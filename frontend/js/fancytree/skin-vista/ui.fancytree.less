@@ -1,0 +1,111 @@
+/*!
+ * Fancytree "Vista" skin.
+ *
+ * DON'T EDIT THE CSS FILE DIRECTLY, since it is automatically generated from
+ * the LESS templates.
+ */
+
+/*
+both:
+   unselected background: #FCFCFC 'nearly white'
+   hover bar (unselected, inactive): #F8FCFE..#EFF9FE (border: #D8F0FA) 'very light blue'
+   active node: #F6FBFD..#D5EFFC (border: #99DEFD)  'light blue'
+   active node with hover: #F2F9FD..#C4E8FA (border: #B6E6FB)
+
+Tree view:
+   active node, tree inactive: #FAFAFB..#E5E5E5 (border: #D9D9D9) 'light gray, selected, but tree not active'
+
+List view:
+   selected bar: --> active bar
+   focus  bar: active + border 1px dotted #090402 (inside the blue border)
+
+   table left/right border: #EDEDED 'light gray'
+ */
+
+// Import common styles
+@import "../skin-common.less";
+
+
+/*******************************************************************************
+ * Styles specific to this skin.
+ *
+ * This section is automatically generated from the `ui-fancytree.less` template.
+ ******************************************************************************/
+
+
+// Override the variable after the import. 
+// NOTE: Variables are always resolved as the last definition, even if it is 
+// after where it is used.
+@fancy-use-sprites: true;  // false: suppress all background images (i.e. icons)
+
+@fancy-icon-width: 16px;
+@fancy-icon-height: 16px;
+@fancy-line-height: 16px;
+@fancy-icon-spacing: 3px;
+
+// Use 'data-uri(...)' to embed the image into CSS instead of linking to 'loading.gif':
+@fancy-loading-url: data-uri("@{fancy-image-dir}/loading.gif");
+// Set to `true` to use `data-uri(...)` which will embed icons.gif into CSS 
+// instead of linking to that file:
+// @fancy-inline-sprites: true;
+
+
+/*******************************************************************************
+ * Node titles
+ */
+span.fancytree-title {
+  border: @fancy-node-border-width solid transparent;  // avoid jumping, when a border is added on hover
+}
+span.fancytree-title:hover {
+   background-color: #F2F7FD; // light blue
+   border-color: #B8D6FB; // darker light blue
+}
+.fancytree-folder span.fancytree-title {
+   // font-weight: bold;
+}
+span.fancytree-focused span.fancytree-title {
+   background-color: #EFEBDE; // gray
+   outline: 1px dotted gray;
+}
+span.fancytree-has-children span.fancytree-title {
+  // font-style: oblique;
+}
+span.fancytree-expanded span.fancytree-title {
+}
+span.fancytree-selected span.fancytree-title {
+   font-style: italic;
+}
+span.fancytree-active span.fancytree-title {
+   border: 1px solid #99DEFD;
+   background-color: #D8F0FA;
+}
+
+/*******************************************************************************
+ * 'table' extension
+ */
+
+table.fancytree-ext-table {
+   border-collapse: collapse;
+   tbody tr.fancytree-focused {
+      background-color: #99DEFD;
+   }
+   tbody tr.fancytree-active {
+      background-color: royalblue;
+   }
+   tbody tr.fancytree-selected {
+      background-color: #99FDDE;
+   }
+}
+
+/*******************************************************************************
+ * 'columnview' extension
+ */
+
+table.fancytree-ext-columnview {
+   span.fancytree-node.fancytree-expanded {
+      background-color: #ccc;
+   }
+   span.fancytree-node.fancytree-active {
+      background-color: royalblue;
+   }
+}

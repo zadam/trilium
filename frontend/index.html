@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>frontend</title>
+  </head>
+  <body>
+
+<div id="top" style="text-align: center;">
+  &nbsp;
+  <span id="top-message"></span>
+</div>
+
+<div style="margin-left: auto; margin-right: auto; width: 1000px">
+  <div id="tree" style="width: 200px; float: left;">
+  <ul id="treeData" style="display: none;">
+    <li id="1">Node 1
+    <li id="2" class="folder">Folder 2
+      <ul>
+        <li id="3">Node 2.1
+        <li id="4">Node 2.2
+      </ul>
+    </ul>
+  </div>
+
+<div style="width: 750px; float: left; margin-left: 20px;">
+  <div>
+    <input type="text" value="" id="noteTitle" style="font-size: x-large; border: 0;">
+  </div>
+
+  <div id="noteDetail">
+    Nothing here right now!
+  </div>
+  </div>
+</div>
+    
+  <script src="js/jquery.js"></script>
+  <script src="js/jqueryui/jquery-ui.js"></script>
+  <!-- Include Fancytree skin and library -->
+  <link href="js/fancytree/skin-win8/ui.fancytree.css" rel="stylesheet">
+  <script src="js/fancytree/jquery.fancytree-all.js"></script>
+
+  <link href="http://netdna.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.css" rel="stylesheet">
+  <script src="http://netdna.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.js"></script> 
+
+  <link href="js/summernote/summernote.css" rel="stylesheet">
+  <script src="js/summernote/summernote.js"></script>
+
+  <script src="js/jquery.hotkeys.js"></script>
+  <script src="js/jquery.fancytree.hotkeys.js"></script>
+
+  <!-- Initialize the tree when page is loaded -->
+  <script type="text/javascript">
+    let tags = {
+      1: "<b>",
+      2: "</b>",
+      3: "<i>",
+      4: "</i>",
+      5: "<u>",
+      6: "</u>",
+      9: "<s>",
+      10: "</s>"
+    };
+
+    function message(str) {
+      $("#top-message").show();
+      $("#top-message").html(str);
+      $("#top-message").fadeOut(2000);
+    }
+
+    function noteChanged() {
+      message("Change!");
+
+      var note = globalNote;
+
+      let contents = $('#noteDetail').summernote('code');
+
+      let title = $('#noteTitle').val();
+
+      $("#tree").fancytree('getNodeByKey', note.detail.note_id).setTitle(title);
+
+      console.log('orig:' + contents);
+
+      contents = contents.replace(/<br \/>/g, '\n');
+      contents = contents.replace(/<br>/g, '\n');
+      contents = contents.replace(/<\/p>/g, '\n');
+      contents = contents.replace(/<p>/g, '');
+
+      console.log('pre-processed:' + contents);
+
+      var index = 0;
+
+      note.formatting = [];
+      note.links = [];
+      note.images = [];
+
+      while (index < contents.length) {
+        var found = false;
+
+        if (contents[index] == '<') {
+          for (tagId in tags) {
+            let tag = tags[tagId];
+
+            if (contents.substr(index, tag.length) == tag) {
+              found = true;
+              // if (tagMap.get(index) == undefined) {
+              //   tagMap.get(index) = [];
+              // }
+
+              // tagMap.get(index).push(key);
+
+              note.formatting.push({
+                note_id: note.detail.note_id,
+                note_offset: index,
+                fmt_tag: tagId,
+                fmt_color: '',
+                fmt_font: '',
+                fmt_value: 100
+              });
+
+              contents = contents.substr(0, index) + contents.substr(index + tag.length);
+
+              console.log(contents);
+
+              break;
+            }
+          }
+        }
+
+        if (!found) {
+          index++;
+        }
+      }
+
+      note.detail.note_text = contents;
+      note.detail.note_title = title;
+
+      $.ajax({
+          url: 'http://localhost:5000/notes/' + note.detail.note_id,
+          type: 'PUT',
+          data: JSON.stringify(note),
+          contentType: "application/json",
+          success: function(result) {
+              message("Saved!");
+          }
+      });
+    }
+
+    $(document).ready(function() {
+      $("#noteTitle").on('input', function() {
+        noteChanged();
+      });
+
+      $('#noteDetail').summernote({
+        airMode: true,
+        callbacks: {
+          onChange: noteChanged
+        }
+      });
+    });
+
+    $(function(){
+      $.get('http://localhost:5000/tree').then(notes => {
+        function copyTitle(notes) {
+          for (key in notes) {
+            var note = notes[key];
+
+            note.title = note.note_title;
+            note.key = note.note_id;
+
+            if (note.children && note.children.length > 0) {
+              copyTitle(note.children);
+            }
+          }
+        }
+
+        copyTitle(notes);
+
+        $("#tree").fancytree({
+          extensions: ["hotkeys"],
+          source: notes,
+          activate: function(event, data){
+            var node = data.node.data;
+            var noteId = node.note_id;
+
+            loadNote(noteId);
+          },
+          hotkeys: {
+            keydown: {
+              "insert": function(node) {
+                node.appendSibling({
+                  "title": "New!"
+                }).setActive(true);
+              },
+              "shift+insert": function(node) {
+                node.addChildren({
+                  "title": "New!"
+                }).setActive(true);
+              },
+              "del": function(node) {
+                node.remove();
+              },
+              "shift+left": function(node) {
+                if (node.getParent() != null) {
+                  node.moveTo(node.getParent(), 'after');
+                }
+              },
+              "shift+right": function(node) {
+                let prevSibling = node.getPrevSibling();
+                
+                if (prevSibling != null) {
+                  node.moveTo(prevSibling);
+                  
+                  prevSibling.setExpanded(true);
+                }
+              }
+            }
+          }
+      });
+    });
+  });
+  
+  var globalNote;
+
+  function loadNote(noteId) {
+    $.get('http://localhost:5000/notes/' + noteId).then(function(note) {
+      globalNote = note;
+
+      var noteText = note.detail.note_text;
+
+      $("#noteTitle").val(note.detail.note_title);
+
+      var formatting = note.formatting;
+      let links = note.links;
+      let images = note.images;
+
+      var offset = 0;
+      var lastTag = null;
+
+      function inject(target, injected, position) {
+        offset += injected.length;
+
+        console.log("injecting " + injected);
+
+        return noteText.substr(0, position) + injected + noteText.substr(position);
+      }
+
+      for (let fmt of formatting) {
+        if (tags[fmt.fmt_tag]) {
+          noteText = inject(noteText, tags[fmt.fmt_tag], fmt.note_offset + offset);
+        }
+
+        console.log(noteText);
+      }
+
+      offset = 0;
+
+      for (let link of links) {
+        let linkHtml = '<a href="' + link.target_url + '">' + link.lnk_text + '</a>';
+
+        noteText = noteText.substr(0, link.note_offset + offset) + noteText.substr(link.note_offset + offset + link.lnk_text.length);
+
+        noteText = inject(noteText, linkHtml, link.note_offset + offset);
+
+        offset -= link.lnk_text.length;
+      }
+
+      offset = 0;
+
+      for (let image of images) {
+        let imgHtml = '<img alt="Embedded Image" src="data:image/jpg;base64,' + image.image_data + '" />';
+
+        noteText = inject(noteText, imgHtml, image.note_offset + offset);
+      }
+
+      noteText = noteText.replace(/(?:\r\n|\r|\n)/g, '<br />');;
+
+      $('#noteDetail').summernote('code', noteText);
+
+      //$("#noteDetail").html(noteText);
+    });
+  }
+  </script>
+    <script src="src/main.js"></script>
+  </body>
+</html>
