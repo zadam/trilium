@@ -77,6 +77,18 @@ class Notes(Resource):
         for fmt in note['formatting']:
             insert("formatting", fmt)
 
+        delete("images", note_id)
+
+        for img in note['images']:
+            img['image_data'] = buffer(base64.b64decode(img['image_data']))
+
+            insert("images", img)
+
+        delete("links", note_id)
+
+        for link in note['links']:
+            insert("links", link)
+
         conn.commit()
 
         return {}

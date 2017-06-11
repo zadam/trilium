@@ -137,8 +137,11 @@
       history: {
         undo: 'Annuler la dernière action',
         redo: 'Restaurer la dernière action annulée'
+      },
+      specialChar: {
+        specialChar: 'CARACTÈRES SPÉCIAUX',
+        select: 'Choisir des caractères spéciaux'
       }
-
     }
   });
 })(jQuery);

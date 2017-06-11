@@ -51,6 +51,8 @@
 
   <!-- Initialize the tree when page is loaded -->
   <script type="text/javascript">
+    const baseUrl = '../';
+
     let tags = {
       1: "<b>",
       2: "</b>",
@@ -79,14 +81,10 @@
 
       $("#tree").fancytree('getNodeByKey', note.detail.note_id).setTitle(title);
 
-      console.log('orig:' + contents);
-
       contents = contents.replace(/<br \/>/g, '\n');
       contents = contents.replace(/<br>/g, '\n');
       contents = contents.replace(/<\/p>/g, '\n');
       contents = contents.replace(/<p>/g, '');
-
-      console.log('pre-processed:' + contents);
 
       var index = 0;
 
@@ -98,6 +96,17 @@
         var found = false;
 
         if (contents[index] == '<') {
+          let curContent = contents.substr(index);
+          let endOfTag = curContent.indexOf('>');
+
+          if (endOfTag == -1) {
+            console.log("Can't find the end of the tag");
+          }
+
+          let curTag = curContent.substr(0, endOfTag + 1);
+
+          console.log(contents);
+
           for (tagId in tags) {
             let tag = tags[tagId];
 
@@ -120,11 +129,72 @@
 
               contents = contents.substr(0, index) + contents.substr(index + tag.length);
 
-              console.log(contents);
-
               break;
             }
           }
+
+          if (curTag.substr(0, 4) == "<img") {
+            console.log("Found img tag");
+
+            let dataImagePos = curTag.indexOf('data:image/');
+
+            if (dataImagePos != -1) {
+              let imageType = curTag.substr(dataImagePos + 11, 3);
+
+              console.log("image type: " + imageType);
+
+              let dataStart = curTag.substr(dataImagePos + 22);
+
+              let endOfDataPos = dataStart.indexOf('"');
+
+              if (endOfDataPos != -1) {
+                console.log("Found the end of image data");
+
+                let imageData = dataStart.substr(0, endOfDataPos);
+
+                note.images.push({
+                  note_id: note.detail.note_id,
+                  note_offset: index,
+                  is_png: imageType == "png",
+                  image_data: imageData
+                });
+
+                contents = contents.substr(0, index) + contents.substr(index + curTag.length);
+
+                console.log("Parsed image: " + imageData.substr(0, 100));
+
+                found = true;
+              }
+            }
+          }
+
+          let match = /<a[^>]+?href="([^"]+?)"[^>]+?>([^<]+?)<\/a>/.exec(curContent);
+
+          if (match != null) {
+            note.links.push({
+              note_id: note.detail.note_id,
+              note_offset: index,
+              target_url: match[1],
+              lnk_text: match[2]
+            });
+            
+            console.log("Found link with text: " + match[2] + ", targetting: " + match[1]);
+
+            contents = contents.substr(0, index) + match[2] + contents.substr(index + match[0].length);
+
+            found = true;
+          }
+
+          // let imageRegex = /<img[^>]+src="data:image\/(jpg|png);base64,([^>\"]+)"[^>]+>/;
+
+          // console.log("Testing for image: " + curTag.substr(0, 100));
+          // console.log("End of image: " + curTag.substr(curTag.length - 100));
+
+          // let match = imageRegex.exec(curTag);
+
+          // if (match != null) {
+
+          // }
         }
 
         if (!found) {
@@ -136,7 +206,7 @@
       note.detail.note_title = title;
 
       $.ajax({
-          url: 'http://localhost:5000/notes/' + note.detail.note_id,
+          url: baseUrl + 'notes/' + note.detail.note_id,
           type: 'PUT',
           data: JSON.stringify(note),
           contentType: "application/json",
@@ -160,7 +230,7 @@
     });
 
     $(function(){
-      $.get('http://localhost:5000/tree').then(notes => {
+      $.get(baseUrl + 'tree').then(notes => {
         function copyTitle(notes) {
           for (key in notes) {
             var note = notes[key];
@@ -223,7 +293,7 @@
   var globalNote;
 
   function loadNote(noteId) {
-    $.get('http://localhost:5000/notes/' + noteId).then(function(note) {
+    $.get(baseUrl + 'notes/' + noteId).then(function(note) {
       globalNote = note;
 
       var noteText = note.detail.note_text;
@@ -240,8 +310,6 @@
       function inject(target, injected, position) {
         offset += injected.length;
 
-        console.log("injecting " + injected);
-
         return noteText.substr(0, position) + injected + noteText.substr(position);
       }
 
@@ -249,8 +317,6 @@
         if (tags[fmt.fmt_tag]) {
           noteText = inject(noteText, tags[fmt.fmt_tag], fmt.note_offset + offset);
         }
-
-        console.log(noteText);
       }
 
       offset = 0;
@@ -268,7 +334,9 @@
       offset = 0;
 
       for (let image of images) {
-        let imgHtml = '<img alt="Embedded Image" src="data:image/jpg;base64,' + image.image_data + '" />';
+        let type = image.is_png ? "png" : "jpg";
+
+        let imgHtml = '<img alt="Embedded Image" src="data:image/' + type + ';base64,' + image.image_data + '" />';
 
         noteText = inject(noteText, imgHtml, image.note_offset + offset);
       }
