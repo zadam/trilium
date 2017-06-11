@@ -2,472 +2,52 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>frontend</title>
+    <title>Notecase web app</title>
   </head>
   <body>
+    <div id="top" style="text-align: center;">
+      &nbsp;
+      <span id="top-message"></span>
+    </div>
 
-<div id="top" style="text-align: center;">
-  &nbsp;
-  <span id="top-message"></span>
-</div>
+    <div style="margin-left: auto; margin-right: auto; width: 1000px">
+      <div id="tree" style="width: 200px; float: left;">
+      </div>
 
-<div style="margin-left: auto; margin-right: auto; width: 1000px">
-  <div id="tree" style="width: 200px; float: left;">
-  <ul id="treeData" style="display: none;">
-    <li id="1">Node 1
-    <li id="2" class="folder">Folder 2
-      <ul>
-        <li id="3">Node 2.1
-        <li id="4">Node 2.2
-      </ul>
-    </ul>
-  </div>
+    <div style="width: 750px; float: left; margin-left: 20px;">
+      <div>
+        <input type="text" value="" id="noteTitle" style="font-size: x-large; border: 0;">
+      </div>
 
-<div style="width: 750px; float: left; margin-left: 20px;">
-  <div>
-    <input type="text" value="" id="noteTitle" style="font-size: x-large; border: 0;">
-  </div>
-
-  <div id="noteDetail">
-    Nothing here right now!
-  </div>
-  </div>
-</div>
+      <div id="noteDetail">
+        Nothing here right now!
+      </div>
+      </div>
+    </div>
     
-  <script src="js/jquery.js"></script>
-  <script src="js/jqueryui/jquery-ui.js"></script>
-  <!-- Include Fancytree skin and library -->
-  <link href="js/fancytree/skin-win8/ui.fancytree.css" rel="stylesheet">
-  <script src="js/fancytree/jquery.fancytree-all.js"></script>
-
-  <link href="js/bootstrap/css/bootstrap.css" rel="stylesheet">
-  <script src="js/bootstrap/js/bootstrap.js"></script> 
-
-  <link href="js/summernote/summernote.css" rel="stylesheet">
-  <script src="js/summernote/summernote.js"></script>
-
-  <script src="js/jquery.hotkeys.js"></script>
-  <script src="js/jquery.fancytree.hotkeys.js"></script>
-
-  <!-- Initialize the tree when page is loaded -->
-  <script type="text/javascript">
-    const baseUrl = '../';
-
-    let tags = {
-      1: "<b>",
-      2: "</b>",
-      3: "<i>",
-      4: "</i>",
-      5: "<u>",
-      6: "</u>",
-      9: "<s>",
-      10: "</s>"
-    };
-
-    function message(str) {
-      $("#top-message").show();
-      $("#top-message").html(str);
-      $("#top-message").fadeOut(2000);
-    }
-
-    function noteChanged() {
-      message("Change!");
-
-      var note = globalNote;
-
-      let contents = $('#noteDetail').summernote('code');
-
-      let title = $('#noteTitle').val();
-
-      $("#tree").fancytree('getNodeByKey', note.detail.note_id).setTitle(title);
-
-      contents = contents.replace(/<br \/>/g, '\n');
-      contents = contents.replace(/<br>/g, '\n');
-      contents = contents.replace(/<\/p>/g, '\n');
-      contents = contents.replace(/<p>/g, '');
-
-      var index = 0;
-
-      note.formatting = [];
-      note.links = [];
-      note.images = [];
-
-      while (index < contents.length) {
-        var found = false;
-
-        if (contents[index] == '<') {
-          let curContent = contents.substr(index);
-          let endOfTag = curContent.indexOf('>');
-
-          if (endOfTag == -1) {
-            console.log("Can't find the end of the tag");
-          }
-
-          let curTag = curContent.substr(0, endOfTag + 1);
-
-          //console.log(contents);
-
-          for (tagId in tags) {
-            let tag = tags[tagId];
-
-            if (contents.substr(index, tag.length) == tag) {
-              found = true;
-              // if (tagMap.get(index) == undefined) {
-              //   tagMap.get(index) = [];
-              // }
-
-              // tagMap.get(index).push(key);
-
-              note.formatting.push({
-                note_id: note.detail.note_id,
-                note_offset: index,
-                fmt_tag: tagId,
-                fmt_color: '',
-                fmt_font: '',
-                fmt_value: 100
-              });
-
-              contents = contents.substr(0, index) + contents.substr(index + tag.length);
-
-              break;
-            }
-          }
-
-          if (curTag.substr(0, 4) == "<img") {
-            //console.log("Found img tag");
-
-            let dataImagePos = curTag.indexOf('data:image/');
-
-            if (dataImagePos != -1) {
-              let imageType = curTag.substr(dataImagePos + 11, 3);
-
-              //console.log("image type: " + imageType);
-
-              let dataStart = curTag.substr(dataImagePos + 22);
-
-              let endOfDataPos = dataStart.indexOf('"');
-
-              if (endOfDataPos != -1) {
-                //console.log("Found the end of image data");
-
-                let imageData = dataStart.substr(0, endOfDataPos);
-
-                note.images.push({
-                  note_id: note.detail.note_id,
-                  note_offset: index,
-                  is_png: imageType == "png",
-                  image_data: imageData
-                });
-
-                contents = contents.substr(0, index) + contents.substr(index + curTag.length);
-
-                //console.log("Parsed image: " + imageData.substr(0, 100));
-
-                found = true;
-              }
-            }
-          }
-
-          let match = /<a[^>]+?href="([^"]+?)"[^>]+?>([^<]+?)<\/a>/.exec(curContent);
-
-          if (match != null) {
-            note.links.push({
-              note_id: note.detail.note_id,
-              note_offset: index,
-              target_url: match[1],
-              lnk_text: match[2]
-            });
-            
-            //console.log("Found link with text: " + match[2] + ", targetting: " + match[1]);
-
-            contents = contents.substr(0, index) + match[2] + contents.substr(index + match[0].length);
-
-            found = true;
-          }
-
-          // let imageRegex = /<img[^>]+src="data:image\/(jpg|png);base64,([^>\"]+)"[^>]+>/;
-
-          // console.log("Testing for image: " + curTag.substr(0, 100));
-          // console.log("End of image: " + curTag.substr(curTag.length - 100));
-
-          // let match = imageRegex.exec(curTag);
-
-          // if (match != null) {
-
-          // }
-        }
-
-        if (!found) {
-          index++;
-        }
-      }
-
-      note.detail.note_text = contents;
-      note.detail.note_title = title;
-
-      $.ajax({
-          url: baseUrl + 'notes/' + note.detail.note_id,
-          type: 'PUT',
-          data: JSON.stringify(note),
-          contentType: "application/json",
-          success: function(result) {
-              message("Saved!");
-          }
-      });
-    }
-
-    $(document).ready(function() {
-      $("#noteTitle").on('input', function() {
-        noteChanged();
-      });
-
-      $('#noteDetail').summernote({
-        airMode: true,
-        callbacks: {
-          onChange: noteChanged
-        }
-      });
-    });
-
-    $(function(){
-      $.get(baseUrl + 'tree').then(notes => {
-        function copyTitle(notes) {
-          for (let note of notes) {
-            note.title = note.note_title;
-            note.key = note.note_id;
-            note.expanded = note.is_expanded;
-
-            if (note.children && note.children.length > 0) {
-              copyTitle(note.children);
-            }
-          }
-        }
-
-        copyTitle(notes);
-
-        function setExpanded(note_id, is_expanded) {
-          expanded_num = is_expanded ? 1 : 0;
-
-          $.ajax({
-              url: baseUrl + 'notes/' + note_id + '/expanded/' + expanded_num,
-              type: 'PUT',
-              contentType: "application/json",
-              success: function(result) {
-                
-              }
-          });
-        }
-
-        $("#tree").fancytree({
-          extensions: ["hotkeys"],
-          source: notes,
-          activate: function(event, data){
-            var node = data.node.data;
-            var noteId = node.note_id;
-
-            loadNote(noteId);
-          },
-          expand: function(event, data) {
-            setExpanded(data.node.key, true);
-          },
-          collapse: function(event, data) {
-            setExpanded(data.node.key, false);
-          },
-          hotkeys: {
-            keydown: {
-              "insert": function(node) {
-                let parentKey = (node.getParent() == null || node.getParent().key == "root_1") ? "root" : node.getParent().key;
-
-                createNote(node, parentKey, 'after');
-              },
-              "shift+insert": function(node) {
-                createNote(node, node.key, 'into');
-              },
-              "del": function(node) {
-                if (confirm('Are you sure you want to delete note "' + node.title + '"?')) {
-                  $.ajax({
-                      url: baseUrl + 'notes/' + node.key,
-                      type: 'DELETE',
-                      success: function(result) {
-                        if (node.getParent() != null && node.getParent().getChildren().length <= 1) {
-                          node.getParent().folder = false;
-                          node.getParent().renderTitle();
-                        }
-
-                        node.remove();
-                      }
-                  });
-                }
-              },
-              "shift+up": function(node) {
-                if (node.getPrevSibling() != null) {
-                  $.ajax({
-                      url: baseUrl + 'notes/' + node.key + '/moveBefore/' + node.getPrevSibling().key,
-                      type: 'PUT',
-                      contentType: "application/json",
-                      success: function(result) {
-                        node.moveTo(node.getPrevSibling(), 'before');
-                      }
-                  });
-                }
-              },
-              "shift+down": function(node) {
-                if (node.getNextSibling() != null) {
-                  $.ajax({
-                      url: baseUrl + 'notes/' + node.key + '/moveAfter/' + node.getNextSibling().key,
-                      type: 'PUT',
-                      contentType: "application/json",
-                      success: function(result) {
-                        node.moveTo(node.getNextSibling(), 'after');
-                      }
-                  });
-                }
-              },
-              "shift+left": function(node) {
-                if (node.getParent() != null) {
-                  $.ajax({
-                      url: baseUrl + 'notes/' + node.key + '/moveAfter/' + node.getParent().key,
-                      type: 'PUT',
-                      contentType: "application/json",
-                      success: function(result) {
-                        if (node.getParent() != null && node.getParent().getChildren().length <= 1) {
-                          node.getParent().folder = false;
-                          node.getParent().renderTitle();
-                        }
-
-                        node.moveTo(node.getParent(), 'after');
-                      }
-                  });
-                }
-              },
-              "shift+right": function(node) {
-                let prevSibling = node.getPrevSibling();
-                
-                if (prevSibling != null) {
-                    $.ajax({
-                      url: baseUrl + 'notes/' + node.key + '/moveTo/' + prevSibling.key,
-                      type: 'PUT',
-                      contentType: "application/json",
-                      success: function(result) {
-                        node.moveTo(prevSibling);
-                  
-                        prevSibling.setExpanded(true);
-
-                        prevSibling.folder = true;
-                        prevSibling.renderTitle();
-                      }
-                  });
-                }
-              }
-            }
-          }
-      });
-    });
-  });
-  
-  var globalNote;
-
-  function setParent(noteId, newParentKey, successCallback) {
-      let newNoteName = "new note";
-
-      $.ajax({
-        url: baseUrl + 'notes/' + nodeId + '/setParent/' + newParentKey,
-        type: 'PUT',
-        contentType: "application/json",
-        success: function(result) {
-          successCallback();
-        }
-    });
-  }
-
-  function createNote(node, parentKey, target) {
-      let newNoteName = "new note";
-
-      $.ajax({
-        url: baseUrl + 'notes/' + parentKey + '/children' ,
-        type: 'POST',
-        data: JSON.stringify({
-          note_title: newNoteName,
-          target: target,
-          target_note_id: node.key
-        }),
-        contentType: "application/json",
-        success: function(result) {
-          let newNode = {
-            "title": newNoteName,
-            "key": result.note_id,
-            "note_id": result.note_id
-          };
-
-          if (target == 'after') {
-            node.appendSibling(newNode).setActive(true);
-          }
-          else {
-            node.addChildren(newNode).setActive(true);
-
-            node.folder = true;
-            node.renderTitle();
-          }
-
-          message("Created!");
-        }
-    });
-  }
-
-  function loadNote(noteId) {
-    $.get(baseUrl + 'notes/' + noteId).then(function(note) {
-      globalNote = note;
-
-      var noteText = note.detail.note_text;
-
-      $("#noteTitle").val(note.detail.note_title);
-
-      var formatting = note.formatting;
-      let links = note.links;
-      let images = note.images;
-
-      var offset = 0;
-      var lastTag = null;
-
-      function inject(target, injected, position) {
-        offset += injected.length;
-
-        return noteText.substr(0, position) + injected + noteText.substr(position);
-      }
-
-      for (let fmt of formatting) {
-        if (tags[fmt.fmt_tag]) {
-          noteText = inject(noteText, tags[fmt.fmt_tag], fmt.note_offset + offset);
-        }
-      }
-
-      offset = 0;
-
-      for (let link of links) {
-        let linkHtml = '<a href="' + link.target_url + '">' + link.lnk_text + '</a>';
-
-        noteText = noteText.substr(0, link.note_offset + offset) + noteText.substr(link.note_offset + offset + link.lnk_text.length);
-
-        noteText = inject(noteText, linkHtml, link.note_offset + offset);
-
-        offset -= link.lnk_text.length;
-      }
-
-      offset = 0;
-
-      for (let image of images) {
-        let type = image.is_png ? "png" : "jpg";
-
-        let imgHtml = '<img alt="Embedded Image" src="data:image/' + type + ';base64,' + image.image_data + '" />';
-
-        noteText = inject(noteText, imgHtml, image.note_offset + offset);
-      }
-
-      noteText = noteText.replace(/(?:\r\n|\r|\n)/g, '<br />');;
-
-      $('#noteDetail').summernote('code', noteText);
-    });
-  }
-  </script>
+    <script src="lib/jquery.js"></script>
+    <script src="lib/jqueryui/jquery-ui.js"></script>
+    <!-- Include Fancytree skin and library -->
+    <link href="lib/fancytree/skin-win8/ui.fancytree.css" rel="stylesheet">
+    <script src="lib/fancytree/jquery.fancytree-all.js"></script>
+
+    <link href="lib/bootstrap/css/bootstrap.css" rel="stylesheet">
+    <script src="lib/bootstrap/js/bootstrap.js"></script> 
+
+    <link href="lib/summernote/summernote.css" rel="stylesheet">
+    <script src="lib/summernote/summernote.js"></script>
+
+    <script src="lib/jquery.hotkeys.js"></script>
+    <script src="lib/jquery.fancytree.hotkeys.js"></script>
+
+    <script type="text/javascript">
+      const baseUrl = '../';
+    </script>
+
+    <script src="tree.js"></script>
+    <script src="note.js"></script>
+    <script src="notecase2html.js"></script>
+    <script src="html2notecase.js"></script>
+    <script src="utils.js"></script>
   </body>
 </html>
