@@ -289,6 +289,11 @@
                       url: baseUrl + 'notes/' + node.key,
                       type: 'DELETE',
                       success: function(result) {
+                        if (node.getParent() != null && node.getParent().getChildren().length <= 1) {
+                          node.getParent().folder = false;
+                          node.getParent().renderTitle();
+                        }
+
                         node.remove();
                       }
                   });
@@ -325,6 +330,11 @@
                       type: 'PUT',
                       contentType: "application/json",
                       success: function(result) {
+                        if (node.getParent() != null && node.getParent().getChildren().length <= 1) {
+                          node.getParent().folder = false;
+                          node.getParent().renderTitle();
+                        }
+
                         node.moveTo(node.getParent(), 'after');
                       }
                   });
@@ -342,6 +352,9 @@
                         node.moveTo(prevSibling);
                   
                         prevSibling.setExpanded(true);
+
+                        prevSibling.folder = true;
+                        prevSibling.renderTitle();
                       }
                   });
                 }
@@ -391,6 +404,9 @@
           }
           else {
             node.addChildren(newNode).setActive(true);
+
+            node.folder = true;
+            node.renderTitle();
           }
 
           message("Created!");
