@@ -105,7 +105,7 @@
 
           let curTag = curContent.substr(0, endOfTag + 1);
 
-          console.log(contents);
+          //console.log(contents);
 
           for (tagId in tags) {
             let tag = tags[tagId];
@@ -134,21 +134,21 @@
           }
 
           if (curTag.substr(0, 4) == "<img") {
-            console.log("Found img tag");
+            //console.log("Found img tag");
 
             let dataImagePos = curTag.indexOf('data:image/');
 
             if (dataImagePos != -1) {
               let imageType = curTag.substr(dataImagePos + 11, 3);
 
-              console.log("image type: " + imageType);
+              //console.log("image type: " + imageType);
 
               let dataStart = curTag.substr(dataImagePos + 22);
 
               let endOfDataPos = dataStart.indexOf('"');
 
               if (endOfDataPos != -1) {
-                console.log("Found the end of image data");
+                //console.log("Found the end of image data");
 
                 let imageData = dataStart.substr(0, endOfDataPos);
 
@@ -161,7 +161,7 @@
 
                 contents = contents.substr(0, index) + contents.substr(index + curTag.length);
 
-                console.log("Parsed image: " + imageData.substr(0, 100));
+                //console.log("Parsed image: " + imageData.substr(0, 100));
 
                 found = true;
               }
@@ -178,7 +178,7 @@
               lnk_text: match[2]
             });
             
-            console.log("Found link with text: " + match[2] + ", targetting: " + match[1]);
+            //console.log("Found link with text: " + match[2] + ", targetting: " + match[1]);
 
             contents = contents.substr(0, index) + match[2] + contents.substr(index + match[0].length);
 
@@ -232,9 +232,7 @@
     $(function(){
       $.get(baseUrl + 'tree').then(notes => {
         function copyTitle(notes) {
-          for (key in notes) {
-            var note = notes[key];
-
+          for (let note of notes) {
             note.title = note.note_title;
             note.key = note.note_id;
 
@@ -258,30 +256,52 @@
           hotkeys: {
             keydown: {
               "insert": function(node) {
-                node.appendSibling({
-                  "title": "New!"
-                }).setActive(true);
+                let parentKey = (node.getParent() == null || node.getParent().key == "root_1") ? "root" : node.getParent().key;
+
+                createNote(parentKey);
               },
               "shift+insert": function(node) {
-                node.addChildren({
-                  "title": "New!"
-                }).setActive(true);
+                createNote(node.key);
               },
               "del": function(node) {
                 node.remove();
               },
+              "shift+up": function(node) {
+                if (node.getPrevSibling() != null) {
+                  node.moveTo(node.getPrevSibling(), 'before');
+                }
+              },
+              "shift+down": function(node) {
+                if (node.getNextSibling() != null) {
+                  node.moveTo(node.getNextSibling(), 'after');
+                }
+              },
               "shift+left": function(node) {
                 if (node.getParent() != null) {
-                  node.moveTo(node.getParent(), 'after');
+                  $.ajax({
+                      url: baseUrl + 'notes/' + node.key + '/moveAfter/' + node.getParent().key,
+                      type: 'PUT',
+                      contentType: "application/json",
+                      success: function(result) {
+                        node.moveTo(node.getParent(), 'after');
+                      }
+                  });
                 }
               },
               "shift+right": function(node) {
                 let prevSibling = node.getPrevSibling();
                 
                 if (prevSibling != null) {
-                  node.moveTo(prevSibling);
+                    $.ajax({
+                      url: baseUrl + 'notes/' + node.key + '/moveTo/' + prevSibling.key,
+                      type: 'PUT',
+                      contentType: "application/json",
+                      success: function(result) {
+                        node.moveTo(prevSibling);
                   
-                  prevSibling.setExpanded(true);
+                        prevSibling.setExpanded(true);
+                      }
+                  });
                 }
               }
             }
@@ -291,6 +311,41 @@
   });
   
   var globalNote;
+
+  function setParent(noteId, newParentKey, successCallback) {
+      let newNoteName = "new note";
+
+      $.ajax({
+        url: baseUrl + 'notes/' + nodeId + '/setParent/' + newParentKey,
+        type: 'PUT',
+        contentType: "application/json",
+        success: function(result) {
+          successCallback();
+        }
+    });
+  }
+
+  function createNote(parentKey) {
+      let newNoteName = "new note";
+
+      $.ajax({
+        url: baseUrl + 'notes/' + parentKey + '/children' ,
+        type: 'POST',
+        data: JSON.stringify({
+          note_title: newNoteName
+        }),
+        contentType: "application/json",
+        success: function(result) {
+          node.appendSibling({
+            "title": newNoteName,
+            "key": result.note_id,
+            "note_id": result.note_id
+          }).setActive(true);
+
+          message("Created!");
+        }
+    });
+  }
 
   function loadNote(noteId) {
     $.get(baseUrl + 'notes/' + noteId).then(function(note) {

@@ -3,6 +3,10 @@ import base64
 from flask import Flask, request, send_from_directory
 from flask_restful import Resource, Api
 from flask_cors import CORS
+import time
+import math
+import random
+import string
 
 def dict_factory(cursor, row):
     d = {}
@@ -31,7 +35,8 @@ def insert(tablename, rec):
     keys = ','.join(rec.keys())
     question_marks = ','.join(list('?'*len(rec)))
     values = tuple(rec.values())
-    execute('INSERT INTO '+tablename+' ('+keys+') VALUES ('+question_marks+')', values)
+    cursor = execute('INSERT INTO '+tablename+' ('+keys+') VALUES ('+question_marks+')', values)
+    return cursor.lastrowid
 
 def delete(tablename, note_id):
     execute("DELETE FROM " + tablename + " WHERE note_id = ?", [note_id])
@@ -39,6 +44,7 @@ def delete(tablename, note_id):
 def execute(sql, params=[]):
     cursor = conn.cursor()
     cursor.execute(sql, params)
+    return cursor
 
 def getResults(sql, params=[]):
     cursor = conn.cursor()
@@ -94,6 +100,62 @@ class Notes(Resource):
         return {}
 
 api.add_resource(Notes, '/notes/<string:note_id>')
+
+class NotesChildren(Resource):
+    def post(self, parent_note_id):
+        note = request.get_json(force=True)
+
+        noteId = ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(22))
+
+        now = math.floor(time.time());
+
+        insert("notes", {
+            'note_id': noteId,
+            'note_title': note['note_title'],
+            'note_text': '',
+            'note_clone_id': '',
+            'date_created': now,
+            'date_modified': now,
+            'icon_info': 'pencil',
+            'is_finished': 0
+        })
+
+        if parent_note_id == "root":
+            parent_note_id = ""
+
+        insert("notes_tree", {
+            'note_id': noteId,
+            'note_pid': parent_note_id,
+            'note_pos': 0,
+            'is_expanded': 0
+        })
+
+        conn.commit()
+
+        return {
+            'note_id': noteId
+        }
+
+api.add_resource(NotesChildren, '/notes/<string:parent_note_id>/children')
+
+class MoveAfterNote(Resource):
+    def put(self, note_id, after_note_id):
+        after_note = getSingleResult("select * from notes_tree where note_id = ?", [after_note_id])
+
+        if after_note <> None:
+            execute("update notes_tree set note_pid = ?, note_pos = ? where note_id = ?", [after_note['note_pid'], after_note['note_pos'] + 1, note_id])
+
+            conn.commit()
+
+api.add_resource(MoveAfterNote, '/notes/<string:note_id>/moveAfter/<string:after_note_id>')
+
+class MoveToNote(Resource):
+    def put(self, note_id, parent_id):
+        execute("update notes_tree set note_pid = ? where note_id = ?", [parent_id, note_id])
+
+        conn.commit()
+
+api.add_resource(MoveToNote, '/notes/<string:note_id>/moveTo/<string:parent_id>')
 
 class Tree(Resource):
     def get(self):
