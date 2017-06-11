@@ -235,6 +235,7 @@
           for (let note of notes) {
             note.title = note.note_title;
             note.key = note.note_id;
+            note.expanded = note.is_expanded;
 
             if (note.children && note.children.length > 0) {
               copyTitle(note.children);
@@ -244,6 +245,19 @@
 
         copyTitle(notes);
 
+        function setExpanded(note_id, is_expanded) {
+          expanded_num = is_expanded ? 1 : 0;
+
+          $.ajax({
+              url: baseUrl + 'notes/' + note_id + '/expanded/' + expanded_num,
+              type: 'PUT',
+              contentType: "application/json",
+              success: function(result) {
+                
+              }
+          });
+        }
+
         $("#tree").fancytree({
           extensions: ["hotkeys"],
           source: notes,
@@ -252,6 +266,12 @@
             var noteId = node.note_id;
 
             loadNote(noteId);
+          },
+          expand: function(event, data) {
+            setExpanded(data.node.key, true);
+          },
+          collapse: function(event, data) {
+            setExpanded(data.node.key, false);
           },
           hotkeys: {
             keydown: {

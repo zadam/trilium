@@ -211,6 +211,14 @@ class MoveToNote(Resource):
 
 api.add_resource(MoveToNote, '/notes/<string:note_id>/moveTo/<string:parent_id>')
 
+class ExpandedNote(Resource):
+    def put(self, note_id, expanded):
+        execute("update notes_tree set is_expanded = ? where note_id = ?", [expanded, note_id])
+
+        conn.commit()
+
+api.add_resource(ExpandedNote, '/notes/<string:note_id>/expanded/<int:expanded>')
+
 class Tree(Resource):
     def get(self):
         notes = getResults("select notes_tree.*, notes.note_title from notes_tree join notes on notes.note_id = notes_tree.note_id order by note_pid, note_pos")
