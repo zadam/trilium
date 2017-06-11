@@ -99,6 +99,17 @@ class Notes(Resource):
 
         return {}
 
+    def delete(self, note_id):
+        children = getResults("select note_id from notes_tree where note_pid = ?", [note_id])
+
+        for child in children:
+            self.delete(child['note_id'])
+
+        delete("notes_tree", note_id)
+        delete("notes", note_id)
+
+        conn.commit()
+
 api.add_resource(Notes, '/notes/<string:note_id>')
 
 class NotesChildren(Resource):
@@ -107,7 +118,29 @@ class NotesChildren(Resource):
 
         noteId = ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(22))
 
-        now = math.floor(time.time());
+        if parent_note_id == "root":
+            parent_note_id = ""
+
+        new_note_pos = 0
+
+        if note['target'] == 'into':
+            res = getSingleResult('select max(note_pos) as max_note_pos from notes_tree where note_pid = ?', [parent_note_id])
+            max_note_pos = res['max_note_pos']
+
+            if max_note_pos is None: # no children yet
+                new_note_pos = 0
+            else:
+                new_note_pos = max_note_pos + 1
+        elif note['target'] == 'after':
+            after_note = getSingleResult('select note_pos from notes_tree where note_id = ?', [note['target_note_id']])
+
+            new_note_pos = after_note['note_pos'] + 1
+
+            execute('update notes_tree set note_pos = note_pos + 1 where note_pid = ? and note_pos > ?', [parent_note_id, after_note['note_pos']])
+        else:
+            raise Exception('Unknown target: ' + note['target'])
+
+        now = math.floor(time.time())
 
         insert("notes", {
             'note_id': noteId,
@@ -120,13 +153,10 @@ class NotesChildren(Resource):
             'is_finished': 0
         })
 
-        if parent_note_id == "root":
-            parent_note_id = ""
-
         insert("notes_tree", {
             'note_id': noteId,
             'note_pid': parent_note_id,
-            'note_pos': 0,
+            'note_pos': new_note_pos,
             'is_expanded': 0
         })
 
@@ -143,15 +173,39 @@ class MoveAfterNote(Resource):
         after_note = getSingleResult("select * from notes_tree where note_id = ?", [after_note_id])
 
         if after_note <> None:
+            execute("update notes_tree set note_pos = note_pos + 1 where note_pid = ? and note_pos > ?", [after_note['note_pid'], after_note['note_pos']])
+
             execute("update notes_tree set note_pid = ?, note_pos = ? where note_id = ?", [after_note['note_pid'], after_note['note_pos'] + 1, note_id])
 
             conn.commit()
 
 api.add_resource(MoveAfterNote, '/notes/<string:note_id>/moveAfter/<string:after_note_id>')
 
+class MoveBeforeNote(Resource):
+    def put(self, note_id, before_note_id):
+        before_note = getSingleResult("select * from notes_tree where note_id = ?", [before_note_id])
+
+        if before_note <> None:
+            execute("update notes_tree set note_pos = note_pos + 1 where note_id = ?", [before_note_id])
+
+            execute("update notes_tree set note_pid = ?, note_pos = ? where note_id = ?", [before_note['note_pid'], before_note['note_pos'], note_id])
+
+            conn.commit()
+
+api.add_resource(MoveBeforeNote, '/notes/<string:note_id>/moveBefore/<string:before_note_id>')
+
 class MoveToNote(Resource):
     def put(self, note_id, parent_id):
-        execute("update notes_tree set note_pid = ? where note_id = ?", [parent_id, note_id])
+        res = getSingleResult('select max(note_pos) as max_note_pos from notes_tree where note_pid = ?', [parent_id])
+        max_note_pos = res['max_note_pos']
+        new_note_pos = 0
+
+        if max_note_pos is None: # no children yet
+            new_note_pos = 0
+        else:
+            new_note_pos = max_note_pos + 1
+
+        execute("update notes_tree set note_pid = ?, note_pos = ? where note_id = ?", [parent_id, new_note_pos, note_id])
 
         conn.commit()
 

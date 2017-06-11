@@ -258,22 +258,44 @@
               "insert": function(node) {
                 let parentKey = (node.getParent() == null || node.getParent().key == "root_1") ? "root" : node.getParent().key;
 
-                createNote(parentKey);
+                createNote(node, parentKey, 'after');
               },
               "shift+insert": function(node) {
-                createNote(node.key);
+                createNote(node, node.key, 'into');
               },
               "del": function(node) {
-                node.remove();
+                if (confirm('Are you sure you want to delete note "' + node.title + '"?')) {
+                  $.ajax({
+                      url: baseUrl + 'notes/' + node.key,
+                      type: 'DELETE',
+                      success: function(result) {
+                        node.remove();
+                      }
+                  });
+                }
               },
               "shift+up": function(node) {
                 if (node.getPrevSibling() != null) {
-                  node.moveTo(node.getPrevSibling(), 'before');
+                  $.ajax({
+                      url: baseUrl + 'notes/' + node.key + '/moveBefore/' + node.getPrevSibling().key,
+                      type: 'PUT',
+                      contentType: "application/json",
+                      success: function(result) {
+                        node.moveTo(node.getPrevSibling(), 'before');
+                      }
+                  });
                 }
               },
               "shift+down": function(node) {
                 if (node.getNextSibling() != null) {
-                  node.moveTo(node.getNextSibling(), 'after');
+                  $.ajax({
+                      url: baseUrl + 'notes/' + node.key + '/moveAfter/' + node.getNextSibling().key,
+                      type: 'PUT',
+                      contentType: "application/json",
+                      success: function(result) {
+                        node.moveTo(node.getNextSibling(), 'after');
+                      }
+                  });
                 }
               },
               "shift+left": function(node) {
@@ -325,22 +347,31 @@
     });
   }
 
-  function createNote(parentKey) {
+  function createNote(node, parentKey, target) {
       let newNoteName = "new note";
 
       $.ajax({
         url: baseUrl + 'notes/' + parentKey + '/children' ,
         type: 'POST',
         data: JSON.stringify({
-          note_title: newNoteName
+          note_title: newNoteName,
+          target: target,
+          target_note_id: node.key
         }),
         contentType: "application/json",
         success: function(result) {
-          node.appendSibling({
+          let newNode = {
             "title": newNoteName,
             "key": result.note_id,
             "note_id": result.note_id
-          }).setActive(true);
+          };
+
+          if (target == 'after') {
+            node.appendSibling(newNode).setActive(true);
+          }
+          else {
+            node.addChildren(newNode).setActive(true);
+          }
 
           message("Created!");
         }
