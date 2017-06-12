@@ -11,17 +11,33 @@
     </div>
 
     <div style="margin-left: auto; margin-right: auto; width: 1000px">
-      <div id="tree" style="width: 200px; float: left;">
+      <div style="width: 200px; float: left;">
+        <button type="button" class="btn" onclick="createNewTopLevelNote()">Create new note</button>
+
+        <div id="tree">
+        </div>
       </div>
 
-    <div style="width: 750px; float: left; margin-left: 20px;">
-      <div>
-        <input type="text" value="" id="noteTitle" style="font-size: x-large; border: 0;">
-      </div>
+      <div style="width: 750px; float: left; margin-left: 20px;">
+        <div>
+          <input type="text" autocomplete="off" value="Welcome to Notecase web app!" id="noteTitle" style="font-size: x-large; border: 0;">
+        </div>
 
-      <div id="noteDetail">
-        Nothing here right now!
-      </div>
+        <div id="noteDetail">
+          <p>This prototype version supports basic editing, including some formatting (bold, italic, strike-through, underscore), images (just paste it into editor) and links. To edit the note, just click on title or content and you can directly modify it. Changes are saved immediatelly.</p>
+
+          <p>You can work with the tree using following keyboard shortcuts:</p>
+
+          <ul>
+            <li>insert - create new note on current tree level</li>
+            <li>shift + insert - create new sub-note</li>
+            <li>delete - delete current note (and it's sub-notes)</li>
+            <li>shift + up - move current note up in the current tree level</li>
+            <li>shift + down - move current note down in the current tree level</li>
+            <li>shift + left - move current note up in the tree hierarchy</li>
+            <li>shift + right - move current note down in the tree hierarchy</li>
+          </ul>
+        </div>
       </div>
     </div>
     
@@ -39,6 +55,8 @@
 
     <script src="lib/jquery.hotkeys.js"></script>
     <script src="lib/jquery.fancytree.hotkeys.js"></script>
+
+    <link href="style.css" rel="stylesheet">
 
     <script type="text/javascript">
       const baseUrl = '../';

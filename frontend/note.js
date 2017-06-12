@@ -9,7 +9,13 @@ let tags = {
     10: "</s>"
 };
 
+let noteChangeDisabled = false;
+
 function noteChanged() {
+    if (noteChangeDisabled) {
+        return;
+    }
+
     let note = globalNote;
 
     let contents = $('#noteDetail').summernote('code');
@@ -40,6 +46,7 @@ $(document).ready(function() {
 
     $('#noteDetail').summernote({
         airMode: true,
+        height: 300,
         callbacks: {
             onChange: noteChanged
         }
@@ -59,6 +66,12 @@ function setParent(noteId, newParentKey, successCallback) {
             successCallback();
         }
     });
+}
+
+function createNewTopLevelNote() {
+    let rootNode = $("#tree").fancytree("getRootNode");
+
+    createNote(rootNode, "root", "into");
 }
 
 function createNote(node, parentKey, target) {
@@ -103,6 +116,10 @@ function loadNote(noteId) {
 
         let noteText = notecase2html(note);
 
+        noteChangeDisabled = true;
+
         $('#noteDetail').summernote('code', noteText);
+
+        noteChangeDisabled = false;
     });
 }

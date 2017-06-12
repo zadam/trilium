@@ -1,0 +1,12 @@
+.note-editable {
+    /* This is because with empty content height of editor is 0 and it's impossible to click into it */
+    min-height: 400px;
+}
+
+#top-message {
+    display: none; /* initial state is hidden */
+    background-color: greenyellow;
+    color: green;
+    padding: 5px;
+    border-radius: 10px;
+}

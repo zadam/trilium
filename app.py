@@ -76,7 +76,9 @@ class Notes(Resource):
     def put(self, note_id):
         note = request.get_json(force=True)
 
-        execute("update notes set note_text = ?, note_title = ? where note_id = ?", [note['detail']['note_text'], note['detail']['note_title'], note_id])
+        now = math.floor(time.time())
+
+        execute("update notes set note_text = ?, note_title = ?, date_modified = ? where note_id = ?", [note['detail']['note_text'], note['detail']['note_title'], now, note_id])
 
         delete("formatting", note_id)
 
