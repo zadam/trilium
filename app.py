@@ -3,10 +3,13 @@ import base64
 from flask import Flask, request, send_from_directory
 from flask_restful import Resource, Api
 from flask_cors import CORS
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user
 import time
 import math
 import random
 import string
+
+from flask import render_template, redirect
 
 def dict_factory(cursor, row):
     d = {}
@@ -22,12 +25,45 @@ conn = sqlite3.connect('demo.ncdb')
 conn.row_factory = dict_factory
 
 app = Flask(__name__)
+app.secret_key = 'dshjkjsdhfk9832fsdlhf'
+
+class User(UserMixin):
+    pass
+
+@app.route('/login', methods=['GET'])
+def login_form():
+    return render_template('login.html')
+
+@app.route('/app', methods=['GET'])
+@login_required
+def show_app():
+    return render_template('app.html')
+
+@app.route('/logout', methods=['POST'])
+@login_required
+def logout():
+    logout_user()
+    return redirect('login')
+
+userAdam = User()
+userAdam.id = 'adam'
+
+@app.route('/login', methods=['POST'])
+def login_post():
+    if request.form['username'] == 'adam' and request.form['password'] == 'pass':
+        rememberMe = True if request.form['remember-me'] else False
+
+        login_user(userAdam, remember=rememberMe)
+
+        return redirect('app')
+    else:
+        return render_template('login.html', failedAuth=True)
 
 CORS(app)
 
-@app.route('/frontend/<path:path>')
-def send_js(path):
-    return send_from_directory('frontend', path)
+@app.route('/static/<path:path>')
+def send_static(path):
+    return send_from_directory('static', path)
 
 api = Api(app)
 
@@ -246,6 +282,17 @@ class Tree(Resource):
         return rootNotes
 
 api.add_resource(Tree, '/tree')
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login_form'
+
+@login_manager.user_loader
+def load_user(user_id):
+    if user_id == 'adam':
+        return userAdam
+    else:
+        return None
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0')

@@ -19,9 +19,17 @@
       </div>
 
       <div style="width: 750px; float: left; margin-left: 20px;">
-        <div>
-          <input type="text" autocomplete="off" value="Welcome to Notecase web app!" id="noteTitle" style="font-size: x-large; border: 0;">
+        <div style="float: right;">
+          <form action="logout" method="POST">
+            <input type="submit" class="btn btn-sm" value="Logout">
+          </form>
         </div>
+
+        <div style="float: left;">
+          <input type="text" autocomplete="off" value="Welcome to Notecase web app!" id="noteTitle" style="font-size: x-large; border: 0; width: 100%;">
+        </div>
+
+        <div style="clear: both; height: 0"></div>
 
         <div id="noteDetail">
           <p>This prototype version supports basic editing, including some formatting (bold, italic, strike-through, underscore), images (just paste it into editor) and links. To edit the note, just click on title or content and you can directly modify it. Changes are saved immediatelly.</p>
@@ -41,31 +49,31 @@
       </div>
     </div>
     
-    <script src="lib/jquery.js"></script>
-    <script src="lib/jqueryui/jquery-ui.js"></script>
+    <script src="static/lib/jquery.js"></script>
+    <script src="static/lib/jqueryui/jquery-ui.js"></script>
     <!-- Include Fancytree skin and library -->
-    <link href="lib/fancytree/skin-win8/ui.fancytree.css" rel="stylesheet">
-    <script src="lib/fancytree/jquery.fancytree-all.js"></script>
+    <link href="static/lib/fancytree/skin-win8/ui.fancytree.css" rel="stylesheet">
+    <script src="static/lib/fancytree/jquery.fancytree-all.js"></script>
 
-    <link href="lib/bootstrap/css/bootstrap.css" rel="stylesheet">
-    <script src="lib/bootstrap/js/bootstrap.js"></script> 
+    <link href="static/lib/bootstrap/css/bootstrap.css" rel="stylesheet">
+    <script src="static/lib/bootstrap/js/bootstrap.js"></script> 
 
-    <link href="lib/summernote/summernote.css" rel="stylesheet">
-    <script src="lib/summernote/summernote.js"></script>
+    <link href="static/lib/summernote/summernote.css" rel="stylesheet">
+    <script src="static/lib/summernote/summernote.js"></script>
 
-    <script src="lib/jquery.hotkeys.js"></script>
-    <script src="lib/jquery.fancytree.hotkeys.js"></script>
+    <script src="static/lib/jquery.hotkeys.js"></script>
+    <script src="static/lib/jquery.fancytree.hotkeys.js"></script>
 
-    <link href="style.css" rel="stylesheet">
+    <link href="static/style.css" rel="stylesheet">
 
     <script type="text/javascript">
-      const baseUrl = '../';
+      const baseUrl = '';
     </script>
 
-    <script src="tree.js"></script>
-    <script src="note.js"></script>
-    <script src="notecase2html.js"></script>
-    <script src="html2notecase.js"></script>
-    <script src="utils.js"></script>
+    <script src="static/js/tree.js"></script>
+    <script src="static/js/note.js"></script>
+    <script src="static/js/notecase2html.js"></script>
+    <script src="static/js/html2notecase.js"></script>
+    <script src="static/js/utils.js"></script>
   </body>
 </html>
