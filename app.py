@@ -10,6 +10,11 @@ import random
 import string
 import configparser
 import bcrypt
+import requests
+import json
+import os
+import binascii
+import hashlib
 
 from flask import render_template, redirect
 
@@ -302,6 +307,25 @@ def load_user(user_id):
         return user
     else:
         return None
+
+syncServerUrl = config['Sync']['sync-server-url']
+syncServerUsername = config['Sync']['sync-server-username']
+syncServerPassword = config['Sync']['sync-server-password']
+
+nonce = binascii.hexlify(bytearray(os.urandom(32)))
+
+print('Nonce: ' + nonce)
+
+# SHA256(user + ":" + SHA256(user + ":" + password) + ":" + nonce)  where SHA256 is a hex encoded value
+auth = hashlib.sha256(syncServerUsername + ":" + hashlib.sha256(syncServerPassword + ":" + syncServerPassword).hexdigest() + ":" + nonce).hexdigest()
+
+response = requests.post(syncServerUrl + "/login", json={
+    'user': syncServerUsername,
+    'nonce': nonce,
+    'auth': auth
+})
+
+print(response)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0')
