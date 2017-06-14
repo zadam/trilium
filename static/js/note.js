@@ -74,6 +74,8 @@ function createNewTopLevelNote() {
     createNote(rootNode, "root", "into");
 }
 
+let newNoteCreated = false;
+
 function createNote(node, parentKey, target) {
     let newNoteName = "new note";
 
@@ -92,6 +94,8 @@ function createNote(node, parentKey, target) {
                 "key": result.note_id,
                 "note_id": result.note_id
             };
+
+            newNoteCreated = true;
 
             if (target == 'after') {
                 node.appendSibling(newNode).setActive(true);
@@ -113,6 +117,12 @@ function loadNote(noteId) {
         globalNote = note;
 
         $("#noteTitle").val(note.detail.note_title);
+
+        if (newNoteCreated) {
+            newNoteCreated = false;
+
+            $("#noteTitle").focus().select();
+        }
 
         let noteText = notecase2html(note);
 
