@@ -8,6 +8,8 @@ import time
 import math
 import random
 import string
+import configparser
+import bcrypt
 
 from flask import render_template, redirect
 
@@ -45,15 +47,22 @@ def logout():
     logout_user()
     return redirect('login')
 
-userAdam = User()
-userAdam.id = 'adam'
+config = configparser.ConfigParser()
+config.read('config.ini')
+
+user = User()
+user.id = config['Login']['username']
+
+hashedPassword = config['Login']['password-hash'].encode('utf-8')
 
 @app.route('/login', methods=['POST'])
 def login_post():
-    if request.form['username'] == 'adam' and request.form['password'] == 'pass':
-        rememberMe = True if request.form['remember-me'] else False
+    inputPassword = request.form['password'].encode('utf-8')
 
-        login_user(userAdam, remember=rememberMe)
+    if request.form['username'] == user.id and bcrypt.hashpw(inputPassword, hashedPassword) == hashedPassword:
+        rememberMe = True if 'remember-me' in request.form else False
+
+        login_user(user, remember=rememberMe)
 
         return redirect('app')
     else:
@@ -289,8 +298,8 @@ login_manager.login_view = 'login_form'
 
 @login_manager.user_loader
 def load_user(user_id):
-    if user_id == 'adam':
-        return userAdam
+    if user_id == user.id:
+        return user
     else:
         return None
 
