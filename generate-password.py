@@ -1,7 +1,8 @@
 #!/usr/bin/python
 
-import bcrypt # pip install bcrypt
 import getpass
+
+import bcrypt  # pip install bcrypt
 
 password1 = getpass.getpass()
 
