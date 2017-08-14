@@ -12,9 +12,9 @@ function html2notecase(contents, note) {
     note.images = [];
 
     while (index < contents.length) {
-        let found = false;
-
         if (contents[index] == '<') {
+            let found = false;
+
             let curContent = contents.substr(index);
             let endOfTag = curContent.indexOf('>');
 
@@ -87,7 +87,7 @@ function html2notecase(contents, note) {
                 }
             }
 
-            let match = /<a[^>]+?href="([^"]+?)"[^>]+?>([^<]+?)<\/a>/.exec(curContent);
+            let match = /^<a[^>]+?href="([^"]+?)"[^>]+?>([^<]+?)<\/a>/.exec(curContent);
 
             if (match != null) {
                 note.links.push({
@@ -114,9 +114,12 @@ function html2notecase(contents, note) {
             // if (match != null) {
 
             // }
-        }
 
-        if (!found) {
+            if (!found) {
+                contents = contents.substr(0, index) + contents.substr(index + endOfTag + 1);
+            }
+        }
+        else {
             index++;
         }
     }
