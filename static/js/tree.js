@@ -127,6 +127,10 @@ $(function(){
                                 }
                             });
                         }
+                    },
+                    "return": function(node) {
+                        // doesn't work :-/
+                        $('#noteDetail').summernote('focus');
                     }
                 }
             }

@@ -3,6 +3,7 @@ function html2notecase(contents, note) {
     contents = contents.replace(/<br>/g, '\n');
     contents = contents.replace(/<\/p>/g, '\n');
     contents = contents.replace(/<p>/g, '');
+    contents = contents.replace(/&nbsp;/g, ' ');
 
     let index = 0;
 

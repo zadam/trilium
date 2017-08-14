@@ -10,3 +10,11 @@
     padding: 5px;
     border-radius: 10px;
 }
+
+#error-message {
+    display: none; /* initial state is hidden */
+    background-color: red;
+    color: white;
+    padding: 5px;
+    border-radius: 10px;
+}

@@ -44,5 +44,7 @@ function notecase2html(note) {
 
     noteText = noteText.replace(/(?:\r\n|\r|\n)/g, '<br />');
 
+    noteText = noteText.replace(/  /g, '&nbsp;&nbsp;');
+
     return noteText;
 }

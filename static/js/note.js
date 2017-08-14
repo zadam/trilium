@@ -35,6 +35,9 @@ function noteChanged() {
         contentType: "application/json",
         success: function(result) {
             message("Saved!");
+        },
+        error: function(result) {
+            error("Error saving the note!");
         }
     });
 }

@@ -8,24 +8,25 @@
     <div id="top" style="text-align: center;">
       &nbsp;
       <span id="top-message"></span>
+      <span id="error-message"></span>
     </div>
 
-    <div style="margin-left: auto; margin-right: auto; width: 1000px">
-      <div style="width: 200px; float: left;">
+    <div style="margin-left: auto; margin-right: auto; width: 1100px">
+      <div style="width: 300px; height: 800px; float: left; overflow: scroll;">
         <button type="button" class="btn" onclick="createNewTopLevelNote()">Create new note</button>
 
         <div id="tree">
         </div>
       </div>
 
-      <div style="width: 750px; float: left; margin-left: 20px;">
+      <div style="width: 750px; float: left; margin-left: 30px;">
         <div style="float: right;">
           <form action="logout" method="POST">
             <input type="submit" class="btn btn-sm" value="Logout">
           </form>
         </div>
 
-        <div style="float: left;">
+        <div style="float: left; margin: 5px;">
           <input type="text" autocomplete="off" value="Welcome to Notecase web app!" id="noteTitle" style="font-size: x-large; border: 0; width: 100%;">
         </div>
 
