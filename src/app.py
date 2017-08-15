@@ -42,6 +42,10 @@ config.read('config.ini')
 user = User()
 user.id = config['Login']['username']
 
+port = config['Network']['port']
+certPath = config['Network']['certPath']
+certKeyPath = config['Network']['certKeyPath']
+
 hashedPassword = config['Login']['password-hash'].encode('utf-8')
 
 @app.route('/login', methods=['POST'])
@@ -85,5 +89,5 @@ def load_user(user_id):
 
 api.add_resource(Notes, '/notes/<string:note_id>')
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0')
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', port=port, ssl_context = (certPath, certKeyPath))

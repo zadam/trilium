@@ -6,3 +6,5 @@ yarn-error.log
 app.pyc
 demo.ncdb
 config.ini
+cert.key
+cert.crt
