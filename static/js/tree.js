@@ -3,6 +3,11 @@ $(function(){
         function copyTitle(notes) {
             for (let note of notes) {
                 note.title = note.note_title;
+
+                if (note.is_clone) {
+                    note.title += " (clone)";
+                }
+
                 note.key = note.note_id;
                 note.expanded = note.is_expanded;
 
@@ -31,8 +36,8 @@ $(function(){
             extensions: ["hotkeys"],
             source: notes,
             activate: function(event, data){
-                var node = data.node.data;
-                var noteId = node.note_id;
+                const node = data.node.data;
+                const noteId = node.is_clone ? node.note_clone_id : node.note_id;
 
                 loadNote(noteId);
             },
