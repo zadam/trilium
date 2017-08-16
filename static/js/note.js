@@ -135,6 +135,8 @@ function loadNote(noteId) {
 
         $('#noteDetail').summernote('code', noteText);
 
+        $(window).resize(); // to trigger resizing of editor
+
         noteChangeDisabled = false;
     });
 }

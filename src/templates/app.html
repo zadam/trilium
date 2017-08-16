@@ -11,11 +11,11 @@
       <span id="error-message"></span>
     </div>
 
-    <div style="margin-left: auto; margin-right: auto; width: 1100px">
-      <div style="width: 300px; height: 800px; float: left; overflow: scroll;">
+    <div id="content" style="margin-left: auto; margin-right: auto; width: 1100px">
+      <div style="width: 300px; height: 100%; float: left;">
         <button type="button" class="btn" onclick="createNewTopLevelNote()">Create new note</button>
 
-        <div id="tree">
+        <div id="tree" style="overflow: scroll; height: 100%;">
         </div>
       </div>
 
@@ -32,7 +32,7 @@
 
         <div style="clear: both; height: 0"></div>
 
-        <div id="noteDetail">
+        <div id="noteDetail" style="overflow: scroll; height: 100%;">
           <p>This prototype version supports basic editing, including some formatting (bold, italic, strike-through, underscore), images (just paste it into editor) and links. To edit the note, just click on title or content and you can directly modify it. Changes are saved immediatelly.</p>
 
           <p>You can work with the tree using following keyboard shortcuts:</p>
@@ -71,6 +71,7 @@
       const baseUrl = '';
     </script>
 
+    <script src="stat/js/init.js"></script>
     <script src="stat/js/tree.js"></script>
     <script src="stat/js/note.js"></script>
     <script src="stat/js/notecase2html.js"></script>
