@@ -1,22 +1,27 @@
+import os
+
 import bcrypt
 import configparser
-import os
 from flask import Flask, request, send_from_directory
 from flask import render_template, redirect
 from flask_cors import CORS
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user
 from flask_restful import Api
+
+from expanded_note import ExpandedNote
 from move_after_note import MoveAfterNote
+from move_before_note import MoveBeforeNote
 from move_to_note import MoveToNote
 from notes import Notes
 from notes_children import NotesChildren
-
-from expanded_note import ExpandedNote
-from move_before_note import MoveBeforeNote
+from sql import connect
 from tree import Tree
 
+config = configparser.ConfigParser()
+config.read('config.ini')
+
 app = Flask(__name__)
-app.secret_key = 'dshjkjsdhfk9832fsdlhf'
+app.secret_key = config['Security']['flaskSecretKey']
 
 class User(UserMixin):
     pass
@@ -36,15 +41,16 @@ def logout():
     logout_user()
     return redirect('login')
 
-config = configparser.ConfigParser()
-config.read('config.ini')
-
 user = User()
 user.id = config['Login']['username']
 
 port = config['Network']['port']
 certPath = config['Network']['certPath']
 certKeyPath = config['Network']['certKeyPath']
+
+documentPath = config['Document']['documentPath']
+
+connect(documentPath)
 
 hashedPassword = config['Login']['password-hash'].encode('utf-8')
 

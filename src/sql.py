@@ -1,5 +1,5 @@
-import sqlite3
 import base64
+import sqlite3
 
 def dict_factory(cursor, row):
     d = {}
@@ -11,8 +11,10 @@ def dict_factory(cursor, row):
 
     return d
 
-conn = sqlite3.connect('demo.ncdb')
-conn.row_factory = dict_factory
+def connect(documentPath):
+    global conn
+    conn = sqlite3.connect(documentPath)
+    conn.row_factory = dict_factory
 
 def insert(tablename, rec):
     keys = ','.join(rec.keys())
