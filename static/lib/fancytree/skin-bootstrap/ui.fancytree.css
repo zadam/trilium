@@ -76,7 +76,6 @@ span.fancytree-vline,
 span.fancytree-expander,
 span.fancytree-icon,
 span.fancytree-checkbox,
-span.fancytree-radio,
 span.fancytree-drag-helper-img,
 #fancytree-drop-marker {
   width: 1em;
@@ -90,7 +89,6 @@ span.fancytree-drag-helper-img,
 span.fancytree-icon,
 span.fancytree-checkbox,
 span.fancytree-expander,
-span.fancytree-radio,
 span.fancytree-custom-icon {
   margin-top: 2px;
 }
@@ -156,11 +154,6 @@ span.fancytree-checkbox {
   opacity: 0.4;
   filter: alpha(opacity=40);
 }
-/*------------------------------------------------------------------------------
- * Radiobutton icon
- * This is a customization, that may be activated by overriding the 'checkbox'
- * class name as 'fancytree-radio' in the tree options.
- *----------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------
  * Node type icon
  * Note: IE6 doesn't correctly evaluate multiples class names,

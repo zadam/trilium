@@ -76,7 +76,6 @@ span.fancytree-vline,
 span.fancytree-expander,
 span.fancytree-icon,
 span.fancytree-checkbox,
-span.fancytree-radio,
 span.fancytree-drag-helper-img,
 #fancytree-drop-marker {
   width: 32px;
@@ -91,7 +90,6 @@ span.fancytree-drag-helper-img,
 span.fancytree-icon,
 span.fancytree-checkbox,
 span.fancytree-expander,
-span.fancytree-radio,
 span.fancytree-custom-icon {
   margin-top: 0px;
 }
@@ -206,17 +204,35 @@ span.fancytree-checkbox {
 span.fancytree-checkbox:hover {
   background-position: -32px -64px;
 }
+span.fancytree-checkbox.fancytree-radio {
+  background-position: 0px -96px;
+}
+span.fancytree-checkbox.fancytree-radio:hover {
+  background-position: -32px -96px;
+}
 .fancytree-partsel span.fancytree-checkbox {
   background-position: -128px -64px;
 }
 .fancytree-partsel span.fancytree-checkbox:hover {
   background-position: -160px -64px;
 }
+.fancytree-partsel span.fancytree-checkbox.fancytree-radio {
+  background-position: -128px -96px;
+}
+.fancytree-partsel span.fancytree-checkbox.fancytree-radio:hover {
+  background-position: -160px -96px;
+}
 .fancytree-selected span.fancytree-checkbox {
   background-position: -64px -64px;
 }
 .fancytree-selected span.fancytree-checkbox:hover {
   background-position: -96px -64px;
+}
+.fancytree-selected span.fancytree-checkbox.fancytree-radio {
+  background-position: -64px -96px;
+}
+.fancytree-selected span.fancytree-checkbox.fancytree-radio:hover {
+  background-position: -96px -96px;
 }
 .fancytree-unselectable span.fancytree-checkbox {
   opacity: 0.4;
@@ -230,33 +246,6 @@ span.fancytree-checkbox:hover {
 }
 .fancytree-unselectable.fancytree-selected span.fancytree-checkbox:hover {
   background-position: -64px -64px;
-}
-/*------------------------------------------------------------------------------
- * Radiobutton icon
- * This is a customization, that may be activated by overriding the 'checkbox'
- * class name as 'fancytree-radio' in the tree options.
- *----------------------------------------------------------------------------*/
-.fancytree-radio span.fancytree-checkbox {
-  background-position: 0px -96px;
-}
-.fancytree-radio span.fancytree-checkbox:hover {
-  background-position: -32px -96px;
-}
-.fancytree-radio .fancytree-partsel span.fancytree-checkbox {
-  background-position: -128px -96px;
-}
-.fancytree-radio .fancytree-partsel span.fancytree-checkbox:hover {
-  background-position: -160px -96px;
-}
-.fancytree-radio .fancytree-selected span.fancytree-checkbox {
-  background-position: -64px -96px;
-}
-.fancytree-radio .fancytree-selected span.fancytree-checkbox:hover {
-  background-position: -96px -96px;
-}
-.fancytree-radio .fancytree-unselectable span.fancytree-checkbox,
-.fancytree-radio .fancytree-unselectable span.fancytree-checkbox:hover {
-  background-position: 0px -96px;
 }
 /*------------------------------------------------------------------------------
  * Node type icon

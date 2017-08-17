@@ -11,8 +11,8 @@
  * Released under the MIT license
  * https://github.com/mar10/fancytree/wiki/LicenseInfo
  *
- * @version 2.22.5
- * @date 2017-05-11T17:01:53Z
+ * @version 2.23.0
+ * @date 2017-05-27T20:09:38Z
  */
 
 ;(function($, window, document, undefined) {
@@ -152,7 +152,7 @@ $.ui.fancytree._FancytreeClass.prototype.getPersistData = function(){
  */
 $.ui.fancytree.registerExtension({
 	name: "persist",
-	version: "2.22.5",
+	version: "2.23.0",
 	// Default options for this extension.
 	options: {
 		cookieDelimiter: "~",
@@ -359,7 +359,7 @@ $.ui.fancytree.registerExtension({
 		}
 		return res;
 	},
-	nodeSetSelected: function(ctx, flag) {
+	nodeSetSelected: function(ctx, flag, callOpts) {
 		var res, selNodes,
 			tree = ctx.tree,
 			node = ctx.node,

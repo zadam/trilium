@@ -170,7 +170,7 @@ span.fancytree-vline,
 span.fancytree-expander,
 span.fancytree-icon,
 span.fancytree-checkbox,
-span.fancytree-radio,
+// span.fancytree-radio,
 span.fancytree-drag-helper-img,
 #fancytree-drop-marker {
 	width: @fancy-icon-width;
@@ -187,7 +187,7 @@ span.fancytree-drag-helper-img,
 span.fancytree-icon,
 span.fancytree-checkbox,
 span.fancytree-expander,
-span.fancytree-radio,
+// span.fancytree-radio,
 span.fancytree-custom-icon {
 	margin-top: @fancy-icon-ofs-top;
 }
@@ -323,15 +323,21 @@ span.fancytree-checkbox {
 	margin-left: @fancy-icon-spacing;
 	.useSprite(0, 2);
 	&:hover { .useSprite(1, 2); }
+	&.fancytree-radio { .useSprite(0, 3); }
+	&.fancytree-radio:hover { .useSprite(1, 3); }
 }
 .fancytree-partsel span.fancytree-checkbox {
 	.useSprite(4, 2);
 	&:hover { .useSprite(5, 2); }
+	&.fancytree-radio { .useSprite(4, 3); }
+	&.fancytree-radio:hover { .useSprite(5, 3); }
 }
 // selected after partsel, so it takes precedence:
 .fancytree-selected span.fancytree-checkbox {
 	.useSprite(2, 2);
 	&:hover { .useSprite(3, 2); }
+	&.fancytree-radio { .useSprite(2, 3); }
+	&.fancytree-radio:hover { .useSprite(3, 3); }
 }
 // Unselectable is dimmed, without hover effects
 .fancytree-unselectable {
@@ -347,35 +353,6 @@ span.fancytree-checkbox {
 	}
 	&.fancytree-selected span.fancytree-checkbox:hover {
 		.useSprite(2, 2);
-	}
-}
-
-/*------------------------------------------------------------------------------
- * Radiobutton icon
- * This is a customization, that may be activated by overriding the 'checkbox'
- * class name as 'fancytree-radio' in the tree options.
- *----------------------------------------------------------------------------*/
-
-.fancytree-radio {
-	span.fancytree-checkbox {
-		.useSprite(0, 3);
-		&:hover { .useSprite(1, 3); }
-	}
-	.fancytree-partsel span.fancytree-checkbox {
-		.useSprite(4, 3);
-		&:hover { .useSprite(5, 3); }
-	}
-	// Selected after partsel, so it takes precedence:
-	.fancytree-selected span.fancytree-checkbox {
-		.useSprite(2, 3);
-		&:hover { .useSprite(3, 3); }
-	}
-	// Unselectable is dimmed, without hover effects
-	.fancytree-unselectable {
-		span.fancytree-checkbox,
-		span.fancytree-checkbox:hover {
-			.useSprite(0, 3);
-		}
 	}
 }
 

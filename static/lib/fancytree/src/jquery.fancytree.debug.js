@@ -9,8 +9,8 @@
  * Released under the MIT license
  * https://github.com/mar10/fancytree/wiki/LicenseInfo
  *
- * @version 2.22.5
- * @date 2017-05-11T17:01:53Z
+ * @version 2.23.0
+ * @date 2017-05-27T20:09:38Z
  */
 
 ;(function($, window, document, undefined) {
@@ -41,7 +41,7 @@ for(i=0; i<EVENT_NAMES.length; i++){ EVENT_NAME_MAP[EVENT_NAMES[i]] = true; }
  */
 $.ui.fancytree.registerExtension({
 	name: "tracecalls",
-	version: "2.22.5",
+	version: "2.23.0",
 	// Default options for this extension.
 	options: {
 		logTarget: null,   // optional redirect logging to this <div> tag
@@ -92,7 +92,7 @@ $.ui.fancytree.registerExtension({
 	},
 	nodeSetFocus: function(ctx) {
 	},
-	nodeSetSelected: function(ctx, flag) {
+	nodeSetSelected: function(ctx, flag, callOpts) {
 	},
 	nodeSetStatus: function(ctx, status, message, details) {
 	},
@@ -124,7 +124,7 @@ $.ui.fancytree.registerExtension({
 ;(function($, window, document, undefined) {
 	$.ui.fancytree.registerExtension({
 		name: "profiler",
-		version: "2.22.5",
+		version: "2.23.0",
 		// Default options for this extension
 		options: {
 			prefix: ""
