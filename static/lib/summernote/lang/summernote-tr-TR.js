@@ -51,7 +51,14 @@
         openInNewWindow: 'Yeni pencerede aç'
       },
       table: {
-        table: 'Tablo'
+        table: 'Tablo',
+        addRowAbove: 'Yukarı satır ekle',
+        addRowBelow: 'Aşağı satır ekle',
+        addColLeft: 'Sola sütun ekle',
+        addColRight: 'Sağa sütun ekle',
+        delRow: 'Satırı sil',
+        delCol: 'Sütunu sil',
+        delTable: 'Tabloyu sil'
       },
       hr: {
         insert: 'Yatay çizgi ekle'

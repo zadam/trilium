@@ -41,7 +41,13 @@
         openInNewWindow: 'Abrir em uma nova janela'
       },
       table: {
-        table: 'Tabela'
+        table: 'Tabela',
+        addRowAbove: 'Adicionar linha acima',
+        addRowBelow: 'Adicionar linha abaixo',
+        addColLeft: 'Adicionar coluna a esquerda',
+        addColRight: 'Adicionar coluna a direita',
+        delRow: 'Excluir linha',
+        delCol: 'Excluir coluna'
       },
       hr: {
         insert: 'Inserir linha horizontal'
