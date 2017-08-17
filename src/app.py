@@ -45,6 +45,7 @@ user = User()
 user.id = config['Login']['username']
 
 port = config['Network']['port']
+https = config['Network']['https']
 certPath = config['Network']['certPath']
 certKeyPath = config['Network']['certKeyPath']
 
@@ -96,4 +97,9 @@ def load_user(user_id):
 api.add_resource(Notes, '/notes/<string:note_id>')
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=port, ssl_context = (certPath, certKeyPath))
+    ssl_context = None
+
+    if https == "true":
+        ssl_context = (certPath, certKeyPath)
+
+    app.run(host='0.0.0.0', port=port, ssl_context = ssl_context)
