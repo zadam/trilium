@@ -6,8 +6,8 @@
 
 #top-message {
     display: none; /* initial state is hidden */
-    background-color: greenyellow;
-    color: green;
+    background-color: #e0e0e0;
+    color: #333;
     padding: 5px;
     border-radius: 10px;
 }

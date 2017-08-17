@@ -11,8 +11,22 @@ let tags = {
 
 let noteChangeDisabled = false;
 
+let isNoteChanged = false;
+
 function noteChanged() {
     if (noteChangeDisabled) {
+        return;
+    }
+
+    isNoteChanged = true;
+}
+
+function saveNoteIfChanged(callback) {
+    if (!isNoteChanged) {
+        if (callback) {
+            callback();
+        }
+
         return;
     }
 
@@ -36,13 +50,21 @@ function noteChanged() {
         data: JSON.stringify(note),
         contentType: "application/json",
         success: function(result) {
+            isNoteChanged = false;
+
             message("Saved!");
+
+            if (callback) {
+                callback();
+            }
         },
         error: function(result) {
             error("Error saving the note!");
         }
     });
 }
+
+setInterval(saveNoteIfChanged, 5000);
 
 $(document).ready(function() {
     $("#noteTitle").on('input', function() {

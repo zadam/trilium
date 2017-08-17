@@ -1,7 +1,7 @@
 function message(str) {
-    $("#top-message").show();
+    $("#top-message").fadeIn(1500);
     $("#top-message").html(str);
-    $("#top-message").fadeOut(3000);
+    $("#top-message").fadeOut(1500);
 }
 
 function error(str) {

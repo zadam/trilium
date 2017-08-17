@@ -39,7 +39,7 @@ $(function(){
                 const node = data.node.data;
                 const noteId = node.is_clone ? node.note_clone_id : node.note_id;
 
-                loadNote(noteId);
+                saveNoteIfChanged(() => loadNote(noteId));
             },
             expand: function(event, data) {
                 setExpanded(data.node.key, true);
