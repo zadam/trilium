@@ -19,3 +19,8 @@
     padding: 5px;
     border-radius: 10px;
 }
+
+.note-editable p {
+    padding: 0;
+    margin: 0;
+}
