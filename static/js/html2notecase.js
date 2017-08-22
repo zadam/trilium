@@ -12,13 +12,13 @@ function html2notecase(contents, note) {
     note.images = [];
 
     while (index < contents.length) {
-        if (contents[index] == '<') {
-            let found = false;
+        let curContent = contents.substr(index);
 
-            let curContent = contents.substr(index);
+        if (contents[index] === '<') {
+            let found = false;
             let endOfTag = curContent.indexOf('>');
 
-            if (endOfTag == -1) {
+            if (endOfTag === -1) {
                 console.log("Can't find the end of the tag");
             }
 
@@ -29,7 +29,7 @@ function html2notecase(contents, note) {
             for (tagId in tags) {
                 let tag = tags[tagId];
 
-                if (contents.substr(index, tag.length) == tag) {
+                if (contents.substr(index, tag.length) === tag) {
                     found = true;
                     // if (tagMap.get(index) == undefined) {
                     //   tagMap.get(index) = [];
@@ -52,12 +52,12 @@ function html2notecase(contents, note) {
                 }
             }
 
-            if (curTag.substr(0, 4) == "<img") {
+            if (curTag.substr(0, 4) === "<img") {
                 //console.log("Found img tag");
 
                 let dataImagePos = curTag.indexOf('data:image/');
 
-                if (dataImagePos != -1) {
+                if (dataImagePos !== -1) {
                     let imageType = curTag.substr(dataImagePos + 11, 3);
 
                     //console.log("image type: " + imageType);
@@ -66,7 +66,7 @@ function html2notecase(contents, note) {
 
                     let endOfDataPos = dataStart.indexOf('"');
 
-                    if (endOfDataPos != -1) {
+                    if (endOfDataPos !== -1) {
                         //console.log("Found the end of image data");
 
                         let imageData = dataStart.substr(0, endOfDataPos);
@@ -74,7 +74,7 @@ function html2notecase(contents, note) {
                         note.images.push({
                             note_id: note.detail.note_id,
                             note_offset: index,
-                            is_png: imageType == "png",
+                            is_png: imageType === "png",
                             image_data: imageData
                         });
 
@@ -89,7 +89,7 @@ function html2notecase(contents, note) {
 
             let match = /^<a[^>]+?href="([^"]+?)"[^>]+?>([^<]+?)<\/a>/.exec(curContent);
 
-            if (match != null) {
+            if (match !== null) {
                 note.links.push({
                     note_id: note.detail.note_id,
                     note_offset: index,
@@ -120,7 +120,22 @@ function html2notecase(contents, note) {
             }
         }
         else {
-            index++;
+            let linkMatch = /^((https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/i.exec(curContent);
+
+            if (linkMatch !== null) {
+                note.links.push({
+                    note_id: note.detail.note_id,
+                    note_offset: index,
+                    target_url: linkMatch[1],
+                    lnk_text: linkMatch[1]
+                });
+
+                found = true;
+                index += linkMatch[1].length;
+            }
+            else {
+                index++;
+            }
         }
     }
 

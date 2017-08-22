@@ -124,7 +124,7 @@ function createNote(node, parentKey, target) {
 
             newNoteCreated = true;
 
-            if (target == 'after') {
+            if (target === 'after') {
                 node.appendSibling(newNode).setActive(true);
             }
             else {

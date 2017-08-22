@@ -1,11 +1,15 @@
 function message(str) {
-    $("#top-message").fadeIn(1500);
-    $("#top-message").html(str);
-    $("#top-message").fadeOut(1500);
+    const top = $("#top-message");
+
+    top.fadeIn(1500);
+    top.html(str);
+    top.fadeOut(1500);
 }
 
 function error(str) {
-    $("#error-message").show();
-    $("#error-message").html(str);
-    $("#error-message").fadeOut(10000);
+    const error = $("#error-message");
+
+    error.show();
+    error.html(str);
+    error.fadeOut(10000);
 }

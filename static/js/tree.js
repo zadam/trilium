@@ -50,7 +50,7 @@ $(function(){
             hotkeys: {
                 keydown: {
                     "insert": function(node) {
-                        let parentKey = (node.getParent() == null || node.getParent().key == "root_1") ? "root" : node.getParent().key;
+                        let parentKey = (node.getParent() === null || node.getParent().key === "root_1") ? "root" : node.getParent().key;
 
                         createNote(node, parentKey, 'after');
                     },
@@ -63,7 +63,7 @@ $(function(){
                                 url: baseUrl + 'notes/' + node.key,
                                 type: 'DELETE',
                                 success: function(result) {
-                                if (node.getParent() != null && node.getParent().getChildren().length <= 1) {
+                                if (node.getParent() !== null && node.getParent().getChildren().length <= 1) {
                                     node.getParent().folder = false;
                                     node.getParent().renderTitle();
                                 }
@@ -74,7 +74,7 @@ $(function(){
                         }
                     },
                     "shift+up": function(node) {
-                        if (node.getPrevSibling() != null) {
+                        if (node.getPrevSibling() !== null) {
                             $.ajax({
                                 url: baseUrl + 'notes/' + node.key + '/moveBefore/' + node.getPrevSibling().key,
                                 type: 'PUT',
@@ -86,7 +86,7 @@ $(function(){
                         }
                     },
                     "shift+down": function(node) {
-                        if (node.getNextSibling() != null) {
+                        if (node.getNextSibling() !== null) {
                             $.ajax({
                                 url: baseUrl + 'notes/' + node.key + '/moveAfter/' + node.getNextSibling().key,
                                 type: 'PUT',
@@ -98,13 +98,13 @@ $(function(){
                         }
                     },
                     "shift+left": function(node) {
-                        if (node.getParent() != null) {
+                        if (node.getParent() !== null) {
                             $.ajax({
                                 url: baseUrl + 'notes/' + node.key + '/moveAfter/' + node.getParent().key,
                                 type: 'PUT',
                                 contentType: "application/json",
                                 success: function(result) {
-                                if (node.getParent() != null && node.getParent().getChildren().length <= 1) {
+                                if (node.getParent() !== null && node.getParent().getChildren().length <= 1) {
                                     node.getParent().folder = false;
                                     node.getParent().renderTitle();
                                 }
@@ -117,7 +117,7 @@ $(function(){
                     "shift+right": function(node) {
                         let prevSibling = node.getPrevSibling();
                         
-                        if (prevSibling != null) {
+                        if (prevSibling !== null) {
                             $.ajax({
                                 url: baseUrl + 'notes/' + node.key + '/moveTo/' + prevSibling.key,
                                 type: 'PUT',
