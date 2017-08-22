@@ -12,7 +12,7 @@
     </div>
 
     <div id="content" style="margin-left: auto; margin-right: auto; width: 1100px">
-      <div style="width: 300px; height: 100%; float: left;">
+      <div class="hide-toggle" style="width: 300px; height: 100%; float: left;">
         <button type="button" class="btn" onclick="createNewTopLevelNote()">Create new note</button>
 
         <div id="tree" style="overflow: scroll; height: 100%;">
@@ -20,13 +20,13 @@
       </div>
 
       <div style="width: 750px; float: left; margin-left: 30px;">
-        <div style="float: right;">
+        <div style="float: right;" class="hide-toggle">
           <form action="logout" method="POST">
             <input type="submit" class="btn btn-sm" value="Logout">
           </form>
         </div>
 
-        <div style="float: left; margin: 0 5px 5px 5px;">
+        <div style="float: left; margin: 0 5px 5px 5px;" class="hide-toggle">
           <input type="text" autocomplete="off" value="Welcome to Notecase web app!" id="noteTitle" style="font-size: x-large; border: 0; width: 600px;">
 
           <button class="btn btn-sm" onclick="encryptNote();">Encrypt</button>
