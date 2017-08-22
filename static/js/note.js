@@ -34,11 +34,11 @@ function saveNoteIfChanged(callback) {
 
     let contents = $('#noteDetail').summernote('code');
 
+    html2notecase(contents, note);
+
     let title = $('#noteTitle').val();
 
     $("#tree").fancytree('getNodeByKey', note.detail.note_id).setTitle(title);
-
-    html2notecase(contents, note);
 
     note.detail.note_title = title;
 
@@ -161,4 +161,41 @@ function loadNote(noteId) {
 
         noteChangeDisabled = false;
     });
+}
+
+function encryptNote() {
+    let password = prompt("Enter password for encryption");
+
+    console.log(password);
+
+    // 12 takes about 400 ms on my computer to compute
+    let salt = dcodeIO.bcrypt.genSaltSync(12);
+
+    let hashedPassword = dcodeIO.bcrypt.hashSync(password, salt);
+
+    let hashedPasswordSha = sha256(hashedPassword).substr(0, 32);
+
+    console.log(hashedPassword);
+
+    let note = globalNote;
+
+    let contents = $('#noteDetail').summernote('code');
+
+    html2notecase(contents, note);
+
+    let noteJson = JSON.stringify(note);
+
+    console.log('json: ' + noteJson);
+
+    let hashedPasswordBytes = aesjs.utils.hex.toBytes(hashedPasswordSha);
+
+    let noteBytes = aesjs.utils.utf8.toBytes(noteJson);
+
+    let aesCtr = new aesjs.ModeOfOperation.ctr(hashedPasswordBytes, new aesjs.Counter(5));
+    let encryptedBytes = aesCtr.encrypt(noteBytes);
+
+    // To print or store the binary data, you may convert it to hex
+    let encryptedHex = aesjs.utils.hex.fromBytes(encryptedBytes);
+
+    console.log("encrypted: " + encryptedBytes);
 }

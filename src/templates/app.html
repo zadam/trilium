@@ -26,8 +26,10 @@
           </form>
         </div>
 
-        <div style="float: left; margin: 5px;">
-          <input type="text" autocomplete="off" value="Welcome to Notecase web app!" id="noteTitle" style="font-size: x-large; border: 0; width: 650px;">
+        <div style="float: left; margin: 0 5px 5px 5px;">
+          <input type="text" autocomplete="off" value="Welcome to Notecase web app!" id="noteTitle" style="font-size: x-large; border: 0; width: 600px;">
+
+          <button class="btn btn-sm" onclick="encryptNote();">Encrypt</button>
         </div>
 
         <div style="clear: both; height: 0"></div>
@@ -64,6 +66,13 @@
 
     <script src="stat/lib/jquery.hotkeys.js"></script>
     <script src="stat/lib/jquery.fancytree.hotkeys.js"></script>
+
+    <!-- https://github.com/ricmoo/aes-js -->
+    <script src="stat/lib/aes.js"></script>
+    <!-- https://github.com/dcodeIO/bcrypt.js -->
+    <script src="stat/lib/bcrypt.min.js"></script>
+    <!-- https://github.com/emn178/js-sha256 -->
+    <script src="stat/lib/sha256.min.js"></script>
 
     <link href="stat/style.css" rel="stylesheet">
 
