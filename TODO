@@ -1,5 +1,5 @@
-- when loading the app, open last viewed note
-- link to individual notes (and changing the URL to current one, probably through # anchor)
+- some features (recent notes, linking to notes) don't work well with cloned notes
+- when jumping to notes, tree does not scroll
 - logout detection
 - conflict detection
 

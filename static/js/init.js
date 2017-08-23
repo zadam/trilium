@@ -16,7 +16,7 @@ $(document).bind('keypress', 'alt+ctrl+h', function() {
     toggle.css('visibility', toggle.css('visibility') === 'hidden' ? 'visible' : 'hidden');
 });
 
-$(document).bind('keypress', 'ctrl+e', function() {
+$(document).bind('keypress', 'alt+q', function() {
     $("#recentNotesDialog").dialog({
         modal: true
     });
