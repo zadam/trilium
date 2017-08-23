@@ -52,8 +52,11 @@
       </div>
     </div>
     
-    <script src="stat/lib/jquery.js"></script>
-    <script src="stat/lib/jqueryui/jquery-ui.js"></script>
+    <script src="stat/lib/jquery.min.js"></script>
+
+    <link href="stat/lib/jqueryui/jquery-ui.min.css" rel="stylesheet">
+    <script src="stat/lib/jqueryui/jquery-ui.min.js"></script>
+
     <!-- Include Fancytree skin and library -->
     <link href="stat/lib/fancytree/skin-win8/ui.fancytree.css" rel="stylesheet">
     <script src="stat/lib/fancytree/jquery.fancytree-all.js"></script>
@@ -75,6 +78,11 @@
     <script src="stat/lib/sha256.min.js"></script>
 
     <link href="stat/style.css" rel="stylesheet">
+
+    <div id="recentNotesDialog" title="Recent notes" style="display: none;">
+      <select id="recentNotesSelectBox" size="15" style="width: 100%">
+        </select>
+    </div>
 
     <script type="text/javascript">
       const baseUrl = '';

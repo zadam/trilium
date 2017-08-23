@@ -139,6 +139,8 @@ function createNote(node, parentKey, target) {
     });
 }
 
+recentNotes = [];
+
 function loadNote(noteId) {
     $.get(baseUrl + 'notes/' + noteId).then(function(note) {
         globalNote = note;
@@ -161,7 +163,19 @@ function loadNote(noteId) {
 
         $(window).resize(); // to trigger resizing of editor
 
+        addRecentNote(noteId, note.detail.note_title);
+
         noteChangeDisabled = false;
+    });
+}
+
+function addRecentNote(noteId, noteTitle) {
+    // if it's already there, remove the note
+    recentNotes = recentNotes.filter(note => note.noteId !== noteId);
+
+    recentNotes.unshift({
+       noteId: noteId,
+       noteTitle: noteTitle
     });
 }
 

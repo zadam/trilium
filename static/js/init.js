@@ -15,3 +15,42 @@ $(document).bind('keypress', 'alt+ctrl+h', function() {
     // use visibility instead of display so that content isn't moved around and stays set in place
     toggle.css('visibility', toggle.css('visibility') === 'hidden' ? 'visible' : 'hidden');
 });
+
+$(document).bind('keypress', 'ctrl+e', function() {
+    $("#recentNotesDialog").dialog({
+        modal: true
+    });
+
+    let recentNotesSelectBox = $('#recentNotesSelectBox');
+
+    recentNotesSelectBox.find('option').remove();
+
+    // remove the current note
+    let recNotes = recentNotes.slice(1);
+
+    $.each(recNotes, function(key, value) {
+        let option = $("<option></option>")
+                .attr("value", value.noteId)
+                .text(value.noteTitle);
+
+        // select the first one (most recent one) by default
+        if (key === 0) {
+            option.attr("selected", "selected");
+        }
+
+        recentNotesSelectBox.append(option);
+    });
+});
+
+$('#recentNotesSelectBox').keydown(function(e) {
+    let key = e.which;
+
+    if (key === 13)// the enter key code
+    {
+        let noteId = $("#recentNotesSelectBox option:selected").val();
+
+        $("#tree").fancytree('getNodeByKey', noteId).setActive();
+
+        $("#recentNotesDialog").dialog('close');
+    }
+});
