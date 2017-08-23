@@ -1,8 +1,6 @@
 from flask_restful import Resource
-from sql import getResults
-from flask_restful import Resource
 
-from sql import getResults
+from sql import getResults, getSingleResult
 
 
 class Tree(Resource):
@@ -35,4 +33,8 @@ class Tree(Resource):
                 parent['children'].append(note)
                 parent['folder'] = True
 
-        return rootNotes
+        retObject = {}
+        retObject['notes'] = rootNotes
+        retObject['start_note_id'] = getSingleResult('select * from options where opt_name = "start_node"')['opt_value'];
+
+        return retObject

@@ -1,5 +1,8 @@
 $(function(){
-    $.get(baseUrl + 'tree').then(notes => {
+    $.get(baseUrl + 'tree').then(resp => {
+        const notes = resp.notes;
+        const startNoteId = resp.start_note_id;
+
         function copyTitle(notes) {
             for (let note of notes) {
                 note.title = note.note_title;
@@ -33,6 +36,7 @@ $(function(){
         }
 
         $("#tree").fancytree({
+            autoScroll: true,
             extensions: ["hotkeys"],
             source: notes,
             activate: function(event, data){
@@ -46,6 +50,13 @@ $(function(){
             },
             collapse: function(event, data) {
                 setExpanded(data.node.key, false);
+            },
+            init: function(event, data) {
+                console.log("Activating...");
+
+                if (startNoteId) {
+                    data.tree.activateKey(startNoteId);
+                }
             },
             hotkeys: {
                 keydown: {

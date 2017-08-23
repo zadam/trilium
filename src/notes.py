@@ -10,6 +10,8 @@ from sql import delete, execute, insert, getResults, getSingleResult, commit
 
 class Notes(Resource):
     def get(self, note_id):
+        execute("update options set opt_value = ? where opt_name = 'start_node'", [note_id])
+
         return {
             'detail': getSingleResult("select * from notes where note_id = ?", [note_id]),
             'formatting': getResults("select * from formatting where note_id = ? order by note_offset", [note_id]),
