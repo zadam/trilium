@@ -12,5 +12,6 @@ jQuery.hotkeys.options.filterContentEditable = true;
 $(document).bind('keypress', 'alt+ctrl+h', function() {
     const toggle = $(".hide-toggle");
 
+    // use visibility instead of display so that content isn't moved around and stays set in place
     toggle.css('visibility', toggle.css('visibility') === 'hidden' ? 'visible' : 'hidden');
 });

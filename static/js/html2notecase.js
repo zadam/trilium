@@ -120,18 +120,20 @@ function html2notecase(contents, note) {
             }
         }
         else {
-            let linkMatch = /^((https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/i.exec(curContent);
+            let linkMatch = /^(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|]/i.exec(curContent);
 
             if (linkMatch !== null) {
                 note.links.push({
                     note_id: note.detail.note_id,
                     note_offset: index,
-                    target_url: linkMatch[1],
-                    lnk_text: linkMatch[1]
+                    target_url: linkMatch[0],
+                    lnk_text: linkMatch[0]
                 });
 
-                found = true;
-                index += linkMatch[1].length;
+                console.log(linkMatch[0]);
+                console.log(linkMatch[0].length);
+
+                index += linkMatch[0].length;
             }
             else {
                 index++;
