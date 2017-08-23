@@ -1,6 +1,6 @@
-- drag and drop for notes (currently only keyboard)
-- authentication with credentials in the config file (password hashed and salted)
-- sync with sync server
-- remembering open and closed folders
-- link to individual notes (and changing the URL to current one, probably through # anchor)
 - when loading the app, open last viewed note
+- link to individual notes (and changing the URL to current one, probably through # anchor)
+
+Later:
+- drag and drop for notes (currently only keyboard)
+- sync with sync server
