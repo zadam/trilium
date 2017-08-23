@@ -42,15 +42,23 @@ $(document).bind('keypress', 'alt+q', function() {
     });
 });
 
+function setActiveNoteBasedOnRecentNotes() {
+    let noteId = $("#recentNotesSelectBox option:selected").val();
+
+    $("#tree").fancytree('getNodeByKey', noteId).setActive();
+
+    $("#recentNotesDialog").dialog('close');
+}
+
 $('#recentNotesSelectBox').keydown(function(e) {
     let key = e.which;
 
     if (key === 13)// the enter key code
     {
-        let noteId = $("#recentNotesSelectBox option:selected").val();
-
-        $("#tree").fancytree('getNodeByKey', noteId).setActive();
-
-        $("#recentNotesDialog").dialog('close');
+        setActiveNoteBasedOnRecentNotes();
     }
+});
+
+$('#recentNotesSelectBox').dblclick(function(e) {
+    setActiveNoteBasedOnRecentNotes();
 });
