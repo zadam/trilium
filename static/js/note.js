@@ -170,13 +170,22 @@ function loadNote(noteId) {
 }
 
 function addRecentNote(noteId, noteTitle) {
-    // if it's already there, remove the note
-    recentNotes = recentNotes.filter(note => note.noteId !== noteId);
+    const origDate = new Date();
 
-    recentNotes.unshift({
-       noteId: noteId,
-       noteTitle: noteTitle
-    });
+    setTimeout(function() {
+        // we include the note into recent list only if the user stayed on the note at least 5 seconds
+        if (noteId === globalNote.detail.note_id) {
+            // if it's already there, remove the note
+            recentNotes = recentNotes.filter(note => note.noteId !== noteId);
+
+            // console.log("added after " + (new Date().getTime() - origDate.getTime()));
+
+            recentNotes.unshift({
+                noteId: noteId,
+                noteTitle: noteTitle
+            });
+        }
+    }, 1500);
 }
 
 function encryptNote() {

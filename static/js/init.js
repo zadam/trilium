@@ -26,7 +26,7 @@ $(document).bind('keypress', 'alt+q', function() {
     recentNotesSelectBox.find('option').remove();
 
     // remove the current note
-    let recNotes = recentNotes.slice(1);
+    let recNotes = recentNotes.filter(note => note.noteId !== globalNote.detail.note_id);
 
     $.each(recNotes, function(key, value) {
         let option = $("<option></option>")
