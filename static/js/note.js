@@ -157,6 +157,8 @@ function loadNote(noteId) {
 
         $('#noteDetail').summernote('code', noteText);
 
+        document.location.hash = noteId;
+
         $(window).resize(); // to trigger resizing of editor
 
         noteChangeDisabled = false;

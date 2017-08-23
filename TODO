@@ -1,5 +1,7 @@
 - when loading the app, open last viewed note
 - link to individual notes (and changing the URL to current one, probably through # anchor)
+- logout detection
+- conflict detection
 
 Later:
 - drag and drop for notes (currently only keyboard)

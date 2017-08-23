@@ -1,7 +1,11 @@
 $(function(){
     $.get(baseUrl + 'tree').then(resp => {
         const notes = resp.notes;
-        const startNoteId = resp.start_note_id;
+        let startNoteId = resp.start_note_id;
+
+        if (document.location.hash) {
+            startNoteId = document.location.hash.substr(1); // strip initial #
+        }
 
         function copyTitle(notes) {
             for (let note of notes) {
@@ -52,8 +56,6 @@ $(function(){
                 setExpanded(data.node.key, false);
             },
             init: function(event, data) {
-                console.log("Activating...");
-
                 if (startNoteId) {
                     data.tree.activateKey(startNoteId);
                 }
