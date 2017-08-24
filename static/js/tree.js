@@ -1,3 +1,95 @@
+const keybindings = {
+    "insert": function(node) {
+        let parentKey = (node.getParent() === null || node.getParent().key === "root_1") ? "root" : node.getParent().key;
+
+        createNote(node, parentKey, 'after');
+    },
+    "ctrl+insert": function(node) {
+        createNote(node, node.key, 'into');
+    },
+    "del": function(node) {
+        if (confirm('Are you sure you want to delete note "' + node.title + '"?')) {
+            $.ajax({
+                url: baseUrl + 'notes/' + node.key,
+                type: 'DELETE',
+                success: function() {
+                    if (node.getParent() !== null && node.getParent().getChildren().length <= 1) {
+                        node.getParent().folder = false;
+                        node.getParent().renderTitle();
+                    }
+
+                    node.remove();
+                }
+            });
+        }
+    },
+    "shift+up": function(node) {
+        if (node.getPrevSibling() !== null) {
+            $.ajax({
+                url: baseUrl + 'notes/' + node.key + '/moveBefore/' + node.getPrevSibling().key,
+                type: 'PUT',
+                contentType: "application/json",
+                success: function() {
+                    node.moveTo(node.getPrevSibling(), 'before');
+                }
+            });
+        }
+    },
+    "shift+down": function(node) {
+        if (node.getNextSibling() !== null) {
+            $.ajax({
+                url: baseUrl + 'notes/' + node.key + '/moveAfter/' + node.getNextSibling().key,
+                type: 'PUT',
+                contentType: "application/json",
+                success: function() {
+                    node.moveTo(node.getNextSibling(), 'after');
+                }
+            });
+        }
+    },
+    "shift+left": function(node) {
+        if (node.getParent() !== null) {
+            $.ajax({
+                url: baseUrl + 'notes/' + node.key + '/moveAfter/' + node.getParent().key,
+                type: 'PUT',
+                contentType: "application/json",
+                success: function() {
+                    if (node.getParent() !== null && node.getParent().getChildren().length <= 1) {
+                        node.getParent().folder = false;
+                        node.getParent().renderTitle();
+                    }
+
+                    node.moveTo(node.getParent(), 'after');
+                }
+            });
+        }
+    },
+    "shift+right": function(node) {
+        let prevSibling = node.getPrevSibling();
+
+        if (prevSibling !== null) {
+            $.ajax({
+                url: baseUrl + 'notes/' + node.key + '/moveTo/' + prevSibling.key,
+                type: 'PUT',
+                contentType: "application/json",
+                success: function(result) {
+                    node.moveTo(prevSibling);
+
+                    prevSibling.setExpanded(true);
+
+                    prevSibling.folder = true;
+                    prevSibling.renderTitle();
+                }
+            });
+        }
+    },
+    "return": function(node) {
+        // doesn't work :-/
+        $('#noteDetail').summernote('focus');
+    }
+};
+
+
 $(function(){
     $.get(baseUrl + 'tree').then(resp => {
         const notes = resp.notes;
@@ -33,9 +125,7 @@ $(function(){
                 url: baseUrl + 'notes/' + note_id + '/expanded/' + expanded_num,
                 type: 'PUT',
                 contentType: "application/json",
-                success: function(result) {
-                
-                }
+                success: function(result) {}
             });
         }
 
@@ -61,96 +151,7 @@ $(function(){
                 }
             },
             hotkeys: {
-                keydown: {
-                    "insert": function(node) {
-                        let parentKey = (node.getParent() === null || node.getParent().key === "root_1") ? "root" : node.getParent().key;
-
-                        createNote(node, parentKey, 'after');
-                    },
-                    "ctrl+insert": function(node) {
-                        createNote(node, node.key, 'into');
-                    },
-                    "del": function(node) {
-                        if (confirm('Are you sure you want to delete note "' + node.title + '"?')) {
-                            $.ajax({
-                                url: baseUrl + 'notes/' + node.key,
-                                type: 'DELETE',
-                                success: function(result) {
-                                if (node.getParent() !== null && node.getParent().getChildren().length <= 1) {
-                                    node.getParent().folder = false;
-                                    node.getParent().renderTitle();
-                                }
-
-                                node.remove();
-                                }
-                            });
-                        }
-                    },
-                    "shift+up": function(node) {
-                        if (node.getPrevSibling() !== null) {
-                            $.ajax({
-                                url: baseUrl + 'notes/' + node.key + '/moveBefore/' + node.getPrevSibling().key,
-                                type: 'PUT',
-                                contentType: "application/json",
-                                success: function(result) {
-                                node.moveTo(node.getPrevSibling(), 'before');
-                                }
-                            });
-                        }
-                    },
-                    "shift+down": function(node) {
-                        if (node.getNextSibling() !== null) {
-                            $.ajax({
-                                url: baseUrl + 'notes/' + node.key + '/moveAfter/' + node.getNextSibling().key,
-                                type: 'PUT',
-                                contentType: "application/json",
-                                success: function(result) {
-                                node.moveTo(node.getNextSibling(), 'after');
-                                }
-                            });
-                        }
-                    },
-                    "shift+left": function(node) {
-                        if (node.getParent() !== null) {
-                            $.ajax({
-                                url: baseUrl + 'notes/' + node.key + '/moveAfter/' + node.getParent().key,
-                                type: 'PUT',
-                                contentType: "application/json",
-                                success: function(result) {
-                                if (node.getParent() !== null && node.getParent().getChildren().length <= 1) {
-                                    node.getParent().folder = false;
-                                    node.getParent().renderTitle();
-                                }
-
-                                node.moveTo(node.getParent(), 'after');
-                                }
-                            });
-                        }
-                    },
-                    "shift+right": function(node) {
-                        let prevSibling = node.getPrevSibling();
-                        
-                        if (prevSibling !== null) {
-                            $.ajax({
-                                url: baseUrl + 'notes/' + node.key + '/moveTo/' + prevSibling.key,
-                                type: 'PUT',
-                                contentType: "application/json",
-                                success: function(result) {
-                                node.moveTo(prevSibling);
-                            
-                                prevSibling.setExpanded(true);
-
-                                prevSibling.folder = true;
-                                prevSibling.renderTitle();
-                                }
-                            });
-                        }
-                    },
-                    "return": function(node) {
-                        // doesn't work :-/
-                        $('#noteDetail').summernote('focus');
-                    }
-                }
+                keydown: keybindings
             }
         });
     });
