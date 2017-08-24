@@ -30,4 +30,5 @@ ul.fancytree-container {
   height: 400px;
   overflow: auto;
   position: relative;
+  outline: none !important;
 }
