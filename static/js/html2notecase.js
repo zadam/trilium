@@ -133,8 +133,8 @@ function html2notecase(contents, note) {
                     lnk_text: linkMatch[0]
                 });
 
-                console.log(linkMatch[0]);
-                console.log(linkMatch[0].length);
+                // console.log(linkMatch[0]);
+                // console.log(linkMatch[0].length);
 
                 index += linkMatch[0].length;
             }

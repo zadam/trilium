@@ -135,9 +135,8 @@ $(function(){
             source: notes,
             activate: function(event, data){
                 const node = data.node.data;
-                const noteId = node.is_clone ? node.note_clone_id : node.note_id;
 
-                saveNoteIfChanged(() => loadNote(noteId));
+                saveNoteIfChanged(() => loadNote(node.note_id));
             },
             expand: function(event, data) {
                 setExpanded(data.node.key, true);

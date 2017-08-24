@@ -12,14 +12,25 @@ class Notes(Resource):
     def get(self, note_id):
         execute("update options set opt_value = ? where opt_name = 'start_node'", [note_id])
 
+        detail = getSingleResult("select * from notes where note_id = ?", [note_id])
+
+        if detail['note_clone_id']:
+            note_id = detail['note_clone_id']
+            detail = getSingleResult("select * from notes where note_id = ?", [note_id])
+
         return {
-            'detail': getSingleResult("select * from notes where note_id = ?", [note_id]),
+            'detail': detail,
             'formatting': getResults("select * from formatting where note_id = ? order by note_offset", [note_id]),
             'links': getResults("select * from links where note_id = ? order by note_offset", [note_id]),
             'images': getResults("select * from images where note_id = ? order by note_offset", [note_id])
         }
 
     def put(self, note_id):
+        detail = getSingleResult("select * from notes where note_id = ?", [note_id])
+
+        if detail['note_clone_id']:
+            note_id = detail['note_clone_id']
+
         note = request.get_json(force=True)
 
         now = math.floor(time.time())

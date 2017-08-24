@@ -42,14 +42,12 @@ function saveNoteIfChanged(callback) {
 
     note.detail.note_title = title;
 
-    const note_id = note.detail.is_clone ? note.detail.note_clone_id : note.detail.note_id;
-
     $.ajax({
-        url: baseUrl + 'notes/' + note_id,
+        url: baseUrl + 'notes/' + note.detail.note_id,
         type: 'PUT',
         data: JSON.stringify(note),
         contentType: "application/json",
-        success: function(result) {
+        success: function() {
             isNoteChanged = false;
 
             message("Saved!");
@@ -58,7 +56,7 @@ function saveNoteIfChanged(callback) {
                 callback();
             }
         },
-        error: function(result) {
+        error: function() {
             error("Error saving the note!");
         }
     });
