@@ -1,4 +1,7 @@
 function html2notecase(contents, note) {
+    // remove any possible extra newlines which might be inserted - all relevant new lines should be only in <br> and <p>
+    contents = contents.replace(/(?:\r\n|\r|\n)/, '');
+
     contents = contents.replace(/<br \/>/g, '\n');
     contents = contents.replace(/<br>/g, '\n');
     contents = contents.replace(/<\/p>/g, '\n');
