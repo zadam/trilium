@@ -67,7 +67,7 @@ $(function(){
 
                         createNote(node, parentKey, 'after');
                     },
-                    "shift+insert": function(node) {
+                    "ctrl+insert": function(node) {
                         createNote(node, node.key, 'into');
                     },
                     "del": function(node) {
