@@ -161,25 +161,25 @@ function loadNote(noteId) {
 
         $(window).resize(); // to trigger resizing of editor
 
-        addRecentNote(noteId, note.detail.note_title);
+        addRecentNote(noteId, note.detail.note_id, note.detail.note_title);
 
         noteChangeDisabled = false;
     });
 }
 
-function addRecentNote(noteId, noteTitle) {
+function addRecentNote(noteTreeId, noteContentId, noteTitle) {
     const origDate = new Date();
 
     setTimeout(function() {
         // we include the note into recent list only if the user stayed on the note at least 5 seconds
-        if (noteId === globalNote.detail.note_id) {
+        if (noteTreeId === globalNote.detail.note_id || noteContentId === globalNote.detail.note_id) {
             // if it's already there, remove the note
-            recentNotes = recentNotes.filter(note => note.noteId !== noteId);
+            recentNotes = recentNotes.filter(note => note.noteId !== noteTreeId);
 
             console.log("added after " + (new Date().getTime() - origDate.getTime()));
 
             recentNotes.unshift({
-                noteId: noteId,
+                noteId: noteTreeId,
                 noteTitle: noteTitle
             });
         }
