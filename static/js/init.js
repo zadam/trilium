@@ -1,6 +1,6 @@
 $(function() {
     $(window).resize(function() {
-        $('div#tree').height($(window).height() - $('div#tree').offset().top);
+        $('ul.fancytree-container').height($(window).height() - $('ul.fancytree-container').offset().top - 10);
         $('div.note-editable').height($(window).height() - $('div.note-editable').offset().top);
     });
     $(window).resize();

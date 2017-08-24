@@ -24,3 +24,10 @@
     padding: 0;
     margin: 0;
 }
+
+ul.fancytree-container {
+  width: 290px;
+  height: 400px;
+  overflow: auto;
+  position: relative;
+}

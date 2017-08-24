@@ -176,7 +176,7 @@ function addRecentNote(noteId, noteTitle) {
             // if it's already there, remove the note
             recentNotes = recentNotes.filter(note => note.noteId !== noteId);
 
-            // console.log("added after " + (new Date().getTime() - origDate.getTime()));
+            console.log("added after " + (new Date().getTime() - origDate.getTime()));
 
             recentNotes.unshift({
                 noteId: noteId,
