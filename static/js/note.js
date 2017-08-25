@@ -76,6 +76,9 @@ $(document).ready(function() {
             onChange: noteChanged
         }
     });
+
+    // so that tab jumps from note title (which has tabindex 1)
+    $(".note-editable").attr("tabindex", 2);
 });
   
 var globalNote;

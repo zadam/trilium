@@ -7,7 +7,7 @@ function notecase2html(note) {
 
     let all = note.formatting.concat(note.links).concat(note.images);
     all.sort(function compare(a, b) {
-       return a.note_offset - b.note_offset;
+        return a.note_offset - b.note_offset;
     });
 
     let offset = 0;
