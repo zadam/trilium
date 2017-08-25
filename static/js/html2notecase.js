@@ -144,5 +144,7 @@ function html2notecase(contents, note) {
         }
     }
 
+    //console.log(contents);
+
     note.detail.note_text = contents;
 }
