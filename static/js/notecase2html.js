@@ -43,7 +43,11 @@ function notecase2html(note) {
         }
     }
 
-    noteText = noteText.replace(/(?:\r\n|\r|\n)/g, '<br />');
+    noteText = noteText.replace(/(?:\r\n|\r)/g, '\n');
+
+    noteText = noteText.replace(/(.+)\n/g, '<p>$1</p>');
+
+    noteText = noteText.replace(/\n/g, '<p><br></p>');
 
     noteText = noteText.replace(/  /g, '&nbsp;&nbsp;');
 
