@@ -26,7 +26,16 @@ function notecase2html(note) {
             }
         }
         else if (el.type === 'link') {
-            let linkHtml = '<a href="' + el.target_url + '">' + el.lnk_text + '</a>';
+            let targetUrl;
+
+            if (el.target_url) {
+                targetUrl = el.target_url;
+            }
+            else {
+                targetUrl = "app#" + el.target_note_id;
+            }
+
+            let linkHtml = '<a href="' + targetUrl + '">' + el.lnk_text + '</a>';
 
             noteText = noteText.substr(0, el.note_offset + offset) + noteText.substr(el.note_offset + offset + el.lnk_text.length);
 

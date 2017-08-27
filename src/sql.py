@@ -17,6 +17,7 @@ def connect(documentPath):
     conn.row_factory = dict_factory
 
 def insert(tablename, rec):
+    # FIXME: SQL injection!
     keys = ','.join(rec.keys())
     question_marks = ','.join(list('?'*len(rec)))
     values = tuple(rec.values())

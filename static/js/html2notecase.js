@@ -31,18 +31,11 @@ function html2notecase(contents, note) {
 
             let curTag = curContent.substr(0, endOfTag + 1);
 
-            //console.log(contents);
-
             for (tagId in tags) {
                 let tag = tags[tagId];
 
                 if (contents.substr(index, tag.length) === tag) {
                     found = true;
-                    // if (tagMap.get(index) == undefined) {
-                    //   tagMap.get(index) = [];
-                    // }
-
-                    // tagMap.get(index).push(key);
 
                     note.formatting.push({
                         note_id: note.detail.note_id,
@@ -97,30 +90,32 @@ function html2notecase(contents, note) {
             let match = /^<a[^>]+?href="([^"]+?)"[^>]+?>([^<]+?)<\/a>/.exec(curContent);
 
             if (match !== null) {
-                note.links.push({
+                const targetUrl = match[1];
+                const linkText = match[2];
+
+                const newLink = {
                     note_id: note.detail.note_id,
                     note_offset: index,
-                    target_url: match[1],
-                    lnk_text: match[2]
-                });
+                    lnk_text: linkText
+                };
+
+                const noteIdMatch = /app#([A-Za-z0-9]{22})/.exec(targetUrl);
+
+                if (noteIdMatch !== null) {
+                    newLink.target_note_id = noteIdMatch[1];
+                }
+                else {
+                    newLink.target_url = targetUrl;
+                }
+
+                note.links.push(newLink);
                 
                 //console.log("Found link with text: " + match[2] + ", targetting: " + match[1]);
 
-                contents = contents.substr(0, index) + match[2] + contents.substr(index + match[0].length);
+                contents = contents.substr(0, index) + linkText + contents.substr(index + match[0].length);
 
                 found = true;
             }
-
-            // let imageRegex = /<img[^>]+src="data:image\/(jpg|png);base64,([^>\"]+)"[^>]+>/;
-
-            // console.log("Testing for image: " + curTag.substr(0, 100));
-            // console.log("End of image: " + curTag.substr(curTag.length - 100));
-
-            // let match = imageRegex.exec(curTag);
-
-            // if (match != null) {
-
-            // }
 
             if (!found) {
                 contents = contents.substr(0, index) + contents.substr(index + endOfTag + 1);
@@ -130,17 +125,26 @@ function html2notecase(contents, note) {
             let linkMatch = /^(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|]/i.exec(curContent);
 
             if (linkMatch !== null) {
-                note.links.push({
+                let targetUrl = linkMatch[0];
+
+                let newLink = {
                     note_id: note.detail.note_id,
                     note_offset: index,
-                    target_url: linkMatch[0],
-                    lnk_text: linkMatch[0]
-                });
+                    lnk_text: targetUrl
+                };
 
-                // console.log(linkMatch[0]);
-                // console.log(linkMatch[0].length);
+                const noteIdMatch = /app#([A-Za-z0-9]{22})/.exec(targetUrl);
 
-                index += linkMatch[0].length;
+                if (noteIdMatch !== null) {
+                    newLink.target_note_id = noteIdMatch[1];
+                }
+                else {
+                    newLink.target_url = targetUrl;
+                }
+
+                note.links.push(newLink);
+
+                index += targetUrl.length;
             }
             else {
                 index++;

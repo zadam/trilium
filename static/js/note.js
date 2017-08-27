@@ -181,9 +181,9 @@ function addRecentNote(noteTreeId, noteContentId) {
         // we include the note into recent list only if the user stayed on the note at least 5 seconds
         if (noteTreeId === globalNote.detail.note_id || noteContentId === globalNote.detail.note_id) {
             // if it's already there, remove the note
-            recentNotes = recentNotes.filter(note => note !== noteTreeId);
+            c = recentNotes.filter(note => note !== noteTreeId);
 
-            console.log("added after " + (new Date().getTime() - origDate.getTime()));
+            //console.log("added after " + (new Date().getTime() - origDate.getTime()));
 
             recentNotes.unshift(noteTreeId);
         }

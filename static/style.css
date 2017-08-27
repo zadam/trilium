@@ -33,6 +33,7 @@ ul.fancytree-container {
     outline: none !important;
 }
 
+/* icons from https://feathericons.com */
 span.fancytree-node > span.fancytree-icon {
     background-position: 0 0;
     background-image: url("icons/file.png");
