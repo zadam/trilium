@@ -1,7 +1,16 @@
 $(function() {
     $(window).resize(function() {
-        $('ul.fancytree-container').height($(window).height() - $('ul.fancytree-container').offset().top - 10);
-        $('div.note-editable').height($(window).height() - $('div.note-editable').offset().top);
+        const fancyTree = $('ul.fancytree-container');
+
+        if (fancyTree.length) {
+            fancyTree.height($(window).height() - fancyTree.offset().top - 10);
+        }
+
+        const noteEditable = $('div.note-editable');
+
+        if (noteEditable.length) {
+            noteEditable.height($(window).height() - noteEditable.offset().top);
+        }
     });
     $(window).resize();
 });
