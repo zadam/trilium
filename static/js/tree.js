@@ -23,7 +23,15 @@ const keybindings = {
                     // remove from recent notes
                     recentNotes = recentNotes.filter(note => note !== node.key);
 
+                    let next = node.getNextSibling();
+                    if (!next) {
+                        next = node.getParent();
+                    }
+
                     node.remove();
+
+                    // activate next element after this one is deleted so we don't lose focus
+                    next.setActive();
                 }
             });
         }
