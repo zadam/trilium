@@ -26,9 +26,20 @@
 }
 
 ul.fancytree-container {
-  width: 290px;
-  height: 400px;
-  overflow: auto;
-  position: relative;
-  outline: none !important;
+    width: 290px;
+    height: 400px;
+    overflow: auto;
+    position: relative;
+    outline: none !important;
 }
+
+span.fancytree-node > span.fancytree-icon {
+    background-position: 0 0;
+    background-image: url("icons/file.png");
+}
+
+span.fancytree-node.fancytree-folder > span.fancytree-icon {
+    background-position: 0 0;
+    background-image: url("icons/folder.png");
+}
+
