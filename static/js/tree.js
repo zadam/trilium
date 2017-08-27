@@ -18,6 +18,11 @@ const keybindings = {
                         node.getParent().renderTitle();
                     }
 
+                    delete globalNoteNames[node.key];
+
+                    // remove from recent notes
+                    recentNotes = recentNotes.filter(note => note !== node.key);
+
                     node.remove();
                 }
             });
@@ -89,6 +94,7 @@ const keybindings = {
     }
 };
 
+const globalNoteNames = {};
 
 $(function(){
     $.get(baseUrl + 'tree').then(resp => {
@@ -101,6 +107,8 @@ $(function(){
 
         function copyTitle(notes) {
             for (let note of notes) {
+                globalNoteNames[note.note_id] = note.note_title;
+
                 note.title = note.note_title;
 
                 if (note.is_clone) {

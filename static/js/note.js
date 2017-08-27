@@ -42,6 +42,8 @@ function saveNoteIfChanged(callback) {
 
     note.detail.note_title = title;
 
+    globalNoteNames[note.detail.note_id] = title;
+
     $.ajax({
         url: baseUrl + 'notes/' + note.detail.note_id,
         type: 'PUT',
@@ -123,6 +125,8 @@ function createNote(node, parentKey, target) {
                 "note_id": result.note_id
             };
 
+            globalNoteNames[result.note_id] = newNoteName;
+
             newNoteCreated = true;
 
             if (target === 'after') {
@@ -164,27 +168,24 @@ function loadNote(noteId) {
 
         $(window).resize(); // to trigger resizing of editor
 
-        addRecentNote(noteId, note.detail.note_id, note.detail.note_title);
+        addRecentNote(noteId, note.detail.note_id);
 
         noteChangeDisabled = false;
     });
 }
 
-function addRecentNote(noteTreeId, noteContentId, noteTitle) {
+function addRecentNote(noteTreeId, noteContentId) {
     const origDate = new Date();
 
     setTimeout(function() {
         // we include the note into recent list only if the user stayed on the note at least 5 seconds
         if (noteTreeId === globalNote.detail.note_id || noteContentId === globalNote.detail.note_id) {
             // if it's already there, remove the note
-            recentNotes = recentNotes.filter(note => note.noteId !== noteTreeId);
+            recentNotes = recentNotes.filter(note => note !== noteTreeId);
 
             console.log("added after " + (new Date().getTime() - origDate.getTime()));
 
-            recentNotes.unshift({
-                noteId: noteTreeId,
-                noteTitle: noteTitle
-            });
+            recentNotes.unshift(noteTreeId);
         }
     }, 1500);
 }

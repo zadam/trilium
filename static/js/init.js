@@ -26,12 +26,18 @@ $(document).bind('keydown', 'alt+q', function() {
     recentNotesSelectBox.find('option').remove();
 
     // remove the current note
-    let recNotes = recentNotes.filter(note => note.noteId !== globalNote.detail.note_id);
+    let recNotes = recentNotes.filter(note => note !== globalNote.detail.note_id);
 
-    $.each(recNotes, function(key, value) {
+    $.each(recNotes, function(key, valueNoteId) {
+        let noteTitle = globalNoteNames[valueNoteId];
+
+        if (!noteTitle) {
+            return;
+        }
+
         let option = $("<option></option>")
-                .attr("value", value.noteId)
-                .text(value.noteTitle);
+                .attr("value", valueNoteId)
+                .text(noteTitle);
 
         // select the first one (most recent one) by default
         if (key === 0) {
