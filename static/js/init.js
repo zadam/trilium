@@ -77,3 +77,19 @@ $('#recentNotesSelectBox').keydown(function(e) {
 $('#recentNotesSelectBox').dblclick(function(e) {
     setActiveNoteBasedOnRecentNotes();
 });
+
+// when click on link popup, in case of internal link, just go the the referenced note instead of default behavior
+// of opening the link in new window/tab
+$(document).on('click', 'div.popover-content a', function(e) {
+    const targetUrl = $(e.target).attr("href");
+
+    const noteIdMatch = /app#([A-Za-z0-9]{22})/.exec(targetUrl);
+
+    if (noteIdMatch !== null) {
+        const noteId = noteIdMatch[1];
+
+        $("#tree").fancytree('getNodeByKey', noteId).setActive();
+
+        e.preventDefault();
+    }
+});
