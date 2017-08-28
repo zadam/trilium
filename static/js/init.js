@@ -93,3 +93,60 @@ $(document).on('click', 'div.popover-content a', function(e) {
         e.preventDefault();
     }
 });
+
+let linkInfo;
+
+$(document).bind('keydown', 'alt+l', function() {
+    $("#insertLinkDialog").dialog({
+        modal: true
+    });
+
+    let autocompleteItems = [];
+
+    for (let noteId in globalNoteNames) {
+        autocompleteItems.push({
+            value: globalNoteNames[noteId] + " (" + noteId + ")",
+            label: globalNoteNames[noteId]
+        });
+    }
+
+    $("#noteAutocomplete").autocomplete({
+        source: autocompleteItems,
+        change: function(event, ui) {
+            let val = $("#noteAutocomplete").val();
+
+            val = val.replace(/ \([A-Za-z0-9]{22}\)/, "");
+
+            $("#linkTitle").val(val);
+        }
+    });
+
+    //const noteDetail = $('#noteDetail');
+
+    //linkInfo = noteDetail.summernote('invoke', 'editor.getLinkInfo');
+    //noteDetail.summernote('invoke', 'editor.saveRange');
+});
+
+$("#addLinkButton").click(function() {
+    let val = $("#noteAutocomplete").val();
+
+    const noteIdMatch = / \(([A-Za-z0-9]{22})\)/.exec(val);
+
+    if (noteIdMatch !== null) {
+        const noteId = noteIdMatch[1];
+        const linkTitle = $("#linkTitle").val();
+
+        const noteDetail = $('#noteDetail');
+
+        noteDetail.summernote('createLink', {
+            text: globalNoteNames[noteId],
+            url: 'app#' + noteId,
+            isNewWindow: true
+//            range: linkInfo.range
+        });
+
+        //noteDetail.summernote('invoke', 'editor.restoreRange');
+
+        $("#insertLinkDialog").dialog("close");
+    }
+});
