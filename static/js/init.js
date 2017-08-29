@@ -97,6 +97,9 @@ $(document).on('click', 'div.popover-content a', function(e) {
 let linkInfo;
 
 $(document).bind('keydown', 'alt+l', function() {
+    $("#noteAutocomplete").val('');
+    $("#linkTitle").val('');
+
     const noteDetail = $('#noteDetail');
     noteDetail.summernote('editor.saveRange');
 
@@ -115,16 +118,18 @@ $(document).bind('keydown', 'alt+l', function() {
 
     $("#noteAutocomplete").autocomplete({
         source: autocompleteItems,
-        change: function(event, ui) {
+        minLength: 0,
+        change: function() {
             let val = $("#noteAutocomplete").val();
 
             val = val.replace(/ \([A-Za-z0-9]{22}\)/, "");
 
             $("#linkTitle").val(val);
+        },
+        focus: function(event, ui) {
+            $("#linkTitle").val(ui.item.label);
         }
     });
-
-    //linkInfo = noteDetail.summernote('invoke', 'editor.getLinkInfo');
 });
 
 $("#addLinkButton").click(function() {
@@ -146,7 +151,6 @@ $("#addLinkButton").click(function() {
             text: globalNoteNames[noteId],
             url: 'app#' + noteId,
             isNewWindow: true
-//            range: linkInfo.range
         });
     }
 });
