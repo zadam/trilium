@@ -148,7 +148,7 @@ $("#addLinkButton").click(function() {
         noteDetail.summernote('editor.restoreRange');
 
         noteDetail.summernote('createLink', {
-            text: globalNoteNames[noteId],
+            text: linkTitle,
             url: 'app#' + noteId,
             isNewWindow: true
         });
