@@ -97,6 +97,9 @@ $(document).on('click', 'div.popover-content a', function(e) {
 let linkInfo;
 
 $(document).bind('keydown', 'alt+l', function() {
+    const noteDetail = $('#noteDetail');
+    noteDetail.summernote('editor.saveRange');
+
     $("#insertLinkDialog").dialog({
         modal: true
     });
@@ -121,10 +124,7 @@ $(document).bind('keydown', 'alt+l', function() {
         }
     });
 
-    //const noteDetail = $('#noteDetail');
-
     //linkInfo = noteDetail.summernote('invoke', 'editor.getLinkInfo');
-    //noteDetail.summernote('invoke', 'editor.saveRange');
 });
 
 $("#addLinkButton").click(function() {
@@ -138,15 +138,15 @@ $("#addLinkButton").click(function() {
 
         const noteDetail = $('#noteDetail');
 
+        $("#insertLinkDialog").dialog("close");
+
+        noteDetail.summernote('editor.restoreRange');
+
         noteDetail.summernote('createLink', {
             text: globalNoteNames[noteId],
             url: 'app#' + noteId,
             isNewWindow: true
 //            range: linkInfo.range
         });
-
-        //noteDetail.summernote('invoke', 'editor.restoreRange');
-
-        $("#insertLinkDialog").dialog("close");
     }
 });
