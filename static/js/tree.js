@@ -147,7 +147,7 @@ $(function(){
 
         $("#tree").fancytree({
             autoScroll: true,
-            extensions: ["hotkeys"],
+            extensions: ["hotkeys", "filter"],
             source: notes,
             activate: function(event, data){
                 const node = data.node.data;
@@ -167,7 +167,39 @@ $(function(){
             },
             hotkeys: {
                 keydown: keybindings
+            },
+            filter: {
+                autoApply: true,   // Re-apply last filter if lazy data is loaded
+                autoExpand: true, // Expand all branches that contain matches while filtered
+                counter: false,     // Show a badge with number of matching child nodes near parent icons
+                fuzzy: false,      // Match single characters in order, e.g. 'fb' will match 'FooBar'
+                hideExpandedCounter: true,  // Hide counter badge if parent is expanded
+                hideExpanders: false,       // Hide expanders if all child nodes are hidden by filter
+                highlight: true,   // Highlight matches by wrapping inside <mark> tags
+                leavesOnly: false, // Match end nodes only
+                nodata: true,      // Display a 'no data' status node if result is empty
+                mode: "hide"       // Grayout unmatched nodes (pass "hide" to remove unmatched node instead)
             }
         });
     });
+});
+
+$("input[name=search]").keyup(function (e) {
+    let match = $(this).val();
+
+    if (e && e.which === $.ui.keyCode.ESCAPE || $.trim(match) === "") {
+        $("button#btnResetSearch").click();
+        return;
+    }
+
+    // Pass a string to perform case insensitive matching
+    let tree = $("#tree").fancytree("getTree");
+    tree.filterBranches(match);
+}).focus();
+
+$("button#btnResetSearch").click(function () {
+    $("input[name=search]").val("");
+
+    let tree = $("#tree").fancytree("getTree");
+    tree.clearFilter();
 });

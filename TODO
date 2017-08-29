@@ -1,7 +1,8 @@
-- when jumping to notes, tree does not scroll
 - logout detection
 - conflict detection
 
 Later:
+- collapse all button
+- context menu on items (add subnote etc.)
 - drag and drop for notes (currently only keyboard)
 - sync with sync server
