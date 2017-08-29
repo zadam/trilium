@@ -162,6 +162,9 @@ function loadNote(noteId) {
 
         noteChangeDisabled = true;
 
+        // Clear contents and remove all stored history. This is to prevent undo from going across notes
+        $('#noteDetail').summernote('reset');
+
         $('#noteDetail').summernote('code', noteText);
 
         document.location.hash = noteId;
