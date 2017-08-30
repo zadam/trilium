@@ -161,3 +161,12 @@ $("#addLinkButton").click(function() {
 $(document).bind('keydown', 'alt+s', function() {
     $("input[name=search]").focus();
 });
+
+$(document).bind('keydown', 'alt+t', function() {
+    const date = new Date();
+
+    const dateString = date.getDate() + ". " + (date.getMonth() + 1) + ". " + date.getFullYear() + " " +
+        date.getHours() + ":" + date.getMinutes();
+
+    $('#noteDetail').summernote('insertText', dateString);
+});
