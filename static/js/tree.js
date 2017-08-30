@@ -203,3 +203,11 @@ $("button#btnResetSearch").click(function () {
     let tree = $("#tree").fancytree("getTree");
     tree.clearFilter();
 });
+
+function collapseTree() {
+    $("#tree").fancytree("getRootNode").visit(function(node){
+        node.setExpanded(false);
+    });
+}
+
+$(document).bind('keydown', 'alt+c', collapseTree);

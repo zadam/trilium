@@ -94,8 +94,6 @@ $(document).on('click', 'div.popover-content a', function(e) {
     }
 });
 
-let linkInfo;
-
 $(document).bind('keydown', 'alt+l', function() {
     var range = $('#noteDetail').summernote('createRange');
     console.log("range:", range);

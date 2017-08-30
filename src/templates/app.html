@@ -13,14 +13,21 @@
 
     <div id="content" style="margin-left: auto; margin-right: auto; width: 1100px">
       <div class="hide-toggle" style="width: 300px; height: 100%; float: left;">
-        <!--<button type="button" class="btn" onclick="createNewTopLevelNote()">Create new note</button>-->
-
         <p>
           <label>Search:</label>
           <input name="search" autocomplete="off">
           <button id="btnResetSearch">&times;</button>
           <span id="matches"></span>
         </p>
+
+        <a onclick="createNewTopLevelNote()" title="Create new top level note">
+          <img src="stat/icons/file-plus.png" alt="Create new top level note"/>
+        </a>
+
+        <a onclick="collapseTree()" title="Collapse tree">
+          <img src="stat/icons/list.png" alt="Collapse tree"/>
+        </a>
+
         <div id="tree">
         </div>
       </div>
