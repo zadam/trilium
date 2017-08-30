@@ -1,6 +1,4 @@
 function html2notecase(contents, note) {
-    //console.log("'" + contents + "'");
-
     // remove any possible extra newlines which might be inserted - all relevant new lines should be only in <br> and <p>
     contents = contents.replace(/(?:\r\n|\r|\n)/, '');
 
@@ -23,16 +21,16 @@ function html2notecase(contents, note) {
 
         if (contents[index] === '<') {
             let found = false;
-            let endOfTag = curContent.indexOf('>');
+            const endOfTag = curContent.indexOf('>');
 
             if (endOfTag === -1) {
                 console.log("Can't find the end of the tag");
             }
 
-            let curTag = curContent.substr(0, endOfTag + 1);
+            const curTag = curContent.substr(0, endOfTag + 1);
 
             for (tagId in tags) {
-                let tag = tags[tagId];
+                const tag = tags[tagId];
 
                 if (contents.substr(index, tag.length) === tag) {
                     found = true;
@@ -67,9 +65,7 @@ function html2notecase(contents, note) {
                     let endOfDataPos = dataStart.indexOf('"');
 
                     if (endOfDataPos !== -1) {
-                        //console.log("Found the end of image data");
-
-                        let imageData = dataStart.substr(0, endOfDataPos);
+                        const imageData = dataStart.substr(0, endOfDataPos);
 
                         note.images.push({
                             note_id: note.detail.note_id,
@@ -80,18 +76,16 @@ function html2notecase(contents, note) {
 
                         contents = contents.substr(0, index) + contents.substr(index + curTag.length);
 
-                        //console.log("Parsed image: " + imageData.substr(0, 100));
-
                         found = true;
                     }
                 }
             }
 
-            let match = /^<a[^>]+?href="([^"]+?)"[^>]+?>([^<]+?)<\/a>/.exec(curContent);
+            const linkMatch = /^<a[^>]+?href="([^"]+?)"[^>]+?>([^<]+?)<\/a>/.exec(curContent);
 
-            if (match !== null) {
-                const targetUrl = match[1];
-                const linkText = match[2];
+            if (linkMatch !== null) {
+                const targetUrl = linkMatch[1];
+                const linkText = linkMatch[2];
 
                 const newLink = {
                     note_id: note.detail.note_id,
@@ -109,10 +103,8 @@ function html2notecase(contents, note) {
                 }
 
                 note.links.push(newLink);
-                
-                //console.log("Found link with text: " + match[2] + ", targetting: " + match[1]);
 
-                contents = contents.substr(0, index) + linkText + contents.substr(index + match[0].length);
+                contents = contents.substr(0, index) + linkText + contents.substr(index + linkMatch[0].length);
 
                 found = true;
             }
@@ -125,9 +117,9 @@ function html2notecase(contents, note) {
             let linkMatch = /^(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|]/i.exec(curContent);
 
             if (linkMatch !== null) {
-                let targetUrl = linkMatch[0];
+                const targetUrl = linkMatch[0];
 
-                let newLink = {
+                const newLink = {
                     note_id: note.detail.note_id,
                     note_offset: index,
                     lnk_text: targetUrl
@@ -153,8 +145,6 @@ function html2notecase(contents, note) {
     }
 
     contents = contents.trim();
-
-    //console.log('"' + contents + '"');
 
     note.detail.note_text = contents;
 }

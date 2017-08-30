@@ -5,13 +5,12 @@ function notecase2html(note) {
     note.links.forEach(el => el.type = 'link');
     note.images.forEach(el => el.type = 'image');
 
-    let all = note.formatting.concat(note.links).concat(note.images);
-    all.sort(function compare(a, b) {
+    const allTags = note.formatting.concat(note.links).concat(note.images);
+    allTags.sort(function compare(a, b) {
         return a.note_offset - b.note_offset;
     });
 
     let offset = 0;
-    let lastTag = null;
 
     function inject(target, injected, position) {
         offset += injected.length;
@@ -19,7 +18,7 @@ function notecase2html(note) {
         return noteText.substr(0, position) + injected + noteText.substr(position);
     }
 
-    for (let el of all) {
+    for (const el of allTags) {
         if (el.type === 'formatting') {
             if (tags[el.fmt_tag]) {
                 noteText = inject(noteText, tags[el.fmt_tag], el.note_offset + offset);
@@ -35,7 +34,7 @@ function notecase2html(note) {
                 targetUrl = "app#" + el.target_note_id;
             }
 
-            let linkHtml = '<a href="' + targetUrl + '">' + el.lnk_text + '</a>';
+            const linkHtml = '<a href="' + targetUrl + '">' + el.lnk_text + '</a>';
 
             noteText = noteText.substr(0, el.note_offset + offset) + noteText.substr(el.note_offset + offset + el.lnk_text.length);
 
@@ -44,9 +43,9 @@ function notecase2html(note) {
             offset -= el.lnk_text.length;
         }
         else if (el.type === 'image') {
-            let type = el.is_png ? "png" : "jpg";
+            const type = el.is_png ? "png" : "jpg";
 
-            let imgHtml = '<img alt="Embedded Image" src="data:image/' + type + ';base64,' + el.image_data + '" />';
+            const imgHtml = '<img alt="Embedded Image" src="data:image/' + type + ';base64,' + el.image_data + '" />';
 
             noteText = inject(noteText, imgHtml, el.note_offset + offset);
         }

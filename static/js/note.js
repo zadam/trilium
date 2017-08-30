@@ -1,4 +1,4 @@
-let tags = {
+const tags = {
     1: "<b>",
     2: "</b>",
     3: "<i>",
@@ -84,19 +84,6 @@ $(document).ready(function() {
 });
   
 var globalNote;
-
-function setParent(noteId, newParentKey, successCallback) {
-    let newNoteName = "new note";
-
-    $.ajax({
-        url: baseUrl + 'notes/' + nodeId + '/setParent/' + newParentKey,
-        type: 'PUT',
-        contentType: "application/json",
-        success: function(result) {
-            successCallback();
-        }
-    });
-}
 
 function createNewTopLevelNote() {
     let rootNode = $("#tree").fancytree("getRootNode");

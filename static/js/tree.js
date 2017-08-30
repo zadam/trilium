@@ -114,7 +114,7 @@ $(function(){
         }
 
         function copyTitle(notes) {
-            for (let note of notes) {
+            for (const note of notes) {
                 globalNoteNames[note.note_id] = note.note_title;
 
                 note.title = note.note_title;
@@ -185,7 +185,7 @@ $(function(){
 });
 
 $("input[name=search]").keyup(function (e) {
-    let match = $(this).val();
+    const match = $(this).val();
 
     if (e && e.which === $.ui.keyCode.ESCAPE || $.trim(match) === "") {
         $("button#btnResetSearch").click();
@@ -193,14 +193,14 @@ $("input[name=search]").keyup(function (e) {
     }
 
     // Pass a string to perform case insensitive matching
-    let tree = $("#tree").fancytree("getTree");
+    const tree = $("#tree").fancytree("getTree");
     tree.filterBranches(match);
 }).focus();
 
 $("button#btnResetSearch").click(function () {
     $("input[name=search]").val("");
 
-    let tree = $("#tree").fancytree("getTree");
+    const tree = $("#tree").fancytree("getTree");
     tree.clearFilter();
 });
 
