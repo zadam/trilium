@@ -14,6 +14,7 @@ from move_before_note import MoveBeforeNote
 from move_to_note import MoveToNote
 from notes import Notes
 from notes_children import NotesChildren
+from notes_search import NotesSearch
 from sql import connect
 from tree import Tree
 
@@ -82,6 +83,7 @@ api.add_resource(MoveBeforeNote, '/notes/<string:note_id>/moveBefore/<string:bef
 api.add_resource(MoveToNote, '/notes/<string:note_id>/moveTo/<string:parent_id>')
 api.add_resource(ExpandedNote, '/notes/<string:note_id>/expanded/<int:expanded>')
 api.add_resource(Tree, '/tree')
+api.add_resource(NotesSearch, '/notes')
 
 login_manager = LoginManager()
 login_manager.init_app(app)

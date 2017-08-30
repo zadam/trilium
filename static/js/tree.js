@@ -185,16 +185,24 @@ $(function(){
 });
 
 $("input[name=search]").keyup(function (e) {
-    const match = $(this).val();
+    const searchString = $(this).val();
 
-    if (e && e.which === $.ui.keyCode.ESCAPE || $.trim(match) === "") {
+    if (e && e.which === $.ui.keyCode.ESCAPE || $.trim(searchString) === "") {
         $("button#btnResetSearch").click();
         return;
     }
 
-    // Pass a string to perform case insensitive matching
-    const tree = $("#tree").fancytree("getTree");
-    tree.filterBranches(match);
+    if (e && e.which === $.ui.keyCode.ENTER) {
+        $.get(baseUrl + 'notes?search=' + searchString).then(resp => {
+            console.log("search: ", resp);
+
+            // Pass a string to perform case insensitive matching
+            const tree = $("#tree").fancytree("getTree");
+            tree.filterBranches(function(node) {
+                return resp.includes(node.data.note_id);
+            });
+        });
+    }
 }).focus();
 
 $("button#btnResetSearch").click(function () {
