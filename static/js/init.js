@@ -18,11 +18,13 @@ $(function() {
 jQuery.hotkeys.options.filterInputAcceptingElements = true;
 jQuery.hotkeys.options.filterContentEditable = true;
 
-$(document).bind('keydown', 'alt+ctrl+h', function() {
+$(document).bind('keydown', 'alt+h', function() {
     const toggle = $(".hide-toggle");
+    const hidden = toggle.css('display') === 'none';
 
-    // use visibility instead of display so that content isn't moved around and stays set in place
-    toggle.css('visibility', toggle.css('visibility') === 'hidden' ? 'visible' : 'hidden');
+    toggle.css('display', hidden ? 'block' : 'none');
+
+    $("#noteDetailWrapper").css("width", hidden ? "750px" : "100%");
 });
 
 $(document).bind('keydown', 'alt+q', function() {
