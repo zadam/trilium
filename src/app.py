@@ -6,23 +6,20 @@ from flask import Flask, request, send_from_directory
 from flask import render_template, redirect
 from flask_cors import CORS
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user
-from flask_restful import Api
 
-from expanded_note import ExpandedNote
-from move_after_note import MoveAfterNote
-from move_before_note import MoveBeforeNote
-from move_to_note import MoveToNote
-from notes import Notes
-from notes_children import NotesChildren
-from notes_search import NotesSearch
+from notes_api import notes_api
 from sql import connect
-from tree import Tree
+from tree_api import tree_api
+from notes_move_api import notes_move_api
 
 config = configparser.ConfigParser()
 config.read('config.ini')
 
 app = Flask(__name__)
 app.secret_key = config['Security']['flaskSecretKey']
+app.register_blueprint(tree_api)
+app.register_blueprint(notes_api)
+app.register_blueprint(notes_move_api)
 
 class User(UserMixin):
     pass
@@ -75,16 +72,6 @@ CORS(app)
 def send_stc(path):
     return send_from_directory(os.path.join(os.getcwd(), 'static'), path)
 
-api = Api(app)
-
-api.add_resource(NotesChildren, '/notes/<string:parent_note_id>/children')
-api.add_resource(MoveAfterNote, '/notes/<string:note_id>/moveAfter/<string:after_note_id>')
-api.add_resource(MoveBeforeNote, '/notes/<string:note_id>/moveBefore/<string:before_note_id>')
-api.add_resource(MoveToNote, '/notes/<string:note_id>/moveTo/<string:parent_id>')
-api.add_resource(ExpandedNote, '/notes/<string:note_id>/expanded/<int:expanded>')
-api.add_resource(Tree, '/tree')
-api.add_resource(NotesSearch, '/notes')
-
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login_form'
@@ -95,8 +82,6 @@ def load_user(user_id):
         return user
     else:
         return None
-
-api.add_resource(Notes, '/notes/<string:note_id>')
 
 if __name__ == "__main__":
     ssl_context = None
