@@ -135,7 +135,7 @@ $(document).bind('keydown', 'alt+l', function() {
     });
 });
 
-$("#addLinkButton").click(function() {
+$("#insertLinkForm").submit(function addLink() {
     let val = $("#noteAutocomplete").val();
 
     const noteIdMatch = / \(([A-Za-z0-9]{22})\)/.exec(val);
