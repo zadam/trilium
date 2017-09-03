@@ -130,27 +130,39 @@ $(document).bind('keydown', 'alt+l', function() {
         });
     }
 
-    function setDefaultLinkTitle() {
-        const val = $("#noteAutocomplete").val();
-        const noteId = getNodeIdFromLabel(val);
-
-        if (noteId) {
-            const note = getNodeByKey(noteId);
-            let noteTitle = note.title;
-
-            if (noteTitle.endsWith(" (clone)")) {
-                noteTitle = noteTitle.substr(0, noteTitle.length - 8);
-            }
-
-            $("#linkTitle").val(noteTitle);
+    function setDefaultLinkTitle(noteId) {
+        const note = getNodeByKey(noteId);
+        if (!note) {
+            return;
         }
+
+        let noteTitle = note.title;
+
+        if (noteTitle.endsWith(" (clone)")) {
+            noteTitle = noteTitle.substr(0, noteTitle.length - 8);
+        }
+
+        $("#linkTitle").val(noteTitle);
     }
 
     $("#noteAutocomplete").autocomplete({
         source: autocompleteItems,
         minLength: 0,
-        change: setDefaultLinkTitle,
-        focus: setDefaultLinkTitle
+        change: function () {
+            const val = $("#noteAutocomplete").val();
+            const noteId = getNodeIdFromLabel(val);
+
+            if (noteId) {
+                setDefaultLinkTitle(noteId);
+            }
+        },
+        // this is called when user goes through autocomplete list with keyboard
+        // at this point the item isn't selected yet so we use supplied ui.item to see where the cursor is
+        focus: function (event, ui) {
+            const noteId = getNodeIdFromLabel(ui.item.value);
+
+            setDefaultLinkTitle(noteId);
+        }
     });
 });
 
