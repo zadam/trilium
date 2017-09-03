@@ -44,3 +44,9 @@ span.fancytree-node.fancytree-folder > span.fancytree-icon {
     background-image: url("icons/folder.png");
 }
 
+.ui-autocomplete {
+    max-height: 300px;
+    overflow-y: auto;
+    /* prevent horizontal scrollbar */
+    overflow-x: hidden;
+}
