@@ -38,7 +38,7 @@ function saveNoteIfChanged(callback) {
 
     let title = $('#noteTitle').val();
 
-    $("#tree").fancytree('getNodeByKey', note.detail.note_id).setTitle(title);
+    getNodeByKey(note.detail.note_id).setTitle(title);
 
     note.detail.note_title = title;
 

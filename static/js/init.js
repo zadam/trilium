@@ -29,7 +29,8 @@ $(document).bind('keydown', 'alt+h', function() {
 
 $(document).bind('keydown', 'alt+q', function() {
     $("#recentNotesDialog").dialog({
-        modal: true
+        modal: true,
+        width: 500
     });
 
     let recentNotesSelectBox = $('#recentNotesSelectBox');
@@ -40,7 +41,7 @@ $(document).bind('keydown', 'alt+q', function() {
     let recNotes = recentNotes.filter(note => note !== globalNote.detail.note_id);
 
     $.each(recNotes, function(key, valueNoteId) {
-        let noteTitle = globalNoteNames[valueNoteId];
+        let noteTitle = getFullName(valueNoteId);
 
         if (!noteTitle) {
             return;
@@ -62,7 +63,7 @@ $(document).bind('keydown', 'alt+q', function() {
 function setActiveNoteBasedOnRecentNotes() {
     let noteId = $("#recentNotesSelectBox option:selected").val();
 
-    $("#tree").fancytree('getNodeByKey', noteId).setActive();
+    getNodeByKey(noteId).setActive();
 
     $("#recentNotesDialog").dialog('close');
 }
@@ -90,11 +91,21 @@ $(document).on('click', 'div.popover-content a', function(e) {
     if (noteIdMatch !== null) {
         const noteId = noteIdMatch[1];
 
-        $("#tree").fancytree('getNodeByKey', noteId).setActive();
+        getNodeByKey(noteId).setActive();
 
         e.preventDefault();
     }
 });
+
+function getNodeIdFromLabel(label) {
+    const noteIdMatch = / \(([A-Za-z0-9]{22})\)/.exec(label);
+
+    if (noteIdMatch !== null) {
+        return noteIdMatch[1];
+    }
+
+    return null;
+}
 
 $(document).bind('keydown', 'alt+l', function() {
     var range = $('#noteDetail').summernote('createRange');
@@ -107,43 +118,52 @@ $(document).bind('keydown', 'alt+l', function() {
     noteDetail.summernote('editor.saveRange');
 
     $("#insertLinkDialog").dialog({
-        modal: true
+        modal: true,
+        width: 500
     });
 
     let autocompleteItems = [];
 
     for (let noteId in globalNoteNames) {
+        let fullName = getFullName(noteId);
+
         autocompleteItems.push({
-            value: globalNoteNames[noteId] + " (" + noteId + ")",
-            label: globalNoteNames[noteId]
+            value: fullName + " (" + noteId + ")",
+            label: fullName
         });
+    }
+
+    function setDefaultLinkTitle() {
+        const val = $("#noteAutocomplete").val();
+        const noteId = getNodeIdFromLabel(val);
+
+        if (noteId) {
+            const note = getNodeByKey(noteId);
+            let noteTitle = note.title;
+
+            if (noteTitle.endsWith(" (clone)")) {
+                noteTitle = noteTitle.substr(0, noteTitle.length - 8);
+            }
+
+            $("#linkTitle").val(noteTitle);
+        }
     }
 
     $("#noteAutocomplete").autocomplete({
         source: autocompleteItems,
         minLength: 0,
-        change: function() {
-            let val = $("#noteAutocomplete").val();
-
-            val = val.replace(/ \([A-Za-z0-9]{22}\)/, "");
-
-            $("#linkTitle").val(val);
-        },
-        focus: function(event, ui) {
-            $("#linkTitle").val(ui.item.label);
-        }
+        change: setDefaultLinkTitle,
+        focus: setDefaultLinkTitle
     });
 });
 
 $("#insertLinkForm").submit(function addLink() {
     let val = $("#noteAutocomplete").val();
 
-    const noteIdMatch = / \(([A-Za-z0-9]{22})\)/.exec(val);
+    const noteId = getNodeIdFromLabel(val);
 
-    if (noteIdMatch !== null) {
-        const noteId = noteIdMatch[1];
+    if (noteId) {
         const linkTitle = $("#linkTitle").val();
-
         const noteDetail = $('#noteDetail');
 
         $("#insertLinkDialog").dialog("close");

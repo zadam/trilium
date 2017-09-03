@@ -104,6 +104,28 @@ const keybindings = {
 
 const globalNoteNames = {};
 
+let globalTree;
+
+function getNodeByKey(noteId) {
+    return globalTree.fancytree('getNodeByKey', noteId);
+}
+
+function getFullName(noteId) {
+    let note = getNodeByKey(noteId);
+    const path = [];
+
+    while (note) {
+        path.push(note.title);
+
+        note = note.getParent();
+    }
+
+    // remove "root" element
+    path.pop();
+
+    return path.reverse().join(" > ");
+}
+
 $(function(){
     $.get(baseUrl + 'tree').then(resp => {
         const notes = resp.notes;
@@ -145,7 +167,8 @@ $(function(){
             });
         }
 
-        $("#tree").fancytree({
+        globalTree = $("#tree");
+        globalTree.fancytree({
             autoScroll: true,
             extensions: ["hotkeys", "filter"],
             source: notes,
