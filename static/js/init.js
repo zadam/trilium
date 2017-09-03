@@ -185,6 +185,8 @@ $("#insertLinkForm").submit(function addLink() {
             isNewWindow: true
         });
     }
+
+    return false;
 });
 
 $(document).bind('keydown', 'alt+s', function() {
