@@ -42,8 +42,6 @@ function saveNoteIfChanged(callback) {
 
     note.detail.note_title = title;
 
-    globalNoteNames[note.detail.note_id] = title;
-
     $.ajax({
         url: baseUrl + 'notes/' + note.detail.note_id,
         type: 'PUT',
@@ -112,7 +110,7 @@ function createNote(node, parentKey, target) {
                 "note_id": result.note_id
             };
 
-            globalNoteNames[result.note_id] = newNoteName;
+            globalAllNoteIds.push(result.note_id);
 
             newNoteCreated = true;
 

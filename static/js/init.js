@@ -108,9 +108,6 @@ function getNodeIdFromLabel(label) {
 }
 
 $(document).bind('keydown', 'alt+l', function() {
-    var range = $('#noteDetail').summernote('createRange');
-    console.log("range:", range);
-
     $("#noteAutocomplete").val('');
     $("#linkTitle").val('');
 
@@ -124,7 +121,7 @@ $(document).bind('keydown', 'alt+l', function() {
 
     let autocompleteItems = [];
 
-    for (let noteId in globalNoteNames) {
+    for (const noteId of globalAllNoteIds) {
         let fullName = getFullName(noteId);
 
         autocompleteItems.push({

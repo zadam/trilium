@@ -18,7 +18,7 @@ const keybindings = {
                         node.getParent().renderTitle();
                     }
 
-                    delete globalNoteNames[node.key];
+                    globalAllNoteIds = globalAllNoteIds.filter(e => e !== node.key);
 
                     // remove from recent notes
                     recentNotes = recentNotes.filter(note => note !== node.key);
@@ -102,7 +102,7 @@ const keybindings = {
     }
 };
 
-const globalNoteNames = {};
+let globalAllNoteIds = [];
 
 let globalTree;
 
@@ -137,7 +137,7 @@ $(function(){
 
         function copyTitle(notes) {
             for (const note of notes) {
-                globalNoteNames[note.note_id] = note.note_title;
+                globalAllNoteIds.push(note.note_id);
 
                 note.title = note.note_title;
 
