@@ -106,6 +106,9 @@ function html2notecase(contents, note) {
 
                 contents = contents.substr(0, index) + linkText + contents.substr(index + linkMatch[0].length);
 
+                // we'll skip the link text so that it's not processed twice (second time by link auto detection)
+                index += linkText.length;
+
                 found = true;
             }
 
