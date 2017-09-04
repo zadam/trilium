@@ -81,9 +81,11 @@ function html2notecase(contents, note) {
                 }
             }
 
-            const linkMatch = /^<a[^>]+?href="([^"]+?)"[^>]+?>([^<]+?)<\/a>/.exec(curContent);
+            const linkMatch = /^<a[^>]+?href="([^"]+?)"[^>]*?>([^<]+?)<\/a>/.exec(curContent);
 
             if (linkMatch !== null) {
+                console.log("matched link: ", linkMatch);
+
                 const targetUrl = linkMatch[1];
                 const linkText = linkMatch[2];
 
