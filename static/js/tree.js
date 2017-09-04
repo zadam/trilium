@@ -1,3 +1,41 @@
+function moveBeforeNode(node, beforeNode) {
+    $.ajax({
+        url: baseUrl + 'notes/' + node.key + '/moveBefore/' + beforeNode.key,
+        type: 'PUT',
+        contentType: "application/json",
+        success: function () {
+            node.moveTo(beforeNode, 'before');
+        }
+    });
+}
+
+function moveAfterNode(node, afterNode) {
+    $.ajax({
+        url: baseUrl + 'notes/' + node.key + '/moveAfter/' + afterNode.key,
+        type: 'PUT',
+        contentType: "application/json",
+        success: function () {
+            node.moveTo(afterNode, 'after');
+        }
+    });
+}
+
+function moveToNode(node, toNode) {
+    $.ajax({
+        url: baseUrl + 'notes/' + node.key + '/moveTo/' + toNode.key,
+        type: 'PUT',
+        contentType: "application/json",
+        success: function (result) {
+            node.moveTo(toNode);
+
+            toNode.setExpanded(true);
+
+            toNode.folder = true;
+            toNode.renderTitle();
+        }
+    });
+}
+
 const keybindings = {
     "insert": function(node) {
         let parentKey = (node.getParent() === null || node.getParent().key === "root_1") ? "root" : node.getParent().key;
@@ -37,27 +75,16 @@ const keybindings = {
         }
     },
     "shift+up": function(node) {
-        if (node.getPrevSibling() !== null) {
-            $.ajax({
-                url: baseUrl + 'notes/' + node.key + '/moveBefore/' + node.getPrevSibling().key,
-                type: 'PUT',
-                contentType: "application/json",
-                success: function() {
-                    node.moveTo(node.getPrevSibling(), 'before');
-                }
-            });
+        const beforeNode = node.getPrevSibling();
+
+        if (beforeNode !== null) {
+            moveBeforeNode(node, beforeNode);
         }
     },
     "shift+down": function(node) {
-        if (node.getNextSibling() !== null) {
-            $.ajax({
-                url: baseUrl + 'notes/' + node.key + '/moveAfter/' + node.getNextSibling().key,
-                type: 'PUT',
-                contentType: "application/json",
-                success: function() {
-                    node.moveTo(node.getNextSibling(), 'after');
-                }
-            });
+        let afterNode = node.getNextSibling();
+        if (afterNode !== null) {
+            moveAfterNode(node, afterNode);
         }
     },
     "shift+left": function(node) {
@@ -78,22 +105,10 @@ const keybindings = {
         }
     },
     "shift+right": function(node) {
-        let prevSibling = node.getPrevSibling();
+        let toNode = node.getPrevSibling();
 
-        if (prevSibling !== null) {
-            $.ajax({
-                url: baseUrl + 'notes/' + node.key + '/moveTo/' + prevSibling.key,
-                type: 'PUT',
-                contentType: "application/json",
-                success: function(result) {
-                    node.moveTo(prevSibling);
-
-                    prevSibling.setExpanded(true);
-
-                    prevSibling.folder = true;
-                    prevSibling.renderTitle();
-                }
-            });
+        if (toNode !== null) {
+            moveToNode(node, toNode);
         }
     },
     "return": function(node) {
@@ -170,7 +185,7 @@ $(function(){
         globalTree = $("#tree");
         globalTree.fancytree({
             autoScroll: true,
-            extensions: ["hotkeys", "filter"],
+            extensions: ["hotkeys", "filter", "dnd"],
             source: notes,
             activate: function(event, data){
                 const node = data.node.data;
@@ -202,7 +217,69 @@ $(function(){
                 leavesOnly: false, // Match end nodes only
                 nodata: true,      // Display a 'no data' status node if result is empty
                 mode: "hide"       // Grayout unmatched nodes (pass "hide" to remove unmatched node instead)
-            }
+            },
+            dnd: {
+                autoExpandMS: 600,
+                draggable: { // modify default jQuery draggable options
+                    zIndex: 1000,
+                    scroll: false,
+                    containment: "parent",
+                    revert: "invalid"
+                },
+                preventRecursiveMoves: true, // Prevent dropping nodes on own descendants
+                preventVoidMoves: true, // Prevent dropping nodes 'before self', etc.
+
+                dragStart: function(node, data) {
+                    // This function MUST be defined to enable dragging for the tree.
+                    // Return false to cancel dragging of node.
+                    return true;
+                },
+                dragEnter: function(node, data) {
+                    /* data.otherNode may be null for non-fancytree droppables.
+                    * Return false to disallow dropping on node. In this case
+                    * dragOver and dragLeave are not called.
+                    * Return 'over', 'before, or 'after' to force a hitMode.
+                    * Return ['before', 'after'] to restrict available hitModes.
+                    * Any other return value will calc the hitMode from the cursor position.
+                    */
+                    // Prevent dropping a parent below another parent (only sort
+                    // nodes under the same parent):
+                    //    if(node.parent !== data.otherNode.parent){
+                    //      return false;
+                    //    }
+                    // Don't allow dropping *over* a node (would create a child). Just
+                    // allow changing the order:
+                    //    return ["before", "after"];
+                    // Accept everything:
+                    return true;
+                },
+                dragExpand: function(node, data) {
+                  // return false to prevent auto-expanding data.node on hover
+                },
+                dragOver: function(node, data) {
+                },
+                dragLeave: function(node, data) {
+                },
+                dragStop: function(node, data) {
+                },
+                dragDrop: function(node, data) {
+                    // This function MUST be defined to enable dropping of items on the tree.
+                    // data.hitMode is 'before', 'after', or 'over'.
+
+                    if (data.hitMode === "before") {
+                        moveBeforeNode(data.otherNode, node);
+                    }
+                    else if (data.hitMode === "after") {
+                        moveAfterNode(data.otherNode, node);
+                    }
+                    else if (data.hitMode === "over") {
+                        moveToNode(data.otherNode, node);
+                    }
+                    else {
+                        throw new Exception("Unknown hitMode=" + data.hitMode);
+                    }
+                }
+              },
         });
     });
 });
