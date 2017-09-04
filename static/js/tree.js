@@ -66,9 +66,13 @@ function deleteNode(node) {
     }
 }
 
+function getParentKey(node) {
+    return (node.getParent() === null || node.getParent().key === "root_1") ? "root" : node.getParent().key;
+}
+
 const keybindings = {
     "insert": function(node) {
-        let parentKey = (node.getParent() === null || node.getParent().key === "root_1") ? "root" : node.getParent().key;
+        const parentKey = getParentKey(node);
 
         createNote(node, parentKey, 'after');
     },
@@ -313,22 +317,19 @@ $(function(){
                 ui.menu.prevKeyboard = node.tree.options.keyboard;
                 node.tree.options.keyboard = false;
             },
-            close: function (event, ui) {
-                // Restore tree keyboard handling
-                // console.log("close", event, ui, this)
-                // Note: ui is passed since v1.15.0
-                const node = $.ui.fancytree.getNode(ui.target);
-
-                // in case of move operations this can be null
-                if (node) {
-                    node.tree.options.keyboard = ui.menu.prevKeyboard;
-                    node.setFocus();
-                }
-            },
+            close: function (event, ui) {},
             select: function (event, ui) {
                 const node = $.ui.fancytree.getNode(ui.target);
 
-                if (ui.cmd === "cut") {
+                if (ui.cmd === "insertNoteHere") {
+                   const parentKey = getParentKey(node);
+
+                    createNote(node, parentKey, 'after');
+                }
+                else if (ui.cmd === "insertChildNote") {
+                    createNote(node, node.key, 'into');
+                }
+                else if (ui.cmd === "cut") {
                     globalClipboardNoteId = node.key;
                 }
                 else if (ui.cmd === "pasteAfter") {
