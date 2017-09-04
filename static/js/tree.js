@@ -36,6 +36,36 @@ function moveToNode(node, toNode) {
     });
 }
 
+function deleteNode(node) {
+    if (confirm('Are you sure you want to delete note "' + node.title + '"?')) {
+        $.ajax({
+            url: baseUrl + 'notes/' + node.key,
+            type: 'DELETE',
+            success: function () {
+                if (node.getParent() !== null && node.getParent().getChildren().length <= 1) {
+                    node.getParent().folder = false;
+                    node.getParent().renderTitle();
+                }
+
+                globalAllNoteIds = globalAllNoteIds.filter(e => e !== node.key);
+
+                // remove from recent notes
+                recentNotes = recentNotes.filter(note => note !== node.key);
+
+                let next = node.getNextSibling();
+                if (!next) {
+                    next = node.getParent();
+                }
+
+                node.remove();
+
+                // activate next element after this one is deleted so we don't lose focus
+                next.setActive();
+            }
+        });
+    }
+}
+
 const keybindings = {
     "insert": function(node) {
         let parentKey = (node.getParent() === null || node.getParent().key === "root_1") ? "root" : node.getParent().key;
@@ -46,33 +76,7 @@ const keybindings = {
         createNote(node, node.key, 'into');
     },
     "del": function(node) {
-        if (confirm('Are you sure you want to delete note "' + node.title + '"?')) {
-            $.ajax({
-                url: baseUrl + 'notes/' + node.key,
-                type: 'DELETE',
-                success: function() {
-                    if (node.getParent() !== null && node.getParent().getChildren().length <= 1) {
-                        node.getParent().folder = false;
-                        node.getParent().renderTitle();
-                    }
-
-                    globalAllNoteIds = globalAllNoteIds.filter(e => e !== node.key);
-
-                    // remove from recent notes
-                    recentNotes = recentNotes.filter(note => note !== node.key);
-
-                    let next = node.getNextSibling();
-                    if (!next) {
-                        next = node.getParent();
-                    }
-
-                    node.remove();
-
-                    // activate next element after this one is deleted so we don't lose focus
-                    next.setActive();
-                }
-            });
-        }
+        deleteNode(node);
     },
     "shift+up": function(node) {
         const beforeNode = node.getPrevSibling();
@@ -140,6 +144,8 @@ function getFullName(noteId) {
 
     return path.reverse().join(" > ");
 }
+
+let globalClipboardNoteId = null;
 
 $(function(){
     $.get(baseUrl + 'tree').then(resp => {
@@ -279,7 +285,73 @@ $(function(){
                         throw new Exception("Unknown hitMode=" + data.hitMode);
                     }
                 }
-              },
+            }
+        });
+
+        globalTree.contextmenu({
+            delegate: "span.fancytree-title",
+            autoFocus: true,
+            menu: [
+                {title: "Insert note here", cmd: "insertNoteHere", uiIcon: "ui-icon-pencil"},
+                {title: "Insert child note", cmd: "insertChildNote", uiIcon: "ui-icon-pencil"},
+                {title: "Delete", cmd: "delete", uiIcon: "ui-icon-trash"},
+                {title: "----"},
+                {title: "Cut", cmd: "cut", uiIcon: "ui-icon-scissors"},
+                {title: "Copy / clone", cmd: "copy", uiIcon: "ui-icon-copy"},
+                {title: "Paste after", cmd: "pasteAfter", uiIcon: "ui-icon-clipboard"},
+                {title: "Paste into", cmd: "pasteInto", uiIcon: "ui-icon-clipboard"}
+            ],
+            beforeOpen: function (event, ui) {
+                const node = $.ui.fancytree.getNode(ui.target);
+                // Modify menu entries depending on node status
+                globalTree.contextmenu("enableEntry", "pasteAfter", globalClipboardNoteId !== null);
+                globalTree.contextmenu("enableEntry", "pasteInto", globalClipboardNoteId !== null);
+
+                // Activate node on right-click
+                node.setActive();
+                // Disable tree keyboard handling
+                ui.menu.prevKeyboard = node.tree.options.keyboard;
+                node.tree.options.keyboard = false;
+            },
+            close: function (event, ui) {
+                // Restore tree keyboard handling
+                // console.log("close", event, ui, this)
+                // Note: ui is passed since v1.15.0
+                const node = $.ui.fancytree.getNode(ui.target);
+
+                // in case of move operations this can be null
+                if (node) {
+                    node.tree.options.keyboard = ui.menu.prevKeyboard;
+                    node.setFocus();
+                }
+            },
+            select: function (event, ui) {
+                const node = $.ui.fancytree.getNode(ui.target);
+
+                if (ui.cmd === "cut") {
+                    globalClipboardNoteId = node.key;
+                }
+                else if (ui.cmd === "pasteAfter") {
+                    const subjectNode = getNodeByKey(globalClipboardNoteId);
+
+                    moveAfterNode(subjectNode, node);
+
+                    globalClipboardNoteId = null;
+                }
+                else if (ui.cmd === "pasteInto") {
+                    const subjectNode = getNodeByKey(globalClipboardNoteId);
+
+                    moveToNode(subjectNode, node);
+
+                    globalClipboardNoteId = null;
+                }
+                else if (ui.cmd === "delete") {
+                    deleteNode(node);
+                }
+                else {
+                    console.log("Unknown command: " + ui.cmd);
+                }
+            }
         });
     });
 });

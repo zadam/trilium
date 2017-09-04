@@ -1,5 +1,6 @@
 - logout detection
 - conflict detection
+- deleting cloned nodes ends with 500 (probably only on folders)
 
 Later:
 - context menu on items (add subnote etc.)
