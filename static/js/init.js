@@ -107,6 +107,21 @@ function getNodeIdFromLabel(label) {
     return null;
 }
 
+function getAutocompleteItems() {
+    const autocompleteItems = [];
+
+    for (const noteId of globalAllNoteIds) {
+        const fullName = getFullName(noteId);
+
+        autocompleteItems.push({
+            value: fullName + " (" + noteId + ")",
+            label: fullName
+        });
+    }
+
+    return autocompleteItems;
+}
+
 $(document).bind('keydown', 'alt+l', function() {
     $("#noteAutocomplete").val('');
     $("#linkTitle").val('');
@@ -118,17 +133,6 @@ $(document).bind('keydown', 'alt+l', function() {
         modal: true,
         width: 500
     });
-
-    let autocompleteItems = [];
-
-    for (const noteId of globalAllNoteIds) {
-        let fullName = getFullName(noteId);
-
-        autocompleteItems.push({
-            value: fullName + " (" + noteId + ")",
-            label: fullName
-        });
-    }
 
     function setDefaultLinkTitle(noteId) {
         const note = getNodeByKey(noteId);
@@ -146,7 +150,7 @@ $(document).bind('keydown', 'alt+l', function() {
     }
 
     $("#noteAutocomplete").autocomplete({
-        source: autocompleteItems,
+        source: getAutocompleteItems(),
         minLength: 0,
         change: function () {
             const val = $("#noteAutocomplete").val();
@@ -166,7 +170,7 @@ $(document).bind('keydown', 'alt+l', function() {
     });
 });
 
-$("#insertLinkForm").submit(function addLink() {
+$("#insertLinkForm").submit(function() {
     let val = $("#noteAutocomplete").val();
 
     const noteId = getNodeIdFromLabel(val);
@@ -200,4 +204,31 @@ $(document).bind('keydown', 'alt+t', function() {
         date.getHours() + ":" + date.getMinutes();
 
     $('#noteDetail').summernote('insertText', dateString);
+});
+
+$(document).bind('keydown', 'alt+j', function() {
+    $("#jumpToNoteAutocomplete").val('');
+
+    $("#jumpToNoteDialog").dialog({
+        modal: true,
+        width: 500
+    });
+
+    $("#jumpToNoteAutocomplete").autocomplete({
+        source: getAutocompleteItems(),
+        minLength: 0
+    });
+});
+
+$("#jumpToNoteForm").submit(function() {
+    const val = $("#jumpToNoteAutocomplete").val();
+    const noteId = getNodeIdFromLabel(val);
+
+    if (noteId) {
+        getNodeByKey(noteId).setActive();
+
+        $("#jumpToNoteDialog").dialog('close');
+    }
+
+    return false;
 });
