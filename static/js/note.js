@@ -212,5 +212,5 @@ function encryptNote() {
     // To print or store the binary data, you may convert it to hex
     let encryptedHex = aesjs.utils.hex.fromBytes(encryptedBytes);
 
-    console.log("encrypted: " + encryptedBytes);
+    console.log("encrypted: " + encryptedHex);
 }

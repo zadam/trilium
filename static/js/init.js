@@ -232,3 +232,8 @@ $("#jumpToNoteForm").submit(function() {
 
     return false;
 });
+
+$(window).on('beforeunload', function(){
+    // asynchronously send the request and don't wait for result
+    saveNoteIfChanged();
+});
