@@ -4,6 +4,10 @@
     overflow: scroll;
 }
 
+.note-editable.encrypted {
+    background-color: #eee;
+}
+
 #top-message {
     display: none; /* initial state is hidden */
     background-color: #e0e0e0;

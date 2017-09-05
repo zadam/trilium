@@ -139,6 +139,15 @@ function createNote(node, parentKey, target) {
 
 recentNotes = [];
 
+function setNoteBackgroundIfEncrypted(note) {
+    if (note.detail.encryption > 0) {
+        $(".note-editable").addClass("encrypted");
+    }
+    else {
+        $(".note-editable").removeClass("encrypted");
+    }
+}
+
 function loadNote(noteId) {
     $.get(baseUrl + 'notes/' + noteId).then(function(note) {
         globalNote = note;
@@ -179,6 +188,8 @@ function loadNote(noteId) {
             addRecentNote(noteId, note.detail.note_id);
 
             noteChangeDisabled = false;
+
+            setNoteBackgroundIfEncrypted(note);
         });
     });
 }
@@ -253,7 +264,7 @@ function getAes() {
 
 function encryptNote() {
     getAes().then(aes => {
-       const note = globalNote;
+        const note = globalNote;
 
         updateNoteFromInputs(note);
 
@@ -270,6 +281,8 @@ function encryptNote() {
         note.detail.encryption = 1;
 
         saveNoteToServer(note);
+
+        setNoteBackgroundIfEncrypted(note);
     });
 }
 
