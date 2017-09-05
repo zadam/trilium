@@ -21,17 +21,7 @@ function noteChanged() {
     isNoteChanged = true;
 }
 
-function saveNoteIfChanged(callback) {
-    if (!isNoteChanged) {
-        if (callback) {
-            callback();
-        }
-
-        return;
-    }
-
-    let note = globalNote;
-
+function updateNoteFromInputs(note) {
     let contents = $('#noteDetail').summernote('code');
 
     html2notecase(contents, note);
@@ -41,13 +31,15 @@ function saveNoteIfChanged(callback) {
     getNodeByKey(note.detail.note_id).setTitle(title);
 
     note.detail.note_title = title;
+}
 
+function saveNoteToServer(note, callback) {
     $.ajax({
         url: baseUrl + 'notes/' + note.detail.note_id,
         type: 'PUT',
         data: JSON.stringify(note),
         contentType: "application/json",
-        success: function() {
+        success: function () {
             isNoteChanged = false;
 
             message("Saved!");
@@ -56,10 +48,26 @@ function saveNoteIfChanged(callback) {
                 callback();
             }
         },
-        error: function() {
+        error: function () {
             error("Error saving the note!");
         }
     });
+}
+
+function saveNoteIfChanged(callback) {
+    if (!isNoteChanged) {
+        if (callback) {
+            callback();
+        }
+
+        return;
+    }
+
+    const note = globalNote;
+
+    updateNoteFromInputs(note);
+
+    saveNoteToServer(note, callback);
 }
 
 setInterval(saveNoteIfChanged, 5000);
@@ -143,22 +151,35 @@ function loadNote(noteId) {
             $("#noteTitle").focus().select();
         }
 
-        let noteText = notecase2html(note);
+        let decryptPromise;
 
-        noteChangeDisabled = true;
+        if (note.detail.encryption === 1) {
+            decryptPromise = decryptNote(note.detail.note_text);
+        }
+        else {
+            decryptPromise = Promise.resolve(note.detail.note_text);
+        }
 
-        // Clear contents and remove all stored history. This is to prevent undo from going across notes
-        $('#noteDetail').summernote('reset');
+        decryptPromise.then(decrypted => {
+            note.detail.note_text = decrypted;
 
-        $('#noteDetail').summernote('code', noteText);
+            let noteText = notecase2html(note);
 
-        document.location.hash = noteId;
+            noteChangeDisabled = true;
 
-        $(window).resize(); // to trigger resizing of editor
+            // Clear contents and remove all stored history. This is to prevent undo from going across notes
+            $('#noteDetail').summernote('reset');
 
-        addRecentNote(noteId, note.detail.note_id);
+            $('#noteDetail').summernote('code', noteText);
 
-        noteChangeDisabled = false;
+            document.location.hash = noteId;
+
+            $(window).resize(); // to trigger resizing of editor
+
+            addRecentNote(noteId, note.detail.note_id);
+
+            noteChangeDisabled = false;
+        });
     });
 }
 
@@ -171,46 +192,111 @@ function addRecentNote(noteTreeId, noteContentId) {
             // if it's already there, remove the note
             c = recentNotes.filter(note => note !== noteTreeId);
 
-            //console.log("added after " + (new Date().getTime() - origDate.getTime()));
-
             recentNotes.unshift(noteTreeId);
         }
     }, 1500);
 }
 
+function deriveEncryptionKey(password) {
+    // why this is done is explained here: https://github.com/ricmoo/scrypt-js - "Encoding notes"
+    const normalizedPassword = password.normalize('NFKC');
+    // use password as a base for salt (which is itself salted with constant) so that we don't need to store it
+    // this means everything is encrypted with the same salt.
+    const salt = sha256("Jg&)hZ$" + normalizedPassword + "*P7j.");
+
+    const passwordBuffer = new buffer.SlowBuffer(normalizedPassword);
+    const saltBuffer = new buffer.SlowBuffer(salt);
+
+    // this settings take ~500ms on my laptop
+    const N = 16384, r = 16, p = 1;
+    // 32 byte key - AES 256
+    const dkLen = 32;
+
+    const startedDate = new Date();
+
+    return new Promise((resolve, reject) => {
+        scrypt(passwordBuffer, saltBuffer, N, r, p, dkLen, function (error, progress, key) {
+            if (error) {
+                console.log("Error: " + error);
+
+                reject();
+            }
+            else if (key) {
+                console.log("Computation took " + (new Date().getTime() - startedDate.getTime()) + "ms");
+
+                resolve(key);
+            }
+            else {
+                // update UI with progress complete
+            }
+        });
+    });
+}
+
+let globalEncryptionKeyPromise = null;
+
+function getEncryptionKey() {
+    if (globalEncryptionKeyPromise === null) {
+        const password = prompt("Enter password for encryption");
+
+        globalEncryptionKeyPromise = deriveEncryptionKey(password);
+    }
+
+    return globalEncryptionKeyPromise;
+}
+
+function getAes() {
+    return getEncryptionKey().then(encryptionKey => {
+        return new aesjs.ModeOfOperation.ctr(encryptionKey, new aesjs.Counter(5));
+    });
+}
+
 function encryptNote() {
-    let password = prompt("Enter password for encryption");
+    getAes().then(aes => {
+       const note = globalNote;
 
-    console.log(password);
+        updateNoteFromInputs(note);
 
-    // 12 takes about 400 ms on my computer to compute
-    let salt = dcodeIO.bcrypt.genSaltSync(12);
+        const noteJson = note.detail.note_text;
 
-    let hashedPassword = dcodeIO.bcrypt.hashSync(password, salt);
+        const noteBytes = aesjs.utils.utf8.toBytes(noteJson);
 
-    let hashedPasswordSha = sha256(hashedPassword).substr(0, 32);
+        const encryptedBytes = aes.encrypt(noteBytes);
 
-    console.log(hashedPassword);
+        // To print or store the binary data, you may convert it to hex
+        const encryptedBase64 = uint8ToBase64(encryptedBytes);
 
-    let note = globalNote;
+        note.detail.note_text = encryptedBase64;
+        note.detail.encryption = 1;
 
-    let contents = $('#noteDetail').summernote('code');
+        saveNoteToServer(note);
+    });
+}
 
-    html2notecase(contents, note);
+function decryptNote(encryptedBase64) {
+    return getAes().then(aes => {
+        const encryptedBytes = base64ToUint8Array(encryptedBase64);
 
-    let noteJson = JSON.stringify(note);
+        const decryptedBytes = aes.decrypt(encryptedBytes);
 
-    console.log('json: ' + noteJson);
+        return aesjs.utils.utf8.fromBytes(decryptedBytes);
+    });
+}
 
-    let hashedPasswordBytes = aesjs.utils.hex.toBytes(hashedPasswordSha);
+function uint8ToBase64(u8Arr) {
+    const CHUNK_SIZE = 0x8000; //arbitrary number
+    const length = u8Arr.length;
+    let index = 0;
+    let result = '';
+    let slice;
+    while (index < length) {
+        slice = u8Arr.subarray(index, Math.min(index + CHUNK_SIZE, length));
+        result += String.fromCharCode.apply(null, slice);
+        index += CHUNK_SIZE;
+    }
+    return btoa(result);
+}
 
-    let noteBytes = aesjs.utils.utf8.toBytes(noteJson);
-
-    let aesCtr = new aesjs.ModeOfOperation.ctr(hashedPasswordBytes, new aesjs.Counter(5));
-    let encryptedBytes = aesCtr.encrypt(noteBytes);
-
-    // To print or store the binary data, you may convert it to hex
-    let encryptedHex = aesjs.utils.hex.fromBytes(encryptedBytes);
-
-    console.log("encrypted: " + encryptedHex);
+function base64ToUint8Array(base64encoded) {
+    return new Uint8Array(atob(base64encoded).split("").map(function(c) { return c.charCodeAt(0); }));
 }
