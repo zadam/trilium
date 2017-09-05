@@ -67,7 +67,9 @@ function saveNoteIfChanged(callback) {
 
     updateNoteFromInputs(note);
 
-    saveNoteToServer(note, callback);
+    encryptNoteIfNecessary(note).then(note => {
+        saveNoteToServer(note, callback);
+    });
 }
 
 setInterval(saveNoteIfChanged, 5000);
@@ -160,16 +162,7 @@ function loadNote(noteId) {
             $("#noteTitle").focus().select();
         }
 
-        let decryptPromise;
-
-        if (note.detail.encryption === 1) {
-            decryptPromise = decryptNote(note.detail.note_text);
-        }
-        else {
-            decryptPromise = Promise.resolve(note.detail.note_text);
-        }
-
-        decryptPromise.then(decrypted => {
+        decryptNoteIfNecessary(note).then(decrypted => {
             note.detail.note_text = decrypted;
 
             let noteText = notecase2html(note);
@@ -262,12 +255,17 @@ function getAes() {
     });
 }
 
-function encryptNote() {
-    getAes().then(aes => {
-        const note = globalNote;
+function encryptNoteIfNecessary(note) {
+    if (note.detail.encryption === 0) {
+        return Promise.resolve(note);
+    }
+    else {
+        return encryptNote(note);
+    }
+}
 
-        updateNoteFromInputs(note);
-
+function encryptNote(note) {
+    return getAes().then(aes => {
         const noteJson = note.detail.note_text;
 
         const noteBytes = aesjs.utils.utf8.toBytes(noteJson);
@@ -275,15 +273,34 @@ function encryptNote() {
         const encryptedBytes = aes.encrypt(noteBytes);
 
         // To print or store the binary data, you may convert it to hex
-        const encryptedBase64 = uint8ToBase64(encryptedBytes);
+        note.detail.note_text = uint8ToBase64(encryptedBytes);
 
-        note.detail.note_text = encryptedBase64;
+        return note;
+    });
+}
+
+function encryptNoteAndSendToServer() {
+    updateNoteFromInputs(globalNote);
+
+    encryptNote(globalNote).then(note => {
         note.detail.encryption = 1;
 
         saveNoteToServer(note);
 
         setNoteBackgroundIfEncrypted(note);
     });
+}
+
+function decryptNoteIfNecessary(note) {
+    let decryptPromise;
+
+    if (note.detail.encryption === 1) {
+        decryptPromise = decryptNote(note.detail.note_text);
+    }
+    else {
+        decryptPromise = Promise.resolve(note.detail.note_text);
+    }
+    return decryptPromise;
 }
 
 function decryptNote(encryptedBase64) {
