@@ -204,9 +204,7 @@ function addRecentNote(noteTreeId, noteContentId) {
 function deriveEncryptionKey(password) {
     // why this is done is explained here: https://github.com/ricmoo/scrypt-js - "Encoding notes"
     const normalizedPassword = password.normalize('NFKC');
-    // use password as a base for salt (which is itself salted with constant) so that we don't need to store it
-    // this means everything is encrypted with the same salt.
-    const salt = sha256("Jg&)hZ$" + normalizedPassword + "*P7j.");
+    const salt = "dc73b57736511340f132e4b5521d178afa6311c45e0c25e6a9339038507852a6";
 
     const passwordBuffer = new buffer.SlowBuffer(normalizedPassword);
     const saltBuffer = new buffer.SlowBuffer(salt);
@@ -228,7 +226,24 @@ function deriveEncryptionKey(password) {
             else if (key) {
                 console.log("Computation took " + (new Date().getTime() - startedDate.getTime()) + "ms");
 
-                resolve(key);
+                $.ajax({
+                    url: baseUrl + 'password/verify',
+                    type: 'POST',
+                    data: JSON.stringify({
+                        password: sha256(key)
+                    }),
+                    contentType: "application/json",
+                    success: function (result) {
+                        if (result.valid) {
+                            resolve(key);
+                        }
+                        else {
+                            alert("Wrong password");
+
+                            reject();
+                        }
+                    }
+                });
             }
             else {
                 // update UI with progress complete
