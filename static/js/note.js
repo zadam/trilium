@@ -144,9 +144,13 @@ recentNotes = [];
 function setNoteBackgroundIfEncrypted(note) {
     if (note.detail.encryption > 0) {
         $(".note-editable").addClass("encrypted");
+        $("#encryptButton").hide();
+        $("#decryptButton").show();
     }
     else {
         $(".note-editable").removeClass("encrypted");
+        $("#encryptButton").show();
+        $("#decryptButton").hide();
     }
 }
 
@@ -304,6 +308,18 @@ function encryptNoteAndSendToServer() {
 
         setNoteBackgroundIfEncrypted(note);
     });
+}
+
+function decryptNoteAndSendToServer() {
+    const note = globalNote;
+
+    updateNoteFromInputs(note);
+
+    note.detail.encryption = 0;
+
+    saveNoteToServer(note);
+
+    setNoteBackgroundIfEncrypted(note);
 }
 
 function decryptNoteIfNecessary(note) {

@@ -54,3 +54,13 @@ span.fancytree-node.fancytree-folder > span.fancytree-icon {
     /* prevent horizontal scrollbar */
     overflow-x: hidden;
 }
+
+#encryptButton {
+    position: absolute;
+    left: 950px;
+}
+
+#decryptButton {
+    position: absolute;
+    left: 950px;
+}
