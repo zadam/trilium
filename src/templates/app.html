@@ -11,7 +11,13 @@
       <span id="error-message"></span>
     </div>
 
-    <div id="content" style="margin-left: auto; margin-right: auto; width: 1100px">
+    <div id="content" style="margin-left: auto; margin-right: auto; width: 1100px; position: relative;">
+      <div style="position: absolute; left: 1020px;" class="hide-toggle">
+        <form action="logout" method="POST">
+          <input type="submit" class="btn btn-sm" value="Logout">
+        </form>
+      </div>
+
       <div class="hide-toggle" style="width: 300px; height: 100%; float: left;">
         <p>
           <label>Search:</label>
@@ -33,16 +39,10 @@
       </div>
 
       <div id="noteDetailWrapper" style="width: 750px; float: left; margin-left: 30px;">
-        <div style="float: right;" class="hide-toggle">
-          <form action="logout" method="POST">
-            <input type="submit" class="btn btn-sm" value="Logout">
-          </form>
-        </div>
-
         <div style="float: left; margin: 0 5px 5px 5px;" class="hide-toggle">
-          <input autocomplete="off" value="Welcome to Notecase web app!" id="noteTitle" style="font-size: x-large; border: 0; width: 600px;" tabindex="1">
+          <button class="btn btn-sm" onclick="encryptNoteAndSendToServer();" style="position: absolute; left: 950px;">Encrypt</button>
 
-          <button class="btn btn-sm" onclick="encryptNoteAndSendToServer();">Encrypt</button>
+          <input autocomplete="off" value="Welcome to Notecase web app!" id="noteTitle" style="font-size: x-large; border: 0; width: 600px;" tabindex="1">
         </div>
 
         <div style="clear: both; height: 0"></div>
