@@ -212,6 +212,8 @@ $(function(){
                 if (startNoteId) {
                     data.tree.activateKey(startNoteId);
                 }
+
+                $(window).resize();
             },
             hotkeys: {
                 keydown: keybindings
