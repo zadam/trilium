@@ -166,7 +166,13 @@ function handleEncryption(requireEncryption, modal, callback) {
 
         $("#encryptionPasswordDialog").dialog({
             modal: modal,
-            width: 400
+            width: 400,
+            open: function() {
+                if (!modal) {
+                    // dialog steals focus for itself, which is not what we want for non-modal (viewing)
+                    getNodeByKey(globalNote.detail.note_id).setFocus();
+                }
+            }
         });
     }
     else {
