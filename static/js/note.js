@@ -156,13 +156,16 @@ function setNoteBackgroundIfEncrypted(note) {
 
 let globalEncryptionCallback = null;
 
-function handleEncryption(requireEncryption, callback) {
+function handleEncryption(requireEncryption, modal, callback) {
     if (requireEncryption && globalEncryptionKey === null) {
         globalEncryptionCallback = callback;
 
-        $("#noteDetailWrapper").hide();
+        if (!modal) {
+            $("#noteDetailWrapper").hide();
+        }
+
         $("#encryptionPasswordDialog").dialog({
-            modal: false,
+            modal: modal,
             width: 400
         });
     }
@@ -183,7 +186,7 @@ function loadNote(noteId) {
             $("#noteTitle").focus().select();
         }
 
-        handleEncryption(note.detail.encryption > 0, () => {
+        handleEncryption(note.detail.encryption > 0, false, () => {
             $("#noteDetailWrapper").show();
             try {
                 $("#encryptionPasswordDialog").dialog('close');
@@ -331,7 +334,7 @@ function encryptNote(note) {
 }
 
 function encryptNoteAndSendToServer() {
-    handleEncryption(true, () => {
+    handleEncryption(true, true, () => {
         const note = globalNote;
 
         updateNoteFromInputs(note);
@@ -347,7 +350,7 @@ function encryptNoteAndSendToServer() {
 }
 
 function decryptNoteAndSendToServer() {
-    handleEncryption(true, () => {
+    handleEncryption(true, true, () => {
         const note = globalNote;
 
         updateNoteFromInputs(note);
