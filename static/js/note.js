@@ -290,7 +290,11 @@ function deriveEncryptionKey(password) {
     });
 }
 
+// currently not configurable
+const globalEncryptionKeyTimeToLive = 10 * 60 * 1000; // in milliseconds
+
 let globalEncryptionKey = null;
+let globalLastEncryptionOperationDate = null;
 
 $("#encryptionPasswordForm").submit(function() {
     const password = $("#encryptionPassword").val();
@@ -313,6 +317,18 @@ $("#encryptionPasswordForm").submit(function() {
 });
 
 function getAes() {
+    globalLastEncryptionOperationDate = new Date();
+
+    setTimeout(function() {
+        if (new Date().getTime() - globalLastEncryptionOperationDate.getTime() > globalEncryptionKeyTimeToLive) {
+            globalEncryptionKey = null;
+
+            if (globalNote.detail.encryption > 0) {
+                loadNote(globalNote.detail.note_id);
+            }
+        }
+    }, globalEncryptionKeyTimeToLive + 1000);
+
     return new aesjs.ModeOfOperation.ctr(globalEncryptionKey, new aesjs.Counter(5));
 }
 
