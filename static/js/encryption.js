@@ -111,26 +111,26 @@ $("#encryptionPasswordForm").submit(function() {
     return false;
 });
 
-function getAes() {
-    globalLastEncryptionOperationDate = new Date();
+setInterval(function() {
+    if (globalLastEncryptionOperationDate !== null && new Date().getTime() - globalLastEncryptionOperationDate.getTime() > globalEncryptionKeyTimeToLive) {
+        globalEncryptionKey = null;
 
-    setTimeout(function() {
-        if (new Date().getTime() - globalLastEncryptionOperationDate.getTime() > globalEncryptionKeyTimeToLive) {
-            globalEncryptionKey = null;
+        if (globalNote.detail.encryption > 0) {
+            loadNote(globalNote.detail.note_id);
 
-            if (globalNote.detail.encryption > 0) {
-                loadNote(globalNote.detail.note_id);
+            for (const noteId of globalAllNoteIds) {
+                const note = getNodeByKey(noteId);
 
-                for (const noteId of globalAllNoteIds) {
-                    const note = getNodeByKey(noteId);
-
-                    if (note.data.encryption > 0) {
-                        note.setTitle("[encrypted]");
-                    }
+                if (note.data.encryption > 0) {
+                    note.setTitle("[encrypted]");
                 }
             }
         }
-    }, globalEncryptionKeyTimeToLive + 1000);
+    }
+}, 5000);
+
+function getAes() {
+    globalLastEncryptionOperationDate = new Date();
 
     return new aesjs.ModeOfOperation.ctr(globalEncryptionKey, new aesjs.Counter(5));
 }
