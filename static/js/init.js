@@ -4,8 +4,6 @@ $(function() {
 
         if (fancyTree.length) {
             fancyTree.height($(window).height() - fancyTree.offset().top - 10);
-
-            console.log("height: ", $(window).height() - fancyTree.offset().top - 10);
         }
 
         const noteEditable = $('div.note-editable');
