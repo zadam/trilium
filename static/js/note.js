@@ -194,6 +194,8 @@ function loadNote(noteId) {
 
         handleEncryption(note.detail.encryption > 0, false, () => {
             $("#noteDetailWrapper").show();
+
+            // this may fal if the dialog has not been previously opened
             try {
                 $("#encryptionPasswordDialog").dialog('close');
             }
