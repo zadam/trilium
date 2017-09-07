@@ -94,7 +94,7 @@ $(document).ready(function() {
 var globalNote;
 
 function createNewTopLevelNote() {
-    let rootNode = $("#tree").fancytree("getRootNode");
+    let rootNode = globalTree.fancytree("getRootNode");
 
     createNote(rootNode, "root", "into");
 }

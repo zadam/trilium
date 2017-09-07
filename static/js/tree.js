@@ -372,7 +372,7 @@ $("input[name=search]").keyup(function (e) {
             console.log("search: ", resp);
 
             // Pass a string to perform case insensitive matching
-            const tree = $("#tree").fancytree("getTree");
+            const tree = globalTree.fancytree("getTree");
             tree.filterBranches(function(node) {
                 return resp.includes(node.data.note_id);
             });
@@ -383,12 +383,12 @@ $("input[name=search]").keyup(function (e) {
 $("button#btnResetSearch").click(function () {
     $("input[name=search]").val("");
 
-    const tree = $("#tree").fancytree("getTree");
+    const tree = globalTree.fancytree("getTree");
     tree.clearFilter();
 });
 
 function collapseTree() {
-    $("#tree").fancytree("getRootNode").visit(function(node){
+    globalTree.fancytree("getRootNode").visit(function(node){
         node.setExpanded(false);
     });
 }
