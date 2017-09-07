@@ -40,7 +40,7 @@ $(document).bind('keydown', 'alt+q', function() {
     recentNotesSelectBox.find('option').remove();
 
     // remove the current note
-    let recNotes = recentNotes.filter(note => note !== globalNote.detail.note_id);
+    let recNotes = globalRecentNotes.filter(note => note !== globalNote.detail.note_id);
 
     $.each(recNotes, function(key, valueNoteId) {
         let noteTitle = getFullName(valueNoteId);
