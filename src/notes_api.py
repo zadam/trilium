@@ -78,7 +78,7 @@ def deleteNote(note_id):
     children = getResults("select note_id from notes_tree where note_pid = ?", [note_id])
 
     for child in children:
-        delete(child['note_id'])
+        deleteNote(child['note_id'])
 
     delete("notes_tree", note_id)
     delete("notes", note_id)
