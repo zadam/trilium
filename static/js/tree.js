@@ -164,10 +164,15 @@ $(function(){
             for (const note of notes) {
                 globalAllNoteIds.push(note.note_id);
 
-                note.title = note.note_title;
+                if (note.encryption > 0) {
+                    note.title = "[encrypted]";
+                }
+                else {
+                    note.title = note.note_title;
 
-                if (note.is_clone) {
-                    note.title += " (clone)";
+                    if (note.is_clone) {
+                        note.title += " (clone)";
+                    }
                 }
 
                 note.key = note.note_id;

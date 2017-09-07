@@ -91,6 +91,16 @@ $("#encryptionPasswordForm").submit(function() {
 
         globalEncryptionKey = key;
 
+        for (const noteId of globalAllNoteIds) {
+            const note = getNodeByKey(noteId);
+
+            if (note.data.encryption > 0) {
+                const title = decryptString(note.data.note_title);
+
+                note.setTitle(title);
+            }
+        }
+
         if (globalEncryptionCallback !== null) {
             globalEncryptionCallback();
 
@@ -110,6 +120,14 @@ function getAes() {
 
             if (globalNote.detail.encryption > 0) {
                 loadNote(globalNote.detail.note_id);
+
+                for (const noteId of globalAllNoteIds) {
+                    const note = getNodeByKey(noteId);
+
+                    if (note.data.encryption > 0) {
+                        note.setTitle("[encrypted]");
+                    }
+                }
             }
         }
     }, globalEncryptionKeyTimeToLive + 1000);
@@ -126,16 +144,29 @@ function encryptNoteIfNecessary(note) {
     }
 }
 
-function encryptNote(note) {
+function encryptString(str) {
     const aes = getAes();
-    const noteJson = note.detail.note_text;
+    const bytes = aesjs.utils.utf8.toBytes(str);
 
-    const noteBytes = aesjs.utils.utf8.toBytes(noteJson);
+    const encryptedBytes = aes.encrypt(bytes);
 
-    const encryptedBytes = aes.encrypt(noteBytes);
+    return uint8ToBase64(encryptedBytes);
+}
 
-    // To print or store the binary data, you may convert it to hex
-    note.detail.note_text = uint8ToBase64(encryptedBytes);
+function decryptString(encryptedBase64) {
+    const aes = getAes();
+    const encryptedBytes = base64ToUint8Array(encryptedBase64);
+
+    const decryptedBytes = aes.decrypt(encryptedBytes);
+
+    return aesjs.utils.utf8.fromBytes(decryptedBytes);
+}
+
+function encryptNote(note) {
+    note.detail.note_title = encryptString(note.detail.note_title);
+    note.detail.note_text = encryptString(note.detail.note_text);
+
+    note.detail.encryption = 1;
 
     return note;
 }
@@ -147,8 +178,6 @@ function encryptNoteAndSendToServer() {
         updateNoteFromInputs(note);
 
         encryptNote(note);
-
-        note.detail.encryption = 1;
 
         saveNoteToServer(note);
 
@@ -171,19 +200,12 @@ function decryptNoteAndSendToServer() {
 }
 
 function decryptNoteIfNecessary(note) {
-    if (note.detail.encryption === 1) {
-        return decryptNote(note.detail.note_text);
-    }
-    else {
-        return note.detail.note_text;
+    if (note.detail.encryption > 0) {
+        return decryptNote(note);
     }
 }
 
-function decryptNote(encryptedBase64) {
-    const aes = getAes();
-    const encryptedBytes = base64ToUint8Array(encryptedBase64);
-
-    const decryptedBytes = aes.decrypt(encryptedBytes);
-
-    return aesjs.utils.utf8.fromBytes(decryptedBytes);
+function decryptNote(note) {
+    note.detail.note_title = decryptString(note.detail.note_title);
+    note.detail.note_text = decryptString(note.detail.note_text);
 }

@@ -158,8 +158,6 @@ function loadNote(noteId) {
     $.get(baseUrl + 'notes/' + noteId).then(function(note) {
         globalNote = note;
 
-        $("#noteTitle").val(note.detail.note_title);
-
         if (newNoteCreated) {
             newNoteCreated = false;
 
@@ -177,7 +175,9 @@ function loadNote(noteId) {
 
             $("#encryptionPassword").val('');
 
-            note.detail.note_text = decryptNoteIfNecessary(note);
+            decryptNoteIfNecessary(note);
+
+            $("#noteTitle").val(note.detail.note_title);
 
             let noteText = notecase2html(note);
 
