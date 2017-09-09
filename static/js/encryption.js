@@ -14,7 +14,7 @@ function handleEncryption(requireEncryption, modal, callback) {
             open: function() {
                 if (!modal) {
                     // dialog steals focus for itself, which is not what we want for non-modal (viewing)
-                    getNodeByKey(globalNote.detail.note_id).setFocus();
+                    getNodeByKey(globalCurrentNote.detail.note_id).setFocus();
                 }
             }
         });
@@ -127,8 +127,8 @@ setInterval(function() {
     if (globalLastEncryptionOperationDate !== null && new Date().getTime() - globalLastEncryptionOperationDate.getTime() > globalEncryptionKeyTimeToLive) {
         globalEncryptionKey = null;
 
-        if (globalNote.detail.encryption > 0) {
-            loadNote(globalNote.detail.note_id);
+        if (globalCurrentNote.detail.encryption > 0) {
+            loadNote(globalCurrentNote.detail.note_id);
 
             for (const noteId of globalAllNoteIds) {
                 const note = getNodeByKey(noteId);
@@ -189,7 +189,7 @@ function encryptNote(note) {
 
 function encryptNoteAndSendToServer() {
     handleEncryption(true, true, () => {
-        const note = globalNote;
+        const note = globalCurrentNote;
 
         updateNoteFromInputs(note);
 
@@ -203,7 +203,7 @@ function encryptNoteAndSendToServer() {
 
 function decryptNoteAndSendToServer() {
     handleEncryption(true, true, () => {
-        const note = globalNote;
+        const note = globalCurrentNote;
 
         updateNoteFromInputs(note);
 

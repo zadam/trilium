@@ -14,6 +14,21 @@ function error(str) {
     error.fadeOut(10000);
 }
 
+function getAutocompleteItems(notes) {
+    const autocompleteItems = [];
+
+    for (const noteId of notes) {
+        const fullName = getFullName(noteId);
+
+        autocompleteItems.push({
+            value: fullName + " (" + noteId + ")",
+            label: fullName
+        });
+    }
+
+    return autocompleteItems;
+}
+
 function uint8ToBase64(u8Arr) {
     const CHUNK_SIZE = 0x8000; //arbitrary number
     const length = u8Arr.length;

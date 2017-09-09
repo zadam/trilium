@@ -25,7 +25,7 @@ function moveToNode(node, toNode) {
         url: baseUrl + 'notes/' + node.key + '/moveTo/' + toNode.key,
         type: 'PUT',
         contentType: "application/json",
-        success: function (result) {
+        success: function () {
             node.moveTo(toNode);
 
             toNode.setExpanded(true);
@@ -66,12 +66,22 @@ function deleteNode(node) {
     }
 }
 
-function getParentKey(node) {
-    return (node.getParent() === null || node.getParent().key === "root_1") ? "root" : node.getParent().key;
-}
+function moveNodeUp(node) {
+    if (node.getParent() !== null) {
+        $.ajax({
+            url: baseUrl + 'notes/' + node.key + '/moveAfter/' + node.getParent().key,
+            type: 'PUT',
+            contentType: "application/json",
+            success: function () {
+                if (node.getParent() !== null && node.getParent().getChildren().length <= 1) {
+                    node.getParent().folder = false;
+                    node.getParent().renderTitle();
+                }
 
-function getParentEncryption(node) {
-    return node.getParent() === null ? 0 : node.getParent().data.encryption;
+                node.moveTo(node.getParent(), 'after');
+            }
+        });
+    }
 }
 
 const keybindings = {
@@ -101,21 +111,7 @@ const keybindings = {
         }
     },
     "shift+left": function(node) {
-        if (node.getParent() !== null) {
-            $.ajax({
-                url: baseUrl + 'notes/' + node.key + '/moveAfter/' + node.getParent().key,
-                type: 'PUT',
-                contentType: "application/json",
-                success: function() {
-                    if (node.getParent() !== null && node.getParent().getChildren().length <= 1) {
-                        node.getParent().folder = false;
-                        node.getParent().renderTitle();
-                    }
-
-                    node.moveTo(node.getParent(), 'after');
-                }
-            });
-        }
+        moveNodeUp(node);
     },
     "shift+right": function(node) {
         let toNode = node.getPrevSibling();
@@ -132,29 +128,46 @@ const keybindings = {
 
 let globalAllNoteIds = [];
 
-let globalTree;
-
-function getNodeByKey(noteId) {
-    return globalTree.fancytree('getNodeByKey', noteId);
-}
-
-function getFullName(noteId) {
-    let note = getNodeByKey(noteId);
-    const path = [];
-
-    while (note) {
-        path.push(note.title);
-
-        note = note.getParent();
-    }
-
-    // remove "root" element
-    path.pop();
-
-    return path.reverse().join(" > ");
-}
+const globalTree = $("#tree");
 
 let globalClipboardNoteId = null;
+
+function prepareNoteTree(notes) {
+    for (const note of notes) {
+        globalAllNoteIds.push(note.note_id);
+
+        if (note.encryption > 0) {
+            note.title = "[encrypted]";
+
+            note.extraClasses = "encrypted";
+        }
+        else {
+            note.title = note.note_title;
+
+            if (note.is_clone) {
+                note.title += " (clone)";
+            }
+        }
+
+        note.key = note.note_id;
+        note.expanded = note.is_expanded;
+
+        if (note.children && note.children.length > 0) {
+            prepareNoteTree(note.children);
+        }
+    }
+}
+
+function setExpandedToServer(note_id, is_expanded) {
+    expanded_num = is_expanded ? 1 : 0;
+
+    $.ajax({
+        url: baseUrl + 'notes/' + note_id + '/expanded/' + expanded_num,
+        type: 'PUT',
+        contentType: "application/json",
+        success: function(result) {}
+    });
+}
 
 $(function(){
     $.get(baseUrl + 'tree').then(resp => {
@@ -165,46 +178,8 @@ $(function(){
             startNoteId = document.location.hash.substr(1); // strip initial #
         }
 
-        function copyTitle(notes) {
-            for (const note of notes) {
-                globalAllNoteIds.push(note.note_id);
+        prepareNoteTree(notes);
 
-                if (note.encryption > 0) {
-                    note.title = "[encrypted]";
-
-                    note.extraClasses = "encrypted";
-                }
-                else {
-                    note.title = note.note_title;
-
-                    if (note.is_clone) {
-                        note.title += " (clone)";
-                    }
-                }
-
-                note.key = note.note_id;
-                note.expanded = note.is_expanded;
-
-                if (note.children && note.children.length > 0) {
-                    copyTitle(note.children);
-                }
-            }
-        }
-
-        copyTitle(notes);
-
-        function setExpanded(note_id, is_expanded) {
-            expanded_num = is_expanded ? 1 : 0;
-
-            $.ajax({
-                url: baseUrl + 'notes/' + note_id + '/expanded/' + expanded_num,
-                type: 'PUT',
-                contentType: "application/json",
-                success: function(result) {}
-            });
-        }
-
-        globalTree = $("#tree");
         globalTree.fancytree({
             autoScroll: true,
             extensions: ["hotkeys", "filter", "dnd"],
@@ -215,10 +190,10 @@ $(function(){
                 saveNoteIfChanged(() => loadNote(node.note_id));
             },
             expand: function(event, data) {
-                setExpanded(data.node.key, true);
+                setExpandedToServer(data.node.key, true);
             },
             collapse: function(event, data) {
-                setExpanded(data.node.key, false);
+                setExpandedToServer(data.node.key, false);
             },
             init: function(event, data) {
                 if (startNoteId) {
@@ -242,133 +217,10 @@ $(function(){
                 nodata: true,      // Display a 'no data' status node if result is empty
                 mode: "hide"       // Grayout unmatched nodes (pass "hide" to remove unmatched node instead)
             },
-            dnd: {
-                autoExpandMS: 600,
-                draggable: { // modify default jQuery draggable options
-                    zIndex: 1000,
-                    scroll: false,
-                    containment: "parent",
-                    revert: "invalid"
-                },
-                preventRecursiveMoves: true, // Prevent dropping nodes on own descendants
-                preventVoidMoves: true, // Prevent dropping nodes 'before self', etc.
-
-                dragStart: function(node, data) {
-                    // This function MUST be defined to enable dragging for the tree.
-                    // Return false to cancel dragging of node.
-                    return true;
-                },
-                dragEnter: function(node, data) {
-                    /* data.otherNode may be null for non-fancytree droppables.
-                    * Return false to disallow dropping on node. In this case
-                    * dragOver and dragLeave are not called.
-                    * Return 'over', 'before, or 'after' to force a hitMode.
-                    * Return ['before', 'after'] to restrict available hitModes.
-                    * Any other return value will calc the hitMode from the cursor position.
-                    */
-                    // Prevent dropping a parent below another parent (only sort
-                    // nodes under the same parent):
-                    //    if(node.parent !== data.otherNode.parent){
-                    //      return false;
-                    //    }
-                    // Don't allow dropping *over* a node (would create a child). Just
-                    // allow changing the order:
-                    //    return ["before", "after"];
-                    // Accept everything:
-                    return true;
-                },
-                dragExpand: function(node, data) {
-                  // return false to prevent auto-expanding data.node on hover
-                },
-                dragOver: function(node, data) {
-                },
-                dragLeave: function(node, data) {
-                },
-                dragStop: function(node, data) {
-                },
-                dragDrop: function(node, data) {
-                    // This function MUST be defined to enable dropping of items on the tree.
-                    // data.hitMode is 'before', 'after', or 'over'.
-
-                    if (data.hitMode === "before") {
-                        moveBeforeNode(data.otherNode, node);
-                    }
-                    else if (data.hitMode === "after") {
-                        moveAfterNode(data.otherNode, node);
-                    }
-                    else if (data.hitMode === "over") {
-                        moveToNode(data.otherNode, node);
-                    }
-                    else {
-                        throw new Exception("Unknown hitMode=" + data.hitMode);
-                    }
-                }
-            }
+            dnd: dragAndDropSetup
         });
 
-        globalTree.contextmenu({
-            delegate: "span.fancytree-title",
-            autoFocus: true,
-            menu: [
-                {title: "Insert note here", cmd: "insertNoteHere", uiIcon: "ui-icon-pencil"},
-                {title: "Insert child note", cmd: "insertChildNote", uiIcon: "ui-icon-pencil"},
-                {title: "Delete", cmd: "delete", uiIcon: "ui-icon-trash"},
-                {title: "----"},
-                {title: "Cut", cmd: "cut", uiIcon: "ui-icon-scissors"},
-                {title: "Copy / clone", cmd: "copy", uiIcon: "ui-icon-copy"},
-                {title: "Paste after", cmd: "pasteAfter", uiIcon: "ui-icon-clipboard"},
-                {title: "Paste into", cmd: "pasteInto", uiIcon: "ui-icon-clipboard"}
-            ],
-            beforeOpen: function (event, ui) {
-                const node = $.ui.fancytree.getNode(ui.target);
-                // Modify menu entries depending on node status
-                globalTree.contextmenu("enableEntry", "pasteAfter", globalClipboardNoteId !== null);
-                globalTree.contextmenu("enableEntry", "pasteInto", globalClipboardNoteId !== null);
-
-                // Activate node on right-click
-                node.setActive();
-                // Disable tree keyboard handling
-                ui.menu.prevKeyboard = node.tree.options.keyboard;
-                node.tree.options.keyboard = false;
-            },
-            close: function (event, ui) {},
-            select: function (event, ui) {
-                const node = $.ui.fancytree.getNode(ui.target);
-
-                if (ui.cmd === "insertNoteHere") {
-                    const parentKey = getParentKey(node);
-                    const encryption = getParentEncryption(node);
-
-                    createNote(node, parentKey, 'after', encryption);
-                }
-                else if (ui.cmd === "insertChildNote") {
-                    createNote(node, node.key, 'into');
-                }
-                else if (ui.cmd === "cut") {
-                    globalClipboardNoteId = node.key;
-                }
-                else if (ui.cmd === "pasteAfter") {
-                    const subjectNode = getNodeByKey(globalClipboardNoteId);
-
-                    moveAfterNode(subjectNode, node);
-
-                    globalClipboardNoteId = null;
-                }
-                else if (ui.cmd === "pasteInto") {
-                    const subjectNode = getNodeByKey(globalClipboardNoteId);
-
-                    moveToNode(subjectNode, node);
-
-                    globalClipboardNoteId = null;
-                }
-                else if (ui.cmd === "delete") {
-                    deleteNode(node);
-                }
-                else {
-                    console.log("Unknown command: " + ui.cmd);
-                }
-            }
-        });
+        globalTree.contextmenu(contextMenuSetup);
     });
 });
 

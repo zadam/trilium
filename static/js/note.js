@@ -21,6 +21,43 @@ function noteChanged() {
     isNoteChanged = true;
 }
 
+function saveNoteIfChanged(callback) {
+    if (!isNoteChanged) {
+        if (callback) {
+            callback();
+        }
+
+        return;
+    }
+
+    const note = globalCurrentNote;
+
+    updateNoteFromInputs(note);
+
+    encryptNoteIfNecessary(note);
+
+    saveNoteToServer(note, callback);
+}
+
+setInterval(saveNoteIfChanged, 5000);
+
+$(document).ready(function() {
+    $("#noteTitle").on('input', function() {
+        noteChanged();
+    });
+
+    $('#noteDetail').summernote({
+        airMode: true,
+        height: 300,
+        callbacks: {
+            onChange: noteChanged
+        }
+    });
+
+    // so that tab jumps from note title (which has tabindex 1)
+    $(".note-editable").attr("tabindex", 2);
+});
+
 function updateNoteFromInputs(note) {
     let contents = $('#noteDetail').summernote('code');
 
@@ -54,44 +91,7 @@ function saveNoteToServer(note, callback) {
     });
 }
 
-function saveNoteIfChanged(callback) {
-    if (!isNoteChanged) {
-        if (callback) {
-            callback();
-        }
-
-        return;
-    }
-
-    const note = globalNote;
-
-    updateNoteFromInputs(note);
-
-    encryptNoteIfNecessary(note);
-
-    saveNoteToServer(note, callback);
-}
-
-setInterval(saveNoteIfChanged, 5000);
-
-$(document).ready(function() {
-    $("#noteTitle").on('input', function() {
-        noteChanged();
-    });
-
-    $('#noteDetail').summernote({
-        airMode: true,
-        height: 300,
-        callbacks: {
-            onChange: noteChanged
-        }
-    });
-
-    // so that tab jumps from note title (which has tabindex 1)
-    $(".note-editable").attr("tabindex", 2);
-});
-  
-let globalNote;
+let globalCurrentNote;
 
 function createNewTopLevelNote() {
     let rootNode = globalTree.fancytree("getRootNode");
@@ -149,8 +149,6 @@ function createNote(node, parentKey, target, encryption) {
     });
 }
 
-globalRecentNotes = [];
-
 function setNoteBackgroundIfEncrypted(note) {
     if (note.detail.encryption > 0) {
         $(".note-editable").addClass("encrypted");
@@ -169,7 +167,7 @@ function setNoteBackgroundIfEncrypted(note) {
 
 function loadNote(noteId) {
     $.get(baseUrl + 'notes/' + noteId).then(function(note) {
-        globalNote = note;
+        globalCurrentNote = note;
 
         if (newNoteCreated) {
             newNoteCreated = false;
@@ -213,18 +211,3 @@ function loadNote(noteId) {
         });
     });
 }
-
-function addRecentNote(noteTreeId, noteContentId) {
-    const origDate = new Date();
-
-    setTimeout(function() {
-        // we include the note into recent list only if the user stayed on the note at least 5 seconds
-        if (noteTreeId === globalNote.detail.note_id || noteContentId === globalNote.detail.note_id) {
-            // if it's already there, remove the note
-            globalRecentNotes = globalRecentNotes.filter(note => note !== noteTreeId);
-
-            globalRecentNotes.unshift(noteTreeId);
-        }
-    }, 1500);
-}
-
