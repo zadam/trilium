@@ -8,6 +8,12 @@
     background-color: #eee;
 }
 
+#noteDetailWrapper {
+    width: 750px;
+    float: left;
+    margin-left: 30px;
+}
+
 #top-message {
     display: none; /* initial state is hidden */
     background-color: #e0e0e0;
