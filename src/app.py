@@ -54,11 +54,8 @@ documentPath = config['Document']['documentPath']
 
 connect(documentPath)
 
-hashedPassword = password_provider.getPasswordHash()
-
-
-def verify_password(hex_hashed_password, guessed_password):
-    hashed_password = binascii.unhexlify(hex_hashed_password)
+def verify_password(guessed_password):
+    hashed_password = binascii.unhexlify(password_provider.getPasswordHash())
 
     guess_hashed = my_scrypt.getVerificationHash(guessed_password)
 
@@ -68,7 +65,7 @@ def verify_password(hex_hashed_password, guessed_password):
 def login_post():
     guessedPassword = request.form['password'].encode('utf-8')
 
-    if request.form['username'] == user.id and verify_password(hashedPassword, guessedPassword):
+    if request.form['username'] == user.id and verify_password(guessedPassword):
         rememberMe = True if 'remember-me' in request.form else False
 
         login_user(user, remember=rememberMe)
