@@ -1,7 +1,6 @@
 import os
 
 import binascii
-import scrypt
 from flask import Flask, request, send_from_directory
 from flask import render_template, redirect
 from flask_cors import CORS
@@ -13,6 +12,7 @@ from tree_api import tree_api
 from notes_move_api import notes_move_api
 from password_api import password_api
 import config_provider
+import my_scrypt
 
 config = config_provider.getConfig()
 
@@ -59,14 +59,7 @@ hashedPassword = config['Login']['passwordHash'].encode('utf-8')
 def verify_password(hex_hashed_password, guessed_password):
     hashed_password = binascii.unhexlify(hex_hashed_password)
 
-    salt = "dc73b57736511340f132e4b5521d178afa6311c45e0c25e6a9339038507852a6"
-
-    hashed = scrypt.hash(password=guessed_password,
-                         salt=salt,
-                         N=16384,
-                         r=8,
-                         p=1,
-                         buflen=32)
+    hashed = my_scrypt.getVerificationHash(guessed_password)
 
     return hashed == hashed_password
 
