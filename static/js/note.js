@@ -122,11 +122,12 @@ function createNote(node, parentKey, target, encryption) {
         }),
         contentType: "application/json",
         success: function(result) {
-            let newNode = {
+            const newNode = {
                 title: newNoteName,
                 key: result.note_id,
                 note_id: result.note_id,
-                encryption: encryption
+                encryption: encryption,
+                extraClasses: encryption ? "encrypted" : ""
             };
 
             globalAllNoteIds.push(result.note_id);

@@ -171,6 +171,8 @@ $(function(){
 
                 if (note.encryption > 0) {
                     note.title = "[encrypted]";
+
+                    note.extraClasses = "encrypted";
                 }
                 else {
                     note.title = note.note_title;

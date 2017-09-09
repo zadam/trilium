@@ -48,6 +48,16 @@ span.fancytree-node.fancytree-folder > span.fancytree-icon {
     background-image: url("icons/folder.png");
 }
 
+span.fancytree-node.encrypted > span.fancytree-icon {
+    background-position: 0 0;
+    background-image: url("icons/file-shaded.png");
+}
+
+span.fancytree-node.encrypted.fancytree-folder > span.fancytree-icon {
+    background-position: 0 0;
+    background-image: url("icons/folder-shaded.png");
+}
+
 .ui-autocomplete {
     max-height: 300px;
     overflow-y: auto;
