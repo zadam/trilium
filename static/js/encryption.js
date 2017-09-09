@@ -32,14 +32,43 @@ let globalLastEncryptionOperationDate = null;
 
 function deriveEncryptionKey(password) {
     // why this is done is explained here: https://github.com/ricmoo/scrypt-js - "Encoding notes"
-    const normalizedPassword = password.normalize('NFKC');
-    const salt = "dc73b57736511340f132e4b5521d178afa6311c45e0c25e6a9339038507852a6";
+    const verificationSalt = "dc73b57736511340f132e4b5521d178afa6311c45e0c25e6a9339038507852a6";
 
+    const verificationPromise = computeScrypt(password, verificationSalt, (key, resolve, reject) => {
+        $.ajax({
+            url: baseUrl + 'password/verify',
+            type: 'POST',
+            data: JSON.stringify({
+                password: sha256(key)
+            }),
+            contentType: "application/json",
+            success: function (result) {
+                if (result.valid) {
+                    resolve();
+                }
+                else {
+                    alert("Wrong password");
+
+                    reject();
+                }
+            }
+        });
+    });
+
+    const encryptionKeySalt = "2503bfc386bc028772f803887eaaf4d4a5c1019036873e4ba5de79a4efb7e8d8";
+
+    const encryptionKeyPromise = computeScrypt(password, encryptionKeySalt, (key, resolve, reject) => resolve(key));
+
+    return Promise.all([ verificationPromise, encryptionKeyPromise ]).then(results => results[1]);
+}
+
+function computeScrypt(password, salt, callback) {
+    const normalizedPassword = password.normalize('NFKC');
     const passwordBuffer = new buffer.SlowBuffer(normalizedPassword);
     const saltBuffer = new buffer.SlowBuffer(salt);
 
     // this settings take ~500ms on my laptop
-    const N = 16384, r = 16, p = 1;
+    const N = 16384, r = 8, p = 1;
     // 32 byte key - AES 256
     const dkLen = 32;
 
@@ -55,24 +84,7 @@ function deriveEncryptionKey(password) {
             else if (key) {
                 console.log("Computation took " + (new Date().getTime() - startedDate.getTime()) + "ms");
 
-                $.ajax({
-                    url: baseUrl + 'password/verify',
-                    type: 'POST',
-                    data: JSON.stringify({
-                        password: sha256(key)
-                    }),
-                    contentType: "application/json",
-                    success: function (result) {
-                        if (result.valid) {
-                            resolve(key);
-                        }
-                        else {
-                            alert("Wrong password");
-
-                            reject();
-                        }
-                    }
-                });
+                callback(key, resolve, reject);
             }
             else {
                 // update UI with progress complete

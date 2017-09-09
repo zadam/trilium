@@ -18,7 +18,7 @@ if password1 == password2:
     hashed = scrypt.hash(password=password1,
                            salt=salt,
                            N=16384,
-                           r=16,
+                           r=8,
                            p=1,
                            buflen=32)
 

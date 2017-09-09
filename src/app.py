@@ -65,7 +65,7 @@ def verify_password(hex_hashed_password, guessed_password):
     hashed = scrypt.hash(password=guessed_password,
                          salt=salt,
                          N=16384,
-                         r=16,
+                         r=8,
                          p=1,
                          buflen=32)
 
