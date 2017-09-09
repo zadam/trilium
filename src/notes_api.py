@@ -125,7 +125,8 @@ def createChild(parent_note_id):
         'date_created': now,
         'date_modified': now,
         'icon_info': 'pencil',
-        'is_finished': 0
+        'is_finished': 0,
+        'encryption': note['encryption']
     })
 
     insert("notes_tree", {

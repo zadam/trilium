@@ -101,23 +101,32 @@ function createNewTopLevelNote() {
 
 let newNoteCreated = false;
 
-function createNote(node, parentKey, target) {
-    let newNoteName = "new note";
+function createNote(node, parentKey, target, encryption) {
+    // if encryption isn't available (user didn't enter password yet), then note is created as unencrypted
+    // but this is quite weird since user doesn't see where the note is being created so it shouldn't occur often
+    if (!encryption || !isEncryptionAvailable()) {
+        encryption = 0;
+    }
+
+    const newNoteName = "new note";
+    const newNoteNameEncryptedIfNecessary = encryption > 0 ? encryptString(newNoteName) : newNoteName;
 
     $.ajax({
         url: baseUrl + 'notes/' + parentKey + '/children' ,
         type: 'POST',
         data: JSON.stringify({
-            note_title: newNoteName,
+            note_title: newNoteNameEncryptedIfNecessary,
             target: target,
-            target_note_id: node.key
+            target_note_id: node.key,
+            encryption: encryption
         }),
         contentType: "application/json",
         success: function(result) {
             let newNode = {
-                "title": newNoteName,
-                "key": result.note_id,
-                "note_id": result.note_id
+                title: newNoteName,
+                key: result.note_id,
+                note_id: result.note_id,
+                encryption: encryption
             };
 
             globalAllNoteIds.push(result.note_id);

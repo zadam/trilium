@@ -141,6 +141,10 @@ setInterval(function() {
     }
 }, 5000);
 
+function isEncryptionAvailable() {
+    return globalEncryptionKey !== null;
+}
+
 function getAes() {
     globalLastEncryptionOperationDate = new Date();
 

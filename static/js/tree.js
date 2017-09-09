@@ -70,14 +70,19 @@ function getParentKey(node) {
     return (node.getParent() === null || node.getParent().key === "root_1") ? "root" : node.getParent().key;
 }
 
+function getParentEncryption(node) {
+    return node.getParent() === null ? 0 : node.getParent().data.encryption;
+}
+
 const keybindings = {
     "insert": function(node) {
         const parentKey = getParentKey(node);
+        const encryption = getParentEncryption(node);
 
-        createNote(node, parentKey, 'after');
+        createNote(node, parentKey, 'after', encryption);
     },
     "ctrl+insert": function(node) {
-        createNote(node, node.key, 'into');
+        createNote(node, node.key, 'into', node.data.encryption);
     },
     "del": function(node) {
         deleteNode(node);
@@ -329,9 +334,10 @@ $(function(){
                 const node = $.ui.fancytree.getNode(ui.target);
 
                 if (ui.cmd === "insertNoteHere") {
-                   const parentKey = getParentKey(node);
+                    const parentKey = getParentKey(node);
+                    const encryption = getParentEncryption(node);
 
-                    createNote(node, parentKey, 'after');
+                    createNote(node, parentKey, 'after', encryption);
                 }
                 else if (ui.cmd === "insertChildNote") {
                     createNote(node, node.key, 'into');
