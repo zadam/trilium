@@ -13,6 +13,7 @@ from notes_move_api import notes_move_api
 from password_api import password_api
 import config_provider
 import my_scrypt
+import password_provider
 
 config = config_provider.getConfig()
 
@@ -53,21 +54,21 @@ documentPath = config['Document']['documentPath']
 
 connect(documentPath)
 
-hashedPassword = config['Login']['passwordHash'].encode('utf-8')
+hashedPassword = password_provider.getPasswordHash()
 
 
 def verify_password(hex_hashed_password, guessed_password):
     hashed_password = binascii.unhexlify(hex_hashed_password)
 
-    hashed = my_scrypt.getVerificationHash(guessed_password)
+    guess_hashed = my_scrypt.getVerificationHash(guessed_password)
 
-    return hashed == hashed_password
+    return guess_hashed == hashed_password
 
 @app.route('/login', methods=['POST'])
 def login_post():
-    inputPassword = request.form['password'].encode('utf-8')
+    guessedPassword = request.form['password'].encode('utf-8')
 
-    if request.form['username'] == user.id and verify_password(hashedPassword, inputPassword):
+    if request.form['username'] == user.id and verify_password(hashedPassword, guessedPassword):
         rememberMe = True if 'remember-me' in request.form else False
 
         login_user(user, remember=rememberMe)

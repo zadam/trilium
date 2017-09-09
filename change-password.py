@@ -7,6 +7,7 @@ import getpass
 from Crypto.Cipher import AES
 from Crypto.Util import Counter
 import binascii
+import src.password_provider
 
 import src.my_scrypt
 
@@ -14,9 +15,7 @@ currentPassword = getpass.getpass(prompt="Enter current password: ")
 
 currentPasswordHash = binascii.hexlify(src.my_scrypt.getVerificationHash(currentPassword))
 
-config = src.config_provider.getConfig()
-
-if currentPasswordHash != config['Login']['passwordHash']:
+if currentPasswordHash != src.password_provider.getPasswordHash():
     print("Given password doesn't match hash")
     exit(-1)
 
@@ -32,6 +31,7 @@ if newPassword1 != newPassword2:
 newPasswordVerificationKey = binascii.hexlify(src.my_scrypt.getVerificationHash(newPassword1))
 newPasswordEncryptionKey = src.my_scrypt.getEncryptionHash(newPassword1)
 
+config = src.config_provider.getConfig()
 src.sql.connect(config['Document']['documentPath'])
 
 encryptedNotes = src.sql.getResults("select note_id, note_title, note_text from notes where encryption = 1")
@@ -58,17 +58,16 @@ for note in encryptedNotes:
     reEncryptedTitle = encrypt(decryptedTitle)
     reEncryptedText = encrypt(decryptedText)
 
-    print (reEncryptedTitle)
-    print (reEncryptedText)
-
     src.sql.execute("update notes set note_title = ?, note_text = ? where note_id = ?",
                     [reEncryptedTitle, reEncryptedText, note['note_id']])
 
-    print("Note " + note['note_id'] + " reencrypted with new password")
+    print("Note " + note['note_id'] + " re-encrypted with new password")
 
-print("New password hash is: " + newPasswordVerificationKey)
-print("Set this value to passwordHash value in config.ini")
+src.password_provider.setPasswordHash(newPasswordVerificationKey)
+
+print("New password has been saved into password.txt")
 
 src.sql.commit()
 
 print("Changes committed. All encrypted notes were re-encrypted successfully with new password key.")
+print("You can now start application and login with new password.")

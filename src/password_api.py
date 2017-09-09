@@ -2,7 +2,7 @@ from flask import Blueprint, jsonify, request
 from flask_login import login_required
 import hashlib
 import binascii
-import config_provider
+import password_provider
 
 password_api = Blueprint('password_api', __name__)
 
@@ -11,9 +11,7 @@ password_api = Blueprint('password_api', __name__)
 def verifyPassword():
     req = request.get_json(force=True)
 
-    config = config_provider.getConfig()
-
-    hashedPassword = config['Login']['passwordHash'].encode('utf-8')
+    hashedPassword = password_provider.getPasswordHash()
     hashedPasswordBytes = binascii.unhexlify(hashedPassword)
     hashedPasswordSha = hashlib.sha256(hashedPasswordBytes).hexdigest()
 
