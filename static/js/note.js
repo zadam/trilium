@@ -162,6 +162,9 @@ function setNoteBackgroundIfEncrypted(note) {
         $("#encryptButton").show();
         $("#decryptButton").hide();
     }
+
+    const node = getNodeByKey(note.detail.note_id);
+    node.toggleClass("encrypted", note.detail.encryption > 0);
 }
 
 function loadNote(noteId) {
