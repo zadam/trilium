@@ -2,7 +2,6 @@ import os
 
 import binascii
 import scrypt
-import configparser
 from flask import Flask, request, send_from_directory
 from flask import render_template, redirect
 from flask_cors import CORS
@@ -13,9 +12,9 @@ from sql import connect
 from tree_api import tree_api
 from notes_move_api import notes_move_api
 from password_api import password_api
+import config_provider
 
-config = configparser.ConfigParser()
-config.read('config.ini')
+config = config_provider.getConfig()
 
 app = Flask(__name__)
 app.secret_key = config['Security']['flaskSecretKey']
@@ -54,7 +53,7 @@ documentPath = config['Document']['documentPath']
 
 connect(documentPath)
 
-hashedPassword = config['Login']['password-hash'].encode('utf-8')
+hashedPassword = config['Login']['passwordHash'].encode('utf-8')
 
 
 def verify_password(hex_hashed_password, guessed_password):

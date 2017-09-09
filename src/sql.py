@@ -1,6 +1,8 @@
 import base64
 import sqlite3
 
+conn = None
+
 def dict_factory(cursor, row):
     d = {}
     for idx, col in enumerate(cursor.description):

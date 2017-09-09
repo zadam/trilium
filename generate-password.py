@@ -1,28 +1,15 @@
 #!/usr/bin/python
 
 import getpass
-
-import scrypt  # pip install scrypt
-import binascii
+import src.my_scrypt
 
 password1 = getpass.getpass()
-
-print('Repeat the same password:')
-
-password2 = getpass.getpass()
+password2 = getpass.getpass(prompt='Repeat the same password:')
 
 if password1 == password2:
-    # salt is constant
-    salt = "dc73b57736511340f132e4b5521d178afa6311c45e0c25e6a9339038507852a6"
-
-    hashed = scrypt.hash(password=password1,
-                           salt=salt,
-                           N=16384,
-                           r=8,
-                           p=1,
-                           buflen=32)
+    hash = src.my_scrypt.getVerificationHash(password1)
 
     print('Generated password hash:')
-    print(binascii.hexlify(hashed))
+    print(hash)
 else:
     print('Entered passwords are not identical!')
