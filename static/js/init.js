@@ -48,3 +48,21 @@ $(window).on('beforeunload', function(){
     // this sends the request asynchronously and doesn't wait for result
     saveNoteIfChanged();
 });
+
+// Overrides the default autocomplete filter function to search for matched on atleast 1 word in each of the input term's words
+$.ui.autocomplete.filter = function (array, terms) {
+    const options = {
+        shouldSort: true,
+        threshold: 0.6,
+        location: 0,
+        distance: 100,
+        maxPatternLength: 32,
+        minMatchCharLength: 1,
+        keys: [
+            "value"
+        ]
+    };
+
+    const fuse = new Fuse(array, options); // "list" is the item array
+    return fuse.search(terms);
+};
