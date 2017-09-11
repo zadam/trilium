@@ -18,6 +18,10 @@
         </form>
       </div>
 
+      <div class="hide-toggle" style="position: absolute; left: 940px;">
+        <button class="btn btn-sm" onclick="displaySettings();">Settings</button>
+      </div>
+
       <div class="hide-toggle" style="width: 300px; height: 100%; float: left;">
         <p>
           <label>Search:</label>
@@ -40,15 +44,6 @@
 
       <div id="noteDetailWrapper">
         <div style="float: left; margin: 0 5px 5px 5px;" class="hide-toggle">
-          <!--<button class="btn btn-sm"-->
-                  <!--onclick="encryptNoteAndSendToServer();"-->
-                  <!--title="Encrypt the note so that password will be required to view the note"-->
-                  <!--id="encryptButton">Encrypt</button>-->
-          <!--<button class="btn btn-sm"-->
-                  <!--onclick="decryptNoteAndSendToServer();"-->
-                  <!--title="Decrypt note permamently so that password will not be required to access this note in the future"-->
-                  <!--id="decryptButton">Decrypt</button>-->
-
           <a onclick="encryptNoteAndSendToServer()"
              title="Encrypt the note so that password will be required to view the note"
              class="icon-action"
@@ -130,6 +125,38 @@
       </form>
     </div>
 
+    <div id="settingsDialog" title="Settings" style="display: none;">
+      <div id="settingsTabs">
+        <ul>
+          <li><a href="#changePassword">Change password</a></li>
+          <li><a href="#encryptionTimeout">Encryption timeout</a></li>
+        </ul>
+        <div id="changePassword">
+          <form id="changePasswordForm">
+            <div class="form-group">
+              <label for="oldPassword">Old password</label>
+              <input class="form-control" id="oldPassword" type="password">
+            </div>
+
+            <div class="form-group">
+              <label for="newPassword1">New password</label>
+              <input class="form-control" id="newPassword1" type="password">
+            </div>
+
+            <div class="form-group">
+              <label for="newPassword2">New password once more</label>
+              <input class="form-control" id="newPassword2" type="password">
+            </div>
+
+            <button class="btn btn-sm">Change password</button>
+          </form>
+        </div>
+        <div id="encryptionTimeout">
+          <p>Morbi tincidunt, dui sit amet facilisis feugiat, odio metus gravida ante, ut pharetra massa metus id nunc. Duis scelerisque molestie turpis. Sed fringilla, massa eget luctus malesuada, metus eros molestie lectus, ut tempus eros massa ut dolor. Aenean aliquet fringilla sem. Suspendisse sed ligula in ligula suscipit aliquam. Praesent in eros vestibulum mi adipiscing adipiscing. Morbi facilisis. Curabitur ornare consequat nunc. Aenean vel metus. Ut posuere viverra nulla. Aliquam erat volutpat. Pellentesque convallis. Maecenas feugiat, tellus pellentesque pretium posuere, felis lorem euismod felis, eu ornare leo nisi vel felis. Mauris consectetur tortor et purus.</p>
+        </div>
+      </div>
+    </div>
+
     <script type="text/javascript">
       const baseUrl = '';
     </script>
@@ -188,6 +215,7 @@
     <script src="stat/js/recent_notes.js"></script>
     <script src="stat/js/add_link.js"></script>
     <script src="stat/js/jump_to_note.js"></script>
+    <script src="stat/js/settings.js"></script>
 
     <script src="stat/js/utils.js"></script>
   </body>
