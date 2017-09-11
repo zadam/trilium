@@ -26,11 +26,11 @@
           <span id="matches"></span>
         </p>
 
-        <a onclick="createNewTopLevelNote()" title="Create new top level note">
+        <a onclick="createNewTopLevelNote()" title="Create new top level note" class="icon-action">
           <img src="stat/icons/file-plus.png" alt="Create new top level note"/>
         </a>
 
-        <a onclick="collapseTree()" title="Collapse tree">
+        <a onclick="collapseTree()" title="Collapse tree" class="icon-action">
           <img src="stat/icons/list.png" alt="Collapse tree"/>
         </a>
 
@@ -40,14 +40,30 @@
 
       <div id="noteDetailWrapper">
         <div style="float: left; margin: 0 5px 5px 5px;" class="hide-toggle">
-          <button class="btn btn-sm"
-                  onclick="encryptNoteAndSendToServer();"
-                  title="Encrypt the note so that password will be required to view the note"
-                  id="encryptButton">Encrypt</button>
-          <button class="btn btn-sm"
-                  onclick="decryptNoteAndSendToServer();"
-                  title="Decrypt note permamently so that password will not be required to access this note in the future"
-                  id="decryptButton">Decrypt</button>
+          <!--<button class="btn btn-sm"-->
+                  <!--onclick="encryptNoteAndSendToServer();"-->
+                  <!--title="Encrypt the note so that password will be required to view the note"-->
+                  <!--id="encryptButton">Encrypt</button>-->
+          <!--<button class="btn btn-sm"-->
+                  <!--onclick="decryptNoteAndSendToServer();"-->
+                  <!--title="Decrypt note permamently so that password will not be required to access this note in the future"-->
+                  <!--id="decryptButton">Decrypt</button>-->
+
+          <a onclick="encryptNoteAndSendToServer()"
+             title="Encrypt the note so that password will be required to view the note"
+             class="icon-action"
+             id="encryptButton">
+            <img src="stat/icons/lock.png" alt="Encrypt note"/>
+          </a>
+
+          <a onclick="decryptNoteAndSendToServer()"
+             title="Decrypt note permamently so that password will not be required to access this note in the future"
+             class="icon-action"
+             id="decryptButton">
+            <img src="stat/icons/unlock.png" alt="Decrypt note"/>
+          </a>
+
+          &nbsp;
 
           <input autocomplete="off" value="Welcome to Notecase web app!" id="noteTitle" style="font-size: x-large; border: 0; width: 600px;" tabindex="1">
         </div>

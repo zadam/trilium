@@ -71,12 +71,15 @@ span.fancytree-node.encrypted.fancytree-folder > span.fancytree-icon {
     overflow-x: hidden;
 }
 
-#encryptButton {
-    position: absolute;
-    left: 950px;
+.icon-action:hover {
+    text-decoration: none;
 }
 
-#decryptButton {
-    position: absolute;
-    left: 950px;
+#encryptButton, #decryptButton {
+    display: none;
+}
+
+#encryptButton img, #decryptButton img {
+    top: -5px;
+    position: relative;
 }
