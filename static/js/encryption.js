@@ -115,21 +115,25 @@ $("#encryptionPasswordForm").submit(function() {
     return false;
 });
 
-setInterval(function() {
-    if (globalLastEncryptionOperationDate !== null && new Date().getTime() - globalLastEncryptionOperationDate.getTime() > globalEncryptionSessionTimeout * 1000) {
-        globalEncryptionKey = null;
+function resetEncryptionSession() {
+    globalEncryptionKey = null;
 
-        if (globalCurrentNote.detail.encryption > 0) {
-            loadNote(globalCurrentNote.detail.note_id);
+    if (globalCurrentNote.detail.encryption > 0) {
+        loadNote(globalCurrentNote.detail.note_id);
 
-            for (const noteId of globalAllNoteIds) {
-                const note = getNodeByKey(noteId);
+        for (const noteId of globalAllNoteIds) {
+            const note = getNodeByKey(noteId);
 
-                if (note.data.encryption > 0) {
-                    note.setTitle("[encrypted]");
-                }
+            if (note.data.encryption > 0) {
+                note.setTitle("[encrypted]");
             }
         }
+    }
+}
+
+setInterval(function() {
+    if (globalLastEncryptionOperationDate !== null && new Date().getTime() - globalLastEncryptionOperationDate.getTime() > globalEncryptionSessionTimeout * 1000) {
+        resetEncryptionSession();
     }
 }, 5000);
 

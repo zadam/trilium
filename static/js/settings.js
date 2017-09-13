@@ -40,6 +40,9 @@ $("#changePasswordForm").submit(() => {
         contentType: "application/json",
         success: function (result) {
             if (result.success) {
+                // encryption password changed so current encryption session is invalid and needs to be cleared
+                resetEncryptionSession();
+
                 alert("Password has been changed.");
             }
             else {
