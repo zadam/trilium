@@ -2,18 +2,20 @@ import scrypt  # pip install scrypt
 import sql
 
 def getVerificationHash(password):
-    # getOption returns unicode bytes which scrypt doesn't like
-    salt = sql.getOption('verification_salt').encode('ascii', 'ignore')
+    salt = sql.getOption('verification_salt')
 
     return getScryptHash(password, salt)
 
 def getEncryptionHash(password):
-    # getOption returns unicode bytes which scrypt doesn't like
-    salt = sql.getOption('encryption_salt').encode('ascii', 'ignore')
+    salt = sql.getOption('encryption_salt')
 
     return getScryptHash(password, salt)
 
 def getScryptHash(password, salt):
+    # scrypt doesn't like unicode strings
+    password = password.encode('ascii', 'ignore')
+    salt = salt.encode('ascii', 'ignore')
+
     hashed = scrypt.hash(password=password,
                 salt=salt,
                 N=16384,
