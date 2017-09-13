@@ -11,6 +11,7 @@ from sql import connect, getOption
 from tree_api import tree_api
 from notes_move_api import notes_move_api
 from password_api import password_api
+from settings_api import settings_api
 import config_provider
 import my_scrypt
 
@@ -31,6 +32,7 @@ app.register_blueprint(tree_api)
 app.register_blueprint(notes_api)
 app.register_blueprint(notes_move_api)
 app.register_blueprint(password_api)
+app.register_blueprint(settings_api)
 
 class User(UserMixin):
     pass

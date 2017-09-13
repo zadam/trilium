@@ -85,6 +85,7 @@ function setExpandedToServer(note_id, is_expanded) {
 
 let globalVerificationSalt;
 let globalEncryptionSalt;
+let globalEncryptionSessionTimeout;
 
 $(function(){
     $.get(baseUrl + 'tree').then(resp => {
@@ -92,6 +93,7 @@ $(function(){
         let startNoteId = resp.start_note_id;
         globalVerificationSalt = resp.verification_salt;
         globalEncryptionSalt = resp.encryption_salt;
+        globalEncryptionSessionTimeout = resp.encryption_session_timeout;
 
         if (document.location.hash) {
             startNoteId = document.location.hash.substr(1); // strip initial #

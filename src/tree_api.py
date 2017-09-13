@@ -42,5 +42,6 @@ def getTree():
     retObject['start_note_id'] = getSingleResult('select * from options where opt_name = "start_node"')['opt_value'];
     retObject['verification_salt'] = getOption('verification_salt')
     retObject['encryption_salt'] = getOption('encryption_salt')
+    retObject['encryption_session_timeout'] = getOption('encryption_session_timeout')
 
     return jsonify(retObject)

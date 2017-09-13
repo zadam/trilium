@@ -1,4 +1,13 @@
 function displaySettings() {
+    $.ajax({
+        url: baseUrl + 'settings',
+        type: 'GET',
+        success: function (result) {
+            $("#encryptionTimeoutInSeconds").val(result['encryption_session_timeout']);
+        },
+        error: () => alert("Error getting settings.")
+    });
+
     $("#settingsDialog").dialog({
         modal: true,
         width: 600
@@ -38,6 +47,26 @@ $("#changePasswordForm").submit(() => {
             }
         },
         error: () => alert("Error occurred during changing password.")
+    });
+
+    return false;
+});
+
+$("#encryptionTimeoutForm").submit(() => {
+    const encryptionTimeout = $("#encryptionTimeoutInSeconds").val();
+
+    $.ajax({
+        url: baseUrl + 'settings',
+        type: 'POST',
+        data: JSON.stringify({
+            name: 'encryption_session_timeout',
+            value: encryptionTimeout
+        }),
+        contentType: "application/json",
+        success: function () {
+            alert("Encryption timeout has been changed.");
+         },
+        error: () => alert("Error occurred during changing encryption timeout.")
     });
 
     return false;

@@ -24,9 +24,6 @@ function handleEncryption(requireEncryption, modal, callback) {
     }
 }
 
-// currently not configurable
-const globalEncryptionKeyTimeToLive = 10 * 60 * 1000; // in milliseconds
-
 let globalEncryptionKey = null;
 let globalLastEncryptionOperationDate = null;
 
@@ -119,7 +116,7 @@ $("#encryptionPasswordForm").submit(function() {
 });
 
 setInterval(function() {
-    if (globalLastEncryptionOperationDate !== null && new Date().getTime() - globalLastEncryptionOperationDate.getTime() > globalEncryptionKeyTimeToLive) {
+    if (globalLastEncryptionOperationDate !== null && new Date().getTime() - globalLastEncryptionOperationDate.getTime() > globalEncryptionSessionTimeout * 1000) {
         globalEncryptionKey = null;
 
         if (globalCurrentNote.detail.encryption > 0) {
