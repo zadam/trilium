@@ -31,10 +31,7 @@ let globalEncryptionKey = null;
 let globalLastEncryptionOperationDate = null;
 
 function deriveEncryptionKey(password) {
-    // why this is done is explained here: https://github.com/ricmoo/scrypt-js - "Encoding notes"
-    const verificationSalt = "dc73b57736511340f132e4b5521d178afa6311c45e0c25e6a9339038507852a6";
-
-    const verificationPromise = computeScrypt(password, verificationSalt, (key, resolve, reject) => {
+    const verificationPromise = computeScrypt(password, globalVerificationSalt, (key, resolve, reject) => {
         $.ajax({
             url: baseUrl + 'password/verify',
             type: 'POST',
@@ -55,9 +52,7 @@ function deriveEncryptionKey(password) {
         });
     });
 
-    const encryptionKeySalt = "2503bfc386bc028772f803887eaaf4d4a5c1019036873e4ba5de79a4efb7e8d8";
-
-    const encryptionKeyPromise = computeScrypt(password, encryptionKeySalt, (key, resolve, reject) => resolve(key));
+    const encryptionKeyPromise = computeScrypt(password, globalEncryptionSalt, (key, resolve, reject) => resolve(key));
 
     return Promise.all([ verificationPromise, encryptionKeyPromise ]).then(results => results[1]);
 }

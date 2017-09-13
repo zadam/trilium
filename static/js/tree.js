@@ -83,10 +83,15 @@ function setExpandedToServer(note_id, is_expanded) {
     });
 }
 
+let globalVerificationSalt;
+let globalEncryptionSalt;
+
 $(function(){
     $.get(baseUrl + 'tree').then(resp => {
         const notes = resp.notes;
         let startNoteId = resp.start_note_id;
+        globalVerificationSalt = resp.verification_salt;
+        globalEncryptionSalt = resp.encryption_salt;
 
         if (document.location.hash) {
             startNoteId = document.location.hash.substr(1); // strip initial #

@@ -28,15 +28,15 @@ password1 = getpass.getpass()
 password2 = getpass.getpass(prompt='Repeat the same password: ')
 
 if password1 == password2:
-    hash = src.my_scrypt.getVerificationHash(password1)
-
-    src.sql.setOption('username', username)
-    src.sql.setOption('password', binascii.hexlify(hash))
-
     # urandom is secure enough, see https://docs.python.org/2/library/os.html
     src.sql.setOption('flask_secret_key', base64.b64encode(os.urandom(24)))
     src.sql.setOption('verification_salt', base64.b64encode(os.urandom(24)))
     src.sql.setOption('encryption_salt', base64.b64encode(os.urandom(24)))
+
+    hash = src.my_scrypt.getVerificationHash(password1)
+
+    src.sql.setOption('username', username)
+    src.sql.setOption('password', binascii.hexlify(hash))
 
     src.sql.commit()
 

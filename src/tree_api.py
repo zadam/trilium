@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify
 from flask_login import login_required
 
-from sql import getResults, getSingleResult
+from sql import getResults, getSingleResult, getOption
 
 tree_api = Blueprint('tree_api', __name__)
 
@@ -40,5 +40,7 @@ def getTree():
     retObject = {}
     retObject['notes'] = rootNotes
     retObject['start_note_id'] = getSingleResult('select * from options where opt_name = "start_node"')['opt_value'];
+    retObject['verification_salt'] = getOption('verification_salt')
+    retObject['encryption_salt'] = getOption('encryption_salt')
 
     return jsonify(retObject)
