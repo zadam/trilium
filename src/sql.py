@@ -26,6 +26,12 @@ def insert(tablename, rec):
     cursor = execute('INSERT INTO '+tablename+' ('+keys+') VALUES ('+question_marks+')', values)
     return cursor.lastrowid
 
+def setOption(name, value):
+    execute("UPDATE options SET opt_value = ? WHERE opt_name = ?", [value, name])
+
+def getOption(name):
+    return getSingleResult("SELECT opt_value FROM options WHERE opt_name = ?", [name])['opt_value']
+
 def delete(tablename, note_id):
     execute("DELETE FROM " + tablename + " WHERE note_id = ?", [note_id])
 

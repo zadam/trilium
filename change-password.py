@@ -7,15 +7,17 @@ import getpass
 from Crypto.Cipher import AES
 from Crypto.Util import Counter
 import binascii
-import src.password_provider
 
 import src.my_scrypt
+
+config = src.config_provider.getConfig()
+src.sql.connect(config['Document']['documentPath'])
 
 currentPassword = getpass.getpass(prompt="Enter current password: ")
 
 currentPasswordHash = binascii.hexlify(src.my_scrypt.getVerificationHash(currentPassword))
 
-if currentPasswordHash != src.password_provider.getPasswordHash():
+if currentPasswordHash != src.sql.getOption('password'):
     print("Given password doesn't match hash")
     exit(-1)
 
@@ -30,9 +32,6 @@ if newPassword1 != newPassword2:
 
 newPasswordVerificationKey = binascii.hexlify(src.my_scrypt.getVerificationHash(newPassword1))
 newPasswordEncryptionKey = src.my_scrypt.getEncryptionHash(newPassword1)
-
-config = src.config_provider.getConfig()
-src.sql.connect(config['Document']['documentPath'])
 
 encryptedNotes = src.sql.getResults("select note_id, note_title, note_text from notes where encryption = 1")
 
@@ -63,10 +62,7 @@ for note in encryptedNotes:
 
     print("Note " + note['note_id'] + " re-encrypted with new password")
 
-src.password_provider.setPasswordHash(newPasswordVerificationKey)
-
-print("New password has been saved into password.txt")
-
+src.sql.setOption('password', newPasswordVerificationKey)
 src.sql.commit()
 
 print("Changes committed. All encrypted notes were re-encrypted successfully with new password key.")

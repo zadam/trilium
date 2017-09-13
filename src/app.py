@@ -7,18 +7,26 @@ from flask_cors import CORS
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user
 
 from notes_api import notes_api
-from sql import connect
+from sql import connect, getOption
 from tree_api import tree_api
 from notes_move_api import notes_move_api
 from password_api import password_api
 import config_provider
 import my_scrypt
-import password_provider
 
 config = config_provider.getConfig()
 
+documentPath = config['Document']['documentPath']
+connect(documentPath)
+
+flask_secret_key = getOption("flask_secret_key")
+
+if not flask_secret_key:
+    print("Application has not been setup yet. Run 'python setup.py' to finish setup.")
+    exit(1)
+
 app = Flask(__name__)
-app.secret_key = config['Security']['flaskSecretKey']
+app.secret_key = flask_secret_key
 app.register_blueprint(tree_api)
 app.register_blueprint(notes_api)
 app.register_blueprint(notes_move_api)
@@ -43,19 +51,15 @@ def logout():
     return redirect('login')
 
 user = User()
-user.id = config['Login']['username']
+user.id = getOption('username')
 
 port = config['Network']['port']
 https = config['Network']['https']
 certPath = config['Network']['certPath']
 certKeyPath = config['Network']['certKeyPath']
 
-documentPath = config['Document']['documentPath']
-
-connect(documentPath)
-
 def verify_password(guessed_password):
-    hashed_password = binascii.unhexlify(password_provider.getPasswordHash())
+    hashed_password = binascii.unhexlify(getOption('password'))
 
     guess_hashed = my_scrypt.getVerificationHash(guessed_password)
 
