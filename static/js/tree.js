@@ -179,4 +179,14 @@ function collapseTree() {
     });
 }
 
+function scrollToCurrentNote() {
+    const node = getNodeByKey(globalCurrentNote.detail.note_id);
+
+    if (node) {
+        node.makeVisible({scrollIntoView: true});
+
+        node.setFocus();
+    }
+}
+
 $(document).bind('keydown', 'alt+c', collapseTree);

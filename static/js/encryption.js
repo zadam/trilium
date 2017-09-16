@@ -213,7 +213,7 @@ function decryptNoteAndSendToServer() {
 
 function decryptNoteIfNecessary(note) {
     if (note.detail.encryption > 0) {
-        return decryptNote(note);
+        decryptNote(note);
     }
 }
 
