@@ -6,6 +6,9 @@ const contextMenuSetup = {
         {title: "Insert child note", cmd: "insertChildNote", uiIcon: "ui-icon-pencil"},
         {title: "Delete", cmd: "delete", uiIcon: "ui-icon-trash"},
         {title: "----"},
+        {title: "Encrypt sub-tree", cmd: "encryptSubTree", uiIcon: "ui-icon-locked"},
+        {title: "Decrypt sub-tree", cmd: "decryptSubTree", uiIcon: "ui-icon-unlocked"},
+        {title: "----"},
         {title: "Cut", cmd: "cut", uiIcon: "ui-icon-scissors"},
         {title: "Copy / clone", cmd: "copy", uiIcon: "ui-icon-copy"},
         {title: "Paste after", cmd: "pasteAfter", uiIcon: "ui-icon-clipboard"},
@@ -35,6 +38,12 @@ const contextMenuSetup = {
         }
         else if (ui.cmd === "insertChildNote") {
             createNote(node, node.key, 'into');
+        }
+        else if (ui.cmd === "encryptSubTree") {
+            encryptSubTree(node.key);
+        }
+        else if (ui.cmd === "decryptSubTree") {
+            decryptSubTree(node.key);
         }
         else if (ui.cmd === "cut") {
             globalClipboardNoteId = node.key;

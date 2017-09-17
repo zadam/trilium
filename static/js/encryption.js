@@ -82,8 +82,6 @@ $("#encryptionPasswordForm").submit(function() {
 
         globalDataKey = key;
 
-        console.log("got the key", key);
-
         for (const noteId of globalAllNoteIds) {
             const note = getNodeByKey(noteId);
 
@@ -100,7 +98,11 @@ $("#encryptionPasswordForm").submit(function() {
             globalEncryptionCallback = null;
         }
     })
-        .catch(reason => alert(reason));
+        .catch(reason => {
+            console.log(reason);
+
+            alert(reason);
+        });
 
     return false;
 });
@@ -265,4 +267,109 @@ function decryptNoteIfNecessary(note) {
 function decryptNote(note) {
     note.detail.note_title = decryptString(note.detail.note_title);
     note.detail.note_text = decryptString(note.detail.note_text);
+}
+
+function encryptSubTree(noteId) {
+    handleEncryption(true, true, () => {
+        updateSubTreeRecursively(noteId, note => {
+            if (note.detail.encryption === null || note.detail.encryption === 0) {
+                encryptNote(note);
+
+                note.detail.encryption = 1;
+
+                return true;
+            }
+            else {
+                return false;
+            }
+        },
+            note => {
+                if (note.detail.note_id === globalCurrentNote.detail.note_id) {
+                    loadNote(note.detail.note_id);
+                }
+                else {
+                    setTreeBasedOnEncryption(note);
+                }
+            });
+
+        alert("Encryption finished.");
+    });
+}
+
+function decryptSubTree(noteId) {
+    handleEncryption(true, true, () => {
+        updateSubTreeRecursively(noteId, note => {
+            if (note.detail.encryption === 1) {
+                decryptNote(note);
+
+                note.detail.encryption = 0;
+
+                return true;
+            }
+            else {
+                return false;
+            }
+        },
+            note => {
+                if (note.detail.note_id === globalCurrentNote.detail.note_id) {
+                    loadNote(note.detail.note_id);
+                }
+                else {
+                    setTreeBasedOnEncryption(note);
+                }
+            });
+
+        alert("Decryption finished.");
+    });
+}
+
+function updateSubTreeRecursively(noteId, updateCallback, successCallback) {
+    updateNoteSynchronously(noteId, updateCallback, successCallback);
+
+    const node = getNodeByKey(noteId);
+    if (!node || !node.getChildren()) {
+        return;
+    }
+
+    for (const child of node.getChildren()) {
+        updateSubTreeRecursively(child.key, updateCallback, successCallback);
+    }
+}
+
+function updateNoteSynchronously(noteId, updateCallback, successCallback) {
+    $.ajax({
+        url: baseUrl + 'notes/' + noteId,
+        type: 'GET',
+        async: false,
+        success: function (note) {
+            const needSave = updateCallback(note);
+
+            if (!needSave) {
+                return;
+            }
+
+            for (const link of note.links) {
+                delete link.type;
+            }
+
+            $.ajax({
+                url: baseUrl + 'notes/' + noteId,
+                type: 'PUT',
+                data: JSON.stringify(note),
+                contentType: "application/json",
+                async: false,
+                success: function () {
+                    if (successCallback) {
+                        successCallback(note);
+                    }
+                },
+                error: function () {
+                    console.log("Updating " + noteId + " failed.");
+                }
+            });
+        },
+        error: function () {
+            console.log("Reading " + noteId + " failed.");
+        }
+    });
 }

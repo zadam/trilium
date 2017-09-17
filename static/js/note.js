@@ -149,6 +149,11 @@ function createNote(node, parentKey, target, encryption) {
     });
 }
 
+function setTreeBasedOnEncryption(note) {
+    const node = getNodeByKey(note.detail.note_id);
+    node.toggleClass("encrypted", note.detail.encryption > 0);
+}
+
 function setNoteBackgroundIfEncrypted(note) {
     if (note.detail.encryption > 0) {
         $(".note-editable").addClass("encrypted");
@@ -161,8 +166,7 @@ function setNoteBackgroundIfEncrypted(note) {
         $("#decryptButton").hide();
     }
 
-    const node = getNodeByKey(note.detail.note_id);
-    node.toggleClass("encrypted", note.detail.encryption > 0);
+    setTreeBasedOnEncryption(note);
 }
 
 function loadNote(noteId) {
