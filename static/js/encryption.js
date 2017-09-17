@@ -28,30 +28,17 @@ let globalEncryptionKey = null;
 let globalLastEncryptionOperationDate = null;
 
 function deriveEncryptionKey(password) {
-    const verificationPromise = computeScrypt(password, globalVerificationSalt, (key, resolve, reject) => {
-        $.ajax({
-            url: baseUrl + 'password/verify',
-            type: 'POST',
-            data: JSON.stringify({
-                password: sha256(key)
-            }),
-            contentType: "application/json",
-            success: function (result) {
-                if (result.valid) {
-                    resolve();
-                }
-                else {
-                    alert("Wrong password");
+    return computeScrypt(password, globalEncryptionSalt, (key, resolve, reject) => {
+        const dataKeyAes = getDataKeyAes(key);
 
-                    reject();
-                }
-            }
-        });
+        const decryptedDataKey = decrypt(dataKeyAes, globalEncryptedDataKey);
+
+        if (decryptedDataKey === false) {
+            reject("Wrong password.");
+        }
+
+        return decryptedDataKey;
     });
-
-    const encryptionKeyPromise = computeScrypt(password, globalEncryptionSalt, (key, resolve, reject) => resolve(key));
-
-    return Promise.all([ verificationPromise, encryptionKeyPromise ]).then(results => results[1]);
 }
 
 function computeScrypt(password, salt, callback) {
@@ -110,7 +97,8 @@ $("#encryptionPasswordForm").submit(function() {
 
             globalEncryptionCallback = null;
         }
-    });
+    })
+        .catch(reason => alert(reason));
 
     return false;
 });
@@ -141,10 +129,14 @@ function isEncryptionAvailable() {
     return globalEncryptionKey !== null;
 }
 
-function getAes() {
+function getDataAes() {
     globalLastEncryptionOperationDate = new Date();
 
     return new aesjs.ModeOfOperation.ctr(globalEncryptionKey, new aesjs.Counter(5));
+}
+
+function getDataKeyAes(key) {
+    return new aesjs.ModeOfOperation.ctr(key, new aesjs.Counter(5));
 }
 
 function encryptNoteIfNecessary(note) {
@@ -157,21 +149,72 @@ function encryptNoteIfNecessary(note) {
 }
 
 function encryptString(str) {
-    const aes = getAes();
-    const bytes = aesjs.utils.utf8.toBytes(str);
+    return encrypt(getDataAes(), str);
+}
 
-    const encryptedBytes = aes.encrypt(bytes);
+function encrypt(aes, str) {
+    const payload = aesjs.utils.utf8.toBytes(str);
+    const digest = sha256Array(payload).slice(0, 4);
+
+    const digestWithPayload = concat(digest, payload);
+
+    const encryptedBytes = aes.encrypt(digestWithPayload);
 
     return uint8ToBase64(encryptedBytes);
 }
 
 function decryptString(encryptedBase64) {
-    const aes = getAes();
+    const decryptedBytes = decrypt(getDataAes(), encryptedBase64);
+
+    return aesjs.utils.utf8.fromBytes(decryptedBytes);
+}
+
+function decrypt(aes, encryptedBase64) {
     const encryptedBytes = base64ToUint8Array(encryptedBase64);
 
     const decryptedBytes = aes.decrypt(encryptedBytes);
 
-    return aesjs.utils.utf8.fromBytes(decryptedBytes);
+    const digest = decryptedBytes.slice(0, 4);
+    const payload = decryptedBytes.slice(4);
+
+    const hashArray = sha256Array(payload);
+
+    const computedDigest = hashArray.slice(0, 4);
+
+    if (!arraysIdentical(digest, computedDigest)) {
+        return false;
+    }
+
+    return payload;
+}
+
+function concat(a, b) {
+    const result = [];
+
+    for (let key in a) {
+        result.push(a[key]);
+    }
+
+    for (let key in b) {
+        result.push(b[key]);
+    }
+
+    return result;
+}
+
+function sha256Array(content) {
+    const hash = sha256.create();
+    hash.update(content);
+    return hash.array();
+}
+
+function arraysIdentical(a, b) {
+    let i = a.length;
+    if (i !== b.length) return false;
+    while (i--) {
+        if (a[i] !== b[i]) return false;
+    }
+    return true;
 }
 
 function encryptNote(note) {

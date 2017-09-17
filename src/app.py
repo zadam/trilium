@@ -1,6 +1,7 @@
 import os
 
 import binascii
+import base64
 from flask import Flask, request, send_from_directory
 from flask import render_template, redirect
 from flask_cors import CORS
@@ -61,7 +62,7 @@ certPath = config['Network']['certPath']
 certKeyPath = config['Network']['certKeyPath']
 
 def verify_password(guessed_password):
-    hashed_password = binascii.unhexlify(getOption('password'))
+    hashed_password = base64.b64decode(getOption('password_verification_hash'))
 
     guess_hashed = my_scrypt.getVerificationHash(guessed_password)
 

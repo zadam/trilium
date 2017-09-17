@@ -11,16 +11,16 @@ import src.my_scrypt
 def change_password(current_password, new_password):
     current_password_hash = binascii.hexlify(src.my_scrypt.getVerificationHash(current_password))
 
-    if current_password_hash != src.sql.getOption('password'):
+    if current_password_hash != src.sql.getOption('password_verification_hash'):
         return {
             'success': False,
             'message': "Given current password doesn't match hash"
         }
 
-    current_password_encryption_key = src.my_scrypt.getEncryptionHash(current_password)
+    current_password_encryption_key = src.my_scrypt.getPasswordDerivedKey(current_password)
 
     new_password_verification_key = binascii.hexlify(src.my_scrypt.getVerificationHash(new_password))
-    new_password_encryption_key = src.my_scrypt.getEncryptionHash(new_password)
+    new_password_encryption_key = src.my_scrypt.getPasswordDerivedKey(new_password)
 
     encrypted_notes = src.sql.getResults("select note_id, note_title, note_text from notes where encryption = 1")
 
@@ -49,7 +49,7 @@ def change_password(current_password, new_password):
         src.sql.execute("update notes set note_title = ?, note_text = ? where note_id = ?",
                         [re_encrypted_title, re_encrypted_text, note['note_id']])
 
-    src.sql.setOption('password', new_password_verification_key)
+    src.sql.setOption('password_verification_hash', new_password_verification_key)
     src.sql.commit()
 
     return {

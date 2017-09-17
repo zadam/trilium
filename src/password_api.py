@@ -12,7 +12,7 @@ password_api = Blueprint('password_api', __name__)
 def verifyPassword():
     req = request.get_json(force=True)
 
-    hashedPassword = sql.getOption('password')
+    hashedPassword = sql.getOption('password_verification_hash')
     hashedPasswordBytes = binascii.unhexlify(hashedPassword)
     hashedPasswordSha = hashlib.sha256(hashedPasswordBytes).hexdigest()
 

@@ -83,17 +83,17 @@ function setExpandedToServer(note_id, is_expanded) {
     });
 }
 
-let globalVerificationSalt;
 let globalEncryptionSalt;
 let globalEncryptionSessionTimeout;
+let globalEncryptedDataKey;
 
 $(function(){
     $.get(baseUrl + 'tree').then(resp => {
         const notes = resp.notes;
         let startNoteId = resp.start_note_id;
-        globalVerificationSalt = resp.verification_salt;
-        globalEncryptionSalt = resp.encryption_salt;
+        globalEncryptionSalt = resp.password_derived_key_salt;
         globalEncryptionSessionTimeout = resp.encryption_session_timeout;
+        globalEncryptedDataKey = resp.encrypted_data_key;
 
         if (document.location.hash) {
             startNoteId = document.location.hash.substr(1); // strip initial #

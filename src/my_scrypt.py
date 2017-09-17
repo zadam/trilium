@@ -2,12 +2,12 @@ import scrypt  # pip install scrypt
 import sql
 
 def getVerificationHash(password):
-    salt = sql.getOption('verification_salt')
+    salt = sql.getOption('password_verification_salt')
 
     return getScryptHash(password, salt)
 
-def getEncryptionHash(password):
-    salt = sql.getOption('encryption_salt')
+def getPasswordDerivedKey(password):
+    salt = sql.getOption('password_derived_key_salt')
 
     return getScryptHash(password, salt)
 
