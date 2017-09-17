@@ -1,7 +1,7 @@
 let globalEncryptionCallback = null;
 
 function handleEncryption(requireEncryption, modal, callback) {
-    if (requireEncryption && globalEncryptionKey === null) {
+    if (requireEncryption && globalDataKey === null) {
         globalEncryptionCallback = callback;
 
         if (!modal) {
@@ -24,10 +24,10 @@ function handleEncryption(requireEncryption, modal, callback) {
     }
 }
 
-let globalEncryptionKey = null;
+let globalDataKey = null;
 let globalLastEncryptionOperationDate = null;
 
-function deriveEncryptionKey(password) {
+function getDataKey(password) {
     return computeScrypt(password, globalEncryptionSalt, (key, resolve, reject) => {
         const dataKeyAes = getDataKeyAes(key);
 
@@ -37,7 +37,7 @@ function deriveEncryptionKey(password) {
             reject("Wrong password.");
         }
 
-        return decryptedDataKey;
+        resolve(decryptedDataKey);
     });
 }
 
@@ -76,11 +76,13 @@ $("#encryptionPasswordForm").submit(function() {
     const password = $("#encryptionPassword").val();
     $("#encryptionPassword").val("");
 
-    deriveEncryptionKey(password).then(key => {
+    getDataKey(password).then(key => {
         $("#noteDetailWrapper").show();
         $("#encryptionPasswordDialog").dialog("close");
 
-        globalEncryptionKey = key;
+        globalDataKey = key;
+
+        console.log("got the key", key);
 
         for (const noteId of globalAllNoteIds) {
             const note = getNodeByKey(noteId);
@@ -104,7 +106,7 @@ $("#encryptionPasswordForm").submit(function() {
 });
 
 function resetEncryptionSession() {
-    globalEncryptionKey = null;
+    globalDataKey = null;
 
     if (globalCurrentNote.detail.encryption > 0) {
         loadNote(globalCurrentNote.detail.note_id);
@@ -126,13 +128,13 @@ setInterval(function() {
 }, 5000);
 
 function isEncryptionAvailable() {
-    return globalEncryptionKey !== null;
+    return globalDataKey !== null;
 }
 
 function getDataAes() {
     globalLastEncryptionOperationDate = new Date();
 
-    return new aesjs.ModeOfOperation.ctr(globalEncryptionKey, new aesjs.Counter(5));
+    return new aesjs.ModeOfOperation.ctr(globalDataKey, new aesjs.Counter(5));
 }
 
 function getDataKeyAes(key) {

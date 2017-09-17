@@ -43,7 +43,11 @@ $("#changePasswordForm").submit(() => {
                 // encryption password changed so current encryption session is invalid and needs to be cleared
                 resetEncryptionSession();
 
+                globalEncryptedDataKey = result.new_encrypted_data_key;
+
                 alert("Password has been changed.");
+
+                $("#settingsDialog").dialog('close');
             }
             else {
                 alert(result.message);

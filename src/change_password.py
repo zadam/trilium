@@ -1,15 +1,16 @@
+import hashlib
+
 import src.config_provider
 import src.sql
 import base64
 from Crypto.Cipher import AES
 from Crypto.Util import Counter
-import binascii
 
 import src.my_scrypt
 
 
 def change_password(current_password, new_password):
-    current_password_hash = binascii.hexlify(src.my_scrypt.getVerificationHash(current_password))
+    current_password_hash = base64.b64encode(src.my_scrypt.getVerificationHash(current_password))
 
     if current_password_hash != src.sql.getOption('password_verification_hash'):
         return {
@@ -17,41 +18,42 @@ def change_password(current_password, new_password):
             'message': "Given current password doesn't match hash"
         }
 
-    current_password_encryption_key = src.my_scrypt.getPasswordDerivedKey(current_password)
+    current_password_derived_key = src.my_scrypt.getPasswordDerivedKey(current_password)
 
-    new_password_verification_key = binascii.hexlify(src.my_scrypt.getVerificationHash(new_password))
+    new_password_verification_key = base64.b64encode(src.my_scrypt.getVerificationHash(new_password))
     new_password_encryption_key = src.my_scrypt.getPasswordDerivedKey(new_password)
-
-    encrypted_notes = src.sql.getResults("select note_id, note_title, note_text from notes where encryption = 1")
 
     def decrypt(encrypted_base64):
         encrypted_bytes = base64.b64decode(encrypted_base64)
 
-        aes = get_aes(current_password_encryption_key)
-        return aes.decrypt(encrypted_bytes)
+        aes = get_aes(current_password_derived_key)
+        return aes.decrypt(encrypted_bytes)[4:]
 
     def encrypt(plain_text):
         aes = get_aes(new_password_encryption_key)
-        encryptedBytes = aes.encrypt(plain_text)
 
-        return base64.b64encode(encryptedBytes)
+        digest = hashlib.sha256(plain_text).digest()[:4]
+
+        encrypted_bytes = aes.encrypt(digest + plain_text)
+
+        return base64.b64encode(encrypted_bytes)
 
     def get_aes(key):
         return AES.new(key, AES.MODE_CTR, counter=Counter.new(128, initial_value=5))
 
-    for note in encrypted_notes:
-        decrypted_title = decrypt(note['note_title'])
-        decrypted_text = decrypt(note['note_text'])
+    encrypted_data_key = src.sql.getOption('encrypted_data_key')
 
-        re_encrypted_title = encrypt(decrypted_title)
-        re_encrypted_text = encrypt(decrypted_text)
+    decrypted_data_key = decrypt(encrypted_data_key)
 
-        src.sql.execute("update notes set note_title = ?, note_text = ? where note_id = ?",
-                        [re_encrypted_title, re_encrypted_text, note['note_id']])
+    new_encrypted_data_key = encrypt(decrypted_data_key)
+
+    src.sql.setOption('encrypted_data_key', new_encrypted_data_key)
 
     src.sql.setOption('password_verification_hash', new_password_verification_key)
+
     src.sql.commit()
 
     return {
-        'success': True
+        'success': True,
+        'new_encrypted_data_key': new_encrypted_data_key
     }
