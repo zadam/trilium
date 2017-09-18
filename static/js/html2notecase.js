@@ -1,4 +1,16 @@
+const globalHtmlEnabled = true;
+
 function html2notecase(contents, note) {
+    note.formatting = [];
+    note.links = [];
+    note.images = [];
+
+    if (globalHtmlEnabled) {
+        note.detail.note_text = contents;
+
+        return;
+    }
+
     // remove any possible extra newlines which might be inserted - all relevant new lines should be only in <br> and <p>
     contents = contents.replace(/(?:\r\n|\r|\n)/, '');
 
@@ -14,10 +26,6 @@ function html2notecase(contents, note) {
     contents = contents.replace(/&nbsp;/g, ' ');
 
     let index = 0;
-
-    note.formatting = [];
-    note.links = [];
-    note.images = [];
 
     while (index < contents.length) {
         let curContent = contents.substr(index);

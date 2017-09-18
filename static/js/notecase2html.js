@@ -1,4 +1,8 @@
 function notecase2html(note) {
+    if (globalHtmlEnabled) {
+        return note.detail.note_text;
+    }
+
     let noteText = note.detail.note_text;
 
     note.formatting.forEach(el => el.type = 'formatting');
