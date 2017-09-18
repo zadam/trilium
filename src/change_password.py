@@ -1,27 +1,25 @@
-import hashlib
-
-import src.config_provider
-import src.sql
 import base64
+import hashlib
 from Crypto.Cipher import AES
 from Crypto.Util import Counter
 
-import src.my_scrypt
+import sql
+import my_scrypt
 
 
 def change_password(current_password, new_password):
-    current_password_hash = base64.b64encode(src.my_scrypt.getVerificationHash(current_password))
+    current_password_hash = base64.b64encode(my_scrypt.getVerificationHash(current_password))
 
-    if current_password_hash != src.sql.getOption('password_verification_hash'):
+    if current_password_hash != sql.getOption('password_verification_hash'):
         return {
             'success': False,
             'message': "Given current password doesn't match hash"
         }
 
-    current_password_derived_key = src.my_scrypt.getPasswordDerivedKey(current_password)
+    current_password_derived_key = my_scrypt.getPasswordDerivedKey(current_password)
 
-    new_password_verification_key = base64.b64encode(src.my_scrypt.getVerificationHash(new_password))
-    new_password_encryption_key = src.my_scrypt.getPasswordDerivedKey(new_password)
+    new_password_verification_key = base64.b64encode(my_scrypt.getVerificationHash(new_password))
+    new_password_encryption_key = my_scrypt.getPasswordDerivedKey(new_password)
 
     def decrypt(encrypted_base64):
         encrypted_bytes = base64.b64decode(encrypted_base64)
@@ -41,17 +39,17 @@ def change_password(current_password, new_password):
     def get_aes(key):
         return AES.new(key, AES.MODE_CTR, counter=Counter.new(128, initial_value=5))
 
-    encrypted_data_key = src.sql.getOption('encrypted_data_key')
+    encrypted_data_key = sql.getOption('encrypted_data_key')
 
     decrypted_data_key = decrypt(encrypted_data_key)
 
     new_encrypted_data_key = encrypt(decrypted_data_key)
 
-    src.sql.setOption('encrypted_data_key', new_encrypted_data_key)
+    sql.setOption('encrypted_data_key', new_encrypted_data_key)
 
-    src.sql.setOption('password_verification_hash', new_password_verification_key)
+    sql.setOption('password_verification_hash', new_password_verification_key)
 
-    src.sql.commit()
+    sql.commit()
 
     return {
         'success': True,
