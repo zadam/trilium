@@ -63,6 +63,45 @@ $.ui.autocomplete.filter = function (array, terms) {
         ]
     };
 
+
+    const startDate = new Date();
+
     const fuse = new Fuse(array, options); // "list" is the item array
-    return fuse.search(terms);
+
+    const results = fuse.search(terms);
+
+    console.log("Search took " + (new Date().getTime() - startDate.getTime()) + "ms");
+
+    return results;
+};
+
+$.ui.autocomplete.filter = function (array, terms) {
+    if (!terms) {
+        return [];
+    }
+
+    const startDate = new Date();
+
+    const results = [];
+    const tokens = terms.toLowerCase().split(" ");
+
+    for (const item of array) {
+        let found = true;
+        const lcValue = item.value.toLowerCase();
+
+        for (const token of tokens) {
+            if (lcValue.indexOf(token) === -1) {
+                found = false;
+                break;
+            }
+        }
+
+        if (found) {
+            results.push(item);
+        }
+    }
+
+    console.log("Search took " + (new Date().getTime() - startDate.getTime()) + "ms");
+
+    return results;
 };
