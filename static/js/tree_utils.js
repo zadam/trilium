@@ -12,6 +12,11 @@ function getNodeByKey(noteId) {
 
 function getFullName(noteId) {
     let note = getNodeByKey(noteId);
+
+    if (note.data.is_clone || (note.data.encryption > 0 && !isEncryptionAvailable())) {
+        return null;
+    }
+
     const path = [];
 
     while (note) {

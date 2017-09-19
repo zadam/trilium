@@ -14,16 +14,18 @@ function error(str) {
     error.fadeOut(10000);
 }
 
-function getAutocompleteItems(notes) {
+function getAutocompleteItems(noteIds) {
     const autocompleteItems = [];
 
-    for (const noteId of notes) {
+    for (const noteId of noteIds) {
         const fullName = getFullName(noteId);
 
-        autocompleteItems.push({
-            value: fullName + " (" + noteId + ")",
-            label: fullName
-        });
+        if (fullName !== null) {
+            autocompleteItems.push({
+                value: fullName + " (" + noteId + ")",
+                label: fullName
+            });
+        }
     }
 
     return autocompleteItems;
