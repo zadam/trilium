@@ -44,9 +44,29 @@ def updateNote(note_id):
 
     now = math.floor(time.time())
 
-    execute("update notes set note_text = ?, note_title = ?, encryption = ?, date_modified = ? where note_id = ?", [
-        note['detail']['note_text'],
+    history_cutoff = now - 3600
+
+    history = getSingleResult("select id from notes_history where note_id = ? and date_modified >= ?", [note_id, history_cutoff])
+
+    if history:
+        execute("update notes_history set note_title = ?, note_text = ?, encryption = ? where id = ?", [
+            note['detail']['note_title'],
+            note['detail']['note_text'],
+            note['detail']['encryption'],
+            history['id']
+        ])
+    else:
+        execute("insert into notes_history (note_id, note_title, note_text, encryption, date_modified) values (?, ?, ?, ?, ?)", [
+            note_id,
+            note['detail']['note_title'],
+            note['detail']['note_text'],
+            note['detail']['encryption'],
+            now
+        ])
+
+    execute("update notes set note_title = ?, note_text = ?, encryption = ?, date_modified = ? where note_id = ?", [
         note['detail']['note_title'],
+        note['detail']['note_text'],
         note['detail']['encryption'],
         now,
         note_id])
