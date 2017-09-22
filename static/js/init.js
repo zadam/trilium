@@ -20,25 +20,29 @@ $(function() {
 jQuery.hotkeys.options.filterInputAcceptingElements = true;
 jQuery.hotkeys.options.filterContentEditable = true;
 
-$(document).bind('keydown', 'alt+h', function() {
-    const toggle = $(".hide-toggle");
-    const hidden = toggle.css('display') === 'none';
-
-    toggle.css('display', hidden ? 'block' : 'none');
-
-    $("#noteDetailWrapper").css("width", hidden ? "750px" : "100%");
-});
+// $(document).bind('keydown', 'alt+h', function() {
+//     const toggle = $(".hide-toggle");
+//     const hidden = toggle.css('display') === 'none';
+//
+//     toggle.css('display', hidden ? 'block' : 'none');
+//
+//     $("#noteDetailWrapper").css("width", hidden ? "750px" : "100%");
+// });
 
 $(document).bind('keydown', 'alt+s', function() {
     $("input[name=search]").focus();
 });
 
+function formatDate(date) {
+    const dateString = date.getDate() + ". " + (date.getMonth() + 1) + ". " + date.getFullYear() + " " +
+        date.getHours() + ":" + date.getMinutes();
+    return dateString;
+}
+
 // hide (toggle) everything except for the note content for distraction free writing
 $(document).bind('keydown', 'alt+t', function() {
     const date = new Date();
-
-    const dateString = date.getDate() + ". " + (date.getMonth() + 1) + ". " + date.getFullYear() + " " +
-        date.getHours() + ":" + date.getMinutes();
+    const dateString = formatDate(date);
 
     $('#noteDetail').summernote('insertText', dateString);
 });
