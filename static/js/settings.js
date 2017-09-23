@@ -72,6 +72,8 @@ $("#encryptionTimeoutForm").submit(() => {
         contentType: "application/json",
         success: function () {
             alert("Encryption timeout has been changed.");
+
+            globalEncryptionSessionTimeout = encryptionTimeout;
          },
         error: () => alert("Error occurred during changing encryption timeout.")
     });
