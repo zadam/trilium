@@ -1,3 +1,5 @@
+let globalHistoryItems = null;
+
 $(document).bind('keydown', 'alt+h', function() {
     $("#noteHistoryDialog").dialog({
         modal: true,
@@ -12,17 +14,31 @@ $(document).bind('keydown', 'alt+h', function() {
         url: baseUrl + 'notes-history/' + globalCurrentNote.detail.note_id,
         type: 'GET',
         success: function (result) {
-            if (result.length > 0) {
-                $("#noteHistoryContent").html(result[0]["note_text"]);
+            globalHistoryItems = result;
+
+            for (const row of result) {
+                const dateModified = new Date(row.date_modified * 1000);
+
+                $("#noteHistoryList").append($('<option>', {
+                    value: row.id,
+                    text: formatDate(dateModified)
+                }));
             }
 
-            for (row of result) {
-                const dateModified = new Date(row['date_modified'] * 1000);
-                const optionHtml = '<option value="' + row['note_id'] + '">' + formatDate(dateModified) + '</option>';
+            if (result.length > 0) {
+                const firstOptionValue = $("#noteHistoryList option:first").val();
 
-                $("#noteHistoryList").append(optionHtml);
+                $("#noteHistoryList").val(firstOptionValue).trigger('change');
             }
         },
         error: () => alert("Error getting note history.")
     });
+});
+
+$("#noteHistoryList").on('change', () => {
+    const optVal = $("#noteHistoryList").find(":selected").val();
+    const historyItem = globalHistoryItems.find(r => r.id == optVal); // non-strict comparison is important here!!!s
+
+    $("#noteHistoryTitle").html(historyItem.note_title);
+    $("#noteHistoryContent").html(historyItem.note_text);
 });

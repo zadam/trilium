@@ -44,7 +44,7 @@ def updateNote(note_id):
 
     now = math.floor(time.time())
 
-    history_cutoff = now - 3600
+    history_cutoff = now - 600
 
     history = getSingleResult("select id from notes_history where note_id = ? and date_modified >= ?", [note_id, history_cutoff])
 

@@ -20,14 +20,14 @@ $(function() {
 jQuery.hotkeys.options.filterInputAcceptingElements = true;
 jQuery.hotkeys.options.filterContentEditable = true;
 
-// $(document).bind('keydown', 'alt+h', function() {
-//     const toggle = $(".hide-toggle");
-//     const hidden = toggle.css('display') === 'none';
-//
-//     toggle.css('display', hidden ? 'block' : 'none');
-//
-//     $("#noteDetailWrapper").css("width", hidden ? "750px" : "100%");
-// });
+$(document).bind('keydown', 'alt+m', function() {
+    const toggle = $(".hide-toggle");
+    const hidden = toggle.css('display') === 'none';
+
+    toggle.css('display', hidden ? 'block' : 'none');
+
+    $("#noteDetailWrapper").css("width", hidden ? "750px" : "100%");
+});
 
 $(document).bind('keydown', 'alt+s', function() {
     $("input[name=search]").focus();

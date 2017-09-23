@@ -173,10 +173,13 @@
 
     <div id="noteHistoryDialog" title="Note history" style="display: none;">
       <div style="display: flex;">
-        <select id="noteHistoryList" size="25" style="flex-grow: 1;">
+        <select id="noteHistoryList" size="25" style="flex-grow: 1; height: 630px;">
         </select>
 
-        <div id="noteHistoryContent" style="flex-grow: 3;">
+        <div id="noteHistoryContentWrapper" style="flex-grow: 3; margin-left: 20px;">
+          <h1 id="noteHistoryTitle" style="margin-top: 5px;"></h1>
+
+          <div id="noteHistoryContent"></div>
         </div>
       </div>
     </div>
