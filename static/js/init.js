@@ -1,21 +1,3 @@
-$(function() {
-    $(window).resize(function() {
-        // dynamically setting height of tree and note content to match window's height
-        const fancyTree = $('ul.fancytree-container');
-
-        if (fancyTree.length) {
-            fancyTree.height($(window).height() - fancyTree.offset().top - 10);
-        }
-
-        const noteEditable = $('div.note-editable');
-
-        if (noteEditable.length) {
-            noteEditable.height($(window).height() - noteEditable.offset().top);
-        }
-    });
-    $(window).resize();
-});
-
 // hot keys are active also inside inputs and content editables
 jQuery.hotkeys.options.filterInputAcceptingElements = true;
 jQuery.hotkeys.options.filterContentEditable = true;

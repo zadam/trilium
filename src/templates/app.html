@@ -5,85 +5,86 @@
     <title>Notecase web app</title>
   </head>
   <body>
-    <div id="top" style="text-align: center;">
-      &nbsp;
+    <div id="top" style="grid-area: messages; text-align: center;">&nbsp;
       <span id="top-message"></span>
       <span id="error-message"></span>
     </div>
 
-    <div id="content" style="margin-left: auto; margin-right: auto; width: 1100px; position: relative;">
-      <div style="position: absolute; left: 1020px;" class="hide-toggle">
-        <form action="logout" method="POST">
-          <input type="submit" class="btn btn-sm" value="Logout">
-        </form>
-      </div>
+    <div class="hide-toggle" style="grid-area: search">
+      <p>
+        <label>Search:</label>
+        <input name="search" autocomplete="off">
+        <button id="btnResetSearch">&times;</button>
+        <span id="matches"></span>
+      </p>
+    </div>
 
-      <div class="hide-toggle" style="position: absolute; left: 940px;">
-        <button class="btn btn-sm" onclick="displaySettings();">Settings</button>
-      </div>
+    <div class="hide-toggle" style="grid-area: tree-buttons;">
+      <a onclick="createNewTopLevelNote()" title="Create new top level note" class="icon-action">
+        <img src="stat/icons/file-plus.png" alt="Create new top level note"/>
+      </a>
 
-      <div class="hide-toggle" style="width: 300px; height: 100%; float: left;">
-        <p>
-          <label>Search:</label>
-          <input name="search" autocomplete="off">
-          <button id="btnResetSearch">&times;</button>
-          <span id="matches"></span>
-        </p>
+      <a onclick="collapseTree()" title="Collapse tree" class="icon-action">
+        <img src="stat/icons/list.png" alt="Collapse tree"/>
+      </a>
 
-        <a onclick="createNewTopLevelNote()" title="Create new top level note" class="icon-action">
-          <img src="stat/icons/file-plus.png" alt="Create new top level note"/>
+      <a onclick="scrollToCurrentNote()" title="Scroll to current note" class="icon-action">
+        <img src="stat/icons/crosshair.png" alt="Collapse tree"/>
+      </a>
+    </div>
+
+    <div id="tree" style="overflow: auto; grid-area: tree">
+    </div>
+
+    <div style="grid-area: title">
+      <div style="display: flex; align-items: center;" class="hide-toggle">
+        <a onclick="encryptNoteAndSendToServer()"
+           title="Encrypt the note so that password will be required to view the note"
+           class="icon-action"
+           id="encryptButton"
+           style="display: none;">
+          <img src="stat/icons/lock.png" alt="Encrypt note"/>
         </a>
 
-        <a onclick="collapseTree()" title="Collapse tree" class="icon-action">
-          <img src="stat/icons/list.png" alt="Collapse tree"/>
+        <a onclick="decryptNoteAndSendToServer()"
+           title="Decrypt note permamently so that password will not be required to access this note in the future"
+           class="icon-action"
+           id="decryptButton"
+           style="display: none;">
+          <img src="stat/icons/unlock.png" alt="Decrypt note"/>
         </a>
 
-        <a onclick="scrollToCurrentNote()" title="Scroll to current note" class="icon-action">
-          <img src="stat/icons/crosshair.png" alt="Collapse tree"/>
-        </a>
+        &nbsp;
 
-        <div id="tree">
+        <input autocomplete="off" value="Welcome to Notecase web app!" id="noteTitle" style="font-size: x-large; border: 0; flex-grow: 100;" tabindex="1">
+
+        <div class="hide-toggle">
+          <form action="logout" method="POST">
+            <input type="submit" class="btn btn-sm" value="Logout">
+          </form>
+        </div>
+
+        <div class="hide-toggle">
+          <button class="btn btn-sm" onclick="displaySettings();">Settings</button>
         </div>
       </div>
+    </div>
 
-      <div id="noteDetailWrapper">
-        <div style="float: left; margin: 0 5px 5px 5px;" class="hide-toggle">
-          <a onclick="encryptNoteAndSendToServer()"
-             title="Encrypt the note so that password will be required to view the note"
-             class="icon-action"
-             id="encryptButton">
-            <img src="stat/icons/lock.png" alt="Encrypt note"/>
-          </a>
+    <div style="overflow: auto; grid-area: note-content">
+      <div id="noteDetail">
+        <p>This prototype version supports basic editing, including some formatting (bold, italic, strike-through, underscore), images (just paste it into editor) and links. To edit the note, just click on title or content and you can directly modify it. Changes are saved immediately.</p>
 
-          <a onclick="decryptNoteAndSendToServer()"
-             title="Decrypt note permamently so that password will not be required to access this note in the future"
-             class="icon-action"
-             id="decryptButton">
-            <img src="stat/icons/unlock.png" alt="Decrypt note"/>
-          </a>
+        <p>You can work with the tree using following keyboard shortcuts:</p>
 
-          &nbsp;
-
-          <input autocomplete="off" value="Welcome to Notecase web app!" id="noteTitle" style="font-size: x-large; border: 0; width: 600px;" tabindex="1">
-        </div>
-
-        <div style="clear: both; height: 0"></div>
-
-        <div id="noteDetail" style="overflow: scroll; height: 100%;">
-          <p>This prototype version supports basic editing, including some formatting (bold, italic, strike-through, underscore), images (just paste it into editor) and links. To edit the note, just click on title or content and you can directly modify it. Changes are saved immediately.</p>
-
-          <p>You can work with the tree using following keyboard shortcuts:</p>
-
-          <ul>
-            <li>insert - create new note on current tree level</li>
-            <li>ctrl + insert - create new sub-note</li>
-            <li>delete - delete current note (and it's sub-notes)</li>
-            <li>shift + up - move current note up in the current tree level</li>
-            <li>shift + down - move current note down in the current tree level</li>
-            <li>shift + left - move current note up in the tree hierarchy</li>
-            <li>shift + right - move current note down in the tree hierarchy</li>
-          </ul>
-        </div>
+        <ul>
+          <li>insert - create new note on current tree level</li>
+          <li>ctrl + insert - create new sub-note</li>
+          <li>delete - delete current note (and it's sub-notes)</li>
+          <li>shift + up - move current note up in the current tree level</li>
+          <li>shift + down - move current note down in the current tree level</li>
+          <li>shift + left - move current note up in the tree hierarchy</li>
+          <li>shift + right - move current note down in the tree hierarchy</li>
+        </ul>
       </div>
     </div>
 

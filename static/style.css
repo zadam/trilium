@@ -1,17 +1,11 @@
 .note-editable {
     /* This is because with empty content height of editor is 0 and it's impossible to click into it */
     min-height: 400px;
-    overflow: scroll;
+    overflow: auto;
 }
 
 .note-editable.encrypted {
     background-color: #eee;
-}
-
-#noteDetailWrapper {
-    width: 750px;
-    float: left;
-    margin-left: 30px;
 }
 
 #top-message {
@@ -36,8 +30,6 @@
 }
 
 ul.fancytree-container {
-    width: 290px;
-    height: 400px;
     overflow: auto;
     position: relative;
     outline: none !important;
@@ -82,4 +74,19 @@ span.fancytree-node.encrypted.fancytree-folder > span.fancytree-icon {
 #encryptButton img, #decryptButton img {
     top: -5px;
     position: relative;
+}
+
+body {
+    display: grid;
+    height: 100vh;
+    grid-template-areas: "messages messages"
+                         "search title"
+                         "tree-buttons note-content"
+                         "tree note-content";
+    grid-template-columns: 1fr 3fr;
+    grid-template-rows: auto
+                        auto
+                        auto
+                        1fr;
+    grid-gap: 10px;
 }
