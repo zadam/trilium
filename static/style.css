@@ -17,6 +17,7 @@
 }
 
 #error-message {
+    margin-top: 2px;
     display: none; /* initial state is hidden */
     background-color: red;
     color: white;
@@ -69,11 +70,6 @@ span.fancytree-node.encrypted.fancytree-folder > span.fancytree-icon {
 
 #encryptButton, #decryptButton {
     display: none;
-}
-
-#encryptButton img, #decryptButton img {
-    top: -5px;
-    position: relative;
 }
 
 body {

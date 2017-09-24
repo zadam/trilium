@@ -1,7 +1,7 @@
 function message(str) {
     const top = $("#top-message");
 
-    top.fadeIn(1500);
+    top.fadeIn(1500).css("display","inline-block");
     top.html(str);
     top.fadeOut(1500);
 }
@@ -9,7 +9,7 @@ function message(str) {
 function error(str) {
     const error = $("#error-message");
 
-    error.show();
+    error.show().css("display","inline-block");
     error.html(str);
     error.fadeOut(10000);
 }
