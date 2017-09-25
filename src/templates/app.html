@@ -5,71 +5,72 @@
     <title>Notecase web app</title>
   </head>
   <body>
-    <div class="hide-toggle" style="grid-area: search">
-      <p>
-        <label>Search:</label>
-        <input name="search" autocomplete="off">
-        <button id="btnResetSearch">&times;</button>
-        <span id="matches"></span>
-      </p>
-    </div>
+    <div id="container">
+      <div class="hide-toggle" style="grid-area: search">
+        <p>
+          <label>Search:</label>
+          <input name="search" autocomplete="off">
+          <button id="btnResetSearch">&times;</button>
+          <span id="matches"></span>
+        </p>
+      </div>
 
-    <div class="hide-toggle" style="grid-area: tree-buttons;">
-      <a onclick="createNewTopLevelNote()" title="Create new top level note" class="icon-action">
-        <img src="stat/icons/file-plus.png" alt="Create new top level note"/>
-      </a>
-
-      <a onclick="collapseTree()" title="Collapse tree" class="icon-action">
-        <img src="stat/icons/list.png" alt="Collapse tree"/>
-      </a>
-
-      <a onclick="scrollToCurrentNote()" title="Scroll to current note" class="icon-action">
-        <img src="stat/icons/crosshair.png" alt="Collapse tree"/>
-      </a>
-    </div>
-
-    <div id="tree" style="overflow: auto; grid-area: tree">
-    </div>
-
-    <div style="grid-area: title">
-      <div style="display: flex; align-items: center;" class="hide-toggle">
-        <a onclick="encryptNoteAndSendToServer()"
-           title="Encrypt the note so that password will be required to view the note"
-           class="icon-action"
-           id="encryptButton"
-           style="display: none;">
-          <img src="stat/icons/lock.png" alt="Encrypt note"/>
+      <div class="hide-toggle" style="grid-area: tree-buttons;">
+        <a onclick="createNewTopLevelNote()" title="Create new top level note" class="icon-action">
+          <img src="stat/icons/file-plus.png" alt="Create new top level note"/>
         </a>
 
-        <a onclick="decryptNoteAndSendToServer()"
-           title="Decrypt note permamently so that password will not be required to access this note in the future"
-           class="icon-action"
-           id="decryptButton"
-           style="display: none;">
-          <img src="stat/icons/unlock.png" alt="Decrypt note"/>
+        <a onclick="collapseTree()" title="Collapse tree" class="icon-action">
+          <img src="stat/icons/list.png" alt="Collapse tree"/>
         </a>
 
-        &nbsp;
+        <a onclick="scrollToCurrentNote()" title="Scroll to current note" class="icon-action">
+          <img src="stat/icons/crosshair.png" alt="Collapse tree"/>
+        </a>
+      </div>
 
-        <input autocomplete="off" value="" id="noteTitle" style="font-size: x-large; border: 0; flex-grow: 100;" tabindex="1">
+      <div id="tree" style="overflow: auto; grid-area: tree">
+      </div>
 
-        <div class="hide-toggle">
-          <span id="top-message"></span>
-          <span id="error-message"></span>
+      <div style="grid-area: title;">
+        <div style="display: flex; align-items: center;" class="hide-toggle">
+          <a onclick="encryptNoteAndSendToServer()"
+             title="Encrypt the note so that password will be required to view the note"
+             class="icon-action"
+             id="encryptButton"
+             style="display: none;">
+            <img src="stat/icons/lock.png" alt="Encrypt note"/>
+          </a>
 
-          <button class="btn btn-sm" onclick="displaySettings();">Settings</button>
+          <a onclick="decryptNoteAndSendToServer()"
+             title="Decrypt note permamently so that password will not be required to access this note in the future"
+             class="icon-action"
+             id="decryptButton"
+             style="display: none;">
+            <img src="stat/icons/unlock.png" alt="Decrypt note"/>
+          </a>
 
           &nbsp;
 
-          <form action="logout" method="POST" style="display: inline;">
-            <input type="submit" class="btn btn-sm" value="Logout">
-          </form>
+          <input autocomplete="off" value="" id="noteTitle" style="font-size: x-large; border: 0; flex-grow: 100;" tabindex="1">
+
+          <div class="hide-toggle">
+            <span id="top-message"></span>
+            <span id="error-message"></span>
+
+            <button class="btn btn-sm" onclick="displaySettings();">Settings</button>
+
+            &nbsp;
+
+            <form action="logout" method="POST" style="display: inline;">
+              <input type="submit" class="btn btn-sm" value="Logout">
+            </form>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div style="overflow: auto; grid-area: note-content">
-      <div id="noteDetail">
+      <div style="overflow: auto; grid-area: note-content; padding-left: 10px;">
+        <div id="noteDetail"></div>
       </div>
     </div>
 

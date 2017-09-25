@@ -1,15 +1,17 @@
-body {
-    display: grid;
+#container {
+    max-width: 1100px;
+    margin: 0 auto; /* center */
     height: 100vh;
-    grid-template-areas: "messages messages"
-                         "search title"
+
+    display: grid;
+    grid-template-areas: "search title"
                          "tree-buttons note-content"
                          "tree note-content";
-    grid-template-columns: 1fr 3fr;
+    grid-template-columns: 2fr 5fr;
     grid-template-rows: auto
                         auto
-                        auto
                         1fr;
+    justify-content: center;
     grid-gap: 10px;
 }
 
