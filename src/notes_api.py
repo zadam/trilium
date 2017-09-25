@@ -44,7 +44,7 @@ def updateNote(note_id):
 
     now = math.floor(time.time())
 
-    history_snapshot_time_interval = getOption('history_snapshot_time_interval')
+    history_snapshot_time_interval = float(getOption('history_snapshot_time_interval'))
 
     history_cutoff = now - history_snapshot_time_interval
 
