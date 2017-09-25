@@ -4,6 +4,7 @@ function displaySettings() {
         type: 'GET',
         success: function (result) {
             $("#encryptionTimeoutInSeconds").val(result['encryption_session_timeout']);
+            $("#historySnapshotTimeIntervalInSeconds").val(result['history_snapshot_time_interval']);
         },
         error: () => alert("Error getting settings.")
     });
@@ -76,6 +77,26 @@ $("#encryptionTimeoutForm").submit(() => {
             globalEncryptionSessionTimeout = encryptionTimeout;
          },
         error: () => alert("Error occurred during changing encryption timeout.")
+    });
+
+    return false;
+});
+
+$("#historySnapshotTimeIntervalForm").submit(() => {
+    const historySnapshotTimeInterval = $("#historySnapshotTimeIntervalInSeconds").val();
+
+    $.ajax({
+        url: baseUrl + 'settings',
+        type: 'POST',
+        data: JSON.stringify({
+            name: 'history_snapshot_time_interval',
+            value: historySnapshotTimeInterval
+        }),
+        contentType: "application/json",
+        success: function () {
+            alert("History snapshot time interval has been changed.");
+         },
+        error: () => alert("Error occurred during changing history snapshot time interval.")
     });
 
     return false;

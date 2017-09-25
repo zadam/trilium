@@ -5,7 +5,7 @@ import sql
 
 settings_api = Blueprint('settings_api', __name__)
 
-allowed_options = [ 'encryption_session_timeout' ]
+allowed_options = [ 'encryption_session_timeout', 'history_snapshot_time_interval' ]
 
 @settings_api.route('/settings', methods = ['GET'])
 @login_required

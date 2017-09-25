@@ -10,7 +10,7 @@ from flask_login import login_required
 
 from sql import delete
 from sql import execute, insert, commit
-from sql import getResults, getSingleResult
+from sql import getResults, getSingleResult, getOption
 
 notes_api = Blueprint('notes_api', __name__)
 
@@ -44,7 +44,9 @@ def updateNote(note_id):
 
     now = math.floor(time.time())
 
-    history_cutoff = now - 600
+    history_snapshot_time_interval = getOption('history_snapshot_time_interval')
+
+    history_cutoff = now - history_snapshot_time_interval
 
     history = getSingleResult("select id from notes_history where note_id = ? and date_modified >= ?", [note_id, history_cutoff])
 

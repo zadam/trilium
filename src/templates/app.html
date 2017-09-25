@@ -121,6 +121,7 @@
         <ul>
           <li><a href="#changePassword">Change password</a></li>
           <li><a href="#encryptionTimeout">Encryption timeout</a></li>
+          <li><a href="#historySnapshotTimeInterval">History snapshots</a></li>
         </ul>
         <div id="changePassword">
           <form id="changePasswordForm">
@@ -150,6 +151,18 @@
             <div class="form-group">
               <label for="encryptionTimeoutInSeconds">Encryption timeout (in seconds)</label>
               <input class="form-control" id="encryptionTimeoutInSeconds" type="number">
+            </div>
+
+            <button class="btn btn-sm">Save</button>
+          </form>
+        </div>
+        <div id="historySnapshotTimeInterval">
+          <p>History snapshot time interval is time in seconds after which new history record will be created for the note.</p>
+
+          <form id="historySnapshotTimeIntervalForm">
+            <div class="form-group">
+              <label for="historySnapshotTimeIntervalInSeconds">History snapshot time interval (in seconds)</label>
+              <input class="form-control" id="historySnapshotTimeIntervalInSeconds" type="number">
             </div>
 
             <button class="btn btn-sm">Save</button>
