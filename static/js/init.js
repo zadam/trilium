@@ -17,7 +17,7 @@ $(document).bind('keydown', 'alt+s', function() {
 
 function formatDate(date) {
     const dateString = date.getDate() + ". " + (date.getMonth() + 1) + ". " + date.getFullYear() + " " +
-        date.getHours() + ":" + date.getMinutes();
+        date.getHours() + ":" + (date.getMinutes() <= 9 ? "0": "") + date.getMinutes();
     return dateString;
 }
 
