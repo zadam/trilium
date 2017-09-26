@@ -29,11 +29,11 @@
         </a>
       </div>
 
-      <div id="tree" style="overflow: auto; grid-area: tree">
+      <div id="tree" class="hide-toggle" style="overflow: auto; grid-area: tree">
       </div>
 
-      <div style="grid-area: title;">
-        <div style="display: flex; align-items: center;" class="hide-toggle">
+      <div class="hide-toggle" style="grid-area: title;">
+        <div style="display: flex; align-items: center;">
           <a onclick="encryptNoteAndSendToServer()"
              title="Encrypt the note so that password will be required to view the note"
              class="icon-action"
@@ -54,7 +54,7 @@
 
           <input autocomplete="off" value="" id="noteTitle" style="font-size: x-large; border: 0; flex-grow: 100;" tabindex="1">
 
-          <div class="hide-toggle">
+          <div>
             <span id="top-message"></span>
             <span id="error-message"></span>
 
