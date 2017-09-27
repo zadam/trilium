@@ -58,6 +58,28 @@ $(document).ready(function() {
     $(".note-editable").attr("tabindex", 2);
 });
 
+function html2notecase(contents, note) {
+    note.formatting = [];
+    note.links = [];
+    note.images = [];
+
+    note.detail.note_text = contents;
+
+    if (!note.detail.encryption) {
+        const linkRegexp = /<a[^>]+?href="[^"]*kapp#([A-Za-z0-9]{22})"[^>]*?>[^<]+?<\/a>/g;
+        let match;
+
+        while (match = linkRegexp.exec(contents)) {
+            console.log("adding link for " + match[1]);
+
+            note.links.push({
+                note_id: note.detail.note_id,
+                target_note_id: match[1]
+            });
+        }
+    }
+}
+
 function updateNoteFromInputs(note) {
     let contents = $('#noteDetail').summernote('code');
 
@@ -194,14 +216,12 @@ function loadNote(noteId) {
 
             $("#noteTitle").val(note.detail.note_title);
 
-            let noteText = notecase2html(note);
-
             noteChangeDisabled = true;
 
             // Clear contents and remove all stored history. This is to prevent undo from going across notes
             $('#noteDetail').summernote('reset');
 
-            $('#noteDetail').summernote('code', noteText);
+            $('#noteDetail').summernote('code', note.detail.note_text);
 
             document.location.hash = noteId;
 

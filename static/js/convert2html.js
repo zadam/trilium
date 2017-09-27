@@ -11,7 +11,6 @@ function convertNoteToHtml(noteId, failedNotes) {
                 return;
             }
 
-            note.detail.note_text = notecase2html(note);
             note.formatting = [];
 
             for (const link of note.links) {
