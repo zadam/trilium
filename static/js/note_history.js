@@ -21,7 +21,7 @@ $(document).bind('keydown', 'alt+h', function() {
 
                 $("#noteHistoryList").append($('<option>', {
                     value: row.id,
-                    text: formatDate(dateModified)
+                    text: formatDateTime(dateModified)
                 }));
             }
 

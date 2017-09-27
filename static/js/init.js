@@ -15,16 +15,22 @@ $(document).bind('keydown', 'alt+s', function() {
     $("input[name=search]").focus();
 });
 
+function formatTime(date) {
+    return (date.getHours() <= 9 ? "0" : "") + date.getHours() + ":" + (date.getMinutes() <= 9 ? "0" : "") + date.getMinutes();
+}
+
 function formatDate(date) {
-    const dateString = date.getDate() + ". " + (date.getMonth() + 1) + ". " + date.getFullYear() + " " +
-        date.getHours() + ":" + (date.getMinutes() <= 9 ? "0": "") + date.getMinutes();
-    return dateString;
+    return date.getDate() + ". " + (date.getMonth() + 1) + ". " + date.getFullYear();
+}
+
+function formatDateTime(date) {
+    return formatDate(date) + " " + formatTime(date);
 }
 
 // hide (toggle) everything except for the note content for distraction free writing
 $(document).bind('keydown', 'alt+t', function() {
     const date = new Date();
-    const dateString = formatDate(date);
+    const dateString = formatDateTime(date);
 
     $('#noteDetail').summernote('insertText', dateString);
 });

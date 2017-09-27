@@ -72,6 +72,10 @@ $("#insertLinkForm").submit(function() {
 // when click on link popup, in case of internal link, just go the the referenced note instead of default behavior
 // of opening the link in new window/tab
 $(document).on('click', 'div.popover-content a', function(e) {
+    goToInternalNote(e);
+});
+
+function goToInternalNote(e, callback) {
     const targetUrl = $(e.target).attr("href");
 
     const noteIdMatch = /app#([A-Za-z0-9]{22})/.exec(targetUrl);
@@ -82,8 +86,12 @@ $(document).on('click', 'div.popover-content a', function(e) {
         getNodeByKey(noteId).setActive();
 
         e.preventDefault();
+
+        if (callback) {
+            callback();
+        }
     }
-});
+}
 
 function getNodeIdFromLabel(label) {
     const noteIdMatch = / \(([A-Za-z0-9]{22})\)/.exec(label);
