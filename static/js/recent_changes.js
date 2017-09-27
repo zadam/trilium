@@ -13,12 +13,12 @@ $(document).bind('keydown', 'alt+r', function() {
 
             for (const row of result) {
                 if (row.encryption > 0) {
-                    if (!isEncryptionAvailable()) {
-                        // we don't display encrypted note activity if we're not in the secure session
-                        continue;
+                    if (isEncryptionAvailable()) {
+                        row.note_title = decryptString(row.note_title);
                     }
-
-                    row.note_title = decryptString(row.note_title);
+                    else {
+                        row.note_title = "[encrypted]";
+                    }
                 }
 
                 const dateModified = new Date(row.date_modified * 1000);
