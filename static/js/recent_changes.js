@@ -12,6 +12,15 @@ $(document).bind('keydown', 'alt+r', function() {
             const groupedByDate = {};
 
             for (const row of result) {
+                if (row.encryption > 0) {
+                    if (!isEncryptionAvailable()) {
+                        // we don't display encrypted note activity if we're not in the secure session
+                        continue;
+                    }
+
+                    row.note_title = decryptString(row.note_title);
+                }
+
                 const dateModified = new Date(row.date_modified * 1000);
                 const formattedDate = formatDate(dateModified);
 
