@@ -1,6 +1,9 @@
 import base64
 import sqlite3
 
+import math
+import time
+
 conn = None
 
 def dict_factory(cursor, row):
@@ -31,6 +34,17 @@ def setOption(name, value):
 
 def getOption(name):
     return getSingleResult("SELECT opt_value FROM options WHERE opt_name = ?", [name])['opt_value']
+
+def addAudit(category, request = None, note_id = None, change_from = None, change_to = None, comment = None):
+    now = math.floor(time.time())
+
+    browser_id = None
+
+    if request:
+        browser_id = request.headers['x-browser-id']
+
+    execute("INSERT INTO audit_log (date_modified, category, browser_id, note_id, change_from, change_to, comment)"
+            " VALUES (?, ?, ?, ?, ?, ?, ?)", [now, category, browser_id, note_id, change_from, change_to, comment])
 
 def delete(tablename, note_id):
     execute("DELETE FROM " + tablename + " WHERE note_id = ?", [note_id])

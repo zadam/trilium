@@ -10,7 +10,9 @@ from flask_login import login_required
 
 from sql import delete
 from sql import execute, insert, commit
-from sql import getResults, getSingleResult, getOption
+from sql import getResults, getSingleResult, getOption, addAudit
+
+import audit_category
 
 notes_api = Blueprint('notes_api', __name__)
 
@@ -66,6 +68,9 @@ def updateNote(note_id):
             now
         ])
 
+    if note['detail']['encryption'] != detail['encryption']:
+        addAudit(audit_category.ENCRYPTION, request, note_id, detail['encryption'], note['detail']['encryption'])
+
     execute("update notes set note_title = ?, note_text = ?, encryption = ?, date_modified = ? where note_id = ?", [
         note['detail']['note_title'],
         note['detail']['note_text'],
@@ -105,6 +110,8 @@ def deleteNote(note_id):
     delete("notes_tree", note_id)
     delete("notes", note_id)
 
+    addAudit(audit_category.DELETE_NOTE, request, note_id)
+
     commit()
     return jsonify({})
 
@@ -136,6 +143,8 @@ def createChild(parent_note_id):
         execute('update notes_tree set note_pos = note_pos + 1 where note_pid = ? and note_pos > ?', [parent_note_id, after_note['note_pos']])
     else:
         raise Exception('Unknown target: ' + note['target'])
+
+    addAudit(audit_category.CREATE_NOTE, request, noteId)
 
     now = math.floor(time.time())
 

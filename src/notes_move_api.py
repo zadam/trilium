@@ -1,7 +1,9 @@
 from flask import Blueprint, jsonify
+from flask import request
 from flask_login import login_required
 
-from sql import execute, commit
+import audit_category
+from sql import execute, commit, addAudit
 from sql import getSingleResult
 
 notes_move_api = Blueprint('notes_move_api', __name__)
@@ -20,6 +22,8 @@ def moveToNote(note_id, parent_id):
 
     execute("update notes_tree set note_pid = ?, note_pos = ? where note_id = ?", [parent_id, new_note_pos, note_id])
 
+    addAudit(audit_category.CHANGE_PARENT, request, note_id)
+
     commit()
     return jsonify({})
 
@@ -31,6 +35,8 @@ def moveBeforeNote(note_id, before_note_id):
         execute("update notes_tree set note_pos = note_pos + 1 where note_id = ?", [before_note_id])
 
         execute("update notes_tree set note_pid = ?, note_pos = ? where note_id = ?", [before_note['note_pid'], before_note['note_pos'], note_id])
+
+        addAudit(audit_category.CHANGE_POSITION, request, note_id)
 
         commit()
 
@@ -45,6 +51,8 @@ def moveAfterNote(note_id, after_note_id):
 
         execute("update notes_tree set note_pid = ?, note_pos = ? where note_id = ?", [after_note['note_pid'], after_note['note_pos'] + 1, note_id])
 
+        addAudit(audit_category.CHANGE_POSITION, request, note_id)
+
         commit()
 
     return jsonify({})
@@ -52,6 +60,8 @@ def moveAfterNote(note_id, after_note_id):
 @notes_move_api.route('/notes/<string:note_id>/expanded/<int:expanded>', methods = ['PUT'])
 def setExpandedNote(note_id, expanded):
     execute("update notes_tree set is_expanded = ? where note_id = ?", [expanded, note_id])
+
+    # no audit here, not really important
 
     commit()
     return jsonify({})

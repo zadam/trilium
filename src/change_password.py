@@ -5,9 +5,10 @@ from Crypto.Util import Counter
 
 import sql
 import my_scrypt
+import audit_category
 
 
-def change_password(current_password, new_password):
+def change_password(current_password, new_password, request = None):
     current_password_hash = base64.b64encode(my_scrypt.getVerificationHash(current_password))
 
     if current_password_hash != sql.getOption('password_verification_hash'):
@@ -48,6 +49,8 @@ def change_password(current_password, new_password):
     sql.setOption('encrypted_data_key', new_encrypted_data_key)
 
     sql.setOption('password_verification_hash', new_password_verification_key)
+
+    sql.addAudit(audit_category.CHANGE_PASSWORD, request)
 
     sql.commit()
 

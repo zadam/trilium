@@ -1,3 +1,6 @@
+import base64
+import os
+
 from flask import Blueprint, jsonify
 from flask_login import login_required
 
@@ -44,5 +47,6 @@ def getTree():
     retObject['password_derived_key_salt'] = getOption('password_derived_key_salt')
     retObject['encrypted_data_key'] = getOption('encrypted_data_key')
     retObject['encryption_session_timeout'] = getOption('encryption_session_timeout')
+    retObject['browser_id'] = base64.b64encode(os.urandom(8))
 
     return jsonify(retObject)

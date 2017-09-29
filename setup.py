@@ -1,18 +1,15 @@
 #!/usr/bin/python
 
-import binascii
-import getpass
-import os
 import base64
+import getpass
+import hashlib
+import os
+from Crypto.Cipher import AES
+from Crypto.Util import Counter
 
 from builtins import input
 
-import src.config_provider
-import src.sql
 import src.my_scrypt
-from Crypto.Cipher import AES
-from Crypto.Util import Counter
-import hashlib
 
 config = src.config_provider.getConfig()
 src.sql.connect(config['Document']['documentPath'])

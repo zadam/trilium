@@ -95,6 +95,11 @@ $(function(){
         globalEncryptionSessionTimeout = resp.encryption_session_timeout;
         globalEncryptedDataKey = resp.encrypted_data_key;
 
+        // add browser ID header to all AJAX requests
+        $.ajaxSetup({
+            headers: { 'x-browser-id': resp.browser_id }
+        });
+
         if (document.location.hash) {
             startNoteId = document.location.hash.substr(1); // strip initial #
         }

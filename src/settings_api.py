@@ -2,6 +2,7 @@ from flask import Blueprint, jsonify, request
 from flask_login import login_required
 
 import sql
+import audit_category
 
 settings_api = Blueprint('settings_api', __name__)
 
@@ -25,7 +26,10 @@ def set_settings():
     req = request.get_json(force=True)
 
     if req['name'] in allowed_options:
+        sql.addAudit(audit_category.SETTINGS, request, None, sql.getOption(req['name']), req['value'], req['name'])
+
         sql.setOption(req['name'], req['value'])
+
         sql.commit()
 
         return jsonify({})
