@@ -13,6 +13,7 @@ from notes_move_api import notes_move_api
 from password_api import password_api
 from settings_api import settings_api
 from notes_history_api import notes_history_api
+from audit_api import audit_api
 import config_provider
 import my_scrypt
 
@@ -35,6 +36,7 @@ app.register_blueprint(notes_move_api)
 app.register_blueprint(password_api)
 app.register_blueprint(settings_api)
 app.register_blueprint(notes_history_api)
+app.register_blueprint(audit_api)
 
 class User(UserMixin):
     pass

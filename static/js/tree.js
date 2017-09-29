@@ -86,6 +86,15 @@ function setExpandedToServer(note_id, is_expanded) {
 let globalEncryptionSalt;
 let globalEncryptionSessionTimeout;
 let globalEncryptedDataKey;
+let globalFullLoadTime;
+
+setInterval(() => {
+    $.get(baseUrl + 'audit/' + globalFullLoadTime).then(resp => {
+        if (resp.changed) {
+            window.location.reload(true);
+        }
+    });
+}, 60 * 1000);
 
 $(function(){
     $.get(baseUrl + 'tree').then(resp => {
@@ -94,6 +103,7 @@ $(function(){
         globalEncryptionSalt = resp.password_derived_key_salt;
         globalEncryptionSessionTimeout = resp.encryption_session_timeout;
         globalEncryptedDataKey = resp.encrypted_data_key;
+        globalFullLoadTime = resp.full_load_time;
 
         // add browser ID header to all AJAX requests
         $.ajaxSetup({

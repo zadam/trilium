@@ -1,5 +1,7 @@
 import base64
 import os
+import math
+import time
 
 from flask import Blueprint, jsonify
 from flask_login import login_required
@@ -48,5 +50,6 @@ def getTree():
     retObject['encrypted_data_key'] = getOption('encrypted_data_key')
     retObject['encryption_session_timeout'] = getOption('encryption_session_timeout')
     retObject['browser_id'] = base64.b64encode(os.urandom(8))
+    retObject['full_load_time'] = math.floor(time.time())
 
     return jsonify(retObject)
