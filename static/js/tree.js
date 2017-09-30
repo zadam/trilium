@@ -89,12 +89,23 @@ let globalEncryptedDataKey;
 let globalFullLoadTime;
 
 setInterval(() => {
-    $.get(baseApiUrl + 'audit/' + globalFullLoadTime).then(resp => {
-        if (resp.changed) {
-            window.location.reload(true);
+    $.ajax({
+        url: baseApiUrl + 'audit/' + globalFullLoadTime,
+        type: 'GET',
+        success: function (resp) {
+            if (resp.changed) {
+                window.location.reload(true);
+            }
+        },
+        statusCode: {
+            401: function() {
+                // if the user got logged out then we should display the page
+                // here we do that by reloading which will force the redirect if the user is really logged out
+                window.location.reload(true);
+            }
         }
     });
-}, 60 * 1000);
+}, 10 * 1000);
 
 $(function(){
     $.get(baseApiUrl + 'tree').then(resp => {
