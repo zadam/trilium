@@ -8,7 +8,7 @@ settings_api = Blueprint('settings_api', __name__)
 
 allowed_options = [ 'encryption_session_timeout', 'history_snapshot_time_interval' ]
 
-@settings_api.route('/settings', methods = ['GET'])
+@settings_api.route('/api/settings', methods = ['GET'])
 @login_required
 def get_settings():
     dict = {}
@@ -20,7 +20,7 @@ def get_settings():
 
     return jsonify(dict)
 
-@settings_api.route('/settings', methods = ['POST'])
+@settings_api.route('/api/settings', methods = ['POST'])
 @login_required
 def set_settings():
     req = request.get_json(force=True)

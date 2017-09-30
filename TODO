@@ -1,7 +1,4 @@
 - logout detection
 - conflict detection
+  - note title and content changes are not in audit_log table
 - deleting cloned nodes ends with 500 (probably only on folders)
-
-Later:
-- context menu on items (add subnote etc.)
-- sync with sync server

@@ -1,6 +1,6 @@
 function displaySettings() {
     $.ajax({
-        url: baseUrl + 'settings',
+        url: baseApiUrl + 'settings',
         type: 'GET',
         success: function (result) {
             $("#encryptionTimeoutInSeconds").val(result['encryption_session_timeout']);
@@ -32,7 +32,7 @@ $("#changePasswordForm").submit(() => {
     }
 
     $.ajax({
-        url: baseUrl + 'password/change',
+        url: baseApiUrl + 'password/change',
         type: 'POST',
         data: JSON.stringify({
             'current_password': oldPassword,
@@ -64,7 +64,7 @@ $("#encryptionTimeoutForm").submit(() => {
     const encryptionTimeout = $("#encryptionTimeoutInSeconds").val();
 
     $.ajax({
-        url: baseUrl + 'settings',
+        url: baseApiUrl + 'settings',
         type: 'POST',
         data: JSON.stringify({
             name: 'encryption_session_timeout',
@@ -86,7 +86,7 @@ $("#historySnapshotTimeIntervalForm").submit(() => {
     const historySnapshotTimeInterval = $("#historySnapshotTimeIntervalInSeconds").val();
 
     $.ajax({
-        url: baseUrl + 'settings',
+        url: baseApiUrl + 'settings',
         type: 'POST',
         data: JSON.stringify({
             name: 'history_snapshot_time_interval',

@@ -6,7 +6,7 @@ from sql import getSingleResult
 
 audit_api = Blueprint('audit_api', __name__)
 
-@audit_api.route('/audit/<int:full_load_time>', methods = ['GET'])
+@audit_api.route('/api/audit/<int:full_load_time>', methods = ['GET'])
 @login_required
 def getNote(full_load_time):
     browser_id = request.headers['x-browser-id']

@@ -1,6 +1,6 @@
 function moveBeforeNode(node, beforeNode) {
     $.ajax({
-        url: baseUrl + 'notes/' + node.key + '/moveBefore/' + beforeNode.key,
+        url: baseApiUrl + 'notes/' + node.key + '/moveBefore/' + beforeNode.key,
         type: 'PUT',
         contentType: "application/json",
         success: function () {
@@ -11,7 +11,7 @@ function moveBeforeNode(node, beforeNode) {
 
 function moveAfterNode(node, afterNode) {
     $.ajax({
-        url: baseUrl + 'notes/' + node.key + '/moveAfter/' + afterNode.key,
+        url: baseApiUrl + 'notes/' + node.key + '/moveAfter/' + afterNode.key,
         type: 'PUT',
         contentType: "application/json",
         success: function () {
@@ -22,7 +22,7 @@ function moveAfterNode(node, afterNode) {
 
 function moveToNode(node, toNode) {
     $.ajax({
-        url: baseUrl + 'notes/' + node.key + '/moveTo/' + toNode.key,
+        url: baseApiUrl + 'notes/' + node.key + '/moveTo/' + toNode.key,
         type: 'PUT',
         contentType: "application/json",
         success: function () {
@@ -39,7 +39,7 @@ function moveToNode(node, toNode) {
 function deleteNode(node) {
     if (confirm('Are you sure you want to delete note "' + node.title + '"?')) {
         $.ajax({
-            url: baseUrl + 'notes/' + node.key,
+            url: baseApiUrl + 'notes/' + node.key,
             type: 'DELETE',
             success: function () {
                 if (node.getParent() !== null && node.getParent().getChildren().length <= 1) {
@@ -69,7 +69,7 @@ function deleteNode(node) {
 function moveNodeUp(node) {
     if (node.getParent() !== null) {
         $.ajax({
-            url: baseUrl + 'notes/' + node.key + '/moveAfter/' + node.getParent().key,
+            url: baseApiUrl + 'notes/' + node.key + '/moveAfter/' + node.getParent().key,
             type: 'PUT',
             contentType: "application/json",
             success: function () {

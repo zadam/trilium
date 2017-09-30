@@ -10,7 +10,7 @@ from sql import getResults, getSingleResult, getOption
 
 tree_api = Blueprint('tree_api', __name__)
 
-@tree_api.route('/tree', methods = ['GET'])
+@tree_api.route('/api/tree', methods = ['GET'])
 @login_required
 def getTree():
     notes = getResults("select "

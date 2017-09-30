@@ -94,7 +94,7 @@ function updateNoteFromInputs(note) {
 
 function saveNoteToServer(note, callback) {
     $.ajax({
-        url: baseUrl + 'notes/' + note.detail.note_id,
+        url: baseApiUrl + 'notes/' + note.detail.note_id,
         type: 'PUT',
         data: JSON.stringify(note),
         contentType: "application/json",
@@ -134,7 +134,7 @@ function createNote(node, parentKey, target, encryption) {
     const newNoteNameEncryptedIfNecessary = encryption > 0 ? encryptString(newNoteName) : newNoteName;
 
     $.ajax({
-        url: baseUrl + 'notes/' + parentKey + '/children' ,
+        url: baseApiUrl + 'notes/' + parentKey + '/children' ,
         type: 'POST',
         data: JSON.stringify({
             note_title: newNoteNameEncryptedIfNecessary,
@@ -192,7 +192,7 @@ function setNoteBackgroundIfEncrypted(note) {
 }
 
 function loadNote(noteId) {
-    $.get(baseUrl + 'notes/' + noteId).then(function(note) {
+    $.get(baseApiUrl + 'notes/' + noteId).then(function(note) {
         globalCurrentNote = note;
 
         if (newNoteCreated) {

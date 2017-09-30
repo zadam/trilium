@@ -8,7 +8,7 @@ from sql import getSingleResult
 
 notes_move_api = Blueprint('notes_move_api', __name__)
 
-@notes_move_api.route('/notes/<string:note_id>/moveTo/<string:parent_id>', methods = ['PUT'])
+@notes_move_api.route('/api/notes/<string:note_id>/moveTo/<string:parent_id>', methods = ['PUT'])
 @login_required
 def moveToNote(note_id, parent_id):
     res = getSingleResult('select max(note_pos) as max_note_pos from notes_tree where note_pid = ?', [parent_id])
@@ -27,7 +27,7 @@ def moveToNote(note_id, parent_id):
     commit()
     return jsonify({})
 
-@notes_move_api.route('/notes/<string:note_id>/moveBefore/<string:before_note_id>', methods = ['PUT'])
+@notes_move_api.route('/api/notes/<string:note_id>/moveBefore/<string:before_note_id>', methods = ['PUT'])
 def moveBeforeNote(note_id, before_note_id):
     before_note = getSingleResult("select * from notes_tree where note_id = ?", [before_note_id])
 
@@ -42,7 +42,7 @@ def moveBeforeNote(note_id, before_note_id):
 
     return jsonify({})
 
-@notes_move_api.route('/notes/<string:note_id>/moveAfter/<string:after_note_id>', methods = ['PUT'])
+@notes_move_api.route('/api/notes/<string:note_id>/moveAfter/<string:after_note_id>', methods = ['PUT'])
 def moveAfterNote(note_id, after_note_id):
     after_note = getSingleResult("select * from notes_tree where note_id = ?", [after_note_id])
 
@@ -57,7 +57,7 @@ def moveAfterNote(note_id, after_note_id):
 
     return jsonify({})
 
-@notes_move_api.route('/notes/<string:note_id>/expanded/<int:expanded>', methods = ['PUT'])
+@notes_move_api.route('/api/notes/<string:note_id>/expanded/<int:expanded>', methods = ['PUT'])
 def setExpandedNote(note_id, expanded):
     execute("update notes_tree set is_expanded = ? where note_id = ?", [expanded, note_id])
 

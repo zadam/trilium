@@ -16,7 +16,7 @@ import audit_category
 
 notes_api = Blueprint('notes_api', __name__)
 
-@notes_api.route('/notes/<string:note_id>', methods = ['GET'])
+@notes_api.route('/api/notes/<string:note_id>', methods = ['GET'])
 @login_required
 def getNote(note_id):
     execute("update options set opt_value = ? where opt_name = 'start_node'", [note_id])
@@ -34,7 +34,7 @@ def getNote(note_id):
         'images': getResults("select * from images where note_id = ? order by note_offset", [note_id])
     })
 
-@notes_api.route('/notes/<string:note_id>', methods = ['PUT'])
+@notes_api.route('/api/notes/<string:note_id>', methods = ['PUT'])
 @login_required
 def updateNote(note_id):
     detail = getSingleResult("select * from notes where note_id = ?", [note_id])
@@ -99,7 +99,7 @@ def updateNote(note_id):
 
     return jsonify({})
 
-@notes_api.route('/notes/<string:note_id>', methods = ['DELETE'])
+@notes_api.route('/api/notes/<string:note_id>', methods = ['DELETE'])
 @login_required
 def deleteNote(note_id):
     children = getResults("select note_id from notes_tree where note_pid = ?", [note_id])
@@ -115,7 +115,7 @@ def deleteNote(note_id):
     commit()
     return jsonify({})
 
-@notes_api.route('/notes/<string:parent_note_id>/children', methods = ['POST'])
+@notes_api.route('/api/notes/<string:parent_note_id>/children', methods = ['POST'])
 @login_required
 def createChild(parent_note_id):
     note = request.get_json(force=True)
@@ -173,7 +173,7 @@ def createChild(parent_note_id):
         'note_id': noteId
     })
 
-@notes_api.route('/notes', methods = ['GET'])
+@notes_api.route('/api/notes', methods = ['GET'])
 @login_required
 def searchNotes():
     search = '%' + request.args['search'] + '%'

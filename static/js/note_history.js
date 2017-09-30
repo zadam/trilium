@@ -11,7 +11,7 @@ $(document).bind('keydown', 'alt+h', function() {
     $("#noteHistoryContent").empty();
 
     $.ajax({
-        url: baseUrl + 'notes-history/' + globalCurrentNote.detail.note_id,
+        url: baseApiUrl + 'notes-history/' + globalCurrentNote.detail.note_id,
         type: 'GET',
         success: function (result) {
             globalHistoryItems = result;

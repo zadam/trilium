@@ -338,7 +338,7 @@ function updateSubTreeRecursively(noteId, updateCallback, successCallback) {
 
 function updateNoteSynchronously(noteId, updateCallback, successCallback) {
     $.ajax({
-        url: baseUrl + 'notes/' + noteId,
+        url: baseApiUrl + 'notes/' + noteId,
         type: 'GET',
         async: false,
         success: function (note) {
@@ -353,7 +353,7 @@ function updateNoteSynchronously(noteId, updateCallback, successCallback) {
             }
 
             $.ajax({
-                url: baseUrl + 'notes/' + noteId,
+                url: baseApiUrl + 'notes/' + noteId,
                 type: 'PUT',
                 data: JSON.stringify(note),
                 contentType: "application/json",

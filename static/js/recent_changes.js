@@ -6,7 +6,7 @@ $(document).bind('keydown', 'alt+r', function() {
     });
 
     $.ajax({
-        url: baseUrl + 'recent-changes/',
+        url: baseApiUrl + 'recent-changes/',
         type: 'GET',
         success: function (result) {
             const groupedByDate = {};

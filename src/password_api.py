@@ -7,7 +7,7 @@ import change_password
 
 password_api = Blueprint('password_api', __name__)
 
-@password_api.route('/password/change', methods = ['POST'])
+@password_api.route('/api/password/change', methods = ['POST'])
 @login_required
 def changePassword():
     req = request.get_json(force=True)

@@ -76,7 +76,7 @@ function setExpandedToServer(note_id, is_expanded) {
     expanded_num = is_expanded ? 1 : 0;
 
     $.ajax({
-        url: baseUrl + 'notes/' + note_id + '/expanded/' + expanded_num,
+        url: baseApiUrl + 'notes/' + note_id + '/expanded/' + expanded_num,
         type: 'PUT',
         contentType: "application/json",
         success: function(result) {}
@@ -89,7 +89,7 @@ let globalEncryptedDataKey;
 let globalFullLoadTime;
 
 setInterval(() => {
-    $.get(baseUrl + 'audit/' + globalFullLoadTime).then(resp => {
+    $.get(baseApiUrl + 'audit/' + globalFullLoadTime).then(resp => {
         if (resp.changed) {
             window.location.reload(true);
         }
@@ -97,7 +97,7 @@ setInterval(() => {
 }, 60 * 1000);
 
 $(function(){
-    $.get(baseUrl + 'tree').then(resp => {
+    $.get(baseApiUrl + 'tree').then(resp => {
         const notes = resp.notes;
         let startNoteId = resp.start_note_id;
         globalEncryptionSalt = resp.password_derived_key_salt;
@@ -169,7 +169,7 @@ $("input[name=search]").keyup(function (e) {
     }
 
     if (e && e.which === $.ui.keyCode.ENTER) {
-        $.get(baseUrl + 'notes?search=' + searchString).then(resp => {
+        $.get(baseApiUrl + 'notes?search=' + searchString).then(resp => {
             console.log("search: ", resp);
 
             // Pass a string to perform case insensitive matching
