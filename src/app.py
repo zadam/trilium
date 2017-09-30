@@ -101,6 +101,13 @@ def load_user(user_id):
     else:
         return None
 
+@login_manager.unauthorized_handler
+def unauthorized_handler():
+    if request.path.startswith('/api'):
+        return 'Unauthorized', 401
+    else:
+        return redirect('/login')
+
 if __name__ == "__main__":
     ssl_context = None
 

@@ -2,3 +2,6 @@
 - conflict detection
   - note title and content changes are not in audit_log table
 - deleting cloned nodes ends with 500 (probably only on folders)
+- what links here
+- recent changes - link to note should lead to the revision
+- db upgrade / migration
