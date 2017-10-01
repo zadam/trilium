@@ -10,7 +10,7 @@ from flask_login import login_required
 
 from sql import delete
 from sql import execute, insert, commit
-from sql import getResults, getSingleResult, getOption, addAudit
+from sql import getResults, getSingleResult, getOption, addAudit, deleteRecentAudits
 
 import audit_category
 
@@ -67,6 +67,14 @@ def updateNote(note_id):
             note['detail']['encryption'],
             now
         ])
+
+    if note['detail']['note_title'] != detail['note_title']:
+        deleteRecentAudits(audit_category.UPDATE_TITLE, request, note_id)
+        addAudit(audit_category.UPDATE_TITLE, request, note_id)
+
+    if note['detail']['note_text'] != detail['note_text']:
+        deleteRecentAudits(audit_category.UPDATE_CONTENT, request, note_id)
+        addAudit(audit_category.UPDATE_CONTENT, request, note_id)
 
     if note['detail']['encryption'] != detail['encryption']:
         addAudit(audit_category.ENCRYPTION, request, note_id, detail['encryption'], note['detail']['encryption'])
