@@ -15,28 +15,6 @@ $(document).bind('keydown', 'alt+s', function() {
     $("input[name=search]").focus();
 });
 
-function getDateFromTS(timestamp) {
-    // Date accepts number of milliseconds since epoch so UTC timestamp works without any extra handling
-    // see https://stackoverflow.com/questions/4631928/convert-utc-epoch-to-local-date-with-javascript
-    const utcDate = new Date(timestamp * 1000);
-
-    const localDate = new Date(utcDate.getTime() - utcDate.getTimezoneOffset() * 60 * 1000);
-
-    return localDate;
-}
-
-function formatTime(date) {
-    return (date.getHours() <= 9 ? "0" : "") + date.getHours() + ":" + (date.getMinutes() <= 9 ? "0" : "") + date.getMinutes();
-}
-
-function formatDate(date) {
-    return date.getDate() + ". " + (date.getMonth() + 1) + ". " + date.getFullYear();
-}
-
-function formatDateTime(date) {
-    return formatDate(date) + " " + formatTime(date);
-}
-
 // hide (toggle) everything except for the note content for distraction free writing
 $(document).bind('keydown', 'alt+t', function() {
     const date = new Date();
