@@ -11,10 +11,6 @@ $(document).bind('keydown', 'alt+m', function() {
     $("#noteDetailWrapper").css("width", hidden ? "750px" : "100%");
 });
 
-$(document).bind('keydown', 'alt+s', function() {
-    $("input[name=search]").focus();
-});
-
 // hide (toggle) everything except for the note content for distraction free writing
 $(document).bind('keydown', 'alt+t', function() {
     const date = new Date();

@@ -215,4 +215,14 @@ function scrollToCurrentNote() {
     }
 }
 
+$(document).bind('keydown', 'alt+s', function() {
+    $("#search-box").show();
+
+    $("input[name=search]").focus();
+});
+
+function toggleSearch() {
+    $("#search-box").toggle();
+}
+
 $(document).bind('keydown', 'alt+c', collapseTree);

@@ -6,30 +6,36 @@
   </head>
   <body>
     <div id="container">
-      <div class="hide-toggle" style="grid-area: search">
-        <p>
-          <label>Search:</label>
-          <input name="search" autocomplete="off">
-          <button id="btnResetSearch">&times;</button>
-          <span id="matches"></span>
-        </p>
-      </div>
+      <div style="grid-area: tree">
+        <div class="hide-toggle">
+          <a onclick="createNewTopLevelNote()" title="Create new top level note" class="icon-action">
+            <img src="stat/icons/file-plus.png" alt="Create new top level note"/>
+          </a>
 
-      <div class="hide-toggle" style="grid-area: tree-buttons;">
-        <a onclick="createNewTopLevelNote()" title="Create new top level note" class="icon-action">
-          <img src="stat/icons/file-plus.png" alt="Create new top level note"/>
-        </a>
+          <a onclick="collapseTree()" title="Collapse tree" class="icon-action">
+            <img src="stat/icons/list.png" alt="Collapse tree"/>
+          </a>
 
-        <a onclick="collapseTree()" title="Collapse tree" class="icon-action">
-          <img src="stat/icons/list.png" alt="Collapse tree"/>
-        </a>
+          <a onclick="scrollToCurrentNote()" title="Scroll to current note" class="icon-action">
+            <img src="stat/icons/crosshair.png" alt="Collapse tree"/>
+          </a>
 
-        <a onclick="scrollToCurrentNote()" title="Scroll to current note" class="icon-action">
-          <img src="stat/icons/crosshair.png" alt="Collapse tree"/>
-        </a>
-      </div>
+          <a onclick="toggleSearch()" title="Search in notes" class="icon-action">
+            <img src="stat/icons/search.png" alt="Search in notes"/>
+          </a>
 
-      <div id="tree" class="hide-toggle" style="overflow: auto; grid-area: tree">
+          <div id="search-box" style="display: none; padding: 10px; margin-top: 10px;">
+            <p>
+              <label>Search:</label>
+              <input name="search" autocomplete="off">
+              <button id="btnResetSearch">&times;</button>
+              <span id="matches"></span>
+            </p>
+          </div>
+        </div>
+
+        <div id="tree" class="hide-toggle" style="overflow: auto;">
+        </div>
       </div>
 
       <div class="hide-toggle" style="grid-area: title;">

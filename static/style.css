@@ -4,8 +4,8 @@
     height: 100vh;
 
     display: grid;
-    grid-template-areas: "search title"
-                         "tree-buttons note-content"
+    grid-template-areas: "tree title"
+                         "tree note-content"
                          "tree note-content";
     grid-template-columns: 2fr 5fr;
     grid-template-rows: auto
