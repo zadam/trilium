@@ -21,7 +21,7 @@ $(document).bind('keydown', 'alt+r', function() {
                     }
                 }
 
-                const dateModified = new Date(row.date_modified * 1000);
+                const dateModified = getDateFromTS(row.date_modified);
                 const formattedDate = formatDate(dateModified);
 
                 if (!groupedByDate[formattedDate]) {
@@ -41,7 +41,7 @@ $(document).bind('keydown', 'alt+r', function() {
                 const dayEl = $('<div>').append($('<b>').html(formattedDay)).append(changesListEl);
 
                 for (const dayChanges of groupedByDate[formattedDay]) {
-                    const formattedTime = formatTime(new Date(dayChanges.date_modified * 1000));
+                    const formattedTime = formatTime(getDateFromTS(dayChanges.date_modified));
 
                     const noteLink = $("<a>", {
                        href: 'app#' + dayChanges.note_id,

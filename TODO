@@ -1,7 +1,8 @@
-- conflict detection
-  - note title and content changes are not in audit_log table
 - deleting cloned nodes ends with 500 (probably only on folders)
 - what links here
 - recent changes - link to note should lead to the revision
 - db upgrade / migration
 - dates should be stored in UTC to work correctly with time zones
+  - we should also record timezone info so that we display the date correctly with respect to the local date at the time of recording it
+- modularize frontend
+  - unify handling of global variables

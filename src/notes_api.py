@@ -12,6 +12,7 @@ from sql import delete
 from sql import execute, insert, commit
 from sql import getResults, getSingleResult, getOption, addAudit, deleteRecentAudits
 
+import utils
 import audit_category
 
 notes_api = Blueprint('notes_api', __name__)
@@ -44,7 +45,7 @@ def updateNote(note_id):
 
     note = request.get_json(force=True)
 
-    now = math.floor(time.time())
+    now = utils.nowTimestamp()
 
     history_snapshot_time_interval = float(getOption('history_snapshot_time_interval'))
 
@@ -154,7 +155,7 @@ def createChild(parent_note_id):
 
     addAudit(audit_category.CREATE_NOTE, request, noteId)
 
-    now = math.floor(time.time())
+    now = utils.nowTimestamp()
 
     insert("notes", {
         'note_id': noteId,

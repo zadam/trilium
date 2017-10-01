@@ -7,6 +7,7 @@ from flask import Blueprint, jsonify
 from flask_login import login_required
 
 from sql import getResults, getSingleResult, getOption
+import utils
 
 tree_api = Blueprint('tree_api', __name__)
 
@@ -50,6 +51,6 @@ def getTree():
     retObject['encrypted_data_key'] = getOption('encrypted_data_key')
     retObject['encryption_session_timeout'] = getOption('encryption_session_timeout')
     retObject['browser_id'] = base64.b64encode(os.urandom(8))
-    retObject['full_load_time'] = math.floor(time.time())
+    retObject['full_load_time'] = utils.nowTimestamp()
 
     return jsonify(retObject)

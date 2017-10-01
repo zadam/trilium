@@ -17,7 +17,7 @@ $(document).bind('keydown', 'alt+h', function() {
             globalHistoryItems = result;
 
             for (const row of result) {
-                const dateModified = new Date(row.date_modified * 1000);
+                const dateModified = getDateFromTS(row.date_modified);
 
                 $("#noteHistoryList").append($('<option>', {
                     value: row.id,

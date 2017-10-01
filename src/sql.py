@@ -4,6 +4,8 @@ import sqlite3
 import math
 import time
 
+import utils
+
 conn = None
 
 def dict_factory(cursor, row):
@@ -36,7 +38,7 @@ def getOption(name):
     return getSingleResult("SELECT opt_value FROM options WHERE opt_name = ?", [name])['opt_value']
 
 def addAudit(category, request = None, note_id = None, change_from = None, change_to = None, comment = None):
-    now = math.floor(time.time())
+    now = utils.nowTimestamp()
 
     browser_id = None
 
@@ -49,7 +51,7 @@ def addAudit(category, request = None, note_id = None, change_from = None, chang
 def deleteRecentAudits(category, request, note_id):
     browser_id = request.headers['x-browser-id']
 
-    delete_cutoff = math.floor(time.time()) - 10 * 60;
+    delete_cutoff = utils.nowTimestamp() - 10 * 60;
 
     execute("DELETE FROM audit_log WHERE category = ? AND browser_id = ? AND note_id = ? AND date_modified > ?",
             [category, browser_id, note_id, delete_cutoff])
