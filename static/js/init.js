@@ -31,31 +31,6 @@ $(window).on('beforeunload', function(){
 
 // Overrides the default autocomplete filter function to search for matched on atleast 1 word in each of the input term's words
 $.ui.autocomplete.filter = function (array, terms) {
-    const options = {
-        shouldSort: true,
-        threshold: 0.6,
-        location: 0,
-        distance: 100,
-        maxPatternLength: 32,
-        minMatchCharLength: 1,
-        keys: [
-            "value"
-        ]
-    };
-
-
-    const startDate = new Date();
-
-    const fuse = new Fuse(array, options); // "list" is the item array
-
-    const results = fuse.search(terms);
-
-    console.log("Search took " + (new Date().getTime() - startDate.getTime()) + "ms");
-
-    return results;
-};
-
-$.ui.autocomplete.filter = function (array, terms) {
     if (!terms) {
         return [];
     }
