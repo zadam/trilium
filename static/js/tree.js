@@ -171,6 +171,52 @@ $(function(){
     });
 });
 
+function collapseTree() {
+    globalTree.fancytree("getRootNode").visit(function(node){
+        node.setExpanded(false);
+    });
+}
+
+$(document).bind('keydown', 'alt+c', collapseTree);
+
+function scrollToCurrentNote() {
+    const node = getNodeByKey(globalCurrentNote.detail.note_id);
+
+    if (node) {
+        node.makeVisible({scrollIntoView: true});
+
+        node.setFocus();
+    }
+}
+
+function showSearch() {
+    $("#search-box").show();
+
+    $("input[name=search]").focus();
+}
+
+$(document).bind('keydown', 'alt+s', showSearch);
+
+function toggleSearch() {
+    if ($("#search-box:hidden").length) {
+        showSearch();
+    }
+    else {
+        resetSearch();
+
+        $("#search-box").hide();
+    }
+}
+
+function resetSearch() {
+    $("input[name=search]").val("");
+
+    const tree = globalTree.fancytree("getTree");
+    tree.clearFilter();
+}
+
+$("button#btnResetSearch").click(resetSearch);
+
 $("input[name=search]").keyup(function (e) {
     const searchString = $(this).val();
 
@@ -191,38 +237,3 @@ $("input[name=search]").keyup(function (e) {
         });
     }
 }).focus();
-
-$("button#btnResetSearch").click(function () {
-    $("input[name=search]").val("");
-
-    const tree = globalTree.fancytree("getTree");
-    tree.clearFilter();
-});
-
-function collapseTree() {
-    globalTree.fancytree("getRootNode").visit(function(node){
-        node.setExpanded(false);
-    });
-}
-
-function scrollToCurrentNote() {
-    const node = getNodeByKey(globalCurrentNote.detail.note_id);
-
-    if (node) {
-        node.makeVisible({scrollIntoView: true});
-
-        node.setFocus();
-    }
-}
-
-$(document).bind('keydown', 'alt+s', function() {
-    $("#search-box").show();
-
-    $("input[name=search]").focus();
-});
-
-function toggleSearch() {
-    $("#search-box").toggle();
-}
-
-$(document).bind('keydown', 'alt+c', collapseTree);

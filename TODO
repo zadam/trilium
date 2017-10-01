@@ -21,6 +21,7 @@ Encryption:
 
 Bugs:
 - deleting cloned nodes ends with 500 (probably only on folders)
+- Uncaught Error: cannot call methods on fancytree prior to initialization; attempted to call method 'getTree'
 
 Others:
 - dates should be stored in UTC to work correctly with time zones
