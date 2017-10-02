@@ -6,6 +6,12 @@ New features:
     deterministic to allow lookup by cipher text
 - recent changes - link to note should lead to the revision
 - db upgrade / migration
+- db backup into directory
+- recent notes can either go to or add link
+- might do the same thing with alt-j and alt-l
+- ctrl-b nad linkem by mohlo byt goto do notu
+- potencialne nova navigace back - forward
+- javascript editor
 
 Refactorings:
 - modularize frontend
@@ -22,6 +28,7 @@ Encryption:
 Bugs:
 - deleting cloned nodes ends with 500 (probably only on folders)
 - Uncaught Error: cannot call methods on fancytree prior to initialization; attempted to call method 'getTree'
+- recent changes sorts 1st october to the end
 
 Others:
 - dates should be stored in UTC to work correctly with time zones

@@ -21,26 +21,33 @@ $(document).bind('keydown', 'alt+r', function() {
                     }
                 }
 
-                const dateModified = getDateFromTS(row.date_modified);
-                const formattedDate = formatDate(dateModified);
+                const dateDay = getDateFromTS(row.date_modified);
+                dateDay.setHours(0);
+                dateDay.setMinutes(0);
+                dateDay.setSeconds(0);
+                dateDay.setMilliseconds(0);
 
-                if (!groupedByDate[formattedDate]) {
-                    groupedByDate[formattedDate] = [];
+                const dateDayTS = dateDay.getTime(); // we can't use dateDay as key because complex objects can't be keys
+
+                if (!groupedByDate[dateDayTS]) {
+                    groupedByDate[dateDayTS] = [];
                 }
 
-                groupedByDate[formattedDate].push(row);
+                groupedByDate[dateDayTS].push(row);
             }
 
             const sortedDates = Object.keys(groupedByDate);
             sortedDates.sort();
             sortedDates.reverse();
 
-            for (const formattedDay of sortedDates) {
+            for (const dateDayTS of sortedDates) {
                 const changesListEl = $('<ul>');
 
-                const dayEl = $('<div>').append($('<b>').html(formattedDay)).append(changesListEl);
+                const formattedDate = formatDate(getDateFromTS(groupedByDate[dateDayTS][0].date_modified));
 
-                for (const dayChanges of groupedByDate[formattedDay]) {
+                const dayEl = $('<div>').append($('<b>').html(formattedDate)).append(changesListEl);
+
+                for (const dayChanges of groupedByDate[dateDayTS]) {
                     const formattedTime = formatTime(getDateFromTS(dayChanges.date_modified));
 
                     const noteLink = $("<a>", {
