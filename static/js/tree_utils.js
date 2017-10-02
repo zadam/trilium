@@ -10,6 +10,21 @@ function getNodeByKey(noteId) {
     return globalTree.fancytree('getNodeByKey', noteId);
 }
 
+function getNoteTitle(noteId) {
+    const note = getNodeByKey(noteId);
+    if (!note) {
+        return;
+    }
+
+    let noteTitle = note.title;
+
+    if (noteTitle.endsWith(" (clone)")) {
+        noteTitle = noteTitle.substr(0, noteTitle.length - 8);
+    }
+
+    return noteTitle;
+}
+
 function getFullName(noteId) {
     let note = getNodeByKey(noteId);
 

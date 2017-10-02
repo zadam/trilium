@@ -11,16 +11,7 @@ $(document).bind('keydown', 'alt+l', function() {
     });
 
     function setDefaultLinkTitle(noteId) {
-        const note = getNodeByKey(noteId);
-        if (!note) {
-            return;
-        }
-
-        let noteTitle = note.title;
-
-        if (noteTitle.endsWith(" (clone)")) {
-            noteTitle = noteTitle.substr(0, noteTitle.length - 8);
-        }
+        const noteTitle = getNoteTitle(noteId);
 
         $("#linkTitle").val(noteTitle);
     }

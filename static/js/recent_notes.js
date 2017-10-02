@@ -15,6 +15,8 @@ function addRecentNote(noteTreeId, noteContentId) {
 }
 
 $(document).bind('keydown', 'alt+q', function() {
+    $('#noteDetail').summernote('editor.saveRange');
+
     $("#recentNotesDialog").dialog({
         modal: true,
         width: 500
@@ -47,23 +49,52 @@ $(document).bind('keydown', 'alt+q', function() {
     });
 });
 
+function getSelectedNoteIdFromRecentNotes() {
+    return $("#recentNotesSelectBox option:selected").val();
+}
+
 function setActiveNoteBasedOnRecentNotes() {
-    let noteId = $("#recentNotesSelectBox option:selected").val();
+    const noteId = getSelectedNoteIdFromRecentNotes();
 
     getNodeByKey(noteId).setActive();
 
     $("#recentNotesDialog").dialog('close');
 }
 
+function addLinkBasedOnRecentNotes() {
+    const noteId = getSelectedNoteIdFromRecentNotes();
+
+    const linkTitle = getNoteTitle(noteId);
+    const noteDetail = $('#noteDetail');
+
+    $("#recentNotesDialog").dialog("close");
+
+    noteDetail.summernote('editor.restoreRange');
+
+    noteDetail.summernote('createLink', {
+        text: linkTitle,
+        url: 'app#' + noteId,
+        isNewWindow: true
+    });
+}
+
 $('#recentNotesSelectBox').keydown(function(e) {
-    let key = e.which;
+    const key = e.which;
 
     if (key === 13)// the enter key code
     {
         setActiveNoteBasedOnRecentNotes();
     }
+    else if (key === 76 /* l */) {
+        addLinkBasedOnRecentNotes();
+    }
+
+    e.preventDefault();
 });
 
 $('#recentNotesSelectBox').dblclick(function(e) {
     setActiveNoteBasedOnRecentNotes();
 });
+
+$('#recentNotesJumpTo').click(setActiveNoteBasedOnRecentNotes);
+$('#recentNotesAddLink').click(addLinkBasedOnRecentNotes);
