@@ -9,7 +9,8 @@ $(document).bind('keydown', 'alt+r', function() {
         url: baseApiUrl + 'recent-changes/',
         type: 'GET',
         success: function (result) {
-            const groupedByDate = {};
+            const groupedByDate = new Map();
+            const dayCache = {};
 
             for (const row of result) {
                 if (row.encryption > 0) {
@@ -21,43 +22,44 @@ $(document).bind('keydown', 'alt+r', function() {
                     }
                 }
 
-                const dateDay = getDateFromTS(row.date_modified);
+
+                let dateDay = getDateFromTS(row.date_modified);
                 dateDay.setHours(0);
                 dateDay.setMinutes(0);
                 dateDay.setSeconds(0);
                 dateDay.setMilliseconds(0);
 
-                // FIXME: we can use Map object instead to avoid this hack
-                const dateDayTS = dateDay.getTime(); // we can't use dateDay as key because complex objects can't be keys
-
-                if (!groupedByDate[dateDayTS]) {
-                    groupedByDate[dateDayTS] = [];
+                // this stupidity is to make sure that we always use the same day object because Map uses only
+                // reference equality
+                if (dayCache[dateDay]) {
+                    dateDay = dayCache[dateDay];
+                }
+                else {
+                    dayCache[dateDay] = dateDay;
                 }
 
-                groupedByDate[dateDayTS].push(row);
+                if (!groupedByDate.has(dateDay)) {
+                    groupedByDate.set(dateDay, []);
+                }
+
+                groupedByDate.get(dateDay).push(row);
             }
 
-            const sortedDates = Object.keys(groupedByDate);
-            sortedDates.sort();
-            sortedDates.reverse();
-
-            for (const dateDayTS of sortedDates) {
+            for (const [dateDay, dayChanges] of groupedByDate) {
                 const changesListEl = $('<ul>');
 
-                const formattedDate = formatDate(getDateFromTS(groupedByDate[dateDayTS][0].date_modified));
+                const dayEl = $('<div>').append($('<b>').html(formatDate(dateDay))).append(changesListEl);
 
-                const dayEl = $('<div>').append($('<b>').html(formattedDate)).append(changesListEl);
-
-                for (const dayChanges of groupedByDate[dateDayTS]) {
-                    const formattedTime = formatTime(getDateFromTS(dayChanges.date_modified));
+                for (const change of dayChanges) {
+                    const formattedTime = formatTime(getDateFromTS(change.date_modified));
 
                     const noteLink = $("<a>", {
-                        href: 'app#' + dayChanges.note_id,
-                        text: dayChanges.note_title
+                        href: 'app#' + change.note_id,
+                        text: change.note_title
                     });
 
                     const revLink = $("<a>", {
-                        href: "javascript: showNoteHistoryDialog('" + dayChanges.note_id + "', " + dayChanges.id + ");",
+                        href: "javascript: showNoteHistoryDialog('" + change.note_id + "', " + change.id + ");",
                         text: 'rev'
                     });
 
