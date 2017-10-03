@@ -27,6 +27,7 @@ $(document).bind('keydown', 'alt+r', function() {
                 dateDay.setSeconds(0);
                 dateDay.setMilliseconds(0);
 
+                // FIXME: we can use Map object instead to avoid this hack
                 const dateDayTS = dateDay.getTime(); // we can't use dateDay as key because complex objects can't be keys
 
                 if (!groupedByDate[dateDayTS]) {
@@ -51,11 +52,19 @@ $(document).bind('keydown', 'alt+r', function() {
                     const formattedTime = formatTime(getDateFromTS(dayChanges.date_modified));
 
                     const noteLink = $("<a>", {
-                       href: 'app#' + dayChanges.note_id,
-                       text: dayChanges.note_title
+                        href: 'app#' + dayChanges.note_id,
+                        text: dayChanges.note_title
                     });
 
-                    changesListEl.append($('<li>').append(formattedTime + ' - ').append(noteLink));
+                    const revLink = $("<a>", {
+                        href: "javascript: showNoteHistoryDialog('" + dayChanges.note_id + "', " + dayChanges.id + ");",
+                        text: 'rev'
+                    });
+
+                    changesListEl.append($('<li>')
+                        .append(formattedTime + ' - ')
+                        .append(noteLink)
+                        .append(' (').append(revLink).append(')'));
                 }
 
                 $("#recentChangesDialog").append(dayEl);

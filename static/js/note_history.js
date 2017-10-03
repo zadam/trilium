@@ -1,6 +1,6 @@
 let globalHistoryItems = null;
 
-$(document).bind('keydown', 'alt+h', function() {
+function showNoteHistoryDialog(noteId, noteHistoryId) {
     $("#noteHistoryDialog").dialog({
         modal: true,
         width: 800,
@@ -11,7 +11,7 @@ $(document).bind('keydown', 'alt+h', function() {
     $("#noteHistoryContent").empty();
 
     $.ajax({
-        url: baseApiUrl + 'notes-history/' + globalCurrentNote.detail.note_id,
+        url: baseApiUrl + 'notes-history/' + noteId,
         type: 'GET',
         success: function (result) {
             globalHistoryItems = result;
@@ -26,13 +26,19 @@ $(document).bind('keydown', 'alt+h', function() {
             }
 
             if (result.length > 0) {
-                const firstOptionValue = $("#noteHistoryList option:first").val();
+                if (!noteHistoryId) {
+                    noteHistoryId = $("#noteHistoryList option:first").val();
+                }
 
-                $("#noteHistoryList").val(firstOptionValue).trigger('change');
+                $("#noteHistoryList").val(noteHistoryId).trigger('change');
             }
         },
         error: () => alert("Error getting note history.")
     });
+}
+
+$(document).bind('keydown', 'alt+h', function() {
+    showNoteHistoryDialog(globalCurrentNote.detail.note_id);
 });
 
 $("#noteHistoryList").on('change', () => {

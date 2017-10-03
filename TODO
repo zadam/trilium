@@ -4,10 +4,10 @@ New features:
 - what links here
   - link between encrypted notes could be done by encrypting note_ids of both sides of relations. Encryption must be
     deterministic to allow lookup by cipher text
-- recent changes - link to note should lead to the revision
+- recent changes - links don't look like links (no underline, black)
 - db upgrade / migration
 - db backup into directory
-- recent notes can either go to or add link
+- DONE: recent notes can either go to or add link
 - might do the same thing with alt-j and alt-l
 - ctrl-b nad linkem by mohlo byt goto do notu
 - potencialne nova navigace back - forward
