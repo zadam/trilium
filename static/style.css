@@ -4,12 +4,10 @@
     height: 100vh;
 
     display: grid;
-    grid-template-areas: "tree title"
-                         "tree note-content"
+    grid-template-areas: "tree-actions title"
                          "tree note-content";
     grid-template-columns: 2fr 5fr;
     grid-template-rows: auto
-                        auto
                         1fr;
     justify-content: center;
     grid-gap: 10px;

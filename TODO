@@ -12,6 +12,8 @@ New features:
 - ctrl-b nad linkem by mohlo byt goto do notu
 - potencialne nova navigace back - forward
 - javascript editor
+- persisted recent notes (is wiped out after reload)
+- sync of current page?
 
 Refactorings:
 - modularize frontend
