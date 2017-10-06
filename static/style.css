@@ -86,3 +86,7 @@ span.fancytree-node.encrypted.fancytree-folder > span.fancytree-icon {
 #encryptButton, #decryptButton {
     display: none;
 }
+
+.ui-widget-content a {
+    color: #337ab7 !important;
+}

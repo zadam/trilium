@@ -4,10 +4,8 @@ New features:
 - what links here
   - link between encrypted notes could be done by encrypting note_ids of both sides of relations. Encryption must be
     deterministic to allow lookup by cipher text
-- recent changes - links don't look like links (no underline, black)
 - db upgrade / migration
 - db backup into directory
-- DONE: recent notes can either go to or add link
 - might do the same thing with alt-j and alt-l
 - ctrl-b nad linkem by mohlo byt goto do notu
 - potencialne nova navigace back - forward
@@ -30,7 +28,6 @@ Encryption:
 Bugs:
 - deleting cloned nodes ends with 500 (probably only on folders)
 - Uncaught Error: cannot call methods on fancytree prior to initialization; attempted to call method 'getTree'
-- FIXED: recent changes sorts 1st october to the end
 
 Others:
 - dates should be stored in UTC to work correctly with time zones
