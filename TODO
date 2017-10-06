@@ -12,6 +12,7 @@ New features:
 - javascript editor
 - persisted recent notes (is wiped out after reload)
 - sync of current page?
+- create new subnote from inside the editor - possibly with selection of text
 
 Refactorings:
 - modularize frontend

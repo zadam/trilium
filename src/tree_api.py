@@ -1,19 +1,20 @@
 import base64
 import os
-import math
-import time
 
 from flask import Blueprint, jsonify
 from flask_login import login_required
 
 from sql import getResults, getSingleResult, getOption
 import utils
+import backup
 
 tree_api = Blueprint('tree_api', __name__)
 
 @tree_api.route('/api/tree', methods = ['GET'])
 @login_required
 def getTree():
+    backup.backup()
+
     notes = getResults("select "
                        "notes_tree.*, "
                        "COALESCE(clone.note_title, notes.note_title) as note_title, "
