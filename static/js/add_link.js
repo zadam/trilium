@@ -66,6 +66,10 @@ $(document).on('click', 'div.popover-content a', function(e) {
     goToInternalNote(e);
 });
 
+$(document).on('dblclick', '.note-editable a', function(e) {
+    goToInternalNote(e);
+});
+
 function goToInternalNote(e, callback) {
     const targetUrl = $(e.target).attr("href");
 
