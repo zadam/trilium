@@ -6,6 +6,10 @@ New features:
     deterministic to allow lookup by cipher text
 - db upgrade / migration
 - db backup into directory
+  - basic impl done
+  - configurable backup time interval
+  - delete old backups
+  - configurable backup deletion
 - might do the same thing with alt-j and alt-l
 - ctrl-b nad linkem by mohlo byt goto do notu
 - potencialne nova navigace back - forward
