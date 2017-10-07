@@ -14,7 +14,7 @@ function addRecentNote(noteTreeId, noteContentId) {
     }, 1500);
 }
 
-$(document).bind('keydown', 'alt+q', function() {
+function showRecentNotes() {
     $('#noteDetail').summernote('editor.saveRange');
 
     $("#recentNotesDialog").dialog({
@@ -47,7 +47,9 @@ $(document).bind('keydown', 'alt+q', function() {
 
         recentNotesSelectBox.append(option);
     });
-});
+}
+
+$(document).bind('keydown', 'alt+q', showRecentNotes);
 
 function getSelectedNoteIdFromRecentNotes() {
     return $("#recentNotesSelectBox option:selected").val();

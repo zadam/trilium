@@ -1,4 +1,4 @@
-$(document).bind('keydown', 'alt+r', function() {
+function showRecentChanges() {
     $("#recentChangesDialog").dialog({
         modal: true,
         width: 400,
@@ -74,7 +74,9 @@ $(document).bind('keydown', 'alt+r', function() {
         },
         error: () => alert("Error getting recent changes.")
     });
-});
+}
+
+$(document).bind('keydown', 'alt+r', showRecentChanges);
 
 $(document).on('click', '#recentChangesDialog a', function(e) {
     goToInternalNote(e, () => {

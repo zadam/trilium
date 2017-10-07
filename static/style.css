@@ -4,10 +4,12 @@
     height: 100vh;
 
     display: grid;
-    grid-template-areas: "tree-actions title"
+    grid-template-areas: "header header"
+                         "tree-actions title"
                          "tree note-content";
     grid-template-columns: 2fr 5fr;
     grid-template-rows: auto
+                        auto
                         1fr;
     justify-content: center;
     grid-gap: 10px;
@@ -25,19 +27,12 @@
 
 #top-message {
     display: none; /* initial state is hidden */
-    background-color: #e0e0e0;
     color: #333;
-    padding: 5px;
-    border-radius: 10px;
 }
 
 #error-message {
-    margin-top: 2px;
     display: none; /* initial state is hidden */
-    background-color: red;
-    color: white;
-    padding: 5px;
-    border-radius: 10px;
+    color: red;
 }
 
 .note-editable p {
@@ -89,4 +84,10 @@ span.fancytree-node.encrypted.fancytree-folder > span.fancytree-icon {
 
 .ui-widget-content a {
     color: #337ab7 !important;
+}
+
+#header-title {
+    padding: 5px 50px 5px 10px;
+    font-size: large;
+    font-weight: bold;
 }
