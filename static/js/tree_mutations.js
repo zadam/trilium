@@ -3,7 +3,7 @@ function moveBeforeNode(node, beforeNode) {
         url: baseApiUrl + 'notes/' + node.key + '/moveBefore/' + beforeNode.key,
         type: 'PUT',
         contentType: "application/json",
-        success: function () {
+        success: () => {
             node.moveTo(beforeNode, 'before');
         }
     });
@@ -14,7 +14,7 @@ function moveAfterNode(node, afterNode) {
         url: baseApiUrl + 'notes/' + node.key + '/moveAfter/' + afterNode.key,
         type: 'PUT',
         contentType: "application/json",
-        success: function () {
+        success: () => {
             node.moveTo(afterNode, 'after');
         }
     });
@@ -25,7 +25,7 @@ function moveToNode(node, toNode) {
         url: baseApiUrl + 'notes/' + node.key + '/moveTo/' + toNode.key,
         type: 'PUT',
         contentType: "application/json",
-        success: function () {
+        success: () => {
             node.moveTo(toNode);
 
             toNode.setExpanded(true);
@@ -41,7 +41,7 @@ function deleteNode(node) {
         $.ajax({
             url: baseApiUrl + 'notes/' + node.key,
             type: 'DELETE',
-            success: function () {
+            success: () => {
                 if (node.getParent() !== null && node.getParent().getChildren().length <= 1) {
                     node.getParent().folder = false;
                     node.getParent().renderTitle();
@@ -72,7 +72,7 @@ function moveNodeUp(node) {
             url: baseApiUrl + 'notes/' + node.key + '/moveAfter/' + node.getParent().key,
             type: 'PUT',
             contentType: "application/json",
-            success: function () {
+            success: () => {
                 if (node.getParent() !== null && node.getParent().getChildren().length <= 1) {
                     node.getParent().folder = false;
                     node.getParent().renderTitle();

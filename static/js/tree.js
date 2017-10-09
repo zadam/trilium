@@ -1,40 +1,40 @@
 const keybindings = {
-    "insert": function(node) {
+    "insert": node => {
         const parentKey = getParentKey(node);
         const encryption = getParentEncryption(node);
 
         createNote(node, parentKey, 'after', encryption);
     },
-    "ctrl+insert": function(node) {
+    "ctrl+insert": node => {
         createNote(node, node.key, 'into', node.data.encryption);
     },
-    "del": function(node) {
+    "del": node => {
         deleteNode(node);
     },
-    "shift+up": function(node) {
+    "shift+up": node => {
         const beforeNode = node.getPrevSibling();
 
         if (beforeNode !== null) {
             moveBeforeNode(node, beforeNode);
         }
     },
-    "shift+down": function(node) {
+    "shift+down": node => {
         let afterNode = node.getNextSibling();
         if (afterNode !== null) {
             moveAfterNode(node, afterNode);
         }
     },
-    "shift+left": function(node) {
+    "shift+left": node => {
         moveNodeUp(node);
     },
-    "shift+right": function(node) {
+    "shift+right": node => {
         let toNode = node.getPrevSibling();
 
         if (toNode !== null) {
             moveToNode(node, toNode);
         }
     },
-    "return": function(node) {
+    "return": node => {
         // doesn't work :-/
         $('#noteDetail').summernote('focus');
     }
@@ -79,7 +79,7 @@ function setExpandedToServer(note_id, is_expanded) {
         url: baseApiUrl + 'notes/' + note_id + '/expanded/' + expanded_num,
         type: 'PUT',
         contentType: "application/json",
-        success: function(result) {}
+        success: result => {}
     });
 }
 
@@ -92,13 +92,13 @@ setInterval(() => {
     $.ajax({
         url: baseApiUrl + 'audit/' + globalFullLoadTime,
         type: 'GET',
-        success: function (resp) {
+        success: resp => {
             if (resp.changed) {
                 window.location.reload(true);
             }
         },
         statusCode: {
-            401: function() {
+            401: () => {
                 // if the user got logged out then we should display the page
                 // here we do that by reloading which will force the redirect if the user is really logged out
                 window.location.reload(true);
@@ -107,7 +107,7 @@ setInterval(() => {
     });
 }, 10 * 1000);
 
-$(function(){
+$(() => {
     $.get(baseApiUrl + 'tree').then(resp => {
         const notes = resp.notes;
         let startNoteId = resp.start_note_id;
@@ -131,18 +131,18 @@ $(function(){
             autoScroll: true,
             extensions: ["hotkeys", "filter", "dnd"],
             source: notes,
-            activate: function(event, data){
+            activate: (event, data) => {
                 const node = data.node.data;
 
                 saveNoteIfChanged(() => loadNote(node.note_id));
             },
-            expand: function(event, data) {
+            expand: (event, data) => {
                 setExpandedToServer(data.node.key, true);
             },
-            collapse: function(event, data) {
+            collapse: (event, data) => {
                 setExpandedToServer(data.node.key, false);
             },
-            init: function(event, data) {
+            init: (event, data) => {
                 if (startNoteId) {
                     data.tree.activateKey(startNoteId);
                 }
@@ -172,7 +172,7 @@ $(function(){
 });
 
 function collapseTree() {
-    globalTree.fancytree("getRootNode").visit(function(node){
+    globalTree.fancytree("getRootNode").visit(node => {
         node.setExpanded(false);
     });
 }
@@ -217,7 +217,7 @@ function resetSearch() {
 
 $("button#btnResetSearch").click(resetSearch);
 
-$("input[name=search]").keyup(function (e) {
+$("input[name=search]").keyup(e => {
     const searchString = $(this).val();
 
     if (e && e.which === $.ui.keyCode.ESCAPE || $.trim(searchString) === "") {
@@ -231,7 +231,7 @@ $("input[name=search]").keyup(function (e) {
 
             // Pass a string to perform case insensitive matching
             const tree = globalTree.fancytree("getTree");
-            tree.filterBranches(function(node) {
+            tree.filterBranches(node => {
                 return resp.includes(node.data.note_id);
             });
         });

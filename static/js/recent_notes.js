@@ -1,9 +1,7 @@
 let globalRecentNotes = [];
 
 function addRecentNote(noteTreeId, noteContentId) {
-    const origDate = new Date();
-
-    setTimeout(function() {
+    setTimeout(() => {
         // we include the note into recent list only if the user stayed on the note at least 5 seconds
         if (noteTreeId === globalCurrentNote.detail.note_id || noteContentId === globalCurrentNote.detail.note_id) {
             // if it's already there, remove the note
@@ -29,7 +27,7 @@ function showRecentNotes() {
     // remove the current note
     let recNotes = globalRecentNotes.filter(note => note !== globalCurrentNote.detail.note_id);
 
-    $.each(recNotes, function(key, valueNoteId) {
+    $.each(recNotes, (key, valueNoteId) => {
         let noteTitle = getFullName(valueNoteId);
 
         if (!noteTitle) {
@@ -80,7 +78,7 @@ function addLinkBasedOnRecentNotes() {
     });
 }
 
-$('#recentNotesSelectBox').keydown(function(e) {
+$('#recentNotesSelectBox').keydown(e => {
     const key = e.which;
 
     if (key === 13)// the enter key code
@@ -94,7 +92,7 @@ $('#recentNotesSelectBox').keydown(function(e) {
     e.preventDefault();
 });
 
-$('#recentNotesSelectBox').dblclick(function(e) {
+$('#recentNotesSelectBox').dblclick(e => {
     setActiveNoteBasedOnRecentNotes();
 });
 

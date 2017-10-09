@@ -46,7 +46,7 @@ function uint8ToBase64(u8Arr) {
 }
 
 function base64ToUint8Array(base64encoded) {
-    return new Uint8Array(atob(base64encoded).split("").map(function(c) { return c.charCodeAt(0); }));
+    return new Uint8Array(atob(base64encoded).split("").map(c => c.charCodeAt(0)));
 }
 
 function getDateFromTS(timestamp) {

@@ -2,7 +2,7 @@
 jQuery.hotkeys.options.filterInputAcceptingElements = true;
 jQuery.hotkeys.options.filterContentEditable = true;
 
-$(document).bind('keydown', 'alt+m', function() {
+$(document).bind('keydown', 'alt+m', () => {
     const toggle = $(".hide-toggle");
     const hidden = toggle.css('display') === 'none';
 
@@ -12,21 +12,21 @@ $(document).bind('keydown', 'alt+m', function() {
 });
 
 // hide (toggle) everything except for the note content for distraction free writing
-$(document).bind('keydown', 'alt+t', function() {
+$(document).bind('keydown', 'alt+t', () => {
     const date = new Date();
     const dateString = formatDateTime(date);
 
     $('#noteDetail').summernote('insertText', dateString);
 });
 
-$(window).on('beforeunload', function(){
+$(window).on('beforeunload', () => {
     // this makes sure that when user e.g. reloads the page or navigates away from the page, the note's content is saved
     // this sends the request asynchronously and doesn't wait for result
     saveNoteIfChanged();
 });
 
 // Overrides the default autocomplete filter function to search for matched on atleast 1 word in each of the input term's words
-$.ui.autocomplete.filter = function (array, terms) {
+$.ui.autocomplete.filter = (array, terms) => {
     if (!terms) {
         return [];
     }

@@ -9,12 +9,12 @@ const dragAndDropSetup = {
     preventRecursiveMoves: true, // Prevent dropping nodes on own descendants
     preventVoidMoves: true, // Prevent dropping nodes 'before self', etc.
 
-    dragStart: function (node, data) {
+    dragStart: (node, data) => {
         // This function MUST be defined to enable dragging for the tree.
         // Return false to cancel dragging of node.
         return true;
     },
-    dragEnter: function (node, data) {
+    dragEnter: (node, data) => {
         /* data.otherNode may be null for non-fancytree droppables.
         * Return false to disallow dropping on node. In this case
         * dragOver and dragLeave are not called.
@@ -33,16 +33,13 @@ const dragAndDropSetup = {
         // Accept everything:
         return true;
     },
-    dragExpand: function (node, data) {
+    dragExpand: (node, data) => {
         // return false to prevent auto-expanding data.node on hover
     },
-    dragOver: function (node, data) {
-    },
-    dragLeave: function (node, data) {
-    },
-    dragStop: function (node, data) {
-    },
-    dragDrop: function (node, data) {
+    dragOver: (node, data) => {},
+    dragLeave: (node, data) => {},
+    dragStop: (node, data) => {},
+    dragDrop: (node, data) => {
         // This function MUST be defined to enable dropping of items on the tree.
         // data.hitMode is 'before', 'after', or 'over'.
 

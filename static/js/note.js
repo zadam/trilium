@@ -41,8 +41,8 @@ function saveNoteIfChanged(callback) {
 
 setInterval(saveNoteIfChanged, 5000);
 
-$(document).ready(function() {
-    $("#noteTitle").on('input', function() {
+$(document).ready(() => {
+    $("#noteTitle").on('input', () => {
         noteChanged();
     });
 
@@ -98,7 +98,7 @@ function saveNoteToServer(note, callback) {
         type: 'PUT',
         data: JSON.stringify(note),
         contentType: "application/json",
-        success: function () {
+        success: () => {
             isNoteChanged = false;
 
             message("Saved!");
@@ -107,7 +107,7 @@ function saveNoteToServer(note, callback) {
                 callback();
             }
         },
-        error: function () {
+        error: () => {
             error("Error saving the note!");
         }
     });
@@ -143,7 +143,7 @@ function createNote(node, parentKey, target, encryption) {
             encryption: encryption
         }),
         contentType: "application/json",
-        success: function(result) {
+        success: result => {
             const newNode = {
                 title: newNoteName,
                 key: result.note_id,
@@ -192,7 +192,7 @@ function setNoteBackgroundIfEncrypted(note) {
 }
 
 function loadNote(noteId) {
-    $.get(baseApiUrl + 'notes/' + noteId).then(function(note) {
+    $.get(baseApiUrl + 'notes/' + noteId).then(note => {
         globalCurrentNote = note;
 
         if (newNoteCreated) {

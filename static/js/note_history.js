@@ -17,7 +17,7 @@ function showNoteHistoryDialog(noteId, noteHistoryId) {
     $.ajax({
         url: baseApiUrl + 'notes-history/' + noteId,
         type: 'GET',
-        success: function (result) {
+        success: result => {
             globalHistoryItems = result;
 
             for (const row of result) {

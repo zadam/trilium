@@ -2,7 +2,7 @@ function displaySettings() {
     $.ajax({
         url: baseApiUrl + 'settings',
         type: 'GET',
-        success: function (result) {
+        success: result => {
             $("#encryptionTimeoutInSeconds").val(result['encryption_session_timeout']);
             $("#historySnapshotTimeIntervalInSeconds").val(result['history_snapshot_time_interval']);
         },
@@ -39,7 +39,7 @@ $("#changePasswordForm").submit(() => {
             'new_password': newPassword1
         }),
         contentType: "application/json",
-        success: function (result) {
+        success: result => {
             if (result.success) {
                 // encryption password changed so current encryption session is invalid and needs to be cleared
                 resetEncryptionSession();
@@ -71,7 +71,7 @@ $("#encryptionTimeoutForm").submit(() => {
             value: encryptionTimeout
         }),
         contentType: "application/json",
-        success: function () {
+        success: () => {
             alert("Encryption timeout has been changed.");
 
             globalEncryptionSessionTimeout = encryptionTimeout;
@@ -93,7 +93,7 @@ $("#historySnapshotTimeIntervalForm").submit(() => {
             value: historySnapshotTimeInterval
         }),
         contentType: "application/json",
-        success: function () {
+        success: () => {
             alert("History snapshot time interval has been changed.");
          },
         error: () => alert("Error occurred during changing history snapshot time interval.")

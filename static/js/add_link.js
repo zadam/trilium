@@ -1,4 +1,4 @@
-$(document).bind('keydown', 'alt+l', function() {
+$(document).bind('keydown', 'alt+l', () => {
     $("#noteAutocomplete").val('');
     $("#linkTitle").val('');
 
@@ -19,7 +19,7 @@ $(document).bind('keydown', 'alt+l', function() {
     $("#noteAutocomplete").autocomplete({
         source: getAutocompleteItems(globalAllNoteIds),
         minLength: 0,
-        change: function () {
+        change: () => {
             const val = $("#noteAutocomplete").val();
             const noteId = getNodeIdFromLabel(val);
 
@@ -29,7 +29,7 @@ $(document).bind('keydown', 'alt+l', function() {
         },
         // this is called when user goes through autocomplete list with keyboard
         // at this point the item isn't selected yet so we use supplied ui.item to see where the cursor is
-        focus: function (event, ui) {
+        focus: (event, ui) => {
             const noteId = getNodeIdFromLabel(ui.item.value);
 
             setDefaultLinkTitle(noteId);
@@ -37,7 +37,7 @@ $(document).bind('keydown', 'alt+l', function() {
     });
 });
 
-$("#insertLinkForm").submit(function() {
+$("#insertLinkForm").submit(() => {
     let val = $("#noteAutocomplete").val();
 
     const noteId = getNodeIdFromLabel(val);
@@ -62,11 +62,11 @@ $("#insertLinkForm").submit(function() {
 
 // when click on link popup, in case of internal link, just go the the referenced note instead of default behavior
 // of opening the link in new window/tab
-$(document).on('click', 'div.popover-content a', function(e) {
+$(document).on('click', 'div.popover-content a', e => {
     goToInternalNote(e);
 });
 
-$(document).on('dblclick', '.note-editable a', function(e) {
+$(document).on('dblclick', '.note-editable a', e => {
     goToInternalNote(e);
 });
 

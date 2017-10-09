@@ -11,7 +11,7 @@ function handleEncryption(requireEncryption, modal, callback) {
         $("#encryptionPasswordDialog").dialog({
             modal: modal,
             width: 400,
-            open: function() {
+            open: () => {
                 if (!modal) {
                     // dialog steals focus for itself, which is not what we want for non-modal (viewing)
                     getNodeByKey(globalCurrentNote.detail.note_id).setFocus();
@@ -54,7 +54,7 @@ function computeScrypt(password, salt, callback) {
     const startedDate = new Date();
 
     return new Promise((resolve, reject) => {
-        scrypt(passwordBuffer, saltBuffer, N, r, p, dkLen, function (error, progress, key) {
+        scrypt(passwordBuffer, saltBuffer, N, r, p, dkLen, (error, progress, key) => {
             if (error) {
                 console.log("Error: " + error);
 
@@ -72,7 +72,7 @@ function computeScrypt(password, salt, callback) {
     });
 }
 
-$("#encryptionPasswordForm").submit(function() {
+$("#encryptionPasswordForm").submit(() => {
     const password = $("#encryptionPassword").val();
     $("#encryptionPassword").val("");
 
@@ -123,7 +123,7 @@ function resetEncryptionSession() {
     }
 }
 
-setInterval(function() {
+setInterval(() => {
     if (globalLastEncryptionOperationDate !== null && new Date().getTime() - globalLastEncryptionOperationDate.getTime() > globalEncryptionSessionTimeout * 1000) {
         resetEncryptionSession();
     }
@@ -341,7 +341,7 @@ function updateNoteSynchronously(noteId, updateCallback, successCallback) {
         url: baseApiUrl + 'notes/' + noteId,
         type: 'GET',
         async: false,
-        success: function (note) {
+        success: note => {
             const needSave = updateCallback(note);
 
             if (!needSave) {
@@ -358,17 +358,17 @@ function updateNoteSynchronously(noteId, updateCallback, successCallback) {
                 data: JSON.stringify(note),
                 contentType: "application/json",
                 async: false,
-                success: function () {
+                success: () => {
                     if (successCallback) {
                         successCallback(note);
                     }
                 },
-                error: function () {
+                error: () => {
                     console.log("Updating " + noteId + " failed.");
                 }
             });
         },
-        error: function () {
+        error: () => {
             console.log("Reading " + noteId + " failed.");
         }
     });

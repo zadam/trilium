@@ -14,7 +14,7 @@ const contextMenuSetup = {
         {title: "Paste after", cmd: "pasteAfter", uiIcon: "ui-icon-clipboard"},
         {title: "Paste into", cmd: "pasteInto", uiIcon: "ui-icon-clipboard"}
     ],
-    beforeOpen: function (event, ui) {
+    beforeOpen: (event, ui) => {
         const node = $.ui.fancytree.getNode(ui.target);
         // Modify menu entries depending on node status
         globalTree.contextmenu("enableEntry", "pasteAfter", globalClipboardNoteId !== null);
@@ -26,8 +26,8 @@ const contextMenuSetup = {
         ui.menu.prevKeyboard = node.tree.options.keyboard;
         node.tree.options.keyboard = false;
     },
-    close: function (event, ui) {},
-    select: function (event, ui) {
+    close: (event, ui) => {},
+    select: (event, ui) => {
         const node = $.ui.fancytree.getNode(ui.target);
 
         if (ui.cmd === "insertNoteHere") {

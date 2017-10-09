@@ -1,4 +1,4 @@
-$(document).bind('keydown', 'alt+j', function() {
+$(document).bind('keydown', 'alt+j', () => {
     $("#jumpToNoteAutocomplete").val('');
 
     $("#jumpToNoteDialog").dialog({
@@ -12,7 +12,7 @@ $(document).bind('keydown', 'alt+j', function() {
     });
 });
 
-$("#jumpToNoteForm").submit(function() {
+$("#jumpToNoteForm").submit(() => {
     const val = $("#jumpToNoteAutocomplete").val();
     const noteId = getNodeIdFromLabel(val);
 

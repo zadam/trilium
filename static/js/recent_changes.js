@@ -8,7 +8,7 @@ function showRecentChanges() {
     $.ajax({
         url: baseApiUrl + 'recent-changes/',
         type: 'GET',
-        success: function (result) {
+        success: result => {
             const groupedByDate = new Map();
             const dayCache = {};
 
@@ -78,7 +78,7 @@ function showRecentChanges() {
 
 $(document).bind('keydown', 'alt+r', showRecentChanges);
 
-$(document).on('click', '#recentChangesDialog a', function(e) {
+$(document).on('click', '#recentChangesDialog a', e => {
     goToInternalNote(e, () => {
         $("#recentChangesDialog").dialog('close');
     });

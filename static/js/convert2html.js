@@ -3,7 +3,7 @@ function convertNoteToHtml(noteId, failedNotes) {
         url: baseApiUrl + 'notes/' + noteId,
         type: 'GET',
         async: false,
-        success: function (note) {
+        success: note => {
             const noteNode = getNodeByKey(noteId);
 
             if (noteNode.data.is_clone) {
@@ -23,34 +23,20 @@ function convertNoteToHtml(noteId, failedNotes) {
                 data: JSON.stringify(note),
                 contentType: "application/json",
                 async: false,
-                success: function () {
+                success: () => {
                     console.log("Note " + noteId + " converted.")
                 },
-                error: function () {
+                error: () => {
                     console.log("Note " + noteId + " failed when writing");
 
                     failedNotes.push(noteId);
                 }
             });
         },
-        error: function () {
+        error: () => {
             console.log("Note " + noteId + " failed when reading");
 
             failedNotes.push(noteId);
         }
     });
-}
-
-function convertAll2Html() {
-    const failedNotes = [];
-    let counter = 1;
-
-    for (const noteId of globalAllNoteIds) {
-        console.log('Converting ' + counter + "/" + globalAllNoteIds.length);
-        counter++;
-
-        convertNoteToHtml(noteId, failedNotes);
-    }
-
-    console.log("Failed notes: ", failedNotes);
 }
