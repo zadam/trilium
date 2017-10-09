@@ -1,25 +1,27 @@
-from datetime import datetime
-
-import utils
-from sql import getOption, setOption, commit
-import config_provider
-from shutil import copyfile
 import os
 import re
+from datetime import datetime
+from shutil import copyfile
+
+import config_provider
+import utils
+from sql import get_option, set_option, commit
+
 
 def regular_backup():
-    now = utils.nowTimestamp()
-    last_backup_date = int(getOption('last_backup_date'))
+    now = utils.now_timestamp()
+    last_backup_date = int(get_option('last_backup_date'))
 
     if now - last_backup_date > 43200:
         backup_now()
 
         cleanup_old_backups()
 
-def backup_now():
-    now = utils.nowTimestamp()
 
-    config = config_provider.getConfig()
+def backup_now():
+    now = utils.now_timestamp()
+
+    config = config_provider.get_config()
 
     document_path = config['Document']['documentPath']
     backup_directory = config['Backup']['backupDirectory']
@@ -28,12 +30,13 @@ def backup_now():
 
     copyfile(document_path, backup_directory + "/" + "backup-" + date_str + ".db")
 
-    setOption('last_backup_date', now)
+    set_option('last_backup_date', now)
     commit()
+
 
 def cleanup_old_backups():
     now = datetime.utcnow()
-    config = config_provider.getConfig()
+    config = config_provider.get_config()
     backup_directory = config['Backup']['backupDirectory']
 
     for file in os.listdir(backup_directory):

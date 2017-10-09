@@ -1,6 +1,6 @@
 import configparser
 
-def getConfig():
+def get_config():
     config = configparser.ConfigParser()
     config.read('config.ini')
 

@@ -10,15 +10,15 @@ from notes_history_api import notes_history_api
 from notes_move_api import notes_move_api
 from password_api import password_api
 from settings_api import settings_api
-from sql import connect, getOption
+from sql import connect, get_option
 from tree_api import tree_api
 
-config = config_provider.getConfig()
+config = config_provider.get_config()
 
 documentPath = config['Document']['documentPath']
 connect(documentPath)
 
-flask_secret_key = getOption("flask_secret_key")
+flask_secret_key = get_option("flask_secret_key")
 
 if not flask_secret_key:
     print("Application has not been setup yet. Run 'python setup.py' to finish setup.")

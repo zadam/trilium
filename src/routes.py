@@ -8,7 +8,7 @@ from flask_login import login_required
 
 import my_scrypt
 from migration_api import APP_DB_VERSION
-from sql import getOption
+from sql import get_option
 
 
 class User(UserMixin):
@@ -23,7 +23,7 @@ def init(app):
     login_manager.init_app(app)
     login_manager.login_view = 'login_form'
 
-    user.id = getOption('username')
+    user.id = get_option('username')
 
 
 routes = Blueprint('routes', __name__)
@@ -37,7 +37,7 @@ def login_form():
 @routes.route('/app', methods=['GET'])
 @login_required
 def show_app():
-    db_version = int(getOption('db_version'))
+    db_version = int(get_option('db_version'))
 
     if db_version < APP_DB_VERSION:
         return redirect('migration')
@@ -59,9 +59,9 @@ def logout():
 
 
 def verify_password(guessed_password):
-    hashed_password = base64.b64decode(getOption('password_verification_hash'))
+    hashed_password = base64.b64decode(get_option('password_verification_hash'))
 
-    guess_hashed = my_scrypt.getVerificationHash(guessed_password)
+    guess_hashed = my_scrypt.get_verification_hash(guessed_password)
 
     return guess_hashed == hashed_password
 

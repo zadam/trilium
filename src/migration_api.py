@@ -6,7 +6,7 @@ import traceback
 from flask import Blueprint, jsonify
 from flask_login import login_required
 
-from sql import getOption, setOption, commit, execute_script
+from sql import get_option, set_option, commit, execute_script
 
 import backup
 
@@ -16,22 +16,24 @@ MIGRATIONS_DIR = "src/migrations"
 
 migration_api = Blueprint('migration_api', __name__)
 
+
 @migration_api.route('/api/migration', methods = ['GET'])
 @login_required
-def getMigrationInfo():
+def get_migration_info():
     return jsonify({
-        'db_version': int(getOption('db_version')),
+        'db_version': int(get_option('db_version')),
         'app_db_version': APP_DB_VERSION
     })
 
+
 @migration_api.route('/api/migration', methods = ['POST'])
 @login_required
-def runMigration():
+def run_migration():
     migrations = []
 
     backup.backup_now()
 
-    current_db_version = int(getOption('db_version'))
+    current_db_version = int(get_option('db_version'))
 
     for file in os.listdir(MIGRATIONS_DIR):
         match = re.search(r"([0-9]{4})__([a-zA-Z0-9_ ]+)\.sql", file)
@@ -55,7 +57,7 @@ def runMigration():
                     try:
                         execute_script(sql)
 
-                        setOption('db_version', db_version)
+                        set_option('db_version', db_version)
                         commit()
 
                         migration_record['success'] = True

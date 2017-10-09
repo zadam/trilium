@@ -33,7 +33,7 @@ if password1 == password2:
     src.sql.setOption('password_verification_salt', base64.b64encode(os.urandom(32)))
     src.sql.setOption('password_derived_key_salt', base64.b64encode(os.urandom(32)))
 
-    password_derived_key = src.my_scrypt.getPasswordDerivedKey(password1)
+    password_derived_key = src.my_scrypt.get_password_derived_key(password1)
 
     aes = AES.new(password_derived_key, AES.MODE_CTR, counter=Counter.new(128, initial_value=5))
 
@@ -44,7 +44,7 @@ if password1 == password2:
 
     src.sql.setOption('encrypted_data_key', base64.b64encode(encrypted_data_key))
 
-    verification_hash = src.my_scrypt.getVerificationHash(password1)
+    verification_hash = src.my_scrypt.get_verification_hash(password1)
 
     src.sql.setOption('username', username)
     src.sql.setOption('password_verification_hash', base64.b64encode(verification_hash))

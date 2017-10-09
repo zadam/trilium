@@ -6,29 +6,31 @@ import audit_category
 
 settings_api = Blueprint('settings_api', __name__)
 
-allowed_options = [ 'encryption_session_timeout', 'history_snapshot_time_interval' ]
+ALLOWED_OPTIONS = ['encryption_session_timeout', 'history_snapshot_time_interval']
+
 
 @settings_api.route('/api/settings', methods = ['GET'])
 @login_required
 def get_settings():
     dict = {}
 
-    settings = sql.getResults("SELECT opt_name, opt_value FROM options WHERE opt_name IN (%s)" % ',' . join('?'*len(allowed_options)), allowed_options)
+    settings = sql.getResults("SELECT opt_name, opt_value FROM options WHERE opt_name IN (%s)" % ',' . join('?' * len(ALLOWED_OPTIONS)), ALLOWED_OPTIONS)
 
     for set in settings:
         dict[set['opt_name']] = set['opt_value']
 
     return jsonify(dict)
 
+
 @settings_api.route('/api/settings', methods = ['POST'])
 @login_required
 def set_settings():
     req = request.get_json(force=True)
 
-    if req['name'] in allowed_options:
-        sql.addAudit(audit_category.SETTINGS, request, None, sql.getOption(req['name']), req['value'], req['name'])
+    if req['name'] in ALLOWED_OPTIONS:
+        sql.add_audit(audit_category.SETTINGS, request, None, sql.get_option(req['name']), req['value'], req['name'])
 
-        sql.setOption(req['name'], req['value'])
+        sql.set_option(req['name'], req['value'])
 
         sql.commit()
 

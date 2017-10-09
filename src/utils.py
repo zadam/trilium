@@ -1,5 +1,6 @@
 from datetime import datetime
 import time
 
-def nowTimestamp():
+
+def now_timestamp():
     return int(time.mktime(datetime.utcnow().timetuple()))
