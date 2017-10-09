@@ -7,25 +7,29 @@ from shutil import copyfile
 import os
 import re
 
-def backup():
+def regular_backup():
     now = utils.nowTimestamp()
     last_backup_date = int(getOption('last_backup_date'))
 
     if now - last_backup_date > 43200:
-        config = config_provider.getConfig()
-
-        document_path = config['Document']['documentPath']
-        backup_directory = config['Backup']['backupDirectory']
-
-        date_str = datetime.utcnow().strftime("%Y-%m-%d %H:%M")
-
-        copyfile(document_path, backup_directory + "/" + "backup-" + date_str + ".db")
-
-        setOption('last_backup_date', now)
-        commit()
+        backup_now()
 
         cleanup_old_backups()
 
+def backup_now():
+    now = utils.nowTimestamp()
+
+    config = config_provider.getConfig()
+
+    document_path = config['Document']['documentPath']
+    backup_directory = config['Backup']['backupDirectory']
+
+    date_str = datetime.utcnow().strftime("%Y-%m-%d %H:%M")
+
+    copyfile(document_path, backup_directory + "/" + "backup-" + date_str + ".db")
+
+    setOption('last_backup_date', now)
+    commit()
 
 def cleanup_old_backups():
     now = datetime.utcnow()

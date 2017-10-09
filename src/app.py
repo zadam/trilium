@@ -14,6 +14,7 @@ from password_api import password_api
 from settings_api import settings_api
 from notes_history_api import notes_history_api
 from audit_api import audit_api
+from migration_api import migration_api, APP_DB_VERSION
 import config_provider
 import my_scrypt
 
@@ -37,6 +38,7 @@ app.register_blueprint(password_api)
 app.register_blueprint(settings_api)
 app.register_blueprint(notes_history_api)
 app.register_blueprint(audit_api)
+app.register_blueprint(migration_api)
 
 class User(UserMixin):
     pass
@@ -48,7 +50,17 @@ def login_form():
 @app.route('/app', methods=['GET'])
 @login_required
 def show_app():
+    db_version = int(getOption('db_version'))
+
+    if db_version != APP_DB_VERSION:
+        return redirect('migration')
+
     return render_template('app.html')
+
+@app.route('/migration', methods=['GET'])
+@login_required
+def show_migration():
+    return render_template('migration.html')
 
 @app.route('/logout', methods=['POST'])
 @login_required

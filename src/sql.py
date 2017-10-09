@@ -64,6 +64,11 @@ def execute(sql, params=[]):
     cursor.execute(sql, params)
     return cursor
 
+def execute_script(sql):
+    cursor = conn.cursor()
+    cursor.executescript(sql)
+    return cursor
+
 def getResults(sql, params=[]):
     cursor = conn.cursor()
     query = cursor.execute(sql, params)

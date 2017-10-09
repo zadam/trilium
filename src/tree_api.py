@@ -13,7 +13,7 @@ tree_api = Blueprint('tree_api', __name__)
 @tree_api.route('/api/tree', methods = ['GET'])
 @login_required
 def getTree():
-    backup.backup()
+    backup.regular_backup()
 
     notes = getResults("select "
                        "notes_tree.*, "
