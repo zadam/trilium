@@ -52,7 +52,7 @@ def login_form():
 def show_app():
     db_version = int(getOption('db_version'))
 
-    if db_version != APP_DB_VERSION:
+    if db_version < APP_DB_VERSION:
         return redirect('migration')
 
     return render_template('app.html')
