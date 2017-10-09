@@ -1,16 +1,7 @@
-import base64
-import math
-import random
-import string
-import time
-
 from flask import Blueprint, jsonify
-from flask import request
 from flask_login import login_required
 
-from sql import delete
-from sql import execute, insert, commit
-from sql import getResults, getSingleResult
+from sql import getResults
 
 notes_history_api = Blueprint('notes_history_api', __name__)
 
