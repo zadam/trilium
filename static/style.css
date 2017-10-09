@@ -91,3 +91,8 @@ span.fancytree-node.encrypted.fancytree-folder > span.fancytree-icon {
     font-size: large;
     font-weight: bold;
 }
+
+#header .btn-xs {
+    margin-bottom: 2px;
+    margin-right: 8px;
+}

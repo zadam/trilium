@@ -6,7 +6,7 @@
   </head>
   <body>
     <div id="container">
-      <div class="hide-toggle" style="grid-area: header; background-color: #f1f1f1;">
+      <div id="header" class="hide-toggle" style="grid-area: header; background-color: #f1f1f1;">
         <div style="display: flex; align-items: center;">
           <div id="header-title">
             Trilium
@@ -81,6 +81,8 @@
           &nbsp;
 
           <input autocomplete="off" value="" id="noteTitle" style="font-size: x-large; border: 0; flex-grow: 100;" tabindex="1">
+
+          <button class="btn btn-xs" onclick="showCurrentNoteHistory();">History</button>
         </div>
       </div>
 

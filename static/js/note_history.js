@@ -1,5 +1,9 @@
 let globalHistoryItems = null;
 
+function showCurrentNoteHistory() {
+    showNoteHistoryDialog(globalCurrentNote.detail.note_id);
+}
+
 function showNoteHistoryDialog(noteId, noteHistoryId) {
     $("#noteHistoryDialog").dialog({
         modal: true,
@@ -37,9 +41,7 @@ function showNoteHistoryDialog(noteId, noteHistoryId) {
     });
 }
 
-$(document).bind('keydown', 'alt+h', function() {
-    showNoteHistoryDialog(globalCurrentNote.detail.note_id);
-});
+$(document).bind('keydown', 'alt+h', showCurrentNoteHistory);
 
 $("#noteHistoryList").on('change', () => {
     const optVal = $("#noteHistoryList").find(":selected").val();
