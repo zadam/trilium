@@ -58,7 +58,7 @@ $(document).ready(() => {
     $(".note-editable").attr("tabindex", 2);
 });
 
-function html2notecase(contents, note) {
+function parseHtml(contents, note) {
     note.formatting = [];
     note.links = [];
     note.images = [];
@@ -83,7 +83,7 @@ function html2notecase(contents, note) {
 function updateNoteFromInputs(note) {
     let contents = $('#noteDetail').summernote('code');
 
-    html2notecase(contents, note);
+    parseHtml(contents, note);
 
     let title = $('#noteTitle').val();
 
