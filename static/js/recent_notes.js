@@ -13,14 +13,14 @@ function addRecentNote(noteTreeId, noteContentId) {
 }
 
 function showRecentNotes() {
-    $('#noteDetail').summernote('editor.saveRange');
+    $('#note-detail').summernote('editor.saveRange');
 
-    $("#recentNotesDialog").dialog({
+    $("#recent-notes-dialog").dialog({
         modal: true,
         width: 500
     });
 
-    let recentNotesSelectBox = $('#recentNotesSelectBox');
+    let recentNotesSelectBox = $('#recent-notes-select-box');
 
     recentNotesSelectBox.find('option').remove();
 
@@ -50,7 +50,7 @@ function showRecentNotes() {
 $(document).bind('keydown', 'alt+q', showRecentNotes);
 
 function getSelectedNoteIdFromRecentNotes() {
-    return $("#recentNotesSelectBox option:selected").val();
+    return $("#recent-notes-select-box option:selected").val();
 }
 
 function setActiveNoteBasedOnRecentNotes() {
@@ -58,16 +58,16 @@ function setActiveNoteBasedOnRecentNotes() {
 
     getNodeByKey(noteId).setActive();
 
-    $("#recentNotesDialog").dialog('close');
+    $("#recent-notes-dialog").dialog('close');
 }
 
 function addLinkBasedOnRecentNotes() {
     const noteId = getSelectedNoteIdFromRecentNotes();
 
     const linkTitle = getNoteTitle(noteId);
-    const noteDetail = $('#noteDetail');
+    const noteDetail = $('#note-detail');
 
-    $("#recentNotesDialog").dialog("close");
+    $("#recent-notes-dialog").dialog("close");
 
     noteDetail.summernote('editor.restoreRange');
 
@@ -78,7 +78,7 @@ function addLinkBasedOnRecentNotes() {
     });
 }
 
-$('#recentNotesSelectBox').keydown(e => {
+$('#recent-notes-select-box').keydown(e => {
     const key = e.which;
 
     if (key === 13)// the enter key code
@@ -92,7 +92,7 @@ $('#recentNotesSelectBox').keydown(e => {
     e.preventDefault();
 });
 
-$('#recentNotesSelectBox').dblclick(e => {
+$('#recent-notes-select-box').dblclick(e => {
     setActiveNoteBasedOnRecentNotes();
 });
 

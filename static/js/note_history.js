@@ -5,14 +5,14 @@ function showCurrentNoteHistory() {
 }
 
 function showNoteHistoryDialog(noteId, noteHistoryId) {
-    $("#noteHistoryDialog").dialog({
+    $("#note-history-dialog").dialog({
         modal: true,
         width: 800,
         height: 700
     });
 
-    $("#noteHistoryList").empty();
-    $("#noteHistoryContent").empty();
+    $("#note-history-list").empty();
+    $("#note-history-content").empty();
 
     $.ajax({
         url: baseApiUrl + 'notes-history/' + noteId,
@@ -23,7 +23,7 @@ function showNoteHistoryDialog(noteId, noteHistoryId) {
             for (const row of result) {
                 const dateModified = getDateFromTS(row.date_modified);
 
-                $("#noteHistoryList").append($('<option>', {
+                $("#note-history-list").append($('<option>', {
                     value: row.id,
                     text: formatDateTime(dateModified)
                 }));
@@ -31,10 +31,10 @@ function showNoteHistoryDialog(noteId, noteHistoryId) {
 
             if (result.length > 0) {
                 if (!noteHistoryId) {
-                    noteHistoryId = $("#noteHistoryList option:first").val();
+                    noteHistoryId = $("#note-history-list option:first").val();
                 }
 
-                $("#noteHistoryList").val(noteHistoryId).trigger('change');
+                $("#note-history-list").val(noteHistoryId).trigger('change');
             }
         },
         error: () => alert("Error getting note history.")
@@ -43,10 +43,10 @@ function showNoteHistoryDialog(noteId, noteHistoryId) {
 
 $(document).bind('keydown', 'alt+h', showCurrentNoteHistory);
 
-$("#noteHistoryList").on('change', () => {
-    const optVal = $("#noteHistoryList").find(":selected").val();
-    const historyItem = globalHistoryItems.find(r => r.id == optVal); // non-strict comparison is important here!!!s
+$("#note-history-list").on('change', () => {
+    const optVal = $("#note-history-list").find(":selected").val();
+    const historyItem = globalHistoryItems.find(r => r.id == optVal); // non-strict comparison is important here!!!
 
-    $("#noteHistoryTitle").html(historyItem.note_title);
-    $("#noteHistoryContent").html(historyItem.note_text);
+    $("#note-history-title").html(historyItem.note_title);
+    $("#note-history-content").html(historyItem.note_text);
 });

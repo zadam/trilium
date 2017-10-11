@@ -42,11 +42,11 @@ function saveNoteIfChanged(callback) {
 setInterval(saveNoteIfChanged, 5000);
 
 $(document).ready(() => {
-    $("#noteTitle").on('input', () => {
+    $("#note-title").on('input', () => {
         noteChanged();
     });
 
-    $('#noteDetail').summernote({
+    $('#note-detail').summernote({
         airMode: true,
         height: 300,
         callbacks: {
@@ -81,11 +81,11 @@ function parseHtml(contents, note) {
 }
 
 function updateNoteFromInputs(note) {
-    let contents = $('#noteDetail').summernote('code');
+    let contents = $('#note-detail').summernote('code');
 
     parseHtml(contents, note);
 
-    let title = $('#noteTitle').val();
+    let title = $('#note-title').val();
 
     getNodeByKey(note.detail.note_id).setTitle(title);
 
@@ -179,13 +179,13 @@ function setTreeBasedOnEncryption(note) {
 function setNoteBackgroundIfEncrypted(note) {
     if (note.detail.encryption > 0) {
         $(".note-editable").addClass("encrypted");
-        $("#encryptButton").hide();
-        $("#decryptButton").show();
+        $("#encrypt-button").hide();
+        $("#decrypt-button").show();
     }
     else {
         $(".note-editable").removeClass("encrypted");
-        $("#encryptButton").show();
-        $("#decryptButton").hide();
+        $("#encrypt-button").show();
+        $("#decrypt-button").hide();
     }
 
     setTreeBasedOnEncryption(note);
@@ -198,30 +198,30 @@ function loadNote(noteId) {
         if (newNoteCreated) {
             newNoteCreated = false;
 
-            $("#noteTitle").focus().select();
+            $("#note-title").focus().select();
         }
 
         handleEncryption(note.detail.encryption > 0, false, () => {
-            $("#noteDetailWrapper").show();
+            $("#note-detail-wrapper").show();
 
             // this may fal if the dialog has not been previously opened
             try {
-                $("#encryptionPasswordDialog").dialog('close');
+                $("#encryption-password-dialog").dialog('close');
             }
             catch(e) {}
 
-            $("#encryptionPassword").val('');
+            $("#encryption-password").val('');
 
             decryptNoteIfNecessary(note);
 
-            $("#noteTitle").val(note.detail.note_title);
+            $("#note-title").val(note.detail.note_title);
 
             noteChangeDisabled = true;
 
             // Clear contents and remove all stored history. This is to prevent undo from going across notes
-            $('#noteDetail').summernote('reset');
+            $('#note-detail').summernote('reset');
 
-            $('#noteDetail').summernote('code', note.detail.note_text);
+            $('#note-detail').summernote('code', note.detail.note_text);
 
             document.location.hash = noteId;
 

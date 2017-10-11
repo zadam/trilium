@@ -4,11 +4,7 @@ function handleEncryption(requireEncryption, modal, callback) {
     if (requireEncryption && globalDataKey === null) {
         globalEncryptionCallback = callback;
 
-        if (!modal) {
-            $("#noteDetailWrapper").hide();
-        }
-
-        $("#encryptionPasswordDialog").dialog({
+        $("#encryption-password-dialog").dialog({
             modal: modal,
             width: 400,
             open: () => {
@@ -72,13 +68,12 @@ function computeScrypt(password, salt, callback) {
     });
 }
 
-$("#encryptionPasswordForm").submit(() => {
-    const password = $("#encryptionPassword").val();
-    $("#encryptionPassword").val("");
+$("#encryption-password-form").submit(() => {
+    const password = $("#encryption-password").val();
+    $("#encryption-password").val("");
 
     getDataKey(password).then(key => {
-        $("#noteDetailWrapper").show();
-        $("#encryptionPasswordDialog").dialog("close");
+        $("#encryption-password-dialog").dialog("close");
 
         globalDataKey = key;
 

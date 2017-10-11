@@ -3,30 +3,30 @@ function displaySettings() {
         url: baseApiUrl + 'settings',
         type: 'GET',
         success: result => {
-            $("#encryptionTimeoutInSeconds").val(result['encryption_session_timeout']);
-            $("#historySnapshotTimeIntervalInSeconds").val(result['history_snapshot_time_interval']);
+            $("#encryption-timeout-in-seconds").val(result['encryption_session_timeout']);
+            $("#history-snapshot-time-interval-in-seconds").val(result['history_snapshot_time_interval']);
         },
         error: () => alert("Error getting settings.")
     });
 
-    $("#settingsDialog").dialog({
+    $("#settings-dialog").dialog({
         modal: true,
         width: 600
     });
 
-    $("#settingsTabs").tabs();
+    $("#settings-tabs").tabs();
 }
 
-$("#changePasswordForm").submit(() => {
-    const oldPassword = $("#oldPassword").val();
-    const newPassword1 = $("#newPassword1").val();
-    const newPassword2 = $("#newPassword2").val();
+$("#change-password-form").submit(() => {
+    const oldPassword = $("#old-password").val();
+    const newPassword1 = $("#new-password1").val();
+    const newPassword2 = $("#new-password2").val();
 
-    $("#oldPassword").val('');
-    $("#newPassword1").val('');
-    $("#newPassword2").val('');
+    $("#old-password").val('');
+    $("#new-password1").val('');
+    $("#new-password2").val('');
 
-    if (newPassword1 != newPassword2) {
+    if (newPassword1 !== newPassword2) {
         alert("New passwords are not the same.");
         return false;
     }
@@ -48,7 +48,7 @@ $("#changePasswordForm").submit(() => {
 
                 alert("Password has been changed.");
 
-                $("#settingsDialog").dialog('close');
+                $("#settings-dialog").dialog('close');
             }
             else {
                 alert(result.message);
@@ -60,8 +60,8 @@ $("#changePasswordForm").submit(() => {
     return false;
 });
 
-$("#encryptionTimeoutForm").submit(() => {
-    const encryptionTimeout = $("#encryptionTimeoutInSeconds").val();
+$("#encryption-timeout-form").submit(() => {
+    const encryptionTimeout = $("#encryption-timeout-in-seconds").val();
 
     $.ajax({
         url: baseApiUrl + 'settings',
@@ -82,8 +82,8 @@ $("#encryptionTimeoutForm").submit(() => {
     return false;
 });
 
-$("#historySnapshotTimeIntervalForm").submit(() => {
-    const historySnapshotTimeInterval = $("#historySnapshotTimeIntervalInSeconds").val();
+$("#history-snapshot-time-interval-form").submit(() => {
+    const historySnapshotTimeInterval = $("#history-snapshot-time-interval-in-seconds").val();
 
     $.ajax({
         url: baseApiUrl + 'settings',

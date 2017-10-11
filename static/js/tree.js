@@ -36,7 +36,7 @@ const keybindings = {
     },
     "return": node => {
         // doesn't work :-/
-        $('#noteDetail').summernote('focus');
+        $('#note-detail').summernote('focus');
     }
 };
 
@@ -215,13 +215,13 @@ function resetSearch() {
     tree.clearFilter();
 }
 
-$("button#btnResetSearch").click(resetSearch);
+$("button#reset-search-button").click(resetSearch);
 
 $("input[name=search]").keyup(e => {
     const searchString = $(this).val();
 
     if (e && e.which === $.ui.keyCode.ESCAPE || $.trim(searchString) === "") {
-        $("button#btnResetSearch").click();
+        $("button#reset-search-button").click();
         return;
     }
 

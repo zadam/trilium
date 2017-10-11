@@ -78,7 +78,7 @@ span.fancytree-node.encrypted.fancytree-folder > span.fancytree-icon {
     text-decoration: none;
 }
 
-#encryptButton, #decryptButton {
+#encrypt-button, #decrypt-button {
     display: none;
 }
 

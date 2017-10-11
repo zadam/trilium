@@ -1,5 +1,5 @@
 function showRecentChanges() {
-    $("#recentChangesDialog").dialog({
+    $("#recent-changes-dialog").dialog({
         modal: true,
         width: 400,
         height: 700
@@ -69,7 +69,7 @@ function showRecentChanges() {
                         .append(' (').append(revLink).append(')'));
                 }
 
-                $("#recentChangesDialog").append(dayEl);
+                $("#recent-changes-dialog").append(dayEl);
             }
         },
         error: () => alert("Error getting recent changes.")
@@ -78,8 +78,8 @@ function showRecentChanges() {
 
 $(document).bind('keydown', 'alt+r', showRecentChanges);
 
-$(document).on('click', '#recentChangesDialog a', e => {
+$(document).on('click', '#recent-changes-dialog a', e => {
     goToInternalNote(e, () => {
-        $("#recentChangesDialog").dialog('close');
+        $("#recent-changes-dialog").dialog('close');
     });
 });

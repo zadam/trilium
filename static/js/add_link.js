@@ -1,30 +1,30 @@
 $(document).bind('keydown', 'alt+l', () => {
-    $("#noteAutocomplete").val('');
-    $("#linkTitle").val('');
+    $("#note-autocomplete").val('');
+    $("#link-title").val('');
 
-    const noteDetail = $('#noteDetail');
+    const noteDetail = $('#note-detail');
     noteDetail.summernote('editor.saveRange');
 
-    $("#insertLinkDialog").dialog({
+    $("#insert-link-dialog").dialog({
         modal: true,
         width: 500
     });
 
-    function setDefaultLinkTitle(noteId) {
+    function setDefaultlinkTitle(noteId) {
         const noteTitle = getNoteTitle(noteId);
 
-        $("#linkTitle").val(noteTitle);
+        $("#link-title").val(noteTitle);
     }
 
-    $("#noteAutocomplete").autocomplete({
+    $("#note-autocomplete").autocomplete({
         source: getAutocompleteItems(globalAllNoteIds),
         minLength: 0,
         change: () => {
-            const val = $("#noteAutocomplete").val();
+            const val = $("#note-autocomplete").val();
             const noteId = getNodeIdFromLabel(val);
 
             if (noteId) {
-                setDefaultLinkTitle(noteId);
+                setDefaultlinkTitle(noteId);
             }
         },
         // this is called when user goes through autocomplete list with keyboard
@@ -38,20 +38,20 @@ $(document).bind('keydown', 'alt+l', () => {
 });
 
 $("#insertLinkForm").submit(() => {
-    let val = $("#noteAutocomplete").val();
+    let val = $("#note-autocomplete").val();
 
     const noteId = getNodeIdFromLabel(val);
 
     if (noteId) {
-        const linkTitle = $("#linkTitle").val();
-        const noteDetail = $('#noteDetail');
+        const linkTitle = $("#link-title").val();
+        const noteDetail = $('#note-detail');
 
-        $("#insertLinkDialog").dialog("close");
+        $("#insert-link-dialog").dialog("close");
 
         noteDetail.summernote('editor.restoreRange');
 
         noteDetail.summernote('createLink', {
-            text: linkTitle,
+            text: link-title,
             url: 'app#' + noteId,
             isNewWindow: true
         });

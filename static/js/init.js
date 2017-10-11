@@ -7,8 +7,6 @@ $(document).bind('keydown', 'alt+m', () => {
     const hidden = toggle.css('display') === 'none';
 
     toggle.css('display', hidden ? 'block' : 'none');
-
-    $("#noteDetailWrapper").css("width", hidden ? "750px" : "100%");
 });
 
 // hide (toggle) everything except for the note content for distraction free writing
@@ -16,7 +14,7 @@ $(document).bind('keydown', 'alt+t', () => {
     const date = new Date();
     const dateString = formatDateTime(date);
 
-    $('#noteDetail').summernote('insertText', dateString);
+    $('#note-detail').summernote('insertText', dateString);
 });
 
 $(window).on('beforeunload', () => {

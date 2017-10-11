@@ -1,25 +1,25 @@
 $(document).bind('keydown', 'alt+j', () => {
-    $("#jumpToNoteAutocomplete").val('');
+    $("#jump-to-note-autocomplete").val('');
 
-    $("#jumpToNoteDialog").dialog({
+    $("#jump-to-note-dialog").dialog({
         modal: true,
         width: 500
     });
 
-    $("#jumpToNoteAutocomplete").autocomplete({
+    $("#jump-to-note-autocomplete").autocomplete({
         source: getAutocompleteItems(globalAllNoteIds),
         minLength: 0
     });
 });
 
-$("#jumpToNoteForm").submit(() => {
-    const val = $("#jumpToNoteAutocomplete").val();
+$("#jump-to-note-form").submit(() => {
+    const val = $("#jump-to-note-autocomplete").val();
     const noteId = getNodeIdFromLabel(val);
 
     if (noteId) {
         getNodeByKey(noteId).setActive();
 
-        $("#jumpToNoteDialog").dialog('close');
+        $("#jump-to-note-dialog").dialog('close');
     }
 
     return false;
