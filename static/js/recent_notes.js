@@ -88,6 +88,9 @@ $('#recent-notes-select-box').keydown(e => {
     else if (key === 76 /* l */) {
         addLinkBasedOnRecentNotes();
     }
+    else {
+        return; // avoid prevent default
+    }
 
     e.preventDefault();
 });
