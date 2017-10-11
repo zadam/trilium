@@ -131,6 +131,7 @@ $(() => {
             autoScroll: true,
             extensions: ["hotkeys", "filter", "dnd"],
             source: notes,
+            scrollParent: $("#tree"),
             activate: (event, data) => {
                 const node = data.node.data;
 
