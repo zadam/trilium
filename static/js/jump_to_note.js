@@ -3,7 +3,7 @@ function showJumpToNote() {
 
     $("#jump-to-note-dialog").dialog({
         modal: true,
-        width: 500
+        width: 800
     });
 
     $("#jump-to-note-autocomplete").autocomplete({

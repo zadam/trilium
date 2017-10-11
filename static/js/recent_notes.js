@@ -17,7 +17,7 @@ function showRecentNotes() {
 
     $("#recent-notes-dialog").dialog({
         modal: true,
-        width: 500
+        width: 800
     });
 
     let recentNotesSelectBox = $('#recent-notes-select-box');

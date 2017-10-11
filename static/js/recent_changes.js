@@ -1,7 +1,7 @@
 function showRecentChanges() {
     $("#recent-changes-dialog").dialog({
         modal: true,
-        width: 400,
+        width: 800,
         height: 700
     });
 
@@ -13,13 +13,11 @@ function showRecentChanges() {
             const dayCache = {};
 
             for (const row of result) {
-                if (row.encryption > 0) {
-                    if (isEncryptionAvailable()) {
-                        row.note_title = decryptString(row.note_title);
-                    }
-                    else {
-                        row.note_title = "[encrypted]";
-                    }
+                if (row.encryption > 0 && !isEncryptionAvailable()) {
+                    row.note_title = "[encrypted]";
+                }
+                else {
+                    row.note_title = getFullName(row.note_id);
                 }
 
 

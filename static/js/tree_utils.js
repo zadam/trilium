@@ -28,6 +28,10 @@ function getNoteTitle(noteId) {
 function getFullName(noteId) {
     let note = getNodeByKey(noteId);
 
+    if (note === null) {
+        return "[unknown]";
+    }
+
     if (note.data.is_clone || (note.data.encryption > 0 && !isEncryptionAvailable())) {
         return null;
     }
