@@ -1,4 +1,4 @@
-$(document).bind('keydown', 'alt+j', () => {
+function showJumpToNote() {
     $("#jump-to-note-autocomplete").val('');
 
     $("#jump-to-note-dialog").dialog({
@@ -10,7 +10,9 @@ $(document).bind('keydown', 'alt+j', () => {
         source: getAutocompleteItems(globalAllNoteIds),
         minLength: 0
     });
-});
+}
+
+$(document).bind('keydown', 'alt+j', showJumpToNote);
 
 $("#jump-to-note-form").submit(() => {
     const val = $("#jump-to-note-autocomplete").val();

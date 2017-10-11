@@ -6,27 +6,26 @@
   </head>
   <body>
     <div id="container">
-      <div id="header" class="hide-toggle" style="grid-area: header; background-color: #f1f1f1;">
-        <div style="display: flex; align-items: center;">
-          <div id="header-title">
-            Trilium
-          </div>
+      <div id="header" class="hide-toggle">
+        <div id="header-title">
+          Trilium
+        </div>
 
-          <div style="flex-grow: 100;">
-            <button class="btn btn-xs" onclick="showRecentChanges();">Recent changes</button>
-            <button class="btn btn-xs" onclick="showRecentNotes();">Recent notes</button>
-          </div>
+        <div style="flex-grow: 100;">
+          <button class="btn btn-xs" onclick="showRecentChanges();">Recent changes</button>
+          <button class="btn btn-xs" onclick="showRecentNotes();">Recent notes</button>
+          <button class="btn btn-xs" onclick="showJumpToNote();">Jump to note</button>
+        </div>
 
-          <div>
-            <span id="top-message"></span>
-            <span id="error-message"></span>
+        <div>
+          <span id="top-message"></span>
+          <span id="error-message"></span>
 
-            <button class="btn btn-xs" onclick="displaySettings();">Settings</button>
+          <button class="btn btn-xs" onclick="displaySettings();">Settings</button>
 
-            <form action="logout" method="POST" style="display: inline;">
-              <input type="submit" class="btn btn-xs" value="Logout">
-            </form>
-          </div>
+          <form action="logout" method="POST" style="display: inline;">
+            <input type="submit" class="btn btn-xs" value="Logout">
+          </form>
         </div>
       </div>
 

@@ -15,6 +15,13 @@
     grid-gap: 10px;
 }
 
+#header {
+    grid-area: header;
+    background-color: #f1f1f1;
+    display: flex;
+    align-items: center;
+}
+
 .note-editable {
     /* This is because with empty content height of editor is 0 and it's impossible to click into it */
     min-height: 400px;
