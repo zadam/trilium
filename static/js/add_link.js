@@ -10,7 +10,7 @@ $(document).bind('keydown', 'alt+l', () => {
         width: 500
     });
 
-    function setDefaultlinkTitle(noteId) {
+    function setDefaultLinkTitle(noteId) {
         const noteTitle = getNoteTitle(noteId);
 
         $("#link-title").val(noteTitle);
@@ -24,7 +24,7 @@ $(document).bind('keydown', 'alt+l', () => {
             const noteId = getNodeIdFromLabel(val);
 
             if (noteId) {
-                setDefaultlinkTitle(noteId);
+                setDefaultLinkTitle(noteId);
             }
         },
         // this is called when user goes through autocomplete list with keyboard
@@ -37,7 +37,7 @@ $(document).bind('keydown', 'alt+l', () => {
     });
 });
 
-$("#insertLinkForm").submit(() => {
+$("#insert-link-form").submit(() => {
     let val = $("#note-autocomplete").val();
 
     const noteId = getNodeIdFromLabel(val);
@@ -51,7 +51,7 @@ $("#insertLinkForm").submit(() => {
         noteDetail.summernote('editor.restoreRange');
 
         noteDetail.summernote('createLink', {
-            text: link-title,
+            text: linkTitle,
             url: 'app#' + noteId,
             isNewWindow: true
         });
@@ -62,24 +62,13 @@ $("#insertLinkForm").submit(() => {
 
 // when click on link popup, in case of internal link, just go the the referenced note instead of default behavior
 // of opening the link in new window/tab
-$(document).on('click', 'div.popover-content a', e => {
+$(document).on('click', 'div.popover-content a, div.ui-tooltip-content', e => {
     goToInternalNote(e);
 });
 
-$(document).on('dblclick', '.note-editable a', e => {
+$(document).on('dblclick', '.note-editable a, div.ui-tooltip-content', e => {
     goToInternalNote(e);
 });
-
-function getNoteIdFromLink(url) {
-    const noteIdMatch = /app#([A-Za-z0-9]{22})/.exec(url);
-
-    if (noteIdMatch === null) {
-        return null;
-    }
-    else {
-        return noteIdMatch[1];
-    }
-}
 
 function goToInternalNote(e, callback) {
     const targetUrl = $(e.target).attr("href");
@@ -89,11 +78,25 @@ function goToInternalNote(e, callback) {
     if (noteId !== null) {
         getNodeByKey(noteId).setActive();
 
+        // this is quite ugly hack, but it seems like we can't close the tooltip otherwise
+        $("[role='tooltip']").remove();
+
         e.preventDefault();
 
         if (callback) {
             callback();
         }
+    }
+}
+
+function getNoteIdFromLink(url) {
+    const noteIdMatch = /app#([A-Za-z0-9]{22})/.exec(url);
+
+    if (noteIdMatch === null) {
+        return null;
+    }
+    else {
+        return noteIdMatch[1];
     }
 }
 
