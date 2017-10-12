@@ -103,3 +103,9 @@ span.fancytree-node.encrypted.fancytree-folder > span.fancytree-icon {
     margin-bottom: 2px;
     margin-right: 8px;
 }
+
+div.ui-tooltip {
+    max-width: 600px;
+    max-height: 600px;
+    overflow: auto;
+}

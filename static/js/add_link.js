@@ -70,14 +70,23 @@ $(document).on('dblclick', '.note-editable a', e => {
     goToInternalNote(e);
 });
 
+function getNoteIdFromLink(url) {
+    const noteIdMatch = /app#([A-Za-z0-9]{22})/.exec(url);
+
+    if (noteIdMatch === null) {
+        return null;
+    }
+    else {
+        return noteIdMatch[1];
+    }
+}
+
 function goToInternalNote(e, callback) {
     const targetUrl = $(e.target).attr("href");
 
-    const noteIdMatch = /app#([A-Za-z0-9]{22})/.exec(targetUrl);
+    const noteId = getNoteIdFromLink(targetUrl);
 
-    if (noteIdMatch !== null) {
-        const noteId = noteIdMatch[1];
-
+    if (noteId !== null) {
         getNodeByKey(noteId).setActive();
 
         e.preventDefault();

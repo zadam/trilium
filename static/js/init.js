@@ -54,3 +54,30 @@ $.ui.autocomplete.filter = (array, terms) => {
 
     return results;
 };
+
+$(document).tooltip({
+    items: ".note-editable a",
+    content: function(callback) {
+        const noteId = getNoteIdFromLink($(this).attr("href"));
+
+        if (noteId !== null) {
+            loadNote(noteId, note => {
+                callback(note.detail.note_text);
+            });
+        }
+    },
+    close: function(event, ui)
+    {
+        ui.tooltip.hover(function()
+        {
+            $(this).stop(true).fadeTo(400, 1);
+        },
+        function()
+        {
+            $(this).fadeOut('400', function()
+            {
+                $(this).remove();
+            });
+        });
+    }
+});

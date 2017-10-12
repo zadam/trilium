@@ -106,7 +106,7 @@ function resetEncryptionSession() {
     globalDataKey = null;
 
     if (globalCurrentNote.detail.encryption > 0) {
-        loadNote(globalCurrentNote.detail.note_id);
+        loadNoteToEditor(globalCurrentNote.detail.note_id);
 
         for (const noteId of globalAllNoteIds) {
             const note = getNodeByKey(noteId);
@@ -280,7 +280,7 @@ function encryptSubTree(noteId) {
         },
             note => {
                 if (note.detail.note_id === globalCurrentNote.detail.note_id) {
-                    loadNote(note.detail.note_id);
+                    loadNoteToEditor(note.detail.note_id);
                 }
                 else {
                     setTreeBasedOnEncryption(note);
@@ -307,7 +307,7 @@ function decryptSubTree(noteId) {
         },
             note => {
                 if (note.detail.note_id === globalCurrentNote.detail.note_id) {
-                    loadNote(note.detail.note_id);
+                    loadNoteToEditor(note.detail.note_id);
                 }
                 else {
                     setTreeBasedOnEncryption(note);

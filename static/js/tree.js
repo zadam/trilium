@@ -135,7 +135,7 @@ $(() => {
             activate: (event, data) => {
                 const node = data.node.data;
 
-                saveNoteIfChanged(() => loadNote(node.note_id));
+                saveNoteIfChanged(() => loadNoteToEditor(node.note_id));
             },
             expand: (event, data) => {
                 setExpandedToServer(data.node.key, true);

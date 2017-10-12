@@ -191,7 +191,7 @@ function setNoteBackgroundIfEncrypted(note) {
     setTreeBasedOnEncryption(note);
 }
 
-function loadNote(noteId) {
+function loadNoteToEditor(noteId) {
     $.get(baseApiUrl + 'notes/' + noteId).then(note => {
         globalCurrentNote = note;
 
@@ -225,13 +225,23 @@ function loadNote(noteId) {
 
             document.location.hash = noteId;
 
-            $(window).resize(); // to trigger resizing of editor
-
             addRecentNote(noteId, note.detail.note_id);
 
             noteChangeDisabled = false;
 
             setNoteBackgroundIfEncrypted(note);
         });
+    });
+}
+
+function loadNote(noteId, callback) {
+    $.get(baseApiUrl + 'notes/' + noteId).then(note => {
+        if (note.detail.encryption > 0 && !isEncryptionAvailable()) {
+            return;
+        }
+
+        decryptNoteIfNecessary(note);
+
+        callback(note);
     });
 }
