@@ -31,19 +31,19 @@
 
       <div class="hide-toggle" style="grid-area: tree-actions">
         <a onclick="createNewTopLevelNote()" title="Create new top level note" class="icon-action">
-          <img src="icons/file-plus.png" alt="Create new top level note"/>
+          <img src="images/icons/file-plus.png" alt="Create new top level note"/>
         </a>
 
         <a onclick="collapseTree()" title="Collapse tree" class="icon-action">
-          <img src="icons/list.png" alt="Collapse tree"/>
+          <img src="images/icons/list.png" alt="Collapse tree"/>
         </a>
 
         <a onclick="scrollToCurrentNote()" title="Scroll to current note" class="icon-action">
-          <img src="icons/crosshair.png" alt="Collapse tree"/>
+          <img src="images/icons/crosshair.png" alt="Collapse tree"/>
         </a>
 
         <a onclick="toggleSearch()" title="Search in notes" class="icon-action">
-          <img src="icons/search.png" alt="Search in notes"/>
+          <img src="images/icons/search.png" alt="Search in notes"/>
         </a>
 
         <div id="search-box" style="display: none; padding: 10px; margin-top: 10px;">
@@ -66,7 +66,7 @@
              class="icon-action"
              id="encrypt-button"
              style="display: none;">
-            <img src="icons/lock.png" alt="Encrypt note"/>
+            <img src="images/icons/lock.png" alt="Encrypt note"/>
           </a>
 
           <a onclick="decryptNoteAndSendToServer()"
@@ -74,7 +74,7 @@
              class="icon-action"
              id="decrypt-button"
              style="display: none;">
-            <img src="icons/unlock.png" alt="Decrypt note"/>
+            <img src="images/icons/unlock.png" alt="Decrypt note"/>
           </a>
 
           &nbsp;
@@ -217,60 +217,60 @@
       const baseApiUrl = 'api/';
     </script>
 
-    <script src="lib/jquery.min.js"></script>
+    <script src="libraries/jquery.min.js"></script>
 
     <!-- bootstrap needs to be included before jQuery UI, otherwise close icon in the dialog will be missing -->
-    <link href="lib/bootstrap/css/bootstrap.css" rel="stylesheet">
-    <script src="lib/bootstrap/js/bootstrap.js"></script>
+    <link href="libraries/bootstrap/css/bootstrap.css" rel="stylesheet">
+    <script src="libraries/bootstrap/js/bootstrap.js"></script>
 
-    <link href="lib/jqueryui/jquery-ui.min.css" rel="stylesheet">
-    <script src="lib/jqueryui/jquery-ui.min.js"></script>
+    <link href="libraries/jqueryui/jquery-ui.min.css" rel="stylesheet">
+    <script src="libraries/jqueryui/jquery-ui.min.js"></script>
 
     <!-- Include Fancytree skin and library -->
-    <link href="lib/fancytree/skin-win8/ui.fancytree.css" rel="stylesheet">
-    <script src="lib/fancytree/jquery.fancytree-all.js"></script>
+    <link href="libraries/fancytree/skin-win8/ui.fancytree.css" rel="stylesheet">
+    <script src="libraries/fancytree/jquery.fancytree-all.js"></script>
 
-    <link href="lib/summernote/summernote.css" rel="stylesheet">
-    <script src="lib/summernote/summernote.js"></script>
+    <link href="libraries/summernote/summernote.css" rel="stylesheet">
+    <script src="libraries/summernote/summernote.js"></script>
 
-    <script src="lib/jquery.hotkeys.js"></script>
-    <script src="lib/jquery.fancytree.hotkeys.js"></script>
+    <script src="libraries/jquery.hotkeys.js"></script>
+    <script src="libraries/jquery.fancytree.hotkeys.js"></script>
 
-    <script src="lib/jquery.ui-contextmenu.min.js"></script>
+    <script src="libraries/jquery.ui-contextmenu.min.js"></script>
 
     <!-- https://github.com/ricmoo/aes-js -->
-    <script src="lib/aes.js"></script>
+    <script src="libraries/aes.js"></script>
     <!-- https://github.com/emn178/js-sha256 -->
-    <script src="lib/sha256.min.js"></script>
+    <script src="libraries/sha256.min.js"></script>
     <!-- https://github.com/ricmoo/scrypt-js -->
-    <script src="lib/scrypt/scrypt.js"></script>
-    <script src="lib/scrypt/buffer.js"></script>
-    <script src="lib/scrypt/setImmediate.js"></script>
-    <script src="lib/scrypt/unorm.js"></script>
+    <script src="libraries/scrypt/scrypt.js"></script>
+    <script src="libraries/scrypt/buffer.js"></script>
+    <script src="libraries/scrypt/setImmediate.js"></script>
+    <script src="libraries/scrypt/unorm.js"></script>
 
-    <link href="style.css" rel="stylesheet">
+    <link href="stylesheets/style.css" rel="stylesheet">
 
-    <script src="js/init.js"></script>
+    <script src="javascripts/init.js"></script>
 
     <!-- Tree scripts -->
-    <script src="js/tree.js"></script>
-    <script src="js/tree_mutations.js"></script>
-    <script src="js/tree_utils.js"></script>
-    <script src="js/drag_and_drop.js"></script>
-    <script src="js/context_menu.js"></script>
+    <script src="javascripts/tree.js"></script>
+    <script src="javascripts/tree_mutations.js"></script>
+    <script src="javascripts/tree_utils.js"></script>
+    <script src="javascripts/drag_and_drop.js"></script>
+    <script src="javascripts/context_menu.js"></script>
 
     <!-- Note detail -->
-    <script src="js/note.js"></script>
-    <script src="js/encryption.js"></script>
+    <script src="javascripts/note.js"></script>
+    <script src="javascripts/encryption.js"></script>
 
     <!-- dialogs -->
-    <script src="js/recent_notes.js"></script>
-    <script src="js/add_link.js"></script>
-    <script src="js/jump_to_note.js"></script>
-    <script src="js/settings.js"></script>
-    <script src="js/note_history.js"></script>
-    <script src="js/recent_changes.js"></script>
+    <script src="javascripts/recent_notes.js"></script>
+    <script src="javascripts/add_link.js"></script>
+    <script src="javascripts/jump_to_note.js"></script>
+    <script src="javascripts/settings.js"></script>
+    <script src="javascripts/note_history.js"></script>
+    <script src="javascripts/recent_changes.js"></script>
 
-    <script src="js/utils.js"></script>
+    <script src="javascripts/utils.js"></script>
   </body>
 </html>

@@ -26,7 +26,7 @@ const migrationApiRoute = require('./routes/api/migration');
 
 const db = require('sqlite');
 
-const config = require('./config');
+const config = require('./services/config');
 
 db.open(config.Document.documentPath, { Promise });
 
@@ -41,7 +41,7 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, '../static')));
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(session({
     secret: "sdhkjhdsklajf", // FIXME: need to use the DB one
     resave: false, // true forces the session to be saved back to the session store, even if the session was never modified during the request.
@@ -53,7 +53,7 @@ app.use(session({
     },
     store: new FileStore({
         ttl: 3600,
-        path: '../sessions'
+        path: '../trilium-data/sessions'
     })
 }));
 // uncomment after placing your favicon in /public

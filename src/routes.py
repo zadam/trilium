@@ -42,7 +42,7 @@ def show_app():
     if db_version < APP_DB_VERSION:
         return redirect('migration')
 
-    return render_template('app.html')
+    return render_template('index.html')
 
 
 @routes.route('/migration', methods=['GET'])

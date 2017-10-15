@@ -1,12 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const auth = require('../../auth');
-const backup = require('../../backup');
-const sql = require('../../sql');
+const auth = require('../../services/auth');
+const backup = require('../../services/backup');
+const sql = require('../../services/sql');
 const fs = require('fs-extra');
 
 const APP_DB_VERSION = 0;
-const MIGRATIONS_DIR = "migrations";
+const MIGRATIONS_DIR = "../trilium-data/migrations";
 
 router.get('', auth.checkApiAuth, async (req, res, next) => {
     res.send({

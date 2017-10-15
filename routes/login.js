@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const utils = require('../utils');
-const sql = require('../sql');
-const my_scrypt = require('../my_scrypt');
+const utils = require('../services/utils');
+const sql = require('../services/sql');
+const my_scrypt = require('../services/my_scrypt');
 
 router.get('', (req, res, next) => {
     res.render('login', { 'failedAuth': false });
@@ -18,7 +18,7 @@ router.post('', async (req, res, next) => {
 
         req.session.loggedIn = true;
 
-        return res.redirect('app');
+        return res.redirect('/');
     }
     else {
         res.render('login', {'failedAuth': true});
