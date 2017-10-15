@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const sql = require('../sql');
-const utils = require('../utils');
-const backup = require('../backup');
-const auth = require('../auth');
+const sql = require('../../sql');
+const utils = require('../../utils');
+const backup = require('../../backup');
+const auth = require('../../auth');
 
 router.get('/', auth.checkApiAuth, async (req, res, next) => {
     await backup.regularBackup();

@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const sql = require('../sql');
-const audit_category = require('../audit_category');
-const auth = require('../auth');
+const sql = require('../../sql');
+const audit_category = require('../../audit_category');
+const auth = require('../../auth');
 
 const ALLOWED_OPTIONS = ['encryption_session_timeout', 'history_snapshot_time_interval'];
 

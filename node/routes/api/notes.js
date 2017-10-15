@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const sql = require('../sql');
-const utils = require('../utils');
-const audit_category = require('../audit_category');
-const auth = require('../auth');
+const sql = require('../../sql');
+const utils = require('../../utils');
+const audit_category = require('../../audit_category');
+const auth = require('../../auth');
 
 router.get('/:noteId', auth.checkApiAuth, async (req, res, next) => {
     let noteId = req.params.noteId;

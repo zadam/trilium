@@ -14,14 +14,14 @@ const logoutRoute = require('./routes/logout');
 const migrationRoute = require('./routes/migration');
 
 // API routes
-const treeRoute = require('./routes/tree');
-const notesRoute = require('./routes/notes');
-const notesMoveRoute = require('./routes/notes_move');
-const auditRoute = require('./routes/audit');
-const noteHistoryRoute = require('./routes/note_history');
-const recentChangesRoute = require('./routes/recent_changes');
-const settingsRoute = require('./routes/settings');
-const passwordRoute = require('./routes/password');
+const treeRoute = require('./routes/api/tree');
+const notesRoute = require('./routes/api/notes');
+const notesMoveRoute = require('./routes/api/notes_move');
+const auditRoute = require('./routes/api/audit');
+const noteHistoryRoute = require('./routes/api/note_history');
+const recentChangesRoute = require('./routes/api/recent_changes');
+const settingsRoute = require('./routes/api/settings');
+const passwordRoute = require('./routes/api/password');
 
 const db = require('sqlite');
 
