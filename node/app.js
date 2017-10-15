@@ -14,14 +14,15 @@ const logoutRoute = require('./routes/logout');
 const migrationRoute = require('./routes/migration');
 
 // API routes
-const treeRoute = require('./routes/api/tree');
-const notesRoute = require('./routes/api/notes');
-const notesMoveRoute = require('./routes/api/notes_move');
-const auditRoute = require('./routes/api/audit');
-const noteHistoryRoute = require('./routes/api/note_history');
-const recentChangesRoute = require('./routes/api/recent_changes');
-const settingsRoute = require('./routes/api/settings');
-const passwordRoute = require('./routes/api/password');
+const treeApiRoute = require('./routes/api/tree');
+const notesApiRoute = require('./routes/api/notes');
+const notesMoveApiRoute = require('./routes/api/notes_move');
+const auditApiRoute = require('./routes/api/audit');
+const noteHistoryApiRoute = require('./routes/api/note_history');
+const recentChangesApiRoute = require('./routes/api/recent_changes');
+const settingsApiRoute = require('./routes/api/settings');
+const passwordApiRoute = require('./routes/api/password');
+const migrationApiRoute = require('./routes/api/migration');
 
 const db = require('sqlite');
 
@@ -63,14 +64,15 @@ app.use('/login', loginRoute);
 app.use('/logout', logoutRoute);
 app.use('/migration', migrationRoute);
 
-app.use('/api/tree', treeRoute);
-app.use('/api/notes', notesRoute);
-app.use('/api/notes', notesMoveRoute);
-app.use('/api/audit', auditRoute);
-app.use('/api/notes-history', noteHistoryRoute);
-app.use('/api/recent-changes', recentChangesRoute);
-app.use('/api/settings', settingsRoute);
-app.use('/api/password', passwordRoute);
+app.use('/api/tree', treeApiRoute);
+app.use('/api/notes', notesApiRoute);
+app.use('/api/notes', notesMoveApiRoute);
+app.use('/api/audit', auditApiRoute);
+app.use('/api/notes-history', noteHistoryApiRoute);
+app.use('/api/recent-changes', recentChangesApiRoute);
+app.use('/api/settings', settingsApiRoute);
+app.use('/api/password', passwordApiRoute);
+app.use('/api/migration', migrationApiRoute);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

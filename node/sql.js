@@ -40,6 +40,10 @@ async function execute(query, params = []) {
     return await db.run(query, ...params);
 }
 
+async function executeScript(query) {
+    return await db.exec(query);
+}
+
 async function remove(tableName, noteId) {
     return await execute("DELETE FROM " + tableName + " WHERE note_id = ?", [noteId]);
 }
@@ -67,6 +71,7 @@ module.exports = {
     getSingleResult,
     getResults,
     execute,
+    executeScript,
     getOption,
     setOption,
     beginTransaction,

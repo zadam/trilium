@@ -20,6 +20,7 @@
     "scrypt": "^6.0.3",
     "serve-favicon": "~2.4.5",
     "session-file-store": "^1.1.2",
+    // https://github.com/kriasoft/node-sqlite
     "sqlite": "^2.8.0"
   }
 }
