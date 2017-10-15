@@ -6,6 +6,7 @@ const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const helmet = require('helmet');
 const session = require('express-session');
+const FileStore = require('session-file-store')(session);
 
 const appRoute = require('./routes/app');
 const loginRoute = require('./routes/login');
@@ -48,7 +49,11 @@ app.use(session({
     //    path: "/",
         httpOnly: true,
         maxAge:  1800000
-    }
+    },
+    store: new FileStore({
+        ttl: 3600,
+        path: '../sessions'
+    })
 }));
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
