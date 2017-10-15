@@ -8,7 +8,7 @@ const helmet = require('helmet');
 const session = require('express-session');
 const FileStore = require('session-file-store')(session);
 
-const appRoute = require('./routes/app');
+const indexRoute = require('./routes/index');
 const loginRoute = require('./routes/login');
 const logoutRoute = require('./routes/logout');
 const migrationRoute = require('./routes/migration');
@@ -59,7 +59,7 @@ app.use(session({
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 
-app.use('/app', appRoute);
+app.use('/', indexRoute);
 app.use('/login', loginRoute);
 app.use('/logout', logoutRoute);
 app.use('/migration', migrationRoute);
