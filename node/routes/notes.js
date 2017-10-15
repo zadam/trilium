@@ -3,8 +3,9 @@ const router = express.Router();
 const sql = require('../sql');
 const utils = require('../utils');
 const audit_category = require('../audit_category');
+const auth = require('../auth');
 
-router.get('/:noteId', async (req, res, next) => {
+router.get('/:noteId', auth.checkApiAuth, async (req, res, next) => {
     let noteId = req.params.noteId;
 
     await sql.execute("update options set opt_value = ? where opt_name = 'start_node'", [noteId]);

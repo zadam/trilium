@@ -10,11 +10,11 @@
             <div class="col-md-4 col-md-offset-4">
                 <h1>Trilium login</h1>
 
-                {% if failedAuth %}
+                <% if (failedAuth) { %>
                 <div class="alert alert-warning">
                     Username and / or password are incorrect. Please try again.
                 </div>
-                {% endif %}
+                <% } %>
 
                 <form action="login" method="POST">
                     <div class="form-group">
@@ -44,7 +44,7 @@
         </div>
     </div>
     
-    <link href="stat/lib/bootstrap/css/bootstrap.css" rel="stylesheet">
-    <script src="stat/lib/bootstrap/js/bootstrap.js"></script>
+    <link href="lib/bootstrap/css/bootstrap.css" rel="stylesheet">
+    <script src="lib/bootstrap/js/bootstrap.js"></script>
   </body>
 </html>

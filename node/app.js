@@ -4,9 +4,15 @@ const favicon = require('serve-favicon');
 const logger = require('morgan');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
+const helmet = require('helmet');
+const session = require('express-session');
 
 const appRoute = require('./routes/app');
-const usersRoute = require('./routes/users');
+const loginRoute = require('./routes/login');
+const logoutRoute = require('./routes/logout');
+const migrationRoute = require('./routes/migration');
+
+// API routes
 const treeRoute = require('./routes/tree');
 const notesRoute = require('./routes/notes');
 const notesMoveRoute = require('./routes/notes_move');
@@ -28,16 +34,30 @@ const app = express();
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
-// uncomment after placing your favicon in /public
-//app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
+app.use(helmet());
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, '../static')));
+app.use(session({
+    secret: "sdhkjhdsklajf", // FIXME: need to use the DB one
+    resave: false, // true forces the session to be saved back to the session store, even if the session was never modified during the request.
+    saveUninitialized: false, // true forces a session that is "uninitialized" to be saved to the store. A session is uninitialized when it is new but not modified.
+    cookie: {
+    //    path: "/",
+        httpOnly: true,
+        maxAge:  1800000
+    }
+}));
+// uncomment after placing your favicon in /public
+//app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 
 app.use('/app', appRoute);
-app.use('/users', usersRoute);
+app.use('/login', loginRoute);
+app.use('/logout', logoutRoute);
+app.use('/migration', migrationRoute);
+
 app.use('/api/tree', treeRoute);
 app.use('/api/notes', notesRoute);
 app.use('/api/notes', notesMoveRoute);

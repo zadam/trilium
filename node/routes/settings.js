@@ -2,10 +2,11 @@ const express = require('express');
 const router = express.Router();
 const sql = require('../sql');
 const audit_category = require('../audit_category');
+const auth = require('../auth');
 
 const ALLOWED_OPTIONS = ['encryption_session_timeout', 'history_snapshot_time_interval'];
 
-router.get('/', async (req, res, next) => {
+router.get('/', auth.checkApiAuth, async (req, res, next) => {
     const dict = {};
 
     const settings = await sql.getResults("SELECT opt_name, opt_value FROM options WHERE opt_name IN ("
