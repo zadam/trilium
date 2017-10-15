@@ -19,7 +19,7 @@ function randomString(length, chars) {
 }
 
 function nowTimestamp() {
-    return Date.now();
+    return Date.now() / 1000;
 }
 
 function toBase64(plainText) {

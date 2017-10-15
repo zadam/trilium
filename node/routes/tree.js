@@ -29,7 +29,7 @@ router.get('/', auth.checkApiAuth, async (req, res, next) => {
             root_notes.push(note);
         }
 
-        notes_map[note['note_id']] = note
+        notes_map[note['note_id']] = note;
     }
 
     for (const note of notes) {
