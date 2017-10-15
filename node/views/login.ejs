@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Login</title>
+  </head>
+  <body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4 col-md-offset-4">
+                <h1>Trilium login</h1>
+
+                {% if failedAuth %}
+                <div class="alert alert-warning">
+                    Username and / or password are incorrect. Please try again.
+                </div>
+                {% endif %}
+
+                <form action="login" method="POST">
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <div class="controls">
+                            <input id="username" name="username" placeholder="" class="form-control" type="text">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <div class="controls">
+                            <input id="password" name="password" placeholder="" class="form-control" type="password">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="checkbox">
+                            <label>
+                                <input id="remember-me" name="remember-me" value="1" type="checkbox"> Remember me
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <button class="btn btn-success">Login</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <link href="stat/lib/bootstrap/css/bootstrap.css" rel="stylesheet">
+    <script src="stat/lib/bootstrap/js/bootstrap.js"></script>
+  </body>
+</html>

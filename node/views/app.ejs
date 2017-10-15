@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Trilium</title>
+  </head>
+  <body>
+    <div id="container">
+      <div id="header" class="hide-toggle">
+        <div id="header-title">
+          Trilium
+        </div>
+
+        <div style="flex-grow: 100;">
+          <button class="btn btn-xs" onclick="showRecentChanges();">Recent changes</button>
+          <button class="btn btn-xs" onclick="showRecentNotes();">Recent notes</button>
+          <button class="btn btn-xs" onclick="showJumpToNote();">Jump to note</button>
+        </div>
+
+        <div>
+          <span id="top-message"></span>
+          <span id="error-message"></span>
+
+          <button class="btn btn-xs" onclick="displaySettings();">Settings</button>
+
+          <form action="logout" method="POST" style="display: inline;">
+            <input type="submit" class="btn btn-xs" value="Logout">
+          </form>
+        </div>
+      </div>
+
+      <div class="hide-toggle" style="grid-area: tree-actions">
+        <a onclick="createNewTopLevelNote()" title="Create new top level note" class="icon-action">
+          <img src="icons/file-plus.png" alt="Create new top level note"/>
+        </a>
+
+        <a onclick="collapseTree()" title="Collapse tree" class="icon-action">
+          <img src="icons/list.png" alt="Collapse tree"/>
+        </a>
+
+        <a onclick="scrollToCurrentNote()" title="Scroll to current note" class="icon-action">
+          <img src="icons/crosshair.png" alt="Collapse tree"/>
+        </a>
+
+        <a onclick="toggleSearch()" title="Search in notes" class="icon-action">
+          <img src="icons/search.png" alt="Search in notes"/>
+        </a>
+
+        <div id="search-box" style="display: none; padding: 10px; margin-top: 10px;">
+          <p>
+            <label>Search:</label>
+            <input name="search" autocomplete="off">
+            <button id="reset-search-button">&times;</button>
+            <span id="matches"></span>
+          </p>
+        </div>
+      </div>
+
+      <div id="tree" class="hide-toggle" style="grid-area: tree; overflow: auto;">
+      </div>
+
+      <div class="hide-toggle" style="grid-area: title;">
+        <div style="display: flex; align-items: center;">
+          <a onclick="encryptNoteAndSendToServer()"
+             title="Encrypt the note so that password will be required to view the note"
+             class="icon-action"
+             id="encrypt-button"
+             style="display: none;">
+            <img src="icons/lock.png" alt="Encrypt note"/>
+          </a>
+
+          <a onclick="decryptNoteAndSendToServer()"
+             title="Decrypt note permamently so that password will not be required to access this note in the future"
+             class="icon-action"
+             id="decrypt-button"
+             style="display: none;">
+            <img src="icons/unlock.png" alt="Decrypt note"/>
+          </a>
+
+          &nbsp;
+
+          <input autocomplete="off" value="" id="note-title" style="font-size: x-large; border: 0; flex-grow: 100;" tabindex="1">
+
+          <button class="btn btn-xs" onclick="showCurrentNoteHistory();">History</button>
+        </div>
+      </div>
+
+      <div style="overflow: auto; grid-area: note-content; padding-left: 10px;">
+        <div id="note-detail"></div>
+      </div>
+    </div>
+
+    <div id="recent-notes-dialog" title="Recent notes" style="display: none;">
+      <select id="recent-notes-select-box" size="20" style="width: 100%">
+      </select>
+
+      <br/><br/>
+
+      <p>
+        <button class="btn btn-sm" id="recent-notes-jump-to">Jump to (enter)</button>
+        &nbsp;
+        <button class="btn btn-sm" id="recent-notes-add-link">Add link (l)</button>
+      </p>
+    </div>
+
+    <div id="insert-link-dialog" title="Insert link" style="display: none;">
+      <form id="insert-link-form">
+        <div class="form-group">
+          <label for="note-autocomplete">Link to note</label>
+          <input id="note-autocomplete" style="width: 100%;">
+        </div>
+
+        <div class="form-group">
+          <label for="link-title">Link title</label>
+          <input id="link-title" style="width: 100%;">
+        </div>
+
+        <button class="btn btn-sm">Add link</button>
+      </form>
+    </div>
+
+    <div id="jump-to-note-dialog" title="Jump to note" style="display: none;">
+      <form id="jump-to-note-form">
+        <div class="form-group">
+          <label for="jump-to-note-autocomplete">Jump to note</label>
+          <input id="jump-to-note-autocomplete" style="width: 100%;">
+        </div>
+
+        <button class="btn btn-sm">Jump</button>
+      </form>
+    </div>
+
+    <div id="encryption-password-dialog" title="Encrypted note" style="display: none;">
+      <form id="encryption-password-form">
+        <div class="form-group">
+          <label for="encryption-password">This note is encrypted. Enter password to show it:</label>
+          <input id="encryption-password" style="width: 250px;" type="password">
+          <button class="btn btn-sm">Show</button>
+        </div>
+      </form>
+    </div>
+
+    <div id="settings-dialog" title="Settings" style="display: none;">
+      <div id="settings-tabs">
+        <ul>
+          <li><a href="#change-password">Change password</a></li>
+          <li><a href="#encryption-timeout">Encryption timeout</a></li>
+          <li><a href="#history-snapshot-time-interval">History snapshots</a></li>
+        </ul>
+        <div id="change-password">
+          <form id="change-password-form">
+            <div class="form-group">
+              <label for="old-password">Old password</label>
+              <input class="form-control" id="old-password" type="password">
+            </div>
+
+            <div class="form-group">
+              <label for="new-password1">New password</label>
+              <input class="form-control" id="new-password1" type="password">
+            </div>
+
+            <div class="form-group">
+              <label for="new-password2">New password once more</label>
+              <input class="form-control" id="new-password2" type="password">
+            </div>
+
+            <button class="btn btn-sm">Change password</button>
+          </form>
+        </div>
+        <div id="encryption-timeout">
+          <p>Encryption timeout is a time period after which the encryption key and encrypted data is wiped out from
+            browser's memory. This is measured from the last encryption / decryption activity.</p>
+
+          <form id="encryption-timeout-form">
+            <div class="form-group">
+              <label for="encryption-timeout-in-seconds">Encryption timeout (in seconds)</label>
+              <input class="form-control" id="encryption-timeout-in-seconds" type="number">
+            </div>
+
+            <button class="btn btn-sm">Save</button>
+          </form>
+        </div>
+        <div id="history-snapshot-time-interval">
+          <p>History snapshot time interval is time in seconds after which new history record will be created for the note.</p>
+
+          <form id="history-snapshot-time-interval-form">
+            <div class="form-group">
+              <label for="history-snapshot-time-interval-in-seconds">History snapshot time interval (in seconds)</label>
+              <input class="form-control" id="history-snapshot-time-interval-in-seconds" type="number">
+            </div>
+
+            <button class="btn btn-sm">Save</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div id="note-history-dialog" title="Note history" style="display: none;">
+      <div style="display: flex;">
+        <select id="note-history-list" size="25" style="width: 150px; height: 630px;">
+        </select>
+
+        <div id="note-history-content-wrapper" style="flex-grow: 1; margin-left: 20px;">
+          <h3 id="note-history-title" style="margin: 3px;"></h3>
+
+          <div id="note-history-content" style="height: 600px; width: 600px; overflow: auto;"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="recent-changes-dialog" title="Recent changes" style="display: none; padding: 20px;">
+    </div>
+
+    <div id="tooltip" style="display: none;"></div>
+
+    <script type="text/javascript">
+      const baseApiUrl = 'api/';
+    </script>
+
+    <script src="lib/jquery.min.js"></script>
+
+    <!-- bootstrap needs to be included before jQuery UI, otherwise close icon in the dialog will be missing -->
+    <link href="lib/bootstrap/css/bootstrap.css" rel="stylesheet">
+    <script src="lib/bootstrap/js/bootstrap.js"></script>
+
+    <link href="lib/jqueryui/jquery-ui.min.css" rel="stylesheet">
+    <script src="lib/jqueryui/jquery-ui.min.js"></script>
+
+    <!-- Include Fancytree skin and library -->
+    <link href="lib/fancytree/skin-win8/ui.fancytree.css" rel="stylesheet">
+    <script src="lib/fancytree/jquery.fancytree-all.js"></script>
+
+    <link href="lib/summernote/summernote.css" rel="stylesheet">
+    <script src="lib/summernote/summernote.js"></script>
+
+    <script src="lib/jquery.hotkeys.js"></script>
+    <script src="lib/jquery.fancytree.hotkeys.js"></script>
+
+    <script src="lib/jquery.ui-contextmenu.min.js"></script>
+
+    <!-- https://github.com/ricmoo/aes-js -->
+    <script src="lib/aes.js"></script>
+    <!-- https://github.com/emn178/js-sha256 -->
+    <script src="lib/sha256.min.js"></script>
+    <!-- https://github.com/ricmoo/scrypt-js -->
+    <script src="lib/scrypt/scrypt.js"></script>
+    <script src="lib/scrypt/buffer.js"></script>
+    <script src="lib/scrypt/setImmediate.js"></script>
+    <script src="lib/scrypt/unorm.js"></script>
+
+    <link href="style.css" rel="stylesheet">
+
+    <script src="js/init.js"></script>
+
+    <!-- Tree scripts -->
+    <script src="js/tree.js"></script>
+    <script src="js/tree_mutations.js"></script>
+    <script src="js/tree_utils.js"></script>
+    <script src="js/drag_and_drop.js"></script>
+    <script src="js/context_menu.js"></script>
+
+    <!-- Note detail -->
+    <script src="js/note.js"></script>
+    <script src="js/encryption.js"></script>
+
+    <!-- dialogs -->
+    <script src="js/recent_notes.js"></script>
+    <script src="js/add_link.js"></script>
+    <script src="js/jump_to_note.js"></script>
+    <script src="js/settings.js"></script>
+    <script src="js/note_history.js"></script>
+    <script src="js/recent_changes.js"></script>
+
+    <script src="js/utils.js"></script>
+  </body>
+</html>
