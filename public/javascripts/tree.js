@@ -219,7 +219,7 @@ function resetSearch() {
 $("button#reset-search-button").click(resetSearch);
 
 $("input[name=search]").keyup(e => {
-    const searchString = $(this).val();
+    const searchString = $("input[name=search]").val();
 
     if (e && e.which === $.ui.keyCode.ESCAPE || $.trim(searchString) === "") {
         $("button#reset-search-button").click();
