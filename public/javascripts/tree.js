@@ -165,7 +165,53 @@ $(() => {
                 nodata: true,      // Display a 'no data' status node if result is empty
                 mode: "hide"       // Grayout unmatched nodes (pass "hide" to remove unmatched node instead)
             },
-            dnd: dragAndDropSetup
+            dnd: dragAndDropSetup,
+            keydown: (event, data) => {
+                const node = data.node;
+                // Eat keyboard events, when a menu is open
+                if ($(".contextMenu:visible").length > 0)
+                    return false;
+
+                switch (event.which) {
+                    // Open context menu on [Space] key (simulate right click)
+                    case 32: // [Space]
+                        $(node.span).trigger("mousedown", {
+                            preventDefault: true,
+                            button: 2
+                        })
+                            .trigger("mouseup", {
+                                preventDefault: true,
+                                pageX: node.span.offsetLeft,
+                                pageY: node.span.offsetTop,
+                                button: 2
+                            });
+                        return false;
+
+                    // Handle Ctrl-C, -X and -V
+                    // case 67:
+                    //     if (event.ctrlKey) { // Ctrl-C
+                    //         copyPaste("copy", node);
+                    //         return false;
+                    //     }
+                    //     break;
+                    case 86:
+                        console.log("CTRL-V");
+
+                        if (event.ctrlKey) { // Ctrl-V
+                            pasteAfter(node);
+                            return false;
+                        }
+                        break;
+                    case 88:
+                        console.log("CTRL-X");
+
+                        if (event.ctrlKey) { // Ctrl-X
+                            cut(node);
+                            return false;
+                        }
+                        break;
+                }
+            }
         });
 
         globalTree.contextmenu(contextMenuSetup);

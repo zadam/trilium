@@ -1,3 +1,23 @@
+function pasteAfter(node) {
+    const subjectNode = getNodeByKey(globalClipboardNoteId);
+
+    moveAfterNode(subjectNode, node);
+
+    globalClipboardNoteId = null;
+}
+
+function pasteInto(node) {
+    const subjectNode = getNodeByKey(globalClipboardNoteId);
+
+    moveToNode(subjectNode, node);
+
+    globalClipboardNoteId = null;
+}
+
+function cut(node) {
+    globalClipboardNoteId = node.key;
+}
+
 const contextMenuSetup = {
     delegate: "span.fancytree-title",
     autoFocus: true,
@@ -46,21 +66,13 @@ const contextMenuSetup = {
             decryptSubTree(node.key);
         }
         else if (ui.cmd === "cut") {
-            globalClipboardNoteId = node.key;
+            cut(node);
         }
         else if (ui.cmd === "pasteAfter") {
-            const subjectNode = getNodeByKey(globalClipboardNoteId);
-
-            moveAfterNode(subjectNode, node);
-
-            globalClipboardNoteId = null;
+            pasteAfter(node);
         }
         else if (ui.cmd === "pasteInto") {
-            const subjectNode = getNodeByKey(globalClipboardNoteId);
-
-            moveToNode(subjectNode, node);
-
-            globalClipboardNoteId = null;
+            pasteInto(node);
         }
         else if (ui.cmd === "delete") {
             deleteNode(node);
