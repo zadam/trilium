@@ -4,9 +4,9 @@ jQuery.hotkeys.options.filterContentEditable = true;
 
 $(document).bind('keydown', 'alt+m', () => {
     const toggle = $(".hide-toggle");
-    const hidden = toggle.css('display') === 'none';
+    const hidden = toggle.css('visibility') === 'hidden';
 
-    toggle.css('display', hidden ? 'block' : 'none');
+    toggle.css('visibility', hidden ? 'visible' : 'hidden');
 });
 
 // hide (toggle) everything except for the note content for distraction free writing
