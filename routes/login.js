@@ -14,9 +14,15 @@ router.post('', async (req, res, next) => {
     const guessedPassword = req.body.password;
 
     if (req.body.username === userName && await verifyPassword(guessedPassword)) {
-        const rememberMe = req.body.rememberme;
+        const rememberMe = req.body.remember_me;
 
         req.session.regenerate(() => {
+            if (rememberMe) {
+                req.session.cookie.maxAge = 21 * 24 * 3600000;  // 3 weeks
+            } else {
+                req.session.cookie.expires = false;
+            }
+
             req.session.loggedIn = true;
             res.redirect('/');
         });

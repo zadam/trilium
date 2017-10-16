@@ -52,7 +52,7 @@ app.use(session({
         maxAge:  1800000
     },
     store: new FileStore({
-        ttl: 3600,
+        ttl: 30 * 24 * 3600,
         path: '../trilium-data/sessions'
     })
 }));
