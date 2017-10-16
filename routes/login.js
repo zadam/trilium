@@ -16,9 +16,10 @@ router.post('', async (req, res, next) => {
     if (req.body.username === userName && await verifyPassword(guessedPassword)) {
         const rememberMe = req.body.rememberme;
 
-        req.session.loggedIn = true;
-
-        return res.redirect('/');
+        req.session.regenerate(() => {
+            req.session.loggedIn = true;
+            res.redirect('/');
+        });
     }
     else {
         res.render('login', {'failedAuth': true});

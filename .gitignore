@@ -3,8 +3,7 @@ node_modules/
 dist/
 npm-debug.log
 yarn-error.log
-app.pyc
-demo.ncdb
+*.db
 config.ini
 cert.key
 cert.crt
