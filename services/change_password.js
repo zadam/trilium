@@ -30,11 +30,13 @@ async function changePassword(currentPassword, newPassword, req = null) {
     function encrypt(plainText) {
         const aes = getAes(newPasswordEncryptionKey);
 
-        const digest = crypto.createHash('sha256').update(aesjs.utils.utf8.toBytes(plainText)).digest().slice(0, 4);
+        const plainTextBuffer = Buffer.from(plainText, 'latin1');
+
+        const digest = crypto.createHash('sha256').update(plainTextBuffer).digest().slice(0, 4);
 
         console.log("Digest:", digest);
 
-        const encryptedBytes = aes.encrypt(Buffer.concat([digest, aesjs.utils.utf8.toBytes(plainText)]));
+        const encryptedBytes = aes.encrypt(Buffer.concat([digest, plainTextBuffer]));
 
         console.log("Encrypted", encryptedBytes);
 
