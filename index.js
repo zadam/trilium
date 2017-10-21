@@ -1,5 +1,6 @@
 'use strict';
 const electron = require('electron');
+const path = require('path');
 
 const app = electron.app;
 
@@ -18,7 +19,8 @@ function onClosed() {
 function createMainWindow() {
     const win = new electron.BrowserWindow({
         width: 1200,
-        height: 900
+        height: 900,
+        icon: path.join(__dirname, 'public/images/app-icons/png/256x256.png')
     });
 
     win.setMenu(null);
