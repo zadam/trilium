@@ -3,13 +3,17 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "start": "node ./bin/www"
+    "start": "node ./bin/www",
+    "test-electron": "xo",
+    "start-electron": "electron .",
+    "build-electron": "electron-packager . --out=dist --asar --overwrite --all"
   },
   "dependencies": {
     "body-parser": "~1.18.2",
     "cookie-parser": "~1.4.3",
     "debug": "~3.1.0",
     "ejs": "~2.5.7",
+    "electron": "^1.7.9",
     "express": "~4.16.2",
     "express-session": "^1.15.6",
     "express-sessions": "^1.0.6",
@@ -20,6 +24,20 @@
     "scrypt": "^6.0.3",
     "serve-favicon": "~2.4.5",
     "session-file-store": "^1.1.2",
-    "sqlite": "^2.8.0"
+    "sqlite": "^2.8.0",
+    "electron-debug": "^1.0.0",
+    "electron-rebuild": "^1.6.0"
+  },
+  "devDependencies": {
+    "devtron": "^1.1.0",
+    "electron-packager": "^8.0.0",
+    "electron": "^1.6.6",
+    "xo": "^0.18.0"
+  },
+  "xo": {
+    "envs": [
+      "node",
+      "browser"
+    ]
   }
 }

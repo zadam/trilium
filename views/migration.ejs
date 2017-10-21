@@ -47,6 +47,9 @@
       const baseApiUrl = 'api/';
     </script>
 
+    <!-- Required for correct loading of scripts in Electron -->
+    <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
+
     <script src="stat/lib/jquery.min.js"></script>
 
     <link href="stat/lib/bootstrap/css/bootstrap.css" rel="stylesheet">

@@ -81,3 +81,7 @@ $(document).tooltip({
         });
     }
 });
+
+function isElectron() {
+    return window && window.process && window.process.type;
+}

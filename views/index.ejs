@@ -217,6 +217,9 @@
       const baseApiUrl = 'api/';
     </script>
 
+    <!-- Required for correct loading of scripts in Electron -->
+    <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
+
     <script src="libraries/jquery.min.js"></script>
 
     <!-- bootstrap needs to be included before jQuery UI, otherwise close icon in the dialog will be missing -->

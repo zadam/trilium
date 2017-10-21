@@ -43,7 +43,10 @@
             </div>
         </div>
     </div>
-    
+
+    <!-- Required for correct loading of scripts in Electron -->
+    <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
+
     <link href="libraries/bootstrap/css/bootstrap.css" rel="stylesheet">
     <script src="libraries/bootstrap/js/bootstrap.js"></script>
   </body>
