@@ -1,3 +1,5 @@
+"use strict";
+
 const ini = require('ini');
 const fs = require('fs');
 

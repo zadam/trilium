@@ -1,3 +1,5 @@
+"use strict";
+
 const sql = require('./sql');
 const my_scrypt = require('./my_scrypt');
 const utils = require('./utils');

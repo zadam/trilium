@@ -1,3 +1,5 @@
+"use strict";
+
 const utils = require('./utils');
 const sql = require('./sql');
 const config = require('./config');

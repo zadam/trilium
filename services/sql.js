@@ -1,3 +1,5 @@
+"use strict";
+
 const db = require('sqlite');
 const utils = require('./utils');
 

@@ -1,3 +1,5 @@
+"use strict";
+
 module.exports = {
     UPDATE_CONTENT: 'CONTENT',
     UPDATE_TITLE: 'TITLE',
