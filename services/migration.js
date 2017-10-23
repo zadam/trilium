@@ -22,9 +22,9 @@ async function migrate() {
                 const name = match[2];
 
                 const migrationRecord = {
-                    'db_version': dbVersion,
-                    'name': name,
-                    'file': file
+                    dbVersion: dbVersion,
+                    name: name,
+                    file: file
                 };
 
                 migrations.push(migrationRecord);
@@ -43,6 +43,8 @@ async function migrate() {
             await sql.beginTransaction();
 
             await sql.executeScript(migrationSql);
+
+            await sql.setOption("db_version", mig.dbVersion);
 
             await sql.commit();
 
