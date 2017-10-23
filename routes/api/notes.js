@@ -161,6 +161,8 @@ router.post('/:parentNoteId/children', async (req, res, next) => {
         throw new ('Unknown target: ' + note['target']);
     }
 
+    await sql.beginTransaction();
+
     await sql.addAudit(audit_category.CREATE_NOTE, req, noteId);
 
     const now = utils.nowTimestamp();
@@ -172,8 +174,6 @@ router.post('/:parentNoteId/children', async (req, res, next) => {
         'note_clone_id': '',
         'date_created': now,
         'date_modified': now,
-        'icon_info': 'pencil',
-        'is_finished': 0,
         'encryption': note['encryption']
     });
 
