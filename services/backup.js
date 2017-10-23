@@ -38,7 +38,7 @@ async function cleanupOldBackups() {
         const match = file.match(/backup-([0-9 -:]+)\.db/);
 
         if (match) {
-            const date_str = match.group(1);
+            const date_str = match[1];
 
             const date = Date.parse(date_str);
 

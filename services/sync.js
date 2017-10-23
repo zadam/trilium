@@ -1,3 +1,7 @@
 "use strict";
 
-//setInterval();
+function sync() {
+
+}
+
+setInterval(sync, 60000);

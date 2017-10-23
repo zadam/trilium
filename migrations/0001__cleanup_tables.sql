@@ -1,0 +1,11 @@
+DROP TABLE anchors;
+DROP TABLE attachments;
+DROP TABLE bookmarks;
+DROP TABLE custom_properties;
+DROP TABLE deletions;
+DROP TABLE deletions_attachments;
+DROP TABLE formatting;
+DROP TABLE icons;
+DROP TABLE tags;
+DROP TABLE tags_notes;
+DROP TABLE tasks;

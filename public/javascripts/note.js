@@ -59,7 +59,6 @@ $(document).ready(() => {
 });
 
 function parseHtml(contents, note) {
-    note.formatting = [];
     note.links = [];
     note.images = [];
 
