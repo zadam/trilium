@@ -1,0 +1,1 @@
+ALTER TABLE notes_tree ADD COLUMN date_modified INTEGER NOT NULL DEFAULT 0

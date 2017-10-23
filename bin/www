@@ -1,5 +1,9 @@
 #!/usr/bin/env node
 
+process.on('unhandledRejection', (reason, p) => {
+    // this makes sure that stacktrace of failed promise is printed out
+    console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
+});
 
 var app = require('../app');
 var debug = require('debug')('node:server');

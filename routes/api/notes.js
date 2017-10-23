@@ -153,7 +153,9 @@ router.post('/:parentNoteId/children', async (req, res, next) => {
 
         newNotePos = afterNote['note_pos'] + 1;
 
-        await sql.execute('update notes_tree set note_pos = note_pos + 1 where note_pid = ? and note_pos > ?', [parentNoteId, afterNote['note_pos']]);
+        const now = utils.nowTimestamp();
+
+        await sql.execute('update notes_tree set note_pos = note_pos + 1, date_modified = ? where note_pid = ? and note_pos > ?', [now, parentNoteId, afterNote['note_pos']]);
     }
     else {
         throw new ('Unknown target: ' + note['target']);
@@ -179,7 +181,8 @@ router.post('/:parentNoteId/children', async (req, res, next) => {
         'note_id': noteId,
         'note_pid': parentNoteId,
         'note_pos': newNotePos,
-        'is_expanded': 0
+        'is_expanded': 0,
+        'date_modified': utils.nowTimestamp()
     });
 
     await sql.commit();
