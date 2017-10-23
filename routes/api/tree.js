@@ -19,6 +19,7 @@ router.get('/', auth.checkApiAuth, async (req, res, next) => {
         + "from notes_tree "
         + "join notes on notes.note_id = notes_tree.note_id "
         + "left join notes as clone on notes.note_clone_id = clone.note_id "
+        + "where notes.is_deleted = 0 "
         + "order by note_pid, note_pos");
 
     const root_notes = [];

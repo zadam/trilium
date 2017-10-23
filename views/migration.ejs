@@ -6,41 +6,45 @@
   </head>
   <body>
     <div style="width: 800px; margin: auto;">
-        <h1>Migration</h1>
+      <h1>Migration</h1>
 
-        <div id="up-to-date" style="display:none;">
-          <p>Your database is up-to-date with the application.</p>
-        </div>
+      <div id="up-to-date" style="display:none;">
+        <p>Your database is up-to-date with the application.</p>
 
-        <div id="need-to-migrate" style="display:none;">
-          <p>Your database needs to be migrated to new version before you can use the application again.
-          Database will be backed up before migration in case of something going wrong.</p>
+        <a href="/" class="btn btn-success">Continue to app</a>
+      </div>
 
-          <table class="table table-bordered" style="width: 200px;">
-            <tr>
-              <th>Application version:</th>
-              <td id="app-db-version" style="text-align: right;"></td>
-            <tr>
-              <th>Database version:</th>
-              <td id="db-version" style="text-align: right;"></td>
-            </tr>
-          </table>
+      <div id="need-to-migrate" style="display:none;">
+        <p>Your database needs to be migrated to new version before you can use the application again.
+        Database will be backed up before migration in case of something going wrong.</p>
 
-          <button class="btn btn-warning" id="run-migration">Run migration</button>
-        </div>
+        <table class="table table-bordered" style="width: 200px;">
+          <tr>
+            <th>Application version:</th>
+            <td id="app-db-version" style="text-align: right;"></td>
+          <tr>
+            <th>Database version:</th>
+            <td id="db-version" style="text-align: right;"></td>
+          </tr>
+        </table>
 
-        <div id="migration-result" style="display:none;">
-          <h2>Migration result</h2>
+        <button class="btn btn-warning" id="run-migration">Run migration</button>
+      </div>
 
-          <table id="migration-table" class="table">
-            <tr>
-              <th>Database version</th>
-              <th>Name</th>
-              <th>Success</th>
-              <th>Error</th>
-            </tr>
-          </table>
-        </div>
+      <div id="migration-result" style="display:none;">
+        <h2>Migration result</h2>
+
+        <table id="migration-table" class="table">
+          <tr>
+            <th>Database version</th>
+            <th>Name</th>
+            <th>Success</th>
+            <th>Error</th>
+          </tr>
+        </table>
+
+        <a href="/" class="btn btn-success">Continue to app</a>
+      </div>
     </div>
 
     <script type="text/javascript">

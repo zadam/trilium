@@ -104,22 +104,24 @@ router.put('/:noteId', async (req, res, next) => {
 });
 
 router.delete('/:noteId', async (req, res, next) => {
-    await deleteNote(req.params.noteId);
+    await sql.beginTransaction();
+
+    await deleteNote(req.params.noteId, req);
 
     await sql.commit();
 
     res.send({});
 });
 
-async function deleteNote(noteId) {
+async function deleteNote(noteId, req) {
     const children = await sql.getResults("select note_id from notes_tree where note_pid = ?", [noteId]);
 
     for (const child of children) {
         await deleteNote(child['note_id']);
     }
 
-    await sql.delete("notes_tree", noteId);
-    await sql.delete("notes", noteId);
+    await sql.remove("notes_tree", noteId);
+    await sql.execute("update notes set is_deleted = 1 where note_id = ?", [noteId]);
 
     await sql.addAudit(audit_category.DELETE_NOTE, req, noteId);
 }
