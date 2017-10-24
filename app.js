@@ -7,6 +7,7 @@ const bodyParser = require('body-parser');
 const helmet = require('helmet');
 const session = require('express-session');
 const FileStore = require('session-file-store')(session);
+const os = require('os');
 
 const indexRoute = require('./routes/index');
 const loginRoute = require('./routes/login');
@@ -53,7 +54,7 @@ app.use(session({
     },
     store: new FileStore({
         ttl: 30 * 24 * 3600,
-        path: '../trilium-data/sessions'
+        path: os.tmpdir() + '/trilium-sessions'
     })
 }));
 
