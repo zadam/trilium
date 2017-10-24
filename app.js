@@ -24,12 +24,13 @@ const recentChangesApiRoute = require('./routes/api/recent_changes');
 const settingsApiRoute = require('./routes/api/settings');
 const passwordApiRoute = require('./routes/api/password');
 const migrationApiRoute = require('./routes/api/migration');
+const dataDir = require('./services/data_dir');
 
 const db = require('sqlite');
 
 const config = require('./services/config');
 
-db.open(config.Document.documentPath, { Promise });
+db.open(dataDir.DOCUMENT_PATH, { Promise });
 
 const app = express();
 

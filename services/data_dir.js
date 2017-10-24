@@ -1,0 +1,17 @@
+const os = require('os');
+const fs = require('fs');
+
+const TRILIUM_DATA_DIR = process.env.TRILIUM_DATA_DIR || os.homedir() + "/trilium-data";
+
+if (!fs.existsSync(TRILIUM_DATA_DIR)) {
+    fs.mkdirSync(TRILIUM_DATA_DIR, 0o700);
+}
+
+const DOCUMENT_PATH = TRILIUM_DATA_DIR + "/document.db";
+const BACKUP_DIR = TRILIUM_DATA_DIR + "/backup";
+
+module.exports = {
+    TRILIUM_DATA_DIR,
+    DOCUMENT_PATH,
+    BACKUP_DIR
+};

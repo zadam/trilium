@@ -4,6 +4,7 @@ const utils = require('./utils');
 const sql = require('./sql');
 const config = require('./config');
 const fs = require('fs-extra');
+const dataDir = require('./data_dir');
 
 async function regularBackup() {
     const now = utils.nowTimestamp();
@@ -19,12 +20,15 @@ async function regularBackup() {
 async function backupNow() {
     const now = utils.nowTimestamp();
 
-    const document_path = config.Document.documentPath;
     const backup_directory = config.Backup.backupDirectory;
 
     const date_str = new Date().toISOString().substr(0, 19);
 
-    fs.copySync(document_path, backup_directory + "/" + "backup-" + date_str + ".db");
+    if (!fs.existsSync(dataDir.BACKUP_DIR)) {
+        fs.mkdirSync(dataDir.BACKUP_DIR, 0o700);
+    }
+
+    fs.copySync(dataDir.DOCUMENT_PATH, dataDir.BACKUP_DIR + "/" + "backup-" + date_str + ".db");
 
     await sql.setOption('last_backup_date', now);
     //await sql.commit();
@@ -32,9 +36,8 @@ async function backupNow() {
 
 async function cleanupOldBackups() {
     const now = new Date();
-    const backupDirectory = config.Backup.backupDirectory;
 
-    fs.readdirSync(backupDirectory).forEach(file => {
+    fs.readdirSync(dataDir.BACKUP_DIR).forEach(file => {
         const match = file.match(/backup-([0-9 -:]+)\.db/);
 
         if (match) {
@@ -45,7 +48,7 @@ async function cleanupOldBackups() {
             if (now.getTime() - date.getTime() > 30 * 24 * 3600 * 1000) {
                 console.log("Removing old backup - " + file);
 
-                fs.unlink(backupDirectory + "/" + file);
+                fs.unlink(dataDir.BACKUP_DIR + "/" + file);
             }
         }
     });
