@@ -1,0 +1,1 @@
+DELETE FROM options WHERE opt_name IN ('is_readonly', 'prop_modified', 'doc_title', 'doc_UID', 'format_version', 'flask_secret_key')
