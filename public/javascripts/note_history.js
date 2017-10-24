@@ -21,7 +21,7 @@ function showNoteHistoryDialog(noteId, noteHistoryId) {
             globalHistoryItems = result;
 
             for (const row of result) {
-                const dateModified = getDateFromTS(row.date_modified);
+                const dateModified = getDateFromTS(row.date_modified_to);
 
                 $("#note-history-list").append($('<option>', {
                     value: row.id,

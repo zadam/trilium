@@ -42,24 +42,26 @@ router.put('/:noteId', async (req, res, next) => {
 
     const historyCutoff = now - historySnapshotTimeInterval;
 
-    const history = await sql.getSingleResult("select id from notes_history where note_id = ? and date_modified >= ?", [noteId, historyCutoff]);
+    const history = await sql.getSingleResult("select id from notes_history where note_id = ? and date_modified_from >= ?", [noteId, historyCutoff]);
 
     await sql.beginTransaction();
 
     if (history) {
-        await sql.execute("update notes_history set note_title = ?, note_text = ?, encryption = ? where id = ?", [
+        await sql.execute("update notes_history set note_title = ?, note_text = ?, encryption = ?, date_modified_to = ? where id = ?", [
             note['detail']['note_title'],
             note['detail']['note_text'],
             note['detail']['encryption'],
+            now,
             history['id']
         ]);
     }
     else {
-        await sql.execute("insert into notes_history (note_id, note_title, note_text, encryption, date_modified) values (?, ?, ?, ?, ?)", [
+        await sql.execute("insert into notes_history (note_id, note_title, note_text, encryption, date_modified_from, date_modified_to) values (?, ?, ?, ?, ?, ?)", [
             noteId,
             note['detail']['note_title'],
             note['detail']['note_text'],
             note['detail']['encryption'],
+            now,
             now
         ]);
     }
