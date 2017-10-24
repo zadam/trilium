@@ -52,11 +52,7 @@ function base64ToUint8Array(base64encoded) {
 function getDateFromTS(timestamp) {
     // Date accepts number of milliseconds since epoch so UTC timestamp works without any extra handling
     // see https://stackoverflow.com/questions/4631928/convert-utc-epoch-to-local-date-with-javascript
-    const utcDate = new Date(timestamp * 1000);
-
-    const localDate = new Date(utcDate.getTime() - utcDate.getTimezoneOffset() * 60 * 1000);
-
-    return localDate;
+    return new Date(timestamp * 1000);
 }
 
 function formatTime(date) {
