@@ -25,6 +25,7 @@ const settingsApiRoute = require('./routes/api/settings');
 const passwordApiRoute = require('./routes/api/password');
 const migrationApiRoute = require('./routes/api/migration');
 const dataDir = require('./services/data_dir');
+const sessionSecret = require('./services/session_secret');
 
 const db = require('sqlite');
 
@@ -45,7 +46,7 @@ app.use(bodyParser.urlencoded({extended: false}));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(session({
-    secret: "sdhkjhdsklajf", // FIXME: need to use the DB one
+    secret: sessionSecret,
     resave: false, // true forces the session to be saved back to the session store, even if the session was never modified during the request.
     saveUninitialized: false, // true forces a session that is "uninitialized" to be saved to the store. A session is uninitialized when it is new but not modified.
     cookie: {
