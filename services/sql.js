@@ -39,6 +39,17 @@ async function getResults(query, params = []) {
     return await db.all(query, ...params);
 }
 
+async function getFlattenedResults(key, query, params = []) {
+    const list = [];
+    const result = await getResults(query, params);
+
+    for (const row of result) {
+        list.push(row[key]);
+    }
+
+    return list;
+}
+
 async function execute(query, params = []) {
     return await db.run(query, ...params);
 }
@@ -76,6 +87,7 @@ module.exports = {
     insert,
     getSingleResult,
     getResults,
+    getFlattenedResults,
     execute,
     executeScript,
     getOption,
