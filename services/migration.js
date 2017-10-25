@@ -1,6 +1,7 @@
 const backup = require('./backup');
 const sql = require('./sql');
 const fs = require('fs-extra');
+const log = require('./log');
 
 const APP_DB_VERSION = 9;
 const MIGRATIONS_DIR = "./migrations";
@@ -8,6 +9,7 @@ const MIGRATIONS_DIR = "./migrations";
 async function migrate() {
     const migrations = [];
 
+    // backup before attempting migration
     await backup.backupNow();
 
     const currentDbVersion = parseInt(await sql.getOption('db_version'));
@@ -38,7 +40,7 @@ async function migrate() {
         const migrationSql = fs.readFileSync(MIGRATIONS_DIR + "/" + mig.file).toString('utf8');
 
         try {
-            console.log("Running script: ", migrationSql);
+            log.info("Attempting migration to version " + mig.dbVersion + " with script: " + migrationSql);
 
             await sql.beginTransaction();
 
@@ -48,17 +50,20 @@ async function migrate() {
 
             await sql.commit();
 
+            log.info("Migration to version " + mig.dbVersion + " has been successful.");
+
             mig['success'] = true;
         }
         catch (e) {
             mig['success'] = false;
             mig['error'] = e.stack;
 
-            console.log("error during migration: ", e);
+            log.error("error during migration to version " + mig.dbVersion + ": " + e.stack);
 
             break;
         }
     }
+
     return migrations;
 }
 

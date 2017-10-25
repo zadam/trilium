@@ -2,6 +2,7 @@
 
 const db = require('sqlite');
 const utils = require('./utils');
+const log = require('./log');
 
 async function insert(table_name, rec) {
     const columns = Object.keys(rec).join(", ");
@@ -54,6 +55,9 @@ async function addAudit(category, req=null, noteId=null, changeFrom=null, change
     const now = utils.nowTimestamp();
 
     const browserId = req == null ? null : req.get('x-browser-id');
+
+    log.info("audit: " + category + ", browserId=" + browserId + ", noteId=" + noteId + ", from=" + changeFrom
+        + ", to=" + changeTo + ", comment=" + comment);
 
     await execute("INSERT INTO audit_log (date_modified, category, browser_id, note_id, change_from, change_to, comment)"
            + " VALUES (?, ?, ?, ?, ?, ?, ?)", [now, category, browserId, noteId, changeFrom, changeTo, comment]);

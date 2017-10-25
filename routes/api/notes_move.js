@@ -27,7 +27,7 @@ router.put('/:noteId/moveTo/:parentId', auth.checkApiAuth, async (req, res, next
     await sql.execute("update notes_tree set note_pid = ?, note_pos = ?, date_modified = ? where note_id = ?",
         [parentId, newNotePos, now, noteId]);
 
-    await sql.addAudit(audit_category.CHANGE_PARENT, req, noteId);
+    await sql.addAudit(audit_category.CHANGE_PARENT, req, noteId, null, parentId);
 
     await sql.commit();
 

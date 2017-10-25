@@ -3,6 +3,7 @@
 const fs = require('fs');
 const crypto = require('crypto');
 const dataDir = require('./data_dir');
+const log = require('./log');
 
 const sessionSecretPath = dataDir.TRILIUM_DATA_DIR + "/session_secret.txt";
 
@@ -16,6 +17,8 @@ function randomValueHex(len) {
 
 if (!fs.existsSync(sessionSecretPath)) {
     sessionSecret = randomValueHex(64);
+
+    log.info("Generated session secret");
 
     fs.writeFileSync(sessionSecretPath, sessionSecret, 'ASCII');
 }
