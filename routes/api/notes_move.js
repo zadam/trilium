@@ -11,7 +11,7 @@ router.put('/:noteId/moveTo/:parentId', auth.checkApiAuth, async (req, res, next
     let noteId = req.params.noteId;
     let parentId = req.params.parentId;
 
-    const row = await sql.getSingleResult('select max(note_pos) as max_note_pos from notes_tree where note_pid = ?', [parentId]);
+    const row = await sql.getSingleResult('select max(note_pos) as max_note_pos from notes_tree where note_pid = ? and is_deleted = 0', [parentId]);
     const maxNotePos = row['max_note_pos'];
     let newNotePos = 0;
 
@@ -69,7 +69,7 @@ router.put('/:noteId/moveAfter/:afterNoteId', async (req, res, next) => {
 
         await sql.beginTransaction();
 
-        await sql.execute("update notes_tree set note_pos = note_pos + 1, date_modified = ? where note_pid = ? and note_pos > ?",
+        await sql.execute("update notes_tree set note_pos = note_pos + 1, date_modified = ? where note_pid = ? and note_pos > ? and is_deleted = 0",
             [now, afterNote['note_pid'], afterNote['note_pos']]);
 
         await sql.execute("update notes_tree set note_pid = ?, note_pos = ?, date_modified = ? where note_id = ?",

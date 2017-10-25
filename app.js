@@ -24,6 +24,8 @@ const recentChangesApiRoute = require('./routes/api/recent_changes');
 const settingsApiRoute = require('./routes/api/settings');
 const passwordApiRoute = require('./routes/api/password');
 const migrationApiRoute = require('./routes/api/migration');
+const syncApiRoute = require('./routes/api/sync');
+
 const dataDir = require('./services/data_dir');
 const sessionSecret = require('./services/session_secret');
 
@@ -81,6 +83,7 @@ app.use('/api/recent-changes', recentChangesApiRoute);
 app.use('/api/settings', settingsApiRoute);
 app.use('/api/password', passwordApiRoute);
 app.use('/api/migration', migrationApiRoute);
+app.use('/api/sync', syncApiRoute);
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {

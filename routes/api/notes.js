@@ -116,14 +116,16 @@ router.delete('/:noteId', async (req, res, next) => {
 });
 
 async function deleteNote(noteId, req) {
-    const children = await sql.getResults("select note_id from notes_tree where note_pid = ?", [noteId]);
+    const now = utils.nowTimestamp();
+
+    const children = await sql.getResults("select note_id from notes_tree where note_pid = ? and is_deleted = 0", [noteId]);
 
     for (const child of children) {
         await deleteNote(child['note_id']);
     }
 
-    await sql.remove("notes_tree", noteId);
-    await sql.execute("update notes set is_deleted = 1 where note_id = ?", [noteId]);
+    await sql.execute("update notes_tree set is_deleted = 1, date_modified = ? where note_id = ?", [now, noteId]);
+    await sql.execute("update notes set is_deleted = 1, date_modified = ? where note_id = ?", [now, noteId]);
 
     await sql.addAudit(audit_category.DELETE_NOTE, req, noteId);
 }
@@ -142,7 +144,7 @@ router.post('/:parentNoteId/children', async (req, res, next) => {
     let newNotePos = 0;
 
     if (note['target'] === 'into') {
-        const res = await sql.getSingleResult('select max(note_pos) as max_note_pos from notes_tree where note_pid = ?', [parentNoteId]);
+        const res = await sql.getSingleResult('select max(note_pos) as max_note_pos from notes_tree where note_pid = ? and is_deleted = 0', [parentNoteId]);
         const maxNotePos = res['max_note_pos'];
 
         if (maxNotePos === null) // no children yet
@@ -157,7 +159,7 @@ router.post('/:parentNoteId/children', async (req, res, next) => {
 
         const now = utils.nowTimestamp();
 
-        await sql.execute('update notes_tree set note_pos = note_pos + 1, date_modified = ? where note_pid = ? and note_pos > ?', [now, parentNoteId, afterNote['note_pos']]);
+        await sql.execute('update notes_tree set note_pos = note_pos + 1, date_modified = ? where note_pid = ? and note_pos > ? and is_deleted = 0', [now, parentNoteId, afterNote['note_pos']]);
     }
     else {
         throw new ('Unknown target: ' + note['target']);
@@ -184,7 +186,8 @@ router.post('/:parentNoteId/children', async (req, res, next) => {
         'note_pid': parentNoteId,
         'note_pos': newNotePos,
         'is_expanded': 0,
-        'date_modified': utils.nowTimestamp()
+        'date_modified': utils.nowTimestamp(),
+        'is_deleted': 0
     });
 
     await sql.commit();
