@@ -2,7 +2,7 @@ const backup = require('./backup');
 const sql = require('./sql');
 const fs = require('fs-extra');
 
-const APP_DB_VERSION = 7;
+const APP_DB_VERSION = 9;
 const MIGRATIONS_DIR = "./migrations";
 
 async function migrate() {

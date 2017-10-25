@@ -45,6 +45,7 @@ $(document).bind('keydown', 'alt+h', showCurrentNoteHistory);
 
 $("#note-history-list").on('change', () => {
     const optVal = $("#note-history-list").find(":selected").val();
+
     const historyItem = globalHistoryItems.find(r => r.id == optVal); // non-strict comparison is important here!!!
 
     $("#note-history-title").html(historyItem.note_title);
