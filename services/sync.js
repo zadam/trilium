@@ -29,7 +29,7 @@ async function sync() {
         });
 
         try {
-            sql.beginTransaction();
+            await sql.beginTransaction();
 
             for (const treeItem of resp.tree) {
                 delete treeItem['id'];
@@ -73,10 +73,12 @@ async function sync() {
                 }
             }
 
-            sql.commit();
+            await sql.setOption('last_synced', syncTimestamp);
+
+            await sql.commit();
         }
         catch (e) {
-            sql.rollback();
+            await sql.rollback();
 
             throw e;
         }
