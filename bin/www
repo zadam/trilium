@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 
-process.on('unhandledRejection', (reason, p) => {
-    const message = 'Unhandled Rejection at: Promise' + p + ', reason:' + reason;
+process.on('unhandledRejection', error => {
     // this makes sure that stacktrace of failed promise is printed out
-    console.log(message);
+    console.log(error);
 
     // but also try to log it into file
-    require('../services/log').error(message);
+    // we're using .info() instead of .error() because simple-node-logger emits weird error for error()
+    require('../services/log').info(error);
 });
 
 const app = require('../app');
