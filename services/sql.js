@@ -4,11 +4,19 @@ const db = require('sqlite');
 const utils = require('./utils');
 const log = require('./log');
 
-async function insert(table_name, rec) {
-    const columns = Object.keys(rec).join(", ");
-    const questionMarks = Object.keys(rec).map(p => "?").join(", ");
+async function insert(table_name, rec, replace = false) {
+    const keys = Object.keys(rec);
+    if (keys.length === 0) {
+        log.error("Can't insert empty object into table " + table_name);
+        return;
+    }
 
-    const res = await execute("INSERT INTO " + table_name + "(" + columns + ") VALUES (" + questionMarks + ")", Object.values(rec));
+    const columns = keys.join(", ");
+    const questionMarks = keys.map(p => "?").join(", ");
+
+    const query = "INSERT " + (replace ? "OR REPLACE" : "") + " INTO " + table_name + "(" + columns + ") VALUES (" + questionMarks + ")";
+
+    const res = await execute(query, Object.values(rec));
 
     return res.lastID;
 }
@@ -19,6 +27,10 @@ async function beginTransaction() {
 
 async function commit() {
     return await db.run("COMMIT");
+}
+
+async function rollback() {
+    return await db.run("ROLLBACK");
 }
 
 async function getOption(optName) {
@@ -94,6 +106,7 @@ module.exports = {
     setOption,
     beginTransaction,
     commit,
+    rollback,
     addAudit,
     deleteRecentAudits,
     remove

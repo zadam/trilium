@@ -7,7 +7,7 @@ function randomToken(length) {
 }
 
 function newNoteId() {
-    return randomString(32, '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ');
+    return randomString(22, '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ');
 }
 
 function randomString(length, chars) {

@@ -3,7 +3,7 @@ const sql = require('./sql');
 const fs = require('fs-extra');
 const log = require('./log');
 
-const APP_DB_VERSION = 10;
+const APP_DB_VERSION = 11;
 const MIGRATIONS_DIR = "./migrations";
 
 async function migrate() {
@@ -67,7 +67,14 @@ async function migrate() {
     return migrations;
 }
 
+async function isDbUpToDate() {
+    const dbVersion = parseInt(await sql.getOption('db_version'));
+
+    return dbVersion >= APP_DB_VERSION;
+}
+
 module.exports = {
     migrate,
+    isDbUpToDate,
     APP_DB_VERSION
 };
