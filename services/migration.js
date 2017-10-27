@@ -3,7 +3,7 @@ const sql = require('./sql');
 const fs = require('fs-extra');
 const log = require('./log');
 
-const APP_DB_VERSION = 13;
+const APP_DB_VERSION = 14;
 const MIGRATIONS_DIR = "./migrations";
 
 async function migrate() {

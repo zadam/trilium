@@ -135,8 +135,6 @@ async function putChanged(changed) {
     }
 
     for (const audit of changed.audit_log) {
-        delete audit['id'];
-
         await sql.insert("audit_log", audit, true);
 
         log.info("Update/sync audit_log for noteId=" + audit.note_id);
