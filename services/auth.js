@@ -15,6 +15,15 @@ async function checkAuth(req, res, next) {
     }
 }
 
+async function checkAuthWithoutMigration(req, res, next) {
+    if (!req.session.loggedIn) {
+        res.redirect("login");
+    }
+    else {
+        next();
+    }
+}
+
 async function checkApiAuth(req, res, next) {
     if (!req.session.loggedIn && req.header("auth") !== "sync") {
         res.sendStatus(401);
@@ -28,7 +37,18 @@ async function checkApiAuth(req, res, next) {
     }
 }
 
+async function checkApiAuthWithoutMigration(req, res, next) {
+    if (!req.session.loggedIn && req.header("auth") !== "sync") {
+        res.sendStatus(401);
+    }
+    else {
+        next();
+    }
+}
+
 module.exports = {
     checkAuth,
-    checkApiAuth
+    checkAuthWithoutMigration,
+    checkApiAuth,
+    checkApiAuthWithoutMigration
 };

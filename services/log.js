@@ -19,7 +19,8 @@ function info(message) {
 }
 
 function error(message) {
-    logger.error(message);
+    // we're using .info() instead of .error() because simple-node-logger emits weird error for error()
+    logger.info(message);
 }
 
 const requestBlacklist = [ "/api/audit", "/libraries", "/javascripts", "/images", "/stylesheets" ];

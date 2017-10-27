@@ -5,7 +5,6 @@ process.on('unhandledRejection', error => {
     console.log(error);
 
     // but also try to log it into file
-    // we're using .info() instead of .error() because simple-node-logger emits weird error for error()
     require('../services/log').info(error);
 });
 
