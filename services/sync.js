@@ -5,8 +5,10 @@ const rp = require('request-promise');
 const sql = require('./sql');
 const migration = require('./migration');
 const utils = require('./utils');
+const config = require('./config');
+const audit_category = require('./audit_category');
 
-const SYNC_SERVER = 'http://localhost:3000';
+const SYNC_SERVER = config['Sync']['syncServerHost'];
 
 
 let syncInProgress = false;
@@ -81,7 +83,7 @@ async function pushSync() {
         });
     }
 
-    await sql.setOption('last_synced_pull', syncStarted);
+    await sql.setOption('last_synced_push', syncStarted);
 }
 
 async function sync() {
@@ -139,12 +141,16 @@ async function putChanged(changed) {
 
         log.info("Update/sync audit_log for noteId=" + audit.note_id);
     }
+
+    if (changed.tree.length > 0 || changed.audit_log.length > 0) {
+        await sql.addAudit(audit_category.SYNC);
+    }
 }
 
 async function putNote(note) {
     await sql.insert("notes", note.detail, true);
 
-    await sql.remove("images", node.detail.note_id);
+    await sql.remove("images", note.detail.note_id);
 
     for (const image of note.images) {
         await sql.insert("images", image);
@@ -156,13 +162,22 @@ async function putNote(note) {
         await sql.insert("notes_history", history);
     }
 
+    await sql.addAudit(audit_category.SYNC);
+
     log.info("Update/sync note " + note.detail.note_id);
 }
 
-setInterval(sync, 60000);
+if (SYNC_SERVER) {
+    log.info("Setting up sync");
 
-// kickoff initial sync immediately
-setTimeout(sync, 1000);
+    setInterval(sync, 60000);
+
+    // kickoff initial sync immediately
+    setTimeout(sync, 1000);
+}
+else {
+    log.info("Sync server not configured, sync timer not running.")
+}
 
 module.exports = {
     getChangedSince,

@@ -6,6 +6,10 @@ const fs = require('fs-extra');
 const dataDir = require('./data_dir');
 const log = require('./log');
 
+if (!fs.existsSync(dataDir.BACKUP_DIR)) {
+    fs.mkdirSync(dataDir.BACKUP_DIR, 0o700);
+}
+
 async function regularBackup() {
     const now = utils.nowTimestamp();
     const last_backup_date = parseInt(await sql.getOption('last_backup_date'));
@@ -21,10 +25,6 @@ async function backupNow() {
     const now = utils.nowTimestamp();
 
     const date_str = new Date().toISOString().substr(0, 19);
-
-    if (!fs.existsSync(dataDir.BACKUP_DIR)) {
-        fs.mkdirSync(dataDir.BACKUP_DIR, 0o700);
-    }
 
     const backupFile = dataDir.BACKUP_DIR + "/" + "backup-" + date_str + ".db";
 

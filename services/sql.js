@@ -82,8 +82,10 @@ async function addAudit(category, req=null, noteId=null, changeFrom=null, change
     log.info("audit: " + category + ", browserId=" + browserId + ", noteId=" + noteId + ", from=" + changeFrom
         + ", to=" + changeTo + ", comment=" + comment);
 
-    await execute("INSERT INTO audit_log (date_modified, category, browser_id, note_id, change_from, change_to, comment)"
-           + " VALUES (?, ?, ?, ?, ?, ?, ?)", [now, category, browserId, noteId, changeFrom, changeTo, comment]);
+    const id = utils.randomToken(14);
+
+    await execute("INSERT INTO audit_log (id, date_modified, category, browser_id, note_id, change_from, change_to, comment)"
+           + " VALUES (?, ?, ?, ?, ?, ?, ?, ?)", [id, now, category, browserId, noteId, changeFrom, changeTo, comment]);
 }
 
 async function deleteRecentAudits(category, req, noteId) {
