@@ -49,7 +49,6 @@ async function pullSync() {
                 json: true
             });
 
-            console.log(noteId);
 
             await sql.insert("notes", note.detail, true);
 
@@ -64,9 +63,11 @@ async function pullSync() {
 
                 await sql.insert("notes_history", history);
             }
+
+            log.info("Syncing note" + noteId);
         }
 
-        await sql.setOption('last_synced_pull', syncTimestamp);
+        await sql.setOption('last_synced_pull', resp.syncTimestamp);
 
         await sql.commit();
     }
