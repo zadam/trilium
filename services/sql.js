@@ -34,14 +34,13 @@ async function rollback() {
 }
 
 async function getOption(optName) {
-    try {
-        const row = await getSingleResult("SELECT opt_value FROM options WHERE opt_name = ?", [optName]);
+    const row = await getSingleResultOrNull("SELECT opt_value FROM options WHERE opt_name = ?", [optName]);
 
-        return row['opt_value'];
-    }
-    catch (e) {
+    if (!row) {
         throw new Error("Option " + optName + " doesn't exist");
     }
+
+    return row['opt_value'];
 }
 
 async function setOption(optName, optValue) {
@@ -50,6 +49,12 @@ async function setOption(optName, optValue) {
 
 async function getSingleResult(query, params = []) {
     return await db.get(query, ...params);
+}
+
+async function getSingleResultOrNull(query, params = []) {
+    const all = await db.all(query, ...params);
+
+    return all ? all[0] : null;
 }
 
 async function getResults(query, params = []) {

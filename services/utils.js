@@ -1,5 +1,7 @@
 "use strict";
 
+const crypto = require('crypto');
+
 function newNoteId() {
     return randomString(12);
 }
@@ -16,6 +18,10 @@ function randomString(length) {
     return result;
 }
 
+function randomSecureToken(bytes = 32) {
+    crypto.randomBytes(bytes).toString('base64');
+}
+
 function nowTimestamp() {
     return Math.floor(Date.now() / 1000);
 }
@@ -29,6 +35,7 @@ function fromBase64(encodedText) {
 }
 
 module.exports = {
+    randomSecureToken,
     randomString,
     nowTimestamp,
     newNoteId,

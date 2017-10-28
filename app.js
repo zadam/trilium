@@ -7,7 +7,9 @@ const helmet = require('helmet');
 const session = require('express-session');
 const FileStore = require('session-file-store')(session);
 const os = require('os');
+const sql = require('./services/sql');
 const log = require('./services/log');
+const utils = require('./services/utils');
 
 const indexRoute = require('./routes/index');
 const loginRoute = require('./routes/login');
@@ -33,7 +35,15 @@ const db = require('sqlite');
 
 const config = require('./services/config');
 
-db.open(dataDir.DOCUMENT_PATH, { Promise });
+db.open(dataDir.DOCUMENT_PATH, { Promise }).then(async () => {
+    if (!await sql.getOption('document_id')) {
+        await sql.setOption('document_id', utils.randomString(32));
+    }
+
+    if (!await sql.getOption('document_secret')) {
+        await sql.setOption('document_secret', utils.randomSecureToken(32));
+    }
+});
 
 const app = express();
 

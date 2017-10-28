@@ -149,7 +149,15 @@ async function putChanged(changed) {
 }
 
 async function putNote(note) {
-    await sql.insert("notes", note.detail, true);
+    const origNote = await sql.getSingleResult();
+
+    if (origNote !== null && origNote.date_modified >= note.detail.date_modified) {
+        // version we have in DB is actually newer than the one we're getting from sync
+        // so we'll leave the current state as it is. The synced version should be stored in the history
+    }
+    else {
+        await sql.insert("notes", note.detail, true);
+    }
 
     await sql.remove("images", note.detail.note_id);
 
@@ -166,22 +174,6 @@ async function putNote(note) {
     await sql.addAudit(audit_category.SYNC);
 
     log.info("Update/sync note " + note.detail.note_id);
-}
-
-let documentIdCache = null;
-
-async function getDocumentId() {
-    if (!documentIdCache) {
-        documentIdCache = await sql.getOption('document_id');
-
-        if (!documentIdCache) {
-            documentIdCache = utils.randomString(16);
-
-            await sql.setOption('document_id', documentIdCache);
-        }
-    }
-
-    return documentIdCache;
 }
 
 if (SYNC_SERVER) {
