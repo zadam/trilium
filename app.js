@@ -97,6 +97,10 @@ app.use((err, req, res, next) => {
     log.error(err.message);
 });
 
+// triggers sync timer
 require('./services/sync');
+
+// triggers backup timer
+require('./services/backup');
 
 module.exports = app;

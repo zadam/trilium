@@ -4,12 +4,9 @@ const express = require('express');
 const router = express.Router();
 const sql = require('../../services/sql');
 const utils = require('../../services/utils');
-const backup = require('../../services/backup');
 const auth = require('../../services/auth');
 
 router.get('/', auth.checkApiAuth, async (req, res, next) => {
-    await backup.regularBackup();
-
     const notes = await sql.getResults("select "
         + "notes_tree.*, "
         + "COALESCE(clone.note_title, notes.note_title) as note_title, "
