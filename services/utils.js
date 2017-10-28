@@ -6,7 +6,7 @@ function newNoteId() {
 
 const ALPHA_NUMERIC = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
-function randomString(length, chars) {
+function randomString(length) {
     let result = '';
 
     for (let i = length; i > 0; --i) {

@@ -112,6 +112,7 @@ async function sync() {
 
 async function getChangedSince(since) {
     return {
+        'documentId': await getDocumentId(),
         'syncTimestamp': utils.nowTimestamp(),
         'tree': await sql.getResults("select * from notes_tree where date_modified >= ?", [since]),
         'notes': await sql.getFlattenedResults('note_id', "select note_id from notes where date_modified >= ?", [since]),
@@ -165,6 +166,22 @@ async function putNote(note) {
     await sql.addAudit(audit_category.SYNC);
 
     log.info("Update/sync note " + note.detail.note_id);
+}
+
+let documentIdCache = null;
+
+async function getDocumentId() {
+    if (!documentIdCache) {
+        documentIdCache = await sql.getOption('document_id');
+
+        if (!documentIdCache) {
+            documentIdCache = utils.randomString(16);
+
+            await sql.setOption('document_id', documentIdCache);
+        }
+    }
+
+    return documentIdCache;
 }
 
 if (SYNC_SERVER) {

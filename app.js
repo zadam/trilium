@@ -95,6 +95,11 @@ app.use((req, res, next) => {
 // error handler
 app.use((err, req, res, next) => {
     log.error(err.message);
+
+    res.status(err.status || 500);
+    res.send({
+        message: err.message
+    });
 });
 
 // triggers sync timer

@@ -34,9 +34,14 @@ async function rollback() {
 }
 
 async function getOption(optName) {
-    const row = await getSingleResult("SELECT opt_value FROM options WHERE opt_name = ?", [optName]);
+    try {
+        const row = await getSingleResult("SELECT opt_value FROM options WHERE opt_name = ?", [optName]);
 
-    return row['opt_value'];
+        return row['opt_value'];
+    }
+    catch (e) {
+        throw new Error("Option " + optName + " doesn't exist");
+    }
 }
 
 async function setOption(optName, optValue) {
