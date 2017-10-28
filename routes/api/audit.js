@@ -13,9 +13,6 @@ router.get('/:full_load_time', auth.checkApiAuth, async (req, res, next) => {
     const row = await sql.getSingleResult("SELECT COUNT(*) AS 'count' FROM audit_log WHERE (browser_id IS NULL OR browser_id != ?) " +
         "AND date_modified >= ?", [browserId, fullLoadTime]);
 
-    console.log("SELECT COUNT(*) AS 'count' FROM audit_log WHERE (browser_id IS NULL OR browser_id != ?) " +
-        "AND date_modified >= ?");
-
     res.send({
         'changed': row.count > 0
     });
