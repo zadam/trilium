@@ -82,7 +82,7 @@ async function addAudit(category, req=null, noteId=null, changeFrom=null, change
     log.info("audit: " + category + ", browserId=" + browserId + ", noteId=" + noteId + ", from=" + changeFrom
         + ", to=" + changeTo + ", comment=" + comment);
 
-    const id = utils.randomToken(14);
+    const id = utils.randomString(14);
 
     await execute("INSERT INTO audit_log (id, date_modified, category, browser_id, note_id, change_from, change_to, comment)"
            + " VALUES (?, ?, ?, ?, ?, ?, ?, ?)", [id, now, category, browserId, noteId, changeFrom, changeTo, comment]);

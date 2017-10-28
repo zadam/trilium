@@ -90,7 +90,7 @@ function goToInternalNote(e, callback) {
 }
 
 function getNoteIdFromLink(url) {
-    const noteIdMatch = /app#([A-Za-z0-9]{22})/.exec(url);
+    const noteIdMatch = /app#([A-Za-z0-9]{12})/.exec(url);
 
     if (noteIdMatch === null) {
         return null;
@@ -101,7 +101,7 @@ function getNoteIdFromLink(url) {
 }
 
 function getNodeIdFromLabel(label) {
-    const noteIdMatch = / \(([A-Za-z0-9]{22})\)/.exec(label);
+    const noteIdMatch = / \(([A-Za-z0-9]{12})\)/.exec(label);
 
     if (noteIdMatch !== null) {
         return noteIdMatch[1];

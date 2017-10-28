@@ -1,20 +1,16 @@
 "use strict";
 
-const crypto = require('crypto');
-
-function randomToken(length) {
-    return crypto.randomBytes(length).toString('base64');
-}
-
 function newNoteId() {
-    return randomString(22, '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ');
+    return randomString(12);
 }
+
+const ALPHA_NUMERIC = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
 function randomString(length, chars) {
     let result = '';
 
     for (let i = length; i > 0; --i) {
-        result += chars[Math.floor(Math.random() * chars.length)];
+        result += ALPHA_NUMERIC[Math.floor(Math.random() * ALPHA_NUMERIC.length)];
     }
 
     return result;
@@ -33,7 +29,7 @@ function fromBase64(encodedText) {
 }
 
 module.exports = {
-    randomToken,
+    randomString,
     nowTimestamp,
     newNoteId,
     toBase64,

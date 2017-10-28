@@ -51,7 +51,7 @@ router.get('/', auth.checkApiAuth, async (req, res, next) => {
         'password_derived_key_salt': await sql.getOption('password_derived_key_salt'),
         'encrypted_data_key': await sql.getOption('encrypted_data_key'),
         'encryption_session_timeout': await sql.getOption('encryption_session_timeout'),
-        'browser_id': utils.randomToken(8),
+        'browser_id': utils.randomString(12),
         'full_load_time': utils.nowTimestamp()
     });
 });
