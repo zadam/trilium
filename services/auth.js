@@ -25,7 +25,7 @@ async function checkAuthWithoutMigration(req, res, next) {
 }
 
 async function checkApiAuth(req, res, next) {
-    if (!req.session.loggedIn && req.header("auth") !== "sync") {
+    if (!req.session.loggedIn) {
         res.sendStatus(401);
     }
 
@@ -38,7 +38,7 @@ async function checkApiAuth(req, res, next) {
 }
 
 async function checkApiAuthWithoutMigration(req, res, next) {
-    if (!req.session.loggedIn && req.header("auth") !== "sync") {
+    if (!req.session.loggedIn) {
         res.sendStatus(401);
     }
     else {

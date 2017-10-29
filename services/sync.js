@@ -7,13 +7,14 @@ const migration = require('./migration');
 const utils = require('./utils');
 const config = require('./config');
 const audit_category = require('./audit_category');
+const crypto = require('crypto');
 
 const SYNC_SERVER = config['Sync']['syncServerHost'];
 
 
 let syncInProgress = false;
 
-async function pullSync() {
+async function pullSync(cookieJar) {
     const lastSyncedPull = parseInt(await sql.getOption('last_synced_pull'));
 
     const resp = await rp({
@@ -35,7 +36,8 @@ async function pullSync() {
                 headers: {
                     auth: 'sync'
                 },
-                json: true
+                json: true,
+                jar: cookieJar
             });
 
 
@@ -53,7 +55,7 @@ async function pullSync() {
     }
 }
 
-async function pushSync() {
+async function pushSync(cookieJar) {
     const lastSyncedPush = parseInt(await sql.getOption('last_synced_push'));
     const syncStarted = utils.nowTimestamp();
 
@@ -66,7 +68,8 @@ async function pushSync() {
             auth: 'sync'
         },
         body: changed,
-        json: true
+        json: true,
+        jar: cookieJar
     });
 
     for (const noteId of changed.notes) {
@@ -79,11 +82,36 @@ async function pushSync() {
                 auth: 'sync'
             },
             body: note,
-            json: true
+            json: true,
+            jar: cookieJar
         });
     }
 
     await sql.setOption('last_synced_push', syncStarted);
+}
+
+async function login() {
+    const timestamp = utils.nowTimestamp();
+
+    const hmac = crypto.createHmac('sha256', documentSecret);
+    hmac.update(timestamp);
+    const hash = hmac.digest('base64');
+
+    const cookieJar = rp.jar();
+
+    await rp({
+        method: 'POST',
+        uri: SYNC_SERVER + '/api/login',
+        body: {
+            timestamp: timestamp,
+            dbVersion: migration.APP_DB_VERSION,
+            hash: hash
+        },
+        json: true,
+        jar: cookieJar
+    });
+
+    return cookieJar;
 }
 
 async function sync() {
@@ -98,9 +126,11 @@ async function sync() {
             return;
         }
 
-        await pushSync();
+        const cookieJar = await login();
 
-        await pullSync();
+        await pushSync(cookieJar);
+
+        await pullSync(cookieJar);
     }
     catch (e) {
         log.error("sync failed: " + e.stack);
