@@ -14,7 +14,7 @@ const SYNC_SERVER = config['Sync']['syncServerHost'];
 
 let syncInProgress = false;
 
-async function pullSync(cookieJar) {
+async function pullSync(cookieJar, syncLog) {
     const lastSyncedPull = parseInt(await sql.getOption('last_synced_pull'));
 
     const resp = await rp({
@@ -28,7 +28,7 @@ async function pullSync(cookieJar) {
     try {
         await sql.beginTransaction();
 
-        await putChanged(resp);
+        await putChanged(resp, syncLog);
 
         for (const noteId of resp.notes) {
             const note = await rp({
@@ -41,7 +41,7 @@ async function pullSync(cookieJar) {
             });
 
 
-            await putNote(note);
+            await putNote(note, syncLog);
         }
 
         await sql.setOption('last_synced_pull', resp.syncTimestamp);
@@ -55,24 +55,30 @@ async function pullSync(cookieJar) {
     }
 }
 
-async function pushSync(cookieJar) {
+async function pushSync(cookieJar, syncLog) {
     const lastSyncedPush = parseInt(await sql.getOption('last_synced_push'));
     const syncStarted = utils.nowTimestamp();
 
     const changed = await getChangedSince(lastSyncedPush);
 
-    await rp({
-        method: 'PUT',
-        uri: SYNC_SERVER + '/api/sync/changed',
-        headers: {
-            auth: 'sync'
-        },
-        body: changed,
-        json: true,
-        jar: cookieJar
-    });
+    if (changed.tree.length > 0 || changed.audit_log.length > 0) {
+        logSync("Sending " + changed.tree.length + " tree changes and " + changed.audit_log.length + " audit changes", syncLog);
+
+        await rp({
+            method: 'PUT',
+            uri: SYNC_SERVER + '/api/sync/changed',
+            headers: {
+                auth: 'sync'
+            },
+            body: changed,
+            json: true,
+            jar: cookieJar
+        });
+    }
 
     for (const noteId of changed.notes) {
+        logSync("Sending note " + noteId, syncLog);
+
         const note = await getNoteSince(noteId);
 
         await rp({
@@ -93,8 +99,10 @@ async function pushSync(cookieJar) {
 async function login() {
     const timestamp = utils.nowTimestamp();
 
-    const hmac = crypto.createHmac('sha256', documentSecret);
-    hmac.update(timestamp);
+    const documentSecret = await sql.getOption('document_secret');
+
+    const hmac = crypto.createHmac('sha256', Buffer.from(documentSecret.toString(), 'ASCII'));
+    hmac.update(timestamp.toString());
     const hash = hmac.digest('base64');
 
     const cookieJar = rp.jar();
@@ -120,6 +128,7 @@ async function sync() {
     }
 
     syncInProgress = true;
+    const syncLog = [];
 
     try {
         if (!await migration.isDbUpToDate()) {
@@ -128,15 +137,25 @@ async function sync() {
 
         const cookieJar = await login();
 
-        await pushSync(cookieJar);
+        await pushSync(cookieJar, syncLog);
 
-        await pullSync(cookieJar);
+        await pullSync(cookieJar, syncLog);
     }
     catch (e) {
-        log.error("sync failed: " + e.stack);
+        logSync("sync failed: " + e.stack, syncLog);
     }
     finally {
         syncInProgress = false;
+    }
+
+    return syncLog;
+}
+
+function logSync(message, syncLog) {
+    log.info(message);
+
+    if (syncLog !== null) {
+        syncLog.push(message);
     }
 }
 
@@ -158,27 +177,29 @@ async function getNoteSince(noteId, since) {
     };
 }
 
-async function putChanged(changed) {
+async function putChanged(changed, syncLog) {
     for (const treeItem of changed.tree) {
         delete treeItem['id'];
 
         await sql.insert("notes_tree", treeItem, true);
 
-        log.info("Update/sync notes_tree " + treeItem.note_id);
+        logSync("Update/sync notes_tree " + treeItem.note_id, syncLog);
     }
 
     for (const audit of changed.audit_log) {
         await sql.insert("audit_log", audit, true);
 
-        log.info("Update/sync audit_log for noteId=" + audit.note_id);
+        logSync("Update/sync audit_log for noteId=" + audit.note_id, syncLog);
     }
 
     if (changed.tree.length > 0 || changed.audit_log.length > 0) {
+        logSync("Added final audit", syncLog);
+
         await sql.addAudit(audit_category.SYNC);
     }
 }
 
-async function putNote(note) {
+async function putNote(note, syncLog) {
     const origNote = await sql.getSingleResult();
 
     if (origNote !== null && origNote.date_modified >= note.detail.date_modified) {
@@ -203,7 +224,7 @@ async function putNote(note) {
 
     await sql.addAudit(audit_category.SYNC);
 
-    log.info("Update/sync note " + note.detail.note_id);
+    logSync("Update/sync note " + note.detail.note_id, syncLog);
 }
 
 if (SYNC_SERVER) {
@@ -219,6 +240,7 @@ else {
 }
 
 module.exports = {
+    sync,
     getChangedSince,
     getNoteSince,
     putChanged,

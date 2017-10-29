@@ -5,6 +5,15 @@ const router = express.Router();
 const auth = require('../../services/auth');
 const sync = require('../../services/sync');
 
+router.post('/now', auth.checkApiAuth, async (req, res, next) => {
+    const log = await sync.sync();
+
+    res.send({
+        success: true,
+        log: log
+    });
+});
+
 router.get('/changed/:since', auth.checkApiAuth, async (req, res, next) => {
     const since = parseInt(req.params.since);
 

@@ -19,7 +19,7 @@ function randomString(length) {
 }
 
 function randomSecureToken(bytes = 32) {
-    crypto.randomBytes(bytes).toString('base64');
+    return crypto.randomBytes(bytes).toString('base64');
 }
 
 function nowTimestamp() {
