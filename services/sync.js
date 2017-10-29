@@ -158,11 +158,11 @@ async function login() {
 async function sync() {
     const syncLog = [];
 
-    // if (syncInProgress) {
-    //     syncLog.push("Sync already in progress");
-    //
-    //     return syncLog;
-    // }
+    if (syncInProgress) {
+        syncLog.push("Sync already in progress");
+
+        return syncLog;
+    }
 
     syncInProgress = true;
 
@@ -269,7 +269,7 @@ async function putNote(note, syncLog) {
     }
 }
 
-if (SYNC_SERVER && false) {
+if (SYNC_SERVER) {
     log.info("Setting up sync");
 
     setInterval(sync, 60000);

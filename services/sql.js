@@ -44,7 +44,9 @@ async function getOption(optName) {
 }
 
 async function setOption(optName, optValue) {
-    await execute("UPDATE options SET opt_value = ? WHERE opt_name = ?", [optValue, optName]);
+    const now = utils.nowTimestamp();
+
+    await execute("UPDATE options SET opt_value = ?, date_modified = ? WHERE opt_name = ?", [optValue, now, optName]);
 }
 
 async function getSingleResult(query, params = []) {

@@ -88,7 +88,7 @@ let globalEncryptionSessionTimeout;
 let globalEncryptedDataKey;
 let globalFullLoadTime;
 
-setInterval(() => {
+function checkAudit() {
     $.ajax({
         url: baseApiUrl + 'audit/' + globalFullLoadTime,
         type: 'GET',
@@ -109,7 +109,9 @@ setInterval(() => {
             }
         }
     });
-}, 10 * 1000);
+}
+
+setInterval(checkAudit, 10 * 1000);
 
 $(() => {
     $.get(baseApiUrl + 'tree').then(resp => {
