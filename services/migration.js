@@ -42,13 +42,11 @@ async function migrate() {
         try {
             log.info("Attempting migration to version " + mig.dbVersion + " with script: " + migrationSql);
 
-            await sql.beginTransaction();
+            await sql.doInTransaction(async () => {
+                await sql.executeScript(migrationSql);
 
-            await sql.executeScript(migrationSql);
-
-            await sql.setOption("db_version", mig.dbVersion);
-
-            await sql.commit();
+                await sql.setOption("db_version", mig.dbVersion);
+            });
 
             log.info("Migration to version " + mig.dbVersion + " has been successful.");
 

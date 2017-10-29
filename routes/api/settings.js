@@ -27,13 +27,11 @@ router.post('/', async (req, res, next) => {
     if (ALLOWED_OPTIONS.includes(body['name'])) {
         const optionName = await sql.getOption(body['name']);
 
-        await sql.beginTransaction();
+        await sql.doInTransaction(async () => {
+            await sql.addAudit(audit_category.SETTINGS, req, null, optionName, body['value'], body['name']);
 
-        await sql.addAudit(audit_category.SETTINGS, req, null, optionName, body['value'], body['name']);
-
-        await sql.setOption(body['name'], body['value']);
-
-        await sql.commit();
+            await sql.setOption(body['name'], body['value']);
+        });
 
         res.send({});
     }

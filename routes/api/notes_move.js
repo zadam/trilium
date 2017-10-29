@@ -22,14 +22,12 @@ router.put('/:noteId/moveTo/:parentId', auth.checkApiAuth, async (req, res, next
 
     const now = utils.nowTimestamp();
 
-    await sql.beginTransaction();
+    await sql.doInTransaction(async () => {
+        await sql.execute("update notes_tree set note_pid = ?, note_pos = ?, date_modified = ? where note_id = ?",
+            [parentId, newNotePos, now, noteId]);
 
-    await sql.execute("update notes_tree set note_pid = ?, note_pos = ?, date_modified = ? where note_id = ?",
-        [parentId, newNotePos, now, noteId]);
-
-    await sql.addAudit(audit_category.CHANGE_PARENT, req, noteId, null, parentId);
-
-    await sql.commit();
+        await sql.addAudit(audit_category.CHANGE_PARENT, req, noteId, null, parentId);
+    });
 
     res.send({});
 });
@@ -43,16 +41,14 @@ router.put('/:noteId/moveBefore/:beforeNoteId', async (req, res, next) => {
     if (beforeNote) {
         const now = utils.nowTimestamp();
 
-        await sql.beginTransaction();
+        await sql.doInTransaction(async () => {
+            await sql.execute("update notes_tree set note_pos = note_pos + 1, date_modified = ? where note_id = ?", [now, beforeNoteId]);
 
-        await sql.execute("update notes_tree set note_pos = note_pos + 1, date_modified = ? where note_id = ?", [now, beforeNoteId]);
+            await sql.execute("update notes_tree set note_pid = ?, note_pos = ?, date_modified = ? where note_id = ?",
+                [beforeNote['note_pid'], beforeNote['note_pos'], now, noteId]);
 
-        await sql.execute("update notes_tree set note_pid = ?, note_pos = ?, date_modified = ? where note_id = ?",
-            [beforeNote['note_pid'], beforeNote['note_pos'], now, noteId]);
-
-        await sql.addAudit(audit_category.CHANGE_POSITION, req, noteId);
-
-        await sql.commit();
+            await sql.addAudit(audit_category.CHANGE_POSITION, req, noteId);
+        });
     }
 
     res.send({});
@@ -67,17 +63,15 @@ router.put('/:noteId/moveAfter/:afterNoteId', async (req, res, next) => {
     if (afterNote) {
         const now = utils.nowTimestamp();
 
-        await sql.beginTransaction();
+        await sql.doInTransaction(async () => {
+            await sql.execute("update notes_tree set note_pos = note_pos + 1, date_modified = ? where note_pid = ? and note_pos > ? and is_deleted = 0",
+                [now, afterNote['note_pid'], afterNote['note_pos']]);
 
-        await sql.execute("update notes_tree set note_pos = note_pos + 1, date_modified = ? where note_pid = ? and note_pos > ? and is_deleted = 0",
-            [now, afterNote['note_pid'], afterNote['note_pos']]);
+            await sql.execute("update notes_tree set note_pid = ?, note_pos = ?, date_modified = ? where note_id = ?",
+                [afterNote['note_pid'], afterNote['note_pos'] + 1, now, noteId]);
 
-        await sql.execute("update notes_tree set note_pid = ?, note_pos = ?, date_modified = ? where note_id = ?",
-            [afterNote['note_pid'], afterNote['note_pos'] + 1, now, noteId]);
-
-        await sql.addAudit(audit_category.CHANGE_POSITION, req, noteId);
-
-        await sql.commit();
+            await sql.addAudit(audit_category.CHANGE_POSITION, req, noteId);
+        });
     }
 
     res.send({});
@@ -88,9 +82,11 @@ router.put('/:noteId/expanded/:expanded', async (req, res, next) => {
     const expanded = req.params.expanded;
     const now = utils.nowTimestamp();
 
-    await sql.execute("update notes_tree set is_expanded = ?, date_modified = ? where note_id = ?", [expanded, now, noteId]);
+    await sql.doInTransaction(async () => {
+        await sql.execute("update notes_tree set is_expanded = ?, date_modified = ? where note_id = ?", [expanded, now, noteId]);
 
-    // no audit here, not really important
+        await sql.addAudit(audit_category.CHANGE_EXPANDED, req, noteId, null, expanded);
+    });
 
     res.send({});
 });

@@ -109,6 +109,21 @@ async function deleteRecentAudits(category, req, noteId) {
             [category, browserId, noteId, deleteCutoff])
 }
 
+async function doInTransaction(func) {
+    try {
+        await beginTransaction();
+
+        await func();
+
+        await commit();
+    }
+    catch (e) {
+        log.error("Error executing transaction, executing rollback. Inner exception: " + e.stack);
+
+        await rollback();
+    }
+}
+
 module.exports = {
     insert,
     getSingleResult,
@@ -118,10 +133,8 @@ module.exports = {
     executeScript,
     getOption,
     setOption,
-    beginTransaction,
-    commit,
-    rollback,
     addAudit,
     deleteRecentAudits,
-    remove
+    remove,
+    doInTransaction
 };

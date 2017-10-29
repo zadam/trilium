@@ -55,15 +55,13 @@ async function changePassword(currentPassword, newPassword, req = null) {
 
     const newEncryptedDataKey = encrypt(decryptedDataKey);
 
-    await sql.beginTransaction();
+    await sql.doInTransaction(async () => {
+        await sql.setOption('encrypted_data_key', newEncryptedDataKey);
 
-    await sql.setOption('encrypted_data_key', newEncryptedDataKey);
+        await sql.setOption('password_verification_hash', newPasswordVerificationKey);
 
-    await sql.setOption('password_verification_hash', newPasswordVerificationKey);
-
-    await sql.addAudit(audit_category.CHANGE_PASSWORD, req);
-
-    await sql.commit();
+        await sql.addAudit(audit_category.CHANGE_PASSWORD, req);
+    });
 
     return {
         'success': true,

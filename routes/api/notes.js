@@ -44,73 +44,70 @@ router.put('/:noteId', async (req, res, next) => {
 
     const history = await sql.getSingleResult("select id from notes_history where note_id = ? and date_modified_from >= ?", [noteId, historyCutoff]);
 
-    await sql.beginTransaction();
+    await sql.doInTransaction(async () => {
+        if (history) {
+            await sql.execute("update notes_history set note_title = ?, note_text = ?, encryption = ?, date_modified_to = ? where id = ?", [
+                note['detail']['note_title'],
+                note['detail']['note_text'],
+                note['detail']['encryption'],
+                now,
+                history['id']
+            ]);
+        }
+        else {
+            await sql.execute("insert into notes_history (note_id, note_title, note_text, encryption, date_modified_from, date_modified_to) values (?, ?, ?, ?, ?, ?)", [
+                noteId,
+                note['detail']['note_title'],
+                note['detail']['note_text'],
+                note['detail']['encryption'],
+                now,
+                now
+            ]);
+        }
 
-    if (history) {
-        await sql.execute("update notes_history set note_title = ?, note_text = ?, encryption = ?, date_modified_to = ? where id = ?", [
+        if (note['detail']['note_title'] !== detail['note_title']) {
+            await sql.deleteRecentAudits(audit_category.UPDATE_TITLE, req, noteId);
+            await sql.addAudit(audit_category.UPDATE_TITLE, req, noteId);
+        }
+
+        if (note['detail']['note_text'] !== detail['note_text']) {
+            await sql.deleteRecentAudits(audit_category.UPDATE_CONTENT, req, noteId);
+            await sql.addAudit(audit_category.UPDATE_CONTENT, req, noteId);
+        }
+
+        if (note['detail']['encryption'] !== detail['encryption']) {
+            await sql.addAudit(audit_category.ENCRYPTION, req, noteId, detail['encryption'], note['detail']['encryption']);
+        }
+
+        await sql.execute("update notes set note_title = ?, note_text = ?, encryption = ?, date_modified = ? where note_id = ?", [
             note['detail']['note_title'],
             note['detail']['note_text'],
             note['detail']['encryption'],
             now,
-            history['id']
-        ]);
-    }
-    else {
-        await sql.execute("insert into notes_history (note_id, note_title, note_text, encryption, date_modified_from, date_modified_to) values (?, ?, ?, ?, ?, ?)", [
-            noteId,
-            note['detail']['note_title'],
-            note['detail']['note_text'],
-            note['detail']['encryption'],
-            now,
-            now
-        ]);
-    }
+            noteId]);
 
-    if (note['detail']['note_title'] !== detail['note_title']) {
-        await sql.deleteRecentAudits(audit_category.UPDATE_TITLE, req, noteId);
-        await sql.addAudit(audit_category.UPDATE_TITLE, req, noteId);
-    }
+        await sql.remove("images", noteId);
 
-    if (note['detail']['note_text'] !== detail['note_text']) {
-        await sql.deleteRecentAudits(audit_category.UPDATE_CONTENT, req, noteId);
-        await sql.addAudit(audit_category.UPDATE_CONTENT, req, noteId);
-    }
+        for (const img of note['images']) {
+            img['image_data'] = atob(img['image_data']);
 
-    if (note['detail']['encryption'] !== detail['encryption']) {
-        await sql.addAudit(audit_category.ENCRYPTION, req, noteId, detail['encryption'], note['detail']['encryption']);
-    }
+            await sql.insert("images", img);
+        }
 
-    await sql.execute("update notes set note_title = ?, note_text = ?, encryption = ?, date_modified = ? where note_id = ?", [
-        note['detail']['note_title'],
-        note['detail']['note_text'],
-        note['detail']['encryption'],
-        now,
-        noteId]);
+        await sql.remove("links", noteId);
 
-    await sql.remove("images", noteId);
-
-    for (const img of note['images']) {
-        img['image_data'] = atob(img['image_data']);
-
-        await sql.insert("images", img);
-    }
-
-    await sql.remove("links", noteId);
-
-    for (const link in note['links'])
-        await sql.insert("links", link);
-
-    await sql.commit();
+        for (const link in note['links']) {
+            await sql.insert("links", link);
+        }
+    });
 
     res.send({});
 });
 
 router.delete('/:noteId', async (req, res, next) => {
-    await sql.beginTransaction();
-
-    await deleteNote(req.params.noteId, req);
-
-    await sql.commit();
+    await sql.doInTransaction(async () => {
+        await deleteNote(req.params.noteId, req);
+    });
 
     res.send({});
 });
@@ -165,32 +162,30 @@ router.post('/:parentNoteId/children', async (req, res, next) => {
         throw new ('Unknown target: ' + note['target']);
     }
 
-    await sql.beginTransaction();
+    await sql.doInTransaction(async () => {
+        await sql.addAudit(audit_category.CREATE_NOTE, req, noteId);
 
-    await sql.addAudit(audit_category.CREATE_NOTE, req, noteId);
+        const now = utils.nowTimestamp();
 
-    const now = utils.nowTimestamp();
+        await sql.insert("notes", {
+            'note_id': noteId,
+            'note_title': note['note_title'],
+            'note_text': '',
+            'note_clone_id': '',
+            'date_created': now,
+            'date_modified': now,
+            'encryption': note['encryption']
+        });
 
-    await sql.insert("notes", {
-        'note_id': noteId,
-        'note_title': note['note_title'],
-        'note_text': '',
-        'note_clone_id': '',
-        'date_created': now,
-        'date_modified': now,
-        'encryption': note['encryption']
+        await sql.insert("notes_tree", {
+            'note_id': noteId,
+            'note_pid': parentNoteId,
+            'note_pos': newNotePos,
+            'is_expanded': 0,
+            'date_modified': utils.nowTimestamp(),
+            'is_deleted': 0
+        });
     });
-
-    await sql.insert("notes_tree", {
-        'note_id': noteId,
-        'note_pid': parentNoteId,
-        'note_pos': newNotePos,
-        'is_expanded': 0,
-        'date_modified': utils.nowTimestamp(),
-        'is_deleted': 0
-    });
-
-    await sql.commit();
 
     res.send({
         'note_id': noteId

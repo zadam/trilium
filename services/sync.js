@@ -34,41 +34,37 @@ async function pullSync(cookieJar, syncLog) {
     }
 
     try {
-        await sql.beginTransaction();
+        await sql.doInTransaction(async () => {
+            await putChanged(resp, syncLog);
 
-        await putChanged(resp, syncLog);
+            for (const noteId of resp.notes) {
+                let note;
 
-        for (const noteId of resp.notes) {
-            let note;
+                try {
+                    note = await rp({
+                        uri: SYNC_SERVER + "/api/sync/note/" + noteId + "/" + lastSyncedPull,
+                        headers: {
+                            auth: 'sync'
+                        },
+                        json: true,
+                        jar: cookieJar
+                    });
+                }
+                catch (e) {
+                    throw new Error("Can't pull note " + noteId + ", inner exception: " + e.stack);
+                }
 
-            try {
-                note = await rp({
-                    uri: SYNC_SERVER + "/api/sync/note/" + noteId + "/" + lastSyncedPull,
-                    headers: {
-                        auth: 'sync'
-                    },
-                    json: true,
-                    jar: cookieJar
-                });
+                await putNote(note, syncLog);
             }
-            catch (e) {
-                throw new Error("Can't pull note " + noteId + ", inner exception: " + e.stack);
+
+            if (resp.notes.length > 0) {
+                await sql.addAudit(audit_category.SYNC);
             }
 
-            await putNote(note, syncLog);
-        }
-
-        if (resp.notes.length > 0) {
-            await sql.addAudit(audit_category.SYNC);
-        }
-
-        await sql.setOption('last_synced_pull', resp.syncTimestamp);
-
-        await sql.commit();
+            await sql.setOption('last_synced_pull', resp.syncTimestamp);
+        });
     }
     catch (e) {
-        await sql.rollback();
-
         throw e;
     }
 }
