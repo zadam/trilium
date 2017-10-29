@@ -4,7 +4,7 @@ const express = require('express');
 const router = express.Router();
 const sql = require('../../services/sql');
 const utils = require('../../services/utils');
-const crypto = require('crypto');
+const migration = require('../../services/migration');
 
 router.post('', async (req, res, next) => {
     const timestamp = req.body.timestamp;
@@ -16,7 +16,7 @@ router.post('', async (req, res, next) => {
         res.send({ message: 'Auth request time is out of sync' });
     }
 
-    const dbVersion = res.body.dbVersion;
+    const dbVersion = req.body.dbVersion;
 
     if (dbVersion !== migration.APP_DB_VERSION) {
         res.status(400);
@@ -24,10 +24,7 @@ router.post('', async (req, res, next) => {
     }
 
     const documentSecret = await sql.getOption('document_secret');
-
-    const hmac = crypto.createHmac('sha256', documentSecret);
-    hmac.update(timestamp);
-    const expectedHash = hmac.digest('base64');
+    const expectedHash = utils.hmac(documentSecret, timestamp);
 
     const givenHash = req.body.hash;
 

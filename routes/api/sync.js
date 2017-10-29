@@ -17,7 +17,9 @@ router.post('/now', auth.checkApiAuth, async (req, res, next) => {
 router.get('/changed/:since', auth.checkApiAuth, async (req, res, next) => {
     const since = parseInt(req.params.since);
 
-    res.send(await sync.getChangedSince(since));
+    const result = await sync.getChangedSince(since);
+
+    res.send(result);
 });
 
 router.put('/changed', auth.checkApiAuth, async (req, res, next) => {

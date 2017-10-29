@@ -16,11 +16,13 @@ const logger = require('simple-node-logger').createRollingFileLogger({
 
 function info(message) {
     logger.info(message);
+
+    console.log(message);
 }
 
 function error(message) {
     // we're using .info() instead of .error() because simple-node-logger emits weird error for error()
-    logger.info(message);
+    info(message);
 }
 
 const requestBlacklist = [ "/api/audit", "/libraries", "/javascripts", "/images", "/stylesheets" ];

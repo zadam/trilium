@@ -34,11 +34,18 @@ function fromBase64(encodedText) {
     return Buffer.from(encodedText, 'base64');
 }
 
+function hmac(secret, value) {
+    const hmac = crypto.createHmac('sha256', Buffer.from(secret.toString(), 'ASCII'));
+    hmac.update(value.toString());
+    return hmac.digest('base64');
+}
+
 module.exports = {
     randomSecureToken,
     randomString,
     nowTimestamp,
     newNoteId,
     toBase64,
-    fromBase64
+    fromBase64,
+    hmac
 };

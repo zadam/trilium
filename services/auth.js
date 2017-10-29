@@ -6,8 +6,7 @@ async function checkAuth(req, res, next) {
     if (!req.session.loggedIn) {
         res.redirect("login");
     }
-
-    if (await migration.isDbUpToDate()) {
+    else if (await migration.isDbUpToDate()) {
         next();
     }
     else {
@@ -26,20 +25,19 @@ async function checkAuthWithoutMigration(req, res, next) {
 
 async function checkApiAuth(req, res, next) {
     if (!req.session.loggedIn) {
-        res.sendStatus(401);
+        res.status(401).send({});
     }
-
-    if (await migration.isDbUpToDate()) {
+    else if (await migration.isDbUpToDate()) {
         next();
     }
     else {
-        res.sendStatus(409); // need better response than that
+        res.status(409).send({}); // need better response than that
     }
 }
 
 async function checkApiAuthWithoutMigration(req, res, next) {
     if (!req.session.loggedIn) {
-        res.sendStatus(401);
+        res.status(401).send({});
     }
     else {
         next();
