@@ -21,6 +21,10 @@ async function insert(table_name, rec, replace = false) {
     return res.lastID;
 }
 
+async function replace(table_name, rec) {
+    return await insert(table_name, rec, true);
+}
+
 async function beginTransaction() {
     return await db.run("BEGIN");
 }
@@ -56,7 +60,17 @@ async function getSingleResult(query, params = []) {
 async function getSingleResultOrNull(query, params = []) {
     const all = await db.all(query, ...params);
 
-    return all ? all[0] : null;
+    return all.length > 0 ? all[0] : null;
+}
+
+async function getSingleValue(query, params = []) {
+    const row = await getSingleResultOrNull(query, params);
+
+    if (!row) {
+        return null;
+    }
+
+    return row[Object.keys(row)[0]];
 }
 
 async function getResults(query, params = []) {
@@ -126,7 +140,10 @@ async function doInTransaction(func) {
 
 module.exports = {
     insert,
+    replace,
+    getSingleValue,
     getSingleResult,
+    getSingleResultOrNull,
     getResults,
     getFlattenedResults,
     execute,

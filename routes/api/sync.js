@@ -35,8 +35,20 @@ router.get('/note/:noteId/:since', auth.checkApiAuth, async (req, res, next) => 
     res.send(await sync.getNoteSince(noteId, since));
 });
 
-router.put('/note', auth.checkApiAuth, async (req, res, next) => {
-    await sync.putNote(req.body);
+router.put('/notes', auth.checkApiAuth, async (req, res, next) => {
+    await sync.updateNote(req.body);
+
+    res.send({});
+});
+
+router.put('/notes_tree', auth.checkApiAuth, async (req, res, next) => {
+    await sync.updateNoteTree(req.body);
+
+    res.send({});
+});
+
+router.put('/notes_history', auth.checkApiAuth, async (req, res, next) => {
+    await sync.updateNoteHistory(req.body);
 
     res.send({});
 });
