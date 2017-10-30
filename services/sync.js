@@ -129,6 +129,13 @@ async function pushSync(cookieJar, syncLog) {
 
             lastSyncedPush = oldestUnsyncedDateModified;
 
+            // if the sync started in the same second as the last changes then it's possible we synced only parts
+            // of this second's changes. In that case we'll leave the last_synced_push as it is and stop the sync
+            // so next time we'll re-do this second again, this guaranteeing all changes have been pushed
+            if (lastSyncedPush === syncStarted) {
+                return;
+            }
+
             await sql.setOption('last_synced_push', lastSyncedPush);
         });
     }
@@ -185,7 +192,7 @@ async function sync() {
 
         await pushSync(cookieJar, syncLog);
 
-        //await pullSync(cookieJar, syncLog);
+        await pullSync(cookieJar, syncLog);
     }
     catch (e) {
         logSync("sync failed: " + e.stack, syncLog);
