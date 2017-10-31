@@ -8,6 +8,7 @@ const utils = require('./utils');
 const config = require('./config');
 const audit_category = require('./audit_category');
 const crypto = require('crypto');
+const SOURCE_ID = require('./source_id');
 
 const SYNC_SERVER = config['Sync']['syncServerHost'];
 
@@ -72,6 +73,7 @@ async function pullSync(cookieJar, syncLog) {
 async function syncEntity(entity, entityName, cookieJar, syncLog) {
     try {
         const payload = {
+            sourceId: SOURCE_ID,
             entity: entity
         };
 
@@ -269,6 +271,8 @@ async function updateNote(body, syncLog) {
 
                 await sql.insert('link', link);
             }
+
+            await sql.addNoteSync(entity.note_id, body.source_id);
         });
 
         logSync("Update/sync note " + entity.note_id, syncLog);
@@ -284,7 +288,11 @@ async function updateNoteTree(body, syncLog) {
     const orig = await sql.getSingleResultOrNull("select * from notes_tree where note_id = ?", [entity.note_id]);
 
     if (orig === null || orig.date_modified < entity.date_modified) {
-        await sql.replace('notes_tree', entity);
+        await sql.doInTransaction(async () => {
+            await sql.replace('notes_tree', entity);
+
+            await sql.addNoteTreeSync(entity.note_id, body.source_id);
+        });
 
         logSync("Update/sync note tree " + entity.note_id, syncLog);
     }
@@ -296,14 +304,18 @@ async function updateNoteTree(body, syncLog) {
 async function updateNoteHistory(body, syncLog) {
     const entity = body.entity;
 
-    const orig = await sql.getSingleResultOrNull("select * from notes_history where note_id = ? and date_modified_from = ?", [entity.note_id, entity.date_modified_from]);
+    const orig = await sql.getSingleResultOrNull("select * from notes_history where note_history_id", [entity.note_history_id]);
 
     if (orig === null || orig.date_modified_to < entity.date_modified_to) {
-        await sql.execute("delete from notes_history where note_id = ? and date_modified_from = ?", [entity.note_id, entity.date_modified_from]);
+        await sql.doInTransaction(async () => {
+            await sql.execute("delete from notes_history where note_history_id", [entity.note_history_id]);
 
-        delete entity['id'];
+            delete entity['id'];
 
-        await sql.insert('notes_history', entity);
+            await sql.insert('notes_history', entity);
+
+            await sql.addNoteHistorySync(entity.note_history_id, body.source_id);
+        });
 
         logSync("Update/sync note history " + entity.note_id, syncLog);
     }

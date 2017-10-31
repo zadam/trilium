@@ -14,8 +14,8 @@ router.get('/:noteId', auth.checkApiAuth, async (req, res, next) => {
 
     let detail = await sql.getSingleResult("select * from notes where note_id = ?", [noteId]);
 
-    if (detail['note_clone_id']) {
-        noteId = detail['note_clone_id'];
+    if (detail.note_clone_id) {
+        noteId = detail.note_clone_id;
         detail = sql.getSingleResult("select * from notes where note_id = ?", [noteId]);
     }
 
@@ -30,8 +30,8 @@ router.put('/:noteId', async (req, res, next) => {
 
     const detail = await sql.getSingleResult("select * from notes where note_id = ?", [noteId]);
 
-    if (detail['note_clone_id']) {
-        noteId = detail['note_clone_id'];
+    if (detail.note_clone_id) {
+        noteId = detail.note_clone_id;
     }
 
     const note = req.body;
@@ -42,63 +42,71 @@ router.put('/:noteId', async (req, res, next) => {
 
     const historyCutoff = now - historySnapshotTimeInterval;
 
-    const history = await sql.getSingleResult("select id from notes_history where note_id = ? and date_modified_from >= ?", [noteId, historyCutoff]);
+    let noteHistoryId = await sql.getSingleValue("select note_history_id from notes_history where note_id = ? and date_modified_from >= ?", [noteId, historyCutoff]);
 
     await sql.doInTransaction(async () => {
-        if (history) {
-            await sql.execute("update notes_history set note_title = ?, note_text = ?, encryption = ?, date_modified_to = ? where id = ?", [
-                note['detail']['note_title'],
-                note['detail']['note_text'],
-                note['detail']['encryption'],
+        if (noteHistoryId) {
+            await sql.execute("update notes_history set note_title = ?, note_text = ?, encryption = ?, date_modified_to = ? where note_history_id = ?", [
+                note.detail.note_title,
+                note.detail.note_text,
+                note.detail.encryption,
                 now,
-                history['id']
+                noteHistoryId
             ]);
         }
         else {
-            await sql.execute("insert into notes_history (note_id, note_title, note_text, encryption, date_modified_from, date_modified_to) values (?, ?, ?, ?, ?, ?)", [
+            noteHistoryId = utils.randomString(16);
+
+            await sql.execute("insert into notes_history (note_history_id, note_id, note_title, note_text, encryption, date_modified_from, date_modified_to) " +
+                "values (?, ?, ?, ?, ?, ?, ?)", [
+                noteHistoryId,
                 noteId,
-                note['detail']['note_title'],
-                note['detail']['note_text'],
-                note['detail']['encryption'],
+                note.detail.note_title,
+                note.detail.note_text,
+                note.detail.encryption,
                 now,
                 now
             ]);
         }
 
-        if (note['detail']['note_title'] !== detail['note_title']) {
+        await sql.addNoteHistorySync(noteHistoryId);
+
+        if (note.detail.note_title !== detail.note_title) {
             await sql.deleteRecentAudits(audit_category.UPDATE_TITLE, req, noteId);
             await sql.addAudit(audit_category.UPDATE_TITLE, req, noteId);
         }
 
-        if (note['detail']['note_text'] !== detail['note_text']) {
+        if (note.detail.note_text !== detail.note_text) {
             await sql.deleteRecentAudits(audit_category.UPDATE_CONTENT, req, noteId);
             await sql.addAudit(audit_category.UPDATE_CONTENT, req, noteId);
         }
 
-        if (note['detail']['encryption'] !== detail['encryption']) {
-            await sql.addAudit(audit_category.ENCRYPTION, req, noteId, detail['encryption'], note['detail']['encryption']);
+        if (note.detail.encryption !== detail.encryption) {
+            await sql.addAudit(audit_category.ENCRYPTION, req, noteId, detail.encryption, note.detail.encryption);
         }
 
         await sql.execute("update notes set note_title = ?, note_text = ?, encryption = ?, date_modified = ? where note_id = ?", [
-            note['detail']['note_title'],
-            note['detail']['note_text'],
-            note['detail']['encryption'],
+            note.detail.note_title,
+            note.detail.note_text,
+            note.detail.encryption,
             now,
             noteId]);
 
         await sql.remove("images", noteId);
 
-        for (const img of note['images']) {
-            img['image_data'] = atob(img['image_data']);
+        for (const img of note.images) {
+            img.image_data = atob(img.image_data);
 
             await sql.insert("images", img);
         }
 
         await sql.remove("links", noteId);
 
-        for (const link in note['links']) {
+        for (const link in note.links) {
             await sql.insert("links", link);
         }
+
+        await sql.addNoteSync(noteId);
     });
 
     res.send({});
@@ -118,7 +126,7 @@ async function deleteNote(noteId, req) {
     const children = await sql.getResults("select note_id from notes_tree where note_pid = ? and is_deleted = 0", [noteId]);
 
     for (const child of children) {
-        await deleteNote(child['note_id']);
+        await deleteNote(child.note_id);
     }
 
     await sql.execute("update notes_tree set is_deleted = 1, date_modified = ? where note_id = ?", [now, noteId]);
@@ -140,7 +148,7 @@ router.post('/:parentNoteId/children', async (req, res, next) => {
 
     let newNotePos = 0;
 
-    if (note['target'] === 'into') {
+    if (note.target === 'into') {
         const res = await sql.getSingleResult('select max(note_pos) as max_note_pos from notes_tree where note_pid = ? and is_deleted = 0', [parentNoteId]);
         const maxNotePos = res['max_note_pos'];
 
@@ -149,17 +157,17 @@ router.post('/:parentNoteId/children', async (req, res, next) => {
         else
             newNotePos = maxNotePos + 1
     }
-    else if (note['target'] === 'after') {
-        const afterNote = await sql.getSingleResult('select note_pos from notes_tree where note_id = ?', [note['target_note_id']]);
+    else if (note.target === 'after') {
+        const afterNote = await sql.getSingleResult('select note_pos from notes_tree where note_id = ?', [note.target_note_id]);
 
-        newNotePos = afterNote['note_pos'] + 1;
+        newNotePos = afterNote.note_pos + 1;
 
         const now = utils.nowTimestamp();
 
         await sql.execute('update notes_tree set note_pos = note_pos + 1, date_modified = ? where note_pid = ? and note_pos > ? and is_deleted = 0', [now, parentNoteId, afterNote['note_pos']]);
     }
     else {
-        throw new ('Unknown target: ' + note['target']);
+        throw new Error('Unknown target: ' + note.target);
     }
 
     await sql.doInTransaction(async () => {
@@ -169,12 +177,12 @@ router.post('/:parentNoteId/children', async (req, res, next) => {
 
         await sql.insert("notes", {
             'note_id': noteId,
-            'note_title': note['note_title'],
+            'note_title': note.note_title,
             'note_text': '',
             'note_clone_id': '',
             'date_created': now,
             'date_modified': now,
-            'encryption': note['encryption']
+            'encryption': note.encryption
         });
 
         await sql.insert("notes_tree", {
@@ -200,7 +208,7 @@ router.get('/', async (req, res, next) => {
     const noteIdList = [];
 
     for (const res of result) {
-        noteIdList.push(res['note_id']);
+        noteIdList.push(res.note_id);
     }
 
     res.send(noteIdList);

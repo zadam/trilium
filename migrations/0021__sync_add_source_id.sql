@@ -1,0 +1,1 @@
+ALTER TABLE sync ADD COLUMN source_id TEXT

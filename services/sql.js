@@ -3,6 +3,7 @@
 const db = require('sqlite');
 const utils = require('./utils');
 const log = require('./log');
+const SOURCE_ID = require('./source_id');
 
 async function insert(table_name, rec, replace = false) {
     const keys = Object.keys(rec);
@@ -123,8 +124,32 @@ async function deleteRecentAudits(category, req, noteId) {
             [category, browserId, noteId, deleteCutoff])
 }
 
+async function addNoteSync(noteId, sourceId) {
+    await addEntitySync("notes", noteId, sourceId)
+}
+
+async function addNoteTreeSync(noteId, sourceId) {
+    await addEntitySync("notes_tree", noteId, sourceId)
+}
+
+async function addNoteHistorySync(noteHistoryId, sourceId) {
+    await addEntitySync("notes_history", noteHistoryId, sourceId);
+}
+
+async function addEntitySync(entityName, entityId, sourceId) {
+    await replace("sync", {
+        entity_name: entityName,
+        entity_id: entityId,
+        sync_date: utils.nowTimestamp(),
+        source_id: sourceId || SOURCE_ID
+    });
+}
+
 async function doInTransaction(func) {
+    const error = new Error(); // to capture correct stack trace in case of exception
+
     try {
+
         await beginTransaction();
 
         await func();
@@ -132,9 +157,11 @@ async function doInTransaction(func) {
         await commit();
     }
     catch (e) {
-        log.error("Error executing transaction, executing rollback. Inner exception: " + e.stack);
+        log.error("Error executing transaction, executing rollback. Inner exception: " + e.stack + error.stack);
 
         await rollback();
+
+        throw e;
     }
 }
 
@@ -153,5 +180,8 @@ module.exports = {
     addAudit,
     deleteRecentAudits,
     remove,
-    doInTransaction
+    doInTransaction,
+    addNoteSync,
+    addNoteTreeSync,
+    addNoteHistorySync
 };

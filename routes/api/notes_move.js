@@ -26,6 +26,7 @@ router.put('/:noteId/moveTo/:parentId', auth.checkApiAuth, async (req, res, next
         await sql.execute("update notes_tree set note_pid = ?, note_pos = ?, date_modified = ? where note_id = ?",
             [parentId, newNotePos, now, noteId]);
 
+        await sql.addNoteTreeSync(noteId);
         await sql.addAudit(audit_category.CHANGE_PARENT, req, noteId, null, parentId);
     });
 
@@ -47,6 +48,7 @@ router.put('/:noteId/moveBefore/:beforeNoteId', async (req, res, next) => {
             await sql.execute("update notes_tree set note_pid = ?, note_pos = ?, date_modified = ? where note_id = ?",
                 [beforeNote['note_pid'], beforeNote['note_pos'], now, noteId]);
 
+            await sql.addNoteTreeSync(noteId);
             await sql.addAudit(audit_category.CHANGE_POSITION, req, noteId);
         });
     }
@@ -70,6 +72,7 @@ router.put('/:noteId/moveAfter/:afterNoteId', async (req, res, next) => {
             await sql.execute("update notes_tree set note_pid = ?, note_pos = ?, date_modified = ? where note_id = ?",
                 [afterNote['note_pid'], afterNote['note_pos'] + 1, now, noteId]);
 
+            await sql.addNoteTreeSync(noteId);
             await sql.addAudit(audit_category.CHANGE_POSITION, req, noteId);
         });
     }
@@ -85,6 +88,7 @@ router.put('/:noteId/expanded/:expanded', async (req, res, next) => {
     await sql.doInTransaction(async () => {
         await sql.execute("update notes_tree set is_expanded = ?, date_modified = ? where note_id = ?", [expanded, now, noteId]);
 
+        await sql.addNoteTreeSync(noteId);
         await sql.addAudit(audit_category.CHANGE_EXPANDED, req, noteId, null, expanded);
     });
 
