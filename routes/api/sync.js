@@ -4,6 +4,7 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../../services/auth');
 const sync = require('../../services/sync');
+const sql = require('../../services/sql');
 
 router.post('/now', auth.checkApiAuth, async (req, res, next) => {
     const log = await sync.sync();
@@ -14,41 +15,50 @@ router.post('/now', auth.checkApiAuth, async (req, res, next) => {
     });
 });
 
-router.get('/changed/:since', auth.checkApiAuth, async (req, res, next) => {
-    const since = parseInt(req.params.since);
+router.get('/changed', auth.checkApiAuth, async (req, res, next) => {
+    const lastSyncId = parseInt(req.query.lastSyncId);
+    const sourceId = parseInt(req.query.sourceId);
 
-    const result = await sync.getChangedSince(since);
+    const result = await sync.getChanged(lastSyncId, sourceId);
 
     res.send(result);
 });
 
-router.put('/changed', auth.checkApiAuth, async (req, res, next) => {
-    await sync.putChanged(req.body);
+router.get('/notes/:noteId', auth.checkApiAuth, async (req, res, next) => {
+    const noteId = req.params.noteId;
 
-    res.send({});
+    res.send({
+        entity: await sql.getSingleResult("SELECT * FROM notes WHERE note_id = ?", [noteId]),
+        links: await sql.getResults("SELECT * FROM links WHERE note_id = ?", [noteId])
+    });
 });
 
-router.get('/note/:noteId/:since', auth.checkApiAuth, async (req, res, next) => {
+router.get('/notes_tree/:noteId', auth.checkApiAuth, async (req, res, next) => {
     const noteId = req.params.noteId;
-    const since = parseInt(req.params.since);
 
-    res.send(await sync.getNoteSince(noteId, since));
+    res.send(await sql.getSingleResult("SELECT * FROM notes_tree WHERE note_id = ?", [noteId]));
+});
+
+router.get('/notes_history/:noteHistoryId', auth.checkApiAuth, async (req, res, next) => {
+    const noteHistoryId = req.params.noteHistoryId;
+
+    res.send(await sql.getSingleResult("SELECT * FROM notes_history WHERE note_history_id = ?", [noteHistoryId]));
 });
 
 router.put('/notes', auth.checkApiAuth, async (req, res, next) => {
-    await sync.updateNote(req.body);
+    await sync.updateNote(req.body.entity, req.body.links, req.body.source_id);
 
     res.send({});
 });
 
 router.put('/notes_tree', auth.checkApiAuth, async (req, res, next) => {
-    await sync.updateNoteTree(req.body);
+    await sync.updateNoteTree(req.body.entity, req.body.source_id);
 
     res.send({});
 });
 
 router.put('/notes_history', auth.checkApiAuth, async (req, res, next) => {
-    await sync.updateNoteHistory(req.body);
+    await sync.updateNoteHistory(req.body.entity, req.body.source_id);
 
     res.send({});
 });
