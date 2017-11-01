@@ -24,13 +24,14 @@ async function pullSync(cookieJar, syncLog) {
         syncRows = await rp({
             uri: SYNC_SERVER + '/api/sync/changed?lastSyncId=' + lastSyncedPull + "&sourceId=" + SOURCE_ID,
             jar: cookieJar,
-            json: true
+            json: true,
+            timeout: 5 * 1000
         });
 
         logSync("Pulled " + syncRows.length + " changes");
     }
     catch (e) {
-        throw new Error("Can't pull changes, inner exception: " + e.stack);
+        logSyncError("Can't pull changes, inner exception: ", e, syncLog);
     }
 
     for (const sync of syncRows) {
@@ -44,7 +45,7 @@ async function pullSync(cookieJar, syncLog) {
             });
         }
         catch (e) {
-            throw new Error("Can't pull " + sync.entity_name + " " + sync.entity_id + ", inner exception: " + e.stack);
+            logSyncError("Can't pull " + sync.entity_name + " " + sync.entity_id, e, syncLog);
         }
 
         // TODO: ideally this should be in transaction
@@ -59,9 +60,7 @@ async function pullSync(cookieJar, syncLog) {
             await updateNoteHistory(resp, sync.source_id, syncLog);
         }
         else {
-            logSync("Unrecognized entity type " + sync.entity_name, syncLog);
-
-            throw new Error("Unrecognized entity type " + sync.entity_name);
+            logSyncError("Unrecognized entity type " + sync.entity_name, e, syncLog);
         }
 
         await sql.setOption('last_synced_pull', sync.id);
@@ -86,14 +85,12 @@ async function syncEntity(entity, entityName, cookieJar, syncLog) {
             uri: SYNC_SERVER + '/api/sync/' + entityName,
             body: payload,
             json: true,
-            timeout: 60 * 1000,
+            timeout: 5 * 1000,
             jar: cookieJar
         });
     }
     catch (e) {
-        logSync("Failed sending update for entity " + entityName + ", inner exception: " + e.stack, syncLog);
-
-        throw new Error("Failed sending update for entity " + entityName + ", inner exception: " + e.stack);
+        logSyncError("Failed sending update for entity " + entityName, e, syncLog);
     }
 }
 
@@ -124,9 +121,7 @@ async function pushSync(cookieJar, syncLog) {
                 entity = await sql.getSingleResult('SELECT * FROM notes_history WHERE note_history_id = ?', [sync.entity_id]);
             }
             else {
-                logSync("Unrecognized entity type " + sync.entity_name, syncLog);
-
-                throw new Error("Unrecognized entity type " + sync.entity_name);
+                logSyncError("Unrecognized entity type " + sync.entity_name, null, syncLog);
             }
 
             await syncEntity(entity, sync.entity_name, cookieJar, syncLog);
@@ -138,7 +133,7 @@ async function pushSync(cookieJar, syncLog) {
     }
 }
 
-async function login() {
+async function login(syncLog) {
     const timestamp = utils.nowTimestamp();
 
     const documentSecret = await sql.getOption('document_secret');
@@ -163,7 +158,7 @@ async function login() {
         return cookieJar;
     }
     catch (e) {
-        throw new Error("Can't login to API for sync, inner exception: " + e.stack);
+        logSyncError("Can't login to API for sync, inner exception: ", e, syncLog);
     }
 }
 
@@ -185,7 +180,7 @@ async function sync() {
             return syncLog;
         }
 
-        const cookieJar = await login();
+        const cookieJar = await login(syncLog);
 
         await pushSync(cookieJar, syncLog);
 
@@ -207,6 +202,22 @@ function logSync(message, syncLog) {
     if (syncLog) {
         syncLog.push(message);
     }
+}
+
+function logSyncError(message, e, syncLog) {
+    let completeMessage = message;
+
+    if (e) {
+        completeMessage += ", inner exception: " + e.stack;
+    }
+
+    log.info(completeMessage);
+
+    if (syncLog) {
+        syncLog.push(completeMessage);
+    }
+
+    throw new Error(completeMessage);
 }
 
 async function getChanged(lastSyncId, sourceId) {
