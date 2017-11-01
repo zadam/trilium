@@ -50,13 +50,13 @@ async function pullSync(cookieJar, syncLog) {
         // TODO: ideally this should be in transaction
 
         if (sync.entity_name === 'notes') {
-            await updateNote(resp.entity, resp.links, sync.source_id, syncLog)
+            await updateNote(resp.entity, resp.links, sync.source_id, syncLog);
         }
         else if (sync.entity_name === 'notes_tree') {
-            await updateNoteTree(resp, sync.source_id, syncLog)
+            await updateNoteTree(resp, sync.source_id, syncLog);
         }
         else if (sync.entity_name === 'notes_history') {
-            await updateNoteHistory(resp, sync.source_id, syncLog)
+            await updateNoteHistory(resp, sync.source_id, syncLog);
         }
         else {
             logSync("Unrecognized entity type " + sync.entity_name, syncLog);
@@ -207,8 +207,6 @@ function logSync(message, syncLog) {
     if (syncLog) {
         syncLog.push(message);
     }
-
-    console.log(message);
 }
 
 async function getChanged(lastSyncId, sourceId) {

@@ -46,19 +46,19 @@ router.get('/notes_history/:noteHistoryId', auth.checkApiAuth, async (req, res, 
 });
 
 router.put('/notes', auth.checkApiAuth, async (req, res, next) => {
-    await sync.updateNote(req.body.entity, req.body.links, req.body.source_id);
+    await sync.updateNote(req.body.entity, req.body.links, req.body.sourceId);
 
     res.send({});
 });
 
 router.put('/notes_tree', auth.checkApiAuth, async (req, res, next) => {
-    await sync.updateNoteTree(req.body.entity, req.body.source_id);
+    await sync.updateNoteTree(req.body.entity, req.body.sourceId);
 
     res.send({});
 });
 
 router.put('/notes_history', auth.checkApiAuth, async (req, res, next) => {
-    await sync.updateNoteHistory(req.body.entity, req.body.source_id);
+    await sync.updateNoteHistory(req.body.entity, req.body.sourceId);
 
     res.send({});
 });
