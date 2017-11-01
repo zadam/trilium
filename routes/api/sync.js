@@ -19,9 +19,7 @@ router.get('/changed', auth.checkApiAuth, async (req, res, next) => {
     const lastSyncId = parseInt(req.query.lastSyncId);
     const sourceId = req.query.sourceId;
 
-    const result = await sync.getChanged(lastSyncId, sourceId);
-
-    res.send(result);
+    res.send(await sql.getResults("SELECT * FROM sync WHERE id > ? AND source_id != ?", [lastSyncId, sourceId]));
 });
 
 router.get('/notes/:noteId', auth.checkApiAuth, async (req, res, next) => {

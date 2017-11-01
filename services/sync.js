@@ -48,8 +48,6 @@ async function pullSync(cookieJar, syncLog) {
             logSyncError("Can't pull " + sync.entity_name + " " + sync.entity_id, e, syncLog);
         }
 
-        // TODO: ideally this should be in transaction
-
         if (sync.entity_name === 'notes') {
             await updateNote(resp.entity, resp.links, sync.source_id, syncLog);
         }
@@ -69,7 +67,7 @@ async function pullSync(cookieJar, syncLog) {
     logSync("Finished pull");
 }
 
-async function syncEntity(entity, entityName, cookieJar, syncLog) {
+async function pushEntity(entity, entityName, cookieJar, syncLog) {
     try {
         const payload = {
             sourceId: SOURCE_ID,
@@ -108,28 +106,26 @@ async function pushSync(cookieJar, syncLog) {
             break;
         }
 
-        await sql.doInTransaction(async () => {
-            let entity;
+        let entity;
 
-            if (sync.entity_name === 'notes') {
-                entity = await sql.getSingleResult('SELECT * FROM notes WHERE note_id = ?', [sync.entity_id]);
-            }
-            else if (sync.entity_name === 'notes_tree') {
-                entity = await sql.getSingleResult('SELECT * FROM notes_tree WHERE note_id = ?', [sync.entity_id]);
-            }
-            else if (sync.entity_name === 'notes_history') {
-                entity = await sql.getSingleResult('SELECT * FROM notes_history WHERE note_history_id = ?', [sync.entity_id]);
-            }
-            else {
-                logSyncError("Unrecognized entity type " + sync.entity_name, null, syncLog);
-            }
+        if (sync.entity_name === 'notes') {
+            entity = await sql.getSingleResult('SELECT * FROM notes WHERE note_id = ?', [sync.entity_id]);
+        }
+        else if (sync.entity_name === 'notes_tree') {
+            entity = await sql.getSingleResult('SELECT * FROM notes_tree WHERE note_id = ?', [sync.entity_id]);
+        }
+        else if (sync.entity_name === 'notes_history') {
+            entity = await sql.getSingleResult('SELECT * FROM notes_history WHERE note_history_id = ?', [sync.entity_id]);
+        }
+        else {
+            logSyncError("Unrecognized entity type " + sync.entity_name, null, syncLog);
+        }
 
-            await syncEntity(entity, sync.entity_name, cookieJar, syncLog);
+        await pushEntity(entity, sync.entity_name, cookieJar, syncLog);
 
-            lastSyncedPush = sync.id;
+        lastSyncedPush = sync.id;
 
-            await sql.setOption('last_synced_push', lastSyncedPush);
-        });
+        await sql.setOption('last_synced_push', lastSyncedPush);
     }
 }
 
@@ -220,12 +216,6 @@ function logSyncError(message, e, syncLog) {
     throw new Error(completeMessage);
 }
 
-async function getChanged(lastSyncId, sourceId) {
-    console.log([lastSyncId, sourceId]);
-
-    return await sql.getResults("SELECT * FROM sync WHERE id > ? AND source_id != ?", [lastSyncId, sourceId]);
-}
-
 async function updateNote(entity, links, sourceId, syncLog) {
     const origNote = await sql.getSingleResult("select * from notes where note_id = ?", [entity.note_id]);
 
@@ -301,7 +291,6 @@ else {
 
 module.exports = {
     sync,
-    getChanged,
     updateNote,
     updateNoteTree,
     updateNoteHistory
