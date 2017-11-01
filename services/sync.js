@@ -19,6 +19,8 @@ async function pullSync(cookieJar, syncLog) {
     let syncRows;
 
     try {
+        logSync("Pulling changes: " + SYNC_SERVER + '/api/sync/changed?lastSyncId=' + lastSyncedPull + "&sourceId=" + SOURCE_ID);
+
         syncRows = await rp({
             uri: SYNC_SERVER + '/api/sync/changed?lastSyncId=' + lastSyncedPull + "&sourceId=" + SOURCE_ID,
             jar: cookieJar,
@@ -45,24 +47,24 @@ async function pullSync(cookieJar, syncLog) {
             throw new Error("Can't pull " + sync.entity_name + " " + sync.entity_id + ", inner exception: " + e.stack);
         }
 
-        await sql.doInTransaction(async () => {
-            if (sync.entity_name === 'notes') {
-                await updateNote(resp.entity, resp.links, sync.source_id, syncLog)
-            }
-            else if (sync.entity_name === 'notes_tree') {
-                await updateNoteTree(resp.entity, sync.source_id, syncLog)
-            }
-            else if (sync.entity_name === 'notes_history') {
-                await updateNoteHistory(resp.entity, sync.source_id, syncLog)
-            }
-            else {
-                logSync("Unrecognized entity type " + sync.entity_name, syncLog);
+        // TODO: ideally this should be in transaction
 
-                throw new Error("Unrecognized entity type " + sync.entity_name);
-            }
+        if (sync.entity_name === 'notes') {
+            await updateNote(resp.entity, resp.links, sync.source_id, syncLog)
+        }
+        else if (sync.entity_name === 'notes_tree') {
+            await updateNoteTree(resp, sync.source_id, syncLog)
+        }
+        else if (sync.entity_name === 'notes_history') {
+            await updateNoteHistory(resp, sync.source_id, syncLog)
+        }
+        else {
+            logSync("Unrecognized entity type " + sync.entity_name, syncLog);
 
-            await sql.setOption('last_synced_pull', sync.id);
-        });
+            throw new Error("Unrecognized entity type " + sync.entity_name);
+        }
+
+        await sql.setOption('last_synced_pull', sync.id);
     }
 
     logSync("Finished pull");
@@ -210,6 +212,8 @@ function logSync(message, syncLog) {
 }
 
 async function getChanged(lastSyncId, sourceId) {
+    console.log([lastSyncId, sourceId]);
+
     return await sql.getResults("SELECT * FROM sync WHERE id > ? AND source_id != ?", [lastSyncId, sourceId]);
 }
 

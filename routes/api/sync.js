@@ -17,7 +17,7 @@ router.post('/now', auth.checkApiAuth, async (req, res, next) => {
 
 router.get('/changed', auth.checkApiAuth, async (req, res, next) => {
     const lastSyncId = parseInt(req.query.lastSyncId);
-    const sourceId = parseInt(req.query.sourceId);
+    const sourceId = req.query.sourceId;
 
     const result = await sync.getChanged(lastSyncId, sourceId);
 
