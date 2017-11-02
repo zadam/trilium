@@ -22,6 +22,12 @@ router.post('', auth.checkApiAuth, async (req, res, next) => {
         "AND date_modified >= ? AND note_id = ? AND category IN (?)", [browserId, currentNoteDateModified, currentNoteId,
         audit_category.UPDATE_CONTENT]);
 
+    if (currentNoteChangesCount > 0) {
+        console.log("Current note changed!");
+        console.log("SELECT COUNT(*) FROM audit_log WHERE (browser_id IS NULL OR browser_id != '" + browserId + "') " +
+            "AND date_modified >= " + currentNoteDateModified + " AND note_id = '" + currentNoteId + "' AND category IN ('" + audit_category.UPDATE_CONTENT + "')");
+    }
+
     let changesToPushCount = 0;
 
     if (sync.isSyncSetup) {

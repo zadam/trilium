@@ -51,13 +51,13 @@ async function pullSync(syncContext, syncLog) {
         }
 
         if (sync.entity_name === 'notes') {
-            await updateNote(resp.entity, resp.links, sync.source_id, syncLog);
+            await updateNote(resp.entity, resp.links, syncContext.sourceId, syncLog);
         }
         else if (sync.entity_name === 'notes_tree') {
-            await updateNoteTree(resp, sync.source_id, syncLog);
+            await updateNoteTree(resp, syncContext.sourceId, syncLog);
         }
         else if (sync.entity_name === 'notes_history') {
-            await updateNoteHistory(resp, sync.source_id, syncLog);
+            await updateNoteHistory(resp, syncContext.sourceId, syncLog);
         }
         else {
             logSyncError("Unrecognized entity type " + sync.entity_name, e, syncLog);
@@ -129,9 +129,7 @@ async function pushSync(syncContext, syncLog) {
             break;
         }
 
-        console.log("sync: ", sync);
-
-        if (sync.sourceId === syncContext.sourceId) {
+        if (sync.sourceId === syncContext.source_id) {
             logSync("Skipping sync " + sync.entity_name + " " + sync.entity_id + " because it originates from sync target", syncLog);
         }
         else {
@@ -195,8 +193,6 @@ async function sync() {
         }
 
         const syncContext = await login(syncLog);
-
-        console.log("sync context: ", syncContext);
 
         await pullSync(syncContext, syncLog);
 
