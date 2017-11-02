@@ -4,20 +4,34 @@ const express = require('express');
 const router = express.Router();
 const sql = require('../../services/sql');
 const auth = require('../../services/auth');
+const sync = require('../../services/sync');
+const audit_category = require('../../services/audit_category');
 
-router.get('/:full_load_time', auth.checkApiAuth, async (req, res, next) => {
-    const fullLoadTime = req.params.full_load_time;
+router.post('', auth.checkApiAuth, async (req, res, next) => {
+    const treeLoadTime = req.body.treeLoadTime;
+    const currentNoteId = req.body.currentNoteId;
+    const currentNoteDateModified = req.body.currentNoteDateModified;
 
     const browserId = req.get('x-browser-id');
 
-    const rowCount = await sql.getSingleValue("SELECT COUNT(*) FROM audit_log WHERE (browser_id IS NULL OR browser_id != ?) " +
-        "AND date_modified >= ?", [browserId, fullLoadTime]);
+    const noteTreeChangesCount = await sql.getSingleValue("SELECT COUNT(*) FROM audit_log WHERE (browser_id IS NULL OR browser_id != ?) " +
+        "AND date_modified >= ? AND category IN (?, ?, ?)", [browserId, treeLoadTime,
+        audit_category.UPDATE_TITLE, audit_category.CHANGE_PARENT, audit_category.CHANGE_POSITION]);
 
-    const lastSyncedPush = await sql.getOption('last_synced_push');
-    const changesToPushCount = await sql.getSingleValue("SELECT COUNT(*) FROM sync WHERE id > ?", [lastSyncedPush]);
+    const currentNoteChangesCount = await sql.getSingleValue("SELECT COUNT(*) FROM audit_log WHERE (browser_id IS NULL OR browser_id != ?) " +
+        "AND date_modified >= ? AND note_id = ? AND category IN (?)", [browserId, currentNoteDateModified, currentNoteId,
+        audit_category.UPDATE_CONTENT]);
+
+    let changesToPushCount = 0;
+
+    if (sync.isSyncSetup) {
+        const lastSyncedPush = await sql.getOption('last_synced_push');
+        changesToPushCount = await sql.getSingleValue("SELECT COUNT(*) FROM sync WHERE id > ?", [lastSyncedPush]);
+    }
 
     res.send({
-        'changed': rowCount > 0,
+        'changedTree': noteTreeChangesCount > 0,
+        'changedCurrentNote': currentNoteChangesCount > 0,
         'changesToPushCount': changesToPushCount
     });
 });

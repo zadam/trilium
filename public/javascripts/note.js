@@ -113,6 +113,7 @@ function saveNoteToServer(note, callback) {
 }
 
 let globalCurrentNote;
+let globalCurrentNoteLoadTime;
 
 function createNewTopLevelNote() {
     let rootNode = globalTree.fancytree("getRootNode");
@@ -193,6 +194,7 @@ function setNoteBackgroundIfEncrypted(note) {
 function loadNoteToEditor(noteId) {
     $.get(baseApiUrl + 'notes/' + noteId).then(note => {
         globalCurrentNote = note;
+        globalCurrentNoteLoadTime = Math.floor(new Date().getTime() / 1000);
 
         if (newNoteCreated) {
             newNoteCreated = false;

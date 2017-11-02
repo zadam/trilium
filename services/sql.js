@@ -102,17 +102,24 @@ async function remove(tableName, noteId) {
 }
 
 async function addAudit(category, req=null, noteId=null, changeFrom=null, changeTo=null, comment=null) {
-    const now = utils.nowTimestamp();
-
     const browserId = req == null ? null : req.get('x-browser-id');
 
+    await addAuditWithBrowserId(category, browserId, noteId, changeFrom, changeTo, comment);
+}
+
+async function addSyncAudit(category, sourceId, noteId) {
+    await addAuditWithBrowserId(category, sourceId, noteId);
+}
+
+async function addAuditWithBrowserId(category, browserId=null, noteId=null, changeFrom=null, changeTo=null, comment=null) {
+    const now = utils.nowTimestamp();
     log.info("audit: " + category + ", browserId=" + browserId + ", noteId=" + noteId + ", from=" + changeFrom
         + ", to=" + changeTo + ", comment=" + comment);
 
     const id = utils.randomString(14);
 
     await execute("INSERT INTO audit_log (id, date_modified, category, browser_id, note_id, change_from, change_to, comment)"
-           + " VALUES (?, ?, ?, ?, ?, ?, ?, ?)", [id, now, category, browserId, noteId, changeFrom, changeTo, comment]);
+        + " VALUES (?, ?, ?, ?, ?, ?, ?, ?)", [id, now, category, browserId, noteId, changeFrom, changeTo, comment]);
 }
 
 async function deleteRecentAudits(category, req, noteId) {
@@ -191,6 +198,7 @@ module.exports = {
     getOption,
     setOption,
     addAudit,
+    addSyncAudit,
     deleteRecentAudits,
     remove,
     doInTransaction,

@@ -86,16 +86,107 @@ function setExpandedToServer(note_id, is_expanded) {
 let globalEncryptionSalt;
 let globalEncryptionSessionTimeout;
 let globalEncryptedDataKey;
-let globalFullLoadTime;
+let globalTreeLoadTime;
 
-$(() => {
-    $.get(baseApiUrl + 'tree').then(resp => {
+function initFancyTree(notes, startNoteId) {
+    globalTree.fancytree({
+        autoScroll: true,
+        extensions: ["hotkeys", "filter", "dnd"],
+        source: notes,
+        scrollParent: $("#tree"),
+        activate: (event, data) => {
+            const node = data.node.data;
+
+            saveNoteIfChanged(() => loadNoteToEditor(node.note_id));
+        },
+        expand: (event, data) => {
+            setExpandedToServer(data.node.key, true);
+        },
+        collapse: (event, data) => {
+            setExpandedToServer(data.node.key, false);
+        },
+        init: (event, data) => {
+            if (startNoteId) {
+                data.tree.activateKey(startNoteId);
+            }
+
+            $(window).resize();
+        },
+        hotkeys: {
+            keydown: keybindings
+        },
+        filter: {
+            autoApply: true,   // Re-apply last filter if lazy data is loaded
+            autoExpand: true, // Expand all branches that contain matches while filtered
+            counter: false,     // Show a badge with number of matching child nodes near parent icons
+            fuzzy: false,      // Match single characters in order, e.g. 'fb' will match 'FooBar'
+            hideExpandedCounter: true,  // Hide counter badge if parent is expanded
+            hideExpanders: false,       // Hide expanders if all child nodes are hidden by filter
+            highlight: true,   // Highlight matches by wrapping inside <mark> tags
+            leavesOnly: false, // Match end nodes only
+            nodata: true,      // Display a 'no data' status node if result is empty
+            mode: "hide"       // Grayout unmatched nodes (pass "hide" to remove unmatched node instead)
+        },
+        dnd: dragAndDropSetup,
+        keydown: (event, data) => {
+            const node = data.node;
+            // Eat keyboard events, when a menu is open
+            if ($(".contextMenu:visible").length > 0)
+                return false;
+
+            switch (event.which) {
+                // Open context menu on [Space] key (simulate right click)
+                case 32: // [Space]
+                    $(node.span).trigger("mousedown", {
+                        preventDefault: true,
+                        button: 2
+                    })
+                        .trigger("mouseup", {
+                            preventDefault: true,
+                            pageX: node.span.offsetLeft,
+                            pageY: node.span.offsetTop,
+                            button: 2
+                        });
+                    return false;
+
+                // Handle Ctrl-C, -X and -V
+                // case 67:
+                //     if (event.ctrlKey) { // Ctrl-C
+                //         copyPaste("copy", node);
+                //         return false;
+                //     }
+                //     break;
+                case 86:
+                    console.log("CTRL-V");
+
+                    if (event.ctrlKey) { // Ctrl-V
+                        pasteAfter(node);
+                        return false;
+                    }
+                    break;
+                case 88:
+                    console.log("CTRL-X");
+
+                    if (event.ctrlKey) { // Ctrl-X
+                        cut(node);
+                        return false;
+                    }
+                    break;
+            }
+        }
+    });
+
+    globalTree.contextmenu(contextMenuSetup);
+}
+
+function loadTree() {
+    return $.get(baseApiUrl + 'tree').then(resp => {
         const notes = resp.notes;
         let startNoteId = resp.start_note_id;
         globalEncryptionSalt = resp.password_derived_key_salt;
         globalEncryptionSessionTimeout = resp.encryption_session_timeout;
         globalEncryptedDataKey = resp.encrypted_data_key;
-        globalFullLoadTime = resp.full_load_time;
+        globalTreeLoadTime = resp.tree_load_time;
 
         // add browser ID header to all AJAX requests
         $.ajaxSetup({
@@ -108,94 +199,16 @@ $(() => {
 
         prepareNoteTree(notes);
 
-        globalTree.fancytree({
-            autoScroll: true,
-            extensions: ["hotkeys", "filter", "dnd"],
-            source: notes,
-            scrollParent: $("#tree"),
-            activate: (event, data) => {
-                const node = data.node.data;
+        return {
+            notes: notes,
+            startNoteId: startNoteId
+        };
+    });
+}
 
-                saveNoteIfChanged(() => loadNoteToEditor(node.note_id));
-            },
-            expand: (event, data) => {
-                setExpandedToServer(data.node.key, true);
-            },
-            collapse: (event, data) => {
-                setExpandedToServer(data.node.key, false);
-            },
-            init: (event, data) => {
-                if (startNoteId) {
-                    data.tree.activateKey(startNoteId);
-                }
-
-                $(window).resize();
-            },
-            hotkeys: {
-                keydown: keybindings
-            },
-            filter: {
-                autoApply: true,   // Re-apply last filter if lazy data is loaded
-                autoExpand: true, // Expand all branches that contain matches while filtered
-                counter: false,     // Show a badge with number of matching child nodes near parent icons
-                fuzzy: false,      // Match single characters in order, e.g. 'fb' will match 'FooBar'
-                hideExpandedCounter: true,  // Hide counter badge if parent is expanded
-                hideExpanders: false,       // Hide expanders if all child nodes are hidden by filter
-                highlight: true,   // Highlight matches by wrapping inside <mark> tags
-                leavesOnly: false, // Match end nodes only
-                nodata: true,      // Display a 'no data' status node if result is empty
-                mode: "hide"       // Grayout unmatched nodes (pass "hide" to remove unmatched node instead)
-            },
-            dnd: dragAndDropSetup,
-            keydown: (event, data) => {
-                const node = data.node;
-                // Eat keyboard events, when a menu is open
-                if ($(".contextMenu:visible").length > 0)
-                    return false;
-
-                switch (event.which) {
-                    // Open context menu on [Space] key (simulate right click)
-                    case 32: // [Space]
-                        $(node.span).trigger("mousedown", {
-                            preventDefault: true,
-                            button: 2
-                        })
-                            .trigger("mouseup", {
-                                preventDefault: true,
-                                pageX: node.span.offsetLeft,
-                                pageY: node.span.offsetTop,
-                                button: 2
-                            });
-                        return false;
-
-                    // Handle Ctrl-C, -X and -V
-                    // case 67:
-                    //     if (event.ctrlKey) { // Ctrl-C
-                    //         copyPaste("copy", node);
-                    //         return false;
-                    //     }
-                    //     break;
-                    case 86:
-                        console.log("CTRL-V");
-
-                        if (event.ctrlKey) { // Ctrl-V
-                            pasteAfter(node);
-                            return false;
-                        }
-                        break;
-                    case 88:
-                        console.log("CTRL-X");
-
-                        if (event.ctrlKey) { // Ctrl-X
-                            cut(node);
-                            return false;
-                        }
-                        break;
-                }
-            }
-        });
-
-        globalTree.contextmenu(contextMenuSetup);
+$(() => {
+    loadTree().then(resp => {
+       initFancyTree(resp.notes, resp.startNoteId);
     });
 });
 

@@ -1,14 +1,27 @@
 function checkStatus() {
     $.ajax({
-        url: baseApiUrl + 'status/' + globalFullLoadTime,
-        type: 'GET',
+        url: baseApiUrl + 'status',
+        type: 'POST',
+        contentType: "application/json",
+        data: JSON.stringify({
+            treeLoadTime: globalTreeLoadTime,
+            currentNoteId: globalCurrentNote ? globalCurrentNote.detail.note_id : null,
+            currentNoteDateModified: globalCurrentNoteLoadTime
+        }),
         success: resp => {
-            if (resp.changed) {
-                window.location.reload(true);
+            if (resp.changedTree) {
+                loadTree().then(resp => {
+                    console.log("Reloading tree because of background changes");
+
+                    globalTree.fancytree('getTree').reload(resp.notes);
+                });
             }
-            else {
-                $("#changesToPushCount").html(resp.changesToPushCount);
+
+            if (resp.changedCurrentNote) {
+                alert("Current note has been changed in different window / computer. Please reload the application and resolve the conflict manually.");
             }
+
+            $("#changesToPushCount").html(resp.changesToPushCount);
         },
         statusCode: {
             401: () => {
@@ -24,4 +37,4 @@ function checkStatus() {
     });
 }
 
-setInterval(checkStatus, 10 * 1000);
+setInterval(checkStatus, 5 * 1000);

@@ -7,8 +7,10 @@ const migration = require('./migration');
 const utils = require('./utils');
 const config = require('./config');
 const SOURCE_ID = require('./source_id');
+const audit_category = require('./audit_category');
 
 const SYNC_SERVER = config['Sync']['syncServerHost'];
+const isSyncSetup = !!SYNC_SERVER;
 
 
 let syncInProgress = false;
@@ -121,6 +123,8 @@ async function pushSync(cookieJar, syncLog) {
             logSyncError("Unrecognized entity type " + sync.entity_name, null, syncLog);
         }
 
+        logSync("Pushing changes in " + sync.entity_name + " " + sync.entity_id);
+
         await pushEntity(entity, sync.entity_name, cookieJar, syncLog);
 
         lastSyncedPush = sync.id;
@@ -232,6 +236,10 @@ async function updateNote(entity, links, sourceId, syncLog) {
             }
 
             await sql.addNoteSync(entity.note_id, sourceId);
+
+            // we don't distinguish between those for now
+            await sql.addSyncAudit(audit_category.UPDATE_CONTENT, sourceId, entity.note_id);
+            await sql.addSyncAudit(audit_category.UPDATE_TITLE, sourceId, entity.note_id);
         });
 
         logSync("Update/sync note " + entity.note_id, syncLog);
@@ -249,6 +257,8 @@ async function updateNoteTree(entity, sourceId, syncLog) {
             await sql.replace('notes_tree', entity);
 
             await sql.addNoteTreeSync(entity.note_id, sourceId);
+
+            await sql.addSyncAudit(audit_category.UPDATE_TITLE, sourceId, entity.note_id);
         });
 
         logSync("Update/sync note tree " + entity.note_id, syncLog);
@@ -270,7 +280,7 @@ async function updateNoteHistory(entity, sourceId, syncLog) {
             await sql.addNoteHistorySync(entity.note_history_id, sourceId);
         });
 
-        logSync("Update/sync note history " + entity.note_id, syncLog);
+        logSync("Update/sync note history " + entity.note_history_id, syncLog);
     }
     else {
         logSync("Sync conflict in note history for " + entity.note_id + ", from=" + entity.date_modified_from + ", to=" + entity.date_modified_to, syncLog);
@@ -293,5 +303,6 @@ module.exports = {
     sync,
     updateNote,
     updateNoteTree,
-    updateNoteHistory
+    updateNoteHistory,
+    isSyncSetup
 };
