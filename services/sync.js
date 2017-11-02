@@ -285,8 +285,6 @@ async function updateNoteHistory(entity, sourceId, syncLog) {
 
     if (orig === null || orig.date_modified_to < entity.date_modified_to) {
         await sql.doInTransaction(async () => {
-            delete entity['id'];
-
             await sql.replace('notes_history', entity);
 
             await sql.addNoteHistorySync(entity.note_history_id, sourceId);
