@@ -4,7 +4,7 @@ function syncNow() {
         type: 'POST',
         success: result => {
             if (result.success) {
-                checkAudit();
+                checkStatus();
 
                 message("Sync finished successfully");
 

@@ -55,11 +55,11 @@ async function setOption(optName, optValue) {
 }
 
 async function getSingleResult(query, params = []) {
-    return await db.get(query, ...params);
+    return await wrap(async () => db.get(query, ...params));
 }
 
 async function getSingleResultOrNull(query, params = []) {
-    const all = await db.all(query, ...params);
+    const all = await wrap(async () => db.all(query, ...params));
 
     return all.length > 0 ? all[0] : null;
 }
@@ -75,7 +75,7 @@ async function getSingleValue(query, params = []) {
 }
 
 async function getResults(query, params = []) {
-    return await db.all(query, ...params);
+    return await wrap(async () => db.all(query, ...params));
 }
 
 async function getFlattenedResults(key, query, params = []) {
@@ -90,11 +90,11 @@ async function getFlattenedResults(key, query, params = []) {
 }
 
 async function execute(query, params = []) {
-    return await db.run(query, ...params);
+    return await wrap(async () => db.run(query, ...params));
 }
 
 async function executeScript(query) {
-    return await db.exec(query);
+    return await wrap(async () => db.exec(query));
 }
 
 async function remove(tableName, noteId) {
@@ -143,6 +143,19 @@ async function addEntitySync(entityName, entityId, sourceId) {
         sync_date: utils.nowTimestamp(),
         source_id: sourceId || SOURCE_ID
     });
+}
+
+async function wrap(func) {
+    const error = new Error();
+
+    try {
+        return await func();
+    }
+    catch (e) {
+        log.error("Error executing transaction, executing rollback. Inner exception: " + e.stack + error.stack);
+
+        throw e;
+    }
 }
 
 async function doInTransaction(func) {

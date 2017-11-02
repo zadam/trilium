@@ -178,9 +178,9 @@ async function sync() {
 
         const cookieJar = await login(syncLog);
 
-        await pushSync(cookieJar, syncLog);
-
         await pullSync(cookieJar, syncLog);
+
+        await pushSync(cookieJar, syncLog);
     }
     catch (e) {
         logSync("sync failed: " + e.stack, syncLog);

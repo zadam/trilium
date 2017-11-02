@@ -88,31 +88,6 @@ let globalEncryptionSessionTimeout;
 let globalEncryptedDataKey;
 let globalFullLoadTime;
 
-function checkAudit() {
-    $.ajax({
-        url: baseApiUrl + 'audit/' + globalFullLoadTime,
-        type: 'GET',
-        success: resp => {
-            if (resp.changed) {
-                window.location.reload(true);
-            }
-        },
-        statusCode: {
-            401: () => {
-                // if the user got logged out then we should display the page
-                // here we do that by reloading which will force the redirect if the user is really logged out
-                window.location.reload(true);
-            },
-            409: () => {
-                // 409 means we need to migrate database, reload will take care of it
-                window.location.reload(true);
-            }
-        }
-    });
-}
-
-setInterval(checkAudit, 10 * 1000);
-
 $(() => {
     $.get(baseApiUrl + 'tree').then(resp => {
         const notes = resp.notes;
