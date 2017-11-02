@@ -15,7 +15,7 @@ const isSyncSetup = !!SYNC_SERVER;
 
 let syncInProgress = false;
 
-async function pullSync(cookieJar, syncLog) {
+async function pullSync(syncContext, syncLog) {
     const lastSyncedPull = parseInt(await sql.getOption('last_synced_pull'));
 
     let syncRows;
@@ -25,7 +25,7 @@ async function pullSync(cookieJar, syncLog) {
 
         syncRows = await rp({
             uri: SYNC_SERVER + '/api/sync/changed?lastSyncId=' + lastSyncedPull + "&sourceId=" + SOURCE_ID,
-            jar: cookieJar,
+            jar: syncContext.cookieJar,
             json: true,
             timeout: 5 * 1000
         });
@@ -43,7 +43,7 @@ async function pullSync(cookieJar, syncLog) {
             resp = await rp({
                 uri: SYNC_SERVER + "/api/sync/" + sync.entity_name + "/" + sync.entity_id,
                 json: true,
-                jar: cookieJar
+                jar: syncContext.cookieJar
             });
         }
         catch (e) {
@@ -69,7 +69,7 @@ async function pullSync(cookieJar, syncLog) {
     logSync("Finished pull");
 }
 
-async function pushEntity(entity, entityName, cookieJar, syncLog) {
+async function sendEntity(entity, entityName, cookieJar, syncLog) {
     try {
         const payload = {
             sourceId: SOURCE_ID,
@@ -94,7 +94,28 @@ async function pushEntity(entity, entityName, cookieJar, syncLog) {
     }
 }
 
-async function pushSync(cookieJar, syncLog) {
+async function readAndPushEntity(sync, syncLog, syncContext) {
+    let entity;
+
+    if (sync.entity_name === 'notes') {
+        entity = await sql.getSingleResult('SELECT * FROM notes WHERE note_id = ?', [sync.entity_id]);
+    }
+    else if (sync.entity_name === 'notes_tree') {
+        entity = await sql.getSingleResult('SELECT * FROM notes_tree WHERE note_id = ?', [sync.entity_id]);
+    }
+    else if (sync.entity_name === 'notes_history') {
+        entity = await sql.getSingleResult('SELECT * FROM notes_history WHERE note_history_id = ?', [sync.entity_id]);
+    }
+    else {
+        logSyncError("Unrecognized entity type " + sync.entity_name, null, syncLog);
+    }
+
+    logSync("Pushing changes in " + sync.entity_name + " " + sync.entity_id);
+
+    await sendEntity(entity, sync.entity_name, syncContext.cookieJar, syncLog);
+}
+
+async function pushSync(syncContext, syncLog) {
     let lastSyncedPush = parseInt(await sql.getOption('last_synced_push'));
 
     while (true) {
@@ -108,24 +129,14 @@ async function pushSync(cookieJar, syncLog) {
             break;
         }
 
-        let entity;
+        console.log("sync: ", sync);
 
-        if (sync.entity_name === 'notes') {
-            entity = await sql.getSingleResult('SELECT * FROM notes WHERE note_id = ?', [sync.entity_id]);
-        }
-        else if (sync.entity_name === 'notes_tree') {
-            entity = await sql.getSingleResult('SELECT * FROM notes_tree WHERE note_id = ?', [sync.entity_id]);
-        }
-        else if (sync.entity_name === 'notes_history') {
-            entity = await sql.getSingleResult('SELECT * FROM notes_history WHERE note_history_id = ?', [sync.entity_id]);
+        if (sync.sourceId === syncContext.sourceId) {
+            logSync("Skipping sync " + sync.entity_name + " " + sync.entity_id + " because it originates from sync target", syncLog);
         }
         else {
-            logSyncError("Unrecognized entity type " + sync.entity_name, null, syncLog);
+            await readAndPushEntity(sync, syncLog, syncContext);
         }
-
-        logSync("Pushing changes in " + sync.entity_name + " " + sync.entity_id);
-
-        await pushEntity(entity, sync.entity_name, cookieJar, syncLog);
 
         lastSyncedPush = sync.id;
 
@@ -142,7 +153,7 @@ async function login(syncLog) {
     const cookieJar = rp.jar();
 
     try {
-        await rp({
+        const resp = await rp({
             method: 'POST',
             uri: SYNC_SERVER + '/api/login',
             body: {
@@ -155,7 +166,10 @@ async function login(syncLog) {
             jar: cookieJar
         });
 
-        return cookieJar;
+        return {
+            cookieJar: cookieJar,
+            sourceId: resp.sourceId
+        };
     }
     catch (e) {
         logSyncError("Can't login to API for sync, inner exception: ", e, syncLog);
@@ -180,11 +194,13 @@ async function sync() {
             return syncLog;
         }
 
-        const cookieJar = await login(syncLog);
+        const syncContext = await login(syncLog);
 
-        await pullSync(cookieJar, syncLog);
+        console.log("sync context: ", syncContext);
 
-        await pushSync(cookieJar, syncLog);
+        await pullSync(syncContext, syncLog);
+
+        await pushSync(syncContext, syncLog);
     }
     catch (e) {
         logSync("sync failed: " + e.stack, syncLog);

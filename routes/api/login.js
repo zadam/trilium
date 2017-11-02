@@ -5,6 +5,7 @@ const router = express.Router();
 const sql = require('../../services/sql');
 const utils = require('../../services/utils');
 const migration = require('../../services/migration');
+const SOURCE_ID = require('../../services/source_id');
 
 router.post('', async (req, res, next) => {
     const timestamp = req.body.timestamp;
@@ -35,7 +36,9 @@ router.post('', async (req, res, next) => {
 
     req.session.loggedIn = true;
 
-    res.send({});
+    res.send({
+        sourceId: SOURCE_ID
+    });
 });
 
 module.exports = router;
