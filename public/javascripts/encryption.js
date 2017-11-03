@@ -235,7 +235,34 @@ function encryptNoteAndSendToServer() {
 
         saveNoteToServer(note);
 
+        encryptNoteHistory(note.detail.note_id);
+
         setNoteBackgroundIfEncrypted(note);
+    });
+}
+
+function encryptNoteHistory(noteId) {
+    $.ajax({
+        url: baseApiUrl + 'notes-history/' + noteId + "?encryption=0",
+        type: 'GET',
+        success: result => {
+            for (const row of result) {
+                row.note_title = encryptString(row.note_title);
+                row.note_text = encryptString(row.note_text);
+
+                row.encryption = 1;
+
+                $.ajax({
+                    url: baseApiUrl + 'notes-history',
+                    type: 'PUT',
+                    contentType: 'application/json',
+                    data: JSON.stringify(row),
+                    success: result => console.log('Note history ' + row.note_history_id + ' encrypted'),
+                    error: () => alert("Error encrypting note history.")
+                });
+            }
+        },
+        error: () => alert("Error getting note history.")
     });
 }
 

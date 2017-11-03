@@ -24,7 +24,7 @@ function showNoteHistoryDialog(noteId, noteHistoryId) {
                 const dateModified = getDateFromTS(row.date_modified_to);
 
                 $("#note-history-list").append($('<option>', {
-                    value: row.id,
+                    value: row.note_history_id,
                     text: formatDateTime(dateModified)
                 }));
             }
@@ -46,8 +46,16 @@ $(document).bind('keydown', 'alt+h', showCurrentNoteHistory);
 $("#note-history-list").on('change', () => {
     const optVal = $("#note-history-list").find(":selected").val();
 
-    const historyItem = globalHistoryItems.find(r => r.id == optVal); // non-strict comparison is important here!!!
+    const historyItem = globalHistoryItems.find(r => r.note_history_id === optVal);
 
-    $("#note-history-title").html(historyItem.note_title);
-    $("#note-history-content").html(historyItem.note_text);
+    let noteTitle = historyItem.note_title;
+    let noteText = historyItem.note_text;
+
+    if (historyItem.encryption > 0) {
+        noteTitle = decryptString(noteTitle);
+        noteText = decryptString(noteText);
+    }
+
+    $("#note-history-title").html(noteTitle);
+    $("#note-history-content").html(noteText);
 });
