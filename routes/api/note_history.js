@@ -21,7 +21,7 @@ router.get('/:noteId', auth.checkApiAuth, async (req, res, next) => {
     res.send(history);
 });
 
-router.put('/', auth.checkApiAuth, async (req, res, next) => {
+router.put('', auth.checkApiAuth, async (req, res, next) => {
     await sql.doInTransaction(async () => {
         await sql.replace("notes_history", req.body);
 

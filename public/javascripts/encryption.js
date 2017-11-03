@@ -235,31 +235,39 @@ function encryptNoteAndSendToServer() {
 
         saveNoteToServer(note);
 
-        encryptNoteHistory(note.detail.note_id);
+        changeEncryptionOnNoteHistory(note.detail.note_id, true);
 
         setNoteBackgroundIfEncrypted(note);
     });
 }
 
-function encryptNoteHistory(noteId) {
+function changeEncryptionOnNoteHistory(noteId, encrypt) {
     $.ajax({
-        url: baseApiUrl + 'notes-history/' + noteId + "?encryption=0",
+        url: baseApiUrl + 'notes-history/' + noteId + "?encryption=" + (encrypt ? 0 : 1),
         type: 'GET',
         success: result => {
             for (const row of result) {
-                row.note_title = encryptString(row.note_title);
-                row.note_text = encryptString(row.note_text);
+                if (encrypt) {
+                    row.note_title = encryptString(row.note_title);
+                    row.note_text = encryptString(row.note_text);
+                }
+                else {
+                    row.note_title = decryptString(row.note_title);
+                    row.note_text = decryptString(row.note_text);
+                }
 
-                row.encryption = 1;
+                row.encryption = encrypt ? 1 : 0;
 
                 $.ajax({
                     url: baseApiUrl + 'notes-history',
                     type: 'PUT',
                     contentType: 'application/json',
                     data: JSON.stringify(row),
-                    success: result => console.log('Note history ' + row.note_history_id + ' encrypted'),
-                    error: () => alert("Error encrypting note history.")
+                    success: result => console.log('Note history ' + row.note_history_id + ' de/encrypted'),
+                    error: () => alert("Error de/encrypting note history.")
                 });
+
+                break;
             }
         },
         error: () => alert("Error getting note history.")
@@ -275,6 +283,8 @@ function decryptNoteAndSendToServer() {
         note.detail.encryption = 0;
 
         saveNoteToServer(note);
+
+        changeEncryptionOnNoteHistory(note.detail.note_id, false);
 
         setNoteBackgroundIfEncrypted(note);
     });
