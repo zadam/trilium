@@ -2,7 +2,7 @@
 
 const express = require('express');
 const router = express.Router();
-const sql = require('../../services/sql');
+const options = require('../../services/options');
 const utils = require('../../services/utils');
 const migration = require('../../services/migration');
 const SOURCE_ID = require('../../services/source_id');
@@ -24,7 +24,7 @@ router.post('', async (req, res, next) => {
         res.send({ message: 'Non-matching db versions, local is version ' + migration.APP_DB_VERSION });
     }
 
-    const documentSecret = await sql.getOption('document_secret');
+    const documentSecret = await options.getOption('document_secret');
     const expectedHash = utils.hmac(documentSecret, timestamp);
 
     const givenHash = req.body.hash;

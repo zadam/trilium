@@ -3,6 +3,7 @@
 const express = require('express');
 const router = express.Router();
 const sql = require('../../services/sql');
+const options = require('../../services/options');
 const auth = require('../../services/auth');
 const sync = require('../../services/sync');
 const audit_category = require('../../services/audit_category');
@@ -31,7 +32,7 @@ router.post('', auth.checkApiAuth, async (req, res, next) => {
     let changesToPushCount = 0;
 
     if (sync.isSyncSetup) {
-        const lastSyncedPush = await sql.getOption('last_synced_push');
+        const lastSyncedPush = await options.getOption('last_synced_push');
         changesToPushCount = await sql.getSingleValue("SELECT COUNT(*) FROM sync WHERE id > ?", [lastSyncedPush]);
     }
 

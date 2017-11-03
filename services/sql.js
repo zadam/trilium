@@ -38,22 +38,6 @@ async function rollback() {
     return await db.run("ROLLBACK");
 }
 
-async function getOption(optName) {
-    const row = await getSingleResultOrNull("SELECT opt_value FROM options WHERE opt_name = ?", [optName]);
-
-    if (!row) {
-        throw new Error("Option " + optName + " doesn't exist");
-    }
-
-    return row['opt_value'];
-}
-
-async function setOption(optName, optValue) {
-    const now = utils.nowTimestamp();
-
-    await execute("UPDATE options SET opt_value = ?, date_modified = ? WHERE opt_name = ?", [optValue, now, optName]);
-}
-
 async function getSingleResult(query, params = []) {
     return await wrap(async () => db.get(query, ...params));
 }
@@ -143,6 +127,10 @@ async function addNoteHistorySync(noteHistoryId, sourceId) {
     await addEntitySync("notes_history", noteHistoryId, sourceId);
 }
 
+async function addOptionsSync(optName, sourceId) {
+    await addEntitySync("options", optName, sourceId);
+}
+
 async function addEntitySync(entityName, entityId, sourceId) {
     await replace("sync", {
         entity_name: entityName,
@@ -195,8 +183,6 @@ module.exports = {
     getFlattenedResults,
     execute,
     executeScript,
-    getOption,
-    setOption,
     addAudit,
     addSyncAudit,
     deleteRecentAudits,
@@ -204,5 +190,6 @@ module.exports = {
     doInTransaction,
     addNoteSync,
     addNoteTreeSync,
-    addNoteHistorySync
+    addNoteHistorySync,
+    addOptionsSync
 };

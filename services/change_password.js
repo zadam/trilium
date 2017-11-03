@@ -1,6 +1,7 @@
 "use strict";
 
 const sql = require('./sql');
+const options = require('./options');
 const my_scrypt = require('./my_scrypt');
 const utils = require('./utils');
 const audit_category = require('./audit_category');
@@ -10,7 +11,7 @@ const aesjs = require('./aes');
 async function changePassword(currentPassword, newPassword, req = null) {
     const current_password_hash = utils.toBase64(await my_scrypt.getVerificationHash(currentPassword));
 
-    if (current_password_hash !== await sql.getOption('password_verification_hash')) {
+    if (current_password_hash !== await options.getOption('password_verification_hash')) {
         return {
             'success': false,
             'message': "Given current password doesn't match hash"
@@ -49,16 +50,16 @@ async function changePassword(currentPassword, newPassword, req = null) {
         return new aesjs.ModeOfOperation.ctr(key, new aesjs.Counter(5));
     }
 
-    const encryptedDataKey = await sql.getOption('encrypted_data_key');
+    const encryptedDataKey = await options.getOption('encrypted_data_key');
 
     const decryptedDataKey = decrypt(encryptedDataKey);
 
     const newEncryptedDataKey = encrypt(decryptedDataKey);
 
     await sql.doInTransaction(async () => {
-        await sql.setOption('encrypted_data_key', newEncryptedDataKey);
+        await options.setOption('encrypted_data_key', newEncryptedDataKey);
 
-        await sql.setOption('password_verification_hash', newPasswordVerificationKey);
+        await options.setOption('password_verification_hash', newPasswordVerificationKey);
 
         await sql.addAudit(audit_category.CHANGE_PASSWORD, req);
     });

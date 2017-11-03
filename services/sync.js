@@ -3,6 +3,7 @@
 const log = require('./log');
 const rp = require('request-promise');
 const sql = require('./sql');
+const options = require('./options');
 const migration = require('./migration');
 const utils = require('./utils');
 const config = require('./config');
@@ -16,7 +17,7 @@ const isSyncSetup = !!SYNC_SERVER;
 let syncInProgress = false;
 
 async function pullSync(syncContext, syncLog) {
-    const lastSyncedPull = parseInt(await sql.getOption('last_synced_pull'));
+    const lastSyncedPull = parseInt(await options.getOption('last_synced_pull'));
 
     let syncRows;
 
@@ -59,11 +60,14 @@ async function pullSync(syncContext, syncLog) {
         else if (sync.entity_name === 'notes_history') {
             await updateNoteHistory(resp, syncContext.sourceId, syncLog);
         }
+        else if (sync.entity_name === 'options') {
+            await updateOptions(resp, syncContext.sourceId, syncLog);
+        }
         else {
             logSyncError("Unrecognized entity type " + sync.entity_name, e, syncLog);
         }
 
-        await sql.setOption('last_synced_pull', sync.id);
+        await options.setOption('last_synced_pull', sync.id);
     }
 
     logSync("Finished pull");
@@ -106,6 +110,9 @@ async function readAndPushEntity(sync, syncLog, syncContext) {
     else if (sync.entity_name === 'notes_history') {
         entity = await sql.getSingleResult('SELECT * FROM notes_history WHERE note_history_id = ?', [sync.entity_id]);
     }
+    else if (sync.entity_name === 'options') {
+        entity = await sql.getSingleResult('SELECT * FROM options WHERE opt_name = ?', [sync.entity_id]);
+    }
     else {
         logSyncError("Unrecognized entity type " + sync.entity_name, null, syncLog);
     }
@@ -116,7 +123,7 @@ async function readAndPushEntity(sync, syncLog, syncContext) {
 }
 
 async function pushSync(syncContext, syncLog) {
-    let lastSyncedPush = parseInt(await sql.getOption('last_synced_push'));
+    let lastSyncedPush = parseInt(await options.getOption('last_synced_push'));
 
     while (true) {
         const sync = await sql.getSingleResultOrNull('SELECT * FROM sync WHERE id > ? LIMIT 1', [lastSyncedPush]);
@@ -129,7 +136,7 @@ async function pushSync(syncContext, syncLog) {
             break;
         }
 
-        if (sync.sourceId === syncContext.source_id) {
+        if (sync.source_id === syncContext.sourceId) {
             logSync("Skipping sync " + sync.entity_name + " " + sync.entity_id + " because it originates from sync target", syncLog);
         }
         else {
@@ -138,14 +145,14 @@ async function pushSync(syncContext, syncLog) {
 
         lastSyncedPush = sync.id;
 
-        await sql.setOption('last_synced_push', lastSyncedPush);
+        await options.setOption('last_synced_push', lastSyncedPush);
     }
 }
 
 async function login(syncLog) {
     const timestamp = utils.nowTimestamp();
 
-    const documentSecret = await sql.getOption('document_secret');
+    const documentSecret = await options.getOption('document_secret');
     const hash = utils.hmac(documentSecret, timestamp);
 
     const cookieJar = rp.jar();
@@ -193,6 +200,8 @@ async function sync() {
         }
 
         const syncContext = await login(syncLog);
+
+        await pushSync(syncContext, syncLog);
 
         await pullSync(syncContext, syncLog);
 
@@ -297,6 +306,27 @@ async function updateNoteHistory(entity, sourceId, syncLog) {
     }
 }
 
+async function updateOptions(entity, sourceId, syncLog) {
+    if (!options.SYNCED_OPTIONS.includes(entity.opt_name)) {
+        return;
+    }
+
+    const orig = await sql.getSingleResultOrNull("select * from options where opt_name = ?", [entity.opt_name]);
+
+    if (orig === null || orig.date_modified < entity.date_modified) {
+        await sql.doInTransaction(async () => {
+            await sql.replace('options', entity);
+
+            await sql.addOptionsSync(entity.opt_name, sourceId);
+        });
+
+        logSync("Update/sync options " + entity.opt_name, syncLog);
+    }
+    else {
+        logSync("Sync conflict in options for " + entity.opt_name + ", date_modified=" + entity.date_modified, syncLog);
+    }
+}
+
 if (SYNC_SERVER) {
     log.info("Setting up sync");
 
@@ -314,5 +344,6 @@ module.exports = {
     updateNote,
     updateNoteTree,
     updateNoteHistory,
+    updateOptions,
     isSyncSetup
 };

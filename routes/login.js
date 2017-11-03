@@ -3,7 +3,7 @@
 const express = require('express');
 const router = express.Router();
 const utils = require('../services/utils');
-const sql = require('../services/sql');
+const options = require('../services/options');
 const my_scrypt = require('../services/my_scrypt');
 
 router.get('', (req, res, next) => {
@@ -11,7 +11,7 @@ router.get('', (req, res, next) => {
 });
 
 router.post('', async (req, res, next) => {
-    const userName = await sql.getOption('username');
+    const userName = await options.getOption('username');
 
     const guessedPassword = req.body.password;
 
@@ -36,7 +36,7 @@ router.post('', async (req, res, next) => {
 
 
 async function verifyPassword(guessed_password) {
-    const hashed_password = utils.fromBase64(await sql.getOption('password_verification_hash'));
+    const hashed_password = utils.fromBase64(await options.getOption('password_verification_hash'));
 
     const guess_hashed = await my_scrypt.getVerificationHash(guessed_password);
 

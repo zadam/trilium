@@ -3,6 +3,7 @@
 const express = require('express');
 const router = express.Router();
 const sql = require('../../services/sql');
+const options = require('../../services/options');
 const utils = require('../../services/utils');
 const auth = require('../../services/auth');
 
@@ -43,11 +44,11 @@ router.get('/', auth.checkApiAuth, async (req, res, next) => {
 
     res.send({
         'notes': root_notes,
-        'start_note_id': await sql.getOption('start_node'),
-        'password_verification_salt': await sql.getOption('password_verification_salt'),
-        'password_derived_key_salt': await sql.getOption('password_derived_key_salt'),
-        'encrypted_data_key': await sql.getOption('encrypted_data_key'),
-        'encryption_session_timeout': await sql.getOption('encryption_session_timeout'),
+        'start_note_id': await options.getOption('start_node'),
+        'password_verification_salt': await options.getOption('password_verification_salt'),
+        'password_derived_key_salt': await options.getOption('password_derived_key_salt'),
+        'encrypted_data_key': await options.getOption('encrypted_data_key'),
+        'encryption_session_timeout': await options.getOption('encryption_session_timeout'),
         'browser_id': utils.randomString(12),
         'tree_load_time': utils.nowTimestamp()
     });

@@ -3,6 +3,7 @@
 const express = require('express');
 const router = express.Router();
 const sql = require('../../services/sql');
+const options = require('../../services/options');
 const audit_category = require('../../services/audit_category');
 const auth = require('../../services/auth');
 
@@ -25,12 +26,12 @@ router.post('/', async (req, res, next) => {
     const body = req.body;
 
     if (ALLOWED_OPTIONS.includes(body['name'])) {
-        const optionName = await sql.getOption(body['name']);
+        const optionName = await options.getOption(body['name']);
 
         await sql.doInTransaction(async () => {
             await sql.addAudit(audit_category.SETTINGS, req, null, optionName, body['value'], body['name']);
 
-            await sql.setOption(body['name'], body['value']);
+            await options.setOption(body['name'], body['value']);
         });
 
         res.send({});

@@ -5,6 +5,7 @@ const router = express.Router();
 const auth = require('../../services/auth');
 const sync = require('../../services/sync');
 const sql = require('../../services/sql');
+const options = require('../../services/options');
 
 router.post('/now', auth.checkApiAuth, async (req, res, next) => {
     const log = await sync.sync();
@@ -43,6 +44,17 @@ router.get('/notes_history/:noteHistoryId', auth.checkApiAuth, async (req, res, 
     res.send(await sql.getSingleResult("SELECT * FROM notes_history WHERE note_history_id = ?", [noteHistoryId]));
 });
 
+router.get('/options/:optName', auth.checkApiAuth, async (req, res, next) => {
+    const optName = req.params.optName;
+
+    if (!options.SYNCED_OPTIONS.includes(optName)) {
+        res.send("This option can't be synced.");
+    }
+    else {
+        res.send(await sql.getSingleResult("SELECT * FROM options WHERE opt_name = ?", [optName]));
+    }
+});
+
 router.put('/notes', auth.checkApiAuth, async (req, res, next) => {
     await sync.updateNote(req.body.entity, req.body.links, req.body.sourceId);
 
@@ -57,6 +69,12 @@ router.put('/notes_tree', auth.checkApiAuth, async (req, res, next) => {
 
 router.put('/notes_history', auth.checkApiAuth, async (req, res, next) => {
     await sync.updateNoteHistory(req.body.entity, req.body.sourceId);
+
+    res.send({});
+});
+
+router.put('/options', auth.checkApiAuth, async (req, res, next) => {
+    await sync.updateOptions(req.body.entity, req.body.sourceId);
 
     res.send({});
 });

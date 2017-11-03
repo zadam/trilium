@@ -3,6 +3,7 @@
 const express = require('express');
 const router = express.Router();
 const sql = require('../../services/sql');
+const options = require('../../services/options');
 const utils = require('../../services/utils');
 const audit_category = require('../../services/audit_category');
 const auth = require('../../services/auth');
@@ -38,7 +39,7 @@ router.put('/:noteId', async (req, res, next) => {
 
     const now = utils.nowTimestamp();
 
-    const historySnapshotTimeInterval = parseInt(await sql.getOption('history_snapshot_time_interval'));
+    const historySnapshotTimeInterval = parseInt(await options.getOption('history_snapshot_time_interval'));
 
     const historyCutoff = now - historySnapshotTimeInterval;
 

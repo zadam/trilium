@@ -3,12 +3,12 @@
 const express = require('express');
 const router = express.Router();
 const auth = require('../../services/auth');
-const sql = require('../../services/sql');
+const options = require('../../services/options');
 const migration = require('../../services/migration');
 
 router.get('', auth.checkApiAuthWithoutMigration, async (req, res, next) => {
     res.send({
-        'db_version': parseInt(await sql.getOption('db_version')),
+        'db_version': parseInt(await options.getOption('db_version')),
         'app_db_version': migration.APP_DB_VERSION
     });
 });

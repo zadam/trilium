@@ -1,5 +1,6 @@
 const backup = require('./backup');
 const sql = require('./sql');
+const options = require('./options');
 const fs = require('fs-extra');
 const log = require('./log');
 
@@ -12,7 +13,7 @@ async function migrate() {
     // backup before attempting migration
     await backup.backupNow();
 
-    const currentDbVersion = parseInt(await sql.getOption('db_version'));
+    const currentDbVersion = parseInt(await options.getOption('db_version'));
 
     fs.readdirSync(MIGRATIONS_DIR).forEach(file => {
         const match = file.match(/([0-9]{4})__([a-zA-Z0-9_ ]+)\.sql/);
@@ -45,7 +46,7 @@ async function migrate() {
             await sql.doInTransaction(async () => {
                 await sql.executeScript(migrationSql);
 
-                await sql.setOption("db_version", mig.dbVersion);
+                await options.setOption("db_version", mig.dbVersion);
             });
 
             log.info("Migration to version " + mig.dbVersion + " has been successful.");
@@ -66,7 +67,7 @@ async function migrate() {
 }
 
 async function isDbUpToDate() {
-    const dbVersion = parseInt(await sql.getOption('db_version'));
+    const dbVersion = parseInt(await options.getOption('db_version'));
 
     return dbVersion >= APP_DB_VERSION;
 }

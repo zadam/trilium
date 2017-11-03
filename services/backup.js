@@ -1,14 +1,14 @@
 "use strict";
 
 const utils = require('./utils');
-const sql = require('./sql');
+const options = require('./options');
 const fs = require('fs-extra');
 const dataDir = require('./data_dir');
 const log = require('./log');
 
 async function regularBackup() {
     const now = utils.nowTimestamp();
-    const last_backup_date = parseInt(await sql.getOption('last_backup_date'));
+    const last_backup_date = parseInt(await options.getOption('last_backup_date'));
 
     if (now - last_backup_date > 43200) {
         await backupNow();
@@ -28,7 +28,7 @@ async function backupNow() {
 
     log.info("Created backup at " + backupFile);
 
-    await sql.setOption('last_backup_date', now);
+    await options.setOption('last_backup_date', now);
 }
 
 async function cleanupOldBackups() {
