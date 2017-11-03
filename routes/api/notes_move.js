@@ -40,16 +40,17 @@ router.put('/:noteId/moveBefore/:beforeNoteId', async (req, res, next) => {
     const beforeNote = await sql.getSingleResult("select * from notes_tree where note_id = ?", [beforeNoteId]);
 
     if (beforeNote) {
-        const now = utils.nowTimestamp();
-
         await sql.doInTransaction(async () => {
-            await sql.execute("update notes_tree set note_pos = note_pos + 1, date_modified = ? where note_id = ?", [now, beforeNoteId]);
+            // we don't change date_modified so other changes are prioritized in case of conflict
+            await sql.execute("update notes_tree set note_pos = note_pos + 1 where note_pid = ? and note_pos >= ? and is_deleted = 0",
+                [beforeNote['note_pid'], beforeNote['note_pos']]);
 
-            await sql.execute("update notes_tree set note_pid = ?, note_pos = ?, date_modified = ? where note_id = ?",
-                [beforeNote['note_pid'], beforeNote['note_pos'], now, noteId]);
+            await sql.execute("update notes_tree set note_pid = ?, note_pos = ? where note_id = ?",
+                [beforeNote['note_pid'], beforeNote['note_pos'], noteId]);
 
             await sql.addNoteTreeSync(noteId);
-            await sql.addAudit(audit_category.CHANGE_POSITION, req, noteId);
+            await sql.addNoteReorderingSync(beforeNote['note_pid']);
+            await sql.addAudit(audit_category.CHANGE_POSITION, req, beforeNote['note_pid']);
         });
     }
 
@@ -63,17 +64,17 @@ router.put('/:noteId/moveAfter/:afterNoteId', async (req, res, next) => {
     const afterNote = await sql.getSingleResult("select * from notes_tree where note_id = ?", [afterNoteId]);
 
     if (afterNote) {
-        const now = utils.nowTimestamp();
-
         await sql.doInTransaction(async () => {
-            await sql.execute("update notes_tree set note_pos = note_pos + 1, date_modified = ? where note_pid = ? and note_pos > ? and is_deleted = 0",
-                [now, afterNote['note_pid'], afterNote['note_pos']]);
+            // we don't change date_modified so other changes are prioritized in case of conflict
+            await sql.execute("update notes_tree set note_pos = note_pos + 1 where note_pid = ? and note_pos > ? and is_deleted = 0",
+                [afterNote['note_pid'], afterNote['note_pos']]);
 
-            await sql.execute("update notes_tree set note_pid = ?, note_pos = ?, date_modified = ? where note_id = ?",
-                [afterNote['note_pid'], afterNote['note_pos'] + 1, now, noteId]);
+            await sql.execute("update notes_tree set note_pid = ?, note_pos = ? where note_id = ?",
+                [afterNote['note_pid'], afterNote['note_pos'] + 1, noteId]);
 
             await sql.addNoteTreeSync(noteId);
-            await sql.addAudit(audit_category.CHANGE_POSITION, req, noteId);
+            await sql.addNoteReorderingSync(afterNote['note_pid']);
+            await sql.addAudit(audit_category.CHANGE_POSITION, req, afterNote['note_pid']);
         });
     }
 
@@ -86,7 +87,8 @@ router.put('/:noteId/expanded/:expanded', async (req, res, next) => {
     const now = utils.nowTimestamp();
 
     await sql.doInTransaction(async () => {
-        await sql.execute("update notes_tree set is_expanded = ?, date_modified = ? where note_id = ?", [expanded, now, noteId]);
+        // we don't change date_modified so other changes are prioritized in case of conflict
+        await sql.execute("update notes_tree set is_expanded = ? where note_id = ?", [expanded, noteId]);
 
         await sql.addNoteTreeSync(noteId);
         await sql.addAudit(audit_category.CHANGE_EXPANDED, req, noteId, null, expanded);

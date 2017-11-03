@@ -60,6 +60,9 @@ async function pullSync(syncContext, syncLog) {
         else if (sync.entity_name === 'notes_history') {
             await updateNoteHistory(resp, syncContext.sourceId, syncLog);
         }
+        else if (sync.entity_name === 'notes_reordering') {
+            await updateNoteReordering(resp, syncContext.sourceId, syncLog);
+        }
         else if (sync.entity_name === 'options') {
             await updateOptions(resp, syncContext.sourceId, syncLog);
         }
@@ -109,6 +112,12 @@ async function readAndPushEntity(sync, syncLog, syncContext) {
     }
     else if (sync.entity_name === 'notes_history') {
         entity = await sql.getSingleResult('SELECT * FROM notes_history WHERE note_history_id = ?', [sync.entity_id]);
+    }
+    else if (sync.entity_name === 'notes_reordering') {
+        entity = {
+            note_pid: sync.entity_id,
+            ordering: await sql.getMap('SELECT note_id, note_pos FROM notes_tree WHERE note_pid = ?', [sync.entity_id])
+        };
     }
     else if (sync.entity_name === 'options') {
         entity = await sql.getSingleResult('SELECT * FROM options WHERE opt_name = ?', [sync.entity_id]);
@@ -306,6 +315,17 @@ async function updateNoteHistory(entity, sourceId, syncLog) {
     }
 }
 
+async function updateNoteReordering(entity, sourceId, syncLog) {
+    await sql.doInTransaction(async () => {
+        Object.keys(entity.ordering).forEach(async key => {
+            await sql.execute("UPDATE notes_tree SET note_pos = ? WHERE note_id = ?", [entity.ordering[key], key]);
+        });
+
+        await sql.addNoteReorderingSync(entity.note_pid, sourceId);
+        await sql.addSyncAudit(audit_category.CHANGE_POSITION, sourceId, entity.note_pid);
+    });
+}
+
 async function updateOptions(entity, sourceId, syncLog) {
     if (!options.SYNCED_OPTIONS.includes(entity.opt_name)) {
         return;
@@ -344,6 +364,7 @@ module.exports = {
     updateNote,
     updateNoteTree,
     updateNoteHistory,
+    updateNoteReordering,
     updateOptions,
     isSyncSetup
 };

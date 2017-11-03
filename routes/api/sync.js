@@ -55,6 +55,15 @@ router.get('/options/:optName', auth.checkApiAuth, async (req, res, next) => {
     }
 });
 
+router.get('/notes_reordering/:noteParentId', auth.checkApiAuth, async (req, res, next) => {
+    const noteParentId = req.params.noteParentId;
+
+    res.send({
+        note_pid: noteParentId,
+        ordering: await sql.getMap("SELECT note_id, note_pos FROM notes_tree WHERE note_pid = ?", [noteParentId])
+    });
+});
+
 router.put('/notes', auth.checkApiAuth, async (req, res, next) => {
     await sync.updateNote(req.body.entity, req.body.links, req.body.sourceId);
 
@@ -69,6 +78,12 @@ router.put('/notes_tree', auth.checkApiAuth, async (req, res, next) => {
 
 router.put('/notes_history', auth.checkApiAuth, async (req, res, next) => {
     await sync.updateNoteHistory(req.body.entity, req.body.sourceId);
+
+    res.send({});
+});
+
+router.put('/notes_reordering', auth.checkApiAuth, async (req, res, next) => {
+    await sync.updateNoteReordering(req.body.entity, req.body.sourceId);
 
     res.send({});
 });

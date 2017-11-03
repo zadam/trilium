@@ -62,6 +62,19 @@ async function getResults(query, params = []) {
     return await wrap(async () => db.all(query, ...params));
 }
 
+async function getMap(query, params = []) {
+    const map = {};
+    const results = await getResults(query, params);
+
+    for (const row of results) {
+        const keys = Object.keys(row);
+
+        map[row[keys[0]]] = row[keys[1]];
+    }
+
+    return map;
+}
+
 async function getFlattenedResults(key, query, params = []) {
     const list = [];
     const result = await getResults(query, params);
@@ -123,6 +136,10 @@ async function addNoteTreeSync(noteId, sourceId) {
     await addEntitySync("notes_tree", noteId, sourceId)
 }
 
+async function addNoteReorderingSync(noteId, sourceId) {
+    await addEntitySync("notes_reordering", noteId, sourceId)
+}
+
 async function addNoteHistorySync(noteHistoryId, sourceId) {
     await addEntitySync("notes_history", noteHistoryId, sourceId);
 }
@@ -180,6 +197,7 @@ module.exports = {
     getSingleResult,
     getSingleResultOrNull,
     getResults,
+    getMap,
     getFlattenedResults,
     execute,
     executeScript,
@@ -190,6 +208,7 @@ module.exports = {
     doInTransaction,
     addNoteSync,
     addNoteTreeSync,
+    addNoteReorderingSync,
     addNoteHistorySync,
     addOptionsSync
 };
