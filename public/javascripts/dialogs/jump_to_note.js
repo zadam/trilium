@@ -4,6 +4,8 @@ const jumpToNote = (function() {
     const formEl = $("#jump-to-note-form");
 
     function showDialog() {
+        glob.activeDialog = dialogEl;
+
         autoCompleteEl.val('');
 
         dialogEl.dialog({

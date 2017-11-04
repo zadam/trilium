@@ -9,6 +9,8 @@ const settings = (function() {
     }
 
     async function showDialog() {
+        glob.activeDialog = dialogEl;
+
         const settings = await $.ajax({
             url: baseApiUrl + 'settings',
             type: 'GET',

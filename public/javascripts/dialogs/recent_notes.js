@@ -1,9 +1,9 @@
 const recentNotes = (function() {
-    const dialog = $("#recent-notes-dialog");
-    const selectBox = $('#recent-notes-select-box');
-    const jumpToButton = $('#recentNotesJumpTo');
-    const addLinkButton = $('#recentNotesAddLink');
-    const noteDetail = $('#note-detail');
+    const dialogEl = $("#recent-notes-dialog");
+    const selectBoxEl = $('#recent-notes-select-box');
+    const jumpToButtonEl = $('#recentNotesJumpTo');
+    const addLinkButtonEl = $('#recentNotesAddLink');
+    const noteDetailEl = $('#note-detail');
     let list = [];
 
     function addRecentNote(noteTreeId, noteContentId) {
@@ -23,14 +23,16 @@ const recentNotes = (function() {
     }
 
     function showDialog() {
-        noteDetail.summernote('editor.saveRange');
+        glob.activeDialog = dialogEl;
 
-        dialog.dialog({
+        noteDetailEl.summernote('editor.saveRange');
+
+        dialogEl.dialog({
             modal: true,
             width: 800
         });
 
-        selectBox.find('option').remove();
+        selectBoxEl.find('option').remove();
 
         // remove the current note
         const recNotes = list.filter(note => note !== glob.currentNote.detail.note_id);
@@ -51,12 +53,12 @@ const recentNotes = (function() {
                 option.attr("selected", "selected");
             }
 
-            selectBox.append(option);
+            selectBoxEl.append(option);
         });
     }
 
     function getSelectedNoteIdFromRecentNotes() {
-        return selectBox.find("option:selected").val();
+        return selectBoxEl.find("option:selected").val();
     }
 
     function setActiveNoteBasedOnRecentNotes() {
@@ -64,7 +66,7 @@ const recentNotes = (function() {
 
         getNodeByKey(noteId).setActive();
 
-        dialog.dialog('close');
+        dialogEl.dialog('close');
     }
 
     function addLinkBasedOnRecentNotes() {
@@ -72,18 +74,18 @@ const recentNotes = (function() {
 
         const linkTitle = getNoteTitle(noteId);
 
-        dialog.dialog("close");
+        dialogEl.dialog("close");
 
-        noteDetail.summernote('editor.restoreRange');
+        noteDetailEl.summernote('editor.restoreRange');
 
-        noteDetail.summernote('createLink', {
+        noteDetailEl.summernote('createLink', {
             text: linkTitle,
             url: 'app#' + noteId,
             isNewWindow: true
         });
     }
 
-    selectBox.keydown(e => {
+    selectBoxEl.keydown(e => {
         const key = e.which;
 
         if (key === 13)// the enter key code
@@ -102,12 +104,12 @@ const recentNotes = (function() {
 
     $(document).bind('keydown', 'alt+q', showDialog);
 
-    selectBox.dblclick(e => {
+    selectBoxEl.dblclick(e => {
         setActiveNoteBasedOnRecentNotes();
     });
 
-    jumpToButton.click(setActiveNoteBasedOnRecentNotes);
-    addLinkButton.click(addLinkBasedOnRecentNotes);
+    jumpToButtonEl.click(setActiveNoteBasedOnRecentNotes);
+    addLinkButtonEl.click(addLinkBasedOnRecentNotes);
 
     return {
         showDialog,

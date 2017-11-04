@@ -1,8 +1,10 @@
 const recentChanges = (function() {
-    const dialog = $("#recent-changes-dialog");
+    const dialogEl = $("#recent-changes-dialog");
 
     async function showDialog() {
-        dialog.dialog({
+        glob.activeDialog = dialogEl;
+
+        dialogEl.dialog({
             modal: true,
             width: 800,
             height: 700
@@ -14,7 +16,7 @@ const recentChanges = (function() {
             error: () => error("Error getting recent changes.")
         });
 
-        dialog.html('');
+        dialogEl.html('');
 
         const groupedByDate = groupByDate(result);
 
@@ -26,23 +28,20 @@ const recentChanges = (function() {
             for (const change of dayChanges) {
                 const formattedTime = formatTime(getDateFromTS(change.date_modified_to));
 
-                const noteLink = $("<a>", {
-                    href: 'app#' + change.note_id,
-                    text: change.note_title
-                });
-
                 const revLink = $("<a>", {
-                    href: "javascript: noteHistory.showNoteHistoryDialogNotAsync('" + change.note_id + "', '" + change.note_history_id + "');",
+                    href: 'javascript:',
                     text: 'rev'
-                });
+                }).attr('action', 'note-history')
+                    .attr('note-id', change.note_id)
+                    .attr('note-history-id', change.note_history_id);
 
                 changesListEl.append($('<li>')
                     .append(formattedTime + ' - ')
-                    .append(noteLink)
+                    .append(createNoteLink(change.note_id))
                     .append(' (').append(revLink).append(')'));
             }
 
-            dialog.append(dayEl);
+            dialogEl.append(dayEl);
         }
     }
 
@@ -51,8 +50,6 @@ const recentChanges = (function() {
         const dayCache = {};
 
         for (const row of result) {
-            row.note_title = getFullName(row.note_id);
-
             let dateDay = getDateFromTS(row.date_modified_to);
             dateDay.setHours(0);
             dateDay.setMinutes(0);
@@ -77,14 +74,7 @@ const recentChanges = (function() {
         return groupedByDate;
     }
 
-
     $(document).bind('keydown', 'alt+r', showDialog);
-
-    $(document).on('click', '#recent-changes-dialog a', e => {
-        goToInternalNote(e, () => {
-            dialog.dialog('close');
-        });
-    });
 
     return {
         showDialog

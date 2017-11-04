@@ -10,12 +10,9 @@ const noteHistory = (function() {
         await showNoteHistoryDialog(glob.currentNote.detail.note_id);
     }
 
-    // weird hack because browser doesn't like we're returning promise and displays promise page
-    function showNoteHistoryDialogNotAsync(noteId, noteHistoryId) {
-        showNoteHistoryDialog(noteId, noteHistoryId);
-    }
-
     async function showNoteHistoryDialog(noteId, noteHistoryId) {
+        glob.activeDialog = dialogEl;
+
         dialogEl.dialog({
             modal: true,
             width: 800,
@@ -68,9 +65,17 @@ const noteHistory = (function() {
         contentEl.html(noteText);
     });
 
+    $(document).on('click', "a[action='note-history']", event => {
+        const linkEl = $(event.target);
+        const noteId = linkEl.attr('note-id');
+        const noteHistoryId = linkEl.attr('note-history-id');
+
+        showNoteHistoryDialog(noteId, noteHistoryId);
+
+        return false;
+    });
+
     return {
-        showCurrentNoteHistory,
-        showNoteHistoryDialog,
-        showNoteHistoryDialogNotAsync
+        showCurrentNoteHistory
     };
 })();

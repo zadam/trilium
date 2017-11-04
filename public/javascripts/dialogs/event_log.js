@@ -3,6 +3,8 @@ const eventLog = (function() {
     const listEl = $("#event-log-list");
 
     async function showDialog() {
+        glob.activeDialog = dialogEl;
+
         dialogEl.dialog({
             modal: true,
             width: 800,
@@ -21,10 +23,7 @@ const eventLog = (function() {
             const dateTime = formatDateTime(getDateFromTS(event.date_added));
 
             if (event.note_id) {
-                const noteLink = $("<a>", {
-                    href: 'app#' + event.note_id,
-                    text: getFullName(event.note_id)
-                }).prop('outerHTML');
+                const noteLink = createNoteLink(event.note_id).prop('outerHTML');
 
                 event.comment = event.comment.replace('<note>', noteLink);
             }
@@ -34,12 +33,6 @@ const eventLog = (function() {
             listEl.append(eventEl);
         }
     }
-
-    $(document).on('click', '#event-log-dialog a', e => {
-        goToInternalNote(e, () => {
-            dialogEl.dialog('close');
-        });
-    });
 
     return {
         showDialog
