@@ -32,7 +32,7 @@ const recentChanges = (function() {
                 });
 
                 const revLink = $("<a>", {
-                    href: "javascript: showNoteHistoryDialog('" + change.note_id + "', '" + change.note_history_id + "');",
+                    href: "javascript: noteHistory.showNoteHistoryDialogNotAsync('" + change.note_id + "', '" + change.note_history_id + "');",
                     text: 'rev'
                 });
 

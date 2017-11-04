@@ -1,61 +1,76 @@
-glob.historyItems = null;
+const noteHistory = (function() {
+    const dialogEl = $("#note-history-dialog");
+    const listEl = $("#note-history-list");
+    const contentEl = $("#note-history-content");
+    const titleEl = $("#note-history-title");
 
-function showCurrentNoteHistory() {
-    showNoteHistoryDialog(glob.currentNote.detail.note_id);
-}
+    let historyItems = [];
 
-function showNoteHistoryDialog(noteId, noteHistoryId) {
-    $("#note-history-dialog").dialog({
-        modal: true,
-        width: 800,
-        height: 700
-    });
-
-    $("#note-history-list").empty();
-    $("#note-history-content").empty();
-
-    $.ajax({
-        url: baseApiUrl + 'notes-history/' + noteId,
-        type: 'GET',
-        success: result => {
-            glob.historyItems = result;
-
-            for (const row of result) {
-                const dateModified = getDateFromTS(row.date_modified_to);
-
-                $("#note-history-list").append($('<option>', {
-                    value: row.note_history_id,
-                    text: formatDateTime(dateModified)
-                }));
-            }
-
-            if (result.length > 0) {
-                if (!noteHistoryId) {
-                    noteHistoryId = $("#note-history-list option:first").val();
-                }
-
-                $("#note-history-list").val(noteHistoryId).trigger('change');
-            }
-        },
-        error: () => error("Error getting note history.")
-    });
-}
-
-$(document).bind('keydown', 'alt+h', showCurrentNoteHistory);
-
-$("#note-history-list").on('change', () => {
-    const optVal = $("#note-history-list").find(":selected").val();
-
-    const historyItem = glob.historyItems.find(r => r.note_history_id === optVal);
-
-    let noteTitle = historyItem.note_title;
-    let noteText = historyItem.note_text;
-
-    if (historyItem.encryption > 0) {
-        noteTitle = decryptString(noteTitle);
-        noteText = decryptString(noteText);
+    async function showCurrentNoteHistory() {
+        await showNoteHistoryDialog(glob.currentNote.detail.note_id);
     }
 
-    $("#note-history-title").html(noteTitle);
-    $("#note-history-content").html(noteText);
-});
+    // weird hack because browser doesn't like we're returning promise and displays promise page
+    function showNoteHistoryDialogNotAsync(noteId, noteHistoryId) {
+        showNoteHistoryDialog(noteId, noteHistoryId);
+    }
+
+    async function showNoteHistoryDialog(noteId, noteHistoryId) {
+        dialogEl.dialog({
+            modal: true,
+            width: 800,
+            height: 700
+        });
+
+        listEl.empty();
+        contentEl.empty();
+
+        historyItems = await $.ajax({
+            url: baseApiUrl + 'notes-history/' + noteId,
+            type: 'GET',
+            error: () => error("Error getting note history.")
+        });
+
+        for (const item of historyItems) {
+            const dateModified = getDateFromTS(item.date_modified_to);
+
+            $("#note-history-list").append($('<option>', {
+                value: item.note_history_id,
+                text: formatDateTime(dateModified)
+            }));
+        }
+
+        if (historyItems.length > 0) {
+            if (!noteHistoryId) {
+                noteHistoryId = listEl.find("option:first").val();
+            }
+
+            listEl.val(noteHistoryId).trigger('change');
+        }
+    }
+
+    $(document).bind('keydown', 'alt+h', showCurrentNoteHistory);
+
+    listEl.on('change', () => {
+        const optVal = listEl.find(":selected").val();
+
+        const historyItem = historyItems.find(r => r.note_history_id === optVal);
+
+        let noteTitle = historyItem.note_title;
+        let noteText = historyItem.note_text;
+
+        if (historyItem.encryption > 0) {
+            noteTitle = decryptString(noteTitle);
+            noteText = decryptString(noteText);
+        }
+
+        titleEl.html(noteTitle);
+        contentEl.html(noteText);
+    });
+
+    return {
+        showCurrentNoteHistory,
+        showNoteHistoryDialog,
+        showNoteHistoryDialogNotAsync
+    };
+})();
