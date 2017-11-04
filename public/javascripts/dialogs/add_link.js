@@ -29,7 +29,7 @@ const addLink = (function() {
             minLength: 0,
             change: () => {
                 const val = autoCompleteEl.val();
-                const noteId = getNodeIdFromLabel(val);
+                const noteId = link.getNodeIdFromLabel(val);
 
                 if (noteId) {
                     setDefaultLinkTitle(noteId);
@@ -38,7 +38,7 @@ const addLink = (function() {
             // this is called when user goes through autocomplete list with keyboard
             // at this point the item isn't selected yet so we use supplied ui.item to see where the cursor is
             focus: (event, ui) => {
-                const noteId = getNodeIdFromLabel(ui.item.value);
+                const noteId = link.getNodeIdFromLabel(ui.item.value);
 
                 setDefaultLinkTitle(noteId);
             }
@@ -48,7 +48,7 @@ const addLink = (function() {
     formEl.submit(() => {
         let val = autoCompleteEl.val();
 
-        const noteId = getNodeIdFromLabel(val);
+        const noteId = link.getNodeIdFromLabel(val);
 
         if (noteId) {
             const linkTitle = linkTitleEl.val();

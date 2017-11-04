@@ -23,7 +23,7 @@ const jumpToNote = (function() {
 
     formEl.submit(() => {
         const val = autoCompleteEl.val();
-        const noteId = getNodeIdFromLabel(val);
+        const noteId = link.getNodeIdFromLabel(val);
 
         if (noteId) {
             getNodeByKey(noteId).setActive();

@@ -23,7 +23,7 @@ const eventLog = (function() {
             const dateTime = formatDateTime(getDateFromTS(event.date_added));
 
             if (event.note_id) {
-                const noteLink = createNoteLink(event.note_id).prop('outerHTML');
+                const noteLink = link.createNoteLink(event.note_id).prop('outerHTML');
 
                 event.comment = event.comment.replace('<note>', noteLink);
             }

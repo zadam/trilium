@@ -37,7 +37,7 @@ const recentChanges = (function() {
 
                 changesListEl.append($('<li>')
                     .append(formattedTime + ' - ')
-                    .append(createNoteLink(change.note_id))
+                    .append(link.createNoteLink(change.note_id))
                     .append(' (').append(revLink).append(')'));
             }
 
