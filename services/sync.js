@@ -253,7 +253,7 @@ function logSyncError(message, e, syncLog) {
 async function updateNote(entity, links, sourceId, syncLog) {
     const origNote = await sql.getSingleResult("select * from notes where note_id = ?", [entity.note_id]);
 
-    if (origNote === null || origNote.date_modified <= entity.date_modified) {
+    if (!origNote || origNote.date_modified <= entity.date_modified) {
         await sql.doInTransaction(async () => {
             await sql.replace("notes", entity);
 

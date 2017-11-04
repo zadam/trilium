@@ -13,12 +13,9 @@ function checkStatus() {
                 loadTree().then(resp => {
                     console.log("Reloading tree because of background changes");
 
+                    // this will also reload the note content
                     globalTree.fancytree('getTree').reload(resp.notes);
                 });
-            }
-
-            if (resp.changedCurrentNote) {
-                alert("Current note has been changed in different window / computer. Please reload the application and resolve the conflict manually.");
             }
 
             $("#changesToPushCount").html(resp.changesToPushCount);

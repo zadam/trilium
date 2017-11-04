@@ -11,7 +11,7 @@ const auth = require('../../services/auth');
 router.get('/:noteId', auth.checkApiAuth, async (req, res, next) => {
     let noteId = req.params.noteId;
 
-    await sql.execute("update options set opt_value = ? where opt_name = 'start_node'", [noteId]);
+    await options.setOption('start_node', noteId);
 
     let detail = await sql.getSingleResult("select * from notes where note_id = ?", [noteId]);
 
