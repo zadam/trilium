@@ -20,21 +20,21 @@ function showRecentNotes() {
         width: 800
     });
 
-    let recentNotesSelectBox = $('#recent-notes-select-box');
+    const recentNotesSelectBox = $('#recent-notes-select-box');
 
     recentNotesSelectBox.find('option').remove();
 
     // remove the current note
-    let recNotes = glob.recentNotes.filter(note => note !== glob.currentNote.detail.note_id);
+    const recNotes = glob.recentNotes.filter(note => note !== glob.currentNote.detail.note_id);
 
     $.each(recNotes, (key, valueNoteId) => {
-        let noteTitle = getFullName(valueNoteId);
+        const noteTitle = getFullName(valueNoteId);
 
         if (!noteTitle) {
             return;
         }
 
-        let option = $("<option></option>")
+        const option = $("<option></option>")
                 .attr("value", valueNoteId)
                 .text(noteTitle);
 

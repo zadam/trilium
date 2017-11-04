@@ -32,14 +32,20 @@ function getFullName(noteId) {
         return "[unknown]";
     }
 
-    if (note.data.is_clone || (note.data.encryption > 0 && !isEncryptionAvailable())) {
+    // why?
+    if (note.data.is_clone) {
         return null;
     }
 
     const path = [];
 
     while (note) {
-        path.push(note.title);
+        if (note.data.encryption > 0 && !isEncryptionAvailable()) {
+            path.push("[encrypted]");
+        }
+        else {
+            path.push(note.title);
+        }
 
         note = note.getParent();
     }
