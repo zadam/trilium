@@ -24,7 +24,7 @@ $(document).bind('keydown', 'alt+t', () => {
 $(window).on('beforeunload', () => {
     // this makes sure that when user e.g. reloads the page or navigates away from the page, the note's content is saved
     // this sends the request asynchronously and doesn't wait for result
-    saveNoteIfChanged();
+    noteEditor.saveNoteIfChanged();
 });
 
 // Overrides the default autocomplete filter function to search for matched on atleast 1 word in each of the input term's words
@@ -62,10 +62,10 @@ $.ui.autocomplete.filter = (array, terms) => {
 $(document).tooltip({
     items: ".note-editable a",
     content: function(callback) {
-        const noteId = getNoteIdFromLink($(this).attr("href"));
+        const noteId = link.getNoteIdFromLink($(this).attr("href"));
 
         if (noteId !== null) {
-            loadNote(noteId).then(note => callback(note.detail.note_text));
+            noteEditor.loadNote(noteId).then(note => callback(note.detail.note_text));
         }
     },
     close: function(event, ui)

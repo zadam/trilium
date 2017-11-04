@@ -12,7 +12,7 @@ function handleEncryption(requireEncryption, modal) {
             open: () => {
                 if (!modal) {
                     // dialog steals focus for itself, which is not what we want for non-modal (viewing)
-                    getNodeByKey(glob.currentNote.detail.note_id).setFocus();
+                    getNodeByKey(noteEditor.getCurrentNoteId()).setFocus();
                 }
             }
         });
@@ -117,8 +117,8 @@ $("#encryption-password-form").submit(() => {
 function resetEncryptionSession() {
     glob.dataKey = null;
 
-    if (glob.currentNote.detail.encryption > 0) {
-        loadNoteToEditor(glob.currentNote.detail.note_id);
+    if (noteEditor.getCurrentNote().detail.encryption > 0) {
+        noteEditor.loadNoteToEditor(noteEditor.getCurrentNoteId());
 
         for (const noteId of glob.allNoteIds) {
             const note = getNodeByKey(noteId);
@@ -240,17 +240,17 @@ function encryptNote(note) {
 async function encryptNoteAndSendToServer() {
     await handleEncryption(true, true);
 
-    const note = glob.currentNote;
+    const note = noteEditor.getCurrentNote();
 
-    updateNoteFromInputs(note);
+    noteEditor.updateNoteFromInputs(note);
 
     encryptNote(note);
 
-    await saveNoteToServer(note);
+    await noteEditor.saveNoteToServer(note);
 
     await changeEncryptionOnNoteHistory(note.detail.note_id, true);
 
-    setNoteBackgroundIfEncrypted(note);
+    noteEditor.setNoteBackgroundIfEncrypted(note);
 }
 
 async function changeEncryptionOnNoteHistory(noteId, encrypt) {
@@ -287,17 +287,17 @@ async function changeEncryptionOnNoteHistory(noteId, encrypt) {
 async function decryptNoteAndSendToServer() {
     await handleEncryption(true, true);
 
-    const note = glob.currentNote;
+    const note = noteEditor.getCurrentNote();
 
-    updateNoteFromInputs(note);
+    noteEditor.updateNoteFromInputs(note);
 
     note.detail.encryption = 0;
 
-    await saveNoteToServer(note);
+    await noteEditor.saveNoteToServer(note);
 
     await changeEncryptionOnNoteHistory(note.detail.note_id, false);
 
-    setNoteBackgroundIfEncrypted(note);
+    noteEditor.setNoteBackgroundIfEncrypted(note);
 }
 
 function decryptNoteIfNecessary(note) {
@@ -327,11 +327,11 @@ async function encryptSubTree(noteId) {
         }
     },
         note => {
-            if (note.detail.note_id === glob.currentNote.detail.note_id) {
-                loadNoteToEditor(note.detail.note_id);
+            if (note.detail.note_id === noteEditor.getCurrentNoteId()) {
+                noteEditor.loadNoteToEditor(note.detail.note_id);
             }
             else {
-                setTreeBasedOnEncryption(note);
+                noteEditor.setTreeBasedOnEncryption(note);
             }
         });
 
@@ -354,11 +354,11 @@ async function decryptSubTree(noteId) {
         }
     },
         note => {
-            if (note.detail.note_id === glob.currentNote.detail.note_id) {
-                loadNoteToEditor(note.detail.note_id);
+            if (note.detail.note_id === noteEditor.getCurrentNoteId()) {
+                noteEditor.loadNoteToEditor(note.detail.note_id);
             }
             else {
-                setTreeBasedOnEncryption(note);
+                noteEditor.setTreeBasedOnEncryption(note);
             }
         });
 

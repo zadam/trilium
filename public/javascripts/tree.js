@@ -3,10 +3,10 @@ const keybindings = {
         const parentKey = getParentKey(node);
         const encryption = getParentEncryption(node);
 
-        createNote(node, parentKey, 'after', encryption);
+        noteEditor.createNote(node, parentKey, 'after', encryption);
     },
     "ctrl+insert": node => {
-        createNote(node, node.key, 'into', node.data.encryption);
+        noteEditor.createNote(node, node.key, 'into', node.data.encryption);
     },
     "del": node => {
         deleteNode(node);
@@ -95,7 +95,7 @@ function initFancyTree(notes, startNoteId) {
         activate: (event, data) => {
             const node = data.node.data;
 
-            saveNoteIfChanged().then(() => loadNoteToEditor(node.note_id));
+            noteEditor.saveNoteIfChanged().then(() => noteEditor.loadNoteToEditor(node.note_id));
         },
         expand: (event, data) => {
             setExpandedToServer(data.node.key, true);
@@ -219,7 +219,7 @@ function collapseTree() {
 $(document).bind('keydown', 'alt+c', collapseTree);
 
 function scrollToCurrentNote() {
-    const node = getNodeByKey(glob.currentNote.detail.note_id);
+    const node = getNodeByKey(noteEditor.getCurrentNoteId());
 
     if (node) {
         node.makeVisible({scrollIntoView: true});

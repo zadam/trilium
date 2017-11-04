@@ -5,8 +5,8 @@ async function checkStatus() {
         contentType: "application/json",
         data: JSON.stringify({
             treeLoadTime: glob.treeLoadTime,
-            currentNoteId: glob.currentNote ? glob.currentNote.detail.note_id : null,
-            currentNoteDateModified: glob.currentNoteLoadTime
+            currentNoteId: noteEditor.getCurrentNoteId(),
+            currentNoteDateModified: noteEditor.getCurrentNoteLoadTime()
         }),
         statusCode: {
             401: () => {

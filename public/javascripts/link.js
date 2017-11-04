@@ -63,6 +63,7 @@ const link = (function() {
 
     return {
         getNodeIdFromLabel,
+        getNoteIdFromLink,
         createNoteLink
     };
 })();

@@ -9,7 +9,7 @@ const recentNotes = (function() {
     function addRecentNote(noteTreeId, noteContentId) {
         setTimeout(() => {
             // we include the note into recent list only if the user stayed on the note at least 5 seconds
-            if (noteTreeId === glob.currentNote.detail.note_id || noteContentId === glob.currentNote.detail.note_id) {
+            if (noteTreeId === noteEditor.getCurrentNoteId() || noteContentId === noteEditor.getCurrentNoteId()) {
                 // if it's already there, remove the note
                 list = list.filter(note => note !== noteTreeId);
 
@@ -35,7 +35,7 @@ const recentNotes = (function() {
         selectBoxEl.find('option').remove();
 
         // remove the current note
-        const recNotes = list.filter(note => note !== glob.currentNote.detail.note_id);
+        const recNotes = list.filter(note => note !== noteEditor.getCurrentNoteId());
 
         $.each(recNotes, (key, valueNoteId) => {
             const noteTitle = getFullName(valueNoteId);

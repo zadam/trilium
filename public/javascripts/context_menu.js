@@ -54,10 +54,10 @@ const contextMenuSetup = {
             const parentKey = getParentKey(node);
             const encryption = getParentEncryption(node);
 
-            createNote(node, parentKey, 'after', encryption);
+            noteEditor.createNote(node, parentKey, 'after', encryption);
         }
         else if (ui.cmd === "insertChildNote") {
-            createNote(node, node.key, 'into');
+            noteEditor.createNote(node, node.key, 'into');
         }
         else if (ui.cmd === "encryptSubTree") {
             encryptSubTree(node.key);

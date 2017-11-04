@@ -7,7 +7,7 @@ const noteHistory = (function() {
     let historyItems = [];
 
     async function showCurrentNoteHistory() {
-        await showNoteHistoryDialog(glob.currentNote.detail.note_id);
+        await showNoteHistoryDialog(noteEditor.getCurrentNoteId());
     }
 
     async function showNoteHistoryDialog(noteId, noteHistoryId) {
