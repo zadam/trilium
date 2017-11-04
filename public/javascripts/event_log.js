@@ -20,7 +20,7 @@ async function showEventLog() {
         if (event.note_id) {
             const noteLink = $("<a>", {
                 href: 'app#' + event.note_id,
-                text: event.note_title
+                text: getFullName(event.note_id)
             }).prop('outerHTML');
 
             console.log(noteLink);
@@ -29,7 +29,6 @@ async function showEventLog() {
         }
 
         const eventEl = $('<li>').html(dateTime + " - " + event.comment);
-
 
         eventLogList.append(eventEl);
     }
