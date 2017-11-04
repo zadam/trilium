@@ -1,36 +1,39 @@
-glob.recentNotes = [];
-
-recentNotes = (function() {
-    const recentNotesSelectBox = $('#recent-notes-select-box');
-    const recentNotesDialog = $("#recent-notes-dialog");
-    const recentNotesJumpTo = $('#recentNotesJumpTo');
-    const recentNotesAddLink = $('#recentNotesAddLink');
+const recentNotes = (function() {
+    const dialog = $("#recent-notes-dialog");
+    const selectBox = $('#recent-notes-select-box');
+    const jumpToButton = $('#recentNotesJumpTo');
+    const addLinkButton = $('#recentNotesAddLink');
     const noteDetail = $('#note-detail');
+    let list = [];
 
     function addRecentNote(noteTreeId, noteContentId) {
         setTimeout(() => {
             // we include the note into recent list only if the user stayed on the note at least 5 seconds
             if (noteTreeId === glob.currentNote.detail.note_id || noteContentId === glob.currentNote.detail.note_id) {
                 // if it's already there, remove the note
-                glob.recentNotes = glob.recentNotes.filter(note => note !== noteTreeId);
+                list = list.filter(note => note !== noteTreeId);
 
-                glob.recentNotes.unshift(noteTreeId);
+                list.unshift(noteTreeId);
             }
         }, 1500);
     }
 
-    function showRecentNotes() {
+    function removeRecentNote(noteIdToRemove) {
+        list = list.filter(note => note !== noteIdToRemove);
+    }
+
+    function showDialog() {
         noteDetail.summernote('editor.saveRange');
 
-        recentNotesDialog.dialog({
+        dialog.dialog({
             modal: true,
             width: 800
         });
 
-        recentNotesSelectBox.find('option').remove();
+        selectBox.find('option').remove();
 
         // remove the current note
-        const recNotes = glob.recentNotes.filter(note => note !== glob.currentNote.detail.note_id);
+        const recNotes = list.filter(note => note !== glob.currentNote.detail.note_id);
 
         $.each(recNotes, (key, valueNoteId) => {
             const noteTitle = getFullName(valueNoteId);
@@ -48,14 +51,12 @@ recentNotes = (function() {
                 option.attr("selected", "selected");
             }
 
-            recentNotesSelectBox.append(option);
+            selectBox.append(option);
         });
     }
 
-    $(document).bind('keydown', 'alt+q', showRecentNotes);
-
     function getSelectedNoteIdFromRecentNotes() {
-        return recentNotesSelectBox.find("option:selected").val();
+        return selectBox.find("option:selected").val();
     }
 
     function setActiveNoteBasedOnRecentNotes() {
@@ -63,7 +64,7 @@ recentNotes = (function() {
 
         getNodeByKey(noteId).setActive();
 
-        recentNotesDialog.dialog('close');
+        dialog.dialog('close');
     }
 
     function addLinkBasedOnRecentNotes() {
@@ -71,7 +72,7 @@ recentNotes = (function() {
 
         const linkTitle = getNoteTitle(noteId);
 
-        recentNotesDialog.dialog("close");
+        dialog.dialog("close");
 
         noteDetail.summernote('editor.restoreRange');
 
@@ -82,7 +83,7 @@ recentNotes = (function() {
         });
     }
 
-    recentNotesSelectBox.keydown(e => {
+    selectBox.keydown(e => {
         const key = e.which;
 
         if (key === 13)// the enter key code
@@ -99,14 +100,18 @@ recentNotes = (function() {
         e.preventDefault();
     });
 
-    recentNotesSelectBox.dblclick(e => {
+    $(document).bind('keydown', 'alt+q', showDialog);
+
+    selectBox.dblclick(e => {
         setActiveNoteBasedOnRecentNotes();
     });
 
-    recentNotesJumpTo.click(setActiveNoteBasedOnRecentNotes);
-    recentNotesAddLink.click(addLinkBasedOnRecentNotes);
+    jumpToButton.click(setActiveNoteBasedOnRecentNotes);
+    addLinkButton.click(addLinkBasedOnRecentNotes);
 
     return {
-        addRecentNote
+        showDialog,
+        addRecentNote,
+        removeRecentNote
     };
 })();
