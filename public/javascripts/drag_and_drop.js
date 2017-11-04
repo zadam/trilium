@@ -1,3 +1,5 @@
+"use strict";
+
 const dragAndDropSetup = {
     autoExpandMS: 600,
     draggable: { // modify default jQuery draggable options

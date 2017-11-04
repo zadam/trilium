@@ -1,3 +1,5 @@
+"use strict";
+
 function syncNow() {
     $.ajax({
         url: baseApiUrl + 'sync/now',

@@ -1,3 +1,5 @@
+"use strict";
+
 const encryption = (function() {
     const dialogEl = $("#encryption-password-dialog");
     const encryptionPasswordFormEl = $("#encryption-password-form");

@@ -1,3 +1,5 @@
+"use strict";
+
 const recentChanges = (function() {
     const dialogEl = $("#recent-changes-dialog");
 

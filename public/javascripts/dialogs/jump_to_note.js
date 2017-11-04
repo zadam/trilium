@@ -1,3 +1,5 @@
+"use strict";
+
 const jumpToNote = (function() {
     const dialogEl = $("#jump-to-note-dialog");
     const autoCompleteEl = $("#jump-to-note-autocomplete");

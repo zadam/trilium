@@ -1,3 +1,5 @@
+"use strict";
+
 $(document).ready(() => {
     $.get(baseApiUrl + 'migration').then(result => {
         const appDbVersion = result.app_db_version;

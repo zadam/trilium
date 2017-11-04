@@ -1,3 +1,5 @@
+"use strict";
+
 const status = (function() {
     const treeEl = $("#tree");
     const $changesToPushCountEl = $("#changesToPushCount");

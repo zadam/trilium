@@ -1,3 +1,5 @@
+"use strict";
+
 const noteEditor = (function() {
     const treeEl = $("#tree");
     const noteTitleEl = $("#note-title");

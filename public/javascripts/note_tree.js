@@ -1,3 +1,5 @@
+"use strict";
+
 const noteTree = (function() {
     const noteDetailEl = $('#note-detail');
     const treeEl = $("#tree");
@@ -37,10 +39,10 @@ const noteTree = (function() {
     }
 
     function setExpandedToServer(note_id, is_expanded) {
-        expanded_num = is_expanded ? 1 : 0;
+        const expandedNum = is_expanded ? 1 : 0;
 
         $.ajax({
-            url: baseApiUrl + 'notes/' + note_id + '/expanded/' + expanded_num,
+            url: baseApiUrl + 'notes/' + note_id + '/expanded/' + expandedNum,
             type: 'PUT',
             contentType: "application/json",
             success: result => {}

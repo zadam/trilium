@@ -1,3 +1,5 @@
+"use strict";
+
 function message(str) {
     const top = $("#top-message");
 

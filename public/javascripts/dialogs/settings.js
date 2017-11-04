@@ -1,3 +1,5 @@
+"use strict";
+
 const settings = (function() {
     const dialogEl = $("#settings-dialog");
     const tabsEl = $("#settings-tabs");

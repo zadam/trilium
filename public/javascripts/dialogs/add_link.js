@@ -1,3 +1,5 @@
+"use strict";
+
 const addLink = (function() {
     const dialogEl = $("#insert-link-dialog");
     const formEl = $("#insert-link-form");

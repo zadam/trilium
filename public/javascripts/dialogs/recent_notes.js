@@ -1,3 +1,5 @@
+"use strict";
+
 const recentNotes = (function() {
     const dialogEl = $("#recent-notes-dialog");
     const selectBoxEl = $('#recent-notes-select-box');

@@ -1,3 +1,5 @@
+"use strict";
+
 const noteHistory = (function() {
     const dialogEl = $("#note-history-dialog");
     const listEl = $("#note-history-list");

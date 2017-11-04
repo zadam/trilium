@@ -1,4 +1,6 @@
-glob = {
+"use strict";
+
+const glob = {
     activeDialog: null
 };
 

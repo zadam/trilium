@@ -1,3 +1,5 @@
+"use strict";
+
 const contextMenu = (function() {
     const treeEl = $("#tree");
 

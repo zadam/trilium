@@ -1,3 +1,5 @@
+"use strict";
+
 function moveBeforeNode(node, beforeNode) {
     $.ajax({
         url: baseApiUrl + 'notes/' + node.key + '/moveBefore/' + beforeNode.key,

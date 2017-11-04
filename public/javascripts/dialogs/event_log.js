@@ -1,3 +1,5 @@
+"use strict";
+
 const eventLog = (function() {
     const dialogEl = $("#event-log-dialog");
     const listEl = $("#event-log-list");

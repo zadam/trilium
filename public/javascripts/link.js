@@ -1,3 +1,5 @@
+"use strict";
+
 const link = (function() {
     function getNoteIdFromLink(url) {
         const noteIdMatch = /app#([A-Za-z0-9]{12})/.exec(url);
