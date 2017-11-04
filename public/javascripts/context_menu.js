@@ -1,3 +1,5 @@
+const treeEl = $("#tree");
+
 function pasteAfter(node) {
     const subjectNode = getNodeByKey(glob.clipboardNoteId);
 
@@ -37,8 +39,8 @@ const contextMenuSetup = {
     beforeOpen: (event, ui) => {
         const node = $.ui.fancytree.getNode(ui.target);
         // Modify menu entries depending on node status
-        glob.tree.contextmenu("enableEntry", "pasteAfter", glob.clipboardNoteId !== null);
-        glob.tree.contextmenu("enableEntry", "pasteInto", glob.clipboardNoteId !== null);
+        treeEl.contextmenu("enableEntry", "pasteAfter", glob.clipboardNoteId !== null);
+        treeEl.contextmenu("enableEntry", "pasteInto", glob.clipboardNoteId !== null);
 
         // Activate node on right-click
         node.setActive();

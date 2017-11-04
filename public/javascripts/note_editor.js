@@ -1,4 +1,5 @@
 const noteEditor = (function() {
+    const treeEl = $("#tree");
     const noteTitleEl = $("#note-title");
     const noteDetailEl = $('#note-detail');
     const encryptButton = $("#encrypt-button");
@@ -101,7 +102,7 @@ const noteEditor = (function() {
     currentNoteLoadTime = null;
 
     function createNewTopLevelNote() {
-        let rootNode = glob.tree.fancytree("getRootNode");
+        let rootNode = treeEl.fancytree("getRootNode");
 
         createNote(rootNode, "root", "into");
     }

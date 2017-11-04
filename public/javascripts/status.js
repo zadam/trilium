@@ -1,10 +1,12 @@
+const treeEl = $("#tree");
+
 async function checkStatus() {
     const resp = await $.ajax({
         url: baseApiUrl + 'status',
         type: 'POST',
         contentType: "application/json",
         data: JSON.stringify({
-            treeLoadTime: glob.treeLoadTime,
+            treeLoadTime: noteTree.getTreeLoadTime(),
             currentNoteId: noteEditor.getCurrentNoteId(),
             currentNoteDateModified: noteEditor.getCurrentNoteLoadTime()
         }),
@@ -22,12 +24,12 @@ async function checkStatus() {
     });
 
     if (resp.changedTree) {
-        const treeResp = await loadTree();
+        const treeResp = await noteTree.loadTree();
 
         console.log("Reloading tree because of background changes");
 
         // this will also reload the note content
-        await glob.tree.fancytree('getTree').reload(treeResp.notes);
+        await treeEl.fancytree('getTree').reload(treeResp.notes);
 
         encryption.decryptTreeItems();
     }

@@ -1,3 +1,5 @@
+const treeEl = $("#tree");
+
 function getParentKey(node) {
     return (node.getParent() === null || node.getParent().key === "root_1") ? "root" : node.getParent().key;
 }
@@ -7,7 +9,7 @@ function getParentEncryption(node) {
 }
 
 function getNodeByKey(noteId) {
-    return glob.tree.fancytree('getNodeByKey', noteId);
+    return treeEl.fancytree('getNodeByKey', noteId);
 }
 
 function getNoteTitle(noteId) {
