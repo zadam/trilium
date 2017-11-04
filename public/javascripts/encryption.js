@@ -108,7 +108,7 @@ $("#encryption-password-form").submit(() => {
     .catch(reason => {
         console.log(reason);
 
-        alert(reason);
+        error(reason);
     });
 
     return false;
@@ -257,7 +257,7 @@ async function changeEncryptionOnNoteHistory(noteId, encrypt) {
     const result = await $.ajax({
         url: baseApiUrl + 'notes-history/' + noteId + "?encryption=" + (encrypt ? 0 : 1),
         type: 'GET',
-        error: () => alert("Error getting note history.")
+        error: () => error("Error getting note history.")
     });
 
     for (const row of result) {
@@ -277,7 +277,7 @@ async function changeEncryptionOnNoteHistory(noteId, encrypt) {
             type: 'PUT',
             contentType: 'application/json',
             data: JSON.stringify(row),
-            error: () => alert("Error de/encrypting note history.")
+            error: () => error("Error de/encrypting note history.")
         });
 
         console.log('Note history ' + row.note_history_id + ' de/encrypted');
@@ -335,7 +335,7 @@ async function encryptSubTree(noteId) {
             }
         });
 
-    alert("Encryption finished.");
+    message("Encryption finished.");
 }
 
 async function decryptSubTree(noteId) {
@@ -362,7 +362,7 @@ async function decryptSubTree(noteId) {
             }
         });
 
-    alert("Decryption finished.");
+    message("Decryption finished.");
 }
 
 function updateSubTreeRecursively(noteId, updateCallback, successCallback) {

@@ -6,17 +6,12 @@ function syncNow() {
             if (result.success) {
                 checkStatus();
 
-                message("Sync finished successfully");
-
-                for (const l of result.log)
-                {
-                    console.log(l);
-                }
+                message("Sync triggered.");
             }
             else {
-                alert("Sync failed");
+                error("Sync failed");
             }
         },
-        error: () => alert("Sync failed")
+        error: () => error("Sync failed")
     });
 }

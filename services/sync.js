@@ -9,6 +9,7 @@ const utils = require('./utils');
 const config = require('./config');
 const SOURCE_ID = require('./source_id');
 const audit_category = require('./audit_category');
+const eventLog = require('./event_log');
 
 const SYNC_SERVER = config['Sync']['syncServerHost'];
 const isSyncSetup = !!SYNC_SERVER;
@@ -16,7 +17,7 @@ const isSyncSetup = !!SYNC_SERVER;
 
 let syncInProgress = false;
 
-async function pullSync(syncContext, syncLog) {
+async function pullSync(syncContext) {
     const lastSyncedPull = parseInt(await options.getOption('last_synced_pull'));
 
     let syncRows;
@@ -34,7 +35,7 @@ async function pullSync(syncContext, syncLog) {
         logSync("Pulled " + syncRows.length + " changes");
     }
     catch (e) {
-        logSyncError("Can't pull changes, inner exception: ", e, syncLog);
+        logSyncError("Can't pull changes, inner exception: ", e);
     }
 
     for (const sync of syncRows) {
@@ -48,26 +49,26 @@ async function pullSync(syncContext, syncLog) {
             });
         }
         catch (e) {
-            logSyncError("Can't pull " + sync.entity_name + " " + sync.entity_id, e, syncLog);
+            logSyncError("Can't pull " + sync.entity_name + " " + sync.entity_id, e);
         }
 
         if (sync.entity_name === 'notes') {
-            await updateNote(resp.entity, resp.links, syncContext.sourceId, syncLog);
+            await updateNote(resp.entity, resp.links, syncContext.sourceId);
         }
         else if (sync.entity_name === 'notes_tree') {
-            await updateNoteTree(resp, syncContext.sourceId, syncLog);
+            await updateNoteTree(resp, syncContext.sourceId);
         }
         else if (sync.entity_name === 'notes_history') {
-            await updateNoteHistory(resp, syncContext.sourceId, syncLog);
+            await updateNoteHistory(resp, syncContext.sourceId);
         }
         else if (sync.entity_name === 'notes_reordering') {
-            await updateNoteReordering(resp, syncContext.sourceId, syncLog);
+            await updateNoteReordering(resp, syncContext.sourceId);
         }
         else if (sync.entity_name === 'options') {
-            await updateOptions(resp, syncContext.sourceId, syncLog);
+            await updateOptions(resp, syncContext.sourceId);
         }
         else {
-            logSyncError("Unrecognized entity type " + sync.entity_name, e, syncLog);
+            logSyncError("Unrecognized entity type " + sync.entity_name, e);
         }
 
         await options.setOption('last_synced_pull', sync.id);
@@ -76,7 +77,7 @@ async function pullSync(syncContext, syncLog) {
     logSync("Finished pull");
 }
 
-async function sendEntity(entity, entityName, cookieJar, syncLog) {
+async function sendEntity(entity, entityName, cookieJar) {
     try {
         const payload = {
             sourceId: SOURCE_ID,
@@ -97,11 +98,11 @@ async function sendEntity(entity, entityName, cookieJar, syncLog) {
         });
     }
     catch (e) {
-        logSyncError("Failed sending update for entity " + entityName, e, syncLog);
+        logSyncError("Failed sending update for entity " + entityName, e);
     }
 }
 
-async function readAndPushEntity(sync, syncLog, syncContext) {
+async function readAndPushEntity(sync, syncContext) {
     let entity;
 
     if (sync.entity_name === 'notes') {
@@ -123,15 +124,15 @@ async function readAndPushEntity(sync, syncLog, syncContext) {
         entity = await sql.getSingleResult('SELECT * FROM options WHERE opt_name = ?', [sync.entity_id]);
     }
     else {
-        logSyncError("Unrecognized entity type " + sync.entity_name, null, syncLog);
+        logSyncError("Unrecognized entity type " + sync.entity_name, null);
     }
 
     logSync("Pushing changes in " + sync.entity_name + " " + sync.entity_id);
 
-    await sendEntity(entity, sync.entity_name, syncContext.cookieJar, syncLog);
+    await sendEntity(entity, sync.entity_name, syncContext.cookieJar);
 }
 
-async function pushSync(syncContext, syncLog) {
+async function pushSync(syncContext) {
     let lastSyncedPush = parseInt(await options.getOption('last_synced_push'));
 
     while (true) {
@@ -140,16 +141,16 @@ async function pushSync(syncContext, syncLog) {
         if (sync === null) {
             // nothing to sync
 
-            logSync("Nothing to push", syncLog);
+            logSync("Nothing to push");
 
             break;
         }
 
         if (sync.source_id === syncContext.sourceId) {
-            logSync("Skipping sync " + sync.entity_name + " " + sync.entity_id + " because it originates from sync target", syncLog);
+            logSync("Skipping sync " + sync.entity_name + " " + sync.entity_id + " because it originates from sync target");
         }
         else {
-            await readAndPushEntity(sync, syncLog, syncContext);
+            await readAndPushEntity(sync, syncContext);
         }
 
         lastSyncedPush = sync.id;
@@ -158,7 +159,7 @@ async function pushSync(syncContext, syncLog) {
     }
 }
 
-async function login(syncLog) {
+async function login() {
     const timestamp = utils.nowTimestamp();
 
     const documentSecret = await options.getOption('document_secret');
@@ -186,55 +187,47 @@ async function login(syncLog) {
         };
     }
     catch (e) {
-        logSyncError("Can't login to API for sync, inner exception: ", e, syncLog);
+        logSyncError("Can't login to API for sync, inner exception: ", e);
     }
 }
 
 async function sync() {
-    const syncLog = [];
-
     if (syncInProgress) {
-        syncLog.push("Sync already in progress");
+        logSyncError("Sync already in progress");
 
-        return syncLog;
+        return;
     }
 
     syncInProgress = true;
 
     try {
         if (!await migration.isDbUpToDate()) {
-            syncLog.push("DB not up to date");
+            logSyncError("DB not up to date");
 
-            return syncLog;
+            return;
         }
 
-        const syncContext = await login(syncLog);
+        const syncContext = await login();
 
-        await pushSync(syncContext, syncLog);
+        await pushSync(syncContext);
 
-        await pullSync(syncContext, syncLog);
+        await pullSync(syncContext);
 
-        await pushSync(syncContext, syncLog);
+        await pushSync(syncContext);
     }
     catch (e) {
-        logSync("sync failed: " + e.stack, syncLog);
+        logSync("sync failed: " + e.stack);
     }
     finally {
         syncInProgress = false;
     }
-
-    return syncLog;
 }
 
-function logSync(message, syncLog) {
+function logSync(message) {
     log.info(message);
-
-    if (syncLog) {
-        syncLog.push(message);
-    }
 }
 
-function logSyncError(message, e, syncLog) {
+function logSyncError(message, e) {
     let completeMessage = message;
 
     if (e) {
@@ -243,14 +236,10 @@ function logSyncError(message, e, syncLog) {
 
     log.info(completeMessage);
 
-    if (syncLog) {
-        syncLog.push(completeMessage);
-    }
-
     throw new Error(completeMessage);
 }
 
-async function updateNote(entity, links, sourceId, syncLog) {
+async function updateNote(entity, links, sourceId) {
     const origNote = await sql.getSingleResult("select * from notes where note_id = ?", [entity.note_id]);
 
     if (!origNote || origNote.date_modified <= entity.date_modified) {
@@ -270,16 +259,18 @@ async function updateNote(entity, links, sourceId, syncLog) {
             // we don't distinguish between those for now
             await sql.addSyncAudit(audit_category.UPDATE_CONTENT, sourceId, entity.note_id);
             await sql.addSyncAudit(audit_category.UPDATE_TITLE, sourceId, entity.note_id);
+
+            await eventLog.addNoteEvent(entity.note_id, "Synced note <note>");
         });
 
-        logSync("Update/sync note " + entity.note_id, syncLog);
+        logSync("Update/sync note " + entity.note_id);
     }
     else {
-        logSync("Sync conflict in note " + entity.note_id, syncLog);
+        await eventLog.addNoteEvent(entity.note_id, "Sync conflict in note <note>");
     }
 }
 
-async function updateNoteTree(entity, sourceId, syncLog) {
+async function updateNoteTree(entity, sourceId) {
     const orig = await sql.getSingleResultOrNull("select * from notes_tree where note_id = ?", [entity.note_id]);
 
     if (orig === null || orig.date_modified < entity.date_modified) {
@@ -291,14 +282,14 @@ async function updateNoteTree(entity, sourceId, syncLog) {
             await sql.addSyncAudit(audit_category.UPDATE_TITLE, sourceId, entity.note_id);
         });
 
-        logSync("Update/sync note tree " + entity.note_id, syncLog);
+        logSync("Update/sync note tree " + entity.note_id);
     }
     else {
-        logSync("Sync conflict in note tree " + entity.note_id, syncLog);
+        await eventLog.addNoteEvent(entity.note_id, "Sync conflict in note tree <note>");
     }
 }
 
-async function updateNoteHistory(entity, sourceId, syncLog) {
+async function updateNoteHistory(entity, sourceId) {
     const orig = await sql.getSingleResultOrNull("select * from notes_history where note_history_id = ?", [entity.note_history_id]);
 
     if (orig === null || orig.date_modified_to < entity.date_modified_to) {
@@ -308,14 +299,14 @@ async function updateNoteHistory(entity, sourceId, syncLog) {
             await sql.addNoteHistorySync(entity.note_history_id, sourceId);
         });
 
-        logSync("Update/sync note history " + entity.note_history_id, syncLog);
+        logSync("Update/sync note history " + entity.note_history_id);
     }
     else {
-        logSync("Sync conflict in note history for " + entity.note_id + ", from=" + entity.date_modified_from + ", to=" + entity.date_modified_to, syncLog);
+        await eventLog.addNoteEvent(entity.note_id, "Sync conflict in note history for <note>");
     }
 }
 
-async function updateNoteReordering(entity, sourceId, syncLog) {
+async function updateNoteReordering(entity, sourceId) {
     await sql.doInTransaction(async () => {
         Object.keys(entity.ordering).forEach(async key => {
             await sql.execute("UPDATE notes_tree SET note_pos = ? WHERE note_id = ?", [entity.ordering[key], key]);
@@ -326,7 +317,7 @@ async function updateNoteReordering(entity, sourceId, syncLog) {
     });
 }
 
-async function updateOptions(entity, sourceId, syncLog) {
+async function updateOptions(entity, sourceId) {
     if (!options.SYNCED_OPTIONS.includes(entity.opt_name)) {
         return;
     }
@@ -340,10 +331,10 @@ async function updateOptions(entity, sourceId, syncLog) {
             await sql.addOptionsSync(entity.opt_name, sourceId);
         });
 
-        logSync("Update/sync options " + entity.opt_name, syncLog);
+        await eventLog.addEvent("Synced option " + entity.opt_name);
     }
     else {
-        logSync("Sync conflict in options for " + entity.opt_name + ", date_modified=" + entity.date_modified, syncLog);
+        await eventLog.addEvent("Sync conflict in options for " + entity.opt_name);
     }
 }
 

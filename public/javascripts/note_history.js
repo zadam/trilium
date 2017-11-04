@@ -37,7 +37,7 @@ function showNoteHistoryDialog(noteId, noteHistoryId) {
                 $("#note-history-list").val(noteHistoryId).trigger('change');
             }
         },
-        error: () => alert("Error getting note history.")
+        error: () => error("Error getting note history.")
     });
 }
 

@@ -70,7 +70,7 @@ function showRecentChanges() {
                 $("#recent-changes-dialog").append(dayEl);
             }
         },
-        error: () => alert("Error getting recent changes.")
+        error: () => error("Error getting recent changes.")
     });
 }
 

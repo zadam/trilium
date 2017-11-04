@@ -38,6 +38,6 @@ $("#run-migration").click(() => {
                 $("#migration-table").append(row);
             }
         },
-        error: () => alert("Migration failed with unknown error")
+        error: () => error("Migration failed with unknown error")
     });
 });
