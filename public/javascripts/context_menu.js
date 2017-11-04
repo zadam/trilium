@@ -4,23 +4,23 @@ const contextMenu = (function() {
     const treeEl = $("#tree");
 
     function pasteAfter(node) {
-        const subjectNode = getNodeByKey(glob.clipboardNoteId);
+        const subjectNode = getNodeByKey(noteTree.getClipboardNoteId());
 
         moveAfterNode(subjectNode, node);
 
-        glob.clipboardNoteId = null;
+        noteTree.setClipboardNoteId(null);
     }
 
     function pasteInto(node) {
-        const subjectNode = getNodeByKey(glob.clipboardNoteId);
+        const subjectNode = getNodeByKey(noteTree.getClipboardNoteId());
 
         moveToNode(subjectNode, node);
 
-        glob.clipboardNoteId = null;
+        noteTree.setClipboardNoteId(null);
     }
 
     function cut(node) {
-        glob.clipboardNoteId = node.key;
+        noteTree.setClipboardNoteId(node.key);
     }
 
     const contextMenuSettings = {
@@ -42,8 +42,8 @@ const contextMenu = (function() {
         beforeOpen: (event, ui) => {
             const node = $.ui.fancytree.getNode(ui.target);
             // Modify menu entries depending on node status
-            treeEl.contextmenu("enableEntry", "pasteAfter", glob.clipboardNoteId !== null);
-            treeEl.contextmenu("enableEntry", "pasteInto", glob.clipboardNoteId !== null);
+            treeEl.contextmenu("enableEntry", "pasteAfter", noteTree.getClipboardNoteId() !== null);
+            treeEl.contextmenu("enableEntry", "pasteInto", noteTree.getClipboardNoteId() !== null);
 
             // Activate node on right-click
             node.setActive();

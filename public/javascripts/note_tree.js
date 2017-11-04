@@ -4,12 +4,20 @@ const noteTree = (function() {
     const noteDetailEl = $('#note-detail');
     const treeEl = $("#tree");
     let treeLoadTime = null;
+    let clipboardNoteId = null;
 
     glob.allNoteIds = [];
-    glob.clipboardNoteId = null;
 
     function getTreeLoadTime() {
         return treeLoadTime;
+    }
+
+    function getClipboardNoteId() {
+        return clipboardNoteId;
+    }
+
+    function setClipboardNoteId(cbNoteId) {
+        clipboardNoteId = cbNoteId;
     }
 
     function prepareNoteTree(notes) {
@@ -284,9 +292,11 @@ const noteTree = (function() {
 
     return {
         getTreeLoadTime,
+        getClipboardNoteId,
+        setClipboardNoteId,
         loadTree,
         collapseTree,
         scrollToCurrentNote,
-        toggleSearch
+        toggleSearch,
     };
 })();
