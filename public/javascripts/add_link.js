@@ -17,7 +17,7 @@ $(document).bind('keydown', 'alt+l', () => {
     }
 
     $("#note-autocomplete").autocomplete({
-        source: getAutocompleteItems(globalAllNoteIds),
+        source: getAutocompleteItems(glob.allNoteIds),
         minLength: 0,
         change: () => {
             const val = $("#note-autocomplete").val();

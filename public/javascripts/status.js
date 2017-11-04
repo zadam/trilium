@@ -4,9 +4,9 @@ async function checkStatus() {
         type: 'POST',
         contentType: "application/json",
         data: JSON.stringify({
-            treeLoadTime: globalTreeLoadTime,
-            currentNoteId: globalCurrentNote ? globalCurrentNote.detail.note_id : null,
-            currentNoteDateModified: globalCurrentNoteLoadTime
+            treeLoadTime: glob.treeLoadTime,
+            currentNoteId: glob.currentNote ? glob.currentNote.detail.note_id : null,
+            currentNoteDateModified: glob.currentNoteLoadTime
         }),
         statusCode: {
             401: () => {
@@ -27,7 +27,7 @@ async function checkStatus() {
         console.log("Reloading tree because of background changes");
 
         // this will also reload the note content
-        await globalTree.fancytree('getTree').reload(treeResp.notes);
+        await glob.tree.fancytree('getTree').reload(treeResp.notes);
 
         decryptTreeItems();
     }

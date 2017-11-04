@@ -44,7 +44,7 @@ $("#change-password-form").submit(() => {
                 // encryption password changed so current encryption session is invalid and needs to be cleared
                 resetEncryptionSession();
 
-                globalEncryptedDataKey = result.new_encrypted_data_key;
+                glob.encryptedDataKey = result.new_encrypted_data_key;
 
                 alert("Password has been changed.");
 
@@ -74,7 +74,7 @@ $("#encryption-timeout-form").submit(() => {
         success: () => {
             alert("Encryption timeout has been changed.");
 
-            globalEncryptionSessionTimeout = encryptionTimeout;
+            glob.encryptionSessionTimeout = encryptionTimeout;
          },
         error: () => alert("Error occurred during changing encryption timeout.")
     });

@@ -1,10 +1,10 @@
-let globalEncryptionDeferred = null;
+glob.encryptionDeferred = null;
 
 function handleEncryption(requireEncryption, modal) {
     const dfd = $.Deferred();
 
-    if (requireEncryption && globalDataKey === null) {
-        globalEncryptionDeferred = dfd;
+    if (requireEncryption && glob.dataKey === null) {
+        glob.encryptionDeferred = dfd;
 
         $("#encryption-password-dialog").dialog({
             modal: modal,
@@ -12,7 +12,7 @@ function handleEncryption(requireEncryption, modal) {
             open: () => {
                 if (!modal) {
                     // dialog steals focus for itself, which is not what we want for non-modal (viewing)
-                    getNodeByKey(globalCurrentNote.detail.note_id).setFocus();
+                    getNodeByKey(glob.currentNote.detail.note_id).setFocus();
                 }
             }
         });
@@ -24,14 +24,14 @@ function handleEncryption(requireEncryption, modal) {
     return dfd.promise();
 }
 
-let globalDataKey = null;
-let globalLastEncryptionOperationDate = null;
+glob.dataKey = null;
+glob.lastEncryptionOperationDate = null;
 
 function getDataKey(password) {
-    return computeScrypt(password, globalEncryptionSalt, (key, resolve, reject) => {
+    return computeScrypt(password, glob.encryptionSalt, (key, resolve, reject) => {
         const dataKeyAes = getDataKeyAes(key);
 
-        const decryptedDataKey = decrypt(dataKeyAes, globalEncryptedDataKey);
+        const decryptedDataKey = decrypt(dataKeyAes, glob.encryptedDataKey);
 
         if (decryptedDataKey === false) {
             reject("Wrong password.");
@@ -77,7 +77,7 @@ function decryptTreeItems() {
         return;
     }
 
-    for (const noteId of globalAllNoteIds) {
+    for (const noteId of glob.allNoteIds) {
         const note = getNodeByKey(noteId);
 
         if (note.data.encryption > 0) {
@@ -95,14 +95,14 @@ $("#encryption-password-form").submit(() => {
     getDataKey(password).then(key => {
         $("#encryption-password-dialog").dialog("close");
 
-        globalDataKey = key;
+        glob.dataKey = key;
 
         decryptTreeItems();
 
-        if (globalEncryptionDeferred !== null) {
-            globalEncryptionDeferred.resolve();
+        if (glob.encryptionDeferred !== null) {
+            glob.encryptionDeferred.resolve();
 
-            globalEncryptionDeferred = null;
+            glob.encryptionDeferred = null;
         }
     })
     .catch(reason => {
@@ -115,12 +115,12 @@ $("#encryption-password-form").submit(() => {
 });
 
 function resetEncryptionSession() {
-    globalDataKey = null;
+    glob.dataKey = null;
 
-    if (globalCurrentNote.detail.encryption > 0) {
-        loadNoteToEditor(globalCurrentNote.detail.note_id);
+    if (glob.currentNote.detail.encryption > 0) {
+        loadNoteToEditor(glob.currentNote.detail.note_id);
 
-        for (const noteId of globalAllNoteIds) {
+        for (const noteId of glob.allNoteIds) {
             const note = getNodeByKey(noteId);
 
             if (note.data.encryption > 0) {
@@ -131,19 +131,19 @@ function resetEncryptionSession() {
 }
 
 setInterval(() => {
-    if (globalLastEncryptionOperationDate !== null && new Date().getTime() - globalLastEncryptionOperationDate.getTime() > globalEncryptionSessionTimeout * 1000) {
+    if (glob.lastEncryptionOperationDate !== null && new Date().getTime() - glob.lastEncryptionOperationDate.getTime() > glob.encryptionSessionTimeout * 1000) {
         resetEncryptionSession();
     }
 }, 5000);
 
 function isEncryptionAvailable() {
-    return globalDataKey !== null;
+    return glob.dataKey !== null;
 }
 
 function getDataAes() {
-    globalLastEncryptionOperationDate = new Date();
+    glob.lastEncryptionOperationDate = new Date();
 
-    return new aesjs.ModeOfOperation.ctr(globalDataKey, new aesjs.Counter(5));
+    return new aesjs.ModeOfOperation.ctr(glob.dataKey, new aesjs.Counter(5));
 }
 
 function getDataKeyAes(key) {
@@ -240,7 +240,7 @@ function encryptNote(note) {
 async function encryptNoteAndSendToServer() {
     await handleEncryption(true, true);
 
-    const note = globalCurrentNote;
+    const note = glob.currentNote;
 
     updateNoteFromInputs(note);
 
@@ -287,7 +287,7 @@ async function changeEncryptionOnNoteHistory(noteId, encrypt) {
 async function decryptNoteAndSendToServer() {
     await handleEncryption(true, true);
 
-    const note = globalCurrentNote;
+    const note = glob.currentNote;
 
     updateNoteFromInputs(note);
 
@@ -327,7 +327,7 @@ async function encryptSubTree(noteId) {
         }
     },
         note => {
-            if (note.detail.note_id === globalCurrentNote.detail.note_id) {
+            if (note.detail.note_id === glob.currentNote.detail.note_id) {
                 loadNoteToEditor(note.detail.note_id);
             }
             else {
@@ -354,7 +354,7 @@ async function decryptSubTree(noteId) {
         }
     },
         note => {
-            if (note.detail.note_id === globalCurrentNote.detail.note_id) {
+            if (note.detail.note_id === glob.currentNote.detail.note_id) {
                 loadNoteToEditor(note.detail.note_id);
             }
             else {

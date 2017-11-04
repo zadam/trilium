@@ -40,15 +40,13 @@ const keybindings = {
     }
 };
 
-let globalAllNoteIds = [];
-
-const globalTree = $("#tree");
-
-let globalClipboardNoteId = null;
+glob.allNoteIds = [];
+glob.tree = $("#tree");
+glob.clipboardNoteId = null;
 
 function prepareNoteTree(notes) {
     for (const note of notes) {
-        globalAllNoteIds.push(note.note_id);
+        glob.allNoteIds.push(note.note_id);
 
         if (note.encryption > 0) {
             note.title = "[encrypted]";
@@ -83,13 +81,13 @@ function setExpandedToServer(note_id, is_expanded) {
     });
 }
 
-let globalEncryptionSalt;
-let globalEncryptionSessionTimeout;
-let globalEncryptedDataKey;
-let globalTreeLoadTime;
+glob.encryptionSalt;
+glob.encryptionSessionTimeout;
+glob.encryptedDataKey;
+glob.treeLoadTime;
 
 function initFancyTree(notes, startNoteId) {
-    globalTree.fancytree({
+    glob.tree.fancytree({
         autoScroll: true,
         extensions: ["hotkeys", "filter", "dnd"],
         source: notes,
@@ -176,17 +174,17 @@ function initFancyTree(notes, startNoteId) {
         }
     });
 
-    globalTree.contextmenu(contextMenuSetup);
+    glob.tree.contextmenu(contextMenuSetup);
 }
 
 function loadTree() {
     return $.get(baseApiUrl + 'tree').then(resp => {
         const notes = resp.notes;
         let startNoteId = resp.start_note_id;
-        globalEncryptionSalt = resp.password_derived_key_salt;
-        globalEncryptionSessionTimeout = resp.encryption_session_timeout;
-        globalEncryptedDataKey = resp.encrypted_data_key;
-        globalTreeLoadTime = resp.tree_load_time;
+        glob.encryptionSalt = resp.password_derived_key_salt;
+        glob.encryptionSessionTimeout = resp.encryption_session_timeout;
+        glob.encryptedDataKey = resp.encrypted_data_key;
+        glob.treeLoadTime = resp.tree_load_time;
 
         // add browser ID header to all AJAX requests
         $.ajaxSetup({
@@ -213,7 +211,7 @@ $(() => {
 });
 
 function collapseTree() {
-    globalTree.fancytree("getRootNode").visit(node => {
+    glob.tree.fancytree("getRootNode").visit(node => {
         node.setExpanded(false);
     });
 }
@@ -221,7 +219,7 @@ function collapseTree() {
 $(document).bind('keydown', 'alt+c', collapseTree);
 
 function scrollToCurrentNote() {
-    const node = getNodeByKey(globalCurrentNote.detail.note_id);
+    const node = getNodeByKey(glob.currentNote.detail.note_id);
 
     if (node) {
         node.makeVisible({scrollIntoView: true});
@@ -252,7 +250,7 @@ function toggleSearch() {
 function resetSearch() {
     $("input[name=search]").val("");
 
-    const tree = globalTree.fancytree("getTree");
+    const tree = glob.tree.fancytree("getTree");
     tree.clearFilter();
 }
 
@@ -271,7 +269,7 @@ $("input[name=search]").keyup(e => {
             console.log("search: ", resp);
 
             // Pass a string to perform case insensitive matching
-            const tree = globalTree.fancytree("getTree");
+            const tree = glob.tree.fancytree("getTree");
             tree.filterBranches(node => {
                 return resp.includes(node.data.note_id);
             });

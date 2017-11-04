@@ -7,7 +7,7 @@ function getParentEncryption(node) {
 }
 
 function getNodeByKey(noteId) {
-    return globalTree.fancytree('getNodeByKey', noteId);
+    return glob.tree.fancytree('getNodeByKey', noteId);
 }
 
 function getNoteTitle(noteId) {

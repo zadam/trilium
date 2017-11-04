@@ -47,10 +47,10 @@ function deleteNode(node) {
                     node.getParent().renderTitle();
                 }
 
-                globalAllNoteIds = globalAllNoteIds.filter(e => e !== node.key);
+                glob.allNoteIds = glob.allNoteIds.filter(e => e !== node.key);
 
                 // remove from recent notes
-                globalRecentNotes = globalRecentNotes.filter(note => note !== node.key);
+                glob.recentNotes = glob.recentNotes.filter(note => note !== node.key);
 
                 let next = node.getNextSibling();
                 if (!next) {

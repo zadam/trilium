@@ -1,21 +1,21 @@
 function pasteAfter(node) {
-    const subjectNode = getNodeByKey(globalClipboardNoteId);
+    const subjectNode = getNodeByKey(glob.clipboardNoteId);
 
     moveAfterNode(subjectNode, node);
 
-    globalClipboardNoteId = null;
+    glob.clipboardNoteId = null;
 }
 
 function pasteInto(node) {
-    const subjectNode = getNodeByKey(globalClipboardNoteId);
+    const subjectNode = getNodeByKey(glob.clipboardNoteId);
 
     moveToNode(subjectNode, node);
 
-    globalClipboardNoteId = null;
+    glob.clipboardNoteId = null;
 }
 
 function cut(node) {
-    globalClipboardNoteId = node.key;
+    glob.clipboardNoteId = node.key;
 }
 
 const contextMenuSetup = {
@@ -37,8 +37,8 @@ const contextMenuSetup = {
     beforeOpen: (event, ui) => {
         const node = $.ui.fancytree.getNode(ui.target);
         // Modify menu entries depending on node status
-        globalTree.contextmenu("enableEntry", "pasteAfter", globalClipboardNoteId !== null);
-        globalTree.contextmenu("enableEntry", "pasteInto", globalClipboardNoteId !== null);
+        glob.tree.contextmenu("enableEntry", "pasteAfter", glob.clipboardNoteId !== null);
+        glob.tree.contextmenu("enableEntry", "pasteInto", glob.clipboardNoteId !== null);
 
         // Activate node on right-click
         node.setActive();

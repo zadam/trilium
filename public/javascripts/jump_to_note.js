@@ -7,7 +7,7 @@ function showJumpToNote() {
     });
 
     $("#jump-to-note-autocomplete").autocomplete({
-        source: getAutocompleteItems(globalAllNoteIds),
+        source: getAutocompleteItems(glob.allNoteIds),
         minLength: 0
     });
 }

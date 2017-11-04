@@ -1,13 +1,13 @@
-let globalRecentNotes = [];
+glob.recentNotes = [];
 
 function addRecentNote(noteTreeId, noteContentId) {
     setTimeout(() => {
         // we include the note into recent list only if the user stayed on the note at least 5 seconds
-        if (noteTreeId === globalCurrentNote.detail.note_id || noteContentId === globalCurrentNote.detail.note_id) {
+        if (noteTreeId === glob.currentNote.detail.note_id || noteContentId === glob.currentNote.detail.note_id) {
             // if it's already there, remove the note
-            globalRecentNotes = globalRecentNotes.filter(note => note !== noteTreeId);
+            glob.recentNotes = glob.recentNotes.filter(note => note !== noteTreeId);
 
-            globalRecentNotes.unshift(noteTreeId);
+            glob.recentNotes.unshift(noteTreeId);
         }
     }, 1500);
 }
@@ -25,7 +25,7 @@ function showRecentNotes() {
     recentNotesSelectBox.find('option').remove();
 
     // remove the current note
-    let recNotes = globalRecentNotes.filter(note => note !== globalCurrentNote.detail.note_id);
+    let recNotes = glob.recentNotes.filter(note => note !== glob.currentNote.detail.note_id);
 
     $.each(recNotes, (key, valueNoteId) => {
         let noteTitle = getFullName(valueNoteId);

@@ -26,7 +26,7 @@ async function saveNoteIfChanged() {
         return;
     }
 
-    const note = globalCurrentNote;
+    const note = glob.currentNote;
 
     updateNoteFromInputs(note);
 
@@ -103,11 +103,11 @@ async function saveNoteToServer(note) {
     message("Saved!");
 }
 
-let globalCurrentNote;
-let globalCurrentNoteLoadTime;
+glob.currentNote = null;
+glob.currentNoteLoadTime = null;
 
 function createNewTopLevelNote() {
-    let rootNode = globalTree.fancytree("getRootNode");
+    let rootNode = glob.tree.fancytree("getRootNode");
 
     createNote(rootNode, "root", "into");
 }
@@ -144,7 +144,7 @@ async function createNote(node, parentKey, target, encryption) {
         extraClasses: encryption ? "encrypted" : ""
     };
 
-    globalAllNoteIds.push(result.note_id);
+    glob.allNoteIds.push(result.note_id);
 
     newNoteCreated = true;
 
@@ -183,8 +183,8 @@ function setNoteBackgroundIfEncrypted(note) {
 
 async function loadNoteToEditor(noteId) {
     const note = await $.get(baseApiUrl + 'notes/' + noteId);
-    globalCurrentNote = note;
-    globalCurrentNoteLoadTime = Math.floor(new Date().getTime() / 1000);
+    glob.currentNote = note;
+    glob.currentNoteLoadTime = Math.floor(new Date().getTime() / 1000);
 
     if (newNoteCreated) {
         newNoteCreated = false;

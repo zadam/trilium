@@ -1,7 +1,7 @@
-let globalHistoryItems = null;
+glob.historyItems = null;
 
 function showCurrentNoteHistory() {
-    showNoteHistoryDialog(globalCurrentNote.detail.note_id);
+    showNoteHistoryDialog(glob.currentNote.detail.note_id);
 }
 
 function showNoteHistoryDialog(noteId, noteHistoryId) {
@@ -18,7 +18,7 @@ function showNoteHistoryDialog(noteId, noteHistoryId) {
         url: baseApiUrl + 'notes-history/' + noteId,
         type: 'GET',
         success: result => {
-            globalHistoryItems = result;
+            glob.historyItems = result;
 
             for (const row of result) {
                 const dateModified = getDateFromTS(row.date_modified_to);
@@ -46,7 +46,7 @@ $(document).bind('keydown', 'alt+h', showCurrentNoteHistory);
 $("#note-history-list").on('change', () => {
     const optVal = $("#note-history-list").find(":selected").val();
 
-    const historyItem = globalHistoryItems.find(r => r.note_history_id === optVal);
+    const historyItem = glob.historyItems.find(r => r.note_history_id === optVal);
 
     let noteTitle = historyItem.note_title;
     let noteText = historyItem.note_text;
