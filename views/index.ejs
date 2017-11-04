@@ -64,7 +64,7 @@
 
       <div class="hide-toggle" style="grid-area: title;">
         <div style="display: flex; align-items: center;">
-          <a onclick="encryptNoteAndSendToServer()"
+          <a onclick="encryption.encryptNoteAndSendToServer()"
              title="Encrypt the note so that password will be required to view the note"
              class="icon-action"
              id="encrypt-button"
@@ -72,7 +72,7 @@
             <img src="images/icons/lock.png" alt="Encrypt note"/>
           </a>
 
-          <a onclick="decryptNoteAndSendToServer()"
+          <a onclick="encryption.decryptNoteAndSendToServer()"
              title="Decrypt note permamently so that password will not be required to access this note in the future"
              class="icon-action"
              id="decrypt-button"

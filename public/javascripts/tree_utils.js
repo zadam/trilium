@@ -40,7 +40,7 @@ function getFullName(noteId) {
     const path = [];
 
     while (note) {
-        if (note.data.encryption > 0 && !isEncryptionAvailable()) {
+        if (note.data.encryption > 0 && !encryption.isEncryptionAvailable()) {
             path.push("[encrypted]");
         }
         else {

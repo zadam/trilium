@@ -86,19 +86,17 @@ settings.addModule((function() {
             success: result => {
                 if (result.success) {
                     // encryption password changed so current encryption session is invalid and needs to be cleared
-                    resetEncryptionSession();
+                    encryption.resetEncryptionSession();
 
-                    glob.encryptedDataKey = result.new_encrypted_data_key;
+                    encryption.setEncryptedDataKey(result.new_encrypted_data_key);
 
-                    alert("Password has been changed.");
-
-                    $("#settings-dialog").dialog('close');
+                    message("Password has been changed.");
                 }
                 else {
-                    alert(result.message);
+                    message(result.message);
                 }
             },
-            error: () => alert("Error occurred during changing password.")
+            error: () => error("Error occurred during changing password.")
         });
 
         return false;
@@ -122,7 +120,7 @@ settings.addModule((function() {
         const encryptionTimeout = encryptionTimeoutEl.val();
 
         settings.saveSettings(settingName, encryptionTimeout).then(() => {
-            glob.encryptionSessionTimeout = encryptionTimeout;
+            encryption.setEncryptionSessionTimeout(encryptionTimeout);
         });
 
         return false;

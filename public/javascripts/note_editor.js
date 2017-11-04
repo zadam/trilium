@@ -1,7 +1,6 @@
 const noteEditor = (function() {
     const noteTitleEl = $("#note-title");
     const noteDetailEl = $('#note-detail');
-    const noteEditableEl = $(".note-editable");
     const encryptButton = $("#encrypt-button");
     const decryptButton = $("#decrypt-button");
     const noteDetailWrapperEl = $("#note-detail-wrapper");
@@ -44,7 +43,7 @@ const noteEditor = (function() {
 
         updateNoteFromInputs(note);
 
-        encryptNoteIfNecessary(note);
+        encryption.encryptNoteIfNecessary(note);
 
         await saveNoteToServer(note);
     }
@@ -112,12 +111,12 @@ const noteEditor = (function() {
     async function createNote(node, parentKey, target, encryption) {
         // if encryption isn't available (user didn't enter password yet), then note is created as unencrypted
         // but this is quite weird since user doesn't see where the note is being created so it shouldn't occur often
-        if (!encryption || !isEncryptionAvailable()) {
+        if (!encryption || !encryption.isEncryptionAvailable()) {
             encryption = 0;
         }
 
         const newNoteName = "new note";
-        const newNoteNameEncryptedIfNecessary = encryption > 0 ? encryptString(newNoteName) : newNoteName;
+        const newNoteNameEncryptedIfNecessary = encryption > 0 ? encryption.encryptString(newNoteName) : newNoteName;
 
         const result = await $.ajax({
             url: baseApiUrl + 'notes/' + parentKey + '/children' ,
@@ -163,12 +162,12 @@ const noteEditor = (function() {
 
     function setNoteBackgroundIfEncrypted(note) {
         if (note.detail.encryption > 0) {
-            noteEditableEl.addClass("encrypted");
+            $(".note-editable").addClass("encrypted");
             encryptButton.hide();
             decryptButton.show();
         }
         else {
-            noteEditableEl.removeClass("encrypted");
+            $(".note-editable").removeClass("encrypted");
             encryptButton.show();
             decryptButton.hide();
         }
@@ -187,7 +186,7 @@ const noteEditor = (function() {
             noteTitleEl.focus().select();
         }
 
-        await handleEncryption(note.detail.encryption > 0, false);
+        await encryption.ensureEncryptionIsAvailable(note.detail.encryption > 0, false);
 
         noteDetailWrapperEl.show();
 
@@ -199,7 +198,7 @@ const noteEditor = (function() {
 
         encryptionPasswordEl.val('');
 
-        decryptNoteIfNecessary(note);
+        encryption.decryptNoteIfNecessary(note);
 
         noteTitleEl.val(note.detail.note_title);
 
@@ -222,11 +221,11 @@ const noteEditor = (function() {
     async function loadNote(noteId) {
         const note = await $.get(baseApiUrl + 'notes/' + noteId);
 
-        if (note.detail.encryption > 0 && !isEncryptionAvailable()) {
+        if (note.detail.encryption > 0 && !encryption.isEncryptionAvailable()) {
             return;
         }
 
-        decryptNoteIfNecessary(note);
+        encryption.decryptNoteIfNecessary(note);
 
         return note;
     }
@@ -245,7 +244,7 @@ const noteEditor = (function() {
         });
 
         // so that tab jumps from note title (which has tabindex 1)
-        noteEditableEl.attr("tabindex", 2);
+        $(".note-editable").attr("tabindex", 2);
     });
 
     setInterval(saveNoteIfChanged, 5000);

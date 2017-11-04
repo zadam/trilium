@@ -81,9 +81,6 @@ function setExpandedToServer(note_id, is_expanded) {
     });
 }
 
-glob.encryptionSalt;
-glob.encryptionSessionTimeout;
-glob.encryptedDataKey;
 glob.treeLoadTime;
 
 function initFancyTree(notes, startNoteId) {
@@ -181,9 +178,9 @@ function loadTree() {
     return $.get(baseApiUrl + 'tree').then(resp => {
         const notes = resp.notes;
         let startNoteId = resp.start_note_id;
-        glob.encryptionSalt = resp.password_derived_key_salt;
-        glob.encryptionSessionTimeout = resp.encryption_session_timeout;
-        glob.encryptedDataKey = resp.encrypted_data_key;
+        encryption.setEncryptionSalt(resp.password_derived_key_salt);
+        encryption.setEncryptionSessionTimeout(resp.encryption_session_timeout);
+        encryption.setEncryptedDataKey(resp.encrypted_data_key);
         glob.treeLoadTime = resp.tree_load_time;
 
         // add browser ID header to all AJAX requests

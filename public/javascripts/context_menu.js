@@ -60,10 +60,10 @@ const contextMenuSetup = {
             noteEditor.createNote(node, node.key, 'into');
         }
         else if (ui.cmd === "encryptSubTree") {
-            encryptSubTree(node.key);
+            encryption.encryptSubTree(node.key);
         }
         else if (ui.cmd === "decryptSubTree") {
-            decryptSubTree(node.key);
+            encryption.decryptSubTree(node.key);
         }
         else if (ui.cmd === "cut") {
             cut(node);

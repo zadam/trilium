@@ -29,7 +29,7 @@ async function checkStatus() {
         // this will also reload the note content
         await glob.tree.fancytree('getTree').reload(treeResp.notes);
 
-        decryptTreeItems();
+        encryption.decryptTreeItems();
     }
 
     $("#changesToPushCount").html(resp.changesToPushCount);
