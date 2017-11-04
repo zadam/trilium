@@ -161,7 +161,7 @@ const noteTree = (function() {
                         console.log("CTRL-V");
 
                         if (event.ctrlKey) { // Ctrl-V
-                            pasteAfter(node);
+                            contextMenu.pasteAfter(node);
                             return false;
                         }
                         break;
@@ -169,7 +169,7 @@ const noteTree = (function() {
                         console.log("CTRL-X");
 
                         if (event.ctrlKey) { // Ctrl-X
-                            cut(node);
+                            contextMenu.cut(node);
                             return false;
                         }
                         break;
@@ -177,7 +177,7 @@ const noteTree = (function() {
             }
         });
 
-        treeEl.contextmenu(contextMenuSetup);
+        treeEl.contextmenu(contextMenu.contextMenuSettings);
     }
 
     function loadTree() {
