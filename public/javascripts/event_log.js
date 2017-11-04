@@ -1,41 +1,47 @@
-async function showEventLog() {
-    $("#event-log-dialog").dialog({
-        modal: true,
-        width: 800,
-        height: 700
-    });
+const eventLog = (function() {
+    const dialogEl = $("#event-log-dialog");
+    const listEl = $("#event-log-list");
 
-    const result = await $.ajax({
-        url: baseApiUrl + 'event-log',
-        type: 'GET',
-        error: () => error("Error getting event log.")
-    });
+    async function showDialog() {
+        dialogEl.dialog({
+            modal: true,
+            width: 800,
+            height: 700
+        });
 
-    const eventLogList = $("#event-log-list");
-    eventLogList.html('');
+        const result = await $.ajax({
+            url: baseApiUrl + 'event-log',
+            type: 'GET',
+            error: () => error("Error getting event log.")
+        });
 
-    for (const event of result) {
-        const dateTime = formatDateTime(getDateFromTS(event.date_added));
+        listEl.html('');
 
-        if (event.note_id) {
-            const noteLink = $("<a>", {
-                href: 'app#' + event.note_id,
-                text: getFullName(event.note_id)
-            }).prop('outerHTML');
+        for (const event of result) {
+            const dateTime = formatDateTime(getDateFromTS(event.date_added));
 
-            console.log(noteLink);
+            if (event.note_id) {
+                const noteLink = $("<a>", {
+                    href: 'app#' + event.note_id,
+                    text: getFullName(event.note_id)
+                }).prop('outerHTML');
 
-            event.comment = event.comment.replace('<note>', noteLink);
+                event.comment = event.comment.replace('<note>', noteLink);
+            }
+
+            const eventEl = $('<li>').html(dateTime + " - " + event.comment);
+
+            listEl.append(eventEl);
         }
-
-        const eventEl = $('<li>').html(dateTime + " - " + event.comment);
-
-        eventLogList.append(eventEl);
     }
-}
 
-$(document).on('click', '#event-log-dialog a', e => {
-    goToInternalNote(e, () => {
-        $("#event-log-dialog").dialog('close');
+    $(document).on('click', '#event-log-dialog a', e => {
+        goToInternalNote(e, () => {
+            dialogEl.dialog('close');
+        });
     });
-});
+
+    return {
+        showDialog
+    };
+})();
