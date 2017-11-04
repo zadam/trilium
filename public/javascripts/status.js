@@ -1,5 +1,5 @@
-function checkStatus() {
-    $.ajax({
+async function checkStatus() {
+    const resp = await $.ajax({
         url: baseApiUrl + 'status',
         type: 'POST',
         contentType: "application/json",
@@ -8,18 +8,6 @@ function checkStatus() {
             currentNoteId: globalCurrentNote ? globalCurrentNote.detail.note_id : null,
             currentNoteDateModified: globalCurrentNoteLoadTime
         }),
-        success: resp => {
-            if (resp.changedTree) {
-                loadTree().then(resp => {
-                    console.log("Reloading tree because of background changes");
-
-                    // this will also reload the note content
-                    globalTree.fancytree('getTree').reload(resp.notes);
-                });
-            }
-
-            $("#changesToPushCount").html(resp.changesToPushCount);
-        },
         statusCode: {
             401: () => {
                 // if the user got logged out then we should display the page
@@ -32,6 +20,19 @@ function checkStatus() {
             }
         }
     });
+
+    if (resp.changedTree) {
+        const treeResp = await loadTree();
+
+        console.log("Reloading tree because of background changes");
+
+        // this will also reload the note content
+        await globalTree.fancytree('getTree').reload(treeResp.notes);
+
+        decryptTreeItems();
+    }
+
+    $("#changesToPushCount").html(resp.changesToPushCount);
 }
 
 setInterval(checkStatus, 5 * 1000);

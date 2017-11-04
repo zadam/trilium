@@ -72,6 +72,22 @@ function computeScrypt(password, salt, callback) {
     });
 }
 
+function decryptTreeItems() {
+    if (!isEncryptionAvailable()) {
+        return;
+    }
+
+    for (const noteId of globalAllNoteIds) {
+        const note = getNodeByKey(noteId);
+
+        if (note.data.encryption > 0) {
+            const title = decryptString(note.data.note_title);
+
+            note.setTitle(title);
+        }
+    }
+}
+
 $("#encryption-password-form").submit(() => {
     const password = $("#encryption-password").val();
     $("#encryption-password").val("");
@@ -81,15 +97,7 @@ $("#encryption-password-form").submit(() => {
 
         globalDataKey = key;
 
-        for (const noteId of globalAllNoteIds) {
-            const note = getNodeByKey(noteId);
-
-            if (note.data.encryption > 0) {
-                const title = decryptString(note.data.note_title);
-
-                note.setTitle(title);
-            }
-        }
+        decryptTreeItems();
 
         if (globalEncryptionDeferred !== null) {
             globalEncryptionDeferred.resolve();
@@ -97,11 +105,11 @@ $("#encryption-password-form").submit(() => {
             globalEncryptionDeferred = null;
         }
     })
-        .catch(reason => {
-            console.log(reason);
+    .catch(reason => {
+        console.log(reason);
 
-            alert(reason);
-        });
+        alert(reason);
+    });
 
     return false;
 });
