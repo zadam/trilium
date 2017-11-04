@@ -12,6 +12,16 @@ const encryption = (function() {
     let encryptedDataKey = null;
     let encryptionSessionTimeout = null;
 
+    $.ajax({
+        url: baseApiUrl + 'settings/all',
+        type: 'GET',
+        error: () => error("Error getting encryption settings.")
+    }).then(settings => {
+        encryptionSalt = settings.password_derived_key_salt;
+        encryptionSessionTimeout = settings.encryption_session_timeout;
+        encryptedDataKey = settings.encrypted_data_key;
+    });
+
     function setEncryptionSalt(encSalt) {
         encryptionSalt = encSalt;
     }
@@ -438,7 +448,6 @@ const encryption = (function() {
     }
 
     return {
-        setEncryptionSalt,
         setEncryptedDataKey,
         setEncryptionSessionTimeout,
         ensureEncryptionIsAvailable,

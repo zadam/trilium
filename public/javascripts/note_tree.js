@@ -6,8 +6,6 @@ const noteTree = (function() {
     let treeLoadTime = null;
     let clipboardNoteId = null;
 
-    glob.allNoteIds = [];
-
     function getTreeLoadTime() {
         return treeLoadTime;
     }
@@ -194,9 +192,6 @@ const noteTree = (function() {
         return $.get(baseApiUrl + 'tree').then(resp => {
             const notes = resp.notes;
             let startNoteId = resp.start_note_id;
-            encryption.setEncryptionSalt(resp.password_derived_key_salt);
-            encryption.setEncryptionSessionTimeout(resp.encryption_session_timeout);
-            encryption.setEncryptedDataKey(resp.encrypted_data_key);
             treeLoadTime = resp.tree_load_time;
 
             // add browser ID header to all AJAX requests
