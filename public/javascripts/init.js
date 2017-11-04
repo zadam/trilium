@@ -61,9 +61,7 @@ $(document).tooltip({
         const noteId = getNoteIdFromLink($(this).attr("href"));
 
         if (noteId !== null) {
-            loadNote(noteId, note => {
-                callback(note.detail.note_text);
-            });
+            loadNote(noteId).then(note => callback(note.detail.note_text));
         }
     },
     close: function(event, ui)

@@ -21,12 +21,8 @@ function noteChanged() {
     isNoteChanged = true;
 }
 
-function saveNoteIfChanged(callback) {
+async function saveNoteIfChanged() {
     if (!isNoteChanged) {
-        if (callback) {
-            callback();
-        }
-
         return;
     }
 
@@ -36,7 +32,7 @@ function saveNoteIfChanged(callback) {
 
     encryptNoteIfNecessary(note);
 
-    saveNoteToServer(note, callback);
+    await saveNoteToServer(note);
 }
 
 setInterval(saveNoteIfChanged, 5000);
@@ -91,25 +87,20 @@ function updateNoteFromInputs(note) {
     note.detail.note_title = title;
 }
 
-function saveNoteToServer(note, callback) {
-    $.ajax({
+async function saveNoteToServer(note) {
+    await $.ajax({
         url: baseApiUrl + 'notes/' + note.detail.note_id,
         type: 'PUT',
         data: JSON.stringify(note),
         contentType: "application/json",
-        success: () => {
-            isNoteChanged = false;
-
-            message("Saved!");
-
-            if (callback) {
-                callback();
-            }
-        },
         error: () => {
             error("Error saving the note!");
         }
     });
+
+    isNoteChanged = false;
+
+    message("Saved!");
 }
 
 let globalCurrentNote;
@@ -123,7 +114,7 @@ function createNewTopLevelNote() {
 
 let newNoteCreated = false;
 
-function createNote(node, parentKey, target, encryption) {
+async function createNote(node, parentKey, target, encryption) {
     // if encryption isn't available (user didn't enter password yet), then note is created as unencrypted
     // but this is quite weird since user doesn't see where the note is being created so it shouldn't occur often
     if (!encryption || !isEncryptionAvailable()) {
@@ -133,7 +124,7 @@ function createNote(node, parentKey, target, encryption) {
     const newNoteName = "new note";
     const newNoteNameEncryptedIfNecessary = encryption > 0 ? encryptString(newNoteName) : newNoteName;
 
-    $.ajax({
+    const result = await $.ajax({
         url: baseApiUrl + 'notes/' + parentKey + '/children' ,
         type: 'POST',
         data: JSON.stringify({
@@ -142,33 +133,32 @@ function createNote(node, parentKey, target, encryption) {
             target_note_id: node.key,
             encryption: encryption
         }),
-        contentType: "application/json",
-        success: result => {
-            const newNode = {
-                title: newNoteName,
-                key: result.note_id,
-                note_id: result.note_id,
-                encryption: encryption,
-                extraClasses: encryption ? "encrypted" : ""
-            };
-
-            globalAllNoteIds.push(result.note_id);
-
-            newNoteCreated = true;
-
-            if (target === 'after') {
-                node.appendSibling(newNode).setActive(true);
-            }
-            else {
-                node.addChildren(newNode).setActive(true);
-
-                node.folder = true;
-                node.renderTitle();
-            }
-
-            message("Created!");
-        }
+        contentType: "application/json"
     });
+
+    const newNode = {
+        title: newNoteName,
+        key: result.note_id,
+        note_id: result.note_id,
+        encryption: encryption,
+        extraClasses: encryption ? "encrypted" : ""
+    };
+
+    globalAllNoteIds.push(result.note_id);
+
+    newNoteCreated = true;
+
+    if (target === 'after') {
+        node.appendSibling(newNode).setActive(true);
+    }
+    else {
+        node.addChildren(newNode).setActive(true);
+
+        node.folder = true;
+        node.renderTitle();
+    }
+
+    message("Created!");
 }
 
 function setTreeBasedOnEncryption(note) {
@@ -191,58 +181,57 @@ function setNoteBackgroundIfEncrypted(note) {
     setTreeBasedOnEncryption(note);
 }
 
-function loadNoteToEditor(noteId) {
-    $.get(baseApiUrl + 'notes/' + noteId).then(note => {
-        globalCurrentNote = note;
-        globalCurrentNoteLoadTime = Math.floor(new Date().getTime() / 1000);
+async function loadNoteToEditor(noteId) {
+    const note = await $.get(baseApiUrl + 'notes/' + noteId);
+    globalCurrentNote = note;
+    globalCurrentNoteLoadTime = Math.floor(new Date().getTime() / 1000);
 
-        if (newNoteCreated) {
-            newNoteCreated = false;
+    if (newNoteCreated) {
+        newNoteCreated = false;
 
-            $("#note-title").focus().select();
-        }
+        $("#note-title").focus().select();
+    }
 
-        handleEncryption(note.detail.encryption > 0, false, () => {
-            $("#note-detail-wrapper").show();
+    await handleEncryption(note.detail.encryption > 0, false);
 
-            // this may fal if the dialog has not been previously opened
-            try {
-                $("#encryption-password-dialog").dialog('close');
-            }
-            catch(e) {}
+    $("#note-detail-wrapper").show();
 
-            $("#encryption-password").val('');
+    // this may fal if the dialog has not been previously opened
+    try {
+        $("#encryption-password-dialog").dialog('close');
+    }
+    catch(e) {}
 
-            decryptNoteIfNecessary(note);
+    $("#encryption-password").val('');
 
-            $("#note-title").val(note.detail.note_title);
+    decryptNoteIfNecessary(note);
 
-            noteChangeDisabled = true;
+    $("#note-title").val(note.detail.note_title);
 
-            // Clear contents and remove all stored history. This is to prevent undo from going across notes
-            $('#note-detail').summernote('reset');
+    noteChangeDisabled = true;
 
-            $('#note-detail').summernote('code', note.detail.note_text);
+    // Clear contents and remove all stored history. This is to prevent undo from going across notes
+    $('#note-detail').summernote('reset');
 
-            document.location.hash = noteId;
+    $('#note-detail').summernote('code', note.detail.note_text);
 
-            addRecentNote(noteId, note.detail.note_id);
+    document.location.hash = noteId;
 
-            noteChangeDisabled = false;
+    addRecentNote(noteId, note.detail.note_id);
 
-            setNoteBackgroundIfEncrypted(note);
-        });
-    });
+    noteChangeDisabled = false;
+
+    setNoteBackgroundIfEncrypted(note);
 }
 
-function loadNote(noteId, callback) {
-    $.get(baseApiUrl + 'notes/' + noteId).then(note => {
-        if (note.detail.encryption > 0 && !isEncryptionAvailable()) {
-            return;
-        }
+async function loadNote(noteId) {
+    const note = await $.get(baseApiUrl + 'notes/' + noteId);
 
-        decryptNoteIfNecessary(note);
+    if (note.detail.encryption > 0 && !isEncryptionAvailable()) {
+        return;
+    }
 
-        callback(note);
-    });
+    decryptNoteIfNecessary(note);
+
+    return note;
 }

@@ -97,7 +97,7 @@ function initFancyTree(notes, startNoteId) {
         activate: (event, data) => {
             const node = data.node.data;
 
-            saveNoteIfChanged(() => loadNoteToEditor(node.note_id));
+            saveNoteIfChanged().then(() => loadNoteToEditor(node.note_id));
         },
         expand: (event, data) => {
             setExpandedToServer(data.node.key, true);

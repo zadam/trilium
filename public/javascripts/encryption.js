@@ -1,8 +1,10 @@
-let globalEncryptionCallback = null;
+let globalEncryptionDeferred = null;
 
-function handleEncryption(requireEncryption, modal, callback) {
+function handleEncryption(requireEncryption, modal) {
+    const dfd = $.Deferred();
+
     if (requireEncryption && globalDataKey === null) {
-        globalEncryptionCallback = callback;
+        globalEncryptionDeferred = dfd;
 
         $("#encryption-password-dialog").dialog({
             modal: modal,
@@ -16,8 +18,10 @@ function handleEncryption(requireEncryption, modal, callback) {
         });
     }
     else {
-        callback();
+        dfd.resolve();
     }
+
+    return dfd.promise();
 }
 
 let globalDataKey = null;
@@ -87,10 +91,10 @@ $("#encryption-password-form").submit(() => {
             }
         }
 
-        if (globalEncryptionCallback !== null) {
-            globalEncryptionCallback();
+        if (globalEncryptionDeferred !== null) {
+            globalEncryptionDeferred.resolve();
 
-            globalEncryptionCallback = null;
+            globalEncryptionDeferred = null;
         }
     })
         .catch(reason => {
@@ -225,69 +229,67 @@ function encryptNote(note) {
     return note;
 }
 
-function encryptNoteAndSendToServer() {
-    handleEncryption(true, true, () => {
-        const note = globalCurrentNote;
+async function encryptNoteAndSendToServer() {
+    await handleEncryption(true, true);
 
-        updateNoteFromInputs(note);
+    const note = globalCurrentNote;
 
-        encryptNote(note);
+    updateNoteFromInputs(note);
 
-        saveNoteToServer(note);
+    encryptNote(note);
 
-        changeEncryptionOnNoteHistory(note.detail.note_id, true);
+    await saveNoteToServer(note);
 
-        setNoteBackgroundIfEncrypted(note);
-    });
+    await changeEncryptionOnNoteHistory(note.detail.note_id, true);
+
+    setNoteBackgroundIfEncrypted(note);
 }
 
-function changeEncryptionOnNoteHistory(noteId, encrypt) {
-    $.ajax({
+async function changeEncryptionOnNoteHistory(noteId, encrypt) {
+    const result = await $.ajax({
         url: baseApiUrl + 'notes-history/' + noteId + "?encryption=" + (encrypt ? 0 : 1),
         type: 'GET',
-        success: result => {
-            for (const row of result) {
-                if (encrypt) {
-                    row.note_title = encryptString(row.note_title);
-                    row.note_text = encryptString(row.note_text);
-                }
-                else {
-                    row.note_title = decryptString(row.note_title);
-                    row.note_text = decryptString(row.note_text);
-                }
-
-                row.encryption = encrypt ? 1 : 0;
-
-                $.ajax({
-                    url: baseApiUrl + 'notes-history',
-                    type: 'PUT',
-                    contentType: 'application/json',
-                    data: JSON.stringify(row),
-                    success: result => console.log('Note history ' + row.note_history_id + ' de/encrypted'),
-                    error: () => alert("Error de/encrypting note history.")
-                });
-
-                break;
-            }
-        },
         error: () => alert("Error getting note history.")
     });
+
+    for (const row of result) {
+        if (encrypt) {
+            row.note_title = encryptString(row.note_title);
+            row.note_text = encryptString(row.note_text);
+        }
+        else {
+            row.note_title = decryptString(row.note_title);
+            row.note_text = decryptString(row.note_text);
+        }
+
+        row.encryption = encrypt ? 1 : 0;
+
+        await $.ajax({
+            url: baseApiUrl + 'notes-history',
+            type: 'PUT',
+            contentType: 'application/json',
+            data: JSON.stringify(row),
+            error: () => alert("Error de/encrypting note history.")
+        });
+
+        console.log('Note history ' + row.note_history_id + ' de/encrypted');
+    }
 }
 
-function decryptNoteAndSendToServer() {
-    handleEncryption(true, true, () => {
-        const note = globalCurrentNote;
+async function decryptNoteAndSendToServer() {
+    await handleEncryption(true, true);
 
-        updateNoteFromInputs(note);
+    const note = globalCurrentNote;
 
-        note.detail.encryption = 0;
+    updateNoteFromInputs(note);
 
-        saveNoteToServer(note);
+    note.detail.encryption = 0;
 
-        changeEncryptionOnNoteHistory(note.detail.note_id, false);
+    await saveNoteToServer(note);
 
-        setNoteBackgroundIfEncrypted(note);
-    });
+    await changeEncryptionOnNoteHistory(note.detail.note_id, false);
+
+    setNoteBackgroundIfEncrypted(note);
 }
 
 function decryptNoteIfNecessary(note) {
@@ -301,58 +303,58 @@ function decryptNote(note) {
     note.detail.note_text = decryptString(note.detail.note_text);
 }
 
-function encryptSubTree(noteId) {
-    handleEncryption(true, true, () => {
-        updateSubTreeRecursively(noteId, note => {
-            if (note.detail.encryption === null || note.detail.encryption === 0) {
-                encryptNote(note);
+async function encryptSubTree(noteId) {
+    await handleEncryption(true, true);
 
-                note.detail.encryption = 1;
+    updateSubTreeRecursively(noteId, note => {
+        if (note.detail.encryption === null || note.detail.encryption === 0) {
+            encryptNote(note);
 
-                return true;
+            note.detail.encryption = 1;
+
+            return true;
+        }
+        else {
+            return false;
+        }
+    },
+        note => {
+            if (note.detail.note_id === globalCurrentNote.detail.note_id) {
+                loadNoteToEditor(note.detail.note_id);
             }
             else {
-                return false;
+                setTreeBasedOnEncryption(note);
             }
-        },
-            note => {
-                if (note.detail.note_id === globalCurrentNote.detail.note_id) {
-                    loadNoteToEditor(note.detail.note_id);
-                }
-                else {
-                    setTreeBasedOnEncryption(note);
-                }
-            });
+        });
 
-        alert("Encryption finished.");
-    });
+    alert("Encryption finished.");
 }
 
-function decryptSubTree(noteId) {
-    handleEncryption(true, true, () => {
-        updateSubTreeRecursively(noteId, note => {
-            if (note.detail.encryption === 1) {
-                decryptNote(note);
+async function decryptSubTree(noteId) {
+    await handleEncryption(true, true);
 
-                note.detail.encryption = 0;
+    updateSubTreeRecursively(noteId, note => {
+        if (note.detail.encryption === 1) {
+            decryptNote(note);
 
-                return true;
+            note.detail.encryption = 0;
+
+            return true;
+        }
+        else {
+            return false;
+        }
+    },
+        note => {
+            if (note.detail.note_id === globalCurrentNote.detail.note_id) {
+                loadNoteToEditor(note.detail.note_id);
             }
             else {
-                return false;
+                setTreeBasedOnEncryption(note);
             }
-        },
-            note => {
-                if (note.detail.note_id === globalCurrentNote.detail.note_id) {
-                    loadNoteToEditor(note.detail.note_id);
-                }
-                else {
-                    setTreeBasedOnEncryption(note);
-                }
-            });
+        });
 
-        alert("Decryption finished.");
-    });
+    alert("Decryption finished.");
 }
 
 function updateSubTreeRecursively(noteId, updateCallback, successCallback) {
