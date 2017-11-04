@@ -217,7 +217,7 @@ async function loadNoteToEditor(noteId) {
 
     document.location.hash = noteId;
 
-    addRecentNote(noteId, note.detail.note_id);
+    recentNotes.addRecentNote(noteId, note.detail.note_id);
 
     noteChangeDisabled = false;
 
