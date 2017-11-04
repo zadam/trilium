@@ -21,7 +21,7 @@ function showRecentChanges() {
                 }
 
 
-                let dateDay = getDateFromTS(row.date_modified);
+                let dateDay = getDateFromTS(row.date_modified_to);
                 dateDay.setHours(0);
                 dateDay.setMinutes(0);
                 dateDay.setSeconds(0);
@@ -49,7 +49,7 @@ function showRecentChanges() {
                 const dayEl = $('<div>').append($('<b>').html(formatDate(dateDay))).append(changesListEl);
 
                 for (const change of dayChanges) {
-                    const formattedTime = formatTime(getDateFromTS(change.date_modified));
+                    const formattedTime = formatTime(getDateFromTS(change.date_modified_to));
 
                     const noteLink = $("<a>", {
                         href: 'app#' + change.note_id,
@@ -57,7 +57,7 @@ function showRecentChanges() {
                     });
 
                     const revLink = $("<a>", {
-                        href: "javascript: showNoteHistoryDialog('" + change.note_id + "', " + change.id + ");",
+                        href: "javascript: showNoteHistoryDialog('" + change.note_id + "', '" + change.note_history_id + "');",
                         text: 'rev'
                     });
 

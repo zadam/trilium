@@ -62,13 +62,8 @@ $("#insert-link-form").submit(() => {
 
 // when click on link popup, in case of internal link, just go the the referenced note instead of default behavior
 // of opening the link in new window/tab
-$(document).on('click', 'div.popover-content a, div.ui-tooltip-content', e => {
-    goToInternalNote(e);
-});
-
-$(document).on('dblclick', '.note-editable a, div.ui-tooltip-content', e => {
-    goToInternalNote(e);
-});
+$(document).on('click', 'div.popover-content a, div.ui-tooltip-content', goToInternalNote);
+$(document).on('dblclick', '.note-editable a, div.ui-tooltip-content', goToInternalNote);
 
 function goToInternalNote(e, callback) {
     const targetUrl = $(e.target).attr("href");

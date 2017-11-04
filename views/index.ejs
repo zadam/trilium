@@ -15,6 +15,7 @@
           <button class="btn btn-xs" onclick="showRecentChanges();">Recent changes</button>
           <button class="btn btn-xs" onclick="showRecentNotes();">Recent notes</button>
           <button class="btn btn-xs" onclick="showJumpToNote();">Jump to note</button>
+          <button class="btn btn-xs" onclick="showEventLog();">Event log</button>
         </div>
 
         <div>
@@ -213,6 +214,10 @@
     <div id="recent-changes-dialog" title="Recent changes" style="display: none; padding: 20px;">
     </div>
 
+    <div id="event-log-dialog" title="Event log" style="display: none; padding: 20px;">
+      <ul id="event-log-list"></ul>
+    </div>
+
     <div id="tooltip" style="display: none;"></div>
 
     <script type="text/javascript">
@@ -275,6 +280,7 @@
     <script src="javascripts/settings.js"></script>
     <script src="javascripts/note_history.js"></script>
     <script src="javascripts/recent_changes.js"></script>
+    <script src="javascripts/event_log.js"></script>
 
     <script src="javascripts/status.js"></script>
     <script src="javascripts/sync.js"></script>

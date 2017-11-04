@@ -11,30 +11,10 @@ const options = require('./services/options');
 const log = require('./services/log');
 const utils = require('./services/utils');
 
-const indexRoute = require('./routes/index');
-const loginRoute = require('./routes/login');
-const logoutRoute = require('./routes/logout');
-const migrationRoute = require('./routes/migration');
-
-// API routes
-const treeApiRoute = require('./routes/api/tree');
-const notesApiRoute = require('./routes/api/notes');
-const notesMoveApiRoute = require('./routes/api/notes_move');
-const statusApiRoute = require('./routes/api/status');
-const noteHistoryApiRoute = require('./routes/api/note_history');
-const recentChangesApiRoute = require('./routes/api/recent_changes');
-const settingsApiRoute = require('./routes/api/settings');
-const passwordApiRoute = require('./routes/api/password');
-const migrationApiRoute = require('./routes/api/migration');
-const syncApiRoute = require('./routes/api/sync');
-const loginApiRoute = require('./routes/api/login');
-
 const dataDir = require('./services/data_dir');
 const sessionSecret = require('./services/session_secret');
 
 const db = require('sqlite');
-
-const config = require('./services/config');
 
 db.open(dataDir.DOCUMENT_PATH, { Promise }).then(async () => {
     if (!await options.getOption('document_id')) {
@@ -80,22 +60,7 @@ app.use(session({
 
 app.use(favicon(__dirname + '/public/images/app-icons/favicon.ico'));
 
-app.use('/', indexRoute);
-app.use('/login', loginRoute);
-app.use('/logout', logoutRoute);
-app.use('/migration', migrationRoute);
-
-app.use('/api/tree', treeApiRoute);
-app.use('/api/notes', notesApiRoute);
-app.use('/api/notes', notesMoveApiRoute);
-app.use('/api/status', statusApiRoute);
-app.use('/api/notes-history', noteHistoryApiRoute);
-app.use('/api/recent-changes', recentChangesApiRoute);
-app.use('/api/settings', settingsApiRoute);
-app.use('/api/password', passwordApiRoute);
-app.use('/api/migration', migrationApiRoute);
-app.use('/api/sync', syncApiRoute);
-app.use('/api/login', loginApiRoute);
+require('./routes/routes').register(app);
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {
