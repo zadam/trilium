@@ -1,28 +1,38 @@
-function showJumpToNote() {
-    $("#jump-to-note-autocomplete").val('');
+const jumpToNote = (function() {
+    const dialogEl = $("#jump-to-note-dialog");
+    const autoCompleteEl = $("#jump-to-note-autocomplete");
+    const formEl = $("#jump-to-note-form");
 
-    $("#jump-to-note-dialog").dialog({
-        modal: true,
-        width: 800
-    });
+    function showDialog() {
+        autoCompleteEl.val('');
 
-    $("#jump-to-note-autocomplete").autocomplete({
-        source: getAutocompleteItems(glob.allNoteIds),
-        minLength: 0
-    });
-}
+        dialogEl.dialog({
+            modal: true,
+            width: 800
+        });
 
-$(document).bind('keydown', 'alt+j', showJumpToNote);
-
-$("#jump-to-note-form").submit(() => {
-    const val = $("#jump-to-note-autocomplete").val();
-    const noteId = getNodeIdFromLabel(val);
-
-    if (noteId) {
-        getNodeByKey(noteId).setActive();
-
-        $("#jump-to-note-dialog").dialog('close');
+        autoCompleteEl.autocomplete({
+            source: getAutocompleteItems(glob.allNoteIds),
+            minLength: 0
+        });
     }
 
-    return false;
-});
+    $(document).bind('keydown', 'alt+j', showDialog);
+
+    formEl.submit(() => {
+        const val = autoCompleteEl.val();
+        const noteId = getNodeIdFromLabel(val);
+
+        if (noteId) {
+            getNodeByKey(noteId).setActive();
+
+            dialogEl.dialog('close');
+        }
+
+        return false;
+    });
+
+    return {
+        showDialog
+    };
+})();
