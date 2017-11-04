@@ -1,103 +1,152 @@
-function displaySettings() {
-    $.ajax({
-        url: baseApiUrl + 'settings',
-        type: 'GET',
-        success: result => {
-            $("#encryption-timeout-in-seconds").val(result['encryption_session_timeout']);
-            $("#history-snapshot-time-interval-in-seconds").val(result['history_snapshot_time_interval']);
-        },
-        error: () => alert("Error getting settings.")
-    });
+const settings = (function() {
+    const dialogEl = $("#settings-dialog");
+    const tabsEl = $("#settings-tabs");
 
-    $("#settings-dialog").dialog({
-        modal: true,
-        width: 600
-    });
+    const settingModules = [];
 
-    $("#settings-tabs").tabs();
-}
-
-$("#change-password-form").submit(() => {
-    const oldPassword = $("#old-password").val();
-    const newPassword1 = $("#new-password1").val();
-    const newPassword2 = $("#new-password2").val();
-
-    $("#old-password").val('');
-    $("#new-password1").val('');
-    $("#new-password2").val('');
-
-    if (newPassword1 !== newPassword2) {
-        alert("New passwords are not the same.");
-        return false;
+    function addModule(module) {
+        settingModules.push(module);
     }
 
-    $.ajax({
-        url: baseApiUrl + 'password/change',
-        type: 'POST',
-        data: JSON.stringify({
-            'current_password': oldPassword,
-            'new_password': newPassword1
-        }),
-        contentType: "application/json",
-        success: result => {
-            if (result.success) {
-                // encryption password changed so current encryption session is invalid and needs to be cleared
-                resetEncryptionSession();
+    async function showDialog() {
+        const settings = await $.ajax({
+            url: baseApiUrl + 'settings',
+            type: 'GET',
+            error: () => error("Error getting settings.")
+        });
 
-                glob.encryptedDataKey = result.new_encrypted_data_key;
+        dialogEl.dialog({
+            modal: true,
+            width: 600
+        });
 
-                alert("Password has been changed.");
+        tabsEl.tabs();
 
-                $("#settings-dialog").dialog('close');
-            }
-            else {
-                alert(result.message);
-            }
-        },
-        error: () => alert("Error occurred during changing password.")
+        for (module of settingModules) {
+            module.settingsLoaded(settings);
+        }
+    }
+
+    function saveSettings(settingName, settingValue) {
+        return $.ajax({
+            url: baseApiUrl + 'settings',
+            type: 'POST',
+            data: JSON.stringify({
+                name: settingName,
+                value: settingValue
+            }),
+            contentType: "application/json",
+            success: () => {
+                message("Settings change have been saved.");
+            },
+            error: () => alert("Error occurred during saving settings change.")
+        });
+    }
+
+    return {
+        showDialog,
+        saveSettings,
+        addModule
+    };
+})();
+
+settings.addModule((function() {
+    const formEl = $("#change-password-form");
+    const oldPasswordEl = $("#old-password");
+    const newPassword1El = $("#new-password1");
+    const newPassword2El = $("#new-password2");
+
+    function settingsLoaded(settings) {
+    }
+
+    formEl.submit(() => {
+        const oldPassword = oldPasswordEl.val();
+        const newPassword1 = newPassword1El.val();
+        const newPassword2 = newPassword2El.val();
+
+        oldPasswordEl.val('');
+        newPassword1El.val('');
+        newPassword2El.val('');
+
+        if (newPassword1 !== newPassword2) {
+            alert("New passwords are not the same.");
+            return false;
+        }
+
+        $.ajax({
+            url: baseApiUrl + 'password/change',
+            type: 'POST',
+            data: JSON.stringify({
+                'current_password': oldPassword,
+                'new_password': newPassword1
+            }),
+            contentType: "application/json",
+            success: result => {
+                if (result.success) {
+                    // encryption password changed so current encryption session is invalid and needs to be cleared
+                    resetEncryptionSession();
+
+                    glob.encryptedDataKey = result.new_encrypted_data_key;
+
+                    alert("Password has been changed.");
+
+                    $("#settings-dialog").dialog('close');
+                }
+                else {
+                    alert(result.message);
+                }
+            },
+            error: () => alert("Error occurred during changing password.")
+        });
+
+        return false;
     });
 
-    return false;
-});
+    return {
+        settingsLoaded
+    };
+})());
 
-$("#encryption-timeout-form").submit(() => {
-    const encryptionTimeout = $("#encryption-timeout-in-seconds").val();
+settings.addModule((function() {
+    const formEl = $("#encryption-timeout-form");
+    const encryptionTimeoutEl = $("#encryption-timeout-in-seconds");
+    const settingName = 'encryption_session_timeout';
 
-    $.ajax({
-        url: baseApiUrl + 'settings',
-        type: 'POST',
-        data: JSON.stringify({
-            name: 'encryption_session_timeout',
-            value: encryptionTimeout
-        }),
-        contentType: "application/json",
-        success: () => {
-            alert("Encryption timeout has been changed.");
+    function settingsLoaded(settings) {
+        encryptionTimeoutEl.val(settings[settingName]);
+    }
 
+    formEl.submit(() => {
+        const encryptionTimeout = encryptionTimeoutEl.val();
+
+        settings.saveSettings(settingName, encryptionTimeout).then(() => {
             glob.encryptionSessionTimeout = encryptionTimeout;
-         },
-        error: () => alert("Error occurred during changing encryption timeout.")
+        });
+
+        return false;
     });
 
-    return false;
-});
+    return {
+        settingsLoaded
+    };
+})());
 
-$("#history-snapshot-time-interval-form").submit(() => {
-    const historySnapshotTimeInterval = $("#history-snapshot-time-interval-in-seconds").val();
+settings.addModule((function () {
+    const formEl = $("#history-snapshot-time-interval-form");
+    const timeIntervalEl = $("#history-snapshot-time-interval-in-seconds");
+    const settingName = 'history_snapshot_time_interval';
 
-    $.ajax({
-        url: baseApiUrl + 'settings',
-        type: 'POST',
-        data: JSON.stringify({
-            name: 'history_snapshot_time_interval',
-            value: historySnapshotTimeInterval
-        }),
-        contentType: "application/json",
-        success: () => {
-            alert("History snapshot time interval has been changed.");
-         },
-        error: () => alert("Error occurred during changing history snapshot time interval.")
+    function settingsLoaded(settings) {
+        timeIntervalEl.val(settings[settingName]);
+    }
+
+    formEl.submit(() => {
+        settings.saveSettings(settingName, timeIntervalEl.val());
+
+        return false;
     });
 
-    return false;
-});
+    return {
+        settingsLoaded
+    };
+})());
