@@ -3,6 +3,7 @@
 const noteTree = (function() {
     const noteDetailEl = $('#note-detail');
     const treeEl = $("#tree");
+    let startNoteId = null;
     let treeLoadTime = null;
     let clipboardNoteId = null;
 
@@ -55,7 +56,7 @@ const noteTree = (function() {
         });
     }
 
-    function initFancyTree(notes, startNoteId) {
+    function initFancyTree(notes) {
         const keybindings = {
             "insert": node => {
                 const parentKey = treeUtils.getParentKey(node);
@@ -188,10 +189,19 @@ const noteTree = (function() {
         treeEl.contextmenu(contextMenu.contextMenuSettings);
     }
 
+    async function reload() {
+        const treeResp = await loadTree();
+
+        // this will also reload the note content
+        await treeEl.fancytree('getTree').reload(treeResp.notes);
+
+        encryption.decryptTreeItems();
+    }
+
     function loadTree() {
         return $.get(baseApiUrl + 'tree').then(resp => {
             const notes = resp.notes;
-            let startNoteId = resp.start_note_id;
+            startNoteId = resp.start_note_id;
             treeLoadTime = resp.tree_load_time;
 
             // add browser ID header to all AJAX requests
@@ -212,11 +222,7 @@ const noteTree = (function() {
         });
     }
 
-    $(() => {
-        loadTree().then(resp => {
-            initFancyTree(resp.notes, resp.startNoteId);
-        });
-    });
+    $(() => loadTree().then(resp => initFancyTree(resp.notes)));
 
     function collapseTree() {
         treeEl.fancytree("getRootNode").visit(node => {
@@ -289,7 +295,7 @@ const noteTree = (function() {
         getTreeLoadTime,
         getClipboardNoteId,
         setClipboardNoteId,
-        loadTree,
+        reload,
         collapseTree,
         scrollToCurrentNote,
         toggleSearch,

@@ -28,14 +28,9 @@ const status = (function() {
         });
 
         if (resp.changedTree) {
-            const treeResp = await noteTree.loadTree();
-
             console.log("Reloading tree because of background changes");
 
-            // this will also reload the note content
-            await treeEl.fancytree('getTree').reload(treeResp.notes);
-
-            encryption.decryptTreeItems();
+            noteTree.reload();
         }
 
         $changesToPushCountEl.html(resp.changesToPushCount);
