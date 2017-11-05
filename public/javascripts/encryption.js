@@ -22,10 +22,6 @@ const encryption = (function() {
         encryptedDataKey = settings.encrypted_data_key;
     });
 
-    function setEncryptionSalt(encSalt) {
-        encryptionSalt = encSalt;
-    }
-
     function setEncryptedDataKey(encDataKey) {
         encryptedDataKey = encDataKey;
     }
@@ -149,15 +145,9 @@ const encryption = (function() {
         dataKey = null;
 
         if (noteEditor.getCurrentNote().detail.encryption > 0) {
-            noteEditor.loadNoteToEditor(noteEditor.getCurrentNoteId());
-
-            for (const noteId of glob.allNoteIds) {
-                const note = getNodeByKey(noteId);
-
-                if (note.data.encryption > 0) {
-                    note.setTitle("[encrypted]");
-                }
-            }
+            // most secure solution - guarantees nothing remained in memory
+            // since this expires because user doesn't use the app, it shouldn't be disruptive
+            window.location.reload(true);
         }
     }
 

@@ -21,8 +21,9 @@ router.get('/:noteId', auth.checkApiAuth, async (req, res, next) => {
     }
 
     res.send({
-        'detail': detail,
-        'images': await sql.getResults("select * from images where note_id = ? order by note_offset", [noteId])
+        detail: detail,
+        images: await sql.getResults("select * from images where note_id = ? order by note_offset", [noteId]),
+        loadTime: utils.nowTimestamp()
     });
 });
 

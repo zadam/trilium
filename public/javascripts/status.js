@@ -12,7 +12,7 @@ const status = (function() {
             data: JSON.stringify({
                 treeLoadTime: noteTree.getTreeLoadTime(),
                 currentNoteId: noteEditor.getCurrentNoteId(),
-                currentNoteDateModified: noteEditor.getCurrentNoteLoadTime()
+                currentNoteLoadTime: noteEditor.getCurrentNoteLoadTime()
             }),
             statusCode: {
                 401: () => {

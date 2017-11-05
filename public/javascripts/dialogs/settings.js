@@ -26,7 +26,7 @@ const settings = (function() {
 
         tabsEl.tabs();
 
-        for (module of settingModules) {
+        for (const module of settingModules) {
             module.settingsLoaded(settings);
         }
     }

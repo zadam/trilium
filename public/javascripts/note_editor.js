@@ -11,7 +11,6 @@ const noteEditor = (function() {
     const encryptionPasswordEl = $("#encryption-password");
 
     let currentNote = null;
-    let currentNoteLoadTime = null;
 
     let noteChangeDisabled = false;
 
@@ -26,7 +25,7 @@ const noteEditor = (function() {
     }
 
     function getCurrentNoteLoadTime() {
-        return currentNoteLoadTime;
+        return currentNote ? currentNote.loadTime : null;
     }
 
     function noteChanged() {
@@ -99,9 +98,6 @@ const noteEditor = (function() {
 
         message("Saved!");
     }
-
-    currentNote = null;
-    currentNoteLoadTime = null;
 
     function createNewTopLevelNote() {
         let rootNode = treeEl.fancytree("getRootNode");
@@ -179,9 +175,7 @@ const noteEditor = (function() {
     }
 
     async function loadNoteToEditor(noteId) {
-        const note = await $.get(baseApiUrl + 'notes/' + noteId);
-        currentNote = note;
-        currentNoteLoadTime = Math.floor(new Date().getTime() / 1000);
+        currentNote = await $.get(baseApiUrl + 'notes/' + noteId);
 
         if (newNoteCreated) {
             newNoteCreated = false;
@@ -189,7 +183,7 @@ const noteEditor = (function() {
             noteTitleEl.focus().select();
         }
 
-        await encryption.ensureEncryptionIsAvailable(note.detail.encryption > 0, false);
+        await encryption.ensureEncryptionIsAvailable(currentNote.detail.encryption > 0, false);
 
         noteDetailWrapperEl.show();
 
@@ -201,24 +195,24 @@ const noteEditor = (function() {
 
         encryptionPasswordEl.val('');
 
-        encryption.decryptNoteIfNecessary(note);
+        encryption.decryptNoteIfNecessary(currentNote);
 
-        noteTitleEl.val(note.detail.note_title);
+        noteTitleEl.val(currentNote.detail.note_title);
 
         noteChangeDisabled = true;
 
         // Clear contents and remove all stored history. This is to prevent undo from going across notes
         noteDetailEl.summernote('reset');
 
-        noteDetailEl.summernote('code', note.detail.note_text);
+        noteDetailEl.summernote('code', currentNote.detail.note_text);
 
         document.location.hash = noteId;
 
-        recentNotes.addRecentNote(noteId, note.detail.note_id);
+        recentNotes.addRecentNote(noteId, currentNote.detail.note_id);
 
         noteChangeDisabled = false;
 
-        setNoteBackgroundIfEncrypted(note);
+        setNoteBackgroundIfEncrypted(currentNote);
     }
 
     async function loadNote(noteId) {
