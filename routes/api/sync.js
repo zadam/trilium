@@ -59,6 +59,12 @@ router.get('/notes_reordering/:noteParentId', auth.checkApiAuth, async (req, res
     });
 });
 
+router.get('/recent_notes/:noteId', auth.checkApiAuth, async (req, res, next) => {
+    const noteId = req.params.noteId;
+
+    res.send(await sql.getSingleResult("SELECT * FROM recent_notes WHERE note_id = ?", [noteId]));
+});
+
 router.put('/notes', auth.checkApiAuth, async (req, res, next) => {
     await sync.updateNote(req.body.entity, req.body.links, req.body.sourceId);
 
@@ -85,6 +91,12 @@ router.put('/notes_reordering', auth.checkApiAuth, async (req, res, next) => {
 
 router.put('/options', auth.checkApiAuth, async (req, res, next) => {
     await sync.updateOptions(req.body.entity, req.body.sourceId);
+
+    res.send({});
+});
+
+router.put('/recent_notes', auth.checkApiAuth, async (req, res, next) => {
+    await sync.updateRecentNotes(req.body.entity, req.body.sourceId);
 
     res.send({});
 });

@@ -148,6 +148,10 @@ async function addOptionsSync(optName, sourceId) {
     await addEntitySync("options", optName, sourceId);
 }
 
+async function addRecentNoteSync(noteId, sourceId) {
+    await addEntitySync("recent_notes", noteId, sourceId);
+}
+
 async function addEntitySync(entityName, entityId, sourceId) {
     await replace("sync", {
         entity_name: entityName,
@@ -210,5 +214,6 @@ module.exports = {
     addNoteTreeSync,
     addNoteReorderingSync,
     addNoteHistorySync,
-    addOptionsSync
+    addOptionsSync,
+    addRecentNoteSync
 };

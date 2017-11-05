@@ -67,6 +67,9 @@ async function pullSync(syncContext) {
         else if (sync.entity_name === 'options') {
             await updateOptions(resp, syncContext.sourceId);
         }
+        else if (sync.entity_name === 'recent_notes') {
+            await updateRecentNotes(resp, syncContext.sourceId);
+        }
         else {
             logSyncError("Unrecognized entity type " + sync.entity_name, e);
         }
@@ -122,6 +125,9 @@ async function readAndPushEntity(sync, syncContext) {
     }
     else if (sync.entity_name === 'options') {
         entity = await sql.getSingleResult('SELECT * FROM options WHERE opt_name = ?', [sync.entity_id]);
+    }
+    else if (sync.entity_name === 'recent_notes') {
+        entity = await sql.getSingleResult('SELECT * FROM recent_notes WHERE note_id = ?', [sync.entity_id]);
     }
     else {
         logSyncError("Unrecognized entity type " + sync.entity_name, null);
@@ -358,6 +364,18 @@ async function updateOptions(entity, sourceId) {
     }
 }
 
+async function updateRecentNotes(entity, sourceId) {
+    const orig = await sql.getSingleResultOrNull("select * from recent_notes where note_id = ?", [entity.note_id]);
+
+    if (orig === null || orig.date_accessed < entity.date_accessed) {
+        await sql.doInTransaction(async () => {
+            await sql.replace('recent_notes', entity);
+
+            await sql.addRecentNoteSync(entity.note_id, sourceId);
+        });
+    }
+}
+
 if (SYNC_SERVER) {
     log.info("Setting up sync");
 
@@ -377,5 +395,6 @@ module.exports = {
     updateNoteHistory,
     updateNoteReordering,
     updateOptions,
+    updateRecentNotes,
     isSyncSetup
 };

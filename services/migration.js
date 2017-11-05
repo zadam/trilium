@@ -4,7 +4,7 @@ const options = require('./options');
 const fs = require('fs-extra');
 const log = require('./log');
 
-const APP_DB_VERSION = 26;
+const APP_DB_VERSION = 27;
 const MIGRATIONS_DIR = "./migrations";
 
 async function migrate() {
