@@ -127,6 +127,11 @@ async function readAndPushEntity(sync, syncContext) {
         logSyncError("Unrecognized entity type " + sync.entity_name, null);
     }
 
+    if (!entity) {
+        logSync("Sync entity for " + sync.entity_name + " " + sync.entity_id + " doesn't exist. Skipping.");
+        return;
+    }
+
     logSync("Pushing changes in " + sync.entity_name + " " + sync.entity_id);
 
     await sendEntity(entity, sync.entity_name, syncContext.cookieJar);

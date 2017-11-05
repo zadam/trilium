@@ -46,13 +46,13 @@ const dragAndDropSetup = {
         // data.hitMode is 'before', 'after', or 'over'.
 
         if (data.hitMode === "before") {
-            moveBeforeNode(data.otherNode, node);
+            treeChanges.moveBeforeNode(data.otherNode, node);
         }
         else if (data.hitMode === "after") {
-            moveAfterNode(data.otherNode, node);
+            treeChanges.moveAfterNode(data.otherNode, node);
         }
         else if (data.hitMode === "over") {
-            moveToNode(data.otherNode, node);
+            treeChanges.moveToNode(data.otherNode, node);
         }
         else {
             throw new Exception("Unknown hitMode=" + data.hitMode);

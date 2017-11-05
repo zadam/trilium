@@ -67,29 +67,29 @@ const noteTree = (function() {
                 noteEditor.createNote(node, node.key, 'into', node.data.encryption);
             },
             "del": node => {
-                deleteNode(node);
+                treeChanges.deleteNode(node);
             },
             "shift+up": node => {
                 const beforeNode = node.getPrevSibling();
 
                 if (beforeNode !== null) {
-                    moveBeforeNode(node, beforeNode);
+                    treeChanges.moveBeforeNode(node, beforeNode);
                 }
             },
             "shift+down": node => {
                 let afterNode = node.getNextSibling();
                 if (afterNode !== null) {
-                    moveAfterNode(node, afterNode);
+                    treeChanges.moveAfterNode(node, afterNode);
                 }
             },
             "shift+left": node => {
-                moveNodeUp(node);
+                treeChanges.moveNodeUp(node);
             },
             "shift+right": node => {
                 let toNode = node.getPrevSibling();
 
                 if (toNode !== null) {
-                    moveToNode(node, toNode);
+                    treeChanges.moveToNode(node, toNode);
                 }
             },
             "return": node => {

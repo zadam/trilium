@@ -6,7 +6,7 @@ const contextMenu = (function() {
     function pasteAfter(node) {
         const subjectNode = getNodeByKey(noteTree.getClipboardNoteId());
 
-        moveAfterNode(subjectNode, node);
+        treeChanges.moveAfterNode(subjectNode, node);
 
         noteTree.setClipboardNoteId(null);
     }
@@ -14,7 +14,7 @@ const contextMenu = (function() {
     function pasteInto(node) {
         const subjectNode = getNodeByKey(noteTree.getClipboardNoteId());
 
-        moveToNode(subjectNode, node);
+        treeChanges.moveToNode(subjectNode, node);
 
         noteTree.setClipboardNoteId(null);
     }
@@ -80,7 +80,7 @@ const contextMenu = (function() {
                 pasteInto(node);
             }
             else if (ui.cmd === "delete") {
-                deleteNode(node);
+                treeChanges.deleteNode(node);
             }
             else {
                 console.log("Unknown command: " + ui.cmd);
