@@ -35,7 +35,7 @@ async function migrate() {
         }
     });
 
-    migrations.sort((a, b) => a.db_version - b.db_version);
+    migrations.sort((a, b) => a.dbVersion - b.dbVersion);
 
     for (const mig of migrations) {
         const migrationSql = fs.readFileSync(MIGRATIONS_DIR + "/" + mig.file).toString('utf8');
