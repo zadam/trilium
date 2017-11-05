@@ -185,10 +185,10 @@ const encryption = (function() {
     }
 
     function encrypt(aes, str) {
-        const payload = aesjs.utils.utf8.toBytes(str);
+        const payload = Array.from(aesjs.utils.utf8.toBytes(str));
         const digest = sha256Array(payload).slice(0, 4);
 
-        const digestWithPayload = concat(digest, payload);
+        const digestWithPayload = digest.concat(payload);
 
         const encryptedBytes = aes.encrypt(digestWithPayload);
 
@@ -218,20 +218,6 @@ const encryption = (function() {
         }
 
         return payload;
-    }
-
-    function concat(a, b) {
-        const result = [];
-
-        for (let key in a) {
-            result.push(a[key]);
-        }
-
-        for (let key in b) {
-            result.push(b[key]);
-        }
-
-        return result;
     }
 
     function sha256Array(content) {
