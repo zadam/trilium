@@ -40,7 +40,7 @@ const recentNotes = (function() {
         const recNotes = list.filter(note => note !== noteEditor.getCurrentNoteId());
 
         $.each(recNotes, (key, valueNoteId) => {
-            const noteTitle = getFullName(valueNoteId);
+            const noteTitle = treeUtils.getFullName(valueNoteId);
 
             if (!noteTitle) {
                 return;
@@ -66,7 +66,7 @@ const recentNotes = (function() {
     function setActiveNoteBasedOnRecentNotes() {
         const noteId = getSelectedNoteIdFromRecentNotes();
 
-        getNodeByKey(noteId).setActive();
+        treeUtils.activateNode(noteId);
 
         dialogEl.dialog('close');
     }
@@ -74,7 +74,7 @@ const recentNotes = (function() {
     function addLinkBasedOnRecentNotes() {
         const noteId = getSelectedNoteIdFromRecentNotes();
 
-        const linkTitle = getNoteTitle(noteId);
+        const linkTitle = treeUtils.getNoteTitle(noteId);
 
         dialogEl.dialog("close");
 

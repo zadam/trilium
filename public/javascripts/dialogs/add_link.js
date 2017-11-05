@@ -21,7 +21,7 @@ const addLink = (function() {
         linkTitleEl.val('');
 
         function setDefaultLinkTitle(noteId) {
-            const noteTitle = getNoteTitle(noteId);
+            const noteTitle = treeUtils.getNoteTitle(noteId);
 
             linkTitleEl.val(noteTitle);
         }

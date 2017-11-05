@@ -42,7 +42,7 @@ const encryption = (function() {
                 open: () => {
                     if (!modal) {
                         // dialog steals focus for itself, which is not what we want for non-modal (viewing)
-                        getNodeByKey(noteEditor.getCurrentNoteId()).setFocus();
+                        treeUtils.getNodeByKey(noteEditor.getCurrentNoteId()).setFocus();
                     }
                 }
             });
@@ -105,7 +105,7 @@ const encryption = (function() {
         }
 
         for (const noteId of glob.allNoteIds) {
-            const note = getNodeByKey(noteId);
+            const note = treeUtils.getNodeByKey(noteId);
 
             if (note.data.encryption > 0) {
                 const title = decryptString(note.data.note_title);
@@ -375,7 +375,7 @@ const encryption = (function() {
     function updateSubTreeRecursively(noteId, updateCallback, successCallback) {
         updateNoteSynchronously(noteId, updateCallback, successCallback);
 
-        const node = getNodeByKey(noteId);
+        const node = treeUtils.getNodeByKey(noteId);
         if (!node || !node.getChildren()) {
             return;
         }

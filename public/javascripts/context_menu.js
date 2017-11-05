@@ -4,7 +4,7 @@ const contextMenu = (function() {
     const treeEl = $("#tree");
 
     function pasteAfter(node) {
-        const subjectNode = getNodeByKey(noteTree.getClipboardNoteId());
+        const subjectNode = treeUtils.getNodeByKey(noteTree.getClipboardNoteId());
 
         treeChanges.moveAfterNode(subjectNode, node);
 
@@ -12,7 +12,7 @@ const contextMenu = (function() {
     }
 
     function pasteInto(node) {
-        const subjectNode = getNodeByKey(noteTree.getClipboardNoteId());
+        const subjectNode = treeUtils.getNodeByKey(noteTree.getClipboardNoteId());
 
         treeChanges.moveToNode(subjectNode, node);
 
@@ -56,8 +56,8 @@ const contextMenu = (function() {
             const node = $.ui.fancytree.getNode(ui.target);
 
             if (ui.cmd === "insertNoteHere") {
-                const parentKey = getParentKey(node);
-                const encryption = getParentEncryption(node);
+                const parentKey = treeUtils.getParentKey(node);
+                const encryption = treeUtils.getParentEncryption(node);
 
                 noteEditor.createNote(node, parentKey, 'after', encryption);
             }

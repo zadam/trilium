@@ -78,7 +78,7 @@ const noteEditor = (function() {
 
         const title = noteTitleEl.val();
 
-        getNodeByKey(note.detail.note_id).setTitle(title);
+        treeUtils.getNodeByKey(note.detail.note_id).setTitle(title);
 
         note.detail.note_title = title;
     }
@@ -155,7 +155,7 @@ const noteEditor = (function() {
     }
 
     function setTreeBasedOnEncryption(note) {
-        const node = getNodeByKey(note.detail.note_id);
+        const node = treeUtils.getNodeByKey(note.detail.note_id);
         node.toggleClass("encrypted", note.detail.encryption > 0);
     }
 

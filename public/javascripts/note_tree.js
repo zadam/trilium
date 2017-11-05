@@ -58,8 +58,8 @@ const noteTree = (function() {
     function initFancyTree(notes, startNoteId) {
         const keybindings = {
             "insert": node => {
-                const parentKey = getParentKey(node);
-                const encryption = getParentEncryption(node);
+                const parentKey = treeUtils.getParentKey(node);
+                const encryption = treeUtils.getParentEncryption(node);
 
                 noteEditor.createNote(node, parentKey, 'after', encryption);
             },
@@ -227,7 +227,7 @@ const noteTree = (function() {
     $(document).bind('keydown', 'alt+c', collapseTree);
 
     function scrollToCurrentNote() {
-        const node = getNodeByKey(noteEditor.getCurrentNoteId());
+        const node = treeUtils.getNodeByKey(noteEditor.getCurrentNoteId());
 
         if (node) {
             node.makeVisible({scrollIntoView: true});

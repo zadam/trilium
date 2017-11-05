@@ -20,7 +20,7 @@ function getAutocompleteItems(noteIds) {
     const autocompleteItems = [];
 
     for (const noteId of noteIds) {
-        const fullName = getFullName(noteId);
+        const fullName = treeUtils.getFullName(noteId);
 
         if (fullName !== null) {
             autocompleteItems.push({
