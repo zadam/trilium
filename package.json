@@ -1,20 +1,28 @@
 {
   "name": "trilium",
+  "description": "Trilium",
   "version": "0.0.1",
   "private": true,
   "scripts": {
     "start": "node ./bin/www",
     "test-electron": "xo",
     "start-electron": "electron .",
-    "build-electron": "electron-packager . --out=dist --asar --overwrite --all"
+    "build-electron": "electron-packager . --out=dist --asar --overwrite --all",
+    "start-forge": "electron-forge start",
+    "package-forge": "electron-forge package",
+    "make-forge": "electron-forge make",
+    "publish-forge": "electron-forge publish"
   },
   "dependencies": {
+    "electron-compile": "^6.4.2",
+    "electron-squirrel-startup": "^1.0.0",
     "body-parser": "~1.18.2",
     "cookie-parser": "~1.4.3",
     "debug": "~3.1.0",
     "ejs": "~2.5.7",
-    "electron": "^1.7.9",
+    "electron": "^1.8.2-beta.1",
     "electron-debug": "^1.0.0",
+    "electron-forge": "^4.1.2",
     "electron-rebuild": "^1.6.0",
     "express": "~4.16.2",
     "express-session": "^1.15.6",
@@ -34,7 +42,49 @@
     "devtron": "^1.1.0",
     "electron-packager": "^8.0.0",
     "electron": "^1.6.6",
-    "xo": "^0.18.0"
+    "xo": "^0.18.0",
+    "babel-plugin-transform-async-to-generator": "^6.24.1",
+    "babel-preset-env": "^1.6.1",
+    "babel-preset-react": "^6.24.1",
+    "electron-forge": "^4.1.2",
+    "electron-prebuilt-compile": "1.7.9",
+    "eslint": "^3.19.0",
+    "eslint-config-airbnb": "^15.1.0",
+    "eslint-plugin-import": "^2.8.0",
+    "eslint-plugin-jsx-a11y": "^5.1.1",
+    "eslint-plugin-react": "^7.4.0"
+  },
+  "config": {
+    "forge": {
+      "make_targets": {
+        "win32": [
+          "squirrel"
+        ],
+        "darwin": [
+          "zip"
+        ],
+        "linux": [
+          "deb",
+          "rpm"
+        ]
+      },
+      "electronPackagerConfig": {
+        "packageManager": "npm"
+      },
+      "electronWinstallerConfig": {
+        "name": "trilium"
+      },
+      "electronInstallerDebian": {},
+      "electronInstallerRedhat": {},
+      "github_repository": {
+        "owner": "",
+        "name": ""
+      },
+      "windowsStoreConfig": {
+        "packageName": "",
+        "name": "trilium"
+      }
+    }
   },
   "xo": {
     "envs": [

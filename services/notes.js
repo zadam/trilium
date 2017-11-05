@@ -170,4 +170,4 @@ module.exports = {
     updateNote,
     addNoteAudits,
     deleteNote
-}
+};

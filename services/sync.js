@@ -225,7 +225,22 @@ async function sync() {
             };
         }
 
-        const syncContext = await login();
+        try {
+            const syncContext = await login();
+        }
+        catch (e) {
+            if (e.message.indexOf('ECONNREFUSED') !== -1) {
+                logSync("No connection to sync server.");
+
+                return {
+                    success: false,
+                    message: "No connection to sync server."
+                };
+            }
+            else {
+                throw e;
+            }
+        }
 
         await pushSync(syncContext);
 
@@ -260,8 +275,6 @@ function logSyncError(message, e) {
     if (e) {
         completeMessage += ", inner exception: " + e.stack;
     }
-
-    log.info(completeMessage);
 
     throw new Error(completeMessage);
 }

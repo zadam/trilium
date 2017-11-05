@@ -44,6 +44,10 @@ function browserId(req) {
     return req.get('x-browser-id');
 }
 
+function isElectron() {
+    return !!process.versions['electron'];
+}
+
 module.exports = {
     randomSecureToken,
     randomString,
@@ -52,5 +56,6 @@ module.exports = {
     toBase64,
     fromBase64,
     hmac,
-    browserId
+    browserId,
+    isElectron
 };
