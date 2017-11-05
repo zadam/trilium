@@ -1,8 +1,7 @@
 "use strict";
 
 const status = (function() {
-    const treeEl = $("#tree");
-    const $changesToPushCountEl = $("#changesToPushCount");
+    const changesToPushCountEl = $("#changesToPushCount");
 
     async function checkStatus() {
         const resp = await $.ajax({
@@ -33,7 +32,13 @@ const status = (function() {
             noteTree.reload();
         }
 
-        $changesToPushCountEl.html(resp.changesToPushCount);
+        if (resp.changedCurrentNote) {
+            message('Reloading note because background change');
+
+            noteEditor.reload();
+        }
+
+        changesToPushCountEl.html(resp.changesToPushCount);
     }
 
     setInterval(checkStatus, 5 * 1000);

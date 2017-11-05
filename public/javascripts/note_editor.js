@@ -36,6 +36,20 @@ const noteEditor = (function() {
         isNoteChanged = true;
     }
 
+    async function reload() {
+        // no saving here
+
+        await loadNoteToEditor(getCurrentNoteId());
+    }
+
+    async function switchToNote(noteId) {
+        if (getCurrentNoteId() !== noteId) {
+            await saveNoteIfChanged();
+
+            await loadNoteToEditor(noteId);
+        }
+    }
+
     async function saveNoteIfChanged() {
         if (!isNoteChanged) {
             return;
@@ -247,6 +261,8 @@ const noteEditor = (function() {
     setInterval(saveNoteIfChanged, 5000);
 
     return {
+        reload,
+        switchToNote,
         saveNoteIfChanged,
         updateNoteFromInputs,
         saveNoteToServer,

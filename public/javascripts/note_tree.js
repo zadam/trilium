@@ -107,7 +107,7 @@ const noteTree = (function() {
             activate: (event, data) => {
                 const node = data.node.data;
 
-                noteEditor.saveNoteIfChanged().then(() => noteEditor.loadNoteToEditor(node.note_id));
+                noteEditor.switchToNote(node.note_id);
             },
             expand: (event, data) => {
                 setExpandedToServer(data.node.key, true);
@@ -119,8 +119,6 @@ const noteTree = (function() {
                 if (startNoteId) {
                     data.tree.activateKey(startNoteId);
                 }
-
-                $(window).resize();
             },
             hotkeys: {
                 keydown: keybindings
