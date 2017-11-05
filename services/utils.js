@@ -40,6 +40,10 @@ function hmac(secret, value) {
     return hmac.digest('base64');
 }
 
+function browserId(req) {
+    return req.get('x-browser-id');
+}
+
 module.exports = {
     randomSecureToken,
     randomString,
@@ -47,5 +51,6 @@ module.exports = {
     newNoteId,
     toBase64,
     fromBase64,
-    hmac
+    hmac,
+    browserId
 };

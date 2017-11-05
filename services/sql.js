@@ -98,17 +98,7 @@ async function remove(tableName, noteId) {
     return await execute("DELETE FROM " + tableName + " WHERE note_id = ?", [noteId]);
 }
 
-async function addAudit(category, req=null, noteId=null, changeFrom=null, changeTo=null, comment=null) {
-    const browserId = req == null ? null : req.get('x-browser-id');
-
-    await addAuditWithBrowserId(category, browserId, noteId, changeFrom, changeTo, comment);
-}
-
-async function addSyncAudit(category, sourceId, noteId) {
-    await addAuditWithBrowserId(category, sourceId, noteId);
-}
-
-async function addAuditWithBrowserId(category, browserId=null, noteId=null, changeFrom=null, changeTo=null, comment=null) {
+async function addAudit(category, browserId=null, noteId=null, changeFrom=null, changeTo=null, comment=null) {
     const now = utils.nowTimestamp();
     log.info("audit: " + category + ", browserId=" + browserId + ", noteId=" + noteId + ", from=" + changeFrom
         + ", to=" + changeTo + ", comment=" + comment);
@@ -119,9 +109,7 @@ async function addAuditWithBrowserId(category, browserId=null, noteId=null, chan
         + " VALUES (?, ?, ?, ?, ?, ?, ?, ?)", [id, now, category, browserId, noteId, changeFrom, changeTo, comment]);
 }
 
-async function deleteRecentAudits(category, req, noteId) {
-    const browserId = req.get('x-browser-id');
-
+async function deleteRecentAudits(category, browserId, noteId) {
     const deleteCutoff = utils.nowTimestamp() - 10 * 60;
 
     await execute("DELETE FROM audit_log WHERE category = ? AND browser_id = ? AND note_id = ? AND date_modified > ?",
@@ -206,7 +194,6 @@ module.exports = {
     execute,
     executeScript,
     addAudit,
-    addSyncAudit,
     deleteRecentAudits,
     remove,
     doInTransaction,

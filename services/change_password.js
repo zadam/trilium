@@ -61,7 +61,7 @@ async function changePassword(currentPassword, newPassword, req = null) {
 
         await options.setOption('password_verification_hash', newPasswordVerificationKey);
 
-        await sql.addAudit(audit_category.CHANGE_PASSWORD, req);
+        await sql.addAudit(audit_category.CHANGE_PASSWORD, utils.browserId(req));
     });
 
     return {

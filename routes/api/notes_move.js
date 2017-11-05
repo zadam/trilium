@@ -27,7 +27,7 @@ router.put('/:noteId/moveTo/:parentId', auth.checkApiAuth, async (req, res, next
             [parentId, newNotePos, now, noteId]);
 
         await sql.addNoteTreeSync(noteId);
-        await sql.addAudit(audit_category.CHANGE_PARENT, req, noteId, null, parentId);
+        await sql.addAudit(audit_category.CHANGE_PARENT, utils.browserId(req), noteId, null, parentId);
     });
 
     res.send({});
@@ -50,7 +50,7 @@ router.put('/:noteId/moveBefore/:beforeNoteId', async (req, res, next) => {
 
             await sql.addNoteTreeSync(noteId);
             await sql.addNoteReorderingSync(beforeNote['note_pid']);
-            await sql.addAudit(audit_category.CHANGE_POSITION, req, beforeNote['note_pid']);
+            await sql.addAudit(audit_category.CHANGE_POSITION, utils.browserId(req), beforeNote['note_pid']);
         });
     }
 
@@ -74,7 +74,7 @@ router.put('/:noteId/moveAfter/:afterNoteId', async (req, res, next) => {
 
             await sql.addNoteTreeSync(noteId);
             await sql.addNoteReorderingSync(afterNote['note_pid']);
-            await sql.addAudit(audit_category.CHANGE_POSITION, req, afterNote['note_pid']);
+            await sql.addAudit(audit_category.CHANGE_POSITION, utils.browserId(req), afterNote['note_pid']);
         });
     }
 
@@ -91,7 +91,7 @@ router.put('/:noteId/expanded/:expanded', async (req, res, next) => {
         await sql.execute("update notes_tree set is_expanded = ? where note_id = ?", [expanded, noteId]);
 
         await sql.addNoteTreeSync(noteId);
-        await sql.addAudit(audit_category.CHANGE_EXPANDED, req, noteId, null, expanded);
+        await sql.addAudit(audit_category.CHANGE_EXPANDED, utils.browserId(req), noteId, null, expanded);
     });
 
     res.send({});

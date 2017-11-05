@@ -6,6 +6,7 @@ const sql = require('../../services/sql');
 const options = require('../../services/options');
 const audit_category = require('../../services/audit_category');
 const auth = require('../../services/auth');
+const utils = require('../../services/utils');
 
 // options allowed to be updated directly in settings dialog
 const ALLOWED_OPTIONS = ['encryption_session_timeout', 'history_snapshot_time_interval'];
@@ -30,7 +31,7 @@ router.post('/', async (req, res, next) => {
         const optionName = await options.getOption(body['name']);
 
         await sql.doInTransaction(async () => {
-            await sql.addAudit(audit_category.SETTINGS, req, null, optionName, body['value'], body['name']);
+            await sql.addAudit(audit_category.SETTINGS, utils.browserId(req), null, optionName, body['value'], body['name']);
 
             await options.setOption(body['name'], body['value']);
         });

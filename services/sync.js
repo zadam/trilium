@@ -10,6 +10,7 @@ const config = require('./config');
 const SOURCE_ID = require('./source_id');
 const audit_category = require('./audit_category');
 const eventLog = require('./event_log');
+const notes = require('./notes');
 
 const SYNC_SERVER = config['Sync']['syncServerHost'];
 const isSyncSetup = !!SYNC_SERVER;
@@ -281,11 +282,7 @@ async function updateNote(entity, links, sourceId) {
             }
 
             await sql.addNoteSync(entity.note_id, sourceId);
-
-            // we don't distinguish between those for now
-            await sql.addSyncAudit(audit_category.UPDATE_CONTENT, sourceId, entity.note_id);
-            await sql.addSyncAudit(audit_category.UPDATE_TITLE, sourceId, entity.note_id);
-
+            await notes.addNoteAudits(origNote, entity, sourceId);
             await eventLog.addNoteEvent(entity.note_id, "Synced note <note>");
         });
 
@@ -305,7 +302,7 @@ async function updateNoteTree(entity, sourceId) {
 
             await sql.addNoteTreeSync(entity.note_id, sourceId);
 
-            await sql.addSyncAudit(audit_category.UPDATE_TITLE, sourceId, entity.note_id);
+            await sql.addAudit(audit_category.UPDATE_TITLE, sourceId, entity.note_id);
         });
 
         logSync("Update/sync note tree " + entity.note_id);
@@ -339,7 +336,7 @@ async function updateNoteReordering(entity, sourceId) {
         });
 
         await sql.addNoteReorderingSync(entity.note_pid, sourceId);
-        await sql.addSyncAudit(audit_category.CHANGE_POSITION, sourceId, entity.note_pid);
+        await sql.addAudit(audit_category.CHANGE_POSITION, sourceId, entity.note_pid);
     });
 }
 
