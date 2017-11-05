@@ -8,12 +8,16 @@ function syncNow() {
             if (result.success) {
                 status.checkStatus();
 
-                message("Sync triggered.");
+                message("Sync finished successfully.");
             }
             else {
-                error("Sync failed");
+                if (result.message.length > 50) {
+                    result.message = result.message.substr(0, 50);
+                }
+
+                error("Sync failed: " + result.message);
             }
         },
-        error: () => error("Sync failed")
+        error: () => error("Sync failed for unknown reason.")
     });
 }

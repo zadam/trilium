@@ -195,7 +195,10 @@ async function sync() {
     if (syncInProgress) {
         logSyncError("Sync already in progress");
 
-        return;
+        return {
+            success: false,
+            message: "Sync already in progress"
+        };
     }
 
     syncInProgress = true;
@@ -204,7 +207,10 @@ async function sync() {
         if (!await migration.isDbUpToDate()) {
             logSyncError("DB not up to date");
 
-            return;
+            return {
+                success: false,
+                message: "DB not up to date"
+            };
         }
 
         const syncContext = await login();
@@ -214,9 +220,18 @@ async function sync() {
         await pullSync(syncContext);
 
         await pushSync(syncContext);
+
+        return {
+            success: true
+        };
     }
     catch (e) {
         logSync("sync failed: " + e.stack);
+
+        return {
+            success: false,
+            message: e.message
+        }
     }
     finally {
         syncInProgress = false;

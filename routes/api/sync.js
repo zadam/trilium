@@ -8,11 +8,7 @@ const sql = require('../../services/sql');
 const options = require('../../services/options');
 
 router.post('/now', auth.checkApiAuth, async (req, res, next) => {
-    await sync.sync();
-
-    res.send({
-        success: true
-    });
+    res.send(await sync.sync());
 });
 
 router.get('/changed', auth.checkApiAuth, async (req, res, next) => {
