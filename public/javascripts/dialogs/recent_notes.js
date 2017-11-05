@@ -8,20 +8,37 @@ const recentNotes = (function() {
     const noteDetailEl = $('#note-detail');
     let list = [];
 
+    $.ajax({
+        url: baseApiUrl + 'recent-notes',
+        type: 'GET',
+        error: () => error("Error getting recent notes.")
+    }).then(result => {
+        list = result.map(r => r.note_id);
+    });
+
     function addRecentNote(noteTreeId, noteContentId) {
         setTimeout(() => {
             // we include the note into recent list only if the user stayed on the note at least 5 seconds
             if (noteTreeId === noteEditor.getCurrentNoteId() || noteContentId === noteEditor.getCurrentNoteId()) {
-                // if it's already there, remove the note
-                list = list.filter(note => note !== noteTreeId);
-
-                list.unshift(noteTreeId);
+                $.ajax({
+                    url: baseApiUrl + 'recent-notes/' + noteTreeId,
+                    type: 'PUT',
+                    error: () => error("Error setting recent notes.")
+                }).then(result => {
+                    list = result.map(r => r.note_id);
+                });
             }
         }, 1500);
     }
 
     function removeRecentNote(noteIdToRemove) {
-        list = list.filter(note => note !== noteIdToRemove);
+        $.ajax({
+            url: baseApiUrl + 'recent-notes/' + noteIdToRemove,
+            type: 'DELETE',
+            error: () => error("Error removing note from recent notes.")
+        }).then(result => {
+            list = result.map(r => r.note_id);
+        });
     }
 
     function showDialog() {

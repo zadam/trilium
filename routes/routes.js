@@ -16,6 +16,7 @@ const migrationApiRoute = require('./api/migration');
 const syncApiRoute = require('./api/sync');
 const loginApiRoute = require('./api/login');
 const eventLogRoute = require('./api/event_log');
+const recentNotesRoute = require('./api/recent_notes');
 
 function register(app) {
     app.use('/', indexRoute);
@@ -35,6 +36,7 @@ function register(app) {
     app.use('/api/sync', syncApiRoute);
     app.use('/api/login', loginApiRoute);
     app.use('/api/event-log', eventLogRoute);
+    app.use('/api/recent-notes', recentNotesRoute);
 }
 
 module.exports = {
