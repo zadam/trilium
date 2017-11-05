@@ -20,8 +20,6 @@ const db = require('sqlite');
 db.open(dataDir.DOCUMENT_PATH, { Promise }).then(async () => {
     const tableResults = await sql.getResults("SELECT name FROM sqlite_master WHERE type='table' AND name='notes'");
 
-    console.log(tableResults);
-
     if (tableResults.length !== 1) {
         console.log("No connection to initialized DB.");
         process.exit(1);

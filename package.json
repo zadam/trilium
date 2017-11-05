@@ -14,19 +14,14 @@
     "publish-forge": "electron-forge publish"
   },
   "dependencies": {
-    "electron-compile": "^6.4.2",
-    "electron-squirrel-startup": "^1.0.0",
     "body-parser": "~1.18.2",
     "cookie-parser": "~1.4.3",
     "debug": "~3.1.0",
     "ejs": "~2.5.7",
     "electron": "^1.8.2-beta.1",
     "electron-debug": "^1.0.0",
-    "electron-forge": "^4.1.2",
-    "electron-rebuild": "^1.6.0",
     "express": "~4.16.2",
     "express-session": "^1.15.6",
-    "express-sessions": "^1.0.6",
     "fs-extra": "^4.0.2",
     "helmet": "^3.9.0",
     "ini": "^1.3.4",
@@ -39,6 +34,9 @@
     "sqlite": "^2.8.0"
   },
   "devDependencies": {
+    "electron-compile": "^6.4.2",
+    "electron-squirrel-startup": "^1.0.0",
+    "electron-rebuild": "^1.6.0",
     "devtron": "^1.1.0",
     "electron-packager": "^8.0.0",
     "electron": "^1.6.6",
