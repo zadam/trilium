@@ -16,8 +16,8 @@ router.post('', auth.checkApiAuth, async (req, res, next) => {
     const browserId = req.get('x-browser-id');
 
     const noteTreeChangesCount = await sql.getSingleValue("SELECT COUNT(*) FROM audit_log WHERE (browser_id IS NULL OR browser_id != ?) " +
-        "AND date_modified >= ? AND category IN (?, ?, ?)", [browserId, treeLoadTime,
-        audit_category.UPDATE_TITLE, audit_category.CHANGE_PARENT, audit_category.CHANGE_POSITION]);
+        "AND date_modified >= ? AND category IN (?, ?, ?, ?)", [browserId, treeLoadTime,
+        audit_category.UPDATE_TITLE, audit_category.CHANGE_PARENT, audit_category.CHANGE_POSITION, audit_category.DELETE_NOTE]);
 
     const currentNoteChangesCount = await sql.getSingleValue("SELECT COUNT(*) FROM audit_log WHERE (browser_id IS NULL OR browser_id != ?) " +
         "AND date_modified >= ? AND note_id = ? AND category IN (?, ?)", [browserId, currentNoteLoadTime, currentNoteId,

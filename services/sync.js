@@ -225,8 +225,10 @@ async function sync() {
             };
         }
 
+        let syncContext;
+
         try {
-            const syncContext = await login();
+            syncContext = await login();
         }
         catch (e) {
             if (e.message.indexOf('ECONNREFUSED') !== -1) {

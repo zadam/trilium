@@ -37,6 +37,8 @@ async function createNewNote(parentNoteId, note, browserId) {
 
     await sql.doInTransaction(async () => {
         await sql.addAudit(audit_category.CREATE_NOTE, browserId, noteId);
+        await sql.addNoteTreeSync(noteId, browserId);
+        await sql.addNoteSync(noteId, browserId);
 
         const now = utils.nowTimestamp();
 
@@ -127,25 +129,28 @@ async function updateNote(noteId, newNote, browserId) {
             await sql.insert("links", link);
         }
 
+        await sql.addNoteTreeSync(noteId);
         await sql.addNoteSync(noteId);
     });
 }
 
 async function addNoteAudits(origNote, newNote, browserId) {
-    const noteId = origNote.note_id;
+    const noteId = newNote.note_id;
 
-    if (newNote.note_title !== origNote.note_title) {
+    if (!origNote || newNote.note_title !== origNote.note_title) {
         await sql.deleteRecentAudits(audit_category.UPDATE_TITLE, browserId, noteId);
         await sql.addAudit(audit_category.UPDATE_TITLE, browserId, noteId);
     }
 
-    if (newNote.note_text !== origNote.note_text) {
+    if (!origNote || newNote.note_text !== origNote.note_text) {
         await sql.deleteRecentAudits(audit_category.UPDATE_CONTENT, browserId, noteId);
         await sql.addAudit(audit_category.UPDATE_CONTENT, browserId, noteId);
     }
 
-    if (newNote.encryption !== origNote.encryption) {
-        await sql.addAudit(audit_category.ENCRYPTION, browserId, noteId, origNote.encryption, newNote.encryption);
+    if (!origNote || newNote.encryption !== origNote.encryption) {
+        const origEncryption = origNote ? origNote.encryption : null;
+
+        await sql.addAudit(audit_category.ENCRYPTION, browserId, noteId, origEncryption, newNote.encryption);
     }
 }
 
@@ -161,6 +166,9 @@ async function deleteNote(noteId, browserId) {
 
     await sql.execute("update notes_tree set is_deleted = 1, date_modified = ? where note_id = ?", [now, noteId]);
     await sql.execute("update notes set is_deleted = 1, date_modified = ? where note_id = ?", [now, noteId]);
+
+    await sql.addNoteTreeSync(noteId, browserId);
+    await sql.addNoteSync(noteId, browserId);
 
     await sql.addAudit(audit_category.DELETE_NOTE, browserId, noteId);
 }
