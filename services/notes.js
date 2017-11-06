@@ -37,8 +37,8 @@ async function createNewNote(parentNoteId, note, browserId) {
 
     await sql.doInTransaction(async () => {
         await sql.addAudit(audit_category.CREATE_NOTE, browserId, noteId);
-        await sql.addNoteTreeSync(noteId, browserId);
-        await sql.addNoteSync(noteId, browserId);
+        await sql.addNoteTreeSync(noteId);
+        await sql.addNoteSync(noteId);
 
         const now = utils.nowTimestamp();
 
@@ -167,8 +167,8 @@ async function deleteNote(noteId, browserId) {
     await sql.execute("update notes_tree set is_deleted = 1, date_modified = ? where note_id = ?", [now, noteId]);
     await sql.execute("update notes set is_deleted = 1, date_modified = ? where note_id = ?", [now, noteId]);
 
-    await sql.addNoteTreeSync(noteId, browserId);
-    await sql.addNoteSync(noteId, browserId);
+    await sql.addNoteTreeSync(noteId);
+    await sql.addNoteSync(noteId);
 
     await sql.addAudit(audit_category.DELETE_NOTE, browserId, noteId);
 }

@@ -48,6 +48,16 @@ function isElectron() {
     return !!process.versions['electron'];
 }
 
+function formatDateTimeFromTS(timestamp) {
+    const date = new Date(timestamp * 1000);
+
+    return date.toISOString();
+}
+
+function formatTwoTimestamps(origTS, newTS) {
+    return "orig: " + formatDateTimeFromTS(origTS) + ", new: " + formatDateTimeFromTS(newTS);
+}
+
 module.exports = {
     randomSecureToken,
     randomString,
@@ -57,5 +67,6 @@ module.exports = {
     fromBase64,
     hmac,
     browserId,
-    isElectron
+    isElectron,
+    formatTwoTimestamps
 };

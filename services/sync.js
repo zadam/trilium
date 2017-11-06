@@ -304,7 +304,7 @@ async function updateNote(entity, links, sourceId) {
         logSync("Update/sync note " + entity.note_id);
     }
     else {
-        await eventLog.addNoteEvent(entity.note_id, "Sync conflict in note <note>");
+        await eventLog.addNoteEvent(entity.note_id, "Sync conflict in note <note>, " + utils.formatTwoTimestamps(origNote.date_modified, entity.date_modified));
     }
 }
 
@@ -323,7 +323,7 @@ async function updateNoteTree(entity, sourceId) {
         logSync("Update/sync note tree " + entity.note_id);
     }
     else {
-        await eventLog.addNoteEvent(entity.note_id, "Sync conflict in note tree <note>");
+        await eventLog.addNoteEvent(entity.note_id, "Sync conflict in note tree <note>, " + utils.formatTwoTimestamps(orig.date_modified, entity.date_modified));
     }
 }
 
@@ -340,7 +340,7 @@ async function updateNoteHistory(entity, sourceId) {
         logSync("Update/sync note history " + entity.note_history_id);
     }
     else {
-        await eventLog.addNoteEvent(entity.note_id, "Sync conflict in note history for <note>");
+        await eventLog.addNoteEvent(entity.note_id, "Sync conflict in note history for <note>, " + utils.formatTwoTimestamps(orig.date_modified_to, entity.date_modified_to));
     }
 }
 
@@ -372,7 +372,7 @@ async function updateOptions(entity, sourceId) {
         await eventLog.addEvent("Synced option " + entity.opt_name);
     }
     else {
-        await eventLog.addEvent("Sync conflict in options for " + entity.opt_name);
+        await eventLog.addEvent("Sync conflict in options for " + entity.opt_name + ", " + utils.formatTwoTimestamps(orig.date_modified, entity.date_modified));
     }
 }
 
