@@ -227,6 +227,8 @@ const noteEditor = (function() {
         noteChangeDisabled = false;
 
         setNoteBackgroundIfEncrypted(currentNote);
+
+        showAppIfHidden();
     }
 
     async function loadNote(noteId) {
