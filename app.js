@@ -71,7 +71,7 @@ app.use(session({
     })
 }));
 
-app.use(favicon(__dirname + '/public/images/app-icons/favicon.ico'));
+app.use(favicon(__dirname + '/public/images/app-icons/win/icon.ico'));
 
 require('./routes/routes').register(app);
 
