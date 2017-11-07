@@ -8,7 +8,7 @@ const audit_category = require('./audit_category');
 const crypto = require('crypto');
 const aesjs = require('./aes');
 
-async function changePassword(currentPassword, newPassword, req = null) {
+async function changePassword(currentPassword, newPassword, req) {
     const current_password_hash = utils.toBase64(await my_scrypt.getVerificationHash(currentPassword));
 
     if (current_password_hash !== await options.getOption('password_verification_hash')) {
@@ -37,11 +37,7 @@ async function changePassword(currentPassword, newPassword, req = null) {
 
         const digest = crypto.createHash('sha256').update(plainTextBuffer).digest().slice(0, 4);
 
-        console.log("Digest:", digest);
-
         const encryptedBytes = aes.encrypt(Buffer.concat([digest, plainTextBuffer]));
-
-        console.log("Encrypted", encryptedBytes);
 
         return utils.toBase64(encryptedBytes);
     }

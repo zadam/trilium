@@ -41,7 +41,7 @@ function hmac(secret, value) {
 }
 
 function browserId(req) {
-    return req.get('x-browser-id');
+    return req == null ? null : req.get('x-browser-id');
 }
 
 function isElectron() {

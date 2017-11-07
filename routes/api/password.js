@@ -7,7 +7,7 @@ const changePassword = require('../../services/change_password');
 const auth = require('../../services/auth');
 
 router.post('/change', auth.checkApiAuth, async (req, res, next) => {
-    const result = await changePassword.changePassword(req.body['current_password'], req.body['new_password']);
+    const result = await changePassword.changePassword(req.body['current_password'], req.body['new_password'], req);
 
     res.send(result);
 });

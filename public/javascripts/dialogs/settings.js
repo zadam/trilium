@@ -87,15 +87,15 @@ settings.addModule((function() {
             contentType: "application/json",
             success: result => {
                 if (result.success) {
+                    alert("Password has been changed. Trilium will be reloaded after you press OK.");
+
                     // encryption password changed so current encryption session is invalid and needs to be cleared
                     encryption.resetEncryptionSession();
 
                     encryption.setEncryptedDataKey(result.new_encrypted_data_key);
-
-                    message("Password has been changed.");
                 }
                 else {
-                    message(result.message);
+                    error(result.message);
                 }
             },
             error: () => error("Error occurred during changing password.")
