@@ -1,3 +1,8 @@
 const utils = require('./utils');
+const log = require('./log');
 
-module.exports = utils.randomString(16);
+const sourceId = utils.randomString(16);
+
+log.info("Using sourceId=" + sourceId);
+
+module.exports = sourceId;

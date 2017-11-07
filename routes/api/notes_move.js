@@ -87,8 +87,7 @@ router.put('/:noteId/expanded/:expanded', async (req, res, next) => {
     const now = utils.nowTimestamp();
 
     await sql.doInTransaction(async () => {
-        // we don't change date_modified so other changes are prioritized in case of conflict
-        await sql.execute("update notes_tree set is_expanded = ? where note_id = ?", [expanded, noteId]);
+        await sql.execute("update notes_tree set is_expanded = ?, date_modified = ? where note_id = ?", [expanded, now, noteId]);
 
         await sql.addNoteTreeSync(noteId);
         await sql.addAudit(audit_category.CHANGE_EXPANDED, utils.browserId(req), noteId, null, expanded);

@@ -1,3 +1,5 @@
+const log = require('./services/log');
+log.info("App starting up");
 const express = require('express');
 const path = require('path');
 const favicon = require('serve-favicon');
@@ -8,12 +10,11 @@ const session = require('express-session');
 const FileStore = require('session-file-store')(session);
 const os = require('os');
 const options = require('./services/options');
-const log = require('./services/log');
 const utils = require('./services/utils');
 const sql = require('./services/sql');
-
 const dataDir = require('./services/data_dir');
 const sessionSecret = require('./services/session_secret');
+
 
 const db = require('sqlite');
 
