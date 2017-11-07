@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node ./bin/www",
     "test-electron": "xo",
+	"rebuild-electron": "electron-rebuild",
     "start-electron": "electron .",
     "build-electron": "electron-packager . --out=dist --asar --overwrite --all",
     "start-forge": "electron-forge start",
@@ -35,7 +36,6 @@
   },
   "devDependencies": {
     "devtron": "^1.1.0",
-    "electron": "^1.8.2-beta.1",
     "electron-compile": "^6.4.2",
     "electron-packager": "^8.0.0",
     "electron-prebuilt-compile": "1.8.2-beta.2",
