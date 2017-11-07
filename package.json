@@ -18,7 +18,7 @@
     "cookie-parser": "~1.4.3",
     "debug": "~3.1.0",
     "ejs": "~2.5.7",
-    "electron": "^1.8.2-beta.1",
+    "electron": "^1.8.2-beta.2",
     "electron-debug": "^1.0.0",
     "express": "~4.16.2",
     "express-session": "^1.15.6",
@@ -34,23 +34,13 @@
     "sqlite": "^2.8.0"
   },
   "devDependencies": {
-    "electron-compile": "^6.4.2",
-    "electron-squirrel-startup": "^1.0.0",
-    "electron-rebuild": "^1.6.0",
     "devtron": "^1.1.0",
+    "electron": "^1.8.2-beta.1",
+    "electron-compile": "^6.4.2",
     "electron-packager": "^8.0.0",
-    "electron": "^1.6.6",
-    "xo": "^0.18.0",
-    "babel-plugin-transform-async-to-generator": "^6.24.1",
-    "babel-preset-env": "^1.6.1",
-    "babel-preset-react": "^6.24.1",
-    "electron-forge": "^4.1.2",
-    "electron-prebuilt-compile": "1.7.9",
-    "eslint": "^3.19.0",
-    "eslint-config-airbnb": "^15.1.0",
-    "eslint-plugin-import": "^2.8.0",
-    "eslint-plugin-jsx-a11y": "^5.1.1",
-    "eslint-plugin-react": "^7.4.0"
+    "electron-prebuilt-compile": "1.8.2-beta.2",
+    "electron-rebuild": "^1.6.0",
+    "xo": "^0.18.0"
   },
   "config": {
     "forge": {
