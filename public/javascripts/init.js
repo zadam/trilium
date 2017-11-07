@@ -90,3 +90,17 @@ $(document).tooltip({
 function isElectron() {
     return window && window.process && window.process.type;
 }
+
+$(document).ready(() => {
+    $("#container").show();
+
+    // Get a reference to the loader's div
+    const loaderDiv = document.getElementById("loader-wrapper");
+    // When the transition ends remove loader's div from display
+    // so that we can access the map with gestures or clicks
+    loaderDiv.addEventListener("transitionend", function(){
+        loaderDiv.style.display = "none";
+    }, true);
+    // Kick off the CSS transition
+    loaderDiv.style.opacity = 0.0;
+});
