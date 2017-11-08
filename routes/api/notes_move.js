@@ -84,13 +84,9 @@ router.put('/:noteId/moveAfter/:afterNoteId', async (req, res, next) => {
 router.put('/:noteId/expanded/:expanded', async (req, res, next) => {
     const noteId = req.params.noteId;
     const expanded = req.params.expanded;
-    const now = utils.nowTimestamp();
 
     await sql.doInTransaction(async () => {
-        await sql.execute("update notes_tree set is_expanded = ?, date_modified = ? where note_id = ?", [expanded, now, noteId]);
-
-        await sql.addNoteTreeSync(noteId);
-        await sql.addAudit(audit_category.CHANGE_EXPANDED, utils.browserId(req), noteId, null, expanded);
+        await sql.execute("update notes_tree set is_expanded = ? where note_id = ?", [expanded, noteId]);
     });
 
     res.send({});
