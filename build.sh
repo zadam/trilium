@@ -6,4 +6,6 @@ rm -r dist/*
 
 ./node_modules/.bin/electron-packager . --out=dist --platform=linux,win32 --overwrite
 
-#./node_modules/.bin/electron-installer-debian --src dist/trilium-linux-x64/ --dest dist/installers/ --arch amd64
+cp -r ../trilium-node-bindings/* node_modules/sqlite3/lib/binding/
+
+tar cfJ dist/win.tar.xz dist/trilium-win32-x64
