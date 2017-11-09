@@ -27,7 +27,7 @@ const noteHistory = (function() {
         historyItems = await $.ajax({
             url: baseApiUrl + 'notes-history/' + noteId,
             type: 'GET',
-            error: () => error("Error getting note history.")
+            error: () => showError("Error getting note history.")
         });
 
         for (const item of historyItems) {

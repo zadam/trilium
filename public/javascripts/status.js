@@ -33,7 +33,7 @@ const status = (function() {
         }
 
         if (resp.changedCurrentNote) {
-            message('Reloading note because background change');
+            showMessage('Reloading note because background change');
 
             noteEditor.reload();
         }

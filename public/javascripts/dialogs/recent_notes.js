@@ -11,7 +11,7 @@ const recentNotes = (function() {
     $.ajax({
         url: baseApiUrl + 'recent-notes',
         type: 'GET',
-        error: () => error("Error getting recent notes.")
+        error: () => showError("Error getting recent notes.")
     }).then(result => {
         list = result.map(r => r.note_id);
     });
@@ -23,7 +23,7 @@ const recentNotes = (function() {
                 $.ajax({
                     url: baseApiUrl + 'recent-notes/' + noteTreeId,
                     type: 'PUT',
-                    error: () => error("Error setting recent notes.")
+                    error: () => showError("Error setting recent notes.")
                 }).then(result => {
                     list = result.map(r => r.note_id);
                 });
@@ -35,7 +35,7 @@ const recentNotes = (function() {
         $.ajax({
             url: baseApiUrl + 'recent-notes/' + noteIdToRemove,
             type: 'DELETE',
-            error: () => error("Error removing note from recent notes.")
+            error: () => showError("Error removing note from recent notes.")
         }).then(result => {
             list = result.map(r => r.note_id);
         });

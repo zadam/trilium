@@ -15,7 +15,7 @@ const recentChanges = (function() {
         const result = await $.ajax({
             url: baseApiUrl + 'recent-changes/',
             type: 'GET',
-            error: () => error("Error getting recent changes.")
+            error: () => showError("Error getting recent changes.")
         });
 
         dialogEl.html('');

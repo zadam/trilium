@@ -16,7 +16,7 @@ const eventLog = (function() {
         const result = await $.ajax({
             url: baseApiUrl + 'event-log',
             type: 'GET',
-            error: () => error("Error getting event log.")
+            error: () => showError("Error getting event log.")
         });
 
         listEl.html('');

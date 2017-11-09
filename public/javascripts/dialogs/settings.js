@@ -16,7 +16,7 @@ const settings = (function() {
         const settings = await $.ajax({
             url: baseApiUrl + 'settings',
             type: 'GET',
-            error: () => error("Error getting settings.")
+            error: () => showError("Error getting settings.")
         });
 
         dialogEl.dialog({
@@ -41,7 +41,7 @@ const settings = (function() {
             }),
             contentType: "application/json",
             success: () => {
-                message("Settings change have been saved.");
+                showMessage("Settings change have been saved.");
             },
             error: () => alert("Error occurred during saving settings change.")
         });
@@ -95,10 +95,10 @@ settings.addModule((function() {
                     encryption.setEncryptedDataKey(result.new_encrypted_data_key);
                 }
                 else {
-                    error(result.message);
+                    showError(result.message);
                 }
             },
-            error: () => error("Error occurred during changing password.")
+            error: () => showError("Error occurred during changing password.")
         });
 
         return false;

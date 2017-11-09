@@ -8,16 +8,16 @@ const encryption = (function() {
     let encryptionDeferred = null;
     let dataKey = null;
     let lastEncryptionOperationDate = null;
-    let encryptionSalt = null;
+    let passwordDerivedKeySalt = null;
     let encryptedDataKey = null;
     let encryptionSessionTimeout = null;
 
     $.ajax({
         url: baseApiUrl + 'settings/all',
         type: 'GET',
-        error: () => error("Error getting encryption settings.")
+        error: () => showError("Error getting encryption settings.")
     }).then(settings => {
-        encryptionSalt = settings.password_derived_key_salt;
+        passwordDerivedKeySalt = settings.password_derived_key_salt;
         encryptionSessionTimeout = settings.encryption_session_timeout;
         encryptedDataKey = settings.encrypted_data_key;
     });
@@ -34,6 +34,9 @@ const encryption = (function() {
         const dfd = $.Deferred();
 
         if (requireEncryption && dataKey === null) {
+            // if this is entry point then we need to show the app even before the note is loaded
+            showAppIfHidden();
+
             encryptionDeferred = dfd;
 
             dialogEl.dialog({
@@ -54,21 +57,15 @@ const encryption = (function() {
         return dfd.promise();
     }
 
-    function getDataKey(password) {
-        return computeScrypt(password, encryptionSalt, (key, resolve, reject) => {
-            const dataKeyAes = getDataKeyAes(key);
+    async function getDataKey(password) {
+        const passwordDerivedKey = await computeScrypt(password, passwordDerivedKeySalt);
 
-            const decryptedDataKey = decrypt(dataKeyAes, encryptedDataKey);
+        const dataKeyAes = getDataKeyAes(passwordDerivedKey);
 
-            if (decryptedDataKey === false) {
-                reject("Wrong password.");
-            }
-
-            resolve(decryptedDataKey);
-        });
+        return decrypt(dataKeyAes, encryptedDataKey);
     }
 
-    function computeScrypt(password, salt, callback) {
+    function computeScrypt(password, salt) {
         const normalizedPassword = password.normalize('NFKC');
         const passwordBuffer = new buffer.SlowBuffer(normalizedPassword);
         const saltBuffer = new buffer.SlowBuffer(salt);
@@ -78,22 +75,15 @@ const encryption = (function() {
         // 32 byte key - AES 256
         const dkLen = 32;
 
-        const startedDate = new Date();
-
         return new Promise((resolve, reject) => {
             scrypt(passwordBuffer, saltBuffer, N, r, p, dkLen, (error, progress, key) => {
                 if (error) {
-                    console.log("Error: " + error);
+                    showError(error);
 
-                    reject();
+                    reject(error);
                 }
                 else if (key) {
-                    console.log("Computation took " + (new Date().getTime() - startedDate.getTime()) + "ms");
-
-                    callback(key, resolve, reject);
-                }
-                else {
-                    // update UI with progress complete
+                    resolve(key);
                 }
             });
         });
@@ -115,31 +105,28 @@ const encryption = (function() {
         }
     }
 
-    encryptionPasswordFormEl.submit(() => {
+    async function setupEncryptionSession() {
         const password = encryptionPasswordEl.val();
         encryptionPasswordEl.val("");
 
-        getDataKey(password).then(key => {
-            dialogEl.dialog("close");
+        const key = await getDataKey(password);
+        if (key === false) {
+            showError("Wrong password!");
+            return;
+        }
 
-            dataKey = key;
+        dialogEl.dialog("close");
 
-            decryptTreeItems();
+        dataKey = key;
 
-            if (encryptionDeferred !== null) {
-                encryptionDeferred.resolve();
+        decryptTreeItems();
 
-                encryptionDeferred = null;
-            }
-        })
-            .catch(reason => {
-                console.log(reason);
+        if (encryptionDeferred !== null) {
+            encryptionDeferred.resolve();
 
-                error(reason);
-            });
-
-        return false;
-    });
+            encryptionDeferred = null;
+        }
+    }
 
     function resetEncryptionSession() {
         dataKey = null;
@@ -151,12 +138,6 @@ const encryption = (function() {
         }
     }
 
-    setInterval(() => {
-        if (lastEncryptionOperationDate !== null && new Date().getTime() - lastEncryptionOperationDate.getTime() > encryptionSessionTimeout * 1000) {
-            resetEncryptionSession();
-        }
-    }, 5000);
-
     function isEncryptionAvailable() {
         return dataKey !== null;
     }
@@ -167,8 +148,8 @@ const encryption = (function() {
         return new aesjs.ModeOfOperation.ctr(dataKey, new aesjs.Counter(5));
     }
 
-    function getDataKeyAes(key) {
-        return new aesjs.ModeOfOperation.ctr(key, new aesjs.Counter(5));
+    function getDataKeyAes(passwordDerivedKey) {
+        return new aesjs.ModeOfOperation.ctr(passwordDerivedKey, new aesjs.Counter(5));
     }
 
     function encryptNoteIfNecessary(note) {
@@ -264,7 +245,7 @@ const encryption = (function() {
         const result = await $.ajax({
             url: baseApiUrl + 'notes-history/' + noteId + "?encryption=" + (encrypt ? 0 : 1),
             type: 'GET',
-            error: () => error("Error getting note history.")
+            error: () => showError("Error getting note history.")
         });
 
         for (const row of result) {
@@ -284,7 +265,7 @@ const encryption = (function() {
                 type: 'PUT',
                 contentType: 'application/json',
                 data: JSON.stringify(row),
-                error: () => error("Error de/encrypting note history.")
+                error: () => showError("Error de/encrypting note history.")
             });
 
             console.log('Note history ' + row.note_history_id + ' de/encrypted');
@@ -342,7 +323,7 @@ const encryption = (function() {
                 }
             });
 
-        message("Encryption finished.");
+        showMessage("Encryption finished.");
     }
 
     async function decryptSubTree(noteId) {
@@ -369,7 +350,7 @@ const encryption = (function() {
                 }
             });
 
-        message("Decryption finished.");
+        showMessage("Decryption finished.");
     }
 
     function updateSubTreeRecursively(noteId, updateCallback, successCallback) {
@@ -412,16 +393,25 @@ const encryption = (function() {
                             successCallback(note);
                         }
                     },
-                    error: () => {
-                        console.log("Updating " + noteId + " failed.");
-                    }
+                    error: () => showError("Updating " + noteId + " failed.")
+
                 });
             },
-            error: () => {
-                console.log("Reading " + noteId + " failed.");
-            }
+            error: () => showError("Reading " + noteId + " failed.")
         });
     }
+
+    encryptionPasswordFormEl.submit(() => {
+        setupEncryptionSession();
+
+        return false;
+    });
+
+    setInterval(() => {
+        if (lastEncryptionOperationDate !== null && new Date().getTime() - lastEncryptionOperationDate.getTime() > encryptionSessionTimeout * 1000) {
+            resetEncryptionSession();
+        }
+    }, 5000);
 
     return {
         setEncryptedDataKey,

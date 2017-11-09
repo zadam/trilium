@@ -1,6 +1,8 @@
 "use strict";
 
-function message(str) {
+function showMessage(str) {
+    console.log("message: ", str);
+
     const top = $("#top-message");
 
     top.fadeIn(1500).css("display","inline-block");
@@ -8,7 +10,9 @@ function message(str) {
     top.fadeOut(1500);
 }
 
-function error(str) {
+function showError(str) {
+    console.log("error: ", str);
+
     const error = $("#error-message");
 
     error.show().css("display","inline-block");

@@ -104,13 +104,13 @@ const noteEditor = (function() {
             data: JSON.stringify(note),
             contentType: "application/json",
             error: () => {
-                error("Error saving the note!");
+                showError("Error saving the note!");
             }
         });
 
         isNoteChanged = false;
 
-        message("Saved!");
+        showMessage("Saved!");
     }
 
     function createNewTopLevelNote() {
@@ -165,7 +165,7 @@ const noteEditor = (function() {
             node.renderTitle();
         }
 
-        message("Created!");
+        showMessage("Created!");
     }
 
     function setTreeBasedOnEncryption(note) {
