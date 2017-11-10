@@ -38,6 +38,8 @@ async function updateNoteTree(entity, sourceId) {
 
     if (orig === null || orig.date_modified < entity.date_modified) {
         await sql.doInTransaction(async () => {
+            delete entity.is_expanded;
+
             await sql.replace('notes_tree', entity);
 
             await sql.addNoteTreeSync(entity.note_id, sourceId);

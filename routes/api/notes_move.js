@@ -45,8 +45,10 @@ router.put('/:noteId/moveBefore/:beforeNoteId', async (req, res, next) => {
             await sql.execute("update notes_tree set note_pos = note_pos + 1 where note_pid = ? and note_pos >= ? and is_deleted = 0",
                 [beforeNote['note_pid'], beforeNote['note_pos']]);
 
-            await sql.execute("update notes_tree set note_pid = ?, note_pos = ? where note_id = ?",
-                [beforeNote['note_pid'], beforeNote['note_pos'], noteId]);
+            const now = utils.nowTimestamp();
+
+            await sql.execute("update notes_tree set note_pid = ?, note_pos = ?, date_modified = ? where note_id = ?",
+                [beforeNote['note_pid'], beforeNote['note_pos'], now, noteId]);
 
             await sql.addNoteTreeSync(noteId);
             await sql.addNoteReorderingSync(beforeNote['note_pid']);
@@ -69,8 +71,10 @@ router.put('/:noteId/moveAfter/:afterNoteId', async (req, res, next) => {
             await sql.execute("update notes_tree set note_pos = note_pos + 1 where note_pid = ? and note_pos > ? and is_deleted = 0",
                 [afterNote['note_pid'], afterNote['note_pos']]);
 
-            await sql.execute("update notes_tree set note_pid = ?, note_pos = ? where note_id = ?",
-                [afterNote['note_pid'], afterNote['note_pos'] + 1, noteId]);
+            const now = utils.nowTimestamp();
+
+            await sql.execute("update notes_tree set note_pid = ?, note_pos = ?, date_modified = ? where note_id = ?",
+                [afterNote['note_pid'], afterNote['note_pos'] + 1, now, noteId]);
 
             await sql.addNoteTreeSync(noteId);
             await sql.addNoteReorderingSync(afterNote['note_pid']);
