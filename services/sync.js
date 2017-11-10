@@ -14,7 +14,7 @@ const notes = require('./notes');
 
 const SYNC_SERVER = config['Sync']['syncServerHost'];
 const isSyncSetup = !!SYNC_SERVER;
-
+const SYNC_TIMEOUT = config['Sync']['syncServerTimeout'] || 5000;
 
 let syncInProgress = false;
 
@@ -30,7 +30,7 @@ async function pullSync(syncContext) {
             uri: SYNC_SERVER + '/api/sync/changed?lastSyncId=' + lastSyncedPull + "&sourceId=" + SOURCE_ID,
             jar: syncContext.cookieJar,
             json: true,
-            timeout: 5 * 1000
+            timeout: SYNC_TIMEOUT
         });
 
         logSync("Pulled " + syncRows.length + " changes");
@@ -46,7 +46,8 @@ async function pullSync(syncContext) {
             resp = await rp({
                 uri: SYNC_SERVER + "/api/sync/" + sync.entity_name + "/" + sync.entity_id,
                 json: true,
-                jar: syncContext.cookieJar
+                jar: syncContext.cookieJar,
+                timeout: SYNC_TIMEOUT
             });
         }
         catch (e) {
@@ -97,7 +98,7 @@ async function sendEntity(entity, entityName, cookieJar) {
             uri: SYNC_SERVER + '/api/sync/' + entityName,
             body: payload,
             json: true,
-            timeout: 5 * 1000,
+            timeout: SYNC_TIMEOUT,
             jar: cookieJar
         });
     }
@@ -189,7 +190,7 @@ async function login() {
                 hash: hash
             },
             json: true,
-            timeout: 5 * 1000,
+            timeout: SYNC_TIMEOUT,
             jar: cookieJar
         });
 
@@ -388,8 +389,8 @@ async function updateRecentNotes(entity, sourceId) {
     }
 }
 
-if (SYNC_SERVER) {
-    log.info("Setting up sync");
+if (isSyncSetup) {
+    log.info("Setting up sync to " + SYNC_SERVER + " with timeout " + SYNC_TIMEOUT);
 
     setInterval(sync, 60000);
 
