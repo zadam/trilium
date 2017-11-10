@@ -82,7 +82,7 @@ async function login() {
 
     const syncContext = { cookieJar: rp.jar() };
 
-    const resp = await syncRequest(syncContext, 'POST', '/api/login', {
+    const resp = await syncRequest(syncContext, 'POST', '/api/login/sync', {
         timestamp: timestamp,
         dbVersion: migration.APP_DB_VERSION,
         hash: hash

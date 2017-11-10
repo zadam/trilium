@@ -6,8 +6,11 @@ const options = require('../../services/options');
 const utils = require('../../services/utils');
 const migration = require('../../services/migration');
 const SOURCE_ID = require('../../services/source_id');
+const auth = require('../../services/auth');
+const password_encryption = require('../../services/password_encryption');
+const protected_session = require('../../services/protected_session');
 
-router.post('', async (req, res, next) => {
+router.post('/sync', async (req, res, next) => {
     const timestamp = req.body.timestamp;
 
     const now = utils.nowTimestamp();
@@ -38,6 +41,27 @@ router.post('', async (req, res, next) => {
 
     res.send({
         sourceId: SOURCE_ID
+    });
+});
+
+// this is for entering protected mode so user has to be already logged-in (that's the reason we don't require username)
+router.post('protected', auth.checkApiAuth, async (req, res, next) => {
+    const password = req.body.password;
+
+    if (!await password_encryption.verifyPassword(password)) {
+        return {
+            success: false,
+            message: "Given current password doesn't match hash"
+        };
+    }
+
+    const decryptedDataKey = password_encryption.getDecryptedDataKey(password);
+
+    const protectedSessionId = protected_session.setDataKey(req, decryptedDataKey);
+
+    res.send({
+        success: true,
+        protectedSessionId: protectedSessionId
     });
 });
 

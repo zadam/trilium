@@ -131,11 +131,9 @@ const encryption = (function() {
     function resetEncryptionSession() {
         dataKey = null;
 
-        if (noteEditor.getCurrentNote().detail.encryption > 0) {
-            // most secure solution - guarantees nothing remained in memory
-            // since this expires because user doesn't use the app, it shouldn't be disruptive
-            window.location.reload(true);
-        }
+        // most secure solution - guarantees nothing remained in memory
+        // since this expires because user doesn't use the app, it shouldn't be disruptive
+        window.location.reload(true);
     }
 
     function isEncryptionAvailable() {

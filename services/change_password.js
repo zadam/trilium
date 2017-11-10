@@ -5,52 +5,22 @@ const options = require('./options');
 const my_scrypt = require('./my_scrypt');
 const utils = require('./utils');
 const audit_category = require('./audit_category');
-const crypto = require('crypto');
-const aesjs = require('./aes');
+const password_encryption = require('./password_encryption');
 
 async function changePassword(currentPassword, newPassword, req) {
-    const current_password_hash = utils.toBase64(await my_scrypt.getVerificationHash(currentPassword));
-
-    if (current_password_hash !== await options.getOption('password_verification_hash')) {
+    if (!await password_encryption.verifyPassword(currentPassword)) {
         return {
-            'success': false,
-            'message': "Given current password doesn't match hash"
+            success: false,
+            message: "Given current password doesn't match hash"
         };
     }
 
-    const currentPasswordDerivedKey = await my_scrypt.getPasswordDerivedKey(currentPassword);
-
     const newPasswordVerificationKey = utils.toBase64(await my_scrypt.getVerificationHash(newPassword));
-    const newPasswordEncryptionKey = await my_scrypt.getPasswordDerivedKey(newPassword);
+    const newPasswordDerivedKey = await my_scrypt.getPasswordDerivedKey(newPassword);
 
-    function decrypt(encryptedBase64) {
-        const encryptedBytes = utils.fromBase64(encryptedBase64);
+    const decryptedDataKey = await password_encryption.getDecryptedDataKey(currentPassword);
 
-        const aes = getAes(currentPasswordDerivedKey);
-        return aes.decrypt(encryptedBytes).slice(4);
-    }
-
-    function encrypt(plainText) {
-        const aes = getAes(newPasswordEncryptionKey);
-
-        const plainTextBuffer = Buffer.from(plainText, 'latin1');
-
-        const digest = crypto.createHash('sha256').update(plainTextBuffer).digest().slice(0, 4);
-
-        const encryptedBytes = aes.encrypt(Buffer.concat([digest, plainTextBuffer]));
-
-        return utils.toBase64(encryptedBytes);
-    }
-
-    function getAes(key) {
-        return new aesjs.ModeOfOperation.ctr(key, new aesjs.Counter(5));
-    }
-
-    const encryptedDataKey = await options.getOption('encrypted_data_key');
-
-    const decryptedDataKey = decrypt(encryptedDataKey);
-
-    const newEncryptedDataKey = encrypt(decryptedDataKey);
+    const newEncryptedDataKey = password_encryption.encryptDataKey(newPasswordDerivedKey, decryptedDataKey);
 
     await sql.doInTransaction(async () => {
         await options.setOption('encrypted_data_key', newEncryptedDataKey);
@@ -61,8 +31,8 @@ async function changePassword(currentPassword, newPassword, req) {
     });
 
     return {
-        'success': true,
-        'new_encrypted_data_key': newEncryptedDataKey
+        success: true,
+        new_encrypted_data_key: newEncryptedDataKey
     };
 }
 
