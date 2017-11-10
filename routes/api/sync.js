@@ -4,6 +4,7 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../../services/auth');
 const sync = require('../../services/sync');
+const syncUpdate = require('../../services/sync_update');
 const sql = require('../../services/sql');
 const options = require('../../services/options');
 
@@ -66,37 +67,37 @@ router.get('/recent_notes/:noteId', auth.checkApiAuth, async (req, res, next) =>
 });
 
 router.put('/notes', auth.checkApiAuth, async (req, res, next) => {
-    await sync.updateNote(req.body.entity, req.body.links, req.body.sourceId);
+    await syncUpdate.updateNote(req.body.entity, req.body.links, req.body.sourceId);
 
     res.send({});
 });
 
 router.put('/notes_tree', auth.checkApiAuth, async (req, res, next) => {
-    await sync.updateNoteTree(req.body.entity, req.body.sourceId);
+    await syncUpdate.updateNoteTree(req.body.entity, req.body.sourceId);
 
     res.send({});
 });
 
 router.put('/notes_history', auth.checkApiAuth, async (req, res, next) => {
-    await sync.updateNoteHistory(req.body.entity, req.body.sourceId);
+    await syncUpdate.updateNoteHistory(req.body.entity, req.body.sourceId);
 
     res.send({});
 });
 
 router.put('/notes_reordering', auth.checkApiAuth, async (req, res, next) => {
-    await sync.updateNoteReordering(req.body.entity, req.body.sourceId);
+    await syncUpdate.updateNoteReordering(req.body.entity, req.body.sourceId);
 
     res.send({});
 });
 
 router.put('/options', auth.checkApiAuth, async (req, res, next) => {
-    await sync.updateOptions(req.body.entity, req.body.sourceId);
+    await syncUpdate.updateOptions(req.body.entity, req.body.sourceId);
 
     res.send({});
 });
 
 router.put('/recent_notes', auth.checkApiAuth, async (req, res, next) => {
-    await sync.updateRecentNotes(req.body.entity, req.body.sourceId);
+    await syncUpdate.updateRecentNotes(req.body.entity, req.body.sourceId);
 
     res.send({});
 });
