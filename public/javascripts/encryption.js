@@ -11,6 +11,7 @@ const encryption = (function() {
     let passwordDerivedKeySalt = null;
     let encryptedDataKey = null;
     let encryptionSessionTimeout = null;
+    let protectedSessionId = null;
 
     $.ajax({
         url: baseApiUrl + 'settings/all',
@@ -109,17 +110,19 @@ const encryption = (function() {
         const password = encryptionPasswordEl.val();
         encryptionPasswordEl.val("");
 
-        const key = await getDataKey(password);
-        if (key === false) {
-            showError("Wrong password!");
+        const response = await enterProtectedSession(password);
+
+        if (!response.success) {
+            showError("Wrong password.");
             return;
         }
 
+        protectedSessionId = response.protectedSessionId;
+        initAjax();
+
         dialogEl.dialog("close");
 
-        dataKey = key;
-
-        decryptTreeItems();
+        noteTree.reload();
 
         if (encryptionDeferred !== null) {
             encryptionDeferred.resolve();
@@ -128,8 +131,26 @@ const encryption = (function() {
         }
     }
 
+    async function enterProtectedSession(password) {
+        return await $.ajax({
+            url: baseApiUrl + 'login/protected',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                password: password
+            }),
+            error: () => showError("Error entering protected session.")
+        });
+    }
+
+    function getProtectedSessionId() {
+        return protectedSessionId;
+    }
+
     function resetEncryptionSession() {
-        dataKey = null;
+        protectedSessionId = null;
+
+        initAjax();
 
         // most secure solution - guarantees nothing remained in memory
         // since this expires because user doesn't use the app, it shouldn't be disruptive
@@ -425,6 +446,7 @@ const encryption = (function() {
         decryptNoteAndSendToServer,
         decryptNoteIfNecessary,
         encryptSubTree,
-        decryptSubTree
+        decryptSubTree,
+        getProtectedSessionId
     };
 })();

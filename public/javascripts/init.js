@@ -111,3 +111,14 @@ function showAppIfHidden() {
         loaderDiv.style.opacity = 0.0;
     }
 }
+
+function initAjax() {
+    $.ajaxSetup({
+        headers: {
+            'x-browser-id': browserId,
+            'x-protected-session-id': encryption ? encryption.getProtectedSessionId() : null
+        }
+    });
+}
+
+initAjax();

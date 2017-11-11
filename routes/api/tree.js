@@ -7,6 +7,8 @@ const options = require('../../services/options');
 const utils = require('../../services/utils');
 const auth = require('../../services/auth');
 const log = require('../../services/log');
+const protected_session = require('../../services/protected_session');
+const data_encryption = require('../../services/data_encryption');
 
 router.get('/', auth.checkApiAuth, async (req, res, next) => {
     const notes = await sql.getResults("select "
@@ -24,7 +26,13 @@ router.get('/', auth.checkApiAuth, async (req, res, next) => {
     const root_notes = [];
     const notes_map = {};
 
+    const dataKey = protected_session.getDataKey(req);
+
     for (const note of notes) {
+        if (note['encryption']) {
+            note.note_title = data_encryption.decrypt(dataKey, note.note_title);
+        }
+
         note.children = [];
 
         if (!note.note_pid) {
@@ -50,11 +58,6 @@ router.get('/', auth.checkApiAuth, async (req, res, next) => {
     res.send({
         notes: root_notes,
         start_note_id: await options.getOption('start_node'),
-        password_verification_salt: await options.getOption('password_verification_salt'),
-        password_derived_key_salt: await options.getOption('password_derived_key_salt'),
-        encrypted_data_key: await options.getOption('encrypted_data_key'),
-        encryption_session_timeout: await options.getOption('encryption_session_timeout'),
-        browser_id: utils.randomString(12),
         tree_load_time: utils.nowTimestamp()
     });
 });

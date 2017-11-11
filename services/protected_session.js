@@ -7,7 +7,9 @@ function setDataKey(req, decryptedDataKey) {
     return req.session.protectedSessionId;
 }
 
-function getDataKey(req, protectedSessionId) {
+function getDataKey(req) {
+    const protectedSessionId = req.headers['x-protected-session-id'];
+
     if (protectedSessionId && req.session.protectedSessionId === protectedSessionId) {
         return req.session.decryptedDataKey;
     }

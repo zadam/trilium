@@ -45,17 +45,19 @@ router.post('/sync', async (req, res, next) => {
 });
 
 // this is for entering protected mode so user has to be already logged-in (that's the reason we don't require username)
-router.post('protected', auth.checkApiAuth, async (req, res, next) => {
+router.post('/protected', auth.checkApiAuth, async (req, res, next) => {
     const password = req.body.password;
 
     if (!await password_encryption.verifyPassword(password)) {
-        return {
+        res.send({
             success: false,
             message: "Given current password doesn't match hash"
-        };
+        });
+
+        return;
     }
 
-    const decryptedDataKey = password_encryption.getDecryptedDataKey(password);
+    const decryptedDataKey = await password_encryption.getDecryptedDataKey(password);
 
     const protectedSessionId = protected_session.setDataKey(req, decryptedDataKey);
 

@@ -3,11 +3,12 @@
 const express = require('express');
 const router = express.Router();
 const auth = require('../services/auth');
-const migration = require('../services/migration');
-const sql = require('../services/sql');
+const utils = require('../services/utils');
 
 router.get('', auth.checkAuth, async (req, res, next) => {
-    res.render('index', {});
+    res.render('index', {
+        browserId: utils.randomString(12)
+    });
 });
 
 module.exports = router;

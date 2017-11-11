@@ -23,14 +23,12 @@ const noteTree = (function() {
         for (const note of notes) {
             glob.allNoteIds.push(note.note_id);
 
-            if (note.encryption > 0) {
-                note.title = "[encrypted]";
+            note.title = note.note_title;
 
+            if (note.encryption > 0) {
                 note.extraClasses = "encrypted";
             }
             else {
-                note.title = note.note_title;
-
                 if (note.is_clone) {
                     note.title += " (clone)";
                 }
@@ -201,11 +199,6 @@ const noteTree = (function() {
             const notes = resp.notes;
             startNoteId = resp.start_note_id;
             treeLoadTime = resp.tree_load_time;
-
-            // add browser ID header to all AJAX requests
-            $.ajaxSetup({
-                headers: { 'x-browser-id': resp.browser_id }
-            });
 
             if (document.location.hash) {
                 startNoteId = document.location.hash.substr(1); // strip initial #

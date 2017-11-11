@@ -16,7 +16,7 @@ function decryptDataKey(passwordDerivedKey, encryptedBase64) {
     const encryptedBytes = utils.fromBase64(encryptedBase64);
 
     const aes = getAes(passwordDerivedKey);
-    return aes.decrypt(encryptedBytes).slice(4);
+    return Array.from(aes.decrypt(encryptedBytes).slice(4));
 }
 
 function encryptDataKey(passwordDerivedKey, plainText) {

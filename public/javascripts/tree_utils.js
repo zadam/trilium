@@ -51,12 +51,7 @@ const treeUtils = (function() {
         const path = [];
 
         while (note) {
-            if (note.data.encryption > 0 && !encryption.isEncryptionAvailable()) {
-                path.push("[encrypted]");
-            }
-            else {
-                path.push(note.title);
-            }
+            path.push(note.title);
 
             note = note.getParent();
         }
