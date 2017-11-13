@@ -209,8 +209,6 @@ const noteEditor = (function() {
 
         encryptionPasswordEl.val('');
 
-        encryption.decryptNoteIfNecessary(currentNote);
-
         noteTitleEl.val(currentNote.detail.note_title);
 
         noteChangeDisabled = true;
@@ -233,12 +231,6 @@ const noteEditor = (function() {
 
     async function loadNote(noteId) {
         const note = await $.get(baseApiUrl + 'notes/' + noteId);
-
-        if (note.detail.encryption > 0 && !encryption.isEncryptionAvailable()) {
-            return;
-        }
-
-        encryption.decryptNoteIfNecessary(note);
 
         return note;
     }

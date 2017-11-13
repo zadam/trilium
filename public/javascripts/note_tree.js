@@ -190,8 +190,6 @@ const noteTree = (function() {
 
         // this will also reload the note content
         await treeEl.fancytree('getTree').reload(treeResp.notes);
-
-        encryption.decryptTreeItems();
     }
 
     function loadTree() {

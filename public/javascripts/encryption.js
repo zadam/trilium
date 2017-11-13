@@ -23,10 +23,6 @@ const encryption = (function() {
         encryptedDataKey = settings.encrypted_data_key;
     });
 
-    function setEncryptedDataKey(encDataKey) {
-        encryptedDataKey = encDataKey;
-    }
-
     function setEncryptionSessionTimeout(encSessTimeout) {
         encryptionSessionTimeout = encSessTimeout;
     }
@@ -34,7 +30,7 @@ const encryption = (function() {
     function ensureEncryptionIsAvailable(requireEncryption, modal) {
         const dfd = $.Deferred();
 
-        if (requireEncryption && dataKey === null) {
+        if (requireEncryption && !isEncryptionAvailable()) {
             // if this is entry point then we need to show the app even before the note is loaded
             showAppIfHidden();
 
@@ -58,54 +54,6 @@ const encryption = (function() {
         return dfd.promise();
     }
 
-    async function getDataKey(password) {
-        const passwordDerivedKey = await computeScrypt(password, passwordDerivedKeySalt);
-
-        const dataKeyAes = getDataKeyAes(passwordDerivedKey);
-
-        return decrypt(dataKeyAes, encryptedDataKey);
-    }
-
-    function computeScrypt(password, salt) {
-        const normalizedPassword = password.normalize('NFKC');
-        const passwordBuffer = new buffer.SlowBuffer(normalizedPassword);
-        const saltBuffer = new buffer.SlowBuffer(salt);
-
-        // this settings take ~500ms on my laptop
-        const N = 16384, r = 8, p = 1;
-        // 32 byte key - AES 256
-        const dkLen = 32;
-
-        return new Promise((resolve, reject) => {
-            scrypt(passwordBuffer, saltBuffer, N, r, p, dkLen, (error, progress, key) => {
-                if (error) {
-                    showError(error);
-
-                    reject(error);
-                }
-                else if (key) {
-                    resolve(key);
-                }
-            });
-        });
-    }
-
-    function decryptTreeItems() {
-        if (!isEncryptionAvailable()) {
-            return;
-        }
-
-        for (const noteId of glob.allNoteIds) {
-            const note = treeUtils.getNodeByKey(noteId);
-
-            if (note.data.encryption > 0) {
-                const title = decryptString(note.data.note_title);
-
-                note.setTitle(title);
-            }
-        }
-    }
-
     async function setupEncryptionSession() {
         const password = encryptionPasswordEl.val();
         encryptionPasswordEl.val("");
@@ -122,6 +70,7 @@ const encryption = (function() {
 
         dialogEl.dialog("close");
 
+        noteEditor.reload();
         noteTree.reload();
 
         if (encryptionDeferred !== null) {
@@ -158,17 +107,13 @@ const encryption = (function() {
     }
 
     function isEncryptionAvailable() {
-        return dataKey !== null;
+        return protectedSessionId !== null;
     }
 
     function getDataAes() {
         lastEncryptionOperationDate = new Date();
 
         return new aesjs.ModeOfOperation.ctr(dataKey, new aesjs.Counter(5));
-    }
-
-    function getDataKeyAes(passwordDerivedKey) {
-        return new aesjs.ModeOfOperation.ctr(passwordDerivedKey, new aesjs.Counter(5));
     }
 
     function encryptNoteIfNecessary(note) {
@@ -307,17 +252,6 @@ const encryption = (function() {
         noteEditor.setNoteBackgroundIfEncrypted(note);
     }
 
-    function decryptNoteIfNecessary(note) {
-        if (note.detail.encryption > 0) {
-            decryptNote(note);
-        }
-    }
-
-    function decryptNote(note) {
-        note.detail.note_title = decryptString(note.detail.note_title);
-        note.detail.note_text = decryptString(note.detail.note_text);
-    }
-
     async function encryptSubTree(noteId) {
         await ensureEncryptionIsAvailable(true, true);
 
@@ -433,10 +367,8 @@ const encryption = (function() {
     }, 5000);
 
     return {
-        setEncryptedDataKey,
         setEncryptionSessionTimeout,
         ensureEncryptionIsAvailable,
-        decryptTreeItems,
         resetEncryptionSession,
         isEncryptionAvailable,
         encryptNoteIfNecessary,
@@ -444,7 +376,6 @@ const encryption = (function() {
         decryptString,
         encryptNoteAndSendToServer,
         decryptNoteAndSendToServer,
-        decryptNoteIfNecessary,
         encryptSubTree,
         decryptSubTree,
         getProtectedSessionId

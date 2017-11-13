@@ -7,6 +7,8 @@ const sql = require('../../services/sql');
 const options = require('../../services/options');
 const utils = require('../../services/utils');
 const notes = require('../../services/notes');
+const protected_session = require('../../services/protected_session');
+const data_encryption = require('../../services/data_encryption');
 
 router.get('/:noteId', auth.checkApiAuth, async (req, res, next) => {
     let noteId = req.params.noteId;
@@ -18,6 +20,13 @@ router.get('/:noteId', auth.checkApiAuth, async (req, res, next) => {
     if (detail.note_clone_id) {
         noteId = detail.note_clone_id;
         detail = sql.getSingleResult("select * from notes where note_id = ?", [noteId]);
+    }
+
+    if (detail.encryption > 0) {
+        const dataKey = protected_session.getDataKey(req);
+
+        detail.note_title = data_encryption.decrypt(dataKey, detail.note_title);
+        detail.note_text = data_encryption.decrypt(dataKey, detail.note_text);
     }
 
     res.send({

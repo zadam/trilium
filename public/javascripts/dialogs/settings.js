@@ -91,8 +91,6 @@ settings.addModule((function() {
 
                     // encryption password changed so current encryption session is invalid and needs to be cleared
                     encryption.resetEncryptionSession();
-
-                    encryption.setEncryptedDataKey(result.new_encrypted_data_key);
                 }
                 else {
                     showError(result.message);
