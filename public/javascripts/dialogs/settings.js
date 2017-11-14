@@ -21,7 +21,7 @@ const settings = (function() {
 
         dialogEl.dialog({
             modal: true,
-            width: 600
+            width: 800
         });
 
         tabsEl.tabs();
@@ -145,6 +145,21 @@ settings.addModule((function () {
 
         return false;
     });
+
+    return {
+        settingsLoaded
+    };
+})());
+
+settings.addModule((function () {
+    const buildDateEl = $("#build-date");
+    const buildRevisionEl = $("#build-revision");
+
+    function settingsLoaded(settings) {
+        buildDateEl.html(settings['buildDate']);
+        buildRevisionEl.html(settings['buildRevision']);
+        buildRevisionEl.attr('href', 'https://github.com/zadam/trilium/commit/' + settings['buildRevision']);
+    }
 
     return {
         settingsLoaded

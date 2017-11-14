@@ -1,5 +1,7 @@
 #!/bin/bash
 
+./set-build.sh
+
 echo "Deleting dist"
 
 rm -r dist/*
