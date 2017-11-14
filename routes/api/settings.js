@@ -7,6 +7,7 @@ const options = require('../../services/options');
 const audit_category = require('../../services/audit_category');
 const auth = require('../../services/auth');
 const utils = require('../../services/utils');
+const build = require('../../services/build');
 
 // options allowed to be updated directly in settings dialog
 const ALLOWED_OPTIONS = ['encryption_session_timeout', 'history_snapshot_time_interval'];
@@ -14,12 +15,16 @@ const ALLOWED_OPTIONS = ['encryption_session_timeout', 'history_snapshot_time_in
 router.get('/all', auth.checkApiAuth, async (req, res, next) => {
     const settings = await sql.getMap("SELECT opt_name, opt_value FROM options");
 
+    Object.assign(settings, build);
+
     res.send(settings);
 });
 
 router.get('/', auth.checkApiAuth, async (req, res, next) => {
     const settings = await sql.getMap("SELECT opt_name, opt_value FROM options WHERE opt_name IN ("
         + ALLOWED_OPTIONS.map(x => '?').join(",") + ")", ALLOWED_OPTIONS);
+
+    Object.assign(settings, build);
 
     res.send(settings);
 });
