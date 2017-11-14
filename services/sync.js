@@ -14,6 +14,7 @@ const syncUpdate = require('./sync_update');
 const SYNC_SERVER = config['Sync']['syncServerHost'];
 const isSyncSetup = !!SYNC_SERVER;
 const SYNC_TIMEOUT = config['Sync']['syncServerTimeout'] || 5000;
+const SYNC_PROXY = config['Sync']['syncProxy'];
 
 let syncInProgress = false;
 
@@ -215,14 +216,20 @@ async function syncRequest(syncContext, method, uri, body) {
     const fullUri = SYNC_SERVER + uri;
 
     try {
-        return await rp({
+        const options = {
             method: method,
             uri: fullUri,
             jar: syncContext.cookieJar,
             json: true,
             body: body,
             timeout: SYNC_TIMEOUT
-        });
+        };
+
+        if (SYNC_PROXY) {
+            options.proxy = SYNC_PROXY;
+        }
+
+        return await rp(options);
     }
     catch (e) {
         throw new Error("Request to " + method + " " + fullUri + " failed, inner exception: " + e.stack);
