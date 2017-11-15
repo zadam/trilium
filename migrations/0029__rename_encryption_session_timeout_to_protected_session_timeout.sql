@@ -1,0 +1,1 @@
+UPDATE options SET opt_name = 'protected_session_timeout' WHERE opt_name = 'encryption_session_timeout';

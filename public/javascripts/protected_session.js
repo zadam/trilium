@@ -7,7 +7,7 @@ const protected_session = (function() {
 
     let protectedSessionDeferred = null;
     let lastProtectedSessionOperationDate = null;
-    let encryptionSessionTimeout = null;
+    let protectedSessionTimeout = null;
     let protectedSessionId = null;
 
     $.ajax({
@@ -15,11 +15,11 @@ const protected_session = (function() {
         type: 'GET',
         error: () => showError("Error getting encryption settings.")
     }).then(settings => {
-        encryptionSessionTimeout = settings.encryption_session_timeout;
+        protectedSessionTimeout = settings.protected_session_timeout;
     });
 
-    function setEncryptionSessionTimeout(encSessTimeout) {
-        encryptionSessionTimeout = encSessTimeout;
+    function setProtectedSessionTimeout(encSessTimeout) {
+        protectedSessionTimeout = encSessTimeout;
     }
 
     function ensureProtectedSession(requireProtectedSession, modal) {
@@ -140,13 +140,13 @@ const protected_session = (function() {
     });
 
     setInterval(() => {
-        if (lastProtectedSessionOperationDate !== null && new Date().getTime() - lastProtectedSessionOperationDate.getTime() > encryptionSessionTimeout * 1000) {
+        if (lastProtectedSessionOperationDate !== null && new Date().getTime() - lastProtectedSessionOperationDate.getTime() > protectedSessionTimeout * 1000) {
             resetProtectedSession();
         }
     }, 5000);
 
     return {
-        setEncryptionSessionTimeout,
+        setProtectedSessionTimeout,
         ensureProtectedSession,
         resetProtectedSession,
         isProtectedSessionAvailable,

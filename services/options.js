@@ -1,7 +1,7 @@
 const sql = require('./sql');
 const utils = require('./utils');
 
-const SYNCED_OPTIONS = [ 'username', 'password_verification_hash', 'encrypted_data_key', 'encryption_session_timeout',
+const SYNCED_OPTIONS = [ 'username', 'password_verification_hash', 'encrypted_data_key', 'protected_session_timeout',
     'history_snapshot_time_interval' ];
 
 async function getOption(optName) {

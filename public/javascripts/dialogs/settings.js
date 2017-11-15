@@ -108,19 +108,19 @@ settings.addModule((function() {
 })());
 
 settings.addModule((function() {
-    const formEl = $("#encryption-timeout-form");
-    const encryptionTimeoutEl = $("#encryption-timeout-in-seconds");
-    const settingName = 'encryption_session_timeout';
+    const formEl = $("#protected-session-timeout-form");
+    const protectedSessionTimeoutEl = $("#protected-session-timeout-in-seconds");
+    const settingName = 'protected_session_timeout';
 
     function settingsLoaded(settings) {
-        encryptionTimeoutEl.val(settings[settingName]);
+        protectedSessionTimeoutEl.val(settings[settingName]);
     }
 
     formEl.submit(() => {
-        const encryptionTimeout = encryptionTimeoutEl.val();
+        const protectedSessionTimeout = protectedSessionTimeoutEl.val();
 
-        settings.saveSettings(settingName, encryptionTimeout).then(() => {
-            protected_session.setEncryptionSessionTimeout(encryptionTimeout);
+        settings.saveSettings(settingName, protectedSessionTimeout).then(() => {
+            protected_session.setProtectedSessionTimeout(protectedSessionTimeout);
         });
 
         return false;

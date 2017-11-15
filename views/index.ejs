@@ -151,7 +151,7 @@
       <div id="settings-tabs">
         <ul>
           <li><a href="#change-password">Change password</a></li>
-          <li><a href="#encryption-timeout">Encryption timeout</a></li>
+          <li><a href="#protected-session-timeout">Protected session</a></li>
           <li><a href="#history-snapshot-time-interval">History snapshots</a></li>
           <li><a href="#about">About Trilium</a></li>
         </ul>
@@ -175,14 +175,14 @@
             <button class="btn btn-sm">Change password</button>
           </form>
         </div>
-        <div id="encryption-timeout">
-          <p>Encryption timeout is a time period after which the encryption key and encrypted data is wiped out from
-            browser's memory. This is measured from the last encryption / decryption activity.</p>
+        <div id="protected-session-timeout">
+          <p>Protected session timeout is a time period after which the protected session is wiped out from
+            browser's memory. This is measured from the last interaction with protected notes.</p>
 
-          <form id="encryption-timeout-form">
+          <form id="protected-session-timeout-form">
             <div class="form-group">
-              <label for="encryption-timeout-in-seconds">Encryption timeout (in seconds)</label>
-              <input class="form-control" id="encryption-timeout-in-seconds" type="number">
+              <label for="protected-session-timeout-in-seconds">Protected session timeout (in seconds)</label>
+              <input class="form-control" id="protected-session-timeout-in-seconds" type="number">
             </div>
 
             <button class="btn btn-sm">Save</button>
