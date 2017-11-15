@@ -7,8 +7,8 @@ const noteEditor = (function() {
     const protectButton = $("#protect-button");
     const unprotectButton = $("#unprotect-button");
     const noteDetailWrapperEl = $("#note-detail-wrapper");
-    const encryptionPasswordDialogEl = $("#encryption-password-dialog");
-    const encryptionPasswordEl = $("#encryption-password");
+    const encryptionPasswordDialogEl = $("#protected-session-password-dialog");
+    const encryptionPasswordEl = $("#protected-session-password");
 
     let currentNote = null;
 
@@ -122,7 +122,7 @@ const noteEditor = (function() {
     async function createNote(node, parentKey, target, isProtected) {
         // if isProtected isn't available (user didn't enter password yet), then note is created as unencrypted
         // but this is quite weird since user doesn't see where the note is being created so it shouldn't occur often
-        if (!isProtected || !encryption.isEncryptionAvailable()) {
+        if (!isProtected || !encryption.isProtectedSessionAvailable()) {
             isProtected = false;
         }
 

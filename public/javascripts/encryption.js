@@ -1,12 +1,12 @@
 "use strict";
 
 const encryption = (function() {
-    const dialogEl = $("#encryption-password-dialog");
-    const encryptionPasswordFormEl = $("#encryption-password-form");
-    const encryptionPasswordEl = $("#encryption-password");
+    const dialogEl = $("#protected-session-password-dialog");
+    const passwordFormEl = $("#protected-session-password-form");
+    const passwordEl = $("#protected-session-password");
 
-    let encryptionDeferred = null;
-    let lastEncryptionOperationDate = null;
+    let protectedSessionDeferred = null;
+    let lastProtectedSessionOperationDate = null;
     let encryptionSessionTimeout = null;
     let protectedSessionId = null;
 
@@ -22,14 +22,14 @@ const encryption = (function() {
         encryptionSessionTimeout = encSessTimeout;
     }
 
-    function ensureProtectedSession(requireEncryption, modal) {
+    function ensureProtectedSession(requireProtectedSession, modal) {
         const dfd = $.Deferred();
 
-        if (requireEncryption && !isEncryptionAvailable()) {
+        if (requireProtectedSession && !isProtectedSessionAvailable()) {
             // if this is entry point then we need to show the app even before the note is loaded
             showAppIfHidden();
 
-            encryptionDeferred = dfd;
+            protectedSessionDeferred = dfd;
 
             dialogEl.dialog({
                 modal: modal,
@@ -50,8 +50,8 @@ const encryption = (function() {
     }
 
     async function setupProtectedSession() {
-        const password = encryptionPasswordEl.val();
-        encryptionPasswordEl.val("");
+        const password = passwordEl.val();
+        passwordEl.val("");
 
         const response = await enterProtectedSession(password);
 
@@ -68,10 +68,10 @@ const encryption = (function() {
         noteEditor.reload();
         noteTree.reload();
 
-        if (encryptionDeferred !== null) {
-            encryptionDeferred.resolve();
+        if (protectedSessionDeferred !== null) {
+            protectedSessionDeferred.resolve();
 
-            encryptionDeferred = null;
+            protectedSessionDeferred = null;
         }
     }
 
@@ -91,7 +91,7 @@ const encryption = (function() {
         return protectedSessionId;
     }
 
-    function resetEncryptionSession() {
+    function resetProtectedSession() {
         protectedSessionId = null;
 
         initAjax();
@@ -101,7 +101,7 @@ const encryption = (function() {
         window.location.reload(true);
     }
 
-    function isEncryptionAvailable() {
+    function isProtectedSessionAvailable() {
         return protectedSessionId !== null;
     }
 
@@ -133,23 +133,23 @@ const encryption = (function() {
         noteEditor.setNoteBackgroundIfProtected(note);
     }
 
-    encryptionPasswordFormEl.submit(() => {
+    passwordFormEl.submit(() => {
         setupProtectedSession();
 
         return false;
     });
 
     setInterval(() => {
-        if (lastEncryptionOperationDate !== null && new Date().getTime() - lastEncryptionOperationDate.getTime() > encryptionSessionTimeout * 1000) {
-            resetEncryptionSession();
+        if (lastProtectedSessionOperationDate !== null && new Date().getTime() - lastProtectedSessionOperationDate.getTime() > encryptionSessionTimeout * 1000) {
+            resetProtectedSession();
         }
     }, 5000);
 
     return {
         setEncryptionSessionTimeout,
         ensureProtectedSession,
-        resetEncryptionSession,
-        isEncryptionAvailable,
+        resetProtectedSession,
+        isProtectedSessionAvailable,
         protectNoteAndSendToServer,
         unprotectNoteAndSendToServer,
         getProtectedSessionId
