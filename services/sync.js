@@ -239,6 +239,10 @@ async function syncRequest(syncContext, method, uri, body) {
 if (isSyncSetup) {
     log.info("Setting up sync to " + SYNC_SERVER + " with timeout " + SYNC_TIMEOUT);
 
+    if (SYNC_PROXY) {
+        log.info("Sync proxy: " + SYNC_PROXY);
+    }
+
     setInterval(sync, 60000);
 
     // kickoff initial sync immediately

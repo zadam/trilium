@@ -25,7 +25,7 @@ const noteTree = (function() {
 
             note.title = note.note_title;
 
-            if (note.encryption > 0) {
+            if (note.is_protected) {
                 note.extraClasses = "encrypted";
             }
             else {
@@ -63,7 +63,7 @@ const noteTree = (function() {
                 noteEditor.createNote(node, parentKey, 'after', encryption);
             },
             "ctrl+insert": node => {
-                noteEditor.createNote(node, node.key, 'into', node.data.encryption);
+                noteEditor.createNote(node, node.key, 'into', node.data.is_protected);
             },
             "del": node => {
                 treeChanges.deleteNode(node);

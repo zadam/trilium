@@ -9,6 +9,7 @@ const utils = require('../../services/utils');
 const notes = require('../../services/notes');
 const protected_session = require('../../services/protected_session');
 const data_encryption = require('../../services/data_encryption');
+const RequestContext = require('../../services/request_context');
 
 router.get('/:noteId', auth.checkApiAuth, async (req, res, next) => {
     let noteId = req.params.noteId;
@@ -17,12 +18,7 @@ router.get('/:noteId', auth.checkApiAuth, async (req, res, next) => {
 
     let detail = await sql.getSingleResult("select * from notes where note_id = ?", [noteId]);
 
-    if (detail.note_clone_id) {
-        noteId = detail.note_clone_id;
-        detail = sql.getSingleResult("select * from notes where note_id = ?", [noteId]);
-    }
-
-    if (detail.encryption > 0) {
+    if (detail.is_protected) {
         const dataKey = protected_session.getDataKey(req);
 
         detail.note_title = data_encryption.decrypt(dataKey, detail.note_title);
@@ -49,11 +45,11 @@ router.post('/:parentNoteId/children', async (req, res, next) => {
 });
 
 router.put('/:noteId', async (req, res, next) => {
-    const newNote = req.body;
+    const note = req.body;
     let noteId = req.params.noteId;
-    const browserId = utils.browserId(req);
+    const reqCtx = new RequestContext(req);
 
-    await notes.updateNote(noteId, newNote, browserId);
+    await notes.updateNote(noteId, note, reqCtx);
 
     res.send({});
 });

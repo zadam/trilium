@@ -27,7 +27,7 @@ const encryption = (function() {
         encryptionSessionTimeout = encSessTimeout;
     }
 
-    function ensureEncryptionIsAvailable(requireEncryption, modal) {
+    function ensureProtectedSession(requireEncryption, modal) {
         const dfd = $.Deferred();
 
         if (requireEncryption && !isEncryptionAvailable()) {
@@ -116,15 +116,6 @@ const encryption = (function() {
         return new aesjs.ModeOfOperation.ctr(dataKey, new aesjs.Counter(5));
     }
 
-    function encryptNoteIfNecessary(note) {
-        if (note.detail.encryption === 0) {
-            return note;
-        }
-        else {
-            return encryptNote(note);
-        }
-    }
-
     function encryptString(str) {
         return encrypt(getDataAes(), str);
     }
@@ -184,36 +175,34 @@ const encryption = (function() {
         note.detail.note_title = encryptString(note.detail.note_title);
         note.detail.note_text = encryptString(note.detail.note_text);
 
-        note.detail.encryption = 1;
+        note.detail.is_protected = true;
 
         return note;
     }
 
-    async function encryptNoteAndSendToServer() {
-        await ensureEncryptionIsAvailable(true, true);
+    async function protectNoteAndSendToServer() {
+        await ensureProtectedSession(true, true);
 
         const note = noteEditor.getCurrentNote();
 
         noteEditor.updateNoteFromInputs(note);
 
-        encryptNote(note);
+        note.detail.is_protected = true;
 
         await noteEditor.saveNoteToServer(note);
-
-        await changeEncryptionOnNoteHistory(note.detail.note_id, true);
 
         noteEditor.setNoteBackgroundIfEncrypted(note);
     }
 
-    async function changeEncryptionOnNoteHistory(noteId, encrypt) {
+    async function changeEncryptionOnNoteHistory(noteId, protect) {
         const result = await $.ajax({
-            url: baseApiUrl + 'notes-history/' + noteId + "?encryption=" + (encrypt ? 0 : 1),
+            url: baseApiUrl + 'notes-history/' + noteId + "?encryption=" + (protect ? 0 : 1),
             type: 'GET',
             error: () => showError("Error getting note history.")
         });
 
         for (const row of result) {
-            if (encrypt) {
+            if (protect) {
                 row.note_title = encryptString(row.note_title);
                 row.note_text = encryptString(row.note_text);
             }
@@ -222,7 +211,7 @@ const encryption = (function() {
                 row.note_text = decryptString(row.note_text);
             }
 
-            row.encryption = encrypt ? 1 : 0;
+            row.is_protected = protect;
 
             await $.ajax({
                 url: baseApiUrl + 'notes-history',
@@ -236,14 +225,14 @@ const encryption = (function() {
         }
     }
 
-    async function decryptNoteAndSendToServer() {
-        await ensureEncryptionIsAvailable(true, true);
+    async function unprotectNoteAndSendToServer() {
+        await ensureProtectedSession(true, true);
 
         const note = noteEditor.getCurrentNote();
 
         noteEditor.updateNoteFromInputs(note);
 
-        note.detail.encryption = 0;
+        note.detail.is_protected = false;
 
         await noteEditor.saveNoteToServer(note);
 
@@ -253,13 +242,13 @@ const encryption = (function() {
     }
 
     async function encryptSubTree(noteId) {
-        await ensureEncryptionIsAvailable(true, true);
+        await ensureProtectedSession(true, true);
 
         updateSubTreeRecursively(noteId, note => {
-                if (note.detail.encryption === null || note.detail.encryption === 0) {
+                if (!note.detail.is_protected) {
                     encryptNote(note);
 
-                    note.detail.encryption = 1;
+                    note.detail.is_protected = true;
 
                     return true;
                 }
@@ -280,13 +269,13 @@ const encryption = (function() {
     }
 
     async function decryptSubTree(noteId) {
-        await ensureEncryptionIsAvailable(true, true);
+        await ensureProtectedSession(true, true);
 
         updateSubTreeRecursively(noteId, note => {
-                if (note.detail.encryption === 1) {
+                if (note.detail.is_protected) {
                     decryptNote(note);
 
-                    note.detail.encryption = 0;
+                    note.detail.is_protected = false;
 
                     return true;
                 }
@@ -368,14 +357,13 @@ const encryption = (function() {
 
     return {
         setEncryptionSessionTimeout,
-        ensureEncryptionIsAvailable,
+        ensureProtectedSession,
         resetEncryptionSession,
         isEncryptionAvailable,
-        encryptNoteIfNecessary,
         encryptString,
         decryptString,
-        encryptNoteAndSendToServer,
-        decryptNoteAndSendToServer,
+        protectNoteAndSendToServer,
+        unprotectNoteAndSendToServer,
         encryptSubTree,
         decryptSubTree,
         getProtectedSessionId

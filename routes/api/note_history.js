@@ -7,15 +7,15 @@ const auth = require('../../services/auth');
 
 router.get('/:noteId', auth.checkApiAuth, async (req, res, next) => {
     const noteId = req.params.noteId;
-    const encryption = req.query.encryption;
+    const isProtected = req.query.is_protected;
 
     let history;
 
-    if (encryption === undefined) {
+    if (isProtected === undefined) {
         history = await sql.getResults("select * from notes_history where note_id = ? order by date_modified_to desc", [noteId]);
     }
     else {
-        history = await sql.getResults("select * from notes_history where note_id = ? and encryption = ? order by date_modified_to desc", [noteId, encryption]);
+        history = await sql.getResults("select * from notes_history where note_id = ? and is_protected = ? order by date_modified_to desc", [noteId, is_protected]);
     }
 
     res.send(history);

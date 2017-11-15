@@ -59,8 +59,6 @@ const noteEditor = (function() {
 
         updateNoteFromInputs(note);
 
-        encryption.encryptNoteIfNecessary(note);
-
         await saveNoteToServer(note);
     }
 
@@ -70,7 +68,7 @@ const noteEditor = (function() {
 
         note.detail.note_text = contents;
 
-        if (!note.detail.encryption) {
+        if (!note.detail.is_protected) {
             const linkRegexp = /<a[^>]+?href="[^"]*app#([A-Za-z0-9]{22})"[^>]*?>[^<]+?<\/a>/g;
             let match;
 
@@ -170,11 +168,11 @@ const noteEditor = (function() {
 
     function setTreeBasedOnEncryption(note) {
         const node = treeUtils.getNodeByKey(note.detail.note_id);
-        node.toggleClass("encrypted", note.detail.encryption > 0);
+        node.toggleClass("encrypted", note.detail.is_protected);
     }
 
     function setNoteBackgroundIfEncrypted(note) {
-        if (note.detail.encryption > 0) {
+        if (note.detail.is_protected) {
             $(".note-editable").addClass("encrypted");
             encryptButton.hide();
             decryptButton.show();
@@ -197,7 +195,7 @@ const noteEditor = (function() {
             noteTitleEl.focus().select();
         }
 
-        await encryption.ensureEncryptionIsAvailable(currentNote.detail.encryption > 0, false);
+        await encryption.ensureProtectedSession(currentNote.detail.is_protected, false);
 
         noteDetailWrapperEl.show();
 

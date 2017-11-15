@@ -58,7 +58,7 @@ const noteHistory = (function() {
         let noteTitle = historyItem.note_title;
         let noteText = historyItem.note_text;
 
-        if (historyItem.encryption > 0) {
+        if (historyItem.is_protected) {
             noteTitle = encryption.decryptString(noteTitle);
             noteText = encryption.decryptString(noteText);
         }

@@ -13,13 +13,10 @@ const data_encryption = require('../../services/data_encryption');
 router.get('/', auth.checkApiAuth, async (req, res, next) => {
     const notes = await sql.getResults("select "
         + "notes_tree.*, "
-        + "COALESCE(clone.note_title, notes.note_title) as note_title, "
-        + "notes.note_clone_id, "
-        + "notes.encryption, "
-        + "case when notes.note_clone_id is null or notes.note_clone_id = '' then 0 else 1 end as is_clone "
+        + "notes.note_title, "
+        + "notes.is_protected "
         + "from notes_tree "
         + "join notes on notes.note_id = notes_tree.note_id "
-        + "left join notes as clone on notes.note_clone_id = clone.note_id "
         + "where notes.is_deleted = 0 and notes_tree.is_deleted = 0 "
         + "order by note_pid, note_pos");
 
@@ -29,7 +26,7 @@ router.get('/', auth.checkApiAuth, async (req, res, next) => {
     const dataKey = protected_session.getDataKey(req);
 
     for (const note of notes) {
-        if (note['encryption']) {
+        if (note.is_protected) {
             note.note_title = data_encryption.decrypt(dataKey, note.note_title);
         }
 

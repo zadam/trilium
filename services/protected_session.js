@@ -1,3 +1,5 @@
+"use strict";
+
 const utils = require('./utils');
 
 function setDataKey(req, decryptedDataKey) {
@@ -7,8 +9,12 @@ function setDataKey(req, decryptedDataKey) {
     return req.session.protectedSessionId;
 }
 
+function getProtectedSessionId(req) {
+    return req.headers['x-protected-session-id'];
+}
+
 function getDataKey(req) {
-    const protectedSessionId = req.headers['x-protected-session-id'];
+    const protectedSessionId = getProtectedSessionId(req);
 
     if (protectedSessionId && req.session.protectedSessionId === protectedSessionId) {
         return req.session.decryptedDataKey;
@@ -18,7 +24,14 @@ function getDataKey(req) {
     }
 }
 
+function isProtectedSessionAvailable(req) {
+    const protectedSessionId = getProtectedSessionId(req);
+
+    return protectedSessionId && req.session.protectedSessionId === protectedSessionId;
+}
+
 module.exports = {
     setDataKey,
-    getDataKey
+    getDataKey,
+    isProtectedSessionAvailable
 };

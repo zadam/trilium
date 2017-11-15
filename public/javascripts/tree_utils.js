@@ -8,7 +8,7 @@ const treeUtils = (function() {
     }
 
     function getParentEncryption(node) {
-        return node.getParent() === null ? 0 : node.getParent().data.encryption;
+        return node.getParent() === null ? 0 : node.getParent().data.is_protected;
     }
 
     function getNodeByKey(noteId) {

@@ -3,6 +3,7 @@ const options = require('./options');
 const utils = require('./utils');
 const notes = require('./notes');
 const audit_category = require('./audit_category');
+const data_encryption = require('./data_encryption');
 
 async function createNewNote(parentNoteId, note, browserId) {
     const noteId = utils.newNoteId();
@@ -46,10 +47,9 @@ async function createNewNote(parentNoteId, note, browserId) {
             'note_id': noteId,
             'note_title': note.note_title,
             'note_text': '',
-            'note_clone_id': '',
             'date_created': now,
             'date_modified': now,
-            'encryption': note.encryption
+            'is_protected': note.is_protected
         });
 
         await sql.insert("notes_tree", {
@@ -64,13 +64,17 @@ async function createNewNote(parentNoteId, note, browserId) {
     return noteId;
 }
 
-async function updateNote(noteId, newNote, browserId) {
-    const origNoteDetail = await sql.getSingleResult("select * from notes where note_id = ?", [noteId]);
+async function encryptNote(note, ctx) {
+    note.detail.note_title = data_encryption.encrypt(ctx.getDataKey(), note.detail.note_title);
+    note.detail.note_text = data_encryption.encrypt(ctx.getDataKey(), note.detail.note_text);
+}
 
-    if (origNoteDetail.note_clone_id) {
-        noteId = origNoteDetail.note_clone_id;
+async function updateNote(noteId, newNote, ctx) {
+    if (newNote.detail.is_protected) {
+        await encryptNote(newNote, ctx);
     }
 
+    const origNoteDetail = await sql.getSingleResult("select * from notes where note_id = ?", [noteId]);
 
     const now = utils.nowTimestamp();
 
@@ -82,10 +86,10 @@ async function updateNote(noteId, newNote, browserId) {
 
     await sql.doInTransaction(async () => {
         if (noteHistoryId) {
-            await sql.execute("update notes_history set note_title = ?, note_text = ?, encryption = ?, date_modified_to = ? where note_history_id = ?", [
+            await sql.execute("update notes_history set note_title = ?, note_text = ?, is_protected = ?, date_modified_to = ? where note_history_id = ?", [
                 newNote.detail.note_title,
                 newNote.detail.note_text,
-                newNote.detail.encryption,
+                newNote.detail.is_protected,
                 now,
                 noteHistoryId
             ]);
@@ -93,25 +97,25 @@ async function updateNote(noteId, newNote, browserId) {
         else {
             noteHistoryId = utils.randomString(16);
 
-            await sql.execute("insert into notes_history (note_history_id, note_id, note_title, note_text, encryption, date_modified_from, date_modified_to) " +
+            await sql.execute("insert into notes_history (note_history_id, note_id, note_title, note_text, is_protected, date_modified_from, date_modified_to) " +
                 "values (?, ?, ?, ?, ?, ?, ?)", [
                 noteHistoryId,
                 noteId,
                 newNote.detail.note_title,
                 newNote.detail.note_text,
-                newNote.detail.encryption,
+                newNote.detail.is_protected,
                 now,
                 now
             ]);
         }
 
         await sql.addNoteHistorySync(noteHistoryId);
-        await addNoteAudits(origNoteDetail, newNote.detail, browserId);
+        await addNoteAudits(origNoteDetail, newNote.detail, ctx.browserId);
 
-        await sql.execute("update notes set note_title = ?, note_text = ?, encryption = ?, date_modified = ? where note_id = ?", [
+        await sql.execute("update notes set note_title = ?, note_text = ?, is_protected = ?, date_modified = ? where note_id = ?", [
             newNote.detail.note_title,
             newNote.detail.note_text,
-            newNote.detail.encryption,
+            newNote.detail.is_protected,
             now,
             noteId]);
 
@@ -147,10 +151,10 @@ async function addNoteAudits(origNote, newNote, browserId) {
         await sql.addAudit(audit_category.UPDATE_CONTENT, browserId, noteId);
     }
 
-    if (!origNote || newNote.encryption !== origNote.encryption) {
-        const origEncryption = origNote ? origNote.encryption : null;
+    if (!origNote || newNote.is_protected !== origNote.is_protected) {
+        const origIsProtected = origNote ? origNote.is_protected : null;
 
-        await sql.addAudit(audit_category.ENCRYPTION, browserId, noteId, origEncryption, newNote.encryption);
+        await sql.addAudit(audit_category.PROTECTED, browserId, noteId, origIsProtected, newNote.is_protected);
     }
 }
 
