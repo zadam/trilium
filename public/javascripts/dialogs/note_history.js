@@ -55,16 +55,8 @@ const noteHistory = (function() {
 
         const historyItem = historyItems.find(r => r.note_history_id === optVal);
 
-        let noteTitle = historyItem.note_title;
-        let noteText = historyItem.note_text;
-
-        if (historyItem.is_protected) {
-            noteTitle = encryption.decryptString(noteTitle);
-            noteText = encryption.decryptString(noteText);
-        }
-
-        titleEl.html(noteTitle);
-        contentEl.html(noteText);
+        titleEl.html(historyItem.note_title);
+        contentEl.html(historyItem.note_text);
     });
 
     $(document).on('click', "a[action='note-history']", event => {

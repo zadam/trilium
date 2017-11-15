@@ -27,7 +27,7 @@
     overflow: auto;
 }
 
-.note-editable.encrypted {
+.note-editable.protected {
     background-color: #eee;
 }
 
@@ -63,12 +63,12 @@ span.fancytree-node.fancytree-folder > span.fancytree-icon {
     background-image: url("../images/icons/folder.png");
 }
 
-span.fancytree-node.encrypted > span.fancytree-icon {
+span.fancytree-node.protected > span.fancytree-icon {
     background-position: 0 0;
     background-image: url("../images/icons/file-shaded.png");
 }
 
-span.fancytree-node.encrypted.fancytree-folder > span.fancytree-icon {
+span.fancytree-node.protected.fancytree-folder > span.fancytree-icon {
     background-position: 0 0;
     background-image: url("../images/icons/folder-shaded.png");
 }
@@ -84,7 +84,7 @@ span.fancytree-node.encrypted.fancytree-folder > span.fancytree-icon {
     text-decoration: none;
 }
 
-#encrypt-button, #decrypt-button {
+#protect-button, #unprotect-button {
     display: none;
 }
 

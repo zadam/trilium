@@ -26,7 +26,7 @@ const noteTree = (function() {
             note.title = note.note_title;
 
             if (note.is_protected) {
-                note.extraClasses = "encrypted";
+                note.extraClasses = "protected";
             }
             else {
                 if (note.is_clone) {

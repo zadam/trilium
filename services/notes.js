@@ -109,6 +109,24 @@ async function updateNote(noteId, newNote, ctx) {
             ]);
         }
 
+        const historyToChange = await sql.getResults("SELECT * FROM notes_history WHERE note_id = ? AND is_protected != ?", [noteId, newNote.detail.is_protected]);
+
+        for (const history of historyToChange) {
+            if (newNote.detail.is_protected) {
+                history.note_title = data_encryption.encrypt(history.note_title);
+                history.note_text = data_encryption.encrypt(history.note_text);
+                history.is_protected = true;
+            }
+            else {
+                history.note_title = data_encryption.decrypt(history.note_title);
+                history.note_text = data_encryption.decrypt(history.note_text);
+                history.is_protected = false;
+            }
+
+            await sql.execute("UPDATE notes_history SET note_title = ?, note_text = ?, is_protected = ? WHERE note_history_id = ?",
+                [history.note_title, history.note_text, history.is_protected, history.note_history_id]);
+        }
+
         await sql.addNoteHistorySync(noteHistoryId);
         await addNoteAudits(origNoteDetail, newNote.detail, ctx.browserId);
 

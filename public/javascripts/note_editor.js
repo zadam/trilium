@@ -4,8 +4,8 @@ const noteEditor = (function() {
     const treeEl = $("#tree");
     const noteTitleEl = $("#note-title");
     const noteDetailEl = $('#note-detail');
-    const encryptButton = $("#encrypt-button");
-    const decryptButton = $("#decrypt-button");
+    const protectButton = $("#protect-button");
+    const unprotectButton = $("#unprotect-button");
     const noteDetailWrapperEl = $("#note-detail-wrapper");
     const encryptionPasswordDialogEl = $("#encryption-password-dialog");
     const encryptionPasswordEl = $("#encryption-password");
@@ -119,24 +119,23 @@ const noteEditor = (function() {
 
     let newNoteCreated = false;
 
-    async function createNote(node, parentKey, target, encryption) {
-        // if encryption isn't available (user didn't enter password yet), then note is created as unencrypted
+    async function createNote(node, parentKey, target, isProtected) {
+        // if isProtected isn't available (user didn't enter password yet), then note is created as unencrypted
         // but this is quite weird since user doesn't see where the note is being created so it shouldn't occur often
-        if (!encryption || !encryption.isEncryptionAvailable()) {
-            encryption = 0;
+        if (!isProtected || !encryption.isEncryptionAvailable()) {
+            isProtected = false;
         }
 
         const newNoteName = "new note";
-        const newNoteNameEncryptedIfNecessary = encryption > 0 ? encryption.encryptString(newNoteName) : newNoteName;
 
         const result = await $.ajax({
             url: baseApiUrl + 'notes/' + parentKey + '/children' ,
             type: 'POST',
             data: JSON.stringify({
-                note_title: newNoteNameEncryptedIfNecessary,
+                note_title: newNoteName,
                 target: target,
                 target_note_id: node.key,
-                encryption: encryption
+                is_protected: isProtected
             }),
             contentType: "application/json"
         });
@@ -145,8 +144,8 @@ const noteEditor = (function() {
             title: newNoteName,
             key: result.note_id,
             note_id: result.note_id,
-            encryption: encryption,
-            extraClasses: encryption ? "encrypted" : ""
+            is_protected: isProtected,
+            extraClasses: isProtected ? "protected" : ""
         };
 
         glob.allNoteIds.push(result.note_id);
@@ -166,24 +165,24 @@ const noteEditor = (function() {
         showMessage("Created!");
     }
 
-    function setTreeBasedOnEncryption(note) {
+    function setTreeBasedOnProtectedStatus(note) {
         const node = treeUtils.getNodeByKey(note.detail.note_id);
-        node.toggleClass("encrypted", note.detail.is_protected);
+        node.toggleClass("protected", note.detail.is_protected);
     }
 
-    function setNoteBackgroundIfEncrypted(note) {
+    function setNoteBackgroundIfProtected(note) {
         if (note.detail.is_protected) {
-            $(".note-editable").addClass("encrypted");
-            encryptButton.hide();
-            decryptButton.show();
+            $(".note-editable").addClass("protected");
+            protectButton.hide();
+            unprotectButton.show();
         }
         else {
-            $(".note-editable").removeClass("encrypted");
-            encryptButton.show();
-            decryptButton.hide();
+            $(".note-editable").removeClass("protected");
+            protectButton.show();
+            unprotectButton.hide();
         }
 
-        setTreeBasedOnEncryption(note);
+        setTreeBasedOnProtectedStatus(note);
     }
 
     async function loadNoteToEditor(noteId) {
@@ -222,7 +221,7 @@ const noteEditor = (function() {
 
         noteChangeDisabled = false;
 
-        setNoteBackgroundIfEncrypted(currentNote);
+        setNoteBackgroundIfProtected(currentNote);
 
         showAppIfHidden();
     }
@@ -260,8 +259,8 @@ const noteEditor = (function() {
         saveNoteToServer,
         createNewTopLevelNote,
         createNote,
-        setNoteBackgroundIfEncrypted,
-        setTreeBasedOnEncryption,
+        setNoteBackgroundIfProtected,
+        setTreeBasedOnProtectedStatus,
         loadNoteToEditor,
         loadNote,
         getCurrentNote,
