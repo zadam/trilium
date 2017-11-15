@@ -2,7 +2,7 @@
 
 const utils = require('./utils');
 const aesjs = require('./aes');
-const sha256 = require('./sha256');
+const crypto = require('crypto');
 
 function getProtectedSessionId(req) {
     return req.headers['x-protected-session-id'];
@@ -10,15 +10,6 @@ function getProtectedSessionId(req) {
 
 function getDataAes(dataKey) {
     return new aesjs.ModeOfOperation.ctr(dataKey, new aesjs.Counter(5));
-}
-
-function arraysIdentical(a, b) {
-    let i = a.length;
-    if (i !== b.length) return false;
-    while (i--) {
-        if (a[i] !== b[i]) return false;
-    }
-    return true;
 }
 
 function decrypt(dataKey, encryptedBase64) {
@@ -64,9 +55,16 @@ function encrypt(dataKey, plainText) {
 }
 
 function sha256Array(content) {
-    const hash = sha256.create();
-    hash.update(content);
-    return hash.array();
+    return crypto.createHash('sha256').update(content).digest();
+}
+
+function arraysIdentical(a, b) {
+    let i = a.length;
+    if (i !== b.length) return false;
+    while (i--) {
+        if (a[i] !== b[i]) return false;
+    }
+    return true;
 }
 
 module.exports = {
