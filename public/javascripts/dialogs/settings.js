@@ -89,7 +89,7 @@ settings.addModule((function() {
                 if (result.success) {
                     alert("Password has been changed. Trilium will be reloaded after you press OK.");
 
-                    // encryption password changed so current encryption session is invalid and needs to be cleared
+                    // password changed so current protected session is invalid and needs to be cleared
                     protected_session.resetProtectedSession();
                 }
                 else {

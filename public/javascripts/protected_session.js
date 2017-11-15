@@ -13,7 +13,7 @@ const protected_session = (function() {
     $.ajax({
         url: baseApiUrl + 'settings/all',
         type: 'GET',
-        error: () => showError("Error getting encryption settings.")
+        error: () => showError("Error getting protected session settings.")
     }).then(settings => {
         protectedSessionTimeout = settings.protected_session_timeout;
     });
@@ -69,6 +69,14 @@ const protected_session = (function() {
         noteTree.reload();
 
         if (protectedSessionDeferred !== null) {
+            // this may fal if the dialog has not been previously opened
+            try {
+                dialogEl.dialog('close');
+            }
+            catch(e) {}
+
+            passwordEl.val('');
+
             protectedSessionDeferred.resolve();
 
             protectedSessionDeferred = null;

@@ -57,7 +57,7 @@ const contextMenu = (function() {
 
             if (ui.cmd === "insertNoteHere") {
                 const parentKey = treeUtils.getParentKey(node);
-                const isProtected = treeUtils.getParentEncryption(node);
+                const isProtected = treeUtils.getParentProtectedStatus(node);
 
                 noteEditor.createNote(node, parentKey, 'after', isProtected);
             }

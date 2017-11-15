@@ -7,8 +7,6 @@ const noteEditor = (function() {
     const protectButton = $("#protect-button");
     const unprotectButton = $("#unprotect-button");
     const noteDetailWrapperEl = $("#note-detail-wrapper");
-    const encryptionPasswordDialogEl = $("#protected-session-password-dialog");
-    const encryptionPasswordEl = $("#protected-session-password");
 
     let currentNote = null;
 
@@ -205,14 +203,6 @@ const noteEditor = (function() {
         }
 
         noteDetailWrapperEl.show();
-
-        // this may fal if the dialog has not been previously opened
-        try {
-            encryptionPasswordDialogEl.dialog('close');
-        }
-        catch(e) {}
-
-        encryptionPasswordEl.val('');
 
         noteTitleEl.val(currentNote.detail.note_title);
 

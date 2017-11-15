@@ -58,9 +58,9 @@ const noteTree = (function() {
         const keybindings = {
             "insert": node => {
                 const parentKey = treeUtils.getParentKey(node);
-                const encryption = treeUtils.getParentEncryption(node);
+                const isProtected = treeUtils.getParentProtectedStatus(node);
 
-                noteEditor.createNote(node, parentKey, 'after', encryption);
+                noteEditor.createNote(node, parentKey, 'after', isProtected);
             },
             "ctrl+insert": node => {
                 noteEditor.createNote(node, node.key, 'into', node.data.is_protected);

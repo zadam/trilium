@@ -7,7 +7,7 @@ const treeUtils = (function() {
         return (node.getParent() === null || node.getParent().key === "root_1") ? "root" : node.getParent().key;
     }
 
-    function getParentEncryption(node) {
+    function getParentProtectedStatus(node) {
         return node.getParent() === null ? 0 : node.getParent().data.is_protected;
     }
 
@@ -64,7 +64,7 @@ const treeUtils = (function() {
 
     return {
         getParentKey,
-        getParentEncryption,
+        getParentProtectedStatus,
         getNodeByKey,
         activateNode,
         getNoteTitle,
