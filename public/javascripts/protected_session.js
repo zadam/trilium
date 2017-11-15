@@ -133,6 +133,12 @@ const protected_session = (function() {
         noteEditor.setNoteBackgroundIfProtected(note);
     }
 
+    function touchProtectedSession() {
+        if (isProtectedSessionAvailable()) {
+            lastProtectedSessionOperationDate = new Date();
+        }
+    }
+
     passwordFormEl.submit(() => {
         setupProtectedSession();
 
@@ -152,6 +158,7 @@ const protected_session = (function() {
         isProtectedSessionAvailable,
         protectNoteAndSendToServer,
         unprotectNoteAndSendToServer,
-        getProtectedSessionId
+        getProtectedSessionId,
+        touchProtectedSession
     };
 })();

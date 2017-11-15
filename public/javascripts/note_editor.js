@@ -60,6 +60,10 @@ const noteEditor = (function() {
         updateNoteFromInputs(note);
 
         await saveNoteToServer(note);
+
+        if (note.detail.is_protected) {
+            protected_session.touchProtectedSession();
+        }
     }
 
     function parseHtml(contents, note) {
@@ -196,6 +200,10 @@ const noteEditor = (function() {
 
         await protected_session.ensureProtectedSession(currentNote.detail.is_protected, false);
 
+        if (currentNote.detail.is_protected) {
+            protected_session.touchProtectedSession();
+        }
+
         noteDetailWrapperEl.show();
 
         // this may fal if the dialog has not been previously opened
@@ -260,8 +268,6 @@ const noteEditor = (function() {
         createNewTopLevelNote,
         createNote,
         setNoteBackgroundIfProtected,
-        setTreeBasedOnProtectedStatus,
-        loadNoteToEditor,
         loadNote,
         getCurrentNote,
         getCurrentNoteId,
