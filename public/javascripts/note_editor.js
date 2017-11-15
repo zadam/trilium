@@ -122,7 +122,7 @@ const noteEditor = (function() {
     async function createNote(node, parentKey, target, isProtected) {
         // if isProtected isn't available (user didn't enter password yet), then note is created as unencrypted
         // but this is quite weird since user doesn't see where the note is being created so it shouldn't occur often
-        if (!isProtected || !encryption.isProtectedSessionAvailable()) {
+        if (!isProtected || !protected_session.isProtectedSessionAvailable()) {
             isProtected = false;
         }
 
@@ -194,7 +194,7 @@ const noteEditor = (function() {
             noteTitleEl.focus().select();
         }
 
-        await encryption.ensureProtectedSession(currentNote.detail.is_protected, false);
+        await protected_session.ensureProtectedSession(currentNote.detail.is_protected, false);
 
         noteDetailWrapperEl.show();
 

@@ -116,7 +116,7 @@ function initAjax() {
     $.ajaxSetup({
         headers: {
             'x-browser-id': browserId,
-            'x-protected-session-id': encryption ? encryption.getProtectedSessionId() : null
+            'x-protected-session-id': protected_session ? protected_session.getProtectedSessionId() : null
         }
     });
 }

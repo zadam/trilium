@@ -1,6 +1,6 @@
 "use strict";
 
-const encryption = (function() {
+const protected_session = (function() {
     const dialogEl = $("#protected-session-password-dialog");
     const passwordFormEl = $("#protected-session-password-form");
     const passwordEl = $("#protected-session-password");

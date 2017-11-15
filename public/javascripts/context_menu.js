@@ -65,10 +65,10 @@ const contextMenu = (function() {
                 noteEditor.createNote(node, node.key, 'into');
             }
             else if (ui.cmd === "encryptSubTree") {
-                encryption.encryptSubTree(node.key);
+                protected_session.encryptSubTree(node.key);
             }
             else if (ui.cmd === "decryptSubTree") {
-                encryption.decryptSubTree(node.key);
+                protected_session.decryptSubTree(node.key);
             }
             else if (ui.cmd === "cut") {
                 cut(node);

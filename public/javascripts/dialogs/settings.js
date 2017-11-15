@@ -90,7 +90,7 @@ settings.addModule((function() {
                     alert("Password has been changed. Trilium will be reloaded after you press OK.");
 
                     // encryption password changed so current encryption session is invalid and needs to be cleared
-                    encryption.resetProtectedSession();
+                    protected_session.resetProtectedSession();
                 }
                 else {
                     showError(result.message);
@@ -120,7 +120,7 @@ settings.addModule((function() {
         const encryptionTimeout = encryptionTimeoutEl.val();
 
         settings.saveSettings(settingName, encryptionTimeout).then(() => {
-            encryption.setEncryptionSessionTimeout(encryptionTimeout);
+            protected_session.setEncryptionSessionTimeout(encryptionTimeout);
         });
 
         return false;

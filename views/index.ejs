@@ -68,7 +68,7 @@
 
       <div class="hide-toggle" style="grid-area: title;">
         <div style="display: flex; align-items: center;">
-          <a onclick="encryption.protectNoteAndSendToServer()"
+          <a onclick="protected_session.protectNoteAndSendToServer()"
              title="Encrypt the note so that password will be required to view the note"
              class="icon-action"
              id="protect-button"
@@ -76,7 +76,7 @@
             <img src="images/icons/lock.png" alt="Encrypt note"/>
           </a>
 
-          <a onclick="encryption.unprotectNoteAndSendToServer()"
+          <a onclick="protected_session.unprotectNoteAndSendToServer()"
              title="Decrypt note permamently so that password will not be required to access this note in the future"
              class="icon-action"
              id="unprotect-button"
@@ -280,7 +280,7 @@
 
     <!-- Note detail -->
     <script src="javascripts/note_editor.js"></script>
-    <script src="javascripts/encryption.js"></script>
+    <script src="javascripts/protected_session.js"></script>
 
     <!-- dialogs -->
     <script src="javascripts/dialogs/recent_notes.js"></script>
