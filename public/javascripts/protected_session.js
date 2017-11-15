@@ -147,6 +147,20 @@ const protected_session = (function() {
         }
     }
 
+    async function protectSubTree(noteId, protect) {
+        await $.ajax({
+            url: baseApiUrl + 'tree/' + noteId + "/protectSubTree/" + (protect ? 1 : 0),
+            type: 'PUT',
+            contentType: 'application/json',
+            error: () => showError("Request to un/protect sub tree has failed.")
+        });
+
+        showMessage("Request to un/protect sub tree has finished successfully");
+
+        noteTree.reload();
+        noteEditor.reload();
+    }
+
     passwordFormEl.submit(() => {
         setupProtectedSession();
 
@@ -167,6 +181,7 @@ const protected_session = (function() {
         protectNoteAndSendToServer,
         unprotectNoteAndSendToServer,
         getProtectedSessionId,
-        touchProtectedSession
+        touchProtectedSession,
+        protectSubTree
     };
 })();

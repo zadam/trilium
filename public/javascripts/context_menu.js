@@ -31,8 +31,8 @@ const contextMenu = (function() {
             {title: "Insert child note", cmd: "insertChildNote", uiIcon: "ui-icon-pencil"},
             {title: "Delete", cmd: "delete", uiIcon: "ui-icon-trash"},
             {title: "----"},
-            {title: "Encrypt sub-tree", cmd: "encryptSubTree", uiIcon: "ui-icon-locked"},
-            {title: "Decrypt sub-tree", cmd: "decryptSubTree", uiIcon: "ui-icon-unlocked"},
+            {title: "Protect sub-tree", cmd: "protectSubTree", uiIcon: "ui-icon-locked"},
+            {title: "Unprotect sub-tree", cmd: "unprotectSubTree", uiIcon: "ui-icon-unlocked"},
             {title: "----"},
             {title: "Cut", cmd: "cut", uiIcon: "ui-icon-scissors"},
             {title: "Copy / clone", cmd: "copy", uiIcon: "ui-icon-copy"},
@@ -44,6 +44,9 @@ const contextMenu = (function() {
             // Modify menu entries depending on node status
             treeEl.contextmenu("enableEntry", "pasteAfter", noteTree.getClipboardNoteId() !== null);
             treeEl.contextmenu("enableEntry", "pasteInto", noteTree.getClipboardNoteId() !== null);
+
+            treeEl.contextmenu("enableEntry", "protectSubTree", protected_session.isProtectedSessionAvailable());
+            treeEl.contextmenu("enableEntry", "unprotectSubTree", protected_session.isProtectedSessionAvailable());
 
             // Activate node on right-click
             node.setActive();
@@ -64,11 +67,11 @@ const contextMenu = (function() {
             else if (ui.cmd === "insertChildNote") {
                 noteEditor.createNote(node, node.key, 'into');
             }
-            else if (ui.cmd === "encryptSubTree") {
-                protected_session.encryptSubTree(node.key);
+            else if (ui.cmd === "protectSubTree") {
+                protected_session.protectSubTree(node.key, true);
             }
-            else if (ui.cmd === "decryptSubTree") {
-                protected_session.decryptSubTree(node.key);
+            else if (ui.cmd === "unprotectSubTree") {
+                protected_session.protectSubTree(node.key, false);
             }
             else if (ui.cmd === "cut") {
                 cut(node);

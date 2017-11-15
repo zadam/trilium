@@ -9,6 +9,7 @@ const auth = require('../../services/auth');
 const log = require('../../services/log');
 const protected_session = require('../../services/protected_session');
 const data_encryption = require('../../services/data_encryption');
+const notes = require('../../services/notes');
 
 router.get('/', auth.checkApiAuth, async (req, res, next) => {
     const notes = await sql.getResults("select "
@@ -57,6 +58,18 @@ router.get('/', auth.checkApiAuth, async (req, res, next) => {
         start_note_id: await options.getOption('start_node'),
         tree_load_time: utils.nowTimestamp()
     });
+});
+
+router.put('/:noteId/protectSubTree/:isProtected', auth.checkApiAuth, async (req, res, next) => {
+    const noteId = req.params.noteId;
+    const isProtected = !!parseInt(req.params.isProtected);
+    const dataKey = protected_session.getDataKey(req);
+
+    await sql.doInTransaction(async () => {
+        await notes.protectNoteRecursively(noteId, dataKey, isProtected);
+    });
+
+    res.send({});
 });
 
 module.exports = router;

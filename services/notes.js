@@ -69,6 +69,70 @@ async function encryptNote(note, ctx) {
     note.detail.note_text = data_encryption.encrypt(ctx.getDataKey(), note.detail.note_text);
 }
 
+async function protectNoteRecursively(noteId, dataKey, protect) {
+    const note = await sql.getSingleResult("SELECT * FROM notes WHERE note_id = ?", [noteId]);
+
+    await protectNote(note, dataKey, protect);
+
+    const children = await sql.getFlattenedResults("note_id", "SELECT note_id FROM notes_tree WHERE note_pid = ?", [noteId]);
+
+    for (const childNoteId of children) {
+        await protectNoteRecursively(childNoteId, dataKey, protect);
+    }
+}
+
+async function protectNote(note, dataKey, protect) {
+    let changed = false;
+
+    if (protect && !note.is_protected) {
+        note.note_title = data_encryption.encrypt(dataKey, note.note_title);
+        note.note_text = data_encryption.encrypt(dataKey, note.note_text);
+        note.is_protected = true;
+
+        changed = true;
+    }
+    else if (!protect && note.is_protected) {
+        note.note_title = data_encryption.decrypt(dataKey, note.note_title);
+        note.note_text = data_encryption.decrypt(dataKey, note.note_text);
+        note.is_protected = false;
+
+        changed = true;
+    }
+
+    if (changed) {
+        console.log("Updating...");
+
+        await sql.execute("UPDATE notes SET note_title = ?, note_text = ?, is_protected = ? WHERE note_id = ?",
+            [note.note_title, note.note_text, note.is_protected, note.note_id]);
+
+        await sql.addNoteSync(note.note_id);
+    }
+
+    await protectNoteHistory(note.note_id, dataKey, protect);
+}
+
+async function protectNoteHistory(noteId, dataKey, protect) {
+    const historyToChange = await sql.getResults("SELECT * FROM notes_history WHERE note_id = ? AND is_protected != ?", [noteId, protect]);
+
+    for (const history of historyToChange) {
+        if (protect) {
+            history.note_title = data_encryption.encrypt(dataKey, history.note_title);
+            history.note_text = data_encryption.encrypt(dataKey, history.note_text);
+            history.is_protected = true;
+        }
+        else {
+            history.note_title = data_encryption.decrypt(dataKey, history.note_title);
+            history.note_text = data_encryption.decrypt(dataKey, history.note_text);
+            history.is_protected = false;
+        }
+
+        await sql.execute("UPDATE notes_history SET note_title = ?, note_text = ?, is_protected = ? WHERE note_history_id = ?",
+            [history.note_title, history.note_text, history.is_protected, history.note_history_id]);
+
+        await sql.addNoteHistorySync(history.note_history_id);
+    }
+}
+
 async function updateNote(noteId, newNote, ctx) {
     if (newNote.detail.is_protected) {
         await encryptNote(newNote, ctx);
@@ -109,23 +173,7 @@ async function updateNote(noteId, newNote, ctx) {
             ]);
         }
 
-        const historyToChange = await sql.getResults("SELECT * FROM notes_history WHERE note_id = ? AND is_protected != ?", [noteId, newNote.detail.is_protected]);
-
-        for (const history of historyToChange) {
-            if (newNote.detail.is_protected) {
-                history.note_title = data_encryption.encrypt(history.note_title);
-                history.note_text = data_encryption.encrypt(history.note_text);
-                history.is_protected = true;
-            }
-            else {
-                history.note_title = data_encryption.decrypt(history.note_title);
-                history.note_text = data_encryption.decrypt(history.note_text);
-                history.is_protected = false;
-            }
-
-            await sql.execute("UPDATE notes_history SET note_title = ?, note_text = ?, is_protected = ? WHERE note_history_id = ?",
-                [history.note_title, history.note_text, history.is_protected, history.note_history_id]);
-        }
+        await protectNoteHistory(noteId, ctx.getDataKey(), newNote.detail.is_protected);
 
         await sql.addNoteHistorySync(noteHistoryId);
         await addNoteAudits(origNoteDetail, newNote.detail, ctx.browserId);
@@ -199,5 +247,6 @@ module.exports = {
     createNewNote,
     updateNote,
     addNoteAudits,
-    deleteNote
+    deleteNote,
+    protectNoteRecursively
 };
