@@ -69,18 +69,22 @@ const protected_session = (function() {
         noteTree.reload();
 
         if (protectedSessionDeferred !== null) {
-            // this may fal if the dialog has not been previously opened
-            try {
-                dialogEl.dialog('close');
-            }
-            catch(e) {}
-
-            passwordEl.val('');
+            ensureDialogIsClosed(dialogEl, passwordEl);
 
             protectedSessionDeferred.resolve();
 
             protectedSessionDeferred = null;
         }
+    }
+
+    function ensureDialogIsClosed() {
+        // this may fal if the dialog has not been previously opened
+        try {
+            dialogEl.dialog('close');
+        }
+        catch (e) {}
+
+        passwordEl.val('');
     }
 
     async function enterProtectedSession(password) {
@@ -182,6 +186,7 @@ const protected_session = (function() {
         unprotectNoteAndSendToServer,
         getProtectedSessionId,
         touchProtectedSession,
-        protectSubTree
+        protectSubTree,
+        ensureDialogIsClosed
     };
 })();

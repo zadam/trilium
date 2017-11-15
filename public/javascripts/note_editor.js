@@ -169,7 +169,7 @@ const noteEditor = (function() {
 
     function setTreeBasedOnProtectedStatus(note) {
         const node = treeUtils.getNodeByKey(note.detail.note_id);
-        node.toggleClass("protected", note.detail.is_protected);
+        node.toggleClass("protected", !!note.detail.is_protected);
     }
 
     function setNoteBackgroundIfProtected(note) {
@@ -201,6 +201,10 @@ const noteEditor = (function() {
         if (currentNote.detail.is_protected) {
             protected_session.touchProtectedSession();
         }
+
+        // this might be important if we focused on protected note when not in protected note and we got a dialog
+        // to login, but we chose instead to come to another node - at that point the dialog is still visible and this will close it.
+        protected_session.ensureDialogIsClosed();
 
         noteDetailWrapperEl.show();
 
