@@ -28,7 +28,7 @@ router.get('/', auth.checkApiAuth, async (req, res, next) => {
 
     for (const note of notes) {
         if (note.is_protected) {
-            note.note_title = data_encryption.decryptCbc(dataKey, data_encryption.noteTitleIv(note.note_id), note.note_title);
+            note.note_title = data_encryption.decryptCbcString(dataKey, data_encryption.noteTitleIv(note.note_id), note.note_title);
         }
 
         note.children = [];

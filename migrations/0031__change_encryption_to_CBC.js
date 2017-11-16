@@ -1,7 +1,6 @@
 const sql = require('../services/sql');
 const data_encryption = require('../services/data_encryption');
 const password_encryption = require('../services/password_encryption');
-const my_scrypt = require('../services/my_scrypt');
 const readline = require('readline');
 
 const cl = readline.createInterface(process.stdin, process.stdout);
@@ -46,11 +45,4 @@ module.exports = async () => {
 
         await sql.execute("UPDATE notes SET note_title = ?, note_text = ? WHERE note_id = ?", [noteHistory.note_title, noteHistory.note_text, noteHistory.note_history_id]);
     }
-
-    const passwordDerivedKey = await my_scrypt.getPasswordDerivedKey(password);
-
-    // trimming to 128bits (for AES-128)
-    const trimmedDataKey = dataKey.slice(0, 16);
-
-    await password_encryption.encryptDataKey(passwordDerivedKey, trimmedDataKey);
 };

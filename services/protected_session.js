@@ -3,7 +3,7 @@
 const utils = require('./utils');
 
 function setDataKey(req, decryptedDataKey) {
-    req.session.decryptedDataKey = decryptedDataKey;
+    req.session.decryptedDataKey = Array.from(decryptedDataKey); // can't store buffer in session
     req.session.protectedSessionId = utils.randomSecureToken(32);
 
     return req.session.protectedSessionId;

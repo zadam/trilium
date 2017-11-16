@@ -3,6 +3,7 @@ const my_scrypt = require('./my_scrypt');
 const utils = require('./utils');
 const crypto = require('crypto');
 const aesjs = require('./aes');
+const data_encryption = require('./data_encryption');
 
 async function verifyPassword(password) {
     const givenPasswordHash = utils.toBase64(await my_scrypt.getVerificationHash(password));
@@ -31,6 +32,26 @@ function encryptDataKey(passwordDerivedKey, plainText) {
     return utils.toBase64(encryptedBytes);
 }
 
+async function setDataKey(passwordDerivedKey, plainText) {
+    const newEncryptedDataKey = encryptDataKey(passwordDerivedKey, plainText);
+
+    await options.setOption('encrypted_data_key', newEncryptedDataKey);
+}
+
+async function setDataKeyCbc(password, plainText) {
+    const passwordDerivedKey = await my_scrypt.getPasswordDerivedKey(password);
+
+    const encryptedDataKeyIv = utils.randomSecureToken(16).slice(0, 16);
+
+    await options.setOption('encrypted_data_key_iv', encryptedDataKeyIv);
+
+    const buffer = Buffer.from(plainText);
+
+    const newEncryptedDataKey = data_encryption.encryptCbc(passwordDerivedKey, encryptedDataKeyIv, buffer);
+
+    await options.setOption('encrypted_data_key', newEncryptedDataKey);
+}
+
 async function getDecryptedDataKey(password) {
     const passwordDerivedKey = await my_scrypt.getPasswordDerivedKey(password);
 
@@ -41,13 +62,27 @@ async function getDecryptedDataKey(password) {
     return decryptedDataKey;
 }
 
+async function getDecryptedDataKeyCbc(password) {
+    const passwordDerivedKey = await my_scrypt.getPasswordDerivedKey(password);
+
+    const encryptedDataKeyIv = await options.getOption('encrypted_data_key_iv');
+    const encryptedDataKey = await options.getOption('encrypted_data_key');
+
+    const decryptedDataKey = data_encryption.decryptCbc(passwordDerivedKey, encryptedDataKeyIv, encryptedDataKey);
+
+    console.log("Decrypted data key: ", decryptedDataKey);
+
+    return decryptedDataKey;
+}
+
 function getAes(key) {
     return new aesjs.ModeOfOperation.ctr(key, new aesjs.Counter(5));
 }
 
 module.exports = {
     verifyPassword,
-    decryptDataKey,
-    encryptDataKey,
-    getDecryptedDataKey
+    getDecryptedDataKey,
+    getDecryptedDataKeyCbc,
+    setDataKey,
+    setDataKeyCbc
 };

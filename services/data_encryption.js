@@ -65,7 +65,7 @@ function encrypt(dataKey, plainText) {
 
 function shaArray(content) {
     // we use this as simple checksum and don't rely on its security so SHA-1 is good enough
-    return crypto.createHash('sha1').update(content).digest('base64');
+    return crypto.createHash('sha1').update(content).digest();
 }
 
 function sha256Array(content) {
@@ -73,7 +73,11 @@ function sha256Array(content) {
 }
 
 function pad(data) {
+    console.log("Before padding: ", data);
+
     let padded = Array.from(data);
+
+    console.log("After arraying: ", padded);
 
     if (data.length >= 16) {
         padded = padded.slice(0, 16);
@@ -81,6 +85,8 @@ function pad(data) {
     else {
         padded = padded.concat(Array(16 - padded.length).fill(0));
     }
+
+    console.log("Before buffering: ", padded);
 
     return Buffer.from(padded);
 }
@@ -90,15 +96,17 @@ function encryptCbc(dataKey, iv, plainText) {
         throw new Error("No data key!");
     }
 
+    const plainTextBuffer = Buffer.from(plainText);
+
     const cipher = crypto.createCipheriv('aes-128-cbc', pad(dataKey), pad(iv));
 
-    const digest = shaArray(plainText).slice(0, 4);
+    const digest = shaArray(plainTextBuffer).slice(0, 4);
 
-    const digestWithPayload = digest + plainText;
+    const digestWithPayload = Buffer.concat([digest, plainTextBuffer]);
 
-    const encryptedData = cipher.update(digestWithPayload, 'utf8', 'base64') + cipher.final('base64');
+    const encryptedData = Buffer.concat([cipher.update(digestWithPayload), cipher.final()]);
 
-    return encryptedData;
+    return encryptedData.toString('base64');
 }
 
 function decryptCbc(dataKey, iv, cipherText) {
@@ -106,19 +114,35 @@ function decryptCbc(dataKey, iv, cipherText) {
         return "[protected]";
     }
 
+    console.log("Key: ", pad(dataKey));
+
     const decipher = crypto.createDecipheriv('aes-128-cbc', pad(dataKey), pad(iv));
-    const decryptedBytes  = decipher.update(cipherText, 'base64', 'utf-8') + decipher.final('utf-8');
+
+    const cipherTextBuffer = Buffer.from(cipherText, 'base64');
+    const decryptedBytes = Buffer.concat([decipher.update(cipherTextBuffer), decipher.final()]);
+
+    console.log("decrypted: ", decryptedBytes);
 
     const digest = decryptedBytes.slice(0, 4);
     const payload = decryptedBytes.slice(4);
 
+    console.log("payload: ", payload);
+
     const computedDigest = shaArray(payload).slice(0, 4);
+
+    console.log("Hash arr: ", computedDigest);
 
     if (!arraysIdentical(digest, computedDigest)) {
         return false;
     }
 
     return payload;
+}
+
+function decryptCbcString(dataKey, iv, cipherText) {
+    const buffer = decryptCbc(dataKey, iv, cipherText);
+
+    return buffer.toString('utf-8');
 }
 
 function noteTitleIv(iv) {
@@ -135,6 +159,7 @@ module.exports = {
     encrypt,
     encryptCbc,
     decryptCbc,
+    decryptCbcString,
     noteTitleIv,
     noteTextIv
 };
