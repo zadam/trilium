@@ -16,7 +16,7 @@ router.get('/:noteId', auth.checkApiAuth, async (req, res, next) => {
     for (const hist of history) {
         if (hist.is_protected) {
             hist.note_title = data_encryption.decryptCbcString(dataKey, data_encryption.noteTitleIv(hist.note_history_id), hist.note_title);
-            hist.note_text = data_encryption.decryptCbcString(dataKey, data_encryption.noteTitleIv(hist.note_history_id), hist.note_text);
+            hist.note_text = data_encryption.decryptCbcString(dataKey, data_encryption.noteTextIv(hist.note_history_id), hist.note_text);
         }
     }
 

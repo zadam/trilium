@@ -70,8 +70,6 @@ async function getDecryptedDataKeyCbc(password) {
 
     const decryptedDataKey = data_encryption.decryptCbc(passwordDerivedKey, encryptedDataKeyIv, encryptedDataKey);
 
-    console.log("Decrypted data key: ", decryptedDataKey);
-
     return decryptedDataKey;
 }
 

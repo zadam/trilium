@@ -20,11 +20,7 @@ module.exports = async () => {
     const protectedNotes = await sql.getResults("SELECT * FROM notes WHERE is_protected = 1");
 
     for (const note of protectedNotes) {
-        console.log("Encrypted: ", note.note_title);
-
         const decryptedTitle = data_encryption.decrypt(dataKey, note.note_title);
-
-        console.log("Decrypted title: ", decryptedTitle);
 
         note.note_title = data_encryption.encryptCbc(dataKey, "0" + note.note_id, decryptedTitle);
 

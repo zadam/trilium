@@ -4,10 +4,6 @@ const utils = require('./utils');
 const aesjs = require('./aes');
 const crypto = require('crypto');
 
-function getProtectedSessionId(req) {
-    return req.headers['x-protected-session-id'];
-}
-
 function getDataAes(dataKey) {
     return new aesjs.ModeOfOperation.ctr(dataKey, new aesjs.Counter(5));
 }
@@ -73,11 +69,7 @@ function sha256Array(content) {
 }
 
 function pad(data) {
-    console.log("Before padding: ", data);
-
     let padded = Array.from(data);
-
-    console.log("After arraying: ", padded);
 
     if (data.length >= 16) {
         padded = padded.slice(0, 16);
@@ -86,19 +78,17 @@ function pad(data) {
         padded = padded.concat(Array(16 - padded.length).fill(0));
     }
 
-    console.log("Before buffering: ", padded);
-
     return Buffer.from(padded);
 }
 
-function encryptCbc(dataKey, iv, plainText) {
-    if (!dataKey) {
+function encryptCbc(key, iv, plainText) {
+    if (!key) {
         throw new Error("No data key!");
     }
 
     const plainTextBuffer = Buffer.from(plainText);
 
-    const cipher = crypto.createCipheriv('aes-128-cbc', pad(dataKey), pad(iv));
+    const cipher = crypto.createCipheriv('aes-128-cbc', pad(key), pad(iv));
 
     const digest = shaArray(plainTextBuffer).slice(0, 4);
 
@@ -109,28 +99,24 @@ function encryptCbc(dataKey, iv, plainText) {
     return encryptedData.toString('base64');
 }
 
-function decryptCbc(dataKey, iv, cipherText) {
-    if (!dataKey) {
+function decryptCbc(key, iv, cipherText) {
+    if (!key) {
         return "[protected]";
     }
 
-    console.log("Key: ", pad(dataKey));
+    console.log("key:", key);
+    console.log("iv:", iv);
+    console.log("cipherText:", cipherText);
 
-    const decipher = crypto.createDecipheriv('aes-128-cbc', pad(dataKey), pad(iv));
+    const decipher = crypto.createDecipheriv('aes-128-cbc', pad(key), pad(iv));
 
     const cipherTextBuffer = Buffer.from(cipherText, 'base64');
     const decryptedBytes = Buffer.concat([decipher.update(cipherTextBuffer), decipher.final()]);
 
-    console.log("decrypted: ", decryptedBytes);
-
     const digest = decryptedBytes.slice(0, 4);
     const payload = decryptedBytes.slice(4);
 
-    console.log("payload: ", payload);
-
     const computedDigest = shaArray(payload).slice(0, 4);
-
-    console.log("Hash arr: ", computedDigest);
 
     if (!arraysIdentical(digest, computedDigest)) {
         return false;
@@ -154,7 +140,6 @@ function noteTextIv(iv) {
 }
 
 module.exports = {
-    getProtectedSessionId,
     decrypt,
     encrypt,
     encryptCbc,

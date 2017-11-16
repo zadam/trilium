@@ -134,6 +134,9 @@ async function protectNoteHistory(noteId, dataKey, protect) {
 }
 
 async function updateNote(noteId, newNote, ctx) {
+    let noteTitleForHistory = newNote.detail.note_title;
+    let noteTextForHistory = newNote.detail.note_text;
+
     if (newNote.detail.is_protected) {
         await encryptNote(newNote, ctx);
     }
@@ -146,36 +149,28 @@ async function updateNote(noteId, newNote, ctx) {
 
     const historyCutoff = now - historySnapshotTimeInterval;
 
-    let noteHistoryId = await sql.getSingleValue("select note_history_id from notes_history where note_id = ? and date_modified_from >= ?", [noteId, historyCutoff]);
+    const existingNoteHistoryId = await sql.getSingleValue("select note_history_id from notes_history where note_id = ? and date_modified_from >= ?", [noteId, historyCutoff]);
 
     await sql.doInTransaction(async () => {
-        if (noteHistoryId) {
-            await sql.execute("update notes_history set note_title = ?, note_text = ?, is_protected = ?, date_modified_to = ? where note_history_id = ?", [
-                newNote.detail.note_title,
-                newNote.detail.note_text,
-                newNote.detail.is_protected,
-                now,
-                noteHistoryId
-            ]);
-        }
-        else {
-            noteHistoryId = utils.randomString(16);
+        if (!existingNoteHistoryId) {
+            const newNoteHistoryId = utils.randomString(16);
 
             await sql.execute("insert into notes_history (note_history_id, note_id, note_title, note_text, is_protected, date_modified_from, date_modified_to) " +
                 "values (?, ?, ?, ?, ?, ?, ?)", [
-                noteHistoryId,
+                newNoteHistoryId,
                 noteId,
-                newNote.detail.note_title,
-                newNote.detail.note_text,
-                newNote.detail.is_protected,
+                noteTitleForHistory,
+                noteTextForHistory,
+                false, // we don't care about encryption - this will be handled in protectNoteHistory()
                 now,
                 now
             ]);
+
+            await sql.addNoteHistorySync(newNoteHistoryId);
         }
 
         await protectNoteHistory(noteId, ctx.getDataKey(), newNote.detail.is_protected);
 
-        await sql.addNoteHistorySync(noteHistoryId);
         await addNoteAudits(origNoteDetail, newNote.detail, ctx.browserId);
 
         await sql.execute("update notes set note_title = ?, note_text = ?, is_protected = ?, date_modified = ? where note_id = ?", [
