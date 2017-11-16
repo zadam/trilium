@@ -1,0 +1,1 @@
+module.exports = async () => console.log("heeeelllooo!!!");

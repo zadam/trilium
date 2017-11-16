@@ -65,8 +65,8 @@ async function createNewNote(parentNoteId, note, browserId) {
 }
 
 async function encryptNote(note, ctx) {
-    note.detail.note_title = data_encryption.encrypt(ctx.getDataKey(), note.detail.note_title);
-    note.detail.note_text = data_encryption.encrypt(ctx.getDataKey(), note.detail.note_text);
+    note.detail.note_title = data_encryption.encryptCbc(ctx.getDataKey(), data_encryption.noteTitleIv(note.detail.note_id), note.detail.note_title);
+    note.detail.note_text = data_encryption.encryptCbc(ctx.getDataKey(), data_encryption.noteTextIv(note.detail.note_id), note.detail.note_text);
 }
 
 async function protectNoteRecursively(noteId, dataKey, protect) {
@@ -85,15 +85,15 @@ async function protectNote(note, dataKey, protect) {
     let changed = false;
 
     if (protect && !note.is_protected) {
-        note.note_title = data_encryption.encrypt(dataKey, note.note_title);
-        note.note_text = data_encryption.encrypt(dataKey, note.note_text);
+        note.note_title = data_encryption.encryptCbc(dataKey, data_encryption.noteTitleIv(note.note_id), note.note_title);
+        note.note_text = data_encryption.encryptCbc(dataKey, data_encryption.noteTextIv(note.note_id), note.note_text);
         note.is_protected = true;
 
         changed = true;
     }
     else if (!protect && note.is_protected) {
-        note.note_title = data_encryption.decrypt(dataKey, note.note_title);
-        note.note_text = data_encryption.decrypt(dataKey, note.note_text);
+        note.note_title = data_encryption.decryptCbc(dataKey, data_encryption.noteTitleIv(note.note_id), note.note_title);
+        note.note_text = data_encryption.decryptCbc(dataKey, data_encryption.noteTextIv(note.note_id), note.note_text);
         note.is_protected = false;
 
         changed = true;
@@ -116,13 +116,13 @@ async function protectNoteHistory(noteId, dataKey, protect) {
 
     for (const history of historyToChange) {
         if (protect) {
-            history.note_title = data_encryption.encrypt(dataKey, history.note_title);
-            history.note_text = data_encryption.encrypt(dataKey, history.note_text);
+            history.note_title = data_encryption.encryptCbc(dataKey, data_encryption.noteTitleIv(history.note_history_id), history.note_title);
+            history.note_text = data_encryption.encryptCbc(dataKey, data_encryption.noteTextIv(history.note_history_id), history.note_text);
             history.is_protected = true;
         }
         else {
-            history.note_title = data_encryption.decrypt(dataKey, history.note_title);
-            history.note_text = data_encryption.decrypt(dataKey, history.note_text);
+            history.note_title = data_encryption.decryptCbc(dataKey, data_encryption.noteTitleIv(history.note_history_id), history.note_title);
+            history.note_text = data_encryption.decryptCbc(dataKey, data_encryption.noteTextIv(history.note_history_id), history.note_text);
             history.is_protected = false;
         }
 
