@@ -10,8 +10,8 @@ async function addNoteTreeSync(noteId, sourceId) {
     await addEntitySync("notes_tree", noteId, sourceId)
 }
 
-async function addNoteReorderingSync(noteId, sourceId) {
-    await addEntitySync("notes_reordering", noteId, sourceId)
+async function addNoteReorderingSync(parentNoteId, sourceId) {
+    await addEntitySync("notes_reordering", parentNoteId, sourceId)
 }
 
 async function addNoteHistorySync(noteHistoryId, sourceId) {

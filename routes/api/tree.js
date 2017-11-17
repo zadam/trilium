@@ -33,7 +33,7 @@ router.get('/', auth.checkApiAuth, async (req, res, next) => {
 
         note.children = [];
 
-        if (!note.note_pid) {
+        if (note.note_pid === "root") {
             root_notes.push(note);
         }
 
@@ -41,7 +41,7 @@ router.get('/', auth.checkApiAuth, async (req, res, next) => {
     }
 
     for (const note of notes) {
-        if (note.note_pid !== "") {
+        if (note.note_pid !== "root") {
             const parent = notes_map[note.note_pid];
 
             if (!parent) {

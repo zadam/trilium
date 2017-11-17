@@ -13,7 +13,7 @@ router.put('/:noteId/moveTo/:parentId', auth.checkApiAuth, async (req, res, next
     let parentId = req.params.parentId;
 
     const row = await sql.getSingleResult('select max(note_pos) as max_note_pos from notes_tree where note_pid = ? and is_deleted = 0', [parentId]);
-    const maxNotePos = row['max_note_pos'];
+    const maxNotePos = row.max_note_pos;
     let newNotePos = 0;
 
     if (maxNotePos === null)  // no children yet
@@ -44,16 +44,16 @@ router.put('/:noteId/moveBefore/:beforeNoteId', async (req, res, next) => {
         await sql.doInTransaction(async () => {
             // we don't change date_modified so other changes are prioritized in case of conflict
             await sql.execute("update notes_tree set note_pos = note_pos + 1 where note_pid = ? and note_pos >= ? and is_deleted = 0",
-                [beforeNote['note_pid'], beforeNote['note_pos']]);
+                [beforeNote.note_pid, beforeNote.note_pos]);
 
             const now = utils.nowTimestamp();
 
             await sql.execute("update notes_tree set note_pid = ?, note_pos = ?, date_modified = ? where note_id = ?",
-                [beforeNote['note_pid'], beforeNote['note_pos'], now, noteId]);
+                [beforeNote.note_pid, beforeNote.note_pos, now, noteId]);
 
             await sync_table.addNoteTreeSync(noteId);
-            await sync_table.addNoteReorderingSync(beforeNote['note_pid']);
-            await sql.addAudit(audit_category.CHANGE_POSITION, utils.browserId(req), beforeNote['note_pid']);
+            await sync_table.addNoteReorderingSync(beforeNote.note_pid);
+            await sql.addAudit(audit_category.CHANGE_POSITION, utils.browserId(req), beforeNote.note_pid);
         });
     }
 
@@ -70,16 +70,16 @@ router.put('/:noteId/moveAfter/:afterNoteId', async (req, res, next) => {
         await sql.doInTransaction(async () => {
             // we don't change date_modified so other changes are prioritized in case of conflict
             await sql.execute("update notes_tree set note_pos = note_pos + 1 where note_pid = ? and note_pos > ? and is_deleted = 0",
-                [afterNote['note_pid'], afterNote['note_pos']]);
+                [afterNote.note_pid, afterNote.note_pos]);
 
             const now = utils.nowTimestamp();
 
             await sql.execute("update notes_tree set note_pid = ?, note_pos = ?, date_modified = ? where note_id = ?",
-                [afterNote['note_pid'], afterNote['note_pos'] + 1, now, noteId]);
+                [afterNote.note_pid, afterNote.note_pos + 1, now, noteId]);
 
             await sync_table.addNoteTreeSync(noteId);
-            await sync_table.addNoteReorderingSync(afterNote['note_pid']);
-            await sql.addAudit(audit_category.CHANGE_POSITION, utils.browserId(req), afterNote['note_pid']);
+            await sync_table.addNoteReorderingSync(afterNote.note_pid);
+            await sql.addAudit(audit_category.CHANGE_POSITION, utils.browserId(req), afterNote.note_pid);
         });
     }
 

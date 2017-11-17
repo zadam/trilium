@@ -113,6 +113,8 @@ async function pullSync(syncContext) {
             continue;
         }
 
+        console.log("Pulling ", sync);
+
         const resp = await syncRequest(syncContext, 'GET', "/api/sync/" + sync.entity_name + "/" + sync.entity_id);
 
         if (sync.entity_name === 'notes') {

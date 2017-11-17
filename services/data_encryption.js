@@ -104,10 +104,6 @@ function decryptCbc(key, iv, cipherText) {
         return "[protected]";
     }
 
-    console.log("key:", key);
-    console.log("iv:", iv);
-    console.log("cipherText:", cipherText);
-
     const decipher = crypto.createDecipheriv('aes-128-cbc', pad(key), pad(iv));
 
     const cipherTextBuffer = Buffer.from(cipherText, 'base64');

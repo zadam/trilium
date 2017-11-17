@@ -9,12 +9,15 @@ log.info("Using sourceId=" + currentSourceId);
 let allSourceIds = [];
 
 sql.dbReady.then(async () => {
-    sql.insert("source_ids", {
-        source_id: currentSourceId,
-        date_created: utils.nowTimestamp()
-    });
+    try {
+        sql.insert("source_ids", {
+            source_id: currentSourceId,
+            date_created: utils.nowTimestamp()
+        });
 
-    allSourceIds = await sql.getFlattenedResults("source_id", "SELECT source_id FROM source_ids");
+        allSourceIds = await sql.getFlattenedResults("source_id", "SELECT source_id FROM source_ids");
+    }
+    catch (e) {}
 });
 
 function isLocalSourceId(srcId) {

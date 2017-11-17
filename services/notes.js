@@ -9,10 +9,6 @@ const sync_table = require('./sync_table');
 async function createNewNote(parentNoteId, note, browserId) {
     const noteId = utils.newNoteId();
 
-    if (parentNoteId === "root") {
-        parentNoteId = "";
-    }
-
     let newNotePos = 0;
 
     if (note.target === 'into') {
