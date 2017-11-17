@@ -17,9 +17,18 @@ module.exports = function(req) {
         return protected_session.getDataKey(req);
     }
 
+    function getDataKeyOrNull() {
+        if (!isProtectedSessionAvailable()) {
+            return null;
+        }
+
+        return protected_session.getDataKey(req);
+    }
+
     return {
         browserId,
         isProtectedSessionAvailable,
-        getDataKey
+        getDataKey,
+        getDataKeyOrNull
     };
 };

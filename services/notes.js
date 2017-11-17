@@ -166,7 +166,7 @@ async function updateNote(noteId, newNote, ctx) {
             await sync_table.addNoteHistorySync(newNoteHistoryId);
         }
 
-        await protectNoteHistory(noteId, ctx.getDataKey(), newNote.detail.is_protected);
+        await protectNoteHistory(noteId, ctx.getDataKeyOrNull(), newNote.detail.is_protected);
 
         await addNoteAudits(origNoteDetail, newNote.detail, ctx.browserId);
 
