@@ -7,7 +7,7 @@ const options = require('./options');
 const migration = require('./migration');
 const utils = require('./utils');
 const config = require('./config');
-const SOURCE_ID = require('./source_id');
+const source_id = require('./source_id');
 const notes = require('./notes');
 const syncUpdate = require('./sync_update');
 
@@ -100,13 +100,19 @@ async function login() {
 async function pullSync(syncContext) {
     const lastSyncedPull = parseInt(await options.getOption('last_synced_pull'));
 
-    const changesUri = '/api/sync/changed?lastSyncId=' + lastSyncedPull + "&sourceId=" + SOURCE_ID;
+    const changesUri = '/api/sync/changed?lastSyncId=' + lastSyncedPull;
 
     const syncRows = await syncRequest(syncContext, 'GET', changesUri);
 
     log.info("Pulled " + syncRows.length + " changes from " + changesUri);
 
     for (const sync of syncRows) {
+        if (source_id.isLocalSourceId(sync.source_id)) {
+            log.info("Skipping " + sync.entity_name + " " + sync.entity_id + " because it has local source id.");
+
+            continue;
+        }
+
         const resp = await syncRequest(syncContext, 'GET', "/api/sync/" + sync.entity_name + "/" + sync.entity_id);
 
         if (sync.entity_name === 'notes') {
@@ -204,7 +210,7 @@ async function readAndPushEntity(sync, syncContext) {
 
 async function sendEntity(syncContext, entity, entityName) {
     const payload = {
-        sourceId: SOURCE_ID,
+        sourceId: source_id.currentSourceId,
         entity: entity
     };
 

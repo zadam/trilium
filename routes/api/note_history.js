@@ -6,6 +6,7 @@ const sql = require('../../services/sql');
 const auth = require('../../services/auth');
 const data_encryption = require('../../services/data_encryption');
 const protected_session = require('../../services/protected_session');
+const sync_table = require('../../services/sync_table');
 
 router.get('/:noteId', auth.checkApiAuth, async (req, res, next) => {
     const noteId = req.params.noteId;
@@ -27,7 +28,7 @@ router.put('', auth.checkApiAuth, async (req, res, next) => {
     await sql.doInTransaction(async () => {
         await sql.replace("notes_history", req.body);
 
-        await sql.addNoteHistorySync(req.body.note_history_id);
+        await sync_table.addNoteHistorySync(req.body.note_history_id);
     });
 
     res.send();

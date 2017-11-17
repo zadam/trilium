@@ -6,6 +6,7 @@ const sql = require('../../services/sql');
 const utils = require('../../services/utils');
 const audit_category = require('../../services/audit_category');
 const auth = require('../../services/auth');
+const sync_table = require('../../services/sync_table');
 
 router.put('/:noteId/moveTo/:parentId', auth.checkApiAuth, async (req, res, next) => {
     let noteId = req.params.noteId;
@@ -26,7 +27,7 @@ router.put('/:noteId/moveTo/:parentId', auth.checkApiAuth, async (req, res, next
         await sql.execute("update notes_tree set note_pid = ?, note_pos = ?, date_modified = ? where note_id = ?",
             [parentId, newNotePos, now, noteId]);
 
-        await sql.addNoteTreeSync(noteId);
+        await sync_table.addNoteTreeSync(noteId);
         await sql.addAudit(audit_category.CHANGE_PARENT, utils.browserId(req), noteId, null, parentId);
     });
 
@@ -50,8 +51,8 @@ router.put('/:noteId/moveBefore/:beforeNoteId', async (req, res, next) => {
             await sql.execute("update notes_tree set note_pid = ?, note_pos = ?, date_modified = ? where note_id = ?",
                 [beforeNote['note_pid'], beforeNote['note_pos'], now, noteId]);
 
-            await sql.addNoteTreeSync(noteId);
-            await sql.addNoteReorderingSync(beforeNote['note_pid']);
+            await sync_table.addNoteTreeSync(noteId);
+            await sync_table.addNoteReorderingSync(beforeNote['note_pid']);
             await sql.addAudit(audit_category.CHANGE_POSITION, utils.browserId(req), beforeNote['note_pid']);
         });
     }
@@ -76,8 +77,8 @@ router.put('/:noteId/moveAfter/:afterNoteId', async (req, res, next) => {
             await sql.execute("update notes_tree set note_pid = ?, note_pos = ?, date_modified = ? where note_id = ?",
                 [afterNote['note_pid'], afterNote['note_pos'] + 1, now, noteId]);
 
-            await sql.addNoteTreeSync(noteId);
-            await sql.addNoteReorderingSync(afterNote['note_pid']);
+            await sync_table.addNoteTreeSync(noteId);
+            await sync_table.addNoteReorderingSync(afterNote['note_pid']);
             await sql.addAudit(audit_category.CHANGE_POSITION, utils.browserId(req), afterNote['note_pid']);
         });
     }

@@ -3,7 +3,7 @@
 const db = require('sqlite');
 const utils = require('./utils');
 const log = require('./log');
-const SOURCE_ID = require('./source_id');
+const dataDir = require('./data_dir');
 
 async function insert(table_name, rec, replace = false) {
     const keys = Object.keys(rec);
@@ -116,39 +116,6 @@ async function deleteRecentAudits(category, browserId, noteId) {
             [category, browserId, noteId, deleteCutoff])
 }
 
-async function addNoteSync(noteId, sourceId) {
-    await addEntitySync("notes", noteId, sourceId)
-}
-
-async function addNoteTreeSync(noteId, sourceId) {
-    await addEntitySync("notes_tree", noteId, sourceId)
-}
-
-async function addNoteReorderingSync(noteId, sourceId) {
-    await addEntitySync("notes_reordering", noteId, sourceId)
-}
-
-async function addNoteHistorySync(noteHistoryId, sourceId) {
-    await addEntitySync("notes_history", noteHistoryId, sourceId);
-}
-
-async function addOptionsSync(optName, sourceId) {
-    await addEntitySync("options", optName, sourceId);
-}
-
-async function addRecentNoteSync(noteId, sourceId) {
-    await addEntitySync("recent_notes", noteId, sourceId);
-}
-
-async function addEntitySync(entityName, entityId, sourceId) {
-    await replace("sync", {
-        entity_name: entityName,
-        entity_id: entityId,
-        sync_date: utils.nowTimestamp(),
-        source_id: sourceId || SOURCE_ID
-    });
-}
-
 async function wrap(func) {
     const error = new Error();
 
@@ -182,7 +149,24 @@ async function doInTransaction(func) {
     }
 }
 
+const dbReady = db.open(dataDir.DOCUMENT_PATH, { Promise });
+
+dbReady
+    .then(async () => {
+        const tableResults = await getResults("SELECT name FROM sqlite_master WHERE type='table' AND name='notes'");
+
+        if (tableResults.length !== 1) {
+            console.log("No connection to initialized DB.");
+            process.exit(1);
+        }
+    })
+    .catch(e => {
+        console.log("Error connecting to DB.", e);
+        process.exit(1);
+    });
+
 module.exports = {
+    dbReady,
     insert,
     replace,
     getSingleValue,
@@ -196,11 +180,5 @@ module.exports = {
     addAudit,
     deleteRecentAudits,
     remove,
-    doInTransaction,
-    addNoteSync,
-    addNoteTreeSync,
-    addNoteReorderingSync,
-    addNoteHistorySync,
-    addOptionsSync,
-    addRecentNoteSync
+    doInTransaction
 };

@@ -1,5 +1,6 @@
 const sql = require('./sql');
 const utils = require('./utils');
+const sync_table = require('./sync_table');
 
 const SYNCED_OPTIONS = [ 'username', 'password_verification_hash', 'encrypted_data_key', 'protected_session_timeout',
     'history_snapshot_time_interval' ];
@@ -20,7 +21,7 @@ async function setOptionInTransaction(optName, optValue) {
 
 async function setOption(optName, optValue) {
     if (SYNCED_OPTIONS.includes(optName)) {
-        await sql.addOptionsSync(optName);
+        await sync_table.addOptionsSync(optName);
     }
 
     await setOptionNoSync(optName, optValue);
@@ -31,6 +32,16 @@ async function setOptionNoSync(optName, optValue) {
 
     await sql.execute("UPDATE options SET opt_value = ?, date_modified = ? WHERE opt_name = ?", [optValue, now, optName]);
 }
+
+sql.dbReady.then(async () => {
+    if (!await getOption('document_id')) {
+        await setOption('document_id', utils.randomSecureToken(16));
+    }
+
+    if (!await getOption('document_secret')) {
+        await setOption('document_secret', utils.randomSecureToken(16));
+    }
+});
 
 module.exports = {
     getOption,

@@ -5,6 +5,7 @@ const utils = require('./utils');
 const audit_category = require('./audit_category');
 const eventLog = require('./event_log');
 const notes = require('./notes');
+const sync_table = require('./sync_table');
 
 async function updateNote(entity, links, sourceId) {
     const origNote = await sql.getSingleResult("select * from notes where note_id = ?", [entity.note_id]);
@@ -21,7 +22,7 @@ async function updateNote(entity, links, sourceId) {
                 await sql.insert('link', link);
             }
 
-            await sql.addNoteSync(entity.note_id, sourceId);
+            await sync_table.addNoteSync(entity.note_id, sourceId);
             await notes.addNoteAudits(origNote, entity, sourceId);
             await eventLog.addNoteEvent(entity.note_id, "Synced note <note>");
         });
@@ -42,7 +43,7 @@ async function updateNoteTree(entity, sourceId) {
 
             await sql.replace('notes_tree', entity);
 
-            await sql.addNoteTreeSync(entity.note_id, sourceId);
+            await sync_table.addNoteTreeSync(entity.note_id, sourceId);
 
             await sql.addAudit(audit_category.UPDATE_TITLE, sourceId, entity.note_id);
         });
@@ -61,7 +62,7 @@ async function updateNoteHistory(entity, sourceId) {
         await sql.doInTransaction(async () => {
             await sql.replace('notes_history', entity);
 
-            await sql.addNoteHistorySync(entity.note_history_id, sourceId);
+            await sync_table.addNoteHistorySync(entity.note_history_id, sourceId);
         });
 
         log.info("Update/sync note history " + entity.note_history_id);
@@ -77,7 +78,7 @@ async function updateNoteReordering(entity, sourceId) {
             await sql.execute("UPDATE notes_tree SET note_pos = ? WHERE note_id = ?", [entity.ordering[key], key]);
         });
 
-        await sql.addNoteReorderingSync(entity.note_pid, sourceId);
+        await sync_table.addNoteReorderingSync(entity.note_pid, sourceId);
         await sql.addAudit(audit_category.CHANGE_POSITION, sourceId, entity.note_pid);
     });
 }
@@ -93,7 +94,7 @@ async function updateOptions(entity, sourceId) {
         await sql.doInTransaction(async () => {
             await sql.replace('options', entity);
 
-            await sql.addOptionsSync(entity.opt_name, sourceId);
+            await sync_table.addOptionsSync(entity.opt_name, sourceId);
         });
 
         await eventLog.addEvent("Synced option " + entity.opt_name);
@@ -110,7 +111,7 @@ async function updateRecentNotes(entity, sourceId) {
         await sql.doInTransaction(async () => {
             await sql.replace('recent_notes', entity);
 
-            await sql.addRecentNoteSync(entity.note_id, sourceId);
+            await sync_table.addRecentNoteSync(entity.note_id, sourceId);
         });
     }
 }

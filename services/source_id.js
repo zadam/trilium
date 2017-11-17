@@ -1,8 +1,27 @@
 const utils = require('./utils');
 const log = require('./log');
+const sql = require('./sql');
 
-const sourceId = utils.randomString(16);
+const currentSourceId = utils.randomString(12);
 
-log.info("Using sourceId=" + sourceId);
+log.info("Using sourceId=" + currentSourceId);
 
-module.exports = sourceId;
+let allSourceIds = [];
+
+sql.dbReady.then(async () => {
+    sql.insert("source_ids", {
+        source_id: currentSourceId,
+        date_created: utils.nowTimestamp()
+    });
+
+    allSourceIds = await sql.getFlattenedResults("source_id", "SELECT source_id FROM source_ids");
+});
+
+function isLocalSourceId(srcId) {
+    return allSourceIds.includes(srcId);
+}
+
+module.exports = {
+    currentSourceId,
+    isLocalSourceId
+};

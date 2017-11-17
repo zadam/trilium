@@ -4,6 +4,7 @@ const utils = require('./utils');
 const notes = require('./notes');
 const audit_category = require('./audit_category');
 const data_encryption = require('./data_encryption');
+const sync_table = require('./sync_table');
 
 async function createNewNote(parentNoteId, note, browserId) {
     const noteId = utils.newNoteId();
@@ -38,8 +39,8 @@ async function createNewNote(parentNoteId, note, browserId) {
 
     await sql.doInTransaction(async () => {
         await sql.addAudit(audit_category.CREATE_NOTE, browserId, noteId);
-        await sql.addNoteTreeSync(noteId);
-        await sql.addNoteSync(noteId);
+        await sync_table.addNoteTreeSync(noteId);
+        await sync_table.addNoteSync(noteId);
 
         const now = utils.nowTimestamp();
 
@@ -105,7 +106,7 @@ async function protectNote(note, dataKey, protect) {
         await sql.execute("UPDATE notes SET note_title = ?, note_text = ?, is_protected = ? WHERE note_id = ?",
             [note.note_title, note.note_text, note.is_protected, note.note_id]);
 
-        await sql.addNoteSync(note.note_id);
+        await sync_table.addNoteSync(note.note_id);
     }
 
     await protectNoteHistory(note.note_id, dataKey, protect);
@@ -129,7 +130,7 @@ async function protectNoteHistory(noteId, dataKey, protect) {
         await sql.execute("UPDATE notes_history SET note_title = ?, note_text = ?, is_protected = ? WHERE note_history_id = ?",
             [history.note_title, history.note_text, history.is_protected, history.note_history_id]);
 
-        await sql.addNoteHistorySync(history.note_history_id);
+        await sync_table.addNoteHistorySync(history.note_history_id);
     }
 }
 
@@ -166,7 +167,7 @@ async function updateNote(noteId, newNote, ctx) {
                 now
             ]);
 
-            await sql.addNoteHistorySync(newNoteHistoryId);
+            await sync_table.addNoteHistorySync(newNoteHistoryId);
         }
 
         await protectNoteHistory(noteId, ctx.getDataKey(), newNote.detail.is_protected);
@@ -194,8 +195,8 @@ async function updateNote(noteId, newNote, ctx) {
             await sql.insert("links", link);
         }
 
-        await sql.addNoteTreeSync(noteId);
-        await sql.addNoteSync(noteId);
+        await sync_table.addNoteTreeSync(noteId);
+        await sync_table.addNoteSync(noteId);
     });
 }
 
@@ -232,8 +233,8 @@ async function deleteNote(noteId, browserId) {
     await sql.execute("update notes_tree set is_deleted = 1, date_modified = ? where note_id = ?", [now, noteId]);
     await sql.execute("update notes set is_deleted = 1, date_modified = ? where note_id = ?", [now, noteId]);
 
-    await sql.addNoteTreeSync(noteId);
-    await sql.addNoteSync(noteId);
+    await sync_table.addNoteTreeSync(noteId);
+    await sync_table.addNoteSync(noteId);
 
     await sql.addAudit(audit_category.DELETE_NOTE, browserId, noteId);
 }

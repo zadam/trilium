@@ -9,35 +9,7 @@ const helmet = require('helmet');
 const session = require('express-session');
 const FileStore = require('session-file-store')(session);
 const os = require('os');
-const options = require('./services/options');
-const utils = require('./services/utils');
-const sql = require('./services/sql');
-const dataDir = require('./services/data_dir');
 const sessionSecret = require('./services/session_secret');
-
-
-const db = require('sqlite');
-
-db.open(dataDir.DOCUMENT_PATH, { Promise }).then(async () => {
-    const tableResults = await sql.getResults("SELECT name FROM sqlite_master WHERE type='table' AND name='notes'");
-
-    if (tableResults.length !== 1) {
-        console.log("No connection to initialized DB.");
-        process.exit(1);
-    }
-
-    if (!await options.getOption('document_id')) {
-        await options.setOption('document_id', utils.randomString(32));
-    }
-
-    if (!await options.getOption('document_secret')) {
-        await options.setOption('document_secret', utils.randomSecureToken(32));
-    }
-})
-    .catch(e => {
-        console.log("Error connecting to DB.", e);
-        process.exit(1);
-    });
 
 const app = express();
 
