@@ -17,6 +17,7 @@ const SYNC_TIMEOUT = config['Sync']['syncServerTimeout'] || 5000;
 const SYNC_PROXY = config['Sync']['syncProxy'];
 
 let syncInProgress = false;
+let proxyToggle = true;
 
 async function sync() {
     if (syncInProgress) {
@@ -53,6 +54,8 @@ async function sync() {
         };
     }
     catch (e) {
+        proxyToggle = !proxyToggle;
+
         if (e.message.indexOf('ECONNREFUSED') !== -1) {
             log.info("No connection to sync server.");
 
@@ -225,7 +228,7 @@ async function syncRequest(syncContext, method, uri, body) {
             timeout: SYNC_TIMEOUT
         };
 
-        if (SYNC_PROXY) {
+        if (SYNC_PROXY && proxyToggle) {
             options.proxy = SYNC_PROXY;
         }
 
