@@ -32,10 +32,10 @@
     "serve-favicon": "~2.4.5",
     "session-file-store": "^1.1.2",
     "simple-node-logger": "^0.93.30",
-    "sqlite": "^2.8.0"
+    "sqlite": "^2.8.0",
+    "devtron": "^1.4.0"
   },
   "devDependencies": {
-    "devtron": "^1.1.0",
     "electron-compile": "^6.4.2",
     "electron-packager": "^8.0.0",
     "electron-prebuilt-compile": "1.8.2-beta.2",
