@@ -10,7 +10,9 @@ process.on('unhandledRejection', error => {
 
 const app = require('../app');
 const debug = require('debug')('node:server');
+const fs = require('fs');
 const http = require('http');
+const https = require('https');
 const config = require('../services/config');
 const log = require('../services/log');
 
@@ -23,9 +25,23 @@ app.set('port', port);
 /**
  * Create HTTP server.
  */
-const server = http.createServer(app);
+let server;
 
-log.info("App server starting up at port " + port);
+if (config['Network']['https']) {
+    const options = {
+        key: fs.readFileSync(config['Network']['keyPath']),
+        cert: fs.readFileSync(config['Network']['certPath'])
+    };
+
+    server = https.createServer(options, app);
+
+    log.info("App HTTPS server starting up at port " + port);
+}
+else {
+    server = http.createServer(app);
+
+    log.info("App HTTP server starting up at port " + port);
+}
 
 /**
  * Listen on provided port, on all network interfaces.
