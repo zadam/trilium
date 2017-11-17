@@ -152,13 +152,17 @@ settings.addModule((function () {
 })());
 
 settings.addModule((function () {
+    const appVersionEl = $("#app-version");
+    const dbVersionEl = $("#db-version");
     const buildDateEl = $("#build-date");
     const buildRevisionEl = $("#build-revision");
 
     function settingsLoaded(settings) {
-        buildDateEl.html(settings['buildDate']);
-        buildRevisionEl.html(settings['buildRevision']);
-        buildRevisionEl.attr('href', 'https://github.com/zadam/trilium/commit/' + settings['buildRevision']);
+        appVersionEl.html(settings.app_version);
+        dbVersionEl.html(settings.db_version);
+        buildDateEl.html(settings.build_date);
+        buildRevisionEl.html(settings.build_revision);
+        buildRevisionEl.attr('href', 'https://github.com/zadam/trilium/commit/' + settings.build_revision);
     }
 
     return {
