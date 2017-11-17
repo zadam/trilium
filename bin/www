@@ -11,17 +11,21 @@ process.on('unhandledRejection', error => {
 const app = require('../app');
 const debug = require('debug')('node:server');
 const http = require('http');
+const config = require('../services/config');
+const log = require('../services/log');
 
 /**
  * Get port from environment and store in Express.
  */
-const port = normalizePort(process.env.PORT || '3000');
+const port = normalizePort(config['Network']['port'] || '3000');
 app.set('port', port);
 
 /**
  * Create HTTP server.
  */
 const server = http.createServer(app);
+
+log.info("App server starting up at port " + port);
 
 /**
  * Listen on provided port, on all network interfaces.
