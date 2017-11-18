@@ -29,7 +29,7 @@ function pad(data) {
     return Buffer.from(padded);
 }
 
-function encryptCbc(key, iv, plainText) {
+function encrypt(key, iv, plainText) {
     if (!key) {
         throw new Error("No data key!");
     }
@@ -47,7 +47,7 @@ function encryptCbc(key, iv, plainText) {
     return encryptedData.toString('base64');
 }
 
-function decryptCbc(key, iv, cipherText) {
+function decrypt(key, iv, cipherText) {
     if (!key) {
         return "[protected]";
     }
@@ -69,8 +69,8 @@ function decryptCbc(key, iv, cipherText) {
     return payload;
 }
 
-function decryptCbcString(dataKey, iv, cipherText) {
-    const buffer = decryptCbc(dataKey, iv, cipherText);
+function decryptString(dataKey, iv, cipherText) {
+    const buffer = decrypt(dataKey, iv, cipherText);
 
     return buffer.toString('utf-8');
 }
@@ -84,9 +84,9 @@ function noteTextIv(iv) {
 }
 
 module.exports = {
-    encryptCbc,
-    decryptCbc,
-    decryptCbcString,
+    encrypt,
+    decrypt,
+    decryptString,
     noteTitleIv,
     noteTextIv
 };

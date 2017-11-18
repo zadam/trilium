@@ -6,8 +6,8 @@ test('encrypt & decrypt', t => {
     const iv = [4,5,6];
     const plainText = "Hello World!";
 
-    const cipherText = data_encryption.encryptCbc(dataKey, iv, plainText);
-    const decodedPlainText = data_encryption.decryptCbc(dataKey, iv, cipherText);
+    const cipherText = data_encryption.encrypt(dataKey, iv, plainText);
+    const decodedPlainText = data_encryption.decrypt(dataKey, iv, cipherText);
 
     t.equal(decodedPlainText, plainText);
     t.end();

@@ -21,5 +21,5 @@ module.exports = async () => {
 
     console.log("Trimmed data key: ", dataKey);
 
-    await password_encryption.setDataKeyCbc(password, dataKey);
+    await password_encryption.setDataKey(password, dataKey);
 };

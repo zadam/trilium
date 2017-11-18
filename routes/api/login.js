@@ -57,7 +57,7 @@ router.post('/protected', auth.checkApiAuth, async (req, res, next) => {
         return;
     }
 
-    const decryptedDataKey = await password_encryption.getDecryptedDataKeyCbc(password);
+    const decryptedDataKey = await password_encryption.getDataKey(password);
 
     const protectedSessionId = protected_session.setDataKey(req, decryptedDataKey);
 

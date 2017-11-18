@@ -11,7 +11,7 @@ async function verifyPassword(password) {
     return givenPasswordHash === dbPasswordHash;
 }
 
-async function setDataKeyCbc(password, plainText) {
+async function setDataKey(password, plainText) {
     const passwordDerivedKey = await my_scrypt.getPasswordDerivedKey(password);
 
     const encryptedDataKeyIv = utils.randomSecureToken(16).slice(0, 16);
@@ -20,24 +20,24 @@ async function setDataKeyCbc(password, plainText) {
 
     const buffer = Buffer.from(plainText);
 
-    const newEncryptedDataKey = data_encryption.encryptCbc(passwordDerivedKey, encryptedDataKeyIv, buffer);
+    const newEncryptedDataKey = data_encryption.encrypt(passwordDerivedKey, encryptedDataKeyIv, buffer);
 
     await options.setOption('encrypted_data_key', newEncryptedDataKey);
 }
 
-async function getDecryptedDataKeyCbc(password) {
+async function getDataKey(password) {
     const passwordDerivedKey = await my_scrypt.getPasswordDerivedKey(password);
 
     const encryptedDataKeyIv = await options.getOption('encrypted_data_key_iv');
     const encryptedDataKey = await options.getOption('encrypted_data_key');
 
-    const decryptedDataKey = data_encryption.decryptCbc(passwordDerivedKey, encryptedDataKeyIv, encryptedDataKey);
+    const decryptedDataKey = data_encryption.decrypt(passwordDerivedKey, encryptedDataKeyIv, encryptedDataKey);
 
     return decryptedDataKey;
 }
 
 module.exports = {
     verifyPassword,
-    getDecryptedDataKeyCbc,
-    setDataKeyCbc
+    getDataKey,
+    setDataKey
 };

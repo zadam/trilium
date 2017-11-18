@@ -22,10 +22,10 @@ module.exports = async () => {
     for (const note of protectedNotes) {
         const decryptedTitle = data_encryption.decrypt(dataKey, note.note_title);
 
-        note.note_title = data_encryption.encryptCbc(dataKey, "0" + note.note_id, decryptedTitle);
+        note.note_title = data_encryption.encrypt(dataKey, "0" + note.note_id, decryptedTitle);
 
         const decryptedText = data_encryption.decrypt(dataKey, note.note_text);
-        note.note_text = data_encryption.encryptCbc(dataKey, "1" + note.note_id, decryptedText);
+        note.note_text = data_encryption.encrypt(dataKey, "1" + note.note_id, decryptedText);
 
         await sql.execute("UPDATE notes SET note_title = ?, note_text = ? WHERE note_id = ?", [note.note_title, note.note_text, note.note_id]);
     }
@@ -34,10 +34,10 @@ module.exports = async () => {
 
     for (const noteHistory of protectedNotesHistory) {
         const decryptedTitle = data_encryption.decrypt(dataKey, noteHistory.note_title);
-        noteHistory.note_title = data_encryption.encryptCbc(dataKey, "0" + noteHistory.note_history_id, decryptedTitle);
+        noteHistory.note_title = data_encryption.encrypt(dataKey, "0" + noteHistory.note_history_id, decryptedTitle);
 
         const decryptedText = data_encryption.decrypt(dataKey, noteHistory.note_text);
-        noteHistory.note_text = data_encryption.encryptCbc(dataKey, "1" + noteHistory.note_history_id, decryptedText);
+        noteHistory.note_text = data_encryption.encrypt(dataKey, "1" + noteHistory.note_history_id, decryptedText);
 
         await sql.execute("UPDATE notes SET note_title = ?, note_text = ? WHERE note_id = ?", [noteHistory.note_title, noteHistory.note_text, noteHistory.note_history_id]);
     }
