@@ -3,37 +3,41 @@
 const treeUtils = (function() {
     const treeEl = $("#tree");
 
-    function getParentKey(node) {
-        return (node.getParent() === null || node.getParent().key === "root_1") ? "root" : node.getParent().key;
+    function getParentNoteTreeId(node) {
+        return node.note_pid;
     }
 
     function getParentProtectedStatus(node) {
         return node.getParent() === null ? 0 : node.getParent().data.is_protected;
     }
 
-    function getNodeByKey(noteId) {
-        return treeEl.fancytree('getNodeByKey', noteId);
+    function getNodeByKey(key) {
+        return treeEl.fancytree('getNodeByKey', key);
     }
 
-    async function activateNode(noteIdToActivate) {
-        const noteIdPath = [ noteIdToActivate ];
+    function getNodeByNoteTreeId(noteTreeId) {
+        const key = noteTree.getKeyFromNoteTreeId(noteTreeId);
 
-        let note = noteTree.getByNoteId(noteIdToActivate);
+        return getNodeByKey(key);
+    }
+
+    async function activateNode(noteTreeIdToActivate) {
+        const noteTreeIdPath = [ noteTreeIdToActivate ];
+
+        let note = noteTree.getByNoteId(noteTreeIdToActivate);
 
         while (note) {
             if (note.note_pid !== 'root') {
-                noteIdPath.push(note.note_pid);
+                noteTreeIdPath.push(note.note_pid);
             }
 
             note = noteTree.getByNoteId(note.note_pid);
         }
 
-        for (const noteId of noteIdPath.reverse()) {
-            console.log("Activating/expanding " + noteId);
+        for (const noteTreeId of noteTreeIdPath.reverse()) {
+            const node = treeUtils.getNodeByNoteTreeId(noteTreeId);
 
-            const node = treeUtils.getNodeByKey(noteId);
-
-            if (noteId !== noteIdToActivate) {
+            if (noteTreeId !== noteTreeIdToActivate) {
                 await node.setExpanded();
             }
             else {
@@ -57,8 +61,8 @@ const treeUtils = (function() {
         return noteTitle;
     }
 
-    function getFullName(noteId) {
-        let note = noteTree.getByNoteId(noteId);
+    function getFullName(noteTreeId) {
+        let note = noteTree.getByNoteId(noteTreeId);
 
         if (note === null) {
             return "[unknown]";
@@ -76,9 +80,10 @@ const treeUtils = (function() {
     }
 
     return {
-        getParentKey,
+        getParentNoteTreeId,
         getParentProtectedStatus,
         getNodeByKey,
+        getNodeByNoteTreeId,
         activateNode,
         getNoteTitle,
         getFullName

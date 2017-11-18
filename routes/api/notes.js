@@ -4,7 +4,6 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../../services/auth');
 const sql = require('../../services/sql');
-const options = require('../../services/options');
 const utils = require('../../services/utils');
 const notes = require('../../services/notes');
 const protected_session = require('../../services/protected_session');
@@ -14,33 +13,32 @@ const RequestContext = require('../../services/request_context');
 router.get('/:noteId', auth.checkApiAuth, async (req, res, next) => {
     const noteId = req.params.noteId;
 
-    await options.setOption('start_node', noteId);
-
     const detail = await sql.getSingleResult("select * from notes where note_id = ?", [noteId]);
 
     if (detail.is_protected) {
         const dataKey = protected_session.getDataKey(req);
 
-        detail.note_title = data_encryption.decryptString(dataKey, data_encryption.noteTitleIv(noteId), detail.note_title);
-        detail.note_text = data_encryption.decryptString(dataKey, data_encryption.noteTextIv(noteId), detail.note_text);
+        detail.note_title = data_encryption.decryptString(dataKey, data_encryption.noteTitleIv(detail.note_id), detail.note_title);
+        detail.note_text = data_encryption.decryptString(dataKey, data_encryption.noteTextIv(detail.note_id), detail.note_text);
     }
 
     res.send({
         detail: detail,
-        images: await sql.getResults("select * from images where note_id = ? order by note_offset", [noteId]),
+        images: await sql.getResults("select * from images where note_id = ? order by note_offset", [detail.note_id]),
         loadTime: utils.nowTimestamp()
     });
 });
 
-router.post('/:parentNoteId/children', async (req, res, next) => {
-    const parentNoteId = req.params.parentNoteId;
+router.post('/:parentNoteTreeId/children', async (req, res, next) => {
+    const parentNoteTreeId = req.params.parentNoteTreeId;
     const browserId = utils.browserId(req);
     const note = req.body;
 
-    const noteId = await notes.createNewNote(parentNoteId, note, browserId);
+    const { noteId, noteTreeId } = await notes.createNewNote(parentNoteTreeId, note, browserId);
 
     res.send({
-        'note_id': noteId
+        'note_id': noteId,
+        'note_tree_id': noteTreeId
     });
 });
 

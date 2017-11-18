@@ -37,7 +37,7 @@ const protected_session = (function() {
                 open: () => {
                     if (!modal) {
                         // dialog steals focus for itself, which is not what we want for non-modal (viewing)
-                        treeUtils.getNodeByKey(noteEditor.getCurrentNoteId()).setFocus();
+                        noteTree.getCurrentNode().setFocus();
                     }
                 }
             });

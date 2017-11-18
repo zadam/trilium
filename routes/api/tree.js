@@ -21,28 +21,17 @@ router.get('/', auth.checkApiAuth, async (req, res, next) => {
         + "where notes.is_deleted = 0 and notes_tree.is_deleted = 0 "
         + "order by note_pid, note_pos");
 
-    const parentToNotes = {};
-    const notesMap = {};
-
     const dataKey = protected_session.getDataKey(req);
 
     for (const note of notes) {
         if (note.is_protected) {
             note.note_title = data_encryption.decryptString(dataKey, data_encryption.noteTitleIv(note.note_id), note.note_title);
         }
-
-        if (!parentToNotes[note.note_pid]) {
-            parentToNotes[note.note_pid] = [];
-        }
-
-        notesMap[note.note_id] = note;
-        parentToNotes[note.note_pid].push(note.note_id);
     }
 
     res.send({
-        notes_map: notesMap,
-        parent_to_notes: parentToNotes,
-        start_note_id: await options.getOption('start_node'),
+        notes: notes,
+        start_note_tree_id: await options.getOption('start_note_tree_id'),
         tree_load_time: utils.nowTimestamp()
     });
 });

@@ -92,7 +92,7 @@ const noteEditor = (function() {
 
         const title = noteTitleEl.val();
 
-        treeUtils.getNodeByKey(note.detail.note_id).setTitle(title);
+        noteTree.getCurrentNode().setTitle(title);
 
         note.detail.note_title = title;
     }
@@ -121,7 +121,7 @@ const noteEditor = (function() {
 
     let newNoteCreated = false;
 
-    async function createNote(node, parentKey, target, isProtected) {
+    async function createNote(node, parentTreeId, target, isProtected) {
         // if isProtected isn't available (user didn't enter password yet), then note is created as unencrypted
         // but this is quite weird since user doesn't see where the note is being created so it shouldn't occur often
         if (!isProtected || !protected_session.isProtectedSessionAvailable()) {
@@ -131,12 +131,12 @@ const noteEditor = (function() {
         const newNoteName = "new note";
 
         const result = await $.ajax({
-            url: baseApiUrl + 'notes/' + parentKey + '/children' ,
+            url: baseApiUrl + 'notes/' + parentTreeId + '/children' ,
             type: 'POST',
             data: JSON.stringify({
                 note_title: newNoteName,
                 target: target,
-                target_note_id: node.key,
+                target_note_id: node.note_tree_id,
                 is_protected: isProtected
             }),
             contentType: "application/json"
@@ -144,13 +144,14 @@ const noteEditor = (function() {
 
         const newNode = {
             title: newNoteName,
-            key: result.note_id,
+            key: counter++,
             note_id: result.note_id,
+            note_tree_id: result.note_tree_id,
             is_protected: isProtected,
             extraClasses: isProtected ? "protected" : ""
         };
 
-        glob.allNoteIds.push(result.note_id);
+        glob.allNoteIds.push(result.note_tree_id);
 
         newNoteCreated = true;
 
@@ -167,11 +168,6 @@ const noteEditor = (function() {
         showMessage("Created!");
     }
 
-    function setTreeBasedOnProtectedStatus(note) {
-        const node = treeUtils.getNodeByKey(note.detail.note_id);
-        node.toggleClass("protected", !!note.detail.is_protected);
-    }
-
     function setNoteBackgroundIfProtected(note) {
         if (note.detail.is_protected) {
             $(".note-editable").addClass("protected");
@@ -184,7 +180,7 @@ const noteEditor = (function() {
             unprotectButton.hide();
         }
 
-        setTreeBasedOnProtectedStatus(note);
+        noteTree.setCurrentNoteTreeBasedOnProtectedStatus();
     }
 
     async function loadNoteToEditor(noteId) {
@@ -216,10 +212,6 @@ const noteEditor = (function() {
         noteDetailEl.summernote('reset');
 
         noteDetailEl.summernote('code', currentNote.detail.note_text);
-
-        document.location.hash = noteId;
-
-        recentNotes.addRecentNote(noteId, currentNote.detail.note_id);
 
         noteChangeDisabled = false;
 

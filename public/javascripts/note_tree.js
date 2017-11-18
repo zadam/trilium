@@ -3,35 +3,59 @@
 const noteTree = (function() {
     const noteDetailEl = $('#note-detail');
     const treeEl = $("#tree");
-    let startNoteId = null;
+    let startNoteTreeId = null;
     let treeLoadTime = null;
-    let clipboardNoteId = null;
+    let clipboardNoteTreeId = null;
     let notesMap = {};
     let parentToNotes = {};
+    let counter = 1;
+    let noteTreeIdToKey = {};
+
+    function getNoteTreeIdFromKey(key) {
+        const node = treeUtils.getNodeByKey(key);
+
+        return node.note_tree_id;
+    }
+
+    function getKeyFromNoteTreeId(noteTreeId) {
+        return noteTreeIdToKey[noteTreeId];
+    }
 
     function getTreeLoadTime() {
         return treeLoadTime;
     }
 
-    function getClipboardNoteId() {
-        return clipboardNoteId;
+    function getClipboardNoteTreeId() {
+        return clipboardNoteTreeId;
     }
 
-    function setClipboardNoteId(cbNoteId) {
-        clipboardNoteId = cbNoteId;
+    function setClipboardNoteTreeId(cbNoteId) {
+        clipboardNoteTreeId = cbNoteId;
     }
 
-    function prepareNoteTree() {
+    function prepareNoteTree(notes) { showAppIfHidden();
+        parentToNotes = {};
+        notesMap = {};
+
+        for (const note of notes) {
+            if (!parentToNotes[note.note_pid]) {
+                parentToNotes[note.note_pid] = [];
+            }
+
+            notesMap[note.note_tree_id] = note;
+            parentToNotes[note.note_pid].push(note.note_tree_id);
+        }
+
         glob.allNoteIds = Object.keys(notesMap);
 
         return prepareNoteTreeInner(parentToNotes['root']);
     }
 
-    function prepareNoteTreeInner(noteIds) {
+    function prepareNoteTreeInner(noteTreeIds) {
         const noteList = [];
 
-        for (const noteId of noteIds) {
-            const note = notesMap[noteId];
+        for (const noteTreeId of noteTreeIds) {
+            const note = notesMap[noteTreeId];
 
             note.title = note.note_title;
 
@@ -39,14 +63,16 @@ const noteTree = (function() {
                 note.extraClasses = "protected";
             }
 
-            note.key = note.note_id;
+            note.key = counter++ + ""; // key needs to be string
             note.expanded = note.is_expanded;
 
-            if (parentToNotes[noteId] && parentToNotes[noteId].length > 0) {
+            noteTreeIdToKey[noteTreeId] = note.key;
+
+            if (parentToNotes[noteTreeId] && parentToNotes[noteTreeId].length > 0) {
                 note.folder = true;
 
                 if (note.expanded) {
-                    note.children = prepareNoteTreeInner(parentToNotes[noteId], notesMap, parentToNotes);
+                    note.children = prepareNoteTreeInner(parentToNotes[noteTreeId], notesMap, parentToNotes);
                 }
                 else {
                     note.lazy = true;
@@ -59,27 +85,27 @@ const noteTree = (function() {
         return noteList;
     }
 
-    function setExpandedToServer(note_id, is_expanded) {
-        const expandedNum = is_expanded ? 1 : 0;
+    function setExpandedToServer(noteTreeId, isExpanded) {
+        const expandedNum = isExpanded ? 1 : 0;
 
         $.ajax({
-            url: baseApiUrl + 'notes/' + note_id + '/expanded/' + expandedNum,
+            url: baseApiUrl + 'notes/' + noteTreeId + '/expanded/' + expandedNum,
             type: 'PUT',
             contentType: "application/json",
             success: result => {}
         });
     }
 
-    function initFancyTree(notes) {
+    function initFancyTree(noteTree) {
         const keybindings = {
             "insert": node => {
-                const parentKey = treeUtils.getParentKey(node);
+                const parentNoteTreeId = treeUtils.getParentNoteTreeId(node);
                 const isProtected = treeUtils.getParentProtectedStatus(node);
 
-                noteEditor.createNote(node, parentKey, 'after', isProtected);
+                noteEditor.createNote(node, parentNoteTreeId, 'after', isProtected);
             },
             "ctrl+insert": node => {
-                noteEditor.createNote(node, node.key, 'into', node.data.is_protected);
+                noteEditor.createNote(node, node.note_id, 'into', node.data.is_protected);
             },
             "del": node => {
                 treeChanges.deleteNode(node);
@@ -116,22 +142,26 @@ const noteTree = (function() {
         treeEl.fancytree({
             autoScroll: true,
             extensions: ["hotkeys", "filter", "dnd"],
-            source: notes,
+            source: noteTree,
             scrollParent: $("#tree"),
             activate: (event, data) => {
                 const node = data.node.data;
 
+                document.location.hash = node.note_tree_id;
+
+                recentNotes.addRecentNote(node.note_tree_id);
+
                 noteEditor.switchToNote(node.note_id);
             },
             expand: (event, data) => {
-                setExpandedToServer(data.node.key, true);
+                setExpandedToServer(getNoteTreeIdFromKey(data.node.key), true);
             },
             collapse: (event, data) => {
-                setExpandedToServer(data.node.key, false);
+                setExpandedToServer(getNoteTreeIdFromKey(data.node.key), false);
             },
             init: (event, data) => {
-                if (startNoteId) {
-                    data.tree.activateKey(startNoteId);
+                if (startNoteTreeId) {
+                    treeUtils.activateNode(startNoteTreeId);
                 }
             },
             hotkeys: {
@@ -197,13 +227,14 @@ const noteTree = (function() {
                 }
             },
             lazyLoad: function(event, data){
-                const node = data.node;
+                const node = data.node.data;
+                const noteTreeId = node.note_tree_id;
 
-                if (parentToNotes[node.key]) {
-                    data.result = prepareNoteTreeInner(parentToNotes[node.key]);
+                if (parentToNotes[noteTreeId]) {
+                    data.result = prepareNoteTreeInner(parentToNotes[noteTreeId]);
                 }
                 else {
-                    console.log("No children. This shouldn't happen.");
+                    console.log("No children for " + noteTreeId + ". This shouldn't happen.");
                 }
             }
         });
@@ -212,28 +243,26 @@ const noteTree = (function() {
     }
 
     async function reload() {
-        const notesMap = await loadTree();
+        const notes = await loadTree();
 
         // this will also reload the note content
-        await treeEl.fancytree('getTree').reload(notesMap);
+        await treeEl.fancytree('getTree').reload(notes);
     }
 
     function loadTree() {
         return $.get(baseApiUrl + 'tree').then(resp => {
-            notesMap = resp.notes_map;
-            parentToNotes = resp.parent_to_notes;
-            startNoteId = resp.start_note_id;
+            startNoteTreeId = resp.start_note_tree_id;
             treeLoadTime = resp.tree_load_time;
 
             if (document.location.hash) {
-                startNoteId = document.location.hash.substr(1); // strip initial #
+                startNoteTreeId = document.location.hash.substr(1); // strip initial #
             }
 
-            return prepareNoteTree();
+            return prepareNoteTree(resp.notes);
         });
     }
 
-    $(() => loadTree().then(notesMap => initFancyTree(notesMap)));
+    $(() => loadTree().then(noteTree => initFancyTree(noteTree)));
 
     function collapseTree() {
         treeEl.fancytree("getRootNode").visit(node => {
@@ -244,7 +273,7 @@ const noteTree = (function() {
     $(document).bind('keydown', 'alt+c', collapseTree);
 
     function scrollToCurrentNote() {
-        const node = treeUtils.getNodeByKey(noteEditor.getCurrentNoteId());
+        const node = treeUtils.getNodeByNoteTreeId(noteEditor.getCurrentNoteId());
 
         if (node) {
             node.makeVisible({scrollIntoView: true});
@@ -281,6 +310,22 @@ const noteTree = (function() {
         return notesMap[noteId];
     }
 
+    // note that if you want to access data like note_id or is_protected, you need to go into "data" property
+    function getCurrentNode() {
+        return treeEl.fancytree("getActiveNode");
+    }
+
+    function getCurrentNoteTreeId() {
+        const node = getCurrentNode();
+        return node.note_tree_id;
+    }
+
+    function setCurrentNoteTreeBasedOnProtectedStatus() {
+        const node = getCurrentNode();
+
+        node.toggleClass("protected", !!node.data.is_protected);
+    }
+
     $("button#reset-search-button").click(resetSearch);
 
     $("input[name=search]").keyup(e => {
@@ -308,12 +353,17 @@ const noteTree = (function() {
 
     return {
         getTreeLoadTime,
-        getClipboardNoteId,
-        setClipboardNoteId,
+        getClipboardNoteTreeId,
+        setClipboardNoteTreeId,
         reload,
         collapseTree,
         scrollToCurrentNote,
         toggleSearch,
-        getByNoteId
+        getByNoteId,
+        getKeyFromNoteTreeId,
+        getNoteTreeIdFromKey,
+        setCurrentNoteTreeBasedOnProtectedStatus,
+        getCurrentNode,
+        getCurrentNoteTreeId,
     };
 })();

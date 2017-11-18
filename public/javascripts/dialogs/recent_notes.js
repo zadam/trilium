@@ -13,31 +13,31 @@ const recentNotes = (function() {
         type: 'GET',
         error: () => showError("Error getting recent notes.")
     }).then(result => {
-        list = result.map(r => r.note_id);
+        list = result.map(r => r.note_tree_id);
     });
 
-    function addRecentNote(noteTreeId, noteContentId) {
+    function addRecentNote(noteTreeId) {
         setTimeout(() => {
             // we include the note into recent list only if the user stayed on the note at least 5 seconds
-            if (noteTreeId === noteEditor.getCurrentNoteId() || noteContentId === noteEditor.getCurrentNoteId()) {
+            if (noteTreeId === noteEditor.getCurrentNoteId()) {
                 $.ajax({
                     url: baseApiUrl + 'recent-notes/' + noteTreeId,
                     type: 'PUT',
                     error: () => showError("Error setting recent notes.")
                 }).then(result => {
-                    list = result.map(r => r.note_id);
+                    list = result.map(r => r.note_tree_id);
                 });
             }
         }, 1500);
     }
 
-    function removeRecentNote(noteIdToRemove) {
+    function removeRecentNote(noteTreeIdToRemove) {
         $.ajax({
-            url: baseApiUrl + 'recent-notes/' + noteIdToRemove,
+            url: baseApiUrl + 'recent-notes/' + noteTreeIdToRemove,
             type: 'DELETE',
             error: () => showError("Error removing note from recent notes.")
         }).then(result => {
-            list = result.map(r => r.note_id);
+            list = result.map(r => r.note_tree_id);
         });
     }
 
@@ -56,15 +56,15 @@ const recentNotes = (function() {
         // remove the current note
         const recNotes = list.filter(note => note !== noteEditor.getCurrentNoteId());
 
-        $.each(recNotes, (key, valueNoteId) => {
-            const noteTitle = treeUtils.getFullName(valueNoteId);
+        $.each(recNotes, (key, valueNoteTreeId) => {
+            const noteTitle = treeUtils.getFullName(valueNoteTreeId);
 
             if (!noteTitle) {
                 return;
             }
 
             const option = $("<option></option>")
-                .attr("value", valueNoteId)
+                .attr("value", valueNoteTreeId)
                 .text(noteTitle);
 
             // select the first one (most recent one) by default

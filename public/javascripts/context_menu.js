@@ -4,23 +4,23 @@ const contextMenu = (function() {
     const treeEl = $("#tree");
 
     function pasteAfter(node) {
-        const subjectNode = treeUtils.getNodeByKey(noteTree.getClipboardNoteId());
+        const subjectNode = treeUtils.getNodeByNoteTreeId(noteTree.getClipboardNoteTreeId());
 
         treeChanges.moveAfterNode(subjectNode, node);
 
-        noteTree.setClipboardNoteId(null);
+        noteTree.setClipboardNoteTreeId(null);
     }
 
     function pasteInto(node) {
-        const subjectNode = treeUtils.getNodeByKey(noteTree.getClipboardNoteId());
+        const subjectNode = treeUtils.getNodeByNoteTreeId(noteTree.getClipboardNoteTreeId());
 
         treeChanges.moveToNode(subjectNode, node);
 
-        noteTree.setClipboardNoteId(null);
+        noteTree.setClipboardNoteTreeId(null);
     }
 
     function cut(node) {
-        noteTree.setClipboardNoteId(node.key);
+        noteTree.setClipboardNoteTreeId(node.note_tree_id);
     }
 
     const contextMenuSettings = {
@@ -42,8 +42,8 @@ const contextMenu = (function() {
         beforeOpen: (event, ui) => {
             const node = $.ui.fancytree.getNode(ui.target);
             // Modify menu entries depending on node status
-            treeEl.contextmenu("enableEntry", "pasteAfter", noteTree.getClipboardNoteId() !== null);
-            treeEl.contextmenu("enableEntry", "pasteInto", noteTree.getClipboardNoteId() !== null);
+            treeEl.contextmenu("enableEntry", "pasteAfter", noteTree.getClipboardNoteTreeId() !== null);
+            treeEl.contextmenu("enableEntry", "pasteInto", noteTree.getClipboardNoteTreeId() !== null);
 
             treeEl.contextmenu("enableEntry", "protectSubTree", protected_session.isProtectedSessionAvailable());
             treeEl.contextmenu("enableEntry", "unprotectSubTree", protected_session.isProtectedSessionAvailable());
@@ -59,10 +59,10 @@ const contextMenu = (function() {
             const node = $.ui.fancytree.getNode(ui.target);
 
             if (ui.cmd === "insertNoteHere") {
-                const parentKey = treeUtils.getParentKey(node);
+                const parentNoteTreeId = treeUtils.getParentNoteTreeId(node);
                 const isProtected = treeUtils.getParentProtectedStatus(node);
 
-                noteEditor.createNote(node, parentKey, 'after', isProtected);
+                noteEditor.createNote(node, parentNoteTreeId, 'after', isProtected);
             }
             else if (ui.cmd === "insertChildNote") {
                 noteEditor.createNote(node, node.key, 'into');

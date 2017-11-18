@@ -8,6 +8,7 @@ const sync_table = require('./sync_table');
 
 async function createNewNote(parentNoteId, note, browserId) {
     const noteId = utils.newNoteId();
+    const noteTreeId = utils.newNoteId();
 
     let newNotePos = 0;
 
@@ -50,6 +51,7 @@ async function createNewNote(parentNoteId, note, browserId) {
         });
 
         await sql.insert("notes_tree", {
+            'note_tree_id': noteTreeId,
             'note_id': noteId,
             'note_pid': parentNoteId,
             'note_pos': newNotePos,
@@ -58,7 +60,11 @@ async function createNewNote(parentNoteId, note, browserId) {
             'is_deleted': 0
         });
     });
-    return noteId;
+
+    return {
+        noteId,
+        noteTreeId
+    };
 }
 
 async function encryptNote(note, ctx) {

@@ -52,7 +52,7 @@ const treeChanges = (function() {
 
                     glob.allNoteIds = glob.allNoteIds.filter(e => e !== node.key);
 
-                    recentNotes.removeRecentNote(node.key);
+                    recentNotes.removeRecentNote(node.note_tree_id);
 
                     let next = node.getNextSibling();
                     if (!next) {
