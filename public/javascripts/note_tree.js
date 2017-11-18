@@ -33,17 +33,20 @@ const noteTree = (function() {
         clipboardNoteTreeId = cbNoteId;
     }
 
-    function prepareNoteTree(notes) { showAppIfHidden();
+    function prepareNoteTree(notes, notesParent) {
         parentToNotes = {};
         notesMap = {};
 
         for (const note of notes) {
-            if (!parentToNotes[note.note_pid]) {
-                parentToNotes[note.note_pid] = [];
+            notesMap[note.note_tree_id] = note;
+        }
+
+        for (const np of notesParent) {
+            if (!parentToNotes[np.parent_id]) {
+                parentToNotes[np.parent_id] = [];
             }
 
-            notesMap[note.note_tree_id] = note;
-            parentToNotes[note.note_pid].push(note.note_tree_id);
+            parentToNotes[np.parent_id].push(np.child_id);
         }
 
         glob.allNoteIds = Object.keys(notesMap);
@@ -160,9 +163,13 @@ const noteTree = (function() {
                 setExpandedToServer(getNoteTreeIdFromKey(data.node.key), false);
             },
             init: (event, data) => {
-                if (startNoteTreeId) {
-                    treeUtils.activateNode(startNoteTreeId);
-                }
+                // if (startNoteTreeId) {
+                //     treeUtils.activateNode(startNoteTreeId);
+                // }
+
+
+
+                showAppIfHidden();
             },
             hotkeys: {
                 keydown: keybindings
@@ -258,7 +265,7 @@ const noteTree = (function() {
                 startNoteTreeId = document.location.hash.substr(1); // strip initial #
             }
 
-            return prepareNoteTree(resp.notes);
+            return prepareNoteTree(resp.notes, resp.notes_parent);
         });
     }
 

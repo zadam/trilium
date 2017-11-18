@@ -128,9 +128,11 @@ async function wrap(func) {
         return await func(db);
     }
     catch (e) {
-        log.error("Error executing query. Inner exception: " + e.stack + error.stack);
+        const thisError = new Error();
 
-        throw new Error();
+        log.error("Error executing query. Inner exception: " + e.stack + thisError.stack);
+
+        throw thisError;
     }
 }
 
