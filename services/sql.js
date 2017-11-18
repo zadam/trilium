@@ -1,9 +1,14 @@
 "use strict";
 
-const db = require('sqlite');
 const utils = require('./utils');
 const log = require('./log');
 const dataDir = require('./data_dir');
+
+const dbReady = (() => {
+    const db = require('sqlite');
+
+    return db.open(dataDir.DOCUMENT_PATH, {Promise}).then(() => db);
+})();
 
 async function insert(table_name, rec, replace = false) {
     const keys = Object.keys(rec);
@@ -27,23 +32,23 @@ async function replace(table_name, rec) {
 }
 
 async function beginTransaction() {
-    return await db.run("BEGIN");
+    return await wrap(async db => db.run("BEGIN"));
 }
 
 async function commit() {
-    return await db.run("COMMIT");
+    return await wrap(async db => db.run("COMMIT"));
 }
 
 async function rollback() {
-    return await db.run("ROLLBACK");
+    return await wrap(async db => db.run("ROLLBACK"));
 }
 
 async function getSingleResult(query, params = []) {
-    return await wrap(async () => db.get(query, ...params));
+    return await wrap(async db => db.get(query, ...params));
 }
 
 async function getSingleResultOrNull(query, params = []) {
-    const all = await wrap(async () => db.all(query, ...params));
+    const all = await wrap(async db => db.all(query, ...params));
 
     return all.length > 0 ? all[0] : null;
 }
@@ -59,7 +64,7 @@ async function getSingleValue(query, params = []) {
 }
 
 async function getResults(query, params = []) {
-    return await wrap(async () => db.all(query, ...params));
+    return await wrap(async db => db.all(query, ...params));
 }
 
 async function getMap(query, params = []) {
@@ -87,11 +92,11 @@ async function getFlattenedResults(key, query, params = []) {
 }
 
 async function execute(query, params = []) {
-    return await wrap(async () => db.run(query, ...params));
+    return await wrap(async db => db.run(query, ...params));
 }
 
 async function executeScript(query) {
-    return await wrap(async () => db.exec(query));
+    return await wrap(async db => db.exec(query));
 }
 
 async function remove(tableName, noteId) {
@@ -117,15 +122,15 @@ async function deleteRecentAudits(category, browserId, noteId) {
 }
 
 async function wrap(func) {
-    const error = new Error();
+    const db = await dbReady;
 
     try {
-        return await func();
+        return await func(db);
     }
     catch (e) {
-        log.error("Error executing transaction, executing rollback. Inner exception: " + e.stack + error.stack);
+        log.error("Error executing query. Inner exception: " + e.stack + error.stack);
 
-        throw e;
+        throw new Error();
     }
 }
 
@@ -148,8 +153,6 @@ async function doInTransaction(func) {
         throw e;
     }
 }
-
-const dbReady = db.open(dataDir.DOCUMENT_PATH, { Promise });
 
 dbReady
     .then(async () => {
