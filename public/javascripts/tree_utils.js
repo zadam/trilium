@@ -43,11 +43,6 @@ const treeUtils = (function() {
             return "[unknown]";
         }
 
-        // why?
-        if (note.data.is_clone) {
-            return null;
-        }
-
         const path = [];
 
         while (note) {

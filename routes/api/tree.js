@@ -21,8 +21,8 @@ router.get('/', auth.checkApiAuth, async (req, res, next) => {
         + "where notes.is_deleted = 0 and notes_tree.is_deleted = 0 "
         + "order by note_pid, note_pos");
 
-    const root_notes = [];
-    const notes_map = {};
+    const parentToNotes = {};
+    const notesMap = {};
 
     const dataKey = protected_session.getDataKey(req);
 
@@ -31,30 +31,17 @@ router.get('/', auth.checkApiAuth, async (req, res, next) => {
             note.note_title = data_encryption.decryptCbcString(dataKey, data_encryption.noteTitleIv(note.note_id), note.note_title);
         }
 
-        note.children = [];
-
-        if (note.note_pid === "root") {
-            root_notes.push(note);
+        if (!parentToNotes[note.note_pid]) {
+            parentToNotes[note.note_pid] = [];
         }
 
-        notes_map[note.note_id] = note;
-    }
-
-    for (const note of notes) {
-        if (note.note_pid !== "root") {
-            const parent = notes_map[note.note_pid];
-
-            if (!parent) {
-                log.error("Parent " + note.note_pid + ' has not been found');
-                continue;
-            }
-            parent.children.push(note);
-            parent.folder = true;
-        }
+        notesMap[note.note_id] = note;
+        parentToNotes[note.note_pid].push(note.note_id);
     }
 
     res.send({
-        notes: root_notes,
+        notes_map: notesMap,
+        parent_to_notes: parentToNotes,
         start_note_id: await options.getOption('start_node'),
         tree_load_time: utils.nowTimestamp()
     });

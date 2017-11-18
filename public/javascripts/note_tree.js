@@ -6,6 +6,8 @@ const noteTree = (function() {
     let startNoteId = null;
     let treeLoadTime = null;
     let clipboardNoteId = null;
+    let notesMap = {};
+    let parentToNotes = {};
 
     function getTreeLoadTime() {
         return treeLoadTime;
@@ -19,8 +21,16 @@ const noteTree = (function() {
         clipboardNoteId = cbNoteId;
     }
 
-    function prepareNoteTree(notes) {
-        for (const note of notes) {
+    function prepareNoteTree() {
+        return prepareNoteTreeInner(parentToNotes['root']);
+    }
+
+    function prepareNoteTreeInner(noteIds) {
+        const noteList = [];
+
+        for (const noteId of noteIds) {
+            const note = notesMap[noteId];
+
             glob.allNoteIds.push(note.note_id);
 
             note.title = note.note_title;
@@ -28,19 +38,25 @@ const noteTree = (function() {
             if (note.is_protected) {
                 note.extraClasses = "protected";
             }
-            else {
-                if (note.is_clone) {
-                    note.title += " (clone)";
-                }
-            }
 
             note.key = note.note_id;
             note.expanded = note.is_expanded;
 
-            if (note.children && note.children.length > 0) {
-                prepareNoteTree(note.children);
+            if (parentToNotes[noteId] && parentToNotes[noteId].length > 0) {
+                note.folder = true;
+
+                if (note.expanded) {
+                    note.children = prepareNoteTreeInner(parentToNotes[noteId], notesMap, parentToNotes);
+                }
+                else {
+                    note.lazy = true;
+                }
             }
+
+            noteList.push(note);
         }
+
+        return noteList;
     }
 
     function setExpandedToServer(note_id, is_expanded) {
@@ -179,6 +195,16 @@ const noteTree = (function() {
                         }
                         break;
                 }
+            },
+            lazyLoad: function(event, data){
+                const node = data.node;
+
+                if (parentToNotes[node.key]) {
+                    data.result = prepareNoteTreeInner(parentToNotes[node.key]);
+                }
+                else {
+                    console.log("No children. This shouldn't happen.");
+                }
             }
         });
 
@@ -186,15 +212,16 @@ const noteTree = (function() {
     }
 
     async function reload() {
-        const treeResp = await loadTree();
+        const notesMap = await loadTree();
 
         // this will also reload the note content
-        await treeEl.fancytree('getTree').reload(treeResp.notes);
+        await treeEl.fancytree('getTree').reload(notesMap);
     }
 
     function loadTree() {
         return $.get(baseApiUrl + 'tree').then(resp => {
-            const notes = resp.notes;
+            notesMap = resp.notes_map;
+            parentToNotes = resp.parent_to_notes;
             startNoteId = resp.start_note_id;
             treeLoadTime = resp.tree_load_time;
 
@@ -202,16 +229,11 @@ const noteTree = (function() {
                 startNoteId = document.location.hash.substr(1); // strip initial #
             }
 
-            prepareNoteTree(notes);
-
-            return {
-                notes: notes,
-                startNoteId: startNoteId
-            };
+            return prepareNoteTree();
         });
     }
 
-    $(() => loadTree().then(resp => initFancyTree(resp.notes)));
+    $(() => loadTree().then(notesMap => initFancyTree(notesMap)));
 
     function collapseTree() {
         treeEl.fancytree("getRootNode").visit(node => {
