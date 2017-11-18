@@ -35,7 +35,7 @@ async function updateNote(entity, links, sourceId) {
 }
 
 async function updateNoteTree(entity, sourceId) {
-    const orig = await sql.getSingleResultOrNull("select * from notes_tree where note_id = ?", [entity.note_id]);
+    const orig = await sql.getSingleResultOrNull("select * from notes_tree where note_tree_id = ?", [entity.note_tree_id]);
 
     if (orig === null || orig.date_modified < entity.date_modified) {
         await sql.doInTransaction(async () => {
@@ -43,15 +43,16 @@ async function updateNoteTree(entity, sourceId) {
 
             await sql.replace('notes_tree', entity);
 
-            await sync_table.addNoteTreeSync(entity.note_id, sourceId);
+            await sync_table.addNoteTreeSync(entity.note_tree_id, sourceId);
 
+            // not sure why this is here ...
             await sql.addAudit(audit_category.UPDATE_TITLE, sourceId, entity.note_id);
         });
 
-        log.info("Update/sync note tree " + entity.note_id);
+        log.info("Update/sync note tree " + entity.note_tree_id);
     }
     else {
-        await eventLog.addNoteEvent(entity.note_id, "Sync conflict in note tree <note>, " + utils.formatTwoTimestamps(orig.date_modified, entity.date_modified));
+        await eventLog.addNoteEvent(entity.note_tree_id, "Sync conflict in note tree <note>, " + utils.formatTwoTimestamps(orig.date_modified, entity.date_modified));
     }
 }
 
@@ -75,7 +76,7 @@ async function updateNoteHistory(entity, sourceId) {
 async function updateNoteReordering(entity, sourceId) {
     await sql.doInTransaction(async () => {
         Object.keys(entity.ordering).forEach(async key => {
-            await sql.execute("UPDATE notes_tree SET note_pos = ? WHERE note_id = ?", [entity.ordering[key], key]);
+            await sql.execute("UPDATE notes_tree SET note_pos = ? WHERE note_tree_id = ?", [entity.ordering[key], key]);
         });
 
         await sync_table.addNoteReorderingSync(entity.note_pid, sourceId);
@@ -105,7 +106,7 @@ async function updateOptions(entity, sourceId) {
 }
 
 async function updateRecentNotes(entity, sourceId) {
-    const orig = await sql.getSingleResultOrNull("select * from recent_notes where note_id = ?", [entity.note_id]);
+    const orig = await sql.getSingleResultOrNull("select * from recent_notes where note_tree_id = ?", [entity.note_tree_id]);
 
     if (orig === null || orig.date_accessed < entity.date_accessed) {
         await sql.doInTransaction(async () => {

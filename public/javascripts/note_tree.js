@@ -317,7 +317,7 @@ const noteTree = (function() {
 
     function getCurrentNoteTreeId() {
         const node = getCurrentNode();
-        return node.note_tree_id;
+        return node.data.note_tree_id;
     }
 
     function setCurrentNoteTreeBasedOnProtectedStatus() {

@@ -18,8 +18,11 @@ const recentNotes = (function() {
 
     function addRecentNote(noteTreeId) {
         setTimeout(() => {
+            console.log("note tree: " + noteTreeId);
+            console.log("current note tree: " + noteTree.getCurrentNoteTreeId());
+
             // we include the note into recent list only if the user stayed on the note at least 5 seconds
-            if (noteTreeId === noteEditor.getCurrentNoteId()) {
+            if (noteTreeId === noteTree.getCurrentNoteTreeId()) {
                 $.ajax({
                     url: baseApiUrl + 'recent-notes/' + noteTreeId,
                     type: 'PUT',

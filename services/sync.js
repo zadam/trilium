@@ -179,7 +179,7 @@ async function readAndPushEntity(sync, syncContext) {
         entity = await sql.getSingleResult('SELECT * FROM notes WHERE note_id = ?', [sync.entity_id]);
     }
     else if (sync.entity_name === 'notes_tree') {
-        entity = await sql.getSingleResult('SELECT * FROM notes_tree WHERE note_id = ?', [sync.entity_id]);
+        entity = await sql.getSingleResult('SELECT * FROM notes_tree WHERE note_tree_id = ?', [sync.entity_id]);
     }
     else if (sync.entity_name === 'notes_history') {
         entity = await sql.getSingleResult('SELECT * FROM notes_history WHERE note_history_id = ?', [sync.entity_id]);
@@ -187,14 +187,14 @@ async function readAndPushEntity(sync, syncContext) {
     else if (sync.entity_name === 'notes_reordering') {
         entity = {
             note_pid: sync.entity_id,
-            ordering: await sql.getMap('SELECT note_id, note_pos FROM notes_tree WHERE note_pid = ?', [sync.entity_id])
+            ordering: await sql.getMap('SELECT note_tree_id, note_pos FROM notes_tree WHERE note_pid = ?', [sync.entity_id])
         };
     }
     else if (sync.entity_name === 'options') {
         entity = await sql.getSingleResult('SELECT * FROM options WHERE opt_name = ?', [sync.entity_id]);
     }
     else if (sync.entity_name === 'recent_notes') {
-        entity = await sql.getSingleResult('SELECT * FROM recent_notes WHERE note_id = ?', [sync.entity_id]);
+        entity = await sql.getSingleResult('SELECT * FROM recent_notes WHERE note_tree_id = ?', [sync.entity_id]);
     }
     else {
         throw new Error("Unrecognized entity type " + sync.entity_name);

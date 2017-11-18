@@ -50,12 +50,12 @@ router.get('/options/:optName', auth.checkApiAuth, async (req, res, next) => {
     }
 });
 
-router.get('/notes_reordering/:noteParentId', auth.checkApiAuth, async (req, res, next) => {
-    const noteParentId = req.params.noteParentId;
+router.get('/notes_reordering/:noteTreeParentId', auth.checkApiAuth, async (req, res, next) => {
+    const noteTreeParentId = req.params.noteTreeParentId;
 
     res.send({
-        note_pid: noteParentId,
-        ordering: await sql.getMap("SELECT note_id, note_pos FROM notes_tree WHERE note_pid = ?", [noteParentId])
+        note_pid: noteTreeParentId,
+        ordering: await sql.getMap("SELECT note_tree_id, note_pos FROM notes_tree WHERE note_pid = ?", [noteTreeParentId])
     });
 });
 
