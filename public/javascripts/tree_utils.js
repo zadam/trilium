@@ -15,10 +15,31 @@ const treeUtils = (function() {
         return treeEl.fancytree('getNodeByKey', noteId);
     }
 
-    function activateNode(noteId) {
-        const node = treeUtils.getNodeByKey(noteId);
+    async function activateNode(noteIdToActivate) {
+        const noteIdPath = [ noteIdToActivate ];
 
-        node.setActive();
+        let note = noteTree.getByNoteId(noteIdToActivate);
+
+        while (note) {
+            if (note.note_pid !== 'root') {
+                noteIdPath.push(note.note_pid);
+            }
+
+            note = noteTree.getByNoteId(note.note_pid);
+        }
+
+        for (const noteId of noteIdPath.reverse()) {
+            console.log("Activating/expanding " + noteId);
+
+            const node = treeUtils.getNodeByKey(noteId);
+
+            if (noteId !== noteIdToActivate) {
+                await node.setExpanded();
+            }
+            else {
+                await node.setActive();
+            }
+        }
     }
 
     function getNoteTitle(noteId) {
