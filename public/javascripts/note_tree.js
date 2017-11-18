@@ -22,6 +22,8 @@ const noteTree = (function() {
     }
 
     function prepareNoteTree() {
+        glob.allNoteIds = Object.keys(notesMap);
+
         return prepareNoteTreeInner(parentToNotes['root']);
     }
 
@@ -30,8 +32,6 @@ const noteTree = (function() {
 
         for (const noteId of noteIds) {
             const note = notesMap[noteId];
-
-            glob.allNoteIds.push(note.note_id);
 
             note.title = note.note_title;
 
@@ -277,6 +277,10 @@ const noteTree = (function() {
         tree.clearFilter();
     }
 
+    function getByNoteId(noteId) {
+        return notesMap[noteId];
+    }
+
     $("button#reset-search-button").click(resetSearch);
 
     $("input[name=search]").keyup(e => {
@@ -310,5 +314,6 @@ const noteTree = (function() {
         collapseTree,
         scrollToCurrentNote,
         toggleSearch,
+        getByNoteId
     };
 })();

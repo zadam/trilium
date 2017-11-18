@@ -37,7 +37,7 @@ const treeUtils = (function() {
     }
 
     function getFullName(noteId) {
-        let note = treeUtils.getNodeByKey(noteId);
+        let note = noteTree.getByNoteId(noteId);
 
         if (note === null) {
             return "[unknown]";
@@ -46,13 +46,10 @@ const treeUtils = (function() {
         const path = [];
 
         while (note) {
-            path.push(note.title);
+            path.push(note.note_title);
 
-            note = note.getParent();
+            note = noteTree.getByNoteId(note.note_pid);
         }
-
-        // remove "root" element
-        path.pop();
 
         return path.reverse().join(" > ");
     }
