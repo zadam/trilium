@@ -7,7 +7,8 @@ const noteTree = (function() {
     let treeLoadTime = null;
     let clipboardNoteTreeId = null;
     let notesMap = {};
-    let parentToNotes = {};
+    let parentToChildren = {};
+    let childToParents = {};
     let counter = 1;
     let noteTreeIdToKey = {};
 
@@ -34,7 +35,8 @@ const noteTree = (function() {
     }
 
     function prepareNoteTree(notes, notesParent) {
-        parentToNotes = {};
+        parentToChildren = {};
+        childToParents = {};
         notesMap = {};
 
         for (const note of notes) {
@@ -42,16 +44,22 @@ const noteTree = (function() {
         }
 
         for (const np of notesParent) {
-            if (!parentToNotes[np.parent_id]) {
-                parentToNotes[np.parent_id] = [];
+            if (!parentToChildren[np.parent_id]) {
+                parentToChildren[np.parent_id] = [];
             }
 
-            parentToNotes[np.parent_id].push(np.child_id);
+            parentToChildren[np.parent_id].push(np.child_id);
+
+            if (!childToParents[np.child_id]) {
+                childToParents[np.child_id] = [];
+            }
+
+            childToParents[np.child_id].push(np.parent_id);
         }
 
         glob.allNoteIds = Object.keys(notesMap);
 
-        return prepareNoteTreeInner(parentToNotes['root']);
+        return prepareNoteTreeInner(parentToChildren['root']);
     }
 
     function prepareNoteTreeInner(noteTreeIds) {
@@ -71,11 +79,11 @@ const noteTree = (function() {
 
             noteTreeIdToKey[noteTreeId] = note.key;
 
-            if (parentToNotes[noteTreeId] && parentToNotes[noteTreeId].length > 0) {
+            if (parentToChildren[noteTreeId] && parentToChildren[noteTreeId].length > 0) {
                 note.folder = true;
 
                 if (note.expanded) {
-                    note.children = prepareNoteTreeInner(parentToNotes[noteTreeId], notesMap, parentToNotes);
+                    note.children = prepareNoteTreeInner(parentToChildren[noteTreeId], notesMap, parentToChildren);
                 }
                 else {
                     note.lazy = true;
@@ -86,6 +94,36 @@ const noteTree = (function() {
         }
 
         return noteList;
+    }
+
+    async function activateNode(notePath) {
+        const path = notePath.split("/").reverse();
+
+        if (!notesMap[path[0]]) {
+            console.log("Requested note doesn't exist.");
+            return;
+        }
+
+        const effectivePath = [];
+
+        for (const noteTreeId of path) {
+            effectivePath.push(noteTreeId);
+        }
+
+        const runPath = effectivePath.reverse();
+
+        for (let i = 0; i < runPath.length; i++) {
+            const noteTreeId = runPath[i];
+
+            const node = treeUtils.getNodeByNoteTreeId(noteTreeId);
+
+            if (i < runPath.length - 1) {
+                await node.setExpanded();
+            }
+            else {
+                await node.setActive();
+            }
+        }
     }
 
     function setExpandedToServer(noteTreeId, isExpanded) {
@@ -150,7 +188,7 @@ const noteTree = (function() {
             activate: (event, data) => {
                 const node = data.node.data;
 
-                document.location.hash = node.note_tree_id;
+                document.location.hash = treeUtils.getNotePath(data.node);
 
                 recentNotes.addRecentNote(node.note_tree_id);
 
@@ -163,13 +201,9 @@ const noteTree = (function() {
                 setExpandedToServer(getNoteTreeIdFromKey(data.node.key), false);
             },
             init: (event, data) => {
-                // if (startNoteTreeId) {
-                //     treeUtils.activateNode(startNoteTreeId);
-                // }
-
-
-
-                showAppIfHidden();
+                if (startNoteTreeId) {
+                    activateNode(startNoteTreeId);
+                }
             },
             hotkeys: {
                 keydown: keybindings
@@ -237,8 +271,8 @@ const noteTree = (function() {
                 const node = data.node.data;
                 const noteTreeId = node.note_tree_id;
 
-                if (parentToNotes[noteTreeId]) {
-                    data.result = prepareNoteTreeInner(parentToNotes[noteTreeId]);
+                if (parentToChildren[noteTreeId]) {
+                    data.result = prepareNoteTreeInner(parentToChildren[noteTreeId]);
                 }
                 else {
                     console.log("No children for " + noteTreeId + ". This shouldn't happen.");
@@ -372,5 +406,6 @@ const noteTree = (function() {
         setCurrentNoteTreeBasedOnProtectedStatus,
         getCurrentNode,
         getCurrentNoteTreeId,
+        activateNode
     };
 })();

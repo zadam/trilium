@@ -8,7 +8,7 @@ const sync_table = require('./sync_table');
 
 async function createNewNote(parentNoteId, note, browserId) {
     const noteId = utils.newNoteId();
-    const noteTreeId = utils.newNoteId();
+    const noteTreeId = utils.newNoteTreeId();
 
     let newNotePos = 0;
 
@@ -156,7 +156,7 @@ async function updateNote(noteId, newNote, ctx) {
 
     await sql.doInTransaction(async () => {
         if (!existingNoteHistoryId) {
-            const newNoteHistoryId = utils.randomString(16);
+            const newNoteHistoryId = utils.newNoteHistoryId();
 
             await sql.execute("insert into notes_history (note_history_id, note_id, note_title, note_text, is_protected, date_modified_from, date_modified_to) " +
                 "values (?, ?, ?, ?, ?, ?, ?)", [

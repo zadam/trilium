@@ -6,6 +6,14 @@ function newNoteId() {
     return randomString(12);
 }
 
+function newNoteTreeId() {
+    return randomString(8);
+}
+
+function newNoteHistoryId() {
+    return randomString(12);
+}
+
 const ALPHA_NUMERIC = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
 function randomString(length) {
@@ -63,6 +71,8 @@ module.exports = {
     randomString,
     nowTimestamp,
     newNoteId,
+    newNoteTreeId,
+    newNoteHistoryId,
     toBase64,
     fromBase64,
     hmac,

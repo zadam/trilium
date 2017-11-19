@@ -2,7 +2,7 @@
 
 const link = (function() {
     function getNoteIdFromLink(url) {
-        const noteIdMatch = /app#([A-Za-z0-9]{12})/.exec(url);
+        const noteIdMatch = /app#([A-Za-z0-9]+)$/.exec(url);
 
         if (noteIdMatch === null) {
             return null;
@@ -13,7 +13,7 @@ const link = (function() {
     }
 
     function getNodeIdFromLabel(label) {
-        const noteIdMatch = / \(([A-Za-z0-9]{12})\)/.exec(label);
+        const noteIdMatch = / \(([A-Za-z0-9]+)\)/.exec(label);
 
         if (noteIdMatch !== null) {
             return noteIdMatch[1];
@@ -41,7 +41,7 @@ const link = (function() {
         }
 
         if (noteId) {
-            treeUtils.activateNode(noteId);
+            noteTree.activateNode(noteId);
 
             // this is quite ugly hack, but it seems like we can't close the tooltip otherwise
             $("[role='tooltip']").remove();

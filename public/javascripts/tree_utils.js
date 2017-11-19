@@ -21,31 +21,6 @@ const treeUtils = (function() {
         return getNodeByKey(key);
     }
 
-    async function activateNode(noteTreeIdToActivate) {
-        const noteTreeIdPath = [ noteTreeIdToActivate ];
-
-        let note = noteTree.getByNoteId(noteTreeIdToActivate);
-
-        while (note) {
-            if (note.note_pid !== 'root') {
-                noteTreeIdPath.push(note.note_pid);
-            }
-
-            note = noteTree.getByNoteId(note.note_pid);
-        }
-
-        for (const noteTreeId of noteTreeIdPath.reverse()) {
-            const node = treeUtils.getNodeByNoteTreeId(noteTreeId);
-
-            if (noteTreeId !== noteTreeIdToActivate) {
-                await node.setExpanded();
-            }
-            else {
-                await node.setActive();
-            }
-        }
-    }
-
     function getNoteTitle(noteId) {
         const note = treeUtils.getNodeByKey(noteId);
         if (!note) {
@@ -79,13 +54,27 @@ const treeUtils = (function() {
         return path.reverse().join(" > ");
     }
 
+    function getNotePath(node) {
+        const path = [];
+
+        while (node) {
+            if (node.data.note_tree_id) {
+                path.push(node.data.note_tree_id);
+            }
+
+            node = node.getParent();
+        }
+
+        return path.reverse().join("/");
+    }
+
     return {
         getParentNoteTreeId,
         getParentProtectedStatus,
         getNodeByKey,
         getNodeByNoteTreeId,
-        activateNode,
         getNoteTitle,
-        getFullName
+        getFullName,
+        getNotePath
     };
 })();

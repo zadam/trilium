@@ -28,7 +28,7 @@ const jumpToNote = (function() {
         const noteId = link.getNodeIdFromLabel(val);
 
         if (noteId) {
-            treeUtils.activateNode(noteId);
+            noteTree.activateNode(noteId);
 
             dialogEl.dialog('close');
         }
