@@ -21,19 +21,17 @@ const treeUtils = (function() {
         return getNodeByKey(key);
     }
 
-    function getNoteTitle(noteId) {
-        const note = treeUtils.getNodeByKey(noteId);
-        if (!note) {
-            return;
-        }
+    function getNoteIdFromNotePath(notePath) {
+        const path = notePath.split("/");
 
-        let noteTitle = note.title;
+        return path[path.length - 1];
+    }
 
-        if (noteTitle.endsWith(" (clone)")) {
-            noteTitle = noteTitle.substr(0, noteTitle.length - 8);
-        }
+    function getFullNameForPath(notePath) {
+        const path = notePath.split("/");
+        const titlePath = path.map(noteId => noteTree.getNoteTitle(noteId));
 
-        return noteTitle;
+        return titlePath.join(" > ");
     }
 
     function getFullName(noteTreeId) {
@@ -73,8 +71,9 @@ const treeUtils = (function() {
         getParentProtectedStatus,
         getNodeByKey,
         getNodeByNoteTreeId,
-        getNoteTitle,
         getFullName,
-        getNotePath
+        getFullNameForPath,
+        getNotePath,
+        getNoteIdFromNotePath
     };
 })();

@@ -106,7 +106,7 @@ async function updateOptions(entity, sourceId) {
 }
 
 async function updateRecentNotes(entity, sourceId) {
-    const orig = await sql.getSingleResultOrNull("select * from recent_notes where note_tree_id = ?", [entity.note_tree_id]);
+    const orig = await sql.getSingleResultOrNull("select * from recent_notes where note_path = ?", [entity.note_path]);
 
     if (orig === null || orig.date_accessed < entity.date_accessed) {
         await sql.doInTransaction(async () => {

@@ -12,26 +12,26 @@ router.get('', auth.checkApiAuth, async (req, res, next) => {
     res.send(await getRecentNotes());
 });
 
-router.put('/:noteTreeId', auth.checkApiAuth, async (req, res, next) => {
-    const noteTreeId = req.params.noteTreeId;
+router.put('/:notePath', auth.checkApiAuth, async (req, res, next) => {
+    const notePath = req.params.notePath;
 
     await sql.replace('recent_notes', {
-        note_tree_id: noteTreeId,
+        note_path: notePath,
         date_accessed: utils.nowTimestamp(),
         is_deleted: 0
     });
 
-    await sync_table.addRecentNoteSync(noteTreeId);
+    await sync_table.addRecentNoteSync(notePath);
 
-    await options.setOption('start_note_tree_id', noteTreeId);
+    await options.setOption('start_note_tree_id', notePath);
 
     res.send(await getRecentNotes());
 });
 
-router.delete('/:noteTreeId', auth.checkApiAuth, async (req, res, next) => {
-    await sql.execute('UPDATE recent_notes SET is_deleted = 1 WHERE note_tree_id = ?', [req.params.noteTreeId]);
+router.delete('/:notePath', auth.checkApiAuth, async (req, res, next) => {
+    await sql.execute('UPDATE recent_notes SET is_deleted = 1 WHERE note_path = ?', [req.params.notePath]);
 
-    await sync_table.addRecentNoteSync(req.params.noteTreeId);
+    await sync_table.addRecentNoteSync(req.params.notePath);
 
     res.send(await getRecentNotes());
 });

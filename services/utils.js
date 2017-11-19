@@ -3,11 +3,11 @@
 const crypto = require('crypto');
 
 function newNoteId() {
-    return randomString(12);
+    return randomString(8);
 }
 
 function newNoteTreeId() {
-    return randomString(8);
+    return randomString(12);
 }
 
 function newNoteHistoryId() {

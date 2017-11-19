@@ -16,28 +16,28 @@ const recentNotes = (function() {
         list = result.map(r => r.note_tree_id);
     });
 
-    function addRecentNote(noteTreeId) {
+    function addRecentNote(notePath) {
         setTimeout(() => {
             // we include the note into recent list only if the user stayed on the note at least 5 seconds
-            if (noteTreeId === noteTree.getCurrentNoteTreeId()) {
+            if (notePath === noteTree.getCurrentNotePath()) {
                 $.ajax({
-                    url: baseApiUrl + 'recent-notes/' + noteTreeId,
+                    url: baseApiUrl + 'recent-notes/' + encodeURIComponent(notePath),
                     type: 'PUT',
                     error: () => showError("Error setting recent notes.")
                 }).then(result => {
-                    list = result.map(r => r.note_tree_id);
+                    list = result.map(r => r.note_path);
                 });
             }
         }, 1500);
     }
 
-    function removeRecentNote(noteTreeIdToRemove) {
+    function removeRecentNote(notePathIdToRemove) {
         $.ajax({
-            url: baseApiUrl + 'recent-notes/' + noteTreeIdToRemove,
+            url: baseApiUrl + 'recent-notes/' + notePathIdToRemove,
             type: 'DELETE',
             error: () => showError("Error removing note from recent notes.")
         }).then(result => {
-            list = result.map(r => r.note_tree_id);
+            list = result.map(r => r.note_path);
         });
     }
 
@@ -54,17 +54,13 @@ const recentNotes = (function() {
         selectBoxEl.find('option').remove();
 
         // remove the current note
-        const recNotes = list.filter(note => note !== noteEditor.getCurrentNoteId());
+        const recNotes = list.filter(note => note !== noteTree.getCurrentNotePath());
 
-        $.each(recNotes, (key, valueNoteTreeId) => {
-            const noteTitle = treeUtils.getFullName(valueNoteTreeId);
-
-            if (!noteTitle) {
-                return;
-            }
+        $.each(recNotes, (key, valueNotePath) => {
+            const noteTitle = treeUtils.getFullNameForPath(valueNotePath);
 
             const option = $("<option></option>")
-                .attr("value", valueNoteTreeId)
+                .attr("value", valueNotePath)
                 .text(noteTitle);
 
             // select the first one (most recent one) by default
@@ -76,22 +72,22 @@ const recentNotes = (function() {
         });
     }
 
-    function getSelectedNoteIdFromRecentNotes() {
+    function getSelectedNotePathFromRecentNotes() {
         return selectBoxEl.find("option:selected").val();
     }
 
     function setActiveNoteBasedOnRecentNotes() {
-        const noteId = getSelectedNoteIdFromRecentNotes();
+        const notePath = getSelectedNotePathFromRecentNotes();
 
-        noteTree.activateNode(noteId);
+        noteTree.activateNode(notePath);
 
         dialogEl.dialog('close');
     }
 
     function addLinkBasedOnRecentNotes() {
-        const noteId = getSelectedNoteIdFromRecentNotes();
+        const notePath = getSelectedNotePathFromRecentNotes();
 
-        const linkTitle = treeUtils.getNoteTitle(noteId);
+        const linkTitle = treeUtils.getNoteTitle(notePath);
 
         dialogEl.dialog("close");
 
@@ -99,7 +95,7 @@ const recentNotes = (function() {
 
         noteDetailEl.summernote('createLink', {
             text: linkTitle,
-            url: 'app#' + noteId,
+            url: 'app#' + notePath,
             isNewWindow: true
         });
     }

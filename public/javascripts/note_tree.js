@@ -12,6 +12,7 @@ const noteTree = (function() {
     let counter = 1;
     let noteTreeIdToKey = {};
     let parentChildToNoteTreeId = {};
+    let noteIdToTitle = {};
 
     function getNoteTreeIdFromKey(key) {
         const node = treeUtils.getNodeByKey(key);
@@ -41,10 +42,23 @@ const noteTree = (function() {
         const noteTreeId = parentChildToNoteTreeId[key];
 
         if (!noteTreeId) {
+            console.trace();
+
             throw new Error("Can't find note tree id for parent=" + parentNoteId + ", child=" + childNoteId);
         }
 
         return noteTreeId;
+    }
+
+    function getNoteTitle(notePath) {
+        const noteId = treeUtils.getNoteIdFromNotePath(notePath);
+        const title = noteIdToTitle[noteId];
+
+        if (!title) {
+            throw new Error("Can't find title for noteId=" + noteId);
+        }
+
+        return title;
     }
 
     function prepareNoteTree(notes) {
@@ -54,6 +68,8 @@ const noteTree = (function() {
 
         for (const note of notes) {
             notesMap[note.note_tree_id] = note;
+
+            noteIdToTitle[note.note_id] = note.note_title;
 
             const key = note.note_pid + "-" + note.note_id;
 
@@ -225,10 +241,11 @@ const noteTree = (function() {
             scrollParent: $("#tree"),
             activate: (event, data) => {
                 const node = data.node.data;
+                const currentNotePath = treeUtils.getNotePath(data.node);
 
-                document.location.hash = treeUtils.getNotePath(data.node);
+                document.location.hash = currentNotePath;
 
-                recentNotes.addRecentNote(node.note_tree_id);
+                recentNotes.addRecentNote(currentNotePath);
 
                 noteEditor.switchToNote(node.note_id);
             },
@@ -400,6 +417,12 @@ const noteTree = (function() {
         return node.data.note_tree_id;
     }
 
+    function getCurrentNotePath() {
+        const node = getCurrentNode();
+
+        return treeUtils.getNotePath(node);
+    }
+
     function setCurrentNoteTreeBasedOnProtectedStatus() {
         const node = getCurrentNode();
 
@@ -445,6 +468,8 @@ const noteTree = (function() {
         setCurrentNoteTreeBasedOnProtectedStatus,
         getCurrentNode,
         getCurrentNoteTreeId,
-        activateNode
+        activateNode,
+        getCurrentNotePath,
+        getNoteTitle
     };
 })();
