@@ -139,15 +139,24 @@ const noteTree = (function() {
 
         const effectivePath = [];
         let childNoteId = null;
+        let i = 0;
 
-        for (const parentNoteId of path) {
+        while (true) {
+            const parentNoteId = i < path.length ? path[i] : null;
+            i++;
+
             if (childNoteId !== null) {
                 const parents = childToParents[childNoteId];
 
-                if (!parents.includes(parentNoteId)) {
+                if (parentNoteId === null || !parents.includes(parentNoteId)) {
                     console.log("Did not find parent " + parentNoteId + " for child " + childNoteId);
 
                     if (parents.length > 0) {
+                        if (parents[0] === 'root') {
+                            console.log("Reached root.");
+                            break;
+                        }
+
                         childNoteId = parents[0];
                         effectivePath.push(childNoteId);
 
@@ -194,6 +203,14 @@ const noteTree = (function() {
             contentType: "application/json",
             success: result => {}
         });
+    }
+
+    function setCurrentNotePathToHash(node) {
+        const currentNotePath = treeUtils.getNotePath(node);
+
+        document.location.hash = currentNotePath;
+
+        recentNotes.addRecentNote(currentNotePath);
     }
 
     function initFancyTree(noteTree) {
@@ -246,11 +263,8 @@ const noteTree = (function() {
             scrollParent: $("#tree"),
             activate: (event, data) => {
                 const node = data.node.data;
-                const currentNotePath = treeUtils.getNotePath(data.node);
 
-                document.location.hash = currentNotePath;
-
-                recentNotes.addRecentNote(currentNotePath);
+                setCurrentNotePathToHash(data.node);
 
                 noteEditor.switchToNote(node.note_id);
             },
@@ -471,6 +485,7 @@ const noteTree = (function() {
         getCurrentNoteTreeId,
         activateNode,
         getCurrentNotePath,
-        getNoteTitle
+        getNoteTitle,
+        setCurrentNotePathToHash
     };
 })();

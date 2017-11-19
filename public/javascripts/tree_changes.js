@@ -3,29 +3,33 @@
 const treeChanges = (function() {
     function moveBeforeNode(node, beforeNode) {
         $.ajax({
-            url: baseApiUrl + 'notes/' + node.key + '/moveBefore/' + beforeNode.key,
+            url: baseApiUrl + 'notes/' + node.data.note_tree_id + '/moveBefore/' + beforeNode.data.note_tree_id,
             type: 'PUT',
             contentType: "application/json",
             success: () => {
                 node.moveTo(beforeNode, 'before');
+
+                noteTree.setCurrentNotePathToHash(node);
             }
         });
     }
 
     function moveAfterNode(node, afterNode) {
         $.ajax({
-            url: baseApiUrl + 'notes/' + node.key + '/moveAfter/' + afterNode.key,
+            url: baseApiUrl + 'notes/' + node.data.note_tree_id + '/moveAfter/' + afterNode.data.note_tree_id,
             type: 'PUT',
             contentType: "application/json",
             success: () => {
                 node.moveTo(afterNode, 'after');
+
+                noteTree.setCurrentNotePathToHash(node);
             }
         });
     }
 
     function moveToNode(node, toNode) {
         $.ajax({
-            url: baseApiUrl + 'notes/' + node.key + '/moveTo/' + toNode.key,
+            url: baseApiUrl + 'notes/' + node.data.note_tree_id + '/moveTo/' + toNode.data.note_id,
             type: 'PUT',
             contentType: "application/json",
             success: () => {
@@ -35,6 +39,8 @@ const treeChanges = (function() {
 
                 toNode.folder = true;
                 toNode.renderTitle();
+
+                noteTree.setCurrentNotePathToHash(node);
             }
         });
     }
@@ -63,6 +69,8 @@ const treeChanges = (function() {
 
                     // activate next element after this one is deleted so we don't lose focus
                     next.setActive();
+
+                    noteTree.setCurrentNotePathToHash(next);
                 }
             });
         }
@@ -71,7 +79,7 @@ const treeChanges = (function() {
     function moveNodeUp(node) {
         if (node.getParent() !== null) {
             $.ajax({
-                url: baseApiUrl + 'notes/' + node.key + '/moveAfter/' + node.getParent().key,
+                url: baseApiUrl + 'notes/' + node.data.note_tree_id + '/moveAfter/' + node.getParent().data.note_tree_id,
                 type: 'PUT',
                 contentType: "application/json",
                 success: () => {
@@ -81,6 +89,8 @@ const treeChanges = (function() {
                     }
 
                     node.moveTo(node.getParent(), 'after');
+
+                    noteTree.setCurrentNotePathToHash(node);
                 }
             });
         }

@@ -15,19 +15,15 @@ async function createNewNote(parentNoteId, note, browserId) {
     if (note.target === 'into') {
         const maxNotePos = await sql.getSingleValue('select max(note_pos) from notes_tree where note_pid = ? and is_deleted = 0', [parentNoteId]);
 
-        if (maxNotePos === null) // no children yet
-            newNotePos = 0;
-        else
-            newNotePos = maxNotePos + 1
+        newNotePos = maxNotePos === null ? 0 : maxNotePos + 1;
     }
     else if (note.target === 'after') {
         const afterNote = await sql.getSingleResult('select note_pos from notes_tree where note_id = ?', [note.target_note_id]);
 
         newNotePos = afterNote.note_pos + 1;
 
-        const now = utils.nowTimestamp();
-
-        await sql.execute('update notes_tree set note_pos = note_pos + 1, date_modified = ? where note_pid = ? and note_pos > ? and is_deleted = 0', [now, parentNoteId, afterNote['note_pos']]);
+        await sql.execute('update notes_tree set note_pos = note_pos + 1, date_modified = ? where note_pid = ? and note_pos > ? and is_deleted = 0',
+            [utils.nowTimestamp(), parentNoteId, afterNote.note_pos]);
     }
     else {
         throw new Error('Unknown target: ' + note.target);
