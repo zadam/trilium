@@ -95,6 +95,11 @@ const noteTree = (function() {
 
     function prepareNoteTreeInner(parentNoteId) {
         const childNoteIds = parentToChildren[parentNoteId];
+        if (!childNoteIds) {
+            console.log("No children for " + noteId + ". This shouldn't happen.");
+            return;
+        }
+
         const noteList = [];
 
         for (const childNoteId of childNoteIds) {
@@ -327,14 +332,8 @@ const noteTree = (function() {
             },
             lazyLoad: function(event, data){
                 const node = data.node.data;
-                const noteTreeId = node.note_tree_id;
 
-                if (parentToChildren[noteTreeId]) {
-                    data.result = prepareNoteTreeInner(parentToChildren[noteTreeId]);
-                }
-                else {
-                    console.log("No children for " + noteTreeId + ". This shouldn't happen.");
-                }
+                data.result = prepareNoteTreeInner(node.note_id);
             }
         });
 
