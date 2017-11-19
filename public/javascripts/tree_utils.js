@@ -58,8 +58,8 @@ const treeUtils = (function() {
         const path = [];
 
         while (node) {
-            if (node.data.note_tree_id) {
-                path.push(node.data.note_tree_id);
+            if (node.data.note_id) {
+                path.push(node.data.note_id);
             }
 
             node = node.getParent();

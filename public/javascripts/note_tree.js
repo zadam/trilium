@@ -11,6 +11,7 @@ const noteTree = (function() {
     let childToParents = {};
     let counter = 1;
     let noteTreeIdToKey = {};
+    let parentChildToNoteTreeId = {};
 
     function getNoteTreeIdFromKey(key) {
         const node = treeUtils.getNodeByKey(key);
@@ -34,38 +35,54 @@ const noteTree = (function() {
         clipboardNoteTreeId = cbNoteId;
     }
 
-    function prepareNoteTree(notes, notesParent) {
+    function getNoteTreeId(parentNoteId, childNoteId) {
+        const key = parentNoteId + "-" + childNoteId;
+
+        const noteTreeId = parentChildToNoteTreeId[key];
+
+        if (!noteTreeId) {
+            throw new Error("Can't find note tree id for parent=" + parentNoteId + ", child=" + childNoteId);
+        }
+
+        return noteTreeId;
+    }
+
+    function prepareNoteTree(notes) {
         parentToChildren = {};
         childToParents = {};
         notesMap = {};
 
         for (const note of notes) {
             notesMap[note.note_tree_id] = note;
-        }
 
-        for (const np of notesParent) {
-            if (!parentToChildren[np.parent_id]) {
-                parentToChildren[np.parent_id] = [];
+            const key = note.note_pid + "-" + note.note_id;
+
+            parentChildToNoteTreeId[key] = note.note_tree_id;
+
+            if (!parentToChildren[note.note_pid]) {
+                parentToChildren[note.note_pid] = [];
             }
 
-            parentToChildren[np.parent_id].push(np.child_id);
+            parentToChildren[note.note_pid].push(note.note_id);
 
-            if (!childToParents[np.child_id]) {
-                childToParents[np.child_id] = [];
+            if (!childToParents[note.note_id]) {
+                childToParents[note.note_id] = [];
             }
 
-            childToParents[np.child_id].push(np.parent_id);
+            childToParents[note.note_id].push(note.note_pid);
         }
 
         glob.allNoteIds = Object.keys(notesMap);
 
-        return prepareNoteTreeInner(parentToChildren['root']);
+        return prepareNoteTreeInner('root');
     }
 
-    function prepareNoteTreeInner(noteTreeIds) {
+    function prepareNoteTreeInner(parentNoteId) {
+        const childNoteIds = parentToChildren[parentNoteId];
         const noteList = [];
 
-        for (const noteTreeId of noteTreeIds) {
+        for (const childNoteId of childNoteIds) {
+            const noteTreeId = getNoteTreeId(parentNoteId, childNoteId);
             const note = notesMap[noteTreeId];
 
             note.title = note.note_title;
@@ -79,11 +96,11 @@ const noteTree = (function() {
 
             noteTreeIdToKey[noteTreeId] = note.key;
 
-            if (parentToChildren[noteTreeId] && parentToChildren[noteTreeId].length > 0) {
+            if (parentToChildren[note.note_id] && parentToChildren[note.note_id].length > 0) {
                 note.folder = true;
 
                 if (note.expanded) {
-                    note.children = prepareNoteTreeInner(parentToChildren[noteTreeId], notesMap, parentToChildren);
+                    note.children = prepareNoteTreeInner(note.note_id);
                 }
                 else {
                     note.lazy = true;
@@ -99,21 +116,40 @@ const noteTree = (function() {
     async function activateNode(notePath) {
         const path = notePath.split("/").reverse();
 
-        if (!notesMap[path[0]]) {
-            console.log("Requested note doesn't exist.");
-            return;
-        }
-
         const effectivePath = [];
+        let childNoteId = null;
 
-        for (const noteTreeId of path) {
-            effectivePath.push(noteTreeId);
+        for (const parentNoteId of path) {
+            if (childNoteId !== null) {
+                const parents = childToParents[childNoteId];
+
+                if (!parents.includes(parentNoteId)) {
+                    console.log("Did not find parent " + parentNoteId + " for child " + childNoteId);
+
+                    if (parents.length > 0) {
+                        childNoteId = parents[0];
+                        effectivePath.push(childNoteId);
+
+                        console.log("Choosing parent " + childNoteId + " instead.");
+                        continue;
+                    }
+                    else {
+                        console.log("No parents, can't activate node.");
+                        return;
+                    }
+                }
+            }
+
+            effectivePath.push(parentNoteId);
+            childNoteId = parentNoteId;
         }
 
         const runPath = effectivePath.reverse();
+        let parentNoteId = 'root';
 
         for (let i = 0; i < runPath.length; i++) {
-            const noteTreeId = runPath[i];
+            const childNoteId = runPath[i];
+            const noteTreeId = getNoteTreeId(parentNoteId, childNoteId);
 
             const node = treeUtils.getNodeByNoteTreeId(noteTreeId);
 
@@ -123,6 +159,8 @@ const noteTree = (function() {
             else {
                 await node.setActive();
             }
+
+            parentNoteId = childNoteId;
         }
     }
 
@@ -201,6 +239,7 @@ const noteTree = (function() {
                 setExpandedToServer(getNoteTreeIdFromKey(data.node.key), false);
             },
             init: (event, data) => {
+                showAppIfHidden();
                 if (startNoteTreeId) {
                     activateNode(startNoteTreeId);
                 }
