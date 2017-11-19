@@ -5,6 +5,8 @@ const recentNotes = (function() {
     const selectBoxEl = $('#recent-notes-select-box');
     const jumpToButtonEl = $('#recentNotesJumpTo');
     const addLinkButtonEl = $('#recentNotesAddLink');
+    const addCurrentAsChildEl = $("#recent-notes-add-current-as-child");
+    const addRecentAsChildEl = $("#recent-notes-add-recent-as-child");
     const noteDetailEl = $('#note-detail');
     let list = [];
 
@@ -31,9 +33,10 @@ const recentNotes = (function() {
         }, 1500);
     }
 
+    // FIXME: this should be probably just refresh upon deletion, not explicit delete
     function removeRecentNote(notePathIdToRemove) {
         $.ajax({
-            url: baseApiUrl + 'recent-notes/' + notePathIdToRemove,
+            url: baseApiUrl + 'recent-notes/' + encodeURIComponent(notePathIdToRemove),
             type: 'DELETE',
             error: () => showError("Error removing note from recent notes.")
         }).then(result => {
@@ -72,12 +75,12 @@ const recentNotes = (function() {
         });
     }
 
-    function getSelectedNotePathFromRecentNotes() {
+    function getSelectedNotePath() {
         return selectBoxEl.find("option:selected").val();
     }
 
     function setActiveNoteBasedOnRecentNotes() {
-        const notePath = getSelectedNotePathFromRecentNotes();
+        const notePath = getSelectedNotePath();
 
         noteTree.activateNode(notePath);
 
@@ -85,9 +88,9 @@ const recentNotes = (function() {
     }
 
     function addLinkBasedOnRecentNotes() {
-        const notePath = getSelectedNotePathFromRecentNotes();
+        const notePath = getSelectedNotePath();
 
-        const linkTitle = treeUtils.getNoteTitle(notePath);
+        const linkTitle = noteTree.getNoteTitle(notePath);
 
         dialogEl.dialog("close");
 
@@ -100,15 +103,45 @@ const recentNotes = (function() {
         });
     }
 
+    async function addAsChild(parentNotePath, childNotePath) {
+        const parentNoteId = treeUtils.getNoteIdFromNotePath(parentNotePath);
+        const childNoteId = treeUtils.getNoteIdFromNotePath(childNotePath);
+
+        await $.ajax({
+            url: baseApiUrl + 'tree/' + parentNoteId + '/addChild/' + childNoteId,
+            type: 'PUT',
+            error: () => showError("Error adding child.")
+        });
+
+        dialogEl.dialog("close");
+
+        await noteTree.reload();
+    }
+
+    async function addCurrentAsChild() {
+        await addAsChild(getSelectedNotePath(), noteTree.getCurrentNotePath());
+    }
+
+    async function addRecentAsChild() {
+        addAsChild(noteTree.getCurrentNotePath(), getSelectedNotePath());
+    }
+
     selectBoxEl.keydown(e => {
         const key = e.which;
 
+        // to get keycodes use http://keycode.info/
         if (key === 13)// the enter key code
         {
             setActiveNoteBasedOnRecentNotes();
         }
         else if (key === 76 /* l */) {
             addLinkBasedOnRecentNotes();
+        }
+        else if (key === 67 /* c */) {
+            addCurrentAsChild();
+        }
+        else if (key === 82 /* r */) {
+            addRecentAsChild()
         }
         else {
             return; // avoid prevent default
@@ -125,6 +158,8 @@ const recentNotes = (function() {
 
     jumpToButtonEl.click(setActiveNoteBasedOnRecentNotes);
     addLinkButtonEl.click(addLinkBasedOnRecentNotes);
+    addCurrentAsChildEl.click(addCurrentAsChild);
+    addRecentAsChildEl.click(addRecentAsChild);
 
     return {
         showDialog,

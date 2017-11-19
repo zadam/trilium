@@ -256,9 +256,11 @@ const noteTree = (function() {
                 setExpandedToServer(getNoteTreeIdFromKey(data.node.key), false);
             },
             init: (event, data) => {
-                showAppIfHidden();
                 if (startNoteTreeId) {
                     activateNode(startNoteTreeId);
+                }
+                else {
+                    showAppIfHidden();
                 }
             },
             hotkeys: {

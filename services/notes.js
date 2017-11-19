@@ -13,8 +13,7 @@ async function createNewNote(parentNoteId, note, browserId) {
     let newNotePos = 0;
 
     if (note.target === 'into') {
-        const res = await sql.getSingleResult('select max(note_pos) as max_note_pos from notes_tree where note_pid = ? and is_deleted = 0', [parentNoteId]);
-        const maxNotePos = res['max_note_pos'];
+        const maxNotePos = await sql.getSingleValue('select max(note_pos) from notes_tree where note_pid = ? and is_deleted = 0', [parentNoteId]);
 
         if (maxNotePos === null) // no children yet
             newNotePos = 0;
@@ -36,7 +35,7 @@ async function createNewNote(parentNoteId, note, browserId) {
 
     await sql.doInTransaction(async () => {
         await sql.addAudit(audit_category.CREATE_NOTE, browserId, noteId);
-        await sync_table.addNoteTreeSync(noteId);
+        await sync_table.addNoteTreeSync(noteTreeId);
         await sync_table.addNoteSync(noteId);
 
         const now = utils.nowTimestamp();
@@ -56,7 +55,7 @@ async function createNewNote(parentNoteId, note, browserId) {
             'note_pid': parentNoteId,
             'note_pos': newNotePos,
             'is_expanded': 0,
-            'date_modified': utils.nowTimestamp(),
+            'date_modified': now,
             'is_deleted': 0
         });
     });
