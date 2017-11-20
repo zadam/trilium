@@ -1,80 +1,78 @@
 "use strict";
 
 const treeChanges = (function() {
-    function moveBeforeNode(node, beforeNode) {
-        $.ajax({
+    async function moveBeforeNode(node, beforeNode) {
+        await $.ajax({
             url: baseApiUrl + 'notes/' + node.data.note_tree_id + '/moveBefore/' + beforeNode.data.note_tree_id,
             type: 'PUT',
-            contentType: "application/json",
-            success: () => {
-                node.moveTo(beforeNode, 'before');
-
-                noteTree.setCurrentNotePathToHash(node);
-            }
+            contentType: "application/json"
         });
+
+        node.moveTo(beforeNode, 'before');
+
+        noteTree.setCurrentNotePathToHash(node);
     }
 
-    function moveAfterNode(node, afterNode) {
-        $.ajax({
+    async function moveAfterNode(node, afterNode) {
+        await $.ajax({
             url: baseApiUrl + 'notes/' + node.data.note_tree_id + '/moveAfter/' + afterNode.data.note_tree_id,
             type: 'PUT',
-            contentType: "application/json",
-            success: () => {
-                node.moveTo(afterNode, 'after');
-
-                noteTree.setCurrentNotePathToHash(node);
-            }
+            contentType: "application/json"
         });
+
+        node.moveTo(afterNode, 'after');
+
+        noteTree.setCurrentNotePathToHash(node);
     }
 
-    function moveToNode(node, toNode) {
-        $.ajax({
+    async function moveToNode(node, toNode) {
+        await $.ajax({
             url: baseApiUrl + 'notes/' + node.data.note_tree_id + '/moveTo/' + toNode.data.note_id,
             type: 'PUT',
-            contentType: "application/json",
-            success: () => {
-                node.moveTo(toNode);
-
-                toNode.setExpanded(true);
-
-                toNode.folder = true;
-                toNode.renderTitle();
-
-                noteTree.setCurrentNotePathToHash(node);
-            }
+            contentType: "application/json"
         });
+
+        node.moveTo(toNode);
+
+        toNode.setExpanded(true);
+
+        toNode.folder = true;
+        toNode.renderTitle();
+
+        noteTree.setCurrentNotePathToHash(node);
     }
 
-    function deleteNode(node) {
-        if (confirm('Are you sure you want to delete note "' + node.title + '"?')) {
-            $.ajax({
-                url: baseApiUrl + 'notes/' + node.key,
-                type: 'DELETE',
-                success: () => {
-                    if (node.getParent() !== null && node.getParent().getChildren().length <= 1) {
-                        node.getParent().folder = false;
-                        node.getParent().renderTitle();
-                    }
-
-                    recentNotes.removeRecentNote(node.note_tree_id);
-
-                    let next = node.getNextSibling();
-                    if (!next) {
-                        next = node.getParent();
-                    }
-
-                    node.remove();
-
-                    // activate next element after this one is deleted so we don't lose focus
-                    next.setActive();
-
-                    noteTree.setCurrentNotePathToHash(next);
-                }
-            });
+    async function deleteNode(node) {
+        if (!confirm('Are you sure you want to delete note "' + node.title + '"?')) {
+            return;
         }
+
+        await $.ajax({
+            url: baseApiUrl + 'notes/' + node.data.note_tree_id,
+            type: 'DELETE'
+        });
+
+        if (node.getParent() !== null && node.getParent().getChildren().length <= 1) {
+            node.getParent().folder = false;
+            node.getParent().renderTitle();
+        }
+
+        recentNotes.removeRecentNote(node.note_tree_id);
+
+        let next = node.getNextSibling();
+        if (!next) {
+            next = node.getParent();
+        }
+
+        node.remove();
+
+        // activate next element after this one is deleted so we don't lose focus
+        next.setActive();
+
+        noteTree.setCurrentNotePathToHash(next);
     }
 
-    function moveNodeUp(node) {
+    async function moveNodeUp(node) {
         if (node.getParent() !== null) {
             $.ajax({
                 url: baseApiUrl + 'notes/' + node.data.note_tree_id + '/moveAfter/' + node.getParent().data.note_tree_id,

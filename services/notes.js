@@ -218,22 +218,27 @@ async function addNoteAudits(origNote, newNote, browserId) {
 }
 
 
-async function deleteNote(noteId, browserId) {
+async function deleteNote(noteTreeId, browserId) {
     const now = utils.nowTimestamp();
+    await sql.execute("update notes_tree set is_deleted = 1, date_modified = ? where note_tree_id = ?", [now, noteTreeId]);
+    await sync_table.addNoteTreeSync(noteTreeId);
 
-    const children = await sql.getResults("select note_id from notes_tree where note_pid = ? and is_deleted = 0", [noteId]);
+    const noteId = await sql.getSingleValue("SELECT note_id FROM notes_tree WHERE note_tree_id = ?", [noteTreeId]);
 
-    for (const child of children) {
-        await deleteNote(child.note_id, browserId);
+    const notDeletedNoteTreesCount = await sql.getSingleValue("SELECT COUNT(*) FROM notes_tree WHERE note_id = ?", [noteId]);
+
+    if (!notDeletedNoteTreesCount) {
+        await sql.execute("update notes set is_deleted = 1, date_modified = ? where note_id = ?", [now, noteTreeId]);
+        await sync_table.addNoteSync(noteTreeId);
+
+        const children = await sql.getResults("select note_tree_id from notes_tree where note_pid = ? and is_deleted = 0", [noteTreeId]);
+
+        for (const child of children) {
+            await deleteNote(child.note_tree_id, browserId);
+        }
+
+        await sql.addAudit(audit_category.DELETE_NOTE, browserId, noteTreeId);
     }
-
-    await sql.execute("update notes_tree set is_deleted = 1, date_modified = ? where note_id = ?", [now, noteId]);
-    await sql.execute("update notes set is_deleted = 1, date_modified = ? where note_id = ?", [now, noteId]);
-
-    await sync_table.addNoteTreeSync(noteId);
-    await sync_table.addNoteSync(noteId);
-
-    await sql.addAudit(audit_category.DELETE_NOTE, browserId, noteId);
 }
 
 module.exports = {

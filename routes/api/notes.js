@@ -52,11 +52,11 @@ router.put('/:noteId', async (req, res, next) => {
     res.send({});
 });
 
-router.delete('/:noteId', async (req, res, next) => {
+router.delete('/:noteTreeId', async (req, res, next) => {
     const browserId = utils.browserId(req);
 
     await sql.doInTransaction(async () => {
-        await notes.deleteNote(req.params.noteId, browserId);
+        await notes.deleteNote(req.params.noteTreeId, browserId);
     });
 
     res.send({});
