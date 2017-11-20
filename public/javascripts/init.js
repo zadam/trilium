@@ -79,7 +79,7 @@ $.ui.autocomplete.filter = (array, terms) => {
 $(document).tooltip({
     items: ".note-editable a",
     content: function(callback) {
-        const noteId = link.getNoteIdFromLink($(this).attr("href"));
+        const noteId = link.getNotePathFromLink($(this).attr("href"));
 
         if (noteId !== null) {
             noteEditor.loadNote(noteId).then(note => callback(note.detail.note_text));

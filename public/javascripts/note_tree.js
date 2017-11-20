@@ -468,7 +468,7 @@ const noteTree = (function() {
             const childTitlePath = (titlePath ? (titlePath + ' / ') : '') + getNoteTitle(childNoteId);
 
             autocompleteItems.push({
-                value: childNotePath,
+                value: childTitlePath + ' (' + childNotePath + ')',
                 label: childTitlePath
             });
 

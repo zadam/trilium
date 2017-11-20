@@ -5,7 +5,7 @@ const jumpToNote = (function() {
     const autoCompleteEl = $("#jump-to-note-autocomplete");
     const formEl = $("#jump-to-note-form");
 
-    function showDialog() {
+    async function showDialog() {
         glob.activeDialog = dialogEl;
 
         autoCompleteEl.val('');
@@ -15,22 +15,30 @@ const jumpToNote = (function() {
             width: 800
         });
 
-        autoCompleteEl.autocomplete({
+        await autoCompleteEl.autocomplete({
             source: noteTree.getAutocompleteItems(),
             minLength: 0
         });
     }
 
+    function goToNote() {
+        const val = autoCompleteEl.val();
+        const notePath = link.getNodePathFromLabel(val);
+
+        if (notePath) {
+            noteTree.activateNode(notePath);
+
+            dialogEl.dialog('close');
+        }
+    }
+
     $(document).bind('keydown', 'alt+j', showDialog);
 
     formEl.submit(() => {
-        const val = autoCompleteEl.val();
-        const noteId = link.getNodeIdFromLabel(val);
+        const action = dialogEl.find("button:focus").val();
 
-        if (noteId) {
-            noteTree.activateNode(noteId);
-
-            dialogEl.dialog('close');
+        if (action === 'jump') {
+            goToNote();
         }
 
         return false;

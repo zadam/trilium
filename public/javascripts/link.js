@@ -1,22 +1,22 @@
 "use strict";
 
 const link = (function() {
-    function getNoteIdFromLink(url) {
-        const noteIdMatch = /app#([A-Za-z0-9]+)$/.exec(url);
+    function getNotePathFromLink(url) {
+        const notePathMatch = /app#([A-Za-z0-9/]+)$/.exec(url);
 
-        if (noteIdMatch === null) {
+        if (notePathMatch === null) {
             return null;
         }
         else {
-            return noteIdMatch[1];
+            return notePathMatch[1];
         }
     }
 
-    function getNodeIdFromLabel(label) {
-        const noteIdMatch = / \(([A-Za-z0-9]+)\)/.exec(label);
+    function getNodePathFromLabel(label) {
+        const notePathMatch = / \(([A-Za-z0-9/]+)\)/.exec(label);
 
-        if (noteIdMatch !== null) {
-            return noteIdMatch[1];
+        if (notePathMatch !== null) {
+            return notePathMatch[1];
         }
 
         return null;
@@ -37,7 +37,7 @@ const link = (function() {
         let noteId = linkEl.attr("note-id");
 
         if (!noteId) {
-            noteId = getNoteIdFromLink(linkEl.attr('href'));
+            noteId = getNotePathFromLink(linkEl.attr('href'));
         }
 
         if (noteId) {
@@ -64,8 +64,8 @@ const link = (function() {
     $(document).on('dblclick', '.note-editable a, div.ui-tooltip-content', goToInternalNote);
 
     return {
-        getNodeIdFromLabel,
-        getNoteIdFromLink,
+        getNodePathFromLabel,
+        getNotePathFromLink,
         createNoteLink
     };
 })();
