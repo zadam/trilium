@@ -25,7 +25,7 @@ const link = (function() {
     function createNoteLink(noteId) {
         const noteLink = $("<a>", {
             href: 'javascript:',
-            text: treeUtils.getFullName(noteId)
+            text: noteTree.getNoteTitle(noteId)
         }).attr('action', 'note')
             .attr('note-id', noteId);
 
