@@ -20,25 +20,6 @@ function showError(str) {
     error.fadeOut(10000);
 }
 
-function getAutocompleteItems(noteIds) {
-    const autocompleteItems = [];
-
-    for (const noteId of noteIds) {
-        const fullName = treeUtils.getFullName(noteId);
-
-        if (fullName !== null) {
-            autocompleteItems.push({
-                value: fullName + " (" + noteId + ")",
-                label: fullName
-            });
-        }
-    }
-
-    autocompleteItems.sort((a, b) => a.value < b.value ? -1 : 1);
-
-    return autocompleteItems;
-}
-
 function getDateFromTS(timestamp) {
     // Date accepts number of milliseconds since epoch so UTC timestamp works without any extra handling
     // see https://stackoverflow.com/questions/4631928/convert-utc-epoch-to-local-date-with-javascript

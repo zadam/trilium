@@ -16,7 +16,7 @@ const jumpToNote = (function() {
         });
 
         autoCompleteEl.autocomplete({
-            source: getAutocompleteItems(glob.allNoteIds),
+            source: noteTree.getAutocompleteItems(),
             minLength: 0
         });
     }

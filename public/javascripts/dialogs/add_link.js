@@ -27,7 +27,7 @@ const addLink = (function() {
         }
 
         autoCompleteEl.autocomplete({
-            source: getAutocompleteItems(glob.allNoteIds),
+            source: noteTree.getAutocompleteItems(),
             minLength: 0,
             change: () => {
                 const val = autoCompleteEl.val();

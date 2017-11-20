@@ -57,10 +57,10 @@ $.ui.autocomplete.filter = (array, terms) => {
 
     for (const item of array) {
         let found = true;
-        const lcValue = item.value.toLowerCase();
+        const lcLabel = item.label.toLowerCase();
 
         for (const token of tokens) {
-            if (lcValue.indexOf(token) === -1) {
+            if (lcLabel.indexOf(token) === -1) {
                 found = false;
                 break;
             }

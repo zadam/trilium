@@ -418,8 +418,8 @@ const noteTree = (function() {
         tree.clearFilter();
     }
 
-    function getByNoteId(noteId) {
-        return notesMap[noteId];
+    function getByNoteTreeId(noteTreeId) {
+        return notesMap[noteTreeId];
     }
 
     // note that if you want to access data like note_id or is_protected, you need to go into "data" property
@@ -442,6 +442,44 @@ const noteTree = (function() {
         const node = getCurrentNode();
 
         node.toggleClass("protected", !!node.data.is_protected);
+    }
+
+    function getAutocompleteItems(parentNoteId, notePath, titlePath) {
+        if (!parentNoteId) {
+            parentNoteId = 'root';
+        }
+
+        if (!parentToChildren[parentNoteId]) {
+            return [];
+        }
+
+        if (!notePath) {
+            notePath = '';
+        }
+
+        if (!titlePath) {
+            titlePath = '';
+        }
+
+        const autocompleteItems = [];
+
+        for (const childNoteId of parentToChildren[parentNoteId]) {
+            const childNotePath = (notePath ? (notePath + '/') : '') + childNoteId;
+            const childTitlePath = (titlePath ? (titlePath + ' / ') : '') + getNoteTitle(childNoteId);
+
+            autocompleteItems.push({
+                value: childNotePath,
+                label: childTitlePath
+            });
+
+            const childItems = getAutocompleteItems(childNoteId, childNotePath, childTitlePath);
+
+            for (const childItem of childItems) {
+                autocompleteItems.push(childItem);
+            }
+        }
+
+        return autocompleteItems;
     }
 
     $("button#reset-search-button").click(resetSearch);
@@ -477,7 +515,7 @@ const noteTree = (function() {
         collapseTree,
         scrollToCurrentNote,
         toggleSearch,
-        getByNoteId,
+        getByNoteTreeId,
         getKeyFromNoteTreeId,
         getNoteTreeIdFromKey,
         setCurrentNoteTreeBasedOnProtectedStatus,
@@ -486,6 +524,7 @@ const noteTree = (function() {
         activateNode,
         getCurrentNotePath,
         getNoteTitle,
-        setCurrentNotePathToHash
+        setCurrentNotePathToHash,
+        getAutocompleteItems
     };
 })();
