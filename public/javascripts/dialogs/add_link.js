@@ -48,11 +48,11 @@ const addLink = (function() {
     }
 
     formEl.submit(() => {
-        let val = autoCompleteEl.val();
+        const value = autoCompleteEl.val();
 
-        const noteId = link.getNodePathFromLabel(val);
+        const notePath = link.getNodePathFromLabel(value);
 
-        if (noteId) {
+        if (notePath) {
             const linkTitle = linkTitleEl.val();
 
             dialogEl.dialog("close");
@@ -61,7 +61,7 @@ const addLink = (function() {
 
             noteDetailEl.summernote('createLink', {
                 text: linkTitle,
-                url: 'app#' + noteId,
+                url: 'app#' + notePath,
                 isNewWindow: true
             });
         }

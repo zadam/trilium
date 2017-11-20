@@ -4,8 +4,11 @@ const jumpToNote = (function() {
     const dialogEl = $("#jump-to-note-dialog");
     const autoCompleteEl = $("#jump-to-note-autocomplete");
     const formEl = $("#jump-to-note-form");
+    const noteDetailEl = $('#note-detail');
 
     async function showDialog() {
+        noteDetailEl.summernote('editor.saveRange');
+
         glob.activeDialog = dialogEl;
 
         autoCompleteEl.val('');
@@ -21,9 +24,13 @@ const jumpToNote = (function() {
         });
     }
 
-    function goToNote() {
+    function getSelectedNotePath() {
         const val = autoCompleteEl.val();
-        const notePath = link.getNodePathFromLabel(val);
+        return link.getNodePathFromLabel(val);
+    }
+
+    function goToNote() {
+        const notePath = getSelectedNotePath();
 
         if (notePath) {
             noteTree.activateNode(notePath);
@@ -37,8 +44,36 @@ const jumpToNote = (function() {
     formEl.submit(() => {
         const action = dialogEl.find("button:focus").val();
 
-        if (action === 'jump') {
+        if (!action || action === 'jump') {
             goToNote();
+        }
+        else if (action === 'add-link') {
+            const notePath = getSelectedNotePath();
+
+            if (notePath) {
+                dialogEl.dialog("close");
+
+                noteDetailEl.summernote('editor.restoreRange');
+
+                noteDetailEl.summernote('createLink', {
+                    text: noteTree.getNoteTitle(notePath),
+                    url: 'app#' + notePath,
+                    isNewWindow: true
+                });
+            }
+        }
+        else if (action === 'add-current-as-child') {
+            treeUtils.addAsChild(getSelectedNotePath(), noteTree.getCurrentNotePath());
+
+            dialogEl.dialog("close");
+        }
+        else if (action === 'add-selected-as-child') {
+            treeUtils.addAsChild(noteTree.getCurrentNotePath(), getSelectedNotePath());
+
+            dialogEl.dialog("close");
+        }
+        else {
+            console.error("Unknown action=" + action);
         }
 
         return false;

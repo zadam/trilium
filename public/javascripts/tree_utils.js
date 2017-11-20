@@ -66,6 +66,19 @@ const treeUtils = (function() {
         return path.reverse().join("/");
     }
 
+    async function addAsChild(parentNotePath, childNotePath) {
+        const parentNoteId = treeUtils.getNoteIdFromNotePath(parentNotePath);
+        const childNoteId = treeUtils.getNoteIdFromNotePath(childNotePath);
+
+        await $.ajax({
+            url: baseApiUrl + 'tree/' + parentNoteId + '/addChild/' + childNoteId,
+            type: 'PUT',
+            error: () => showError("Error adding child.")
+        });
+
+        await noteTree.reload();
+    }
+
     return {
         getParentNoteTreeId,
         getParentProtectedStatus,
@@ -74,6 +87,7 @@ const treeUtils = (function() {
         getFullName,
         getFullNameForPath,
         getNotePath,
-        getNoteIdFromNotePath
+        getNoteIdFromNotePath,
+        addAsChild
     };
 })();

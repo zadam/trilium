@@ -103,27 +103,16 @@ const recentNotes = (function() {
         });
     }
 
-    async function addAsChild(parentNotePath, childNotePath) {
-        const parentNoteId = treeUtils.getNoteIdFromNotePath(parentNotePath);
-        const childNoteId = treeUtils.getNoteIdFromNotePath(childNotePath);
-
-        await $.ajax({
-            url: baseApiUrl + 'tree/' + parentNoteId + '/addChild/' + childNoteId,
-            type: 'PUT',
-            error: () => showError("Error adding child.")
-        });
+    async function addCurrentAsChild() {
+        await treeUtils.addAsChild(getSelectedNotePath(), noteTree.getCurrentNotePath());
 
         dialogEl.dialog("close");
-
-        await noteTree.reload();
-    }
-
-    async function addCurrentAsChild() {
-        await addAsChild(getSelectedNotePath(), noteTree.getCurrentNotePath());
     }
 
     async function addRecentAsChild() {
-        addAsChild(noteTree.getCurrentNotePath(), getSelectedNotePath());
+        await treeUtils.addAsChild(noteTree.getCurrentNotePath(), getSelectedNotePath());
+
+        dialogEl.dialog("close");
     }
 
     selectBoxEl.keydown(e => {
