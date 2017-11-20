@@ -1,7 +1,6 @@
 "use strict";
 
 const glob = {
-    allNoteIds: [],
     activeDialog: null
 };
 

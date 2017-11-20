@@ -151,8 +151,6 @@ const noteEditor = (function() {
             extraClasses: isProtected ? "protected" : ""
         };
 
-        glob.allNoteIds.push(result.note_tree_id);
-
         newNoteCreated = true;
 
         if (target === 'after') {

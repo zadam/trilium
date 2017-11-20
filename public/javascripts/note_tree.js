@@ -88,8 +88,6 @@ const noteTree = (function() {
             childToParents[note.note_id].push(note.note_pid);
         }
 
-        glob.allNoteIds = Object.keys(notesMap);
-
         return prepareNoteTreeInner('root');
     }
 
