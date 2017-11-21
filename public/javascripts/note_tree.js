@@ -106,8 +106,20 @@ const noteTree = (function() {
 
             note.title = note.note_title;
 
+            note.extraClasses = "";
+
             if (note.is_protected) {
-                note.extraClasses = "protected";
+                note.extraClasses += ",protected";
+            }
+
+            if (childToParents[childNoteId].length > 1) {
+                console.log("Multiple classes!");
+
+                note.extraClasses += ",multiple-parents";
+            }
+
+            if (note.extraClasses.startsWith(",")) {
+                note.extraClasses = note.extraClasses.substr(1);
             }
 
             note.key = counter++ + ""; // key needs to be string
