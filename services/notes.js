@@ -188,7 +188,7 @@ async function updateNote(noteId, newNote, ctx) {
         await sql.remove("links", noteId);
 
         for (const link in newNote.links) {
-            await sql.insert("links", link);
+            //await sql.insert("links", link);
         }
 
         await sync_table.addNoteTreeSync(noteId);
