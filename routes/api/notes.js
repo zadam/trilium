@@ -13,7 +13,7 @@ const RequestContext = require('../../services/request_context');
 router.get('/:noteId', auth.checkApiAuth, async (req, res, next) => {
     const noteId = req.params.noteId;
 
-    const detail = await sql.getSingleResult("select * from notes where note_id = ?", [noteId]);
+    const detail = await sql.getSingleResult("SELECT * FROM notes WHERE note_id = ?", [noteId]);
 
     if (detail.is_protected) {
         const dataKey = protected_session.getDataKey(req);
@@ -24,7 +24,7 @@ router.get('/:noteId', auth.checkApiAuth, async (req, res, next) => {
 
     res.send({
         detail: detail,
-        images: await sql.getResults("select * from images where note_id = ? order by note_offset", [detail.note_id]),
+        images: await sql.getResults("SELECT * FROM images WHERE note_id = ? order by note_offset", [detail.note_id]),
         loadTime: utils.nowTimestamp()
     });
 });
@@ -65,7 +65,7 @@ router.delete('/:noteTreeId', async (req, res, next) => {
 router.get('/', async (req, res, next) => {
     const search = '%' + req.query.search + '%';
 
-    const result = await sql.getResults("select note_id from notes where note_title like ? or note_text like ?", [search, search]);
+    const result = await sql.getResults("SELECT note_id FROM notes WHERE note_title liKE ? OR note_text LIKE ?", [search, search]);
 
     const noteIdList = [];
 

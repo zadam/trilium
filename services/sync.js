@@ -217,7 +217,7 @@ async function sendEntity(syncContext, entity, entityName) {
     };
 
     if (entityName === 'notes') {
-        payload.links = await sql.getResults('select * from links where note_id = ?', [entity.note_id]);
+        payload.links = await sql.getResults('SELECT * FROM links WHERE note_id = ?', [entity.note_id]);
     }
 
     await syncRequest(syncContext, 'PUT', '/api/sync/' + entityName, payload);

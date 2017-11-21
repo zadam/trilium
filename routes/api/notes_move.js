@@ -12,13 +12,13 @@ router.put('/:noteTreeId/moveTo/:parentNoteId', auth.checkApiAuth, async (req, r
     const noteTreeId = req.params.noteTreeId;
     const parentNoteId = req.params.parentNoteId;
 
-    const maxNotePos = await sql.getSingleValue('select max(note_pos) from notes_tree where note_pid = ? and is_deleted = 0', [parentNoteId]);
+    const maxNotePos = await sql.getSingleValue('SELECT MAX(note_pos) FROM notes_tree WHERE note_pid = ? AND is_deleted = 0', [parentNoteId]);
     const newNotePos = maxNotePos === null ? 0 : maxNotePos + 1;
 
     const now = utils.nowTimestamp();
 
     await sql.doInTransaction(async () => {
-        await sql.execute("update notes_tree set note_pid = ?, note_pos = ?, date_modified = ? where note_tree_id = ?",
+        await sql.execute("UPDATE notes_tree SET note_pid = ?, note_pos = ?, date_modified = ? WHERE note_tree_id = ?",
             [parentNoteId, newNotePos, now, noteTreeId]);
 
         await sync_table.addNoteTreeSync(noteTreeId);
@@ -32,17 +32,17 @@ router.put('/:noteTreeId/moveBefore/:beforeNoteTreeId', async (req, res, next) =
     const noteTreeId = req.params.noteTreeId;
     const beforeNoteTreeId = req.params.beforeNoteTreeId;
 
-    const beforeNote = await sql.getSingleResult("select * from notes_tree where note_tree_id = ?", [beforeNoteTreeId]);
+    const beforeNote = await sql.getSingleResult("SELECT * FROM notes_tree WHERE note_tree_id = ?", [beforeNoteTreeId]);
 
     if (beforeNote) {
         await sql.doInTransaction(async () => {
             // we don't change date_modified so other changes are prioritized in case of conflict
-            await sql.execute("update notes_tree set note_pos = note_pos + 1 where note_pid = ? and note_pos >= ? and is_deleted = 0",
+            await sql.execute("UPDATE notes_tree SET note_pos = note_pos + 1 WHERE note_pid = ? AND note_pos >= ? AND is_deleted = 0",
                 [beforeNote.note_pid, beforeNote.note_pos]);
 
             const now = utils.nowTimestamp();
 
-            await sql.execute("update notes_tree set note_pid = ?, note_pos = ?, date_modified = ? where note_tree_id = ?",
+            await sql.execute("UPDATE notes_tree SET note_pid = ?, note_pos = ?, date_modified = ? WHERE note_tree_id = ?",
                 [beforeNote.note_pid, beforeNote.note_pos, now, noteTreeId]);
 
             await sync_table.addNoteTreeSync(noteTreeId);
@@ -61,17 +61,17 @@ router.put('/:noteTreeId/moveAfter/:afterNoteTreeId', async (req, res, next) => 
     const noteTreeId = req.params.noteTreeId;
     const afterNoteTreeId = req.params.afterNoteTreeId;
 
-    const afterNote = await sql.getSingleResult("select * from notes_tree where note_tree_id = ?", [afterNoteTreeId]);
+    const afterNote = await sql.getSingleResult("SELECT * FROM notes_tree WHERE note_tree_id = ?", [afterNoteTreeId]);
 
     if (afterNote) {
         await sql.doInTransaction(async () => {
             // we don't change date_modified so other changes are prioritized in case of conflict
-            await sql.execute("update notes_tree set note_pos = note_pos + 1 where note_pid = ? and note_pos > ? and is_deleted = 0",
+            await sql.execute("UPDATE notes_tree SET note_pos = note_pos + 1 WHERE note_pid = ? AND note_pos > ? AND is_deleted = 0",
                 [afterNote.note_pid, afterNote.note_pos]);
 
             const now = utils.nowTimestamp();
 
-            await sql.execute("update notes_tree set note_pid = ?, note_pos = ?, date_modified = ? where note_tree_id = ?",
+            await sql.execute("UPDATE notes_tree SET note_pid = ?, note_pos = ?, date_modified = ? WHERE note_tree_id = ?",
                 [afterNote.note_pid, afterNote.note_pos + 1, now, noteTreeId]);
 
             await sync_table.addNoteTreeSync(noteTreeId);
@@ -91,7 +91,7 @@ router.put('/:noteTreeId/expanded/:expanded', async (req, res, next) => {
     const expanded = req.params.expanded;
 
     await sql.doInTransaction(async () => {
-        await sql.execute("update notes_tree set is_expanded = ? where note_tree_id = ?", [expanded, noteTreeId]);
+        await sql.execute("UPDATE notes_tree SET is_expanded = ? WHERE note_tree_id = ?", [expanded, noteTreeId]);
     });
 
     res.send({});

@@ -3,7 +3,7 @@
 module.exports = {
     UPDATE_CONTENT: 'CONTENT',
     UPDATE_TITLE: 'TITLE',
-    // associated noteId is parent of notes where position changes happened
+    // associated noteId is parent of notes WHERE position changes happened
     CHANGE_POSITION: 'POSITION',
     CHANGE_EXPANDED: 'EXPANDED',
     CREATE_NOTE: 'CREATE',

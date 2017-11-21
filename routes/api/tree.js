@@ -12,14 +12,14 @@ const notes = require('../../services/notes');
 const sync_table = require('../../services/sync_table');
 
 router.get('/', auth.checkApiAuth, async (req, res, next) => {
-    const notes = await sql.getResults("select "
+    const notes = await sql.getResults("SELECT "
         + "notes_tree.*, "
         + "notes.note_title, "
         + "notes.is_protected "
-        + "from notes_tree "
-        + "join notes on notes.note_id = notes_tree.note_id "
-        + "where notes.is_deleted = 0 and notes_tree.is_deleted = 0 "
-        + "order by note_pos");
+        + "FROM notes_tree "
+        + "JOIN notes ON notes.note_id = notes_tree.note_id "
+        + "WHERE notes.is_deleted = 0 AND notes_tree.is_deleted = 0 "
+        + "ORDER BY note_pos");
 
     const dataKey = protected_session.getDataKey(req);
 
@@ -52,10 +52,10 @@ router.put('/:parentNoteId/addChild/:childNoteId', auth.checkApiAuth, async (req
     const parentNoteId = req.params.parentNoteId;
     const childNoteId = req.params.childNoteId;
 
-    const existing = await sql.getSingleValue('select * from notes_tree where note_id = ? and note_pid = ?', [childNoteId, parentNoteId]);
+    const existing = await sql.getSingleValue('SELECT * FROM notes_tree WHERE note_id = ? AND note_pid = ?', [childNoteId, parentNoteId]);
 
     if (!existing) {
-        const maxNotePos = await sql.getSingleValue('select max(note_pos) from notes_tree where note_pid = ? and is_deleted = 0', [parentNoteId]);
+        const maxNotePos = await sql.getSingleValue('SELECT MAX(note_pos) FROM notes_tree WHERE note_pid = ? AND is_deleted = 0', [parentNoteId]);
         const newNotePos = maxNotePos === null ? 0 : maxNotePos + 1;
 
         const noteTreeId = utils.newNoteTreeId();

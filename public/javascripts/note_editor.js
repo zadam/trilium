@@ -123,7 +123,7 @@ const noteEditor = (function() {
 
     async function createNote(node, parentTreeId, target, isProtected) {
         // if isProtected isn't available (user didn't enter password yet), then note is created as unencrypted
-        // but this is quite weird since user doesn't see where the note is being created so it shouldn't occur often
+        // but this is quite weird since user doesn't see WHERE the note is being created so it shouldn't occur often
         if (!isProtected || !protected_session.isProtectedSessionAvailable()) {
             isProtected = false;
         }

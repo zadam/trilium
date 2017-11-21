@@ -8,7 +8,7 @@ const notes = require('./notes');
 const sync_table = require('./sync_table');
 
 async function updateNote(entity, links, sourceId) {
-    const origNote = await sql.getSingleResult("select * from notes where note_id = ?", [entity.note_id]);
+    const origNote = await sql.getSingleResult("SELECT * FROM notes WHERE note_id = ?", [entity.note_id]);
 
     if (!origNote || origNote.date_modified <= entity.date_modified) {
         await sql.doInTransaction(async () => {
@@ -35,7 +35,7 @@ async function updateNote(entity, links, sourceId) {
 }
 
 async function updateNoteTree(entity, sourceId) {
-    const orig = await sql.getSingleResultOrNull("select * from notes_tree where note_tree_id = ?", [entity.note_tree_id]);
+    const orig = await sql.getSingleResultOrNull("SELECT * FROM notes_tree WHERE note_tree_id = ?", [entity.note_tree_id]);
 
     if (orig === null || orig.date_modified < entity.date_modified) {
         await sql.doInTransaction(async () => {
@@ -57,7 +57,7 @@ async function updateNoteTree(entity, sourceId) {
 }
 
 async function updateNoteHistory(entity, sourceId) {
-    const orig = await sql.getSingleResultOrNull("select * from notes_history where note_history_id = ?", [entity.note_history_id]);
+    const orig = await sql.getSingleResultOrNull("SELECT * FROM notes_history WHERE note_history_id = ?", [entity.note_history_id]);
 
     if (orig === null || orig.date_modified_to < entity.date_modified_to) {
         await sql.doInTransaction(async () => {
@@ -89,7 +89,7 @@ async function updateOptions(entity, sourceId) {
         return;
     }
 
-    const orig = await sql.getSingleResultOrNull("select * from options where opt_name = ?", [entity.opt_name]);
+    const orig = await sql.getSingleResultOrNull("SELECT * FROM options WHERE opt_name = ?", [entity.opt_name]);
 
     if (orig === null || orig.date_modified < entity.date_modified) {
         await sql.doInTransaction(async () => {
@@ -106,7 +106,7 @@ async function updateOptions(entity, sourceId) {
 }
 
 async function updateRecentNotes(entity, sourceId) {
-    const orig = await sql.getSingleResultOrNull("select * from recent_notes where note_path = ?", [entity.note_path]);
+    const orig = await sql.getSingleResultOrNull("SELECT * FROM recent_notes WHERE note_path = ?", [entity.note_path]);
 
     if (orig === null || orig.date_accessed < entity.date_accessed) {
         await sql.doInTransaction(async () => {

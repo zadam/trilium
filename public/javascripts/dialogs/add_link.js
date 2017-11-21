@@ -38,7 +38,7 @@ const addLink = (function() {
                 }
             },
             // this is called when user goes through autocomplete list with keyboard
-            // at this point the item isn't selected yet so we use supplied ui.item to see where the cursor is
+            // at this point the item isn't selected yet so we use supplied ui.item to see WHERE the cursor is
             focus: (event, ui) => {
                 const noteId = link.getNodePathFromLabel(ui.item.value);
 

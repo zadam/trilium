@@ -6,7 +6,7 @@ const sql = require('../../services/sql');
 const auth = require('../../services/auth');
 
 router.get('/', auth.checkApiAuth, async (req, res, next) => {
-    const recentChanges = await sql.getResults("select * from notes_history order by date_modified_to desc limit 1000");
+    const recentChanges = await sql.getResults("SELECT * FROM notes_history order by date_modified_to desc limit 1000");
 
     res.send(recentChanges);
 });
