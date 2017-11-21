@@ -7,24 +7,12 @@ const options = require('../../services/options');
 const audit_category = require('../../services/audit_category');
 const auth = require('../../services/auth');
 const utils = require('../../services/utils');
-const build = require('../../services/build');
-const packageJson = require('../../package');
-const migration = require('../../services/migration');
 
 // options allowed to be updated directly in settings dialog
 const ALLOWED_OPTIONS = ['protected_session_timeout', 'history_snapshot_time_interval'];
 
-function addExtraSettings(settings) {
-    Object.assign(settings, build);
-
-    settings['app_version'] = packageJson.version;
-    settings['db_version'] = migration.APP_DB_VERSION;
-}
-
 router.get('/all', auth.checkApiAuth, async (req, res, next) => {
     const settings = await sql.getMap("SELECT opt_name, opt_value FROM options");
-
-    addExtraSettings(settings);
 
     res.send(settings);
 });
@@ -32,8 +20,6 @@ router.get('/all', auth.checkApiAuth, async (req, res, next) => {
 router.get('/', auth.checkApiAuth, async (req, res, next) => {
     const settings = await sql.getMap("SELECT opt_name, opt_value FROM options WHERE opt_name IN ("
         + ALLOWED_OPTIONS.map(x => '?').join(",") + ")", ALLOWED_OPTIONS);
-
-    addExtraSettings(settings);
 
     res.send(settings);
 });

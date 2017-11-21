@@ -15,6 +15,7 @@ const http = require('http');
 const https = require('https');
 const config = require('../services/config');
 const log = require('../services/log');
+const app_info = require('../services/app_info');
 
 const port = normalizePort(config['Network']['port'] || '3000');
 app.set('port', port);
@@ -39,6 +40,8 @@ else {
 
     log.info("App HTTP server starting up at port " + port);
 }
+
+log.info(JSON.stringify(app_info, null, 2));
 
 /**
  * Listen on provided port, on all network interfaces.

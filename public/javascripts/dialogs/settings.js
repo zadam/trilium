@@ -27,7 +27,9 @@ const settings = (function() {
         tabsEl.tabs();
 
         for (const module of settingModules) {
-            module.settingsLoaded(settings);
+            if (module.settingsLoaded) {
+                module.settingsLoaded(settings);
+            }
         }
     }
 
@@ -151,21 +153,19 @@ settings.addModule((function () {
     };
 })());
 
-settings.addModule((function () {
+settings.addModule((async function () {
     const appVersionEl = $("#app-version");
     const dbVersionEl = $("#db-version");
     const buildDateEl = $("#build-date");
     const buildRevisionEl = $("#build-revision");
 
-    function settingsLoaded(settings) {
-        appVersionEl.html(settings.app_version);
-        dbVersionEl.html(settings.db_version);
-        buildDateEl.html(settings.build_date);
-        buildRevisionEl.html(settings.build_revision);
-        buildRevisionEl.attr('href', 'https://github.com/zadam/trilium/commit/' + settings.build_revision);
-    }
+    const appInfo = await $.get(baseApiUrl + 'app-info');
 
-    return {
-        settingsLoaded
-    };
+    appVersionEl.html(appInfo.app_version);
+    dbVersionEl.html(appInfo.db_version);
+    buildDateEl.html(appInfo.build_date);
+    buildRevisionEl.html(appInfo.build_revision);
+    buildRevisionEl.attr('href', 'https://github.com/zadam/trilium/commit/' + appInfo.build_revision);
+
+    return {};
 })());
