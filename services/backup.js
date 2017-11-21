@@ -20,7 +20,7 @@ async function regularBackup() {
 async function backupNow() {
     const now = utils.nowTimestamp();
 
-    const date_str = new Date().toISOString().substr(0, 19);
+    const date_str = new Date().toISOString().substr(0, 19).replace(/:/g, '');
 
     const backupFile = dataDir.BACKUP_DIR + "/" + "backup-" + date_str + ".db";
 

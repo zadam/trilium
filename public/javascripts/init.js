@@ -24,14 +24,20 @@ $(document).bind('keydown', 'alt+t', () => {
 });
 
 $(document).bind('keydown', 'f5', () => {
-    location.reload();
+    window.location.reload(true);
+
+    return false;
+});
+
+$(document).bind('keydown', 'ctrl+r', () => {
+    window.location.reload(true);
 
     return false;
 });
 
 $(document).bind('keydown', 'ctrl+shift+i', () => {
     if (isElectron()) {
-        require('remote').getCurrentWindow().toggleDevTools();
+        require('electron').remote.getCurrentWindow().toggleDevTools();
 
         return false;
     }

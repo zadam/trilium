@@ -1,6 +1,7 @@
 'use strict';
 const electron = require('electron');
 const path = require('path');
+const config = require('./services/config');
 
 const app = electron.app;
 
@@ -23,8 +24,10 @@ function createMainWindow() {
         icon: path.join(__dirname, 'public/images/app-icons/png/256x256.png')
     });
 
+    const port = config['Network']['port'] || '3000';
+
     win.setMenu(null);
-    win.loadURL('http://localhost:3000');
+    win.loadURL('http://localhost:' + port);
     win.on('closed', onClosed);
 
     win.webContents.on('new-window', (e, url) => {

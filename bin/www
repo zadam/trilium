@@ -16,9 +16,6 @@ const https = require('https');
 const config = require('../services/config');
 const log = require('../services/log');
 
-/**
- * Get port from environment and store in Express.
- */
 const port = normalizePort(config['Network']['port'] || '3000');
 app.set('port', port);
 

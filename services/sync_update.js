@@ -19,7 +19,7 @@ async function updateNote(entity, links, sourceId) {
             for (const link of links) {
                 delete link['lnk_id'];
 
-                await sql.insert('link', link);
+                //await sql.insert('link', link);
             }
 
             await sync_table.addNoteSync(entity.note_id, sourceId);
