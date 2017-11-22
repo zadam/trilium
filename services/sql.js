@@ -130,14 +130,14 @@ async function deleteRecentAudits(category, browserId, noteId) {
 }
 
 async function wrap(func) {
+    const thisError = new Error();
+
     const db = await dbReady;
 
     try {
         return await func(db);
     }
     catch (e) {
-        const thisError = new Error();
-
         log.error("Error executing query. Inner exception: " + e.stack + thisError.stack);
 
         throw thisError;

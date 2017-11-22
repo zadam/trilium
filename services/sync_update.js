@@ -112,7 +112,7 @@ async function updateRecentNotes(entity, sourceId) {
         await sql.doInTransaction(async () => {
             await sql.replace('recent_notes', entity);
 
-            await sync_table.addRecentNoteSync(entity.note_id, sourceId);
+            await sync_table.addRecentNoteSync(entity.note_path, sourceId);
         });
     }
 }

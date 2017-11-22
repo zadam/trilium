@@ -7,6 +7,14 @@ const sync = require('../../services/sync');
 const syncUpdate = require('../../services/sync_update');
 const sql = require('../../services/sql');
 const options = require('../../services/options');
+const content_hash = require('../../services/content_hash');
+
+router.get('/check', auth.checkApiAuth, async (req, res, next) => {
+    res.send({
+        'content_hash': await content_hash.getContentHash(),
+        'max_sync_id': await sql.getSingleValue('SELECT MAX(id) FROM sync')
+    });
+});
 
 router.post('/now', auth.checkApiAuth, async (req, res, next) => {
     res.send(await sync.sync());
@@ -59,10 +67,10 @@ router.get('/notes_reordering/:noteTreeParentId', auth.checkApiAuth, async (req,
     });
 });
 
-router.get('/recent_notes/:noteId', auth.checkApiAuth, async (req, res, next) => {
-    const noteId = req.params.noteId;
+router.get('/recent_notes/:notePath', auth.checkApiAuth, async (req, res, next) => {
+    const notePath = req.params.notePath;
 
-    res.send(await sql.getSingleResult("SELECT * FROM recent_notes WHERE note_id = ?", [noteId]));
+    res.send(await sql.getSingleResult("SELECT * FROM recent_notes WHERE note_path = ?", [notePath]));
 });
 
 router.put('/notes', auth.checkApiAuth, async (req, res, next) => {

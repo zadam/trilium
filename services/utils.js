@@ -66,6 +66,11 @@ function formatTwoTimestamps(origTS, newTS) {
     return "orig: " + formatDateTimeFromTS(origTS) + ", new: " + formatDateTimeFromTS(newTS);
 }
 
+function hash(text) {
+    return crypto.createHash('sha1').update(text).digest('base64');
+}
+
+
 module.exports = {
     randomSecureToken,
     randomString,
@@ -78,5 +83,6 @@ module.exports = {
     hmac,
     browserId,
     isElectron,
-    formatTwoTimestamps
+    formatTwoTimestamps,
+    hash
 };

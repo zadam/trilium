@@ -10,6 +10,8 @@ const config = require('./config');
 const source_id = require('./source_id');
 const notes = require('./notes');
 const syncUpdate = require('./sync_update');
+const content_hash = require('./content_hash');
+const event_log = require('./event_log');
 
 const SYNC_SERVER = config['Sync']['syncServerHost'];
 const isSyncSetup = !!SYNC_SERVER;
@@ -48,6 +50,8 @@ async function sync() {
         await pullSync(syncContext);
 
         await pushSync(syncContext);
+
+        await checkContentHash(syncContext);
 
         return {
             success: true
@@ -97,8 +101,12 @@ async function login() {
     return syncContext;
 }
 
+async function getLastSyncedPull() {
+    return parseInt(await options.getOption('last_synced_pull'));
+}
+
 async function pullSync(syncContext) {
-    const lastSyncedPull = parseInt(await options.getOption('last_synced_pull'));
+    const lastSyncedPull = await getLastSyncedPull();
 
     const changesUri = '/api/sync/changed?lastSyncId=' + lastSyncedPull;
 
@@ -145,8 +153,12 @@ async function pullSync(syncContext) {
     log.info("Finished pull");
 }
 
+async function getLastSyncedPush() {
+    return parseInt(await options.getOption('last_synced_push'));
+}
+
 async function pushSync(syncContext) {
-    let lastSyncedPush = parseInt(await options.getOption('last_synced_push'));
+    let lastSyncedPush = await getLastSyncedPush();
 
     while (true) {
         const sync = await sql.getSingleResultOrNull('SELECT * FROM sync WHERE id > ? LIMIT 1', [lastSyncedPush]);
@@ -221,6 +233,34 @@ async function sendEntity(syncContext, entity, entityName) {
     }
 
     await syncRequest(syncContext, 'PUT', '/api/sync/' + entityName, payload);
+}
+
+async function checkContentHash(syncContext) {
+    const lastSyncedPush = await getLastSyncedPush();
+    const notPushedSyncs = await sql.getSingleValue("SELECT COUNT(*) FROM sync WHERE id > ?", [lastSyncedPush]);
+
+    if (notPushedSyncs > 0) {
+        log.info("There's " + notPushedSyncs + " outstanding pushes, skipping content check.");
+
+        return;
+    }
+
+    const resp = await syncRequest(syncContext, 'GET', '/api/sync/check');
+
+    // if (await getLastSyncedPull() < resp.max_sync_id) {
+    //     log.info("There are some outstanding pulls, skipping content check.");
+    //
+    //     return;
+    // }
+
+    const localContentHash = await content_hash.getContentHash();
+
+    if (resp.content_hash === localContentHash) {
+        log.info("Content hash check passed with value: " + localContentHash);
+    }
+    else {
+        await event_log.addEvent("Content hash check failed. Local is " + localContentHash + ", remote is " + resp.content_hash);
+    }
 }
 
 async function syncRequest(syncContext, method, uri, body) {
