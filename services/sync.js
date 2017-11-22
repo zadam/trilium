@@ -123,7 +123,7 @@ async function pullSync(syncContext) {
 
         console.log("Pulling ", sync);
 
-        const resp = await syncRequest(syncContext, 'GET', "/api/sync/" + sync.entity_name + "/" + sync.entity_id);
+        const resp = await syncRequest(syncContext, 'GET', "/api/sync/" + sync.entity_name + "/" + encodeURIComponent(sync.entity_id));
 
         if (sync.entity_name === 'notes') {
             await syncUpdate.updateNote(resp.entity, resp.links, syncContext.sourceId);
