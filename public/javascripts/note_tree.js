@@ -3,6 +3,8 @@
 const noteTree = (function() {
     const noteDetailEl = $('#note-detail');
     const treeEl = $("#tree");
+    const parentListEl = $("#parent-list");
+
     let startNoteTreeId = null;
     let treeLoadTime = null;
     let clipboardNoteTreeId = null;
@@ -55,7 +57,7 @@ const noteTree = (function() {
         const title = noteIdToTitle[noteId];
 
         if (!title) {
-            throw new Error("Can't find title for noteId=" + noteId);
+            throw new Error("Can't find title for noteId='" + noteId + "'");
         }
 
         return title;
@@ -113,8 +115,6 @@ const noteTree = (function() {
             }
 
             if (childToParents[childNoteId].length > 1) {
-                console.log("Multiple classes!");
-
                 note.extraClasses += ",multiple-parents";
             }
 
@@ -184,24 +184,81 @@ const noteTree = (function() {
             childNoteId = parentNoteId;
         }
 
+        const noteId = treeUtils.getNoteIdFromNotePath(notePath);
+
         const runPath = effectivePath.reverse();
         let parentNoteId = 'root';
 
-        for (let i = 0; i < runPath.length; i++) {
-            const childNoteId = runPath[i];
+        for (const childNoteId of runPath) {
             const noteTreeId = getNoteTreeId(parentNoteId, childNoteId);
 
             const node = treeUtils.getNodeByNoteTreeId(noteTreeId);
 
-            if (i < runPath.length - 1) {
-                await node.setExpanded();
+            if (childNoteId === noteId) {
+                await node.setActive();
             }
             else {
-                await node.setActive();
+                await node.setExpanded();
             }
 
             parentNoteId = childNoteId;
         }
+    }
+
+    function showParentList(noteId, node) {
+        const parents = childToParents[noteId];
+
+        if (parents.length <= 1) {
+            parentListEl.hide();
+        }
+        else {
+            parentListEl.show();
+            parentListEl.empty();
+
+            const list = $("<ul/>");
+
+            for (const parentNoteId of parents) {
+                const notePath = getSomeNotePath(parentNoteId) + '/' + noteId;
+                const title = getNotePathTitle(notePath);
+
+                let item;
+
+                if (node.getParent().data.note_id === parentNoteId) {
+                    item = $("<span/>").attr("title", "Current note").append(title);
+                }
+                else {
+                    item = link.createNoteLink(notePath, title);
+                }
+
+                list.append($("<li/>").append(item));
+            }
+
+            parentListEl.append(list);
+        }
+    }
+
+    function getNotePathTitle(notePath) {
+        const titlePath = [];
+
+        for (const path of notePath.split('/')) {
+            titlePath.push(getNoteTitle(path));
+        }
+
+        return titlePath.join(' / ');
+    }
+
+    function getSomeNotePath(noteId) {
+        const path = [];
+
+        let cur = noteId;
+
+        while (cur !== 'root') {
+            path.push(cur);
+
+            cur = childToParents[cur][0];
+        }
+
+        return path.reverse().join('/');
     }
 
     function setExpandedToServer(noteTreeId, isExpanded) {
@@ -277,6 +334,8 @@ const noteTree = (function() {
                 setCurrentNotePathToHash(data.node);
 
                 noteEditor.switchToNote(node.note_id);
+
+                showParentList(node.note_id, data.node);
             },
             expand: (event, data) => {
                 setExpandedToServer(getNoteTreeIdFromKey(data.node.key), true);

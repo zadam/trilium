@@ -61,7 +61,7 @@ const noteHistory = (function() {
 
     $(document).on('click', "a[action='note-history']", event => {
         const linkEl = $(event.target);
-        const noteId = linkEl.attr('note-id');
+        const noteId = linkEl.attr('note-path');
         const noteHistoryId = linkEl.attr('note-history-id');
 
         showNoteHistoryDialog(noteId, noteHistoryId);

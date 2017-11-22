@@ -34,7 +34,7 @@ const recentChanges = (function() {
                     href: 'javascript:',
                     text: 'rev'
                 }).attr('action', 'note-history')
-                    .attr('note-id', change.note_id)
+                    .attr('note-path', change.note_id)
                     .attr('note-history-id', change.note_history_id);
 
                 changesListEl.append($('<li>')

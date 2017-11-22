@@ -22,19 +22,23 @@ const link = (function() {
         return null;
     }
 
-    function createNoteLink(noteId) {
+    function createNoteLink(noteId, noteTitle) {
+        if (!noteTitle) {
+            noteTitle = noteTree.getNoteTitle(noteId);
+        }
+
         const noteLink = $("<a>", {
             href: 'javascript:',
-            text: noteTree.getNoteTitle(noteId)
+            text: noteTitle
         }).attr('action', 'note')
-            .attr('note-id', noteId);
+            .attr('note-path', noteId);
 
         return noteLink;
     }
 
     function goToInternalNote(e) {
         const linkEl = $(e.target);
-        let noteId = linkEl.attr("note-id");
+        let noteId = linkEl.attr("note-path");
 
         if (!noteId) {
             noteId = getNotePathFromLink(linkEl.attr('href'));

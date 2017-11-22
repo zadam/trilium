@@ -5,7 +5,8 @@
     display: grid;
     grid-template-areas: "header header"
                          "tree-actions title"
-                         "tree note-content";
+                         "tree note-content"
+                         "parent-list note-content";
     grid-template-columns: 2fr 5fr;
     grid-template-rows: auto
                         auto
