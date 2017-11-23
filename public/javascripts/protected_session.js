@@ -152,6 +152,8 @@ const protected_session = (function() {
     }
 
     async function protectSubTree(noteId, protect) {
+        await ensureProtectedSession(true, true);
+
         await $.ajax({
             url: baseApiUrl + 'tree/' + noteId + "/protectSubTree/" + (protect ? 1 : 0),
             type: 'PUT',

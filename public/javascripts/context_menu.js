@@ -45,9 +45,6 @@ const contextMenu = (function() {
             treeEl.contextmenu("enableEntry", "pasteAfter", noteTree.getClipboardNoteTreeId() !== null);
             treeEl.contextmenu("enableEntry", "pasteInto", noteTree.getClipboardNoteTreeId() !== null);
 
-            treeEl.contextmenu("enableEntry", "protectSubTree", protected_session.isProtectedSessionAvailable());
-            treeEl.contextmenu("enableEntry", "unprotectSubTree", protected_session.isProtectedSessionAvailable());
-
             // Activate node on right-click
             node.setActive();
             // Disable tree keyboard handling
@@ -65,13 +62,13 @@ const contextMenu = (function() {
                 noteEditor.createNote(node, parentNoteTreeId, 'after', isProtected);
             }
             else if (ui.cmd === "insertChildNote") {
-                noteEditor.createNote(node, node.key, 'into');
+                noteEditor.createNote(node, node.data.note_id, 'into');
             }
             else if (ui.cmd === "protectSubTree") {
-                protected_session.protectSubTree(node.key, true);
+                protected_session.protectSubTree(node.data.note_id, true);
             }
             else if (ui.cmd === "unprotectSubTree") {
-                protected_session.protectSubTree(node.key, false);
+                protected_session.protectSubTree(node.data.note_id, false);
             }
             else if (ui.cmd === "cut") {
                 cut(node);
