@@ -342,10 +342,10 @@ const noteTree = (function() {
                 return false;
             },
             expand: (event, data) => {
-                setExpandedToServer(getNoteTreeIdFromKey(data.node.key), true);
+                setExpandedToServer(data.node.data.note_tree_id, true);
             },
             collapse: (event, data) => {
-                setExpandedToServer(getNoteTreeIdFromKey(data.node.key), false);
+                setExpandedToServer(data.node.data.note_tree_id, false);
             },
             init: (event, data) => {
                 if (startNoteTreeId) {
@@ -525,9 +525,7 @@ const noteTree = (function() {
     }
 
     function setCurrentNoteTreeBasedOnProtectedStatus() {
-        const node = getCurrentNode();
-
-        node.toggleClass("protected", !!node.data.is_protected);
+        getCurrentClones().map(node => node.toggleClass("protected", !!node.data.is_protected));
     }
 
     function getAutocompleteItems(parentNoteId, notePath, titlePath) {
