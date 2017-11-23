@@ -29,8 +29,7 @@ async function changePassword(currentPassword, newPassword, req) {
     });
 
     return {
-        success: true,
-        new_encrypted_data_key: newEncryptedDataKey
+        success: true
     };
 }
 
