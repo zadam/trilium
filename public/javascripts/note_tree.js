@@ -73,6 +73,8 @@ const noteTree = (function() {
 
             noteIdToTitle[note.note_id] = note.note_title;
 
+            delete note.note_title; // this should not be used. Use noteIdToTitle instead
+
             const key = note.note_pid + "-" + note.note_id;
 
             parentChildToNoteTreeId[key] = note.note_tree_id;
@@ -106,7 +108,7 @@ const noteTree = (function() {
             const noteTreeId = getNoteTreeId(parentNoteId, childNoteId);
             const note = notesMap[noteTreeId];
 
-            note.title = note.note_title;
+            note.title = noteIdToTitle[note.note_id];
 
             note.extraClasses = "";
 
@@ -428,11 +430,15 @@ const noteTree = (function() {
         treeEl.contextmenu(contextMenu.contextMenuSettings);
     }
 
+    function getTree() {
+        return treeEl.fancytree('getTree');
+    }
+
     async function reload() {
         const notes = await loadTree();
 
         // this will also reload the note content
-        await treeEl.fancytree('getTree').reload(notes);
+        await getTree().reload(notes);
     }
 
     function loadTree() {
@@ -488,7 +494,7 @@ const noteTree = (function() {
     function resetSearch() {
         $("input[name=search]").val("");
 
-        const tree = treeEl.fancytree("getTree");
+        const tree = getTree();
         tree.clearFilter();
     }
 
@@ -510,6 +516,12 @@ const noteTree = (function() {
         const node = getCurrentNode();
 
         return treeUtils.getNotePath(node);
+    }
+
+    function getCurrentNoteId() {
+        const node = getCurrentNode();
+
+        return node ? node.data.note_id : null;
     }
 
     function setCurrentNoteTreeBasedOnProtectedStatus() {
@@ -556,6 +568,27 @@ const noteTree = (function() {
         return autocompleteItems;
     }
 
+    function getCurrentClones() {
+        const noteId = getCurrentNoteId();
+
+        if (noteId) {
+            return getTree().getNodesByRef(noteId);
+        }
+        else {
+            return [];
+        }
+    }
+
+    function setCurrentNoteTitle(title) {
+        const currentNoteId = getCurrentNoteId();
+
+        if (currentNoteId) {
+            noteIdToTitle[currentNoteId] = title;
+
+            getCurrentClones().map(clone => clone.setTitle(title));
+        }
+    }
+
     $("button#reset-search-button").click(resetSearch);
 
     $("input[name=search]").keyup(e => {
@@ -571,8 +604,7 @@ const noteTree = (function() {
                 console.log("search: ", resp);
 
                 // Pass a string to perform case insensitive matching
-                const tree = treeEl.fancytree("getTree");
-                tree.filterBranches(node => {
+                getTree().filterBranches(node => {
                     return resp.includes(node.data.note_id);
                 });
             });
@@ -599,6 +631,7 @@ const noteTree = (function() {
         getCurrentNotePath,
         getNoteTitle,
         setCurrentNotePathToHash,
-        getAutocompleteItems
+        getAutocompleteItems,
+        setCurrentNoteTitle
     };
 })();

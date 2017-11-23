@@ -92,9 +92,9 @@ const noteEditor = (function() {
 
         const title = noteTitleEl.val();
 
-        noteTree.getCurrentNode().setTitle(title);
-
         note.detail.note_title = title;
+
+        noteTree.setCurrentNoteTitle(title);
     }
 
     async function saveNoteToServer(note) {
