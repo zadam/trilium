@@ -78,6 +78,10 @@ span.fancytree-node.multiple-parents .fancytree-title {
     text-decoration: underline dashed;
 }
 
+span.fancytree-node.fancytree-active-clone:not(.fancytree-active) .fancytree-title {
+    font-weight: bold;
+}
+
 .ui-autocomplete {
     max-height: 300px;
     overflow-y: auto;

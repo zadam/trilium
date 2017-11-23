@@ -123,6 +123,7 @@ const noteTree = (function() {
             }
 
             note.key = counter++ + ""; // key needs to be string
+            note.refKey = note.note_id;
             note.expanded = note.is_expanded;
 
             noteTreeIdToKey[noteTreeId] = note.key;
@@ -325,7 +326,7 @@ const noteTree = (function() {
 
         treeEl.fancytree({
             autoScroll: true,
-            extensions: ["hotkeys", "filter", "dnd"],
+            extensions: ["hotkeys", "filter", "dnd", "clones"],
             source: noteTree,
             scrollParent: $("#tree"),
             activate: (event, data) => {
@@ -336,6 +337,7 @@ const noteTree = (function() {
                 noteEditor.switchToNote(node.note_id);
 
                 showParentList(node.note_id, data.node);
+                return false;
             },
             expand: (event, data) => {
                 setExpandedToServer(getNoteTreeIdFromKey(data.node.key), true);
@@ -417,6 +419,9 @@ const noteTree = (function() {
                 const node = data.node.data;
 
                 data.result = prepareNoteTreeInner(node.note_id);
+            },
+            clones: {
+                highlightActiveClones: true
             }
         });
 
