@@ -86,6 +86,75 @@ router.put('/:noteTreeId/moveAfter/:afterNoteTreeId', async (req, res, next) => 
     }
 });
 
+router.put('/:childNoteId/cloneTo/:parentNoteId', auth.checkApiAuth, async (req, res, next) => {
+    const parentNoteId = req.params.parentNoteId;
+    const childNoteId = req.params.childNoteId;
+
+    const existing = await sql.getSingleValue('SELECT * FROM notes_tree WHERE note_id = ? AND note_pid = ?', [childNoteId, parentNoteId]);
+
+    if (!existing) {
+        const maxNotePos = await sql.getSingleValue('SELECT MAX(note_pos) FROM notes_tree WHERE note_pid = ? AND is_deleted = 0', [parentNoteId]);
+        const newNotePos = maxNotePos === null ? 0 : maxNotePos + 1;
+
+        const noteTreeId = utils.newNoteTreeId();
+
+        await sql.doInTransaction(async () => {
+            await sync_table.addNoteTreeSync(noteTreeId);
+
+            await sql.insert("notes_tree", {
+                'note_tree_id': noteTreeId,
+                'note_id': childNoteId,
+                'note_pid': parentNoteId,
+                'note_pos': newNotePos,
+                'is_expanded': 0,
+                'date_modified': utils.nowTimestamp(),
+                'is_deleted': 0
+            });
+        });
+    }
+    else if (existing && existing.is_deleted) {
+        await sql.execute("UPDATE notes_tree SET is_deleted = 0 WHERE note_tree_id = ?", [existing.note_tree_id]);
+    }
+
+    res.send({});
+});
+
+router.put('/:noteId/cloneAfter/:afterNoteTreeId', async (req, res, next) => {
+    const noteId = req.params.noteId;
+    const afterNoteTreeId = req.params.afterNoteTreeId;
+
+    const afterNote = await sql.getSingleResult("SELECT * FROM notes_tree WHERE note_tree_id = ?", [afterNoteTreeId]);
+
+    if (afterNote) {
+        await sql.doInTransaction(async () => {
+            // we don't change date_modified so other changes are prioritized in case of conflict
+            await sql.execute("UPDATE notes_tree SET note_pos = note_pos + 1 WHERE note_pid = ? AND note_pos > ? AND is_deleted = 0",
+                [afterNote.note_pid, afterNote.note_pos]);
+
+            const noteTreeId = utils.newNoteTreeId();
+
+            await sql.insert("notes_tree", {
+                'note_tree_id': noteTreeId,
+                'note_id': noteId,
+                'note_pid': afterNote.note_pid,
+                'note_pos': afterNote.note_pos + 1,
+                'is_expanded': 0,
+                'date_modified': utils.nowTimestamp(),
+                'is_deleted': 0
+            });
+
+            await sync_table.addNoteTreeSync(noteTreeId);
+            await sync_table.addNoteReorderingSync(afterNote.note_pid);
+            await sql.addAudit(audit_category.CHANGE_POSITION, utils.browserId(req), afterNote.note_pid);
+        });
+
+        res.send({});
+    }
+    else {
+        res.status(500).send("After note " + afterNoteTreeId + " doesn't exist.");
+    }
+});
+
 router.put('/:noteTreeId/expanded/:expanded', async (req, res, next) => {
     const noteTreeId = req.params.noteTreeId;
     const expanded = req.params.expanded;

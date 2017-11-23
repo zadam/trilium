@@ -79,6 +79,11 @@ const recentNotes = (function() {
         return selectBoxEl.find("option:selected").val();
     }
 
+    function getSelectedNoteId() {
+        const notePath = getSelectedNotePath();
+        return treeUtils.getNoteIdFromNotePath(notePath);
+    }
+
     function setActiveNoteBasedOnRecentNotes() {
         const notePath = getSelectedNotePath();
 
@@ -104,13 +109,13 @@ const recentNotes = (function() {
     }
 
     async function addCurrentAsChild() {
-        await treeUtils.addAsChild(getSelectedNotePath(), noteTree.getCurrentNotePath());
+        await treeChanges.cloneNoteTo(noteTree.getCurrentNoteId(), getSelectedNoteId());
 
         dialogEl.dialog("close");
     }
 
     async function addRecentAsChild() {
-        await treeUtils.addAsChild(noteTree.getCurrentNotePath(), getSelectedNotePath());
+        await treeChanges.cloneNoteTo(getSelectedNoteId(), noteTree.getCurrentNoteId());
 
         dialogEl.dialog("close");
     }

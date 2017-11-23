@@ -29,12 +29,12 @@ router.get('/:noteId', auth.checkApiAuth, async (req, res, next) => {
     });
 });
 
-router.post('/:parentNoteTreeId/children', async (req, res, next) => {
-    const parentNoteTreeId = req.params.parentNoteTreeId;
+router.post('/:parentNoteId/children', async (req, res, next) => {
+    const parentNoteId = req.params.parentNoteId;
     const browserId = utils.browserId(req);
     const note = req.body;
 
-    const { noteId, noteTreeId } = await notes.createNewNote(parentNoteTreeId, note, browserId);
+    const { noteId, noteTreeId } = await notes.createNewNote(parentNoteId, note, browserId);
 
     res.send({
         'note_id': noteId,

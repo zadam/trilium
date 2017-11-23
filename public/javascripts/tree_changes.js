@@ -25,6 +25,17 @@ const treeChanges = (function() {
         noteTree.setCurrentNotePathToHash(node);
     }
 
+    // beware that first arg is noteId and second is noteTreeId!
+    async function cloneNoteAfter(noteId, afterNoteTreeId) {
+        await $.ajax({
+            url: baseApiUrl + 'notes/' + noteId + '/cloneAfter/' + afterNoteTreeId,
+            type: 'PUT',
+            error: () => showError("Error cloning note.")
+        });
+
+        await noteTree.reload();
+    }
+
     async function moveToNode(node, toNode) {
         await $.ajax({
             url: baseApiUrl + 'notes/' + node.data.note_tree_id + '/moveTo/' + toNode.data.note_id,
@@ -40,6 +51,16 @@ const treeChanges = (function() {
         toNode.renderTitle();
 
         noteTree.setCurrentNotePathToHash(node);
+    }
+
+    async function cloneNoteTo(childNoteId, parentNoteId) {
+        await $.ajax({
+            url: baseApiUrl + 'notes/' + childNoteId + '/cloneTo/' + parentNoteId,
+            type: 'PUT',
+            error: () => showError("Error cloning note.")
+        });
+
+        await noteTree.reload();
     }
 
     async function deleteNode(node) {
@@ -97,6 +118,8 @@ const treeChanges = (function() {
         moveAfterNode,
         moveToNode,
         deleteNode,
-        moveNodeUp
+        moveNodeUp,
+        cloneNoteAfter,
+        cloneNoteTo
     };
 })();

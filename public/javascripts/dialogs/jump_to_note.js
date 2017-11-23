@@ -29,6 +29,11 @@ const jumpToNote = (function() {
         return link.getNodePathFromLabel(val);
     }
 
+    function getSelectedNoteId() {
+        const notePath = getSelectedNotePath();
+        return treeUtils.getNoteIdFromNotePath(notePath);
+    }
+
     function goToNote() {
         const notePath = getSelectedNotePath();
 
@@ -63,12 +68,12 @@ const jumpToNote = (function() {
             }
         }
         else if (action === 'add-current-as-child') {
-            treeUtils.addAsChild(getSelectedNotePath(), noteTree.getCurrentNotePath());
+            treeChanges.cloneNoteTo(noteTree.getCurrentNoteId(), getSelectedNoteId());
 
             dialogEl.dialog("close");
         }
         else if (action === 'add-selected-as-child') {
-            treeUtils.addAsChild(noteTree.getCurrentNotePath(), getSelectedNotePath());
+            treeChanges.cloneNoteTo(getSelectedNoteId(), noteTree.getCurrentNoteId());
 
             dialogEl.dialog("close");
         }

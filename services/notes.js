@@ -18,7 +18,7 @@ async function createNewNote(parentNoteId, note, browserId) {
         newNotePos = maxNotePos === null ? 0 : maxNotePos + 1;
     }
     else if (note.target === 'after') {
-        const afterNote = await sql.getSingleResult('SELECT note_pos FROM notes_tree WHERE note_id = ?', [note.target_note_id]);
+        const afterNote = await sql.getSingleResult('SELECT note_pos FROM notes_tree WHERE note_tree_id = ?', [note.target_note_tree_id]);
 
         newNotePos = afterNote.note_pos + 1;
 

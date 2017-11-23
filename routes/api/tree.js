@@ -48,37 +48,4 @@ router.put('/:noteId/protectSubTree/:isProtected', auth.checkApiAuth, async (req
     res.send({});
 });
 
-router.put('/:parentNoteId/addChild/:childNoteId', auth.checkApiAuth, async (req, res, next) => {
-    const parentNoteId = req.params.parentNoteId;
-    const childNoteId = req.params.childNoteId;
-
-    const existing = await sql.getSingleValue('SELECT * FROM notes_tree WHERE note_id = ? AND note_pid = ?', [childNoteId, parentNoteId]);
-
-    if (!existing) {
-        const maxNotePos = await sql.getSingleValue('SELECT MAX(note_pos) FROM notes_tree WHERE note_pid = ? AND is_deleted = 0', [parentNoteId]);
-        const newNotePos = maxNotePos === null ? 0 : maxNotePos + 1;
-
-        const noteTreeId = utils.newNoteTreeId();
-
-        await sql.doInTransaction(async () => {
-            await sync_table.addNoteTreeSync(noteTreeId);
-
-            await sql.insert("notes_tree", {
-                'note_tree_id': noteTreeId,
-                'note_id': childNoteId,
-                'note_pid': parentNoteId,
-                'note_pos': newNotePos,
-                'is_expanded': 0,
-                'date_modified': utils.nowTimestamp(),
-                'is_deleted': 0
-            });
-        });
-    }
-    else if (existing && existing.is_deleted) {
-        await sql.execute("UPDATE notes_tree SET is_deleted = 0 WHERE note_tree_id = ?", [existing.note_tree_id]);
-    }
-
-    res.send({});
-});
-
 module.exports = router;

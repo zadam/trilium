@@ -7,7 +7,6 @@ const noteTree = (function() {
 
     let startNoteTreeId = null;
     let treeLoadTime = null;
-    let clipboardNoteTreeId = null;
     let notesMap = {};
     let parentToChildren = {};
     let childToParents = {};
@@ -28,14 +27,6 @@ const noteTree = (function() {
 
     function getTreeLoadTime() {
         return treeLoadTime;
-    }
-
-    function getClipboardNoteTreeId() {
-        return clipboardNoteTreeId;
-    }
-
-    function setClipboardNoteTreeId(cbNoteId) {
-        clipboardNoteTreeId = cbNoteId;
     }
 
     function getNoteTreeId(parentNoteId, childNoteId) {
@@ -107,41 +98,46 @@ const noteTree = (function() {
         for (const childNoteId of childNoteIds) {
             const noteTreeId = getNoteTreeId(parentNoteId, childNoteId);
             const note = notesMap[noteTreeId];
+            const node = {};
 
-            note.title = noteIdToTitle[note.note_id];
+            node.note_id = note.note_id;
+            node.note_pid = note.note_pid;
+            node.note_tree_id = note.note_tree_id;
+            node.is_protected = note.is_protected;
+            node.title = noteIdToTitle[note.note_id];
 
-            note.extraClasses = "";
+            node.extraClasses = "";
 
-            if (note.is_protected) {
-                note.extraClasses += ",protected";
+            if (node.is_protected) {
+                node.extraClasses += ",protected";
             }
 
             if (childToParents[childNoteId].length > 1) {
-                note.extraClasses += ",multiple-parents";
+                node.extraClasses += ",multiple-parents";
             }
 
-            if (note.extraClasses.startsWith(",")) {
-                note.extraClasses = note.extraClasses.substr(1);
+            if (node.extraClasses.startsWith(",")) {
+                node.extraClasses = node.extraClasses.substr(1);
             }
 
-            note.key = counter++ + ""; // key needs to be string
-            note.refKey = note.note_id;
-            note.expanded = note.is_expanded;
+            node.key = counter++ + ""; // key needs to be string
+            node.refKey = note.note_id;
+            node.expanded = note.is_expanded;
 
-            noteTreeIdToKey[noteTreeId] = note.key;
+            noteTreeIdToKey[noteTreeId] = node.key;
 
             if (parentToChildren[note.note_id] && parentToChildren[note.note_id].length > 0) {
-                note.folder = true;
+                node.folder = true;
 
-                if (note.expanded) {
-                    note.children = prepareNoteTreeInner(note.note_id);
+                if (node.expanded) {
+                    node.children = prepareNoteTreeInner(note.note_id);
                 }
                 else {
-                    note.lazy = true;
+                    node.lazy = true;
                 }
             }
 
-            noteList.push(note);
+            noteList.push(node);
         }
 
         return noteList;
@@ -210,6 +206,10 @@ const noteTree = (function() {
 
     function showParentList(noteId, node) {
         const parents = childToParents[noteId];
+
+        if (!parents) {
+            throw new Error("Can't find parents for noteId=" + noteId);
+        }
 
         if (parents.length <= 1) {
             parentListEl.hide();
@@ -284,15 +284,17 @@ const noteTree = (function() {
     }
 
     function initFancyTree(noteTree) {
+        console.log(noteTree);
+
         const keybindings = {
             "insert": node => {
-                const parentNoteTreeId = treeUtils.getParentNoteTreeId(node);
+                const parentNoteId = node.data.note_pid;
                 const isProtected = treeUtils.getParentProtectedStatus(node);
 
-                noteEditor.createNote(node, parentNoteTreeId, 'after', isProtected);
+                createNote(node, parentNoteId, 'after', isProtected);
             },
             "ctrl+insert": node => {
-                noteEditor.createNote(node, node.note_id, 'into', node.data.is_protected);
+                createNote(node, node.data.note_id, 'into', node.data.is_protected);
             },
             "del": node => {
                 treeChanges.deleteNode(node);
@@ -498,10 +500,6 @@ const noteTree = (function() {
         tree.clearFilter();
     }
 
-    function getByNoteTreeId(noteTreeId) {
-        return notesMap[noteTreeId];
-    }
-
     // note that if you want to access data like note_id or is_protected, you need to go into "data" property
     function getCurrentNode() {
         return treeEl.fancytree("getActiveNode");
@@ -587,6 +585,74 @@ const noteTree = (function() {
         }
     }
 
+    function createNewTopLevelNote() {
+        let rootNode = treeEl.fancytree("getRootNode");
+
+        createNote(rootNode, "root", "into");
+    }
+
+    let newNoteCreated = false;
+
+    function isNewNoteCreated() {
+        return newNoteCreated;
+    }
+
+    function switchOffNewNoteCreated() {
+        newNoteCreated = false;
+    }
+
+    async function createNote(node, parentNoteId, target, isProtected) {
+        // if isProtected isn't available (user didn't enter password yet), then note is created as unencrypted
+        // but this is quite weird since user doesn't see WHERE the note is being created so it shouldn't occur often
+        if (!isProtected || !protected_session.isProtectedSessionAvailable()) {
+            isProtected = false;
+        }
+
+        const newNoteName = "new note";
+
+        const result = await $.ajax({
+            url: baseApiUrl + 'notes/' + parentNoteId + '/children' ,
+            type: 'POST',
+            data: JSON.stringify({
+                note_title: newNoteName,
+                target: target,
+                target_note_tree_id: node.data.note_tree_id,
+                is_protected: isProtected
+            }),
+            contentType: "application/json"
+        });
+
+        const newNode = {
+            title: newNoteName,
+            note_id: result.note_id,
+            note_pid: parentNoteId,
+            refKey: result.note_id,
+            note_tree_id: result.note_tree_id,
+            is_protected: isProtected,
+            extraClasses: isProtected ? "protected" : ""
+        };
+
+        parentToChildren[parentNoteId].push(result.note_id);
+        parentToChildren[result.note_id] = [];
+        childToParents[result.note_id] = [ parentNoteId ];
+
+        noteIdToTitle[result.note_id] = newNoteName;
+
+        newNoteCreated = true;
+
+        if (target === 'after') {
+            node.appendSibling(newNode).setActive(true);
+        }
+        else {
+            node.addChildren(newNode).setActive(true);
+
+            node.folder = true;
+            node.renderTitle();
+        }
+
+        showMessage("Created!");
+    }
+
     $("button#reset-search-button").click(resetSearch);
 
     $("input[name=search]").keyup(e => {
@@ -613,13 +679,10 @@ const noteTree = (function() {
 
     return {
         getTreeLoadTime,
-        getClipboardNoteTreeId,
-        setClipboardNoteTreeId,
         reload,
         collapseTree,
         scrollToCurrentNote,
         toggleSearch,
-        getByNoteTreeId,
         getKeyFromNoteTreeId,
         getNoteTreeIdFromKey,
         setCurrentNoteTreeBasedOnProtectedStatus,
@@ -630,6 +693,10 @@ const noteTree = (function() {
         getNoteTitle,
         setCurrentNotePathToHash,
         getAutocompleteItems,
-        setCurrentNoteTitle
+        setCurrentNoteTitle,
+        createNewTopLevelNote,
+        createNote,
+        isNewNoteCreated,
+        switchOffNewNoteCreated
     };
 })();

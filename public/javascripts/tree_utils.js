@@ -3,10 +3,6 @@
 const treeUtils = (function() {
     const treeEl = $("#tree");
 
-    function getParentNoteTreeId(node) {
-        return node.note_pid;
-    }
-
     function getParentProtectedStatus(node) {
         return node.getParent() === null ? 0 : node.getParent().data.is_protected;
     }
@@ -34,24 +30,6 @@ const treeUtils = (function() {
         return titlePath.join(" > ");
     }
 
-    function getFullName(noteTreeId) {
-        let note = noteTree.getByNoteTreeId(noteTreeId);
-
-        if (note === null) {
-            return "[unknown]";
-        }
-
-        const path = [];
-
-        while (note) {
-            path.push(note.note_title);
-
-            note = noteTree.getByNoteTreeId(note.note_pid);
-        }
-
-        return path.reverse().join(" > ");
-    }
-
     function getNotePath(node) {
         const path = [];
 
@@ -66,28 +44,12 @@ const treeUtils = (function() {
         return path.reverse().join("/");
     }
 
-    async function addAsChild(parentNotePath, childNotePath) {
-        const parentNoteId = treeUtils.getNoteIdFromNotePath(parentNotePath);
-        const childNoteId = treeUtils.getNoteIdFromNotePath(childNotePath);
-
-        await $.ajax({
-            url: baseApiUrl + 'tree/' + parentNoteId + '/addChild/' + childNoteId,
-            type: 'PUT',
-            error: () => showError("Error adding child.")
-        });
-
-        await noteTree.reload();
-    }
-
     return {
-        getParentNoteTreeId,
         getParentProtectedStatus,
         getNodeByKey,
         getNodeByNoteTreeId,
-        getFullName,
         getFullNameForPath,
         getNotePath,
-        getNoteIdFromNotePath,
-        addAsChild
+        getNoteIdFromNotePath
     };
 })();

@@ -1,7 +1,6 @@
 "use strict";
 
 const noteEditor = (function() {
-    const treeEl = $("#tree");
     const noteTitleEl = $("#note-title");
     const noteDetailEl = $('#note-detail');
     const protectButton = $("#protect-button");
@@ -113,59 +112,6 @@ const noteEditor = (function() {
         showMessage("Saved!");
     }
 
-    function createNewTopLevelNote() {
-        let rootNode = treeEl.fancytree("getRootNode");
-
-        createNote(rootNode, "root", "into");
-    }
-
-    let newNoteCreated = false;
-
-    async function createNote(node, parentTreeId, target, isProtected) {
-        // if isProtected isn't available (user didn't enter password yet), then note is created as unencrypted
-        // but this is quite weird since user doesn't see WHERE the note is being created so it shouldn't occur often
-        if (!isProtected || !protected_session.isProtectedSessionAvailable()) {
-            isProtected = false;
-        }
-
-        const newNoteName = "new note";
-
-        const result = await $.ajax({
-            url: baseApiUrl + 'notes/' + parentTreeId + '/children' ,
-            type: 'POST',
-            data: JSON.stringify({
-                note_title: newNoteName,
-                target: target,
-                target_note_id: node.note_tree_id,
-                is_protected: isProtected
-            }),
-            contentType: "application/json"
-        });
-
-        const newNode = {
-            title: newNoteName,
-            key: counter++,
-            note_id: result.note_id,
-            note_tree_id: result.note_tree_id,
-            is_protected: isProtected,
-            extraClasses: isProtected ? "protected" : ""
-        };
-
-        newNoteCreated = true;
-
-        if (target === 'after') {
-            node.appendSibling(newNode).setActive(true);
-        }
-        else {
-            node.addChildren(newNode).setActive(true);
-
-            node.folder = true;
-            node.renderTitle();
-        }
-
-        showMessage("Created!");
-    }
-
     function setNoteBackgroundIfProtected(note) {
         if (note.detail.is_protected) {
             $(".note-editable").addClass("protected");
@@ -184,8 +130,8 @@ const noteEditor = (function() {
     async function loadNoteToEditor(noteId) {
         currentNote = await $.get(baseApiUrl + 'notes/' + noteId);
 
-        if (newNoteCreated) {
-            newNoteCreated = false;
+        if (noteTree.isNewNoteCreated()) {
+            noteTree.switchOffNewNoteCreated();
 
             noteTitleEl.focus().select();
         }
@@ -249,8 +195,6 @@ const noteEditor = (function() {
         saveNoteIfChanged,
         updateNoteFromInputs,
         saveNoteToServer,
-        createNewTopLevelNote,
-        createNote,
         setNoteBackgroundIfProtected,
         loadNote,
         getCurrentNote,
