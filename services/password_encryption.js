@@ -11,14 +11,14 @@ async function verifyPassword(password) {
     return givenPasswordHash === dbPasswordHash;
 }
 
-async function setDataKey(password, plainText) {
+async function setDataKey(password, plainTextDataKey) {
     const passwordDerivedKey = await my_scrypt.getPasswordDerivedKey(password);
 
     const encryptedDataKeyIv = utils.randomSecureToken(16).slice(0, 16);
 
     await options.setOption('encrypted_data_key_iv', encryptedDataKeyIv);
 
-    const buffer = Buffer.from(plainText);
+    const buffer = Buffer.from(plainTextDataKey);
 
     const newEncryptedDataKey = data_encryption.encrypt(passwordDerivedKey, encryptedDataKeyIv, buffer);
 
