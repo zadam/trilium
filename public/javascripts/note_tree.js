@@ -6,7 +6,7 @@ const noteTree = (function() {
 
     let startNoteTreeId = null;
     let treeLoadTime = null;
-    let notesMap = {};
+    let notesTreeMap = {};
 
     let parentToChildren = {};
     let childToParents = {};
@@ -43,13 +43,45 @@ const noteTree = (function() {
         return title;
     }
 
+    // note that if you want to access data like note_id or is_protected, you need to go into "data" property
+    function getCurrentNode() {
+        return treeEl.fancytree("getActiveNode");
+    }
+
+    function getCurrentNotePath() {
+        const node = getCurrentNode();
+
+        return treeUtils.getNotePath(node);
+    }
+
+    function getCurrentNoteId() {
+        const node = getCurrentNode();
+
+        return node ? node.data.note_id : null;
+    }
+
+    function getCurrentClones() {
+        const noteId = getCurrentNoteId();
+
+        if (noteId) {
+            return getNodes(noteId);
+        }
+        else {
+            return [];
+        }
+    }
+
+    function getNodes(noteId) {
+        return getTree().getNodesByRef(noteId);
+    }
+
     function prepareNoteTree(notes) {
         parentToChildren = {};
         childToParents = {};
-        notesMap = {};
+        notesTreeMap = {};
 
         for (const note of notes) {
-            notesMap[note.note_tree_id] = note;
+            notesTreeMap[note.note_tree_id] = note;
 
             noteIdToTitle[note.note_id] = note.note_title;
 
@@ -75,48 +107,53 @@ const noteTree = (function() {
         return prepareNoteTreeInner('root');
     }
 
+    function getExtraClasses(note) {
+        let extraClasses = '';
+
+        if (note.is_protected) {
+            extraClasses += ",protected";
+        }
+
+        if (childToParents[note.note_id].length > 1) {
+            extraClasses += ",multiple-parents";
+        }
+
+        if (extraClasses.startsWith(",")) {
+            extraClasses = extraClasses.substr(1);
+        }
+
+        return extraClasses;
+    }
+
     function prepareNoteTreeInner(parentNoteId) {
         const childNoteIds = parentToChildren[parentNoteId];
         if (!childNoteIds) {
-            console.log("No children for " + noteId + ". This shouldn't happen.");
+            console.log("No children for " + parentNoteId + ". This shouldn't happen.");
             return;
         }
 
         const noteList = [];
 
-        for (const childNoteId of childNoteIds) {
-            const noteTreeId = getNoteTreeId(parentNoteId, childNoteId);
-            const note = notesMap[noteTreeId];
-            const node = {};
+        for (const noteId of childNoteIds) {
+            const noteTreeId = getNoteTreeId(parentNoteId, noteId);
+            const noteTree = notesTreeMap[noteTreeId];
 
-            node.note_id = note.note_id;
-            node.note_pid = note.note_pid;
-            node.note_tree_id = note.note_tree_id;
-            node.is_protected = note.is_protected;
-            node.title = noteIdToTitle[note.note_id];
+            const node = {
+                note_id: noteTree.note_id,
+                note_pid: noteTree.note_pid,
+                note_tree_id: noteTree.note_tree_id,
+                is_protected: noteTree.is_protected,
+                title: noteIdToTitle[noteTree.note_id],
+                extraClasses: getExtraClasses(noteTree),
+                refKey: noteTree.note_id,
+                expanded: noteTree.is_expanded
+            };
 
-            node.extraClasses = "";
-
-            if (node.is_protected) {
-                node.extraClasses += ",protected";
-            }
-
-            if (childToParents[childNoteId].length > 1) {
-                node.extraClasses += ",multiple-parents";
-            }
-
-            if (node.extraClasses.startsWith(",")) {
-                node.extraClasses = node.extraClasses.substr(1);
-            }
-
-            node.refKey = note.note_id;
-            node.expanded = note.is_expanded;
-
-            if (parentToChildren[note.note_id] && parentToChildren[note.note_id].length > 0) {
+            if (parentToChildren[noteId] && parentToChildren[noteId].length > 0) {
                 node.folder = true;
 
                 if (node.expanded) {
-                    node.children = prepareNoteTreeInner(note.note_id);
+                    node.children = prepareNoteTreeInner(noteId);
                 }
                 else {
                     node.lazy = true;
@@ -186,10 +223,6 @@ const noteTree = (function() {
 
             parentNoteId = childNoteId;
         }
-    }
-
-    function getNodes(noteId) {
-        return getTree().getNodesByRef(noteId);
     }
 
     function showParentList(noteId, node) {
@@ -484,23 +517,6 @@ const noteTree = (function() {
         tree.clearFilter();
     }
 
-    // note that if you want to access data like note_id or is_protected, you need to go into "data" property
-    function getCurrentNode() {
-        return treeEl.fancytree("getActiveNode");
-    }
-
-    function getCurrentNotePath() {
-        const node = getCurrentNode();
-
-        return treeUtils.getNotePath(node);
-    }
-
-    function getCurrentNoteId() {
-        const node = getCurrentNode();
-
-        return node ? node.data.note_id : null;
-    }
-
     function setCurrentNoteTreeBasedOnProtectedStatus() {
         getCurrentClones().map(node => node.toggleClass("protected", !!node.data.is_protected));
     }
@@ -541,17 +557,6 @@ const noteTree = (function() {
         }
 
         return autocompleteItems;
-    }
-
-    function getCurrentClones() {
-        const noteId = getCurrentNoteId();
-
-        if (noteId) {
-            return getNodes(noteId);
-        }
-        else {
-            return [];
-        }
     }
 
     function setCurrentNoteTitle(title) {
