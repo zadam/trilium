@@ -27,11 +27,16 @@ const treeChanges = (function() {
 
     // beware that first arg is noteId and second is noteTreeId!
     async function cloneNoteAfter(noteId, afterNoteTreeId) {
-        await $.ajax({
+        const resp = await $.ajax({
             url: baseApiUrl + 'notes/' + noteId + '/cloneAfter/' + afterNoteTreeId,
             type: 'PUT',
             error: () => showError("Error cloning note.")
         });
+
+        if (!resp.success) {
+            alert(resp.message);
+            return;
+        }
 
         await noteTree.reload();
     }
@@ -54,11 +59,16 @@ const treeChanges = (function() {
     }
 
     async function cloneNoteTo(childNoteId, parentNoteId) {
-        await $.ajax({
+        const resp = await $.ajax({
             url: baseApiUrl + 'notes/' + childNoteId + '/cloneTo/' + parentNoteId,
             type: 'PUT',
             error: () => showError("Error cloning note.")
         });
+
+        if (!resp.success) {
+            alert(resp.message);
+            return;
+        }
 
         await noteTree.reload();
     }
