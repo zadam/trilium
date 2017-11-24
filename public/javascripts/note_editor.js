@@ -127,11 +127,17 @@ const noteEditor = (function() {
         noteTree.setCurrentNoteTreeBasedOnProtectedStatus();
     }
 
+    let isNewNoteCreated = false;
+
+    function newNoteCreated() {
+        isNewNoteCreated = true;
+    }
+
     async function loadNoteToEditor(noteId) {
         currentNote = await $.get(baseApiUrl + 'notes/' + noteId);
 
-        if (noteTree.isNewNoteCreated()) {
-            noteTree.switchOffNewNoteCreated();
+        if (isNewNoteCreated) {
+            isNewNoteCreated = false;
 
             noteTitleEl.focus().select();
         }
@@ -165,9 +171,7 @@ const noteEditor = (function() {
     }
 
     async function loadNote(noteId) {
-        const note = await $.get(baseApiUrl + 'notes/' + noteId);
-
-        return note;
+        return await $.get(baseApiUrl + 'notes/' + noteId);
     }
 
     $(document).ready(() => {
@@ -199,6 +203,7 @@ const noteEditor = (function() {
         loadNote,
         getCurrentNote,
         getCurrentNoteId,
-        getCurrentNoteLoadTime
+        getCurrentNoteLoadTime,
+        newNoteCreated
     };
 })();

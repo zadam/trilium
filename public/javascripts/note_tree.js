@@ -1,7 +1,6 @@
 "use strict";
 
 const noteTree = (function() {
-    const noteDetailEl = $('#note-detail');
     const treeEl = $("#tree");
     const parentListEl = $("#parent-list");
 
@@ -14,12 +13,6 @@ const noteTree = (function() {
 
     let parentChildToNoteTreeId = {};
     let noteIdToTitle = {};
-
-    function getNoteTreeIdFromKey(key) {
-        const node = treeUtils.getNodeByKey(key);
-
-        return node.note_tree_id;
-    }
 
     function getTreeLoadTime() {
         return treeLoadTime;
@@ -316,10 +309,6 @@ const noteTree = (function() {
                 if (toNode !== null) {
                     treeChanges.moveToNode(node, toNode);
                 }
-            },
-            "return": node => {
-                // doesn't work :-/
-                noteDetailEl.summernote('focus');
             }
         };
 
@@ -500,11 +489,6 @@ const noteTree = (function() {
         return treeEl.fancytree("getActiveNode");
     }
 
-    function getCurrentNoteTreeId() {
-        const node = getCurrentNode();
-        return node.data.note_tree_id;
-    }
-
     function getCurrentNotePath() {
         const node = getCurrentNode();
 
@@ -580,20 +564,10 @@ const noteTree = (function() {
         }
     }
 
-    function createNewTopLevelNote() {
-        let rootNode = treeEl.fancytree("getRootNode");
+    async function createNewTopLevelNote() {
+        const rootNode = treeEl.fancytree("getRootNode");
 
-        createNote(rootNode, "root", "into");
-    }
-
-    let newNoteCreated = false;
-
-    function isNewNoteCreated() {
-        return newNoteCreated;
-    }
-
-    function switchOffNewNoteCreated() {
-        newNoteCreated = false;
+        await createNote(rootNode, "root", "into");
     }
 
     async function createNote(node, parentNoteId, target, isProtected) {
@@ -633,7 +607,7 @@ const noteTree = (function() {
 
         noteIdToTitle[result.note_id] = newNoteName;
 
-        newNoteCreated = true;
+        noteEditor.newNoteCreated();
 
         if (target === 'after') {
             node.appendSibling(newNode).setActive(true);
@@ -678,10 +652,8 @@ const noteTree = (function() {
         collapseTree,
         scrollToCurrentNote,
         toggleSearch,
-        getNoteTreeIdFromKey,
         setCurrentNoteTreeBasedOnProtectedStatus,
         getCurrentNode,
-        getCurrentNoteTreeId,
         activateNode,
         getCurrentNotePath,
         getNoteTitle,
@@ -689,8 +661,6 @@ const noteTree = (function() {
         getAutocompleteItems,
         setCurrentNoteTitle,
         createNewTopLevelNote,
-        createNote,
-        isNewNoteCreated,
-        switchOffNewNoteCreated
+        createNote
     };
 })();
