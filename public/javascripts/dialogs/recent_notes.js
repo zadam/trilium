@@ -21,7 +21,7 @@ const recentNotes = (function() {
     function addRecentNote(notePath) {
         setTimeout(() => {
             // we include the note into recent list only if the user stayed on the note at least 5 seconds
-            if (notePath === noteTree.getCurrentNotePath()) {
+            if (notePath && notePath === noteTree.getCurrentNotePath()) {
                 $.ajax({
                     url: baseApiUrl + 'recent-notes/' + encodeURIComponent(notePath),
                     type: 'PUT',
