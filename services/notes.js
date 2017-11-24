@@ -191,7 +191,6 @@ async function updateNote(noteId, newNote, ctx) {
             //await sql.insert("links", link);
         }
 
-        await sync_table.addNoteTreeSync(noteId);
         await sync_table.addNoteSync(noteId);
     });
 }
@@ -224,13 +223,13 @@ async function deleteNote(noteTreeId, browserId) {
 
     const noteId = await sql.getSingleValue("SELECT note_id FROM notes_tree WHERE note_tree_id = ?", [noteTreeId]);
 
-    const notDeletedNoteTreesCount = await sql.getSingleValue("SELECT COUNT(*) FROM notes_tree WHERE note_id = ?", [noteId]);
+    const notDeletedNoteTreesCount = await sql.getSingleValue("SELECT COUNT(*) FROM notes_tree WHERE note_id = ? AND is_deleted = 0", [noteId]);
 
     if (!notDeletedNoteTreesCount) {
-        await sql.execute("UPDATE notes SET is_deleted = 1, date_modified = ? WHERE note_id = ?", [now, noteTreeId]);
-        await sync_table.addNoteSync(noteTreeId);
+        await sql.execute("UPDATE notes SET is_deleted = 1, date_modified = ? WHERE note_id = ?", [now, noteId]);
+        await sync_table.addNoteSync(noteId);
 
-        const children = await sql.getResults("SELECT note_tree_id FROM notes_tree WHERE note_pid = ? AND is_deleted = 0", [noteTreeId]);
+        const children = await sql.getResults("SELECT note_tree_id FROM notes_tree WHERE note_pid = ? AND is_deleted = 0", [noteId]);
 
         for (const child of children) {
             await deleteNote(child.note_tree_id, browserId);

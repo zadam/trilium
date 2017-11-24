@@ -121,9 +121,11 @@ async function pullSync(syncContext) {
             continue;
         }
 
-        console.log("Pulling ", sync);
-
         const resp = await syncRequest(syncContext, 'GET', "/api/sync/" + sync.entity_name + "/" + encodeURIComponent(sync.entity_id));
+
+        if (!resp) {
+            log.error("Empty response to pull for " + sync.entity_name + ", id=" + sync.entity_id);
+        }
 
         if (sync.entity_name === 'notes') {
             await syncUpdate.updateNote(resp.entity, resp.links, syncContext.sourceId);
