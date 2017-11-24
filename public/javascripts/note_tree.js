@@ -8,10 +8,10 @@ const noteTree = (function() {
     let startNoteTreeId = null;
     let treeLoadTime = null;
     let notesMap = {};
+
     let parentToChildren = {};
     let childToParents = {};
-    let counter = 1;
-    let noteTreeIdToKey = {};
+
     let parentChildToNoteTreeId = {};
     let noteIdToTitle = {};
 
@@ -19,10 +19,6 @@ const noteTree = (function() {
         const node = treeUtils.getNodeByKey(key);
 
         return node.note_tree_id;
-    }
-
-    function getKeyFromNoteTreeId(noteTreeId) {
-        return noteTreeIdToKey[noteTreeId];
     }
 
     function getTreeLoadTime() {
@@ -120,11 +116,8 @@ const noteTree = (function() {
                 node.extraClasses = node.extraClasses.substr(1);
             }
 
-            node.key = counter++ + ""; // key needs to be string
             node.refKey = note.note_id;
             node.expanded = note.is_expanded;
-
-            noteTreeIdToKey[noteTreeId] = node.key;
 
             if (parentToChildren[note.note_id] && parentToChildren[note.note_id].length > 0) {
                 node.folder = true;
@@ -189,9 +182,7 @@ const noteTree = (function() {
         let parentNoteId = 'root';
 
         for (const childNoteId of runPath) {
-            const noteTreeId = getNoteTreeId(parentNoteId, childNoteId);
-
-            const node = treeUtils.getNodeByNoteTreeId(noteTreeId);
+            const node = getNodes(childNoteId).find(node => node.data.note_pid === parentNoteId);
 
             if (childNoteId === noteId) {
                 await node.setActive();
@@ -202,6 +193,10 @@ const noteTree = (function() {
 
             parentNoteId = childNoteId;
         }
+    }
+
+    function getNodes(noteId) {
+        return getTree().getNodesByRef(noteId);
     }
 
     function showParentList(noteId, node) {
@@ -467,7 +462,7 @@ const noteTree = (function() {
     $(document).bind('keydown', 'alt+c', collapseTree);
 
     function scrollToCurrentNote() {
-        const node = treeUtils.getNodeByNoteTreeId(noteEditor.getCurrentNoteId());
+        const node = noteTree.getCurrentNode();
 
         if (node) {
             node.makeVisible({scrollIntoView: true});
@@ -568,7 +563,7 @@ const noteTree = (function() {
         const noteId = getCurrentNoteId();
 
         if (noteId) {
-            return getTree().getNodesByRef(noteId);
+            return getNodes(noteId);
         }
         else {
             return [];
@@ -683,7 +678,6 @@ const noteTree = (function() {
         collapseTree,
         scrollToCurrentNote,
         toggleSearch,
-        getKeyFromNoteTreeId,
         getNoteTreeIdFromKey,
         setCurrentNoteTreeBasedOnProtectedStatus,
         getCurrentNode,

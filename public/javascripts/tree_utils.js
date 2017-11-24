@@ -11,12 +11,6 @@ const treeUtils = (function() {
         return treeEl.fancytree('getNodeByKey', key);
     }
 
-    function getNodeByNoteTreeId(noteTreeId) {
-        const key = noteTree.getKeyFromNoteTreeId(noteTreeId);
-
-        return getNodeByKey(key);
-    }
-
     function getNoteIdFromNotePath(notePath) {
         const path = notePath.split("/");
 
@@ -47,7 +41,6 @@ const treeUtils = (function() {
     return {
         getParentProtectedStatus,
         getNodeByKey,
-        getNodeByNoteTreeId,
         getFullNameForPath,
         getNotePath,
         getNoteIdFromNotePath

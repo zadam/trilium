@@ -8,7 +8,7 @@ const contextMenu = (function() {
 
     function pasteAfter(node) {
         if (clipboardMode === 'cut') {
-            const subjectNode = treeUtils.getNodeByNoteTreeId(clipboardId);
+            const subjectNode = treeUtils.getNodeByKey(clipboardId);
 
             treeChanges.moveAfterNode(subjectNode, node);
         }
@@ -25,7 +25,7 @@ const contextMenu = (function() {
 
     function pasteInto(node) {
         if (clipboardMode === 'cut') {
-            const subjectNode = treeUtils.getNodeByNoteTreeId(clipboardId);
+            const subjectNode = treeUtils.getNodeByKey(clipboardId);
 
             treeChanges.moveToNode(subjectNode, node);
         }
@@ -46,7 +46,7 @@ const contextMenu = (function() {
     }
 
     function cut(node) {
-        clipboardId = node.data.note_tree_id;
+        clipboardId = node.key;
         clipboardMode = 'cut';
     }
 
