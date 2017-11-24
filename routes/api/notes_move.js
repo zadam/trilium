@@ -93,12 +93,17 @@ router.put('/:childNoteId/cloneTo/:parentNoteId', auth.checkApiAuth, async (req,
     const existing = await sql.getSingleValue('SELECT * FROM notes_tree WHERE note_id = ? AND note_pid = ?', [childNoteId, parentNoteId]);
 
     if (existing && !existing.is_deleted) {
-        res.send({
+        return res.send({
             success: false,
             message: 'This note already exists in target parent note.'
         });
+    }
 
-        return;
+    if (!await checkCycle(parentNoteId, childNoteId)) {
+        return res.send({
+            success: false,
+            message: 'Cloning note here would create cycle.'
+        });
     }
 
     const maxNotePos = await sql.getSingleValue('SELECT MAX(note_pos) FROM notes_tree WHERE note_pid = ? AND is_deleted = 0', [parentNoteId]);
@@ -132,19 +137,23 @@ router.put('/:noteId/cloneAfter/:afterNoteTreeId', async (req, res, next) => {
     const afterNote = await sql.getSingleResult("SELECT * FROM notes_tree WHERE note_tree_id = ?", [afterNoteTreeId]);
 
     if (!afterNote) {
-        res.status(500).send("After note " + afterNoteTreeId + " doesn't exist.");
-        return;
+        return res.status(500).send("After note " + afterNoteTreeId + " doesn't exist.");
+    }
+
+    if (!await checkCycle(afterNote.note_pid, noteId)) {
+        return res.send({
+            success: false,
+            message: 'Cloning note here would create cycle.'
+        });
     }
 
     const existing = await sql.getSingleValue('SELECT * FROM notes_tree WHERE note_id = ? AND note_pid = ?', [noteId, afterNote.note_pid]);
 
     if (existing && !existing.is_deleted) {
-        res.send({
+        return res.send({
             success: false,
             message: 'This note already exists in target parent note.'
         });
-
-        return;
     }
 
     await sql.doInTransaction(async () => {
@@ -173,6 +182,26 @@ router.put('/:noteId/cloneAfter/:afterNoteTreeId', async (req, res, next) => {
         });
     });
 });
+
+async function checkCycle(parentNoteId, childNoteId) {
+    if (parentNoteId === 'root') {
+        return true;
+    }
+
+    if (parentNoteId === childNoteId) {
+        return false;
+    }
+
+    const parentNoteIds = await sql.getFlattenedResults("note_pid", "SELECT DISTINCT note_pid FROM notes_tree WHERE note_id = ?", [parentNoteId]);
+
+    for (const pid of parentNoteIds) {
+        if (!await checkCycle(pid, childNoteId)) {
+            return false;
+        }
+    }
+
+    return true;
+}
 
 router.put('/:noteTreeId/expanded/:expanded', async (req, res, next) => {
     const noteTreeId = req.params.noteTreeId;
