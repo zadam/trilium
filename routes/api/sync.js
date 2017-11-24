@@ -35,10 +35,10 @@ router.get('/notes/:noteId', auth.checkApiAuth, async (req, res, next) => {
     });
 });
 
-router.get('/notes_tree/:noteId', auth.checkApiAuth, async (req, res, next) => {
-    const noteId = req.params.noteId;
+router.get('/notes_tree/:noteTreeId', auth.checkApiAuth, async (req, res, next) => {
+    const noteTreeId = req.params.noteTreeId;
 
-    res.send(await sql.getSingleResult("SELECT * FROM notes_tree WHERE note_id = ?", [noteId]));
+    res.send(await sql.getSingleResult("SELECT * FROM notes_tree WHERE note_tree_id = ?", [noteTreeId]));
 });
 
 router.get('/notes_history/:noteHistoryId', auth.checkApiAuth, async (req, res, next) => {
