@@ -49,14 +49,14 @@
           <img src="images/icons/crosshair.png" alt="Collapse tree"/>
         </a>
 
-        <a onclick="noteTree.toggleSearch()" title="Search in notes" class="icon-action">
+        <a onclick="searchTree.toggleSearch()" title="Search in notes" class="icon-action">
           <img src="images/icons/search.png" alt="Search in notes"/>
         </a>
 
         <div id="search-box" style="display: none; padding: 10px; margin-top: 10px;">
           <p>
             <label>Search:</label>
-            <input name="search" autocomplete="off">
+            <input name="search-text" autocomplete="off">
             <button id="reset-search-button">&times;</button>
             <span id="matches"></span>
           </p>
@@ -300,6 +300,7 @@
     <script src="javascripts/tree_utils.js"></script>
     <script src="javascripts/drag_and_drop.js"></script>
     <script src="javascripts/context_menu.js"></script>
+    <script src="javascripts/search_tree.js"></script>
 
     <!-- Note detail -->
     <script src="javascripts/note_editor.js"></script>

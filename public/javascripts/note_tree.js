@@ -305,8 +305,6 @@ const noteTree = (function() {
     }
 
     function initFancyTree(noteTree) {
-        console.log(noteTree);
-
         const keybindings = {
             "insert": node => {
                 const parentNoteId = node.data.note_pid;
@@ -493,30 +491,6 @@ const noteTree = (function() {
         }
     }
 
-    function showSearch() {
-        $("#search-box").show();
-
-        $("input[name=search]").focus();
-    }
-
-    function toggleSearch() {
-        if ($("#search-box:hidden").length) {
-            showSearch();
-        }
-        else {
-            resetSearch();
-
-            $("#search-box").hide();
-        }
-    }
-
-    function resetSearch() {
-        $("input[name=search]").val("");
-
-        const tree = getTree();
-        tree.clearFilter();
-    }
-
     function setCurrentNoteTreeBasedOnProtectedStatus() {
         getCurrentClones().map(node => node.toggleClass("protected", !!node.data.is_protected));
     }
@@ -627,36 +601,11 @@ const noteTree = (function() {
         showMessage("Created!");
     }
 
-    $("button#reset-search-button").click(resetSearch);
-
-    $("input[name=search]").keyup(e => {
-        const searchString = $("input[name=search]").val();
-
-        if (e && e.which === $.ui.keyCode.ESCAPE || $.trim(searchString) === "") {
-            $("button#reset-search-button").click();
-            return;
-        }
-
-        if (e && e.which === $.ui.keyCode.ENTER) {
-            $.get(baseApiUrl + 'notes?search=' + searchString).then(resp => {
-                console.log("search: ", resp);
-
-                // Pass a string to perform case insensitive matching
-                getTree().filterBranches(node => {
-                    return resp.includes(node.data.note_id);
-                });
-            });
-        }
-    }).focus();
-
-    $(document).bind('keydown', 'alt+s', showSearch);
-
     return {
         getTreeLoadTime,
         reload,
         collapseTree,
         scrollToCurrentNote,
-        toggleSearch,
         setCurrentNoteTreeBasedOnProtectedStatus,
         getCurrentNode,
         activateNode,
