@@ -165,5 +165,8 @@ ws.onmessage = function (event) {
 
             noteEditor.reload();
         }
+
+        const changesToPushCountEl = $("#changesToPushCount");
+        changesToPushCountEl.html(message.changesToPushCount);
     }
 };

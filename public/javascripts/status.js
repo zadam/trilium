@@ -38,10 +38,10 @@ const status = (function() {
         //     noteEditor.reload();
         // }
 
-        changesToPushCountEl.html(resp.changesToPushCount);
+        //changesToPushCountEl.html(resp.changesToPushCount);
     }
 
-    setInterval(checkStatus, 5 * 1000);
+    //setInterval(checkStatus, 5 * 1000);
 
     return {
         checkStatus
