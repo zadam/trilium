@@ -6,8 +6,6 @@ function syncNow() {
         type: 'POST',
         success: result => {
             if (result.success) {
-                status.checkStatus();
-
                 showMessage("Sync finished successfully.");
             }
             else {
