@@ -31,10 +31,9 @@ router.get('/:noteId', auth.checkApiAuth, async (req, res, next) => {
 
 router.post('/:parentNoteId/children', async (req, res, next) => {
     const parentNoteId = req.params.parentNoteId;
-    const browserId = utils.browserId(req);
     const note = req.body;
 
-    const { noteId, noteTreeId } = await notes.createNewNote(parentNoteId, note, browserId);
+    const { noteId, noteTreeId } = await notes.createNewNote(parentNoteId, note);
 
     res.send({
         'note_id': noteId,
@@ -53,10 +52,8 @@ router.put('/:noteId', async (req, res, next) => {
 });
 
 router.delete('/:noteTreeId', async (req, res, next) => {
-    const browserId = utils.browserId(req);
-
     await sql.doInTransaction(async () => {
-        await notes.deleteNote(req.params.noteTreeId, browserId);
+        await notes.deleteNote(req.params.noteTreeId);
     });
 
     res.send({});

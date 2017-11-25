@@ -4,7 +4,6 @@ const sql = require('./sql');
 const options = require('./options');
 const my_scrypt = require('./my_scrypt');
 const utils = require('./utils');
-const audit_category = require('./audit_category');
 const password_encryption = require('./password_encryption');
 
 async function changePassword(currentPassword, newPassword, req) {
@@ -22,8 +21,6 @@ async function changePassword(currentPassword, newPassword, req) {
         await password_encryption.setDataKey(newPassword, decryptedDataKey);
 
         await options.setOption('password_verification_hash', newPasswordVerificationKey);
-
-        await sql.addAudit(audit_category.CHANGE_PASSWORD, utils.browserId(req));
     });
 
     return {

@@ -48,10 +48,6 @@ function hmac(secret, value) {
     return hmac.digest('base64');
 }
 
-function browserId(req) {
-    return req == null ? null : req.get('x-browser-id');
-}
-
 function isElectron() {
     return !!process.versions['electron'];
 }
@@ -81,7 +77,6 @@ module.exports = {
     toBase64,
     fromBase64,
     hmac,
-    browserId,
     isElectron,
     formatTwoTimestamps,
     hash

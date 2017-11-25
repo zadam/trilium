@@ -6,28 +6,18 @@ const sql = require('../../services/sql');
 const options = require('../../services/options');
 const auth = require('../../services/auth');
 const sync = require('../../services/sync');
-const audit_category = require('../../services/audit_category');
+const source_id = require('../../services/source_id');
 
 router.post('', auth.checkApiAuth, async (req, res, next) => {
     const treeLoadTime = req.body.treeLoadTime;
     const currentNoteId = req.body.currentNoteId;
     const currentNoteLoadTime = req.body.currentNoteLoadTime;
 
-    const browserId = req.get('x-browser-id');
+    const noteTreeChangesCount = await sql.getSingleValue("SELECT COUNT(*) FROM sync WHERE entity_name = 'notes_tree' AND source_id != ? " +
+        "AND sync_date >= ?", [source_id.currentSourceId, treeLoadTime]);
 
-    const noteTreeChangesCount = await sql.getSingleValue("SELECT COUNT(*) FROM audit_log WHERE (browser_id IS NULL OR browser_id != ?) " +
-        "AND date_modified >= ? AND category IN (?, ?, ?, ?)", [browserId, treeLoadTime,
-        audit_category.UPDATE_TITLE, audit_category.CHANGE_PARENT, audit_category.CHANGE_POSITION, audit_category.DELETE_NOTE]);
-
-    const currentNoteChangesCount = await sql.getSingleValue("SELECT COUNT(*) FROM audit_log WHERE (browser_id IS NULL OR browser_id != ?) " +
-        "AND date_modified >= ? AND note_id = ? AND category IN (?, ?)", [browserId, currentNoteLoadTime, currentNoteId,
-        audit_category.UPDATE_TITLE, audit_category.UPDATE_CONTENT]);
-
-    if (currentNoteChangesCount > 0) {
-        console.log("Current note changed!");
-        console.log("SELECT COUNT(*) FROM audit_log WHERE (browser_id IS NULL OR browser_id != '" + browserId + "') " +
-            "AND date_modified >= " + currentNoteLoadTime + " AND note_id = '" + currentNoteId + "' AND category IN ('" + audit_category.UPDATE_TITLE + "', '" + audit_category.UPDATE_CONTENT + "')");
-    }
+    const currentNoteChangesCount = await sql.getSingleValue("SELECT COUNT(*) FROM sync WHERE source_id != ? " +
+        "AND sync_date >= ? AND entity_name = 'notes' AND entity_id = ?", [source_id.currentSourceId, currentNoteLoadTime, currentNoteId]);
 
     let changesToPushCount = 0;
 

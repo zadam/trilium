@@ -2,11 +2,10 @@ const sql = require('./sql');
 const options = require('./options');
 const utils = require('./utils');
 const notes = require('./notes');
-const audit_category = require('./audit_category');
 const data_encryption = require('./data_encryption');
 const sync_table = require('./sync_table');
 
-async function createNewNote(parentNoteId, note, browserId) {
+async function createNewNote(parentNoteId, note) {
     const noteId = utils.newNoteId();
     const noteTreeId = utils.newNoteTreeId();
 
@@ -30,7 +29,6 @@ async function createNewNote(parentNoteId, note, browserId) {
     }
 
     await sql.doInTransaction(async () => {
-        await sql.addAudit(audit_category.CREATE_NOTE, browserId, noteId);
         await sync_table.addNoteTreeSync(noteTreeId);
         await sync_table.addNoteSync(noteId);
 
@@ -168,8 +166,6 @@ async function updateNote(noteId, newNote, ctx) {
 
         await protectNoteHistory(noteId, ctx.getDataKeyOrNull(), newNote.detail.is_protected);
 
-        await addNoteAudits(origNoteDetail, newNote.detail, ctx.browserId);
-
         await sql.execute("UPDATE notes SET note_title = ?, note_text = ?, is_protected = ?, date_modified = ? WHERE note_id = ?", [
             newNote.detail.note_title,
             newNote.detail.note_text,
@@ -195,28 +191,7 @@ async function updateNote(noteId, newNote, ctx) {
     });
 }
 
-async function addNoteAudits(origNote, newNote, browserId) {
-    const noteId = newNote.note_id;
-
-    if (!origNote || newNote.note_title !== origNote.note_title) {
-        await sql.deleteRecentAudits(audit_category.UPDATE_TITLE, browserId, noteId);
-        await sql.addAudit(audit_category.UPDATE_TITLE, browserId, noteId);
-    }
-
-    if (!origNote || newNote.note_text !== origNote.note_text) {
-        await sql.deleteRecentAudits(audit_category.UPDATE_CONTENT, browserId, noteId);
-        await sql.addAudit(audit_category.UPDATE_CONTENT, browserId, noteId);
-    }
-
-    if (!origNote || newNote.is_protected !== origNote.is_protected) {
-        const origIsProtected = origNote ? origNote.is_protected : null;
-
-        await sql.addAudit(audit_category.PROTECTED, browserId, noteId, origIsProtected, newNote.is_protected);
-    }
-}
-
-
-async function deleteNote(noteTreeId, browserId) {
+async function deleteNote(noteTreeId) {
     const now = utils.nowTimestamp();
     await sql.execute("UPDATE notes_tree SET is_deleted = 1, date_modified = ? WHERE note_tree_id = ?", [now, noteTreeId]);
     await sync_table.addNoteTreeSync(noteTreeId);
@@ -232,17 +207,14 @@ async function deleteNote(noteTreeId, browserId) {
         const children = await sql.getResults("SELECT note_tree_id FROM notes_tree WHERE note_pid = ? AND is_deleted = 0", [noteId]);
 
         for (const child of children) {
-            await deleteNote(child.note_tree_id, browserId);
+            await deleteNote(child.note_tree_id);
         }
-
-        await sql.addAudit(audit_category.DELETE_NOTE, browserId, noteTreeId);
     }
 }
 
 module.exports = {
     createNewNote,
     updateNote,
-    addNoteAudits,
     deleteNote,
     protectNoteRecursively
 };

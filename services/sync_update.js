@@ -2,7 +2,6 @@ const sql = require('./sql');
 const log = require('./log');
 const options = require('./options');
 const utils = require('./utils');
-const audit_category = require('./audit_category');
 const eventLog = require('./event_log');
 const notes = require('./notes');
 const sync_table = require('./sync_table');
@@ -23,7 +22,6 @@ async function updateNote(entity, links, sourceId) {
             }
 
             await sync_table.addNoteSync(entity.note_id, sourceId);
-            await notes.addNoteAudits(origNote, entity, sourceId);
             await eventLog.addNoteEvent(entity.note_id, "Synced note <note>");
         });
 
@@ -44,9 +42,6 @@ async function updateNoteTree(entity, sourceId) {
             await sql.replace('notes_tree', entity);
 
             await sync_table.addNoteTreeSync(entity.note_tree_id, sourceId);
-
-            // not sure why this is here ...
-            await sql.addAudit(audit_category.UPDATE_TITLE, sourceId, entity.note_id);
         });
 
         log.info("Update/sync note tree " + entity.note_tree_id);
@@ -80,7 +75,6 @@ async function updateNoteReordering(entity, sourceId) {
         });
 
         await sync_table.addNoteReorderingSync(entity.note_pid, sourceId);
-        await sql.addAudit(audit_category.CHANGE_POSITION, sourceId, entity.note_pid);
     });
 }
 

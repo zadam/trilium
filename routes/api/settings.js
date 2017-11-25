@@ -4,7 +4,6 @@ const express = require('express');
 const router = express.Router();
 const sql = require('../../services/sql');
 const options = require('../../services/options');
-const audit_category = require('../../services/audit_category');
 const auth = require('../../services/auth');
 const utils = require('../../services/utils');
 
@@ -31,8 +30,6 @@ router.post('/', async (req, res, next) => {
         const optionName = await options.getOption(body['name']);
 
         await sql.doInTransaction(async () => {
-            await sql.addAudit(audit_category.SETTINGS, utils.browserId(req), null, optionName, body['value'], body['name']);
-
             await options.setOption(body['name'], body['value']);
         });
 

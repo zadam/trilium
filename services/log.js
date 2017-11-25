@@ -25,7 +25,7 @@ function error(message) {
     info(message);
 }
 
-const requestBlacklist = [ "/api/audit", "/libraries", "/javascripts", "/images", "/stylesheets" ];
+const requestBlacklist = [ "/libraries", "/javascripts", "/images", "/stylesheets" ];
 
 function request(req) {
     for (const bl of requestBlacklist) {

@@ -103,32 +103,6 @@ async function remove(tableName, noteId) {
     return await execute("DELETE FROM " + tableName + " WHERE note_id = ?", [noteId]);
 }
 
-async function addAudit(category, browserId=null, noteId=null, changeFrom=null, changeTo=null, comment=null) {
-    const now = utils.nowTimestamp();
-    log.info("audit: " + category + ", browserId=" + browserId + ", noteId=" + noteId + ", from=" + changeFrom
-        + ", to=" + changeTo + ", comment=" + comment);
-
-    const id = utils.randomString(14);
-
-    await insert("audit_log", {
-        id: id,
-        date_modified: now,
-        category: category,
-        browser_id: browserId,
-        note_id: noteId,
-        change_from: changeFrom,
-        change_to: changeTo,
-        comment: comment
-    });
-}
-
-async function deleteRecentAudits(category, browserId, noteId) {
-    const deleteCutoff = utils.nowTimestamp() - 10 * 60;
-
-    await execute("DELETE FROM audit_log WHERE category = ? AND browser_id = ? AND note_id = ? AND date_modified > ?",
-            [category, browserId, noteId, deleteCutoff])
-}
-
 async function wrap(func) {
     const thisError = new Error();
 
@@ -190,8 +164,6 @@ module.exports = {
     getFlattenedResults,
     execute,
     executeScript,
-    addAudit,
-    deleteRecentAudits,
     remove,
     doInTransaction
 };

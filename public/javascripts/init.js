@@ -134,7 +134,6 @@ function showAppIfHidden() {
 function initAjax() {
     $.ajaxSetup({
         headers: {
-            'x-browser-id': browserId,
             'x-protected-session-id': typeof protected_session !== 'undefined' ? protected_session.getProtectedSessionId() : null
         }
     });

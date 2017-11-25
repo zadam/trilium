@@ -4,7 +4,6 @@ const express = require('express');
 const router = express.Router();
 const sql = require('../../services/sql');
 const utils = require('../../services/utils');
-const audit_category = require('../../services/audit_category');
 const auth = require('../../services/auth');
 const sync_table = require('../../services/sync_table');
 
@@ -22,7 +21,6 @@ router.put('/:noteTreeId/moveTo/:parentNoteId', auth.checkApiAuth, async (req, r
             [parentNoteId, newNotePos, now, noteTreeId]);
 
         await sync_table.addNoteTreeSync(noteTreeId);
-        await sql.addAudit(audit_category.CHANGE_PARENT, utils.browserId(req), null, null, parentNoteId);
     });
 
     res.send({});
@@ -47,7 +45,6 @@ router.put('/:noteTreeId/moveBefore/:beforeNoteTreeId', async (req, res, next) =
 
             await sync_table.addNoteTreeSync(noteTreeId);
             await sync_table.addNoteReorderingSync(beforeNote.note_pid);
-            await sql.addAudit(audit_category.CHANGE_POSITION, utils.browserId(req), beforeNote.note_pid);
         });
 
         res.send({});
@@ -76,7 +73,6 @@ router.put('/:noteTreeId/moveAfter/:afterNoteTreeId', async (req, res, next) => 
 
             await sync_table.addNoteTreeSync(noteTreeId);
             await sync_table.addNoteReorderingSync(afterNote.note_pid);
-            await sql.addAudit(audit_category.CHANGE_POSITION, utils.browserId(req), afterNote.note_pid);
         });
 
         res.send({});
@@ -175,7 +171,6 @@ router.put('/:noteId/cloneAfter/:afterNoteTreeId', async (req, res, next) => {
 
         await sync_table.addNoteTreeSync(noteTree.note_tree_id);
         await sync_table.addNoteReorderingSync(afterNote.note_pid);
-        await sql.addAudit(audit_category.CHANGE_POSITION, utils.browserId(req), afterNote.note_pid);
 
         res.send({
             success: true
