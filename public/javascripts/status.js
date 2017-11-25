@@ -26,17 +26,17 @@ const status = (function() {
             }
         });
 
-        if (resp.changedTree) {
-            console.log("Reloading tree because of background changes");
-
-            noteTree.reload();
-        }
-
-        if (resp.changedCurrentNote) {
-            showMessage('Reloading note because background change');
-
-            noteEditor.reload();
-        }
+        // if (resp.changedTree) {
+        //     console.log("Reloading tree because of background changes");
+        //
+        //     noteTree.reload();
+        // }
+        //
+        // if (resp.changedCurrentNote) {
+        //     showMessage('Reloading note because background change');
+        //
+        //     noteEditor.reload();
+        // }
 
         changesToPushCountEl.html(resp.changesToPushCount);
     }

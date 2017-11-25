@@ -17,6 +17,7 @@
     "body-parser": "~1.18.2",
     "cookie-parser": "~1.4.3",
     "debug": "~3.1.0",
+    "devtron": "^1.4.0",
     "ejs": "~2.5.7",
     "electron": "^1.8.2-beta.2",
     "electron-debug": "^1.0.0",
@@ -32,7 +33,7 @@
     "session-file-store": "^1.1.2",
     "simple-node-logger": "^0.93.30",
     "sqlite": "^2.8.0",
-    "devtron": "^1.4.0"
+    "ws": "^3.3.2"
   },
   "devDependencies": {
     "electron-compile": "^6.4.2",

@@ -140,3 +140,30 @@ function initAjax() {
 }
 
 initAjax();
+
+// use wss for secure messaging
+const ws = new WebSocket("ws://" + location.host);
+ws.onopen = function (event) {
+};
+
+ws.onmessage = function (event) {
+    console.log(event.data);
+
+    const message = JSON.parse(event.data);
+
+    if (message.type === 'sync') {
+        const data = message.data;
+
+        if (data.notes_tree) {
+            console.log("Reloading tree because of background changes");
+
+            noteTree.reload();
+        }
+
+        if (data.notes && data.notes.includes(noteEditor.getCurrentNoteId())) {
+            showMessage('Reloading note because background change');
+
+            noteEditor.reload();
+        }
+    }
+};

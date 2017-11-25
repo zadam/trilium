@@ -16,6 +16,7 @@ const https = require('https');
 const config = require('../services/config');
 const log = require('../services/log');
 const app_info = require('../services/app_info');
+const messaging = require('../services/messaging');
 
 const port = normalizePort(config['Network']['port'] || '3000');
 app.set('port', port);
@@ -23,7 +24,7 @@ app.set('port', port);
 /**
  * Create HTTP server.
  */
-let server;
+let httpServer;
 
 if (config['Network']['https']) {
     const options = {
@@ -31,12 +32,12 @@ if (config['Network']['https']) {
         cert: fs.readFileSync(config['Network']['certPath'])
     };
 
-    server = https.createServer(options, app);
+    httpServer = https.createServer(options, app);
 
     log.info("App HTTPS server starting up at port " + port);
 }
 else {
-    server = http.createServer(app);
+    httpServer = http.createServer(app);
 
     log.info("App HTTP server starting up at port " + port);
 }
@@ -47,9 +48,11 @@ log.info(JSON.stringify(app_info, null, 2));
  * Listen on provided port, on all network interfaces.
  */
 
-server.listen(port);
-server.on('error', onError);
-server.on('listening', onListening);
+httpServer.listen(port);
+httpServer.on('error', onError);
+httpServer.on('listening', onListening);
+
+messaging.init(httpServer);
 
 /**
  * Normalize a port into a number, string, or false.
@@ -106,7 +109,7 @@ function onError(error) {
  */
 
 function onListening() {
-    const addr = server.address();
+    const addr = httpServer.address();
     const bind = typeof addr === 'string'
         ? 'pipe ' + addr
         : 'port ' + addr.port;
