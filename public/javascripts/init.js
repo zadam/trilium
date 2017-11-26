@@ -176,7 +176,7 @@ function connectWebSocket() {
     ws.onmessage = messageHandler;
     ws.onclose = function(){
         // Try to reconnect in 5 seconds
-        setTimeout(() => connectWebSocket(), 1000);
+        setTimeout(() => connectWebSocket(), 5000);
     };
 }
 
@@ -185,7 +185,7 @@ connectWebSocket();
 let lastPingTs = new Date().getTime();
 let connectionBrokenNotification = null;
 
-setInterval(() => {
+setInterval(async () => {
     if (new Date().getTime() - lastPingTs > 5000) {
         if (!connectionBrokenNotification) {
             connectionBrokenNotification = $.notify({
@@ -194,12 +194,12 @@ setInterval(() => {
             },{
                 // settings
                 type: 'danger',
-                delay: 100000000
+                delay: 100000000 // keep it until we explicitly close it
             });
         }
     }
     else if (connectionBrokenNotification) {
-        connectionBrokenNotification.close();
+        await connectionBrokenNotification.close();
         connectionBrokenNotification = null;
 
         showMessage("Re-connected to server");

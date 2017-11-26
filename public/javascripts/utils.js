@@ -9,7 +9,7 @@ function showMessage(message) {
     },{
         // settings
         type: 'success',
-        delay: 1500
+        delay: 3000
     });
 }
 
