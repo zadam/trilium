@@ -1,23 +1,29 @@
 "use strict";
 
-function showMessage(str) {
-    console.log("message: ", str);
+function showMessage(message) {
+    console.log("message: ", message);
 
-    const top = $("#top-message");
-
-    top.fadeIn(1500).css("display","inline-block");
-    top.html(str);
-    top.fadeOut(1500);
+    $.notify({
+        // options
+        message: message
+    },{
+        // settings
+        type: 'success',
+        delay: 1500
+    });
 }
 
-function showError(str) {
-    console.log("error: ", str);
+function showError(message) {
+    console.log("error: ", message);
 
-    const error = $("#error-message");
-
-    error.show().css("display","inline-block");
-    error.html(str);
-    error.fadeOut(10000);
+    $.notify({
+        // options
+        message: message
+    },{
+        // settings
+        type: 'danger',
+        delay: 10000
+    });
 }
 
 function getDateFromTS(timestamp) {
