@@ -152,6 +152,7 @@ ws.onmessage = function (event) {
     const message = JSON.parse(event.data);
 
     if (message.type === 'sync') {
+        lastPingTs = new Date().getTime();
         const data = message.data;
 
         if (data.notes_tree) {
@@ -170,3 +171,11 @@ ws.onmessage = function (event) {
         changesToPushCountEl.html(message.changesToPushCount);
     }
 };
+
+let lastPingTs = new Date().getTime();
+
+setInterval(() => {
+    if (new Date().getTime() - lastPingTs > 5000) {
+        showError("No communication with server");
+    }
+}, 3000);
