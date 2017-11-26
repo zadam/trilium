@@ -141,12 +141,7 @@ function initAjax() {
 
 initAjax();
 
-// use wss for secure messaging
-const ws = new WebSocket("ws://" + location.host);
-ws.onopen = function (event) {
-};
-
-ws.onmessage = function (event) {
+function messageHandler(event) {
     console.log(event.data);
 
     const message = JSON.parse(event.data);
@@ -170,12 +165,43 @@ ws.onmessage = function (event) {
         const changesToPushCountEl = $("#changesToPushCount");
         changesToPushCountEl.html(message.changesToPushCount);
     }
-};
+}
+
+let ws = null;
+
+function connectWebSocket() {
+    // use wss for secure messaging
+    ws = new WebSocket("ws://" + location.host);
+    ws.onopen = function (event) {};
+    ws.onmessage = messageHandler;
+    ws.onclose = function(){
+        // Try to reconnect in 5 seconds
+        setTimeout(() => connectWebSocket(), 1000);
+    };
+}
+
+connectWebSocket();
 
 let lastPingTs = new Date().getTime();
+let connectionBrokenNotification = null;
 
 setInterval(() => {
     if (new Date().getTime() - lastPingTs > 5000) {
-        showError("No communication with server");
+        if (!connectionBrokenNotification) {
+            connectionBrokenNotification = $.notify({
+                // options
+                message: "Lost connection to server"
+            },{
+                // settings
+                type: 'danger',
+                delay: 100000000
+            });
+        }
+    }
+    else if (connectionBrokenNotification) {
+        connectionBrokenNotification.close();
+        connectionBrokenNotification = null;
+
+        showMessage("Re-connected to server");
     }
 }, 3000);
