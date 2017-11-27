@@ -66,7 +66,7 @@ const noteEditor = (function() {
         note.detail.note_text = contents;
 
         if (!note.detail.is_protected) {
-            const linkRegexp = /<a[^>]+?href="[^"]*app#([A-Za-z0-9]{22})"[^>]*?>[^<]+?<\/a>/g;
+            const linkRegexp = /<a[^>]+?href="[^"]*app#([A-Za-z0-9/]+)"[^>]*?>[^<]+?<\/a>/g;
             let match;
 
             while (match = linkRegexp.exec(contents)) {

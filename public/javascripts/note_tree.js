@@ -180,6 +180,11 @@ const noteTree = (function() {
             if (childNoteId !== null) {
                 const parents = childToParents[childNoteId];
 
+                if (!parents) {
+                    console.error("No parents found for " + childNoteId);
+                    return;
+                }
+
                 if (parentNoteId === null || !parents.includes(parentNoteId)) {
                     console.log("Did not find parent " + parentNoteId + " for child " + childNoteId);
 
