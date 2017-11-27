@@ -52,8 +52,6 @@ const editTreePrefix = (function() {
         return false;
     });
 
-    $(document).bind('keydown', 'alt+l', showDialog);
-
     return {
         showDialog
     };
