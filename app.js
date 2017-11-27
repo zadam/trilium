@@ -10,6 +10,8 @@ const FileStore = require('session-file-store')(session);
 const os = require('os');
 const sessionSecret = require('./services/session_secret');
 
+require('./services/ping_job');
+
 const app = express();
 
 // view engine setup
