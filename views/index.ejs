@@ -256,6 +256,17 @@
       <ul id="event-log-list"></ul>
     </div>
 
+    <div id="edit-tree-prefix-dialog" title="Edit tree prefix" style="display: none; padding: 20px;">
+      <form id="edit-tree-prefix-form">
+        <div class="form-group">
+          <label for="tree-prefix-input">Prefix</label>
+          <input id="tree-prefix-input" style="width: 20em;"> - <span id="tree-prefix-note-title"></span>
+        </div>
+
+        <button name="action" class="btn btn-sm">Save</button>
+      </form>
+    </div>
+
     <div id="tooltip" style="display: none;"></div>
 
     <script type="text/javascript">
@@ -312,6 +323,7 @@
     <script src="javascripts/dialogs/note_history.js"></script>
     <script src="javascripts/dialogs/recent_changes.js"></script>
     <script src="javascripts/dialogs/event_log.js"></script>
+    <script src="javascripts/dialogs/edit_tree_prefix.js"></script>
 
     <script src="javascripts/link.js"></script>
     <script src="javascripts/status.js"></script>

@@ -48,4 +48,17 @@ router.put('/:noteId/protectSubTree/:isProtected', auth.checkApiAuth, async (req
     res.send({});
 });
 
+router.put('/:noteTreeId/setPrefix', auth.checkApiAuth, async (req, res, next) => {
+    const noteTreeId = req.params.noteTreeId;
+    const prefix = req.body.prefix;
+
+    await sql.doInTransaction(async () => {
+        await sql.execute("UPDATE notes_tree SET prefix = ? WHERE note_tree_id = ?", [prefix, noteTreeId]);
+
+        await sync_table.addNoteTreeSync(noteTreeId);
+    });
+
+    res.send({});
+});
+
 module.exports = router;

@@ -54,9 +54,11 @@ const contextMenu = (function() {
         delegate: "span.fancytree-title",
         autoFocus: true,
         menu: [
-            {title: "Insert note here", cmd: "insertNoteHere", uiIcon: "ui-icon-pencil"},
-            {title: "Insert child note", cmd: "insertChildNote", uiIcon: "ui-icon-pencil"},
+            {title: "Insert note here", cmd: "insertNoteHere", uiIcon: "ui-icon-plus"},
+            {title: "Insert child note", cmd: "insertChildNote", uiIcon: "ui-icon-plus"},
             {title: "Delete", cmd: "delete", uiIcon: "ui-icon-trash"},
+            {title: "----"},
+            {title: "Edit tree prefix", cmd: "editTreePrefix", uiIcon: "ui-icon-pencil"},
             {title: "----"},
             {title: "Protect sub-tree", cmd: "protectSubTree", uiIcon: "ui-icon-locked"},
             {title: "Unprotect sub-tree", cmd: "unprotectSubTree", uiIcon: "ui-icon-unlocked"},
@@ -90,6 +92,9 @@ const contextMenu = (function() {
             }
             else if (ui.cmd === "insertChildNote") {
                 noteTree.createNote(node, node.data.note_id, 'into');
+            }
+            else if (ui.cmd === "editTreePrefix") {
+                editTreePrefix.showDialog(node);
             }
             else if (ui.cmd === "protectSubTree") {
                 protected_session.protectSubTree(node.data.note_id, true);

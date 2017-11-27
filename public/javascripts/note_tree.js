@@ -143,7 +143,7 @@ const noteTree = (function() {
                 note_pid: noteTree.note_pid,
                 note_tree_id: noteTree.note_tree_id,
                 is_protected: noteTree.is_protected,
-                title: noteIdToTitle[noteTree.note_id],
+                title: (noteTree.prefix ? (noteTree.prefix + " - ") : "") + noteIdToTitle[noteTree.note_id],
                 extraClasses: getExtraClasses(noteTree),
                 refKey: noteTree.note_id,
                 expanded: noteTree.is_expanded

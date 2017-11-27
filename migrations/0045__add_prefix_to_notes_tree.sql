@@ -1,0 +1,1 @@
+ALTER TABLE notes_tree ADD COLUMN `prefix` TEXT
