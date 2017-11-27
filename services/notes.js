@@ -11,24 +11,24 @@ async function createNewNote(parentNoteId, note) {
 
     let newNotePos = 0;
 
-    if (note.target === 'into') {
-        const maxNotePos = await sql.getSingleValue('SELECT MAX(note_pos) FROM notes_tree WHERE note_pid = ? AND is_deleted = 0', [parentNoteId]);
-
-        newNotePos = maxNotePos === null ? 0 : maxNotePos + 1;
-    }
-    else if (note.target === 'after') {
-        const afterNote = await sql.getSingleResult('SELECT note_pos FROM notes_tree WHERE note_tree_id = ?', [note.target_note_tree_id]);
-
-        newNotePos = afterNote.note_pos + 1;
-
-        await sql.execute('UPDATE notes_tree SET note_pos = note_pos + 1, date_modified = ? WHERE note_pid = ? AND note_pos > ? AND is_deleted = 0',
-            [utils.nowTimestamp(), parentNoteId, afterNote.note_pos]);
-    }
-    else {
-        throw new Error('Unknown target: ' + note.target);
-    }
-
     await sql.doInTransaction(async () => {
+        if (note.target === 'into') {
+            const maxNotePos = await sql.getSingleValue('SELECT MAX(note_pos) FROM notes_tree WHERE note_pid = ? AND is_deleted = 0', [parentNoteId]);
+
+            newNotePos = maxNotePos === null ? 0 : maxNotePos + 1;
+        }
+        else if (note.target === 'after') {
+            const afterNote = await sql.getSingleResult('SELECT note_pos FROM notes_tree WHERE note_tree_id = ?', [note.target_note_tree_id]);
+
+            newNotePos = afterNote.note_pos + 1;
+
+            await sql.execute('UPDATE notes_tree SET note_pos = note_pos + 1, date_modified = ? WHERE note_pid = ? AND note_pos > ? AND is_deleted = 0',
+                [utils.nowTimestamp(), parentNoteId, afterNote.note_pos]);
+        }
+        else {
+            throw new Error('Unknown target: ' + note.target);
+        }
+
         await sync_table.addNoteTreeSync(noteTreeId);
         await sync_table.addNoteSync(noteId);
 

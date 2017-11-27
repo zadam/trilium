@@ -346,6 +346,9 @@ const noteTree = (function() {
                 if (toNode !== null) {
                     treeChanges.moveToNode(node, toNode);
                 }
+            },
+            "f2": node => {
+                editTreePrefix.showDialog();
             }
         };
 

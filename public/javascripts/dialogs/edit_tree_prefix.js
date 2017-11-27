@@ -6,10 +6,10 @@ const editTreePrefix = (function() {
     const treePrefixInputEl = $("#tree-prefix-input");
     const noteTitleEl = $('#tree-prefix-note-title');
 
-    function showDialog() {
+    async function showDialog() {
         glob.activeDialog = dialogEl;
 
-        dialogEl.dialog({
+        await dialogEl.dialog({
             modal: true,
             width: 800
         });
@@ -36,6 +36,8 @@ const editTreePrefix = (function() {
                 prefix: prefix
             }),
             success: () => {
+                currentNode.data.prefix = prefix;
+
                 const noteTitle = noteTree.getNoteTitle(currentNode.data.note_id);
 
                 const title = (prefix ? (prefix + " - ") : "") + noteTitle;

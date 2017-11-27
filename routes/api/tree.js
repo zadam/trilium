@@ -50,10 +50,10 @@ router.put('/:noteId/protectSubTree/:isProtected', auth.checkApiAuth, async (req
 
 router.put('/:noteTreeId/setPrefix', auth.checkApiAuth, async (req, res, next) => {
     const noteTreeId = req.params.noteTreeId;
-    const prefix = req.body.prefix;
+    const prefix = utils.isEmptyOrWhitespace(req.body.prefix) ? null : req.body.prefix;
 
     await sql.doInTransaction(async () => {
-        await sql.execute("UPDATE notes_tree SET prefix = ? WHERE note_tree_id = ?", [prefix, noteTreeId]);
+        await sql.execute("UPDATE notes_tree SET prefix = ?, date_modified = ? WHERE note_tree_id = ?", [prefix, utils.nowTimestamp(), noteTreeId]);
 
         await sync_table.addNoteTreeSync(noteTreeId);
     });

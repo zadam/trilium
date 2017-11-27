@@ -6,6 +6,7 @@ const auth = require('../../services/auth');
 const sql = require('../../services/sql');
 const utils = require('../../services/utils');
 const notes = require('../../services/notes');
+const log = require('../../services/log');
 const protected_session = require('../../services/protected_session');
 const data_encryption = require('../../services/data_encryption');
 const RequestContext = require('../../services/request_context');
@@ -14,6 +15,12 @@ router.get('/:noteId', auth.checkApiAuth, async (req, res, next) => {
     const noteId = req.params.noteId;
 
     const detail = await sql.getSingleResult("SELECT * FROM notes WHERE note_id = ?", [noteId]);
+
+    if (!detail) {
+        log.info("Note " + noteId + " has not been found.");
+
+        return res.status(404).send({});
+    }
 
     if (detail.is_protected) {
         const dataKey = protected_session.getDataKey(req);

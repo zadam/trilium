@@ -66,6 +66,10 @@ function hash(text) {
     return crypto.createHash('sha1').update(text).digest('base64');
 }
 
+function isEmptyOrWhitespace(str) {
+    return str === null || str.match(/^ *$/) !== null;
+}
+
 
 module.exports = {
     randomSecureToken,
@@ -79,5 +83,6 @@ module.exports = {
     hmac,
     isElectron,
     formatTwoTimestamps,
-    hash
+    hash,
+    isEmptyOrWhitespace
 };

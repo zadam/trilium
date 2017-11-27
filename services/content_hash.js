@@ -17,7 +17,7 @@ async function getContentHash() {
         "is_deleted FROM notes ORDER BY note_id"));
 
     hash = updateHash(hash, await sql.getResults("SELECT note_tree_id, note_id, note_pid, note_pos, date_modified, " +
-        "is_deleted FROM notes_tree ORDER BY note_tree_id"));
+        "is_deleted, prefix FROM notes_tree ORDER BY note_tree_id"));
 
     hash = updateHash(hash, await sql.getResults("SELECT note_history_id, note_id, note_title, note_text, " +
         "date_modified_from, date_modified_to FROM notes_history ORDER BY note_history_id"));
