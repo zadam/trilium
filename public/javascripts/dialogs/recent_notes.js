@@ -109,13 +109,13 @@ const recentNotes = (function() {
     }
 
     async function addCurrentAsChild() {
-        await treeChanges.cloneNoteTo(noteTree.getCurrentNoteId(), getSelectedNoteId());
+        await treeChanges.cloneNoteTo(noteEditor.getCurrentNoteId(), getSelectedNoteId());
 
         dialogEl.dialog("close");
     }
 
     async function addRecentAsChild() {
-        await treeChanges.cloneNoteTo(getSelectedNoteId(), noteTree.getCurrentNoteId());
+        await treeChanges.cloneNoteTo(getSelectedNoteId(), noteEditor.getCurrentNoteId());
 
         dialogEl.dialog("close");
     }

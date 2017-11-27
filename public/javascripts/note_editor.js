@@ -21,10 +21,6 @@ const noteEditor = (function() {
         return currentNote ? currentNote.detail.note_id : null;
     }
 
-    function getCurrentNoteLoadTime() {
-        return currentNote ? currentNote.loadTime : null;
-    }
-
     function noteChanged() {
         if (noteChangeDisabled) {
             return;
@@ -203,7 +199,6 @@ const noteEditor = (function() {
         loadNote,
         getCurrentNote,
         getCurrentNoteId,
-        getCurrentNoteLoadTime,
         newNoteCreated
     };
 })();

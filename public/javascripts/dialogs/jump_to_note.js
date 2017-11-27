@@ -68,12 +68,12 @@ const jumpToNote = (function() {
             }
         }
         else if (action === 'add-current-as-child') {
-            treeChanges.cloneNoteTo(noteTree.getCurrentNoteId(), getSelectedNoteId());
+            treeChanges.cloneNoteTo(noteEditor.getCurrentNoteId(), getSelectedNoteId());
 
             dialogEl.dialog("close");
         }
         else if (action === 'add-selected-as-child') {
-            treeChanges.cloneNoteTo(getSelectedNoteId(), noteTree.getCurrentNoteId());
+            treeChanges.cloneNoteTo(getSelectedNoteId(), noteEditor.getCurrentNoteId());
 
             dialogEl.dialog("close");
         }
