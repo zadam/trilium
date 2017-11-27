@@ -143,6 +143,7 @@ const noteTree = (function() {
                 note_pid: noteTree.note_pid,
                 note_tree_id: noteTree.note_tree_id,
                 is_protected: noteTree.is_protected,
+                prefix: noteTree.prefix,
                 title: (noteTree.prefix ? (noteTree.prefix + " - ") : "") + noteIdToTitle[noteTree.note_id],
                 extraClasses: getExtraClasses(noteTree),
                 refKey: noteTree.note_id,
@@ -544,7 +545,11 @@ const noteTree = (function() {
         if (currentNoteId) {
             noteIdToTitle[currentNoteId] = title;
 
-            getCurrentClones().map(clone => clone.setTitle(title));
+            getCurrentClones().map(clone => {
+                const fullTitle = (clone.data.prefix ? (clone.data.prefix + " - ") : "") + title;
+
+                clone.setTitle(fullTitle)
+            });
         }
     }
 
