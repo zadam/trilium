@@ -344,17 +344,17 @@ const noteTree = (function() {
                 const beforeNode = node.getPrevSibling();
 
                 if (beforeNode !== null) {
-                    treeChanges.moveBeforeNode(node, beforeNode);
+                    treeChanges.moveBeforeNode(node, beforeNode, false);
                 }
             },
             "shift+down": node => {
                 let afterNode = node.getNextSibling();
                 if (afterNode !== null) {
-                    treeChanges.moveAfterNode(node, afterNode);
+                    treeChanges.moveAfterNode(node, afterNode, false);
                 }
             },
             "shift+left": node => {
-                treeChanges.moveNodeUp(node);
+                treeChanges.moveNodeUpInHierarchy(node);
             },
             "shift+right": node => {
                 let toNode = node.getPrevSibling();

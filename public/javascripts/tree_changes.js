@@ -1,7 +1,7 @@
 "use strict";
 
 const treeChanges = (function() {
-    async function moveBeforeNode(node, beforeNode) {
+    async function moveBeforeNode(node, beforeNode, changeInPath = true) {
         await $.ajax({
             url: baseApiUrl + 'notes/' + node.data.note_tree_id + '/moveBefore/' + beforeNode.data.note_tree_id,
             type: 'PUT',
@@ -10,10 +10,14 @@ const treeChanges = (function() {
 
         node.moveTo(beforeNode, 'before');
 
+        if (changeInPath) {
+            recentNotes.removeRecentNote(noteTree.getCurrentNotePath());
+        }
+
         noteTree.setCurrentNotePathToHash(node);
     }
 
-    async function moveAfterNode(node, afterNode) {
+    async function moveAfterNode(node, afterNode, changeInPath = true) {
         await $.ajax({
             url: baseApiUrl + 'notes/' + node.data.note_tree_id + '/moveAfter/' + afterNode.data.note_tree_id,
             type: 'PUT',
@@ -21,6 +25,10 @@ const treeChanges = (function() {
         });
 
         node.moveTo(afterNode, 'after');
+
+        if (changeInPath) {
+            recentNotes.removeRecentNote(noteTree.getCurrentNotePath());
+        }
 
         noteTree.setCurrentNotePathToHash(node);
     }
@@ -55,6 +63,8 @@ const treeChanges = (function() {
         toNode.folder = true;
         toNode.renderTitle();
 
+        recentNotes.removeRecentNote(noteTree.getCurrentNotePath());
+
         noteTree.setCurrentNotePathToHash(node);
     }
 
@@ -88,7 +98,7 @@ const treeChanges = (function() {
             node.getParent().renderTitle();
         }
 
-        recentNotes.removeRecentNote(node.note_tree_id);
+        recentNotes.removeRecentNote(noteTree.getCurrentNotePath());
 
         let next = node.getNextSibling();
         if (!next) {
@@ -103,24 +113,25 @@ const treeChanges = (function() {
         noteTree.setCurrentNotePathToHash(next);
     }
 
-    async function moveNodeUp(node) {
-        if (node.getParent() !== null) {
-            $.ajax({
-                url: baseApiUrl + 'notes/' + node.data.note_tree_id + '/moveAfter/' + node.getParent().data.note_tree_id,
-                type: 'PUT',
-                contentType: "application/json",
-                success: () => {
-                    if (node.getParent() !== null && node.getParent().getChildren().length <= 1) {
-                        node.getParent().folder = false;
-                        node.getParent().renderTitle();
-                    }
-
-                    node.moveTo(node.getParent(), 'after');
-
-                    noteTree.setCurrentNotePathToHash(node);
-                }
-            });
+    async function moveNodeUpInHierarchy(node) {
+        if (node.getParent() === null) {
+            return;
         }
+
+        await $.ajax({
+            url: baseApiUrl + 'notes/' + node.data.note_tree_id + '/moveAfter/' + node.getParent().data.note_tree_id,
+            type: 'PUT',
+            contentType: "application/json",
+        });
+
+        if (node.getParent() !== null && node.getParent().getChildren().length <= 1) {
+            node.getParent().folder = false;
+            node.getParent().renderTitle();
+        }
+
+        node.moveTo(node.getParent(), 'after');
+
+        noteTree.setCurrentNotePathToHash(node);
     }
 
     return {
@@ -128,7 +139,7 @@ const treeChanges = (function() {
         moveAfterNode,
         moveToNode,
         deleteNode,
-        moveNodeUp,
+        moveNodeUpInHierarchy,
         cloneNoteAfter,
         cloneNoteTo
     };
