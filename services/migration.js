@@ -43,13 +43,13 @@ async function migrate() {
         try {
             log.info("Attempting migration to version " + mig.dbVersion);
 
-            await sql.doInTransaction(async db => {
+            await sql.doInTransaction(async () => {
                 if (mig.type === 'sql') {
                     const migrationSql = fs.readFileSync(MIGRATIONS_DIR + "/" + mig.file).toString('utf8');
 
                     console.log("Migration with SQL script: " + migrationSql);
 
-                    await sql.executeScript(db, migrationSql);
+                    await sql.executeScript(migrationSql);
                 }
                 else if (mig.type === 'js') {
                     console.log("Migration with JS module");
@@ -61,7 +61,7 @@ async function migrate() {
                     throw new Error("Unknown migration type " + mig.type);
                 }
 
-                await options.setOption(db, "db_version", mig.dbVersion);
+                await options.setOption("db_version", mig.dbVersion);
             });
 
             log.info("Migration to version " + mig.dbVersion + " has been successful.");

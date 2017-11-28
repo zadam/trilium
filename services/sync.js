@@ -149,8 +149,8 @@ async function pullSync(syncContext) {
             throw new Error("Unrecognized entity type " + sync.entity_name);
         }
 
-        await sql.doInTransaction(async db => {
-            await options.setOption(db, 'last_synced_pull', sync.id);
+        await sql.doInTransaction(async () => {
+            await options.setOption('last_synced_pull', sync.id);
         });
     }
 
@@ -184,8 +184,8 @@ async function pushSync(syncContext) {
 
         lastSyncedPush = sync.id;
 
-        await sql.doInTransaction(async db => {
-            await options.setOption(db, 'last_synced_push', lastSyncedPush);
+        await sql.doInTransaction(async () => {
+            await options.setOption('last_synced_push', lastSyncedPush);
         });
     }
 }

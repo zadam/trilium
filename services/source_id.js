@@ -10,8 +10,8 @@ let allSourceIds = [];
 
 sql.dbReady.then(async () => {
     try {
-        await sql.doInTransaction(async db => {
-            await sql.insert(db, "source_ids", {
+        await sql.doInTransaction(async () => {
+            await sql.insert("source_ids", {
                 source_id: currentSourceId,
                 date_created: utils.nowTimestamp()
             });

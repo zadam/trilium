@@ -12,9 +12,9 @@ const treeChanges = (function() {
 
         if (changeInPath) {
             recentNotes.removeRecentNote(noteTree.getCurrentNotePath());
-        }
 
-        noteTree.setCurrentNotePathToHash(node);
+            noteTree.setCurrentNotePathToHash(node);
+        }
     }
 
     async function moveAfterNode(node, afterNode, changeInPath = true) {
@@ -28,9 +28,9 @@ const treeChanges = (function() {
 
         if (changeInPath) {
             recentNotes.removeRecentNote(noteTree.getCurrentNotePath());
-        }
 
-        noteTree.setCurrentNotePathToHash(node);
+            noteTree.setCurrentNotePathToHash(node);
+        }
     }
 
     // beware that first arg is noteId and second is noteTreeId!

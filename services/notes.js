@@ -11,7 +11,7 @@ async function createNewNote(parentNoteId, note) {
 
     let newNotePos = 0;
 
-    await sql.doInTransaction(async db => {
+    await sql.doInTransaction(async () => {
         if (note.target === 'into') {
             const maxNotePos = await sql.getSingleValue('SELECT MAX(note_pos) FROM notes_tree WHERE note_pid = ? AND is_deleted = 0', [parentNoteId]);
 
@@ -22,19 +22,19 @@ async function createNewNote(parentNoteId, note) {
 
             newNotePos = afterNote.note_pos + 1;
 
-            await sql.execute(db, 'UPDATE notes_tree SET note_pos = note_pos + 1, date_modified = ? WHERE note_pid = ? AND note_pos > ? AND is_deleted = 0',
+            await sql.execute('UPDATE notes_tree SET note_pos = note_pos + 1, date_modified = ? WHERE note_pid = ? AND note_pos > ? AND is_deleted = 0',
                 [utils.nowTimestamp(), parentNoteId, afterNote.note_pos]);
         }
         else {
             throw new Error('Unknown target: ' + note.target);
         }
 
-        await sync_table.addNoteTreeSync(db, noteTreeId);
-        await sync_table.addNoteSync(db, noteId);
+        await sync_table.addNoteTreeSync(noteTreeId);
+        await sync_table.addNoteSync(noteId);
 
         const now = utils.nowTimestamp();
 
-        await sql.insert(db, "notes", {
+        await sql.insert("notes", {
             'note_id': noteId,
             'note_title': note.note_title,
             'note_text': '',
@@ -43,7 +43,7 @@ async function createNewNote(parentNoteId, note) {
             'is_protected': note.is_protected
         });
 
-        await sql.insert(db, "notes_tree", {
+        await sql.insert("notes_tree", {
             'note_tree_id': noteTreeId,
             'note_id': noteId,
             'note_pid': parentNoteId,
@@ -65,10 +65,10 @@ async function encryptNote(note, ctx) {
     note.detail.note_text = data_encryption.encrypt(ctx.getDataKey(), data_encryption.noteTextIv(note.detail.note_id), note.detail.note_text);
 }
 
-async function protectNoteRecursively(db, noteId, dataKey, protect) {
+async function protectNoteRecursively(noteId, dataKey, protect) {
     const note = await sql.getSingleResult("SELECT * FROM notes WHERE note_id = ?", [noteId]);
 
-    await protectNote(db, note, dataKey, protect);
+    await protectNote(note, dataKey, protect);
 
     const children = await sql.getFlattenedResults("note_id", "SELECT note_id FROM notes_tree WHERE note_pid = ?", [noteId]);
 
@@ -77,7 +77,7 @@ async function protectNoteRecursively(db, noteId, dataKey, protect) {
     }
 }
 
-async function protectNote(db, note, dataKey, protect) {
+async function protectNote(note, dataKey, protect) {
     let changed = false;
 
     if (protect && !note.is_protected) {
@@ -98,16 +98,16 @@ async function protectNote(db, note, dataKey, protect) {
     if (changed) {
         console.log("Updating...");
 
-        await sql.execute(db, "UPDATE notes SET note_title = ?, note_text = ?, is_protected = ? WHERE note_id = ?",
+        await sql.execute("UPDATE notes SET note_title = ?, note_text = ?, is_protected = ? WHERE note_id = ?",
             [note.note_title, note.note_text, note.is_protected, note.note_id]);
 
-        await sync_table.addNoteSync(db, note.note_id);
+        await sync_table.addNoteSync(note.note_id);
     }
 
-    await protectNoteHistory(db, note.note_id, dataKey, protect);
+    await protectNoteHistory(note.note_id, dataKey, protect);
 }
 
-async function protectNoteHistory(db, noteId, dataKey, protect) {
+async function protectNoteHistory(noteId, dataKey, protect) {
     const historyToChange = await sql.getResults("SELECT * FROM notes_history WHERE note_id = ? AND is_protected != ?", [noteId, protect]);
 
     for (const history of historyToChange) {
@@ -122,10 +122,10 @@ async function protectNoteHistory(db, noteId, dataKey, protect) {
             history.is_protected = false;
         }
 
-        await sql.execute(db, "UPDATE notes_history SET note_title = ?, note_text = ?, is_protected = ? WHERE note_history_id = ?",
+        await sql.execute("UPDATE notes_history SET note_title = ?, note_text = ?, is_protected = ? WHERE note_history_id = ?",
             [history.note_title, history.note_text, history.is_protected, history.note_history_id]);
 
-        await sync_table.addNoteHistorySync(db, history.note_history_id);
+        await sync_table.addNoteHistorySync(history.note_history_id);
     }
 }
 
@@ -147,11 +147,11 @@ async function updateNote(noteId, newNote, ctx) {
 
     const existingNoteHistoryId = await sql.getSingleValue("SELECT note_history_id FROM notes_history WHERE note_id = ? AND date_modified_from >= ?", [noteId, historyCutoff]);
 
-    await sql.doInTransaction(async db => {
+    await sql.doInTransaction(async () => {
         if (!existingNoteHistoryId) {
             const newNoteHistoryId = utils.newNoteHistoryId();
 
-            await sql.insert(db, 'notes_history', {
+            await sql.insert('notes_history', {
                 note_history_id: newNoteHistoryId,
                 note_id: noteId,
                 note_title: noteTitleForHistory,
@@ -161,53 +161,53 @@ async function updateNote(noteId, newNote, ctx) {
                 date_modified_to: now
             });
 
-            await sync_table.addNoteHistorySync(db, newNoteHistoryId);
+            await sync_table.addNoteHistorySync(newNoteHistoryId);
         }
 
-        await protectNoteHistory(db, noteId, ctx.getDataKeyOrNull(), newNote.detail.is_protected);
+        await protectNoteHistory(noteId, ctx.getDataKeyOrNull(), newNote.detail.is_protected);
 
-        await sql.execute(db, "UPDATE notes SET note_title = ?, note_text = ?, is_protected = ?, date_modified = ? WHERE note_id = ?", [
+        await sql.execute("UPDATE notes SET note_title = ?, note_text = ?, is_protected = ?, date_modified = ? WHERE note_id = ?", [
             newNote.detail.note_title,
             newNote.detail.note_text,
             newNote.detail.is_protected,
             now,
             noteId]);
 
-        await sql.remove(db, "images", noteId);
+        await sql.remove("images", noteId);
 
         for (const img of newNote.images) {
             img.image_data = atob(img.image_data);
 
-            await sql.insert(db, "images", img);
+            await sql.insert("images", img);
         }
 
-        await sql.remove(db, "links", noteId);
+        await sql.remove("links", noteId);
 
         for (const link in newNote.links) {
-            //await sql.insert(db, "links", link);
+            //await sql.insert("links", link);
         }
 
-        await sync_table.addNoteSync(db, noteId);
+        await sync_table.addNoteSync(noteId);
     });
 }
 
-async function deleteNote(db, noteTreeId) {
+async function deleteNote(noteTreeId) {
     const now = utils.nowTimestamp();
-    await sql.execute(db, "UPDATE notes_tree SET is_deleted = 1, date_modified = ? WHERE note_tree_id = ?", [now, noteTreeId]);
-    await sync_table.addNoteTreeSync(db, noteTreeId);
+    await sql.execute("UPDATE notes_tree SET is_deleted = 1, date_modified = ? WHERE note_tree_id = ?", [now, noteTreeId]);
+    await sync_table.addNoteTreeSync(noteTreeId);
 
     const noteId = await sql.getSingleValue("SELECT note_id FROM notes_tree WHERE note_tree_id = ?", [noteTreeId]);
 
     const notDeletedNoteTreesCount = await sql.getSingleValue("SELECT COUNT(*) FROM notes_tree WHERE note_id = ? AND is_deleted = 0", [noteId]);
 
     if (!notDeletedNoteTreesCount) {
-        await sql.execute(db, "UPDATE notes SET is_deleted = 1, date_modified = ? WHERE note_id = ?", [now, noteId]);
-        await sync_table.addNoteSync(db, noteId);
+        await sql.execute("UPDATE notes SET is_deleted = 1, date_modified = ? WHERE note_id = ?", [now, noteId]);
+        await sync_table.addNoteSync(noteId);
 
         const children = await sql.getResults("SELECT note_tree_id FROM notes_tree WHERE note_pid = ? AND is_deleted = 0", [noteId]);
 
         for (const child of children) {
-            await deleteNote(db, child.note_tree_id);
+            await deleteNote(child.note_tree_id);
         }
     }
 }
