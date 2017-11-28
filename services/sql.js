@@ -1,16 +1,16 @@
 "use strict";
 
-const utils = require('./utils');
 const log = require('./log');
 const dataDir = require('./data_dir');
+const sqlite = require('sqlite');
 
-const dbReady = (() => {
-    const db = require('sqlite');
+async function createConnection() {
+    return await sqlite.open(dataDir.DOCUMENT_PATH, {Promise});
+}
 
-    return db.open(dataDir.DOCUMENT_PATH, {Promise}).then(() => db);
-})();
+const dbReady = createConnection();
 
-async function insert(table_name, rec, replace = false) {
+async function insert(db, table_name, rec, replace = false) {
     const keys = Object.keys(rec);
     if (keys.length === 0) {
         log.error("Can't insert empty object into table " + table_name);
@@ -22,33 +22,36 @@ async function insert(table_name, rec, replace = false) {
 
     const query = "INSERT " + (replace ? "OR REPLACE" : "") + " INTO " + table_name + "(" + columns + ") VALUES (" + questionMarks + ")";
 
-    const res = await execute(query, Object.values(rec));
+    const res = await execute(db, query, Object.values(rec));
 
     return res.lastID;
 }
 
-async function replace(table_name, rec) {
-    return await insert(table_name, rec, true);
+async function replace(db, table_name, rec) {
+    return await insert(db, table_name, rec, true);
 }
 
-async function beginTransaction() {
-    return await wrap(async db => db.run("BEGIN"));
+async function beginTransaction(db) {
+    return await wrap(async () => db.run("BEGIN"));
 }
 
-async function commit() {
-    return await wrap(async db => db.run("COMMIT"));
+async function commit(db) {
+    return await wrap(async () => db.run("COMMIT"));
 }
 
-async function rollback() {
-    return await wrap(async db => db.run("ROLLBACK"));
+async function rollback(db) {
+    return await wrap(async () => db.run("ROLLBACK"));
 }
 
 async function getSingleResult(query, params = []) {
-    return await wrap(async db => db.get(query, ...params));
+    const db = await dbReady;
+
+    return await wrap(async () => db.get(query, ...params));
 }
 
 async function getSingleResultOrNull(query, params = []) {
-    const all = await wrap(async db => db.all(query, ...params));
+    const db = await dbReady;
+    const all = await wrap(async () => db.all(query, ...params));
 
     return all.length > 0 ? all[0] : null;
 }
@@ -64,7 +67,9 @@ async function getSingleValue(query, params = []) {
 }
 
 async function getResults(query, params = []) {
-    return await wrap(async db => db.all(query, ...params));
+    const db = await dbReady;
+
+    return await wrap(async () => db.all(query, ...params));
 }
 
 async function getMap(query, params = []) {
@@ -91,25 +96,23 @@ async function getFlattenedResults(key, query, params = []) {
     return list;
 }
 
-async function execute(query, params = []) {
-    return await wrap(async db => db.run(query, ...params));
+async function execute(db, query, params = []) {
+    return await wrap(async () => db.run(query, ...params));
 }
 
-async function executeScript(query) {
-    return await wrap(async db => db.exec(query));
+async function executeScript(db, query) {
+    return await wrap(async () => db.exec(query));
 }
 
-async function remove(tableName, noteId) {
-    return await execute("DELETE FROM " + tableName + " WHERE note_id = ?", [noteId]);
+async function remove(db, tableName, noteId) {
+    return await execute(db, "DELETE FROM " + tableName + " WHERE note_id = ?", [noteId]);
 }
 
 async function wrap(func) {
     const thisError = new Error();
 
-    const db = await dbReady;
-
     try {
-        return await func(db);
+        return await func();
     }
     catch (e) {
         log.error("Error executing query. Inner exception: " + e.stack + thisError.stack);
@@ -120,19 +123,20 @@ async function wrap(func) {
 
 async function doInTransaction(func) {
     const error = new Error(); // to capture correct stack trace in case of exception
+    const db = await createConnection();
 
     try {
 
-        await beginTransaction();
+        await beginTransaction(db);
 
-        await func();
+        await func(db);
 
-        await commit();
+        await commit(db);
     }
     catch (e) {
         log.error("Error executing transaction, executing rollback. Inner exception: " + e.stack + error.stack);
 
-        await rollback();
+        await rollback(db);
 
         throw e;
     }

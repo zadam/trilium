@@ -59,8 +59,8 @@ router.put('/:noteId', async (req, res, next) => {
 });
 
 router.delete('/:noteTreeId', async (req, res, next) => {
-    await sql.doInTransaction(async () => {
-        await notes.deleteNote(req.params.noteTreeId);
+    await sql.doInTransaction(async db => {
+        await notes.deleteNote(db, req.params.noteTreeId);
     });
 
     res.send({});

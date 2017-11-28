@@ -15,16 +15,16 @@ router.get('', auth.checkApiAuth, async (req, res, next) => {
 router.put('/:notePath', auth.checkApiAuth, async (req, res, next) => {
     const notePath = req.params.notePath;
 
-    await sql.doInTransaction(async() => {
-        await sql.replace('recent_notes', {
+    await sql.doInTransaction(async db => {
+        await sql.replace(db, 'recent_notes', {
             note_path: notePath,
             date_accessed: utils.nowTimestamp(),
             is_deleted: 0
         });
 
-        await sync_table.addRecentNoteSync(notePath);
+        await sync_table.addRecentNoteSync(db, notePath);
 
-        await options.setOption('start_note_tree_id', notePath);
+        await options.setOption(db, 'start_note_tree_id', notePath);
     });
 
     res.send(await getRecentNotes());
@@ -33,10 +33,10 @@ router.put('/:notePath', auth.checkApiAuth, async (req, res, next) => {
 router.delete('/:notePath', auth.checkApiAuth, async (req, res, next) => {
     const notePath = req.params.notePath;
 
-    await sql.doInTransaction(async() => {
-        await sql.execute('UPDATE recent_notes SET is_deleted = 1 WHERE note_path = ?', [notePath]);
+    await sql.doInTransaction(async db => {
+        await sql.execute(db, 'UPDATE recent_notes SET is_deleted = 1 WHERE note_path = ?', [notePath]);
 
-        await sync_table.addRecentNoteSync(notePath);
+        await sync_table.addRecentNoteSync(db, notePath);
     });
 
     res.send(await getRecentNotes());
@@ -52,7 +52,9 @@ async function deleteOld() {
     const cutoffDateAccessed = await sql.getSingleValue("SELECT date_accessed FROM recent_notes WHERE is_deleted = 0 ORDER BY date_accessed DESC LIMIT 100, 1");
 
     if (cutoffDateAccessed) {
-        await sql.execute("DELETE FROM recent_notes WHERE date_accessed < ?", [cutoffDateAccessed]);
+        await sql.doInTransaction(async db => {
+            await sql.execute(db, "DELETE FROM recent_notes WHERE date_accessed < ?", [cutoffDateAccessed]);
+        });
     }
 }
 

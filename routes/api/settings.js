@@ -29,8 +29,8 @@ router.post('/', async (req, res, next) => {
     if (ALLOWED_OPTIONS.includes(body['name'])) {
         const optionName = await options.getOption(body['name']);
 
-        await sql.doInTransaction(async () => {
-            await options.setOption(body['name'], body['value']);
+        await sql.doInTransaction(async db => {
+            await options.setOption(db, body['name'], body['value']);
         });
 
         res.send({});

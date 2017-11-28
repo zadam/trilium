@@ -15,38 +15,31 @@ async function getOption(optName) {
     return row['opt_value'];
 }
 
-async function setOptionInTransaction(optName, optValue) {
-    await sql.doInTransaction(async () => setOption(optName, optValue));
-}
-
-async function setOption(optName, optValue) {
+async function setOption(db, optName, optValue) {
     if (SYNCED_OPTIONS.includes(optName)) {
         await sync_table.addOptionsSync(optName);
     }
 
-    await setOptionNoSync(optName, optValue);
+    await setOptionNoSync(db, optName, optValue);
 }
 
-async function setOptionNoSync(optName, optValue) {
+async function setOptionNoSync(db, optName, optValue) {
     const now = utils.nowTimestamp();
 
-    await sql.execute("UPDATE options SET opt_value = ?, date_modified = ? WHERE opt_name = ?", [optValue, now, optName]);
+    await sql.execute(db, "UPDATE options SET opt_value = ?, date_modified = ? WHERE opt_name = ?", [optValue, now, optName]);
 }
 
 sql.dbReady.then(async () => {
-    if (!await getOption('document_id')) {
-        await setOption('document_id', utils.randomSecureToken(16));
-    }
-
-    if (!await getOption('document_secret')) {
-        await setOption('document_secret', utils.randomSecureToken(16));
+    if (!await getOption('document_id') || !await getOption('document_secret')) {
+        await sql.doInTransaction(async db => {
+            await setOption(db, 'document_id', utils.randomSecureToken(16));
+            await setOption(db, 'document_secret', utils.randomSecureToken(16));
+        });
     }
 });
 
 module.exports = {
     getOption,
     setOption,
-    setOptionNoSync,
-    setOptionInTransaction,
     SYNCED_OPTIONS
 };

@@ -28,7 +28,9 @@ async function backupNow() {
 
     log.info("Created backup at " + backupFile);
 
-    await options.setOption('last_backup_date', now);
+    await sql.doInTransaction(async db => {
+        await options.setOption(db, 'last_backup_date', now);
+    });
 }
 
 async function cleanupOldBackups() {

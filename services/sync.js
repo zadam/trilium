@@ -149,7 +149,9 @@ async function pullSync(syncContext) {
             throw new Error("Unrecognized entity type " + sync.entity_name);
         }
 
-        await options.setOption('last_synced_pull', sync.id);
+        await sql.doInTransaction(async db => {
+            await options.setOption(db, 'last_synced_pull', sync.id);
+        });
     }
 
     log.info("Finished pull");
@@ -182,7 +184,9 @@ async function pushSync(syncContext) {
 
         lastSyncedPush = sync.id;
 
-        await options.setOption('last_synced_push', lastSyncedPush);
+        await sql.doInTransaction(async db => {
+            await options.setOption(db, 'last_synced_push', lastSyncedPush);
+        });
     }
 }
 
@@ -258,10 +262,10 @@ async function checkContentHash(syncContext) {
     const localContentHash = await content_hash.getContentHash();
 
     if (resp.content_hash === localContentHash) {
-        log.info("Content hash check passed with value: " + localContentHash);
+        log.info("Content hash check PASSED with value: " + localContentHash);
     }
     else {
-        await event_log.addEvent("Content hash check failed. Local is " + localContentHash + ", remote is " + resp.content_hash);
+        await event_log.addEvent("Content hash check FAILED. Local is " + localContentHash + ", remote is " + resp.content_hash);
     }
 }
 

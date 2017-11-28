@@ -10,9 +10,11 @@ let allSourceIds = [];
 
 sql.dbReady.then(async () => {
     try {
-        sql.insert("source_ids", {
-            source_id: currentSourceId,
-            date_created: utils.nowTimestamp()
+        await sql.doInTransaction(async db => {
+            await sql.insert(db, "source_ids", {
+                source_id: currentSourceId,
+                date_created: utils.nowTimestamp()
+            });
         });
 
         allSourceIds = await sql.getFlattenedResults("source_id", "SELECT source_id FROM source_ids");

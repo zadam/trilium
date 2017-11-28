@@ -17,10 +17,10 @@ async function changePassword(currentPassword, newPassword, req) {
     const newPasswordVerificationKey = utils.toBase64(await my_scrypt.getVerificationHash(newPassword));
     const decryptedDataKey = await password_encryption.getDataKey(currentPassword);
 
-    await sql.doInTransaction(async () => {
-        await password_encryption.setDataKey(newPassword, decryptedDataKey);
+    await sql.doInTransaction(async db => {
+        await password_encryption.setDataKey(db, newPassword, decryptedDataKey);
 
-        await options.setOption('password_verification_hash', newPasswordVerificationKey);
+        await options.setOption(db, 'password_verification_hash', newPasswordVerificationKey);
     });
 
     return {
