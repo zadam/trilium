@@ -137,8 +137,6 @@ async function updateNote(noteId, newNote, ctx) {
         await encryptNote(newNote, ctx);
     }
 
-    const origNoteDetail = await sql.getSingleResult("SELECT * FROM notes WHERE note_id = ?", [noteId]);
-
     const now = utils.nowTimestamp();
 
     const historySnapshotTimeInterval = parseInt(await options.getOption('history_snapshot_time_interval'));
