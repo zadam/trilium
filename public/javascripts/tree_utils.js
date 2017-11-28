@@ -38,11 +38,21 @@ const treeUtils = (function() {
         return path.reverse().join("/");
     }
 
+    function setNodeTitleWithPrefix(node) {
+        const noteTitle = noteTree.getNoteTitle(node.data.note_id);
+        const prefix = node.data.prefix;
+
+        const title = (prefix ? (prefix + " - ") : "") + noteTitle;
+
+        node.setTitle(title);
+    }
+
     return {
         getParentProtectedStatus,
         getNodeByKey,
         getFullNameForPath,
         getNotePath,
-        getNoteIdFromNotePath
+        getNoteIdFromNotePath,
+        setNodeTitleWithPrefix
     };
 })();

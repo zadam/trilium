@@ -6,6 +6,8 @@ const editTreePrefix = (function() {
     const treePrefixInputEl = $("#tree-prefix-input");
     const noteTitleEl = $('#tree-prefix-note-title');
 
+    let noteTreeId;
+
     async function showDialog() {
         glob.activeDialog = dialogEl;
 
@@ -16,6 +18,8 @@ const editTreePrefix = (function() {
 
         const currentNode = noteTree.getCurrentNode();
 
+        noteTreeId = currentNode.data.note_tree_id;
+
         treePrefixInputEl.val(currentNode.data.prefix).focus();
 
         const noteTitle = noteTree.getNoteTitle(currentNode.data.note_id);
@@ -25,8 +29,6 @@ const editTreePrefix = (function() {
 
     formEl.submit(() => {
         const prefix = treePrefixInputEl.val();
-        const currentNode = noteTree.getCurrentNode();
-        const noteTreeId = currentNode.data.note_tree_id;
 
         $.ajax({
             url: baseApiUrl + 'tree/' + noteTreeId + '/setPrefix',
@@ -35,15 +37,7 @@ const editTreePrefix = (function() {
             data: JSON.stringify({
                 prefix: prefix
             }),
-            success: () => {
-                currentNode.data.prefix = prefix;
-
-                const noteTitle = noteTree.getNoteTitle(currentNode.data.note_id);
-
-                const title = (prefix ? (prefix + " - ") : "") + noteTitle;
-
-                currentNode.setTitle(title);
-            },
+            success: () => noteTree.setPrefix(noteTreeId, prefix),
             error: () => showError("Error setting prefix.")
         });
 

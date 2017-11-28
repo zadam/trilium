@@ -64,15 +64,31 @@ const noteTree = (function() {
         const noteId = getCurrentNoteId();
 
         if (noteId) {
-            return getNodes(noteId);
+            return getNodesByNoteId(noteId);
         }
         else {
             return [];
         }
     }
 
-    function getNodes(noteId) {
+    function getNodesByNoteTreeId(noteTreeId) {
+        const noteTree = notesTreeMap[noteTreeId];
+
+        return getNodesByNoteId(noteTree.note_id).filter(node => node.data.note_tree_id === noteTreeId);
+    }
+
+    function getNodesByNoteId(noteId) {
         return getTree().getNodesByRef(noteId);
+    }
+
+    function setPrefix(noteTreeId, prefix) {
+        notesTreeMap[noteTreeId].prefix = prefix;
+
+        getNodesByNoteTreeId(noteTreeId).map(node => {
+            node.data.prefix = prefix;
+
+            treeUtils.setNodeTitleWithPrefix(node);
+        });
     }
 
     function prepareNoteTree(notes) {
@@ -218,7 +234,7 @@ const noteTree = (function() {
         let parentNoteId = 'root';
 
         for (const childNoteId of runPath) {
-            const node = getNodes(childNoteId).find(node => node.data.note_pid === parentNoteId);
+            const node = getNodesByNoteId(childNoteId).find(node => node.data.note_pid === parentNoteId);
 
             if (childNoteId === noteId) {
                 await node.setActive();
@@ -348,7 +364,7 @@ const noteTree = (function() {
                 }
             },
             "f2": node => {
-                editTreePrefix.showDialog();
+                editTreePrefix.showDialog(node);
             }
         };
 
@@ -548,11 +564,7 @@ const noteTree = (function() {
         if (currentNoteId) {
             noteIdToTitle[currentNoteId] = title;
 
-            getCurrentClones().map(clone => {
-                const fullTitle = (clone.data.prefix ? (clone.data.prefix + " - ") : "") + title;
-
-                clone.setTitle(fullTitle)
-            });
+            getNodesByNoteId(currentNoteId).map(clone => treeUtils.setNodeTitleWithPrefix(clone));
         }
     }
 
@@ -628,6 +640,8 @@ const noteTree = (function() {
         getAutocompleteItems,
         setCurrentNoteTitle,
         createNewTopLevelNote,
-        createNote
+        createNote,
+        setPrefix,
+        getNodesByNoteTreeId
     };
 })();
