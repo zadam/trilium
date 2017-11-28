@@ -435,23 +435,19 @@ const noteTree = (function() {
                         return false;
 
                     // Handle Ctrl-C, -X and -V
-                    // case 67:
-                    //     if (event.ctrlKey) { // Ctrl-C
-                    //         copyPaste("copy", node);
-                    //         return false;
-                    //     }
-                    //     break;
+                    case 67:
+                        if (event.ctrlKey) { // Ctrl-C
+                            contextMenu.copy(node);
+                            return false;
+                        }
+                        break;
                     case 86:
-                        console.log("CTRL-V");
-
                         if (event.ctrlKey) { // Ctrl-V
                             contextMenu.pasteAfter(node);
                             return false;
                         }
                         break;
                     case 88:
-                        console.log("CTRL-X");
-
                         if (event.ctrlKey) { // Ctrl-X
                             contextMenu.cut(node);
                             return false;

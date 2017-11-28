@@ -171,9 +171,7 @@ const noteEditor = (function() {
     }
 
     $(document).ready(() => {
-        noteTitleEl.on('input', () => {
-            noteChanged();
-        });
+        noteTitleEl.on('input', noteChanged);
 
         noteDetailEl.summernote({
             airMode: true,

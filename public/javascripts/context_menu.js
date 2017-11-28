@@ -15,8 +15,11 @@ const contextMenu = (function() {
         else if (clipboardMode === 'copy') {
             treeChanges.cloneNoteAfter(clipboardId, node.data.note_tree_id);
         }
+        else if (clipboardId === null) {
+            // just do nothing
+        }
         else {
-            throw new Error("Unrecognized clipboard mode=" + mode);
+            throw new Error("Unrecognized clipboard mode=" + clipboardMode);
         }
 
         clipboardId = null;
@@ -127,6 +130,7 @@ const contextMenu = (function() {
         pasteAfter,
         pasteInto,
         cut,
+        copy,
         contextMenuSettings
     }
 })();
