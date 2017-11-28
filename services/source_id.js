@@ -17,7 +17,7 @@ sql.dbReady.then(async () => {
             });
         });
 
-        allSourceIds = await sql.getFlattenedResults("source_id", "SELECT source_id FROM source_ids");
+        allSourceIds = await sql.getFlattenedResults("source_id", "SELECT source_id FROM source_ids ORDER BY date_created DESC");
     }
     catch (e) {}
 });

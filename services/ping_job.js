@@ -32,7 +32,7 @@ setInterval(async () => {
 
     const changesToPushCount = await sql.getSingleValue("SELECT COUNT(*) FROM sync WHERE id > ?", [lastSyncedPush]);
 
-    messaging.send({
+    messaging.sendMessage({
         type: 'sync',
         data: data,
         changesToPushCount: sync.isSyncSetup ? changesToPushCount : 0

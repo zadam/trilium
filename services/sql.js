@@ -122,38 +122,43 @@ async function wrap(func) {
     }
 }
 
+let transactionActive = false;
 let transactionPromise = null;
 
 async function doInTransaction(func) {
-    while (transactionPromise !== null) {
+    while (transactionActive) {
         await transactionPromise;
     }
 
     const error = new Error(); // to capture correct stack trace in case of exception
 
+    transactionActive = true;
     transactionPromise = new Promise(async (resolve, reject) => {
         try {
-
             await beginTransaction();
 
             await func();
 
             await commit();
 
+            transactionActive = false;
             resolve();
-            transactionPromise = null;
         }
         catch (e) {
             log.error("Error executing transaction, executing rollback. Inner exception: " + e.stack + error.stack);
 
             await rollback();
 
+            transactionActive = false;
             resolve();
-            transactionPromise = null;
 
             throw e;
         }
     });
+
+    if (transactionActive) {
+        await transactionPromise;
+    }
 }
 
 dbReady

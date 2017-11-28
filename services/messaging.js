@@ -1,4 +1,3 @@
-const utils = require('../services/utils');
 const WebSocket = require('ws');
 
 let webSocketServer;
@@ -10,7 +9,7 @@ function init(httpServer) {
     });
 }
 
-async function send(message) {
+async function sendMessage(message) {
     const jsonStr = JSON.stringify(message);
 
     webSocketServer.clients.forEach(function each(client) {
@@ -22,5 +21,5 @@ async function send(message) {
 
 module.exports = {
     init,
-    send
+    sendMessage
 };
