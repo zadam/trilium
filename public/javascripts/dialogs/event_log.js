@@ -13,11 +13,7 @@ const eventLog = (function() {
             height: 700
         });
 
-        const result = await $.ajax({
-            url: baseApiUrl + 'event-log',
-            type: 'GET',
-            error: () => showError("Error getting event log.")
-        });
+        const result = await server.get('event-log');
 
         listEl.html('');
 

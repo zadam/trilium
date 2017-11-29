@@ -13,11 +13,7 @@ const settings = (function() {
     async function showDialog() {
         glob.activeDialog = dialogEl;
 
-        const settings = await $.ajax({
-            url: baseApiUrl + 'settings',
-            type: 'GET',
-            error: () => showError("Error getting settings.")
-        });
+        const settings = await server.get('settings');
 
         dialogEl.dialog({
             modal: true,
@@ -33,20 +29,13 @@ const settings = (function() {
         }
     }
 
-    function saveSettings(settingName, settingValue) {
-        return $.ajax({
-            url: baseApiUrl + 'settings',
-            type: 'POST',
-            data: JSON.stringify({
-                name: settingName,
-                value: settingValue
-            }),
-            contentType: "application/json",
-            success: () => {
-                showMessage("Settings change have been saved.");
-            },
-            error: () => alert("Error occurred during saving settings change.")
+    async function saveSettings(settingName, settingValue) {
+        await server.post('settings', {
+            name: settingName,
+            value: settingValue
         });
+
+        showMessage("Settings change have been saved.");
     }
 
     return {
@@ -79,26 +68,19 @@ settings.addModule((function() {
             return false;
         }
 
-        $.ajax({
-            url: baseApiUrl + 'password/change',
-            type: 'POST',
-            data: JSON.stringify({
-                'current_password': oldPassword,
-                'new_password': newPassword1
-            }),
-            contentType: "application/json",
-            success: result => {
-                if (result.success) {
-                    alert("Password has been changed. Trilium will be reloaded after you press OK.");
+        server.post('password/change', {
+            'current_password': oldPassword,
+            'new_password': newPassword1
+        }).then(result => {
+            if (result.success) {
+                alert("Password has been changed. Trilium will be reloaded after you press OK.");
 
-                    // password changed so current protected session is invalid and needs to be cleared
-                    protected_session.resetProtectedSession();
-                }
-                else {
-                    showError(result.message);
-                }
-            },
-            error: () => showError("Error occurred during changing password.")
+                // password changed so current protected session is invalid and needs to be cleared
+                protected_session.resetProtectedSession();
+            }
+            else {
+                showError(result.message);
+            }
         });
 
         return false;
@@ -159,7 +141,7 @@ settings.addModule((async function () {
     const buildDateEl = $("#build-date");
     const buildRevisionEl = $("#build-revision");
 
-    const appInfo = await $.get(baseApiUrl + 'app-info');
+    const appInfo = await server.get('app-info');
 
     appVersionEl.html(appInfo.app_version);
     dbVersionEl.html(appInfo.db_version);

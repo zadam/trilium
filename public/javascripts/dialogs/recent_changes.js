@@ -12,11 +12,7 @@ const recentChanges = (function() {
             height: 700
         });
 
-        const result = await $.ajax({
-            url: baseApiUrl + 'recent-changes/',
-            type: 'GET',
-            error: () => showError("Error getting recent changes.")
-        });
+        const result = await server.get('recent-changes/');
 
         dialogEl.html('');
 

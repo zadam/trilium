@@ -105,6 +105,12 @@ async function getLastSyncedPull() {
     return parseInt(await options.getOption('last_synced_pull'));
 }
 
+async function setLastSyncedPull(syncId) {
+    await sql.doInTransaction(async () => {
+        await options.setOption('last_synced_pull', syncId);
+    });
+}
+
 async function pullSync(syncContext) {
     const lastSyncedPull = await getLastSyncedPull();
 
@@ -117,6 +123,8 @@ async function pullSync(syncContext) {
     for (const sync of syncRows) {
         if (source_id.isLocalSourceId(sync.source_id)) {
             log.info("Skipping " + sync.entity_name + " " + sync.entity_id + " because it has local source id.");
+
+            await setLastSyncedPull(sync.id);
 
             continue;
         }
@@ -149,9 +157,7 @@ async function pullSync(syncContext) {
             throw new Error("Unrecognized entity type " + sync.entity_name);
         }
 
-        await sql.doInTransaction(async () => {
-            await options.setOption('last_synced_pull', sync.id);
-        });
+        await setLastSyncedPull(sync.id);
     }
 
     log.info("Finished pull");

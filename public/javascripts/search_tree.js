@@ -43,7 +43,7 @@ const searchTree = (function() {
         }
 
         if (e && e.which === $.ui.keyCode.ENTER) {
-            $.get(baseApiUrl + 'notes?search=' + searchText).then(resp => {
+            server.get('notes?search=' + searchText).then(resp => {
                 // Pass a string to perform case insensitive matching
                 getTree().filterBranches(node => {
                     return resp.includes(node.data.note_id);

@@ -93,15 +93,7 @@ const noteEditor = (function() {
     }
 
     async function saveNoteToServer(note) {
-        await $.ajax({
-            url: baseApiUrl + 'notes/' + note.detail.note_id,
-            type: 'PUT',
-            data: JSON.stringify(note),
-            contentType: "application/json",
-            error: () => {
-                showError("Error saving the note!");
-            }
-        });
+        await server.put('notes/' + note.detail.note_id, note);
 
         isNoteChanged = false;
 
@@ -130,7 +122,7 @@ const noteEditor = (function() {
     }
 
     async function loadNoteToEditor(noteId) {
-        currentNote = await $.get(baseApiUrl + 'notes/' + noteId);
+        currentNote = await server.get('notes/' + noteId);
 
         if (isNewNoteCreated) {
             isNewNoteCreated = false;
@@ -167,7 +159,7 @@ const noteEditor = (function() {
     }
 
     async function loadNote(noteId) {
-        return await $.get(baseApiUrl + 'notes/' + noteId);
+        return await server.get('notes/' + noteId);
     }
 
     $(document).ready(() => {
