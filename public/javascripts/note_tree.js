@@ -381,7 +381,6 @@ const noteTree = (function() {
                 noteEditor.switchToNote(node.note_id);
 
                 showParentList(node.note_id, data.node);
-                return false;
             },
             expand: (event, data) => {
                 setExpandedToServer(data.node.data.note_tree_id, true);
@@ -554,14 +553,10 @@ const noteTree = (function() {
         return autocompleteItems;
     }
 
-    function setCurrentNoteTitle(title) {
-        const currentNoteId = getCurrentNoteId();
+    function setNoteTitle(noteId, title) {
+        noteIdToTitle[noteId] = title;
 
-        if (currentNoteId) {
-            noteIdToTitle[currentNoteId] = title;
-
-            getNodesByNoteId(currentNoteId).map(clone => treeUtils.setNodeTitleWithPrefix(clone));
-        }
+        getNodesByNoteId(noteId).map(clone => treeUtils.setNodeTitleWithPrefix(clone));
     }
 
     async function createNewTopLevelNote() {
@@ -634,7 +629,7 @@ const noteTree = (function() {
         getNoteTitle,
         setCurrentNotePathToHash,
         getAutocompleteItems,
-        setCurrentNoteTitle,
+        setNoteTitle,
         createNewTopLevelNote,
         createNote,
         setPrefix,
