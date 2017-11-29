@@ -8,22 +8,54 @@ const server = (function() {
     }
 
     async function get(url) {
-        return await ajax('GET', url);
+        return await call('GET', url);
     }
 
     async function post(url, data) {
-        return await ajax('POST', url, data);
+        return await call('POST', url, data);
     }
 
     async function put(url, data) {
-        return await ajax('PUT', url, data);
+        return await call('PUT', url, data);
     }
 
     async function remove(url) {
-        return await ajax('DELETE', url);
+        return await call('DELETE', url);
     }
 
-    async function ajax(method, url, data) {
+    let i = 1;
+    const reqResolves = {};
+
+    async function call(method, url, data) {
+        if (isElectron()) {
+            const ipc = require('electron').ipcRenderer;
+            const requestId = i++;
+
+            return new Promise((resolve, reject) => {
+                reqResolves[requestId] = resolve;
+
+                ipc.send('server-request', {
+                    requestId: requestId,
+                    method: method,
+                    url: "/" + baseApiUrl + url,
+                    data: data
+                });
+            });
+        }
+        else {
+            return await ajax(url, method, data);
+        }
+    }
+
+    if (isElectron()) {
+        const ipc = require('electron').ipcRenderer;
+
+        ipc.on('server-response', (event, arg) => {
+            reqResolves[arg.requestId](arg.body);
+        });
+    }
+
+    async function ajax(url, method, data) {
         const options = {
             url: baseApiUrl + url,
             type: method
@@ -38,6 +70,7 @@ const server = (function() {
             showError("Error when calling " + method + " " + url + ": " + e);
         });
     }
+
 
     initAjax();
 
