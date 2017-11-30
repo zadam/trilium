@@ -119,9 +119,9 @@ const noteEditor = (function() {
 
         noteDetailWrapperEl.show();
 
-        noteTitleEl.val(currentNote.detail.note_title);
-
         noteChangeDisabled = true;
+
+        noteTitleEl.val(currentNote.detail.note_title);
 
         // Clear contents and remove all stored history. This is to prevent undo from going across notes
         noteDetailEl.summernote('reset');
@@ -140,7 +140,13 @@ const noteEditor = (function() {
     }
 
     $(document).ready(() => {
-        noteTitleEl.on('input', noteChanged);
+        noteTitleEl.on('input', () => {
+            noteChanged();
+
+            const title = noteTitleEl.val();
+
+            noteTree.setNoteTitle(getCurrentNoteId(), title);
+        });
 
         noteDetailEl.summernote({
             airMode: true,
