@@ -24,11 +24,7 @@ const noteHistory = (function() {
         listEl.empty();
         contentEl.empty();
 
-        historyItems = await $.ajax({
-            url: baseApiUrl + 'notes-history/' + noteId,
-            type: 'GET',
-            error: () => showError("Error getting note history.")
-        });
+        historyItems = await server.get('notes-history/' + noteId);
 
         for (const item of historyItems) {
             const dateModified = getDateFromTS(item.date_modified_to);

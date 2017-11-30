@@ -2,11 +2,7 @@
 
 const treeChanges = (function() {
     async function moveBeforeNode(node, beforeNode, changeInPath = true) {
-        await $.ajax({
-            url: baseApiUrl + 'notes/' + node.data.note_tree_id + '/moveBefore/' + beforeNode.data.note_tree_id,
-            type: 'PUT',
-            contentType: "application/json"
-        });
+        await server.put('notes/' + node.data.note_tree_id + '/moveBefore/' + beforeNode.data.note_tree_id);
 
         node.moveTo(beforeNode, 'before');
 
@@ -18,11 +14,7 @@ const treeChanges = (function() {
     }
 
     async function moveAfterNode(node, afterNode, changeInPath = true) {
-        await $.ajax({
-            url: baseApiUrl + 'notes/' + node.data.note_tree_id + '/moveAfter/' + afterNode.data.note_tree_id,
-            type: 'PUT',
-            contentType: "application/json"
-        });
+        await server.put('notes/' + node.data.note_tree_id + '/moveAfter/' + afterNode.data.note_tree_id);
 
         node.moveTo(afterNode, 'after');
 
@@ -35,11 +27,7 @@ const treeChanges = (function() {
 
     // beware that first arg is noteId and second is noteTreeId!
     async function cloneNoteAfter(noteId, afterNoteTreeId) {
-        const resp = await $.ajax({
-            url: baseApiUrl + 'notes/' + noteId + '/cloneAfter/' + afterNoteTreeId,
-            type: 'PUT',
-            error: () => showError("Error cloning note.")
-        });
+        const resp = await server.put('notes/' + noteId + '/cloneAfter/' + afterNoteTreeId);
 
         if (!resp.success) {
             alert(resp.message);
@@ -50,11 +38,7 @@ const treeChanges = (function() {
     }
 
     async function moveToNode(node, toNode) {
-        await $.ajax({
-            url: baseApiUrl + 'notes/' + node.data.note_tree_id + '/moveTo/' + toNode.data.note_id,
-            type: 'PUT',
-            contentType: "application/json"
-        });
+        await server.put('notes/' + node.data.note_tree_id + '/moveTo/' + toNode.data.note_id);
 
         node.moveTo(toNode);
 
@@ -69,11 +53,7 @@ const treeChanges = (function() {
     }
 
     async function cloneNoteTo(childNoteId, parentNoteId) {
-        const resp = await $.ajax({
-            url: baseApiUrl + 'notes/' + childNoteId + '/cloneTo/' + parentNoteId,
-            type: 'PUT',
-            error: () => showError("Error cloning note.")
-        });
+        const resp = await server.put('notes/' + childNoteId + '/cloneTo/' + parentNoteId);
 
         if (!resp.success) {
             alert(resp.message);
@@ -88,10 +68,7 @@ const treeChanges = (function() {
             return;
         }
 
-        await $.ajax({
-            url: baseApiUrl + 'notes/' + node.data.note_tree_id,
-            type: 'DELETE'
-        });
+        await server.remove('notes/' + node.data.note_tree_id);
 
         if (node.getParent() !== null && node.getParent().getChildren().length <= 1) {
             node.getParent().folder = false;
@@ -118,11 +95,7 @@ const treeChanges = (function() {
             return;
         }
 
-        await $.ajax({
-            url: baseApiUrl + 'notes/' + node.data.note_tree_id + '/moveAfter/' + node.getParent().data.note_tree_id,
-            type: 'PUT',
-            contentType: "application/json",
-        });
+        await server.put('notes/' + node.data.note_tree_id + '/moveAfter/' + node.getParent().data.note_tree_id);
 
         if (node.getParent() !== null && node.getParent().getChildren().length <= 1) {
             node.getParent().folder = false;

@@ -130,13 +130,3 @@ function showAppIfHidden() {
         loaderDiv.style.opacity = 0.0;
     }
 }
-
-function initAjax() {
-    $.ajaxSetup({
-        headers: {
-            'x-protected-session-id': typeof protected_session !== 'undefined' ? protected_session.getProtectedSessionId() : null
-        }
-    });
-}
-
-initAjax();

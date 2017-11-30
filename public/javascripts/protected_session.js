@@ -10,11 +10,7 @@ const protected_session = (function() {
     let protectedSessionTimeout = null;
     let protectedSessionId = null;
 
-    $.ajax({
-        url: baseApiUrl + 'settings/all',
-        type: 'GET',
-        error: () => showError("Error getting protected session settings.")
-    }).then(settings => {
+    server.get('settings/all').then(settings => {
         protectedSessionTimeout = settings.protected_session_timeout;
     });
 
@@ -61,7 +57,7 @@ const protected_session = (function() {
         }
 
         protectedSessionId = response.protectedSessionId;
-        initAjax();
+        server.initAjax();
 
         dialogEl.dialog("close");
 
@@ -88,14 +84,8 @@ const protected_session = (function() {
     }
 
     async function enterProtectedSession(password) {
-        return await $.ajax({
-            url: baseApiUrl + 'login/protected',
-            type: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify({
-                password: password
-            }),
-            error: () => showError("Error entering protected session.")
+        return await server.post('login/protected', {
+            password: password
         });
     }
 
@@ -106,7 +96,7 @@ const protected_session = (function() {
     function resetProtectedSession() {
         protectedSessionId = null;
 
-        initAjax();
+        server.initAjax();
 
         // most secure solution - guarantees nothing remained in memory
         // since this expires because user doesn't use the app, it shouldn't be disruptive
@@ -154,12 +144,7 @@ const protected_session = (function() {
     async function protectSubTree(noteId, protect) {
         await ensureProtectedSession(true, true);
 
-        await $.ajax({
-            url: baseApiUrl + 'tree/' + noteId + "/protectSubTree/" + (protect ? 1 : 0),
-            type: 'PUT',
-            contentType: 'application/json',
-            error: () => showError("Request to un/protect sub tree has failed.")
-        });
+        await server.put('tree/' + noteId + "/protectSubTree/" + (protect ? 1 : 0));
 
         showMessage("Request to un/protect sub tree has finished successfully");
 

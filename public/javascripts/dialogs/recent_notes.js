@@ -10,38 +10,26 @@ const recentNotes = (function() {
     const noteDetailEl = $('#note-detail');
     let list = [];
 
-    $.ajax({
-        url: baseApiUrl + 'recent-notes',
-        type: 'GET',
-        error: () => showError("Error getting recent notes.")
-    }).then(result => {
+    server.get('recent-notes').then(result => {
         list = result.map(r => r.note_tree_id);
     });
 
     function addRecentNote(notePath) {
-        setTimeout(() => {
+        setTimeout(async () => {
             // we include the note into recent list only if the user stayed on the note at least 5 seconds
             if (notePath && notePath === noteTree.getCurrentNotePath()) {
-                $.ajax({
-                    url: baseApiUrl + 'recent-notes/' + encodeURIComponent(notePath),
-                    type: 'PUT',
-                    error: () => showError("Error setting recent notes.")
-                }).then(result => {
-                    list = result.map(r => r.note_path);
-                });
+                const result = await server.put('recent-notes/' + encodeURIComponent(notePath));
+
+                list = result.map(r => r.note_path);
             }
         }, 1500);
     }
 
     // FIXME: this should be probably just refresh upon deletion, not explicit delete
-    function removeRecentNote(notePathIdToRemove) {
-        $.ajax({
-            url: baseApiUrl + 'recent-notes/' + encodeURIComponent(notePathIdToRemove),
-            type: 'DELETE',
-            error: () => showError("Error removing note from recent notes.")
-        }).then(result => {
-            list = result.map(r => r.note_path);
-        });
+    async function removeRecentNote(notePathIdToRemove) {
+        const result = server.remove('recent-notes/' + encodeURIComponent(notePathIdToRemove));
+
+        list = result.map(r => r.note_path);
     }
 
     function showDialog() {

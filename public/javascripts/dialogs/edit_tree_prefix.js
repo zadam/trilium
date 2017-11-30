@@ -30,16 +30,9 @@ const editTreePrefix = (function() {
     formEl.submit(() => {
         const prefix = treePrefixInputEl.val();
 
-        $.ajax({
-            url: baseApiUrl + 'tree/' + noteTreeId + '/setPrefix',
-            type: 'PUT',
-            contentType: 'application/json',
-            data: JSON.stringify({
-                prefix: prefix
-            }),
-            success: () => noteTree.setPrefix(noteTreeId, prefix),
-            error: () => showError("Error setting prefix.")
-        });
+        server.put('tree/' + noteTreeId + '/setPrefix', {
+            prefix: prefix
+        }).then(() => noteTree.setPrefix(noteTreeId, prefix));
 
         dialogEl.dialog("close");
 

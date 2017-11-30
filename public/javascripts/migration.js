@@ -17,29 +17,28 @@ $(document).ready(() => {
     });
 });
 
-$("#run-migration").click(() => {
+$("#run-migration").click(async () => {
     $("#run-migration").prop("disabled", true);
 
     $("#migration-result").show();
 
-    $.ajax({
+    const result = await $.ajax({
         url: baseApiUrl + 'migration',
         type: 'POST',
-        success: result => {
-            for (const migration of result.migrations) {
-                const row = $('<tr>')
-                        .append($('<td>').html(migration.db_version))
-                        .append($('<td>').html(migration.name))
-                        .append($('<td>').html(migration.success ? 'Yes' : 'No'))
-                        .append($('<td>').html(migration.success ? 'N/A' : migration.error));
-
-                if (!migration.success) {
-                    row.addClass("danger");
-                }
-
-                $("#migration-table").append(row);
-            }
-        },
         error: () => showError("Migration failed with unknown error")
     });
+
+    for (const migration of result.migrations) {
+        const row = $('<tr>')
+            .append($('<td>').html(migration.db_version))
+            .append($('<td>').html(migration.name))
+            .append($('<td>').html(migration.success ? 'Yes' : 'No'))
+            .append($('<td>').html(migration.success ? 'N/A' : migration.error));
+
+        if (!migration.success) {
+            row.addClass("danger");
+        }
+
+        $("#migration-table").append(row);
+    }
 });

@@ -9,6 +9,7 @@ const session = require('express-session');
 const FileStore = require('session-file-store')(session);
 const os = require('os');
 const sessionSecret = require('./services/session_secret');
+const utils = require('./services/utils');
 
 require('./services/ping_job');
 
@@ -70,5 +71,31 @@ require('./services/sync');
 
 // triggers backup timer
 require('./services/backup');
+
+if (utils.isElectron()) {
+    const ipcMain = require('electron').ipcMain;
+
+    ipcMain.on('server-request', (event, arg) => {
+        const req = {};
+        req.url = arg.url;
+        req.method = arg.method;
+        req.body = arg.data;
+        req.headers = {};
+
+        const res = {};
+        res.setHeader = function() {
+
+        };
+
+        res.send = function(obj) {
+            event.sender.send('server-response', {
+                requestId: arg.requestId,
+                body: obj
+            });
+        };
+
+        return app._router.handle(req, res, () => {});
+    });
+}
 
 module.exports = app;

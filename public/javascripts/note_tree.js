@@ -307,15 +307,10 @@ const noteTree = (function() {
         return path.reverse().join('/');
     }
 
-    function setExpandedToServer(noteTreeId, isExpanded) {
+    async function setExpandedToServer(noteTreeId, isExpanded) {
         const expandedNum = isExpanded ? 1 : 0;
 
-        $.ajax({
-            url: baseApiUrl + 'notes/' + noteTreeId + '/expanded/' + expandedNum,
-            type: 'PUT',
-            contentType: "application/json",
-            success: result => {}
-        });
+        await server.put('notes/' + noteTreeId + '/expanded/' + expandedNum);
     }
 
     function setCurrentNotePathToHash(node) {
@@ -479,7 +474,7 @@ const noteTree = (function() {
     }
 
     function loadTree() {
-        return $.get(baseApiUrl + 'tree').then(resp => {
+        return server.get('tree').then(resp => {
             startNoteTreeId = resp.start_note_tree_id;
             treeLoadTime = resp.tree_load_time;
 
@@ -574,16 +569,11 @@ const noteTree = (function() {
 
         const newNoteName = "new note";
 
-        const result = await $.ajax({
-            url: baseApiUrl + 'notes/' + parentNoteId + '/children' ,
-            type: 'POST',
-            data: JSON.stringify({
-                note_title: newNoteName,
-                target: target,
-                target_note_tree_id: node.data.note_tree_id,
-                is_protected: isProtected
-            }),
-            contentType: "application/json"
+        const result = await server.post('notes/' + parentNoteId + '/children', {
+            note_title: newNoteName,
+            target: target,
+            target_note_tree_id: node.data.note_tree_id,
+            is_protected: isProtected
         });
 
         const newNode = {
