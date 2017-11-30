@@ -1,10 +1,8 @@
 const server = (function() {
-    function initAjax() {
-        $.ajaxSetup({
-            headers: {
-                'x-protected-session-id': typeof protected_session !== 'undefined' ? protected_session.getProtectedSessionId() : null
-            }
-        });
+    function getHeaders() {
+        return {
+            'x-protected-session-id': protected_session.getProtectedSessionId()
+        };
     }
 
     async function get(url) {
@@ -34,8 +32,11 @@ const server = (function() {
             return new Promise((resolve, reject) => {
                 reqResolves[requestId] = resolve;
 
+                console.log("Request #" + requestId + " to " + method + " " + url);
+
                 ipc.send('server-request', {
                     requestId: requestId,
+                    headers: getHeaders(),
                     method: method,
                     url: "/" + baseApiUrl + url,
                     data: data
@@ -51,14 +52,19 @@ const server = (function() {
         const ipc = require('electron').ipcRenderer;
 
         ipc.on('server-response', (event, arg) => {
+            console.log("Response #" + arg.requestId + ": " + arg.statusCode);
+
             reqResolves[arg.requestId](arg.body);
+
+            delete reqResolves[arg.requestId];
         });
     }
 
     async function ajax(url, method, data) {
         const options = {
             url: baseApiUrl + url,
-            type: method
+            type: method,
+            headers: getHeaders()
         };
 
         if (data) {
@@ -71,14 +77,10 @@ const server = (function() {
         });
     }
 
-
-    initAjax();
-
     return {
         get,
         post,
         put,
-        remove,
-        initAjax
+        remove
     }
 })();

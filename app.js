@@ -80,16 +80,24 @@ if (utils.isElectron()) {
         req.url = arg.url;
         req.method = arg.method;
         req.body = arg.data;
-        req.headers = {};
+        req.headers = arg.headers;
 
-        const res = {};
+        const res = {
+            statusCode: 200
+        };
+
         res.setHeader = function() {
 
+        };
+
+        res.status = function(statusCode) {
+            res.statusCode = statusCode;
         };
 
         res.send = function(obj) {
             event.sender.send('server-response', {
                 requestId: arg.requestId,
+                statusCode: res.statusCode,
                 body: obj
             });
         };

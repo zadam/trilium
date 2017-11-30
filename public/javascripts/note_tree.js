@@ -625,6 +625,6 @@ const noteTree = (function() {
         createNewTopLevelNote,
         createNote,
         setPrefix,
-        getNotePathTitle
+
     };
 })();

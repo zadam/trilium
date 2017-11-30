@@ -1,5 +1,9 @@
 "use strict";
 
+function reloadApp() {
+    window.location.reload(true);
+}
+
 function showMessage(message) {
     console.log("message: ", message);
 

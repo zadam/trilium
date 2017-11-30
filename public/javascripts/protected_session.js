@@ -10,8 +10,8 @@ const protected_session = (function() {
     let protectedSessionTimeout = null;
     let protectedSessionId = null;
 
-    server.get('settings/all').then(settings => {
-        protectedSessionTimeout = settings.protected_session_timeout;
+    $(document).ready(() => {
+        server.get('settings/all').then(settings => protectedSessionTimeout = settings.protected_session_timeout);
     });
 
     function setProtectedSessionTimeout(encSessTimeout) {
@@ -57,7 +57,6 @@ const protected_session = (function() {
         }
 
         protectedSessionId = response.protectedSessionId;
-        server.initAjax();
 
         dialogEl.dialog("close");
 
@@ -96,11 +95,9 @@ const protected_session = (function() {
     function resetProtectedSession() {
         protectedSessionId = null;
 
-        server.initAjax();
-
         // most secure solution - guarantees nothing remained in memory
         // since this expires because user doesn't use the app, it shouldn't be disruptive
-        window.location.reload(true);
+        reloadApp();
     }
 
     function isProtectedSessionAvailable() {

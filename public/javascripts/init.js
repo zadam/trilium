@@ -24,13 +24,13 @@ $(document).bind('keydown', 'alt+t', () => {
 });
 
 $(document).bind('keydown', 'f5', () => {
-    window.location.reload(true);
+    reloadApp();
 
     return false;
 });
 
 $(document).bind('keydown', 'ctrl+r', () => {
-    window.location.reload(true);
+    reloadApp();
 
     return false;
 });
