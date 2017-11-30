@@ -49,13 +49,13 @@ async function getRecentNotes() {
 }
 
 async function deleteOld() {
-    const cutoffDateAccessed = await sql.getSingleValue("SELECT date_accessed FROM recent_notes WHERE is_deleted = 0 ORDER BY date_accessed DESC LIMIT 100, 1");
+    const cutoffDateAccessed = utils.nowTimestamp() - 24 * 60 * 60;
 
-    if (cutoffDateAccessed) {
-        await sql.doInTransaction(async () => {
-            await sql.execute("DELETE FROM recent_notes WHERE date_accessed < ?", [cutoffDateAccessed]);
-        });
-    }
+    await sql.doInTransaction(async () => {
+        await sql.execute("DELETE FROM recent_notes WHERE date_accessed < ?", [cutoffDateAccessed]);
+
+        await sql.execute("DELETE FROM sync WHERE entity_name = 'recent_notes' AND sync_date < ?", [cutoffDateAccessed]);
+    });
 }
 
 module.exports = router;
