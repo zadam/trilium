@@ -31,7 +31,6 @@ router.get('/:noteId', auth.checkApiAuth, async (req, res, next) => {
 
     res.send({
         detail: detail,
-        images: await sql.getResults("SELECT * FROM images WHERE note_id = ? order by note_offset", [detail.note_id]),
         loadTime: utils.nowTimestamp()
     });
 });

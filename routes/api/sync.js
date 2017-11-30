@@ -30,8 +30,7 @@ router.get('/notes/:noteId', auth.checkApiAuth, async (req, res, next) => {
     const noteId = req.params.noteId;
 
     res.send({
-        entity: await sql.getSingleResult("SELECT * FROM notes WHERE note_id = ?", [noteId]),
-        links: await sql.getResults("SELECT * FROM links WHERE note_id = ?", [noteId])
+        entity: await sql.getSingleResult("SELECT * FROM notes WHERE note_id = ?", [noteId])
     });
 });
 
@@ -74,7 +73,7 @@ router.get('/recent_notes/:notePath', auth.checkApiAuth, async (req, res, next) 
 });
 
 router.put('/notes', auth.checkApiAuth, async (req, res, next) => {
-    await syncUpdate.updateNote(req.body.entity, req.body.links, req.body.sourceId);
+    await syncUpdate.updateNote(req.body.entity, req.body.sourceId);
 
     res.send({});
 });

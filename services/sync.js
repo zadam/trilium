@@ -136,7 +136,7 @@ async function pullSync(syncContext) {
         }
 
         if (sync.entity_name === 'notes') {
-            await syncUpdate.updateNote(resp.entity, resp.links, syncContext.sourceId);
+            await syncUpdate.updateNote(resp.entity, syncContext.sourceId);
         }
         else if (sync.entity_name === 'notes_tree') {
             await syncUpdate.updateNoteTree(resp, syncContext.sourceId);
@@ -167,6 +167,12 @@ async function getLastSyncedPush() {
     return parseInt(await options.getOption('last_synced_push'));
 }
 
+async function setLastSyncedPush(lastSyncedPush) {
+    await sql.doInTransaction(async () => {
+        await options.setOption('last_synced_push', lastSyncedPush);
+    });
+}
+
 async function pushSync(syncContext) {
     let lastSyncedPush = await getLastSyncedPush();
 
@@ -190,9 +196,7 @@ async function pushSync(syncContext) {
 
         lastSyncedPush = sync.id;
 
-        await sql.doInTransaction(async () => {
-            await options.setOption('last_synced_push', lastSyncedPush);
-        });
+        await setLastSyncedPush(lastSyncedPush);
     }
 }
 
@@ -239,10 +243,6 @@ async function sendEntity(syncContext, entity, entityName) {
         sourceId: source_id.currentSourceId,
         entity: entity
     };
-
-    if (entityName === 'notes') {
-        payload.links = await sql.getResults('SELECT * FROM links WHERE note_id = ?', [entity.note_id]);
-    }
 
     await syncRequest(syncContext, 'PUT', '/api/sync/' + entityName, payload);
 }

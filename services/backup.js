@@ -5,6 +5,7 @@ const options = require('./options');
 const fs = require('fs-extra');
 const dataDir = require('./data_dir');
 const log = require('./log');
+const sql = require('./sql');
 
 async function regularBackup() {
     const now = utils.nowTimestamp();

@@ -59,31 +59,8 @@ const noteEditor = (function() {
         }
     }
 
-    function parseHtml(contents, note) {
-        note.links = [];
-        note.images = [];
-
-        note.detail.note_text = contents;
-
-        if (!note.detail.is_protected) {
-            const linkRegexp = /<a[^>]+?href="[^"]*app#([A-Za-z0-9/]+)"[^>]*?>[^<]+?<\/a>/g;
-            let match;
-
-            while (match = linkRegexp.exec(contents)) {
-                console.log("adding link for " + match[1]);
-
-                note.links.push({
-                    note_id: note.detail.note_id,
-                    target_note_id: match[1]
-                });
-            }
-        }
-    }
-
     function updateNoteFromInputs(note) {
-        const contents = noteDetailEl.summernote('code');
-
-        parseHtml(contents, note);
+        note.detail.note_text = noteDetailEl.summernote('code');
 
         const title = noteTitleEl.val();
 

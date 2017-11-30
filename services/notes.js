@@ -171,20 +171,6 @@ async function updateNote(noteId, newNote, ctx) {
             now,
             noteId]);
 
-        await sql.remove("images", noteId);
-
-        for (const img of newNote.images) {
-            img.image_data = atob(img.image_data);
-
-            await sql.insert("images", img);
-        }
-
-        await sql.remove("links", noteId);
-
-        for (const link in newNote.links) {
-            //await sql.insert("links", link);
-        }
-
         await sync_table.addNoteSync(noteId);
     });
 }

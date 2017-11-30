@@ -6,20 +6,12 @@ const eventLog = require('./event_log');
 const notes = require('./notes');
 const sync_table = require('./sync_table');
 
-async function updateNote(entity, links, sourceId) {
+async function updateNote(entity, sourceId) {
     const origNote = await sql.getSingleResult("SELECT * FROM notes WHERE note_id = ?", [entity.note_id]);
 
     if (!origNote || origNote.date_modified <= entity.date_modified) {
         await sql.doInTransaction(async () => {
             await sql.replace("notes", entity);
-
-            await sql.remove("links", entity.note_id);
-
-            for (const link of links) {
-                delete link['lnk_id'];
-
-                //await sql.insert('link', link);
-            }
 
             await sync_table.addNoteSync(entity.note_id, sourceId);
             await eventLog.addNoteEvent(entity.note_id, "Synced note <note>");
