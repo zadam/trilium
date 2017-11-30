@@ -22,8 +22,10 @@ const link = (function() {
         return null;
     }
 
-    function createNoteLink(noteId, noteTitle) {
+    function createNoteLink(notePath, noteTitle) {
         if (!noteTitle) {
+            const noteId = treeUtils.getNoteIdFromNotePath(notePath);
+
             noteTitle = noteTree.getNoteTitle(noteId);
         }
 
@@ -31,7 +33,7 @@ const link = (function() {
             href: 'javascript:',
             text: noteTitle
         }).attr('action', 'note')
-            .attr('note-path', noteId);
+            .attr('note-path', notePath);
 
         return noteLink;
     }

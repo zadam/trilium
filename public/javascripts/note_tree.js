@@ -5,7 +5,6 @@ const noteTree = (function() {
     const parentListEl = $("#parent-list");
 
     let startNoteTreeId = null;
-    let treeLoadTime = null;
     let notesTreeMap = {};
 
     let parentToChildren = {};
@@ -14,30 +13,31 @@ const noteTree = (function() {
     let parentChildToNoteTreeId = {};
     let noteIdToTitle = {};
 
-    function getTreeLoadTime() {
-        return treeLoadTime;
-    }
-
     function getNoteTreeId(parentNoteId, childNoteId) {
         const key = parentNoteId + "-" + childNoteId;
 
-        const noteTreeId = parentChildToNoteTreeId[key];
+        // this can return undefined and client code should deal with it somehow
 
-        if (!noteTreeId) {
-            console.trace();
-
-            throw new Error("Can't find note tree id for parent=" + parentNoteId + ", child=" + childNoteId);
-        }
-
-        return noteTreeId;
+        return parentChildToNoteTreeId[key];
     }
 
-    function getNoteTitle(notePath) {
-        const noteId = treeUtils.getNoteIdFromNotePath(notePath);
-        const title = noteIdToTitle[noteId];
+    function getNoteTitle(noteId, parentNoteId = null) {
+        let title = noteIdToTitle[noteId];
 
         if (!title) {
             throw new Error("Can't find title for noteId='" + noteId + "'");
+        }
+
+        if (parentNoteId !== null) {
+            const noteTreeId = getNoteTreeId(parentNoteId, noteId);
+
+            if (noteTreeId) {
+                const noteTree = notesTreeMap[noteTreeId];
+
+                if (noteTree.prefix) {
+                    title = noteTree.prefix + ' - ' + title;
+                }
+            }
         }
 
         return title;
@@ -286,8 +286,12 @@ const noteTree = (function() {
     function getNotePathTitle(notePath) {
         const titlePath = [];
 
-        for (const path of notePath.split('/')) {
-            titlePath.push(getNoteTitle(path));
+        let parentNoteId = 'root';
+
+        for (const noteId of notePath.split('/')) {
+            titlePath.push(getNoteTitle(noteId, parentNoteId));
+
+            parentNoteId = noteId;
         }
 
         return titlePath.join(' / ');
@@ -476,7 +480,6 @@ const noteTree = (function() {
     function loadTree() {
         return server.get('tree').then(resp => {
             startNoteTreeId = resp.start_note_tree_id;
-            treeLoadTime = resp.tree_load_time;
 
             if (document.location.hash) {
                 startNoteTreeId = document.location.hash.substr(1); // strip initial #
@@ -531,7 +534,7 @@ const noteTree = (function() {
 
         for (const childNoteId of parentToChildren[parentNoteId]) {
             const childNotePath = (notePath ? (notePath + '/') : '') + childNoteId;
-            const childTitlePath = (titlePath ? (titlePath + ' / ') : '') + getNoteTitle(childNoteId);
+            const childTitlePath = (titlePath ? (titlePath + ' / ') : '') + getNoteTitle(childNoteId, parentNoteId);
 
             autocompleteItems.push({
                 value: childTitlePath + ' (' + childNotePath + ')',
@@ -608,7 +611,6 @@ const noteTree = (function() {
     }
 
     return {
-        getTreeLoadTime,
         reload,
         collapseTree,
         scrollToCurrentNote,
@@ -623,6 +625,6 @@ const noteTree = (function() {
         createNewTopLevelNote,
         createNote,
         setPrefix,
-        getNodesByNoteTreeId
+        getNotePathTitle
     };
 })();

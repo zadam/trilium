@@ -48,7 +48,7 @@ const recentNotes = (function() {
         const recNotes = list.filter(note => note !== noteTree.getCurrentNotePath());
 
         $.each(recNotes, (key, valueNotePath) => {
-            const noteTitle = treeUtils.getFullNameForPath(valueNotePath);
+            const noteTitle = noteTree.getNotePathTitle(valueNotePath);
 
             const option = $("<option></option>")
                 .attr("value", valueNotePath)
@@ -82,8 +82,9 @@ const recentNotes = (function() {
 
     function addLinkBasedOnRecentNotes() {
         const notePath = getSelectedNotePath();
+        const noteId = treeUtils.getNoteIdFromNotePath(notePath);
 
-        const linkTitle = noteTree.getNoteTitle(notePath);
+        const linkTitle = noteTree.getNoteTitle(noteId);
 
         dialogEl.dialog("close");
 

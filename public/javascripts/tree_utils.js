@@ -17,13 +17,6 @@ const treeUtils = (function() {
         return path[path.length - 1];
     }
 
-    function getFullNameForPath(notePath) {
-        const path = notePath.split("/");
-        const titlePath = path.map(noteId => noteTree.getNoteTitle(noteId));
-
-        return titlePath.join(" > ");
-    }
-
     function getNotePath(node) {
         const path = [];
 
@@ -50,7 +43,6 @@ const treeUtils = (function() {
     return {
         getParentProtectedStatus,
         getNodeByKey,
-        getFullNameForPath,
         getNotePath,
         getNoteIdFromNotePath,
         setNodeTitleWithPrefix

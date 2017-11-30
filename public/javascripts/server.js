@@ -67,7 +67,7 @@ const server = (function() {
         }
 
         return await $.ajax(options).catch(e => {
-            showError("Error when calling " + method + " " + url + ": " + e);
+            showError("Error when calling " + method + " " + url + ": " + e.status + " - " + e.statusText);
         });
     }
 

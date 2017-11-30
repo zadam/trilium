@@ -31,8 +31,7 @@ router.get('/', auth.checkApiAuth, async (req, res, next) => {
 
     res.send({
         notes: notes,
-        start_note_tree_id: await options.getOption('start_note_tree_id'),
-        tree_load_time: utils.nowTimestamp()
+        start_note_tree_id: await options.getOption('start_note_tree_id')
     });
 });
 

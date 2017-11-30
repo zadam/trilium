@@ -60,8 +60,10 @@ const jumpToNote = (function() {
 
                 noteDetailEl.summernote('editor.restoreRange');
 
+                const noteId = treeUtils.getNoteIdFromNotePath(notePath);
+
                 noteDetailEl.summernote('createLink', {
-                    text: noteTree.getNoteTitle(notePath),
+                    text: noteTree.getNoteTitle(noteId),
                     url: 'app#' + notePath,
                     isNewWindow: true
                 });
