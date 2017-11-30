@@ -104,10 +104,6 @@ async function executeScript(query) {
     return await wrap(async db => db.exec(query));
 }
 
-async function remove(tableName, noteId) {
-    return await execute("DELETE FROM " + tableName + " WHERE note_id = ?", [noteId]);
-}
-
 async function wrap(func) {
     const thisError = new Error();
     const db = await dbReady;
@@ -187,6 +183,5 @@ module.exports = {
     getFlattenedResults,
     execute,
     executeScript,
-    remove,
     doInTransaction
 };

@@ -20,13 +20,8 @@ async function setOption(optName, optValue) {
         await sync_table.addOptionsSync(optName);
     }
 
-    await setOptionNoSync(optName, optValue);
-}
-
-async function setOptionNoSync(optName, optValue) {
-    const now = utils.nowTimestamp();
-
-    await sql.execute("UPDATE options SET opt_value = ?, date_modified = ? WHERE opt_name = ?", [optValue, now, optName]);
+    await sql.execute("UPDATE options SET opt_value = ?, date_modified = ? WHERE opt_name = ?",
+        [optValue, utils.nowTimestamp(), optName]);
 }
 
 sql.dbReady.then(async () => {
