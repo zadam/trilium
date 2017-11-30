@@ -27,7 +27,7 @@ const recentNotes = (function() {
 
     // FIXME: this should be probably just refresh upon deletion, not explicit delete
     async function removeRecentNote(notePathIdToRemove) {
-        const result = server.remove('recent-notes/' + encodeURIComponent(notePathIdToRemove));
+        const result = await server.remove('recent-notes/' + encodeURIComponent(notePathIdToRemove));
 
         list = result.map(r => r.note_path);
     }
