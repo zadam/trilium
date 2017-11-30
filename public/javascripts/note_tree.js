@@ -191,8 +191,11 @@ const noteTree = (function() {
         let i = 0;
 
         while (true) {
-            const parentNoteId = i < path.length ? path[i] : null;
-            i++;
+            if (i >= path.length) {
+                break;
+            }
+
+            const parentNoteId = path[i++];
 
             if (childNoteId !== null) {
                 const parents = childToParents[childNoteId];
@@ -202,20 +205,17 @@ const noteTree = (function() {
                     return;
                 }
 
-                if (parentNoteId === null || !parents.includes(parentNoteId)) {
+                if (!parents.includes(parentNoteId)) {
                     console.log("Did not find parent " + parentNoteId + " for child " + childNoteId);
 
                     if (parents.length > 0) {
-                        if (parents[0] === 'root') {
-                            console.log("Reached root.");
-                            break;
+                        const pathToRoot = getSomeNotePath(parents[0]).split("/").reverse();
+
+                        for (const noteId of pathToRoot) {
+                            effectivePath.push(noteId);
                         }
 
-                        childNoteId = parents[0];
-                        effectivePath.push(childNoteId);
-
-                        console.log("Choosing parent " + childNoteId + " instead.");
-                        continue;
+                        break;
                     }
                     else {
                         console.log("No parents, can't activate node.");
