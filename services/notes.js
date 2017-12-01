@@ -150,7 +150,7 @@ async function updateNote(noteId, newNote, ctx) {
     const existingNoteHistoryId = await sql.getSingleValue("SELECT note_history_id FROM notes_history WHERE note_id = ? AND date_modified_from >= ?", [noteId, historyCutoff]);
 
     await sql.doInTransaction(async () => {
-        if (!existingNoteHistoryId) {
+        if (!existingNoteHistoryId && (now - newNote.detail.date_created) >= historySnapshotTimeInterval) {
             const newNoteHistoryId = utils.newNoteHistoryId();
 
             await sql.insert('notes_history', {
