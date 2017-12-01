@@ -1,7 +1,14 @@
 const server = (function() {
     function getHeaders() {
+        let protectedSessionId = null;
+
+        try { // this is because protected session might not be declared in some cases - like when it's included in migration page
+            protectedSessionId = protected_session.getProtectedSessionId();
+        }
+        catch(e) {}
+
         return {
-            'x-protected-session-id': protected_session.getProtectedSessionId()
+            'x-protected-session-id': protectedSessionId
         };
     }
 

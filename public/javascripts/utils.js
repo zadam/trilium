@@ -47,3 +47,7 @@ function formatDate(date) {
 function formatDateTime(date) {
     return formatDate(date) + " " + formatTime(date);
 }
+
+function isElectron() {
+    return window && window.process && window.process.type;
+}

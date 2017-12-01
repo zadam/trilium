@@ -1,7 +1,7 @@
 "use strict";
 
 $(document).ready(() => {
-    $.get(baseApiUrl + 'migration').then(result => {
+    server.get('migration').then(result => {
         const appDbVersion = result.app_db_version;
         const dbVersion = result.db_version;
 
@@ -22,11 +22,7 @@ $("#run-migration").click(async () => {
 
     $("#migration-result").show();
 
-    const result = await $.ajax({
-        url: baseApiUrl + 'migration',
-        type: 'POST',
-        error: () => showError("Migration failed with unknown error")
-    });
+    const result = await server.post('migration');
 
     for (const migration of result.migrations) {
         const row = $('<tr>')

@@ -106,10 +106,6 @@ $(document).tooltip({
     }
 });
 
-function isElectron() {
-    return window && window.process && window.process.type;
-}
-
 let appShown = false;
 
 function showAppIfHidden() {
