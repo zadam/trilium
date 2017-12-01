@@ -8,7 +8,7 @@ process.on('unhandledRejection', error => {
     require('../services/log').info(error);
 });
 
-const app = require('../app');
+const { app, sessionParser } = require('../app');
 const debug = require('debug')('node:server');
 const fs = require('fs');
 const http = require('http');
@@ -53,7 +53,7 @@ httpServer.listen(port);
 httpServer.on('error', onError);
 httpServer.on('listening', onListening);
 
-messaging.init(httpServer);
+messaging.init(httpServer, sessionParser);
 
 if (utils.isElectron()) {
     const electronRouting = require('../routes/electron');

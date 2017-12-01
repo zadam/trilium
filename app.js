@@ -9,7 +9,6 @@ const session = require('express-session');
 const FileStore = require('session-file-store')(session);
 const os = require('os');
 const sessionSecret = require('./services/session_secret');
-const utils = require('./services/utils');
 
 require('./services/ping_job');
 
@@ -30,12 +29,12 @@ app.use(bodyParser.json({limit: '50mb'}));
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(session({
+const sessionParser = session({
     secret: sessionSecret,
     resave: false, // true forces the session to be saved back to the session store, even if the session was never modified during the request.
     saveUninitialized: false, // true forces a session that is "uninitialized" to be saved to the store. A session is uninitialized when it is new but not modified.
     cookie: {
-    //    path: "/",
+        //    path: "/",
         httpOnly: true,
         maxAge:  1800000
     },
@@ -43,7 +42,8 @@ app.use(session({
         ttl: 30 * 24 * 3600,
         path: os.tmpdir() + '/trilium-sessions'
     })
-}));
+});
+app.use(sessionParser);
 
 app.use(favicon(__dirname + '/public/images/app-icons/win/icon.ico'));
 
@@ -72,4 +72,7 @@ require('./services/sync');
 // triggers backup timer
 require('./services/backup');
 
-module.exports = app;
+module.exports = {
+    app,
+    sessionParser
+};
