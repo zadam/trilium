@@ -7,6 +7,9 @@ function init(app) {
         req.method = arg.method;
         req.body = arg.data;
         req.headers = arg.headers;
+        req.session = {
+            loggedIn: true
+        };
 
         const res = {
             statusCode: 200

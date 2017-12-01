@@ -25,7 +25,7 @@ async function checkAuthForMigrationPage(req, res, next) {
 }
 
 async function checkApiAuth(req, res, next) {
-    if (!req.session.loggedIn && !utils.isElectron()) {
+    if (!req.session.loggedIn) {
         res.status(401).send("Not authorized");
     }
     else if (await migration.isDbUpToDate()) {
@@ -37,7 +37,7 @@ async function checkApiAuth(req, res, next) {
 }
 
 async function checkApiAuthForMigrationPage(req, res, next) {
-    if (!req.session.loggedIn && !utils.isElectron()) {
+    if (!req.session.loggedIn) {
         res.status(401).send("Not authorized");
     }
     else {
