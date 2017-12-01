@@ -17,6 +17,7 @@ const config = require('../services/config');
 const log = require('../services/log');
 const app_info = require('../services/app_info');
 const messaging = require('../services/messaging');
+const utils = require('../services/utils');
 
 const port = normalizePort(config['Network']['port'] || '3000');
 app.set('port', port);
@@ -53,6 +54,11 @@ httpServer.on('error', onError);
 httpServer.on('listening', onListening);
 
 messaging.init(httpServer);
+
+if (utils.isElectron()) {
+    const electronRouting = require('../routes/electron');
+    electronRouting(app);
+}
 
 /**
  * Normalize a port into a number, string, or false.

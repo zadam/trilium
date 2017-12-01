@@ -15,7 +15,7 @@ async function checkAuth(req, res, next) {
     }
 }
 
-async function checkAuthWithoutMigration(req, res, next) {
+async function checkAuthForMigrationPage(req, res, next) {
     if (!req.session.loggedIn && !utils.isElectron()) {
         res.redirect("login");
     }
@@ -36,7 +36,7 @@ async function checkApiAuth(req, res, next) {
     }
 }
 
-async function checkApiAuthWithoutMigration(req, res, next) {
+async function checkApiAuthForMigrationPage(req, res, next) {
     if (!req.session.loggedIn && !utils.isElectron()) {
         res.status(401).send("Not authorized");
     }
@@ -47,7 +47,7 @@ async function checkApiAuthWithoutMigration(req, res, next) {
 
 module.exports = {
     checkAuth,
-    checkAuthWithoutMigration,
+    checkAuthForMigrationPage,
     checkApiAuth,
-    checkApiAuthWithoutMigration
+    checkApiAuthForMigrationPage
 };
