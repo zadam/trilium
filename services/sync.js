@@ -12,6 +12,7 @@ const notes = require('./notes');
 const syncUpdate = require('./sync_update');
 const content_hash = require('./content_hash');
 const event_log = require('./event_log');
+const fs = require('fs');
 
 const SYNC_SERVER = config['Sync']['syncServerHost'];
 const isSyncSetup = !!SYNC_SERVER;
@@ -20,6 +21,7 @@ const SYNC_PROXY = config['Sync']['syncProxy'];
 
 let syncInProgress = false;
 let proxyToggle = true;
+let syncServerCertificate = null;
 
 async function sync() {
     if (syncInProgress) {
@@ -288,6 +290,10 @@ async function syncRequest(syncContext, method, uri, body) {
             timeout: SYNC_TIMEOUT
         };
 
+        if (syncServerCertificate) {
+            options.ca = syncServerCertificate;
+        }
+
         if (SYNC_PROXY && proxyToggle) {
             options.proxy = SYNC_PROXY;
         }
@@ -304,6 +310,14 @@ if (isSyncSetup) {
 
     if (SYNC_PROXY) {
         log.info("Sync proxy: " + SYNC_PROXY);
+    }
+
+    const syncCertPath = config['Sync']['syncServerCertificate'];
+
+    if (syncCertPath) {
+        log.info('Sync certificate: ' + syncCertPath);
+
+        syncServerCertificate = fs.readFileSync(syncCertPath);
     }
 
     setInterval(sync, 60000);
