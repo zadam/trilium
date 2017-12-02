@@ -30,7 +30,7 @@ const editTreePrefix = (function() {
     formEl.submit(() => {
         const prefix = treePrefixInputEl.val();
 
-        server.put('tree/' + noteTreeId + '/setPrefix', {
+        server.put('tree/' + noteTreeId + '/set-prefix', {
             prefix: prefix
         }).then(() => noteTree.setPrefix(noteTreeId, prefix));
 

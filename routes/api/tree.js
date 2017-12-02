@@ -35,7 +35,7 @@ router.get('/', auth.checkApiAuth, async (req, res, next) => {
     });
 });
 
-router.put('/:noteId/protectSubTree/:isProtected', auth.checkApiAuth, async (req, res, next) => {
+router.put('/:noteId/protect-sub-tree/:isProtected', auth.checkApiAuth, async (req, res, next) => {
     const noteId = req.params.noteId;
     const isProtected = !!parseInt(req.params.isProtected);
     const dataKey = protected_session.getDataKey(req);
@@ -47,7 +47,7 @@ router.put('/:noteId/protectSubTree/:isProtected', auth.checkApiAuth, async (req
     res.send({});
 });
 
-router.put('/:noteTreeId/setPrefix', auth.checkApiAuth, async (req, res, next) => {
+router.put('/:noteTreeId/set-prefix', auth.checkApiAuth, async (req, res, next) => {
     const noteTreeId = req.params.noteTreeId;
     const prefix = utils.isEmptyOrWhitespace(req.body.prefix) ? null : req.body.prefix;
 

@@ -2,7 +2,7 @@
 
 const treeChanges = (function() {
     async function moveBeforeNode(node, beforeNode, changeInPath = true) {
-        await server.put('notes/' + node.data.note_tree_id + '/moveBefore/' + beforeNode.data.note_tree_id);
+        await server.put('notes/' + node.data.note_tree_id + '/move-before/' + beforeNode.data.note_tree_id);
 
         node.moveTo(beforeNode, 'before');
 
@@ -14,7 +14,7 @@ const treeChanges = (function() {
     }
 
     async function moveAfterNode(node, afterNode, changeInPath = true) {
-        await server.put('notes/' + node.data.note_tree_id + '/moveAfter/' + afterNode.data.note_tree_id);
+        await server.put('notes/' + node.data.note_tree_id + '/move-after/' + afterNode.data.note_tree_id);
 
         node.moveTo(afterNode, 'after');
 
@@ -27,7 +27,7 @@ const treeChanges = (function() {
 
     // beware that first arg is noteId and second is noteTreeId!
     async function cloneNoteAfter(noteId, afterNoteTreeId) {
-        const resp = await server.put('notes/' + noteId + '/cloneAfter/' + afterNoteTreeId);
+        const resp = await server.put('notes/' + noteId + '/clone-after/' + afterNoteTreeId);
 
         if (!resp.success) {
             alert(resp.message);
@@ -38,7 +38,7 @@ const treeChanges = (function() {
     }
 
     async function moveToNode(node, toNode) {
-        await server.put('notes/' + node.data.note_tree_id + '/moveTo/' + toNode.data.note_id);
+        await server.put('notes/' + node.data.note_tree_id + '/move-to/' + toNode.data.note_id);
 
         node.moveTo(toNode);
 
@@ -53,7 +53,7 @@ const treeChanges = (function() {
     }
 
     async function cloneNoteTo(childNoteId, parentNoteId) {
-        const resp = await server.put('notes/' + childNoteId + '/cloneTo/' + parentNoteId);
+        const resp = await server.put('notes/' + childNoteId + '/clone-to/' + parentNoteId);
 
         if (!resp.success) {
             alert(resp.message);
@@ -95,7 +95,7 @@ const treeChanges = (function() {
             return;
         }
 
-        await server.put('notes/' + node.data.note_tree_id + '/moveAfter/' + node.getParent().data.note_tree_id);
+        await server.put('notes/' + node.data.note_tree_id + '/move-after/' + node.getParent().data.note_tree_id);
 
         if (node.getParent() !== null && node.getParent().getChildren().length <= 1) {
             node.getParent().folder = false;

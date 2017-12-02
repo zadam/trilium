@@ -7,7 +7,7 @@ const utils = require('../../services/utils');
 const auth = require('../../services/auth');
 const sync_table = require('../../services/sync_table');
 
-router.put('/:noteTreeId/moveTo/:parentNoteId', auth.checkApiAuth, async (req, res, next) => {
+router.put('/:noteTreeId/move-to/:parentNoteId', auth.checkApiAuth, async (req, res, next) => {
     const noteTreeId = req.params.noteTreeId;
     const parentNoteId = req.params.parentNoteId;
 
@@ -26,7 +26,7 @@ router.put('/:noteTreeId/moveTo/:parentNoteId', auth.checkApiAuth, async (req, r
     res.send({});
 });
 
-router.put('/:noteTreeId/moveBefore/:beforeNoteTreeId', async (req, res, next) => {
+router.put('/:noteTreeId/move-before/:beforeNoteTreeId', async (req, res, next) => {
     const noteTreeId = req.params.noteTreeId;
     const beforeNoteTreeId = req.params.beforeNoteTreeId;
 
@@ -55,7 +55,7 @@ router.put('/:noteTreeId/moveBefore/:beforeNoteTreeId', async (req, res, next) =
     }
 });
 
-router.put('/:noteTreeId/moveAfter/:afterNoteTreeId', async (req, res, next) => {
+router.put('/:noteTreeId/move-after/:afterNoteTreeId', async (req, res, next) => {
     const noteTreeId = req.params.noteTreeId;
     const afterNoteTreeId = req.params.afterNoteTreeId;
 
@@ -82,7 +82,7 @@ router.put('/:noteTreeId/moveAfter/:afterNoteTreeId', async (req, res, next) => 
     }
 });
 
-router.put('/:childNoteId/cloneTo/:parentNoteId', auth.checkApiAuth, async (req, res, next) => {
+router.put('/:childNoteId/clone-to/:parentNoteId', auth.checkApiAuth, async (req, res, next) => {
     const parentNoteId = req.params.parentNoteId;
     const childNoteId = req.params.childNoteId;
 
@@ -126,7 +126,7 @@ router.put('/:childNoteId/cloneTo/:parentNoteId', auth.checkApiAuth, async (req,
     });
 });
 
-router.put('/:noteId/cloneAfter/:afterNoteTreeId', async (req, res, next) => {
+router.put('/:noteId/clone-after/:afterNoteTreeId', async (req, res, next) => {
     const noteId = req.params.noteId;
     const afterNoteTreeId = req.params.afterNoteTreeId;
 
