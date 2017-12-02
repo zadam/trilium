@@ -20,8 +20,20 @@ function init(httpServer, sessionParser) {
         server: httpServer
     });
 
-    webSocketServer.on('connection', function connection(ws, req) {
+    webSocketServer.on('connection', (ws, req) => {
         console.log("websocket client connected");
+
+        ws.on('message', messageJson => {
+            const message = JSON.parse(messageJson);
+
+            if (message.type === 'log-error') {
+                log.error('JS Error: ' + message.error);
+            }
+            else {
+                log.error('Unrecognized message: ');
+                log.error(message);
+            }
+        });
     });
 }
 

@@ -80,7 +80,7 @@ const jumpToNote = (function() {
             dialogEl.dialog("close");
         }
         else {
-            console.error("Unknown action=" + action);
+            messaging.logError("Unknown action=" + action);
         }
 
         return false;

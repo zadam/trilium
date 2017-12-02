@@ -144,7 +144,7 @@ const noteTree = (function() {
     function prepareNoteTreeInner(parentNoteId) {
         const childNoteIds = parentToChildren[parentNoteId];
         if (!childNoteIds) {
-            console.log("No children for " + parentNoteId + ". This shouldn't happen.");
+            messaging.logError("No children for " + parentNoteId + ". This shouldn't happen.");
             return;
         }
 
@@ -201,7 +201,7 @@ const noteTree = (function() {
                 const parents = childToParents[childNoteId];
 
                 if (!parents) {
-                    console.error("No parents found for " + childNoteId);
+                    messaging.logError("No parents found for " + childNoteId);
                     return;
                 }
 
@@ -218,7 +218,7 @@ const noteTree = (function() {
                         break;
                     }
                     else {
-                        console.log("No parents, can't activate node.");
+                        messaging.logError("No parents, can't activate node.");
                         return;
                     }
                 }

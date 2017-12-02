@@ -1,9 +1,20 @@
 "use strict";
 
 const messaging = (function() {
-    function messageHandler(event) {
-        console.log(event.data);
+    let ws = null;
 
+    function logError(message) {
+        console.error(message);
+
+        if (ws && ws.readyState === 1) {
+            ws.send(JSON.stringify({
+                type: 'log-error',
+                error: message
+            }));
+        }
+    }
+
+    function messageHandler(event) {
         const message = JSON.parse(event.data);
 
         if (message.type === 'sync') {
@@ -26,8 +37,6 @@ const messaging = (function() {
             changesToPushCountEl.html(message.changesToPushCount);
         }
     }
-
-    let ws = null;
 
     function connectWebSocket() {
         // use wss for secure messaging
@@ -65,4 +74,8 @@ const messaging = (function() {
             showMessage("Re-connected to server");
         }
     }, 3000);
+
+    return {
+        logError
+    };
 })();

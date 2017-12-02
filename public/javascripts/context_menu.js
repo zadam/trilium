@@ -121,7 +121,7 @@ const contextMenu = (function() {
                 treeChanges.deleteNode(node);
             }
             else {
-                console.log("Unknown command: " + ui.cmd);
+                messaging.logError("Unknown command: " + ui.cmd);
             }
         }
     };

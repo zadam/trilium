@@ -126,3 +126,26 @@ function showAppIfHidden() {
         loaderDiv.style.opacity = 0.0;
     }
 }
+
+window.onerror = function (msg, url, lineNo, columnNo, error) {
+    const string = msg.toLowerCase();
+
+    let message = "Uncaught error: ";
+
+    if (string.indexOf("script error") > -1){
+        message += 'No details available';
+    }
+    else {
+        message += [
+            'Message: ' + msg,
+            'URL: ' + url,
+            'Line: ' + lineNo,
+            'Column: ' + columnNo,
+            'Error object: ' + JSON.stringify(error)
+        ].join(' - ');
+    }
+
+    messaging.logError(message);
+
+    return false;
+};
