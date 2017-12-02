@@ -22,17 +22,19 @@
     align-items: center;
 }
 
-.note-editable {
+#note-detail {
+    border: 0 !important;
+    box-shadow: none !important;
     /* This is because with empty content height of editor is 0 and it's impossible to click into it */
     min-height: 400px;
     overflow: auto;
 }
 
-.note-editable.protected {
+#note-detail.protected {
     background-color: #eee;
 }
 
-.note-editable p {
+#note-detail p {
     padding: 0;
     margin: 0;
 }

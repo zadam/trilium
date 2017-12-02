@@ -6,6 +6,7 @@ const noteEditor = (function() {
     const protectButton = $("#protect-button");
     const unprotectButton = $("#unprotect-button");
     const noteDetailWrapperEl = $("#note-detail-wrapper");
+    let editor = null;
 
     let currentNote = null;
 
@@ -22,6 +23,8 @@ const noteEditor = (function() {
     }
 
     function noteChanged() {
+        console.log("CHANGED!!!");
+
         if (noteChangeDisabled) {
             return;
         }
@@ -60,7 +63,7 @@ const noteEditor = (function() {
     }
 
     function updateNoteFromInputs(note) {
-        note.detail.note_text = noteDetailEl.summernote('code');
+        note.detail.note_text = editor.getData();
 
         const title = noteTitleEl.val();
 
@@ -124,9 +127,9 @@ const noteEditor = (function() {
         noteTitleEl.val(currentNote.detail.note_title);
 
         // Clear contents and remove all stored history. This is to prevent undo from going across notes
-        noteDetailEl.summernote('reset');
+        //noteDetailEl.summernote('reset');
 
-        noteDetailEl.summernote('code', currentNote.detail.note_text);
+        editor.setData(currentNote.detail.note_text);
 
         noteChangeDisabled = false;
 
@@ -148,16 +151,20 @@ const noteEditor = (function() {
             noteTree.setNoteTitle(getCurrentNoteId(), title);
         });
 
-        noteDetailEl.summernote({
-            airMode: true,
-            height: 300,
-            callbacks: {
-                onChange: noteChanged
-            }
-        });
+        BalloonEditor
+            .create(document.querySelector('#note-detail'), {
+            })
+            .then(edit => {
+                editor = edit;
+
+                editor.document.on('change', () => noteChanged);
+            })
+            .catch(error => {
+                console.error(error);
+            });
 
         // so that tab jumps from note title (which has tabindex 1)
-        $(".note-editable").attr("tabindex", 2);
+        noteDetailEl.attr("tabindex", 2);
     });
 
     setInterval(saveNoteIfChanged, 5000);
