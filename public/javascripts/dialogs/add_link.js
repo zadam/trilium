@@ -10,8 +10,6 @@ const addLink = (function() {
     function showDialog() {
         glob.activeDialog = dialogEl;
 
-        noteDetailEl.summernote('editor.saveRange');
-
         dialogEl.dialog({
             modal: true,
             width: 500
@@ -21,7 +19,7 @@ const addLink = (function() {
         linkTitleEl.val('');
 
         function setDefaultLinkTitle(noteId) {
-            const noteTitle = treeUtils.getNoteTitle(noteId);
+            const noteTitle = noteTree.getNoteTitle(noteId);
 
             linkTitleEl.val(noteTitle);
         }
@@ -31,7 +29,8 @@ const addLink = (function() {
             minLength: 0,
             change: () => {
                 const val = autoCompleteEl.val();
-                const noteId = link.getNodePathFromLabel(val);
+                const notePath = link.getNodePathFromLabel(val);
+                const noteId = treeUtils.getNoteIdFromNotePath(notePath);
 
                 if (noteId) {
                     setDefaultLinkTitle(noteId);
@@ -40,7 +39,8 @@ const addLink = (function() {
             // this is called when user goes through autocomplete list with keyboard
             // at this point the item isn't selected yet so we use supplied ui.item to see WHERE the cursor is
             focus: (event, ui) => {
-                const noteId = link.getNodePathFromLabel(ui.item.value);
+                const notePath = link.getNodePathFromLabel(ui.item.value);
+                const noteId = treeUtils.getNoteIdFromNotePath(notePath);
 
                 setDefaultLinkTitle(noteId);
             }
@@ -57,13 +57,22 @@ const addLink = (function() {
 
             dialogEl.dialog("close");
 
-            noteDetailEl.summernote('editor.restoreRange');
+            const editor = noteEditor.getEditor();
+            const doc = editor.document;
 
-            noteDetailEl.summernote('createLink', {
-                text: linkTitle,
-                url: 'app#' + notePath,
-                isNewWindow: true
-            });
+//             doc.enqueueChanges( () => {
+// //                const link = '<a href="#' + notePath + '" target="_blank">' + linkTitle + '</a>';
+//
+//                 editor.data.insertContent({
+//                     linkHref: '#' + notePath
+//                 }, doc.selection);
+//             } );
+
+            // noteDetailEl.summernote('createLink', {
+            //     text: linkTitle,
+            //     url: 'app#' + notePath,
+            //     isNewWindow: true
+            // });
         }
 
         return false;

@@ -67,7 +67,7 @@ const link = (function() {
     // of opening the link in new window/tab
     $(document).on('click', "a[action='note']", goToInternalNote);
     $(document).on('click', 'div.popover-content a, div.ui-tooltip-content', goToInternalNote);
-    $(document).on('dblclick', '.note-editable a, div.ui-tooltip-content', goToInternalNote);
+    $(document).on('dblclick', '#note-detail a, div.ui-tooltip-content', goToInternalNote);
 
     return {
         getNodePathFromLabel,

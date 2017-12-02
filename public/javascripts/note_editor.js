@@ -82,12 +82,12 @@ const noteEditor = (function() {
 
     function setNoteBackgroundIfProtected(note) {
         if (note.detail.is_protected) {
-            $(".note-editable").addClass("protected");
+            $("#note-detail").addClass("protected");
             protectButton.hide();
             unprotectButton.show();
         }
         else {
-            $(".note-editable").removeClass("protected");
+            $("#note-detail").removeClass("protected");
             protectButton.show();
             unprotectButton.hide();
         }
@@ -126,9 +126,6 @@ const noteEditor = (function() {
 
         noteTitleEl.val(currentNote.detail.note_title);
 
-        // Clear contents and remove all stored history. This is to prevent undo from going across notes
-        //noteDetailEl.summernote('reset');
-
         editor.setData(currentNote.detail.note_text);
 
         noteChangeDisabled = false;
@@ -140,6 +137,10 @@ const noteEditor = (function() {
 
     async function loadNote(noteId) {
         return await server.get('notes/' + noteId);
+    }
+
+    function getEditor() {
+        return editor;
     }
 
     $(document).ready(() => {
@@ -179,6 +180,7 @@ const noteEditor = (function() {
         loadNote,
         getCurrentNote,
         getCurrentNoteId,
-        newNoteCreated
+        newNoteCreated,
+        getEditor
     };
 })();
