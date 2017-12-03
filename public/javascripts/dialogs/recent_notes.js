@@ -8,28 +8,24 @@ const recentNotes = (function() {
     const addCurrentAsChildEl = $("#recent-notes-add-current-as-child");
     const addRecentAsChildEl = $("#recent-notes-add-recent-as-child");
     const noteDetailEl = $('#note-detail');
+    // list of recent note paths
     let list = [];
 
-    server.get('recent-notes').then(result => {
-        list = result.map(r => r.note_tree_id);
-    });
+    async function reload() {
+        const result = await server.get('recent-notes');
 
-    function addRecentNote(notePath) {
+        list = result.map(r => r.note_path);
+    }
+
+    function addRecentNote(noteTreeId, notePath) {
         setTimeout(async () => {
             // we include the note into recent list only if the user stayed on the note at least 5 seconds
             if (notePath && notePath === noteTree.getCurrentNotePath()) {
-                const result = await server.put('recent-notes/' + encodeURIComponent(notePath));
+                const result = await server.put('recent-notes/' + noteTreeId + '/' + encodeURIComponent(notePath));
 
                 list = result.map(r => r.note_path);
             }
         }, 1500);
-    }
-
-    // FIXME: this should be probably just refresh upon deletion, not explicit delete
-    async function removeRecentNote(notePathIdToRemove) {
-        const result = await server.remove('recent-notes/' + encodeURIComponent(notePathIdToRemove));
-
-        list = result.map(r => r.note_path);
     }
 
     function showDialog() {
@@ -133,6 +129,8 @@ const recentNotes = (function() {
         e.preventDefault();
     });
 
+    reload();
+
     $(document).bind('keydown', 'alt+q', showDialog);
 
     selectBoxEl.dblclick(e => {
@@ -147,6 +145,6 @@ const recentNotes = (function() {
     return {
         showDialog,
         addRecentNote,
-        removeRecentNote
+        reload
     };
 })();

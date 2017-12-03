@@ -92,13 +92,13 @@ async function updateOptions(entity, sourceId) {
 }
 
 async function updateRecentNotes(entity, sourceId) {
-    const orig = await sql.getSingleResultOrNull("SELECT * FROM recent_notes WHERE note_path = ?", [entity.note_path]);
+    const orig = await sql.getSingleResultOrNull("SELECT * FROM recent_notes WHERE note_tree_id = ?", [entity.note_tree_id]);
 
     if (orig === null || orig.date_accessed < entity.date_accessed) {
         await sql.doInTransaction(async () => {
             await sql.replace('recent_notes', entity);
 
-            await sync_table.addRecentNoteSync(entity.note_path, sourceId);
+            await sync_table.addRecentNoteSync(entity.note_tree_id, sourceId);
         });
     }
 }

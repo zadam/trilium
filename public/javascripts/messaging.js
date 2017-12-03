@@ -33,15 +33,23 @@ const messaging = (function() {
                 noteEditor.reload();
             }
 
+            if (data.recent_notes) {
+                console.log("Reloading recent notes because of background changes");
+
+                recentNotes.reload();
+            }
+
             const changesToPushCountEl = $("#changesToPushCount");
             changesToPushCountEl.html(message.changesToPushCount);
         }
     }
 
     function connectWebSocket() {
+        const protocol = document.location.protocol === 'https:' ? 'wss' : 'ws';
+
         // use wss for secure messaging
-        ws = new WebSocket("ws://" + location.host);
-        ws.onopen = function (event) {};
+        ws = new WebSocket(protocol + "://" + location.host);
+        ws.onopen = event => console.log("Connected to server with WebSocket");
         ws.onmessage = messageHandler;
         ws.onclose = function(){
             // Try to reconnect in 5 seconds
