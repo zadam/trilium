@@ -11,9 +11,11 @@ const recentNotes = (function() {
     // list of recent note paths
     let list = [];
 
-    server.get('recent-notes').then(result => {
+    async function reload() {
+        const result = await server.get('recent-notes');
+
         list = result.map(r => r.note_path);
-    });
+    }
 
     function addRecentNote(noteTreeId, notePath) {
         setTimeout(async () => {
@@ -127,6 +129,8 @@ const recentNotes = (function() {
         e.preventDefault();
     });
 
+    reload();
+
     $(document).bind('keydown', 'alt+q', showDialog);
 
     selectBoxEl.dblclick(e => {
@@ -140,6 +144,7 @@ const recentNotes = (function() {
 
     return {
         showDialog,
-        addRecentNote
+        addRecentNote,
+        reload
     };
 })();

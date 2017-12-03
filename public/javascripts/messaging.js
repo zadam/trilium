@@ -33,6 +33,12 @@ const messaging = (function() {
                 noteEditor.reload();
             }
 
+            if (data.recent_notes) {
+                console.log("Reloading recent notes because of background changes");
+
+                recentNotes.reload();
+            }
+
             const changesToPushCountEl = $("#changesToPushCount");
             changesToPushCountEl.html(message.changesToPushCount);
         }
