@@ -184,7 +184,32 @@ const noteTree = (function() {
     }
 
     async function activateNode(notePath) {
+        const runPath = getRunPath(notePath);
+        const noteId = treeUtils.getNoteIdFromNotePath(notePath);
+
+        let parentNoteId = 'root';
+
+        for (const childNoteId of runPath) {
+            const node = getNodesByNoteId(childNoteId).find(node => node.data.note_pid === parentNoteId);
+
+            if (childNoteId === noteId) {
+                await node.setActive();
+            }
+            else {
+                await node.setExpanded();
+            }
+
+            parentNoteId = childNoteId;
+        }
+    }
+
+    /**
+     * Accepts notePath and tries to resolve it. Part of the path might not be valid because of note moving (which causes
+     * path change) or other corruption, in that case this will try to get some other valid path to the correct note.
+     */
+    function getRunPath(notePath) {
         const path = notePath.split("/").reverse();
+        path.push('root');
 
         const effectivePath = [];
         let childNoteId = null;
@@ -224,27 +249,16 @@ const noteTree = (function() {
                 }
             }
 
-            effectivePath.push(parentNoteId);
-            childNoteId = parentNoteId;
-        }
-
-        const noteId = treeUtils.getNoteIdFromNotePath(notePath);
-
-        const runPath = effectivePath.reverse();
-        let parentNoteId = 'root';
-
-        for (const childNoteId of runPath) {
-            const node = getNodesByNoteId(childNoteId).find(node => node.data.note_pid === parentNoteId);
-
-            if (childNoteId === noteId) {
-                await node.setActive();
+            if (parentNoteId === 'root') {
+                break;
             }
             else {
-                await node.setExpanded();
+                effectivePath.push(parentNoteId);
+                childNoteId = parentNoteId;
             }
-
-            parentNoteId = childNoteId;
         }
+
+        return effectivePath.reverse();
     }
 
     function showParentList(noteId, node) {

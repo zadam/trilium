@@ -33,9 +33,18 @@ const recentChanges = (function() {
                     .attr('note-path', change.note_id)
                     .attr('note-history-id', change.note_history_id);
 
+                let noteLink;
+
+                if (change.current_is_deleted) {
+                    noteLink = change.current_note_title;
+                }
+                else {
+                    noteLink = link.createNoteLink(change.note_id, change.note_title);
+                }
+
                 changesListEl.append($('<li>')
                     .append(formattedTime + ' - ')
-                    .append(link.createNoteLink(change.note_id))
+                    .append(noteLink)
                     .append(' (').append(revLink).append(')'));
             }
 
