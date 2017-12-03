@@ -40,13 +40,29 @@ async function importNotes(dir, parentNoteId) {
             continue;
         }
 
-        const noteTitle = file.substr(0, file.length - 5);
-        const noteText = fs.readFileSync(path, "utf8");
+        const fileNameWithoutExt = file.substr(0, file.length - 5);
 
-        let maxPos = await sql.getSingleValue("SELECT MAX(note_pos) FROM notes_tree WHERE note_pid = ? AND is_deleted = 0", [parentNoteId]);
-        if (!maxPos) {
-            maxPos = 1;
+        let noteTitle;
+        let notePos;
+
+        const match = fileNameWithoutExt.match(/^([0-9]{4})-(.*)$/);
+        if (match) {
+            notePos = parseInt(match[1]);
+            noteTitle = match[2];
         }
+        else {
+            let maxPos = await sql.getSingleValue("SELECT MAX(note_pos) FROM notes_tree WHERE note_pid = ? AND is_deleted = 0", [parentNoteId]);
+            if (maxPos) {
+                notePos = maxPos + 1;
+            }
+            else {
+                notePos = 0;
+            }
+
+            noteTitle = fileNameWithoutExt;
+        }
+
+        const noteText = fs.readFileSync(path, "utf8");
 
         const noteId = utils.newNoteId();
         const noteTreeId = utils.newNoteHistoryId();
@@ -55,7 +71,7 @@ async function importNotes(dir, parentNoteId) {
             note_tree_id: noteTreeId,
             note_id: noteId,
             note_pid: parentNoteId,
-            note_pos: maxPos + 1,
+            note_pos: notePos,
             is_expanded: 0,
             is_deleted: 0,
             date_modified: utils.nowTimestamp()
@@ -75,7 +91,7 @@ async function importNotes(dir, parentNoteId) {
 
         await sync_table.addNoteSync(noteId);
 
-        const noteDir = dir + '/' + noteTitle;
+        const noteDir = dir + '/' + fileNameWithoutExt;
 
         if (fs.existsSync(noteDir) && fs.lstatSync(noteDir).isDirectory()) {
             await importNotes(noteDir, noteId);
