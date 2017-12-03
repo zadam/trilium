@@ -6,6 +6,7 @@ const rimraf = require('rimraf');
 const fs = require('fs');
 const sql = require('../../services/sql');
 const data_dir = require('../../services/data_dir');
+const html = require('html');
 
 router.get('/:noteId/to/:directory', async (req, res, next) => {
     const noteId = req.params.noteId;
@@ -36,7 +37,7 @@ async function exportNote(noteTreeId, dir) {
 
     const pos = (noteTree.note_pos + '').padStart(4, '0');
 
-    fs.writeFileSync(dir + '/' + pos + '-' + note.note_title + '.html', note.note_text);
+    fs.writeFileSync(dir + '/' + pos + '-' + note.note_title + '.html', html.prettyPrint(note.note_text, {indent_size: 2}));
 
     const children = await sql.getResults("SELECT * FROM notes_tree WHERE note_pid = ? AND is_deleted = 0", [note.note_id]);
 
