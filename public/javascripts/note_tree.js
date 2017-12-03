@@ -319,10 +319,11 @@ const noteTree = (function() {
 
     function setCurrentNotePathToHash(node) {
         const currentNotePath = treeUtils.getNotePath(node);
+        const currentNoteTreeId = node.data.note_tree_id;
 
         document.location.hash = currentNotePath;
 
-        recentNotes.addRecentNote(currentNotePath);
+        recentNotes.addRecentNote(currentNoteTreeId, currentNotePath);
     }
 
     function initFancyTree(noteTree) {
@@ -343,13 +344,13 @@ const noteTree = (function() {
                 const beforeNode = node.getPrevSibling();
 
                 if (beforeNode !== null) {
-                    treeChanges.moveBeforeNode(node, beforeNode, false);
+                    treeChanges.moveBeforeNode(node, beforeNode);
                 }
             },
             "shift+down": node => {
                 let afterNode = node.getNextSibling();
                 if (afterNode !== null) {
-                    treeChanges.moveAfterNode(node, afterNode, false);
+                    treeChanges.moveAfterNode(node, afterNode);
                 }
             },
             "shift+left": node => {
@@ -625,6 +626,6 @@ const noteTree = (function() {
         createNewTopLevelNote,
         createNote,
         setPrefix,
-
+        getNotePathTitle
     };
 })();

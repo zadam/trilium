@@ -22,7 +22,7 @@ async function getContentHash() {
     hash = updateHash(hash, await sql.getResults("SELECT note_history_id, note_id, note_title, note_text, " +
         "date_modified_from, date_modified_to FROM notes_history ORDER BY note_history_id"));
 
-    hash = updateHash(hash, await sql.getResults("SELECT note_path, date_accessed, is_deleted FROM recent_notes " +
+    hash = updateHash(hash, await sql.getResults("SELECT note_tree_id, note_path, date_accessed, is_deleted FROM recent_notes " +
         "ORDER BY note_path"));
 
     const questionMarks = Array(options.SYNCED_OPTIONS.length).fill('?').join(',');

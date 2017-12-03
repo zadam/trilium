@@ -66,10 +66,10 @@ router.get('/notes_reordering/:noteTreeParentId', auth.checkApiAuth, async (req,
     });
 });
 
-router.get('/recent_notes/:notePath', auth.checkApiAuth, async (req, res, next) => {
-    const notePath = req.params.notePath;
+router.get('/recent_notes/:noteTreeId', auth.checkApiAuth, async (req, res, next) => {
+    const noteTreeId = req.params.noteTreeId;
 
-    res.send(await sql.getSingleResult("SELECT * FROM recent_notes WHERE note_path = ?", [notePath]));
+    res.send(await sql.getSingleResult("SELECT * FROM recent_notes WHERE note_tree_id = ?", [noteTreeId]));
 });
 
 router.put('/notes', auth.checkApiAuth, async (req, res, next) => {

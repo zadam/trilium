@@ -224,7 +224,7 @@ async function readAndPushEntity(sync, syncContext) {
         entity = await sql.getSingleResult('SELECT * FROM options WHERE opt_name = ?', [sync.entity_id]);
     }
     else if (sync.entity_name === 'recent_notes') {
-        entity = await sql.getSingleResult('SELECT * FROM recent_notes WHERE note_path = ?', [sync.entity_id]);
+        entity = await sql.getSingleResult('SELECT * FROM recent_notes WHERE note_tree_id = ?', [sync.entity_id]);
     }
     else {
         throw new Error("Unrecognized entity type " + sync.entity_name);

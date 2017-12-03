@@ -1,28 +1,20 @@
 "use strict";
 
 const treeChanges = (function() {
-    async function moveBeforeNode(node, beforeNode, changeInPath = true) {
+    async function moveBeforeNode(node, beforeNode) {
         await server.put('notes/' + node.data.note_tree_id + '/move-before/' + beforeNode.data.note_tree_id);
 
         node.moveTo(beforeNode, 'before');
 
-        if (changeInPath) {
-            recentNotes.removeRecentNote(noteTree.getCurrentNotePath());
-
-            noteTree.setCurrentNotePathToHash(node);
-        }
+        noteTree.setCurrentNotePathToHash(node);
     }
 
-    async function moveAfterNode(node, afterNode, changeInPath = true) {
+    async function moveAfterNode(node, afterNode) {
         await server.put('notes/' + node.data.note_tree_id + '/move-after/' + afterNode.data.note_tree_id);
 
         node.moveTo(afterNode, 'after');
 
-        if (changeInPath) {
-            recentNotes.removeRecentNote(noteTree.getCurrentNotePath());
-
-            noteTree.setCurrentNotePathToHash(node);
-        }
+        noteTree.setCurrentNotePathToHash(node);
     }
 
     // beware that first arg is noteId and second is noteTreeId!
@@ -46,8 +38,6 @@ const treeChanges = (function() {
 
         toNode.folder = true;
         toNode.renderTitle();
-
-        recentNotes.removeRecentNote(noteTree.getCurrentNotePath());
 
         noteTree.setCurrentNotePathToHash(node);
     }
@@ -74,8 +64,6 @@ const treeChanges = (function() {
             node.getParent().folder = false;
             node.getParent().renderTitle();
         }
-
-        recentNotes.removeRecentNote(noteTree.getCurrentNotePath());
 
         let next = node.getNextSibling();
         if (!next) {
