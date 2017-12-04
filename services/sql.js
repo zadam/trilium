@@ -4,6 +4,7 @@ const log = require('./log');
 const dataDir = require('./data_dir');
 const fs = require('fs');
 const sqlite = require('sqlite');
+const utils = require('./utils');
 
 async function createConnection() {
     return await sqlite.open(dataDir.DOCUMENT_PATH, {Promise});
@@ -25,7 +26,28 @@ const dbReady = new Promise((resolve, reject) => {
             await doInTransaction(async () => {
                 await executeScript(schema);
 
-                await require('./options').initOptions();
+                const noteId = utils.newNoteId();
+
+                await insert('notes_tree', {
+                    note_tree_id: utils.newNoteTreeId(),
+                    note_id: noteId,
+                    note_pid: 'root',
+                    note_pos: 1,
+                    is_deleted: 0,
+                    date_modified: utils.nowTimestamp()
+                });
+
+                await insert('notes', {
+                    note_id: noteId,
+                    note_title: 'Welcome to Trilium!',
+                    note_text: 'Text',
+                    is_protected: 0,
+                    is_deleted: 0,
+                    date_created: utils.nowTimestamp(),
+                    date_modified: utils.nowTimestamp()
+                });
+
+                await require('./options').initOptions(noteId);
             });
 
             // we don't resolve dbReady promise because user needs to setup the username and password to initialize

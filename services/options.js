@@ -28,7 +28,7 @@ async function setOption(optName, optValue) {
     });
 }
 
-async function initOptions() {
+async function initOptions(startNoteTreeId) {
     await setOption('document_id', utils.randomSecureToken(16));
     await setOption('document_secret', utils.randomSecureToken(16));
 
@@ -39,7 +39,7 @@ async function initOptions() {
     await setOption('encrypted_data_key', '');
     await setOption('encrypted_data_key_iv', '');
 
-    await setOption('start_note_tree_id', '');
+    await setOption('start_note_tree_id', startNoteTreeId);
     await setOption('protected_session_timeout', 600);
     await setOption('history_snapshot_time_interval', 600);
     await setOption('last_backup_date', utils.nowTimestamp());
