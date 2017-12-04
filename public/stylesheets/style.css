@@ -83,6 +83,10 @@ span.fancytree-node.fancytree-active-clone:not(.fancytree-active) .fancytree-tit
     text-decoration: none;
 }
 
+.icon-action {
+    cursor: pointer;
+}
+
 #protect-button, #unprotect-button {
     display: none;
 }
