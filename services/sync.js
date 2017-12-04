@@ -13,6 +13,7 @@ const syncUpdate = require('./sync_update');
 const content_hash = require('./content_hash');
 const event_log = require('./event_log');
 const fs = require('fs');
+const app_info = require('./app_info');
 
 const SYNC_SERVER = config['Sync']['syncServerHost'];
 const isSyncSetup = !!SYNC_SERVER;
@@ -94,7 +95,7 @@ async function login() {
 
     const resp = await syncRequest(syncContext, 'POST', '/api/login/sync', {
         timestamp: timestamp,
-        dbVersion: migration.APP_DB_VERSION,
+        dbVersion: app_info.db_version,
         hash: hash
     });
 

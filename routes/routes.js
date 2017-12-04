@@ -2,6 +2,7 @@ const indexRoute = require('./index');
 const loginRoute = require('./login');
 const logoutRoute = require('./logout');
 const migrationRoute = require('./migration');
+const setupRoute = require('./setup');
 
 // API routes
 const treeApiRoute = require('./api/tree');
@@ -19,12 +20,14 @@ const recentNotesRoute = require('./api/recent_notes');
 const appInfoRoute = require('./api/app_info');
 const exportRoute = require('./api/export');
 const importRoute = require('./api/import');
+const setupApiRoute = require('./api/setup');
 
 function register(app) {
     app.use('/', indexRoute);
     app.use('/login', loginRoute);
     app.use('/logout', logoutRoute);
     app.use('/migration', migrationRoute);
+    app.use('/setup', setupRoute);
 
     app.use('/api/tree', treeApiRoute);
     app.use('/api/notes', notesApiRoute);
@@ -41,6 +44,7 @@ function register(app) {
     app.use('/api/app-info', appInfoRoute);
     app.use('/api/export', exportRoute);
     app.use('/api/import', importRoute);
+    app.use('/api/setup', setupApiRoute);
 }
 
 module.exports = {

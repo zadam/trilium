@@ -11,21 +11,43 @@ async function createConnection() {
 
 const dbConnected = createConnection();
 
+let dbReadyResolve = null;
 const dbReady = new Promise((resolve, reject) => {
     dbConnected.then(async db => {
+        dbReadyResolve = () => resolve(db);
+
         const tableResults = await getResults("SELECT name FROM sqlite_master WHERE type='table' AND name='notes'");
         if (tableResults.length !== 1) {
-            console.log("No connection to initialized DB.");
-            process.exit(1);
-        }
+            log.info("Connected to db, but schema doesn't exist. Initializing schema ...");
 
-        resolve(db);
+            const schema = fs.readFileSync('schema.sql', 'UTF-8');
+
+            await doInTransaction(async () => {
+                await executeScript(schema);
+
+                await require('./options').initOptions();
+            });
+
+            // we don't resolve dbReady promise because user needs to setup the username and password to initialize
+            // the database
+        }
+        else {
+            const username = await getSingleValue("SELECT opt_value FROM options WHERE opt_name = 'username'");
+
+            if (username) {
+                resolve(db);
+            }
+        }
     })
     .catch(e => {
         console.log("Error connecting to DB.", e);
         process.exit(1);
     });
 });
+
+function setDbReadyAsResolved() {
+    dbReadyResolve();
+}
 
 async function insert(table_name, rec, replace = false) {
     const keys = Object.keys(rec);
@@ -181,5 +203,6 @@ module.exports = {
     getFlattenedResults,
     execute,
     executeScript,
-    doInTransaction
+    doInTransaction,
+    setDbReadyAsResolved
 };
