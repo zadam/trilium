@@ -18,6 +18,7 @@ const log = require('../services/log');
 const app_info = require('../services/app_info');
 const messaging = require('../services/messaging');
 const utils = require('../services/utils');
+const sql = require('../services/sql');
 
 const port = normalizePort(config['Network']['port'] || '3000');
 app.set('port', port);
@@ -53,7 +54,7 @@ httpServer.listen(port);
 httpServer.on('error', onError);
 httpServer.on('listening', onListening);
 
-messaging.init(httpServer, sessionParser);
+sql.dbReady.then(() => messaging.init(httpServer, sessionParser));
 
 if (utils.isElectron()) {
     const electronRouting = require('../routes/electron');

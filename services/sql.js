@@ -2,13 +2,30 @@
 
 const log = require('./log');
 const dataDir = require('./data_dir');
+const fs = require('fs');
 const sqlite = require('sqlite');
 
 async function createConnection() {
     return await sqlite.open(dataDir.DOCUMENT_PATH, {Promise});
 }
 
-const dbReady = createConnection();
+const dbConnected = createConnection();
+
+const dbReady = new Promise((resolve, reject) => {
+    dbConnected.then(async db => {
+        const tableResults = await getResults("SELECT name FROM sqlite_master WHERE type='table' AND name='notes'");
+        if (tableResults.length !== 1) {
+            console.log("No connection to initialized DB.");
+            process.exit(1);
+        }
+
+        resolve(db);
+    })
+    .catch(e => {
+        console.log("Error connecting to DB.", e);
+        process.exit(1);
+    });
+});
 
 async function insert(table_name, rec, replace = false) {
     const keys = Object.keys(rec);
@@ -44,13 +61,10 @@ async function rollback() {
 }
 
 async function getSingleResult(query, params = []) {
-    const db = await dbReady;
-
     return await wrap(async db => db.get(query, ...params));
 }
 
 async function getSingleResultOrNull(query, params = []) {
-    const db = await dbReady;
     const all = await wrap(async db => db.all(query, ...params));
 
     return all.length > 0 ? all[0] : null;
@@ -67,8 +81,6 @@ async function getSingleValue(query, params = []) {
 }
 
 async function getResults(query, params = []) {
-    const db = await dbReady;
-
     return await wrap(async db => db.all(query, ...params));
 }
 
@@ -106,7 +118,7 @@ async function executeScript(query) {
 
 async function wrap(func) {
     const thisError = new Error();
-    const db = await dbReady;
+    const db = await dbConnected;
 
     try {
         return await func(db);
@@ -156,20 +168,6 @@ async function doInTransaction(func) {
         await transactionPromise;
     }
 }
-
-dbReady
-    .then(async () => {
-        const tableResults = await getResults("SELECT name FROM sqlite_master WHERE type='table' AND name='notes'");
-
-        if (tableResults.length !== 1) {
-            console.log("No connection to initialized DB.");
-            process.exit(1);
-        }
-    })
-    .catch(e => {
-        console.log("Error connecting to DB.", e);
-        process.exit(1);
-    });
 
 module.exports = {
     dbReady,

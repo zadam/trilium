@@ -8,7 +8,7 @@ const sync = require('./sync');
 let startTime = utils.nowTimestamp();
 let sentSyncId = [];
 
-setInterval(async () => {
+async function sendPing() {
     const syncs = await sql.getResults("SELECT * FROM sync WHERE sync_date >= ? AND source_id != ?", [startTime, source_id.currentSourceId]);
     startTime = utils.nowTimestamp();
 
@@ -41,4 +41,6 @@ setInterval(async () => {
     for (const syncId of syncIds) {
         sentSyncId.push(syncId);
     }
-}, 1000);
+}
+
+sql.dbReady.then(() => setInterval(sendPing, 1000));
