@@ -28,7 +28,7 @@ async function createNewNote(parentNoteId, note) {
             await sync_table.addNoteReorderingSync(parentNoteId);
         }
         else {
-            throw new Error('Unknown target: ' + note.target);
+            throwError('Unknown target: ' + note.target);
         }
 
 

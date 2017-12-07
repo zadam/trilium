@@ -31,7 +31,7 @@ function pad(data) {
 
 function encrypt(key, iv, plainText) {
     if (!key) {
-        throw new Error("No data key!");
+        throwError("No data key!");
     }
 
     const plainTextBuffer = Buffer.from(plainText);

@@ -19,7 +19,7 @@ const contextMenu = (function() {
             // just do nothing
         }
         else {
-            throw new Error("Unrecognized clipboard mode=" + clipboardMode);
+            throwError("Unrecognized clipboard mode=" + clipboardMode);
         }
 
         clipboardId = null;
@@ -36,7 +36,7 @@ const contextMenu = (function() {
             treeChanges.cloneNoteTo(clipboardId, node.data.note_id);
         }
         else {
-            throw new Error("Unrecognized clipboard mode=" + mode);
+            throwError("Unrecognized clipboard mode=" + mode);
         }
 
         clipboardId = null;

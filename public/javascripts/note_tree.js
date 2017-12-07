@@ -25,7 +25,7 @@ const noteTree = (function() {
         let title = noteIdToTitle[noteId];
 
         if (!title) {
-            throw new Error("Can't find title for noteId='" + noteId + "'");
+            throwError("Can't find title for noteId='" + noteId + "'");
         }
 
         if (parentNoteId !== null) {
@@ -265,7 +265,7 @@ const noteTree = (function() {
         const parents = childToParents[noteId];
 
         if (!parents) {
-            throw new Error("Can't find parents for noteId=" + noteId);
+            throwError("Can't find parents for noteId=" + noteId);
         }
 
         if (parents.length <= 1) {

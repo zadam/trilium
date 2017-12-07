@@ -58,7 +58,7 @@ async function migrate() {
                     await migrationModule(db);
                 }
                 else {
-                    throw new Error("Unknown migration type " + mig.type);
+                    throwError("Unknown migration type " + mig.type);
                 }
 
                 await options.setOption("db_version", mig.dbVersion);
