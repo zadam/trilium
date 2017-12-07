@@ -5,7 +5,16 @@ const fs = require('fs-extra');
 const log = require('./log');
 const app_info = require('./app_info');
 
-const MIGRATIONS_DIR = "migrations";
+let MIGRATIONS_DIR = "migrations";
+
+if (!fs.existsSync(MIGRATIONS_DIR) && isElectron()) {
+    MIGRATIONS_DIR = "resources/app/migrations";
+}
+
+if (!fs.existsSync(MIGRATIONS_DIR)) {
+    log.error("Could not find migration directory: " + MIGRATIONS_DIR);
+    process.exit(1);
+}
 
 async function migrate() {
     const migrations = [];
@@ -58,7 +67,7 @@ async function migrate() {
                     await migrationModule(db);
                 }
                 else {
-                    throwError("Unknown migration type " + mig.type);
+                    throw new Error("Unknown migration type " + mig.type);
                 }
 
                 await options.setOption("db_version", mig.dbVersion);

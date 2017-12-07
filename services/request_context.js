@@ -9,7 +9,7 @@ module.exports = function(req) {
 
     function getDataKey() {
         if (!isProtectedSessionAvailable()) {
-            throwError("Protected session is not available");
+            throw new Error("Protected session is not available");
         }
 
         return protected_session.getDataKey(req);

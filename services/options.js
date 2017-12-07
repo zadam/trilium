@@ -10,7 +10,7 @@ async function getOption(optName) {
     const row = await sql.getSingleResultOrNull("SELECT opt_value FROM options WHERE opt_name = ?", [optName]);
 
     if (!row) {
-        throwError("Option " + optName + " doesn't exist");
+        throw new Error("Option " + optName + " doesn't exist");
     }
 
     return row['opt_value'];

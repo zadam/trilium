@@ -157,7 +157,7 @@ async function pullSync(syncContext) {
             await syncUpdate.updateRecentNotes(resp, syncContext.sourceId);
         }
         else {
-            throwError("Unrecognized entity type " + sync.entity_name);
+            throw new Error("Unrecognized entity type " + sync.entity_name);
         }
 
         await setLastSyncedPull(sync.id);
@@ -228,7 +228,7 @@ async function readAndPushEntity(sync, syncContext) {
         entity = await sql.getSingleResult('SELECT * FROM recent_notes WHERE note_tree_id = ?', [sync.entity_id]);
     }
     else {
-        throwError("Unrecognized entity type " + sync.entity_name);
+        throw new Error("Unrecognized entity type " + sync.entity_name);
     }
 
     if (!entity) {
@@ -302,7 +302,7 @@ async function syncRequest(syncContext, method, uri, body) {
         return await rp(options);
     }
     catch (e) {
-        throwError("Request to " + method + " " + fullUri + " failed, inner exception: " + e.stack);
+        throw new Error("Request to " + method + " " + fullUri + " failed, inner exception: " + e.stack);
     }
 }
 
