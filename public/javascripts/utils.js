@@ -31,7 +31,9 @@ function showError(message) {
 }
 
 function throwError(message) {
-    throw new Error(message + ':' + new Error().stack);
+    messaging.logError(message);
+
+    throw new Error(message);
 }
 
 function getDateFromTS(timestamp) {

@@ -278,7 +278,9 @@ const noteTree = (function() {
             const list = $("<ul/>");
 
             for (const parentNoteId of parents) {
-                const notePath = getSomeNotePath(parentNoteId) + '/' + noteId;
+                const parentNotePath = getSomeNotePath(parentNoteId);
+                // this is to avoid having root notes leading '/'
+                const notePath = parentNotePath ? (parentNotePath + '/' + noteId) : noteId;
                 const title = getNotePathTitle(notePath);
 
                 let item;
@@ -302,11 +304,18 @@ const noteTree = (function() {
 
         let parentNoteId = 'root';
 
+        console.log('notePath: ' + notePath);
+        console.log('notePath chunks: ', notePath.split('/'));
+
         for (const noteId of notePath.split('/')) {
+            console.log('noteId: ' + noteId);
+
             titlePath.push(getNoteTitle(noteId, parentNoteId));
 
             parentNoteId = noteId;
         }
+
+        console.log("Title path:", titlePath.join(' / '));
 
         return titlePath.join(' / ');
     }
