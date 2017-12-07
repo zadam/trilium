@@ -4,12 +4,9 @@ const options = require('./options');
 const fs = require('fs-extra');
 const log = require('./log');
 const app_info = require('./app_info');
+const path = require('path');
 
-let MIGRATIONS_DIR = "migrations";
-
-if (!fs.existsSync(MIGRATIONS_DIR) && isElectron()) {
-    MIGRATIONS_DIR = "resources/app/migrations";
-}
+const MIGRATIONS_DIR = path.resolve(__dirname, "..", "migrations");
 
 if (!fs.existsSync(MIGRATIONS_DIR)) {
     log.error("Could not find migration directory: " + MIGRATIONS_DIR);
