@@ -31,7 +31,7 @@ router.get('/', auth.checkApiAuth, async (req, res, next) => {
 
     res.send({
         notes: notes,
-        start_note_tree_id: await options.getOption('start_note_tree_id')
+        start_note_path: await options.getOption('start_note_path')
     });
 });
 

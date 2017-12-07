@@ -4,7 +4,7 @@ const noteTree = (function() {
     const treeEl = $("#tree");
     const parentListEl = $("#parent-list");
 
-    let startNoteTreeId = null;
+    let startNotePath = null;
     let notesTreeMap = {};
 
     let parentToChildren = {};
@@ -412,8 +412,8 @@ const noteTree = (function() {
                 setExpandedToServer(data.node.data.note_tree_id, false);
             },
             init: (event, data) => {
-                if (startNoteTreeId) {
-                    activateNode(startNoteTreeId);
+                if (startNotePath) {
+                    activateNode(startNotePath);
                 }
                 else {
                     showAppIfHidden();
@@ -503,10 +503,10 @@ const noteTree = (function() {
 
     function loadTree() {
         return server.get('tree').then(resp => {
-            startNoteTreeId = resp.start_note_tree_id;
+            startNotePath = resp.start_note_path;
 
             if (document.location.hash) {
-                startNoteTreeId = document.location.hash.substr(1); // strip initial #
+                startNotePath = document.location.hash.substr(1); // strip initial #
             }
 
             return prepareNoteTree(resp.notes, resp.notes_parent);
