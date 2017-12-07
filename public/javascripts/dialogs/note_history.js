@@ -27,7 +27,7 @@ const noteHistory = (function() {
         historyItems = await server.get('notes-history/' + noteId);
 
         for (const item of historyItems) {
-            const dateModified = getDateFromTS(item.date_modified_to);
+            const dateModified = getDateFromTS(item.date_modified_from);
 
             $("#note-history-list").append($('<option>', {
                 value: item.note_history_id,
