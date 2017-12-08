@@ -304,9 +304,6 @@ const noteTree = (function() {
 
         let parentNoteId = 'root';
 
-        console.log('notePath: ' + notePath);
-        console.log('notePath chunks: ', notePath.split('/'));
-
         for (const noteId of notePath.split('/')) {
             console.log('noteId: ' + noteId);
 
@@ -314,8 +311,6 @@ const noteTree = (function() {
 
             parentNoteId = noteId;
         }
-
-        console.log("Title path:", titlePath.join(' / '));
 
         return titlePath.join(' / ');
     }
