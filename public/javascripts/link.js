@@ -70,6 +70,13 @@ const link = (function() {
         doc.enqueueChanges(() => editor.data.insertLink(linkTitle, linkHref), doc.selection);
     }
 
+    function addTextToEditor(text) {
+        const editor = noteEditor.getEditor();
+        const doc = editor.document;
+
+        doc.enqueueChanges(() => editor.data.insertText(text), doc.selection);
+    }
+
     // when click on link popup, in case of internal link, just go the the referenced note instead of default behavior
     // of opening the link in new window/tab
     $(document).on('click', "a[action='note']", goToInternalNote);
@@ -80,6 +87,7 @@ const link = (function() {
         getNodePathFromLabel,
         getNotePathFromLink,
         createNoteLink,
-        addLinkToEditor
+        addLinkToEditor,
+        addTextToEditor
     };
 })();

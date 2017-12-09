@@ -20,7 +20,7 @@ $(document).bind('keydown', 'alt+t', () => {
     const date = new Date();
     const dateString = formatDateTime(date);
 
-    $('#note-detail').summernote('insertText', dateString);
+    link.addTextToEditor(dateString);
 });
 
 $(document).bind('keydown', 'f5', () => {
