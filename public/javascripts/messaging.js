@@ -4,7 +4,7 @@ const messaging = (function() {
     let ws = null;
 
     function logError(message) {
-        console.error(message);
+        console.trace(message);
 
         if (ws && ws.readyState === 1) {
             ws.send(JSON.stringify({

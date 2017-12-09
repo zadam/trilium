@@ -58,10 +58,12 @@ if (!fs.existsSync(dataDir.BACKUP_DIR)) {
     fs.mkdirSync(dataDir.BACKUP_DIR, 0o700);
 }
 
-setInterval(regularBackup, 60 * 60 * 1000);
+sql.dbReady.then(() => {
+    setInterval(regularBackup, 60 * 60 * 1000);
 
-// kickoff backup immediately
-setTimeout(regularBackup, 1000);
+    // kickoff backup immediately
+    setTimeout(regularBackup, 1000);
+});
 
 module.exports = {
     backupNow

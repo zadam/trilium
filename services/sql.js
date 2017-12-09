@@ -2,13 +2,74 @@
 
 const log = require('./log');
 const dataDir = require('./data_dir');
+const fs = require('fs');
 const sqlite = require('sqlite');
+const utils = require('./utils');
 
 async function createConnection() {
     return await sqlite.open(dataDir.DOCUMENT_PATH, {Promise});
 }
 
-const dbReady = createConnection();
+const dbConnected = createConnection();
+
+let dbReadyResolve = null;
+const dbReady = new Promise((resolve, reject) => {
+    dbConnected.then(async db => {
+        dbReadyResolve = () => resolve(db);
+
+        const tableResults = await getResults("SELECT name FROM sqlite_master WHERE type='table' AND name='notes'");
+        if (tableResults.length !== 1) {
+            log.info("Connected to db, but schema doesn't exist. Initializing schema ...");
+
+            const schema = fs.readFileSync('schema.sql', 'UTF-8');
+
+            await doInTransaction(async () => {
+                await executeScript(schema);
+
+                const noteId = utils.newNoteId();
+
+                await insert('notes_tree', {
+                    note_tree_id: utils.newNoteTreeId(),
+                    note_id: noteId,
+                    note_pid: 'root',
+                    note_pos: 1,
+                    is_deleted: 0,
+                    date_modified: utils.nowTimestamp()
+                });
+
+                await insert('notes', {
+                    note_id: noteId,
+                    note_title: 'Welcome to Trilium!',
+                    note_text: 'Text',
+                    is_protected: 0,
+                    is_deleted: 0,
+                    date_created: utils.nowTimestamp(),
+                    date_modified: utils.nowTimestamp()
+                });
+
+                await require('./options').initOptions(noteId);
+            });
+
+            // we don't resolve dbReady promise because user needs to setup the username and password to initialize
+            // the database
+        }
+        else {
+            const username = await getSingleValue("SELECT opt_value FROM options WHERE opt_name = 'username'");
+
+            if (username) {
+                resolve(db);
+            }
+        }
+    })
+    .catch(e => {
+        console.log("Error connecting to DB.", e);
+        process.exit(1);
+    });
+});
+
+function setDbReadyAsResolved() {
+    dbReadyResolve();
+}
 
 async function insert(table_name, rec, replace = false) {
     const keys = Object.keys(rec);
@@ -44,13 +105,10 @@ async function rollback() {
 }
 
 async function getSingleResult(query, params = []) {
-    const db = await dbReady;
-
     return await wrap(async db => db.get(query, ...params));
 }
 
 async function getSingleResultOrNull(query, params = []) {
-    const db = await dbReady;
     const all = await wrap(async db => db.all(query, ...params));
 
     return all.length > 0 ? all[0] : null;
@@ -67,8 +125,6 @@ async function getSingleValue(query, params = []) {
 }
 
 async function getResults(query, params = []) {
-    const db = await dbReady;
-
     return await wrap(async db => db.all(query, ...params));
 }
 
@@ -106,7 +162,7 @@ async function executeScript(query) {
 
 async function wrap(func) {
     const thisError = new Error();
-    const db = await dbReady;
+    const db = await dbConnected;
 
     try {
         return await func(db);
@@ -157,20 +213,6 @@ async function doInTransaction(func) {
     }
 }
 
-dbReady
-    .then(async () => {
-        const tableResults = await getResults("SELECT name FROM sqlite_master WHERE type='table' AND name='notes'");
-
-        if (tableResults.length !== 1) {
-            console.log("No connection to initialized DB.");
-            process.exit(1);
-        }
-    })
-    .catch(e => {
-        console.log("Error connecting to DB.", e);
-        process.exit(1);
-    });
-
 module.exports = {
     dbReady,
     insert,
@@ -183,5 +225,6 @@ module.exports = {
     getFlattenedResults,
     execute,
     executeScript,
-    doInTransaction
+    doInTransaction,
+    setDbReadyAsResolved
 };

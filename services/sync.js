@@ -13,6 +13,7 @@ const syncUpdate = require('./sync_update');
 const content_hash = require('./content_hash');
 const event_log = require('./event_log');
 const fs = require('fs');
+const app_info = require('./app_info');
 
 const SYNC_SERVER = config['Sync']['syncServerHost'];
 const isSyncSetup = !!SYNC_SERVER;
@@ -94,7 +95,7 @@ async function login() {
 
     const resp = await syncRequest(syncContext, 'POST', '/api/login/sync', {
         timestamp: timestamp,
-        dbVersion: migration.APP_DB_VERSION,
+        dbVersion: app_info.db_version,
         hash: hash
     });
 
@@ -305,29 +306,31 @@ async function syncRequest(syncContext, method, uri, body) {
     }
 }
 
-if (isSyncSetup) {
-    log.info("Setting up sync to " + SYNC_SERVER + " with timeout " + SYNC_TIMEOUT);
+sql.dbReady.then(() => {
+    if (isSyncSetup) {
+        log.info("Setting up sync to " + SYNC_SERVER + " with timeout " + SYNC_TIMEOUT);
 
-    if (SYNC_PROXY) {
-        log.info("Sync proxy: " + SYNC_PROXY);
+        if (SYNC_PROXY) {
+            log.info("Sync proxy: " + SYNC_PROXY);
+        }
+
+        const syncCertPath = config['Sync']['syncServerCertificate'];
+
+        if (syncCertPath) {
+            log.info('Sync certificate: ' + syncCertPath);
+
+            syncServerCertificate = fs.readFileSync(syncCertPath);
+        }
+
+        setInterval(sync, 60000);
+
+        // kickoff initial sync immediately
+        setTimeout(sync, 1000);
     }
-
-    const syncCertPath = config['Sync']['syncServerCertificate'];
-
-    if (syncCertPath) {
-        log.info('Sync certificate: ' + syncCertPath);
-
-        syncServerCertificate = fs.readFileSync(syncCertPath);
+    else {
+        log.info("Sync server not configured, sync timer not running.")
     }
-
-    setInterval(sync, 60000);
-
-    // kickoff initial sync immediately
-    setTimeout(sync, 1000);
-}
-else {
-    log.info("Sync server not configured, sync timer not running.")
-}
+});
 
 module.exports = {
     sync,

@@ -19,7 +19,7 @@
     "debug": "~3.1.0",
     "devtron": "^1.4.0",
     "ejs": "~2.5.7",
-    "electron": "^1.8.2-beta.2",
+    "electron": "^1.8.2-beta.3",
     "electron-debug": "^1.0.0",
     "express": "~4.16.2",
     "express-session": "^1.15.6",

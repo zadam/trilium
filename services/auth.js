@@ -2,16 +2,22 @@
 
 const migration = require('./migration');
 const utils = require('./utils');
+const options = require('./options');
 
 async function checkAuth(req, res, next) {
-    if (!req.session.loggedIn && !utils.isElectron()) {
+    const username = await options.getOption('username');
+
+    if (!username) {
+        res.redirect("setup");
+    }
+    else if (!req.session.loggedIn && !utils.isElectron()) {
         res.redirect("login");
     }
-    else if (await migration.isDbUpToDate()) {
-        next();
+    else if (!await migration.isDbUpToDate()) {
+        res.redirect("migration");
     }
     else {
-        res.redirect("migration");
+        next();
     }
 }
 
@@ -45,9 +51,21 @@ async function checkApiAuthForMigrationPage(req, res, next) {
     }
 }
 
+async function checkAppNotInitialized(req, res, next) {
+    const username = await options.getOption('username');
+
+    if (username) {
+        res.status(400).send("App already initialized.");
+    }
+    else {
+        next();
+    }
+}
+
 module.exports = {
     checkAuth,
     checkAuthForMigrationPage,
     checkApiAuth,
-    checkApiAuthForMigrationPage
+    checkApiAuthForMigrationPage,
+    checkAppNotInitialized
 };

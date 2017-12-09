@@ -3,7 +3,7 @@
 const crypto = require('crypto');
 
 function newNoteId() {
-    return randomString(8);
+    return randomString(12);
 }
 
 function newNoteTreeId() {
@@ -14,16 +14,10 @@ function newNoteHistoryId() {
     return randomString(12);
 }
 
-const ALPHA_NUMERIC = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-
 function randomString(length) {
-    let result = '';
+    const token = randomSecureToken(32);
 
-    for (let i = length; i > 0; --i) {
-        result += ALPHA_NUMERIC[Math.floor(Math.random() * ALPHA_NUMERIC.length)];
-    }
-
-    return result;
+    return token.substr(0, length);
 }
 
 function randomSecureToken(bytes = 32) {

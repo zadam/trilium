@@ -1,6 +1,7 @@
 const sql = require('./sql');
 const utils = require('./utils');
 const sync_table = require('./sync_table');
+const app_info = require('./app_info');
 
 const SYNCED_OPTIONS = [ 'username', 'password_verification_hash', 'encrypted_data_key', 'protected_session_timeout',
     'history_snapshot_time_interval' ];
@@ -20,21 +21,38 @@ async function setOption(optName, optValue) {
         await sync_table.addOptionsSync(optName);
     }
 
-    await sql.execute("UPDATE options SET opt_value = ?, date_modified = ? WHERE opt_name = ?",
-        [optValue, utils.nowTimestamp(), optName]);
+    await sql.replace("options", {
+        opt_name: optName,
+        opt_value: optValue,
+        date_modified: utils.nowTimestamp()
+    });
 }
 
-sql.dbReady.then(async () => {
-    if (!await getOption('document_id') || !await getOption('document_secret')) {
-        await sql.doInTransaction(async () => {
-            await setOption('document_id', utils.randomSecureToken(16));
-            await setOption('document_secret', utils.randomSecureToken(16));
-        });
-    }
-});
+async function initOptions(startNotePath) {
+    await setOption('document_id', utils.randomSecureToken(16));
+    await setOption('document_secret', utils.randomSecureToken(16));
+
+    await setOption('username', '');
+    await setOption('password_verification_hash', '');
+    await setOption('password_verification_salt', '');
+    await setOption('password_derived_key_salt', '');
+    await setOption('encrypted_data_key', '');
+    await setOption('encrypted_data_key_iv', '');
+
+    await setOption('start_note_path', startNotePath);
+    await setOption('protected_session_timeout', 600);
+    await setOption('history_snapshot_time_interval', 600);
+    await setOption('last_backup_date', utils.nowTimestamp());
+    await setOption('db_version', app_info.db_version);
+
+    await setOption('last_synced_pull', app_info.db_version);
+    await setOption('last_synced_push', 0);
+    await setOption('last_synced_push', 0);
+}
 
 module.exports = {
     getOption,
     setOption,
+    initOptions,
     SYNCED_OPTIONS
 };

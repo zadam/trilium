@@ -1,15 +1,15 @@
 "use strict";
 
 const fs = require('fs');
-const LOG_DIR = require('./data_dir').LOG_DIR;
+const data_dir = require('./data_dir');
 
-if (!fs.existsSync(LOG_DIR)) {
-    fs.mkdirSync(LOG_DIR, 0o700);
+if (!fs.existsSync(data_dir.LOG_DIR)) {
+    fs.mkdirSync(data_dir.LOG_DIR, 0o700);
 }
 
 const logger = require('simple-node-logger').createRollingFileLogger({
     errorEventName: 'error',
-    logDirectory: LOG_DIR,
+    logDirectory: data_dir.LOG_DIR,
     fileNamePattern: 'trilium-<DATE>.log',
     dateFormat:'YYYY-MM-DD'
 });
@@ -36,6 +36,8 @@ function request(req) {
 
     logger.info(req.method + " " + req.url);
 }
+
+info("Using data dir: " + data_dir.TRILIUM_DATA_DIR);
 
 module.exports = {
     info,

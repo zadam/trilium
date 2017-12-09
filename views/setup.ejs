@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Setup</title>
+</head>
+<body>
+<div style="width: 500px; margin: auto;">
+    <h1>Trilium setup</h1>
+
+    <div class="alert alert-warning" id="alert" style="display: none;">
+    </div>
+
+    <form id="setup-form">
+        <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" class="form-control" id="username" placeholder="Arbitrary string">
+        </div>
+        <div class="form-group">
+            <label for="password1">Password</label>
+            <input type="password" class="form-control" id="password1" placeholder="Password">
+        </div>
+        <div class="form-group">
+            <label for="password2">Repeat password</label>
+            <input type="password" class="form-control" id="password2" placeholder="Password">
+        </div>
+
+        <button type="submit" class="btn btn-default">Save</button>
+    </form>
+</div>
+
+<script type="text/javascript">
+    const baseApiUrl = 'api/';
+</script>
+
+<!-- Required for correct loading of scripts in Electron -->
+<script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
+
+<script src="libraries/jquery.min.js"></script>
+
+<link href="libraries/bootstrap/css/bootstrap.css" rel="stylesheet">
+<script src="libraries/bootstrap/js/bootstrap.js"></script>
+
+<script src="javascripts/setup.js"></script>
+<script src="javascripts/utils.js"></script>
+<script src="javascripts/server.js"></script>
+</body>
+</html>

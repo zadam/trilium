@@ -9,6 +9,7 @@ const source_id = require('../../services/source_id');
 const auth = require('../../services/auth');
 const password_encryption = require('../../services/password_encryption');
 const protected_session = require('../../services/protected_session');
+const app_info = require('../../services/app_info');
 
 router.post('/sync', async (req, res, next) => {
     const timestamp = req.body.timestamp;
@@ -22,9 +23,9 @@ router.post('/sync', async (req, res, next) => {
 
     const dbVersion = req.body.dbVersion;
 
-    if (dbVersion !== migration.APP_DB_VERSION) {
+    if (dbVersion !== app_info.db_version) {
         res.status(400);
-        res.send({ message: 'Non-matching db versions, local is version ' + migration.APP_DB_VERSION });
+        res.send({ message: 'Non-matching db versions, local is version ' + app_info.db_version });
     }
 
     const documentSecret = await options.getOption('document_secret');

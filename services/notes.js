@@ -81,6 +81,12 @@ async function protectNoteRecursively(noteId, dataKey, protect) {
     }
 }
 
+function decryptNote(note, dataKey) {
+    note.note_title = data_encryption.decryptString(dataKey, data_encryption.noteTitleIv(note.note_id), note.note_title);
+    note.note_text = data_encryption.decryptString(dataKey, data_encryption.noteTextIv(note.note_id), note.note_text);
+    note.is_protected = false;
+}
+
 async function protectNote(note, dataKey, protect) {
     let changed = false;
 
@@ -92,9 +98,7 @@ async function protectNote(note, dataKey, protect) {
         changed = true;
     }
     else if (!protect && note.is_protected) {
-        note.note_title = data_encryption.decryptString(dataKey, data_encryption.noteTitleIv(note.note_id), note.note_title);
-        note.note_text = data_encryption.decryptString(dataKey, data_encryption.noteTextIv(note.note_id), note.note_text);
-        note.is_protected = false;
+        decryptNote(note, dataKey);
 
         changed = true;
     }
@@ -134,9 +138,6 @@ async function protectNoteHistory(noteId, dataKey, protect) {
 }
 
 async function updateNote(noteId, newNote, ctx) {
-    let noteTitleForHistory = newNote.detail.note_title;
-    let noteTextForHistory = newNote.detail.note_text;
-
     if (newNote.detail.is_protected) {
         await encryptNote(newNote, ctx);
     }
@@ -147,19 +148,26 @@ async function updateNote(noteId, newNote, ctx) {
 
     const historyCutoff = now - historySnapshotTimeInterval;
 
-    const existingNoteHistoryId = await sql.getSingleValue("SELECT note_history_id FROM notes_history WHERE note_id = ? AND date_modified_from >= ?", [noteId, historyCutoff]);
+    const existingNoteHistoryId = await sql.getSingleValue("SELECT note_history_id FROM notes_history WHERE note_id = ? AND date_modified_to >= ?", [noteId, historyCutoff]);
 
     await sql.doInTransaction(async () => {
         if (!existingNoteHistoryId && (now - newNote.detail.date_created) >= historySnapshotTimeInterval) {
+            const oldNote = await sql.getSingleResult("SELECT * FROM notes WHERE note_id = ?", [noteId]);
+
+            if (oldNote.is_protected) {
+                decryptNote(oldNote, ctx.getDataKey());
+            }
+
             const newNoteHistoryId = utils.newNoteHistoryId();
 
             await sql.insert('notes_history', {
                 note_history_id: newNoteHistoryId,
                 note_id: noteId,
-                note_title: noteTitleForHistory,
-                note_text: noteTextForHistory,
-                is_protected: false, // we don't care about encryption - this will be handled in protectNoteHistory()
-                date_modified_from: now,
+                // title and text should be decrypted now
+                note_title: oldNote.note_title,
+                note_text: oldNote.note_text,
+                is_protected: 0, // will be fixed in the protectNoteHistory() call
+                date_modified_from: oldNote.date_modified,
                 date_modified_to: now
             });
 

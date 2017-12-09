@@ -4,7 +4,7 @@ const noteTree = (function() {
     const treeEl = $("#tree");
     const parentListEl = $("#parent-list");
 
-    let startNoteTreeId = null;
+    let startNotePath = null;
     let notesTreeMap = {};
 
     let parentToChildren = {};
@@ -25,7 +25,7 @@ const noteTree = (function() {
         let title = noteIdToTitle[noteId];
 
         if (!title) {
-            throw new Error("Can't find title for noteId='" + noteId + "'");
+            throwError("Can't find title for noteId='" + noteId + "'");
         }
 
         if (parentNoteId !== null) {
@@ -265,7 +265,7 @@ const noteTree = (function() {
         const parents = childToParents[noteId];
 
         if (!parents) {
-            throw new Error("Can't find parents for noteId=" + noteId);
+            throwError("Can't find parents for noteId=" + noteId);
         }
 
         if (parents.length <= 1) {
@@ -278,7 +278,9 @@ const noteTree = (function() {
             const list = $("<ul/>");
 
             for (const parentNoteId of parents) {
-                const notePath = getSomeNotePath(parentNoteId) + '/' + noteId;
+                const parentNotePath = getSomeNotePath(parentNoteId);
+                // this is to avoid having root notes leading '/'
+                const notePath = parentNotePath ? (parentNotePath + '/' + noteId) : noteId;
                 const title = getNotePathTitle(notePath);
 
                 let item;
@@ -303,6 +305,8 @@ const noteTree = (function() {
         let parentNoteId = 'root';
 
         for (const noteId of notePath.split('/')) {
+            console.log('noteId: ' + noteId);
+
             titlePath.push(getNoteTitle(noteId, parentNoteId));
 
             parentNoteId = noteId;
@@ -403,8 +407,8 @@ const noteTree = (function() {
                 setExpandedToServer(data.node.data.note_tree_id, false);
             },
             init: (event, data) => {
-                if (startNoteTreeId) {
-                    activateNode(startNoteTreeId);
+                if (startNotePath) {
+                    activateNode(startNotePath);
                 }
                 else {
                     showAppIfHidden();
@@ -494,10 +498,10 @@ const noteTree = (function() {
 
     function loadTree() {
         return server.get('tree').then(resp => {
-            startNoteTreeId = resp.start_note_tree_id;
+            startNotePath = resp.start_note_path;
 
             if (document.location.hash) {
-                startNoteTreeId = document.location.hash.substr(1); // strip initial #
+                startNotePath = document.location.hash.substr(1); // strip initial #
             }
 
             return prepareNoteTree(resp.notes, resp.notes_parent);

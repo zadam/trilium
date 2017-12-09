@@ -3,9 +3,15 @@ const sql = require('./sql');
 const options = require('./options');
 const fs = require('fs-extra');
 const log = require('./log');
+const app_info = require('./app_info');
+const path = require('path');
 
-const APP_DB_VERSION = 48;
-const MIGRATIONS_DIR = "migrations";
+const MIGRATIONS_DIR = path.resolve(__dirname, "..", "migrations");
+
+if (!fs.existsSync(MIGRATIONS_DIR)) {
+    log.error("Could not find migration directory: " + MIGRATIONS_DIR);
+    process.exit(1);
+}
 
 async function migrate() {
     const migrations = [];
@@ -84,11 +90,10 @@ async function migrate() {
 async function isDbUpToDate() {
     const dbVersion = parseInt(await options.getOption('db_version'));
 
-    return dbVersion >= APP_DB_VERSION;
+    return dbVersion >= app_info.db_version;
 }
 
 module.exports = {
     migrate,
-    isDbUpToDate,
-    APP_DB_VERSION
+    isDbUpToDate
 };

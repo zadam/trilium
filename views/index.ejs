@@ -33,22 +33,24 @@
         </div>
       </div>
 
-      <div class="hide-toggle" style="grid-area: tree-actions">
-        <a onclick="noteTree.createNewTopLevelNote()" title="Create new top level note" class="icon-action">
-          <img src="images/icons/file-plus.png" alt="Create new top level note"/>
-        </a>
+      <div class="hide-toggle" style="grid-area: tree-actions;">
+        <div style="display: flex; justify-content: space-evenly; padding: 10px 0 10px 0; margin: 0 20px 0 20px; border: 1px solid #ccc;">
+          <a onclick="noteTree.createNewTopLevelNote()" title="Create new top level note" class="icon-action">
+            <img src="images/icons/file-plus.png" alt="Create new top level note"/>
+          </a>
 
-        <a onclick="noteTree.collapseTree()" title="Collapse tree" class="icon-action">
-          <img src="images/icons/list.png" alt="Collapse tree"/>
-        </a>
+          <a onclick="noteTree.collapseTree()" title="Collapse tree" class="icon-action">
+            <img src="images/icons/list.png" alt="Collapse tree"/>
+          </a>
 
-        <a onclick="noteTree.scrollToCurrentNote()" title="Scroll to current note" class="icon-action">
-          <img src="images/icons/crosshair.png" alt="Collapse tree"/>
-        </a>
+          <a onclick="noteTree.scrollToCurrentNote()" title="Scroll to current note" class="icon-action">
+            <img src="images/icons/crosshair.png" alt="Collapse tree"/>
+          </a>
 
-        <a onclick="searchTree.toggleSearch()" title="Search in notes" class="icon-action">
-          <img src="images/icons/search.png" alt="Search in notes"/>
-        </a>
+          <a onclick="searchTree.toggleSearch()" title="Search in notes" class="icon-action">
+            <img src="images/icons/search.png" alt="Search in notes"/>
+          </a>
+        </div>
 
         <div id="search-box" style="display: none; padding: 10px; margin-top: 10px;">
           <p>
@@ -63,7 +65,7 @@
       <div id="tree" class="hide-toggle" style="grid-area: tree; overflow: auto;">
       </div>
 
-      <div id="parent-list" style="display: none;">
+      <div id="parent-list">
       </div>
 
       <div class="hide-toggle" style="grid-area: title;">
