@@ -14,7 +14,7 @@ async function verifyPassword(password) {
 async function setDataKey(password, plainTextDataKey) {
     const passwordDerivedKey = await my_scrypt.getPasswordDerivedKey(password);
 
-    const encryptedDataKeyIv = utils.randomSecureToken(16).slice(0, 16);
+    const encryptedDataKeyIv = utils.randomString(16);
 
     await options.setOption('encrypted_data_key_iv', encryptedDataKeyIv);
 

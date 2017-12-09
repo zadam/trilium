@@ -57,22 +57,7 @@ const addLink = (function() {
 
             dialogEl.dialog("close");
 
-            const editor = noteEditor.getEditor();
-            const doc = editor.document;
-
-//             doc.enqueueChanges( () => {
-// //                const link = '<a href="#' + notePath + '" target="_blank">' + linkTitle + '</a>';
-//
-//                 editor.data.insertContent({
-//                     linkHref: '#' + notePath
-//                 }, doc.selection);
-//             } );
-
-            // noteDetailEl.summernote('createLink', {
-            //     text: linkTitle,
-            //     url: 'app#' + notePath,
-            //     isNewWindow: true
-            // });
+            link.addLinkToEditor(linkTitle, '#' + notePath);
         }
 
         return false;

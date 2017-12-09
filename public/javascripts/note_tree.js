@@ -305,8 +305,6 @@ const noteTree = (function() {
         let parentNoteId = 'root';
 
         for (const noteId of notePath.split('/')) {
-            console.log('noteId: ' + noteId);
-
             titlePath.push(getNoteTitle(noteId, parentNoteId));
 
             parentNoteId = noteId;

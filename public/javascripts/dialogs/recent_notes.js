@@ -3,8 +3,8 @@
 const recentNotes = (function() {
     const dialogEl = $("#recent-notes-dialog");
     const selectBoxEl = $('#recent-notes-select-box');
-    const jumpToButtonEl = $('#recentNotesJumpTo');
-    const addLinkButtonEl = $('#recentNotesAddLink');
+    const jumpToButtonEl = $('#recent-notes-jump-to');
+    const addLinkButtonEl = $('#recent-notes-add-link');
     const addCurrentAsChildEl = $("#recent-notes-add-current-as-child");
     const addRecentAsChildEl = $("#recent-notes-add-recent-as-child");
     const noteDetailEl = $('#note-detail');
@@ -30,8 +30,6 @@ const recentNotes = (function() {
 
     function showDialog() {
         glob.activeDialog = dialogEl;
-
-        noteDetailEl.summernote('editor.saveRange');
 
         dialogEl.dialog({
             modal: true,
@@ -84,13 +82,7 @@ const recentNotes = (function() {
 
         dialogEl.dialog("close");
 
-        noteDetailEl.summernote('editor.restoreRange');
-
-        noteDetailEl.summernote('createLink', {
-            text: linkTitle,
-            url: 'app#' + notePath,
-            isNewWindow: true
-        });
+        link.addLinkToEditor(linkTitle, '#' + notePath);
     }
 
     async function addCurrentAsChild() {

@@ -23,8 +23,6 @@ const noteEditor = (function() {
     }
 
     function noteChanged() {
-        console.log("CHANGED!!!");
-
         if (noteChangeDisabled) {
             return;
         }
@@ -158,7 +156,7 @@ const noteEditor = (function() {
             .then(edit => {
                 editor = edit;
 
-                editor.document.on('change', () => noteChanged);
+                editor.document.on('changesDone', noteChanged);
             })
             .catch(error => {
                 console.error(error);

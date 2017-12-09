@@ -7,8 +7,6 @@ const jumpToNote = (function() {
     const noteDetailEl = $('#note-detail');
 
     async function showDialog() {
-        noteDetailEl.summernote('editor.saveRange');
-
         glob.activeDialog = dialogEl;
 
         autoCompleteEl.val('');
@@ -58,15 +56,9 @@ const jumpToNote = (function() {
             if (notePath) {
                 dialogEl.dialog("close");
 
-                noteDetailEl.summernote('editor.restoreRange');
-
                 const noteId = treeUtils.getNoteIdFromNotePath(notePath);
 
-                noteDetailEl.summernote('createLink', {
-                    text: noteTree.getNoteTitle(noteId),
-                    url: 'app#' + notePath,
-                    isNewWindow: true
-                });
+                link.addLinkToEditor(noteTree.getNoteTitle(noteId), '#' + notePath);
             }
         }
         else if (action === 'add-current-as-child') {
