@@ -119,7 +119,7 @@ CREATE TABLE `source_ids` (
 DROP TABLE recent_notes;
 
 CREATE TABLE `recent_notes` (
-  'note_tree_id'TEXT NOT NULL PRIMARY KEY,
+  `note_tree_id` TEXT NOT NULL PRIMARY KEY,
   `note_path` TEXT NOT NULL,
   `date_accessed` TEXT NOT NULL,
   is_deleted INT

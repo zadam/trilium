@@ -84,7 +84,7 @@ async function sync() {
 }
 
 async function login() {
-    const timestamp = utils.nowTimestamp();
+    const timestamp = utils.nowDate();
 
     const documentSecret = await options.getOption('document_secret');
     const hash = utils.hmac(documentSecret, timestamp);
@@ -135,8 +135,7 @@ async function pullSync(syncContext) {
         if (!resp) {
             log.error("Empty response to pull for " + sync.entity_name + ", id=" + sync.entity_id);
         }
-
-        if (sync.entity_name === 'notes') {
+        else if (sync.entity_name === 'notes') {
             await syncUpdate.updateNote(resp.entity, syncContext.sourceId);
         }
         else if (sync.entity_name === 'notes_tree') {

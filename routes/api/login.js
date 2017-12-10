@@ -11,11 +11,15 @@ const protected_session = require('../../services/protected_session');
 const app_info = require('../../services/app_info');
 
 router.post('/sync', async (req, res, next) => {
-    const timestamp = req.body.timestamp;
+    const timestampStr = req.body.timestamp;
 
-    const now = utils.nowTimestamp();
+    console.log(req.body);
 
-    if (Math.abs(timestamp - now) > 5) {
+    const timestamp = utils.parseDate(timestampStr);
+
+    const now = new Date();
+
+    if (Math.abs(timestamp.getTime() - now.getTime()) > 5000) {
         res.status(400);
         res.send({ message: 'Auth request time is out of sync' });
     }
@@ -28,13 +32,13 @@ router.post('/sync', async (req, res, next) => {
     }
 
     const documentSecret = await options.getOption('document_secret');
-    const expectedHash = utils.hmac(documentSecret, timestamp);
+    const expectedHash = utils.hmac(documentSecret, timestampStr);
 
     const givenHash = req.body.hash;
 
     if (expectedHash !== givenHash) {
         res.status(400);
-        res.send({ message: "Hash doesn't match" });
+        res.send({ message: "Sync login hash doesn't match" });
     }
 
     req.session.loggedIn = true;

@@ -23,10 +23,6 @@ function randomSecureToken(bytes = 32) {
     return crypto.randomBytes(bytes).toString('base64');
 }
 
-function nowTimestamp() {
-    return Math.floor(Date.now() / 1000);
-}
-
 function nowDate() {
     return dateStr(new Date());
 }
@@ -66,14 +62,8 @@ function isElectron() {
     return !!process.versions['electron'];
 }
 
-function formatDateTimeFromTS(timestamp) {
-    const date = new Date(timestamp * 1000);
-
-    return date.toISOString();
-}
-
-function formatTwoTimestamps(origTS, newTS) {
-    return "orig: " + formatDateTimeFromTS(origTS) + ", new: " + formatDateTimeFromTS(newTS);
+function formatTwoDates(origDate, newDate) {
+    return "orig: " + origDate + ", new: " + newDate;
 }
 
 function hash(text) {
@@ -88,7 +78,6 @@ function isEmptyOrWhitespace(str) {
 module.exports = {
     randomSecureToken,
     randomString,
-    nowTimestamp,
     nowDate,
     dateStr,
     parseDate,
@@ -99,7 +88,7 @@ module.exports = {
     fromBase64,
     hmac,
     isElectron,
-    formatTwoTimestamps,
+    formatTwoDates,
     hash,
     isEmptyOrWhitespace
 };

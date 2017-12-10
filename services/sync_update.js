@@ -20,7 +20,7 @@ async function updateNote(entity, sourceId) {
         log.info("Update/sync note " + entity.note_id);
     }
     else {
-        await eventLog.addNoteEvent(entity.note_id, "Sync conflict in note <note>, " + utils.formatTwoTimestamps(origNote.date_modified, entity.date_modified));
+        await eventLog.addNoteEvent(entity.note_id, "Sync conflict in note <note>, " + utils.formatTwoDates(origNote.date_modified, entity.date_modified));
     }
 }
 
@@ -38,7 +38,7 @@ async function updateNoteTree(entity, sourceId) {
             log.info("Update/sync note tree " + entity.note_tree_id);
         }
         else {
-            await eventLog.addNoteEvent(entity.note_tree_id, "Sync conflict in note tree <note>, " + utils.formatTwoTimestamps(orig.date_modified, entity.date_modified));
+            await eventLog.addNoteEvent(entity.note_tree_id, "Sync conflict in note tree <note>, " + utils.formatTwoDates(orig.date_modified, entity.date_modified));
         }
     });
 }
@@ -55,7 +55,7 @@ async function updateNoteHistory(entity, sourceId) {
             log.info("Update/sync note history " + entity.note_history_id);
         }
         else {
-            await eventLog.addNoteEvent(entity.note_id, "Sync conflict in note history for <note>, " + utils.formatTwoTimestamps(orig.date_modified_to, entity.date_modified_to));
+            await eventLog.addNoteEvent(entity.note_id, "Sync conflict in note history for <note>, " + utils.formatTwoDates(orig.date_modified_to, entity.date_modified_to));
         }
     });
 }
@@ -86,7 +86,7 @@ async function updateOptions(entity, sourceId) {
             await eventLog.addEvent("Synced option " + entity.opt_name);
         }
         else {
-            await eventLog.addEvent("Sync conflict in options for " + entity.opt_name + ", " + utils.formatTwoTimestamps(orig.date_modified, entity.date_modified));
+            await eventLog.addEvent("Sync conflict in options for " + entity.opt_name + ", " + utils.formatTwoDates(orig.date_modified, entity.date_modified));
         }
     });
 }
