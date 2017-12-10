@@ -30,7 +30,7 @@ async function addEntitySync(entityName, entityId, sourceId) {
     await sql.replace("sync", {
         entity_name: entityName,
         entity_id: entityId,
-        sync_date: utils.nowTimestamp(),
+        sync_date: utils.nowDate(),
         source_id: sourceId || source_id.currentSourceId
     });
 }

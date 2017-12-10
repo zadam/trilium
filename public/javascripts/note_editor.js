@@ -100,7 +100,7 @@ const noteEditor = (function() {
     }
 
     async function loadNoteToEditor(noteId) {
-        currentNote = await server.get('notes/' + noteId);
+        currentNote = await loadNote(noteId);
 
         if (isNewNoteCreated) {
             isNewNoteCreated = false;

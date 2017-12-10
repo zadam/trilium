@@ -24,7 +24,7 @@ async function setOption(optName, optValue) {
     await sql.replace("options", {
         opt_name: optName,
         opt_value: optValue,
-        date_modified: utils.nowTimestamp()
+        date_modified: utils.nowDate()
     });
 }
 
@@ -42,7 +42,7 @@ async function initOptions(startNotePath) {
     await setOption('start_note_path', startNotePath);
     await setOption('protected_session_timeout', 600);
     await setOption('history_snapshot_time_interval', 600);
-    await setOption('last_backup_date', utils.nowTimestamp());
+    await setOption('last_backup_date', utils.nowDate());
     await setOption('db_version', app_info.db_version);
 
     await setOption('last_synced_pull', app_info.db_version);

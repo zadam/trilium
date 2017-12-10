@@ -13,7 +13,7 @@ sql.dbReady.then(async () => {
         await sql.doInTransaction(async () => {
             await sql.insert("source_ids", {
                 source_id: currentSourceId,
-                date_created: utils.nowTimestamp()
+                date_created: utils.nowDate()
             });
         });
 

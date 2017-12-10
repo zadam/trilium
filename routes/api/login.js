@@ -4,7 +4,6 @@ const express = require('express');
 const router = express.Router();
 const options = require('../../services/options');
 const utils = require('../../services/utils');
-const migration = require('../../services/migration');
 const source_id = require('../../services/source_id');
 const auth = require('../../services/auth');
 const password_encryption = require('../../services/password_encryption');

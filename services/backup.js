@@ -8,10 +8,12 @@ const log = require('./log');
 const sql = require('./sql');
 
 async function regularBackup() {
-    const now = utils.nowTimestamp();
-    const last_backup_date = parseInt(await options.getOption('last_backup_date'));
+    const now = new Date();
+    const lastBackupDate = utils.parseDate(await options.getOption('last_backup_date'));
 
-    if (now - last_backup_date > 43200) {
+    console.log(lastBackupDate);
+
+    if (now.getTime() - lastBackupDate.getTime() > 43200 * 1000) {
         await backupNow();
     }
 
@@ -19,7 +21,7 @@ async function regularBackup() {
 }
 
 async function backupNow() {
-    const now = utils.nowTimestamp();
+    const now = utils.nowDate();
 
     const date_str = new Date().toISOString().substr(0, 19).replace(/:/g, '');
 

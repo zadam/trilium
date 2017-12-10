@@ -52,7 +52,7 @@ router.put('/:noteTreeId/set-prefix', auth.checkApiAuth, async (req, res, next) 
     const prefix = utils.isEmptyOrWhitespace(req.body.prefix) ? null : req.body.prefix;
 
     await sql.doInTransaction(async () => {
-        await sql.execute("UPDATE notes_tree SET prefix = ?, date_modified = ? WHERE note_tree_id = ?", [prefix, utils.nowTimestamp(), noteTreeId]);
+        await sql.execute("UPDATE notes_tree SET prefix = ?, date_modified = ? WHERE note_tree_id = ?", [prefix, utils.nowDate(), noteTreeId]);
 
         await sync_table.addNoteTreeSync(noteTreeId);
     });

@@ -10,7 +10,7 @@ async function addNoteEvent(noteId, comment) {
     await sql.insert('event_log', {
        note_id : noteId,
        comment: comment,
-       date_added: utils.nowTimestamp()
+       date_added: utils.nowDate()
     });
 
     log.info("Event log for " + noteId + ": " + comment);

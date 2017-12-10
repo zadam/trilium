@@ -14,7 +14,7 @@ router.put('/:noteTreeId/move-to/:parentNoteId', auth.checkApiAuth, async (req, 
     const maxNotePos = await sql.getSingleValue('SELECT MAX(note_pos) FROM notes_tree WHERE note_pid = ? AND is_deleted = 0', [parentNoteId]);
     const newNotePos = maxNotePos === null ? 0 : maxNotePos + 1;
 
-    const now = utils.nowTimestamp();
+    const now = utils.nowDate();
 
     await sql.doInTransaction(async () => {
         await sql.execute("UPDATE notes_tree SET note_pid = ?, note_pos = ?, date_modified = ? WHERE note_tree_id = ?",
@@ -40,7 +40,7 @@ router.put('/:noteTreeId/move-before/:beforeNoteTreeId', async (req, res, next) 
 
             await sync_table.addNoteReorderingSync(beforeNote.note_pid);
 
-            const now = utils.nowTimestamp();
+            const now = utils.nowDate();
 
             await sql.execute("UPDATE notes_tree SET note_pid = ?, note_pos = ?, date_modified = ? WHERE note_tree_id = ?",
                 [beforeNote.note_pid, beforeNote.note_pos, now, noteTreeId]);
@@ -70,7 +70,7 @@ router.put('/:noteTreeId/move-after/:afterNoteTreeId', async (req, res, next) =>
             await sync_table.addNoteReorderingSync(afterNote.note_pid);
 
             await sql.execute("UPDATE notes_tree SET note_pid = ?, note_pos = ?, date_modified = ? WHERE note_tree_id = ?",
-                [afterNote.note_pid, afterNote.note_pos + 1, utils.nowTimestamp(), noteTreeId]);
+                [afterNote.note_pid, afterNote.note_pos + 1, utils.nowDate(), noteTreeId]);
 
             await sync_table.addNoteTreeSync(noteTreeId);
         });
@@ -107,13 +107,13 @@ router.put('/:childNoteId/clone-to/:parentNoteId', auth.checkApiAuth, async (req
 
     await sql.doInTransaction(async () => {
         const noteTree = {
-            'note_tree_id': utils.newNoteTreeId(),
-            'note_id': childNoteId,
-            'note_pid': parentNoteId,
-            'note_pos': newNotePos,
-            'is_expanded': 0,
-            'date_modified': utils.nowTimestamp(),
-            'is_deleted': 0
+            note_tree_id: utils.newNoteTreeId(),
+            note_id: childNoteId,
+            note_pid: parentNoteId,
+            note_pos: newNotePos,
+            is_expanded: 0,
+            date_modified: utils.nowDate(),
+            is_deleted: 0
         };
 
         await sql.replace("notes_tree", noteTree);
@@ -160,13 +160,13 @@ router.put('/:noteId/clone-after/:afterNoteTreeId', async (req, res, next) => {
         await sync_table.addNoteReorderingSync(afterNote.note_pid);
 
         const noteTree = {
-            'note_tree_id': utils.newNoteTreeId(),
-            'note_id': noteId,
-            'note_pid': afterNote.note_pid,
-            'note_pos': afterNote.note_pos + 1,
-            'is_expanded': 0,
-            'date_modified': utils.nowTimestamp(),
-            'is_deleted': 0
+            note_tree_id: utils.newNoteTreeId(),
+            note_id: noteId,
+            note_pid: afterNote.note_pid,
+            note_pos: afterNote.note_pos + 1,
+            is_expanded: 0,
+            date_modified: utils.nowDate(),
+            is_deleted: 0
         };
 
         await sql.replace("notes_tree", noteTree);

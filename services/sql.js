@@ -5,6 +5,7 @@ const dataDir = require('./data_dir');
 const fs = require('fs');
 const sqlite = require('sqlite');
 const utils = require('./utils');
+const app_info = require('./app_info');
 
 async function createConnection() {
     return await sqlite.open(dataDir.DOCUMENT_PATH, {Promise});
@@ -15,7 +16,11 @@ const dbConnected = createConnection();
 let dbReadyResolve = null;
 const dbReady = new Promise((resolve, reject) => {
     dbConnected.then(async db => {
-        dbReadyResolve = () => resolve(db);
+        dbReadyResolve = () => {
+            log.info("DB ready.");
+
+            resolve(db);
+        };
 
         const tableResults = await getResults("SELECT name FROM sqlite_master WHERE type='table' AND name='notes'");
         if (tableResults.length !== 1) {
@@ -27,6 +32,7 @@ const dbReady = new Promise((resolve, reject) => {
                 await executeScript(schema);
 
                 const noteId = utils.newNoteId();
+                const now = utils.nowDate();
 
                 await insert('notes_tree', {
                     note_tree_id: utils.newNoteTreeId(),
@@ -34,7 +40,7 @@ const dbReady = new Promise((resolve, reject) => {
                     note_pid: 'root',
                     note_pos: 1,
                     is_deleted: 0,
-                    date_modified: utils.nowTimestamp()
+                    date_modified: now
                 });
 
                 await insert('notes', {
@@ -43,8 +49,8 @@ const dbReady = new Promise((resolve, reject) => {
                     note_text: 'Text',
                     is_protected: 0,
                     is_deleted: 0,
-                    date_created: utils.nowTimestamp(),
-                    date_modified: utils.nowTimestamp()
+                    date_created: now,
+                    date_modified: now
                 });
 
                 await require('./options').initOptions(noteId);
@@ -56,9 +62,17 @@ const dbReady = new Promise((resolve, reject) => {
         else {
             const username = await getSingleValue("SELECT opt_value FROM options WHERE opt_name = 'username'");
 
-            if (username) {
-                resolve(db);
+            if (!username) {
+                log.info("Login/password not initialized. DB not ready.");
+
+                return;
             }
+
+            if (!await isDbUpToDate()) {
+                return;
+            }
+
+            resolve(db);
         }
     })
     .catch(e => {
@@ -202,15 +216,26 @@ async function doInTransaction(func) {
             await rollback();
 
             transactionActive = false;
-            resolve();
 
-            throw e;
+            reject(e);
         }
     });
 
     if (transactionActive) {
         await transactionPromise;
     }
+}
+
+async function isDbUpToDate() {
+    const dbVersion = parseInt(await getSingleValue("SELECT opt_value FROM options WHERE opt_name = 'db_version'"));
+
+    const upToDate = dbVersion >= app_info.db_version;
+
+    if (!upToDate) {
+        log.info("App db version is " + app_info.db_version + ", while db version is " + dbVersion + ". Migration needed.");
+    }
+
+    return upToDate;
 }
 
 module.exports = {
@@ -226,5 +251,6 @@ module.exports = {
     execute,
     executeScript,
     doInTransaction,
-    setDbReadyAsResolved
+    setDbReadyAsResolved,
+    isDbUpToDate
 };

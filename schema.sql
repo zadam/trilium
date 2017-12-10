@@ -68,25 +68,27 @@ CREATE TABLE `source_ids` (
 	`date_created`	INTEGER NOT NULL,
 	PRIMARY KEY(`source_id`)
 );
+CREATE TABLE `recent_notes` (
+  'note_tree_id'TEXT NOT NULL PRIMARY KEY,
+  `note_path` TEXT NOT NULL,
+  `date_accessed` INTEGER NOT NULL ,
+  is_deleted INT
+);
 CREATE TABLE IF NOT EXISTS "notes_tree" (
-    [note_tree_id] VARCHAR(30) PRIMARY KEY NOT NULL,
-    [note_id] VARCHAR(30) NOT NULL,
-    [note_pid] VARCHAR(30) NOT NULL,
-    [note_pos] INTEGER NOT NULL,
-    [is_expanded] BOOLEAN NULL ,
-    date_modified INTEGER NOT NULL DEFAULT 0,
-    is_deleted INTEGER NOT NULL DEFAULT 0
-, `prefix` TEXT);
+	`note_tree_id`	VARCHAR ( 30 ) NOT NULL,
+	`note_id`	VARCHAR ( 30 ) NOT NULL,
+	`note_pid`	VARCHAR ( 30 ) NOT NULL,
+	`note_pos`	INTEGER NOT NULL,
+	`is_expanded`	BOOLEAN,
+	`date_modified`	TEXT NOT NULL DEFAULT 0,
+	`is_deleted`	INTEGER NOT NULL DEFAULT 0,
+	`prefix`	TEXT,
+	PRIMARY KEY(`note_tree_id`)
+);
 CREATE INDEX `IDX_notes_tree_note_tree_id` ON `notes_tree` (
 	`note_tree_id`
 );
 CREATE INDEX `IDX_notes_tree_note_id_note_pid` ON `notes_tree` (
 	`note_id`,
 	`note_pid`
-);
-CREATE TABLE `recent_notes` (
-  'note_tree_id'TEXT NOT NULL PRIMARY KEY,
-  `note_path` TEXT NOT NULL,
-  `date_accessed` INTEGER NOT NULL ,
-  is_deleted INT
 );

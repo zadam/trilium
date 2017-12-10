@@ -1,6 +1,7 @@
 "use strict";
 
 const migration = require('./migration');
+const sql = require('./sql');
 const utils = require('./utils');
 const options = require('./options');
 
@@ -13,7 +14,7 @@ async function checkAuth(req, res, next) {
     else if (!req.session.loggedIn && !utils.isElectron()) {
         res.redirect("login");
     }
-    else if (!await migration.isDbUpToDate()) {
+    else if (!await sql.isDbUpToDate()) {
         res.redirect("migration");
     }
     else {
@@ -34,7 +35,7 @@ async function checkApiAuth(req, res, next) {
     if (!req.session.loggedIn) {
         res.status(401).send("Not authorized");
     }
-    else if (await migration.isDbUpToDate()) {
+    else if (await sql.isDbUpToDate()) {
         next();
     }
     else {

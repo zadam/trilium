@@ -5,12 +5,12 @@ const messaging = require('./messaging');
 const options = require('./options');
 const sync = require('./sync');
 
-let startTime = utils.nowTimestamp();
+let startTime = utils.nowDate();
 let sentSyncId = [];
 
 async function sendPing() {
     const syncs = await sql.getResults("SELECT * FROM sync WHERE sync_date >= ? AND source_id != ?", [startTime, source_id.currentSourceId]);
-    startTime = utils.nowTimestamp();
+    startTime = utils.nowDate();
 
     const data = {};
     const syncIds = [];

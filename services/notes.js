@@ -23,7 +23,7 @@ async function createNewNote(parentNoteId, note) {
             newNotePos = afterNote.note_pos + 1;
 
             await sql.execute('UPDATE notes_tree SET note_pos = note_pos + 1, date_modified = ? WHERE note_pid = ? AND note_pos > ? AND is_deleted = 0',
-                [utils.nowTimestamp(), parentNoteId, afterNote.note_pos]);
+                [utils.nowDate(), parentNoteId, afterNote.note_pos]);
 
             await sync_table.addNoteReorderingSync(parentNoteId);
         }
@@ -31,28 +31,27 @@ async function createNewNote(parentNoteId, note) {
             throw new Error('Unknown target: ' + note.target);
         }
 
-
-        const now = utils.nowTimestamp();
+        const now = utils.nowDate();
 
         await sql.insert("notes", {
-            'note_id': noteId,
-            'note_title': note.note_title,
-            'note_text': '',
-            'date_created': now,
-            'date_modified': now,
-            'is_protected': note.is_protected
+            note_id: noteId,
+            note_title: note.note_title,
+            note_text: '',
+            date_created: now,
+            date_modified: now,
+            is_protected: note.is_protected
         });
 
         await sync_table.addNoteSync(noteId);
 
         await sql.insert("notes_tree", {
-            'note_tree_id': noteTreeId,
-            'note_id': noteId,
-            'note_pid': parentNoteId,
-            'note_pos': newNotePos,
-            'is_expanded': 0,
-            'date_modified': now,
-            'is_deleted': 0
+            note_tree_id: noteTreeId,
+            note_id: noteId,
+            note_pid: parentNoteId,
+            note_pos: newNotePos,
+            is_expanded: 0,
+            date_modified: now,
+            is_deleted: 0
         });
 
         await sync_table.addNoteTreeSync(noteTreeId);
@@ -142,16 +141,19 @@ async function updateNote(noteId, newNote, ctx) {
         await encryptNote(newNote, ctx);
     }
 
-    const now = utils.nowTimestamp();
+    const now = new Date();
 
     const historySnapshotTimeInterval = parseInt(await options.getOption('history_snapshot_time_interval'));
 
-    const historyCutoff = now - historySnapshotTimeInterval;
+    const historyCutoff = utils.dateStr(new Date(now.getTime() - historySnapshotTimeInterval * 1000));
 
-    const existingNoteHistoryId = await sql.getSingleValue("SELECT note_history_id FROM notes_history WHERE note_id = ? AND date_modified_to >= ?", [noteId, historyCutoff]);
+    const existingNoteHistoryId = await sql.getSingleValue(
+        "SELECT note_history_id FROM notes_history WHERE note_id = ? AND date_modified_to >= ?", [noteId, historyCutoff]);
 
     await sql.doInTransaction(async () => {
-        if (!existingNoteHistoryId && (now - newNote.detail.date_created) >= historySnapshotTimeInterval) {
+        const msSinceDateCreated = now.getTime() - utils.parseDate(newNote.detail.date_created).getTime();
+
+        if (!existingNoteHistoryId && msSinceDateCreated >= historySnapshotTimeInterval * 1000) {
             const oldNote = await sql.getSingleResult("SELECT * FROM notes WHERE note_id = ?", [noteId]);
 
             if (oldNote.is_protected) {
@@ -188,7 +190,7 @@ async function updateNote(noteId, newNote, ctx) {
 }
 
 async function deleteNote(noteTreeId) {
-    const now = utils.nowTimestamp();
+    const now = utils.nowDate();
 
     await sql.execute("UPDATE notes_tree SET is_deleted = 1, date_modified = ? WHERE note_tree_id = ?", [now, noteTreeId]);
     await sync_table.addNoteTreeSync(noteTreeId);

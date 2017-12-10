@@ -30,8 +30,7 @@ router.get('/:noteId', auth.checkApiAuth, async (req, res, next) => {
     }
 
     res.send({
-        detail: detail,
-        loadTime: utils.nowTimestamp()
+        detail: detail
     });
 });
 

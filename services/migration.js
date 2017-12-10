@@ -70,6 +70,8 @@ async function migrate() {
                 await options.setOption("db_version", mig.dbVersion);
             });
 
+            sql.setDbReadyAsResolved();
+
             log.info("Migration to version " + mig.dbVersion + " has been successful.");
 
             mig['success'] = true;
@@ -87,13 +89,6 @@ async function migrate() {
     return migrations;
 }
 
-async function isDbUpToDate() {
-    const dbVersion = parseInt(await options.getOption('db_version'));
-
-    return dbVersion >= app_info.db_version;
-}
-
 module.exports = {
-    migrate,
-    isDbUpToDate
+    migrate
 };

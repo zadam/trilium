@@ -37,9 +37,7 @@ async function sync() {
     syncInProgress = true;
 
     try {
-        if (!await migration.isDbUpToDate()) {
-            log.info("DB not up to date");
-
+        if (!await sql.isDbUpToDate()) {
             return {
                 success: false,
                 message: "DB not up to date"

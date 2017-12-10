@@ -27,6 +27,29 @@ function nowTimestamp() {
     return Math.floor(Date.now() / 1000);
 }
 
+function nowDate() {
+    return dateStr(new Date());
+}
+
+function dateStr(date) {
+    return date.toISOString().replace("T", " ").replace("Z", "");
+}
+
+/**
+ * @param str - needs to be in the "YYYY-MM-DD HH:MM:SS.sss" format as outputted by dateStr().
+ *              also is assumed to be GMT time, *not* local time
+ */
+function parseDate(str) {
+    try {
+        const isoDate = str.replace(" ", "T") + "Z";
+
+        return new Date(Date.parse(isoDate));
+    }
+    catch (e) {
+        throw new Error("Can't parse date from " + str + ": " + e.stack);
+    }
+}
+
 function toBase64(plainText) {
     return Buffer.from(plainText).toString('base64');
 }
@@ -68,6 +91,9 @@ module.exports = {
     randomSecureToken,
     randomString,
     nowTimestamp,
+    nowDate,
+    dateStr,
+    parseDate,
     newNoteId,
     newNoteTreeId,
     newNoteHistoryId,

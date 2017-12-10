@@ -67,6 +67,8 @@ async function importNotes(dir, parentNoteId) {
         const noteId = utils.newNoteId();
         const noteTreeId = utils.newNoteHistoryId();
 
+        const now = utils.nowDate();
+
         await sql.insert('notes_tree', {
             note_tree_id: noteTreeId,
             note_id: noteId,
@@ -74,7 +76,7 @@ async function importNotes(dir, parentNoteId) {
             note_pos: notePos,
             is_expanded: 0,
             is_deleted: 0,
-            date_modified: utils.nowTimestamp()
+            date_modified: now
         });
 
         await sync_table.addNoteTreeSync(noteTreeId);
@@ -85,8 +87,8 @@ async function importNotes(dir, parentNoteId) {
             note_text: noteText,
             is_deleted: 0,
             is_protected: 0,
-            date_created: utils.nowTimestamp(),
-            date_modified: utils.nowTimestamp()
+            date_created: now,
+            date_modified: now
         });
 
         await sync_table.addNoteSync(noteId);

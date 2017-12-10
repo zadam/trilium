@@ -20,7 +20,7 @@ router.put('/:noteTreeId/:notePath', auth.checkApiAuth, async (req, res, next) =
         await sql.replace('recent_notes', {
             note_tree_id: noteTreeId,
             note_path: notePath,
-            date_accessed: utils.nowTimestamp(),
+            date_accessed: utils.nowDate(),
             is_deleted: 0
         });
 
@@ -39,7 +39,7 @@ async function getRecentNotes() {
 }
 
 async function deleteOld() {
-    const cutoffDateAccessed = utils.nowTimestamp() - 24 * 60 * 60;
+    const cutoffDateAccessed = utils.dateStr(new Date(Date.now() - 24 * 60 * 60 * 1000));
 
     await sql.doInTransaction(async () => {
         await sql.execute("DELETE FROM recent_notes WHERE date_accessed < ?", [cutoffDateAccessed]);
