@@ -76,6 +76,7 @@ const treeChanges = (function() {
         next.setActive();
 
         noteTree.setCurrentNotePathToHash(next);
+        noteTree.reload();
     }
 
     async function moveNodeUpInHierarchy(node) {
