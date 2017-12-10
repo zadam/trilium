@@ -32,18 +32,16 @@ function nowDate() {
 }
 
 function dateStr(date) {
-    return date.toISOString().replace("T", " ").replace("Z", "");
+    return date.toISOString();
 }
 
 /**
- * @param str - needs to be in the "YYYY-MM-DD HH:MM:SS.sss" format as outputted by dateStr().
- *              also is assumed to be GMT time, *not* local time
+ * @param str - needs to be in the ISO 8601 format "YYYY-MM-DDTHH:MM:SS.sssZ" format as outputted by dateStr().
+ *              also is assumed to be GMT time (as indicated by the "Z" at the end), *not* local time
  */
 function parseDate(str) {
     try {
-        const isoDate = str.replace(" ", "T") + "Z";
-
-        return new Date(Date.parse(isoDate));
+        return new Date(Date.parse(str));
     }
     catch (e) {
         throw new Error("Can't parse date from " + str + ": " + e.stack);

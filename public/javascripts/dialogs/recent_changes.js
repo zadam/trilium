@@ -24,7 +24,7 @@ const recentChanges = (function() {
             const dayEl = $('<div>').append($('<b>').html(formatDate(dateDay))).append(changesListEl);
 
             for (const change of dayChanges) {
-                const formattedTime = formatTime(getDateFromTS(change.date_modified_to));
+                const formattedTime = formatTime(parseDate(change.date_modified_to));
 
                 const revLink = $("<a>", {
                     href: 'javascript:',
@@ -57,7 +57,7 @@ const recentChanges = (function() {
         const dayCache = {};
 
         for (const row of result) {
-            let dateDay = getDateFromTS(row.date_modified_to);
+            let dateDay = parseDate(row.date_modified_to);
             dateDay.setHours(0);
             dateDay.setMinutes(0);
             dateDay.setSeconds(0);

@@ -36,10 +36,13 @@ function throwError(message) {
     throw new Error(message);
 }
 
-function getDateFromTS(timestamp) {
-    // Date accepts number of milliseconds since epoch so UTC timestamp works without any extra handling
-    // see https://stackoverflow.com/questions/4631928/convert-utc-epoch-to-local-date-with-javascript
-    return new Date(timestamp * 1000);
+function parseDate(str) {
+    try {
+        return new Date(Date.parse(str));
+    }
+    catch (e) {
+        throw new Error("Can't parse date from " + str + ": " + e.stack);
+    }
 }
 
 function formatTime(date) {

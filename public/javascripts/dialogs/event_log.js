@@ -18,7 +18,7 @@ const eventLog = (function() {
         listEl.html('');
 
         for (const event of result) {
-            const dateTime = formatDateTime(getDateFromTS(event.date_added));
+            const dateTime = formatDateTime(parseDate(event.date_added));
 
             if (event.note_id) {
                 const noteLink = link.createNoteLink(event.note_id).prop('outerHTML');

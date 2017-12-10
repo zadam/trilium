@@ -9,7 +9,7 @@ CREATE TABLE `sync_mig` (
     `sync_date`	TEXT NOT NULL);
 
 INSERT INTO sync_mig (id, entity_name, entity_id, source_id, sync_date)
-               SELECT id, entity_name, entity_id, source_id, datetime(sync_date, 'unixepoch') || '.000' FROM sync;
+               SELECT id, entity_name, entity_id, source_id, strftime('%Y-%m-%dT%H:%M:%S.000Z', sync_date, 'unixepoch') FROM sync;
 
 DROP TABLE sync;
 ALTER TABLE sync_mig RENAME TO sync;
@@ -25,8 +25,8 @@ CREATE INDEX `IDX_sync_sync_date` ON `sync` (
 
 -- Options
 
-UPDATE options SET opt_value = datetime(opt_value, 'unixepoch') || '.000' WHERE opt_name IN ('last_backup_date');
-UPDATE options SET date_modified = datetime(date_modified, 'unixepoch') || '.000';
+UPDATE options SET opt_value = strftime('%Y-%m-%dT%H:%M:%S.000Z', opt_value, 'unixepoch') WHERE opt_name IN ('last_backup_date');
+UPDATE options SET date_modified = strftime('%Y-%m-%dT%H:%M:%S.000Z', date_modified, 'unixepoch');
 
 -- Event log
 
@@ -38,7 +38,7 @@ CREATE TABLE `event_log_mig` (
 );
 
 INSERT INTO event_log_mig (id, note_id, comment, date_added)
-                    SELECT id, note_id, comment, datetime(date_added, 'unixepoch') || '.000' FROM event_log;
+                    SELECT id, note_id, comment, strftime('%Y-%m-%dT%H:%M:%S.000Z', date_added, 'unixepoch') FROM event_log;
 
 DROP TABLE event_log;
 ALTER TABLE event_log_mig RENAME TO event_log;
@@ -62,8 +62,8 @@ CREATE TABLE IF NOT EXISTS "notes_mig" (
 
 INSERT INTO notes_mig (note_id, note_title, note_text, is_protected, is_deleted, date_created, date_modified)
                 SELECT note_id, note_title, note_text, is_protected, is_deleted,
-                  datetime(date_created, 'unixepoch') || '.000',
-                  datetime(date_modified, 'unixepoch') || '.000'
+                  strftime('%Y-%m-%dT%H:%M:%S.000Z', date_created, 'unixepoch'),
+                  strftime('%Y-%m-%dT%H:%M:%S.000Z', date_modified, 'unixepoch')
                 FROM notes;
 
 DROP TABLE notes;
@@ -87,8 +87,8 @@ CREATE TABLE IF NOT EXISTS "notes_history_mig" (
 
 INSERT INTO notes_history_mig (note_history_id, note_id, note_title, note_text, is_protected, date_modified_from, date_modified_to)
   SELECT note_history_id, note_id, note_title, note_text, is_protected,
-    datetime(date_modified_from, 'unixepoch') || '.000',
-    datetime(date_modified_to, 'unixepoch') || '.000'
+    strftime('%Y-%m-%dT%H:%M:%S.000Z', date_modified_from, 'unixepoch'),
+    strftime('%Y-%m-%dT%H:%M:%S.000Z', date_modified_to, 'unixepoch')
   FROM notes_history;
 
 DROP TABLE notes_history;
@@ -141,7 +141,7 @@ CREATE TABLE IF NOT EXISTS "notes_tree_mig" (
 
 INSERT INTO notes_tree_mig (note_tree_id, note_id, note_pid, note_pos, prefix, is_expanded, is_deleted, date_modified)
                      SELECT note_tree_id, note_id, note_pid, note_pos, prefix, is_expanded, is_deleted,
-                            datetime(date_modified, 'unixepoch') || '.000'
+                            strftime('%Y-%m-%dT%H:%M:%S.000Z', date_modified, 'unixepoch')
                      FROM notes_tree;
 
 DROP TABLE notes_tree;
