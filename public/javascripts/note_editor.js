@@ -156,7 +156,7 @@ const noteEditor = (function() {
             .then(edit => {
                 editor = edit;
 
-                editor.document.on('changesDone', noteChanged);
+                editor.document.on('change', noteChanged);
             })
             .catch(error => {
                 console.error(error);
