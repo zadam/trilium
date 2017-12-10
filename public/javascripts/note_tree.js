@@ -91,6 +91,24 @@ const noteTree = (function() {
         });
     }
 
+    function setParentChildRelation(noteTreeId, parentNoteId, childNoteId) {
+        const key = parentNoteId + "-" + childNoteId;
+
+        parentChildToNoteTreeId[key] = noteTreeId;
+
+        if (!parentToChildren[parentNoteId]) {
+            parentToChildren[parentNoteId] = [];
+        }
+
+        parentToChildren[parentNoteId].push(childNoteId);
+
+        if (!childToParents[childNoteId]) {
+            childToParents[childNoteId] = [];
+        }
+
+        childToParents[childNoteId].push(parentNoteId);
+    }
+
     function prepareNoteTree(notes) {
         parentToChildren = {};
         childToParents = {};
@@ -103,21 +121,7 @@ const noteTree = (function() {
 
             delete note.note_title; // this should not be used. Use noteIdToTitle instead
 
-            const key = note.note_pid + "-" + note.note_id;
-
-            parentChildToNoteTreeId[key] = note.note_tree_id;
-
-            if (!parentToChildren[note.note_pid]) {
-                parentToChildren[note.note_pid] = [];
-            }
-
-            parentToChildren[note.note_pid].push(note.note_id);
-
-            if (!childToParents[note.note_id]) {
-                childToParents[note.note_id] = [];
-            }
-
-            childToParents[note.note_id].push(note.note_pid);
+            setParentChildRelation(note.note_tree_id, note.note_pid, note.note_id);
         }
 
         return prepareNoteTreeInner('root');
@@ -188,6 +192,8 @@ const noteTree = (function() {
         const noteId = treeUtils.getNoteIdFromNotePath(notePath);
 
         let parentNoteId = 'root';
+
+        console.log("Run path: ", runPath);
 
         for (const childNoteId of runPath) {
             const node = getNodesByNoteId(childNoteId).find(node => node.data.note_pid === parentNoteId);
@@ -606,9 +612,7 @@ const noteTree = (function() {
             extraClasses: isProtected ? "protected" : ""
         };
 
-        parentToChildren[parentNoteId].push(result.note_id);
-        parentToChildren[result.note_id] = [];
-        childToParents[result.note_id] = [ parentNoteId ];
+        setParentChildRelation(result.note_tree_id, parentNoteId, result.note_id);
 
         noteIdToTitle[result.note_id] = newNoteName;
 
