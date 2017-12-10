@@ -1,6 +1,7 @@
 "use strict";
 
 const crypto = require('crypto');
+const randtoken = require('rand-token').generator({source: 'crypto'});
 
 function newNoteId() {
     return randomString(12);
@@ -15,9 +16,7 @@ function newNoteHistoryId() {
 }
 
 function randomString(length) {
-    const token = randomSecureToken(32);
-
-    return token.substr(0, length);
+    return randtoken.generate(length);
 }
 
 function randomSecureToken(bytes = 32) {

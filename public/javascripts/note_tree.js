@@ -502,7 +502,7 @@ const noteTree = (function() {
                 startNotePath = document.location.hash.substr(1); // strip initial #
             }
 
-            return prepareNoteTree(resp.notes, resp.notes_parent);
+            return prepareNoteTree(resp.notes);
         });
     }
 

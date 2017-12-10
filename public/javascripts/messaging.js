@@ -1,6 +1,7 @@
 "use strict";
 
 const messaging = (function() {
+    const changesToPushCountEl = $("#changes-to-push-count");
     let ws = null;
 
     function logError(message) {
@@ -39,7 +40,6 @@ const messaging = (function() {
                 recentNotes.reload();
             }
 
-            const changesToPushCountEl = $("#changesToPushCount");
             changesToPushCountEl.html(message.changesToPushCount);
         }
     }
