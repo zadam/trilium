@@ -50,6 +50,7 @@ log.info(JSON.stringify(app_info, null, 2));
  * Listen on provided port, on all network interfaces.
  */
 
+httpServer.keepAliveTimeout = 120000 * 5;
 httpServer.listen(port);
 httpServer.on('error', onError);
 httpServer.on('listening', onListening);
