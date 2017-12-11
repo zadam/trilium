@@ -13,8 +13,6 @@ const app_info = require('../../services/app_info');
 router.post('/sync', async (req, res, next) => {
     const timestampStr = req.body.timestamp;
 
-    console.log(req.body);
-
     const timestamp = utils.parseDate(timestampStr);
 
     const now = new Date();
