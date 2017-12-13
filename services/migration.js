@@ -70,8 +70,6 @@ async function migrate() {
                 await options.setOption("db_version", mig.dbVersion);
             });
 
-            sql.setDbReadyAsResolved();
-
             log.info("Migration to version " + mig.dbVersion + " has been successful.");
 
             mig['success'] = true;
@@ -84,6 +82,10 @@ async function migrate() {
 
             break;
         }
+    }
+
+    if (sql.isDbUpToDate()) {
+        sql.setDbReadyAsResolved();
     }
 
     return migrations;
