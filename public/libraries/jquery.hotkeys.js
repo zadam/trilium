@@ -141,6 +141,7 @@
       //      Don't fire in text-accepting inputs that we didn't directly bind to
       if (this !== event.target && (/textarea|select/i.test(event.target.nodeName) ||
           (jQuery.hotkeys.options.filterTextInputs &&
+            event.target.tagName != 'WEBVIEW' &&
             jQuery.inArray(event.target.type, jQuery.hotkeys.textAcceptingInputTypes) > -1))) {
         return;
       }

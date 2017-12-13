@@ -43,6 +43,20 @@ $(document).bind('keydown', 'ctrl+shift+i', () => {
     }
 });
 
+
+$(document).bind('keydown', 'ctrl+f', () => {
+    if (isElectron()) {
+        const searchInPage = require('electron-in-page-search').default;
+        const remote = require('electron').remote;
+
+        const inPageSearch = searchInPage(remote.getCurrentWebContents(), { openDevToolsOfSearchWindow: true });
+
+        inPageSearch.openSearchWindow();
+
+        return false;
+    }
+});
+
 $(window).on('beforeunload', () => {
     // this makes sure that when user e.g. reloads the page or navigates away from the page, the note's content is saved
     // this sends the request asynchronously and doesn't wait for result

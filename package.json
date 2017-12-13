@@ -21,6 +21,7 @@
     "ejs": "~2.5.7",
     "electron": "^1.8.2-beta.3",
     "electron-debug": "^1.0.0",
+    "electron-in-page-search": "^1.2.4",
     "express": "~4.16.2",
     "express-session": "^1.15.6",
     "fs-extra": "^4.0.2",
