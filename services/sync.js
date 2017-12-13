@@ -123,7 +123,7 @@ async function pullSync(syncContext) {
 
     for (const sync of syncRows) {
         if (source_id.isLocalSourceId(sync.source_id)) {
-            log.info("Skipping " + sync.entity_name + " " + sync.entity_id + " because it has local source id.");
+            log.info("Skipping pull " + sync.entity_name + " " + sync.entity_id + " because it has local source id.");
 
             await setLastSyncedPull(sync.id);
 
@@ -188,7 +188,7 @@ async function pushSync(syncContext) {
         }
 
         if (sync.source_id === syncContext.sourceId) {
-            log.info("Skipping sync " + sync.entity_name + " " + sync.entity_id + " because it originates from sync target");
+            log.info("Skipping push " + sync.entity_name + " " + sync.entity_id + " because it originates from sync target");
         }
         else {
             await readAndPushEntity(sync, syncContext);
