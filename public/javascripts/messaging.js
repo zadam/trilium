@@ -42,6 +42,9 @@ const messaging = (function() {
 
             changesToPushCountEl.html(message.changesToPushCount);
         }
+        else if (message.type === 'sync-hash-check-failed') {
+            showError("Sync check failed!", 60000);
+        }
     }
 
     function connectWebSocket() {

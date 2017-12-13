@@ -17,7 +17,7 @@ function showMessage(message) {
     });
 }
 
-function showError(message) {
+function showError(message, delay = 10000) {
     console.log("error: ", message);
 
     $.notify({
@@ -26,7 +26,7 @@ function showError(message) {
     },{
         // settings
         type: 'danger',
-        delay: 10000
+        delay: delay
     });
 }
 

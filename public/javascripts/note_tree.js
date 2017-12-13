@@ -78,7 +78,8 @@ const noteTree = (function() {
     }
 
     function getNodesByNoteId(noteId) {
-        return getTree().getNodesByRef(noteId);
+        const list = getTree().getNodesByRef(noteId);
+        return list ? list : []; // if no nodes with this refKey are found, fancy tree returns null
     }
 
     function setPrefix(noteTreeId, prefix) {
@@ -613,6 +614,8 @@ const noteTree = (function() {
         };
 
         setParentChildRelation(result.note_tree_id, parentNoteId, result.note_id);
+
+        notesTreeMap[result.note_tree_id] = result;
 
         noteIdToTitle[result.note_id] = newNoteName;
 

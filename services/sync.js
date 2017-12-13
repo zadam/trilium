@@ -4,7 +4,6 @@ const log = require('./log');
 const rp = require('request-promise');
 const sql = require('./sql');
 const options = require('./options');
-const migration = require('./migration');
 const utils = require('./utils');
 const config = require('./config');
 const source_id = require('./source_id');
@@ -14,6 +13,7 @@ const content_hash = require('./content_hash');
 const event_log = require('./event_log');
 const fs = require('fs');
 const app_info = require('./app_info');
+const messaging = require('./messaging');
 
 const SYNC_SERVER = config['Sync']['syncServerHost'];
 const isSyncSetup = !!SYNC_SERVER;
@@ -123,7 +123,7 @@ async function pullSync(syncContext) {
 
     for (const sync of syncRows) {
         if (source_id.isLocalSourceId(sync.source_id)) {
-            log.info("Skipping " + sync.entity_name + " " + sync.entity_id + " because it has local source id.");
+            log.info("Skipping pull " + sync.entity_name + " " + sync.entity_id + " because it has local source id.");
 
             await setLastSyncedPull(sync.id);
 
@@ -188,7 +188,7 @@ async function pushSync(syncContext) {
         }
 
         if (sync.source_id === syncContext.sourceId) {
-            log.info("Skipping sync " + sync.entity_name + " " + sync.entity_id + " because it originates from sync target");
+            log.info("Skipping push " + sync.entity_name + " " + sync.entity_id + " because it originates from sync target");
         }
         else {
             await readAndPushEntity(sync, syncContext);
@@ -271,6 +271,8 @@ async function checkContentHash(syncContext) {
         log.info("Content hash check PASSED with value: " + localContentHash);
     }
     else {
+        await messaging.sendMessage({type: 'sync-hash-check-failed'});
+
         await event_log.addEvent("Content hash check FAILED. Local is " + localContentHash + ", remote is " + resp.content_hash);
     }
 }
