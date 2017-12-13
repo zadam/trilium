@@ -614,6 +614,8 @@ const noteTree = (function() {
 
         setParentChildRelation(result.note_tree_id, parentNoteId, result.note_id);
 
+        notesTreeMap[result.note_tree_id] = result;
+
         noteIdToTitle[result.note_id] = newNoteName;
 
         noteEditor.newNoteCreated();
