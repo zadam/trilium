@@ -33,19 +33,7 @@ router.put('/:noteTreeId/:notePath', auth.checkApiAuth, async (req, res, next) =
 });
 
 async function getRecentNotes() {
-    await deleteOld();
-
     return await sql.getResults("SELECT * FROM recent_notes WHERE is_deleted = 0 ORDER BY date_accessed DESC");
-}
-
-async function deleteOld() {
-    const cutoffDateAccessed = utils.dateStr(new Date(Date.now() - 24 * 60 * 60 * 1000));
-
-    await sql.doInTransaction(async () => {
-        await sql.execute("DELETE FROM recent_notes WHERE date_accessed < ?", [cutoffDateAccessed]);
-
-        await sql.execute("DELETE FROM sync WHERE entity_name = 'recent_notes' AND sync_date < ?", [cutoffDateAccessed]);
-    });
 }
 
 module.exports = router;
