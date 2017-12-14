@@ -3,7 +3,7 @@ const source_id = require('./source_id');
 const utils = require('./utils');
 const messaging = require('./messaging');
 const options = require('./options');
-const sync = require('./sync');
+const sync_setup = require('./sync_setup');
 
 let startTime = utils.nowDate();
 let sentSyncId = [];
@@ -35,7 +35,7 @@ async function sendPing() {
     messaging.sendMessage({
         type: 'sync',
         data: data,
-        changesToPushCount: sync.isSyncSetup ? changesToPushCount : 0
+        changesToPushCount: sync_setup.isSyncSetup ? changesToPushCount : 0
     });
 
     for (const syncId of syncIds) {

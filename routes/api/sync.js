@@ -20,6 +20,18 @@ router.post('/now', auth.checkApiAuth, async (req, res, next) => {
     res.send(await sync.sync());
 });
 
+router.post('/force-full-sync', auth.checkApiAuth, async (req, res, next) => {
+    await sql.doInTransaction(async () => {
+        await options.setOption('last_synced_pull', 0);
+        await options.setOption('last_synced_push', 0);
+    });
+
+    // not awaiting for the job to finish (will probably take a long time)
+    sync.sync();
+
+    res.send({});
+});
+
 router.get('/changed', auth.checkApiAuth, async (req, res, next) => {
     const lastSyncId = parseInt(req.query.lastSyncId);
 

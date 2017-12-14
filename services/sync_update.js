@@ -1,7 +1,6 @@
 const sql = require('./sql');
 const log = require('./log');
 const options = require('./options');
-const utils = require('./utils');
 const eventLog = require('./event_log');
 const notes = require('./notes');
 const sync_table = require('./sync_table');
@@ -19,9 +18,6 @@ async function updateNote(entity, sourceId) {
 
         log.info("Update/sync note " + entity.note_id);
     }
-    else {
-        await eventLog.addNoteEvent(entity.note_id, "Sync conflict in note <note>, " + utils.formatTwoDates(origNote.date_modified, entity.date_modified));
-    }
 }
 
 async function updateNoteTree(entity, sourceId) {
@@ -37,9 +33,6 @@ async function updateNoteTree(entity, sourceId) {
 
             log.info("Update/sync note tree " + entity.note_tree_id);
         }
-        else {
-            await eventLog.addNoteEvent(entity.note_tree_id, "Sync conflict in note tree <note>, " + utils.formatTwoDates(orig.date_modified, entity.date_modified));
-        }
     });
 }
 
@@ -53,9 +46,6 @@ async function updateNoteHistory(entity, sourceId) {
             await sync_table.addNoteHistorySync(entity.note_history_id, sourceId);
 
             log.info("Update/sync note history " + entity.note_history_id);
-        }
-        else {
-            await eventLog.addNoteEvent(entity.note_id, "Sync conflict in note history for <note>, " + utils.formatTwoDates(orig.date_modified_to, entity.date_modified_to));
         }
     });
 }
@@ -84,9 +74,6 @@ async function updateOptions(entity, sourceId) {
             await sync_table.addOptionsSync(entity.opt_name, sourceId);
 
             await eventLog.addEvent("Synced option " + entity.opt_name);
-        }
-        else {
-            await eventLog.addEvent("Sync conflict in options for " + entity.opt_name + ", " + utils.formatTwoDates(orig.date_modified, entity.date_modified));
         }
     });
 }

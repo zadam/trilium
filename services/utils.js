@@ -62,10 +62,6 @@ function isElectron() {
     return !!process.versions['electron'];
 }
 
-function formatTwoDates(origDate, newDate) {
-    return "orig: " + origDate + ", new: " + newDate;
-}
-
 function hash(text) {
     return crypto.createHash('sha1').update(text).digest('base64');
 }
@@ -88,7 +84,6 @@ module.exports = {
     fromBase64,
     hmac,
     isElectron,
-    formatTwoDates,
     hash,
     isEmptyOrWhitespace
 };

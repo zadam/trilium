@@ -151,3 +151,15 @@ settings.addModule((async function () {
 
     return {};
 })());
+
+settings.addModule((async function () {
+    const forceFullSyncButton = $("#force-full-sync-button");
+
+    forceFullSyncButton.click(async () => {
+        await server.post('sync/force-full-sync');
+
+        showMessage("Full sync triggered");
+    });
+
+    return {};
+})());
