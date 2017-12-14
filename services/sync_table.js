@@ -1,7 +1,7 @@
 const sql = require('./sql');
 const source_id = require('./source_id');
 const utils = require('./utils');
-const sync = require('./sync');
+const sync_setup = require('./sync_setup');
 
 async function addNoteSync(noteId, sourceId) {
     await addEntitySync("notes", noteId, sourceId)
@@ -28,7 +28,7 @@ async function addRecentNoteSync(notePath, sourceId) {
 }
 
 async function addEntitySync(entityName, entityId, sourceId) {
-    if (sync.isSyncSetup) {
+    if (sync_setup.isSyncSetup) {
         await sql.replace("sync", {
             entity_name: entityName,
             entity_id: entityId,

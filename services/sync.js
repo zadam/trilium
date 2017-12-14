@@ -5,7 +5,6 @@ const rp = require('request-promise');
 const sql = require('./sql');
 const options = require('./options');
 const utils = require('./utils');
-const config = require('./config');
 const source_id = require('./source_id');
 const notes = require('./notes');
 const syncUpdate = require('./sync_update');
@@ -14,11 +13,7 @@ const event_log = require('./event_log');
 const fs = require('fs');
 const app_info = require('./app_info');
 const messaging = require('./messaging');
-
-const SYNC_SERVER = config['Sync']['syncServerHost'];
-const isSyncSetup = !!SYNC_SERVER;
-const SYNC_TIMEOUT = config['Sync']['syncServerTimeout'] || 5000;
-const SYNC_PROXY = config['Sync']['syncProxy'];
+const sync_setup = require('./sync_setup');
 
 let syncInProgress = false;
 let proxyToggle = true;
@@ -278,7 +273,7 @@ async function checkContentHash(syncContext) {
 }
 
 async function syncRequest(syncContext, method, uri, body) {
-    const fullUri = SYNC_SERVER + uri;
+    const fullUri = sync_setup.SYNC_SERVER + uri;
 
     try {
         const options = {
@@ -287,15 +282,15 @@ async function syncRequest(syncContext, method, uri, body) {
             jar: syncContext.cookieJar,
             json: true,
             body: body,
-            timeout: SYNC_TIMEOUT
+            timeout: sync_setup.SYNC_TIMEOUT
         };
 
         if (syncServerCertificate) {
             options.ca = syncServerCertificate;
         }
 
-        if (SYNC_PROXY && proxyToggle) {
-            options.proxy = SYNC_PROXY;
+        if (sync_setup.SYNC_PROXY && proxyToggle) {
+            options.proxy = sync_setup.SYNC_PROXY;
         }
 
         return await rp(options);
@@ -306,19 +301,17 @@ async function syncRequest(syncContext, method, uri, body) {
 }
 
 sql.dbReady.then(() => {
-    if (isSyncSetup) {
-        log.info("Setting up sync to " + SYNC_SERVER + " with timeout " + SYNC_TIMEOUT);
+    if (sync_setup.isSyncSetup) {
+        log.info("Setting up sync to " + sync_setup.SYNC_SERVER + " with timeout " + sync_setup.SYNC_TIMEOUT);
 
-        if (SYNC_PROXY) {
-            log.info("Sync proxy: " + SYNC_PROXY);
+        if (sync_setup.SYNC_PROXY) {
+            log.info("Sync proxy: " + sync_setup.SYNC_PROXY);
         }
 
-        const syncCertPath = config['Sync']['syncServerCertificate'];
+        if (sync_setup.SYNC_CERT_PATH) {
+            log.info('Sync certificate: ' + sync_setup.SYNC_CERT_PATH);
 
-        if (syncCertPath) {
-            log.info('Sync certificate: ' + syncCertPath);
-
-            syncServerCertificate = fs.readFileSync(syncCertPath);
+            syncServerCertificate = fs.readFileSync(sync_setup.SYNC_CERT_PATH);
         }
 
         setInterval(sync, 60000);
@@ -332,6 +325,5 @@ sql.dbReady.then(() => {
 });
 
 module.exports = {
-    sync,
-    isSyncSetup
+    sync
 };
