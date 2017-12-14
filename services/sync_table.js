@@ -28,13 +28,17 @@ async function addRecentNoteSync(notePath, sourceId) {
 }
 
 async function addEntitySync(entityName, entityId, sourceId) {
-    if (sync_setup.isSyncSetup) {
-        await sql.replace("sync", {
-            entity_name: entityName,
-            entity_id: entityId,
-            sync_date: utils.nowDate(),
-            source_id: sourceId || source_id.currentSourceId
-        });
+    await sql.replace("sync", {
+        entity_name: entityName,
+        entity_id: entityId,
+        sync_date: utils.nowDate(),
+        source_id: sourceId || source_id.currentSourceId
+    });
+
+    if (!sync_setup.isSyncSetup) {
+        // this is because the "server" instances shouldn't have outstanding pushes
+        // useful when you fork the DB for new "client" instance, it won't try to sync the whole DB
+        await sql.execute("UPDATE options SET opt_value = (SELECT MAX(id) FROM sync) WHERE opt_name = 'last_synced_push'");
     }
 }
 
