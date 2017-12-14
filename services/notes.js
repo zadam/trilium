@@ -142,6 +142,7 @@ async function updateNote(noteId, newNote, ctx) {
     }
 
     const now = new Date();
+    const nowStr = utils.nowDate();
 
     const historySnapshotTimeInterval = parseInt(await options.getOption('history_snapshot_time_interval'));
 
@@ -170,7 +171,7 @@ async function updateNote(noteId, newNote, ctx) {
                 note_text: oldNote.note_text,
                 is_protected: 0, // will be fixed in the protectNoteHistory() call
                 date_modified_from: oldNote.date_modified,
-                date_modified_to: now
+                date_modified_to: nowStr
             });
 
             await sync_table.addNoteHistorySync(newNoteHistoryId);
@@ -182,7 +183,7 @@ async function updateNote(noteId, newNote, ctx) {
             newNote.detail.note_title,
             newNote.detail.note_text,
             newNote.detail.is_protected,
-            now,
+            nowStr,
             noteId]);
 
         await sync_table.addNoteSync(noteId);
