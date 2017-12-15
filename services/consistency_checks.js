@@ -46,6 +46,9 @@ async function runChecks() {
     if (errorList.length > 0) {
         messaging.sendMessage({type: 'consistency-checks-failed'});
     }
+    else {
+        log.info("All consistency checks passed.");
+    }
 }
 
 sql.dbReady.then(() => {
