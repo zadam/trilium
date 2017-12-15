@@ -66,6 +66,11 @@ const treeChanges = (function() {
         }
 
         let next = node.getNextSibling();
+
+        if (!next) {
+            next = node.getPrevSibling();
+        }
+
         if (!next) {
             next = node.getParent();
         }
