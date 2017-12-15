@@ -78,8 +78,8 @@ CREATE TABLE IF NOT EXISTS "notes_tree" (
   `date_modified`	TEXT NOT NULL,
   PRIMARY KEY(`note_tree_id`)
 );
-CREATE INDEX `IDX_notes_tree_note_tree_id` ON `notes_tree` (
-  `note_tree_id`
+CREATE INDEX `IDX_notes_tree_note_id` ON `notes_tree` (
+  `note_id`
 );
 CREATE INDEX `IDX_notes_tree_note_id_note_pid` ON `notes_tree` (
   `note_id`,

@@ -73,7 +73,7 @@ async function protectNoteRecursively(noteId, dataKey, protect) {
 
     await protectNote(note, dataKey, protect);
 
-    const children = await sql.getFlattenedResults("note_id", "SELECT note_id FROM notes_tree WHERE note_pid = ?", [noteId]);
+    const children = await sql.getFlattenedResults("SELECT note_id FROM notes_tree WHERE note_pid = ?", [noteId]);
 
     for (const childNoteId of children) {
         await protectNoteRecursively(childNoteId, dataKey, protect);

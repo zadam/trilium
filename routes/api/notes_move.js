@@ -188,7 +188,7 @@ async function checkCycle(parentNoteId, childNoteId) {
         return false;
     }
 
-    const parentNoteIds = await sql.getFlattenedResults("note_pid", "SELECT DISTINCT note_pid FROM notes_tree WHERE note_id = ?", [parentNoteId]);
+    const parentNoteIds = await sql.getFlattenedResults("SELECT DISTINCT note_pid FROM notes_tree WHERE note_id = ?", [parentNoteId]);
 
     for (const pid of parentNoteIds) {
         if (!await checkCycle(pid, childNoteId)) {

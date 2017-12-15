@@ -155,9 +155,15 @@ async function getMap(query, params = []) {
     return map;
 }
 
-async function getFlattenedResults(key, query, params = []) {
+async function getFlattenedResults(query, params = []) {
     const list = [];
     const result = await getResults(query, params);
+
+    if (result.length === 0) {
+        return list;
+    }
+
+    const key = Object.keys(result[0])[0];
 
     for (const row of result) {
         list.push(row[key]);
