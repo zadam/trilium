@@ -45,12 +45,16 @@ function parseDate(str) {
     }
 }
 
+function padNum(num) {
+    return (num <= 9 ? "0" : "") + num;
+}
+
 function formatTime(date) {
-    return (date.getHours() <= 9 ? "0" : "") + date.getHours() + ":" + (date.getMinutes() <= 9 ? "0" : "") + date.getMinutes();
+    return padNum(date.getHours()) + ":" + padNum(date.getMinutes());
 }
 
 function formatDate(date) {
-    return date.getDate() + ". " + (date.getMonth() + 1) + ". " + date.getFullYear();
+    return padNum(date.getDate()) + ". " + padNum(date.getMonth() + 1) + ". " + date.getFullYear();
 }
 
 function formatDateTime(date) {
