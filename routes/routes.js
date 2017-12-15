@@ -21,6 +21,7 @@ const appInfoRoute = require('./api/app_info');
 const exportRoute = require('./api/export');
 const importRoute = require('./api/import');
 const setupApiRoute = require('./api/setup');
+const sqlRoute = require('./api/sql');
 
 function register(app) {
     app.use('/', indexRoute);
@@ -45,6 +46,7 @@ function register(app) {
     app.use('/api/export', exportRoute);
     app.use('/api/import', importRoute);
     app.use('/api/setup', setupApiRoute);
+    app.use('/api/sql', sqlRoute);
 }
 
 module.exports = {
