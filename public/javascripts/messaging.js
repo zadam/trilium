@@ -45,6 +45,9 @@ const messaging = (function() {
         else if (message.type === 'sync-hash-check-failed') {
             showError("Sync check failed!", 60000);
         }
+        else if (message.type === 'consistency-checks-failed') {
+            showError("Consistency checks failed! See logs for details.", 50 * 60000);
+        }
     }
 
     function connectWebSocket() {

@@ -2,6 +2,7 @@
 
 const sql = require('./sql');
 const log = require('./log');
+const messaging = require('./messaging');
 
 async function runCheck(query, errorText, errorList) {
     const result = await sql.getFlattenedResults(query);
@@ -25,8 +26,8 @@ async function runChecks() {
     await runCheck("SELECT note_id FROM notes LEFT JOIN notes_tree USING(note_id) WHERE notes_tree.note_tree_id IS NULL",
         "Missing notes_tree records for following note IDs", errorList);
 
-    await runCheck("SELECT note_tree_id FROM notes_tree LEFT JOIN notes USING(note_id) WHERE notes.note_id IS NULL",
-        "Missing notes records for following note tree IDs", errorList);
+    await runCheck("SELECT note_tree_id || ' > ' || notes_tree.note_id FROM notes_tree LEFT JOIN notes USING(note_id) WHERE notes.note_id IS NULL",
+        "Missing notes records for following note tree ID > note ID", errorList);
 
     await runCheck("SELECT note_tree_id FROM notes_tree JOIN notes USING(note_id) WHERE notes.is_deleted = 1 AND notes_tree.is_deleted = 0",
         "Note tree is not deleted even though main note is deleted for following note tree IDs", errorList);
@@ -41,13 +42,17 @@ async function runChecks() {
     await runMissingSyncRowCheck("notes_history", "note_history_id", errorList);
     await runMissingSyncRowCheck("notes_tree", "note_tree_id", errorList);
     await runMissingSyncRowCheck("recent_notes", "note_tree_id", errorList);
+
+    if (errorList.length > 0) {
+        messaging.sendMessage({type: 'consistency-checks-failed'});
+    }
 }
 
 sql.dbReady.then(() => {
     setInterval(runChecks, 60 * 60 * 1000);
 
     // kickoff backup immediately
-    setTimeout(runChecks, 5000);
+    setTimeout(runChecks, 10000);
 });
 
 module.exports = {
