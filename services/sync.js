@@ -118,7 +118,7 @@ async function pullSync(syncContext) {
 
     for (const sync of syncRows) {
         if (source_id.isLocalSourceId(sync.source_id)) {
-            log.info("Skipping pull " + sync.entity_name + " " + sync.entity_id + " because it has local source id.");
+            log.info(`Skipping pull #${sync.id} ${sync.entity_name} ${sync.entity_id} because it has local source id.`);
 
             await setLastSyncedPull(sync.id);
 
@@ -183,7 +183,7 @@ async function pushSync(syncContext) {
         }
 
         if (sync.source_id === syncContext.sourceId) {
-            log.info("Skipping push " + sync.entity_name + " " + sync.entity_id + " because it originates from sync target");
+            log.info(`Skipping push #${sync.id} ${sync.entity_name} ${sync.entity_id} because it originates from sync target`);
         }
         else {
             await readAndPushEntity(sync, syncContext);
@@ -220,15 +220,15 @@ async function readAndPushEntity(sync, syncContext) {
         entity = await sql.getSingleResult('SELECT * FROM recent_notes WHERE note_tree_id = ?', [sync.entity_id]);
     }
     else {
-        throw new Error("Unrecognized entity type " + sync.entity_name);
+        throw new Error(`Unrecognized entity type ${sync.entity_name} in sync #${sync.id}`);
     }
 
     if (!entity) {
-        log.info("Sync entity for " + sync.entity_name + " " + sync.entity_id + " doesn't exist. Skipping.");
+        log.info(`Sync #${sync.id} entity for ${sync.entity_name} ${sync.entity_id} doesn't exist. Skipping.`);
         return;
     }
 
-    log.info("Pushing changes in " + sync.entity_name + " " + sync.entity_id);
+    log.info(`Pushing changes in sync #${sync.id} ${sync.entity_name} ${sync.entity_id}`);
 
     await sendEntity(syncContext, entity, sync.entity_name);
 }
@@ -305,7 +305,7 @@ async function syncRequest(syncContext, method, uri, body) {
         return await rp(options);
     }
     catch (e) {
-        throw new Error("Request to " + method + " " + fullUri + " failed, inner exception: " + e.stack);
+        throw new Error(`Request to ${method} ${fullUri} failed, inner exception: ${e.stack}`);
     }
 }
 
