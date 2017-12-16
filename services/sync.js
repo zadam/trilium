@@ -118,7 +118,7 @@ async function pullSync(syncContext) {
 
     for (const sync of syncRows) {
         if (source_id.isLocalSourceId(sync.source_id)) {
-            log.info(`Skipping pull #${sync.id} ${sync.entity_name} ${sync.entity_id} because it has local source id.`);
+            log.info(`Skipping pull #${sync.id} ${sync.entity_name} ${sync.entity_id} because ${sync.source_id} is a local source id.`);
 
             await setLastSyncedPull(sync.id);
 

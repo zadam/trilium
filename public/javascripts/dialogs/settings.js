@@ -17,7 +17,7 @@ const settings = (function() {
 
         dialogEl.dialog({
             modal: true,
-            width: 800
+            width: 900
         });
 
         tabsEl.tabs();
@@ -159,6 +159,18 @@ settings.addModule((async function () {
         await server.post('sync/force-full-sync');
 
         showMessage("Full sync triggered");
+    });
+
+    return {};
+})());
+
+settings.addModule((async function () {
+    const anonymizeButton = $("#anonymize-button");
+
+    anonymizeButton.click(async () => {
+        await server.post('anonymization/anonymize');
+
+        showMessage("Created anonymized database");
     });
 
     return {};

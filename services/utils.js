@@ -70,6 +70,9 @@ function isEmptyOrWhitespace(str) {
     return str === null || str.match(/^ *$/) !== null;
 }
 
+function getDateTimeForFile() {
+    return new Date().toISOString().substr(0, 19).replace(/:/g, '');
+}
 
 module.exports = {
     randomSecureToken,
@@ -85,5 +88,6 @@ module.exports = {
     hmac,
     isElectron,
     hash,
-    isEmptyOrWhitespace
+    isEmptyOrWhitespace,
+    getDateTimeForFile
 };

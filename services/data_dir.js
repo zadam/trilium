@@ -13,11 +13,13 @@ const DOCUMENT_PATH = TRILIUM_DATA_DIR + "/document.db";
 const BACKUP_DIR = TRILIUM_DATA_DIR + "/backup";
 const LOG_DIR = TRILIUM_DATA_DIR + "/log";
 const EXPORT_DIR = TRILIUM_DATA_DIR + "/export";
+const ANONYMIZED_DB_DIR = TRILIUM_DATA_DIR + "/anonymized-db";
 
 module.exports = {
     TRILIUM_DATA_DIR,
     DOCUMENT_PATH,
     BACKUP_DIR,
     LOG_DIR,
-    EXPORT_DIR
+    EXPORT_DIR,
+    ANONYMIZED_DB_DIR
 };
