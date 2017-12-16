@@ -412,6 +412,13 @@ const noteTree = (function() {
                 setExpandedToServer(data.node.data.note_tree_id, false);
             },
             init: (event, data) => {
+                const noteId = treeUtils.getNoteIdFromNotePath(startNotePath);
+
+                if (noteIdToTitle[noteId] === undefined) {
+                    // note doesn't exist so don't try to activate it
+                    startNotePath = null;
+                }
+
                 if (startNotePath) {
                     activateNode(startNotePath);
                 }

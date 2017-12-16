@@ -265,7 +265,7 @@ async function checkContentHash(syncContext) {
 
     for (const key in hashes) {
         if (hashes[key] !== resp.hashes[key]) {
-            allChecksPassed = true;
+            allChecksPassed = false;
 
             await event_log.addEvent(`Content hash check for ${key} FAILED. Local is ${hashes[key]}, remote is ${resp.hashes[key]}`);
 
