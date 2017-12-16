@@ -93,7 +93,7 @@ span.fancytree-node.fancytree-active-clone:not(.fancytree-active) .fancytree-tit
     display: none;
 }
 
-.ui-widget-content a {
+.ui-widget-content a:not(.ui-tabs-anchor) {
     color: #337ab7 !important;
 }
 
