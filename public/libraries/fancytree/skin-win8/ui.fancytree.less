@@ -26,14 +26,14 @@
 // Tree view:
 //    active node, tree inactive: #F7F7F7 (border: #DEDEDE) 'light gray, selected, but tree not active'
 
-// List view: 
+// List view:
 //    selected bar: --> active bar
 //    focus  bar: transparent(white) + border 1px solid #3399FF  ()
 
 //    table left/right border: #EDEDED 'light gray'
 
-// Override the variable after the import. 
-// NOTE: Variables are always resolved as the last definition, even if it is 
+// Override the variable after the import.
+// NOTE: Variables are always resolved as the last definition, even if it is
 // after where it is used.
 @fancy-use-sprites: true;      // false: suppress all background images (i.e. icons)
 
@@ -54,9 +54,13 @@
 // @fancy-line-height: 16px;
 // @fancy-icon-spacing: 3px;
 
+// We need to define this variable here (not in skin-common.less) to make it
+// work with grunt and webpack:
+@fancy-image-prefix: "./skin-win8/";
+
 // Use 'data-uri(...)' to embed the image into CSS instead of linking to 'loading.gif':
-@fancy-loading-url: data-uri("@{fancy-image-dir}/loading.gif");
-// Set to `true` to use `data-uri(...)` which will embed icons.gif into CSS 
+// @fancy-loading-url: data-uri("@{fancy-image-prefix}loading.gif");
+// Set to `true` to use `data-uri(...)` which will embed icons.gif into CSS
 // instead of linking to that file:
 // @fancy-inline-sprites: true;
 
