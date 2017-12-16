@@ -127,7 +127,7 @@ async function pullSync(syncContext) {
 
         const resp = await syncRequest(syncContext, 'GET', "/api/sync/" + sync.entity_name + "/" + encodeURIComponent(sync.entity_id));
 
-        if (!resp || !resp.entity) {
+        if (!resp || (sync.entity_name === 'notes' && !resp.entity)) {
             log.error(`Empty response to pull for sync #${sync.id} ${sync.entity_name}, id=${sync.entity_id}`);
         }
         else if (sync.entity_name === 'notes') {
