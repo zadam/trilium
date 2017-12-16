@@ -15,9 +15,12 @@ async function runCheck(query, errorText, errorList) {
     }
 }
 
-async function runMissingSyncRowCheck(table, key, errorList) {
-    await runCheck("SELECT " + key + " FROM " + table + " LEFT JOIN sync ON sync.entity_name = '" + table + "' AND entity_id = " + key + " WHERE sync.id IS NULL",
-        "Missing sync records for " + key + " in table " + table, errorList);
+async function runSyncRowChecks(table, key, errorList) {
+    await runCheck(`SELECT ${key} FROM ${table} LEFT JOIN sync ON sync.entity_name = '${table}' AND entity_id = ${key} WHERE sync.id IS NULL`,
+        `Missing sync records for ${key} in table ${table}`, errorList);
+
+    await runCheck(`SELECT entity_id FROM sync LEFT JOIN ${table} ON entity_id = ${key} WHERE sync.entity_name = '${table}' AND ${key} IS NULL`,
+        `Missing ${table} records for existing sync rows`, errorList);
 }
 
 async function runChecks() {
@@ -38,10 +41,10 @@ async function runChecks() {
     await runCheck("SELECT note_history_id || ' > ' || notes_history.note_id FROM notes_history LEFT JOIN notes USING(note_id) WHERE notes.note_id IS NULL",
         "Missing notes records for following note history ID > note ID", errorList);
 
-    await runMissingSyncRowCheck("notes", "note_id", errorList);
-    await runMissingSyncRowCheck("notes_history", "note_history_id", errorList);
-    await runMissingSyncRowCheck("notes_tree", "note_tree_id", errorList);
-    await runMissingSyncRowCheck("recent_notes", "note_tree_id", errorList);
+    await runSyncRowChecks("notes", "note_id", errorList);
+    await runSyncRowChecks("notes_history", "note_history_id", errorList);
+    await runSyncRowChecks("notes_tree", "note_tree_id", errorList);
+    await runSyncRowChecks("recent_notes", "note_tree_id", errorList);
 
     if (errorList.length > 0) {
         messaging.sendMessage({type: 'consistency-checks-failed'});

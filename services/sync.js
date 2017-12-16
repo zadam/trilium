@@ -128,7 +128,7 @@ async function pullSync(syncContext) {
         const resp = await syncRequest(syncContext, 'GET', "/api/sync/" + sync.entity_name + "/" + encodeURIComponent(sync.entity_id));
 
         if (!resp || !resp.entity) {
-            log.error("Empty response to pull for " + sync.entity_name + ", id=" + sync.entity_id);
+            log.error(`Empty response to pull for sync #${sync.id} ${sync.entity_name}, id=${sync.entity_id}`);
         }
         else if (sync.entity_name === 'notes') {
             await syncUpdate.updateNote(resp.entity, syncContext.sourceId);
@@ -149,7 +149,7 @@ async function pullSync(syncContext) {
             await syncUpdate.updateRecentNotes(resp, syncContext.sourceId);
         }
         else {
-            throw new Error("Unrecognized entity type " + sync.entity_name);
+            throw new Error(`Unrecognized entity type ${sync.entity_name} in sync #${sync.id}`);
         }
 
         await setLastSyncedPull(sync.id);
