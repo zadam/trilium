@@ -11,7 +11,7 @@ const content_hash = require('../../services/content_hash');
 
 router.get('/check', auth.checkApiAuth, async (req, res, next) => {
     res.send({
-        'content_hash': await content_hash.getContentHash(),
+        'hashes': await content_hash.getHashes(),
         'max_sync_id': await sql.getSingleValue('SELECT MAX(id) FROM sync')
     });
 });

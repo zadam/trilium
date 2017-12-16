@@ -127,7 +127,7 @@ async function pullSync(syncContext) {
 
         const resp = await syncRequest(syncContext, 'GET', "/api/sync/" + sync.entity_name + "/" + encodeURIComponent(sync.entity_id));
 
-        if (!resp) {
+        if (!resp || !resp.entity) {
             log.error("Empty response to pull for " + sync.entity_name + ", id=" + sync.entity_id);
         }
         else if (sync.entity_name === 'notes') {
@@ -254,21 +254,30 @@ async function checkContentHash(syncContext) {
 
     const resp = await syncRequest(syncContext, 'GET', '/api/sync/check');
 
-    // if (await getLastSyncedPull() < resp.max_sync_id) {
-    //     log.info("There are some outstanding pulls, skipping content check.");
-    //
-    //     return;
-    // }
+    if (await getLastSyncedPull() < resp.max_sync_id) {
+        log.info("There are some outstanding pulls, skipping content check.");
 
-    const localContentHash = await content_hash.getContentHash();
-
-    if (resp.content_hash === localContentHash) {
-        log.info("Content hash check PASSED with value: " + localContentHash);
+        return;
     }
-    else {
-        await messaging.sendMessage({type: 'sync-hash-check-failed'});
 
-        await event_log.addEvent("Content hash check FAILED. Local is " + localContentHash + ", remote is " + resp.content_hash);
+    const hashes = await content_hash.getHashes();
+    let allChecksPassed = true;
+
+    for (const key in hashes) {
+        if (hashes[key] !== resp.hashes[key]) {
+            allChecksPassed = true;
+
+            await event_log.addEvent(`Content hash check for ${key} FAILED. Local is ${hashes[key]}, remote is ${resp.hashes[key]}`);
+
+            if (key !== 'recent_notes') {
+                // let's not get alarmed about recent notes which get updated often and can cause failures in race conditions
+                await messaging.sendMessage({type: 'sync-hash-check-failed'});
+            }
+        }
+    }
+
+    if (allChecksPassed) {
+        log.info("Content hash checks PASSED");
     }
 }
 
