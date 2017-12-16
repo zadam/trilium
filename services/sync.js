@@ -243,19 +243,19 @@ async function sendEntity(syncContext, entity, entityName) {
 }
 
 async function checkContentHash(syncContext) {
+    const resp = await syncRequest(syncContext, 'GET', '/api/sync/check');
+
+    if (await getLastSyncedPull() < resp.max_sync_id) {
+        log.info("There are some outstanding pulls, skipping content check.");
+
+        return;
+    }
+
     const lastSyncedPush = await getLastSyncedPush();
     const notPushedSyncs = await sql.getSingleValue("SELECT COUNT(*) FROM sync WHERE id > ?", [lastSyncedPush]);
 
     if (notPushedSyncs > 0) {
         log.info("There's " + notPushedSyncs + " outstanding pushes, skipping content check.");
-
-        return;
-    }
-
-    const resp = await syncRequest(syncContext, 'GET', '/api/sync/check');
-
-    if (await getLastSyncedPull() < resp.max_sync_id) {
-        log.info("There are some outstanding pulls, skipping content check.");
 
         return;
     }
