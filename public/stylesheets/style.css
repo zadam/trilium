@@ -30,7 +30,7 @@
     overflow: auto;
 }
 
-#note-detail.protected {
+#note-detail-wrapper.protected {
     background-color: #eee;
 }
 

@@ -80,12 +80,12 @@ const noteEditor = (function() {
 
     function setNoteBackgroundIfProtected(note) {
         if (note.detail.is_protected) {
-            $("#note-detail").addClass("protected");
+            $("#note-detail-wrapper").addClass("protected");
             protectButton.hide();
             unprotectButton.show();
         }
         else {
-            $("#note-detail").removeClass("protected");
+            $("#note-detail-wrapper").removeClass("protected");
             protectButton.show();
             unprotectButton.hide();
         }
