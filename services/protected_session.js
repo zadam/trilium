@@ -11,7 +11,7 @@ function setDataKey(req, decryptedDataKey) {
 }
 
 function getProtectedSessionId(req) {
-    return req.headers['x-protected-session-id'];
+    return req.headers.protected_session_id;
 }
 
 function getDataKey(req) {

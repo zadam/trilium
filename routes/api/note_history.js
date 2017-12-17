@@ -25,10 +25,12 @@ router.get('/:noteId', auth.checkApiAuth, async (req, res, next) => {
 });
 
 router.put('', auth.checkApiAuth, async (req, res, next) => {
+    const sourceId = req.headers.source_id;
+
     await sql.doInTransaction(async () => {
         await sql.replace("notes_history", req.body);
 
-        await sync_table.addNoteHistorySync(req.body.note_history_id);
+        await sync_table.addNoteHistorySync(req.body.note_history_id, sourceId);
     });
 
     res.send();

@@ -1,9 +1,5 @@
 "use strict";
 
-const glob = {
-    activeDialog: null
-};
-
 // hot keys are active also inside inputs and content editables
 jQuery.hotkeys.options.filterInputAcceptingElements = true;
 jQuery.hotkeys.options.filterContentEditable = true;

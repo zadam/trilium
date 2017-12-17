@@ -8,7 +8,8 @@ const server = (function() {
         catch(e) {}
 
         return {
-            'x-protected-session-id': protectedSessionId
+            protected_session_id: protectedSessionId,
+            source_id: glob.sourceId
         };
     }
 

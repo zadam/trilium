@@ -39,9 +39,10 @@ router.put('/:noteId/protect-sub-tree/:isProtected', auth.checkApiAuth, async (r
     const noteId = req.params.noteId;
     const isProtected = !!parseInt(req.params.isProtected);
     const dataKey = protected_session.getDataKey(req);
+    const sourceId = req.headers.source_id;
 
     await sql.doInTransaction(async () => {
-        await notes.protectNoteRecursively(noteId, dataKey, isProtected);
+        await notes.protectNoteRecursively(noteId, dataKey, isProtected, sourceId);
     });
 
     res.send({});
@@ -49,12 +50,13 @@ router.put('/:noteId/protect-sub-tree/:isProtected', auth.checkApiAuth, async (r
 
 router.put('/:noteTreeId/set-prefix', auth.checkApiAuth, async (req, res, next) => {
     const noteTreeId = req.params.noteTreeId;
+    const sourceId = req.headers.source_id;
     const prefix = utils.isEmptyOrWhitespace(req.body.prefix) ? null : req.body.prefix;
 
     await sql.doInTransaction(async () => {
         await sql.execute("UPDATE notes_tree SET prefix = ?, date_modified = ? WHERE note_tree_id = ?", [prefix, utils.nowDate(), noteTreeId]);
 
-        await sync_table.addNoteTreeSync(noteTreeId);
+        await sync_table.addNoteTreeSync(noteTreeId, sourceId);
     });
 
     res.send({});

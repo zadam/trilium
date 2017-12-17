@@ -25,12 +25,13 @@ router.get('/', auth.checkApiAuth, async (req, res, next) => {
 
 router.post('/', async (req, res, next) => {
     const body = req.body;
+    const sourceId = req.headers.source_id;
 
     if (ALLOWED_OPTIONS.includes(body['name'])) {
         const optionName = await options.getOption(body['name']);
 
         await sql.doInTransaction(async () => {
-            await options.setOption(body['name'], body['value']);
+            await options.setOption(body['name'], body['value'], sourceId);
         });
 
         res.send({});

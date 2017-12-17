@@ -10,6 +10,7 @@ const sync_table = require('../../services/sync_table');
 router.put('/:noteTreeId/move-to/:parentNoteId', auth.checkApiAuth, async (req, res, next) => {
     const noteTreeId = req.params.noteTreeId;
     const parentNoteId = req.params.parentNoteId;
+    const sourceId = req.headers.source_id;
 
     const maxNotePos = await sql.getSingleValue('SELECT MAX(note_pos) FROM notes_tree WHERE note_pid = ? AND is_deleted = 0', [parentNoteId]);
     const newNotePos = maxNotePos === null ? 0 : maxNotePos + 1;
@@ -20,7 +21,7 @@ router.put('/:noteTreeId/move-to/:parentNoteId', auth.checkApiAuth, async (req, 
         await sql.execute("UPDATE notes_tree SET note_pid = ?, note_pos = ?, date_modified = ? WHERE note_tree_id = ?",
             [parentNoteId, newNotePos, now, noteTreeId]);
 
-        await sync_table.addNoteTreeSync(noteTreeId);
+        await sync_table.addNoteTreeSync(noteTreeId, sourceId);
     });
 
     res.send({});
@@ -29,6 +30,7 @@ router.put('/:noteTreeId/move-to/:parentNoteId', auth.checkApiAuth, async (req, 
 router.put('/:noteTreeId/move-before/:beforeNoteTreeId', async (req, res, next) => {
     const noteTreeId = req.params.noteTreeId;
     const beforeNoteTreeId = req.params.beforeNoteTreeId;
+    const sourceId = req.headers.source_id;
 
     const beforeNote = await sql.getSingleResult("SELECT * FROM notes_tree WHERE note_tree_id = ?", [beforeNoteTreeId]);
 
@@ -38,14 +40,14 @@ router.put('/:noteTreeId/move-before/:beforeNoteTreeId', async (req, res, next) 
             await sql.execute("UPDATE notes_tree SET note_pos = note_pos + 1 WHERE note_pid = ? AND note_pos >= ? AND is_deleted = 0",
                 [beforeNote.note_pid, beforeNote.note_pos]);
 
-            await sync_table.addNoteReorderingSync(beforeNote.note_pid);
+            await sync_table.addNoteReorderingSync(beforeNote.note_pid, sourceId);
 
             const now = utils.nowDate();
 
             await sql.execute("UPDATE notes_tree SET note_pid = ?, note_pos = ?, date_modified = ? WHERE note_tree_id = ?",
                 [beforeNote.note_pid, beforeNote.note_pos, now, noteTreeId]);
 
-            await sync_table.addNoteTreeSync(noteTreeId);
+            await sync_table.addNoteTreeSync(noteTreeId, sourceId);
         });
 
         res.send({});
@@ -58,6 +60,7 @@ router.put('/:noteTreeId/move-before/:beforeNoteTreeId', async (req, res, next) 
 router.put('/:noteTreeId/move-after/:afterNoteTreeId', async (req, res, next) => {
     const noteTreeId = req.params.noteTreeId;
     const afterNoteTreeId = req.params.afterNoteTreeId;
+    const sourceId = req.headers.source_id;
 
     const afterNote = await sql.getSingleResult("SELECT * FROM notes_tree WHERE note_tree_id = ?", [afterNoteTreeId]);
 
@@ -67,12 +70,12 @@ router.put('/:noteTreeId/move-after/:afterNoteTreeId', async (req, res, next) =>
             await sql.execute("UPDATE notes_tree SET note_pos = note_pos + 1 WHERE note_pid = ? AND note_pos > ? AND is_deleted = 0",
                 [afterNote.note_pid, afterNote.note_pos]);
 
-            await sync_table.addNoteReorderingSync(afterNote.note_pid);
+            await sync_table.addNoteReorderingSync(afterNote.note_pid, sourceId);
 
             await sql.execute("UPDATE notes_tree SET note_pid = ?, note_pos = ?, date_modified = ? WHERE note_tree_id = ?",
                 [afterNote.note_pid, afterNote.note_pos + 1, utils.nowDate(), noteTreeId]);
 
-            await sync_table.addNoteTreeSync(noteTreeId);
+            await sync_table.addNoteTreeSync(noteTreeId, sourceId);
         });
 
         res.send({});
@@ -85,6 +88,7 @@ router.put('/:noteTreeId/move-after/:afterNoteTreeId', async (req, res, next) =>
 router.put('/:childNoteId/clone-to/:parentNoteId', auth.checkApiAuth, async (req, res, next) => {
     const parentNoteId = req.params.parentNoteId;
     const childNoteId = req.params.childNoteId;
+    const sourceId = req.headers.source_id;
 
     const existing = await sql.getSingleValue('SELECT * FROM notes_tree WHERE note_id = ? AND note_pid = ?', [childNoteId, parentNoteId]);
 
@@ -118,7 +122,7 @@ router.put('/:childNoteId/clone-to/:parentNoteId', auth.checkApiAuth, async (req
 
         await sql.replace("notes_tree", noteTree);
 
-        await sync_table.addNoteTreeSync(noteTree.note_tree_id);
+        await sync_table.addNoteTreeSync(noteTree.note_tree_id, sourceId);
 
         res.send({
             success: true
@@ -129,6 +133,7 @@ router.put('/:childNoteId/clone-to/:parentNoteId', auth.checkApiAuth, async (req
 router.put('/:noteId/clone-after/:afterNoteTreeId', async (req, res, next) => {
     const noteId = req.params.noteId;
     const afterNoteTreeId = req.params.afterNoteTreeId;
+    const sourceId = req.headers.source_id;
 
     const afterNote = await sql.getSingleResult("SELECT * FROM notes_tree WHERE note_tree_id = ?", [afterNoteTreeId]);
 
@@ -157,7 +162,7 @@ router.put('/:noteId/clone-after/:afterNoteTreeId', async (req, res, next) => {
         await sql.execute("UPDATE notes_tree SET note_pos = note_pos + 1 WHERE note_pid = ? AND note_pos > ? AND is_deleted = 0",
             [afterNote.note_pid, afterNote.note_pos]);
 
-        await sync_table.addNoteReorderingSync(afterNote.note_pid);
+        await sync_table.addNoteReorderingSync(afterNote.note_pid, sourceId);
 
         const noteTree = {
             note_tree_id: utils.newNoteTreeId(),
@@ -171,7 +176,7 @@ router.put('/:noteId/clone-after/:afterNoteTreeId', async (req, res, next) => {
 
         await sql.replace("notes_tree", noteTree);
 
-        await sync_table.addNoteTreeSync(noteTree.note_tree_id);
+        await sync_table.addNoteTreeSync(noteTree.note_tree_id, sourceId);
 
         res.send({
             success: true

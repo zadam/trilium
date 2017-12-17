@@ -15,6 +15,7 @@ router.get('', auth.checkApiAuth, async (req, res, next) => {
 router.put('/:noteTreeId/:notePath', auth.checkApiAuth, async (req, res, next) => {
     const noteTreeId = req.params.noteTreeId;
     const notePath = req.params.notePath;
+    const sourceId = req.headers.source_id;
 
     await sql.doInTransaction(async () => {
         await sql.replace('recent_notes', {
@@ -24,9 +25,9 @@ router.put('/:noteTreeId/:notePath', auth.checkApiAuth, async (req, res, next) =
             is_deleted: 0
         });
 
-        await sync_table.addRecentNoteSync(noteTreeId);
+        await sync_table.addRecentNoteSync(noteTreeId, sourceId);
 
-        await options.setOption('start_note_path', notePath);
+        await options.setOption('start_note_path', notePath, sourceId);
     });
 
     res.send(await getRecentNotes());

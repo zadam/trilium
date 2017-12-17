@@ -19,23 +19,27 @@ const messaging = (function() {
     function messageHandler(event) {
         const message = JSON.parse(event.data);
 
+        if (message.data.length > 0) {
+            console.log(message);
+        }
+
         if (message.type === 'sync') {
             lastPingTs = new Date().getTime();
-            const data = message.data;
+            const syncData = message.data.filter(sync => sync.source_id !== glob.sourceId);
 
-            if (data.notes_tree) {
+            if (syncData.some(sync => sync.entity_name === 'notes_tree')) {
                 console.log("Reloading tree because of background changes");
 
                 noteTree.reload();
             }
 
-            if (data.notes && data.notes.includes(noteEditor.getCurrentNoteId())) {
+            if (syncData.some(sync => sync.entity_name === 'notes' && sync.entity_id === noteEditor.getCurrentNoteId())) {
                 showMessage('Reloading note because background change');
 
                 noteEditor.reload();
             }
 
-            if (data.recent_notes) {
+            if (syncData.some(sync => sync.entity_name === 'recent_notes')) {
                 console.log("Reloading recent notes because of background changes");
 
                 recentNotes.reload();

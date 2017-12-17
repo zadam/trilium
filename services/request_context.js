@@ -3,6 +3,8 @@
 const protected_session = require('./protected_session');
 
 module.exports = function(req) {
+    const sourceId = req.headers.source_id;
+
     function isProtectedSessionAvailable() {
         return protected_session.isProtectedSessionAvailable(req);
     }
@@ -24,6 +26,7 @@ module.exports = function(req) {
     }
 
     return {
+        sourceId,
         isProtectedSessionAvailable,
         getDataKey,
         getDataKeyOrNull

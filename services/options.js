@@ -16,9 +16,9 @@ async function getOption(optName) {
     return row['opt_value'];
 }
 
-async function setOption(optName, optValue) {
+async function setOption(optName, optValue, sourceId) {
     if (SYNCED_OPTIONS.includes(optName)) {
-        await sync_table.addOptionsSync(optName);
+        await sync_table.addOptionsSync(optName, sourceId);
     }
 
     await sql.replace("options", {
