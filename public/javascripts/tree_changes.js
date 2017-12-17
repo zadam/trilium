@@ -4,17 +4,13 @@ const treeChanges = (function() {
     async function moveBeforeNode(node, beforeNode) {
         await server.put('notes/' + node.data.note_tree_id + '/move-before/' + beforeNode.data.note_tree_id);
 
-        node.moveTo(beforeNode, 'before');
-
-        noteTree.setCurrentNotePathToHash(node);
+        changeNode(node, node => node.moveTo(beforeNode, 'before'));
     }
 
     async function moveAfterNode(node, afterNode) {
         await server.put('notes/' + node.data.note_tree_id + '/move-after/' + afterNode.data.note_tree_id);
 
-        node.moveTo(afterNode, 'after');
-
-        noteTree.setCurrentNotePathToHash(node);
+        changeNode(node, node => node.moveTo(afterNode, 'after'));
     }
 
     // beware that first arg is noteId and second is noteTreeId!
@@ -32,14 +28,14 @@ const treeChanges = (function() {
     async function moveToNode(node, toNode) {
         await server.put('notes/' + node.data.note_tree_id + '/move-to/' + toNode.data.note_id);
 
-        node.moveTo(toNode);
+        changeNode(node, node => {
+            node.moveTo(toNode);
 
-        toNode.setExpanded(true);
+            toNode.setExpanded(true);
 
-        toNode.folder = true;
-        toNode.renderTitle();
-
-        noteTree.setCurrentNotePathToHash(node);
+            toNode.folder = true;
+            toNode.renderTitle();
+        });
     }
 
     async function cloneNoteTo(childNoteId, parentNoteId) {
@@ -96,7 +92,17 @@ const treeChanges = (function() {
             node.getParent().renderTitle();
         }
 
-        node.moveTo(node.getParent(), 'after');
+        changeNode(node, node => node.moveTo(node.getParent(), 'after'));
+    }
+
+    function changeNode(node, func) {
+        noteTree.removeParentChildRelation(node.data.note_pid, node.data.note_id);
+
+        func(node);
+
+        node.data.note_pid = node.getParent() === null ? 'root' : node.getParent().data.note_id;
+
+        noteTree.setParentChildRelation(node.data.note_tree_id, node.data.note_pid, node.data.note_id);
 
         noteTree.setCurrentNotePathToHash(node);
     }

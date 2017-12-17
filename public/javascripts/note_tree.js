@@ -93,6 +93,15 @@ const noteTree = (function() {
         });
     }
 
+    function removeParentChildRelation(parentNoteId, childNoteId) {
+        const key = parentNoteId + "-" + childNoteId;
+
+        delete parentChildToNoteTreeId[key];
+
+        parentToChildren[parentNoteId] = parentToChildren[parentNoteId].filter(noteId => noteId !== childNoteId);
+        childToParents[childNoteId] = childToParents[childNoteId].filter(noteId => noteId !== parentNoteId);
+    }
+
     function setParentChildRelation(noteTreeId, parentNoteId, childNoteId) {
         const key = parentNoteId + "-" + childNoteId;
 
@@ -653,6 +662,8 @@ const noteTree = (function() {
         createNewTopLevelNote,
         createNote,
         setPrefix,
-        getNotePathTitle
+        getNotePathTitle,
+        removeParentChildRelation,
+        setParentChildRelation
     };
 })();
