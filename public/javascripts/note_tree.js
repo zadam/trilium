@@ -650,6 +650,8 @@ const noteTree = (function() {
         createNote(node, node.data.note_id, 'into', node.data.is_protected);
     });
 
+    $(document).bind('keydown', 'ctrl+.', scrollToCurrentNote);
+
     return {
         reload,
         collapseTree,
