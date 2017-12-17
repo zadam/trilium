@@ -363,9 +363,6 @@ const noteTree = (function() {
 
                 createNote(node, parentNoteId, 'after', isProtected);
             },
-            "ctrl+insert": node => {
-                createNote(node, node.data.note_id, 'into', node.data.is_protected);
-            },
             "del": node => {
                 treeChanges.deleteNode(node);
             },
@@ -646,6 +643,12 @@ const noteTree = (function() {
 
         showMessage("Created!");
     }
+
+    $(document).bind('keydown', 'ctrl+insert', () => {
+        const node = getCurrentNode();
+
+        createNote(node, node.data.note_id, 'into', node.data.is_protected);
+    });
 
     return {
         reload,

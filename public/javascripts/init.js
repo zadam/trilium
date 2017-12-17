@@ -39,7 +39,6 @@ $(document).bind('keydown', 'ctrl+shift+i', () => {
     }
 });
 
-
 $(document).bind('keydown', 'ctrl+f', () => {
     if (isElectron()) {
         const searchInPage = require('electron-in-page-search').default;
