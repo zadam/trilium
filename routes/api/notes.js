@@ -4,12 +4,10 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../../services/auth');
 const sql = require('../../services/sql');
-const utils = require('../../services/utils');
 const notes = require('../../services/notes');
 const log = require('../../services/log');
 const protected_session = require('../../services/protected_session');
 const data_encryption = require('../../services/data_encryption');
-const RequestContext = require('../../services/request_context');
 
 router.get('/:noteId', auth.checkApiAuth, async (req, res, next) => {
     const noteId = req.params.noteId;
@@ -50,9 +48,10 @@ router.post('/:parentNoteId/children', async (req, res, next) => {
 router.put('/:noteId', async (req, res, next) => {
     const note = req.body;
     const noteId = req.params.noteId;
-    const reqCtx = new RequestContext(req);
+    const sourceId = req.headers.source_id;
+    const dataKey = protected_session.getDataKey(req);
 
-    await notes.updateNote(noteId, note, reqCtx);
+    await notes.updateNote(noteId, note, dataKey, sourceId);
 
     res.send({});
 });

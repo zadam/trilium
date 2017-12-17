@@ -32,7 +32,7 @@ async function addEntitySync(entityName, entityId, sourceId) {
         entity_name: entityName,
         entity_id: entityId,
         sync_date: utils.nowDate(),
-        source_id: sourceId || source_id.currentSourceId
+        source_id: sourceId || await source_id.getCurrentSourceId()
     });
 
     if (!sync_setup.isSyncSetup) {

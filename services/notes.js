@@ -63,9 +63,9 @@ async function createNewNote(parentNoteId, note, sourceId) {
     };
 }
 
-async function encryptNote(note, ctx) {
-    note.detail.note_title = data_encryption.encrypt(ctx.getDataKey(), data_encryption.noteTitleIv(note.detail.note_id), note.detail.note_title);
-    note.detail.note_text = data_encryption.encrypt(ctx.getDataKey(), data_encryption.noteTextIv(note.detail.note_id), note.detail.note_text);
+async function encryptNote(note, dataKey) {
+    note.detail.note_title = data_encryption.encrypt(dataKey, data_encryption.noteTitleIv(note.detail.note_id), note.detail.note_title);
+    note.detail.note_text = data_encryption.encrypt(dataKey, data_encryption.noteTextIv(note.detail.note_id), note.detail.note_text);
 }
 
 async function protectNoteRecursively(noteId, dataKey, protect, sourceId) {
@@ -136,9 +136,9 @@ async function protectNoteHistory(noteId, dataKey, protect, sourceId) {
     }
 }
 
-async function updateNote(noteId, newNote, ctx) {
+async function updateNote(noteId, newNote, dataKey, sourceId) {
     if (newNote.detail.is_protected) {
-        await encryptNote(newNote, ctx);
+        await encryptNote(newNote, dataKey);
     }
 
     const now = new Date();
@@ -158,7 +158,7 @@ async function updateNote(noteId, newNote, ctx) {
             const oldNote = await sql.getSingleResult("SELECT * FROM notes WHERE note_id = ?", [noteId]);
 
             if (oldNote.is_protected) {
-                decryptNote(oldNote, ctx.getDataKey());
+                decryptNote(oldNote, dataKey);
             }
 
             const newNoteHistoryId = utils.newNoteHistoryId();
@@ -174,10 +174,10 @@ async function updateNote(noteId, newNote, ctx) {
                 date_modified_to: nowStr
             });
 
-            await sync_table.addNoteHistorySync(newNoteHistoryId, ctx.sourceId);
+            await sync_table.addNoteHistorySync(newNoteHistoryId, sourceId);
         }
 
-        await protectNoteHistory(noteId, ctx.getDataKeyOrNull(), newNote.detail.is_protected);
+        await protectNoteHistory(noteId, dataKey, newNote.detail.is_protected);
 
         await sql.execute("UPDATE notes SET note_title = ?, note_text = ?, is_protected = ?, date_modified = ? WHERE note_id = ?", [
             newNote.detail.note_title,
@@ -186,7 +186,7 @@ async function updateNote(noteId, newNote, ctx) {
             nowStr,
             noteId]);
 
-        await sync_table.addNoteSync(noteId, ctx.sourceId);
+        await sync_table.addNoteSync(noteId, sourceId);
     });
 }
 

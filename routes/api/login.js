@@ -42,7 +42,7 @@ router.post('/sync', async (req, res, next) => {
     req.session.loggedIn = true;
 
     res.send({
-        sourceId: source_id.currentSourceId
+        sourceId: await source_id.getCurrentSourceId()
     });
 });
 

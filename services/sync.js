@@ -186,7 +186,7 @@ async function pushSync(syncContext) {
             log.info(`Skipping push #${sync.id} ${sync.entity_name} ${sync.entity_id} because it originates from sync target`);
         }
         else {
-            await readAndPushEntity(sync, syncContext);
+            await pushEntity(sync, syncContext);
         }
 
         lastSyncedPush = sync.id;
@@ -195,7 +195,7 @@ async function pushSync(syncContext) {
     }
 }
 
-async function readAndPushEntity(sync, syncContext) {
+async function pushEntity(sync, syncContext) {
     let entity;
 
     if (sync.entity_name === 'notes') {
@@ -230,16 +230,12 @@ async function readAndPushEntity(sync, syncContext) {
 
     log.info(`Pushing changes in sync #${sync.id} ${sync.entity_name} ${sync.entity_id}`);
 
-    await sendEntity(syncContext, entity, sync.entity_name);
-}
-
-async function sendEntity(syncContext, entity, entityName) {
     const payload = {
-        sourceId: source_id.currentSourceId,
+        sourceId: await source_id.getCurrentSourceId(),
         entity: entity
     };
 
-    await syncRequest(syncContext, 'PUT', '/api/sync/' + entityName, payload);
+    await syncRequest(syncContext, 'PUT', '/api/sync/' + sync.entity_name, payload);
 }
 
 async function checkContentHash(syncContext) {

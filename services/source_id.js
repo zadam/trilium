@@ -31,10 +31,14 @@ function isLocalSourceId(srcId) {
     return allSourceIds.includes(srcId);
 }
 
-const currentSourceId = generateSourceId();
+const currentSourceIdPromise = generateSourceId();
+
+async function getCurrentSourceId() {
+    return await currentSourceIdPromise;
+}
 
 module.exports = {
     generateSourceId,
-    currentSourceId,
+    getCurrentSourceId,
     isLocalSourceId
 };
