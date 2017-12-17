@@ -3,6 +3,7 @@
 const noteTree = (function() {
     const treeEl = $("#tree");
     const parentListEl = $("#parent-list");
+    const parentListListEl = $("#parent-list-list");
 
     let startNotePath = null;
     let notesTreeMap = {};
@@ -280,9 +281,7 @@ const noteTree = (function() {
         }
         else {
             parentListEl.show();
-            parentListEl.empty();
-
-            const list = $("<ul/>");
+            parentListListEl.empty();
 
             for (const parentNoteId of parents) {
                 const parentNotePath = getSomeNotePath(parentNoteId);
@@ -299,10 +298,8 @@ const noteTree = (function() {
                     item = link.createNoteLink(notePath, title);
                 }
 
-                list.append($("<li/>").append(item));
+                parentListListEl.append($("<li/>").append(item));
             }
-
-            parentListEl.append(list);
         }
     }
 
