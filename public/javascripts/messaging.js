@@ -19,13 +19,13 @@ const messaging = (function() {
     function messageHandler(event) {
         const message = JSON.parse(event.data);
 
-        if (message.data.length > 0) {
-            console.log(message);
-        }
-
         if (message.type === 'sync') {
             lastPingTs = new Date().getTime();
             const syncData = message.data.filter(sync => sync.source_id !== glob.sourceId);
+
+            if (syncData.length > 0) {
+                console.log("Sync data: ", message);
+            }
 
             if (syncData.some(sync => sync.entity_name === 'notes_tree')) {
                 console.log("Reloading tree because of background changes");
