@@ -93,9 +93,11 @@ $.ui.autocomplete.filter = (array, terms) => {
 $(document).tooltip({
     items: "#note-detail a",
     content: function(callback) {
-        const noteId = link.getNotePathFromLink($(this).attr("href"));
+        const notePath = link.getNotePathFromLink($(this).attr("href"));
 
-        if (noteId !== null) {
+        if (notePath !== null) {
+            const noteId = treeUtils.getNoteIdFromNotePath(notePath);
+
             noteEditor.loadNote(noteId).then(note => callback(note.detail.note_text));
         }
     },

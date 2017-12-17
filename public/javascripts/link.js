@@ -2,7 +2,7 @@
 
 const link = (function() {
     function getNotePathFromLink(url) {
-        const notePathMatch = /app#([A-Za-z0-9/]+)$/.exec(url);
+        const notePathMatch = /#([A-Za-z0-9/]+)$/.exec(url);
 
         if (notePathMatch === null) {
             return null;
