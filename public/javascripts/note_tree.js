@@ -204,7 +204,7 @@ const noteTree = (function() {
 
         let parentNoteId = 'root';
 
-        console.log("Run path: ", runPath);
+        //console.log(now(), "Run path: ", runPath);
 
         for (const childNoteId of runPath) {
             const node = getNodesByNoteId(childNoteId).find(node => node.data.note_pid === parentNoteId);
@@ -248,7 +248,7 @@ const noteTree = (function() {
                 }
 
                 if (!parents.includes(parentNoteId)) {
-                    console.log("Did not find parent " + parentNoteId + " for child " + childNoteId);
+                    console.log(now(), "Did not find parent " + parentNoteId + " for child " + childNoteId);
 
                     if (parents.length > 0) {
                         const pathToRoot = getSomeNotePath(parents[0]).split("/").reverse();

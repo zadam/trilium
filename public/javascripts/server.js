@@ -40,7 +40,7 @@ const server = (function() {
             return new Promise((resolve, reject) => {
                 reqResolves[requestId] = resolve;
 
-                console.log("Request #" + requestId + " to " + method + " " + url);
+                console.log(now(), "Request #" + requestId + " to " + method + " " + url);
 
                 ipc.send('server-request', {
                     requestId: requestId,
@@ -60,7 +60,7 @@ const server = (function() {
         const ipc = require('electron').ipcRenderer;
 
         ipc.on('server-response', (event, arg) => {
-            console.log("Response #" + arg.requestId + ": " + arg.statusCode);
+            console.log(now(), "Response #" + arg.requestId + ": " + arg.statusCode);
 
             reqResolves[arg.requestId](arg.body);
 

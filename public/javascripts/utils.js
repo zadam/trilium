@@ -5,7 +5,7 @@ function reloadApp() {
 }
 
 function showMessage(message) {
-    console.log("message: ", message);
+    console.log(now(), "message: ", message);
 
     $.notify({
         // options
@@ -18,7 +18,7 @@ function showMessage(message) {
 }
 
 function showError(message, delay = 10000) {
-    console.log("error: ", message);
+    console.log(now(), "error: ", message);
 
     $.notify({
         // options
@@ -53,12 +53,20 @@ function formatTime(date) {
     return padNum(date.getHours()) + ":" + padNum(date.getMinutes());
 }
 
+function formatTimeWithSeconds(date) {
+    return padNum(date.getHours()) + ":" + padNum(date.getMinutes()) + ":" + padNum(date.getSeconds());
+}
+
 function formatDate(date) {
     return padNum(date.getDate()) + ". " + padNum(date.getMonth() + 1) + ". " + date.getFullYear();
 }
 
 function formatDateTime(date) {
     return formatDate(date) + " " + formatTime(date);
+}
+
+function now() {
+    return formatTimeWithSeconds(new Date());
 }
 
 function isElectron() {

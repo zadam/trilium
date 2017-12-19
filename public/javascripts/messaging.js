@@ -5,7 +5,7 @@ const messaging = (function() {
     let ws = null;
 
     function logError(message) {
-        console.log(message); // needs to be separate from .trace()
+        console.log(now(), message); // needs to be separate from .trace()
         console.trace();
 
         if (ws && ws.readyState === 1) {
@@ -24,11 +24,11 @@ const messaging = (function() {
             const syncData = message.data.filter(sync => sync.source_id !== glob.sourceId);
 
             if (syncData.length > 0) {
-                console.log("Sync data: ", message);
+                console.log(now(), "Sync data: ", message);
             }
 
             if (syncData.some(sync => sync.entity_name === 'notes_tree')) {
-                console.log("Reloading tree because of background changes");
+                console.log(now(), "Reloading tree because of background changes");
 
                 noteTree.reload();
             }
@@ -40,7 +40,7 @@ const messaging = (function() {
             }
 
             if (syncData.some(sync => sync.entity_name === 'recent_notes')) {
-                console.log("Reloading recent notes because of background changes");
+                console.log(now(), "Reloading recent notes because of background changes");
 
                 recentNotes.reload();
             }
@@ -60,7 +60,7 @@ const messaging = (function() {
 
         // use wss for secure messaging
         ws = new WebSocket(protocol + "://" + location.host);
-        ws.onopen = event => console.log("Connected to server with WebSocket");
+        ws.onopen = event => console.log(now(), "Connected to server with WebSocket");
         ws.onmessage = messageHandler;
         ws.onclose = function(){
             // Try to reconnect in 5 seconds
