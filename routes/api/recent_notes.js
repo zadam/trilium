@@ -34,7 +34,17 @@ router.put('/:noteTreeId/:notePath', auth.checkApiAuth, async (req, res, next) =
 });
 
 async function getRecentNotes() {
-    return await sql.getResults("SELECT * FROM recent_notes WHERE is_deleted = 0 ORDER BY date_accessed DESC");
+    return await sql.getResults(`
+      SELECT 
+        recent_notes.* 
+      FROM 
+        recent_notes
+        JOIN notes_tree USING(note_tree_id)
+      WHERE
+        recent_notes.is_deleted = 0
+        AND notes_tree.is_deleted = 0
+      ORDER BY 
+        date_accessed DESC`);
 }
 
 module.exports = router;
