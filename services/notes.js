@@ -22,7 +22,8 @@ async function createNewNote(parentNoteId, note, sourceId) {
 
             newNotePos = afterNote.note_pos + 1;
 
-            await sql.execute('UPDATE notes_tree SET note_pos = note_pos + 1, date_modified = ? WHERE note_pid = ? AND note_pos > ? AND is_deleted = 0',
+            // not updating date_modified to avoig having to sync whole rows
+            await sql.execute('UPDATE notes_tree SET note_pos = note_pos + 1 WHERE note_pid = ? AND note_pos > ? AND is_deleted = 0',
                 [utils.nowDate(), parentNoteId, afterNote.note_pos]);
 
             await sync_table.addNoteReorderingSync(parentNoteId, sourceId);

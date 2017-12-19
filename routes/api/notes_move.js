@@ -37,6 +37,7 @@ router.put('/:noteTreeId/move-before/:beforeNoteTreeId', async (req, res, next) 
     if (beforeNote) {
         await sql.doInTransaction(async () => {
             // we don't change date_modified so other changes are prioritized in case of conflict
+            // also we would have to sync all those modified note trees otherwise hash checks would fail
             await sql.execute("UPDATE notes_tree SET note_pos = note_pos + 1 WHERE note_pid = ? AND note_pos >= ? AND is_deleted = 0",
                 [beforeNote.note_pid, beforeNote.note_pos]);
 
@@ -67,6 +68,7 @@ router.put('/:noteTreeId/move-after/:afterNoteTreeId', async (req, res, next) =>
     if (afterNote) {
         await sql.doInTransaction(async () => {
             // we don't change date_modified so other changes are prioritized in case of conflict
+            // also we would have to sync all those modified note trees otherwise hash checks would fail
             await sql.execute("UPDATE notes_tree SET note_pos = note_pos + 1 WHERE note_pid = ? AND note_pos > ? AND is_deleted = 0",
                 [afterNote.note_pid, afterNote.note_pos]);
 
@@ -123,10 +125,10 @@ router.put('/:childNoteId/clone-to/:parentNoteId', auth.checkApiAuth, async (req
         await sql.replace("notes_tree", noteTree);
 
         await sync_table.addNoteTreeSync(noteTree.note_tree_id, sourceId);
+    });
 
-        res.send({
-            success: true
-        });
+    res.send({
+        success: true
     });
 });
 
@@ -159,6 +161,7 @@ router.put('/:noteId/clone-after/:afterNoteTreeId', async (req, res, next) => {
 
     await sql.doInTransaction(async () => {
         // we don't change date_modified so other changes are prioritized in case of conflict
+        // also we would have to sync all those modified note trees otherwise hash checks would fail
         await sql.execute("UPDATE notes_tree SET note_pos = note_pos + 1 WHERE note_pid = ? AND note_pos > ? AND is_deleted = 0",
             [afterNote.note_pid, afterNote.note_pos]);
 
@@ -177,10 +180,10 @@ router.put('/:noteId/clone-after/:afterNoteTreeId', async (req, res, next) => {
         await sql.replace("notes_tree", noteTree);
 
         await sync_table.addNoteTreeSync(noteTree.note_tree_id, sourceId);
+    });
 
-        res.send({
-            success: true
-        });
+    res.send({
+        success: true
     });
 });
 
