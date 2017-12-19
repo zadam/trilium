@@ -1,17 +1,12 @@
 const sql = require('./sql');
-const utils = require('./utils');
 const messaging = require('./messaging');
 const options = require('./options');
 const sync_setup = require('./sync_setup');
 
-let startTime = utils.nowDate();
-let sentSyncId = [];
+let lastSentSyncId;
 
 async function sendPing() {
-    const syncs = await sql.getResults("SELECT * FROM sync WHERE sync_date >= ?", [startTime]);
-    startTime = utils.nowDate();
-
-    const syncData = syncs.filter(sync => !sentSyncId.includes(sync.id));
+    const syncData = await sql.getResults("SELECT * FROM sync WHERE id > ?", [lastSentSyncId]);
 
     const lastSyncedPush = await options.getOption('last_synced_push');
 
@@ -23,9 +18,13 @@ async function sendPing() {
         changesToPushCount: sync_setup.isSyncSetup ? changesToPushCount : 0
     });
 
-    for (const sync of syncData) {
-        sentSyncId.push(sync.id);
+    if (syncData.length > 0) {
+        lastSentSyncId = syncData[syncData.length - 1].id;
     }
 }
 
-sql.dbReady.then(() => setInterval(sendPing, 1000));
+sql.dbReady.then(async () => {
+    lastSentSyncId = await sql.getSingleValue("SELECT MAX(id) FROM sync");
+
+    setInterval(sendPing, 1000);
+});
