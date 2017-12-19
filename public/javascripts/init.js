@@ -1,22 +1,27 @@
 "use strict";
 
 // hot keys are active also inside inputs and content editables
-jQuery.hotkeys.options.filterInputAcceptingElements = true;
-jQuery.hotkeys.options.filterContentEditable = true;
+jQuery.hotkeys.options.filterInputAcceptingElements = false;
+jQuery.hotkeys.options.filterContentEditable = false;
+jQuery.hotkeys.options.filterTextInputs = false;
 
-$(document).bind('keydown', 'alt+m', () => {
+$(document).bind('keydown', 'alt+m', e => {
     const toggle = $(".hide-toggle");
     const hidden = toggle.css('visibility') === 'hidden';
 
     toggle.css('visibility', hidden ? 'visible' : 'hidden');
+
+    e.preventDefault();
 });
 
 // hide (toggle) everything except for the note content for distraction free writing
-$(document).bind('keydown', 'alt+t', () => {
+$(document).bind('keydown', 'alt+t', e => {
     const date = new Date();
     const dateString = formatDateTime(date);
 
     link.addTextToEditor(dateString);
+
+    e.preventDefault();
 });
 
 $(document).bind('keydown', 'f5', () => {

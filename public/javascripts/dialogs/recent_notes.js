@@ -123,7 +123,11 @@ const recentNotes = (function() {
 
     reload();
 
-    $(document).bind('keydown', 'alt+q', showDialog);
+    $(document).bind('keydown', 'ctrl+e', e => {
+        showDialog();
+
+        e.preventDefault();
+    });
 
     selectBoxEl.dblclick(e => {
         setActiveNoteBasedOnRecentNotes();

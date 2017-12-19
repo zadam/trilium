@@ -63,7 +63,11 @@ const addLink = (function() {
         return false;
     });
 
-    $(document).bind('keydown', 'alt+l', showDialog);
+    $(document).bind('keydown', 'ctrl+l', e => {
+        showDialog();
+
+        e.preventDefault();
+    });
 
     return {
         showDialog

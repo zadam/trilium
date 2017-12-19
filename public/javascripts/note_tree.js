@@ -357,12 +357,6 @@ const noteTree = (function() {
 
     function initFancyTree(noteTree) {
         const keybindings = {
-            "insert": node => {
-                const parentNoteId = node.data.note_pid;
-                const isProtected = treeUtils.getParentProtectedStatus(node);
-
-                createNote(node, parentNoteId, 'after', isProtected);
-            },
             "del": node => {
                 treeChanges.deleteNode(node);
             },
@@ -644,10 +638,32 @@ const noteTree = (function() {
         showMessage("Created!");
     }
 
-    $(document).bind('keydown', 'ctrl+insert', () => {
+    $(document).bind('keydown', 'ctrl+o', e => {
+        console.log("pressed O");
+
+        const node = getCurrentNode();
+        const parentNoteId = node.data.note_pid;
+        const isProtected = treeUtils.getParentProtectedStatus(node);
+
+        createNote(node, parentNoteId, 'after', isProtected);
+
+        e.preventDefault();
+    });
+
+    $(document).bind('keydown', 'ctrl+p', e => {
         const node = getCurrentNode();
 
         createNote(node, node.data.note_id, 'into', node.data.is_protected);
+
+        e.preventDefault();
+    });
+
+    $(document).bind('keydown', 'ctrl+del', e => {
+        const node = getCurrentNode();
+
+        treeChanges.deleteNode(node);
+
+        e.preventDefault();
     });
 
     $(document).bind('keydown', 'ctrl+.', scrollToCurrentNote);

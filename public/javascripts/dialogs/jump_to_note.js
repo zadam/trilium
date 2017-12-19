@@ -4,7 +4,6 @@ const jumpToNote = (function() {
     const dialogEl = $("#jump-to-note-dialog");
     const autoCompleteEl = $("#jump-to-note-autocomplete");
     const formEl = $("#jump-to-note-form");
-    const noteDetailEl = $('#note-detail');
 
     async function showDialog() {
         glob.activeDialog = dialogEl;
@@ -42,7 +41,11 @@ const jumpToNote = (function() {
         }
     }
 
-    $(document).bind('keydown', 'alt+j', showDialog);
+    $(document).bind('keydown', 'ctrl+j', e => {
+        showDialog();
+
+        e.preventDefault();
+    });
 
     formEl.submit(() => {
         const action = dialogEl.find("button:focus").val();
