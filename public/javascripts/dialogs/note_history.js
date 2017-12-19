@@ -44,7 +44,11 @@ const noteHistory = (function() {
         }
     }
 
-    $(document).bind('keydown', 'alt+h', showCurrentNoteHistory);
+    $(document).bind('keydown', 'alt+h', e => {
+        showCurrentNoteHistory();
+
+        e.preventDefault();
+    });
 
     listEl.on('change', () => {
         const optVal = listEl.find(":selected").val();
