@@ -52,7 +52,15 @@
     </script>
 
     <!-- Required for correct loading of scripts in Electron -->
-    <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
+    <script>
+        if (typeof module === 'object') {
+            window.module = module; module = undefined;
+        }
+
+        const glob = {
+            sourceId: ''
+        };
+    </script>
 
     <script src="libraries/jquery.min.js"></script>
 
