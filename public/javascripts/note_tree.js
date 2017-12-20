@@ -505,12 +505,16 @@ const noteTree = (function() {
         await getTree().reload(notes);
     }
 
+    function getNotePathFromAddress() {
+        return document.location.hash.substr(1); // strip initial #
+    }
+
     function loadTree() {
         return server.get('tree').then(resp => {
             startNotePath = resp.start_note_path;
 
             if (document.location.hash) {
-                startNotePath = document.location.hash.substr(1); // strip initial #
+                startNotePath = getNotePathFromAddress();
             }
 
             return prepareNoteTree(resp.notes);
@@ -667,6 +671,12 @@ const noteTree = (function() {
     });
 
     $(document).bind('keydown', 'ctrl+.', scrollToCurrentNote);
+
+    $(window).bind('hashchange', function() {
+        const notePath = getNotePathFromAddress();
+
+        activateNode(notePath);
+    });
 
     return {
         reload,
