@@ -192,6 +192,8 @@ async function wrap(func) {
     catch (e) {
         log.error("Error executing query. Inner exception: " + e.stack + thisError.stack);
 
+        thisError.message = e.stack;
+
         throw thisError;
     }
 }

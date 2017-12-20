@@ -20,15 +20,22 @@ const sqlConsole = (function() {
     async function execute() {
         const sqlQuery = queryEl.val();
 
-        const results = await server.post("sql/execute", {
+        const result = await server.post("sql/execute", {
             query: sqlQuery
         });
+
+        if (!result.success) {
+            showError(result.error);
+            return;
+        }
+
+        const rows = result.rows;
 
         resultHeadEl.empty();
         resultBodyEl.empty();
 
-        if (results.length > 0) {
-            const result = results[0];
+        if (rows.length > 0) {
+            const result = rows[0];
             const rowEl = $("<tr>");
 
             for (const key in result) {
@@ -38,7 +45,7 @@ const sqlConsole = (function() {
             resultHeadEl.append(rowEl);
         }
 
-        for (const result of results) {
+        for (const result of rows) {
             const rowEl = $("<tr>");
 
             for (const key in result) {
