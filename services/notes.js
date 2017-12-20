@@ -13,18 +13,18 @@ async function createNewNote(parentNoteId, note, sourceId) {
 
     await sql.doInTransaction(async () => {
         if (note.target === 'into') {
-            const maxNotePos = await sql.getSingleValue('SELECT MAX(note_pos) FROM notes_tree WHERE note_pid = ? AND is_deleted = 0', [parentNoteId]);
+            const maxNotePos = await sql.getSingleValue('SELECT MAX(note_position) FROM notes_tree WHERE parent_note_id = ? AND is_deleted = 0', [parentNoteId]);
 
             newNotePos = maxNotePos === null ? 0 : maxNotePos + 1;
         }
         else if (note.target === 'after') {
-            const afterNote = await sql.getSingleResult('SELECT note_pos FROM notes_tree WHERE note_tree_id = ?', [note.target_note_tree_id]);
+            const afterNote = await sql.getSingleResult('SELECT note_position FROM notes_tree WHERE note_tree_id = ?', [note.target_note_tree_id]);
 
-            newNotePos = afterNote.note_pos + 1;
+            newNotePos = afterNote.note_position + 1;
 
             // not updating date_modified to avoig having to sync whole rows
-            await sql.execute('UPDATE notes_tree SET note_pos = note_pos + 1 WHERE note_pid = ? AND note_pos > ? AND is_deleted = 0',
-                [parentNoteId, afterNote.note_pos]);
+            await sql.execute('UPDATE notes_tree SET note_position = note_position + 1 WHERE parent_note_id = ? AND note_position > ? AND is_deleted = 0',
+                [parentNoteId, afterNote.note_position]);
 
             await sync_table.addNoteReorderingSync(parentNoteId, sourceId);
         }
@@ -48,8 +48,8 @@ async function createNewNote(parentNoteId, note, sourceId) {
         await sql.insert("notes_tree", {
             note_tree_id: noteTreeId,
             note_id: noteId,
-            note_pid: parentNoteId,
-            note_pos: newNotePos,
+            parent_note_id: parentNoteId,
+            note_position: newNotePos,
             is_expanded: 0,
             date_modified: now,
             is_deleted: 0
@@ -74,7 +74,7 @@ async function protectNoteRecursively(noteId, dataKey, protect, sourceId) {
 
     await protectNote(note, dataKey, protect, sourceId);
 
-    const children = await sql.getFlattenedResults("SELECT note_id FROM notes_tree WHERE note_pid = ?", [noteId]);
+    const children = await sql.getFlattenedResults("SELECT note_id FROM notes_tree WHERE parent_note_id = ?", [noteId]);
 
     for (const childNoteId of children) {
         await protectNoteRecursively(childNoteId, dataKey, protect, sourceId);
@@ -205,7 +205,7 @@ async function deleteNote(noteTreeId, sourceId) {
         await sql.execute("UPDATE notes SET is_deleted = 1, date_modified = ? WHERE note_id = ?", [now, noteId]);
         await sync_table.addNoteSync(noteId, sourceId);
 
-        const children = await sql.getResults("SELECT note_tree_id FROM notes_tree WHERE note_pid = ? AND is_deleted = 0", [noteId]);
+        const children = await sql.getResults("SELECT note_tree_id FROM notes_tree WHERE parent_note_id = ? AND is_deleted = 0", [noteId]);
 
         for (const child of children) {
             await deleteNote(child.note_tree_id, sourceId);

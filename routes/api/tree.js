@@ -19,7 +19,7 @@ router.get('/', auth.checkApiAuth, async (req, res, next) => {
         + "FROM notes_tree "
         + "JOIN notes ON notes.note_id = notes_tree.note_id "
         + "WHERE notes.is_deleted = 0 AND notes_tree.is_deleted = 0 "
-        + "ORDER BY note_pos");
+        + "ORDER BY note_position");
 
     const dataKey = protected_session.getDataKey(req);
 

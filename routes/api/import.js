@@ -51,7 +51,7 @@ async function importNotes(dir, parentNoteId) {
             noteTitle = match[2];
         }
         else {
-            let maxPos = await sql.getSingleValue("SELECT MAX(note_pos) FROM notes_tree WHERE note_pid = ? AND is_deleted = 0", [parentNoteId]);
+            let maxPos = await sql.getSingleValue("SELECT MAX(note_position) FROM notes_tree WHERE parent_note_id = ? AND is_deleted = 0", [parentNoteId]);
             if (maxPos) {
                 notePos = maxPos + 1;
             }
@@ -72,8 +72,8 @@ async function importNotes(dir, parentNoteId) {
         await sql.insert('notes_tree', {
             note_tree_id: noteTreeId,
             note_id: noteId,
-            note_pid: parentNoteId,
-            note_pos: notePos,
+            parent_note_id: parentNoteId,
+            note_position: notePos,
             is_expanded: 0,
             is_deleted: 0,
             date_modified: now

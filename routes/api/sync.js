@@ -73,8 +73,8 @@ router.get('/notes_reordering/:noteTreeParentId', auth.checkApiAuth, async (req,
     const noteTreeParentId = req.params.noteTreeParentId;
 
     res.send({
-        note_pid: noteTreeParentId,
-        ordering: await sql.getMap("SELECT note_tree_id, note_pos FROM notes_tree WHERE note_pid = ?", [noteTreeParentId])
+        parent_note_id: noteTreeParentId,
+        ordering: await sql.getMap("SELECT note_tree_id, note_position FROM notes_tree WHERE parent_note_id = ?", [noteTreeParentId])
     });
 });
 

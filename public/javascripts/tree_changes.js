@@ -96,13 +96,13 @@ const treeChanges = (function() {
     }
 
     function changeNode(node, func) {
-        noteTree.removeParentChildRelation(node.data.note_pid, node.data.note_id);
+        noteTree.removeParentChildRelation(node.data.parent_note_id, node.data.note_id);
 
         func(node);
 
-        node.data.note_pid = node.getParent() === null ? 'root' : node.getParent().data.note_id;
+        node.data.parent_note_id = node.getParent() === null ? 'root' : node.getParent().data.note_id;
 
-        noteTree.setParentChildRelation(node.data.note_tree_id, node.data.note_pid, node.data.note_id);
+        noteTree.setParentChildRelation(node.data.note_tree_id, node.data.parent_note_id, node.data.note_id);
 
         noteTree.setCurrentNotePathToHash(node);
     }

@@ -29,8 +29,8 @@ async function getHashes() {
         notes_tree: getHash(await sql.getResults(`SELECT
                                                        note_tree_id,
                                                        note_id,
-                                                       note_pid,
-                                                       note_pos,
+                                                       parent_note_id,
+                                                       note_position,
                                                        date_modified,
                                                        is_deleted,
                                                        prefix

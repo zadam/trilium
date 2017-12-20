@@ -37,8 +37,8 @@ const dbReady = new Promise((resolve, reject) => {
                 await insert('notes_tree', {
                     note_tree_id: utils.newNoteTreeId(),
                     note_id: noteId,
-                    note_pid: 'root',
-                    note_pos: 1,
+                    parent_note_id: 'root',
+                    note_position: 1,
                     is_deleted: 0,
                     date_modified: now
                 });
