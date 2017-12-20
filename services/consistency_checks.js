@@ -16,7 +16,7 @@ async function runCheck(query, errorText, errorList) {
 }
 
 async function runSyncRowChecks(table, key, errorList) {
-    await runCheck(`SELECT ${key} FROM ${table} LEFT JOIN sync ON sync.entity_name = '${table}' AND entity_id = ${key} WHERE entity_id != 'root' AND sync.id IS NULL`,
+    await runCheck(`SELECT ${key} FROM ${table} LEFT JOIN sync ON sync.entity_name = '${table}' AND entity_id = ${key} WHERE sync.id IS NULL`,
         `Missing sync records for ${key} in table ${table}`, errorList);
 
     await runCheck(`SELECT entity_id FROM sync LEFT JOIN ${table} ON entity_id = ${key} WHERE sync.entity_name = '${table}' AND ${key} IS NULL`,

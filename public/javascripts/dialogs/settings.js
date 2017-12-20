@@ -154,11 +154,18 @@ settings.addModule((async function () {
 
 settings.addModule((async function () {
     const forceFullSyncButton = $("#force-full-sync-button");
+    const fillSyncRowsButton = $("#fill-sync-rows-button");
 
     forceFullSyncButton.click(async () => {
         await server.post('sync/force-full-sync');
 
         showMessage("Full sync triggered");
+    });
+
+    fillSyncRowsButton.click(async () => {
+        await server.post('sync/fill-sync-rows');
+
+        showMessage("Sync rows filled successfully");
     });
 
     return {};
