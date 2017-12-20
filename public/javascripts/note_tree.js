@@ -678,6 +678,20 @@ const noteTree = (function() {
         activateNode(notePath);
     });
 
+    if (isElectron()) {
+        $(document).bind('keydown', 'alt+left', e => {
+            window.history.back();
+
+            e.preventDefault();
+        });
+
+        $(document).bind('keydown', 'alt+right', e => {
+            window.history.forward();
+
+            e.preventDefault();
+        });
+    }
+
     return {
         reload,
         collapseTree,
