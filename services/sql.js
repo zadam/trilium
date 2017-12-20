@@ -16,6 +16,8 @@ const dbConnected = createConnection();
 let dbReadyResolve = null;
 const dbReady = new Promise((resolve, reject) => {
     dbConnected.then(async db => {
+        await execute("PRAGMA foreign_keys = ON");
+
         dbReadyResolve = () => {
             log.info("DB ready.");
 
