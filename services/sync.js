@@ -267,7 +267,7 @@ async function checkContentHash(syncContext) {
 
             if (key !== 'recent_notes') {
                 // let's not get alarmed about recent notes which get updated often and can cause failures in race conditions
-                await messaging.sendMessage({type: 'sync-hash-check-failed'});
+                await messaging.sendMessageToAllClients({type: 'sync-hash-check-failed'});
             }
         }
     }

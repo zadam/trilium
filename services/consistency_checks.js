@@ -47,7 +47,7 @@ async function runChecks() {
     await runSyncRowChecks("recent_notes", "note_tree_id", errorList);
 
     if (errorList.length > 0) {
-        messaging.sendMessage({type: 'consistency-checks-failed'});
+        messaging.sendMessageToAllClients({type: 'consistency-checks-failed'});
     }
     else {
         log.info("All consistency checks passed.");

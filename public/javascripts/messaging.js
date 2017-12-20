@@ -2,7 +2,6 @@
 
 const messaging = (function() {
     const changesToPushCountEl = $("#changes-to-push-count");
-    let ws = null;
 
     function logError(message) {
         console.log(now(), message); // needs to be separate from .trace()
@@ -21,11 +20,14 @@ const messaging = (function() {
 
         if (message.type === 'sync') {
             lastPingTs = new Date().getTime();
-            const syncData = message.data.filter(sync => sync.source_id !== glob.sourceId);
 
-            if (syncData.length > 0) {
-                console.log(now(), "Sync data: ", message);
+            if (message.data.length > 0) {
+                console.log(now(), "Sync data: ", message.data);
+
+                lastSyncId = message.data[message.data.length - 1].id;
             }
+
+            const syncData = message.data.filter(sync => sync.source_id !== glob.sourceId);
 
             if (syncData.some(sync => sync.entity_name === 'notes_tree')) {
                 console.log(now(), "Reloading tree because of background changes");
@@ -59,17 +61,20 @@ const messaging = (function() {
         const protocol = document.location.protocol === 'https:' ? 'wss' : 'ws';
 
         // use wss for secure messaging
-        ws = new WebSocket(protocol + "://" + location.host);
+        const ws = new WebSocket(protocol + "://" + location.host);
         ws.onopen = event => console.log(now(), "Connected to server with WebSocket");
         ws.onmessage = messageHandler;
         ws.onclose = function(){
             // Try to reconnect in 5 seconds
             setTimeout(() => connectWebSocket(), 5000);
         };
+
+        return ws;
     }
 
-    connectWebSocket();
+    const ws = connectWebSocket();
 
+    let lastSyncId = glob.maxSyncIdAtLoad;
     let lastPingTs = new Date().getTime();
     let connectionBrokenNotification = null;
 
@@ -92,7 +97,12 @@ const messaging = (function() {
 
             showMessage("Re-connected to server");
         }
-    }, 3000);
+
+        ws.send(JSON.stringify({
+            type: 'ping',
+            lastSyncId: lastSyncId
+        }));
+    }, 1000);
 
     return {
         logError
