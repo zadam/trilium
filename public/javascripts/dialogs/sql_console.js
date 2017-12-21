@@ -58,6 +58,8 @@ const sqlConsole = (function() {
 
     $(document).bind('keydown', 'alt+o', showDialog);
 
+    queryEl.bind('keydown', 'ctrl+return', execute);
+
     executeButton.click(execute);
 
     return {
