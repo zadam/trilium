@@ -35,11 +35,11 @@ async function exportNote(noteTreeId, dir) {
     const noteTree = await sql.getSingleResult("SELECT * FROM notes_tree WHERE note_tree_id = ?", [noteTreeId]);
     const note = await sql.getSingleResult("SELECT * FROM notes WHERE note_id = ?", [noteTree.note_id]);
 
-    const pos = (noteTree.note_pos + '').padStart(4, '0');
+    const pos = (noteTree.note_position + '').padStart(4, '0');
 
     fs.writeFileSync(dir + '/' + pos + '-' + note.note_title + '.html', html.prettyPrint(note.note_text, {indent_size: 2}));
 
-    const children = await sql.getResults("SELECT * FROM notes_tree WHERE note_pid = ? AND is_deleted = 0", [note.note_id]);
+    const children = await sql.getResults("SELECT * FROM notes_tree WHERE parent_note_id = ? AND is_deleted = 0", [note.note_id]);
 
     if (children.length > 0) {
         const childrenDir = dir + '/' + pos + '-' + note.note_title;

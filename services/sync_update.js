@@ -53,10 +53,10 @@ async function updateNoteHistory(entity, sourceId) {
 async function updateNoteReordering(entity, sourceId) {
     await sql.doInTransaction(async () => {
         Object.keys(entity.ordering).forEach(async key => {
-            await sql.execute("UPDATE notes_tree SET note_pos = ? WHERE note_tree_id = ?", [entity.ordering[key], key]);
+            await sql.execute("UPDATE notes_tree SET note_position = ? WHERE note_tree_id = ?", [entity.ordering[key], key]);
         });
 
-        await sync_table.addNoteReorderingSync(entity.note_pid, sourceId);
+        await sync_table.addNoteReorderingSync(entity.parent_note_id, sourceId);
     });
 }
 

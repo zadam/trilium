@@ -209,8 +209,8 @@ async function pushEntity(sync, syncContext) {
     }
     else if (sync.entity_name === 'notes_reordering') {
         entity = {
-            note_pid: sync.entity_id,
-            ordering: await sql.getMap('SELECT note_tree_id, note_pos FROM notes_tree WHERE note_pid = ?', [sync.entity_id])
+            parent_note_id: sync.entity_id,
+            ordering: await sql.getMap('SELECT note_tree_id, note_position FROM notes_tree WHERE parent_note_id = ?', [sync.entity_id])
         };
     }
     else if (sync.entity_name === 'options') {
@@ -267,7 +267,7 @@ async function checkContentHash(syncContext) {
 
             if (key !== 'recent_notes') {
                 // let's not get alarmed about recent notes which get updated often and can cause failures in race conditions
-                await messaging.sendMessage({type: 'sync-hash-check-failed'});
+                await messaging.sendMessageToAllClients({type: 'sync-hash-check-failed'});
             }
         }
     }

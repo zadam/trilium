@@ -1,6 +1,9 @@
 const WebSocket = require('ws');
 const utils = require('./utils');
 const log = require('./log');
+const sql = require('./sql');
+const options = require('./options');
+const sync_setup = require('./sync_setup');
 
 let webSocketServer;
 
@@ -29,6 +32,9 @@ function init(httpServer, sessionParser) {
             if (message.type === 'log-error') {
                 log.error('JS Error: ' + message.error);
             }
+            else if (message.type === 'ping') {
+                sendPing(ws, message.lastSyncId);
+            }
             else {
                 log.error('Unrecognized message: ');
                 log.error(message);
@@ -37,7 +43,15 @@ function init(httpServer, sessionParser) {
     });
 }
 
-async function sendMessage(message) {
+async function sendMessage(client, message) {
+    const jsonStr = JSON.stringify(message);
+
+    if (client.readyState === WebSocket.OPEN) {
+        client.send(jsonStr);
+    }
+}
+
+async function sendMessageToAllClients(message) {
     const jsonStr = JSON.stringify(message);
 
     webSocketServer.clients.forEach(function each(client) {
@@ -47,7 +61,21 @@ async function sendMessage(message) {
     });
 }
 
+async function sendPing(client, lastSentSyncId) {
+    const syncData = await sql.getResults("SELECT * FROM sync WHERE id > ?", [lastSentSyncId]);
+
+    const lastSyncedPush = await options.getOption('last_synced_push');
+
+    const changesToPushCount = await sql.getSingleValue("SELECT COUNT(*) FROM sync WHERE id > ?", [lastSyncedPush]);
+
+    await sendMessage(client, {
+        type: 'sync',
+        data: syncData,
+        changesToPushCount: sync_setup.isSyncSetup ? changesToPushCount : 0
+    });
+}
+
 module.exports = {
     init,
-    sendMessage
+    sendMessageToAllClients
 };

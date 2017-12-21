@@ -70,8 +70,8 @@ CREATE TABLE `recent_notes` (
 CREATE TABLE IF NOT EXISTS "notes_tree" (
   `note_tree_id`	TEXT NOT NULL,
   `note_id`	TEXT NOT NULL,
-  `note_pid`	TEXT NOT NULL,
-  `note_pos`	INTEGER NOT NULL,
+  `parent_note_id`	TEXT NOT NULL,
+  `note_position`	INTEGER NOT NULL,
   `prefix`	TEXT,
   `is_expanded`	BOOLEAN,
   `is_deleted`	INTEGER NOT NULL DEFAULT 0,
@@ -81,7 +81,7 @@ CREATE TABLE IF NOT EXISTS "notes_tree" (
 CREATE INDEX `IDX_notes_tree_note_id` ON `notes_tree` (
   `note_id`
 );
-CREATE INDEX `IDX_notes_tree_note_id_note_pid` ON `notes_tree` (
+CREATE INDEX `IDX_notes_tree_note_id_parent_note_id` ON `notes_tree` (
   `note_id`,
-  `note_pid`
+  `parent_note_id`
 );

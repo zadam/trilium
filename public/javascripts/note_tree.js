@@ -132,7 +132,7 @@ const noteTree = (function() {
 
             delete note.note_title; // this should not be used. Use noteIdToTitle instead
 
-            setParentChildRelation(note.note_tree_id, note.note_pid, note.note_id);
+            setParentChildRelation(note.note_tree_id, note.parent_note_id, note.note_id);
         }
 
         return prepareNoteTreeInner('root');
@@ -171,7 +171,7 @@ const noteTree = (function() {
 
             const node = {
                 note_id: noteTree.note_id,
-                note_pid: noteTree.note_pid,
+                parent_note_id: noteTree.parent_note_id,
                 note_tree_id: noteTree.note_tree_id,
                 is_protected: noteTree.is_protected,
                 prefix: noteTree.prefix,
@@ -207,7 +207,7 @@ const noteTree = (function() {
         //console.log(now(), "Run path: ", runPath);
 
         for (const childNoteId of runPath) {
-            const node = getNodesByNoteId(childNoteId).find(node => node.data.note_pid === parentNoteId);
+            const node = getNodesByNoteId(childNoteId).find(node => node.data.parent_note_id === parentNoteId);
 
             if (childNoteId === noteId) {
                 await node.setActive();
@@ -333,6 +333,10 @@ const noteTree = (function() {
 
         while (cur !== 'root') {
             path.push(cur);
+
+            if (!childToParents[cur]) {
+                throwError("Can't find parents for " + cur);
+            }
 
             cur = childToParents[cur][0];
         }
@@ -505,12 +509,16 @@ const noteTree = (function() {
         await getTree().reload(notes);
     }
 
+    function getNotePathFromAddress() {
+        return document.location.hash.substr(1); // strip initial #
+    }
+
     function loadTree() {
         return server.get('tree').then(resp => {
             startNotePath = resp.start_note_path;
 
             if (document.location.hash) {
-                startNotePath = document.location.hash.substr(1); // strip initial #
+                startNotePath = getNotePathFromAddress();
             }
 
             return prepareNoteTree(resp.notes);
@@ -610,7 +618,7 @@ const noteTree = (function() {
         const newNode = {
             title: newNoteName,
             note_id: result.note_id,
-            note_pid: parentNoteId,
+            parent_note_id: parentNoteId,
             refKey: result.note_id,
             note_tree_id: result.note_tree_id,
             is_protected: isProtected,
@@ -642,7 +650,7 @@ const noteTree = (function() {
         console.log("pressed O");
 
         const node = getCurrentNode();
-        const parentNoteId = node.data.note_pid;
+        const parentNoteId = node.data.parent_note_id;
         const isProtected = treeUtils.getParentProtectedStatus(node);
 
         createNote(node, parentNoteId, 'after', isProtected);
@@ -667,6 +675,26 @@ const noteTree = (function() {
     });
 
     $(document).bind('keydown', 'ctrl+.', scrollToCurrentNote);
+
+    $(window).bind('hashchange', function() {
+        const notePath = getNotePathFromAddress();
+
+        activateNode(notePath);
+    });
+
+    if (isElectron()) {
+        $(document).bind('keydown', 'alt+left', e => {
+            window.history.back();
+
+            e.preventDefault();
+        });
+
+        $(document).bind('keydown', 'alt+right', e => {
+            window.history.forward();
+
+            e.preventDefault();
+        });
+    }
 
     return {
         reload,

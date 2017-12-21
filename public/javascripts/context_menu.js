@@ -88,7 +88,7 @@ const contextMenu = (function() {
             const node = $.ui.fancytree.getNode(ui.target);
 
             if (ui.cmd === "insertNoteHere") {
-                const parentNoteId = node.data.note_pid;
+                const parentNoteId = node.data.parent_note_id;
                 const isProtected = treeUtils.getParentProtectedStatus(node);
 
                 noteTree.createNote(node, parentNoteId, 'after', isProtected);

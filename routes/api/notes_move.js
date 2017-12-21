@@ -12,13 +12,13 @@ router.put('/:noteTreeId/move-to/:parentNoteId', auth.checkApiAuth, async (req, 
     const parentNoteId = req.params.parentNoteId;
     const sourceId = req.headers.source_id;
 
-    const maxNotePos = await sql.getSingleValue('SELECT MAX(note_pos) FROM notes_tree WHERE note_pid = ? AND is_deleted = 0', [parentNoteId]);
+    const maxNotePos = await sql.getSingleValue('SELECT MAX(note_position) FROM notes_tree WHERE parent_note_id = ? AND is_deleted = 0', [parentNoteId]);
     const newNotePos = maxNotePos === null ? 0 : maxNotePos + 1;
 
     const now = utils.nowDate();
 
     await sql.doInTransaction(async () => {
-        await sql.execute("UPDATE notes_tree SET note_pid = ?, note_pos = ?, date_modified = ? WHERE note_tree_id = ?",
+        await sql.execute("UPDATE notes_tree SET parent_note_id = ?, note_position = ?, date_modified = ? WHERE note_tree_id = ?",
             [parentNoteId, newNotePos, now, noteTreeId]);
 
         await sync_table.addNoteTreeSync(noteTreeId, sourceId);
@@ -38,15 +38,15 @@ router.put('/:noteTreeId/move-before/:beforeNoteTreeId', async (req, res, next) 
         await sql.doInTransaction(async () => {
             // we don't change date_modified so other changes are prioritized in case of conflict
             // also we would have to sync all those modified note trees otherwise hash checks would fail
-            await sql.execute("UPDATE notes_tree SET note_pos = note_pos + 1 WHERE note_pid = ? AND note_pos >= ? AND is_deleted = 0",
-                [beforeNote.note_pid, beforeNote.note_pos]);
+            await sql.execute("UPDATE notes_tree SET note_position = note_position + 1 WHERE parent_note_id = ? AND note_position >= ? AND is_deleted = 0",
+                [beforeNote.parent_note_id, beforeNote.note_position]);
 
-            await sync_table.addNoteReorderingSync(beforeNote.note_pid, sourceId);
+            await sync_table.addNoteReorderingSync(beforeNote.parent_note_id, sourceId);
 
             const now = utils.nowDate();
 
-            await sql.execute("UPDATE notes_tree SET note_pid = ?, note_pos = ?, date_modified = ? WHERE note_tree_id = ?",
-                [beforeNote.note_pid, beforeNote.note_pos, now, noteTreeId]);
+            await sql.execute("UPDATE notes_tree SET parent_note_id = ?, note_position = ?, date_modified = ? WHERE note_tree_id = ?",
+                [beforeNote.parent_note_id, beforeNote.note_position, now, noteTreeId]);
 
             await sync_table.addNoteTreeSync(noteTreeId, sourceId);
         });
@@ -69,13 +69,13 @@ router.put('/:noteTreeId/move-after/:afterNoteTreeId', async (req, res, next) =>
         await sql.doInTransaction(async () => {
             // we don't change date_modified so other changes are prioritized in case of conflict
             // also we would have to sync all those modified note trees otherwise hash checks would fail
-            await sql.execute("UPDATE notes_tree SET note_pos = note_pos + 1 WHERE note_pid = ? AND note_pos > ? AND is_deleted = 0",
-                [afterNote.note_pid, afterNote.note_pos]);
+            await sql.execute("UPDATE notes_tree SET note_position = note_position + 1 WHERE parent_note_id = ? AND note_position > ? AND is_deleted = 0",
+                [afterNote.parent_note_id, afterNote.note_position]);
 
-            await sync_table.addNoteReorderingSync(afterNote.note_pid, sourceId);
+            await sync_table.addNoteReorderingSync(afterNote.parent_note_id, sourceId);
 
-            await sql.execute("UPDATE notes_tree SET note_pid = ?, note_pos = ?, date_modified = ? WHERE note_tree_id = ?",
-                [afterNote.note_pid, afterNote.note_pos + 1, utils.nowDate(), noteTreeId]);
+            await sql.execute("UPDATE notes_tree SET parent_note_id = ?, note_position = ?, date_modified = ? WHERE note_tree_id = ?",
+                [afterNote.parent_note_id, afterNote.note_position + 1, utils.nowDate(), noteTreeId]);
 
             await sync_table.addNoteTreeSync(noteTreeId, sourceId);
         });
@@ -92,7 +92,7 @@ router.put('/:childNoteId/clone-to/:parentNoteId', auth.checkApiAuth, async (req
     const childNoteId = req.params.childNoteId;
     const sourceId = req.headers.source_id;
 
-    const existing = await sql.getSingleValue('SELECT * FROM notes_tree WHERE note_id = ? AND note_pid = ?', [childNoteId, parentNoteId]);
+    const existing = await sql.getSingleValue('SELECT * FROM notes_tree WHERE note_id = ? AND parent_note_id = ?', [childNoteId, parentNoteId]);
 
     if (existing && !existing.is_deleted) {
         return res.send({
@@ -108,15 +108,15 @@ router.put('/:childNoteId/clone-to/:parentNoteId', auth.checkApiAuth, async (req
         });
     }
 
-    const maxNotePos = await sql.getSingleValue('SELECT MAX(note_pos) FROM notes_tree WHERE note_pid = ? AND is_deleted = 0', [parentNoteId]);
+    const maxNotePos = await sql.getSingleValue('SELECT MAX(note_position) FROM notes_tree WHERE parent_note_id = ? AND is_deleted = 0', [parentNoteId]);
     const newNotePos = maxNotePos === null ? 0 : maxNotePos + 1;
 
     await sql.doInTransaction(async () => {
         const noteTree = {
             note_tree_id: utils.newNoteTreeId(),
             note_id: childNoteId,
-            note_pid: parentNoteId,
-            note_pos: newNotePos,
+            parent_note_id: parentNoteId,
+            note_position: newNotePos,
             is_expanded: 0,
             date_modified: utils.nowDate(),
             is_deleted: 0
@@ -143,14 +143,14 @@ router.put('/:noteId/clone-after/:afterNoteTreeId', async (req, res, next) => {
         return res.status(500).send("After note " + afterNoteTreeId + " doesn't exist.");
     }
 
-    if (!await checkCycle(afterNote.note_pid, noteId)) {
+    if (!await checkCycle(afterNote.parent_note_id, noteId)) {
         return res.send({
             success: false,
             message: 'Cloning note here would create cycle.'
         });
     }
 
-    const existing = await sql.getSingleValue('SELECT * FROM notes_tree WHERE note_id = ? AND note_pid = ?', [noteId, afterNote.note_pid]);
+    const existing = await sql.getSingleValue('SELECT * FROM notes_tree WHERE note_id = ? AND parent_note_id = ?', [noteId, afterNote.parent_note_id]);
 
     if (existing && !existing.is_deleted) {
         return res.send({
@@ -162,16 +162,16 @@ router.put('/:noteId/clone-after/:afterNoteTreeId', async (req, res, next) => {
     await sql.doInTransaction(async () => {
         // we don't change date_modified so other changes are prioritized in case of conflict
         // also we would have to sync all those modified note trees otherwise hash checks would fail
-        await sql.execute("UPDATE notes_tree SET note_pos = note_pos + 1 WHERE note_pid = ? AND note_pos > ? AND is_deleted = 0",
-            [afterNote.note_pid, afterNote.note_pos]);
+        await sql.execute("UPDATE notes_tree SET note_position = note_position + 1 WHERE parent_note_id = ? AND note_position > ? AND is_deleted = 0",
+            [afterNote.parent_note_id, afterNote.note_position]);
 
-        await sync_table.addNoteReorderingSync(afterNote.note_pid, sourceId);
+        await sync_table.addNoteReorderingSync(afterNote.parent_note_id, sourceId);
 
         const noteTree = {
             note_tree_id: utils.newNoteTreeId(),
             note_id: noteId,
-            note_pid: afterNote.note_pid,
-            note_pos: afterNote.note_pos + 1,
+            parent_note_id: afterNote.parent_note_id,
+            note_position: afterNote.note_position + 1,
             is_expanded: 0,
             date_modified: utils.nowDate(),
             is_deleted: 0
@@ -196,7 +196,7 @@ async function checkCycle(parentNoteId, childNoteId) {
         return false;
     }
 
-    const parentNoteIds = await sql.getFlattenedResults("SELECT DISTINCT note_pid FROM notes_tree WHERE note_id = ?", [parentNoteId]);
+    const parentNoteIds = await sql.getFlattenedResults("SELECT DISTINCT parent_note_id FROM notes_tree WHERE note_id = ?", [parentNoteId]);
 
     for (const pid of parentNoteIds) {
         if (!await checkCycle(pid, childNoteId)) {

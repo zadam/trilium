@@ -219,6 +219,11 @@
         </div>
         <div id="sync">
           <button id="force-full-sync-button" class="btn btn-sm">Force full sync</button>
+
+          <br/>
+          <br/>
+
+          <button id="fill-sync-rows-button" class="btn btn-sm">Fill sync rows</button>
         </div>
         <div id="debugging">
           <button id="anonymize-button" class="btn btn-sm">Save anonymized database</button>
@@ -296,7 +301,8 @@
       const baseApiUrl = 'api/';
       const glob = {
           activeDialog: null,
-          sourceId: '<%= sourceId %>'
+          sourceId: '<%= sourceId %>',
+          maxSyncIdAtLoad: <%= maxSyncIdAtLoad %>
       };
     </script>
 
