@@ -49,6 +49,9 @@ async function migrate() {
         try {
             log.info("Attempting migration to version " + mig.dbVersion);
 
+            // needs to happen outside of the transaction (otherwise it's a NO-OP)
+            await sql.execute("PRAGMA foreign_keys = OFF");
+
             await sql.doInTransaction(async () => {
                 if (mig.type === 'sql') {
                     const migrationSql = fs.readFileSync(MIGRATIONS_DIR + "/" + mig.file).toString('utf8');
@@ -68,6 +71,7 @@ async function migrate() {
                 }
 
                 await options.setOption("db_version", mig.dbVersion);
+
             });
 
             log.info("Migration to version " + mig.dbVersion + " has been successful.");
@@ -81,6 +85,10 @@ async function migrate() {
             log.error("error during migration to version " + mig.dbVersion + ": " + e.stack);
 
             break;
+        }
+        finally {
+            // make sure foreign keys are enabled even if migration script disables them
+            await sql.execute("PRAGMA foreign_keys = ON");
         }
     }
 
