@@ -12,7 +12,9 @@ const addLink = (function() {
     function showDialog() {
         glob.activeDialog = dialogEl;
 
-        $('input:radio[name="add-link-type"]').filter('[value="html"]').attr('checked', true);
+        $('input[name="add-link-type"]').each(function () {
+            $(this).prop('checked', $(this).val() === "html");
+        });
 
         linkTitleEl.val('');
         clonePrefixEl.val('');
