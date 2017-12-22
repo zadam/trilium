@@ -92,6 +92,10 @@ async function login() {
         hash: hash
     });
 
+    if (source_id.isLocalSourceId(resp.sourceId)) {
+        throw new Error(`Sync server has source ID ${resp.sourceId} which is also local. Try restarting sync server.`);
+    }
+
     syncContext.sourceId = resp.sourceId;
 
     return syncContext;
