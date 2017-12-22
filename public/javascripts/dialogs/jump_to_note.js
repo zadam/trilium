@@ -50,33 +50,7 @@ const jumpToNote = (function() {
     formEl.submit(() => {
         const action = dialogEl.find("button:focus").val();
 
-        if (!action || action === 'jump') {
-            goToNote();
-        }
-        else if (action === 'add-link') {
-            const notePath = getSelectedNotePath();
-
-            if (notePath) {
-                dialogEl.dialog("close");
-
-                const noteId = treeUtils.getNoteIdFromNotePath(notePath);
-
-                link.addLinkToEditor(noteTree.getNoteTitle(noteId), '#' + notePath);
-            }
-        }
-        else if (action === 'add-current-as-child') {
-            treeChanges.cloneNoteTo(noteEditor.getCurrentNoteId(), getSelectedNoteId());
-
-            dialogEl.dialog("close");
-        }
-        else if (action === 'add-selected-as-child') {
-            treeChanges.cloneNoteTo(getSelectedNoteId(), noteEditor.getCurrentNoteId());
-
-            dialogEl.dialog("close");
-        }
-        else {
-            messaging.logError("Unknown action=" + action);
-        }
+        goToNote();
 
         return false;
     });
