@@ -38,8 +38,10 @@ const treeChanges = (function() {
         });
     }
 
-    async function cloneNoteTo(childNoteId, parentNoteId) {
-        const resp = await server.put('notes/' + childNoteId + '/clone-to/' + parentNoteId);
+    async function cloneNoteTo(childNoteId, parentNoteId, prefix) {
+        const resp = await server.put('notes/' + childNoteId + '/clone-to/' + parentNoteId, {
+            prefix: prefix
+        });
 
         if (!resp.success) {
             alert(resp.message);

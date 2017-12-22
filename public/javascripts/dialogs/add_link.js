@@ -1,18 +1,28 @@
 "use strict";
 
 const addLink = (function() {
-    const dialogEl = $("#insert-link-dialog");
-    const formEl = $("#insert-link-form");
+    const dialogEl = $("#add-link-dialog");
+    const formEl = $("#add-link-form");
     const autoCompleteEl = $("#note-autocomplete");
-    const noteDetailEl = $('#note-detail');
     const linkTitleEl = $("#link-title");
+    const clonePrefixEl = $("#clone-prefix");
+    const linkTitleFormGroup = $("#add-link-title-form-group");
+    const prefixFormGroup = $("#add-link-prefix-form-group");
 
     function showDialog() {
         glob.activeDialog = dialogEl;
 
+        $('input:radio[name="add-link-type"]').filter('[value="html"]').attr('checked', true);
+
+        linkTitleEl.val('');
+        clonePrefixEl.val('');
+
+        linkTitleFormGroup.show();
+        prefixFormGroup.hide();
+
         dialogEl.dialog({
             modal: true,
-            width: 500
+            width: 700
         });
 
         autoCompleteEl.val('').focus();
@@ -51,16 +61,46 @@ const addLink = (function() {
         const value = autoCompleteEl.val();
 
         const notePath = link.getNodePathFromLabel(value);
+        const noteId = treeUtils.getNoteIdFromNotePath(notePath);
 
         if (notePath) {
-            const linkTitle = linkTitleEl.val();
+            const linkType = $("input[name='add-link-type']:checked").val();
 
-            dialogEl.dialog("close");
+            if (linkType === 'html') {
+                const linkTitle = linkTitleEl.val();
 
-            link.addLinkToEditor(linkTitle, '#' + notePath);
+                dialogEl.dialog("close");
+
+                link.addLinkToEditor(linkTitle, '#' + notePath);
+            }
+            else if (linkType === 'selected-to-current') {
+                const prefix = clonePrefixEl.val();
+
+                treeChanges.cloneNoteTo(noteId, noteEditor.getCurrentNoteId(), prefix);
+
+                dialogEl.dialog("close");
+            }
+            else if (linkType === 'current-to-selected') {
+                const prefix = clonePrefixEl.val();
+
+                treeChanges.cloneNoteTo(noteEditor.getCurrentNoteId(), noteId, prefix);
+
+                dialogEl.dialog("close");
+            }
         }
 
         return false;
+    });
+
+    $("input[name='add-link-type']").change(function() {
+        if (this.value === 'html') {
+            linkTitleFormGroup.show();
+            prefixFormGroup.hide();
+        }
+        else {
+            linkTitleFormGroup.hide();
+            prefixFormGroup.show();
+        }
     });
 
     $(document).bind('keydown', 'ctrl+l', e => {

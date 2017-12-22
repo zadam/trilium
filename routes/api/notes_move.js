@@ -90,6 +90,7 @@ router.put('/:noteTreeId/move-after/:afterNoteTreeId', async (req, res, next) =>
 router.put('/:childNoteId/clone-to/:parentNoteId', auth.checkApiAuth, async (req, res, next) => {
     const parentNoteId = req.params.parentNoteId;
     const childNoteId = req.params.childNoteId;
+    const prefix = req.body.prefix;
     const sourceId = req.headers.source_id;
 
     const existing = await sql.getSingleValue('SELECT * FROM notes_tree WHERE note_id = ? AND parent_note_id = ?', [childNoteId, parentNoteId]);
@@ -116,6 +117,7 @@ router.put('/:childNoteId/clone-to/:parentNoteId', auth.checkApiAuth, async (req
             note_tree_id: utils.newNoteTreeId(),
             note_id: childNoteId,
             parent_note_id: parentNoteId,
+            prefix: prefix,
             note_position: newNotePos,
             is_expanded: 0,
             date_modified: utils.nowDate(),

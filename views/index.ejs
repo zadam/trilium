@@ -119,16 +119,35 @@
       </p>
     </div>
 
-    <div id="insert-link-dialog" title="Insert link" style="display: none;">
-      <form id="insert-link-form">
-        <div class="form-group">
-          <label for="note-autocomplete">Link to note</label>
-          <input id="note-autocomplete" style="width: 100%;">
+    <div id="add-link-dialog" title="Add link" style="display: none;">
+      <form id="add-link-form">
+        <div class="radio">
+          <label title="Add HTML link to the selected note at cursor in current note">
+            <input type="radio" name="add-link-type" value="html"/>
+            add normal HTML link</label>
+
+          <label title="Add selected note as a child of current note">
+            <input type="radio" name="add-link-type" value="selected-to-current"/>
+            add selected note to current note</label>
+
+          <label title="Add current note as a child of the selected note">
+            <input type="radio" name="add-link-type" value="current-to-selected"/>
+            add current note to selected note</label>
         </div>
 
         <div class="form-group">
+          <label for="note-autocomplete">Note</label>
+          <input id="note-autocomplete" style="width: 100%;">
+        </div>
+
+        <div class="form-group" id="add-link-title-form-group">
           <label for="link-title">Link title</label>
           <input id="link-title" style="width: 100%;">
+        </div>
+
+        <div class="form-group" id="add-link-prefix-form-group" title="Cloned note will be shown in note tree with given prefix">
+          <label for="clone-prefix">Prefix (optional)</label>
+          <input id="clone-prefix" style="width: 100%;">
         </div>
 
         <button class="btn btn-sm">Add link</button>
