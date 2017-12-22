@@ -16,14 +16,16 @@
         </div>
 
         <div style="flex-grow: 100;">
-          <button class="btn btn-xs" onclick="recentChanges.showDialog();">Recent changes</button>
-          <button class="btn btn-xs" onclick="recentNotes.showDialog();">Recent notes</button>
           <button class="btn btn-xs" onclick="jumpToNote.showDialog();">Jump to note</button>
+          <button class="btn btn-xs" onclick="recentNotes.showDialog();">Recent notes</button>
+          <button class="btn btn-xs" onclick="recentChanges.showDialog();">Recent changes</button>
           <button class="btn btn-xs" onclick="eventLog.showDialog();">Event log</button>
         </div>
 
         <div>
-          <button class="btn btn-xs" onclick="syncNow();">Sync now (<span id="changes-to-push-count">0</span>)</button>
+          <button class="btn btn-xs" onclick="syncNow();" title="Number of outstanding changes to be pushed to server">
+            Sync now (<span id="changes-to-push-count">0</span>)
+          </button>
 
           <button class="btn btn-xs" onclick="settings.showDialog();">Settings</button>
 
@@ -39,12 +41,12 @@
             <img src="images/icons/file-plus.png" alt="Create new top level note"/>
           </a>
 
-          <a onclick="noteTree.collapseTree()" title="Collapse tree" class="icon-action">
-            <img src="images/icons/list.png" alt="Collapse tree"/>
+          <a onclick="noteTree.collapseTree()" title="Collapse note tree" class="icon-action">
+            <img src="images/icons/list.png" alt="Collapse note tree"/>
           </a>
 
           <a onclick="noteTree.scrollToCurrentNote()" title="Scroll to current note" class="icon-action">
-            <img src="images/icons/crosshair.png" alt="Collapse tree"/>
+            <img src="images/icons/crosshair.png" alt="Scroll to current note"/>
           </a>
 
           <a onclick="searchTree.toggleSearch()" title="Search in notes" class="icon-action">
