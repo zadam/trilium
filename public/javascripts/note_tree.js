@@ -422,6 +422,10 @@ const noteTree = (function() {
 
                 if (startNotePath) {
                     activateNode(startNotePath);
+
+                    // looks like this this doesn't work when triggered immediatelly after activating node
+                    // so waiting a second helps
+                    setTimeout(scrollToCurrentNote, 1000);
                 }
                 else {
                     showAppIfHidden();
@@ -536,7 +540,7 @@ const noteTree = (function() {
     $(document).bind('keydown', 'alt+c', collapseTree);
 
     function scrollToCurrentNote() {
-        const node = noteTree.getCurrentNode();
+        const node = getCurrentNode();
 
         if (node) {
             node.makeVisible({scrollIntoView: true});
