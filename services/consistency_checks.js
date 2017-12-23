@@ -16,29 +16,105 @@ async function runCheck(query, errorText, errorList) {
 }
 
 async function runSyncRowChecks(table, key, errorList) {
-    await runCheck(`SELECT ${key} FROM ${table} LEFT JOIN sync ON sync.entity_name = '${table}' AND entity_id = ${key} WHERE sync.id IS NULL`,
+    await runCheck(`
+        SELECT 
+          ${key} 
+        FROM 
+          ${table} 
+          LEFT JOIN sync ON sync.entity_name = '${table}' AND entity_id = ${key} 
+        WHERE 
+          sync.id IS NULL`,
         `Missing sync records for ${key} in table ${table}`, errorList);
 
-    await runCheck(`SELECT entity_id FROM sync LEFT JOIN ${table} ON entity_id = ${key} WHERE sync.entity_name = '${table}' AND ${key} IS NULL`,
+    await runCheck(`
+        SELECT 
+          entity_id 
+        FROM 
+          sync 
+          LEFT JOIN ${table} ON entity_id = ${key} 
+        WHERE 
+          sync.entity_name = '${table}' 
+          AND ${key} IS NULL`,
         `Missing ${table} records for existing sync rows`, errorList);
 }
 
 async function runChecks() {
     const errorList = [];
 
-    await runCheck("SELECT note_id FROM notes LEFT JOIN notes_tree USING(note_id) WHERE note_id != 'root' AND notes_tree.note_tree_id IS NULL",
+    await runCheck(`
+          SELECT 
+            note_id 
+          FROM 
+            notes 
+            LEFT JOIN notes_tree USING(note_id) 
+          WHERE 
+            note_id != 'root' 
+            AND notes_tree.note_tree_id IS NULL`,
         "Missing notes_tree records for following note IDs", errorList);
 
-    await runCheck("SELECT note_tree_id || ' > ' || notes_tree.note_id FROM notes_tree LEFT JOIN notes USING(note_id) WHERE notes.note_id IS NULL",
+    await runCheck(`
+          SELECT 
+            note_tree_id || ' > ' || notes_tree.note_id 
+          FROM 
+            notes_tree 
+            LEFT JOIN notes USING(note_id) 
+          WHERE 
+            notes.note_id IS NULL`,
         "Missing notes records for following note tree ID > note ID", errorList);
 
-    await runCheck("SELECT note_tree_id FROM notes_tree JOIN notes USING(note_id) WHERE notes.is_deleted = 1 AND notes_tree.is_deleted = 0",
+    await runCheck(`
+          SELECT 
+            note_tree_id 
+          FROM 
+            notes_tree 
+            JOIN notes USING(note_id) 
+          WHERE 
+            notes.is_deleted = 1 
+            AND notes_tree.is_deleted = 0`,
         "Note tree is not deleted even though main note is deleted for following note tree IDs", errorList);
 
-    await runCheck("SELECT child.parent_note_id || ' > ' || child.note_id FROM notes_tree AS child LEFT JOIN notes_tree AS parent ON parent.note_id = child.parent_note_id WHERE parent.note_id IS NULL AND child.parent_note_id != 'root'",
+    await runCheck(`
+          SELECT 
+            child.note_id 
+          FROM 
+            notes_tree 
+            JOIN notes AS child ON child.note_id = notes_tree.note_id 
+            JOIN notes AS parent ON notes_tree.parent_note_id = parent.note_id 
+          WHERE 
+            parent.is_deleted = 1 
+            AND child.is_deleted = 0`,
+        "Parent note is deleted but child note is not for these child note IDs", errorList);
+
+    // we do extra JOIN to eliminate orphan notes without note tree (which are reported separately)
+    await runCheck(`
+          SELECT
+            DISTINCT note_id
+          FROM
+            notes
+            JOIN notes_tree USING(note_id)
+          WHERE
+            (SELECT COUNT(*) FROM notes_tree WHERE notes.note_id = notes_tree.note_id AND notes_tree.is_deleted = 0) = 0
+            AND notes.is_deleted = 0
+    `, );
+
+    await runCheck(`
+          SELECT 
+            child.parent_note_id || ' > ' || child.note_id 
+          FROM notes_tree 
+            AS child 
+            LEFT JOIN notes_tree AS parent ON parent.note_id = child.parent_note_id 
+          WHERE 
+            parent.note_id IS NULL 
+            AND child.parent_note_id != 'root'`,
         "Not existing parent in the following parent > child relations", errorList);
 
-    await runCheck("SELECT note_history_id || ' > ' || notes_history.note_id FROM notes_history LEFT JOIN notes USING(note_id) WHERE notes.note_id IS NULL",
+    await runCheck(`
+          SELECT 
+            note_history_id || ' > ' || notes_history.note_id 
+          FROM 
+            notes_history LEFT JOIN notes USING(note_id) 
+          WHERE 
+            notes.note_id IS NULL`,
         "Missing notes records for following note history ID > note ID", errorList);
 
     await runSyncRowChecks("notes", "note_id", errorList);
