@@ -8,7 +8,9 @@ async function runCheck(query, errorText, errorList) {
     const result = await sql.getFirstColumn(query);
 
     if (result.length > 0) {
-        const err = errorText + ": " + result;
+        const resultText = result.map(val => "'" + val + "'").join(', ');
+
+        const err = errorText + ": " + resultText;
         errorList.push(err);
 
         log.error(err);

@@ -6,6 +6,7 @@ const sql = require('../../services/sql');
 const utils = require('../../services/utils');
 const sync_table = require('../../services/sync_table');
 const auth = require('../../services/auth');
+const log = require('../../services/log');
 
 router.post('/cleanup-soft-deleted-items', auth.checkApiAuth, async (req, res, next) => {
     await sql.doInTransaction(async () => {
@@ -13,8 +14,6 @@ router.post('/cleanup-soft-deleted-items', auth.checkApiAuth, async (req, res, n
         const noteIdsSql = noteIdsToDelete
             .map(noteId => "'" + utils.sanitizeSql(noteId) + "'")
             .join(', ');
-
-        console.log("Note IDS for deletion", noteIdsSql);
 
         await sql.execute(`DELETE FROM event_log WHERE note_id IN (${noteIdsSql})`);
 
@@ -30,6 +29,8 @@ router.post('/cleanup-soft-deleted-items', auth.checkApiAuth, async (req, res, n
         await sync_table.cleanupSyncRowsForMissingEntities("notes_tree", "note_tree_id");
         await sync_table.cleanupSyncRowsForMissingEntities("notes_history", "note_history_id");
         await sync_table.cleanupSyncRowsForMissingEntities("recent_notes", "note_tree_id");
+
+        log.info("Following notes has been completely cleaned from database: " + noteIdsSql);
     });
 
     res.send({});
@@ -37,6 +38,8 @@ router.post('/cleanup-soft-deleted-items', auth.checkApiAuth, async (req, res, n
 
 router.post('/vacuum-database', auth.checkApiAuth, async (req, res, next) => {
     await sql.execute("VACUUM");
+
+    log.info("Database has been vacuumed.");
 
     res.send({});
 });

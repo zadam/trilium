@@ -9,6 +9,7 @@ const sync_table = require('../../services/sync_table');
 const sql = require('../../services/sql');
 const options = require('../../services/options');
 const content_hash = require('../../services/content_hash');
+const log = require('../../services/log');
 
 router.get('/check', auth.checkApiAuth, async (req, res, next) => {
     res.send({
@@ -29,6 +30,8 @@ router.post('/fill-sync-rows', auth.checkApiAuth, async (req, res, next) => {
         await sync_table.fillSyncRows("recent_notes", "note_tree_id");
     });
 
+    log.info("Sync rows have been filled.");
+
     res.send({});
 });
 
@@ -37,6 +40,8 @@ router.post('/force-full-sync', auth.checkApiAuth, async (req, res, next) => {
         await options.setOption('last_synced_pull', 0);
         await options.setOption('last_synced_push', 0);
     });
+
+    log.info("Forcing full sync.");
 
     // not awaiting for the job to finish (will probably take a long time)
     sync.sync();
