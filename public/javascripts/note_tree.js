@@ -15,6 +15,8 @@ const noteTree = (function() {
     let noteIdToTitle = {};
 
     function getNoteTreeId(parentNoteId, childNoteId) {
+        assertArguments(parentNoteId, childNoteId);
+
         const key = parentNoteId + "-" + childNoteId;
 
         // this can return undefined and client code should deal with it somehow
@@ -23,6 +25,8 @@ const noteTree = (function() {
     }
 
     function getNoteTitle(noteId, parentNoteId = null) {
+        assertArguments(noteId);
+
         let title = noteIdToTitle[noteId];
 
         if (!title) {
@@ -73,17 +77,23 @@ const noteTree = (function() {
     }
 
     function getNodesByNoteTreeId(noteTreeId) {
+        assertArguments(noteTreeId);
+
         const noteTree = notesTreeMap[noteTreeId];
 
         return getNodesByNoteId(noteTree.note_id).filter(node => node.data.note_tree_id === noteTreeId);
     }
 
     function getNodesByNoteId(noteId) {
+        assertArguments(noteId);
+
         const list = getTree().getNodesByRef(noteId);
         return list ? list : []; // if no nodes with this refKey are found, fancy tree returns null
     }
 
     function setPrefix(noteTreeId, prefix) {
+        assertArguments(noteTreeId);
+
         notesTreeMap[noteTreeId].prefix = prefix;
 
         getNodesByNoteTreeId(noteTreeId).map(node => {
@@ -94,6 +104,8 @@ const noteTree = (function() {
     }
 
     function removeParentChildRelation(parentNoteId, childNoteId) {
+        assertArguments(parentNoteId, childNoteId);
+
         const key = parentNoteId + "-" + childNoteId;
 
         delete parentChildToNoteTreeId[key];
@@ -103,6 +115,8 @@ const noteTree = (function() {
     }
 
     function setParentChildRelation(noteTreeId, parentNoteId, childNoteId) {
+        assertArguments(noteTreeId, parentNoteId, childNoteId);
+
         const key = parentNoteId + "-" + childNoteId;
 
         parentChildToNoteTreeId[key] = noteTreeId;
@@ -121,6 +135,8 @@ const noteTree = (function() {
     }
 
     function prepareNoteTree(notes) {
+        assertArguments(notes);
+
         parentToChildren = {};
         childToParents = {};
         notesTreeMap = {};
@@ -139,6 +155,8 @@ const noteTree = (function() {
     }
 
     function getExtraClasses(note) {
+        assertArguments(note);
+
         let extraClasses = '';
 
         if (note.is_protected) {
@@ -157,6 +175,8 @@ const noteTree = (function() {
     }
 
     function prepareNoteTreeInner(parentNoteId) {
+        assertArguments(parentNoteId);
+
         const childNoteIds = parentToChildren[parentNoteId];
         if (!childNoteIds) {
             messaging.logError("No children for " + parentNoteId + ". This shouldn't happen.");
@@ -199,6 +219,8 @@ const noteTree = (function() {
     }
 
     async function activateNode(notePath) {
+        assertArguments(notePath);
+
         const runPath = getRunPath(notePath);
         const noteId = treeUtils.getNoteIdFromNotePath(notePath);
 
@@ -225,6 +247,8 @@ const noteTree = (function() {
      * path change) or other corruption, in that case this will try to get some other valid path to the correct note.
      */
     function getRunPath(notePath) {
+        assertArguments(notePath);
+
         const path = notePath.split("/").reverse();
         path.push('root');
 
@@ -251,6 +275,8 @@ const noteTree = (function() {
                     console.log(now(), "Did not find parent " + parentNoteId + " for child " + childNoteId);
 
                     if (parents.length > 0) {
+                        console.log(now(), "Available parents:", parents);
+
                         const pathToRoot = getSomeNotePath(parents[0]).split("/").reverse();
 
                         for (const noteId of pathToRoot) {
@@ -279,6 +305,8 @@ const noteTree = (function() {
     }
 
     function showParentList(noteId, node) {
+        assertArguments(noteId, node);
+
         const parents = childToParents[noteId];
 
         if (!parents) {
@@ -313,6 +341,8 @@ const noteTree = (function() {
     }
 
     function getNotePathTitle(notePath) {
+        assertArguments(notePath);
+
         const titlePath = [];
 
         let parentNoteId = 'root';
@@ -327,6 +357,8 @@ const noteTree = (function() {
     }
 
     function getSomeNotePath(noteId) {
+        assertArguments(noteId);
+
         const path = [];
 
         let cur = noteId;
@@ -345,12 +377,16 @@ const noteTree = (function() {
     }
 
     async function setExpandedToServer(noteTreeId, isExpanded) {
+        assertArguments(noteTreeId);
+
         const expandedNum = isExpanded ? 1 : 0;
 
         await server.put('notes/' + noteTreeId + '/expanded/' + expandedNum);
     }
 
     function setCurrentNotePathToHash(node) {
+        assertArguments(node);
+
         const currentNotePath = treeUtils.getNotePath(node);
         const currentNoteTreeId = node.data.note_tree_id;
 
@@ -360,6 +396,8 @@ const noteTree = (function() {
     }
 
     function initFancyTree(noteTree) {
+        assertArguments(noteTree);
+
         const keybindings = {
             "del": node => {
                 treeChanges.deleteNode(node);
@@ -601,6 +639,8 @@ const noteTree = (function() {
     }
 
     function setNoteTitle(noteId, title) {
+        assertArguments(noteId);
+
         noteIdToTitle[noteId] = title;
 
         getNodesByNoteId(noteId).map(clone => treeUtils.setNodeTitleWithPrefix(clone));
@@ -613,6 +653,8 @@ const noteTree = (function() {
     }
 
     async function createNote(node, parentNoteId, target, isProtected) {
+        assertArguments(node, parentNoteId, target);
+
         // if isProtected isn't available (user didn't enter password yet), then note is created as unencrypted
         // but this is quite weird since user doesn't see WHERE the note is being created so it shouldn't occur often
         if (!isProtected || !protected_session.isProtectedSessionAvailable()) {

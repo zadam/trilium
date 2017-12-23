@@ -13,7 +13,7 @@ const content_hash = require('../../services/content_hash');
 router.get('/check', auth.checkApiAuth, async (req, res, next) => {
     res.send({
         'hashes': await content_hash.getHashes(),
-        'max_sync_id': await sql.getSingleValue('SELECT MAX(id) FROM sync')
+        'max_sync_id': await sql.getFirstValue('SELECT MAX(id) FROM sync')
     });
 });
 
@@ -47,27 +47,27 @@ router.post('/force-full-sync', auth.checkApiAuth, async (req, res, next) => {
 router.get('/changed', auth.checkApiAuth, async (req, res, next) => {
     const lastSyncId = parseInt(req.query.lastSyncId);
 
-    res.send(await sql.getResults("SELECT * FROM sync WHERE id > ?", [lastSyncId]));
+    res.send(await sql.getAll("SELECT * FROM sync WHERE id > ?", [lastSyncId]));
 });
 
 router.get('/notes/:noteId', auth.checkApiAuth, async (req, res, next) => {
     const noteId = req.params.noteId;
 
     res.send({
-        entity: await sql.getSingleResult("SELECT * FROM notes WHERE note_id = ?", [noteId])
+        entity: await sql.getFirst("SELECT * FROM notes WHERE note_id = ?", [noteId])
     });
 });
 
 router.get('/notes_tree/:noteTreeId', auth.checkApiAuth, async (req, res, next) => {
     const noteTreeId = req.params.noteTreeId;
 
-    res.send(await sql.getSingleResult("SELECT * FROM notes_tree WHERE note_tree_id = ?", [noteTreeId]));
+    res.send(await sql.getFirst("SELECT * FROM notes_tree WHERE note_tree_id = ?", [noteTreeId]));
 });
 
 router.get('/notes_history/:noteHistoryId', auth.checkApiAuth, async (req, res, next) => {
     const noteHistoryId = req.params.noteHistoryId;
 
-    res.send(await sql.getSingleResult("SELECT * FROM notes_history WHERE note_history_id = ?", [noteHistoryId]));
+    res.send(await sql.getFirst("SELECT * FROM notes_history WHERE note_history_id = ?", [noteHistoryId]));
 });
 
 router.get('/options/:optName', auth.checkApiAuth, async (req, res, next) => {
@@ -77,7 +77,7 @@ router.get('/options/:optName', auth.checkApiAuth, async (req, res, next) => {
         res.send("This option can't be synced.");
     }
     else {
-        res.send(await sql.getSingleResult("SELECT * FROM options WHERE opt_name = ?", [optName]));
+        res.send(await sql.getFirst("SELECT * FROM options WHERE opt_name = ?", [optName]));
     }
 });
 
@@ -93,7 +93,7 @@ router.get('/notes_reordering/:noteTreeParentId', auth.checkApiAuth, async (req,
 router.get('/recent_notes/:noteTreeId', auth.checkApiAuth, async (req, res, next) => {
     const noteTreeId = req.params.noteTreeId;
 
-    res.send(await sql.getSingleResult("SELECT * FROM recent_notes WHERE note_tree_id = ?", [noteTreeId]));
+    res.send(await sql.getFirst("SELECT * FROM recent_notes WHERE note_tree_id = ?", [noteTreeId]));
 });
 
 router.put('/notes', auth.checkApiAuth, async (req, res, next) => {

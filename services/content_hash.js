@@ -16,7 +16,7 @@ async function getHashes() {
     const optionsQuestionMarks = Array(options.SYNCED_OPTIONS.length).fill('?').join(',');
 
     return {
-        notes: getHash(await sql.getResults(`SELECT
+        notes: getHash(await sql.getAll(`SELECT
                                                   note_id,
                                                   note_title,
                                                   note_text,
@@ -26,7 +26,7 @@ async function getHashes() {
                                                 FROM notes
                                                 ORDER BY note_id`)),
 
-        notes_tree: getHash(await sql.getResults(`SELECT
+        notes_tree: getHash(await sql.getAll(`SELECT
                                                        note_tree_id,
                                                        note_id,
                                                        parent_note_id,
@@ -37,7 +37,7 @@ async function getHashes() {
                                                      FROM notes_tree
                                                      ORDER BY note_tree_id`)),
 
-        notes_history: getHash(await sql.getResults(`SELECT
+        notes_history: getHash(await sql.getAll(`SELECT
                                                           note_history_id,
                                                           note_id,
                                                           note_title,
@@ -47,7 +47,7 @@ async function getHashes() {
                                                         FROM notes_history
                                                         ORDER BY note_history_id`)),
 
-        recent_notes: getHash(await sql.getResults(`SELECT
+        recent_notes: getHash(await sql.getAll(`SELECT
                                                          note_tree_id,
                                                          note_path,
                                                          date_accessed,
@@ -55,7 +55,7 @@ async function getHashes() {
                                                        FROM recent_notes
                                                        ORDER BY note_path`)),
 
-        options: getHash(await sql.getResults(`SELECT 
+        options: getHash(await sql.getAll(`SELECT 
                                                     opt_name,
                                                     opt_value 
                                                   FROM options 

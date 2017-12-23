@@ -176,7 +176,7 @@ async function pushSync(syncContext) {
     let lastSyncedPush = await getLastSyncedPush();
 
     while (true) {
-        const sync = await sql.getSingleResultOrNull('SELECT * FROM sync WHERE id > ? LIMIT 1', [lastSyncedPush]);
+        const sync = await sql.getFirstOrNull('SELECT * FROM sync WHERE id > ? LIMIT 1', [lastSyncedPush]);
 
         if (sync === null) {
             // nothing to sync
@@ -203,13 +203,13 @@ async function pushEntity(sync, syncContext) {
     let entity;
 
     if (sync.entity_name === 'notes') {
-        entity = await sql.getSingleResult('SELECT * FROM notes WHERE note_id = ?', [sync.entity_id]);
+        entity = await sql.getFirst('SELECT * FROM notes WHERE note_id = ?', [sync.entity_id]);
     }
     else if (sync.entity_name === 'notes_tree') {
-        entity = await sql.getSingleResult('SELECT * FROM notes_tree WHERE note_tree_id = ?', [sync.entity_id]);
+        entity = await sql.getFirst('SELECT * FROM notes_tree WHERE note_tree_id = ?', [sync.entity_id]);
     }
     else if (sync.entity_name === 'notes_history') {
-        entity = await sql.getSingleResult('SELECT * FROM notes_history WHERE note_history_id = ?', [sync.entity_id]);
+        entity = await sql.getFirst('SELECT * FROM notes_history WHERE note_history_id = ?', [sync.entity_id]);
     }
     else if (sync.entity_name === 'notes_reordering') {
         entity = {
@@ -218,10 +218,10 @@ async function pushEntity(sync, syncContext) {
         };
     }
     else if (sync.entity_name === 'options') {
-        entity = await sql.getSingleResult('SELECT * FROM options WHERE opt_name = ?', [sync.entity_id]);
+        entity = await sql.getFirst('SELECT * FROM options WHERE opt_name = ?', [sync.entity_id]);
     }
     else if (sync.entity_name === 'recent_notes') {
-        entity = await sql.getSingleResult('SELECT * FROM recent_notes WHERE note_tree_id = ?', [sync.entity_id]);
+        entity = await sql.getFirst('SELECT * FROM recent_notes WHERE note_tree_id = ?', [sync.entity_id]);
     }
     else {
         throw new Error(`Unrecognized entity type ${sync.entity_name} in sync #${sync.id}`);
@@ -252,7 +252,7 @@ async function checkContentHash(syncContext) {
     }
 
     const lastSyncedPush = await getLastSyncedPush();
-    const notPushedSyncs = await sql.getSingleValue("SELECT COUNT(*) FROM sync WHERE id > ?", [lastSyncedPush]);
+    const notPushedSyncs = await sql.getFirstValue("SELECT COUNT(*) FROM sync WHERE id > ?", [lastSyncedPush]);
 
     if (notPushedSyncs > 0) {
         log.info("There's " + notPushedSyncs + " outstanding pushes, skipping content check.");

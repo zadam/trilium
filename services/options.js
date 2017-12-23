@@ -7,7 +7,7 @@ const SYNCED_OPTIONS = [ 'username', 'password_verification_hash', 'encrypted_da
     'history_snapshot_time_interval' ];
 
 async function getOption(optName) {
-    const row = await sql.getSingleResultOrNull("SELECT opt_value FROM options WHERE opt_name = ?", [optName]);
+    const row = await sql.getFirstOrNull("SELECT opt_value FROM options WHERE opt_name = ?", [optName]);
 
     if (!row) {
         throw new Error("Option " + optName + " doesn't exist");

@@ -72,3 +72,15 @@ function now() {
 function isElectron() {
     return window && window.process && window.process.type;
 }
+
+function assertArguments() {
+    for (const i in arguments) {
+        assert(arguments[i], `argument ${i} should not be falsy. Argument list: ${arguments}`);
+    }
+}
+
+function assert(expr, message) {
+    if (!expr) {
+        throwError(message);
+    }
+}

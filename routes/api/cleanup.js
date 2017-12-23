@@ -9,7 +9,7 @@ const auth = require('../../services/auth');
 
 router.post('/cleanup-soft-deleted-items', auth.checkApiAuth, async (req, res, next) => {
     await sql.doInTransaction(async () => {
-        const noteIdsToDelete = await sql.getFlattenedResults("SELECT note_id FROM notes WHERE is_deleted = 1");
+        const noteIdsToDelete = await sql.getFirstColumn("SELECT note_id FROM notes WHERE is_deleted = 1");
         const noteIdsSql = noteIdsToDelete
             .map(noteId => "'" + utils.sanitizeSql(noteId) + "'")
             .join(', ');

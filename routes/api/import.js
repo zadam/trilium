@@ -21,7 +21,7 @@ router.get('/:directory/to/:parentNoteId', auth.checkApiAuth, async (req, res, n
 });
 
 async function importNotes(dir, parentNoteId) {
-    const parent = await sql.getSingleResult("SELECT * FROM notes WHERE note_id = ?", [parentNoteId]);
+    const parent = await sql.getFirst("SELECT * FROM notes WHERE note_id = ?", [parentNoteId]);
 
     if (!parent) {
         return;
@@ -51,7 +51,7 @@ async function importNotes(dir, parentNoteId) {
             noteTitle = match[2];
         }
         else {
-            let maxPos = await sql.getSingleValue("SELECT MAX(note_position) FROM notes_tree WHERE parent_note_id = ? AND is_deleted = 0", [parentNoteId]);
+            let maxPos = await sql.getFirstValue("SELECT MAX(note_position) FROM notes_tree WHERE parent_note_id = ? AND is_deleted = 0", [parentNoteId]);
             if (maxPos) {
                 notePos = maxPos + 1;
             }

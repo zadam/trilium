@@ -24,7 +24,7 @@ const dbReady = new Promise((resolve, reject) => {
             resolve(db);
         };
 
-        const tableResults = await getResults("SELECT name FROM sqlite_master WHERE type='table' AND name='notes'");
+        const tableResults = await getAll("SELECT name FROM sqlite_master WHERE type='table' AND name='notes'");
         if (tableResults.length !== 1) {
             log.info("Connected to db, but schema doesn't exist. Initializing schema ...");
 
@@ -62,7 +62,7 @@ const dbReady = new Promise((resolve, reject) => {
             // the database
         }
         else {
-            const username = await getSingleValue("SELECT opt_value FROM options WHERE opt_name = 'username'");
+            const username = await getFirstValue("SELECT opt_value FROM options WHERE opt_name = 'username'");
 
             if (!username) {
                 log.info("Login/password not initialized. DB not ready.");
@@ -120,18 +120,18 @@ async function rollback() {
     return await wrap(async db => db.run("ROLLBACK"));
 }
 
-async function getSingleResult(query, params = []) {
+async function getFirst(query, params = []) {
     return await wrap(async db => db.get(query, ...params));
 }
 
-async function getSingleResultOrNull(query, params = []) {
+async function getFirstOrNull(query, params = []) {
     const all = await wrap(async db => db.all(query, ...params));
 
     return all.length > 0 ? all[0] : null;
 }
 
-async function getSingleValue(query, params = []) {
-    const row = await getSingleResultOrNull(query, params);
+async function getFirstValue(query, params = []) {
+    const row = await getFirstOrNull(query, params);
 
     if (!row) {
         return null;
@@ -140,13 +140,13 @@ async function getSingleValue(query, params = []) {
     return row[Object.keys(row)[0]];
 }
 
-async function getResults(query, params = []) {
+async function getAll(query, params = []) {
     return await wrap(async db => db.all(query, ...params));
 }
 
 async function getMap(query, params = []) {
     const map = {};
-    const results = await getResults(query, params);
+    const results = await getAll(query, params);
 
     for (const row of results) {
         const keys = Object.keys(row);
@@ -157,9 +157,9 @@ async function getMap(query, params = []) {
     return map;
 }
 
-async function getFlattenedResults(query, params = []) {
+async function getFirstColumn(query, params = []) {
     const list = [];
-    const result = await getResults(query, params);
+    const result = await getAll(query, params);
 
     if (result.length === 0) {
         return list;
@@ -237,7 +237,7 @@ async function doInTransaction(func) {
 }
 
 async function isDbUpToDate() {
-    const dbVersion = parseInt(await getSingleValue("SELECT opt_value FROM options WHERE opt_name = 'db_version'"));
+    const dbVersion = parseInt(await getFirstValue("SELECT opt_value FROM options WHERE opt_name = 'db_version'"));
 
     const upToDate = dbVersion >= app_info.db_version;
 
@@ -252,12 +252,12 @@ module.exports = {
     dbReady,
     insert,
     replace,
-    getSingleValue,
-    getSingleResult,
-    getSingleResultOrNull,
-    getResults,
+    getFirstValue,
+    getFirst,
+    getFirstOrNull,
+    getAll,
     getMap,
-    getFlattenedResults,
+    getFirstColumn,
     execute,
     executeScript,
     doInTransaction,

@@ -5,7 +5,7 @@ const log = require('./log');
 const messaging = require('./messaging');
 
 async function runCheck(query, errorText, errorList) {
-    const result = await sql.getFlattenedResults(query);
+    const result = await sql.getFirstColumn(query);
 
     if (result.length > 0) {
         const err = errorText + ": " + result;

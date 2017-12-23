@@ -6,7 +6,7 @@ const sql = require('../../services/sql');
 const auth = require('../../services/auth');
 
 router.get('/', auth.checkApiAuth, async (req, res, next) => {
-    const recentChanges = await sql.getResults(
+    const recentChanges = await sql.getAll(
         `SELECT 
             notes.is_deleted AS current_is_deleted,
             notes.note_title AS current_note_title,

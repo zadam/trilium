@@ -62,11 +62,11 @@ async function sendMessageToAllClients(message) {
 }
 
 async function sendPing(client, lastSentSyncId) {
-    const syncData = await sql.getResults("SELECT * FROM sync WHERE id > ?", [lastSentSyncId]);
+    const syncData = await sql.getAll("SELECT * FROM sync WHERE id > ?", [lastSentSyncId]);
 
     const lastSyncedPush = await options.getOption('last_synced_push');
 
-    const changesToPushCount = await sql.getSingleValue("SELECT COUNT(*) FROM sync WHERE id > ?", [lastSyncedPush]);
+    const changesToPushCount = await sql.getFirstValue("SELECT COUNT(*) FROM sync WHERE id > ?", [lastSyncedPush]);
 
     await sendMessage(client, {
         type: 'sync',

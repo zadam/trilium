@@ -12,7 +12,7 @@ const data_encryption = require('../../services/data_encryption');
 router.get('/:noteId', auth.checkApiAuth, async (req, res, next) => {
     const noteId = req.params.noteId;
 
-    const detail = await sql.getSingleResult("SELECT * FROM notes WHERE note_id = ?", [noteId]);
+    const detail = await sql.getFirst("SELECT * FROM notes WHERE note_id = ?", [noteId]);
 
     if (!detail) {
         log.info("Note " + noteId + " has not been found.");
@@ -67,7 +67,7 @@ router.delete('/:noteTreeId', auth.checkApiAuth, async (req, res, next) => {
 router.get('/', auth.checkApiAuth, async (req, res, next) => {
     const search = '%' + req.query.search + '%';
 
-    const result = await sql.getResults("SELECT note_id FROM notes WHERE note_title liKE ? OR note_text LIKE ?", [search, search]);
+    const result = await sql.getAll("SELECT note_id FROM notes WHERE note_title liKE ? OR note_text LIKE ?", [search, search]);
 
     const noteIdList = [];
 

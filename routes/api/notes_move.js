@@ -12,7 +12,7 @@ router.put('/:noteTreeId/move-to/:parentNoteId', auth.checkApiAuth, async (req, 
     const parentNoteId = req.params.parentNoteId;
     const sourceId = req.headers.source_id;
 
-    const maxNotePos = await sql.getSingleValue('SELECT MAX(note_position) FROM notes_tree WHERE parent_note_id = ? AND is_deleted = 0', [parentNoteId]);
+    const maxNotePos = await sql.getFirstValue('SELECT MAX(note_position) FROM notes_tree WHERE parent_note_id = ? AND is_deleted = 0', [parentNoteId]);
     const newNotePos = maxNotePos === null ? 0 : maxNotePos + 1;
 
     const now = utils.nowDate();
@@ -32,7 +32,7 @@ router.put('/:noteTreeId/move-before/:beforeNoteTreeId', auth.checkApiAuth, asyn
     const beforeNoteTreeId = req.params.beforeNoteTreeId;
     const sourceId = req.headers.source_id;
 
-    const beforeNote = await sql.getSingleResult("SELECT * FROM notes_tree WHERE note_tree_id = ?", [beforeNoteTreeId]);
+    const beforeNote = await sql.getFirst("SELECT * FROM notes_tree WHERE note_tree_id = ?", [beforeNoteTreeId]);
 
     if (beforeNote) {
         await sql.doInTransaction(async () => {
@@ -63,7 +63,7 @@ router.put('/:noteTreeId/move-after/:afterNoteTreeId', auth.checkApiAuth, async 
     const afterNoteTreeId = req.params.afterNoteTreeId;
     const sourceId = req.headers.source_id;
 
-    const afterNote = await sql.getSingleResult("SELECT * FROM notes_tree WHERE note_tree_id = ?", [afterNoteTreeId]);
+    const afterNote = await sql.getFirst("SELECT * FROM notes_tree WHERE note_tree_id = ?", [afterNoteTreeId]);
 
     if (afterNote) {
         await sql.doInTransaction(async () => {
@@ -93,7 +93,7 @@ router.put('/:childNoteId/clone-to/:parentNoteId', auth.checkApiAuth, async (req
     const prefix = req.body.prefix;
     const sourceId = req.headers.source_id;
 
-    const existing = await sql.getSingleValue('SELECT * FROM notes_tree WHERE note_id = ? AND parent_note_id = ?', [childNoteId, parentNoteId]);
+    const existing = await sql.getFirstValue('SELECT * FROM notes_tree WHERE note_id = ? AND parent_note_id = ?', [childNoteId, parentNoteId]);
 
     if (existing && !existing.is_deleted) {
         return res.send({
@@ -109,7 +109,7 @@ router.put('/:childNoteId/clone-to/:parentNoteId', auth.checkApiAuth, async (req
         });
     }
 
-    const maxNotePos = await sql.getSingleValue('SELECT MAX(note_position) FROM notes_tree WHERE parent_note_id = ? AND is_deleted = 0', [parentNoteId]);
+    const maxNotePos = await sql.getFirstValue('SELECT MAX(note_position) FROM notes_tree WHERE parent_note_id = ? AND is_deleted = 0', [parentNoteId]);
     const newNotePos = maxNotePos === null ? 0 : maxNotePos + 1;
 
     await sql.doInTransaction(async () => {
@@ -141,7 +141,7 @@ router.put('/:noteId/clone-after/:afterNoteTreeId', auth.checkApiAuth, async (re
     const afterNoteTreeId = req.params.afterNoteTreeId;
     const sourceId = req.headers.source_id;
 
-    const afterNote = await sql.getSingleResult("SELECT * FROM notes_tree WHERE note_tree_id = ?", [afterNoteTreeId]);
+    const afterNote = await sql.getFirst("SELECT * FROM notes_tree WHERE note_tree_id = ?", [afterNoteTreeId]);
 
     if (!afterNote) {
         return res.status(500).send("After note " + afterNoteTreeId + " doesn't exist.");
@@ -154,7 +154,7 @@ router.put('/:noteId/clone-after/:afterNoteTreeId', auth.checkApiAuth, async (re
         });
     }
 
-    const existing = await sql.getSingleValue('SELECT * FROM notes_tree WHERE note_id = ? AND parent_note_id = ?', [noteId, afterNote.parent_note_id]);
+    const existing = await sql.getFirstValue('SELECT * FROM notes_tree WHERE note_id = ? AND parent_note_id = ?', [noteId, afterNote.parent_note_id]);
 
     if (existing && !existing.is_deleted) {
         return res.send({
@@ -200,7 +200,7 @@ async function checkCycle(parentNoteId, childNoteId) {
         return false;
     }
 
-    const parentNoteIds = await sql.getFlattenedResults("SELECT DISTINCT parent_note_id FROM notes_tree WHERE note_id = ?", [parentNoteId]);
+    const parentNoteIds = await sql.getFirstColumn("SELECT DISTINCT parent_note_id FROM notes_tree WHERE note_id = ?", [parentNoteId]);
 
     for (const pid of parentNoteIds) {
         if (!await checkCycle(pid, childNoteId)) {

@@ -34,7 +34,7 @@ router.put('/:noteTreeId/:notePath', auth.checkApiAuth, async (req, res, next) =
 });
 
 async function getRecentNotes() {
-    return await sql.getResults(`
+    return await sql.getAll(`
       SELECT 
         recent_notes.* 
       FROM 

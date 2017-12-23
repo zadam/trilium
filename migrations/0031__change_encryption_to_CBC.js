@@ -17,7 +17,7 @@ module.exports = async () => {
     const password = await question("Enter password: ");
     const dataKey = await password_encryption.getDecryptedDataKey(password);
 
-    const protectedNotes = await sql.getResults("SELECT * FROM notes WHERE is_protected = 1");
+    const protectedNotes = await sql.getAll("SELECT * FROM notes WHERE is_protected = 1");
 
     for (const note of protectedNotes) {
         const decryptedTitle = data_encryption.decrypt(dataKey, note.note_title);
@@ -30,7 +30,7 @@ module.exports = async () => {
         await sql.execute("UPDATE notes SET note_title = ?, note_text = ? WHERE note_id = ?", [note.note_title, note.note_text, note.note_id]);
     }
 
-    const protectedNotesHistory = await sql.getResults("SELECT * FROM notes_history WHERE is_protected = 1");
+    const protectedNotesHistory = await sql.getAll("SELECT * FROM notes_history WHERE is_protected = 1");
 
     for (const noteHistory of protectedNotesHistory) {
         const decryptedTitle = data_encryption.decrypt(dataKey, noteHistory.note_title);

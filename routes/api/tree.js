@@ -12,7 +12,7 @@ const notes = require('../../services/notes');
 const sync_table = require('../../services/sync_table');
 
 router.get('/', auth.checkApiAuth, async (req, res, next) => {
-    const notes = await sql.getResults("SELECT "
+    const notes = await sql.getAll("SELECT "
         + "notes_tree.*, "
         + "notes.note_title, "
         + "notes.is_protected "

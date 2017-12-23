@@ -11,7 +11,7 @@ router.post('/execute', auth.checkApiAuth, async (req, res, next) => {
     try {
         res.send({
             success: true,
-            rows: await sql.getResults(query)
+            rows: await sql.getAll(query)
         });
     }
     catch (e) {

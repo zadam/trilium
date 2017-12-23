@@ -54,10 +54,10 @@ async function cleanupSyncRowsForMissingEntities(entityName, entityKey) {
 async function fillSyncRows(entityName, entityKey) {
     await cleanupSyncRowsForMissingEntities(entityName, entityKey);
 
-    const entityIds = await sql.getFlattenedResults(`SELECT ${entityKey} FROM ${entityName}`);
+    const entityIds = await sql.getFirstColumn(`SELECT ${entityKey} FROM ${entityName}`);
 
     for (const entityId of entityIds) {
-        const existingRows = await sql.getSingleValue("SELECT COUNT(id) FROM sync WHERE entity_name = ? AND entity_id = ?", [entityName, entityId]);
+        const existingRows = await sql.getFirstValue("SELECT COUNT(id) FROM sync WHERE entity_name = ? AND entity_id = ?", [entityName, entityId]);
 
         // we don't want to replace existing entities (which would effectively cause full resync)
         if (existingRows === 0) {

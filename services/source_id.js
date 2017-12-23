@@ -20,7 +20,7 @@ async function generateSourceId() {
 }
 
 async function refreshSourceIds() {
-    allSourceIds = await sql.getFlattenedResults("SELECT source_id FROM source_ids ORDER BY date_created DESC");
+    allSourceIds = await sql.getFirstColumn("SELECT source_id FROM source_ids ORDER BY date_created DESC");
 }
 
 let allSourceIds = [];
