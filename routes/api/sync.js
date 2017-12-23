@@ -24,10 +24,7 @@ router.post('/now', auth.checkApiAuth, async (req, res, next) => {
 
 router.post('/fill-sync-rows', auth.checkApiAuth, async (req, res, next) => {
     await sql.doInTransaction(async () => {
-        await sync_table.fillSyncRows("notes", "note_id");
-        await sync_table.fillSyncRows("notes_tree", "note_tree_id");
-        await sync_table.fillSyncRows("notes_history", "note_history_id");
-        await sync_table.fillSyncRows("recent_notes", "note_tree_id");
+        await sync_table.fillAllSyncRows();
     });
 
     log.info("Sync rows have been filled.");

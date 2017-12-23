@@ -33,7 +33,7 @@ async function addEntitySync(entityName, entityId, sourceId) {
         entity_name: entityName,
         entity_id: entityId,
         sync_date: utils.nowDate(),
-        source_id: sourceId || await source_id.getCurrentSourceId()
+        source_id: sourceId || source_id.getCurrentSourceId()
     });
 
     if (!sync_setup.isSyncSetup) {
@@ -73,6 +73,13 @@ async function fillSyncRows(entityName, entityKey) {
     }
 }
 
+async function fillAllSyncRows() {
+    await fillSyncRows("notes", "note_id");
+    await fillSyncRows("notes_tree", "note_tree_id");
+    await fillSyncRows("notes_history", "note_history_id");
+    await fillSyncRows("recent_notes", "note_tree_id");
+}
+
 module.exports = {
     addNoteSync,
     addNoteTreeSync,
@@ -81,5 +88,5 @@ module.exports = {
     addOptionsSync,
     addRecentNoteSync,
     cleanupSyncRowsForMissingEntities,
-    fillSyncRows
+    fillAllSyncRows
 };

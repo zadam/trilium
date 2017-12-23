@@ -235,7 +235,7 @@ async function pushEntity(sync, syncContext) {
     log.info(`Pushing changes in sync #${sync.id} ${sync.entity_name} ${sync.entity_id}`);
 
     const payload = {
-        sourceId: await source_id.getCurrentSourceId(),
+        sourceId: source_id.getCurrentSourceId(),
         entity: entity
     };
 

@@ -28,35 +28,22 @@ const dbReady = new Promise((resolve, reject) => {
         if (tableResults.length !== 1) {
             log.info("Connected to db, but schema doesn't exist. Initializing schema ...");
 
-            const schema = fs.readFileSync('schema.sql', 'UTF-8');
+            const schema = fs.readFileSync('db/schema.sql', 'UTF-8');
+            const notesSql = fs.readFileSync('db/main_notes.sql', 'UTF-8');
+            const notesTreeSql = fs.readFileSync('db/main_notes_tree.sql', 'UTF-8');
 
             await doInTransaction(async () => {
                 await executeScript(schema);
+                await executeScript(notesSql);
+                await executeScript(notesTreeSql);
 
-                const noteId = utils.newNoteId();
-                const now = utils.nowDate();
-
-                await insert('notes_tree', {
-                    note_tree_id: utils.newNoteTreeId(),
-                    note_id: noteId,
-                    parent_note_id: 'root',
-                    note_position: 1,
-                    is_deleted: 0,
-                    date_modified: now
-                });
-
-                await insert('notes', {
-                    note_id: noteId,
-                    note_title: 'Welcome to Trilium!',
-                    note_text: 'Text',
-                    is_protected: 0,
-                    is_deleted: 0,
-                    date_created: now,
-                    date_modified: now
-                });
+                const noteId = await getFirstValue("SELECT note_id FROM notes_tree WHERE parent_note_id = 'root' ORDER BY note_position");
 
                 await require('./options').initOptions(noteId);
+                await require('./sync_table').fillAllSyncRows();
             });
+
+            log.info("Schema and initial content generated. Waiting for user to enter username/password to finish setup.");
 
             // we don't resolve dbReady promise because user needs to setup the username and password to initialize
             // the database

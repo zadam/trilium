@@ -3,8 +3,9 @@ const utils = require('./utils');
 const sync_table = require('./sync_table');
 const app_info = require('./app_info');
 
-const SYNCED_OPTIONS = [ 'username', 'password_verification_hash', 'encrypted_data_key', 'protected_session_timeout',
-    'history_snapshot_time_interval' ];
+const SYNCED_OPTIONS = [ 'username', 'password_verification_hash', 'password_verification_salt',
+    'password_derived_key_salt', 'encrypted_data_key', 'encrypted_data_key_iv',
+    'protected_session_timeout', 'history_snapshot_time_interval' ];
 
 async function getOption(optName) {
     const row = await sql.getFirstOrNull("SELECT opt_value FROM options WHERE opt_name = ?", [optName]);

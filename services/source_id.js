@@ -2,11 +2,7 @@ const utils = require('./utils');
 const log = require('./log');
 const sql = require('./sql');
 
-async function generateSourceId() {
-    const sourceId = utils.randomString(12);
-
-    log.info("Generated sourceId=" + sourceId);
-
+async function saveSourceId(sourceId) {
     await sql.doInTransaction(async () => {
         await sql.insert("source_ids", {
             source_id: sourceId,
@@ -15,6 +11,19 @@ async function generateSourceId() {
     });
 
     await refreshSourceIds();
+}
+
+function createSourceId() {
+    const sourceId = utils.randomString(12);
+
+    log.info("Generated sourceId=" + sourceId);
+    return sourceId;
+}
+
+async function generateSourceId() {
+    const sourceId = createSourceId();
+
+    await saveSourceId(sourceId);
 
     return sourceId;
 }
@@ -25,16 +34,17 @@ async function refreshSourceIds() {
 
 let allSourceIds = [];
 
-sql.dbReady.then(refreshSourceIds);
-
 function isLocalSourceId(srcId) {
     return allSourceIds.includes(srcId);
 }
 
-const currentSourceIdPromise = generateSourceId();
+const currentSourceId = createSourceId();
 
-async function getCurrentSourceId() {
-    return await currentSourceIdPromise;
+// this will also refresh source IDs
+sql.dbReady.then(() => saveSourceId(currentSourceId));
+
+function getCurrentSourceId() {
+    return currentSourceId;
 }
 
 module.exports = {
