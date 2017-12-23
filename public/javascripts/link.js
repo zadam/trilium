@@ -38,28 +38,38 @@ const link = (function() {
         return noteLink;
     }
 
-    function goToInternalNote(e) {
-        const linkEl = $(e.target);
-        let noteId = linkEl.attr("note-path");
+    function goToLink(e) {
+        e.preventDefault();
 
-        if (!noteId) {
-            noteId = getNotePathFromLink(linkEl.attr('href'));
+        const linkEl = $(e.target);
+        const notePath = linkEl.attr("note-path") ? linkEl.attr("note-path") : linkEl.attr('href');
+
+        if (!notePath) {
+            return;
         }
 
-        if (noteId) {
-            noteTree.activateNode(noteId);
+        if (notePath.startsWith('http')) {
+            window.open(notePath, '_blank');
 
-            // this is quite ugly hack, but it seems like we can't close the tooltip otherwise
-            $("[role='tooltip']").remove();
+            return;
+        }
 
-            if (glob.activeDialog) {
-                try {
-                    glob.activeDialog.dialog('close');
-                }
-                catch (e) {}
+        const noteId = getNotePathFromLink(notePath);
+
+        if (!noteId) {
+            return;
+        }
+
+        noteTree.activateNode(noteId);
+
+        // this is quite ugly hack, but it seems like we can't close the tooltip otherwise
+        $("[role='tooltip']").remove();
+
+        if (glob.activeDialog) {
+            try {
+                glob.activeDialog.dialog('close');
             }
-
-            e.preventDefault();
+            catch (e) {}
         }
     }
 
@@ -79,9 +89,9 @@ const link = (function() {
 
     // when click on link popup, in case of internal link, just go the the referenced note instead of default behavior
     // of opening the link in new window/tab
-    $(document).on('click', "a[action='note']", goToInternalNote);
-    $(document).on('click', 'div.popover-content a, div.ui-tooltip-content', goToInternalNote);
-    $(document).on('dblclick', '#note-detail a, div.ui-tooltip-content', goToInternalNote);
+    $(document).on('click', "a[action='note']", goToLink);
+    $(document).on('click', 'div.popover-content a, div.ui-tooltip-content', goToLink);
+    $(document).on('dblclick', '#note-detail a, div.ui-tooltip-content', goToLink);
 
     return {
         getNodePathFromLabel,
