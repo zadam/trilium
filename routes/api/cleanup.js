@@ -5,8 +5,9 @@ const router = express.Router();
 const sql = require('../../services/sql');
 const utils = require('../../services/utils');
 const sync_table = require('../../services/sync_table');
+const auth = require('../../services/auth');
 
-router.post('/cleanup-soft-deleted-items', async (req, res, next) => {
+router.post('/cleanup-soft-deleted-items', auth.checkApiAuth, async (req, res, next) => {
     await sql.doInTransaction(async () => {
         const noteIdsToDelete = await sql.getFlattenedResults("SELECT note_id FROM notes WHERE is_deleted = 1");
         const noteIdsSql = noteIdsToDelete
@@ -34,7 +35,7 @@ router.post('/cleanup-soft-deleted-items', async (req, res, next) => {
     res.send({});
 });
 
-router.post('/vacuum-database', async (req, res, next) => {
+router.post('/vacuum-database', auth.checkApiAuth, async (req, res, next) => {
     await sql.execute("VACUUM");
 
     res.send({});

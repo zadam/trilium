@@ -27,7 +27,7 @@ router.put('/:noteTreeId/move-to/:parentNoteId', auth.checkApiAuth, async (req, 
     res.send({});
 });
 
-router.put('/:noteTreeId/move-before/:beforeNoteTreeId', async (req, res, next) => {
+router.put('/:noteTreeId/move-before/:beforeNoteTreeId', auth.checkApiAuth, async (req, res, next) => {
     const noteTreeId = req.params.noteTreeId;
     const beforeNoteTreeId = req.params.beforeNoteTreeId;
     const sourceId = req.headers.source_id;
@@ -58,7 +58,7 @@ router.put('/:noteTreeId/move-before/:beforeNoteTreeId', async (req, res, next) 
     }
 });
 
-router.put('/:noteTreeId/move-after/:afterNoteTreeId', async (req, res, next) => {
+router.put('/:noteTreeId/move-after/:afterNoteTreeId', auth.checkApiAuth, async (req, res, next) => {
     const noteTreeId = req.params.noteTreeId;
     const afterNoteTreeId = req.params.afterNoteTreeId;
     const sourceId = req.headers.source_id;
@@ -136,7 +136,7 @@ router.put('/:childNoteId/clone-to/:parentNoteId', auth.checkApiAuth, async (req
     });
 });
 
-router.put('/:noteId/clone-after/:afterNoteTreeId', async (req, res, next) => {
+router.put('/:noteId/clone-after/:afterNoteTreeId', auth.checkApiAuth, async (req, res, next) => {
     const noteId = req.params.noteId;
     const afterNoteTreeId = req.params.afterNoteTreeId;
     const sourceId = req.headers.source_id;
@@ -211,7 +211,7 @@ async function checkCycle(parentNoteId, childNoteId) {
     return true;
 }
 
-router.put('/:noteTreeId/expanded/:expanded', async (req, res, next) => {
+router.put('/:noteTreeId/expanded/:expanded', auth.checkApiAuth, async (req, res, next) => {
     const noteTreeId = req.params.noteTreeId;
     const expanded = req.params.expanded;
 

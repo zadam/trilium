@@ -5,7 +5,6 @@ const router = express.Router();
 const sql = require('../../services/sql');
 const options = require('../../services/options');
 const auth = require('../../services/auth');
-const utils = require('../../services/utils');
 
 // options allowed to be updated directly in settings dialog
 const ALLOWED_OPTIONS = ['protected_session_timeout', 'history_snapshot_time_interval'];
@@ -23,7 +22,7 @@ router.get('/', auth.checkApiAuth, async (req, res, next) => {
     res.send(settings);
 });
 
-router.post('/', async (req, res, next) => {
+router.post('/', auth.checkApiAuth, async (req, res, next) => {
     const body = req.body;
     const sourceId = req.headers.source_id;
 

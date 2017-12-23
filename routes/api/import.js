@@ -7,8 +7,9 @@ const sql = require('../../services/sql');
 const data_dir = require('../../services/data_dir');
 const utils = require('../../services/utils');
 const sync_table = require('../../services/sync_table');
+const auth = require('../../services/auth');
 
-router.get('/:directory/to/:parentNoteId', async (req, res, next) => {
+router.get('/:directory/to/:parentNoteId', auth.checkApiAuth, async (req, res, next) => {
     const directory = req.params.directory.replace(/[^0-9a-zA-Z_-]/gi, '');
     const parentNoteId = req.params.parentNoteId;
 

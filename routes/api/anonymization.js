@@ -3,8 +3,9 @@
 const express = require('express');
 const router = express.Router();
 const anonymization = require('../../services/anonymization');
+const auth = require('../../services/auth');
 
-router.post('/anonymize', async (req, res, next) => {
+router.post('/anonymize', auth.checkApiAuth, async (req, res, next) => {
     await anonymization.anonymize();
 
     res.send({});

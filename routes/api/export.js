@@ -7,8 +7,9 @@ const fs = require('fs');
 const sql = require('../../services/sql');
 const data_dir = require('../../services/data_dir');
 const html = require('html');
+const auth = require('../../services/auth');
 
-router.get('/:noteId/to/:directory', async (req, res, next) => {
+router.get('/:noteId/to/:directory', auth.checkApiAuth, async (req, res, next) => {
     const noteId = req.params.noteId;
     const directory = req.params.directory.replace(/[^0-9a-zA-Z_-]/gi, '');
 

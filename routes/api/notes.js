@@ -32,7 +32,7 @@ router.get('/:noteId', auth.checkApiAuth, async (req, res, next) => {
     });
 });
 
-router.post('/:parentNoteId/children', async (req, res, next) => {
+router.post('/:parentNoteId/children', auth.checkApiAuth, async (req, res, next) => {
     const sourceId = req.headers.source_id;
     const parentNoteId = req.params.parentNoteId;
     const note = req.body;
@@ -45,7 +45,7 @@ router.post('/:parentNoteId/children', async (req, res, next) => {
     });
 });
 
-router.put('/:noteId', async (req, res, next) => {
+router.put('/:noteId', auth.checkApiAuth, async (req, res, next) => {
     const note = req.body;
     const noteId = req.params.noteId;
     const sourceId = req.headers.source_id;
@@ -56,7 +56,7 @@ router.put('/:noteId', async (req, res, next) => {
     res.send({});
 });
 
-router.delete('/:noteTreeId', async (req, res, next) => {
+router.delete('/:noteTreeId', auth.checkApiAuth, async (req, res, next) => {
     await sql.doInTransaction(async () => {
         await notes.deleteNote(req.params.noteTreeId, req.headers.source_id);
     });
@@ -64,7 +64,7 @@ router.delete('/:noteTreeId', async (req, res, next) => {
     res.send({});
 });
 
-router.get('/', async (req, res, next) => {
+router.get('/', auth.checkApiAuth, async (req, res, next) => {
     const search = '%' + req.query.search + '%';
 
     const result = await sql.getResults("SELECT note_id FROM notes WHERE note_title liKE ? OR note_text LIKE ?", [search, search]);
