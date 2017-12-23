@@ -8,6 +8,7 @@ const dragAndDropSetup = {
         containment: "parent",
         revert: "invalid"
     },
+    focusOnClick: true,
     preventRecursiveMoves: true, // Prevent dropping nodes on own descendants
     preventVoidMoves: true, // Prevent dropping nodes 'before self', etc.
 
