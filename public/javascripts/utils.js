@@ -75,7 +75,9 @@ function isElectron() {
 
 function assertArguments() {
     for (const i in arguments) {
-        assert(arguments[i], `argument ${i} should not be falsy. Argument list: ${arguments}`);
+        if (!arguments[i]) {
+            throwError(`Argument idx#${i} should not be falsy: ${arguments[i]}`);
+        }
     }
 }
 
@@ -83,4 +85,12 @@ function assert(expr, message) {
     if (!expr) {
         throwError(message);
     }
+}
+
+function isTopLevelNode(node) {
+    return isRootNode(node.getParent());
+}
+
+function isRootNode(node) {
+    return node.key === "root_1";
 }

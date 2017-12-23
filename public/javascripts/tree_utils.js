@@ -4,7 +4,7 @@ const treeUtils = (function() {
     const treeEl = $("#tree");
 
     function getParentProtectedStatus(node) {
-        return node.getParent() === null ? 0 : node.getParent().data.is_protected;
+        return isTopLevelNode(node) ? 0 : node.getParent().data.is_protected;
     }
 
     function getNodeByKey(key) {
@@ -20,7 +20,7 @@ const treeUtils = (function() {
     function getNotePath(node) {
         const path = [];
 
-        while (node) {
+        while (node && !isRootNode(node)) {
             if (node.data.note_id) {
                 path.push(node.data.note_id);
             }

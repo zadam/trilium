@@ -222,6 +222,7 @@ const noteTree = (function() {
         assertArguments(notePath);
 
         const runPath = getRunPath(notePath);
+
         const noteId = treeUtils.getNoteIdFromNotePath(notePath);
 
         let parentNoteId = 'root';
@@ -277,10 +278,14 @@ const noteTree = (function() {
                     if (parents.length > 0) {
                         console.log(now(), "Available parents:", parents);
 
-                        const pathToRoot = getSomeNotePath(parents[0]).split("/").reverse();
+                        const someNotePath = getSomeNotePath(parents[0]);
 
-                        for (const noteId of pathToRoot) {
-                            effectivePath.push(noteId);
+                        if (someNotePath) { // in case it's root the path may be empty
+                            const pathToRoot = someNotePath.split("/").reverse();
+
+                            for (const noteId of pathToRoot) {
+                                effectivePath.push(noteId);
+                            }
                         }
 
                         break;

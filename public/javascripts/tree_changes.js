@@ -58,7 +58,7 @@ const treeChanges = (function() {
 
         await server.remove('notes/' + node.data.note_tree_id);
 
-        if (node.getParent() !== null && node.getParent().getChildren().length <= 1) {
+        if (!isTopLevelNode(node) && node.getParent().getChildren().length <= 1) {
             node.getParent().folder = false;
             node.getParent().renderTitle();
         }
@@ -69,27 +69,30 @@ const treeChanges = (function() {
             next = node.getPrevSibling();
         }
 
-        if (!next) {
+        if (!next && !isTopLevelNode(node)) {
             next = node.getParent();
         }
 
         node.remove();
 
-        // activate next element after this one is deleted so we don't lose focus
-        next.setActive();
+        if (next) {
+            // activate next element after this one is deleted so we don't lose focus
+            next.setActive();
 
-        noteTree.setCurrentNotePathToHash(next);
+            noteTree.setCurrentNotePathToHash(next);
+        }
+
         noteTree.reload();
     }
 
     async function moveNodeUpInHierarchy(node) {
-        if (node.getParent() === null) {
+        if (isTopLevelNode(node)) {
             return;
         }
 
         await server.put('notes/' + node.data.note_tree_id + '/move-after/' + node.getParent().data.note_tree_id);
 
-        if (node.getParent() !== null && node.getParent().getChildren().length <= 1) {
+        if (!isTopLevelNode(node) && node.getParent().getChildren().length <= 1) {
             node.getParent().folder = false;
             node.getParent().renderTitle();
         }
@@ -98,11 +101,13 @@ const treeChanges = (function() {
     }
 
     function changeNode(node, func) {
+        assertArguments(node.data.parent_note_id, node.data.note_id);
+
         noteTree.removeParentChildRelation(node.data.parent_note_id, node.data.note_id);
 
         func(node);
 
-        node.data.parent_note_id = node.getParent() === null ? 'root' : node.getParent().data.note_id;
+        node.data.parent_note_id = isTopLevelNode(node) ? 'root' : node.getParent().data.note_id;
 
         noteTree.setParentChildRelation(node.data.note_tree_id, node.data.parent_note_id, node.data.note_id);
 
