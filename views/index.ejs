@@ -183,8 +183,7 @@
           <li><a href="#change-password">Change password</a></li>
           <li><a href="#protected-session-timeout">Protected session</a></li>
           <li><a href="#history-snapshot-time-interval">History snapshots</a></li>
-          <li><a href="#sync">Sync</a></li>
-          <li><a href="#debugging">Debugging</a></li>
+          <li><a href="#advanced">Advanced</a></li>
           <li><a href="#about">About Trilium</a></li>
         </ul>
         <div id="change-password">
@@ -232,16 +231,30 @@
             <button class="btn btn-sm">Save</button>
           </form>
         </div>
-        <div id="sync">
+        <div id="advanced">
+          <h4 style="margin-top: 0px;">Sync</h4>
           <button id="force-full-sync-button" class="btn btn-sm">Force full sync</button>
 
           <br/>
           <br/>
 
           <button id="fill-sync-rows-button" class="btn btn-sm">Fill sync rows</button>
-        </div>
-        <div id="debugging">
-          <button id="anonymize-button" class="btn btn-sm">Save anonymized database</button>
+
+          <h4>Debugging</h4>
+
+          <button id="anonymize-button" class="btn btn-sm">Save anonymized database</button><br/><br/>
+
+          <p>This action will create a new copy of the database and anonymise it (remove all note content and leave only structure and metadata)
+            for sharing online for debugging purposes without fear of leaking your personal data.</p>
+
+          <h4>Cleanup</h4>
+
+          <button id="cleanup-soft-deleted-items-button" class="btn btn-danger btn-sm">Permanently cleanup soft-deleted items</button>
+
+          <br/>
+          <br/>
+
+          <button id="vacuum-database-button" class="btn btn-sm">Vacuum database</button>
         </div>
         <div id="about">
           <table class="table">

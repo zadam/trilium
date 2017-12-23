@@ -23,6 +23,7 @@ const importRoute = require('./api/import');
 const setupApiRoute = require('./api/setup');
 const sqlRoute = require('./api/sql');
 const anonymizationRoute = require('./api/anonymization');
+const cleanupRoute = require('./api/cleanup');
 
 function register(app) {
     app.use('/', indexRoute);
@@ -49,6 +50,7 @@ function register(app) {
     app.use('/api/setup', setupApiRoute);
     app.use('/api/sql', sqlRoute);
     app.use('/api/anonymization', anonymizationRoute);
+    app.use('/api/cleanup', cleanupRoute);
 }
 
 module.exports = {

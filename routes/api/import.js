@@ -2,7 +2,6 @@
 
 const express = require('express');
 const router = express.Router();
-const rimraf = require('rimraf');
 const fs = require('fs');
 const sql = require('../../services/sql');
 const data_dir = require('../../services/data_dir');

@@ -155,6 +155,9 @@ settings.addModule((async function () {
 settings.addModule((async function () {
     const forceFullSyncButton = $("#force-full-sync-button");
     const fillSyncRowsButton = $("#fill-sync-rows-button");
+    const anonymizeButton = $("#anonymize-button");
+    const cleanupSoftDeletedButton = $("#cleanup-soft-deleted-items-button");
+    const vacuumDatabaseButton = $("#vacuum-database-button");
 
     forceFullSyncButton.click(async () => {
         await server.post('sync/force-full-sync');
@@ -168,16 +171,25 @@ settings.addModule((async function () {
         showMessage("Sync rows filled successfully");
     });
 
-    return {};
-})());
-
-settings.addModule((async function () {
-    const anonymizeButton = $("#anonymize-button");
 
     anonymizeButton.click(async () => {
         await server.post('anonymization/anonymize');
 
         showMessage("Created anonymized database");
+    });
+
+    cleanupSoftDeletedButton.click(async () => {
+        if (confirm("Do you really want to clean up soft-deleted items?")) {
+            await server.post('cleanup/cleanup-soft-deleted-items');
+
+            showMessage("Soft deleted items have been cleaned up");
+        }
+    });
+
+    vacuumDatabaseButton.click(async () => {
+        await server.post('cleanup/vacuum-database');
+
+        showMessage("Database has been vacuumed");
     });
 
     return {};

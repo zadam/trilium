@@ -2,6 +2,7 @@ const sql = require('./sql');
 const source_id = require('./source_id');
 const utils = require('./utils');
 const sync_setup = require('./sync_setup');
+const log = require('./log');
 
 async function addNoteSync(noteId, sourceId) {
     await addEntitySync("notes", noteId, sourceId)
@@ -42,11 +43,43 @@ async function addEntitySync(entityName, entityId, sourceId) {
     }
 }
 
+async function cleanupSyncRowsForMissingEntities(entityName, entityKey) {
+    await sql.execute(`
+      DELETE 
+      FROM sync 
+      WHERE sync.entity_name = '${entityName}' 
+        AND sync.entity_id NOT IN (SELECT ${entityKey} FROM ${entityName})`);
+}
+
+async function fillSyncRows(entityName, entityKey) {
+    await cleanupSyncRowsForMissingEntities(entityName, entityKey);
+
+    const entityIds = await sql.getFlattenedResults(`SELECT ${entityKey} FROM ${entityName}`);
+
+    for (const entityId of entityIds) {
+        const existingRows = await sql.getSingleValue("SELECT COUNT(id) FROM sync WHERE entity_name = ? AND entity_id = ?", [entityName, entityId]);
+
+        // we don't want to replace existing entities (which would effectively cause full resync)
+        if (existingRows === 0) {
+            log.info(`Creating missing sync record for ${entityName} ${entityId}`);
+
+            await sql.insert("sync", {
+                entity_name: entityName,
+                entity_id: entityId,
+                source_id: "SYNC_FILL",
+                sync_date: utils.nowDate()
+            });
+        }
+    }
+}
+
 module.exports = {
     addNoteSync,
     addNoteTreeSync,
     addNoteReorderingSync,
     addNoteHistorySync,
     addOptionsSync,
-    addRecentNoteSync
+    addRecentNoteSync,
+    cleanupSyncRowsForMissingEntities,
+    fillSyncRows
 };

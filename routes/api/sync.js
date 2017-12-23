@@ -5,11 +5,10 @@ const router = express.Router();
 const auth = require('../../services/auth');
 const sync = require('../../services/sync');
 const syncUpdate = require('../../services/sync_update');
+const sync_table = require('../../services/sync_table');
 const sql = require('../../services/sql');
 const options = require('../../services/options');
 const content_hash = require('../../services/content_hash');
-const utils = require('../../services/utils');
-const log = require('../../services/log');
 
 router.get('/check', auth.checkApiAuth, async (req, res, next) => {
     res.send({
@@ -22,39 +21,12 @@ router.post('/now', auth.checkApiAuth, async (req, res, next) => {
     res.send(await sync.sync());
 });
 
-async function fillSyncRows(entityName, entityKey) {
-    // cleanup sync rows for missing entities
-    await sql.execute(`
-      DELETE 
-      FROM sync 
-      WHERE sync.entity_name = '${entityName}' 
-        AND sync.entity_id NOT IN (SELECT ${entityKey} FROM ${entityName})`);
-
-    const entityIds = await sql.getFlattenedResults(`SELECT ${entityKey} FROM ${entityName}`);
-
-    for (const entityId of entityIds) {
-        const existingRows = await sql.getSingleValue("SELECT COUNT(id) FROM sync WHERE entity_name = ? AND entity_id = ?", [entityName, entityId]);
-
-        // we don't want to replace existing entities (which would effectively cause full resync)
-        if (existingRows === 0) {
-            log.info(`Creating missing sync record for ${entityName} ${entityId}`);
-
-            await sql.insert("sync", {
-                entity_name: entityName,
-                entity_id: entityId,
-                source_id: "SYNC_FILL",
-                sync_date: utils.nowDate()
-            });
-        }
-    }
-}
-
 router.post('/fill-sync-rows', auth.checkApiAuth, async (req, res, next) => {
     await sql.doInTransaction(async () => {
-        await fillSyncRows("notes", "note_id");
-        await fillSyncRows("notes_tree", "note_tree_id");
-        await fillSyncRows("notes_history", "note_history_id");
-        await fillSyncRows("recent_notes", "note_tree_id");
+        await sync_table.fillSyncRows("notes", "note_id");
+        await sync_table.fillSyncRows("notes_tree", "note_tree_id");
+        await sync_table.fillSyncRows("notes_history", "note_history_id");
+        await sync_table.fillSyncRows("recent_notes", "note_tree_id");
     });
 
     res.send({});

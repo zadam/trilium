@@ -74,6 +74,11 @@ function getDateTimeForFile() {
     return new Date().toISOString().substr(0, 19).replace(/:/g, '');
 }
 
+function sanitizeSql(str) {
+    // should be improved or usage eliminated
+    return str.replace(/'/g, "\\'");
+}
+
 module.exports = {
     randomSecureToken,
     randomString,
@@ -89,5 +94,6 @@ module.exports = {
     isElectron,
     hash,
     isEmptyOrWhitespace,
-    getDateTimeForFile
+    getDateTimeForFile,
+    sanitizeSql
 };
