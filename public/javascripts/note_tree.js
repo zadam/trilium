@@ -472,18 +472,27 @@ const noteTree = (function() {
                     case 67:
                         if (event.ctrlKey) { // Ctrl-C
                             contextMenu.copy(node);
-                            return false;
-                        }
-                        break;
-                    case 86:
-                        if (event.ctrlKey) { // Ctrl-V
-                            contextMenu.pasteAfter(node);
+
+                            showMessage("Note copied into clipboard.");
+
                             return false;
                         }
                         break;
                     case 88:
                         if (event.ctrlKey) { // Ctrl-X
                             contextMenu.cut(node);
+
+                            showMessage("Note cut into clipboard.");
+
+                            return false;
+                        }
+                        break;
+                    case 86:
+                        if (event.ctrlKey) { // Ctrl-V
+                            contextMenu.pasteInto(node);
+
+                            showMessage("Note pasted from clipboard into current note.");
+
                             return false;
                         }
                         break;

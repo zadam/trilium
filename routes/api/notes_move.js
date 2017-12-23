@@ -127,6 +127,8 @@ router.put('/:childNoteId/clone-to/:parentNoteId', auth.checkApiAuth, async (req
         await sql.replace("notes_tree", noteTree);
 
         await sync_table.addNoteTreeSync(noteTree.note_tree_id, sourceId);
+
+        await sql.execute("UPDATE notes_tree SET is_expanded = 1 WHERE note_id = ?", [parentNoteId]);
     });
 
     res.send({
