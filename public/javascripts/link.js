@@ -42,7 +42,7 @@ const link = (function() {
         e.preventDefault();
 
         const linkEl = $(e.target);
-        const notePath = linkEl.attr("note-path") ? linkEl.attr("note-path") : linkEl.attr('href');
+        const notePath = linkEl.attr("note-path") ? linkEl.attr("note-path") : getNotePathFromLink(linkEl.attr('href'));
 
         if (!notePath) {
             return;
@@ -54,13 +54,7 @@ const link = (function() {
             return;
         }
 
-        const noteId = getNotePathFromLink(notePath);
-
-        if (!noteId) {
-            return;
-        }
-
-        noteTree.activateNode(noteId);
+        noteTree.activateNode(notePath);
 
         // this is quite ugly hack, but it seems like we can't close the tooltip otherwise
         $("[role='tooltip']").remove();
