@@ -3,7 +3,6 @@ const sql = require('./sql');
 const options = require('./options');
 const fs = require('fs-extra');
 const log = require('./log');
-const app_info = require('./app_info');
 const path = require('path');
 
 const MIGRATIONS_DIR = path.resolve(__dirname, "..", "migrations");
