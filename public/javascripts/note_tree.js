@@ -432,11 +432,27 @@ const noteTree = (function() {
             },
             "f2": node => {
                 editTreePrefix.showDialog(node);
+            },
+            // code below shouldn't be necessary normally, however there's some problem with interaction with context menu plugin
+            // after opening context menu, standard shortcuts don't work, but they are detected here
+            // so we essentially takeover the standard handling with our implementation.
+            "left": node => {
+                node.navigate($.ui.keyCode.LEFT, true);
+            },
+            "right": node => {
+                node.navigate($.ui.keyCode.RIGHT, true);
+            },
+            "up": node => {
+                node.navigate($.ui.keyCode.UP, true);
+            },
+            "down": node => {
+                node.navigate($.ui.keyCode.DOWN, true);
             }
         };
 
         treeEl.fancytree({
             autoScroll: true,
+            keyboard: false, // we takover keyboard handling in the hotkeys plugin
             extensions: ["hotkeys", "filter", "dnd", "clones"],
             source: noteTree,
             scrollParent: $("#tree"),
