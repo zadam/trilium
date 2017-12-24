@@ -93,7 +93,7 @@ router.put('/:childNoteId/clone-to/:parentNoteId', auth.checkApiAuth, async (req
     const prefix = req.body.prefix;
     const sourceId = req.headers.source_id;
 
-    const existing = await sql.getFirstValue('SELECT * FROM notes_tree WHERE note_id = ? AND parent_note_id = ?', [childNoteId, parentNoteId]);
+    const existing = await sql.getFirst('SELECT * FROM notes_tree WHERE note_id = ? AND parent_note_id = ?', [childNoteId, parentNoteId]);
 
     if (existing && !existing.is_deleted) {
         return res.send({
