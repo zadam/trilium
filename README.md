@@ -1,6 +1,4 @@
 # Trilium
 Hierarchical note taking application
 
-![Trilium screenshot](wiki/images/screenshot.png?raw=true "Title")
-
-[[wiki/images/screenshot.png]]
+![](https://raw.githubusercontent.com/wiki/zadam/trilium/images/screenshot.png)
