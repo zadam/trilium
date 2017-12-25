@@ -157,21 +157,17 @@ const noteTree = (function() {
     function getExtraClasses(note) {
         assertArguments(note);
 
-        let extraClasses = '';
+        const extraClasses = [];
 
         if (note.is_protected) {
-            extraClasses += ",protected";
+            extraClasses.push("protected");
         }
 
         if (childToParents[note.note_id].length > 1) {
-            extraClasses += ",multiple-parents";
+            extraClasses.push("multiple-parents");
         }
 
-        if (extraClasses.startsWith(",")) {
-            extraClasses = extraClasses.substr(1);
-        }
-
-        return extraClasses;
+        return extraClasses.join(" ");
     }
 
     function prepareNoteTreeInner(parentNoteId) {
