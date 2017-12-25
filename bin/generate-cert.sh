@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Script generates certificate by default into the ~/trilium-data/cert where it is expected by Trilium
 # If directory is given in argument, certificate will be created there.
 
