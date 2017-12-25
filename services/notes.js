@@ -104,8 +104,6 @@ async function protectNote(note, dataKey, protect, sourceId) {
     }
 
     if (changed) {
-        console.log("Updating...");
-
         await sql.execute("UPDATE notes SET note_title = ?, note_text = ?, is_protected = ? WHERE note_id = ?",
             [note.note_title, note.note_text, note.is_protected, note.note_id]);
 

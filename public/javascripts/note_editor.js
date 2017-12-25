@@ -6,6 +6,8 @@ const noteEditor = (function() {
     const protectButton = $("#protect-button");
     const unprotectButton = $("#unprotect-button");
     const noteDetailWrapperEl = $("#note-detail-wrapper");
+    const noteIdDisplayEl = $("#note-id-display");
+
     let editor = null;
 
     let currentNote = null;
@@ -100,6 +102,8 @@ const noteEditor = (function() {
 
             noteTitleEl.focus().select();
         }
+
+        noteIdDisplayEl.html(noteId);
 
         await protected_session.ensureProtectedSession(currentNote.detail.is_protected, false);
 
