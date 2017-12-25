@@ -17,8 +17,12 @@ cp -r ../trilium-node-binaries/scrypt/* node_modules/scrypt/bin/
 # can't copy this before the packaging because the same file name is used for both linux and windows build
 cp ../trilium-node-binaries/scrypt.node ./dist/trilium-win32-x64/resources/app/node_modules/scrypt/build/Release/
 
+VERSION=`jq -r ".version" package.json`
+
 echo "Packaging windows distribution..."
 
-# possibly use zip: zip -r myfiles.zip mydir
+7z a dist/trilium-windows-${VERSION}.7z dist/trilium-win32-x64
 
-tar cfJ dist/win.tar.xz dist/trilium-win32-x64
+echo "Packaging linux distribution..."
+tar cfJ dist/trilium-linux-${VERSION}.tar.xz dist/trilium-linux-x64
+
