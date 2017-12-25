@@ -19,6 +19,14 @@ Hierarchical note taking application.
 * If you want to install Trilium on server, follow [this page](https://github.com/zadam/trilium/wiki/Installation-on-server)
 * If you want to use Trilium on the desktop, download binary release from [releases], unzip the package and run ```trilium``` executable.
 
+## Supported platforms
+
+Desktop (electron) builds are available for Linux and Windows.
+
+Requirements for web based installation are outlined in (https://github.com/zadam/trilium/wiki/Installation-on-server).
+
+Currently only recent Chrome and Firefox are supported (tested) browsers. Other modern browsers should work as well.
+
 ## Documentation
 
 See [wiki](https://github.com/zadam/trilium/wiki/Home) for complete list of available pages.
