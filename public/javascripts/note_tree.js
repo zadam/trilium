@@ -617,8 +617,14 @@ const noteTree = (function() {
         }
     }
 
-    function setCurrentNoteTreeBasedOnProtectedStatus() {
-        getCurrentClones().map(node => node.toggleClass("protected", !!node.data.is_protected));
+    function setNoteTreeBackgroundBasedOnProtectedStatus(noteId) {
+        getNodesByNoteId(noteId).map(node => node.toggleClass("protected", !!node.data.is_protected));
+    }
+
+    function setProtected(noteId, isProtected) {
+        getNodesByNoteId(noteId).map(node => node.data.is_protected = isProtected);
+
+        setNoteTreeBackgroundBasedOnProtectedStatus(noteId);
     }
 
     function getAutocompleteItems(parentNoteId, notePath, titlePath) {
@@ -776,7 +782,8 @@ const noteTree = (function() {
         reload,
         collapseTree,
         scrollToCurrentNote,
-        setCurrentNoteTreeBasedOnProtectedStatus,
+        setNoteTreeBackgroundBasedOnProtectedStatus,
+        setProtected,
         getCurrentNode,
         activateNode,
         getCurrentNotePath,

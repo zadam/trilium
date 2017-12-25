@@ -79,18 +79,11 @@ const noteEditor = (function() {
     }
 
     function setNoteBackgroundIfProtected(note) {
-        if (note.detail.is_protected) {
-            $("#note-detail-wrapper").addClass("protected");
-            protectButton.hide();
-            unprotectButton.show();
-        }
-        else {
-            $("#note-detail-wrapper").removeClass("protected");
-            protectButton.show();
-            unprotectButton.hide();
-        }
+        const isProtected = !!note.detail.is_protected;
 
-        noteTree.setCurrentNoteTreeBasedOnProtectedStatus();
+        noteDetailWrapperEl.toggleClass("protected", isProtected);
+        protectButton.toggle(!isProtected);
+        unprotectButton.toggle(isProtected);
     }
 
     let isNewNoteCreated = false;
@@ -129,6 +122,7 @@ const noteEditor = (function() {
         noteChangeDisabled = false;
 
         setNoteBackgroundIfProtected(currentNote);
+        noteTree.setNoteTreeBackgroundBasedOnProtectedStatus(noteId);
 
         showAppIfHidden();
     }

@@ -115,6 +115,8 @@ const protected_session = (function() {
 
         await noteEditor.saveNoteToServer(note);
 
+        noteTree.setProtected(note.detail.note_id, note.detail.is_protected);
+
         noteEditor.setNoteBackgroundIfProtected(note);
     }
 
@@ -128,6 +130,8 @@ const protected_session = (function() {
         note.detail.is_protected = false;
 
         await noteEditor.saveNoteToServer(note);
+
+        noteTree.setProtected(note.detail.note_id, note.detail.is_protected);
 
         noteEditor.setNoteBackgroundIfProtected(note);
     }
