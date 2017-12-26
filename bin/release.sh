@@ -18,7 +18,7 @@ if ! git diff-index --quiet HEAD --; then
     exit 1
 fi
 
-jq '.version = "$VERSION"' package.json|sponge package.json
+jq '.version = "'$VERSION'"' package.json|sponge package.json
 
 TAG=v$VERSION
 
