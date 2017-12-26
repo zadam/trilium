@@ -616,7 +616,7 @@ const noteTree = (function() {
         node.visit(node => node.setExpanded(false));
     }
 
-    $(document).bind('keydown', 'alt+c', collapseTree);
+    $(document).bind('keydown', 'alt+c', () => collapseTree()); // don't use shortened form since collapseTree() accepts argument
 
     function scrollToCurrentNote() {
         const node = getCurrentNode();
