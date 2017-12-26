@@ -42,17 +42,19 @@ const link = (function() {
         e.preventDefault();
 
         const linkEl = $(e.target);
-        const notePath = linkEl.attr("note-path") ? linkEl.attr("note-path") : getNotePathFromLink(linkEl.attr('href'));
+        const address = linkEl.attr("note-path") ? linkEl.attr("note-path") : linkEl.attr('href');
 
-        if (!notePath) {
+        if (!address) {
             return;
         }
 
-        if (notePath.startsWith('http')) {
-            window.open(notePath, '_blank');
+        if (address.startsWith('http')) {
+            window.open(address, '_blank');
 
             return;
         }
+
+        const notePath = getNotePathFromLink(address);
 
         noteTree.activateNode(notePath);
 
@@ -84,8 +86,8 @@ const link = (function() {
     // when click on link popup, in case of internal link, just go the the referenced note instead of default behavior
     // of opening the link in new window/tab
     $(document).on('click', "a[action='note']", goToLink);
-    $(document).on('click', 'div.popover-content a, div.ui-tooltip-content', goToLink);
-    $(document).on('dblclick', '#note-detail a, div.ui-tooltip-content', goToLink);
+    $(document).on('click', 'div.popover-content a, div.ui-tooltip-content a', goToLink);
+    $(document).on('dblclick', '#note-detail a', goToLink);
 
     return {
         getNodePathFromLabel,
