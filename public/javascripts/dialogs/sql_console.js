@@ -28,6 +28,9 @@ const sqlConsole = (function() {
             showError(result.error);
             return;
         }
+        else {
+            showMessage("Query was executed successfully.");
+        }
 
         const rows = result.rows;
 
