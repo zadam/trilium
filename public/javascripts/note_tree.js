@@ -434,15 +434,23 @@ const noteTree = (function() {
             // so we essentially takeover the standard handling with our implementation.
             "left": node => {
                 node.navigate($.ui.keyCode.LEFT, true);
+
+                return false;
             },
             "right": node => {
                 node.navigate($.ui.keyCode.RIGHT, true);
+
+                return false;
             },
             "up": node => {
                 node.navigate($.ui.keyCode.UP, true);
+
+                return false;
             },
             "down": node => {
                 node.navigate($.ui.keyCode.DOWN, true);
+
+                return false;
             }
         };
 
