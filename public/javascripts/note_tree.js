@@ -429,6 +429,9 @@ const noteTree = (function() {
             "f2": node => {
                 editTreePrefix.showDialog(node);
             },
+            "alt+-": node => {
+                collapseTree(node);
+            },
             // code below shouldn't be necessary normally, however there's some problem with interaction with context menu plugin
             // after opening context menu, standard shortcuts don't work, but they are detected here
             // so we essentially takeover the standard handling with our implementation.
@@ -531,9 +534,9 @@ const noteTree = (function() {
                             });
                         return false;
 
-                    // Handle Ctrl-C, -X and -V
+                    // Handle Ctrl+C, +X and +V
                     case 67:
-                        if (event.ctrlKey) { // Ctrl-C
+                        if (event.ctrlKey) { // Ctrl+C
                             contextMenu.copy(node);
 
                             showMessage("Note copied into clipboard.");
@@ -542,7 +545,7 @@ const noteTree = (function() {
                         }
                         break;
                     case 88:
-                        if (event.ctrlKey) { // Ctrl-X
+                        if (event.ctrlKey) { // Ctrl+X
                             contextMenu.cut(node);
 
                             showMessage("Note cut into clipboard.");
@@ -551,7 +554,7 @@ const noteTree = (function() {
                         }
                         break;
                     case 86:
-                        if (event.ctrlKey) { // Ctrl-V
+                        if (event.ctrlKey) { // Ctrl+V
                             contextMenu.pasteInto(node);
 
                             showMessage("Note pasted from clipboard into current note.");
@@ -603,10 +606,14 @@ const noteTree = (function() {
 
     $(() => loadTree().then(noteTree => initFancyTree(noteTree)));
 
-    function collapseTree() {
-        treeEl.fancytree("getRootNode").visit(node => {
-            node.setExpanded(false);
-        });
+    function collapseTree(node = null) {
+        if (!node) {
+            node = treeEl.fancytree("getRootNode");
+        }
+
+        node.setExpanded(false);
+
+        node.visit(node => node.setExpanded(false));
     }
 
     $(document).bind('keydown', 'alt+c', collapseTree);
