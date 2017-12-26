@@ -1,6 +1,6 @@
 {
   "name": "trilium",
-  "description": "Trilium",
+  "description": "Trilium Notes",
   "version": "0.0.10",
   "scripts": {
     "start": "node ./bin/www",

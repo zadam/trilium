@@ -1,5 +1,5 @@
-# Trilium
-Hierarchical note taking application. Picture tells a thousand words:
+# Trilium Notes
+Trilium Notes is a hierarchical note taking application. Picture tells a thousand words:
 
 ![](https://raw.githubusercontent.com/wiki/zadam/trilium/images/screenshot.png)
 
