@@ -1,7 +1,7 @@
 {
   "name": "trilium",
   "description": "Trilium Notes",
-  "version": "0.0.11",
+  "version": "0.1.0",
   "scripts": {
     "start": "node ./bin/www",
     "test-electron": "xo",
