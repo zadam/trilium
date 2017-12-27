@@ -4,8 +4,8 @@ const log = require('./log');
 const dataDir = require('./data_dir');
 const fs = require('fs');
 const sqlite = require('sqlite');
-const utils = require('./utils');
 const app_info = require('./app_info');
+const resource_dir = require('./resource_dir');
 
 async function createConnection() {
     return await sqlite.open(dataDir.DOCUMENT_PATH, {Promise});
@@ -28,9 +28,9 @@ const dbReady = new Promise((resolve, reject) => {
         if (tableResults.length !== 1) {
             log.info("Connected to db, but schema doesn't exist. Initializing schema ...");
 
-            const schema = fs.readFileSync('db/schema.sql', 'UTF-8');
-            const notesSql = fs.readFileSync('db/main_notes.sql', 'UTF-8');
-            const notesTreeSql = fs.readFileSync('db/main_notes_tree.sql', 'UTF-8');
+            const schema = fs.readFileSync(resource_dir.DB_INIT_DIR + '/schema.sql', 'UTF-8');
+            const notesSql = fs.readFileSync(resource_dir.DB_INIT_DIR + '/main_notes.sql', 'UTF-8');
+            const notesTreeSql = fs.readFileSync(resource_dir.DB_INIT_DIR + '/main_notes_tree.sql', 'UTF-8');
 
             await doInTransaction(async () => {
                 await executeScript(schema);

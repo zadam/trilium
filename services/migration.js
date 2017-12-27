@@ -3,14 +3,7 @@ const sql = require('./sql');
 const options = require('./options');
 const fs = require('fs-extra');
 const log = require('./log');
-const path = require('path');
-
-const MIGRATIONS_DIR = path.resolve(__dirname, "..", "migrations");
-
-if (!fs.existsSync(MIGRATIONS_DIR)) {
-    log.error("Could not find migration directory: " + MIGRATIONS_DIR);
-    process.exit(1);
-}
+const resource_dir = require('./resource_dir');
 
 async function migrate() {
     const migrations = [];
@@ -20,7 +13,7 @@ async function migrate() {
 
     const currentDbVersion = parseInt(await options.getOption('db_version'));
 
-    fs.readdirSync(MIGRATIONS_DIR).forEach(file => {
+    fs.readdirSync(resource_dir.MIGRATIONS_DIR).forEach(file => {
         const match = file.match(/([0-9]{4})__([a-zA-Z0-9_ ]+)\.(sql|js)/);
 
         if (match) {
@@ -53,7 +46,7 @@ async function migrate() {
 
             await sql.doInTransaction(async () => {
                 if (mig.type === 'sql') {
-                    const migrationSql = fs.readFileSync(MIGRATIONS_DIR + "/" + mig.file).toString('utf8');
+                    const migrationSql = fs.readFileSync(resource_dir.MIGRATIONS_DIR + "/" + mig.file).toString('utf8');
 
                     console.log("Migration with SQL script: " + migrationSql);
 
@@ -62,7 +55,7 @@ async function migrate() {
                 else if (mig.type === 'js') {
                     console.log("Migration with JS module");
 
-                    const migrationModule = require("../" + MIGRATIONS_DIR + "/" + mig.file);
+                    const migrationModule = require("../" + resource_dir.MIGRATIONS_DIR + "/" + mig.file);
                     await migrationModule(db);
                 }
                 else {
