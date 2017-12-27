@@ -21,6 +21,7 @@ function createMainWindow() {
     const win = new electron.BrowserWindow({
         width: 1200,
         height: 900,
+        title: 'Trilium Notes',
         icon: path.join(__dirname, 'public/images/app-icons/png/256x256.png')
     });
 

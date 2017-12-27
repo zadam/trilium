@@ -44,8 +44,9 @@ bin/build.sh
 
 bin/package.sh
 
-LINUX_BUILD=trilium-linux-$VERSION.7z
-WINDOWS_BUILD=trilium-windows-$VERSION.7z
+LINUX_X64_BUILD=trilium-linux-x64-$VERSION.7z
+LINUX_IA32_BUILD=trilium-linux-ia32-$VERSION.7z
+WINDOWS_X64_BUILD=trilium-windows-x64-$VERSION.7z
 
 echo "Creating release in GitHub"
 
@@ -53,18 +54,25 @@ github-release release \
     --tag $TAG \
     --name "$TAG release"
 
-echo "Uploading linux build"
+echo "Uploading linux x64 build"
 
 github-release upload \
     --tag $TAG \
-    --name "$LINUX_BUILD" \
-    --file "dist/$LINUX_BUILD"
+    --name "$LINUX_X64_BUILD" \
+    --file "dist/$LINUX_X64_BUILD"
 
-echo "Uploading windows build"
+echo "Uploading linux ia32 build"
 
 github-release upload \
     --tag $TAG \
-    --name "$WINDOWS_BUILD" \
-    --file "dist/$WINDOWS_BUILD"
+    --name "$LINUX_IA32_BUILD" \
+    --file "dist/$LINUX_IA32_BUILD"
+
+echo "Uploading windows x64 build"
+
+github-release upload \
+    --tag $TAG \
+    --name "$WINDOWS_X64_BUILD" \
+    --file "dist/$WINDOWS_X64_BUILD"
 
 echo "Release finished!"
