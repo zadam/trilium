@@ -67,7 +67,7 @@ router.delete('/:noteTreeId', auth.checkApiAuth, async (req, res, next) => {
 router.get('/', auth.checkApiAuth, async (req, res, next) => {
     const search = '%' + req.query.search + '%';
 
-    const result = await sql.getAll("SELECT note_id FROM notes WHERE note_title liKE ? OR note_text LIKE ?", [search, search]);
+    const result = await sql.getAll("SELECT note_id FROM notes WHERE note_title LIKE ? OR note_text LIKE ?", [search, search]);
 
     const noteIdList = [];
 

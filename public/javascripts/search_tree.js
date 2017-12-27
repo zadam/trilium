@@ -8,14 +8,10 @@ const searchTree = (function() {
 
     resetSearchButton.click(resetSearch);
 
-    function showSearch() {
-        searchBoxEl.show();
-        searchInputEl.focus();
-    }
-
     function toggleSearch() {
         if (searchBoxEl.is(":hidden")) {
-            showSearch();
+            searchBoxEl.show();
+            searchInputEl.focus();
         }
         else {
             resetSearch();
@@ -52,7 +48,11 @@ const searchTree = (function() {
         }
     }).focus();
 
-    $(document).bind('keydown', 'alt+s', showSearch);
+    $(document).bind('keydown', 'alt+s', e => {
+        toggleSearch();
+
+        e.preventDefault();
+    });
 
     return {
         toggleSearch
