@@ -49,7 +49,7 @@ $(document).bind('keydown', 'ctrl+f', () => {
         const searchInPage = require('electron-in-page-search').default;
         const remote = require('electron').remote;
 
-        const inPageSearch = searchInPage(remote.getCurrentWebContents(), { openDevToolsOfSearchWindow: true });
+        const inPageSearch = searchInPage(remote.getCurrentWebContents());
 
         inPageSearch.openSearchWindow();
 
