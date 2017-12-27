@@ -29,7 +29,7 @@ const noteHistory = (function() {
         for (const item of historyItems) {
             const dateModified = parseDate(item.date_modified_from);
 
-            $("#note-history-list").append($('<option>', {
+            listEl.append($('<option>', {
                 value: item.note_history_id,
                 text: formatDateTime(dateModified)
             }));
@@ -41,6 +41,9 @@ const noteHistory = (function() {
             }
 
             listEl.val(noteHistoryId).trigger('change');
+        }
+        else {
+            titleEl.text("No history for this note yet...");
         }
     }
 

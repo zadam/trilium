@@ -97,7 +97,7 @@
 
           <span id="note-id-display" title="Note ID"></span>
 
-          <button class="btn btn-xs" style="margin: 10px;" onclick="noteHistory.showCurrentNoteHistory();">Note history</button>
+          <button class="btn btn-xs" title="ALT+H" style="margin: 10px;" onclick="noteHistory.showCurrentNoteHistory();">Note history</button>
         </div>
       </div>
 
@@ -113,13 +113,13 @@
       <br/><br/>
 
       <p>
-        <button class="btn btn-sm" id="recent-notes-jump-to">Jump to (enter)</button>
+        <button class="btn btn-sm" id="recent-notes-jump-to">Jump to <kbd>enter</kbd></button>
         &nbsp;
-        <button class="btn btn-sm" id="recent-notes-add-link">Add link (l)</button>
+        <button class="btn btn-sm" id="recent-notes-add-link">Add link <kbd>l</kbd></button>
 
-        <button class="btn btn-sm" id="recent-notes-add-current-as-child">Add current as child (c)</button>
+        <button class="btn btn-sm" id="recent-notes-add-current-as-child">Add current as child <kbd>c</kbd></button>
 
-        <button class="btn btn-sm" id="recent-notes-add-recent-as-child">Add recent as child (r)</button>
+        <button class="btn btn-sm" id="recent-notes-add-recent-as-child">Add recent as child <kbd>r</kbd></button>
       </p>
     </div>
 
@@ -165,7 +165,7 @@
           <input id="jump-to-note-autocomplete" style="width: 100%;">
         </div>
 
-        <button name="action" value="jump" class="btn btn-sm">Jump (enter)</button>
+        <button name="action" value="jump" class="btn btn-sm">Jump <kbd>enter</kbd></button>
       </form>
     </div>
 
@@ -176,7 +176,7 @@
           <input id="protected-session-password" class="form-control" type="password">
         </div>
 
-        <button class="btn btn-sm">Enter protected session</button>
+        <button class="btn btn-sm">Enter protected session <kbd>enter</kbd></button>
       </form>
     </div>
 
@@ -318,7 +318,7 @@
 
     <div id="sql-console-dialog" title="SQL console" style="display: none; padding: 20px;">
       <textarea style="width: 100%; height: 100px" id="sql-console-query"></textarea>
-      <button class="btn btn-danger" id="sql-console-execute">Execute</button>
+      <button class="btn btn-danger" id="sql-console-execute">Execute <kbd>CTRL+ENTER</kbd></button>
 
       <table id="sql-console-results" class="table table-striped" style="overflow: scroll; width: 100%;">
         <thead></thead>

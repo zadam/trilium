@@ -168,13 +168,16 @@ div.ui-tooltip {
 }
 
 /* Allow to use <kbd> elements inside the title to define shortcut hints. */
-.ui-menu kbd {
-    margin-left: 30px;
+.ui-menu kbd, button kbd {
     float: right;
     color: black;
     border: none;
     background-color: transparent;
     box-shadow: none;
+}
+
+.ui-menu kbd {
+    margin-left: 30px;
 }
 
 #note-id-display {

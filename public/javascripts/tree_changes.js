@@ -52,7 +52,7 @@ const treeChanges = (function() {
     }
 
     async function deleteNode(node) {
-        if (!confirm('Are you sure you want to delete note "' + node.title + '"?')) {
+        if (!confirm('Are you sure you want to delete note "' + node.title + '" and all its sub-notes?')) {
             return;
         }
 
@@ -83,6 +83,8 @@ const treeChanges = (function() {
         }
 
         noteTree.reload();
+
+        showMessage("Note has been deleted.");
     }
 
     async function moveNodeUpInHierarchy(node) {

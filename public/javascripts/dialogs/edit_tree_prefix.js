@@ -13,7 +13,7 @@ const editTreePrefix = (function() {
 
         await dialogEl.dialog({
             modal: true,
-            width: 800
+            width: 500
         });
 
         const currentNode = noteTree.getCurrentNode();
