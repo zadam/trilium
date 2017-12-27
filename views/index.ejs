@@ -29,7 +29,7 @@
 
           <button class="btn btn-xs" onclick="settings.showDialog();">Settings</button>
 
-          <form action="logout" method="POST" style="display: inline;">
+          <form action="logout" id="logout-button" method="POST" style="display: inline;">
             <input type="submit" class="btn btn-xs" value="Logout">
           </form>
         </div>
@@ -172,11 +172,11 @@
     <div id="protected-session-password-dialog" title="Protected session" style="display: none;">
       <form id="protected-session-password-form">
         <div class="form-group">
-          <label for="protected-session-password">To proceed with requested action you need to enter protected session by entering password:</label>
+          <label for="protected-session-password">To proceed with requested action you need to start protected session by entering password:</label>
           <input id="protected-session-password" class="form-control" type="password">
         </div>
 
-        <button class="btn btn-sm">Enter protected session <kbd>enter</kbd></button>
+        <button class="btn btn-sm">Start protected session <kbd>enter</kbd></button>
       </form>
     </div>
 
