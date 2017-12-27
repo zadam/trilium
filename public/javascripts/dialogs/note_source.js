@@ -9,7 +9,8 @@ const noteSource = (function() {
 
         dialogEl.dialog({
             modal: true,
-            width: 800
+            width: 800,
+            height: 500
         });
 
         const noteText = noteEditor.getCurrentNote().detail.note_text;

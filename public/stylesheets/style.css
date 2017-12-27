@@ -185,6 +185,12 @@ div.ui-tooltip {
     margin-left: 10px;
 }
 
+#note-source {
+    height: 98%;
+    width: 100%;
+    overflow: scroll;
+}
+
 #loader-wrapper{position:fixed;top:0;left:0;width:100%;height:100%;z-index:1000;background-color:#fff;opacity:1;transition:opacity 2s ease}
 #loader{display:block;position:relative;left:50%;top:50%;width:150px;height:150px;margin:-75px 0 0 -75px;border-radius:50%;border:3px solid transparent;border-top-color:#777;-webkit-animation:spin 2s linear infinite;animation:spin 2s linear infinite}
 #loader:before{content:"";position:absolute;top:5px;left:5px;right:5px;bottom:5px;border-radius:50%;border:3px solid transparent;border-top-color:#aaa;-webkit-animation:spin 3s linear infinite;animation:spin 3s linear infinite}
