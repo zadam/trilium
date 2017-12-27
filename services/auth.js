@@ -3,12 +3,9 @@
 const migration = require('./migration');
 const sql = require('./sql');
 const utils = require('./utils');
-const options = require('./options');
 
 async function checkAuth(req, res, next) {
-    const username = await options.getOption('username');
-
-    if (!username) {
+    if (!await sql.isUserInitialized()) {
         res.redirect("setup");
     }
     else if (!req.session.loggedIn && !utils.isElectron()) {
@@ -53,9 +50,7 @@ async function checkApiAuthForMigrationPage(req, res, next) {
 }
 
 async function checkAppNotInitialized(req, res, next) {
-    const username = await options.getOption('username');
-
-    if (username) {
+    if (await sql.isUserInitialized()) {
         res.status(400).send("App already initialized.");
     }
     else {

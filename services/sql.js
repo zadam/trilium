@@ -49,9 +49,7 @@ const dbReady = new Promise((resolve, reject) => {
             // the database
         }
         else {
-            const username = await getFirstValue("SELECT opt_value FROM options WHERE opt_name = 'username'");
-
-            if (!username) {
+            if (!await isUserInitialized()) {
                 log.info("Login/password not initialized. DB not ready.");
 
                 return;
@@ -235,8 +233,15 @@ async function isDbUpToDate() {
     return upToDate;
 }
 
+async function isUserInitialized() {
+    const username = await getFirstValue("SELECT opt_value FROM options WHERE opt_name = 'username'");
+
+    return !!username;
+}
+
 module.exports = {
     dbReady,
+    isUserInitialized,
     insert,
     replace,
     getFirstValue,
