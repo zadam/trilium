@@ -432,6 +432,27 @@ const noteTree = (function() {
             "alt+-": node => {
                 collapseTree(node);
             },
+            "ctrl+c": node => {
+                contextMenu.copy(node);
+
+                showMessage("Note copied into clipboard.");
+
+                return false;
+            },
+            "ctrl+x": node => {
+                contextMenu.cut(node);
+
+                showMessage("Note cut into clipboard.");
+
+                return false;
+            },
+            "ctrl+v": node => {
+                contextMenu.pasteInto(node);
+
+                showMessage("Note pasted from clipboard into current note.");
+
+                return false;
+            },
             // code below shouldn't be necessary normally, however there's some problem with interaction with context menu plugin
             // after opening context menu, standard shortcuts don't work, but they are detected here
             // so we essentially takeover the standard handling with our implementation.
@@ -513,57 +534,6 @@ const noteTree = (function() {
                 mode: "hide"       // Grayout unmatched nodes (pass "hide" to remove unmatched node instead)
             },
             dnd: dragAndDropSetup,
-            keydown: (event, data) => {
-                const node = data.node;
-                // Eat keyboard events, when a menu is open
-                if ($(".contextMenu:visible").length > 0)
-                    return false;
-
-                switch (event.which) {
-                    // Open context menu on [Space] key (simulate right click)
-                    case 32: // [Space]
-                        $(node.span).trigger("mousedown", {
-                            preventDefault: true,
-                            button: 2
-                        })
-                            .trigger("mouseup", {
-                                preventDefault: true,
-                                pageX: node.span.offsetLeft,
-                                pageY: node.span.offsetTop,
-                                button: 2
-                            });
-                        return false;
-
-                    // Handle Ctrl+C, +X and +V
-                    case 67:
-                        if (event.ctrlKey) { // Ctrl+C
-                            contextMenu.copy(node);
-
-                            showMessage("Note copied into clipboard.");
-
-                            return false;
-                        }
-                        break;
-                    case 88:
-                        if (event.ctrlKey) { // Ctrl+X
-                            contextMenu.cut(node);
-
-                            showMessage("Note cut into clipboard.");
-
-                            return false;
-                        }
-                        break;
-                    case 86:
-                        if (event.ctrlKey) { // Ctrl+V
-                            contextMenu.pasteInto(node);
-
-                            showMessage("Note pasted from clipboard into current note.");
-
-                            return false;
-                        }
-                        break;
-                }
-            },
             lazyLoad: function(event, data){
                 const node = data.node.data;
 
