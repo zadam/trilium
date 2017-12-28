@@ -29,9 +29,11 @@ const treeChanges = (function() {
         await server.put('notes/' + node.data.note_tree_id + '/move-to/' + toNode.data.note_id);
 
         changeNode(node, node => {
-            node.moveTo(toNode);
-
+            // first expand which will force lazy load and only then move the node
+            // if this is not expanded before moving, then lazy load won't happen because it already contains node
             toNode.setExpanded(true);
+
+            node.moveTo(toNode);
 
             toNode.folder = true;
             toNode.renderTitle();
