@@ -4,6 +4,7 @@ const noteTree = (function() {
     const treeEl = $("#tree");
     const parentListEl = $("#parent-list");
     const parentListListEl = $("#parent-list-list");
+    const noteDetailEl = $("#note-detail");
 
     let startNotePath = null;
     let notesTreeMap = {};
@@ -452,6 +453,9 @@ const noteTree = (function() {
                 showMessage("Note pasted from clipboard into current note.");
 
                 return false;
+            },
+            "ctrl+return": node => {
+                noteDetailEl.focus();
             },
             // code below shouldn't be necessary normally, however there's some problem with interaction with context menu plugin
             // after opening context menu, standard shortcuts don't work, but they are detected here
