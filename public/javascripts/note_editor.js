@@ -128,6 +128,9 @@ const noteEditor = (function() {
         setNoteBackgroundIfProtected(currentNote);
         noteTree.setNoteTreeBackgroundBasedOnProtectedStatus(noteId);
 
+        // after loading new note make sure editor is scrolled to the top
+        noteDetailWrapperEl.scrollTop(0);
+
         showAppIfHidden();
     }
 
