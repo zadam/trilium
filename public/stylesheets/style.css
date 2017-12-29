@@ -74,6 +74,12 @@ span.fancytree-node.fancytree-active-clone:not(.fancytree-active) .fancytree-tit
     font-weight: bold;
 }
 
+/* By default not focused active tree item is not easily visible, this makes it more visible */
+span.fancytree-active:not(.fancytree-focused) .fancytree-title {
+    background-color: #ddd !important;
+    border-color: #555 !important;
+}
+
 .ui-autocomplete {
     max-height: 300px;
     overflow-y: auto;
