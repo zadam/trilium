@@ -60,23 +60,6 @@ const noteTree = (function() {
         return treeUtils.getNotePath(node);
     }
 
-    function getCurrentNoteId() {
-        const node = getCurrentNode();
-
-        return node ? node.data.note_id : null;
-    }
-
-    function getCurrentClones() {
-        const noteId = getCurrentNoteId();
-
-        if (noteId) {
-            return getNodesByNoteId(noteId);
-        }
-        else {
-            return [];
-        }
-    }
-
     function getNodesByNoteTreeId(noteTreeId) {
         assertArguments(noteTreeId);
 
