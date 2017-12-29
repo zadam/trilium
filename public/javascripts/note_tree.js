@@ -186,13 +186,15 @@ const noteTree = (function() {
             const noteTreeId = getNoteTreeId(parentNoteId, noteId);
             const noteTree = notesTreeMap[noteTreeId];
 
+            const title = (noteTree.prefix ? (noteTree.prefix + " - ") : "") + noteIdToTitle[noteTree.note_id];
+
             const node = {
                 note_id: noteTree.note_id,
                 parent_note_id: noteTree.parent_note_id,
                 note_tree_id: noteTree.note_tree_id,
                 is_protected: noteTree.is_protected,
                 prefix: noteTree.prefix,
-                title: (noteTree.prefix ? (noteTree.prefix + " - ") : "") + noteIdToTitle[noteTree.note_id],
+                title: escapeHtml(title),
                 extraClasses: getExtraClasses(noteTree),
                 refKey: noteTree.note_id,
                 expanded: noteTree.is_expanded

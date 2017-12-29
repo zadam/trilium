@@ -37,7 +37,7 @@ const treeUtils = (function() {
 
         const title = (prefix ? (prefix + " - ") : "") + noteTitle;
 
-        node.setTitle(title);
+        node.setTitle(escapeHtml(title));
     }
 
     return {

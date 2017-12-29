@@ -94,3 +94,7 @@ function isTopLevelNode(node) {
 function isRootNode(node) {
     return node.key === "root_1";
 }
+
+function escapeHtml(str) {
+    return $('<div/>').text(str).html();
+}
