@@ -57,6 +57,42 @@ $(document).bind('keydown', 'ctrl+f', () => {
     }
 });
 
+$(document).bind('keydown', "ctrl+shift+left", () => {
+    const node = noteTree.getCurrentNode();
+    node.navigate($.ui.keyCode.LEFT, true);
+
+    $("#note-detail").focus();
+
+    return false;
+});
+
+$(document).bind('keydown', "ctrl+shift+right", () => {
+    const node = noteTree.getCurrentNode();
+    node.navigate($.ui.keyCode.RIGHT, true);
+
+    $("#note-detail").focus();
+
+    return false;
+});
+
+$(document).bind('keydown', "ctrl+shift+up", () => {
+    const node = noteTree.getCurrentNode();
+    node.navigate($.ui.keyCode.UP, true);
+
+    $("#note-detail").focus();
+
+    return false;
+});
+
+$(document).bind('keydown', "ctrl+shift+down", () => {
+    const node = noteTree.getCurrentNode();
+    node.navigate($.ui.keyCode.DOWN, true);
+
+    $("#note-detail").focus();
+
+    return false;
+});
+
 $(window).on('beforeunload', () => {
     // this makes sure that when user e.g. reloads the page or navigates away from the page, the note's content is saved
     // this sends the request asynchronously and doesn't wait for result
