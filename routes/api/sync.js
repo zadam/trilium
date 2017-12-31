@@ -58,7 +58,7 @@ router.post('/force-note-sync/:noteId', auth.checkApiAuth, async (req, res, next
         }
 
         for (const noteHistoryId of await sql.getFirstColumn("SELECT note_history_id FROM notes_history WHERE note_id = ?", [noteId])) {
-            await sync_table.addNoteTreeSync(noteHistoryId);
+            await sync_table.addNoteHistorySync(noteHistoryId);
         }
     });
 
