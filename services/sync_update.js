@@ -40,7 +40,9 @@ async function updateNoteHistory(entity, sourceId) {
     const orig = await sql.getFirstOrNull("SELECT * FROM notes_history WHERE note_history_id = ?", [entity.note_history_id]);
 
     await sql.doInTransaction(async () => {
-        if (orig === null || orig.date_modified_to < entity.date_modified_to) {
+        // we update note history even if date modified to is the same because the only thing which might have changed
+        // is the protected status (and correnspondingly note_title and note_text) which doesn't affect the date_modified_to
+        if (orig === null || orig.date_modified_to <= entity.date_modified_to) {
             await sql.replace('notes_history', entity);
 
             await sync_table.addNoteHistorySync(entity.note_history_id, sourceId);
