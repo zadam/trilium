@@ -1,6 +1,7 @@
 "use strict";
 
 const crypto = require('crypto');
+const log = require('./log');
 
 function arraysIdentical(a, b) {
     let i = a.length;
@@ -72,7 +73,15 @@ function decrypt(key, iv, cipherText) {
 function decryptString(dataKey, iv, cipherText) {
     const buffer = decrypt(dataKey, iv, cipherText);
 
-    return buffer.toString('utf-8');
+    const str = buffer.toString('utf-8');
+
+    if (str === 'false') {
+        log.error("Could not decrypt string. Buffer: " + buffer);
+
+        throw new Error("Could not decrypt string.");
+    }
+
+    return str;
 }
 
 function noteTitleIv(iv) {
