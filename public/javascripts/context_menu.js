@@ -71,7 +71,8 @@ const contextMenu = (function() {
             {title: "Paste into <kbd>Ctrl+V</kbd>", cmd: "pasteInto", uiIcon: "ui-icon-clipboard"},
             {title: "Paste after", cmd: "pasteAfter", uiIcon: "ui-icon-clipboard"},
             {title: "----"},
-            {title: "Collapse sub-tree <kbd>Alt+-</kbd>", cmd: "collapse-sub-tree", uiIcon: "ui-icon-minus"}
+            {title: "Collapse sub-tree <kbd>Alt+-</kbd>", cmd: "collapse-sub-tree", uiIcon: "ui-icon-minus"},
+            {title: "Force note sync", cmd: "force-note-sync", uiIcon: "ui-icon-refresh"}
         ],
         beforeOpen: (event, ui) => {
             const node = $.ui.fancytree.getNode(ui.target);
@@ -124,6 +125,9 @@ const contextMenu = (function() {
             }
             else if (ui.cmd === "collapse-sub-tree") {
                 noteTree.collapseTree(node);
+            }
+            else if (ui.cmd === "force-note-sync") {
+                forceNoteSync(node.data.note_id);
             }
             else {
                 messaging.logError("Unknown command: " + ui.cmd);

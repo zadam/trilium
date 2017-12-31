@@ -24,8 +24,8 @@ async function addOptionsSync(optName, sourceId) {
     await addEntitySync("options", optName, sourceId);
 }
 
-async function addRecentNoteSync(notePath, sourceId) {
-    await addEntitySync("recent_notes", notePath, sourceId);
+async function addRecentNoteSync(noteTreeId, sourceId) {
+    await addEntitySync("recent_notes", noteTreeId, sourceId);
 }
 
 async function addEntitySync(entityName, entityId, sourceId) {

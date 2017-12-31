@@ -14,3 +14,9 @@ async function syncNow() {
         showError("Sync failed: " + result.message);
     }
 }
+
+async function forceNoteSync(noteId) {
+    const result = await server.post('sync/force-note-sync/' + noteId);
+
+    showMessage("Note added to sync queue.");
+}

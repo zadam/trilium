@@ -46,6 +46,30 @@ router.post('/force-full-sync', auth.checkApiAuth, async (req, res, next) => {
     res.send({});
 });
 
+router.post('/force-note-sync/:noteId', auth.checkApiAuth, async (req, res, next) => {
+    const noteId = req.params.noteId;
+
+    await sql.doInTransaction(async () => {
+        await sync_table.addNoteSync(noteId);
+
+        for (const noteTreeId of await sql.getFirstColumn("SELECT note_tree_id FROM notes_tree WHERE is_deleted = 0 AND note_id = ?", [noteId])) {
+            await sync_table.addNoteTreeSync(noteTreeId);
+            await sync_table.addRecentNoteSync(noteTreeId);
+        }
+
+        for (const noteHistoryId of await sql.getFirstColumn("SELECT note_history_id FROM notes_history WHERE note_id = ?", [noteId])) {
+            await sync_table.addNoteTreeSync(noteHistoryId);
+        }
+    });
+
+    log.info("Forcing note sync for " + noteId);
+
+    // not awaiting for the job to finish (will probably take a long time)
+    sync.sync();
+
+    res.send({});
+});
+
 router.get('/changed', auth.checkApiAuth, async (req, res, next) => {
     const lastSyncId = parseInt(req.query.lastSyncId);
 
