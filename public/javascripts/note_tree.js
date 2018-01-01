@@ -452,6 +452,13 @@ const noteTree = (function() {
             "alt+-": node => {
                 collapseTree(node);
             },
+            "ctrl+a": node => {
+                for (const child of node.getParent().getChildren()) {
+                    child.setSelected(true);
+                }
+
+                return false;
+            },
             "ctrl+c": () => {
                 contextMenu.copy(getSelectedNodes());
 
