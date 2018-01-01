@@ -1,16 +1,20 @@
 "use strict";
 
 const treeChanges = (function() {
-    async function moveBeforeNode(node, beforeNode) {
-        await server.put('notes/' + node.data.note_tree_id + '/move-before/' + beforeNode.data.note_tree_id);
+    async function moveBeforeNode(nodesToMove, beforeNode) {
+        for (const nodeToMove of nodesToMove) {
+            await server.put('notes/' + nodeToMove.data.note_tree_id + '/move-before/' + beforeNode.data.note_tree_id);
 
-        changeNode(node, node => node.moveTo(beforeNode, 'before'));
+            changeNode(nodeToMove, node => node.moveTo(beforeNode, 'before'));
+        }
     }
 
-    async function moveAfterNode(node, afterNode) {
-        await server.put('notes/' + node.data.note_tree_id + '/move-after/' + afterNode.data.note_tree_id);
+    async function moveAfterNode(nodesToMove, afterNode) {
+        for (const nodeToMove of nodesToMove) {
+            await server.put('notes/' + nodeToMove.data.note_tree_id + '/move-after/' + afterNode.data.note_tree_id);
 
-        changeNode(node, node => node.moveTo(afterNode, 'after'));
+            changeNode(nodeToMove, node => node.moveTo(afterNode, 'after'));
+        }
     }
 
     // beware that first arg is noteId and second is noteTreeId!
@@ -25,19 +29,21 @@ const treeChanges = (function() {
         await noteTree.reload();
     }
 
-    async function moveToNode(node, toNode) {
-        await server.put('notes/' + node.data.note_tree_id + '/move-to/' + toNode.data.note_id);
+    async function moveToNode(nodesToMove, toNode) {
+        for (const nodeToMove of nodesToMove) {
+            await server.put('notes/' + nodeToMove.data.note_tree_id + '/move-to/' + toNode.data.note_id);
 
-        changeNode(node, node => {
-            // first expand which will force lazy load and only then move the node
-            // if this is not expanded before moving, then lazy load won't happen because it already contains node
-            toNode.setExpanded(true);
+            changeNode(nodeToMove, node => {
+                // first expand which will force lazy load and only then move the node
+                // if this is not expanded before moving, then lazy load won't happen because it already contains node
+                toNode.setExpanded(true);
 
-            node.moveTo(toNode);
+                node.moveTo(toNode);
 
-            toNode.folder = true;
-            toNode.renderTitle();
-        });
+                toNode.folder = true;
+                toNode.renderTitle();
+            });
+        }
     }
 
     async function cloneNoteTo(childNoteId, parentNoteId, prefix) {

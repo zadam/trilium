@@ -46,14 +46,19 @@ const dragAndDropSetup = {
         // This function MUST be defined to enable dropping of items on the tree.
         // data.hitMode is 'before', 'after', or 'over'.
 
+        const nodeToMove = data.otherNode;
+        nodeToMove.setSelected(true);
+
+        const selectedNodes = noteTree.getSelectedNodes();
+
         if (data.hitMode === "before") {
-            treeChanges.moveBeforeNode(data.otherNode, node);
+            treeChanges.moveBeforeNode(selectedNodes, node);
         }
         else if (data.hitMode === "after") {
-            treeChanges.moveAfterNode(data.otherNode, node);
+            treeChanges.moveAfterNode(selectedNodes, node);
         }
         else if (data.hitMode === "over") {
-            treeChanges.moveToNode(data.otherNode, node);
+            treeChanges.moveToNode(selectedNodes, node);
         }
         else {
             throw new Exception("Unknown hitMode=" + data.hitMode);

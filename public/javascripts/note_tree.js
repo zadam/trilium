@@ -405,24 +405,32 @@ const noteTree = (function() {
                 const beforeNode = node.getPrevSibling();
 
                 if (beforeNode !== null) {
-                    treeChanges.moveBeforeNode(node, beforeNode);
+                    treeChanges.moveBeforeNode([node], beforeNode);
                 }
+
+                return false;
             },
             "ctrl+down": node => {
                 let afterNode = node.getNextSibling();
                 if (afterNode !== null) {
-                    treeChanges.moveAfterNode(node, afterNode);
+                    treeChanges.moveAfterNode([node], afterNode);
                 }
+
+                return false;
             },
             "ctrl+left": node => {
                 treeChanges.moveNodeUpInHierarchy(node);
+
+                return false;
             },
             "ctrl+right": node => {
                 let toNode = node.getPrevSibling();
 
                 if (toNode !== null) {
-                    treeChanges.moveToNode(node, toNode);
+                    treeChanges.moveToNode([node], toNode);
                 }
+
+                return false;
             },
             "shift+up": node => {
                 node.navigate($.ui.keyCode.UP, true).then(() => {
@@ -434,6 +442,8 @@ const noteTree = (function() {
 
                     currentNode.setSelected(true);
                 });
+
+                return false;
             },
             "shift+down": node => {
                 node.navigate($.ui.keyCode.DOWN, true).then(() => {
@@ -445,6 +455,8 @@ const noteTree = (function() {
 
                     currentNode.setSelected(true);
                 });
+
+                return false;
             },
             "f2": node => {
                 editTreePrefix.showDialog(node);
