@@ -3,53 +3,68 @@
 const contextMenu = (function() {
     const treeEl = $("#tree");
 
-    let clipboardId = null;
+    let clipboardIds = [];
     let clipboardMode = null;
 
     function pasteAfter(node) {
         if (clipboardMode === 'cut') {
-            const subjectNode = treeUtils.getNodeByKey(clipboardId);
+            for (const nodeKey of clipboardIds) {
+                const subjectNode = treeUtils.getNodeByKey(nodeKey);
 
-            treeChanges.moveAfterNode(subjectNode, node);
+                treeChanges.moveAfterNode(subjectNode, node);
+            }
+
+            clipboardIds = [];
+            clipboardMode = null;
         }
         else if (clipboardMode === 'copy') {
-            treeChanges.cloneNoteAfter(clipboardId, node.data.note_tree_id);
+            for (const noteId of clipboardIds) {
+                treeChanges.cloneNoteAfter(noteId, node.data.note_tree_id);
+            }
+
+            // copy will keep clipboardIds and clipboardMode so it's possible to paste into multiple places
         }
-        else if (clipboardId === null) {
+        else if (clipboardIds.length === 0) {
             // just do nothing
         }
         else {
             throwError("Unrecognized clipboard mode=" + clipboardMode);
         }
-
-        clipboardId = null;
-        clipboardMode = null;
     }
 
     function pasteInto(node) {
         if (clipboardMode === 'cut') {
-            const subjectNode = treeUtils.getNodeByKey(clipboardId);
+            for (const nodeKey of clipboardIds) {
+                const subjectNode = treeUtils.getNodeByKey(nodeKey);
 
-            treeChanges.moveToNode(subjectNode, node);
+                treeChanges.moveToNode(subjectNode, node);
+            }
+
+            clipboardIds = [];
+            clipboardMode = null;
         }
         else if (clipboardMode === 'copy') {
-            treeChanges.cloneNoteTo(clipboardId, node.data.note_id);
+            for (const noteId of clipboardIds) {
+                treeChanges.cloneNoteTo(noteId, node.data.note_id);
+            }
+
+            // copy will keep clipboardIds and clipboardMode so it's possible to paste into multiple places
+        }
+        else if (clipboardIds.length === 0) {
+            // just do nothing
         }
         else {
             throwError("Unrecognized clipboard mode=" + mode);
         }
-
-        clipboardId = null;
-        clipboardMode = null;
     }
 
-    function copy(node) {
-        clipboardId = node.data.note_id;
+    function copy(nodes) {
+        clipboardIds = nodes.map(node => node.data.note_id);
         clipboardMode = 'copy';
     }
 
-    function cut(node) {
-        clipboardId = node.key;
+    function cut(nodes) {
+        clipboardIds = nodes.map(node => node.key);
         clipboardMode = 'cut';
     }
 
@@ -77,8 +92,8 @@ const contextMenu = (function() {
         beforeOpen: (event, ui) => {
             const node = $.ui.fancytree.getNode(ui.target);
             // Modify menu entries depending on node status
-            treeEl.contextmenu("enableEntry", "pasteAfter", clipboardId !== null);
-            treeEl.contextmenu("enableEntry", "pasteInto", clipboardId !== null);
+            treeEl.contextmenu("enableEntry", "pasteAfter", clipboardIds.length > 0);
+            treeEl.contextmenu("enableEntry", "pasteInto", clipboardIds.length > 0);
 
             // Activate node on right-click
             node.setActive();
@@ -109,10 +124,10 @@ const contextMenu = (function() {
                 protected_session.protectSubTree(node.data.note_id, false);
             }
             else if (ui.cmd === "copy") {
-                copy(node);
+                copy(noteTree.getSelectedNodes());
             }
             else if (ui.cmd === "cut") {
-                cut(node);
+                cut(noteTree.getSelectedNodes());
             }
             else if (ui.cmd === "pasteAfter") {
                 pasteAfter(node);

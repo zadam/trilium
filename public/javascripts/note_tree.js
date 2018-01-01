@@ -382,6 +382,18 @@ const noteTree = (function() {
         recentNotes.addRecentNote(currentNoteTreeId, currentNotePath);
     }
 
+    function getSelectedNodes() {
+        return getTree().getSelectedNodes();
+    }
+
+    function clearSelectedNodes() {
+        for (const selectedNode of getSelectedNodes()) {
+            selectedNode.setSelected(false);
+        }
+
+        getCurrentNode().setSelected(true);
+    }
+
     function initFancyTree(noteTree) {
         assertArguments(noteTree);
 
@@ -389,28 +401,50 @@ const noteTree = (function() {
             "del": node => {
                 treeChanges.deleteNode(node);
             },
-            "shift+up": node => {
+            "ctrl+up": node => {
                 const beforeNode = node.getPrevSibling();
 
                 if (beforeNode !== null) {
                     treeChanges.moveBeforeNode(node, beforeNode);
                 }
             },
-            "shift+down": node => {
+            "ctrl+down": node => {
                 let afterNode = node.getNextSibling();
                 if (afterNode !== null) {
                     treeChanges.moveAfterNode(node, afterNode);
                 }
             },
-            "shift+left": node => {
+            "ctrl+left": node => {
                 treeChanges.moveNodeUpInHierarchy(node);
             },
-            "shift+right": node => {
+            "ctrl+right": node => {
                 let toNode = node.getPrevSibling();
 
                 if (toNode !== null) {
                     treeChanges.moveToNode(node, toNode);
                 }
+            },
+            "shift+up": node => {
+                node.navigate($.ui.keyCode.UP, true).then(() => {
+                    const currentNode = getCurrentNode();
+
+                    if (currentNode.isSelected()) {
+                        node.setSelected(false);
+                    }
+
+                    currentNode.setSelected(true);
+                });
+            },
+            "shift+down": node => {
+                node.navigate($.ui.keyCode.DOWN, true).then(() => {
+                    const currentNode = getCurrentNode();
+
+                    if (currentNode.isSelected()) {
+                        node.setSelected(false);
+                    }
+
+                    currentNode.setSelected(true);
+                });
             },
             "f2": node => {
                 editTreePrefix.showDialog(node);
@@ -418,24 +452,24 @@ const noteTree = (function() {
             "alt+-": node => {
                 collapseTree(node);
             },
-            "ctrl+c": node => {
-                contextMenu.copy(node);
+            "ctrl+c": () => {
+                contextMenu.copy(getSelectedNodes());
 
-                showMessage("Note copied into clipboard.");
+                showMessage("Note(s) copied into clipboard.");
 
                 return false;
             },
-            "ctrl+x": node => {
-                contextMenu.cut(node);
+            "ctrl+x": () => {
+                contextMenu.cut(getSelectedNodes());
 
-                showMessage("Note cut into clipboard.");
+                showMessage("Note(s) cut into clipboard.");
 
                 return false;
             },
             "ctrl+v": node => {
                 contextMenu.pasteInto(node);
 
-                showMessage("Note pasted from clipboard into current note.");
+                showMessage("Note(s) pasted from clipboard into current note.");
 
                 return false;
             },
@@ -449,22 +483,22 @@ const noteTree = (function() {
             // after opening context menu, standard shortcuts don't work, but they are detected here
             // so we essentially takeover the standard handling with our implementation.
             "left": node => {
-                node.navigate($.ui.keyCode.LEFT, true);
+                node.navigate($.ui.keyCode.LEFT, true).then(() => clearSelectedNodes());
 
                 return false;
             },
             "right": node => {
-                node.navigate($.ui.keyCode.RIGHT, true);
+                node.navigate($.ui.keyCode.RIGHT, true).then(() => clearSelectedNodes());
 
                 return false;
             },
             "up": node => {
-                node.navigate($.ui.keyCode.UP, true);
+                node.navigate($.ui.keyCode.UP, true).then(() => clearSelectedNodes());
 
                 return false;
             },
             "down": node => {
-                node.navigate($.ui.keyCode.DOWN, true);
+                node.navigate($.ui.keyCode.DOWN, true).then(() => clearSelectedNodes());
 
                 return false;
             }
@@ -476,6 +510,22 @@ const noteTree = (function() {
             extensions: ["hotkeys", "filter", "dnd", "clones"],
             source: noteTree,
             scrollParent: $("#tree"),
+            click: (event, data) => {
+                const targetType = data.targetType;
+                const node = data.node;
+
+                if (targetType === 'title' || targetType === 'icon') {
+                    node.setActive();
+
+                    if (!event.ctrlKey) {
+                        clearSelectedNodes();
+                    }
+
+                    node.setSelected(true);
+
+                    return false;
+                }
+            },
             activate: (event, data) => {
                 const node = data.node.data;
 
@@ -769,6 +819,7 @@ const noteTree = (function() {
         setPrefix,
         getNotePathTitle,
         removeParentChildRelation,
-        setParentChildRelation
+        setParentChildRelation,
+        getSelectedNodes
     };
 })();
