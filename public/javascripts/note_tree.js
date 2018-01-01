@@ -209,8 +209,6 @@ const noteTree = (function() {
 
         let parentNoteId = 'root';
 
-        //console.log(now(), "Run path: ", runPath);
-
         for (const childNoteId of runPath) {
             const node = getNodesByNoteId(childNoteId).find(node => node.data.parent_note_id === parentNoteId);
 
@@ -223,6 +221,8 @@ const noteTree = (function() {
 
             parentNoteId = childNoteId;
         }
+
+        clearSelectedNodes();
     }
 
     /**
@@ -391,7 +391,11 @@ const noteTree = (function() {
             selectedNode.setSelected(false);
         }
 
-        getCurrentNode().setSelected(true);
+        const currentNode = getCurrentNode();
+
+        if (currentNode) {
+            currentNode.setSelected(true);
+        }
     }
 
     function initFancyTree(noteTree) {
@@ -803,7 +807,11 @@ const noteTree = (function() {
     $(window).bind('hashchange', function() {
         const notePath = getNotePathFromAddress();
 
-        activateNode(notePath);
+        if (getCurrentNotePath() !== notePath) {
+            console.log("Switching to " + notePath + " because of hash change");
+
+            activateNode(notePath);
+        }
     });
 
     if (isElectron()) {
