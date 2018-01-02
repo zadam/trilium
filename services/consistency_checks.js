@@ -83,6 +83,8 @@ async function runSyncRowChecks(table, key, errorList) {
 async function runChecks() {
     const errorList = [];
 
+    const startTime = new Date();
+
     await runCheck(`
           SELECT 
             note_id 
@@ -170,13 +172,15 @@ async function runChecks() {
         await checkTreeCycles(errorList);
     }
 
+    const elapsedTimeMs = new Date().getTime() - startTime.getTime();
+
     if (errorList.length > 0) {
-        log.info("Consistency checks failed with these errors: " + JSON.stringify(errorList));
+        log.info(`Consistency checks failed (took ${elapsedTimeMs}ms) with these errors: ` + JSON.stringify(errorList));
 
         messaging.sendMessageToAllClients({type: 'consistency-checks-failed'});
     }
     else {
-        log.info("All consistency checks passed.");
+        log.info(`All consistency checks passed (took ${elapsedTimeMs}ms)`);
     }
 }
 

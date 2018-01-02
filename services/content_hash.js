@@ -1,6 +1,7 @@
 const sql = require('./sql');
 const utils = require('./utils');
 const options = require('./options');
+const log = require('./log');
 
 function getHash(rows) {
     let hash = '';
@@ -13,9 +14,11 @@ function getHash(rows) {
 }
 
 async function getHashes() {
+    const startTime = new Date();
+
     const optionsQuestionMarks = Array(options.SYNCED_OPTIONS.length).fill('?').join(',');
 
-    return {
+    const hashes = {
         notes: getHash(await sql.getAll(`SELECT
                                                   note_id,
                                                   note_title,
@@ -62,6 +65,12 @@ async function getHashes() {
                                                   WHERE opt_name IN (${optionsQuestionMarks}) 
                                                   ORDER BY opt_name`, options.SYNCED_OPTIONS))
     };
+
+    const elapseTimeMs = new Date().getTime() - startTime.getTime();
+
+    log.info(`Content hash computation took ${elapseTimeMs}ms`);
+
+    return hashes;
 }
 
 module.exports = {
