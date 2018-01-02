@@ -60,11 +60,15 @@ const contextMenu = (function() {
     function copy(nodes) {
         clipboardIds = nodes.map(node => node.data.note_id);
         clipboardMode = 'copy';
+
+        showMessage("Note(s) have been copied into clipboard.");
     }
 
     function cut(nodes) {
         clipboardIds = nodes.map(node => node.key);
         clipboardMode = 'cut';
+
+        showMessage("Note(s) have been cut into clipboard.");
     }
 
     const contextMenuSettings = {
