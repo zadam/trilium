@@ -3,7 +3,12 @@
 const treeChanges = (function() {
     async function moveBeforeNode(nodesToMove, beforeNode) {
         for (const nodeToMove of nodesToMove) {
-            await server.put('notes/' + nodeToMove.data.note_tree_id + '/move-before/' + beforeNode.data.note_tree_id);
+            const resp = await server.put('notes/' + nodeToMove.data.note_tree_id + '/move-before/' + beforeNode.data.note_tree_id);
+
+            if (!resp.success) {
+                alert(resp.message);
+                return;
+            }
 
             changeNode(nodeToMove, node => node.moveTo(beforeNode, 'before'));
         }
@@ -11,7 +16,12 @@ const treeChanges = (function() {
 
     async function moveAfterNode(nodesToMove, afterNode) {
         for (const nodeToMove of nodesToMove) {
-            await server.put('notes/' + nodeToMove.data.note_tree_id + '/move-after/' + afterNode.data.note_tree_id);
+            const resp = await server.put('notes/' + nodeToMove.data.note_tree_id + '/move-after/' + afterNode.data.note_tree_id);
+
+            if (!resp.success) {
+                alert(resp.message);
+                return;
+            }
 
             changeNode(nodeToMove, node => node.moveTo(afterNode, 'after'));
         }
@@ -31,7 +41,12 @@ const treeChanges = (function() {
 
     async function moveToNode(nodesToMove, toNode) {
         for (const nodeToMove of nodesToMove) {
-            await server.put('notes/' + nodeToMove.data.note_tree_id + '/move-to/' + toNode.data.note_id);
+            const resp = await server.put('notes/' + nodeToMove.data.note_tree_id + '/move-to/' + toNode.data.note_id);
+
+            if (!resp.success) {
+                alert(resp.message);
+                return;
+            }
 
             changeNode(nodeToMove, node => {
                 // first expand which will force lazy load and only then move the node
@@ -100,7 +115,12 @@ const treeChanges = (function() {
             return;
         }
 
-        await server.put('notes/' + node.data.note_tree_id + '/move-after/' + node.getParent().data.note_tree_id);
+        const resp = await server.put('notes/' + node.data.note_tree_id + '/move-after/' + node.getParent().data.note_tree_id);
+
+        if (!resp.success) {
+            alert(resp.message);
+            return;
+        }
 
         if (!isTopLevelNode(node) && node.getParent().getChildren().length <= 1) {
             node.getParent().folder = false;

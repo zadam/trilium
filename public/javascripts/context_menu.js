@@ -11,7 +11,7 @@ const contextMenu = (function() {
             for (const nodeKey of clipboardIds) {
                 const subjectNode = treeUtils.getNodeByKey(nodeKey);
 
-                treeChanges.moveAfterNode(subjectNode, node);
+                treeChanges.moveAfterNode([subjectNode], node);
             }
 
             clipboardIds = [];
@@ -37,7 +37,7 @@ const contextMenu = (function() {
             for (const nodeKey of clipboardIds) {
                 const subjectNode = treeUtils.getNodeByKey(nodeKey);
 
-                treeChanges.moveToNode(subjectNode, node);
+                treeChanges.moveToNode([subjectNode], node);
             }
 
             clipboardIds = [];
@@ -47,7 +47,6 @@ const contextMenu = (function() {
             for (const noteId of clipboardIds) {
                 treeChanges.cloneNoteTo(noteId, node.data.note_id);
             }
-
             // copy will keep clipboardIds and clipboardMode so it's possible to paste into multiple places
         }
         else if (clipboardIds.length === 0) {

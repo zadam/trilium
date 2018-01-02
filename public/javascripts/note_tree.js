@@ -478,21 +478,15 @@ const noteTree = (function() {
             "ctrl+c": () => {
                 contextMenu.copy(getSelectedNodes());
 
-                showMessage("Note(s) copied into clipboard.");
-
                 return false;
             },
             "ctrl+x": () => {
                 contextMenu.cut(getSelectedNodes());
 
-                showMessage("Note(s) cut into clipboard.");
-
                 return false;
             },
             "ctrl+v": node => {
                 contextMenu.pasteInto(node);
-
-                showMessage("Note(s) pasted from clipboard into current note.");
 
                 return false;
             },

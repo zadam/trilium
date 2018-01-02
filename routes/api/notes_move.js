@@ -12,6 +12,15 @@ router.put('/:noteTreeId/move-to/:parentNoteId', auth.checkApiAuth, async (req, 
     const parentNoteId = req.params.parentNoteId;
     const sourceId = req.headers.source_id;
 
+    const noteToMove = await sql.getFirst("SELECT * FROM notes_tree WHERE note_tree_id = ?", [noteTreeId]);
+
+    if (!await checkTreeCycle(parentNoteId, noteToMove.note_id)) {
+        return res.send({
+            success: false,
+            message: 'Moving note here would create cycle.'
+        });
+    }
+
     const maxNotePos = await sql.getFirstValue('SELECT MAX(note_position) FROM notes_tree WHERE parent_note_id = ? AND is_deleted = 0', [parentNoteId]);
     const newNotePos = maxNotePos === null ? 0 : maxNotePos + 1;
 
@@ -24,7 +33,7 @@ router.put('/:noteTreeId/move-to/:parentNoteId', auth.checkApiAuth, async (req, 
         await sync_table.addNoteTreeSync(noteTreeId, sourceId);
     });
 
-    res.send({});
+    res.send({ success: true });
 });
 
 router.put('/:noteTreeId/move-before/:beforeNoteTreeId', auth.checkApiAuth, async (req, res, next) => {
@@ -32,7 +41,15 @@ router.put('/:noteTreeId/move-before/:beforeNoteTreeId', auth.checkApiAuth, asyn
     const beforeNoteTreeId = req.params.beforeNoteTreeId;
     const sourceId = req.headers.source_id;
 
+    const noteToMove = await sql.getFirst("SELECT * FROM notes_tree WHERE note_tree_id = ?", [noteTreeId]);
     const beforeNote = await sql.getFirst("SELECT * FROM notes_tree WHERE note_tree_id = ?", [beforeNoteTreeId]);
+
+    if (!await checkTreeCycle(beforeNote.parent_note_id, noteToMove.note_id)) {
+        return res.send({
+            success: false,
+            message: 'Moving note here would create cycle.'
+        });
+    }
 
     if (beforeNote) {
         await sql.doInTransaction(async () => {
@@ -51,7 +68,7 @@ router.put('/:noteTreeId/move-before/:beforeNoteTreeId', auth.checkApiAuth, asyn
             await sync_table.addNoteTreeSync(noteTreeId, sourceId);
         });
 
-        res.send({});
+        res.send({ success: true });
     }
     else {
         res.status(500).send("Before note " + beforeNoteTreeId + " doesn't exist.");
@@ -63,7 +80,15 @@ router.put('/:noteTreeId/move-after/:afterNoteTreeId', auth.checkApiAuth, async 
     const afterNoteTreeId = req.params.afterNoteTreeId;
     const sourceId = req.headers.source_id;
 
+    const noteToMove = await sql.getFirst("SELECT * FROM notes_tree WHERE note_tree_id = ?", [noteTreeId]);
     const afterNote = await sql.getFirst("SELECT * FROM notes_tree WHERE note_tree_id = ?", [afterNoteTreeId]);
+
+    if (!await checkTreeCycle(afterNote.parent_note_id, noteToMove.note_id)) {
+        return res.send({
+            success: false,
+            message: 'Moving note here would create cycle.'
+        });
+    }
 
     if (afterNote) {
         await sql.doInTransaction(async () => {
@@ -80,7 +105,7 @@ router.put('/:noteTreeId/move-after/:afterNoteTreeId', auth.checkApiAuth, async 
             await sync_table.addNoteTreeSync(noteTreeId, sourceId);
         });
 
-        res.send({});
+        res.send({ success: true });
     }
     else {
         res.status(500).send("After note " + afterNoteTreeId + " doesn't exist.");
@@ -102,7 +127,7 @@ router.put('/:childNoteId/clone-to/:parentNoteId', auth.checkApiAuth, async (req
         });
     }
 
-    if (!await checkCycle(parentNoteId, childNoteId)) {
+    if (!await checkTreeCycle(parentNoteId, childNoteId)) {
         return res.send({
             success: false,
             message: 'Cloning note here would create cycle.'
@@ -131,9 +156,7 @@ router.put('/:childNoteId/clone-to/:parentNoteId', auth.checkApiAuth, async (req
         await sql.execute("UPDATE notes_tree SET is_expanded = 1 WHERE note_id = ?", [parentNoteId]);
     });
 
-    res.send({
-        success: true
-    });
+    res.send({ success: true });
 });
 
 router.put('/:noteId/clone-after/:afterNoteTreeId', auth.checkApiAuth, async (req, res, next) => {
@@ -147,7 +170,7 @@ router.put('/:noteId/clone-after/:afterNoteTreeId', auth.checkApiAuth, async (re
         return res.status(500).send("After note " + afterNoteTreeId + " doesn't exist.");
     }
 
-    if (!await checkCycle(afterNote.parent_note_id, noteId)) {
+    if (!await checkTreeCycle(afterNote.parent_note_id, noteId)) {
         return res.send({
             success: false,
             message: 'Cloning note here would create cycle.'
@@ -186,29 +209,51 @@ router.put('/:noteId/clone-after/:afterNoteTreeId', auth.checkApiAuth, async (re
         await sync_table.addNoteTreeSync(noteTree.note_tree_id, sourceId);
     });
 
-    res.send({
-        success: true
-    });
+    res.send({ success: true });
 });
 
-async function checkCycle(parentNoteId, childNoteId) {
-    if (parentNoteId === 'root') {
+async function loadSubTreeNoteIds(parentNoteId, subTreeNoteIds) {
+    subTreeNoteIds.push(parentNoteId);
+
+    const children = await sql.getFirstColumn("SELECT note_id FROM notes_tree WHERE parent_note_id = ?", [parentNoteId]);
+
+    for (const childNoteId of children) {
+        await loadSubTreeNoteIds(childNoteId, subTreeNoteIds);
+    }
+}
+
+/**
+ * Tree cycle can be created when cloning or when moving existing clone. This method should detect both cases.
+ */
+async function checkTreeCycle(parentNoteId, childNoteId) {
+    const subTreeNoteIds = [];
+
+    // we'll load the whole sub tree - because the cycle can start in one of the notes in the sub tree
+    await loadSubTreeNoteIds(childNoteId, subTreeNoteIds);
+
+    async function checkTreeCycleInner(parentNoteId) {
+        if (parentNoteId === 'root') {
+            return true;
+        }
+
+        if (subTreeNoteIds.includes(parentNoteId)) {
+            // while towards the root of the tree we encountered noteId which is already present in the subtree
+            // joining parentNoteId with childNoteId would then clearly create a cycle
+            return false;
+        }
+
+        const parentNoteIds = await sql.getFirstColumn("SELECT DISTINCT parent_note_id FROM notes_tree WHERE note_id = ?", [parentNoteId]);
+
+        for (const pid of parentNoteIds) {
+            if (!await checkTreeCycleInner(pid)) {
+                return false;
+            }
+        }
+
         return true;
     }
 
-    if (parentNoteId === childNoteId) {
-        return false;
-    }
-
-    const parentNoteIds = await sql.getFirstColumn("SELECT DISTINCT parent_note_id FROM notes_tree WHERE note_id = ?", [parentNoteId]);
-
-    for (const pid of parentNoteIds) {
-        if (!await checkCycle(pid, childNoteId)) {
-            return false;
-        }
-    }
-
-    return true;
+    return await checkTreeCycleInner(parentNoteId);
 }
 
 router.put('/:noteTreeId/expanded/:expanded', auth.checkApiAuth, async (req, res, next) => {
