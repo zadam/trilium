@@ -17,6 +17,46 @@ async function runCheck(query, errorText, errorList) {
     }
 }
 
+async function checkTreeCycles(errorList) {
+    const childToParents = {};
+    const rows = await sql.getAll("SELECT note_id, parent_note_id FROM notes_tree");
+
+    for (const row of rows) {
+        const childNoteId = row.note_id;
+        const parentNoteId = row.parent_note_id;
+
+        if (!childToParents[childNoteId]) {
+            childToParents[childNoteId] = [];
+        }
+
+        childToParents[childNoteId].push(parentNoteId);
+    }
+
+    function checkTreeCycle(noteId, path, errorList) {
+        if (noteId === 'root') {
+            return;
+        }
+
+        for (const parentNoteId of childToParents[noteId]) {
+            if (path.includes(parentNoteId)) {
+                errorList.push(`Tree cycle detected at parent-child relationship: ${parentNoteId} - ${noteId}, whole path: ${path}`);
+            }
+            else {
+                const newPath = path.slice();
+                newPath.push(noteId);
+
+                checkTreeCycle(parentNoteId, newPath, errorList);
+            }
+        }
+    }
+
+    const noteIds = Object.keys(childToParents);
+
+    for (const noteId of noteIds) {
+        checkTreeCycle(noteId, [], errorList);
+    }
+}
+
 async function runSyncRowChecks(table, key, errorList) {
     await runCheck(`
         SELECT 
@@ -124,7 +164,15 @@ async function runChecks() {
     await runSyncRowChecks("notes_tree", "note_tree_id", errorList);
     await runSyncRowChecks("recent_notes", "note_tree_id", errorList);
 
+    if (errorList.length === 0) {
+        // we run this only if basic checks passed since this assumes basic data consistency
+
+        await checkTreeCycles(errorList);
+    }
+
     if (errorList.length > 0) {
+        log.info("Consistency checks failed with these errors: " + JSON.stringify(errorList));
+
         messaging.sendMessageToAllClients({type: 'consistency-checks-failed'});
     }
     else {
