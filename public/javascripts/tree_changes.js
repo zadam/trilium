@@ -51,12 +51,16 @@ const treeChanges = (function() {
             changeNode(nodeToMove, node => {
                 // first expand which will force lazy load and only then move the node
                 // if this is not expanded before moving, then lazy load won't happen because it already contains node
+                // this doesn't work if this isn't a folder yet, that's why we expand second time below
                 toNode.setExpanded(true);
 
                 node.moveTo(toNode);
 
                 toNode.folder = true;
                 toNode.renderTitle();
+
+                // this expands the note in case it become the folder only after the move
+                toNode.setExpanded(true);
             });
         }
     }
