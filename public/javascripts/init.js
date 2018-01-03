@@ -6,10 +6,7 @@ jQuery.hotkeys.options.filterContentEditable = false;
 jQuery.hotkeys.options.filterTextInputs = false;
 
 $(document).bind('keydown', 'alt+m', e => {
-    const toggle = $(".hide-toggle");
-    const hidden = toggle.css('visibility') === 'hidden';
-
-    toggle.css('visibility', hidden ? 'visible' : 'hidden');
+    $(".hide-toggle").toggleClass("suppressed");
 
     e.preventDefault();
 });
