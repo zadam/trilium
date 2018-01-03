@@ -155,27 +155,6 @@ $(document).tooltip({
     }
 });
 
-let appShown = false;
-
-function showAppIfHidden() {
-    if (!appShown) {
-        appShown = true;
-
-        $("#container").show();
-
-        // Get a reference to the loader's div
-        const loaderDiv = document.getElementById("loader-wrapper");
-        // When the transition ends remove loader's div from display
-        // so that we can access the map with gestures or clicks
-        loaderDiv.addEventListener("transitionend", function(){
-            loaderDiv.style.display = "none";
-        }, true);
-
-        // Kick off the CSS transition
-        loaderDiv.style.opacity = 0.0;
-    }
-}
-
 window.onerror = function (msg, url, lineNo, columnNo, error) {
     const string = msg.toLowerCase();
 

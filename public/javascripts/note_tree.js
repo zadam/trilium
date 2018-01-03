@@ -573,9 +573,6 @@ const noteTree = (function() {
                     // so waiting a second helps
                     setTimeout(scrollToCurrentNote, 1000);
                 }
-                else {
-                    showAppIfHidden();
-                }
             },
             hotkeys: {
                 keydown: keybindings

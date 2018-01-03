@@ -22,9 +22,6 @@ const protected_session = (function() {
         const dfd = $.Deferred();
 
         if (requireProtectedSession && !isProtectedSessionAvailable()) {
-            // if this is entry point then we need to show the app even before the note is loaded
-            showAppIfHidden();
-
             protectedSessionDeferred = dfd;
 
             dialogEl.dialog({

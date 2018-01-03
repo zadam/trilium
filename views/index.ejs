@@ -5,9 +5,7 @@
     <title>Trilium Notes</title>
   </head>
   <body>
-    <div id="loader-wrapper"><div id="loader"></div></div>
-
-    <div id="container" style="display: none;">
+    <div id="container" style="display:none;">
       <div id="header" class="hide-toggle">
         <div id="header-title">
           <img src="images/app-icons/png/24x24.png">
@@ -399,5 +397,11 @@
     <script src="javascripts/link.js"></script>
     <script src="javascripts/sync.js"></script>
     <script src="javascripts/messaging.js"></script>
+
+    <script type="text/javascript">
+      // we hide container initally because otherwise it is rendered first without CSS and then flickers into
+      // final form which is pretty ugly.
+      $("#container").show();
+    </script>
   </body>
 </html>
