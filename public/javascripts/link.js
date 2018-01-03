@@ -42,19 +42,23 @@ const link = (function() {
         e.preventDefault();
 
         const linkEl = $(e.target);
-        const address = linkEl.attr("note-path") ? linkEl.attr("note-path") : linkEl.attr('href');
+        let notePath = linkEl.attr("note-path");
 
-        if (!address) {
-            return;
+        if (!notePath) {
+            const address = linkEl.attr("note-path") ? linkEl.attr("note-path") : linkEl.attr('href');
+
+            if (!address) {
+                return;
+            }
+
+            if (address.startsWith('http')) {
+                window.open(address, '_blank');
+
+                return;
+            }
+
+            notePath = getNotePathFromLink(address);
         }
-
-        if (address.startsWith('http')) {
-            window.open(address, '_blank');
-
-            return;
-        }
-
-        const notePath = getNotePathFromLink(address);
 
         noteTree.activateNode(notePath);
 
