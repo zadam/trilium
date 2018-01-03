@@ -14,6 +14,15 @@ router.put('/:noteTreeId/move-to/:parentNoteId', auth.checkApiAuth, async (req, 
 
     const noteToMove = await sql.getFirst("SELECT * FROM notes_tree WHERE note_tree_id = ?", [noteTreeId]);
 
+    const existing = await getExistingNoteTree(parentNoteId, noteToMove.note_id);
+
+    if (existing && !existing.is_deleted && existing.note_tree_id !== noteTreeId) {
+        return res.send({
+            success: false,
+            message: 'This note already exists in target parent note.'
+        });
+    }
+
     if (!await checkTreeCycle(parentNoteId, noteToMove.note_id)) {
         return res.send({
             success: false,
@@ -43,6 +52,15 @@ router.put('/:noteTreeId/move-before/:beforeNoteTreeId', auth.checkApiAuth, asyn
 
     const noteToMove = await sql.getFirst("SELECT * FROM notes_tree WHERE note_tree_id = ?", [noteTreeId]);
     const beforeNote = await sql.getFirst("SELECT * FROM notes_tree WHERE note_tree_id = ?", [beforeNoteTreeId]);
+
+    const existing = await getExistingNoteTree(beforeNote.parent_note_id, noteToMove.note_id);
+
+    if (existing && !existing.is_deleted && existing.note_tree_id !== noteTreeId) {
+        return res.send({
+            success: false,
+            message: 'This note already exists in target parent note.'
+        });
+    }
 
     if (!await checkTreeCycle(beforeNote.parent_note_id, noteToMove.note_id)) {
         return res.send({
@@ -83,6 +101,15 @@ router.put('/:noteTreeId/move-after/:afterNoteTreeId', auth.checkApiAuth, async 
     const noteToMove = await sql.getFirst("SELECT * FROM notes_tree WHERE note_tree_id = ?", [noteTreeId]);
     const afterNote = await sql.getFirst("SELECT * FROM notes_tree WHERE note_tree_id = ?", [afterNoteTreeId]);
 
+    const existing = await getExistingNoteTree(afterNote.parent_note_id, noteToMove.note_id);
+
+    if (existing && !existing.is_deleted && existing.note_tree_id !== noteTreeId) {
+        return res.send({
+            success: false,
+            message: 'This note already exists in target parent note.'
+        });
+    }
+
     if (!await checkTreeCycle(afterNote.parent_note_id, noteToMove.note_id)) {
         return res.send({
             success: false,
@@ -118,7 +145,7 @@ router.put('/:childNoteId/clone-to/:parentNoteId', auth.checkApiAuth, async (req
     const prefix = req.body.prefix;
     const sourceId = req.headers.source_id;
 
-    const existing = await sql.getFirst('SELECT * FROM notes_tree WHERE note_id = ? AND parent_note_id = ?', [childNoteId, parentNoteId]);
+    const existing = await getExistingNoteTree(parentNoteId, childNoteId);
 
     if (existing && !existing.is_deleted) {
         return res.send({
@@ -170,19 +197,19 @@ router.put('/:noteId/clone-after/:afterNoteTreeId', auth.checkApiAuth, async (re
         return res.status(500).send("After note " + afterNoteTreeId + " doesn't exist.");
     }
 
-    if (!await checkTreeCycle(afterNote.parent_note_id, noteId)) {
-        return res.send({
-            success: false,
-            message: 'Cloning note here would create cycle.'
-        });
-    }
-
-    const existing = await sql.getFirstValue('SELECT * FROM notes_tree WHERE note_id = ? AND parent_note_id = ?', [noteId, afterNote.parent_note_id]);
+    const existing = await getExistingNoteTree(afterNote.parent_note_id, noteId);
 
     if (existing && !existing.is_deleted) {
         return res.send({
             success: false,
             message: 'This note already exists in target parent note.'
+        });
+    }
+
+    if (!await checkTreeCycle(afterNote.parent_note_id, noteId)) {
+        return res.send({
+            success: false,
+            message: 'Cloning note here would create cycle.'
         });
     }
 
@@ -220,6 +247,10 @@ async function loadSubTreeNoteIds(parentNoteId, subTreeNoteIds) {
     for (const childNoteId of children) {
         await loadSubTreeNoteIds(childNoteId, subTreeNoteIds);
     }
+}
+
+async function getExistingNoteTree(parentNoteId, childNoteId) {
+    return await sql.getFirst('SELECT * FROM notes_tree WHERE note_id = ? AND parent_note_id = ?', [childNoteId, parentNoteId]);
 }
 
 /**
