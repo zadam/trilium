@@ -4,6 +4,8 @@ const express = require('express');
 const router = express.Router();
 const sql = require('../../services/sql');
 const auth = require('../../services/auth');
+const utils = require('../../services/utils');
+const sync_table = require('../../services/sync_table');
 
 /**
  * Code in this file deals with moving and cloning note tree rows. Relationship between note and parent note is unique
