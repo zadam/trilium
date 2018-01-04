@@ -534,13 +534,15 @@ const noteTree = (function() {
                 const node = data.node;
 
                 if (targetType === 'title' || targetType === 'icon') {
-                    node.setActive();
-
                     if (!event.ctrlKey) {
+                        node.setActive();
+                        node.setSelected(true);
+
                         clearSelectedNodes();
                     }
-
-                    node.setSelected(true);
+                    else {
+                        node.setSelected(!node.isSelected());
+                    }
 
                     return false;
                 }
