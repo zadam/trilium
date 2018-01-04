@@ -490,11 +490,13 @@ const noteTree = (function() {
 
                 return false;
             },
-            "ctrl+return": node => {
-                noteDetailEl.focus();
-            },
             "return": node => {
                 noteDetailEl.focus();
+            },
+            "backspace": node => {
+                if (!isTopLevelNode(node)) {
+                    node.getParent().setActive().then(() => clearSelectedNodes());
+                }
             },
             // code below shouldn't be necessary normally, however there's some problem with interaction with context menu plugin
             // after opening context menu, standard shortcuts don't work, but they are detected here
