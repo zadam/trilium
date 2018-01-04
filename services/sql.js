@@ -37,9 +37,9 @@ const dbReady = new Promise((resolve, reject) => {
                 await executeScript(notesSql);
                 await executeScript(notesTreeSql);
 
-                const noteId = await getFirstValue("SELECT note_id FROM notes_tree WHERE parent_note_id = 'root' ORDER BY note_position");
+                const startNoteId = await getFirstValue("SELECT note_id FROM notes_tree WHERE parent_note_id = 'root' AND is_deleted = 0 ORDER BY note_position");
 
-                await require('./options').initOptions(noteId);
+                await require('./options').initOptions(startNoteId);
                 await require('./sync_table').fillAllSyncRows();
             });
 

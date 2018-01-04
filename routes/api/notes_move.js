@@ -12,7 +12,7 @@ router.put('/:noteTreeId/move-to/:parentNoteId', auth.checkApiAuth, async (req, 
     const parentNoteId = req.params.parentNoteId;
     const sourceId = req.headers.source_id;
 
-    const noteToMove = await sql.getFirst("SELECT * FROM notes_tree WHERE note_tree_id = ?", [noteTreeId]);
+    const noteToMove = await getNoteTree(noteTreeId);
 
     if (!await validateParentChild(res, parentNoteId, noteToMove.note_id, noteTreeId)) {
         return;
@@ -38,8 +38,8 @@ router.put('/:noteTreeId/move-before/:beforeNoteTreeId', auth.checkApiAuth, asyn
     const beforeNoteTreeId = req.params.beforeNoteTreeId;
     const sourceId = req.headers.source_id;
 
-    const noteToMove = await sql.getFirst("SELECT * FROM notes_tree WHERE note_tree_id = ?", [noteTreeId]);
-    const beforeNote = await sql.getFirst("SELECT * FROM notes_tree WHERE note_tree_id = ?", [beforeNoteTreeId]);
+    const noteToMove = await getNoteTree(noteTreeId);
+    const beforeNote = await getNoteTree(beforeNoteTreeId);
 
     if (!await validateParentChild(res, beforeNote.parent_note_id, noteToMove.note_id, noteTreeId)) {
         return;
@@ -69,8 +69,8 @@ router.put('/:noteTreeId/move-after/:afterNoteTreeId', auth.checkApiAuth, async 
     const afterNoteTreeId = req.params.afterNoteTreeId;
     const sourceId = req.headers.source_id;
 
-    const noteToMove = await sql.getFirst("SELECT * FROM notes_tree WHERE note_tree_id = ?", [noteTreeId]);
-    const afterNote = await sql.getFirst("SELECT * FROM notes_tree WHERE note_tree_id = ?", [afterNoteTreeId]);
+    const noteToMove = await getNoteTree(noteTreeId);
+    const afterNote = await getNoteTree(afterNoteTreeId);
 
     if (!await validateParentChild(res, afterNote.parent_note_id, noteToMove.note_id, noteTreeId)) {
         return;
@@ -133,7 +133,7 @@ router.put('/:noteId/clone-after/:afterNoteTreeId', auth.checkApiAuth, async (re
     const afterNoteTreeId = req.params.afterNoteTreeId;
     const sourceId = req.headers.source_id;
 
-    const afterNote = await sql.getFirst("SELECT * FROM notes_tree WHERE note_tree_id = ?", [afterNoteTreeId]);
+    const afterNote = await getNoteTree(afterNoteTreeId);
 
     if (!await validateParentChild(res, afterNote.parent_note_id, noteId)) {
         return;
@@ -168,11 +168,15 @@ router.put('/:noteId/clone-after/:afterNoteTreeId', auth.checkApiAuth, async (re
 async function loadSubTreeNoteIds(parentNoteId, subTreeNoteIds) {
     subTreeNoteIds.push(parentNoteId);
 
-    const children = await sql.getFirstColumn("SELECT note_id FROM notes_tree WHERE parent_note_id = ?", [parentNoteId]);
+    const children = await sql.getFirstColumn("SELECT note_id FROM notes_tree WHERE parent_note_id = ? AND is_deleted = 0", [parentNoteId]);
 
     for (const childNoteId of children) {
         await loadSubTreeNoteIds(childNoteId, subTreeNoteIds);
     }
+}
+
+async function getNoteTree(noteTreeId) {
+    return sql.getFirst("SELECT * FROM notes_tree WHERE note_tree_id = ?", [noteTreeId]);
 }
 
 async function validateParentChild(res, parentNoteId, childNoteId, noteTreeId = null) {
@@ -223,7 +227,7 @@ async function checkTreeCycle(parentNoteId, childNoteId) {
             return false;
         }
 
-        const parentNoteIds = await sql.getFirstColumn("SELECT DISTINCT parent_note_id FROM notes_tree WHERE note_id = ?", [parentNoteId]);
+        const parentNoteIds = await sql.getFirstColumn("SELECT DISTINCT parent_note_id FROM notes_tree WHERE note_id = ? AND is_deleted = 0", [parentNoteId]);
 
         for (const pid of parentNoteIds) {
             if (!await checkTreeCycleInner(pid)) {

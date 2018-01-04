@@ -19,7 +19,7 @@ async function runCheck(query, errorText, errorList) {
 
 async function checkTreeCycles(errorList) {
     const childToParents = {};
-    const rows = await sql.getAll("SELECT note_id, parent_note_id FROM notes_tree");
+    const rows = await sql.getAll("SELECT note_id, parent_note_id FROM notes_tree WHERE is_deleted = 0");
 
     for (const row of rows) {
         const childNoteId = row.note_id;

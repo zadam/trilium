@@ -214,7 +214,7 @@ async function pushEntity(sync, syncContext) {
     else if (sync.entity_name === 'notes_reordering') {
         entity = {
             parent_note_id: sync.entity_id,
-            ordering: await sql.getMap('SELECT note_tree_id, note_position FROM notes_tree WHERE parent_note_id = ?', [sync.entity_id])
+            ordering: await sql.getMap('SELECT note_tree_id, note_position FROM notes_tree WHERE parent_note_id = ? AND is_deleted = 0', [sync.entity_id])
         };
     }
     else if (sync.entity_name === 'options') {

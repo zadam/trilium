@@ -74,7 +74,7 @@ async function protectNoteRecursively(noteId, dataKey, protect, sourceId) {
 
     await protectNote(note, dataKey, protect, sourceId);
 
-    const children = await sql.getFirstColumn("SELECT note_id FROM notes_tree WHERE parent_note_id = ?", [noteId]);
+    const children = await sql.getFirstColumn("SELECT note_id FROM notes_tree WHERE parent_note_id = ? AND is_deleted = 0", [noteId]);
 
     for (const childNoteId of children) {
         await protectNoteRecursively(childNoteId, dataKey, protect, sourceId);
