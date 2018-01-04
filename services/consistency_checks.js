@@ -161,6 +161,20 @@ async function runChecks() {
             notes.note_id IS NULL`,
         "Missing notes records for following note history ID > note ID", errorList);
 
+    await runCheck(`
+          SELECT 
+            notes_tree.parent_note_id || ' > ' || notes_tree.note_id 
+          FROM 
+            notes_tree 
+          WHERE 
+            notes_tree.is_deleted = 0
+          GROUP BY 
+            notes_tree.parent_note_id,
+            notes_tree.note_id
+          HAVING 
+            COUNT(*) > 1`,
+        "Duplicate undeleted parent note <-> note relationship - parent note ID > note ID", errorList);
+
     await runSyncRowChecks("notes", "note_id", errorList);
     await runSyncRowChecks("notes_history", "note_history_id", errorList);
     await runSyncRowChecks("notes_tree", "note_tree_id", errorList);
