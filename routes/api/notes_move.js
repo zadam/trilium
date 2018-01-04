@@ -3,9 +3,12 @@
 const express = require('express');
 const router = express.Router();
 const sql = require('../../services/sql');
-const utils = require('../../services/utils');
 const auth = require('../../services/auth');
-const sync_table = require('../../services/sync_table');
+
+/**
+ * Code in this file deals with moving and cloning note tree rows. Relationship between note and parent note is unique
+ * for not deleted note trees. There may be multiple deleted note-parent note relationships.
+ */
 
 router.put('/:noteTreeId/move-to/:parentNoteId', auth.checkApiAuth, async (req, res, next) => {
     const noteTreeId = req.params.noteTreeId;
