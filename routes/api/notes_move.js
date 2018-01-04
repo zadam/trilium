@@ -14,20 +14,8 @@ router.put('/:noteTreeId/move-to/:parentNoteId', auth.checkApiAuth, async (req, 
 
     const noteToMove = await sql.getFirst("SELECT * FROM notes_tree WHERE note_tree_id = ?", [noteTreeId]);
 
-    const existing = await getExistingNoteTree(parentNoteId, noteToMove.note_id);
-
-    if (existing && !existing.is_deleted && existing.note_tree_id !== noteTreeId) {
-        return res.send({
-            success: false,
-            message: 'This note already exists in target parent note.'
-        });
-    }
-
-    if (!await checkTreeCycle(parentNoteId, noteToMove.note_id)) {
-        return res.send({
-            success: false,
-            message: 'Moving note here would create cycle.'
-        });
+    if (!await validateParentChild(res, parentNoteId, noteToMove.note_id, noteTreeId)) {
+        return;
     }
 
     const maxNotePos = await sql.getFirstValue('SELECT MAX(note_position) FROM notes_tree WHERE parent_note_id = ? AND is_deleted = 0', [parentNoteId]);
@@ -53,44 +41,27 @@ router.put('/:noteTreeId/move-before/:beforeNoteTreeId', auth.checkApiAuth, asyn
     const noteToMove = await sql.getFirst("SELECT * FROM notes_tree WHERE note_tree_id = ?", [noteTreeId]);
     const beforeNote = await sql.getFirst("SELECT * FROM notes_tree WHERE note_tree_id = ?", [beforeNoteTreeId]);
 
-    const existing = await getExistingNoteTree(beforeNote.parent_note_id, noteToMove.note_id);
-
-    if (existing && !existing.is_deleted && existing.note_tree_id !== noteTreeId) {
-        return res.send({
-            success: false,
-            message: 'This note already exists in target parent note.'
-        });
+    if (!await validateParentChild(res, beforeNote.parent_note_id, noteToMove.note_id, noteTreeId)) {
+        return;
     }
 
-    if (!await checkTreeCycle(beforeNote.parent_note_id, noteToMove.note_id)) {
-        return res.send({
-            success: false,
-            message: 'Moving note here would create cycle.'
-        });
-    }
+    await sql.doInTransaction(async () => {
+        // we don't change date_modified so other changes are prioritized in case of conflict
+        // also we would have to sync all those modified note trees otherwise hash checks would fail
+        await sql.execute("UPDATE notes_tree SET note_position = note_position + 1 WHERE parent_note_id = ? AND note_position >= ? AND is_deleted = 0",
+            [beforeNote.parent_note_id, beforeNote.note_position]);
 
-    if (beforeNote) {
-        await sql.doInTransaction(async () => {
-            // we don't change date_modified so other changes are prioritized in case of conflict
-            // also we would have to sync all those modified note trees otherwise hash checks would fail
-            await sql.execute("UPDATE notes_tree SET note_position = note_position + 1 WHERE parent_note_id = ? AND note_position >= ? AND is_deleted = 0",
-                [beforeNote.parent_note_id, beforeNote.note_position]);
+        await sync_table.addNoteReorderingSync(beforeNote.parent_note_id, sourceId);
 
-            await sync_table.addNoteReorderingSync(beforeNote.parent_note_id, sourceId);
+        const now = utils.nowDate();
 
-            const now = utils.nowDate();
+        await sql.execute("UPDATE notes_tree SET parent_note_id = ?, note_position = ?, date_modified = ? WHERE note_tree_id = ?",
+            [beforeNote.parent_note_id, beforeNote.note_position, now, noteTreeId]);
 
-            await sql.execute("UPDATE notes_tree SET parent_note_id = ?, note_position = ?, date_modified = ? WHERE note_tree_id = ?",
-                [beforeNote.parent_note_id, beforeNote.note_position, now, noteTreeId]);
+        await sync_table.addNoteTreeSync(noteTreeId, sourceId);
+    });
 
-            await sync_table.addNoteTreeSync(noteTreeId, sourceId);
-        });
-
-        res.send({ success: true });
-    }
-    else {
-        res.status(500).send("Before note " + beforeNoteTreeId + " doesn't exist.");
-    }
+    res.send({ success: true });
 });
 
 router.put('/:noteTreeId/move-after/:afterNoteTreeId', auth.checkApiAuth, async (req, res, next) => {
@@ -101,42 +72,25 @@ router.put('/:noteTreeId/move-after/:afterNoteTreeId', auth.checkApiAuth, async 
     const noteToMove = await sql.getFirst("SELECT * FROM notes_tree WHERE note_tree_id = ?", [noteTreeId]);
     const afterNote = await sql.getFirst("SELECT * FROM notes_tree WHERE note_tree_id = ?", [afterNoteTreeId]);
 
-    const existing = await getExistingNoteTree(afterNote.parent_note_id, noteToMove.note_id);
-
-    if (existing && !existing.is_deleted && existing.note_tree_id !== noteTreeId) {
-        return res.send({
-            success: false,
-            message: 'This note already exists in target parent note.'
-        });
+    if (!await validateParentChild(res, afterNote.parent_note_id, noteToMove.note_id, noteTreeId)) {
+        return;
     }
 
-    if (!await checkTreeCycle(afterNote.parent_note_id, noteToMove.note_id)) {
-        return res.send({
-            success: false,
-            message: 'Moving note here would create cycle.'
-        });
-    }
+    await sql.doInTransaction(async () => {
+        // we don't change date_modified so other changes are prioritized in case of conflict
+        // also we would have to sync all those modified note trees otherwise hash checks would fail
+        await sql.execute("UPDATE notes_tree SET note_position = note_position + 1 WHERE parent_note_id = ? AND note_position > ? AND is_deleted = 0",
+            [afterNote.parent_note_id, afterNote.note_position]);
 
-    if (afterNote) {
-        await sql.doInTransaction(async () => {
-            // we don't change date_modified so other changes are prioritized in case of conflict
-            // also we would have to sync all those modified note trees otherwise hash checks would fail
-            await sql.execute("UPDATE notes_tree SET note_position = note_position + 1 WHERE parent_note_id = ? AND note_position > ? AND is_deleted = 0",
-                [afterNote.parent_note_id, afterNote.note_position]);
+        await sync_table.addNoteReorderingSync(afterNote.parent_note_id, sourceId);
 
-            await sync_table.addNoteReorderingSync(afterNote.parent_note_id, sourceId);
+        await sql.execute("UPDATE notes_tree SET parent_note_id = ?, note_position = ?, date_modified = ? WHERE note_tree_id = ?",
+            [afterNote.parent_note_id, afterNote.note_position + 1, utils.nowDate(), noteTreeId]);
 
-            await sql.execute("UPDATE notes_tree SET parent_note_id = ?, note_position = ?, date_modified = ? WHERE note_tree_id = ?",
-                [afterNote.parent_note_id, afterNote.note_position + 1, utils.nowDate(), noteTreeId]);
+        await sync_table.addNoteTreeSync(noteTreeId, sourceId);
+    });
 
-            await sync_table.addNoteTreeSync(noteTreeId, sourceId);
-        });
-
-        res.send({ success: true });
-    }
-    else {
-        res.status(500).send("After note " + afterNoteTreeId + " doesn't exist.");
-    }
+    res.send({ success: true });
 });
 
 router.put('/:childNoteId/clone-to/:parentNoteId', auth.checkApiAuth, async (req, res, next) => {
@@ -145,20 +99,8 @@ router.put('/:childNoteId/clone-to/:parentNoteId', auth.checkApiAuth, async (req
     const prefix = req.body.prefix;
     const sourceId = req.headers.source_id;
 
-    const existing = await getExistingNoteTree(parentNoteId, childNoteId);
-
-    if (existing && !existing.is_deleted) {
-        return res.send({
-            success: false,
-            message: 'This note already exists in target parent note.'
-        });
-    }
-
-    if (!await checkTreeCycle(parentNoteId, childNoteId)) {
-        return res.send({
-            success: false,
-            message: 'Cloning note here would create cycle.'
-        });
+    if (!await validateParentChild(res, parentNoteId, childNoteId)) {
+        return;
     }
 
     const maxNotePos = await sql.getFirstValue('SELECT MAX(note_position) FROM notes_tree WHERE parent_note_id = ? AND is_deleted = 0', [parentNoteId]);
@@ -193,24 +135,8 @@ router.put('/:noteId/clone-after/:afterNoteTreeId', auth.checkApiAuth, async (re
 
     const afterNote = await sql.getFirst("SELECT * FROM notes_tree WHERE note_tree_id = ?", [afterNoteTreeId]);
 
-    if (!afterNote) {
-        return res.status(500).send("After note " + afterNoteTreeId + " doesn't exist.");
-    }
-
-    const existing = await getExistingNoteTree(afterNote.parent_note_id, noteId);
-
-    if (existing && !existing.is_deleted) {
-        return res.send({
-            success: false,
-            message: 'This note already exists in target parent note.'
-        });
-    }
-
-    if (!await checkTreeCycle(afterNote.parent_note_id, noteId)) {
-        return res.send({
-            success: false,
-            message: 'Cloning note here would create cycle.'
-        });
+    if (!await validateParentChild(res, afterNote.parent_note_id, noteId)) {
+        return;
     }
 
     await sql.doInTransaction(async () => {
@@ -249,8 +175,32 @@ async function loadSubTreeNoteIds(parentNoteId, subTreeNoteIds) {
     }
 }
 
+async function validateParentChild(res, parentNoteId, childNoteId, noteTreeId = null) {
+    const existing = await getExistingNoteTree(parentNoteId, childNoteId);
+
+    if (existing && (noteTreeId === null || existing.note_tree_id !== noteTreeId)) {
+        res.send({
+            success: false,
+            message: 'This note already exists in target parent note.'
+        });
+
+        return false;
+    }
+
+    if (!await checkTreeCycle(parentNoteId, childNoteId)) {
+        res.send({
+            success: false,
+            message: 'Moving note here would create cycle.'
+        });
+
+        return false;
+    }
+
+    return true;
+}
+
 async function getExistingNoteTree(parentNoteId, childNoteId) {
-    return await sql.getFirst('SELECT * FROM notes_tree WHERE note_id = ? AND parent_note_id = ?', [childNoteId, parentNoteId]);
+    return await sql.getFirst('SELECT * FROM notes_tree WHERE note_id = ? AND parent_note_id = ? AND is_deleted = 0', [childNoteId, parentNoteId]);
 }
 
 /**

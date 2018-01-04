@@ -67,9 +67,6 @@ CREATE INDEX `IDX_sync_sync_date` ON `sync` (
 CREATE INDEX `IDX_notes_is_deleted` ON `notes` (
     `is_deleted`
 );
-CREATE INDEX `IDX_notes_tree_note_tree_id` ON `notes_tree` (
-  `note_tree_id`
-);
 CREATE UNIQUE INDEX `IDX_notes_tree_note_id_parent_note_id` ON `notes_tree` (
   `note_id`,
   `parent_note_id`
