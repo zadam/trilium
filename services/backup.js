@@ -6,6 +6,7 @@ const fs = require('fs-extra');
 const dataDir = require('./data_dir');
 const log = require('./log');
 const sql = require('./sql');
+const sync_mutex = require('./sync_mutex');
 
 async function regularBackup() {
     const now = new Date();
@@ -21,17 +22,25 @@ async function regularBackup() {
 }
 
 async function backupNow() {
-    const now = utils.nowDate();
+    // we don't want to backup DB in the middle of sync with potentially inconsistent DB state
+    const releaseMutex = await sync_mutex.acquire();
 
-    const backupFile = dataDir.BACKUP_DIR + "/" + "backup-" + utils.getDateTimeForFile() + ".db";
+    try {
+        const now = utils.nowDate();
 
-    fs.copySync(dataDir.DOCUMENT_PATH, backupFile);
+        const backupFile = dataDir.BACKUP_DIR + "/" + "backup-" + utils.getDateTimeForFile() + ".db";
 
-    log.info("Created backup at " + backupFile);
+        fs.copySync(dataDir.DOCUMENT_PATH, backupFile);
 
-    await sql.doInTransaction(async () => {
-        await options.setOption('last_backup_date', now);
-    });
+        log.info("Created backup at " + backupFile);
+
+        await sql.doInTransaction(async () => {
+            await options.setOption('last_backup_date', now);
+        });
+    }
+    finally {
+        releaseMutex();
+    }
 }
 
 async function cleanupOldBackups() {

@@ -14,22 +14,13 @@ const fs = require('fs');
 const app_info = require('./app_info');
 const messaging = require('./messaging');
 const sync_setup = require('./sync_setup');
+const sync_mutex = require('./sync_mutex');
 
-let syncInProgress = false;
 let proxyToggle = true;
 let syncServerCertificate = null;
 
 async function sync() {
-    if (syncInProgress) {
-        log.info("Sync already in progress");
-
-        return {
-            success: false,
-            message: "Sync already in progress"
-        };
-    }
-
-    syncInProgress = true;
+    const releaseMutex = await sync_mutex.acquire();
 
     try {
         if (!await sql.isDbUpToDate()) {
@@ -74,7 +65,7 @@ async function sync() {
         }
     }
     finally {
-        syncInProgress = false;
+        releaseMutex();
     }
 }
 

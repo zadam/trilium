@@ -2,6 +2,11 @@
   "name": "trilium",
   "description": "Trilium Notes",
   "version": "0.2.2",
+  "license": "AGPL-3.0-only",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zadam/trilium.git"
+  },
   "scripts": {
     "start": "node ./bin/www",
     "test-electron": "xo",
@@ -14,6 +19,7 @@
     "publish-forge": "electron-forge publish"
   },
   "dependencies": {
+    "async-mutex": "^0.1.3",
     "body-parser": "~1.18.2",
     "cookie-parser": "~1.4.3",
     "debug": "~3.1.0",

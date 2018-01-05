@@ -3,6 +3,7 @@
 const sql = require('./sql');
 const log = require('./log');
 const messaging = require('./messaging');
+const sync_mutex = require('./sync_mutex');
 
 async function runCheck(query, errorText, errorList) {
     const result = await sql.getFirstColumn(query);
@@ -80,10 +81,8 @@ async function runSyncRowChecks(table, key, errorList) {
         `Missing ${table} records for existing sync rows`, errorList);
 }
 
-async function runChecks() {
+async function runAllChecks() {
     const errorList = [];
-
-    const startTime = new Date();
 
     await runCheck(`
           SELECT 
@@ -139,7 +138,7 @@ async function runChecks() {
           WHERE
             (SELECT COUNT(*) FROM notes_tree WHERE notes.note_id = notes_tree.note_id AND notes_tree.is_deleted = 0) = 0
             AND notes.is_deleted = 0
-    `, );
+    `,);
 
     await runCheck(`
           SELECT 
@@ -186,7 +185,24 @@ async function runChecks() {
         await checkTreeCycles(errorList);
     }
 
-    const elapsedTimeMs = new Date().getTime() - startTime.getTime();
+    return errorList;
+}
+
+async function runChecks() {
+    let errorList;
+    let elapsedTimeMs;
+    const releaseMutex = await sync_mutex.acquire();
+
+    try {
+        const startTime = new Date();
+
+        errorList = await runAllChecks();
+
+        elapsedTimeMs = new Date().getTime() - startTime.getTime();
+    }
+    finally {
+        releaseMutex();
+    }
 
     if (errorList.length > 0) {
         log.info(`Consistency checks failed (took ${elapsedTimeMs}ms) with these errors: ` + JSON.stringify(errorList));

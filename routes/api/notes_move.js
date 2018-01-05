@@ -190,7 +190,7 @@ async function validateParentChild(res, parentNoteId, childNoteId, noteTreeId = 
     if (existing && (noteTreeId === null || existing.note_tree_id !== noteTreeId)) {
         res.send({
             success: false,
-            message: 'This note already exists in target parent note.'
+            message: 'This note already exists in the target.'
         });
 
         return false;
