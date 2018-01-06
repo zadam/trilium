@@ -92,11 +92,30 @@ async function updateRecentNotes(entity, sourceId) {
     }
 }
 
+async function updateImage(entity, sourceId) {
+    if (entity.data !== null) {
+        entity.data = Buffer.from(entity.data, 'base64');
+    }
+
+    const origImage = await sql.getFirst("SELECT * FROM images WHERE image_id = ?", [entity.image_id]);
+
+    if (!origImage || origImage.date_modified <= entity.date_modified) {
+        await sql.doInTransaction(async () => {
+            await sql.replace("images", entity);
+
+            await sync_table.addImageSync(entity.image_id, sourceId);
+        });
+
+        log.info("Update/sync image " + entity.image_id);
+    }
+}
+
 module.exports = {
     updateNote,
     updateNoteTree,
     updateNoteHistory,
     updateNoteReordering,
     updateOptions,
-    updateRecentNotes
+    updateRecentNotes,
+    updateImage
 };

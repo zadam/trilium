@@ -79,6 +79,14 @@ function sanitizeSql(str) {
     return str.replace(/'/g, "\\'");
 }
 
+function assertArguments() {
+    for (const i in arguments) {
+        if (!arguments[i]) {
+            throw new Error(`Argument idx#${i} should not be falsy: ${arguments[i]}`);
+        }
+    }
+}
+
 module.exports = {
     randomSecureToken,
     randomString,
@@ -95,5 +103,6 @@ module.exports = {
     hash,
     isEmptyOrWhitespace,
     getDateTimeForFile,
-    sanitizeSql
+    sanitizeSql,
+    assertArguments
 };

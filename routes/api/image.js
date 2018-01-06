@@ -5,6 +5,7 @@ const router = express.Router();
 const sql = require('../../services/sql');
 const auth = require('../../services/auth');
 const utils = require('../../services/utils');
+const sync_table = require('../../services/sync_table');
 const multer = require('multer')();
 const imagemin = require('imagemin');
 const imageminMozJpeg = require('imagemin-mozjpeg');
@@ -24,6 +25,7 @@ router.get('/:imageId/:filename', auth.checkApiAuth, async (req, res, next) => {
 });
 
 router.post('/upload', auth.checkApiAuth, multer.single('upload'), async (req, res, next) => {
+    const sourceId = req.headers.source_id;
     const file = req.file;
 
     const imageId = utils.newNoteId();
@@ -37,15 +39,19 @@ router.post('/upload', auth.checkApiAuth, multer.single('upload'), async (req, r
     const resizedImage = await resize(file.buffer);
     const optimizedImage = await optimize(resizedImage);
 
-    await sql.insert("images", {
-        image_id: imageId,
-        format: file.mimetype.substr(6),
-        name: file.originalname,
-        checksum: utils.hash(optimizedImage),
-        data: optimizedImage,
-        is_deleted: 0,
-        date_modified: now,
-        date_created: now
+    await sql.doInTransaction(async () => {
+        await sql.insert("images", {
+            image_id: imageId,
+            format: file.mimetype.substr(6),
+            name: file.originalname,
+            checksum: utils.hash(optimizedImage),
+            data: optimizedImage,
+            is_deleted: 0,
+            date_modified: now,
+            date_created: now
+        });
+
+        await sync_table.addImageSync(imageId, sourceId);
     });
 
     res.send({
@@ -59,8 +65,6 @@ const MAX_BYTE_SIZE = 200000; // images should have under 100 KBs
 
 async function resize(buffer) {
     const image = await jimp.read(buffer);
-
-    console.log("Size: ", buffer.byteLength);
 
     if (image.bitmap.width > image.bitmap.height && image.bitmap.width > MAX_SIZE) {
         image.resize(MAX_SIZE, jimp.AUTO);

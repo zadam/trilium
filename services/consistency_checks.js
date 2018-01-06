@@ -4,8 +4,11 @@ const sql = require('./sql');
 const log = require('./log');
 const messaging = require('./messaging');
 const sync_mutex = require('./sync_mutex');
+const utils = require('./utils');
 
 async function runCheck(query, errorText, errorList) {
+    utils.assertArguments(query, errorText, errorList);
+
     const result = await sql.getFirstColumn(query);
 
     if (result.length > 0) {
@@ -138,7 +141,7 @@ async function runAllChecks() {
           WHERE
             (SELECT COUNT(*) FROM notes_tree WHERE notes.note_id = notes_tree.note_id AND notes_tree.is_deleted = 0) = 0
             AND notes.is_deleted = 0
-    `,);
+    `, 'No undeleted note trees for note IDs', errorList);
 
     await runCheck(`
           SELECT 

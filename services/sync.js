@@ -143,6 +143,9 @@ async function pullSync(syncContext) {
         else if (sync.entity_name === 'recent_notes') {
             await syncUpdate.updateRecentNotes(resp, syncContext.sourceId);
         }
+        else if (sync.entity_name === 'images') {
+            await syncUpdate.updateImage(resp, syncContext.sourceId);
+        }
         else {
             throw new Error(`Unrecognized entity type ${sync.entity_name} in sync #${sync.id}`);
         }
@@ -213,6 +216,13 @@ async function pushEntity(sync, syncContext) {
     }
     else if (sync.entity_name === 'recent_notes') {
         entity = await sql.getFirst('SELECT * FROM recent_notes WHERE note_tree_id = ?', [sync.entity_id]);
+    }
+    else if (sync.entity_name === 'images') {
+        entity = await sql.getFirst('SELECT * FROM images WHERE image_id = ?', [sync.entity_id]);
+
+        if (entity.data !== null) {
+            entity.data = entity.data.toString('base64');
+        }
     }
     else {
         throw new Error(`Unrecognized entity type ${sync.entity_name} in sync #${sync.id}`);
