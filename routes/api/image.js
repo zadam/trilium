@@ -8,6 +8,7 @@ const utils = require('../../services/utils');
 const multer = require('multer')();
 const imagemin = require('imagemin');
 const imageminMozJpeg = require('imagemin-mozjpeg');
+const imageminPngQuant = require('imagemin-pngquant');
 const jimp = require('jimp');
 
 router.get('/:imageId/:filename', auth.checkApiAuth, async (req, res, next) => {
@@ -54,9 +55,12 @@ router.post('/upload', auth.checkApiAuth, multer.single('upload'), async (req, r
 });
 
 const MAX_SIZE = 1000;
+const MAX_BYTE_SIZE = 200000; // images should have under 100 KBs
 
 async function resize(buffer) {
     const image = await jimp.read(buffer);
+
+    console.log("Size: ", buffer.byteLength);
 
     if (image.bitmap.width > image.bitmap.height && image.bitmap.width > MAX_SIZE) {
         image.resize(MAX_SIZE, jimp.AUTO);
@@ -64,7 +68,7 @@ async function resize(buffer) {
     else if (image.bitmap.height > MAX_SIZE) {
         image.resize(jimp.AUTO, MAX_SIZE);
     }
-    else {
+    else if (buffer.byteLength <= MAX_BYTE_SIZE) {
         return buffer;
     }
 
@@ -85,8 +89,11 @@ async function resize(buffer) {
 async function optimize(buffer) {
     return await imagemin.buffer(buffer, {
         plugins: [
-            imageminMozJpeg({
-                quality: 50
+            // imageminMozJpeg({
+            //     quality: 50
+            // }),
+            imageminPngQuant({
+                quality: "0-70"
             })
         ]
     });
