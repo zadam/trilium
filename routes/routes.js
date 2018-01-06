@@ -24,6 +24,7 @@ const setupApiRoute = require('./api/setup');
 const sqlRoute = require('./api/sql');
 const anonymizationRoute = require('./api/anonymization');
 const cleanupRoute = require('./api/cleanup');
+const imageRoute = require('./api/image');
 
 function register(app) {
     app.use('/', indexRoute);
@@ -51,6 +52,7 @@ function register(app) {
     app.use('/api/sql', sqlRoute);
     app.use('/api/anonymization', anonymizationRoute);
     app.use('/api/cleanup', cleanupRoute);
+    app.use('/api/image', imageRoute);
 }
 
 module.exports = {
