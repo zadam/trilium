@@ -6,13 +6,14 @@ const sql = require('../../services/sql');
 const auth = require('../../services/auth');
 const utils = require('../../services/utils');
 const sync_table = require('../../services/sync_table');
+const wrap = require('express-promise-wrap').wrap;
 
 /**
  * Code in this file deals with moving and cloning note tree rows. Relationship between note and parent note is unique
  * for not deleted note trees. There may be multiple deleted note-parent note relationships.
  */
 
-router.put('/:noteTreeId/move-to/:parentNoteId', auth.checkApiAuth, async (req, res, next) => {
+router.put('/:noteTreeId/move-to/:parentNoteId', auth.checkApiAuth, wrap(async (req, res, next) => {
     const noteTreeId = req.params.noteTreeId;
     const parentNoteId = req.params.parentNoteId;
     const sourceId = req.headers.source_id;
@@ -36,9 +37,9 @@ router.put('/:noteTreeId/move-to/:parentNoteId', auth.checkApiAuth, async (req, 
     });
 
     res.send({ success: true });
-});
+}));
 
-router.put('/:noteTreeId/move-before/:beforeNoteTreeId', auth.checkApiAuth, async (req, res, next) => {
+router.put('/:noteTreeId/move-before/:beforeNoteTreeId', auth.checkApiAuth, wrap(async (req, res, next) => {
     const noteTreeId = req.params.noteTreeId;
     const beforeNoteTreeId = req.params.beforeNoteTreeId;
     const sourceId = req.headers.source_id;
@@ -67,9 +68,9 @@ router.put('/:noteTreeId/move-before/:beforeNoteTreeId', auth.checkApiAuth, asyn
     });
 
     res.send({ success: true });
-});
+}));
 
-router.put('/:noteTreeId/move-after/:afterNoteTreeId', auth.checkApiAuth, async (req, res, next) => {
+router.put('/:noteTreeId/move-after/:afterNoteTreeId', auth.checkApiAuth, wrap(async (req, res, next) => {
     const noteTreeId = req.params.noteTreeId;
     const afterNoteTreeId = req.params.afterNoteTreeId;
     const sourceId = req.headers.source_id;
@@ -96,9 +97,9 @@ router.put('/:noteTreeId/move-after/:afterNoteTreeId', auth.checkApiAuth, async 
     });
 
     res.send({ success: true });
-});
+}));
 
-router.put('/:childNoteId/clone-to/:parentNoteId', auth.checkApiAuth, async (req, res, next) => {
+router.put('/:childNoteId/clone-to/:parentNoteId', auth.checkApiAuth, wrap(async (req, res, next) => {
     const parentNoteId = req.params.parentNoteId;
     const childNoteId = req.params.childNoteId;
     const prefix = req.body.prefix;
@@ -131,9 +132,9 @@ router.put('/:childNoteId/clone-to/:parentNoteId', auth.checkApiAuth, async (req
     });
 
     res.send({ success: true });
-});
+}));
 
-router.put('/:noteId/clone-after/:afterNoteTreeId', auth.checkApiAuth, async (req, res, next) => {
+router.put('/:noteId/clone-after/:afterNoteTreeId', auth.checkApiAuth, wrap(async (req, res, next) => {
     const noteId = req.params.noteId;
     const afterNoteTreeId = req.params.afterNoteTreeId;
     const sourceId = req.headers.source_id;
@@ -168,7 +169,7 @@ router.put('/:noteId/clone-after/:afterNoteTreeId', auth.checkApiAuth, async (re
     });
 
     res.send({ success: true });
-});
+}));
 
 async function loadSubTreeNoteIds(parentNoteId, subTreeNoteIds) {
     subTreeNoteIds.push(parentNoteId);
@@ -246,7 +247,7 @@ async function checkTreeCycle(parentNoteId, childNoteId) {
     return await checkTreeCycleInner(parentNoteId);
 }
 
-router.put('/:noteTreeId/expanded/:expanded', auth.checkApiAuth, async (req, res, next) => {
+router.put('/:noteTreeId/expanded/:expanded', auth.checkApiAuth, wrap(async (req, res, next) => {
     const noteTreeId = req.params.noteTreeId;
     const expanded = req.params.expanded;
 
@@ -257,6 +258,6 @@ router.put('/:noteTreeId/expanded/:expanded', auth.checkApiAuth, async (req, res
     });
 
     res.send({});
-});
+}));
 
 module.exports = router;

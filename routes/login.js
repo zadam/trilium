@@ -5,12 +5,13 @@ const router = express.Router();
 const utils = require('../services/utils');
 const options = require('../services/options');
 const my_scrypt = require('../services/my_scrypt');
+const wrap = require('express-promise-wrap').wrap;
 
-router.get('', (req, res, next) => {
+router.get('', wrap(async (req, res, next) => {
     res.render('login', { 'failedAuth': false });
-});
+}));
 
-router.post('', async (req, res, next) => {
+router.post('', wrap(async (req, res, next) => {
     const userName = await options.getOption('username');
 
     const guessedPassword = req.body.password;
@@ -32,7 +33,7 @@ router.post('', async (req, res, next) => {
     else {
         res.render('login', {'failedAuth': true});
     }
-});
+}));
 
 
 async function verifyPassword(guessed_password) {

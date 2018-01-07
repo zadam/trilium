@@ -166,8 +166,6 @@ async function saveNoteImages(noteId, noteText, sourceId) {
     let match;
 
     while (match = re.exec(noteText)) {
-        console.log(match);
-
         const imageId = match[1];
         const existingNoteImage = existingNoteImages.find(ni => ni.image_id === imageId);
 

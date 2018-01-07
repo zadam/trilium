@@ -8,8 +8,9 @@ const data_dir = require('../../services/data_dir');
 const utils = require('../../services/utils');
 const sync_table = require('../../services/sync_table');
 const auth = require('../../services/auth');
+const wrap = require('express-promise-wrap').wrap;
 
-router.get('/:directory/to/:parentNoteId', auth.checkApiAuth, async (req, res, next) => {
+router.get('/:directory/to/:parentNoteId', auth.checkApiAuth, wrap(async (req, res, next) => {
     const directory = req.params.directory.replace(/[^0-9a-zA-Z_-]/gi, '');
     const parentNoteId = req.params.parentNoteId;
 
@@ -18,7 +19,7 @@ router.get('/:directory/to/:parentNoteId', auth.checkApiAuth, async (req, res, n
     await sql.doInTransaction(async () => await importNotes(dir, parentNoteId));
 
     res.send({});
-});
+}));
 
 async function importNotes(dir, parentNoteId) {
     const parent = await sql.getFirst("SELECT * FROM notes WHERE note_id = ?", [parentNoteId]);

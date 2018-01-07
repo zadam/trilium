@@ -9,8 +9,9 @@ const auth = require('../../services/auth');
 const password_encryption = require('../../services/password_encryption');
 const protected_session = require('../../services/protected_session');
 const app_info = require('../../services/app_info');
+const wrap = require('express-promise-wrap').wrap;
 
-router.post('/sync', async (req, res, next) => {
+router.post('/sync', wrap(async (req, res, next) => {
     const timestampStr = req.body.timestamp;
 
     const timestamp = utils.parseDate(timestampStr);
@@ -44,10 +45,10 @@ router.post('/sync', async (req, res, next) => {
     res.send({
         sourceId: source_id.getCurrentSourceId()
     });
-});
+}));
 
 // this is for entering protected mode so user has to be already logged-in (that's the reason we don't require username)
-router.post('/protected', auth.checkApiAuth, async (req, res, next) => {
+router.post('/protected', auth.checkApiAuth, wrap(async (req, res, next) => {
     const password = req.body.password;
 
     if (!await password_encryption.verifyPassword(password)) {
@@ -67,6 +68,6 @@ router.post('/protected', auth.checkApiAuth, async (req, res, next) => {
         success: true,
         protectedSessionId: protectedSessionId
     });
-});
+}));
 
 module.exports = router;

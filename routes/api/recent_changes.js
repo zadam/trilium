@@ -4,8 +4,9 @@ const express = require('express');
 const router = express.Router();
 const sql = require('../../services/sql');
 const auth = require('../../services/auth');
+const wrap = require('express-promise-wrap').wrap;
 
-router.get('/', auth.checkApiAuth, async (req, res, next) => {
+router.get('/', auth.checkApiAuth, wrap(async (req, res, next) => {
     const recentChanges = await sql.getAll(
         `SELECT 
             notes.is_deleted AS current_is_deleted,
@@ -19,6 +20,6 @@ router.get('/', auth.checkApiAuth, async (req, res, next) => {
         LIMIT 1000`);
 
     res.send(recentChanges);
-});
+}));
 
 module.exports = router;

@@ -8,8 +8,9 @@ const notes = require('../../services/notes');
 const log = require('../../services/log');
 const protected_session = require('../../services/protected_session');
 const data_encryption = require('../../services/data_encryption');
+const wrap = require('express-promise-wrap').wrap;
 
-router.get('/:noteId', auth.checkApiAuth, async (req, res, next) => {
+router.get('/:noteId', auth.checkApiAuth, wrap(async (req, res, next) => {
     const noteId = req.params.noteId;
 
     const detail = await sql.getFirst("SELECT * FROM notes WHERE note_id = ?", [noteId]);
@@ -30,9 +31,9 @@ router.get('/:noteId', auth.checkApiAuth, async (req, res, next) => {
     res.send({
         detail: detail
     });
-});
+}));
 
-router.post('/:parentNoteId/children', auth.checkApiAuth, async (req, res, next) => {
+router.post('/:parentNoteId/children', auth.checkApiAuth, wrap(async (req, res, next) => {
     const sourceId = req.headers.source_id;
     const parentNoteId = req.params.parentNoteId;
     const note = req.body;
@@ -43,9 +44,9 @@ router.post('/:parentNoteId/children', auth.checkApiAuth, async (req, res, next)
         'note_id': noteId,
         'note_tree_id': noteTreeId
     });
-});
+}));
 
-router.put('/:noteId', auth.checkApiAuth, async (req, res, next) => {
+router.put('/:noteId', auth.checkApiAuth, wrap(async (req, res, next) => {
     const note = req.body;
     const noteId = req.params.noteId;
     const sourceId = req.headers.source_id;
@@ -54,17 +55,17 @@ router.put('/:noteId', auth.checkApiAuth, async (req, res, next) => {
     await notes.updateNote(noteId, note, dataKey, sourceId);
 
     res.send({});
-});
+}));
 
-router.delete('/:noteTreeId', auth.checkApiAuth, async (req, res, next) => {
+router.delete('/:noteTreeId', auth.checkApiAuth, wrap(async (req, res, next) => {
     await sql.doInTransaction(async () => {
         await notes.deleteNote(req.params.noteTreeId, req.headers.source_id);
     });
 
     res.send({});
-});
+}));
 
-router.get('/', auth.checkApiAuth, async (req, res, next) => {
+router.get('/', auth.checkApiAuth, wrap(async (req, res, next) => {
     const search = '%' + req.query.search + '%';
 
     const result = await sql.getAll("SELECT note_id FROM notes WHERE note_title LIKE ? OR note_text LIKE ?", [search, search]);
@@ -76,6 +77,6 @@ router.get('/', auth.checkApiAuth, async (req, res, next) => {
     }
 
     res.send(noteIdList);
-});
+}));
 
 module.exports = router;

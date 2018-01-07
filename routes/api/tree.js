@@ -10,8 +10,9 @@ const protected_session = require('../../services/protected_session');
 const data_encryption = require('../../services/data_encryption');
 const notes = require('../../services/notes');
 const sync_table = require('../../services/sync_table');
+const wrap = require('express-promise-wrap').wrap;
 
-router.get('/', auth.checkApiAuth, async (req, res, next) => {
+router.get('/', auth.checkApiAuth, wrap(async (req, res, next) => {
     const notes = await sql.getAll(`
       SELECT 
         notes_tree.*, 
@@ -39,9 +40,9 @@ router.get('/', auth.checkApiAuth, async (req, res, next) => {
         notes: notes,
         start_note_path: await options.getOption('start_note_path')
     });
-});
+}));
 
-router.put('/:noteId/protect-sub-tree/:isProtected', auth.checkApiAuth, async (req, res, next) => {
+router.put('/:noteId/protect-sub-tree/:isProtected', auth.checkApiAuth, wrap(async (req, res, next) => {
     const noteId = req.params.noteId;
     const isProtected = !!parseInt(req.params.isProtected);
     const dataKey = protected_session.getDataKey(req);
@@ -52,9 +53,9 @@ router.put('/:noteId/protect-sub-tree/:isProtected', auth.checkApiAuth, async (r
     });
 
     res.send({});
-});
+}));
 
-router.put('/:noteTreeId/set-prefix', auth.checkApiAuth, async (req, res, next) => {
+router.put('/:noteTreeId/set-prefix', auth.checkApiAuth, wrap(async (req, res, next) => {
     const noteTreeId = req.params.noteTreeId;
     const sourceId = req.headers.source_id;
     const prefix = utils.isEmptyOrWhitespace(req.body.prefix) ? null : req.body.prefix;
@@ -66,6 +67,6 @@ router.put('/:noteTreeId/set-prefix', auth.checkApiAuth, async (req, res, next) 
     });
 
     res.send({});
-});
+}));
 
 module.exports = router;

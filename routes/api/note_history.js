@@ -7,8 +7,9 @@ const auth = require('../../services/auth');
 const data_encryption = require('../../services/data_encryption');
 const protected_session = require('../../services/protected_session');
 const sync_table = require('../../services/sync_table');
+const wrap = require('express-promise-wrap').wrap;
 
-router.get('/:noteId', auth.checkApiAuth, async (req, res, next) => {
+router.get('/:noteId', auth.checkApiAuth, wrap(async (req, res, next) => {
     const noteId = req.params.noteId;
     const history = await sql.getAll("SELECT * FROM notes_history WHERE note_id = ? order by date_modified_to desc", [noteId]);
 
@@ -22,9 +23,9 @@ router.get('/:noteId', auth.checkApiAuth, async (req, res, next) => {
     }
 
     res.send(history);
-});
+}));
 
-router.put('', auth.checkApiAuth, async (req, res, next) => {
+router.put('', auth.checkApiAuth, wrap(async (req, res, next) => {
     const sourceId = req.headers.source_id;
 
     await sql.doInTransaction(async () => {
@@ -34,6 +35,6 @@ router.put('', auth.checkApiAuth, async (req, res, next) => {
     });
 
     res.send();
-});
+}));
 
 module.exports = router;

@@ -14,8 +14,9 @@ const imageminGifLossy = require('imagemin-giflossy');
 const jimp = require('jimp');
 const imageType = require('image-type');
 const sanitizeFilename = require('sanitize-filename');
+const wrap = require('express-promise-wrap').wrap;
 
-router.get('/:imageId/:filename', auth.checkApiAuth, async (req, res, next) => {
+router.get('/:imageId/:filename', auth.checkApiAuth, wrap(async (req, res, next) => {
     const image = await sql.getFirst("SELECT * FROM images WHERE image_id = ?", [req.params.imageId]);
 
     if (!image) {
@@ -25,9 +26,9 @@ router.get('/:imageId/:filename', auth.checkApiAuth, async (req, res, next) => {
     res.set('Content-Type', 'image/' + image.format);
 
     res.send(image.data);
-});
+}));
 
-router.post('', auth.checkApiAuth, multer.single('upload'), async (req, res, next) => {
+router.post('', auth.checkApiAuth, multer.single('upload'), wrap(async (req, res, next) => {
     const sourceId = req.headers.source_id;
     const noteId = req.query.noteId;
     const file = req.file;
@@ -86,7 +87,7 @@ router.post('', auth.checkApiAuth, multer.single('upload'), async (req, res, nex
         uploaded: true,
         url: `/api/images/${imageId}/${fileName}`
     });
-});
+}));
 
 const MAX_SIZE = 1000;
 const MAX_BYTE_SIZE = 200000; // images should have under 100 KBs

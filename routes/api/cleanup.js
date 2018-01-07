@@ -7,8 +7,9 @@ const utils = require('../../services/utils');
 const sync_table = require('../../services/sync_table');
 const auth = require('../../services/auth');
 const log = require('../../services/log');
+const wrap = require('express-promise-wrap').wrap;
 
-router.post('/cleanup-soft-deleted-items', auth.checkApiAuth, async (req, res, next) => {
+router.post('/cleanup-soft-deleted-items', auth.checkApiAuth, wrap(async (req, res, next) => {
     await sql.doInTransaction(async () => {
         const noteIdsToDelete = await sql.getFirstColumn("SELECT note_id FROM notes WHERE is_deleted = 1");
         const noteIdsSql = noteIdsToDelete
@@ -34,14 +35,14 @@ router.post('/cleanup-soft-deleted-items', auth.checkApiAuth, async (req, res, n
     });
 
     res.send({});
-});
+}));
 
-router.post('/vacuum-database', auth.checkApiAuth, async (req, res, next) => {
+router.post('/vacuum-database', auth.checkApiAuth, wrap(async (req, res, next) => {
     await sql.execute("VACUUM");
 
     log.info("Database has been vacuumed.");
 
     res.send({});
-});
+}));
 
 module.exports = router;

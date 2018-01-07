@@ -7,12 +7,13 @@ const auth = require('../../services/auth');
 const utils = require('../../services/utils');
 const sync_table = require('../../services/sync_table');
 const options = require('../../services/options');
+const wrap = require('express-promise-wrap').wrap;
 
-router.get('', auth.checkApiAuth, async (req, res, next) => {
+router.get('', auth.checkApiAuth, wrap(async (req, res, next) => {
     res.send(await getRecentNotes());
-});
+}));
 
-router.put('/:noteTreeId/:notePath', auth.checkApiAuth, async (req, res, next) => {
+router.put('/:noteTreeId/:notePath', auth.checkApiAuth, wrap(async (req, res, next) => {
     const noteTreeId = req.params.noteTreeId;
     const notePath = req.params.notePath;
     const sourceId = req.headers.source_id;
@@ -31,7 +32,7 @@ router.put('/:noteTreeId/:notePath', auth.checkApiAuth, async (req, res, next) =
     });
 
     res.send(await getRecentNotes());
-});
+}));
 
 async function getRecentNotes() {
     return await sql.getAll(`

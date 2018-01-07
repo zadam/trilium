@@ -8,8 +8,9 @@ const sql = require('../../services/sql');
 const utils = require('../../services/utils');
 const my_scrypt = require('../../services/my_scrypt');
 const password_encryption = require('../../services/password_encryption');
+const wrap = require('express-promise-wrap').wrap;
 
-router.post('', auth.checkAppNotInitialized, async (req, res, next) => {
+router.post('', auth.checkAppNotInitialized, wrap(async (req, res, next) => {
     const { username, password } = req.body;
 
     await sql.doInTransaction(async () => {
@@ -27,6 +28,6 @@ router.post('', auth.checkAppNotInitialized, async (req, res, next) => {
     sql.setDbReadyAsResolved();
 
     res.send({});
-});
+}));
 
 module.exports = router;
