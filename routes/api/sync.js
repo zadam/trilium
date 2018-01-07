@@ -133,6 +133,12 @@ router.get('/images/:imageId', auth.checkApiAuth, async (req, res, next) => {
     res.send(entity);
 });
 
+router.get('/notes_image/:noteImageId', auth.checkApiAuth, async (req, res, next) => {
+    const noteImageId = req.params.noteImageId;
+
+    res.send(await sql.getFirst("SELECT * FROM notes_image WHERE note_image_id = ?", [noteImageId]));
+});
+
 router.put('/notes', auth.checkApiAuth, async (req, res, next) => {
     await syncUpdate.updateNote(req.body.entity, req.body.sourceId);
 
@@ -171,6 +177,12 @@ router.put('/recent_notes', auth.checkApiAuth, async (req, res, next) => {
 
 router.put('/images', auth.checkApiAuth, async (req, res, next) => {
     await syncUpdate.updateImage(req.body.entity, req.body.sourceId);
+
+    res.send({});
+});
+
+router.put('/notes_image', auth.checkApiAuth, async (req, res, next) => {
+    await syncUpdate.updateNoteImage(req.body.entity, req.body.sourceId);
 
     res.send({});
 });

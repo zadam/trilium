@@ -24,11 +24,16 @@ router.get('/:imageId/:filename', auth.checkApiAuth, async (req, res, next) => {
     res.send(image.data);
 });
 
-router.post('/upload', auth.checkApiAuth, multer.single('upload'), async (req, res, next) => {
+router.post('', auth.checkApiAuth, multer.single('upload'), async (req, res, next) => {
     const sourceId = req.headers.source_id;
+    const noteId = req.query.noteId;
     const file = req.file;
 
-    const imageId = utils.newNoteId();
+    const note = await sql.getFirst("SELECT * FROM notes WHERE note_id = ?", [noteId]);
+
+    if (!note) {
+        return req.status(404).send(`Note ${noteId} doesn't exist.`);
+    }
 
     if (!file.mimetype.startsWith("image/")) {
         return req.send("Unknown image type: " + file.mimetype);
@@ -38,6 +43,8 @@ router.post('/upload', auth.checkApiAuth, multer.single('upload'), async (req, r
 
     const resizedImage = await resize(file.buffer);
     const optimizedImage = await optimize(resizedImage);
+
+    const imageId = utils.newImageId();
 
     await sql.doInTransaction(async () => {
         await sql.insert("images", {
@@ -52,11 +59,24 @@ router.post('/upload', auth.checkApiAuth, multer.single('upload'), async (req, r
         });
 
         await sync_table.addImageSync(imageId, sourceId);
+
+        const noteImageId = utils.newNoteImageId();
+
+        await sql.insert("notes_image", {
+            note_image_id: noteImageId,
+            note_id: noteId,
+            image_id: imageId,
+            is_deleted: 0,
+            date_modified: now,
+            date_created: now
+        });
+
+        await sync_table.addNoteImageSync(noteImageId, sourceId);
     });
 
     res.send({
         uploaded: true,
-        url: `/api/image/${imageId}/${file.originalname}`
+        url: `/api/images/${imageId}/${file.originalname}`
     });
 });
 

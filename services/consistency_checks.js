@@ -181,6 +181,8 @@ async function runAllChecks() {
     await runSyncRowChecks("notes_history", "note_history_id", errorList);
     await runSyncRowChecks("notes_tree", "note_tree_id", errorList);
     await runSyncRowChecks("recent_notes", "note_tree_id", errorList);
+    await runSyncRowChecks("images", "image_id", errorList);
+    await runSyncRowChecks("notes_image", "note_image_id", errorList);
 
     if (errorList.length === 0) {
         // we run this only if basic checks passed since this assumes basic data consistency

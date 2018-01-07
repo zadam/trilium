@@ -52,7 +52,7 @@ function register(app) {
     app.use('/api/sql', sqlRoute);
     app.use('/api/anonymization', anonymizationRoute);
     app.use('/api/cleanup', cleanupRoute);
-    app.use('/api/image', imageRoute);
+    app.use('/api/images', imageRoute);
 }
 
 module.exports = {

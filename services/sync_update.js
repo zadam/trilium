@@ -110,6 +110,20 @@ async function updateImage(entity, sourceId) {
     }
 }
 
+async function updateNoteImage(entity, sourceId) {
+    const origNoteImage = await sql.getFirst("SELECT * FROM notes_image WHERE note_image_id = ?", [entity.note_image_id]);
+
+    if (!origNoteImage || origNoteImage.date_modified <= entity.date_modified) {
+        await sql.doInTransaction(async () => {
+            await sql.replace("notes_image", entity);
+
+            await sync_table.addNoteImageSync(entity.note_image_id, sourceId);
+        });
+
+        log.info("Update/sync note image " + entity.note_image_id);
+    }
+}
+
 module.exports = {
     updateNote,
     updateNoteTree,
@@ -117,5 +131,6 @@ module.exports = {
     updateNoteReordering,
     updateOptions,
     updateRecentNotes,
-    updateImage
+    updateImage,
+    updateNoteImage
 };
