@@ -11,6 +11,8 @@ const imagemin = require('imagemin');
 const imageminMozJpeg = require('imagemin-mozjpeg');
 const imageminPngQuant = require('imagemin-pngquant');
 const jimp = require('jimp');
+const imageType = require('image-type');
+const sanitizeFilename = require('sanitize-filename');
 
 router.get('/:imageId/:filename', auth.checkApiAuth, async (req, res, next) => {
     const image = await sql.getFirst("SELECT * FROM images WHERE image_id = ?", [req.params.imageId]);
@@ -35,7 +37,7 @@ router.post('', auth.checkApiAuth, multer.single('upload'), async (req, res, nex
         return req.status(404).send(`Note ${noteId} doesn't exist.`);
     }
 
-    if (!file.mimetype.startsWith("image/")) {
+    if (!["image/png", "image/jpeg"].includes(file.mimetype)) {
         return req.send("Unknown image type: " + file.mimetype);
     }
 
@@ -44,13 +46,19 @@ router.post('', auth.checkApiAuth, multer.single('upload'), async (req, res, nex
     const resizedImage = await resize(file.buffer);
     const optimizedImage = await optimize(resizedImage);
 
+    const imageFormat = imageType(optimizedImage);
+    console.log(imageFormat);
+
+    const fileNameWithouExtension = file.originalname.replace(/\.[^/.]+$/, "");
+    const fileName = sanitizeFilename(fileNameWithouExtension + "." + imageFormat.ext);
+
     const imageId = utils.newImageId();
 
     await sql.doInTransaction(async () => {
         await sql.insert("images", {
             image_id: imageId,
-            format: file.mimetype.substr(6),
-            name: file.originalname,
+            format: imageFormat.ext,
+            name: fileName,
             checksum: utils.hash(optimizedImage),
             data: optimizedImage,
             is_deleted: 0,
@@ -76,7 +84,7 @@ router.post('', auth.checkApiAuth, multer.single('upload'), async (req, res, nex
 
     res.send({
         uploaded: true,
-        url: `/api/images/${imageId}/${file.originalname}`
+        url: `/api/images/${imageId}/${fileName}`
     });
 });
 
@@ -113,9 +121,9 @@ async function resize(buffer) {
 async function optimize(buffer) {
     return await imagemin.buffer(buffer, {
         plugins: [
-            // imageminMozJpeg({
-            //     quality: 50
-            // }),
+            imageminMozJpeg({
+                quality: 50
+            }),
             imageminPngQuant({
                 quality: "0-70"
             })

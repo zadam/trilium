@@ -91,6 +91,7 @@ const server = (function() {
         get,
         post,
         put,
-        remove
+        remove,
+        getHeaders
     }
 })();

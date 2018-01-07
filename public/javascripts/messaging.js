@@ -49,6 +49,9 @@ const messaging = (function() {
                 recentNotes.reload();
             }
 
+            // we don't detect image changes here since images themselves are immutable and references should be
+            // updated in note detail as well
+
             changesToPushCountEl.html(message.changesToPushCount);
         }
         else if (message.type === 'sync-hash-check-failed') {
