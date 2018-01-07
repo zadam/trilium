@@ -29,7 +29,9 @@ const messaging = (function() {
 
             const syncData = message.data.filter(sync => sync.source_id !== glob.sourceId);
 
-            if (syncData.some(sync => sync.entity_name === 'notes_tree')) {
+            if (syncData.some(sync => sync.entity_name === 'notes_tree')
+                || syncData.some(sync => sync.entity_name === 'notes')) {
+
                 console.log(now(), "Reloading tree because of background changes");
 
                 noteTree.reload();
