@@ -32,8 +32,8 @@ async function addImageSync(imageId, sourceId) {
     await addEntitySync("images", imageId, sourceId);
 }
 
-async function addNoteImageSync(imageId, sourceId) {
-    await addEntitySync("notes_image", imageId, sourceId);
+async function addNoteImageSync(noteImageId, sourceId) {
+    await addEntitySync("notes_image", noteImageId, sourceId);
 }
 
 async function addEntitySync(entityName, entityId, sourceId) {

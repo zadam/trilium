@@ -135,6 +135,78 @@ async function protectNoteHistory(noteId, dataKey, protect, sourceId) {
     }
 }
 
+async function saveNoteHistory(noteId, dataKey, sourceId, nowStr) {
+    const oldNote = await sql.getFirst("SELECT * FROM notes WHERE note_id = ?", [noteId]);
+
+    if (oldNote.is_protected) {
+        decryptNote(oldNote, dataKey);
+    }
+
+    const newNoteHistoryId = utils.newNoteHistoryId();
+
+    await sql.insert('notes_history', {
+        note_history_id: newNoteHistoryId,
+        note_id: noteId,
+        // title and text should be decrypted now
+        note_title: oldNote.note_title,
+        note_text: oldNote.note_text,
+        is_protected: 0, // will be fixed in the protectNoteHistory() call
+        date_modified_from: oldNote.date_modified,
+        date_modified_to: nowStr
+    });
+
+    await sync_table.addNoteHistorySync(newNoteHistoryId, sourceId);
+}
+
+async function saveNoteImages(noteId, noteText, sourceId) {
+    const existingNoteImages = await sql.getAll("SELECT * FROM notes_image WHERE note_id = ?", [noteId]);
+    const foundImageIds = [];
+    const now = utils.nowDate();
+    const re = /src="\/api\/images\/([a-zA-Z0-9]+)\//g;
+    let match;
+
+    while (match = re.exec(noteText)) {
+        console.log(match);
+
+        const imageId = match[1];
+        const existingNoteImage = existingNoteImages.find(ni => ni.image_id === imageId);
+
+        if (!existingNoteImage) {
+            const noteImageId = utils.newNoteImageId();
+
+            await sql.insert("notes_image", {
+                note_image_id: noteImageId,
+                note_id: noteId,
+                image_id: imageId,
+                is_deleted: 0,
+                date_modified: now,
+                date_created: now
+            });
+
+            await sync_table.addNoteImageSync(noteImageId, sourceId);
+        }
+        else if (existingNoteImage.is_deleted) {
+            await sql.execute("UPDATE notes_image SET is_deleted = 0, date_modified = ? WHERE note_image_id = ?",
+                [now, existingNoteImage.note_image_id]);
+
+            await sync_table.addNoteImageSync(existingNoteImage.note_image_id, sourceId);
+        }
+        // else we don't need to do anything
+
+        foundImageIds.push(imageId);
+    }
+
+    // marking note images as deleted if they are not present on the page anymore
+    const unusedNoteImages = existingNoteImages.filter(ni => !foundImageIds.includes(ni.image_id));
+
+    for (const unusedNoteImage of unusedNoteImages) {
+        await sql.execute("UPDATE notes_image SET is_deleted = 1, date_modified = ? WHERE note_image_id = ?",
+            [now, unusedNoteImage.note_image_id]);
+
+        await sync_table.addNoteImageSync(unusedNoteImage.note_image_id, sourceId);
+    }
+}
+
 async function updateNote(noteId, newNote, dataKey, sourceId) {
     if (newNote.detail.is_protected) {
         await encryptNote(newNote, dataKey);
@@ -154,27 +226,10 @@ async function updateNote(noteId, newNote, dataKey, sourceId) {
         const msSinceDateCreated = now.getTime() - utils.parseDate(newNote.detail.date_created).getTime();
 
         if (!existingNoteHistoryId && msSinceDateCreated >= historySnapshotTimeInterval * 1000) {
-            const oldNote = await sql.getFirst("SELECT * FROM notes WHERE note_id = ?", [noteId]);
-
-            if (oldNote.is_protected) {
-                decryptNote(oldNote, dataKey);
-            }
-
-            const newNoteHistoryId = utils.newNoteHistoryId();
-
-            await sql.insert('notes_history', {
-                note_history_id: newNoteHistoryId,
-                note_id: noteId,
-                // title and text should be decrypted now
-                note_title: oldNote.note_title,
-                note_text: oldNote.note_text,
-                is_protected: 0, // will be fixed in the protectNoteHistory() call
-                date_modified_from: oldNote.date_modified,
-                date_modified_to: nowStr
-            });
-
-            await sync_table.addNoteHistorySync(newNoteHistoryId, sourceId);
+            await saveNoteHistory(noteId, dataKey, sourceId, nowStr);
         }
+
+        await saveNoteImages(noteId, newNote.detail.note_text, sourceId);
 
         await protectNoteHistory(noteId, dataKey, newNote.detail.is_protected);
 
