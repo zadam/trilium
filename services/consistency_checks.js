@@ -177,6 +177,16 @@ async function runAllChecks() {
             COUNT(*) > 1`,
         "Duplicate undeleted parent note <-> note relationship - parent note ID > note ID", errorList);
 
+    await runCheck(`
+          SELECT 
+            images.image_id
+          FROM 
+            images
+            LEFT JOIN notes_image ON notes_image.image_id = images.image_id
+          WHERE 
+            notes_image.note_image_id IS NULL`,
+        "Image with no note relation", errorList);
+
     await runSyncRowChecks("notes", "note_id", errorList);
     await runSyncRowChecks("notes_history", "note_history_id", errorList);
     await runSyncRowChecks("notes_tree", "note_tree_id", errorList);

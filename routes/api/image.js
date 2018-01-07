@@ -10,6 +10,7 @@ const multer = require('multer')();
 const imagemin = require('imagemin');
 const imageminMozJpeg = require('imagemin-mozjpeg');
 const imageminPngQuant = require('imagemin-pngquant');
+const imageminGifLossy = require('imagemin-giflossy');
 const jimp = require('jimp');
 const imageType = require('image-type');
 const sanitizeFilename = require('sanitize-filename');
@@ -34,11 +35,11 @@ router.post('', auth.checkApiAuth, multer.single('upload'), async (req, res, nex
     const note = await sql.getFirst("SELECT * FROM notes WHERE note_id = ?", [noteId]);
 
     if (!note) {
-        return req.status(404).send(`Note ${noteId} doesn't exist.`);
+        return res.status(404).send(`Note ${noteId} doesn't exist.`);
     }
 
-    if (!["image/png", "image/jpeg"].includes(file.mimetype)) {
-        return req.send("Unknown image type: " + file.mimetype);
+    if (!["image/png", "image/jpeg", "image/gif"].includes(file.mimetype)) {
+        return res.status(400).send("Unknown image type: " + file.mimetype);
     }
 
     const now = utils.nowDate();
@@ -47,7 +48,6 @@ router.post('', auth.checkApiAuth, multer.single('upload'), async (req, res, nex
     const optimizedImage = await optimize(resizedImage);
 
     const imageFormat = imageType(optimizedImage);
-    console.log(imageFormat);
 
     const fileNameWithouExtension = file.originalname.replace(/\.[^/.]+$/, "");
     const fileName = sanitizeFilename(fileNameWithouExtension + "." + imageFormat.ext);
@@ -129,6 +129,10 @@ async function optimize(buffer) {
             }),
             imageminPngQuant({
                 quality: "0-70"
+            }),
+            imageminGifLossy({
+                lossy: 80,
+                optimize: '3' // needs to be string
             })
         ]
     });

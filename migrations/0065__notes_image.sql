@@ -23,4 +23,5 @@ CREATE TABLE notes_image
 );
 
 CREATE INDEX notes_image_note_id_index ON notes_image (note_id);
+CREATE INDEX notes_image_image_id_index ON notes_image (image_id);
 CREATE INDEX notes_image_note_id_image_id_index ON notes_image (note_id, image_id);
