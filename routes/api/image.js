@@ -107,6 +107,9 @@ async function resize(buffer) {
     // we do resizing with max quality which will be trimmed during optimization step next
     image.quality(100);
 
+    // when converting PNG to JPG we lose alpha channel, this is replaced by white to match Trilium white background
+    image.background(0xFFFFFFFF);
+
     // getBuffer doesn't support promises so this workaround
     return await new Promise((resolve, reject) => image.getBuffer(jimp.MIME_JPEG, (err, data) => {
         if (err) {
