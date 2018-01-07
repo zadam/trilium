@@ -28,6 +28,20 @@ async function checkAuthForMigrationPage(req, res, next) {
     }
 }
 
+// for electron things which need network stuff
+// currently we're doing that for file upload because handling form data seems to be difficult
+async function checkApiAuthOrElectron(req, res, next) {
+    if (!req.session.loggedIn && !utils.isElectron()) {
+        res.status(401).send("Not authorized");
+    }
+    else if (await sql.isDbUpToDate()) {
+        next();
+    }
+    else {
+        res.status(409).send("Mismatched app versions"); // need better response than that
+    }
+}
+
 async function checkApiAuth(req, res, next) {
     if (!req.session.loggedIn) {
         res.status(401).send("Not authorized");
@@ -63,5 +77,6 @@ module.exports = {
     checkAuthForMigrationPage,
     checkApiAuth,
     checkApiAuthForMigrationPage,
-    checkAppNotInitialized
+    checkAppNotInitialized,
+    checkApiAuthOrElectron
 };

@@ -16,7 +16,7 @@ const imageType = require('image-type');
 const sanitizeFilename = require('sanitize-filename');
 const wrap = require('express-promise-wrap').wrap;
 
-router.get('/:imageId/:filename', auth.checkApiAuth, wrap(async (req, res, next) => {
+router.get('/:imageId/:filename', auth.checkApiAuthOrElectron, wrap(async (req, res, next) => {
     const image = await sql.getFirst("SELECT * FROM images WHERE image_id = ?", [req.params.imageId]);
 
     if (!image) {
@@ -28,7 +28,7 @@ router.get('/:imageId/:filename', auth.checkApiAuth, wrap(async (req, res, next)
     res.send(image.data);
 }));
 
-router.post('', auth.checkApiAuth, multer.single('upload'), wrap(async (req, res, next) => {
+router.post('', auth.checkApiAuthOrElectron, multer.single('upload'), wrap(async (req, res, next) => {
     const sourceId = req.headers.source_id;
     const noteId = req.query.noteId;
     const file = req.file;
