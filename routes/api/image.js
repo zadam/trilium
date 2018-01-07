@@ -15,12 +15,18 @@ const jimp = require('jimp');
 const imageType = require('image-type');
 const sanitizeFilename = require('sanitize-filename');
 const wrap = require('express-promise-wrap').wrap;
+const RESOURCE_DIR = require('../../services/resource_dir').RESOURCE_DIR;
+const fs = require('fs');
 
 router.get('/:imageId/:filename', auth.checkApiAuthOrElectron, wrap(async (req, res, next) => {
     const image = await sql.getFirst("SELECT * FROM images WHERE image_id = ?", [req.params.imageId]);
 
     if (!image) {
         return res.status(404).send({});
+    }
+    else if (image.data === null) {
+        res.set('Content-Type', 'image/png');
+        return res.send(fs.readFileSync(RESOURCE_DIR + '/db/image-deleted.png'));
     }
 
     res.set('Content-Type', 'image/' + image.format);

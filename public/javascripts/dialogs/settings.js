@@ -157,6 +157,7 @@ settings.addModule((async function () {
     const fillSyncRowsButton = $("#fill-sync-rows-button");
     const anonymizeButton = $("#anonymize-button");
     const cleanupSoftDeletedButton = $("#cleanup-soft-deleted-items-button");
+    const cleanupUnusedImagesButton = $("#cleanup-unused-images-button");
     const vacuumDatabaseButton = $("#vacuum-database-button");
 
     forceFullSyncButton.click(async () => {
@@ -183,6 +184,14 @@ settings.addModule((async function () {
             await server.post('cleanup/cleanup-soft-deleted-items');
 
             showMessage("Soft deleted items have been cleaned up");
+        }
+    });
+
+    cleanupUnusedImagesButton.click(async () => {
+        if (confirm("Do you really want to clean up unused images?")) {
+            await server.post('cleanup/cleanup-unused-images');
+
+            showMessage("Unused images have been cleaned up");
         }
     });
 
