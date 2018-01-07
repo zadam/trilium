@@ -90,6 +90,8 @@ $(document).bind('keydown', "ctrl+shift+down", () => {
     return false;
 });
 
+$("#note-title").bind('keydown', 'return', () => $("#note-detail").focus());
+
 $(window).on('beforeunload', () => {
     // this makes sure that when user e.g. reloads the page or navigates away from the page, the note's content is saved
     // this sends the request asynchronously and doesn't wait for result
