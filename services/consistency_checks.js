@@ -187,6 +187,17 @@ async function runAllChecks() {
             notes_image.note_image_id IS NULL`,
         "Image with no note relation", errorList);
 
+    await runCheck(`
+          SELECT 
+            notes_image.note_image_id
+          FROM 
+            notes_image
+            JOIN images USING(image_id)
+          WHERE 
+            notes_image.is_deleted = 0
+            AND images.is_deleted = 1`,
+        "Note image is not deleted while image is deleted for note_image_id", errorList);
+
     await runSyncRowChecks("notes", "note_id", errorList);
     await runSyncRowChecks("notes_history", "note_history_id", errorList);
     await runSyncRowChecks("notes_tree", "note_tree_id", errorList);
