@@ -31,11 +31,15 @@ const dbReady = new Promise((resolve, reject) => {
             const schema = fs.readFileSync(resource_dir.DB_INIT_DIR + '/schema.sql', 'UTF-8');
             const notesSql = fs.readFileSync(resource_dir.DB_INIT_DIR + '/main_notes.sql', 'UTF-8');
             const notesTreeSql = fs.readFileSync(resource_dir.DB_INIT_DIR + '/main_notes_tree.sql', 'UTF-8');
+            const imagesSql = fs.readFileSync(resource_dir.DB_INIT_DIR + '/main_images.sql', 'UTF-8');
+            const notesImageSql = fs.readFileSync(resource_dir.DB_INIT_DIR + '/main_notes_image.sql', 'UTF-8');
 
             await doInTransaction(async () => {
                 await executeScript(schema);
                 await executeScript(notesSql);
                 await executeScript(notesTreeSql);
+                await executeScript(imagesSql);
+                await executeScript(notesImageSql);
 
                 const startNoteId = await getFirstValue("SELECT note_id FROM notes_tree WHERE parent_note_id = 'root' AND is_deleted = 0 ORDER BY note_position");
 
