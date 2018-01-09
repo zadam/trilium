@@ -1,7 +1,7 @@
 {
   "name": "trilium",
   "description": "Trilium Notes",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "license": "AGPL-3.0-only",
   "repository": {
     "type": "git",
