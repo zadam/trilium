@@ -1,23 +1,33 @@
 #!/usr/bin/env bash
 
-echo "Deleting dist"
+echo "Deleting existing builds"
 
 rm -r dist/*
 
-cp -r bin/deps/sqlite/* node_modules/sqlite3/lib/binding/
-cp -r bin/deps/image/cjpeg.exe node_modules/mozjpeg/vendor/
-cp -r bin/deps/image/pngquant.exe node_modules/pngquant-bin/vendor/
-cp -r bin/deps/image/gifsicle.exe node_modules/giflossy/vendor/
-
-./node_modules/.bin/electron-rebuild --arch=ia32
-
-./node_modules/.bin/electron-packager . --out=dist --platform=linux --arch=ia32 --overwrite
-
+echo "Rebuilding binaries for linux-x64"
 ./node_modules/.bin/electron-rebuild --arch=x64
 
 ./node_modules/.bin/electron-packager . --out=dist --platform=linux --arch=x64 --overwrite
 
+echo "Rebuilding binaries for linux-ia32"
+./node_modules/.bin/electron-rebuild --arch=ia32
+
+./node_modules/.bin/electron-packager . --out=dist --platform=linux --arch=ia32 --overwrite
+
 ./node_modules/.bin/electron-packager . --out=dist --platform=win32 --arch=x64 --overwrite
 
-# can't copy this before the packaging because the same file name is used for both linux and windows build
-cp bin/deps/scrypt.node ./dist/trilium-win32-x64/resources/app/node_modules/scrypt/build/Release/
+echo "Copying required windows binaries"
+
+WIN_RES_DIR=./dist/trilium-win32-x64/resources/app
+
+cp -r bin/deps/sqlite/* $WIN_RES_DIR/node_modules/sqlite3/lib/binding/
+cp bin/deps/image/cjpeg.exe $WIN_RES_DIR/node_modules/mozjpeg/vendor/
+cp bin/deps/image/pngquant.exe $WIN_RES_DIR/node_modules/pngquant-bin/vendor/
+cp bin/deps/image/gifsicle.exe $WIN_RES_DIR/node_modules/giflossy/vendor/
+cp bin/deps/scrypt.node $WIN_RES_DIR/node_modules/scrypt/build/Release/
+
+echo "Cleaning up unnecessary binaries from all builds"
+
+rm -r ./dist/trilium-linux-ia32/resources/app/bin/deps
+rm -r ./dist/trilium-linux-x64/resources/app/bin/deps
+rm -r ./dist/trilium-win32-x64/resources/app/bin/deps
