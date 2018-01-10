@@ -121,7 +121,8 @@ const noteEditor = (function() {
 
         noteTitleEl.val(currentNote.detail.note_title);
 
-        editor.setData(currentNote.detail.note_text);
+        // temporary workaround for https://github.com/ckeditor/ckeditor5-enter/issues/49
+        editor.setData(currentNote.detail.note_text ? currentNote.detail.note_text : "<p></p>");
 
         noteChangeDisabled = false;
 

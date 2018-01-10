@@ -4,17 +4,18 @@ echo "Deleting existing builds"
 
 rm -r dist/*
 
-echo "Rebuilding binaries for linux-x64"
-./node_modules/.bin/electron-rebuild --arch=x64
-
-./node_modules/.bin/electron-packager . --out=dist --platform=linux --arch=x64 --overwrite
-
 echo "Rebuilding binaries for linux-ia32"
 ./node_modules/.bin/electron-rebuild --arch=ia32
 
 ./node_modules/.bin/electron-packager . --out=dist --platform=linux --arch=ia32 --overwrite
 
 ./node_modules/.bin/electron-packager . --out=dist --platform=win32 --arch=x64 --overwrite
+
+# we build x64 as second so that we keep X64 binaries in node_modules for local development
+echo "Rebuilding binaries for linux-x64"
+./node_modules/.bin/electron-rebuild --arch=x64
+
+./node_modules/.bin/electron-packager . --out=dist --platform=linux --arch=x64 --overwrite
 
 echo "Copying required windows binaries"
 
