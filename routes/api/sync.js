@@ -140,6 +140,12 @@ router.get('/notes_image/:noteImageId', auth.checkApiAuth, wrap(async (req, res,
     res.send(await sql.getFirst("SELECT * FROM notes_image WHERE note_image_id = ?", [noteImageId]));
 }));
 
+router.get('/attributes/:attributeId', auth.checkApiAuth, wrap(async (req, res, next) => {
+    const attributeId = req.params.attributeId;
+
+    res.send(await sql.getFirst("SELECT * FROM attributes WHERE attribute_id = ?", [attributeId]));
+}));
+
 router.put('/notes', auth.checkApiAuth, wrap(async (req, res, next) => {
     await syncUpdate.updateNote(req.body.entity, req.body.sourceId);
 
@@ -183,6 +189,12 @@ router.put('/images', auth.checkApiAuth, wrap(async (req, res, next) => {
 }));
 
 router.put('/notes_image', auth.checkApiAuth, wrap(async (req, res, next) => {
+    await syncUpdate.updateNoteImage(req.body.entity, req.body.sourceId);
+
+    res.send({});
+}));
+
+router.put('/attributes', auth.checkApiAuth, wrap(async (req, res, next) => {
     await syncUpdate.updateNoteImage(req.body.entity, req.body.sourceId);
 
     res.send({});

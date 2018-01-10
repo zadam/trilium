@@ -36,6 +36,10 @@ async function addNoteImageSync(noteImageId, sourceId) {
     await addEntitySync("notes_image", noteImageId, sourceId);
 }
 
+async function addAttributeSync(noteImageId, sourceId) {
+    await addEntitySync("attributes", noteImageId, sourceId);
+}
+
 async function addEntitySync(entityName, entityId, sourceId) {
     await sql.replace("sync", {
         entity_name: entityName,
@@ -88,6 +92,7 @@ async function fillAllSyncRows() {
     await fillSyncRows("recent_notes", "note_tree_id");
     await fillSyncRows("images", "image_id");
     await fillSyncRows("notes_image", "note_image_id");
+    await fillSyncRows("attributes", "attribute_id");
 }
 
 module.exports = {
@@ -99,6 +104,7 @@ module.exports = {
     addRecentNoteSync,
     addImageSync,
     addNoteImageSync,
+    addAttributeSync,
     cleanupSyncRowsForMissingEntities,
     fillAllSyncRows
 };

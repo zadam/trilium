@@ -20,6 +20,10 @@ router.post('/cleanup-soft-deleted-items', auth.checkApiAuth, wrap(async (req, r
 
         await sql.execute(`DELETE FROM notes_history WHERE note_id IN (${noteIdsSql})`);
 
+        await sql.execute(`DELETE FROM notes_image WHERE note_id IN (${noteIdsSql})`);
+
+        await sql.execute(`DELETE FROM attributes WHERE note_id IN (${noteIdsSql})`);
+
         await sql.execute("DELETE FROM notes_tree WHERE is_deleted = 1");
 
         await sql.execute("DELETE FROM notes_image WHERE is_deleted = 1");

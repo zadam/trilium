@@ -230,6 +230,9 @@ async function pushEntity(sync, syncContext) {
     else if (sync.entity_name === 'notes_image') {
         entity = await sql.getFirst('SELECT * FROM notes_image WHERE note_image_id = ?', [sync.entity_id]);
     }
+    else if (sync.entity_name === 'attributes') {
+        entity = await sql.getFirst('SELECT * FROM attributes WHERE attribute_id = ?', [sync.entity_id]);
+    }
     else {
         throw new Error(`Unrecognized entity type ${sync.entity_name} in sync #${sync.id}`);
     }

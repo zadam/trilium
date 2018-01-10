@@ -124,6 +124,20 @@ async function updateNoteImage(entity, sourceId) {
     }
 }
 
+async function updateAttribute(entity, sourceId) {
+    const origAttribute = await sql.getFirst("SELECT * FROM attribute WHERE attribute_id = ?", [entity.attribute_id]);
+
+    if (!origAttribute || origAttribute.date_modified <= entity.date_modified) {
+        await sql.doInTransaction(async () => {
+            await sql.replace("attribute", entity);
+
+            await sync_table.addAttributeSync(entity.attribute_id, sourceId);
+        });
+
+        log.info("Update/sync attribute " + entity.attribute_id);
+    }
+}
+
 module.exports = {
     updateNote,
     updateNoteTree,
@@ -132,5 +146,6 @@ module.exports = {
     updateOptions,
     updateRecentNotes,
     updateImage,
-    updateNoteImage
+    updateNoteImage,
+    updateAttribute
 };
