@@ -9,4 +9,4 @@ CREATE TABLE attributes
 );
 
 CREATE INDEX attributes_note_id_index ON attributes (note_id);
-CREATE INDEX attributes_note_id_name_index ON attributes (note_id, name);
+CREATE UNIQUE INDEX attributes_note_id_name_index ON attributes (note_id, name);

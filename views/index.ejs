@@ -340,6 +340,31 @@
       <textarea id="note-source" readonly="readonly"></textarea>
     </div>
 
+    <div id="attributes-dialog" title="Note attributes" style="display: none; padding: 20px;">
+      <button class="btn-small" data-bind="click: addNewRow">Add new attribute</button>
+
+      <table id="attributes-table" class="table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Value</th>
+          </tr>
+        </thead>
+        <tbody data-bind="foreach: attributes">
+          <tr>
+            <td data-bind="text: attribute_id"></td>
+            <td>
+              <input type="text" data-bind="value: name"/>
+            </td>
+            <td>
+              <input type="text" data-bind="value: value"/>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
     <div id="tooltip" style="display: none;"></div>
 
     <script type="text/javascript">
@@ -376,6 +401,8 @@
 
     <script src="libraries/jquery.ui-contextmenu.min.js"></script>
 
+    <script src="libraries/knockout.min.js"></script>
+
     <link href="stylesheets/style.css" rel="stylesheet">
 
     <script src="javascripts/utils.js"></script>
@@ -405,6 +432,7 @@
     <script src="javascripts/dialogs/edit_tree_prefix.js"></script>
     <script src="javascripts/dialogs/sql_console.js"></script>
     <script src="javascripts/dialogs/note_source.js"></script>
+    <script src="javascripts/dialogs/attributes.js"></script>
 
     <script src="javascripts/link.js"></script>
     <script src="javascripts/sync.js"></script>

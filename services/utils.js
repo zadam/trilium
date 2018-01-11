@@ -23,6 +23,10 @@ function newNoteImageId() {
     return randomString(12);
 }
 
+function newAttributeId() {
+    return randomString(12);
+}
+
 function randomString(length) {
     return randtoken.generate(length);
 }
@@ -106,6 +110,7 @@ module.exports = {
     newNoteHistoryId,
     newImageId,
     newNoteImageId,
+    newAttributeId,
     toBase64,
     fromBase64,
     hmac,
