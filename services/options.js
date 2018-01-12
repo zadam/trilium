@@ -3,8 +3,12 @@ const utils = require('./utils');
 const sync_table = require('./sync_table');
 const app_info = require('./app_info');
 
+async function getOptionOrNull(optName) {
+    return await sql.getFirstOrNull("SELECT opt_value FROM options WHERE opt_name = ?", [optName]);
+}
+
 async function getOption(optName) {
-    const row = await sql.getFirstOrNull("SELECT opt_value FROM options WHERE opt_name = ?", [optName]);
+    const row = await getOptionOrNull(optName);
 
     if (!row) {
         throw new Error("Option " + optName + " doesn't exist");
@@ -30,9 +34,10 @@ async function setOption(optName, optValue, sourceId = null) {
 
 async function createOption(optName, optValue, isSynced, sourceId = null) {
     await sql.insert("options", {
-       opt_name: optName,
-       opt_value: optValue,
-       is_synced: isSynced
+        opt_name: optName,
+        opt_value: optValue,
+        is_synced: isSynced,
+        date_modified: utils.nowDate()
     });
 
     if (isSynced) {
@@ -63,6 +68,8 @@ async function initOptions(startNotePath) {
 
 module.exports = {
     getOption,
+    getOptionOrNull,
     setOption,
-    initOptions
+    initOptions,
+    createOption
 };
