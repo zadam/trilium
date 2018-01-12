@@ -341,28 +341,34 @@
     </div>
 
     <div id="attributes-dialog" title="Note attributes" style="display: none; padding: 20px;">
-      <button class="btn-small" data-bind="click: addNewRow">Add new attribute</button>
+      <div style="display: flex; justify-content: space-between; padding: 15px; padding-top: 0;">
+        <button class="btn-default" data-bind="click: addNewRow">Add new attribute</button>
 
-      <table id="attributes-table" class="table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Value</th>
-          </tr>
-        </thead>
-        <tbody data-bind="foreach: attributes">
-          <tr>
-            <td data-bind="text: attribute_id"></td>
-            <td>
-              <input type="text" data-bind="value: name"/>
-            </td>
-            <td>
-              <input type="text" data-bind="value: value"/>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+        <button class="btn-primary" data-bind="click: save">Save</button>
+      </div>
+
+      <div style="height: 97%; overflow: auto">
+        <table id="attributes-table" class="table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Value</th>
+            </tr>
+          </thead>
+          <tbody data-bind="foreach: attributes">
+            <tr>
+              <td data-bind="text: attribute_id"></td>
+              <td>
+                <input type="text" data-bind="value: name"/>
+              </td>
+              <td>
+                <input type="text" data-bind="value: value" style="width: 300px"/>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <div id="tooltip" style="display: none;"></div>

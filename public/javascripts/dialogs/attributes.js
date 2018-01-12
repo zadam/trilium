@@ -2,19 +2,38 @@
 
 const attributesDialog = (function() {
     const dialogEl = $("#attributes-dialog");
+    const attributesModel = new AttributesModel();
 
-    function AttributesModel(attributes) {
-        const model = this;
+    function AttributesModel() {
+        const self = this;
 
-        this.attributes = ko.observableArray(attributes);
+        this.attributes = ko.observableArray();
+
+        this.loadAttributes = async function() {
+            const noteId = noteEditor.getCurrentNoteId();
+
+            const attributes = await server.get('notes/' + noteId + '/attributes');
+
+            this.attributes(attributes);
+        };
 
         this.addNewRow = function() {
-            model.attributes.push({
+            self.attributes.push({
                 attribute_id: '',
                 name: '',
                 value: ''
             });
-        }
+        };
+
+        this.save = async function() {
+            const noteId = noteEditor.getCurrentNoteId();
+
+            const attributes = await server.put('notes/' + noteId + '/attributes', this.attributes());
+
+            self.attributes(attributes);
+
+            showMessage("Attributes have been saved.");
+        };
     }
 
     async function showDialog() {
@@ -26,11 +45,7 @@ const attributesDialog = (function() {
             height: 700
         });
 
-        const noteId = noteEditor.getCurrentNoteId();
-
-        const attributes = await server.get('notes/' + noteId + '/attributes');
-
-        ko.applyBindings(new AttributesModel(attributes));
+        attributesModel.loadAttributes();
     }
 
     $(document).bind('keydown', 'alt+a', e => {
@@ -38,6 +53,8 @@ const attributesDialog = (function() {
 
         e.preventDefault();
     });
+
+    ko.applyBindings(attributesModel);
 
     return {
         showDialog
