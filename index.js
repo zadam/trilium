@@ -38,6 +38,11 @@ function createMainWindow() {
         }
     });
 
+    // prevent drag & drop to navigate away from trilium
+    win.webContents.on('will-navigate', ev => {
+        ev.preventDefault()
+    });
+
     return win;
 }
 
