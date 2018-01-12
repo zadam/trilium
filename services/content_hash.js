@@ -16,8 +16,6 @@ function getHash(rows) {
 async function getHashes() {
     const startTime = new Date();
 
-    const optionsQuestionMarks = Array(options.SYNCED_OPTIONS.length).fill('?').join(',');
-
     const hashes = {
         notes: getHash(await sql.getAll(`
             SELECT
@@ -67,8 +65,8 @@ async function getHashes() {
              opt_name,
              opt_value 
            FROM options 
-           WHERE opt_name IN (${optionsQuestionMarks}) 
-           ORDER BY opt_name`, options.SYNCED_OPTIONS)),
+           WHERE is_synced = 1
+           ORDER BY opt_name`)),
 
         // we don't include image data on purpose because they are quite large, checksum is good enough
         // to represent the data anyway

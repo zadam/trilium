@@ -3,10 +3,6 @@ const utils = require('./utils');
 const sync_table = require('./sync_table');
 const app_info = require('./app_info');
 
-const SYNCED_OPTIONS = [ 'username', 'password_verification_hash', 'password_verification_salt',
-    'password_derived_key_salt', 'encrypted_data_key', 'encrypted_data_key_iv',
-    'protected_session_timeout', 'history_snapshot_time_interval' ];
-
 async function getOption(optName) {
     const row = await sql.getFirstOrNull("SELECT opt_value FROM options WHERE opt_name = ?", [optName]);
 
@@ -17,43 +13,56 @@ async function getOption(optName) {
     return row['opt_value'];
 }
 
-async function setOption(optName, optValue, sourceId) {
-    if (SYNCED_OPTIONS.includes(optName)) {
+async function setOption(optName, optValue, sourceId = null) {
+    const opt = await sql.getFirst("SELECT * FROM options WHERE opt_name = ?", [optName]);
+
+    if (!opt) {
+        throw new Error(`Option ${optName} doesn't exist`);
+    }
+
+    if (opt.is_synced) {
         await sync_table.addOptionsSync(optName, sourceId);
     }
 
-    await sql.replace("options", {
-        opt_name: optName,
-        opt_value: optValue,
-        date_modified: utils.nowDate()
+    await sql.execute("UPDATE options SET opt_value = ?, date_modified = ? WHERE opt_name = ?",
+        [optValue, utils.nowDate(), optName]);
+}
+
+async function createOption(optName, optValue, isSynced, sourceId = null) {
+    await sql.insert("options", {
+       opt_name: optName,
+       opt_value: optValue,
+       is_synced: isSynced
     });
+
+    if (isSynced) {
+        await sync_table.addOptionsSync(optName, sourceId);
+    }
 }
 
 async function initOptions(startNotePath) {
-    await setOption('document_id', utils.randomSecureToken(16));
-    await setOption('document_secret', utils.randomSecureToken(16));
+    await createOption('document_id', utils.randomSecureToken(16), false);
+    await createOption('document_secret', utils.randomSecureToken(16), false);
 
-    await setOption('username', '');
-    await setOption('password_verification_hash', '');
-    await setOption('password_verification_salt', '');
-    await setOption('password_derived_key_salt', '');
-    await setOption('encrypted_data_key', '');
-    await setOption('encrypted_data_key_iv', '');
+    await createOption('username', '', true);
+    await createOption('password_verification_hash', '', true);
+    await createOption('password_verification_salt', '', true);
+    await createOption('password_derived_key_salt', '', true);
+    await createOption('encrypted_data_key', '', true);
+    await createOption('encrypted_data_key_iv', '', true);
 
-    await setOption('start_note_path', startNotePath);
-    await setOption('protected_session_timeout', 600);
-    await setOption('history_snapshot_time_interval', 600);
-    await setOption('last_backup_date', utils.nowDate());
-    await setOption('db_version', app_info.db_version);
+    await createOption('start_note_path', startNotePath, false);
+    await createOption('protected_session_timeout', 600, true);
+    await createOption('history_snapshot_time_interval', 600, true);
+    await createOption('last_backup_date', utils.nowDate(), false);
+    await createOption('db_version', app_info.db_version, false);
 
-    await setOption('last_synced_pull', app_info.db_version);
-    await setOption('last_synced_push', 0);
-    await setOption('last_synced_push', 0);
+    await createOption('last_synced_pull', app_info.db_version, false);
+    await createOption('last_synced_push', 0, false);
 }
 
 module.exports = {
     getOption,
     setOption,
-    initOptions,
-    SYNCED_OPTIONS
+    initOptions
 };

@@ -1,6 +1,5 @@
 const sql = require('./sql');
 const log = require('./log');
-const options = require('./options');
 const eventLog = require('./event_log');
 const notes = require('./notes');
 const sync_table = require('./sync_table');
@@ -63,11 +62,11 @@ async function updateNoteReordering(entity, sourceId) {
 }
 
 async function updateOptions(entity, sourceId) {
-    if (!options.SYNCED_OPTIONS.includes(entity.opt_name)) {
+    const orig = await sql.getFirstOrNull("SELECT * FROM options WHERE opt_name = ?", [entity.opt_name]);
+
+    if (!orig.is_synced) {
         return;
     }
-
-    const orig = await sql.getFirstOrNull("SELECT * FROM options WHERE opt_name = ?", [entity.opt_name]);
 
     await sql.doInTransaction(async () => {
         if (orig === null || orig.date_modified < entity.date_modified) {

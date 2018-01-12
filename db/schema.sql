@@ -1,6 +1,7 @@
 CREATE TABLE IF NOT EXISTS "options" (
 	`opt_name`	TEXT NOT NULL PRIMARY KEY,
 	`opt_value`	TEXT,
+  `is_synced` INTEGER NOT NULL DEFAULT 0,
 	`date_modified` INT
 );
 CREATE TABLE IF NOT EXISTS "sync" (

@@ -99,12 +99,13 @@ router.get('/notes_history/:noteHistoryId', auth.checkApiAuth, wrap(async (req, 
 
 router.get('/options/:optName', auth.checkApiAuth, wrap(async (req, res, next) => {
     const optName = req.params.optName;
+    const opt = await sql.getFirst("SELECT * FROM options WHERE opt_name = ?", [optName]);
 
-    if (!options.SYNCED_OPTIONS.includes(optName)) {
+    if (!opt.is_synced) {
         res.send("This option can't be synced.");
     }
     else {
-        res.send(await sql.getFirst("SELECT * FROM options WHERE opt_name = ?", [optName]));
+        res.send(opt);
     }
 }));
 
@@ -195,7 +196,7 @@ router.put('/notes_image', auth.checkApiAuth, wrap(async (req, res, next) => {
 }));
 
 router.put('/attributes', auth.checkApiAuth, wrap(async (req, res, next) => {
-    await syncUpdate.updateNoteImage(req.body.entity, req.body.sourceId);
+    await syncUpdate.updateAttribute(req.body.entity, req.body.sourceId);
 
     res.send({});
 }));
