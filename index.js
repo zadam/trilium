@@ -2,6 +2,7 @@
 const electron = require('electron');
 const path = require('path');
 const config = require('./services/config');
+const url = require("url");
 
 const app = electron.app;
 
@@ -35,6 +36,16 @@ function createMainWindow() {
         if (url !== mainWindow.webContents.getURL()) {
             e.preventDefault();
             require('electron').shell.openExternal(url);
+        }
+    });
+
+    // prevent drag & drop to navigate away from trilium
+    win.webContents.on('will-navigate', (ev, targetUrl) => {
+        const parsedUrl = url.parse(targetUrl);
+
+        // we still need to allow internal redirects from setup and migration pages
+        if (parsedUrl.hostname !== 'localhost' || (parsedUrl.path && parsedUrl.path !== '/')) {
+            ev.preventDefault();
         }
     });
 
