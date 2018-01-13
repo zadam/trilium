@@ -769,6 +769,12 @@ const noteTree = (function() {
         showMessage("Created!");
     }
 
+    async function sortAlphabetically(noteId) {
+        await server.put('notes/' + noteId + '/sort');
+
+        await reload();
+    }
+
     $(document).bind('keydown', 'ctrl+o', e => {
         console.log("pressed O");
 
@@ -842,6 +848,7 @@ const noteTree = (function() {
         getNotePathTitle,
         removeParentChildRelation,
         setParentChildRelation,
-        getSelectedNodes
+        getSelectedNodes,
+        sortAlphabetically
     };
 })();

@@ -90,7 +90,9 @@ const contextMenu = (function() {
             {title: "Paste after", cmd: "pasteAfter", uiIcon: "ui-icon-clipboard"},
             {title: "----"},
             {title: "Collapse sub-tree <kbd>Alt+-</kbd>", cmd: "collapse-sub-tree", uiIcon: "ui-icon-minus"},
-            {title: "Force note sync", cmd: "force-note-sync", uiIcon: "ui-icon-refresh"}
+            {title: "Force note sync", cmd: "force-note-sync", uiIcon: "ui-icon-refresh"},
+            {title: "Sort alphabetically", cmd: "sort-alphabetically", uiIcon: " ui-icon-arrowthick-2-n-s"}
+
         ],
         beforeOpen: (event, ui) => {
             const node = $.ui.fancytree.getNode(ui.target);
@@ -146,6 +148,9 @@ const contextMenu = (function() {
             }
             else if (ui.cmd === "force-note-sync") {
                 forceNoteSync(node.data.note_id);
+            }
+            else if (ui.cmd === "sort-alphabetically") {
+                noteTree.sortAlphabetically(node.data.note_id);
             }
             else {
                 messaging.logError("Unknown command: " + ui.cmd);
