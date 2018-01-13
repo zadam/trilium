@@ -99,6 +99,16 @@ function assertArguments() {
     }
 }
 
+async function stopWatch(what, func) {
+    const start = new Date();
+
+    await func();
+
+    const tookMs = new Date().getTime() - start.getTime();
+
+    console.log(`${what} took ${tookMs}ms`);
+}
+
 module.exports = {
     randomSecureToken,
     randomString,
@@ -119,5 +129,6 @@ module.exports = {
     isEmptyOrWhitespace,
     getDateTimeForFile,
     sanitizeSql,
-    assertArguments
+    assertArguments,
+    stopWatch
 };

@@ -4,65 +4,65 @@ const axios = require('axios');
 const log = require('../services/log');
 const utils = require('../services/utils');
 const unescape = require('unescape');
-const sync_table = require('../services/sync_table');
+const attributes = require('../services/attributes');
 const options = require('../services/options');
 
 const REDDIT_ROOT = 'reddit_root';
-const SOURCE_ID = 'reddit_plugin';
+
+async function createNote(parentNoteId, noteTitle, noteText) {
+    return (await notes.createNewNote(parentNoteId, {
+        note_title: noteTitle,
+        note_text: noteText,
+        target: 'into',
+        is_protected: false
+    })).noteId;
+}
+
+function redditId(kind, id) {
+    return kind + "_" + id;
+}
 
 async function getYearNoteId(dateTimeStr, rootNoteId) {
     const yearStr = dateTimeStr.substr(0, 4);
 
-    let dateNoteId = await getNoteIdWithAttribute('year_note', yearStr);
+    let yearNoteId = await attributes.getNoteIdWithAttribute('year_note', yearStr);
 
-    if (!dateNoteId) {
-        dateNoteId = (await notes.createNewNote(rootNoteId, {
-            note_title: yearStr,
-            target: 'into',
-            is_protected: false
-        }, SOURCE_ID)).noteId;
+    if (!yearNoteId) {
+        yearNoteId = await createNote(rootNoteId, yearStr);
 
-        await createAttribute(dateNoteId, "year_note", yearStr);
+        await attributes.createAttribute(yearNoteId, "year_note", yearStr);
     }
 
-    return dateNoteId;
+    return yearNoteId;
 }
 
 async function getMonthNoteId(dateTimeStr, rootNoteId) {
     const monthStr = dateTimeStr.substr(0, 7);
 
-    let dateNoteId = await getNoteIdWithAttribute('month_note', monthStr);
+    let monthNoteId = await attributes.getNoteIdWithAttribute('month_note', monthStr);
 
-    if (!dateNoteId) {
-        const monthNoteId = await getYearNoteId(dateTimeStr, rootNoteId);
+    if (!monthNoteId) {
+        const yearNoteId = await getYearNoteId(dateTimeStr, rootNoteId);
 
-        dateNoteId = (await notes.createNewNote(monthNoteId, {
-            note_title: dateTimeStr.substr(5, 2),
-            target: 'into',
-            is_protected: false
-        }, SOURCE_ID)).noteId;
+        monthNoteId = await createNote(yearNoteId, dateTimeStr.substr(5, 2));
 
-        await createAttribute(dateNoteId, "month_note", monthStr);
+        await attributes.createAttribute(monthNoteId, "month_note", monthStr);
     }
 
-    return dateNoteId;
+    return monthNoteId;
 }
 
 async function getDateNoteId(dateTimeStr, rootNoteId) {
     const dateStr = dateTimeStr.substr(0, 10);
 
-    let dateNoteId = await getNoteIdWithAttribute('date_note', dateStr);
+    let dateNoteId = await attributes.getNoteIdWithAttribute('date_note', dateStr);
 
     if (!dateNoteId) {
         const monthNoteId = await getMonthNoteId(dateTimeStr, rootNoteId);
 
-        dateNoteId = (await notes.createNewNote(monthNoteId, {
-            note_title: dateTimeStr.substr(8, 2),
-            target: 'into',
-            is_protected: false
-        }, SOURCE_ID)).noteId;
+        dateNoteId = await createNote(monthNoteId, dateTimeStr.substr(8, 2));
 
-        await createAttribute(dateNoteId, "date_note", dateStr);
+        await attributes.createAttribute(dateNoteId, "date_note", dateStr);
     }
 
     return dateNoteId;
@@ -71,18 +71,14 @@ async function getDateNoteId(dateTimeStr, rootNoteId) {
 async function getDateNoteIdForReddit(dateTimeStr, rootNoteId) {
     const dateStr = dateTimeStr.substr(0, 10);
 
-    let redditDateNoteId = await getNoteIdWithAttribute('reddit_date_note', dateStr);
+    let redditDateNoteId = await attributes.getNoteIdWithAttribute('reddit_date_note', dateStr);
 
     if (!redditDateNoteId) {
         const dateNoteId = await getDateNoteId(dateTimeStr, rootNoteId);
 
-        redditDateNoteId = (await notes.createNewNote(dateNoteId, {
-            note_title: "Reddit",
-            target: 'into',
-            is_protected: false
-        }, SOURCE_ID)).noteId;
+        redditDateNoteId = await createNote(dateNoteId, "Reddit");
 
-        await createAttribute(redditDateNoteId, "reddit_date_note", dateStr);
+        await attributes.createAttribute(redditDateNoteId, "reddit_date_note", dateStr);
     }
 
     return redditDateNoteId;
@@ -97,9 +93,9 @@ async function importReddit(accountName, afterId = null) {
             note_title: 'Reddit',
             target: 'into',
             is_protected: false
-        }, SOURCE_ID)).noteId;
+        })).noteId;
 
-        await createAttribute(rootNoteId, REDDIT_ROOT);
+        await attributes.createAttribute(rootNoteId, REDDIT_ROOT);
     }
 
     let url = `https://www.reddit.com/user/${accountName}.json`;
@@ -112,16 +108,18 @@ async function importReddit(accountName, afterId = null) {
     const listing = response.data;
 
     if (listing.kind !== 'Listing') {
-        log.info(`Unknown kind ${listing.kind}`);
+        log.info(`Reddit: Unknown object kind ${listing.kind}`);
         return;
     }
 
     const children = listing.data.children;
 
+    let importedComments = 0;
+
     for (const child of children) {
         const comment = child.data;
 
-        let commentNoteId = await getNoteIdWithAttribute('reddit_id', redditId(child.kind, comment.id));
+        let commentNoteId = await attributes.getNoteIdWithAttribute('reddit_id', redditId(child.kind, comment.id));
 
         if (commentNoteId) {
             continue;
@@ -129,58 +127,34 @@ async function importReddit(accountName, afterId = null) {
 
         const dateTimeStr = utils.dateStr(new Date(comment.created_utc * 1000));
 
-        const parentNoteId = await getDateNoteIdForReddit(dateTimeStr, rootNoteId);
-
-        commentNoteId = (await notes.createNewNote(parentNoteId, {
-            note_title: comment.link_title,
-            target: 'into',
-            is_protected: false
-        }, SOURCE_ID)).noteId;
-
-        console.log("Created note " + commentNoteId);
-
-        const body =
+        const noteText =
             `<p><a href="${comment.link_permalink}">${comment.link_permalink}</a></p>
             <p>author: ${comment.author}, subreddit: ${comment.subreddit}, karma: ${comment.score}, created at ${dateTimeStr}</p><p></p>`
             + unescape(comment.body_html);
 
-        await sql.execute("UPDATE notes SET note_text = ? WHERE note_id = ?", [body, commentNoteId]);
+        let parentNoteId = await getDateNoteIdForReddit(dateTimeStr, rootNoteId);
 
-        await createAttribute(commentNoteId, "reddit_kind", child.kind);
-        await createAttribute(commentNoteId, "reddit_id", redditId(child.kind, comment.id));
-        await createAttribute(commentNoteId, "reddit_created_utc", comment.created_utc);
+        commentNoteId = await createNote(parentNoteId, comment.link_title, noteText);
+
+        log.info("Reddit: Imported comment to note " + commentNoteId);
+        importedComments++;
+
+        await sql.doInTransaction(async () => {
+            await attributes.createAttribute(commentNoteId, "reddit_kind", child.kind);
+            await attributes.createAttribute(commentNoteId, "reddit_id", redditId(child.kind, comment.id));
+            await attributes.createAttribute(commentNoteId, "reddit_created_utc", comment.created_utc);
+        });
     }
 
-    if (listing.data.after) {
-        log.info("Importing next page ...");
+    // if there have been no imported comments on this page, there shouldn't be any to import
+    // on the next page since those are older
+    if (listing.data.after && importedComments > 0) {
+        log.info("Reddit: Importing from next page of comments ...");
 
-        await importReddit(accountName, listing.data.after);
+        importedComments += await importReddit(accountName, listing.data.after);
     }
-}
 
-function redditId(kind, id) {
-    return kind + "_" + id;
-}
-
-async function createAttribute(noteId, name, value = null) {
-    const now = utils.nowDate();
-    const attributeId = utils.newAttributeId();
-
-    await sql.insert("attributes", {
-        attribute_id: attributeId,
-        note_id: noteId,
-        name: name,
-        value: value,
-        date_modified: now,
-        date_created: now
-    });
-
-    await sync_table.addAttributeSync(attributeId, SOURCE_ID);
-}
-
-async function getNoteIdWithAttribute(name, value) {
-    return await sql.getFirstValue(`SELECT notes.note_id FROM notes JOIN attributes USING(note_id) 
-          WHERE notes.is_deleted = 0 AND attributes.name = ? AND attributes.value = ?`, [name, value]);
+    return importedComments;
 }
 
 sql.dbReady.then(async () => {
@@ -198,16 +172,17 @@ sql.dbReady.then(async () => {
     }
 
     if (!accountsOption) {
-        log.info("No reddit accounts defined in option 'reddit_accounts'");
+        log.info("Reddit: No reddit accounts defined in option 'reddit_accounts'");
     }
 
     const redditAccounts = JSON.parse(accountsOption.opt_value);
+    let importedComments = 0;
 
     for (const account of redditAccounts) {
         log.info("Importing account " + account);
 
-        await importReddit(account);
+        importedComments += await importReddit(account);
     }
 
-    log.info("Import finished.");
+    log.info(`Reddit: Imported ${importedComments} comments.`);
 });

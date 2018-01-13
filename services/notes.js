@@ -37,7 +37,7 @@ async function createNewNote(parentNoteId, note, sourceId) {
         await sql.insert("notes", {
             note_id: noteId,
             note_title: note.note_title,
-            note_text: '',
+            note_text: note.note_text ? note.note_text : '',
             date_created: now,
             date_modified: now,
             is_protected: note.is_protected
