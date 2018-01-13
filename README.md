@@ -17,7 +17,7 @@ Trilium Notes is a hierarchical note taking application. Picture tells a thousan
 ## Builds
 
 * If you want to install Trilium on server, follow [this page](https://github.com/zadam/trilium/wiki/Installation-as-webapp)
-* If you want to use Trilium on the desktop, download binary release for your platfor from [latest release](https://github.com/zadam/trilium/releases/latest), unzip the package and run ```trilium``` executable.
+* If you want to use Trilium on the desktop, download binary release for your platform from [latest release](https://github.com/zadam/trilium/releases/latest), unzip the package and run ```trilium``` executable.
 
 ## Supported platforms
 

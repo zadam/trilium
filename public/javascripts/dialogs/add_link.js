@@ -78,14 +78,14 @@ const addLink = (function() {
             else if (linkType === 'selected-to-current') {
                 const prefix = clonePrefixEl.val();
 
-                treeChanges.cloneNoteTo(noteId, noteEditor.getCurrentNoteId(), prefix);
+                cloning.cloneNoteTo(noteId, noteEditor.getCurrentNoteId(), prefix);
 
                 dialogEl.dialog("close");
             }
             else if (linkType === 'current-to-selected') {
                 const prefix = clonePrefixEl.val();
 
-                treeChanges.cloneNoteTo(noteEditor.getCurrentNoteId(), noteId, prefix);
+                cloning.cloneNoteTo(noteEditor.getCurrentNoteId(), noteId, prefix);
 
                 dialogEl.dialog("close");
             }

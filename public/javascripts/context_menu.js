@@ -19,7 +19,7 @@ const contextMenu = (function() {
         }
         else if (clipboardMode === 'copy') {
             for (const noteId of clipboardIds) {
-                treeChanges.cloneNoteAfter(noteId, node.data.note_tree_id);
+                cloning.cloneNoteAfter(noteId, node.data.note_tree_id);
             }
 
             // copy will keep clipboardIds and clipboardMode so it's possible to paste into multiple places
@@ -45,7 +45,7 @@ const contextMenu = (function() {
         }
         else if (clipboardMode === 'copy') {
             for (const noteId of clipboardIds) {
-                treeChanges.cloneNoteTo(noteId, node.data.note_id);
+                cloning.cloneNoteTo(noteId, node.data.note_id);
             }
             // copy will keep clipboardIds and clipboardMode so it's possible to paste into multiple places
         }

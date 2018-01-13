@@ -3,7 +3,7 @@
 const treeChanges = (function() {
     async function moveBeforeNode(nodesToMove, beforeNode) {
         for (const nodeToMove of nodesToMove) {
-            const resp = await server.put('notes/' + nodeToMove.data.note_tree_id + '/move-before/' + beforeNode.data.note_tree_id);
+            const resp = await server.put('tree/' + nodeToMove.data.note_tree_id + '/move-before/' + beforeNode.data.note_tree_id);
 
             if (!resp.success) {
                 alert(resp.message);
@@ -16,7 +16,7 @@ const treeChanges = (function() {
 
     async function moveAfterNode(nodesToMove, afterNode) {
         for (const nodeToMove of nodesToMove) {
-            const resp = await server.put('notes/' + nodeToMove.data.note_tree_id + '/move-after/' + afterNode.data.note_tree_id);
+            const resp = await server.put('tree/' + nodeToMove.data.note_tree_id + '/move-after/' + afterNode.data.note_tree_id);
 
             if (!resp.success) {
                 alert(resp.message);
@@ -27,21 +27,9 @@ const treeChanges = (function() {
         }
     }
 
-    // beware that first arg is noteId and second is noteTreeId!
-    async function cloneNoteAfter(noteId, afterNoteTreeId) {
-        const resp = await server.put('notes/' + noteId + '/clone-after/' + afterNoteTreeId);
-
-        if (!resp.success) {
-            alert(resp.message);
-            return;
-        }
-
-        await noteTree.reload();
-    }
-
     async function moveToNode(nodesToMove, toNode) {
         for (const nodeToMove of nodesToMove) {
-            const resp = await server.put('notes/' + nodeToMove.data.note_tree_id + '/move-to/' + toNode.data.note_id);
+            const resp = await server.put('tree/' + nodeToMove.data.note_tree_id + '/move-to/' + toNode.data.note_id);
 
             if (!resp.success) {
                 alert(resp.message);
@@ -65,25 +53,12 @@ const treeChanges = (function() {
         }
     }
 
-    async function cloneNoteTo(childNoteId, parentNoteId, prefix) {
-        const resp = await server.put('notes/' + childNoteId + '/clone-to/' + parentNoteId, {
-            prefix: prefix
-        });
-
-        if (!resp.success) {
-            alert(resp.message);
-            return;
-        }
-
-        await noteTree.reload();
-    }
-
     async function deleteNode(node) {
         if (!confirm('Are you sure you want to delete note "' + node.title + '" and all its sub-notes?')) {
             return;
         }
 
-        await server.remove('notes/' + node.data.note_tree_id);
+        await server.remove('tree/' + node.data.note_tree_id);
 
         if (!isTopLevelNode(node) && node.getParent().getChildren().length <= 1) {
             node.getParent().folder = false;
@@ -119,7 +94,7 @@ const treeChanges = (function() {
             return;
         }
 
-        const resp = await server.put('notes/' + node.data.note_tree_id + '/move-after/' + node.getParent().data.note_tree_id);
+        const resp = await server.put('tree/' + node.data.note_tree_id + '/move-after/' + node.getParent().data.note_tree_id);
 
         if (!resp.success) {
             alert(resp.message);
@@ -153,8 +128,6 @@ const treeChanges = (function() {
         moveAfterNode,
         moveToNode,
         deleteNode,
-        moveNodeUpInHierarchy,
-        cloneNoteAfter,
-        cloneNoteTo
+        moveNodeUpInHierarchy
     };
 })();

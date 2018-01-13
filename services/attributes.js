@@ -1,3 +1,5 @@
+"use strict";
+
 const sql = require('./sql');
 const utils = require('./utils');
 const sync_table = require('./sync_table');

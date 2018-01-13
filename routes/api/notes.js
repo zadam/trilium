@@ -58,14 +58,6 @@ router.put('/:noteId', auth.checkApiAuth, wrap(async (req, res, next) => {
     res.send({});
 }));
 
-router.delete('/:noteTreeId', auth.checkApiAuth, wrap(async (req, res, next) => {
-    await sql.doInTransaction(async () => {
-        await notes.deleteNote(req.params.noteTreeId, req.headers.source_id);
-    });
-
-    res.send({});
-}));
-
 router.get('/', auth.checkApiAuth, wrap(async (req, res, next) => {
     const search = '%' + req.query.search + '%';
 

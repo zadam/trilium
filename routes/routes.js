@@ -7,7 +7,8 @@ const setupRoute = require('./setup');
 // API routes
 const treeApiRoute = require('./api/tree');
 const notesApiRoute = require('./api/notes');
-const notesMoveApiRoute = require('./api/notes_move');
+const treeChangesApiRoute = require('./api/tree_changes');
+const cloningApiRoute = require('./api/cloning');
 const noteHistoryApiRoute = require('./api/note_history');
 const recentChangesApiRoute = require('./api/recent_changes');
 const settingsApiRoute = require('./api/settings');
@@ -36,7 +37,8 @@ function register(app) {
 
     app.use('/api/tree', treeApiRoute);
     app.use('/api/notes', notesApiRoute);
-    app.use('/api/notes', notesMoveApiRoute);
+    app.use('/api/tree', treeChangesApiRoute);
+    app.use('/api/notes', cloningApiRoute);
     app.use('/api/notes', attributesRoute);
     app.use('/api/notes-history', noteHistoryApiRoute);
     app.use('/api/recent-changes', recentChangesApiRoute);

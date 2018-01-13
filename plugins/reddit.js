@@ -1,3 +1,5 @@
+"use strict";
+
 const sql = require('../services/sql');
 const notes = require('../services/notes');
 const axios = require('axios');
@@ -179,7 +181,7 @@ sql.dbReady.then(async () => {
     let importedComments = 0;
 
     for (const account of redditAccounts) {
-        log.info("Importing account " + account);
+        log.info("Reddit: Importing account " + account);
 
         importedComments += await importReddit(account);
     }

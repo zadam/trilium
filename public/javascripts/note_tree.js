@@ -368,7 +368,7 @@ const noteTree = (function() {
 
         const expandedNum = isExpanded ? 1 : 0;
 
-        await server.put('notes/' + noteTreeId + '/expanded/' + expandedNum);
+        await server.put('tree/' + noteTreeId + '/expanded/' + expandedNum);
     }
 
     function setCurrentNotePathToHash(node) {
