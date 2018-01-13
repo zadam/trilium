@@ -10,10 +10,86 @@ const options = require('../services/options');
 const REDDIT_ROOT = 'reddit_root';
 const SOURCE_ID = 'reddit_plugin';
 
-async function importReddit(accounts) {
-    const accountName = accounts[0];
+async function getYearNoteId(dateTimeStr, rootNoteId) {
+    const yearStr = dateTimeStr.substr(0, 4);
 
-    let rootNoteId = await sql.getFirst(`SELECT notes.note_id FROM notes JOIN attributes USING(note_id) 
+    let dateNoteId = await getNoteIdWithAttribute('year_note', yearStr);
+
+    if (!dateNoteId) {
+        dateNoteId = (await notes.createNewNote(rootNoteId, {
+            note_title: yearStr,
+            target: 'into',
+            is_protected: false
+        }, SOURCE_ID)).noteId;
+
+        await createAttribute(dateNoteId, "year_note", yearStr);
+    }
+
+    return dateNoteId;
+}
+
+async function getMonthNoteId(dateTimeStr, rootNoteId) {
+    const monthStr = dateTimeStr.substr(0, 7);
+
+    let dateNoteId = await getNoteIdWithAttribute('month_note', monthStr);
+
+    if (!dateNoteId) {
+        const monthNoteId = await getYearNoteId(dateTimeStr, rootNoteId);
+
+        dateNoteId = (await notes.createNewNote(monthNoteId, {
+            note_title: dateTimeStr.substr(5, 2),
+            target: 'into',
+            is_protected: false
+        }, SOURCE_ID)).noteId;
+
+        await createAttribute(dateNoteId, "month_note", monthStr);
+    }
+
+    return dateNoteId;
+}
+
+async function getDateNoteId(dateTimeStr, rootNoteId) {
+    const dateStr = dateTimeStr.substr(0, 10);
+
+    let dateNoteId = await getNoteIdWithAttribute('date_note', dateStr);
+
+    if (!dateNoteId) {
+        const monthNoteId = await getMonthNoteId(dateTimeStr, rootNoteId);
+
+        dateNoteId = (await notes.createNewNote(monthNoteId, {
+            note_title: dateTimeStr.substr(8, 2),
+            target: 'into',
+            is_protected: false
+        }, SOURCE_ID)).noteId;
+
+        await createAttribute(dateNoteId, "date_note", dateStr);
+    }
+
+    return dateNoteId;
+}
+
+async function getDateNoteIdForReddit(dateTimeStr, rootNoteId) {
+    const dateStr = dateTimeStr.substr(0, 10);
+
+    let redditDateNoteId = await getNoteIdWithAttribute('reddit_date_note', dateStr);
+
+    if (!redditDateNoteId) {
+        const dateNoteId = await getDateNoteId(dateTimeStr, rootNoteId);
+
+        redditDateNoteId = (await notes.createNewNote(dateNoteId, {
+            note_title: "Reddit",
+            target: 'into',
+            is_protected: false
+        }, SOURCE_ID)).noteId;
+
+        await createAttribute(redditDateNoteId, "reddit_date_note", dateStr);
+    }
+
+    return redditDateNoteId;
+}
+
+async function importReddit(accountName, afterId = null) {
+    let rootNoteId = await sql.getFirstValue(`SELECT notes.note_id FROM notes JOIN attributes USING(note_id) 
               WHERE attributes.name = '${REDDIT_ROOT}' AND notes.is_deleted = 0`);
 
     if (!rootNoteId) {
@@ -26,7 +102,13 @@ async function importReddit(accounts) {
         await createAttribute(rootNoteId, REDDIT_ROOT);
     }
 
-    const response = await axios.get(`https://www.reddit.com/user/${accountName}.json`);
+    let url = `https://www.reddit.com/user/${accountName}.json`;
+
+    if (afterId) {
+        url += "?after=" + afterId;
+    }
+
+    const response = await axios.get(url);
     const listing = response.data;
 
     if (listing.kind !== 'Listing') {
@@ -35,33 +117,21 @@ async function importReddit(accounts) {
     }
 
     const children = listing.data.children;
-    console.log(children[0]);
 
     for (const child of children) {
         const comment = child.data;
 
-        let commentNoteId = await getNoteIdWithAttribute('reddit_comment_id', comment.id);
+        let commentNoteId = await getNoteIdWithAttribute('reddit_id', redditId(child.kind, comment.id));
 
         if (commentNoteId) {
             continue;
         }
 
         const dateTimeStr = utils.dateStr(new Date(comment.created_utc * 1000));
-        const dateStr = dateTimeStr.substr(0, 10);
 
-        let dateNoteId = await getNoteIdWithAttribute('date_note', dateStr);
+        const parentNoteId = await getDateNoteIdForReddit(dateTimeStr, rootNoteId);
 
-        if (!dateNoteId) {
-            dateNoteId = (await notes.createNewNote(rootNoteId, {
-                note_title: dateStr,
-                target: 'into',
-                is_protected: false
-            }, SOURCE_ID)).noteId;
-
-            await createAttribute(dateNoteId, "date_note", dateStr);
-        }
-
-        commentNoteId = (await notes.createNewNote(dateNoteId, {
+        commentNoteId = (await notes.createNewNote(parentNoteId, {
             note_title: comment.link_title,
             target: 'into',
             is_protected: false
@@ -77,9 +147,19 @@ async function importReddit(accounts) {
         await sql.execute("UPDATE notes SET note_text = ? WHERE note_id = ?", [body, commentNoteId]);
 
         await createAttribute(commentNoteId, "reddit_kind", child.kind);
-        await createAttribute(commentNoteId, "reddit_id", comment.id);
+        await createAttribute(commentNoteId, "reddit_id", redditId(child.kind, comment.id));
         await createAttribute(commentNoteId, "reddit_created_utc", comment.created_utc);
     }
+
+    if (listing.data.after) {
+        log.info("Importing next page ...");
+
+        await importReddit(accountName, listing.data.after);
+    }
+}
+
+function redditId(kind, id) {
+    return kind + "_" + id;
 }
 
 async function createAttribute(noteId, name, value = null) {
@@ -123,5 +203,11 @@ sql.dbReady.then(async () => {
 
     const redditAccounts = JSON.parse(accountsOption.opt_value);
 
-    await importReddit(redditAccounts);
+    for (const account of redditAccounts) {
+        log.info("Importing account " + account);
+
+        await importReddit(account);
+    }
+
+    log.info("Import finished.");
 });
