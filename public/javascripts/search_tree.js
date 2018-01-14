@@ -48,7 +48,7 @@ const searchTree = (function() {
         }
     }).focus();
 
-    $(document).bind('keydown', 'alt+s', e => {
+    $(document).bind('keydown', 'ctrl+s', e => {
         toggleSearch();
 
         e.preventDefault();

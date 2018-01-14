@@ -189,8 +189,6 @@ async function runImport() {
         let importedComments = 0;
 
         for (const account of redditAccounts) {
-            log.info("Reddit: Importing account " + account);
-
             importedComments += await importComments(account);
         }
 
@@ -199,9 +197,7 @@ async function runImport() {
 }
 
 sql.dbReady.then(async () => {
-    console.log(config);
-
-    if (!config['Reddit'] || !config['Reddit']['enabled'] !== true) {
+    if (!config['Reddit'] || config['Reddit']['enabled'] !== true) {
         return;
     }
 

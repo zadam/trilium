@@ -468,6 +468,11 @@ const noteTree = (function() {
             "alt+-": node => {
                 collapseTree(node);
             },
+            "alt+s": node => {
+                sortAlphabetically(node.data.note_id);
+
+                return false;
+            },
             "ctrl+a": node => {
                 for (const child of node.getParent().getChildren()) {
                     child.setSelected(true);
