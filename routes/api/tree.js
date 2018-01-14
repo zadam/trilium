@@ -8,7 +8,6 @@ const utils = require('../../services/utils');
 const auth = require('../../services/auth');
 const protected_session = require('../../services/protected_session');
 const data_encryption = require('../../services/data_encryption');
-const notes = require('../../services/notes');
 const sync_table = require('../../services/sync_table');
 const wrap = require('express-promise-wrap').wrap;
 
@@ -40,19 +39,6 @@ router.get('/', auth.checkApiAuth, wrap(async (req, res, next) => {
         notes: notes,
         start_note_path: await options.getOption('start_note_path')
     });
-}));
-
-router.put('/:noteId/protect-sub-tree/:isProtected', auth.checkApiAuth, wrap(async (req, res, next) => {
-    const noteId = req.params.noteId;
-    const isProtected = !!parseInt(req.params.isProtected);
-    const dataKey = protected_session.getDataKey(req);
-    const sourceId = req.headers.source_id;
-
-    await sql.doInTransaction(async () => {
-        await notes.protectNoteRecursively(noteId, dataKey, isProtected, sourceId);
-    });
-
-    res.send({});
 }));
 
 router.put('/:noteTreeId/set-prefix', auth.checkApiAuth, wrap(async (req, res, next) => {

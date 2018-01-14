@@ -8,7 +8,7 @@ const notes = require('../../services/notes');
 const log = require('../../services/log');
 const protected_session = require('../../services/protected_session');
 const data_encryption = require('../../services/data_encryption');
-const sync_table = require('../../services/sync_table');
+const tree = require('../../services/tree');
 const wrap = require('express-promise-wrap').wrap;
 
 router.get('/:noteId', auth.checkApiAuth, wrap(async (req, res, next) => {
@@ -77,28 +77,19 @@ router.put('/:noteId/sort', auth.checkApiAuth, wrap(async (req, res, next) => {
     const sourceId = req.headers.source_id;
     const dataKey = protected_session.getDataKey(req);
 
+    await tree.sortNotesAlphabetically(noteId, dataKey, sourceId);
+
+    res.send({});
+}));
+
+router.put('/:noteId/protect-sub-tree/:isProtected', auth.checkApiAuth, wrap(async (req, res, next) => {
+    const noteId = req.params.noteId;
+    const isProtected = !!parseInt(req.params.isProtected);
+    const dataKey = protected_session.getDataKey(req);
+    const sourceId = req.headers.source_id;
+
     await sql.doInTransaction(async () => {
-       const notes = await sql.getAll(`SELECT note_tree_id, note_id, note_title, is_protected 
-                                       FROM notes JOIN notes_tree USING(note_id) WHERE parent_note_id = ?`, [noteId]);
-
-       for (const note of notes) {
-           if (note.is_protected) {
-               note.note_title = data_encryption.decryptString(dataKey, data_encryption.noteTitleIv(note.note_id), note.note_title);
-           }
-       }
-
-       notes.sort((a, b) => a.note_title.toLowerCase() < b.note_title.toLowerCase() ? -1 : 1);
-
-       let position = 1;
-
-       for (const note of notes) {
-           await sql.execute("UPDATE notes_tree SET note_position = ? WHERE note_tree_id = ?",
-               [position, note.note_tree_id]);
-
-           position++;
-       }
-
-       await sync_table.addNoteReorderingSync(noteId, sourceId);
+        await notes.protectNoteRecursively(noteId, dataKey, isProtected, sourceId);
     });
 
     res.send({});

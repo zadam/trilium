@@ -142,7 +142,7 @@ const protected_session = (function() {
     async function protectSubTree(noteId, protect) {
         await ensureProtectedSession(true, true);
 
-        await server.put('tree/' + noteId + "/protect-sub-tree/" + (protect ? 1 : 0));
+        await server.put('notes/' + noteId + "/protect-sub-tree/" + (protect ? 1 : 0));
 
         showMessage("Request to un/protect sub tree has finished successfully");
 

@@ -1,6 +1,8 @@
 "use strict";
 
 const sql = require('./sql');
+const sync_table = require('./sync_table');
+const data_encryption = require('./data_encryption');
 
 async function validateParentChild(res, parentNoteId, childNoteId, noteTreeId = null) {
     const existing = await getExistingNoteTree(parentNoteId, childNoteId);
@@ -78,7 +80,34 @@ async function loadSubTreeNoteIds(parentNoteId, subTreeNoteIds) {
     }
 }
 
+async function sortNotesAlphabetically(parentNoteId, dataKey, sourceId) {
+    await sql.doInTransaction(async () => {
+        const notes = await sql.getAll(`SELECT note_tree_id, note_id, note_title, is_protected 
+                                       FROM notes JOIN notes_tree USING(note_id) WHERE parent_note_id = ?`, [parentNoteId]);
+
+        for (const note of notes) {
+            if (note.is_protected) {
+                note.note_title = data_encryption.decryptString(dataKey, data_encryption.noteTitleIv(note.note_id), note.note_title);
+            }
+        }
+
+        notes.sort((a, b) => a.note_title.toLowerCase() < b.note_title.toLowerCase() ? -1 : 1);
+
+        let position = 1;
+
+        for (const note of notes) {
+            await sql.execute("UPDATE notes_tree SET note_position = ? WHERE note_tree_id = ?",
+                [position, note.note_tree_id]);
+
+            position++;
+        }
+
+        await sync_table.addNoteReorderingSync(parentNoteId, sourceId);
+    });
+}
+
 module.exports = {
     validateParentChild,
-    getNoteTree
+    getNoteTree,
+    sortNotesAlphabetically
 };
