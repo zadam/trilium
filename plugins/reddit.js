@@ -7,7 +7,8 @@ const log = require('../services/log');
 const utils = require('../services/utils');
 const unescape = require('unescape');
 const attributes = require('../services/attributes');
-const options = require('../services/options');
+const sync_mutex = require('../services/sync_mutex');
+const config = require('../services/config');
 
 const REDDIT_ROOT = 'reddit_root';
 
@@ -106,7 +107,7 @@ async function getDateNoteIdForReddit(dateTimeStr, rootNoteId) {
     return redditDateNoteId;
 }
 
-async function importReddit(accountName, afterId = null) {
+async function importComments(accountName, afterId = null) {
     let rootNoteId = await sql.getFirstValue(`SELECT notes.note_id FROM notes JOIN attributes USING(note_id) 
               WHERE attributes.name = '${REDDIT_ROOT}' AND notes.is_deleted = 0`);
 
@@ -173,38 +174,47 @@ async function importReddit(accountName, afterId = null) {
     if (listing.data.after && importedComments > 0) {
         log.info("Reddit: Importing from next page of comments ...");
 
-        importedComments += await importReddit(accountName, listing.data.after);
+        importedComments += await importComments(accountName, listing.data.after);
     }
 
     return importedComments;
 }
 
+let redditAccounts = [];
+
+async function runImport() {
+    // technically mutex shouldn't be necessary but we want to avoid doing potentially expensive import
+    // concurrently with sync
+    await sync_mutex.doExclusively(async () => {
+        let importedComments = 0;
+
+        for (const account of redditAccounts) {
+            log.info("Reddit: Importing account " + account);
+
+            importedComments += await importComments(account);
+        }
+
+        log.info(`Reddit: Imported ${importedComments} comments.`);
+    });
+}
+
 sql.dbReady.then(async () => {
-    const enabledOption = await options.getOptionOrNull("reddit_enabled");
-    const accountsOption = await options.getOptionOrNull("reddit_accounts");
+    console.log(config);
 
-    if (!enabledOption) {
-        await options.createOption("reddit_enabled", "false", true);
-        await options.createOption("reddit_accounts", "[]", true);
+    if (!config['Reddit'] || !config['Reddit']['enabled'] !== true) {
         return;
     }
 
-    if (enabledOption.opt_value !== "true") {
-        return;
-    }
+    const redditAccountsStr = config['Reddit']['accounts'];
 
-    if (!accountsOption) {
+    if (!redditAccountsStr) {
         log.info("Reddit: No reddit accounts defined in option 'reddit_accounts'");
     }
 
-    const redditAccounts = JSON.parse(accountsOption.opt_value);
-    let importedComments = 0;
+    redditAccounts = redditAccountsStr.split(",").map(s => s.trim());
 
-    for (const account of redditAccounts) {
-        log.info("Reddit: Importing account " + account);
+    const pollingIntervalInSeconds = config['Reddit']['pollingIntervalInSeconds'] || 3600;
 
-        importedComments += await importReddit(account);
-    }
-
-    log.info(`Reddit: Imported ${importedComments} comments.`);
+    setInterval(runImport, pollingIntervalInSeconds * 1000);
+    setTimeout(runImport, 1000);
 });

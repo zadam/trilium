@@ -20,25 +20,25 @@ let proxyToggle = true;
 let syncServerCertificate = null;
 
 async function sync() {
-    const releaseMutex = await sync_mutex.acquire();
-
     try {
-        if (!await sql.isDbUpToDate()) {
-            return {
-                success: false,
-                message: "DB not up to date"
-            };
-        }
+        await sync_mutex.doExclusively(async () => {
+            if (!await sql.isDbUpToDate()) {
+                return {
+                    success: false,
+                    message: "DB not up to date"
+                };
+            }
 
-        const syncContext = await login();
+            const syncContext = await login();
 
-        await pushSync(syncContext);
+            await pushSync(syncContext);
 
-        await pullSync(syncContext);
+            await pullSync(syncContext);
 
-        await pushSync(syncContext);
+            await pushSync(syncContext);
 
-        await checkContentHash(syncContext);
+            await checkContentHash(syncContext);
+        });
 
         return {
             success: true
@@ -63,9 +63,6 @@ async function sync() {
                 message: e.message
             }
         }
-    }
-    finally {
-        releaseMutex();
     }
 }
 

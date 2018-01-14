@@ -23,9 +23,8 @@ async function regularBackup() {
 
 async function backupNow() {
     // we don't want to backup DB in the middle of sync with potentially inconsistent DB state
-    const releaseMutex = await sync_mutex.acquire();
 
-    try {
+    await sync_mutex.doExclusively(async () => {
         const now = utils.nowDate();
 
         const backupFile = dataDir.BACKUP_DIR + "/" + "backup-" + utils.getDateTimeForFile() + ".db";
@@ -37,10 +36,7 @@ async function backupNow() {
         await sql.doInTransaction(async () => {
             await options.setOption('last_backup_date', now);
         });
-    }
-    finally {
-        releaseMutex();
-    }
+    });
 }
 
 async function cleanupOldBackups() {

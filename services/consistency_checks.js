@@ -217,18 +217,14 @@ async function runAllChecks() {
 async function runChecks() {
     let errorList;
     let elapsedTimeMs;
-    const releaseMutex = await sync_mutex.acquire();
 
-    try {
+    await sync_mutex.doExclusively(async () => {
         const startTime = new Date();
 
         errorList = await runAllChecks();
 
         elapsedTimeMs = new Date().getTime() - startTime.getTime();
-    }
-    finally {
-        releaseMutex();
-    }
+    });
 
     if (errorList.length > 0) {
         log.info(`Consistency checks failed (took ${elapsedTimeMs}ms) with these errors: ` + JSON.stringify(errorList));

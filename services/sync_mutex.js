@@ -4,5 +4,20 @@
  */
 
 const Mutex = require('async-mutex').Mutex;
+const instance = new Mutex();
 
-module.exports = new Mutex();
+async function doExclusively(func) {
+    const releaseMutex = await instance.acquire();
+
+    try {
+        await func();
+    }
+    finally {
+        releaseMutex();
+    }
+
+}
+
+module.exports = {
+    doExclusively
+};
