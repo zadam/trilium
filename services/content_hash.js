@@ -80,7 +80,18 @@ async function getHashes() {
             date_modified,
             date_created
           FROM images  
-          ORDER BY image_id`))
+          ORDER BY image_id`)),
+
+        attributes: getHash(await sql.getAll(`
+          SELECT 
+            attribute_id,
+            note_id
+            name,
+            value
+            date_modified,
+            date_created
+          FROM attributes  
+          ORDER BY attribute_id`))
     };
 
     const elapseTimeMs = new Date().getTime() - startTime.getTime();
