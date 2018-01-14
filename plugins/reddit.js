@@ -150,9 +150,13 @@ async function importComments(accountName, afterId = null) {
 
         const dateTimeStr = utils.dateStr(new Date(comment.created_utc * 1000));
 
+        const permaLink = 'https://reddit.com' + comment.permalink;
+
         const noteText =
-            `<p><a href="${comment.link_permalink}">${comment.link_permalink}</a></p>
-            <p>author: ${comment.author}, subreddit: ${comment.subreddit}, karma: ${comment.score}, created at ${dateTimeStr}</p><p></p>`
+`<p><a href="${permaLink}">${permaLink}</a></p>
+<p>author: <a href="https://reddit.com/u/${comment.author}">${comment.author}</a>, 
+subreddit: <a href="https://reddit.com/r/${comment.subreddit}">${comment.subreddit}</a>, 
+karma: ${comment.score}, created at ${dateTimeStr}</p><p></p>`
             + unescape(comment.body_html);
 
         let parentNoteId = await getDateNoteIdForReddit(dateTimeStr, rootNoteId);
