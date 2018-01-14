@@ -24,13 +24,23 @@ function redditId(kind, id) {
     return kind + "_" + id;
 }
 
+async function getNoteStartingWith(parentNoteId, startsWith) {
+    return await sql.getFirstValue(`SELECT note_id FROM notes JOIN notes_tree USING(note_id) 
+                                    WHERE parent_note_id = ? AND note_title LIKE '${startsWith}%'
+                                    AND notes.is_deleted = 0 AND notes_tree.is_deleted = 0`, [parentNoteId]);
+}
+
 async function getYearNoteId(dateTimeStr, rootNoteId) {
     const yearStr = dateTimeStr.substr(0, 4);
 
     let yearNoteId = await attributes.getNoteIdWithAttribute('year_note', yearStr);
 
     if (!yearNoteId) {
-        yearNoteId = await createNote(rootNoteId, yearStr);
+        yearNoteId = await getNoteStartingWith(rootNoteId, yearStr);
+
+        if (!yearNoteId) {
+            yearNoteId = await createNote(rootNoteId, yearStr);
+        }
 
         await attributes.createAttribute(yearNoteId, "year_note", yearStr);
     }
@@ -40,13 +50,18 @@ async function getYearNoteId(dateTimeStr, rootNoteId) {
 
 async function getMonthNoteId(dateTimeStr, rootNoteId) {
     const monthStr = dateTimeStr.substr(0, 7);
+    const monthNumber = dateTimeStr.substr(5, 2);
 
     let monthNoteId = await attributes.getNoteIdWithAttribute('month_note', monthStr);
 
     if (!monthNoteId) {
         const yearNoteId = await getYearNoteId(dateTimeStr, rootNoteId);
 
-        monthNoteId = await createNote(yearNoteId, dateTimeStr.substr(5, 2));
+        monthNoteId = await getNoteStartingWith(yearNoteId, monthNumber);
+
+        if (!monthNoteId) {
+            monthNoteId = await createNote(yearNoteId, monthNumber);
+        }
 
         await attributes.createAttribute(monthNoteId, "month_note", monthStr);
     }
@@ -56,13 +71,18 @@ async function getMonthNoteId(dateTimeStr, rootNoteId) {
 
 async function getDateNoteId(dateTimeStr, rootNoteId) {
     const dateStr = dateTimeStr.substr(0, 10);
+    const dayNumber = dateTimeStr.substr(8, 2);
 
     let dateNoteId = await attributes.getNoteIdWithAttribute('date_note', dateStr);
 
     if (!dateNoteId) {
         const monthNoteId = await getMonthNoteId(dateTimeStr, rootNoteId);
 
-        dateNoteId = await createNote(monthNoteId, dateTimeStr.substr(8, 2));
+        dateNoteId = await getNoteStartingWith(monthNoteId, dayNumber);
+
+        if (!dateNoteId) {
+            dateNoteId = await createNote(monthNoteId, dayNumber);
+        }
 
         await attributes.createAttribute(dateNoteId, "date_note", dateStr);
     }

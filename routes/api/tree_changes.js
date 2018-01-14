@@ -7,6 +7,7 @@ const auth = require('../../services/auth');
 const utils = require('../../services/utils');
 const sync_table = require('../../services/sync_table');
 const tree = require('../../services/tree');
+const notes = require('../../services/notes');
 const wrap = require('express-promise-wrap').wrap;
 
 /**
