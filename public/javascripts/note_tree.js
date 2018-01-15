@@ -382,8 +382,8 @@ const noteTree = (function() {
         recentNotes.addRecentNote(currentNoteTreeId, currentNotePath);
     }
 
-    function getSelectedNodes() {
-        return getTree().getSelectedNodes();
+    function getSelectedNodes(stopOnParents = false) {
+        return getTree().getSelectedNodes(stopOnParents);
     }
 
     function clearSelectedNodes() {
@@ -403,7 +403,7 @@ const noteTree = (function() {
 
         const keybindings = {
             "del": node => {
-                treeChanges.deleteNode(node);
+                treeChanges.deleteNodes(getSelectedNodes(true));
             },
             "ctrl+up": node => {
                 const beforeNode = node.getPrevSibling();
@@ -803,7 +803,7 @@ const noteTree = (function() {
     $(document).bind('keydown', 'ctrl+del', e => {
         const node = getCurrentNode();
 
-        treeChanges.deleteNode(node);
+        treeChanges.deleteNodes([node]);
 
         e.preventDefault();
     });

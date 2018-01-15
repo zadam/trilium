@@ -243,6 +243,12 @@ async function updateNote(noteId, newNote, dataKey, sourceId) {
 }
 
 async function deleteNote(noteTreeId, sourceId) {
+    const noteTree = await sql.getFirstOrNull("SELECT * FROM notes_tree WHERE note_tree_id = ?", [noteTreeId]);
+
+    if (!noteTree || noteTree.is_deleted === 1) {
+        return;
+    }
+
     const now = utils.nowDate();
 
     await sql.execute("UPDATE notes_tree SET is_deleted = 1, date_modified = ? WHERE note_tree_id = ?", [now, noteTreeId]);

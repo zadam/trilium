@@ -121,15 +121,15 @@ async function runAllChecks() {
 
     await runCheck(`
           SELECT 
-            child.note_id 
+            child.note_tree_id
           FROM 
-            notes_tree 
-            JOIN notes AS child ON child.note_id = notes_tree.note_id 
-            JOIN notes AS parent ON notes_tree.parent_note_id = parent.note_id 
+            notes_tree AS child
           WHERE 
-            parent.is_deleted = 1 
-            AND child.is_deleted = 0`,
-        "Parent note is deleted but child note is not for these child note IDs", errorList);
+            child.is_deleted = 0
+            AND child.parent_note_id != 'root'
+            AND (SELECT COUNT(*) FROM notes_tree AS parent WHERE parent.note_id = child.parent_note_id 
+                                                                 AND parent.is_deleted = 0) = 0`,
+        "All parent note trees are deleted but child note tree is not for these child note tree IDs", errorList);
 
     // we do extra JOIN to eliminate orphan notes without note tree (which are reported separately)
     await runCheck(`

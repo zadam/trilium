@@ -141,7 +141,7 @@ const contextMenu = (function() {
                 pasteInto(node);
             }
             else if (ui.cmd === "delete") {
-                treeChanges.deleteNode(node);
+                treeChanges.deleteNodes(noteTree.getSelectedNodes(true));
             }
             else if (ui.cmd === "collapse-sub-tree") {
                 noteTree.collapseTree(node);

@@ -53,29 +53,26 @@ const treeChanges = (function() {
         }
     }
 
-    async function deleteNode(node) {
-        if (!confirm('Are you sure you want to delete note "' + node.title + '" and all its sub-notes?')) {
+    async function deleteNodes(nodes) {
+        if (nodes.length === 0 || !confirm('Are you sure you want to delete select note(s) and all the sub-notes?')) {
             return;
         }
 
-        await server.remove('tree/' + node.data.note_tree_id);
-
-        if (!isTopLevelNode(node) && node.getParent().getChildren().length <= 1) {
-            node.getParent().folder = false;
-            node.getParent().renderTitle();
+        for (const node of nodes) {
+            await server.remove('tree/' + node.data.note_tree_id);
         }
 
-        let next = node.getNextSibling();
+        // following code assumes that nodes contain only top-most selected nodes - getSelectedNodes has been
+        // called with stopOnParent=true
+        let next = nodes[nodes.length - 1].getNextSibling();
 
         if (!next) {
-            next = node.getPrevSibling();
+            next = nodes[0].getPrevSibling();
         }
 
-        if (!next && !isTopLevelNode(node)) {
-            next = node.getParent();
+        if (!next && !isTopLevelNode(nodes[0])) {
+            next = nodes[0].getParent();
         }
-
-        node.remove();
 
         if (next) {
             // activate next element after this one is deleted so we don't lose focus
@@ -86,7 +83,7 @@ const treeChanges = (function() {
 
         noteTree.reload();
 
-        showMessage("Note has been deleted.");
+        showMessage("Note(s) has been deleted.");
     }
 
     async function moveNodeUpInHierarchy(node) {
@@ -127,7 +124,7 @@ const treeChanges = (function() {
         moveBeforeNode,
         moveAfterNode,
         moveToNode,
-        deleteNode,
+        deleteNodes,
         moveNodeUpInHierarchy
     };
 })();

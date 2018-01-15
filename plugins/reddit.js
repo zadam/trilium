@@ -176,8 +176,6 @@ karma: ${comment.score}, created at ${dateTimeStr}</p><p></p>`
     // if there have been no imported comments on this page, there shouldn't be any to import
     // on the next page since those are older
     if (listing.data.after && importedComments > 0) {
-        log.info("Reddit: Importing from next page of comments ...");
-
         importedComments += await importComments(accountName, listing.data.after);
     }
 
