@@ -30,7 +30,7 @@ const searchTree = (function() {
         return treeEl.fancytree('getTree');
     }
 
-    searchInputEl.keyup(e => {
+    searchInputEl.keyup(async e => {
         const searchText = searchInputEl.val();
 
         if (e && e.which === $.ui.keyCode.ESCAPE || $.trim(searchText) === "") {
@@ -39,12 +39,14 @@ const searchTree = (function() {
         }
 
         if (e && e.which === $.ui.keyCode.ENTER) {
-            server.get('notes?search=' + searchText).then(resp => {
-                // Pass a string to perform case insensitive matching
-                getTree().filterBranches(node => {
-                    return resp.includes(node.data.note_id);
-                });
-            });
+            const noteIds = await server.get('notes?search=' + encodeURIComponent(searchText));
+
+            for (const noteId of noteIds) {
+                await noteTree.expandToNote(noteId, {noAnimation: true, noEvents: true});
+            }
+
+            // Pass a string to perform case insensitive matching
+            getTree().filterBranches(node => noteIds.includes(node.data.note_id));
         }
     }).focus();
 

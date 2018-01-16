@@ -200,7 +200,7 @@ const noteTree = (function() {
         return noteList;
     }
 
-    async function activateNode(notePath) {
+    async function expandToNote(notePath, expandOpts) {
         assertArguments(notePath);
 
         const runPath = getRunPath(notePath);
@@ -213,14 +213,22 @@ const noteTree = (function() {
             const node = getNodesByNoteId(childNoteId).find(node => node.data.parent_note_id === parentNoteId);
 
             if (childNoteId === noteId) {
-                await node.setActive();
+                return node;
             }
             else {
-                await node.setExpanded();
+                await node.setExpanded(true, expandOpts);
             }
 
             parentNoteId = childNoteId;
         }
+    }
+
+    async function activateNode(notePath) {
+        assertArguments(notePath);
+
+        const node = await expandToNote(notePath);
+
+        await node.setActive();
 
         clearSelectedNodes();
     }
@@ -841,6 +849,7 @@ const noteTree = (function() {
         setNoteTreeBackgroundBasedOnProtectedStatus,
         setProtected,
         getCurrentNode,
+        expandToNote,
         activateNode,
         getCurrentNotePath,
         getNoteTitle,

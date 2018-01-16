@@ -6,6 +6,7 @@ const auth = require('../../services/auth');
 const sql = require('../../services/sql');
 const notes = require('../../services/notes');
 const log = require('../../services/log');
+const utils = require('../../services/utils');
 const protected_session = require('../../services/protected_session');
 const data_encryption = require('../../services/data_encryption');
 const tree = require('../../services/tree');
@@ -59,17 +60,13 @@ router.put('/:noteId', auth.checkApiAuth, wrap(async (req, res, next) => {
 }));
 
 router.get('/', auth.checkApiAuth, wrap(async (req, res, next) => {
-    const search = '%' + req.query.search + '%';
+    const search = '%' + utils.sanitizeSql(req.query.search) + '%';
 
-    const result = await sql.getAll("SELECT note_id FROM notes WHERE note_title LIKE ? OR note_text LIKE ?", [search, search]);
+    // searching in protected notes is pointless because of encryption
+    const noteIds = await sql.getFirstColumn(`SELECT note_id FROM notes 
+              WHERE is_deleted = 0 AND is_protected = 0 AND (note_title LIKE ? OR note_text LIKE ?)`, [search, search]);
 
-    const noteIdList = [];
-
-    for (const res of result) {
-        noteIdList.push(res.note_id);
-    }
-
-    res.send(noteIdList);
+    res.send(noteIds);
 }));
 
 router.put('/:noteId/sort', auth.checkApiAuth, wrap(async (req, res, next) => {
