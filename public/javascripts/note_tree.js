@@ -772,11 +772,21 @@ const noteTree = (function() {
         if (target === 'after') {
             node.appendSibling(newNode).setActive(true);
         }
-        else {
-            node.addChildren(newNode).setActive(true);
+        else if (target === 'into') {
+            if (!node.getChildren() && node.isFolder()) {
+                await node.setExpanded();
+            }
+            else {
+                node.addChildren(newNode);
+            }
+
+            node.getLastChild().setActive(true);
 
             node.folder = true;
             node.renderTitle();
+        }
+        else {
+            throwError("Unrecognized target: " + target);
         }
 
         showMessage("Created!");
