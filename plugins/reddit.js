@@ -10,7 +10,13 @@ const attributes = require('../services/attributes');
 const sync_mutex = require('../services/sync_mutex');
 const config = require('../services/config');
 
-const REDDIT_ROOT = 'reddit_root';
+const CALENDAR_ROOT_ATTRIBUTE = 'calendar_root';
+const YEAR_ATTRIBUTE = 'year_note';
+const MONTH_ATTRIBUTE = 'month_note';
+const DATE_ATTRIBUTE = 'date_note';
+
+// "reddit" date note is subnote of date note which contains all reddit comments from that date
+const REDDIT_DATE_ATTRIBUTE = 'reddit_date_note';
 
 async function createNote(parentNoteId, noteTitle, noteText) {
     return (await notes.createNewNote(parentNoteId, {
@@ -31,10 +37,27 @@ async function getNoteStartingWith(parentNoteId, startsWith) {
                                     AND notes.is_deleted = 0 AND notes_tree.is_deleted = 0`, [parentNoteId]);
 }
 
+async function getRootNoteId() {
+    let rootNoteId = await sql.getFirstValue(`SELECT notes.note_id FROM notes JOIN attributes USING(note_id) 
+              WHERE attributes.name = '${CALENDAR_ROOT_ATTRIBUTE}' AND notes.is_deleted = 0`);
+
+    if (!rootNoteId) {
+        rootNoteId = (await notes.createNewNote('root', {
+            note_title: 'Calendar',
+            target: 'into',
+            is_protected: false
+        })).noteId;
+
+        await attributes.createAttribute(rootNoteId, CALENDAR_ROOT_ATTRIBUTE);
+    }
+
+    return rootNoteId;
+}
+
 async function getYearNoteId(dateTimeStr, rootNoteId) {
     const yearStr = dateTimeStr.substr(0, 4);
 
-    let yearNoteId = await attributes.getNoteIdWithAttribute('year_note', yearStr);
+    let yearNoteId = await attributes.getNoteIdWithAttribute(YEAR_ATTRIBUTE, yearStr);
 
     if (!yearNoteId) {
         yearNoteId = await getNoteStartingWith(rootNoteId, yearStr);
@@ -43,7 +66,7 @@ async function getYearNoteId(dateTimeStr, rootNoteId) {
             yearNoteId = await createNote(rootNoteId, yearStr);
         }
 
-        await attributes.createAttribute(yearNoteId, "year_note", yearStr);
+        await attributes.createAttribute(yearNoteId, YEAR_ATTRIBUTE, yearStr);
     }
 
     return yearNoteId;
@@ -53,7 +76,7 @@ async function getMonthNoteId(dateTimeStr, rootNoteId) {
     const monthStr = dateTimeStr.substr(0, 7);
     const monthNumber = dateTimeStr.substr(5, 2);
 
-    let monthNoteId = await attributes.getNoteIdWithAttribute('month_note', monthStr);
+    let monthNoteId = await attributes.getNoteIdWithAttribute(MONTH_ATTRIBUTE, monthStr);
 
     if (!monthNoteId) {
         const yearNoteId = await getYearNoteId(dateTimeStr, rootNoteId);
@@ -64,7 +87,7 @@ async function getMonthNoteId(dateTimeStr, rootNoteId) {
             monthNoteId = await createNote(yearNoteId, monthNumber);
         }
 
-        await attributes.createAttribute(monthNoteId, "month_note", monthStr);
+        await attributes.createAttribute(monthNoteId, MONTH_ATTRIBUTE, monthStr);
     }
 
     return monthNoteId;
@@ -74,7 +97,7 @@ async function getDateNoteId(dateTimeStr, rootNoteId) {
     const dateStr = dateTimeStr.substr(0, 10);
     const dayNumber = dateTimeStr.substr(8, 2);
 
-    let dateNoteId = await attributes.getNoteIdWithAttribute('date_note', dateStr);
+    let dateNoteId = await attributes.getNoteIdWithAttribute(DATE_ATTRIBUTE, dateStr);
 
     if (!dateNoteId) {
         const monthNoteId = await getMonthNoteId(dateTimeStr, rootNoteId);
@@ -85,7 +108,7 @@ async function getDateNoteId(dateTimeStr, rootNoteId) {
             dateNoteId = await createNote(monthNoteId, dayNumber);
         }
 
-        await attributes.createAttribute(dateNoteId, "date_note", dateStr);
+        await attributes.createAttribute(dateNoteId, DATE_ATTRIBUTE, dateStr);
     }
 
     return dateNoteId;
@@ -94,33 +117,20 @@ async function getDateNoteId(dateTimeStr, rootNoteId) {
 async function getDateNoteIdForReddit(dateTimeStr, rootNoteId) {
     const dateStr = dateTimeStr.substr(0, 10);
 
-    let redditDateNoteId = await attributes.getNoteIdWithAttribute('reddit_date_note', dateStr);
+    let redditDateNoteId = await attributes.getNoteIdWithAttribute(REDDIT_DATE_ATTRIBUTE, dateStr);
 
     if (!redditDateNoteId) {
         const dateNoteId = await getDateNoteId(dateTimeStr, rootNoteId);
 
         redditDateNoteId = await createNote(dateNoteId, "Reddit");
 
-        await attributes.createAttribute(redditDateNoteId, "reddit_date_note", dateStr);
+        await attributes.createAttribute(redditDateNoteId, REDDIT_DATE_ATTRIBUTE, dateStr);
     }
 
     return redditDateNoteId;
 }
 
-async function importComments(accountName, afterId = null) {
-    let rootNoteId = await sql.getFirstValue(`SELECT notes.note_id FROM notes JOIN attributes USING(note_id) 
-              WHERE attributes.name = '${REDDIT_ROOT}' AND notes.is_deleted = 0`);
-
-    if (!rootNoteId) {
-        rootNoteId = (await notes.createNewNote('root', {
-            note_title: 'Reddit',
-            target: 'into',
-            is_protected: false
-        })).noteId;
-
-        await attributes.createAttribute(rootNoteId, REDDIT_ROOT);
-    }
-
+async function importComments(rootNoteId, accountName, afterId = null) {
     let url = `https://www.reddit.com/user/${accountName}.json`;
 
     if (afterId) {
@@ -176,7 +186,7 @@ karma: ${comment.score}, created at ${dateTimeStr}</p><p></p>`
     // if there have been no imported comments on this page, there shouldn't be any to import
     // on the next page since those are older
     if (listing.data.after && importedComments > 0) {
-        importedComments += await importComments(accountName, listing.data.after);
+        importedComments += await importComments(rootNoteId, accountName, listing.data.after);
     }
 
     return importedComments;
@@ -185,13 +195,15 @@ karma: ${comment.score}, created at ${dateTimeStr}</p><p></p>`
 let redditAccounts = [];
 
 async function runImport() {
+    const rootNoteId = await getRootNoteId();
+
     // technically mutex shouldn't be necessary but we want to avoid doing potentially expensive import
     // concurrently with sync
     await sync_mutex.doExclusively(async () => {
         let importedComments = 0;
 
         for (const account of redditAccounts) {
-            importedComments += await importComments(account);
+            importedComments += await importComments(rootNoteId, account);
         }
 
         log.info(`Reddit: Imported ${importedComments} comments.`);
@@ -211,8 +223,8 @@ sql.dbReady.then(async () => {
 
     redditAccounts = redditAccountsStr.split(",").map(s => s.trim());
 
-    const pollingIntervalInSeconds = config['Reddit']['pollingIntervalInSeconds'] || 3600;
+    const pollingIntervalInSeconds = config['Reddit']['pollingIntervalInSeconds'] || (4 * 3600);
 
     setInterval(runImport, pollingIntervalInSeconds * 1000);
-    setTimeout(runImport, 1000);
+    setTimeout(runImport, 10000); // 10 seconds after startup - intentionally after initial sync
 });
