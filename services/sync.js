@@ -146,6 +146,9 @@ async function pullSync(syncContext) {
         else if (sync.entity_name === 'notes_image') {
             await syncUpdate.updateNoteImage(resp, syncContext.sourceId);
         }
+        else if (sync.entity_name === 'attributes') {
+            await syncUpdate.updateAttribute(resp, syncContext.sourceId);
+        }
         else {
             throw new Error(`Unrecognized entity type ${sync.entity_name} in sync #${sync.id}`);
         }
