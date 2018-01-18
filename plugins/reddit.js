@@ -34,7 +34,8 @@ function redditId(kind, id) {
 async function getNoteStartingWith(parentNoteId, startsWith) {
     return await sql.getFirstValue(`SELECT note_id FROM notes JOIN notes_tree USING(note_id) 
                                     WHERE parent_note_id = ? AND note_title LIKE '${startsWith}%'
-                                    AND notes.is_deleted = 0 AND notes_tree.is_deleted = 0`, [parentNoteId]);
+                                    AND notes.is_deleted = 0 AND is_protected = 0 
+                                    AND notes_tree.is_deleted = 0`, [parentNoteId]);
 }
 
 async function getRootNoteId() {

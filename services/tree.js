@@ -83,7 +83,8 @@ async function loadSubTreeNoteIds(parentNoteId, subTreeNoteIds) {
 async function sortNotesAlphabetically(parentNoteId, dataKey, sourceId) {
     await sql.doInTransaction(async () => {
         const notes = await sql.getAll(`SELECT note_tree_id, note_id, note_title, is_protected 
-                                       FROM notes JOIN notes_tree USING(note_id) WHERE parent_note_id = ?`, [parentNoteId]);
+                                       FROM notes JOIN notes_tree USING(note_id) 
+                                       WHERE notes_tree.is_deleted = 0 AND parent_note_id = ?`, [parentNoteId]);
 
         for (const note of notes) {
             if (note.is_protected) {
