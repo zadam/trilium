@@ -198,6 +198,16 @@ async function runAllChecks() {
             AND images.is_deleted = 1`,
         "Note image is not deleted while image is deleted for note_image_id", errorList);
 
+    await runCheck(`
+          SELECT 
+            note_id
+          FROM 
+            notes
+          WHERE 
+            is_deleted = 0
+            AND (note_title IS NULL OR note_text IS NULL)`,
+        "Note has null title or text", errorList);
+
     await runSyncRowChecks("notes", "note_id", errorList);
     await runSyncRowChecks("notes_history", "note_history_id", errorList);
     await runSyncRowChecks("notes_tree", "note_tree_id", errorList);
