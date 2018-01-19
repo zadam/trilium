@@ -15,6 +15,8 @@ const treeChanges = (function() {
     }
 
     async function moveAfterNode(nodesToMove, afterNode) {
+        nodesToMove.reverse(); // need to reverse to keep the note order
+
         for (const nodeToMove of nodesToMove) {
             const resp = await server.put('tree/' + nodeToMove.data.note_tree_id + '/move-after/' + afterNode.data.note_tree_id);
 

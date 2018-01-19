@@ -6,20 +6,18 @@ const contextMenu = (function() {
     let clipboardIds = [];
     let clipboardMode = null;
 
-    function pasteAfter(node) {
+    async function pasteAfter(node) {
         if (clipboardMode === 'cut') {
-            for (const nodeKey of clipboardIds) {
-                const subjectNode = treeUtils.getNodeByKey(nodeKey);
+            const nodes = clipboardIds.map(nodeKey => treeUtils.getNodeByKey(nodeKey));
 
-                treeChanges.moveAfterNode([subjectNode], node);
-            }
+            await treeChanges.moveAfterNode(nodes, node);
 
             clipboardIds = [];
             clipboardMode = null;
         }
         else if (clipboardMode === 'copy') {
             for (const noteId of clipboardIds) {
-                cloning.cloneNoteAfter(noteId, node.data.note_tree_id);
+                await cloning.cloneNoteAfter(noteId, node.data.note_tree_id);
             }
 
             // copy will keep clipboardIds and clipboardMode so it's possible to paste into multiple places
@@ -32,20 +30,18 @@ const contextMenu = (function() {
         }
     }
 
-    function pasteInto(node) {
+    async function pasteInto(node) {
         if (clipboardMode === 'cut') {
-            for (const nodeKey of clipboardIds) {
-                const subjectNode = treeUtils.getNodeByKey(nodeKey);
+            const nodes = clipboardIds.map(nodeKey => treeUtils.getNodeByKey(nodeKey));
 
-                treeChanges.moveToNode([subjectNode], node);
-            }
+            await treeChanges.moveToNode(nodes, node);
 
             clipboardIds = [];
             clipboardMode = null;
         }
         else if (clipboardMode === 'copy') {
             for (const noteId of clipboardIds) {
-                cloning.cloneNoteTo(noteId, node.data.note_id);
+                await cloning.cloneNoteTo(noteId, node.data.note_id);
             }
             // copy will keep clipboardIds and clipboardMode so it's possible to paste into multiple places
         }
