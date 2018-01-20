@@ -353,10 +353,11 @@
     </div>
 
     <div id="attributes-dialog" title="Note attributes" style="display: none; padding: 20px;">
+      <form data-bind="submit: save">
       <div style="display: flex; justify-content: space-between; padding: 15px; padding-top: 0;">
-        <button class="btn-default" data-bind="click: addNewRow">Add new attribute</button>
+        <button class="btn-default" type="button" data-bind="click: addNewRow">Add new attribute</button>
 
-        <button class="btn-primary" data-bind="click: save">Save</button>
+        <button class="btn-primary" type="submit">Save</button>
       </div>
 
       <div style="height: 97%; overflow: auto">
@@ -381,6 +382,7 @@
           </tbody>
         </table>
       </div>
+      </form>
     </div>
 
     <div id="tooltip" style="display: none;"></div>
