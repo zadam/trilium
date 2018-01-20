@@ -87,7 +87,7 @@ const contextMenu = (function() {
             {title: "----"},
             {title: "Collapse sub-tree <kbd>Alt+-</kbd>", cmd: "collapse-sub-tree", uiIcon: "ui-icon-minus"},
             {title: "Force note sync", cmd: "force-note-sync", uiIcon: "ui-icon-refresh"},
-            {title: "Sort alphabetically <kbd>Alt+s</kbd>", cmd: "sort-alphabetically", uiIcon: " ui-icon-arrowthick-2-n-s"}
+            {title: "Sort alphabetically <kbd>Alt+S</kbd>", cmd: "sort-alphabetically", uiIcon: " ui-icon-arrowthick-2-n-s"}
 
         ],
         beforeOpen: (event, ui) => {

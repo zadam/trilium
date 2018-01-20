@@ -95,7 +95,19 @@
 
           <span id="note-id-display" title="Note ID"></span>
 
-          <button class="btn btn-xs" title="ALT+H" style="margin: 10px;" onclick="noteHistory.showCurrentNoteHistory();">Note history</button>
+          <div class="dropdown" style="margin-left: 10px; margin-right: 10px;">
+            <button id="dLabel" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-xs">
+              Note actions
+              <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-right" aria-labelledby="dLabel">
+              <li><a onclick="noteHistory.showCurrentNoteHistory();"><kbd>Alt+H</kbd> History</a></li>
+              <li><a onclick="attributesDialog.showDialog();"><kbd>Alt+A</kbd> Attributes</a></li>
+              <li><a onclick="noteSource.showDialog();"><kbd>Ctrl+U</kbd> HTML source</a></li>
+            </ul>
+          </div>
+
+          <!--<button class="btn btn-xs" title="ALT+H"  onclick="noteHistory.showCurrentNoteHistory();">Note history</button>-->
         </div>
       </div>
 

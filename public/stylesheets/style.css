@@ -200,3 +200,25 @@ div.ui-tooltip {
 .suppressed {
     filter: opacity(7%);
 }
+
+.dropdown-menu li {
+    padding: 5px;
+    width: 200px;
+}
+
+.dropdown-menu li:hover, .dropdown-menu a:hover {
+    background-color: #eee !important;
+    cursor: pointer;
+}
+
+.dropdown-menu kbd
+{
+    color: black;
+    border: none;
+    background-color: transparent;
+    box-shadow: none;
+}
+
+.dropdown-menu kbd {
+    float: right;
+}
