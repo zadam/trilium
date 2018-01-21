@@ -65,7 +65,15 @@ const noteEditor = (function() {
     }
 
     function updateNoteFromInputs(note) {
-        note.detail.note_text = editor.getData();
+        if (note.detail.type === 'text') {
+            note.detail.note_text = editor.getData();
+        }
+        else if (note.detail.type === 'code') {
+            note.detail.note_text = codeEditor.getValue();
+        }
+        else {
+            throwError("Unrecognized type: " + note.detail.type);
+        }
 
         const title = noteTitleEl.val();
 
@@ -133,10 +141,11 @@ const noteEditor = (function() {
             noteDetailCodeEl.hide();
         }
         else if (currentNote.detail.type === 'code') {
-            codeEditor.setValue(currentNote.detail.note_text);
-
             noteDetailEl.hide();
             noteDetailCodeEl.show();
+
+            // this needs to happen after the element is shown, otherwise the editor won't be refresheds
+            codeEditor.setValue(currentNote.detail.note_text);
         }
         else {
             throwError("Unrecognized type " + currentNote.detail.type);
@@ -182,8 +191,11 @@ const noteEditor = (function() {
 
         codeEditor = CodeMirror($("#note-detail-code")[0], {
             value: "",
-            mode:  "javascript"
+            mode:  "javascript",
+            viewportMargin: Infinity
         });
+
+        codeEditor.on('change', noteChanged);
 
         codeEditor.setOption("extraKeys", {
             'Ctrl-.': function(cm) {

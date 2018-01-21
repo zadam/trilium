@@ -222,3 +222,11 @@ div.ui-tooltip {
 .dropdown-menu kbd {
     float: right;
 }
+
+#note-detail-code {
+    height: 100%;
+}
+
+.CodeMirror {
+    height: 100%;
+}
