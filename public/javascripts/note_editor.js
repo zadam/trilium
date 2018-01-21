@@ -3,12 +3,14 @@
 const noteEditor = (function() {
     const noteTitleEl = $("#note-title");
     const noteDetailEl = $('#note-detail');
+    const noteDetailCodeEl = $('#note-detail-code');
     const protectButton = $("#protect-button");
     const unprotectButton = $("#unprotect-button");
     const noteDetailWrapperEl = $("#note-detail-wrapper");
     const noteIdDisplayEl = $("#note-id-display");
 
     let editor = null;
+    let codeEditor = null;
 
     let currentNote = null;
 
@@ -121,8 +123,24 @@ const noteEditor = (function() {
 
         noteTitleEl.val(currentNote.detail.note_title);
 
-        // temporary workaround for https://github.com/ckeditor/ckeditor5-enter/issues/49
-        editor.setData(currentNote.detail.note_text ? currentNote.detail.note_text : "<p></p>");
+        console.log("Type: " + currentNote.detail.type);
+
+        if (currentNote.detail.type === 'text') {
+            // temporary workaround for https://github.com/ckeditor/ckeditor5-enter/issues/49
+            editor.setData(currentNote.detail.note_text ? currentNote.detail.note_text : "<p></p>");
+
+            noteDetailEl.show();
+            noteDetailCodeEl.hide();
+        }
+        else if (currentNote.detail.type === 'code') {
+            codeEditor.setValue(currentNote.detail.note_text);
+
+            noteDetailEl.hide();
+            noteDetailCodeEl.show();
+        }
+        else {
+            throwError("Unrecognized type " + currentNote.detail.type);
+        }
 
         noteChangeDisabled = false;
 
@@ -162,8 +180,31 @@ const noteEditor = (function() {
                 console.error(error);
             });
 
+        codeEditor = CodeMirror($("#note-detail-code")[0], {
+            value: "",
+            mode:  "javascript"
+        });
+
+        codeEditor.setOption("extraKeys", {
+            'Ctrl-.': function(cm) {
+                noteTree.scrollToCurrentNote();
+            }
+        });
+
         // so that tab jumps from note title (which has tabindex 1)
         noteDetailEl.attr("tabindex", 2);
+    });
+
+    $(document).bind('keydown', 'alt+q', async e => {
+        const note = getCurrentNote();
+        const type = note.detail.type;
+        const newType = type === "text" ? "code" : "text";
+
+        await server.put('notes/' + note.detail.note_id + '/type/' + newType);
+
+        await reload();
+
+        e.preventDefault();
     });
 
     setInterval(saveNoteIfChanged, 5000);

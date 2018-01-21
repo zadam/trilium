@@ -10,6 +10,7 @@ const utils = require('../../services/utils');
 const protected_session = require('../../services/protected_session');
 const data_encryption = require('../../services/data_encryption');
 const tree = require('../../services/tree');
+const sync_table = require('../../services/sync_table');
 const wrap = require('express-promise-wrap').wrap;
 
 router.get('/:noteId', auth.checkApiAuth, wrap(async (req, res, next) => {
@@ -87,6 +88,21 @@ router.put('/:noteId/protect-sub-tree/:isProtected', auth.checkApiAuth, wrap(asy
 
     await sql.doInTransaction(async () => {
         await notes.protectNoteRecursively(noteId, dataKey, isProtected, sourceId);
+    });
+
+    res.send({});
+}));
+
+router.put('/:noteId/type/:type', auth.checkApiAuth, wrap(async (req, res, next) => {
+    const noteId = req.params.noteId;
+    const type = req.params.type;
+    const sourceId = req.headers.source_id;
+
+    await sql.doInTransaction(async () => {
+       await sql.execute("UPDATE notes SET type = ?, date_modified = ? WHERE note_id = ?",
+           [type, utils.nowDate(), noteId]);
+
+       await sync_table.addNoteSync(noteId, sourceId);
     });
 
     res.send({});

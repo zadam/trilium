@@ -208,6 +208,15 @@ async function runAllChecks() {
             AND (note_title IS NULL OR note_text IS NULL)`,
         "Note has null title or text", errorList);
 
+    await runCheck(`
+          SELECT 
+            note_id
+          FROM 
+            notes
+          WHERE 
+            type != 'text' AND type != 'code'`,
+        "Note has invalid type", errorList);
+
     await runSyncRowChecks("notes", "note_id", errorList);
     await runSyncRowChecks("notes_history", "note_history_id", errorList);
     await runSyncRowChecks("notes_tree", "note_tree_id", errorList);

@@ -22,6 +22,7 @@ async function getHashes() {
               note_id,
               note_title,
               note_text,
+              type,
               date_modified,
               is_protected,
               is_deleted

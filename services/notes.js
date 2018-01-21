@@ -38,9 +38,10 @@ async function createNewNote(parentNoteId, note, sourceId) {
             note_id: noteId,
             note_title: note.note_title,
             note_text: note.note_text ? note.note_text : '',
+            is_protected: note.is_protected,
+            type: 'text',
             date_created: now,
-            date_modified: now,
-            is_protected: note.is_protected
+            date_modified: now
         });
 
         await sync_table.addNoteSync(noteId, sourceId);
