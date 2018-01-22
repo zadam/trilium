@@ -70,6 +70,8 @@ const noteEditor = (function() {
         }
         else if (note.detail.type === 'code') {
             note.detail.note_text = codeEditor.getValue();
+
+            codeEditor.setOption("mode", note.detail.mime);
         }
         else {
             throwError("Unrecognized type: " + note.detail.type);
@@ -131,6 +133,9 @@ const noteEditor = (function() {
 
         noteTitleEl.val(currentNote.detail.note_title);
 
+        noteType.setNoteType(currentNote.detail.type);
+        noteType.setNoteMime(currentNote.detail.mime);
+
         if (currentNote.detail.type === 'text') {
             // temporary workaround for https://github.com/ckeditor/ckeditor5-enter/issues/49
             editor.setData(currentNote.detail.note_text ? currentNote.detail.note_text : "<p></p>");
@@ -189,7 +194,6 @@ const noteEditor = (function() {
 
         codeEditor = CodeMirror($("#note-detail-code")[0], {
             value: "",
-            mode:  "javascript",
             viewportMargin: Infinity
         });
 
@@ -203,18 +207,6 @@ const noteEditor = (function() {
 
         // so that tab jumps from note title (which has tabindex 1)
         noteDetailEl.attr("tabindex", 2);
-    });
-
-    $(document).bind('keydown', 'alt+q', async e => {
-        const note = getCurrentNote();
-        const type = note.detail.type;
-        const newType = type === "text" ? "code" : "text";
-
-        await server.put('notes/' + note.detail.note_id + '/type/' + newType);
-
-        await reload();
-
-        e.preventDefault();
     });
 
     setInterval(saveNoteIfChanged, 5000);

@@ -77,8 +77,7 @@ async function importNotes(dir, parentNoteId) {
             note_position: notePos,
             is_expanded: 0,
             is_deleted: 0,
-            date_modified: now,
-            type: 'text'
+            date_modified: now
         });
 
         await sync_table.addNoteTreeSync(noteTreeId);
@@ -89,6 +88,8 @@ async function importNotes(dir, parentNoteId) {
             note_text: noteText,
             is_deleted: 0,
             is_protected: 0,
+            type: 'text',
+            mime: 'text/html',
             date_created: now,
             date_modified: now
         });

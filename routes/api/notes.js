@@ -93,14 +93,15 @@ router.put('/:noteId/protect-sub-tree/:isProtected', auth.checkApiAuth, wrap(asy
     res.send({});
 }));
 
-router.put('/:noteId/type/:type', auth.checkApiAuth, wrap(async (req, res, next) => {
+router.put('/:noteId/type/:type/mime/:mime', auth.checkApiAuth, wrap(async (req, res, next) => {
     const noteId = req.params.noteId;
     const type = req.params.type;
+    const mime = req.params.mime;
     const sourceId = req.headers.source_id;
 
     await sql.doInTransaction(async () => {
-       await sql.execute("UPDATE notes SET type = ?, date_modified = ? WHERE note_id = ?",
-           [type, utils.nowDate(), noteId]);
+       await sql.execute("UPDATE notes SET type = ?, mime = ?, date_modified = ? WHERE note_id = ?",
+           [type, mime, utils.nowDate(), noteId]);
 
        await sync_table.addNoteSync(noteId, sourceId);
     });

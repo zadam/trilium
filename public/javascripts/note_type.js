@@ -21,9 +21,11 @@ const noteType = (function() {
             { mime: 'text/x-go', title: 'Go' },
             { mime: 'text/x-groovy', title: 'Groovy' },
             { mime: 'text/x-haskell', title: 'Haskell' },
+            { mime: 'text/html', title: 'HTML' },
             { mime: 'message/http', title: 'HTTP' },
             { mime: 'text/x-java', title: 'Java' },
-            { mime: 'text/javascript', title: 'JavaScript' },
+            { mime: 'application/javascript', title: 'JavaScript' },
+            { mime: 'application/json', title: 'JSON' },
             { mime: 'text/x-kotlin', title: 'Kotlin' },
             { mime: 'text/x-lua', title: 'Lua' },
             { mime: 'text/x-markdown', title: 'Markdown' },
@@ -64,24 +66,45 @@ const noteType = (function() {
             }
         };
 
+        async function save() {
+            const note = noteEditor.getCurrentNote();
+
+            await server.put('notes/' + note.detail.note_id
+                + '/type/' + encodeURIComponent(self.type())
+                + '/mime/' + encodeURIComponent(self.mime()));
+
+            await noteEditor.reload();
+        }
+
         this.selectText = function() {
             self.type('text');
             self.mime('');
+
+            save();
         };
 
         this.selectCode = function() {
             self.type('code');
             self.mime('');
+
+            save();
         };
 
         this.selectCodeMime = function(el) {
             self.type('code');
             self.mime(el.mime);
+
+            save();
         };
     }
 
     ko.applyBindings(noteTypeModel, document.getElementById('note-type'));
 
     return {
+        getNoteType: () => noteTypeModel.type(),
+        setNoteType: type => noteTypeModel.type(type),
+
+        getNoteMime: () => noteTypeModel.mime(),
+        setNoteMime: mime => noteTypeModel.mime(mime)
     };
 })();

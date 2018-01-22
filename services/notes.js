@@ -40,6 +40,7 @@ async function createNewNote(parentNoteId, note, sourceId) {
             note_text: note.note_text ? note.note_text : '',
             is_protected: note.is_protected,
             type: 'text',
+            mime: 'text/html',
             date_created: now,
             date_modified: now
         });
