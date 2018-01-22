@@ -201,14 +201,18 @@ div.ui-tooltip {
     filter: opacity(7%);
 }
 
-.dropdown-menu li {
+.dropdown-menu li:not(.divider) {
     padding: 5px;
     width: 200px;
 }
 
-.dropdown-menu li:hover, .dropdown-menu a:hover {
+.dropdown-menu li:not(.divider):hover, .dropdown-menu li:not(.divider) a:hover {
     background-color: #eee !important;
     cursor: pointer;
+}
+
+.dropdown-menu li:not(.selected) .check {
+    visibility: hidden;
 }
 
 .dropdown-menu kbd
@@ -236,4 +240,10 @@ div.ui-tooltip {
     right: 10px;
     bottom: 5px;
     z-index: 1000;
+}
+
+#note-type-dropdown {
+    max-height: 500px;
+    overflow-y: auto;
+    overflow-x: hidden;
 }

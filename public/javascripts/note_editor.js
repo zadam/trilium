@@ -131,8 +131,6 @@ const noteEditor = (function() {
 
         noteTitleEl.val(currentNote.detail.note_title);
 
-        console.log("Type: " + currentNote.detail.type);
-
         if (currentNote.detail.type === 'text') {
             // temporary workaround for https://github.com/ckeditor/ckeditor5-enter/issues/49
             editor.setData(currentNote.detail.note_text ? currentNote.detail.note_text : "<p></p>");

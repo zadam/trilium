@@ -95,6 +95,21 @@
 
           <span id="note-id-display" title="Note ID"></span>
 
+          <div class="dropdown" id="note-type">
+            <button id="dLabel" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-sm">
+              Type: <span data-bind="text: typeString()"></span>
+              <span class="caret"></span>
+            </button>
+            <ul id="note-type-dropdown" class="dropdown-menu dropdown-menu-right" aria-labelledby="dLabel">
+              <li data-bind="click: selectText, css: { selected: type() == 'text' }"><span class="check">&check;</span> <strong>Text</strong></li>
+              <li role="separator" class="divider"></li>
+              <li data-bind="click: selectCode, css: { selected: type() == 'code' && mime() == '' }"><span class="check">&check;</span> <strong>Code</strong></li>
+              <!-- ko foreach: codeMimeTypes -->
+              <li data-bind="click: $parent.selectCodeMime, css: { selected: $parent.type() == 'code' && $parent.mime() == mime }"><span class="check">&check;</span> <span data-bind="text: title"></span></li>
+              <!-- /ko -->
+            </ul>
+          </div>
+
           <div class="dropdown" style="margin-left: 10px; margin-right: 10px;">
             <button id="dLabel" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-sm">
               Note actions
@@ -445,6 +460,7 @@
     <!-- Note detail -->
     <script src="javascripts/note_editor.js"></script>
     <script src="javascripts/protected_session.js"></script>
+    <script src="javascripts/note_type.js"></script>
 
     <!-- dialogs -->
     <script src="javascripts/dialogs/recent_notes.js"></script>

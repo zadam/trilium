@@ -54,7 +54,7 @@ const attributesDialog = (function() {
         e.preventDefault();
     });
 
-    ko.applyBindings(attributesModel);
+    ko.applyBindings(attributesModel, document.getElementById('attributes-dialog'));
 
     return {
         showDialog
