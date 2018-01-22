@@ -230,3 +230,10 @@ div.ui-tooltip {
 .CodeMirror {
     height: 100%;
 }
+
+#note-id-display {
+    position: absolute;
+    right: 10px;
+    bottom: 5px;
+    z-index: 1000;
+}
