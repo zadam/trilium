@@ -90,6 +90,28 @@ $(document).bind('keydown', "ctrl+shift+down", () => {
     return false;
 });
 
+$(document).bind('keydown', 'ctrl+-', () => {
+    if (isElectron()) {
+        const webFrame = require('electron').webFrame;
+
+        if (webFrame.getZoomFactor() > 0.2) {
+            webFrame.setZoomFactor(webFrame.getZoomFactor() - 0.1);
+        }
+
+        return false;
+    }
+});
+
+$(document).bind('keydown', 'ctrl+=', () => {
+    if (isElectron()) {
+        const webFrame = require('electron').webFrame;
+
+        webFrame.setZoomFactor(webFrame.getZoomFactor() + 0.1);
+
+        return false;
+    }
+});
+
 $("#note-title").bind('keydown', 'return', () => $("#note-detail").focus());
 
 $(window).on('beforeunload', () => {
