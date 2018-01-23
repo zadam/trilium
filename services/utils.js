@@ -102,11 +102,13 @@ function assertArguments() {
 async function stopWatch(what, func) {
     const start = new Date();
 
-    await func();
+    const ret = await func();
 
     const tookMs = new Date().getTime() - start.getTime();
 
     console.log(`${what} took ${tookMs}ms`);
+
+    return ret;
 }
 
 module.exports = {

@@ -98,3 +98,15 @@ function isRootNode(node) {
 function escapeHtml(str) {
     return $('<div/>').text(str).html();
 }
+
+async function stopWatch(what, func) {
+    const start = new Date();
+
+    const ret = await func();
+
+    const tookMs = new Date().getTime() - start.getTime();
+
+    console.log(`${what} took ${tookMs}ms`);
+
+    return ret;
+}

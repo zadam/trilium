@@ -16,7 +16,7 @@ const jumpToNote = (function() {
         });
 
         await autoCompleteEl.autocomplete({
-            source: noteTree.getAutocompleteItems(),
+            source: await stopWatch("building autocomplete", noteTree.getAutocompleteItems),
             minLength: 0
         });
     }
@@ -24,11 +24,6 @@ const jumpToNote = (function() {
     function getSelectedNotePath() {
         const val = autoCompleteEl.val();
         return link.getNodePathFromLabel(val);
-    }
-
-    function getSelectedNoteId() {
-        const notePath = getSelectedNotePath();
-        return treeUtils.getNoteIdFromNotePath(notePath);
     }
 
     function goToNote() {
