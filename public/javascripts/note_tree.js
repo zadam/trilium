@@ -4,7 +4,6 @@ const noteTree = (function() {
     const treeEl = $("#tree");
     const parentListEl = $("#parent-list");
     const parentListListEl = $("#parent-list-list");
-    const noteDetailEl = $("#note-detail");
 
     let startNotePath = null;
     let notesTreeMap = {};
@@ -504,7 +503,9 @@ const noteTree = (function() {
                 return false;
             },
             "return": node => {
-                noteDetailEl.focus();
+                noteEditor.focus();
+
+                return false;
             },
             "backspace": node => {
                 if (!isTopLevelNode(node)) {

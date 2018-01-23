@@ -171,6 +171,20 @@ const noteEditor = (function() {
         return editor;
     }
 
+    function focus() {
+        const note = getCurrentNote();
+
+        if (note.detail.type === 'text') {
+            noteDetailEl.focus();
+        }
+        else if (note.detail.type === 'code') {
+            codeEditor.focus();
+        }
+        else {
+            throwError('Unrecognized type: ' + note.detail.type);
+        }
+    }
+
     $(document).ready(() => {
         noteTitleEl.on('input', () => {
             noteChanged();
@@ -192,18 +206,16 @@ const noteEditor = (function() {
                 console.error(error);
             });
 
+        CodeMirror.keyMap.default["Shift-Tab"] = "indentLess";
+        CodeMirror.keyMap.default["Tab"] = "indentMore";
+
         codeEditor = CodeMirror($("#note-detail-code")[0], {
             value: "",
-            viewportMargin: Infinity
+            viewportMargin: Infinity,
+            indentUnit: 4,
         });
 
         codeEditor.on('change', noteChanged);
-
-        codeEditor.setOption("extraKeys", {
-            'Ctrl-.': function(cm) {
-                noteTree.scrollToCurrentNote();
-            }
-        });
 
         // so that tab jumps from note title (which has tabindex 1)
         noteDetailEl.attr("tabindex", 2);
@@ -222,6 +234,7 @@ const noteEditor = (function() {
         getCurrentNote,
         getCurrentNoteId,
         newNoteCreated,
-        getEditor
+        getEditor,
+        focus
     };
 })();
