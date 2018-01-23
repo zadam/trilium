@@ -70,8 +70,6 @@ const noteEditor = (function() {
         }
         else if (note.detail.type === 'code') {
             note.detail.note_text = codeEditor.getValue();
-
-            codeEditor.setOption("mode", note.detail.mime);
         }
         else {
             throwError("Unrecognized type: " + note.detail.type);
@@ -149,6 +147,16 @@ const noteEditor = (function() {
 
             // this needs to happen after the element is shown, otherwise the editor won't be refresheds
             codeEditor.setValue(currentNote.detail.note_text);
+
+            const info = CodeMirror.findModeByMIME(currentNote.detail.mime);
+            let mode = null;
+            if (info) {
+                mode = info.mode;
+            }
+
+            CodeMirror.autoLoadMode(codeEditor, mode);
+
+            codeEditor.setOption("mode", mode);
         }
         else {
             throwError("Unrecognized type " + currentNote.detail.type);
@@ -208,6 +216,8 @@ const noteEditor = (function() {
 
         CodeMirror.keyMap.default["Shift-Tab"] = "indentLess";
         CodeMirror.keyMap.default["Tab"] = "indentMore";
+
+        CodeMirror.modeURL = 'libraries/codemirror/mode/%N/%N.js';
 
         codeEditor = CodeMirror($("#note-detail-code")[0], {
             value: "",
