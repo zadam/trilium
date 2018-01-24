@@ -1,6 +1,7 @@
 "use strict";
 
 const noteType = (function() {
+    const executeScriptButton = $("#execute-script-button");
     const noteTypeModel = new NoteTypeModel();
 
     function NoteTypeModel() {
@@ -74,6 +75,8 @@ const noteType = (function() {
                 + '/mime/' + encodeURIComponent(self.mime()));
 
             await noteEditor.reload();
+
+            self.updateExecuteScriptButtonVisibility();
         }
 
         this.selectText = function() {
@@ -96,6 +99,10 @@ const noteType = (function() {
 
             save();
         };
+
+        this.updateExecuteScriptButtonVisibility = function() {
+            executeScriptButton.toggle(self.mime() === 'application/javascript');
+        }
     }
 
     ko.applyBindings(noteTypeModel, document.getElementById('note-type'));
@@ -105,6 +112,10 @@ const noteType = (function() {
         setNoteType: type => noteTypeModel.type(type),
 
         getNoteMime: () => noteTypeModel.mime(),
-        setNoteMime: mime => noteTypeModel.mime(mime)
+        setNoteMime: mime => {
+            noteTypeModel.mime(mime);
+
+            noteTypeModel.updateExecuteScriptButtonVisibility();
+        }
     };
 })();

@@ -196,6 +196,14 @@ const noteEditor = (function() {
         return currentNote ? currentNote.detail.type : null;
     }
 
+    function executeScript() {
+        if (getCurrentNoteType() === 'code') {
+            const script = codeEditor.getValue();
+
+            eval(script);
+        }
+    }
+
     $(document).ready(() => {
         noteTitleEl.on('input', () => {
             noteChanged();
@@ -234,6 +242,8 @@ const noteEditor = (function() {
         noteDetailEl.attr("tabindex", 2);
     });
 
+    $(document).bind('keydown', "ctrl+return", executeScript);
+
     setInterval(saveNoteIfChanged, 5000);
 
     return {
@@ -249,6 +259,7 @@ const noteEditor = (function() {
         getCurrentNoteId,
         newNoteCreated,
         getEditor,
-        focus
+        focus,
+        executeScript
     };
 })();
