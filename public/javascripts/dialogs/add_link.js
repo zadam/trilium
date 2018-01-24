@@ -8,19 +8,30 @@ const addLink = (function() {
     const clonePrefixEl = $("#clone-prefix");
     const linkTitleFormGroup = $("#add-link-title-form-group");
     const prefixFormGroup = $("#add-link-prefix-form-group");
+    const linkTypeEls = $("input[name='add-link-type']");
+    const linkTypeHtmlEl = linkTypeEls.filter('input[value="html"]');
+
+    function setLinkType(linkType) {
+        linkTypeEls.each(function () {
+            $(this).prop('checked', $(this).val() === linkType);
+        });
+
+        linkTypeChanged();
+    }
 
     function showDialog() {
         glob.activeDialog = dialogEl;
 
-        $('input[name="add-link-type"]').each(function () {
-            $(this).prop('checked', $(this).val() === "html");
-        });
+        if (noteEditor.getCurrentNoteType() === 'text') {
+            linkTypeHtmlEl.prop('disabled', false);
 
-        linkTitleEl.val('');
-        clonePrefixEl.val('');
+            setLinkType('html');
+        }
+        else {
+            linkTypeHtmlEl.prop('disabled', true);
 
-        linkTitleFormGroup.show();
-        prefixFormGroup.hide();
+            setLinkType('selected-to-current');
+        }
 
         dialogEl.dialog({
             modal: true,
@@ -28,6 +39,7 @@ const addLink = (function() {
         });
 
         autoCompleteEl.val('').focus();
+        clonePrefixEl.val('');
         linkTitleEl.val('');
 
         function setDefaultLinkTitle(noteId) {
@@ -42,6 +54,10 @@ const addLink = (function() {
             change: () => {
                 const val = autoCompleteEl.val();
                 const notePath = link.getNodePathFromLabel(val);
+                if (!notePath) {
+                    return;
+                }
+
                 const noteId = treeUtils.getNoteIdFromNotePath(notePath);
 
                 if (noteId) {
@@ -94,8 +110,10 @@ const addLink = (function() {
         return false;
     });
 
-    $("input[name='add-link-type']").change(function() {
-        if (this.value === 'html') {
+    function linkTypeChanged() {
+        const value = linkTypeEls.filter(":checked").val();
+
+        if (value === 'html') {
             linkTitleFormGroup.show();
             prefixFormGroup.hide();
         }
@@ -103,7 +121,9 @@ const addLink = (function() {
             linkTitleFormGroup.hide();
             prefixFormGroup.show();
         }
-    });
+    }
+
+    linkTypeEls.change(linkTypeChanged);
 
     $(document).bind('keydown', 'ctrl+l', e => {
         showDialog();

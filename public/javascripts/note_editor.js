@@ -190,6 +190,12 @@ const noteEditor = (function() {
         }
     }
 
+    function getCurrentNoteType() {
+        const currentNote = getCurrentNote();
+
+        return currentNote ? currentNote.detail.type : null;
+    }
+
     $(document).ready(() => {
         noteTitleEl.on('input', () => {
             noteChanged();
@@ -239,6 +245,7 @@ const noteEditor = (function() {
         setNoteBackgroundIfProtected,
         loadNote,
         getCurrentNote,
+        getCurrentNoteType,
         getCurrentNoteId,
         newNoteCreated,
         getEditor,
