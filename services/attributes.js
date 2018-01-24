@@ -4,6 +4,10 @@ const sql = require('./sql');
 const utils = require('./utils');
 const sync_table = require('./sync_table');
 
+async function getNoteAttributeMap(noteId) {
+    return await sql.getMap(`SELECT name, value FROM attributes WHERE note_id = ?`, [noteId]);
+}
+
 async function getNoteIdWithAttribute(name, value) {
     return await sql.getFirstValue(`SELECT notes.note_id FROM notes JOIN attributes USING(note_id) 
           WHERE notes.is_deleted = 0 AND attributes.name = ? AND attributes.value = ?`, [name, value]);
@@ -26,6 +30,7 @@ async function createAttribute(noteId, name, value = null, sourceId = null) {
 }
 
 module.exports = {
+    getNoteAttributeMap,
     getNoteIdWithAttribute,
     createAttribute
 };

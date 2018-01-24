@@ -4,6 +4,7 @@ const utils = require('./utils');
 const notes = require('./notes');
 const data_encryption = require('./data_encryption');
 const sync_table = require('./sync_table');
+const attributes = require('./attributes');
 
 async function createNewNote(parentNoteId, note, sourceId) {
     const noteId = utils.newNoteId();
@@ -212,6 +213,8 @@ async function updateNote(noteId, newNote, dataKey, sourceId) {
         await encryptNote(newNote, dataKey);
     }
 
+    const attributesMap = await attributes.getNoteAttributeMap(noteId);
+
     const now = new Date();
     const nowStr = utils.nowDate();
 
@@ -225,7 +228,10 @@ async function updateNote(noteId, newNote, dataKey, sourceId) {
     await sql.doInTransaction(async () => {
         const msSinceDateCreated = now.getTime() - utils.parseDate(newNote.detail.date_created).getTime();
 
-        if (!existingNoteHistoryId && msSinceDateCreated >= historySnapshotTimeInterval * 1000) {
+        if (attributesMap.disable_versioning !== 'true'
+            && !existingNoteHistoryId
+            && msSinceDateCreated >= historySnapshotTimeInterval * 1000) {
+
             await saveNoteHistory(noteId, dataKey, sourceId, nowStr);
         }
 
