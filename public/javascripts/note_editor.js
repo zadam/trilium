@@ -149,14 +149,11 @@ const noteEditor = (function() {
             codeEditor.setValue(currentNote.detail.note_text);
 
             const info = CodeMirror.findModeByMIME(currentNote.detail.mime);
-            let mode = null;
+
             if (info) {
-                mode = info.mode;
+                codeEditor.setOption("mode", info.mime);
+                CodeMirror.autoLoadMode(codeEditor, info.mode);
             }
-
-            CodeMirror.autoLoadMode(codeEditor, mode);
-
-            codeEditor.setOption("mode", mode);
         }
         else {
             throwError("Unrecognized type " + currentNote.detail.type);
