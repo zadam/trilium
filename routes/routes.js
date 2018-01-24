@@ -27,6 +27,7 @@ const anonymizationRoute = require('./api/anonymization');
 const cleanupRoute = require('./api/cleanup');
 const imageRoute = require('./api/image');
 const attributesRoute = require('./api/attributes');
+const scriptRoute = require('./api/script');
 
 function register(app) {
     app.use('/', indexRoute);
@@ -57,6 +58,7 @@ function register(app) {
     app.use('/api/anonymization', anonymizationRoute);
     app.use('/api/cleanup', cleanupRoute);
     app.use('/api/images', imageRoute);
+    app.use('/api/script', scriptRoute);
 }
 
 module.exports = {

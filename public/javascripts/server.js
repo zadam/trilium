@@ -29,6 +29,14 @@ const server = (function() {
         return await call('DELETE', url);
     }
 
+    async function exec(script) {
+        if (typeof script === "function") {
+            script = script.toString();
+        }
+
+        return await post('script/exec', { script: script });
+    }
+
     let i = 1;
     const reqResolves = {};
 
@@ -92,6 +100,6 @@ const server = (function() {
         post,
         put,
         remove,
-        getHeaders
+        exec
     }
 })();

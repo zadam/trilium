@@ -196,11 +196,11 @@ const noteEditor = (function() {
         return currentNote ? currentNote.detail.type : null;
     }
 
-    function executeScript() {
+    async function executeScript() {
         if (getCurrentNoteType() === 'code') {
             const script = codeEditor.getValue();
 
-            eval(script);
+            eval("(async function() {" + script + "})()");
         }
     }
 
