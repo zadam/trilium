@@ -198,9 +198,11 @@ const noteEditor = (function() {
 
     async function executeScript() {
         if (getCurrentNoteType() === 'code') {
+            // we take script value directly from editor so we don't need to wait for it to be saved
             const script = codeEditor.getValue();
+            const subTreeScripts = await server.get('script/subtree/' + getCurrentNoteId());
 
-            eval("(async function() {" + script + "})()");
+            eval("(async function() {" + subTreeScripts + script + "})()");
         }
     }
 
