@@ -32,7 +32,7 @@ async function getSubTreeScripts(parentId, includedNoteIds, dataKey) {
                                      FROM notes JOIN notes_tree USING(note_id)
                                      WHERE notes_tree.is_deleted = 0 AND notes.is_deleted = 0
                                            AND notes_tree.parent_note_id = ? AND notes.type = 'code'
-                                           AND notes.mime = 'application/javascript'`, [parentId]);
+                                           AND (notes.mime = 'application/javascript' OR notes.mime = 'text/html')`, [parentId]);
 
     let script = "\r\n";
 
@@ -54,9 +54,7 @@ async function getSubTreeScripts(parentId, includedNoteIds, dataKey) {
             child.note_text = data_encryption.decryptString(dataKey, data_encryption.noteTextIv(child.note_id), child.note_text);
         }
 
-        script += '// start of script ' + child.note_title + '\r\n';
         script += child.note_text + "\r\n";
-        script += '// end of script ' + child.note_title + '\r\n\r\n';
     }
 
     return script;

@@ -62,6 +62,9 @@ const noteType = (function() {
                     return found ? found.title : mime;
                 }
             }
+            else if (type === 'render') {
+                return 'Render HTML note';
+            }
             else {
                 throwError('Unrecognized type: ' + type);
             }
@@ -81,6 +84,13 @@ const noteType = (function() {
 
         this.selectText = function() {
             self.type('text');
+            self.mime('');
+
+            save();
+        };
+
+        this.selectRender = function() {
+            self.type('render');
             self.mime('');
 
             save();

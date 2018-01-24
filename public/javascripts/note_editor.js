@@ -4,6 +4,7 @@ const noteEditor = (function() {
     const noteTitleEl = $("#note-title");
     const noteDetailEl = $('#note-detail');
     const noteDetailCodeEl = $('#note-detail-code');
+    const noteDetailRenderEl = $('#note-detail-render');
     const protectButton = $("#protect-button");
     const unprotectButton = $("#unprotect-button");
     const noteDetailWrapperEl = $("#note-detail-wrapper");
@@ -70,6 +71,9 @@ const noteEditor = (function() {
         }
         else if (note.detail.type === 'code') {
             note.detail.note_text = codeEditor.getValue();
+        }
+        else if (note.detail.type === 'render') {
+            // nothing
         }
         else {
             throwError("Unrecognized type: " + note.detail.type);
@@ -140,10 +144,12 @@ const noteEditor = (function() {
 
             noteDetailEl.show();
             noteDetailCodeEl.hide();
+            noteDetailRenderEl.hide();
         }
         else if (currentNote.detail.type === 'code') {
             noteDetailEl.hide();
             noteDetailCodeEl.show();
+            noteDetailRenderEl.hide();
 
             // this needs to happen after the element is shown, otherwise the editor won't be refresheds
             codeEditor.setValue(currentNote.detail.note_text);
@@ -154,6 +160,15 @@ const noteEditor = (function() {
                 codeEditor.setOption("mode", info.mime);
                 CodeMirror.autoLoadMode(codeEditor, info.mode);
             }
+        }
+        else if (currentNote.detail.type === 'render') {
+            noteDetailEl.hide();
+            noteDetailCodeEl.hide();
+            noteDetailRenderEl.show();
+
+            const subTree = await server.get('script/subtree/' + getCurrentNoteId());
+
+            noteDetailRenderEl.html(subTree);
         }
         else {
             throwError("Unrecognized type " + currentNote.detail.type);
@@ -184,6 +199,9 @@ const noteEditor = (function() {
         }
         else if (note.detail.type === 'code') {
             codeEditor.focus();
+        }
+        else if (note.detail.type === 'render') {
+            // do nothing
         }
         else {
             throwError('Unrecognized type: ' + note.detail.type);

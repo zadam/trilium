@@ -214,7 +214,7 @@ async function runAllChecks() {
           FROM 
             notes
           WHERE 
-            type != 'text' AND type != 'code'`,
+            type != 'text' AND type != 'code' AND type != 'render'`,
         "Note has invalid type", errorList);
 
     await runSyncRowChecks("notes", "note_id", errorList);

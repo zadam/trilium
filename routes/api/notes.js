@@ -93,10 +93,10 @@ router.put('/:noteId/protect-sub-tree/:isProtected', auth.checkApiAuth, wrap(asy
     res.send({});
 }));
 
-router.put('/:noteId/type/:type/mime/:mime', auth.checkApiAuth, wrap(async (req, res, next) => {
-    const noteId = req.params.noteId;
-    const type = req.params.type;
-    const mime = req.params.mime;
+router.put(/\/(.*)\/type\/(.*)\/mime\/(.*)/, auth.checkApiAuth, wrap(async (req, res, next) => {
+    const noteId = req.params[0];
+    const type = req.params[1];
+    const mime = req.params[2];
     const sourceId = req.headers.source_id;
 
     await sql.doInTransaction(async () => {
