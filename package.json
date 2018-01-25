@@ -27,7 +27,7 @@
     "devtron": "^1.4.0",
     "ejs": "~2.5.7",
     "electron": "^1.8.2-beta.4",
-    "electron-debug": "^1.0.0",
+    "electron-debug": "^1.5.0",
     "electron-in-page-search": "^1.2.4",
     "express": "~4.16.2",
     "express-promise-wrap": "^0.2.2",
@@ -59,9 +59,9 @@
   },
   "devDependencies": {
     "electron-compile": "^6.4.2",
-    "electron-packager": "^8.0.0",
+    "electron-packager": "^10.1.1",
     "electron-prebuilt-compile": "1.8.2-beta.4",
-    "electron-rebuild": "^1.6.0",
+    "electron-rebuild": "^1.7.3",
     "tape": "^4.8.0",
     "xo": "^0.18.0"
   },
