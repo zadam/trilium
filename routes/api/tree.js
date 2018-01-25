@@ -7,7 +7,6 @@ const options = require('../../services/options');
 const utils = require('../../services/utils');
 const auth = require('../../services/auth');
 const protected_session = require('../../services/protected_session');
-const data_encryption = require('../../services/data_encryption');
 const sync_table = require('../../services/sync_table');
 const wrap = require('express-promise-wrap').wrap;
 
@@ -27,13 +26,7 @@ router.get('/', auth.checkApiAuth, wrap(async (req, res, next) => {
       ORDER BY 
         note_position`);
 
-    const dataKey = protected_session.getDataKey(req);
-
-    for (const note of notes) {
-        if (note.is_protected) {
-            note.note_title = data_encryption.decryptString(dataKey, data_encryption.noteTitleIv(note.note_id), note.note_title);
-        }
-    }
+    protected_session.decryptNotes(req, notes);
 
     res.send({
         notes: notes,

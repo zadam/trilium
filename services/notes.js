@@ -5,6 +5,7 @@ const notes = require('./notes');
 const data_encryption = require('./data_encryption');
 const sync_table = require('./sync_table');
 const attributes = require('./attributes');
+const protected_session = require('./protected_session');
 
 async function createNewNote(parentNoteId, note, sourceId) {
     const noteId = utils.newNoteId();
@@ -67,11 +68,6 @@ async function createNewNote(parentNoteId, note, sourceId) {
     };
 }
 
-async function encryptNote(note, dataKey) {
-    note.detail.note_title = data_encryption.encrypt(dataKey, data_encryption.noteTitleIv(note.detail.note_id), note.detail.note_title);
-    note.detail.note_text = data_encryption.encrypt(dataKey, data_encryption.noteTextIv(note.detail.note_id), note.detail.note_text);
-}
-
 async function protectNoteRecursively(noteId, dataKey, protect, sourceId) {
     const note = await sql.getFirst("SELECT * FROM notes WHERE note_id = ?", [noteId]);
 
@@ -84,24 +80,20 @@ async function protectNoteRecursively(noteId, dataKey, protect, sourceId) {
     }
 }
 
-function decryptNote(note, dataKey) {
-    note.note_title = data_encryption.decryptString(dataKey, data_encryption.noteTitleIv(note.note_id), note.note_title);
-    note.note_text = data_encryption.decryptString(dataKey, data_encryption.noteTextIv(note.note_id), note.note_text);
-    note.is_protected = false;
-}
-
 async function protectNote(note, dataKey, protect, sourceId) {
     let changed = false;
 
     if (protect && !note.is_protected) {
-        note.note_title = data_encryption.encrypt(dataKey, data_encryption.noteTitleIv(note.note_id), note.note_title);
-        note.note_text = data_encryption.encrypt(dataKey, data_encryption.noteTextIv(note.note_id), note.note_text);
+        protected_session.encryptNote(dataKey, note);
+
         note.is_protected = true;
 
         changed = true;
     }
     else if (!protect && note.is_protected) {
-        decryptNote(note, dataKey);
+        protected_session.decryptNote(dataKey, note);
+
+        note.is_protected = false;
 
         changed = true;
     }
@@ -121,13 +113,13 @@ async function protectNoteHistory(noteId, dataKey, protect, sourceId) {
 
     for (const history of historyToChange) {
         if (protect) {
-            history.note_title = data_encryption.encrypt(dataKey, data_encryption.noteTitleIv(history.note_history_id), history.note_title);
-            history.note_text = data_encryption.encrypt(dataKey, data_encryption.noteTextIv(history.note_history_id), history.note_text);
+            protected_session.encryptNoteHistoryRow(dataKey, history);
+
             history.is_protected = true;
         }
         else {
-            history.note_title = data_encryption.decryptString(dataKey, data_encryption.noteTitleIv(history.note_history_id), history.note_title);
-            history.note_text = data_encryption.decryptString(dataKey, data_encryption.noteTextIv(history.note_history_id), history.note_text);
+            protected_session.decryptNoteHistoryRow(dataKey, history);
+
             history.is_protected = false;
         }
 
@@ -142,7 +134,9 @@ async function saveNoteHistory(noteId, dataKey, sourceId, nowStr) {
     const oldNote = await sql.getFirst("SELECT * FROM notes WHERE note_id = ?", [noteId]);
 
     if (oldNote.is_protected) {
-        decryptNote(oldNote, dataKey);
+        protected_session.decryptNote(dataKey, oldNote);
+
+        note.is_protected = false;
     }
 
     const newNoteHistoryId = utils.newNoteHistoryId();
@@ -210,11 +204,11 @@ async function saveNoteImages(noteId, noteText, sourceId) {
 
 async function updateNote(noteId, newNote, dataKey, sourceId) {
     if (newNote.detail.note_text === '<p>&nbsp;</p>') {
-        newNote.detail.note_text = '';
+        newNote.detail.note_text = ''
     }
 
     if (newNote.detail.is_protected) {
-        await encryptNote(newNote, dataKey);
+        await protected_session.encryptNote(dataKey, newNote.detail);
     }
 
     const attributesMap = await attributes.getNoteAttributeMap(noteId);

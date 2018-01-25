@@ -24,12 +24,7 @@ router.get('/:noteId', auth.checkApiAuth, wrap(async (req, res, next) => {
         return res.status(404).send({});
     }
 
-    if (detail.is_protected) {
-        const dataKey = protected_session.getDataKey(req);
-
-        detail.note_title = data_encryption.decryptString(dataKey, data_encryption.noteTitleIv(detail.note_id), detail.note_title);
-        detail.note_text = data_encryption.decryptString(dataKey, data_encryption.noteTextIv(detail.note_id), detail.note_text);
-    }
+    protected_session.decryptNote(req, detail);
 
     res.send({
         detail: detail

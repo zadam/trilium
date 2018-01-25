@@ -80,17 +80,13 @@ async function loadSubTreeNoteIds(parentNoteId, subTreeNoteIds) {
     }
 }
 
-async function sortNotesAlphabetically(parentNoteId, dataKey, sourceId) {
+async function sortNotesAlphabetically(parentNoteId, req, sourceId) {
     await sql.doInTransaction(async () => {
         const notes = await sql.getAll(`SELECT note_tree_id, note_id, note_title, is_protected 
                                        FROM notes JOIN notes_tree USING(note_id) 
                                        WHERE notes_tree.is_deleted = 0 AND parent_note_id = ?`, [parentNoteId]);
 
-        for (const note of notes) {
-            if (note.is_protected) {
-                note.note_title = data_encryption.decryptString(dataKey, data_encryption.noteTitleIv(note.note_id), note.note_title);
-            }
-        }
+        protected_session.decryptNotes(req, notes);
 
         notes.sort((a, b) => a.note_title.toLowerCase() < b.note_title.toLowerCase() ? -1 : 1);
 
