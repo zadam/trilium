@@ -203,3 +203,11 @@ window.onerror = function (msg, url, lineNo, columnNo, error) {
 };
 
 $("#logout-button").toggle(!isElectron());
+
+$(document).ready(() => {
+    server.get("script/startup").then(scripts => {
+        for (const script of scripts) {
+            executeScript(script);
+        }
+    });
+});

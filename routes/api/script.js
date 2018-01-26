@@ -8,6 +8,7 @@ const log = require('../../services/log');
 const sql = require('../../services/sql');
 const notes = require('../../services/notes');
 const protected_session = require('../../services/protected_session');
+const attributes = require('../../services/attributes');
 
 router.post('/exec', auth.checkApiAuth, wrap(async (req, res, next) => {
     log.info('Executing script: ' + req.body.script);
@@ -19,6 +20,18 @@ router.post('/exec', auth.checkApiAuth, wrap(async (req, res, next) => {
     res.send(ret);
 }));
 
+router.get('/startup', auth.checkApiAuth, wrap(async (req, res, next) => {
+    const noteIds = await attributes.getNoteIdsWithAttribute("run_on_startup");
+
+    const scripts = [];
+
+    for (const noteId of noteIds) {
+        scripts.push(await getNoteWithSubtreeScript(noteId, req));
+    }
+
+    res.send(scripts);
+}));
+
 router.get('/subtree/:noteId', auth.checkApiAuth, wrap(async (req, res, next) => {
     const noteId = req.params.noteId;
 
@@ -28,6 +41,14 @@ router.get('/subtree/:noteId', auth.checkApiAuth, wrap(async (req, res, next) =>
 
     res.send(subTreeScripts + noteScript);
 }));
+
+async function getNoteWithSubtreeScript(noteId, req) {
+    const noteScript = (await notes.getNoteById(noteId, req)).note_text;
+
+    const subTreeScripts = await getSubTreeScripts(noteId, [noteId], req);
+
+    return subTreeScripts + noteScript;
+}
 
 async function getSubTreeScripts(parentId, includedNoteIds, dataKey) {
     const children = await sql.getAll(`SELECT notes.note_id, notes.note_title, notes.note_text, notes.is_protected 

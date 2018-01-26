@@ -9,8 +9,13 @@ async function getNoteAttributeMap(noteId) {
 }
 
 async function getNoteIdWithAttribute(name, value) {
-    return await sql.getFirstValue(`SELECT notes.note_id FROM notes JOIN attributes USING(note_id) 
+    return await sql.getFirstValue(`SELECT DISTINCT notes.note_id FROM notes JOIN attributes USING(note_id) 
           WHERE notes.is_deleted = 0 AND attributes.name = ? AND attributes.value = ?`, [name, value]);
+}
+
+async function getNoteIdsWithAttribute(name) {
+    return await sql.getFirstColumn(`SELECT DISTINCT notes.note_id FROM notes JOIN attributes USING(note_id) 
+          WHERE notes.is_deleted = 0 AND attributes.name = ?`, [name]);
 }
 
 async function createAttribute(noteId, name, value = null, sourceId = null) {
@@ -32,5 +37,6 @@ async function createAttribute(noteId, name, value = null, sourceId = null) {
 module.exports = {
     getNoteAttributeMap,
     getNoteIdWithAttribute,
+    getNoteIdsWithAttribute,
     createAttribute
 };

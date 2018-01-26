@@ -214,14 +214,14 @@ const noteEditor = (function() {
         return currentNote ? currentNote.detail.type : null;
     }
 
-    async function executeScript() {
+    async function executeCurrentNote() {
         if (getCurrentNoteType() === 'code') {
             // make sure note is saved so we load latest changes
             await saveNoteIfChanged();
 
-            const subTreeScripts = await server.get('script/subtree/' + getCurrentNoteId());
+            const script = await server.get('script/subtree/' + getCurrentNoteId());
 
-            eval("(async function() {" + subTreeScripts + "})()");
+            executeScript(script);
         }
     }
 
@@ -263,7 +263,7 @@ const noteEditor = (function() {
         noteDetailEl.attr("tabindex", 2);
     });
 
-    $(document).bind('keydown', "ctrl+return", executeScript);
+    $(document).bind('keydown', "ctrl+return", executeCurrentNote);
 
     setInterval(saveNoteIfChanged, 5000);
 
@@ -281,6 +281,6 @@ const noteEditor = (function() {
         newNoteCreated,
         getEditor,
         focus,
-        executeScript
+        executeCurrentNote
     };
 })();

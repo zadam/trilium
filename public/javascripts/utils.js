@@ -114,3 +114,7 @@ async function stopWatch(what, func) {
 
     return ret;
 }
+
+function executeScript(script) {
+    eval("(async function() {" + script + "})()");
+}
