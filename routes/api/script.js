@@ -6,6 +6,7 @@ const auth = require('../../services/auth');
 const wrap = require('express-promise-wrap').wrap;
 const log = require('../../services/log');
 const sql = require('../../services/sql');
+const notes = require('../../services/notes');
 const protected_session = require('../../services/protected_session');
 
 router.post('/exec', auth.checkApiAuth, wrap(async (req, res, next) => {
@@ -21,7 +22,11 @@ router.post('/exec', auth.checkApiAuth, wrap(async (req, res, next) => {
 router.get('/subtree/:noteId', auth.checkApiAuth, wrap(async (req, res, next) => {
     const noteId = req.params.noteId;
 
-    res.send(await getSubTreeScripts(noteId, [noteId], req));
+    const noteScript = (await notes.getNoteById(noteId, req)).note_text;
+
+    const subTreeScripts = await getSubTreeScripts(noteId, [noteId], req);
+
+    res.send(subTreeScripts + noteScript);
 }));
 
 async function getSubTreeScripts(parentId, includedNoteIds, dataKey) {

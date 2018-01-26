@@ -2,10 +2,17 @@ const sql = require('./sql');
 const options = require('./options');
 const utils = require('./utils');
 const notes = require('./notes');
-const data_encryption = require('./data_encryption');
 const sync_table = require('./sync_table');
 const attributes = require('./attributes');
 const protected_session = require('./protected_session');
+
+async function getNoteById(noteId, dataKey) {
+    const note = await sql.getFirst("SELECT * FROM notes WHERE note_id = ?", [noteId]);
+
+    protected_session.decryptNote(dataKey, note);
+
+    return note;
+}
 
 async function createNewNote(parentNoteId, note, sourceId) {
     const noteId = utils.newNoteId();
@@ -41,8 +48,8 @@ async function createNewNote(parentNoteId, note, sourceId) {
             note_title: note.note_title,
             note_text: note.note_text ? note.note_text : '',
             is_protected: note.is_protected,
-            type: 'text',
-            mime: 'text/html',
+            type: note.type ? note.type : 'text',
+            mime: note.mime ? note.mime : 'text/html',
             date_created: now,
             date_modified: now
         });
@@ -277,6 +284,7 @@ async function deleteNote(noteTreeId, sourceId) {
 }
 
 module.exports = {
+    getNoteById,
     createNewNote,
     updateNote,
     deleteNote,

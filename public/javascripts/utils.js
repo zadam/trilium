@@ -61,6 +61,10 @@ function formatDate(date) {
     return padNum(date.getDate()) + ". " + padNum(date.getMonth() + 1) + ". " + date.getFullYear();
 }
 
+function formatDateISO(date) {
+    return date.getFullYear() + "-" + padNum(date.getMonth() + 1) + "-" + padNum(date.getDate());
+}
+
 function formatDateTime(date) {
     return formatDate(date) + " " + formatTime(date);
 }
