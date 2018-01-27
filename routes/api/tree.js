@@ -15,7 +15,8 @@ router.get('/', auth.checkApiAuth, wrap(async (req, res, next) => {
       SELECT 
         notes_tree.*, 
         notes.note_title, 
-        notes.is_protected
+        notes.is_protected,
+        notes.type
       FROM 
         notes_tree 
       JOIN 

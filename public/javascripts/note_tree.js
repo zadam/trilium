@@ -150,6 +150,10 @@ const noteTree = (function() {
             extraClasses.push("multiple-parents");
         }
 
+        if (note.type === 'code') {
+            extraClasses.push("code");
+        }
+
         return extraClasses.join(" ");
     }
 

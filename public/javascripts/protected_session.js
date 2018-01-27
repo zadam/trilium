@@ -4,6 +4,7 @@ const protected_session = (function() {
     const dialogEl = $("#protected-session-password-dialog");
     const passwordFormEl = $("#protected-session-password-form");
     const passwordEl = $("#protected-session-password");
+    const noteDetailWrapperEl = $("#note-detail-wrapper");
 
     let protectedSessionDeferred = null;
     let lastProtectedSessionOperationDate = null;
@@ -23,6 +24,8 @@ const protected_session = (function() {
 
         if (requireProtectedSession && !isProtectedSessionAvailable()) {
             protectedSessionDeferred = dfd;
+
+            noteDetailWrapperEl.hide();
 
             dialogEl.dialog({
                 modal: modal,
@@ -62,6 +65,8 @@ const protected_session = (function() {
 
         if (protectedSessionDeferred !== null) {
             ensureDialogIsClosed(dialogEl, passwordEl);
+
+            noteDetailWrapperEl.show();
 
             protectedSessionDeferred.resolve();
 

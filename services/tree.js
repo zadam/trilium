@@ -2,7 +2,6 @@
 
 const sql = require('./sql');
 const sync_table = require('./sync_table');
-const data_encryption = require('./data_encryption');
 
 async function validateParentChild(res, parentNoteId, childNoteId, noteTreeId = null) {
     const existing = await getExistingNoteTree(parentNoteId, childNoteId);
