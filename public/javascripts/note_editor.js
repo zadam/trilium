@@ -71,7 +71,7 @@ const noteEditor = (function() {
 
             // if content is only tags/whitespace (typically <p>&nbsp;</p>), then just make it empty
             // this is important when setting new note to code
-            if ($(note.detail.note_text).text().trim() === '') {
+            if (jQuery(note.detail.note_text).text().trim() === '') {
                 note.detail.note_text = ''
             }
         }

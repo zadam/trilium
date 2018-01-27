@@ -41,6 +41,18 @@ async function createNewNote(parentNoteId, note, sourceId) {
             throw new Error('Unknown target: ' + note.target);
         }
 
+        if (parentNoteId !== 'root') {
+            const parent = await sql.getFirst("SELECT * FROM notes WHERE note_id = ?", [parentNoteId]);
+
+            if (!note.type) {
+                note.type = parent.type;
+            }
+
+            if (!note.mime) {
+                note.mime = parent.mime;
+            }
+        }
+
         const now = utils.nowDate();
 
         await sql.insert("notes", {
