@@ -16,6 +16,10 @@ function ScriptContext(noteId, dataKey) {
         }
     }
 
+    function serializePayload(payload) {
+        return JSON.stringify(payload, null, '\t');
+    }
+
     this.getNoteById = async function(noteId) {
         const note = await notes.getNoteById(noteId, this.dataKey);
 
@@ -35,7 +39,7 @@ function ScriptContext(noteId, dataKey) {
     this.createNote = async function (parentNoteId, name, payload, extraOptions = {}) {
         const note = {
             note_title: name,
-            note_text: extraOptions.json ? JSON.stringify(payload) : payload,
+            note_text: extraOptions.json ? serializePayload(payload) : payload,
             target: 'into',
             is_protected: extraOptions.isProtected !== undefined ? extraOptions.isProtected : false,
             type: extraOptions.type,
@@ -65,7 +69,7 @@ function ScriptContext(noteId, dataKey) {
 
     this.updateNote = async function (note) {
         if (note.type === 'code' && note.mime === 'application/json') {
-            note.note_text = JSON.stringify(note.payload);
+            note.note_text = serializePayload(note.payload);
         }
 
         log.info("new note text: ", note.note_text);
