@@ -800,8 +800,6 @@ const noteTree = (function() {
     }
 
     $(document).bind('keydown', 'ctrl+o', e => {
-        console.log("pressed O");
-
         const node = getCurrentNode();
         const parentNoteId = node.data.parent_note_id;
         const isProtected = treeUtils.getParentProtectedStatus(node);

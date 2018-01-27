@@ -210,10 +210,6 @@ async function saveNoteImages(noteId, noteText, sourceId) {
 }
 
 async function updateNote(noteId, newNote, dataKey, sourceId) {
-    if (newNote.detail.note_text === '<p>&nbsp;</p>') {
-        newNote.detail.note_text = ''
-    }
-
     if (newNote.detail.is_protected) {
         await protected_session.encryptNote(dataKey, newNote.detail);
     }

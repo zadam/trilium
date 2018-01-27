@@ -68,6 +68,12 @@ const noteEditor = (function() {
     function updateNoteFromInputs(note) {
         if (note.detail.type === 'text') {
             note.detail.note_text = editor.getData();
+
+            // if content is only tags/whitespace (typically <p>&nbsp;</p>), then just make it empty
+            // this is important when setting new note to code
+            if ($(note.detail.note_text).text().trim() === '') {
+                note.detail.note_text = ''
+            }
         }
         else if (note.detail.type === 'code') {
             note.detail.note_text = codeEditor.getValue();
