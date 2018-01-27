@@ -1,18 +1,19 @@
 const log = require('./log');
-const protected_session = require('./protected_session');
+const sql = require('./sql');
+const ScriptContext = require('./script_context');
 
-async function executeScript(dataKey, script, params) {
+async function executeScript(noteId, dataKey, script, params) {
     log.info('Executing script: ' + script);
 
-    const ctx = {
-        dataKey: protected_session.getDataKey(dataKey)
-    };
-
-    params.unshift(ctx);
+    const ctx = new ScriptContext(noteId, dataKey);
 
     const paramsStr = getParams(params);
 
-    const ret = await eval(`(${script})(${paramsStr})`);
+    let ret;
+
+    await sql.doInTransaction(async () => {
+        ret = await (function() { return eval(`(${script})(${paramsStr})`); }.call(ctx));
+    });
 
     log.info('Execution result: ' + ret);
 

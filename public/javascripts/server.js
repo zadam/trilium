@@ -29,12 +29,12 @@ const server = (function() {
         return await call('DELETE', url);
     }
 
-    async function exec(script, params = []) {
+    async function exec(params, script) {
         if (typeof script === "function") {
             script = script.toString();
         }
 
-        return await post('script/exec', { script: script, params: params });
+        return await post('script/exec/noteId', { script: script, params: params });
     }
 
     let i = 1;

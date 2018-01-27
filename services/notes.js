@@ -1,7 +1,6 @@
 const sql = require('./sql');
 const options = require('./options');
 const utils = require('./utils');
-const notes = require('./notes');
 const sync_table = require('./sync_table');
 const attributes = require('./attributes');
 const protected_session = require('./protected_session');
@@ -14,72 +13,109 @@ async function getNoteById(noteId, dataKey) {
     return note;
 }
 
-async function createNewNote(parentNoteId, note, sourceId) {
+async function getJsonNoteById(noteId, dataKey) {
+    const note = await getNoteById(noteId, dataKey);
+    note.data = JSON.parse(note.note_text);
+
+    return note;
+}
+
+async function updateJsonNote(noteId, data) {
+    const ret = await createNewNote(noteId, {
+        note_title: name,
+        note_text: JSON.stringify(data),
+        target: 'into',
+        is_protected: false,
+        type: 'code',
+        mime: 'application/json'
+    });
+
+    return ret.noteId;
+}
+
+async function createNewJsonNote(parentNoteId, name, payload) {
+    const ret = await createNewNote(parentNoteId, {
+        note_title: name,
+        note_text: JSON.stringify(payload),
+        target: 'into',
+        is_protected: false,
+        type: 'code',
+        mime: 'application/json'
+    });
+
+    return ret.noteId;
+}
+
+async function createNewNote(parentNoteId, noteOpts, dataKey, sourceId) {
     const noteId = utils.newNoteId();
     const noteTreeId = utils.newNoteTreeId();
 
     let newNotePos = 0;
 
-    await sql.doInTransaction(async () => {
-        if (note.target === 'into') {
-            const maxNotePos = await sql.getFirstValue('SELECT MAX(note_position) FROM notes_tree WHERE parent_note_id = ? AND is_deleted = 0', [parentNoteId]);
+    if (noteOpts.target === 'into') {
+        const maxNotePos = await sql.getFirstValue('SELECT MAX(note_position) FROM notes_tree WHERE parent_note_id = ? AND is_deleted = 0', [parentNoteId]);
 
-            newNotePos = maxNotePos === null ? 0 : maxNotePos + 1;
-        }
-        else if (note.target === 'after') {
-            const afterNote = await sql.getFirst('SELECT note_position FROM notes_tree WHERE note_tree_id = ?', [note.target_note_tree_id]);
+        newNotePos = maxNotePos === null ? 0 : maxNotePos + 1;
+    }
+    else if (noteOpts.target === 'after') {
+        const afterNote = await sql.getFirst('SELECT note_position FROM notes_tree WHERE note_tree_id = ?', [noteOpts.target_note_tree_id]);
 
-            newNotePos = afterNote.note_position + 1;
+        newNotePos = afterNote.note_position + 1;
 
-            // not updating date_modified to avoig having to sync whole rows
-            await sql.execute('UPDATE notes_tree SET note_position = note_position + 1 WHERE parent_note_id = ? AND note_position > ? AND is_deleted = 0',
-                [parentNoteId, afterNote.note_position]);
+        // not updating date_modified to avoig having to sync whole rows
+        await sql.execute('UPDATE notes_tree SET note_position = note_position + 1 WHERE parent_note_id = ? AND note_position > ? AND is_deleted = 0',
+            [parentNoteId, afterNote.note_position]);
 
-            await sync_table.addNoteReorderingSync(parentNoteId, sourceId);
-        }
-        else {
-            throw new Error('Unknown target: ' + note.target);
-        }
+        await sync_table.addNoteReorderingSync(parentNoteId, sourceId);
+    }
+    else {
+        throw new Error('Unknown target: ' + noteOpts.target);
+    }
 
-        if (parentNoteId !== 'root') {
-            const parent = await sql.getFirst("SELECT * FROM notes WHERE note_id = ?", [parentNoteId]);
+    if (parentNoteId !== 'root') {
+        const parent = await sql.getFirst("SELECT * FROM notes WHERE note_id = ?", [parentNoteId]);
 
-            if (!note.type) {
-                note.type = parent.type;
-            }
-
-            if (!note.mime) {
-                note.mime = parent.mime;
-            }
+        if (!noteOpts.type) {
+            noteOpts.type = parent.type;
         }
 
-        const now = utils.nowDate();
+        if (!noteOpts.mime) {
+            noteOpts.mime = parent.mime;
+        }
+    }
 
-        await sql.insert("notes", {
-            note_id: noteId,
-            note_title: note.note_title,
-            note_text: note.note_text ? note.note_text : '',
-            is_protected: note.is_protected,
-            type: note.type ? note.type : 'text',
-            mime: note.mime ? note.mime : 'text/html',
-            date_created: now,
-            date_modified: now
-        });
+    const now = utils.nowDate();
 
-        await sync_table.addNoteSync(noteId, sourceId);
+    const note = {
+        note_id: noteId,
+        note_title: noteOpts.note_title,
+        note_text: noteOpts.note_text ? noteOpts.note_text : '',
+        is_protected: noteOpts.is_protected,
+        type: noteOpts.type ? noteOpts.type : 'text',
+        mime: noteOpts.mime ? noteOpts.mime : 'text/html',
+        date_created: now,
+        date_modified: now
+    };
 
-        await sql.insert("notes_tree", {
-            note_tree_id: noteTreeId,
-            note_id: noteId,
-            parent_note_id: parentNoteId,
-            note_position: newNotePos,
-            is_expanded: 0,
-            date_modified: now,
-            is_deleted: 0
-        });
+    if (note.is_protected) {
+        protected_session.encryptNote(dataKey, note);
+    }
 
-        await sync_table.addNoteTreeSync(noteTreeId, sourceId);
+    await sql.insert("notes", note);
+
+    await sync_table.addNoteSync(noteId, sourceId);
+
+    await sql.insert("notes_tree", {
+        note_tree_id: noteTreeId,
+        note_id: noteId,
+        parent_note_id: parentNoteId,
+        note_position: newNotePos,
+        is_expanded: 0,
+        date_modified: now,
+        is_deleted: 0
     });
+
+    await sync_table.addNoteTreeSync(noteTreeId, sourceId);
 
     return {
         noteId,

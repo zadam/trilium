@@ -84,12 +84,12 @@ karma: ${comment.score}, created at ${dateTimeStr}</p><p></p>`
 
         let parentNoteId = await getDateNoteIdForReddit(dateTimeStr, rootNoteId);
 
-        commentNoteId = await createNote(parentNoteId, comment.link_title, noteText);
-
-        log.info("Reddit: Imported comment to note " + commentNoteId);
-        importedComments++;
-
         await sql.doInTransaction(async () => {
+            commentNoteId = await createNote(parentNoteId, comment.link_title, noteText);
+
+            log.info("Reddit: Imported comment to note " + commentNoteId);
+            importedComments++;
+
             await attributes.createAttribute(commentNoteId, "reddit_kind", child.kind);
             await attributes.createAttribute(commentNoteId, "reddit_id", redditId(child.kind, comment.id));
             await attributes.createAttribute(commentNoteId, "reddit_created_utc", comment.created_utc);

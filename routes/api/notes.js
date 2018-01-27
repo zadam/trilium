@@ -8,7 +8,6 @@ const notes = require('../../services/notes');
 const log = require('../../services/log');
 const utils = require('../../services/utils');
 const protected_session = require('../../services/protected_session');
-const data_encryption = require('../../services/data_encryption');
 const tree = require('../../services/tree');
 const sync_table = require('../../services/sync_table');
 const wrap = require('express-promise-wrap').wrap;
@@ -36,11 +35,13 @@ router.post('/:parentNoteId/children', auth.checkApiAuth, wrap(async (req, res, 
     const parentNoteId = req.params.parentNoteId;
     const note = req.body;
 
-    const { noteId, noteTreeId } = await notes.createNewNote(parentNoteId, note, sourceId);
+    await sql.doInTransaction(async () => {
+        const { noteId, noteTreeId } = await notes.createNewNote(parentNoteId, note, req, sourceId);
 
-    res.send({
-        'note_id': noteId,
-        'note_tree_id': noteTreeId
+        res.send({
+            'note_id': noteId,
+            'note_tree_id': noteTreeId
+        });
     });
 }));
 
