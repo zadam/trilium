@@ -81,7 +81,11 @@ async function getMonthNoteId(dateTimeStr, rootNoteId) {
     return monthNoteId;
 }
 
-async function getDateNoteId(dateTimeStr, rootNoteId) {
+async function getDateNoteId(dateTimeStr, rootNoteId = null) {
+    if (!rootNoteId) {
+        rootNoteId = await getRootNoteId();
+    }
+
     const dateStr = dateTimeStr.substr(0, 10);
     const dayNumber = dateTimeStr.substr(8, 2);
 

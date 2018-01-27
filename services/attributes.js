@@ -3,14 +3,28 @@
 const sql = require('./sql');
 const utils = require('./utils');
 const sync_table = require('./sync_table');
+const protected_session = require('./protected_session');
 
 async function getNoteAttributeMap(noteId) {
     return await sql.getMap(`SELECT name, value FROM attributes WHERE note_id = ?`, [noteId]);
 }
 
 async function getNoteIdWithAttribute(name, value) {
-    return await sql.getFirstValue(`SELECT DISTINCT notes.note_id FROM notes JOIN attributes USING(note_id) 
+    return await sql.getFirstValue(`SELECT notes.note_id FROM notes JOIN attributes USING(note_id) 
           WHERE notes.is_deleted = 0 AND attributes.name = ? AND attributes.value = ?`, [name, value]);
+}
+
+async function getNoteWithAttribute(dataKey, name, value) {
+    const note = await sql.getFirst(`SELECT notes.* FROM notes JOIN attributes USING(note_id) 
+          WHERE notes.is_deleted = 0 AND attributes.name = ? AND attributes.value = ?`, [name, value]);
+
+    if (!note) {
+        return note;
+    }
+
+    protected_session.decryptNote(dataKey, note);
+
+    return note;
 }
 
 async function getNoteIdsWithAttribute(name) {
@@ -37,6 +51,7 @@ async function createAttribute(noteId, name, value = null, sourceId = null) {
 module.exports = {
     getNoteAttributeMap,
     getNoteIdWithAttribute,
+    getNoteWithAttribute,
     getNoteIdsWithAttribute,
     createAttribute
 };

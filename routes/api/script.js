@@ -4,18 +4,14 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../../services/auth');
 const wrap = require('express-promise-wrap').wrap;
-const log = require('../../services/log');
 const sql = require('../../services/sql');
 const notes = require('../../services/notes');
 const protected_session = require('../../services/protected_session');
 const attributes = require('../../services/attributes');
+const script = require('../../services/script');
 
 router.post('/exec', auth.checkApiAuth, wrap(async (req, res, next) => {
-    log.info('Executing script: ' + req.body.script);
-
-    const ret = await eval("(" + req.body.script + ")()");
-
-    log.info('Execution result: ' + ret);
+    const ret = await script.executeScript(req, req.body.script, req.body.params);
 
     res.send(ret);
 }));
