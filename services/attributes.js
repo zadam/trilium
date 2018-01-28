@@ -14,17 +14,29 @@ async function getNoteIdWithAttribute(name, value) {
           WHERE notes.is_deleted = 0 AND attributes.name = ? AND attributes.value = ?`, [name, value]);
 }
 
-async function getNoteWithAttribute(dataKey, name, value) {
-    const note = await sql.getFirst(`SELECT notes.* FROM notes JOIN attributes USING(note_id) 
-          WHERE notes.is_deleted = 0 AND attributes.name = ? AND attributes.value = ?`, [name, value]);
+async function getNotesWithAttribute(dataKey, name, value) {
+    let notes;
 
-    if (!note) {
-        return note;
+    if (value !== undefined) {
+        notes = await sql.getAll(`SELECT notes.* FROM notes JOIN attributes USING(note_id) 
+          WHERE notes.is_deleted = 0 AND attributes.name = ? AND attributes.value = ?`, [name, value]);
+    }
+    else {
+        notes = await sql.getAll(`SELECT notes.* FROM notes JOIN attributes USING(note_id) 
+          WHERE notes.is_deleted = 0 AND attributes.name = ?`, [name]);
     }
 
-    protected_session.decryptNote(dataKey, note);
+    for (const note of notes) {
+        protected_session.decryptNote(dataKey, note);
+    }
 
-    return note;
+    return notes;
+}
+
+async function getNoteWithAttribute(dataKey, name, value) {
+    const notes = getNotesWithAttribute(dataKey, name, value);
+
+    return notes.length > 0 ? notes[0] : null;
 }
 
 async function getNoteIdsWithAttribute(name) {
@@ -51,6 +63,7 @@ async function createAttribute(noteId, name, value = null, sourceId = null) {
 module.exports = {
     getNoteAttributeMap,
     getNoteIdWithAttribute,
+    getNotesWithAttribute,
     getNoteWithAttribute,
     getNoteIdsWithAttribute,
     createAttribute

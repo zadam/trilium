@@ -68,8 +68,6 @@ async function getSubTreeScripts(parentId, includedNoteIds, dataKey) {
 
         script += await getSubTreeScripts(child.note_id, includedNoteIds, dataKey);
 
-        console.log('MIME: ', child.mime);
-
         if (child.mime === 'application/javascript') {
             child.note_text = '<script>' + child.note_text + '</script>';
         }

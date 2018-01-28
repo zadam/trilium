@@ -11,7 +11,7 @@ function ScriptContext(noteId, dataKey) {
     this.dataKey = protected_session.getDataKey(dataKey);
 
     function deserializePayload(note) {
-        if (note.type === "code" && note.mime === "application/json") {
+        if (note && note.type === "code" && note.mime === "application/json") {
             note.payload = JSON.parse(note.note_text);
         }
     }
@@ -28,12 +28,20 @@ function ScriptContext(noteId, dataKey) {
         return note;
     };
 
+    this.getNotesWithAttribute = async function (attrName, attrValue) {
+        const notes = await attributes.getNotesWithAttribute(this.dataKey, attrName, attrValue);
+
+        for (const note of notes) {
+            deserializePayload(note);
+        }
+
+        return notes;
+    };
+
     this.getNoteWithAttribute = async function (attrName, attrValue) {
-        const note = await attributes.getNoteWithAttribute(this.dataKey, attrName, attrValue);
+        const notes = this.getNotesWithAttribute(attrName, attrValue);
 
-        deserializePayload(note);
-
-        return note;
+        return notes.length > 0 ? notes[0] : null;
     };
 
     this.createNote = async function (parentNoteId, name, payload, extraOptions = {}) {
