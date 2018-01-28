@@ -261,6 +261,9 @@ const noteEditor = (function() {
             value: "",
             viewportMargin: Infinity,
             indentUnit: 4,
+            matchBrackets: true,
+            matchTags: { bothTags: true },
+            highlightSelectionMatches: { showToken: /\w/, annotateScrollbar: false }
         });
 
         codeEditor.on('change', noteChanged);
