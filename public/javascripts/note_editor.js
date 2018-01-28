@@ -150,12 +150,12 @@ const noteEditor = (function() {
 
             noteDetailEl.show();
             noteDetailCodeEl.hide();
-            noteDetailRenderEl.hide();
+            noteDetailRenderEl.html('').hide();
         }
         else if (currentNote.detail.type === 'code') {
             noteDetailEl.hide();
             noteDetailCodeEl.show();
-            noteDetailRenderEl.hide();
+            noteDetailRenderEl.html('').hide();
 
             // this needs to happen after the element is shown, otherwise the editor won't be refresheds
             codeEditor.setValue(currentNote.detail.note_text);
@@ -170,7 +170,7 @@ const noteEditor = (function() {
         else if (currentNote.detail.type === 'render') {
             noteDetailEl.hide();
             noteDetailCodeEl.hide();
-            noteDetailRenderEl.show();
+            noteDetailRenderEl.html('').show();
 
             const subTree = await server.get('script/subtree/' + getCurrentNoteId());
 

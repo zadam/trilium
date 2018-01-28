@@ -49,7 +49,7 @@ async function getNoteWithSubtreeScript(noteId, req) {
 }
 
 async function getSubTreeScripts(parentId, includedNoteIds, dataKey) {
-    const children = await sql.getAll(`SELECT notes.note_id, notes.note_title, notes.note_text, notes.is_protected 
+    const children = await sql.getAll(`SELECT notes.note_id, notes.note_title, notes.note_text, notes.is_protected, notes.mime 
                                      FROM notes JOIN notes_tree USING(note_id)
                                      WHERE notes_tree.is_deleted = 0 AND notes.is_deleted = 0
                                            AND notes_tree.parent_note_id = ? AND notes.type = 'code'
@@ -67,6 +67,12 @@ async function getSubTreeScripts(parentId, includedNoteIds, dataKey) {
         includedNoteIds.push(child.note_id);
 
         script += await getSubTreeScripts(child.note_id, includedNoteIds, dataKey);
+
+        console.log('MIME: ', child.mime);
+
+        if (child.mime === 'application/javascript') {
+            child.note_text = '<script>' + child.note_text + '</script>';
+        }
 
         script += child.note_text + "\r\n";
     }

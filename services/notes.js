@@ -119,7 +119,8 @@ async function createNewNote(parentNoteId, noteOpts, dataKey, sourceId) {
 
     return {
         noteId,
-        noteTreeId
+        noteTreeId,
+        note
     };
 }
 

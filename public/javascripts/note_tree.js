@@ -756,16 +756,6 @@ const noteTree = (function() {
             is_protected: isProtected
         });
 
-        const newNode = {
-            title: newNoteName,
-            note_id: result.note_id,
-            parent_note_id: parentNoteId,
-            refKey: result.note_id,
-            note_tree_id: result.note_tree_id,
-            is_protected: isProtected,
-            extraClasses: isProtected ? "protected" : ""
-        };
-
         setParentChildRelation(result.note_tree_id, parentNoteId, result.note_id);
 
         notesTreeMap[result.note_tree_id] = result;
@@ -773,6 +763,16 @@ const noteTree = (function() {
         noteIdToTitle[result.note_id] = newNoteName;
 
         noteEditor.newNoteCreated();
+
+        const newNode = {
+            title: newNoteName,
+            note_id: result.note_id,
+            parent_note_id: parentNoteId,
+            refKey: result.note_id,
+            note_tree_id: result.note_tree_id,
+            is_protected: isProtected,
+            extraClasses: getExtraClasses(result.note)
+        };
 
         if (target === 'after') {
             node.appendSibling(newNode).setActive(true);
