@@ -1,20 +1,22 @@
 "use strict";
 
-class Note {
-    constructor(sql, row) {
-        this.sql = sql;
+const Entity = require('./entity');
 
-        for (const key in row) {
-            this[key] = row[key];
-        }
+class Note extends Entity {
+    async getAttributes() {
+        return this.sql.getEntities("SELECT * FROM attributes WHERE noteId = ?", [this.noteId]);
     }
 
-    async attributes() {
-        return this.sql.getRows("SELECT * FROM attributes WHERE noteId = ?", [this.noteId]);
+    async getAttribute(name) {
+        return this.sql.getEntity("SELECT * FROM attributes WHERE noteId = ? AND name = ?", [this.noteId, name]);
     }
 
-    async revisions() {
-        return this.sql.getRows("SELECT * FROM note_revisions WHERE noteId = ?", [this.noteId]);
+    async getRevisions() {
+        return this.sql.getEntities("SELECT * FROM note_revisions WHERE noteId = ?", [this.noteId]);
+    }
+
+    async getTrees() {
+        return this.sql.getEntities("SELECT * FROM note_tree WHERE isDeleted = 0 AND noteId = ?", [this.noteId]);
     }
 }
 
