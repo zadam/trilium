@@ -37,7 +37,7 @@ router.get('/', auth.checkApiAuth, wrap(async (req, res, next) => {
 
 router.put('/:noteTreeId/set-prefix', auth.checkApiAuth, wrap(async (req, res, next) => {
     const noteTreeId = req.params.noteTreeId;
-    const sourceId = req.headers.sourceId;
+    const sourceId = req.headers.source_id;
     const prefix = utils.isEmptyOrWhitespace(req.body.prefix) ? null : req.body.prefix;
 
     await sql.doInTransaction(async () => {

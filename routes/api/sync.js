@@ -109,7 +109,7 @@ router.get('/options/:name', auth.checkApiAuth, wrap(async (req, res, next) => {
     }
 }));
 
-router.get('/notes_reordering/:parentNoteId', auth.checkApiAuth, wrap(async (req, res, next) => {
+router.get('/note_reordering/:parentNoteId', auth.checkApiAuth, wrap(async (req, res, next) => {
     const parentNoteId = req.params.parentNoteId;
 
     res.send({
@@ -165,7 +165,7 @@ router.put('/note_revisions', auth.checkApiAuth, wrap(async (req, res, next) => 
     res.send({});
 }));
 
-router.put('/notes_reordering', auth.checkApiAuth, wrap(async (req, res, next) => {
+router.put('/note_reordering', auth.checkApiAuth, wrap(async (req, res, next) => {
     await syncUpdate.updateNoteReordering(req.body.entity, req.body.sourceId);
 
     res.send({});

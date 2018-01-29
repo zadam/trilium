@@ -18,7 +18,7 @@ const wrap = require('express-promise-wrap').wrap;
 router.put('/:noteTreeId/move-to/:parentNoteId', auth.checkApiAuth, wrap(async (req, res, next) => {
     const noteTreeId = req.params.noteTreeId;
     const parentNoteId = req.params.parentNoteId;
-    const sourceId = req.headers.sourceId;
+    const sourceId = req.headers.source_id;
 
     const noteToMove = await tree.getNoteTree(noteTreeId);
 
@@ -44,7 +44,7 @@ router.put('/:noteTreeId/move-to/:parentNoteId', auth.checkApiAuth, wrap(async (
 router.put('/:noteTreeId/move-before/:beforeNoteTreeId', auth.checkApiAuth, wrap(async (req, res, next) => {
     const noteTreeId = req.params.noteTreeId;
     const beforeNoteTreeId = req.params.beforeNoteTreeId;
-    const sourceId = req.headers.sourceId;
+    const sourceId = req.headers.source_id;
 
     const noteToMove = await tree.getNoteTree(noteTreeId);
     const beforeNote = await tree.getNoteTree(beforeNoteTreeId);
@@ -75,7 +75,7 @@ router.put('/:noteTreeId/move-before/:beforeNoteTreeId', auth.checkApiAuth, wrap
 router.put('/:noteTreeId/move-after/:afterNoteTreeId', auth.checkApiAuth, wrap(async (req, res, next) => {
     const noteTreeId = req.params.noteTreeId;
     const afterNoteTreeId = req.params.afterNoteTreeId;
-    const sourceId = req.headers.sourceId;
+    const sourceId = req.headers.source_id;
 
     const noteToMove = await tree.getNoteTree(noteTreeId);
     const afterNote = await tree.getNoteTree(afterNoteTreeId);
@@ -116,7 +116,7 @@ router.put('/:noteTreeId/expanded/:expanded', auth.checkApiAuth, wrap(async (req
 
 router.delete('/:noteTreeId', auth.checkApiAuth, wrap(async (req, res, next) => {
     await sql.doInTransaction(async () => {
-        await notes.deleteNote(req.params.noteTreeId, req.headers.sourceId);
+        await notes.deleteNote(req.params.noteTreeId, req.headers.source_id);
     });
 
     res.send({});

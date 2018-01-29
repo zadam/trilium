@@ -35,7 +35,7 @@ router.get('/:imageId/:filename', auth.checkApiAuthOrElectron, wrap(async (req, 
 }));
 
 router.post('', auth.checkApiAuthOrElectron, multer.single('upload'), wrap(async (req, res, next) => {
-    const sourceId = req.headers.sourceId;
+    const sourceId = req.headers.source_id;
     const noteId = req.query.noteId;
     const file = req.file;
 

@@ -31,7 +31,7 @@ router.get('/:noteId', auth.checkApiAuth, wrap(async (req, res, next) => {
 }));
 
 router.post('/:parentNoteId/children', auth.checkApiAuth, wrap(async (req, res, next) => {
-    const sourceId = req.headers.sourceId;
+    const sourceId = req.headers.source_id;
     const parentNoteId = req.params.parentNoteId;
     const newNote = req.body;
 
@@ -49,7 +49,7 @@ router.post('/:parentNoteId/children', auth.checkApiAuth, wrap(async (req, res, 
 router.put('/:noteId', auth.checkApiAuth, wrap(async (req, res, next) => {
     const note = req.body;
     const noteId = req.params.noteId;
-    const sourceId = req.headers.sourceId;
+    const sourceId = req.headers.source_id;
     const dataKey = protected_session.getDataKey(req);
 
     await notes.updateNote(noteId, note, dataKey, sourceId);
@@ -69,7 +69,7 @@ router.get('/', auth.checkApiAuth, wrap(async (req, res, next) => {
 
 router.put('/:noteId/sort', auth.checkApiAuth, wrap(async (req, res, next) => {
     const noteId = req.params.noteId;
-    const sourceId = req.headers.sourceId;
+    const sourceId = req.headers.source_id;
     const dataKey = protected_session.getDataKey(req);
 
     await tree.sortNotesAlphabetically(noteId, dataKey, sourceId);
@@ -81,7 +81,7 @@ router.put('/:noteId/protect-sub-tree/:isProtected', auth.checkApiAuth, wrap(asy
     const noteId = req.params.noteId;
     const isProtected = !!parseInt(req.params.isProtected);
     const dataKey = protected_session.getDataKey(req);
-    const sourceId = req.headers.sourceId;
+    const sourceId = req.headers.source_id;
 
     await sql.doInTransaction(async () => {
         await notes.protectNoteRecursively(noteId, dataKey, isProtected, sourceId);
@@ -94,7 +94,7 @@ router.put(/\/(.*)\/type\/(.*)\/mime\/(.*)/, auth.checkApiAuth, wrap(async (req,
     const noteId = req.params[0];
     const type = req.params[1];
     const mime = req.params[2];
-    const sourceId = req.headers.sourceId;
+    const sourceId = req.headers.source_id;
 
     await sql.doInTransaction(async () => {
        await sql.execute("UPDATE notes SET type = ?, mime = ?, dateModified = ? WHERE noteId = ?",

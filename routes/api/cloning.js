@@ -13,7 +13,7 @@ router.put('/:childNoteId/clone-to/:parentNoteId', auth.checkApiAuth, wrap(async
     const parentNoteId = req.params.parentNoteId;
     const childNoteId = req.params.childNoteId;
     const prefix = req.body.prefix;
-    const sourceId = req.headers.sourceId;
+    const sourceId = req.headers.source_id;
 
     if (!await tree.validateParentChild(res, parentNoteId, childNoteId)) {
         return;
@@ -47,7 +47,7 @@ router.put('/:childNoteId/clone-to/:parentNoteId', auth.checkApiAuth, wrap(async
 router.put('/:noteId/clone-after/:afterNoteTreeId', auth.checkApiAuth, wrap(async (req, res, next) => {
     const noteId = req.params.noteId;
     const afterNoteTreeId = req.params.afterNoteTreeId;
-    const sourceId = req.headers.sourceId;
+    const sourceId = req.headers.source_id;
 
     const afterNote = await tree.getNoteTree(afterNoteTreeId);
 

@@ -17,7 +17,7 @@ router.get('/:noteId', auth.checkApiAuth, wrap(async (req, res, next) => {
 }));
 
 router.put('', auth.checkApiAuth, wrap(async (req, res, next) => {
-    const sourceId = req.headers.sourceId;
+    const sourceId = req.headers.source_id;
 
     await sql.doInTransaction(async () => {
         await sql.replace("note_revisions", req.body);

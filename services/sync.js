@@ -131,7 +131,7 @@ async function pullSync(syncContext) {
         else if (sync.entityName === 'note_revisions') {
             await syncUpdate.updateNoteHistory(resp, syncContext.sourceId);
         }
-        else if (sync.entityName === 'notes_reordering') {
+        else if (sync.entityName === 'note_reordering') {
             await syncUpdate.updateNoteReordering(resp, syncContext.sourceId);
         }
         else if (sync.entityName === 'options') {
@@ -208,7 +208,7 @@ async function pushEntity(sync, syncContext) {
     else if (sync.entityName === 'note_revisions') {
         entity = await sql.getFirst('SELECT * FROM note_revisions WHERE noteRevisionId = ?', [sync.entityId]);
     }
-    else if (sync.entityName === 'notes_reordering') {
+    else if (sync.entityName === 'note_reordering') {
         entity = {
             parentNoteId: sync.entityId,
             ordering: await sql.getMap('SELECT noteTreeId, notePosition FROM note_tree WHERE parentNoteId = ? AND isDeleted = 0', [sync.entityId])

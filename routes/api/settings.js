@@ -25,7 +25,7 @@ router.get('/', auth.checkApiAuth, wrap(async (req, res, next) => {
 
 router.post('/', auth.checkApiAuth, wrap(async (req, res, next) => {
     const body = req.body;
-    const sourceId = req.headers.sourceId;
+    const sourceId = req.headers.source_id;
 
     if (ALLOWED_OPTIONS.includes(body['name'])) {
         const optionName = await options.getOption(body['name']);

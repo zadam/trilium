@@ -46,7 +46,7 @@ router.post('/cleanup-soft-deleted-items', auth.checkApiAuth, wrap(async (req, r
 }));
 
 router.post('/cleanup-unused-images', auth.checkApiAuth, wrap(async (req, res, next) => {
-    const sourceId = req.headers.sourceId;
+    const sourceId = req.headers.source_id;
 
     await sql.doInTransaction(async () => {
         const unusedImageIds = await sql.getFirstColumn(`

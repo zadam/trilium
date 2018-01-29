@@ -38,7 +38,7 @@ const messaging = (function() {
             }
 
             if (syncData.some(sync => sync.entityName === 'notes' && sync.entityId === noteEditor.getCurrentNoteId())) {
-                showMessage('Reloading note because background change');
+                showMessage('Reloading note because of background changes');
 
                 noteEditor.reload();
             }

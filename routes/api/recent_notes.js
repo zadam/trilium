@@ -16,7 +16,7 @@ router.get('', auth.checkApiAuth, wrap(async (req, res, next) => {
 router.put('/:noteTreeId/:notePath', auth.checkApiAuth, wrap(async (req, res, next) => {
     const noteTreeId = req.params.noteTreeId;
     const notePath = req.params.notePath;
-    const sourceId = req.headers.sourceId;
+    const sourceId = req.headers.source_id;
 
     await sql.doInTransaction(async () => {
         await sql.replace('recent_notes', {

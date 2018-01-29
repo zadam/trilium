@@ -7,9 +7,11 @@ const server = (function() {
         }
         catch(e) {}
 
+        // headers need to be lowercase because node.js automatically converts them to lower case
+        // so hypothetical protectedSessionId becomes protectedsessionid on the backend
         return {
             protected_session_id: protectedSessionId,
-            sourceId: glob.sourceId
+            source_id: glob.sourceId
         };
     }
 
