@@ -6,6 +6,7 @@ const fs = require('fs');
 const sqlite = require('sqlite');
 const app_info = require('./app_info');
 const resource_dir = require('./resource_dir');
+const Note = require('../entities/note');
 
 async function createConnection() {
     return await sqlite.open(dataDir.DOCUMENT_PATH, {Promise});
@@ -131,6 +132,12 @@ async function getFirstValue(query, params = []) {
 
 async function getAll(query, params = []) {
     return await wrap(async db => db.all(query, ...params));
+}
+
+async function getAllEntities(query, params = []) {
+    const rows = await getAll(query, params);
+
+    return rows.map(row => new Note(module.exports, row));
 }
 
 async function getMap(query, params = []) {
@@ -266,6 +273,7 @@ module.exports = {
     getFirst,
     getFirstOrNull,
     getAll,
+    getAllEntities,
     getMap,
     getFirstColumn,
     execute,
