@@ -26,7 +26,7 @@ router.get('/:noteId/to/:directory', auth.checkApiAuth, wrap(async (req, res, ne
 
     fs.mkdirSync(completeExportDir);
 
-    const noteTreeId = await sql.getFirstValue('SELECT noteTreeId FROM notes_tree WHERE noteId = ?', [noteId]);
+    const noteTreeId = await sql.getFirstValue('SELECT noteTreeId FROM note_tree WHERE noteId = ?', [noteId]);
 
     await exportNote(noteTreeId, completeExportDir);
 
@@ -34,14 +34,14 @@ router.get('/:noteId/to/:directory', auth.checkApiAuth, wrap(async (req, res, ne
 }));
 
 async function exportNote(noteTreeId, dir) {
-    const noteTree = await sql.getFirst("SELECT * FROM notes_tree WHERE noteTreeId = ?", [noteTreeId]);
+    const noteTree = await sql.getFirst("SELECT * FROM note_tree WHERE noteTreeId = ?", [noteTreeId]);
     const note = await sql.getFirst("SELECT * FROM notes WHERE noteId = ?", [noteTree.noteId]);
 
     const pos = (noteTree.notePosition + '').padStart(4, '0');
 
     fs.writeFileSync(dir + '/' + pos + '-' + note.title + '.html', html.prettyPrint(note.content, {indent_size: 2}));
 
-    const children = await sql.getAll("SELECT * FROM notes_tree WHERE parentNoteId = ? AND isDeleted = 0", [note.noteId]);
+    const children = await sql.getAll("SELECT * FROM note_tree WHERE parentNoteId = ? AND isDeleted = 0", [note.noteId]);
 
     if (children.length > 0) {
         const childrenDir = dir + '/' + pos + '-' + note.title;

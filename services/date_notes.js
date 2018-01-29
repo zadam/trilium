@@ -19,10 +19,10 @@ async function createNote(parentNoteId, noteTitle, noteText) {
 }
 
 async function getNoteStartingWith(parentNoteId, startsWith) {
-    return await sql.getFirstValue(`SELECT noteId FROM notes JOIN notes_tree USING(noteId) 
+    return await sql.getFirstValue(`SELECT noteId FROM notes JOIN note_tree USING(noteId) 
                                     WHERE parentNoteId = ? AND title LIKE '${startsWith}%'
                                     AND notes.isDeleted = 0 AND isProtected = 0 
-                                    AND notes_tree.isDeleted = 0`, [parentNoteId]);
+                                    AND note_tree.isDeleted = 0`, [parentNoteId]);
 }
 
 async function getRootNoteId() {

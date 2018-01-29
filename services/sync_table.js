@@ -9,15 +9,15 @@ async function addNoteSync(noteId, sourceId) {
 }
 
 async function addNoteTreeSync(noteTreeId, sourceId) {
-    await addEntitySync("notes_tree", noteTreeId, sourceId)
+    await addEntitySync("note_tree", noteTreeId, sourceId)
 }
 
 async function addNoteReorderingSync(parentNoteTreeId, sourceId) {
     await addEntitySync("notes_reordering", parentNoteTreeId, sourceId)
 }
 
-async function addNoteHistorySync(noteHistoryId, sourceId) {
-    await addEntitySync("notes_history", noteHistoryId, sourceId);
+async function addNoteHistorySync(noteRevisionId, sourceId) {
+    await addEntitySync("note_revisions", noteRevisionId, sourceId);
 }
 
 async function addOptionsSync(name, sourceId) {
@@ -33,7 +33,7 @@ async function addImageSync(imageId, sourceId) {
 }
 
 async function addNoteImageSync(noteImageId, sourceId) {
-    await addEntitySync("notes_image", noteImageId, sourceId);
+    await addEntitySync("note_images", noteImageId, sourceId);
 }
 
 async function addAttributeSync(attributeId, sourceId) {
@@ -87,11 +87,11 @@ async function fillSyncRows(entityName, entityKey) {
 
 async function fillAllSyncRows() {
     await fillSyncRows("notes", "noteId");
-    await fillSyncRows("notes_tree", "noteTreeId");
-    await fillSyncRows("notes_history", "noteHistoryId");
+    await fillSyncRows("note_tree", "noteTreeId");
+    await fillSyncRows("note_revisions", "noteRevisionId");
     await fillSyncRows("recent_notes", "noteTreeId");
     await fillSyncRows("images", "imageId");
-    await fillSyncRows("notes_image", "noteImageId");
+    await fillSyncRows("note_images", "noteImageId");
     await fillSyncRows("attributes", "attributeId");
 }
 

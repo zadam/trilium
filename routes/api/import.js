@@ -52,7 +52,7 @@ async function importNotes(dir, parentNoteId) {
             noteTitle = match[2];
         }
         else {
-            let maxPos = await sql.getFirstValue("SELECT MAX(notePosition) FROM notes_tree WHERE parentNoteId = ? AND isDeleted = 0", [parentNoteId]);
+            let maxPos = await sql.getFirstValue("SELECT MAX(notePosition) FROM note_tree WHERE parentNoteId = ? AND isDeleted = 0", [parentNoteId]);
             if (maxPos) {
                 notePos = maxPos + 1;
             }
@@ -66,11 +66,11 @@ async function importNotes(dir, parentNoteId) {
         const noteText = fs.readFileSync(path, "utf8");
 
         const noteId = utils.newNoteId();
-        const noteTreeId = utils.newNoteHistoryId();
+        const noteTreeId = utils.newnoteRevisionId();
 
         const now = utils.nowDate();
 
-        await sql.insert('notes_tree', {
+        await sql.insert('note_tree', {
             noteTreeId: noteTreeId,
             noteId: noteId,
             parentNoteId: parentNoteId,

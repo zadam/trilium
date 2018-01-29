@@ -31,7 +31,7 @@ const recentChanges = (function() {
                     text: 'rev'
                 }).attr('action', 'note-history')
                     .attr('note-path', change.noteId)
-                    .attr('note-history-id', change.noteHistoryId);
+                    .attr('note-history-id', change.noteRevisionId);
 
                 let noteLink;
 

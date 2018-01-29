@@ -53,17 +53,17 @@ async function createNewNote(parentNoteId, noteOpts, dataKey, sourceId) {
     let newNotePos = 0;
 
     if (noteOpts.target === 'into') {
-        const maxNotePos = await sql.getFirstValue('SELECT MAX(notePosition) FROM notes_tree WHERE parentNoteId = ? AND isDeleted = 0', [parentNoteId]);
+        const maxNotePos = await sql.getFirstValue('SELECT MAX(notePosition) FROM note_tree WHERE parentNoteId = ? AND isDeleted = 0', [parentNoteId]);
 
         newNotePos = maxNotePos === null ? 0 : maxNotePos + 1;
     }
     else if (noteOpts.target === 'after') {
-        const afterNote = await sql.getFirst('SELECT notePosition FROM notes_tree WHERE noteTreeId = ?', [noteOpts.target_noteTreeId]);
+        const afterNote = await sql.getFirst('SELECT notePosition FROM note_tree WHERE noteTreeId = ?', [noteOpts.target_noteTreeId]);
 
         newNotePos = afterNote.notePosition + 1;
 
         // not updating dateModified to avoig having to sync whole rows
-        await sql.execute('UPDATE notes_tree SET notePosition = notePosition + 1 WHERE parentNoteId = ? AND notePosition > ? AND isDeleted = 0',
+        await sql.execute('UPDATE note_tree SET notePosition = notePosition + 1 WHERE parentNoteId = ? AND notePosition > ? AND isDeleted = 0',
             [parentNoteId, afterNote.notePosition]);
 
         await sync_table.addNoteReorderingSync(parentNoteId, sourceId);
@@ -105,7 +105,7 @@ async function createNewNote(parentNoteId, noteOpts, dataKey, sourceId) {
 
     await sync_table.addNoteSync(noteId, sourceId);
 
-    await sql.insert("notes_tree", {
+    await sql.insert("note_tree", {
         noteTreeId: noteTreeId,
         noteId: noteId,
         parentNoteId: parentNoteId,
@@ -129,7 +129,7 @@ async function protectNoteRecursively(noteId, dataKey, protect, sourceId) {
 
     await protectNote(note, dataKey, protect, sourceId);
 
-    const children = await sql.getFirstColumn("SELECT noteId FROM notes_tree WHERE parentNoteId = ? AND isDeleted = 0", [noteId]);
+    const children = await sql.getFirstColumn("SELECT noteId FROM note_tree WHERE parentNoteId = ? AND isDeleted = 0", [noteId]);
 
     for (const childNoteId of children) {
         await protectNoteRecursively(childNoteId, dataKey, protect, sourceId);
@@ -165,7 +165,7 @@ async function protectNote(note, dataKey, protect, sourceId) {
 }
 
 async function protectNoteHistory(noteId, dataKey, protect, sourceId) {
-    const historyToChange = await sql.getAll("SELECT * FROM notes_history WHERE noteId = ? AND isProtected != ?", [noteId, protect]);
+    const historyToChange = await sql.getAll("SELECT * FROM note_revisions WHERE noteId = ? AND isProtected != ?", [noteId, protect]);
 
     for (const history of historyToChange) {
         if (protect) {
@@ -179,10 +179,10 @@ async function protectNoteHistory(noteId, dataKey, protect, sourceId) {
             history.isProtected = false;
         }
 
-        await sql.execute("UPDATE notes_history SET title = ?, content = ?, isProtected = ? WHERE noteHistoryId = ?",
-            [history.title, history.content, history.isProtected, history.noteHistoryId]);
+        await sql.execute("UPDATE note_revisions SET title = ?, content = ?, isProtected = ? WHERE noteRevisionId = ?",
+            [history.title, history.content, history.isProtected, history.noteRevisionId]);
 
-        await sync_table.addNoteHistorySync(history.noteHistoryId, sourceId);
+        await sync_table.addNoteHistorySync(history.noteRevisionId, sourceId);
     }
 }
 
@@ -195,10 +195,10 @@ async function saveNoteHistory(noteId, dataKey, sourceId, nowStr) {
         note.isProtected = false;
     }
 
-    const newNoteHistoryId = utils.newNoteHistoryId();
+    const newnoteRevisionId = utils.newnoteRevisionId();
 
-    await sql.insert('notes_history', {
-        noteHistoryId: newNoteHistoryId,
+    await sql.insert('note_revisions', {
+        noteRevisionId: newnoteRevisionId,
         noteId: noteId,
         // title and text should be decrypted now
         title: oldNote.title,
@@ -208,11 +208,11 @@ async function saveNoteHistory(noteId, dataKey, sourceId, nowStr) {
         dateModifiedTo: nowStr
     });
 
-    await sync_table.addNoteHistorySync(newNoteHistoryId, sourceId);
+    await sync_table.addNoteHistorySync(newnoteRevisionId, sourceId);
 }
 
 async function saveNoteImages(noteId, noteText, sourceId) {
-    const existingNoteImages = await sql.getAll("SELECT * FROM notes_image WHERE noteId = ?", [noteId]);
+    const existingNoteImages = await sql.getAll("SELECT * FROM note_images WHERE noteId = ?", [noteId]);
     const foundImageIds = [];
     const now = utils.nowDate();
     const re = /src="\/api\/images\/([a-zA-Z0-9]+)\//g;
@@ -225,7 +225,7 @@ async function saveNoteImages(noteId, noteText, sourceId) {
         if (!existingNoteImage) {
             const noteImageId = utils.newNoteImageId();
 
-            await sql.insert("notes_image", {
+            await sql.insert("note_images", {
                 noteImageId: noteImageId,
                 noteId: noteId,
                 imageId: imageId,
@@ -237,7 +237,7 @@ async function saveNoteImages(noteId, noteText, sourceId) {
             await sync_table.addNoteImageSync(noteImageId, sourceId);
         }
         else if (existingNoteImage.isDeleted) {
-            await sql.execute("UPDATE notes_image SET isDeleted = 0, dateModified = ? WHERE noteImageId = ?",
+            await sql.execute("UPDATE note_images SET isDeleted = 0, dateModified = ? WHERE noteImageId = ?",
                 [now, existingNoteImage.noteImageId]);
 
             await sync_table.addNoteImageSync(existingNoteImage.noteImageId, sourceId);
@@ -251,7 +251,7 @@ async function saveNoteImages(noteId, noteText, sourceId) {
     const unusedNoteImages = existingNoteImages.filter(ni => !foundImageIds.includes(ni.imageId));
 
     for (const unusedNoteImage of unusedNoteImages) {
-        await sql.execute("UPDATE notes_image SET isDeleted = 1, dateModified = ? WHERE noteImageId = ?",
+        await sql.execute("UPDATE note_images SET isDeleted = 1, dateModified = ? WHERE noteImageId = ?",
             [now, unusedNoteImage.noteImageId]);
 
         await sync_table.addNoteImageSync(unusedNoteImage.noteImageId, sourceId);
@@ -272,14 +272,14 @@ async function updateNote(noteId, newNote, dataKey, sourceId) {
 
     const historyCutoff = utils.dateStr(new Date(now.getTime() - historySnapshotTimeInterval * 1000));
 
-    const existingNoteHistoryId = await sql.getFirstValue(
-        "SELECT noteHistoryId FROM notes_history WHERE noteId = ? AND dateModifiedTo >= ?", [noteId, historyCutoff]);
+    const existingnoteRevisionId = await sql.getFirstValue(
+        "SELECT noteRevisionId FROM note_revisions WHERE noteId = ? AND dateModifiedTo >= ?", [noteId, historyCutoff]);
 
     await sql.doInTransaction(async () => {
         const msSinceDateCreated = now.getTime() - utils.parseDate(newNote.detail.dateCreated).getTime();
 
         if (attributesMap.disable_versioning !== 'true'
-            && !existingNoteHistoryId
+            && !existingnoteRevisionId
             && msSinceDateCreated >= historySnapshotTimeInterval * 1000) {
 
             await saveNoteHistory(noteId, dataKey, sourceId, nowStr);
@@ -301,7 +301,7 @@ async function updateNote(noteId, newNote, dataKey, sourceId) {
 }
 
 async function deleteNote(noteTreeId, sourceId) {
-    const noteTree = await sql.getFirstOrNull("SELECT * FROM notes_tree WHERE noteTreeId = ?", [noteTreeId]);
+    const noteTree = await sql.getFirstOrNull("SELECT * FROM note_tree WHERE noteTreeId = ?", [noteTreeId]);
 
     if (!noteTree || noteTree.isDeleted === 1) {
         return;
@@ -309,18 +309,18 @@ async function deleteNote(noteTreeId, sourceId) {
 
     const now = utils.nowDate();
 
-    await sql.execute("UPDATE notes_tree SET isDeleted = 1, dateModified = ? WHERE noteTreeId = ?", [now, noteTreeId]);
+    await sql.execute("UPDATE note_tree SET isDeleted = 1, dateModified = ? WHERE noteTreeId = ?", [now, noteTreeId]);
     await sync_table.addNoteTreeSync(noteTreeId, sourceId);
 
-    const noteId = await sql.getFirstValue("SELECT noteId FROM notes_tree WHERE noteTreeId = ?", [noteTreeId]);
+    const noteId = await sql.getFirstValue("SELECT noteId FROM note_tree WHERE noteTreeId = ?", [noteTreeId]);
 
-    const notDeletedNoteTreesCount = await sql.getFirstValue("SELECT COUNT(*) FROM notes_tree WHERE noteId = ? AND isDeleted = 0", [noteId]);
+    const notDeletedNoteTreesCount = await sql.getFirstValue("SELECT COUNT(*) FROM note_tree WHERE noteId = ? AND isDeleted = 0", [noteId]);
 
     if (!notDeletedNoteTreesCount) {
         await sql.execute("UPDATE notes SET isDeleted = 1, dateModified = ? WHERE noteId = ?", [now, noteId]);
         await sync_table.addNoteSync(noteId, sourceId);
 
-        const children = await sql.getAll("SELECT noteTreeId FROM notes_tree WHERE parentNoteId = ? AND isDeleted = 0", [noteId]);
+        const children = await sql.getAll("SELECT noteTreeId FROM note_tree WHERE parentNoteId = ? AND isDeleted = 0", [noteId]);
 
         for (const child of children) {
             await deleteNote(child.noteTreeId, sourceId);

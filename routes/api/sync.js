@@ -53,13 +53,13 @@ router.post('/force-note-sync/:noteId', auth.checkApiAuth, wrap(async (req, res,
     await sql.doInTransaction(async () => {
         await sync_table.addNoteSync(noteId);
 
-        for (const noteTreeId of await sql.getFirstColumn("SELECT noteTreeId FROM notes_tree WHERE isDeleted = 0 AND noteId = ?", [noteId])) {
+        for (const noteTreeId of await sql.getFirstColumn("SELECT noteTreeId FROM note_tree WHERE isDeleted = 0 AND noteId = ?", [noteId])) {
             await sync_table.addNoteTreeSync(noteTreeId);
             await sync_table.addRecentNoteSync(noteTreeId);
         }
 
-        for (const noteHistoryId of await sql.getFirstColumn("SELECT noteHistoryId FROM notes_history WHERE noteId = ?", [noteId])) {
-            await sync_table.addNoteHistorySync(noteHistoryId);
+        for (const noteRevisionId of await sql.getFirstColumn("SELECT noteRevisionId FROM note_revisions WHERE noteId = ?", [noteId])) {
+            await sync_table.addNoteHistorySync(noteRevisionId);
         }
     });
 
@@ -85,16 +85,16 @@ router.get('/notes/:noteId', auth.checkApiAuth, wrap(async (req, res, next) => {
     });
 }));
 
-router.get('/notes_tree/:noteTreeId', auth.checkApiAuth, wrap(async (req, res, next) => {
+router.get('/note_tree/:noteTreeId', auth.checkApiAuth, wrap(async (req, res, next) => {
     const noteTreeId = req.params.noteTreeId;
 
-    res.send(await sql.getFirst("SELECT * FROM notes_tree WHERE noteTreeId = ?", [noteTreeId]));
+    res.send(await sql.getFirst("SELECT * FROM note_tree WHERE noteTreeId = ?", [noteTreeId]));
 }));
 
-router.get('/notes_history/:noteHistoryId', auth.checkApiAuth, wrap(async (req, res, next) => {
-    const noteHistoryId = req.params.noteHistoryId;
+router.get('/note_revisions/:noteRevisionId', auth.checkApiAuth, wrap(async (req, res, next) => {
+    const noteRevisionId = req.params.noteRevisionId;
 
-    res.send(await sql.getFirst("SELECT * FROM notes_history WHERE noteHistoryId = ?", [noteHistoryId]));
+    res.send(await sql.getFirst("SELECT * FROM note_revisions WHERE noteRevisionId = ?", [noteRevisionId]));
 }));
 
 router.get('/options/:name', auth.checkApiAuth, wrap(async (req, res, next) => {
@@ -114,7 +114,7 @@ router.get('/notes_reordering/:parentNoteId', auth.checkApiAuth, wrap(async (req
 
     res.send({
         parentNoteId: parentNoteId,
-        ordering: await sql.getMap("SELECT noteTreeId, notePosition FROM notes_tree WHERE parentNoteId = ? AND isDeleted = 0", [parentNoteId])
+        ordering: await sql.getMap("SELECT noteTreeId, notePosition FROM note_tree WHERE parentNoteId = ? AND isDeleted = 0", [parentNoteId])
     });
 }));
 
@@ -135,10 +135,10 @@ router.get('/images/:imageId', auth.checkApiAuth, wrap(async (req, res, next) =>
     res.send(entity);
 }));
 
-router.get('/notes_image/:noteImageId', auth.checkApiAuth, wrap(async (req, res, next) => {
+router.get('/note_images/:noteImageId', auth.checkApiAuth, wrap(async (req, res, next) => {
     const noteImageId = req.params.noteImageId;
 
-    res.send(await sql.getFirst("SELECT * FROM notes_image WHERE noteImageId = ?", [noteImageId]));
+    res.send(await sql.getFirst("SELECT * FROM note_images WHERE noteImageId = ?", [noteImageId]));
 }));
 
 router.get('/attributes/:attributeId', auth.checkApiAuth, wrap(async (req, res, next) => {
@@ -153,13 +153,13 @@ router.put('/notes', auth.checkApiAuth, wrap(async (req, res, next) => {
     res.send({});
 }));
 
-router.put('/notes_tree', auth.checkApiAuth, wrap(async (req, res, next) => {
+router.put('/note_tree', auth.checkApiAuth, wrap(async (req, res, next) => {
     await syncUpdate.updateNoteTree(req.body.entity, req.body.sourceId);
 
     res.send({});
 }));
 
-router.put('/notes_history', auth.checkApiAuth, wrap(async (req, res, next) => {
+router.put('/note_revisions', auth.checkApiAuth, wrap(async (req, res, next) => {
     await syncUpdate.updateNoteHistory(req.body.entity, req.body.sourceId);
 
     res.send({});
@@ -189,7 +189,7 @@ router.put('/images', auth.checkApiAuth, wrap(async (req, res, next) => {
     res.send({});
 }));
 
-router.put('/notes_image', auth.checkApiAuth, wrap(async (req, res, next) => {
+router.put('/note_images', auth.checkApiAuth, wrap(async (req, res, next) => {
     await syncUpdate.updateNoteImage(req.body.entity, req.body.sourceId);
 
     res.send({});

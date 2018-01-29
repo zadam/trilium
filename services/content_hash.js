@@ -29,7 +29,7 @@ async function getHashes() {
             FROM notes
             ORDER BY noteId`)),
 
-        notes_tree: getHash(await sql.getAll(`
+        note_tree: getHash(await sql.getAll(`
             SELECT
                noteTreeId,
                noteId,
@@ -38,19 +38,19 @@ async function getHashes() {
                dateModified,
                isDeleted,
                prefix
-             FROM notes_tree
+             FROM note_tree
              ORDER BY noteTreeId`)),
 
-        notes_history: getHash(await sql.getAll(`
+        note_revisions: getHash(await sql.getAll(`
             SELECT
-              noteHistoryId,
+              noteRevisionId,
               noteId,
               title,
               content,
               dateModifiedFrom,
               dateModifiedTo
-            FROM notes_history
-            ORDER BY noteHistoryId`)),
+            FROM note_revisions
+            ORDER BY noteRevisionId`)),
 
         recent_notes: getHash(await sql.getAll(`
            SELECT

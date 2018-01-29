@@ -23,7 +23,7 @@ async function runCheck(query, errorText, errorList) {
 
 async function checkTreeCycles(errorList) {
     const childToParents = {};
-    const rows = await sql.getAll("SELECT noteId, parentNoteId FROM notes_tree WHERE isDeleted = 0");
+    const rows = await sql.getAll("SELECT noteId, parentNoteId FROM note_tree WHERE isDeleted = 0");
 
     for (const row of rows) {
         const childNoteId = row.noteId;
@@ -92,17 +92,17 @@ async function runAllChecks() {
             noteId 
           FROM 
             notes 
-            LEFT JOIN notes_tree USING(noteId) 
+            LEFT JOIN note_tree USING(noteId) 
           WHERE 
             noteId != 'root' 
-            AND notes_tree.noteTreeId IS NULL`,
-        "Missing notes_tree records for following note IDs", errorList);
+            AND note_tree.noteTreeId IS NULL`,
+        "Missing note_tree records for following note IDs", errorList);
 
     await runCheck(`
           SELECT 
-            noteTreeId || ' > ' || notes_tree.noteId 
+            noteTreeId || ' > ' || note_tree.noteId 
           FROM 
-            notes_tree 
+            note_tree 
             LEFT JOIN notes USING(noteId) 
           WHERE 
             notes.noteId IS NULL`,
@@ -112,22 +112,22 @@ async function runAllChecks() {
           SELECT 
             noteTreeId 
           FROM 
-            notes_tree 
+            note_tree 
             JOIN notes USING(noteId) 
           WHERE 
             notes.isDeleted = 1 
-            AND notes_tree.isDeleted = 0`,
+            AND note_tree.isDeleted = 0`,
         "Note tree is not deleted even though main note is deleted for following note tree IDs", errorList);
 
     await runCheck(`
           SELECT 
             child.noteTreeId
           FROM 
-            notes_tree AS child
+            note_tree AS child
           WHERE 
             child.isDeleted = 0
             AND child.parentNoteId != 'root'
-            AND (SELECT COUNT(*) FROM notes_tree AS parent WHERE parent.noteId = child.parentNoteId 
+            AND (SELECT COUNT(*) FROM note_tree AS parent WHERE parent.noteId = child.parentNoteId 
                                                                  AND parent.isDeleted = 0) = 0`,
         "All parent note trees are deleted but child note tree is not for these child note tree IDs", errorList);
 
@@ -137,18 +137,18 @@ async function runAllChecks() {
             DISTINCT noteId
           FROM
             notes
-            JOIN notes_tree USING(noteId)
+            JOIN note_tree USING(noteId)
           WHERE
-            (SELECT COUNT(*) FROM notes_tree WHERE notes.noteId = notes_tree.noteId AND notes_tree.isDeleted = 0) = 0
+            (SELECT COUNT(*) FROM note_tree WHERE notes.noteId = note_tree.noteId AND note_tree.isDeleted = 0) = 0
             AND notes.isDeleted = 0
     `, 'No undeleted note trees for note IDs', errorList);
 
     await runCheck(`
           SELECT 
             child.parentNoteId || ' > ' || child.noteId 
-          FROM notes_tree 
+          FROM note_tree 
             AS child 
-            LEFT JOIN notes_tree AS parent ON parent.noteId = child.parentNoteId 
+            LEFT JOIN note_tree AS parent ON parent.noteId = child.parentNoteId 
           WHERE 
             parent.noteId IS NULL 
             AND child.parentNoteId != 'root'`,
@@ -156,23 +156,23 @@ async function runAllChecks() {
 
     await runCheck(`
           SELECT 
-            noteHistoryId || ' > ' || notes_history.noteId 
+            noteRevisionId || ' > ' || note_revisions.noteId 
           FROM 
-            notes_history LEFT JOIN notes USING(noteId) 
+            note_revisions LEFT JOIN notes USING(noteId) 
           WHERE 
             notes.noteId IS NULL`,
         "Missing notes records for following note history ID > note ID", errorList);
 
     await runCheck(`
           SELECT 
-            notes_tree.parentNoteId || ' > ' || notes_tree.noteId 
+            note_tree.parentNoteId || ' > ' || note_tree.noteId 
           FROM 
-            notes_tree 
+            note_tree 
           WHERE 
-            notes_tree.isDeleted = 0
+            note_tree.isDeleted = 0
           GROUP BY 
-            notes_tree.parentNoteId,
-            notes_tree.noteId
+            note_tree.parentNoteId,
+            note_tree.noteId
           HAVING 
             COUNT(*) > 1`,
         "Duplicate undeleted parent note <-> note relationship - parent note ID > note ID", errorList);
@@ -182,19 +182,19 @@ async function runAllChecks() {
             images.imageId
           FROM 
             images
-            LEFT JOIN notes_image ON notes_image.imageId = images.imageId
+            LEFT JOIN note_images ON note_images.imageId = images.imageId
           WHERE 
-            notes_image.noteImageId IS NULL`,
+            note_images.noteImageId IS NULL`,
         "Image with no note relation", errorList);
 
     await runCheck(`
           SELECT 
-            notes_image.noteImageId
+            note_images.noteImageId
           FROM 
-            notes_image
+            note_images
             JOIN images USING(imageId)
           WHERE 
-            notes_image.isDeleted = 0
+            note_images.isDeleted = 0
             AND images.isDeleted = 1`,
         "Note image is not deleted while image is deleted for noteImageId", errorList);
 
@@ -218,11 +218,11 @@ async function runAllChecks() {
         "Note has invalid type", errorList);
 
     await runSyncRowChecks("notes", "noteId", errorList);
-    await runSyncRowChecks("notes_history", "noteHistoryId", errorList);
-    await runSyncRowChecks("notes_tree", "noteTreeId", errorList);
+    await runSyncRowChecks("note_revisions", "noteRevisionId", errorList);
+    await runSyncRowChecks("note_tree", "noteTreeId", errorList);
     await runSyncRowChecks("recent_notes", "noteTreeId", errorList);
     await runSyncRowChecks("images", "imageId", errorList);
-    await runSyncRowChecks("notes_image", "noteImageId", errorList);
+    await runSyncRowChecks("note_images", "noteImageId", errorList);
 
     if (errorList.length === 0) {
         // we run this only if basic checks passed since this assumes basic data consistency

@@ -40,10 +40,10 @@ async function getRecentNotes() {
         recent_notes.* 
       FROM 
         recent_notes
-        JOIN notes_tree USING(noteTreeId)
+        JOIN note_tree USING(noteTreeId)
       WHERE
         recent_notes.isDeleted = 0
-        AND notes_tree.isDeleted = 0
+        AND note_tree.isDeleted = 0
       ORDER BY 
         dateAccessed DESC`);
 }

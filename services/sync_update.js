@@ -20,13 +20,13 @@ async function updateNote(entity, sourceId) {
 }
 
 async function updateNoteTree(entity, sourceId) {
-    const orig = await sql.getFirstOrNull("SELECT * FROM notes_tree WHERE noteTreeId = ?", [entity.noteTreeId]);
+    const orig = await sql.getFirstOrNull("SELECT * FROM note_tree WHERE noteTreeId = ?", [entity.noteTreeId]);
 
     await sql.doInTransaction(async () => {
         if (orig === null || orig.dateModified < entity.dateModified) {
             delete entity.isExpanded;
 
-            await sql.replace('notes_tree', entity);
+            await sql.replace('note_tree', entity);
 
             await sync_table.addNoteTreeSync(entity.noteTreeId, sourceId);
 
@@ -36,17 +36,17 @@ async function updateNoteTree(entity, sourceId) {
 }
 
 async function updateNoteHistory(entity, sourceId) {
-    const orig = await sql.getFirstOrNull("SELECT * FROM notes_history WHERE noteHistoryId = ?", [entity.noteHistoryId]);
+    const orig = await sql.getFirstOrNull("SELECT * FROM note_revisions WHERE noteRevisionId = ?", [entity.noteRevisionId]);
 
     await sql.doInTransaction(async () => {
         // we update note history even if date modified to is the same because the only thing which might have changed
         // is the protected status (and correnspondingly title and content) which doesn't affect the dateModifiedTo
         if (orig === null || orig.dateModifiedTo <= entity.dateModifiedTo) {
-            await sql.replace('notes_history', entity);
+            await sql.replace('note_revisions', entity);
 
-            await sync_table.addNoteHistorySync(entity.noteHistoryId, sourceId);
+            await sync_table.addNoteHistorySync(entity.noteRevisionId, sourceId);
 
-            log.info("Update/sync note history " + entity.noteHistoryId);
+            log.info("Update/sync note history " + entity.noteRevisionId);
         }
     });
 }
@@ -54,7 +54,7 @@ async function updateNoteHistory(entity, sourceId) {
 async function updateNoteReordering(entity, sourceId) {
     await sql.doInTransaction(async () => {
         Object.keys(entity.ordering).forEach(async key => {
-            await sql.execute("UPDATE notes_tree SET notePosition = ? WHERE noteTreeId = ?", [entity.ordering[key], key]);
+            await sql.execute("UPDATE note_tree SET notePosition = ? WHERE noteTreeId = ?", [entity.ordering[key], key]);
         });
 
         await sync_table.addNoteReorderingSync(entity.parentNoteId, sourceId);
@@ -110,11 +110,11 @@ async function updateImage(entity, sourceId) {
 }
 
 async function updateNoteImage(entity, sourceId) {
-    const origNoteImage = await sql.getFirst("SELECT * FROM notes_image WHERE noteImageId = ?", [entity.noteImageId]);
+    const origNoteImage = await sql.getFirst("SELECT * FROM note_images WHERE noteImageId = ?", [entity.noteImageId]);
 
     if (!origNoteImage || origNoteImage.dateModified <= entity.dateModified) {
         await sql.doInTransaction(async () => {
-            await sql.replace("notes_image", entity);
+            await sql.replace("note_images", entity);
 
             await sync_table.addNoteImageSync(entity.noteImageId, sourceId);
         });

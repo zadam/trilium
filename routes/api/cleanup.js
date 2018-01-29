@@ -18,15 +18,15 @@ router.post('/cleanup-soft-deleted-items', auth.checkApiAuth, wrap(async (req, r
 
         await sql.execute(`DELETE FROM event_log WHERE noteId IN (${noteIdsSql})`);
 
-        await sql.execute(`DELETE FROM notes_history WHERE noteId IN (${noteIdsSql})`);
+        await sql.execute(`DELETE FROM note_revisions WHERE noteId IN (${noteIdsSql})`);
 
-        await sql.execute(`DELETE FROM notes_image WHERE noteId IN (${noteIdsSql})`);
+        await sql.execute(`DELETE FROM note_images WHERE noteId IN (${noteIdsSql})`);
 
         await sql.execute(`DELETE FROM attributes WHERE noteId IN (${noteIdsSql})`);
 
-        await sql.execute("DELETE FROM notes_tree WHERE isDeleted = 1");
+        await sql.execute("DELETE FROM note_tree WHERE isDeleted = 1");
 
-        await sql.execute("DELETE FROM notes_image WHERE isDeleted = 1");
+        await sql.execute("DELETE FROM note_images WHERE isDeleted = 1");
 
         await sql.execute("DELETE FROM images WHERE isDeleted = 1");
 
@@ -35,8 +35,8 @@ router.post('/cleanup-soft-deleted-items', auth.checkApiAuth, wrap(async (req, r
         await sql.execute("DELETE FROM recent_notes");
 
         await sync_table.cleanupSyncRowsForMissingEntities("notes", "noteId");
-        await sync_table.cleanupSyncRowsForMissingEntities("notes_tree", "noteTreeId");
-        await sync_table.cleanupSyncRowsForMissingEntities("notes_history", "noteHistoryId");
+        await sync_table.cleanupSyncRowsForMissingEntities("note_tree", "noteTreeId");
+        await sync_table.cleanupSyncRowsForMissingEntities("note_revisions", "noteRevisionId");
         await sync_table.cleanupSyncRowsForMissingEntities("recent_notes", "noteTreeId");
 
         log.info("Following notes has been completely cleaned from database: " + noteIdsSql);
@@ -52,10 +52,10 @@ router.post('/cleanup-unused-images', auth.checkApiAuth, wrap(async (req, res, n
         const unusedImageIds = await sql.getFirstColumn(`
           SELECT images.imageId 
           FROM images 
-            LEFT JOIN notes_image ON notes_image.imageId = images.imageId AND notes_image.isDeleted = 0
+            LEFT JOIN note_images ON note_images.imageId = images.imageId AND note_images.isDeleted = 0
           WHERE
             images.isDeleted = 0
-            AND notes_image.noteImageId IS NULL`);
+            AND note_images.noteImageId IS NULL`);
 
         const now = utils.nowDate();
 

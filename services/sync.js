@@ -125,10 +125,10 @@ async function pullSync(syncContext) {
         else if (sync.entityName === 'notes') {
             await syncUpdate.updateNote(resp.entity, syncContext.sourceId);
         }
-        else if (sync.entityName === 'notes_tree') {
+        else if (sync.entityName === 'note_tree') {
             await syncUpdate.updateNoteTree(resp, syncContext.sourceId);
         }
-        else if (sync.entityName === 'notes_history') {
+        else if (sync.entityName === 'note_revisions') {
             await syncUpdate.updateNoteHistory(resp, syncContext.sourceId);
         }
         else if (sync.entityName === 'notes_reordering') {
@@ -143,7 +143,7 @@ async function pullSync(syncContext) {
         else if (sync.entityName === 'images') {
             await syncUpdate.updateImage(resp, syncContext.sourceId);
         }
-        else if (sync.entityName === 'notes_image') {
+        else if (sync.entityName === 'note_images') {
             await syncUpdate.updateNoteImage(resp, syncContext.sourceId);
         }
         else if (sync.entityName === 'attributes') {
@@ -202,16 +202,16 @@ async function pushEntity(sync, syncContext) {
     if (sync.entityName === 'notes') {
         entity = await sql.getFirst('SELECT * FROM notes WHERE noteId = ?', [sync.entityId]);
     }
-    else if (sync.entityName === 'notes_tree') {
-        entity = await sql.getFirst('SELECT * FROM notes_tree WHERE noteTreeId = ?', [sync.entityId]);
+    else if (sync.entityName === 'note_tree') {
+        entity = await sql.getFirst('SELECT * FROM note_tree WHERE noteTreeId = ?', [sync.entityId]);
     }
-    else if (sync.entityName === 'notes_history') {
-        entity = await sql.getFirst('SELECT * FROM notes_history WHERE noteHistoryId = ?', [sync.entityId]);
+    else if (sync.entityName === 'note_revisions') {
+        entity = await sql.getFirst('SELECT * FROM note_revisions WHERE noteRevisionId = ?', [sync.entityId]);
     }
     else if (sync.entityName === 'notes_reordering') {
         entity = {
             parentNoteId: sync.entityId,
-            ordering: await sql.getMap('SELECT noteTreeId, notePosition FROM notes_tree WHERE parentNoteId = ? AND isDeleted = 0', [sync.entityId])
+            ordering: await sql.getMap('SELECT noteTreeId, notePosition FROM note_tree WHERE parentNoteId = ? AND isDeleted = 0', [sync.entityId])
         };
     }
     else if (sync.entityName === 'options') {
@@ -227,8 +227,8 @@ async function pushEntity(sync, syncContext) {
             entity.data = entity.data.toString('base64');
         }
     }
-    else if (sync.entityName === 'notes_image') {
-        entity = await sql.getFirst('SELECT * FROM notes_image WHERE noteImageId = ?', [sync.entityId]);
+    else if (sync.entityName === 'note_images') {
+        entity = await sql.getFirst('SELECT * FROM note_images WHERE noteImageId = ?', [sync.entityId]);
     }
     else if (sync.entityName === 'attributes') {
         entity = await sql.getFirst('SELECT * FROM attributes WHERE attributeId = ?', [sync.entityId]);

@@ -11,7 +11,7 @@ function newNoteTreeId() {
     return randomString(12);
 }
 
-function newNoteHistoryId() {
+function newnoteRevisionId() {
     return randomString(12);
 }
 
@@ -119,7 +119,7 @@ module.exports = {
     parseDate,
     newNoteId,
     newNoteTreeId,
-    newNoteHistoryId,
+    newnoteRevisionId,
     newImageId,
     newNoteImageId,
     newAttributeId,

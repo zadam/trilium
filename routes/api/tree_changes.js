@@ -26,13 +26,13 @@ router.put('/:noteTreeId/move-to/:parentNoteId', auth.checkApiAuth, wrap(async (
         return;
     }
 
-    const maxNotePos = await sql.getFirstValue('SELECT MAX(notePosition) FROM notes_tree WHERE parentNoteId = ? AND isDeleted = 0', [parentNoteId]);
+    const maxNotePos = await sql.getFirstValue('SELECT MAX(notePosition) FROM note_tree WHERE parentNoteId = ? AND isDeleted = 0', [parentNoteId]);
     const newNotePos = maxNotePos === null ? 0 : maxNotePos + 1;
 
     const now = utils.nowDate();
 
     await sql.doInTransaction(async () => {
-        await sql.execute("UPDATE notes_tree SET parentNoteId = ?, notePosition = ?, dateModified = ? WHERE noteTreeId = ?",
+        await sql.execute("UPDATE note_tree SET parentNoteId = ?, notePosition = ?, dateModified = ? WHERE noteTreeId = ?",
             [parentNoteId, newNotePos, now, noteTreeId]);
 
         await sync_table.addNoteTreeSync(noteTreeId, sourceId);
@@ -56,14 +56,14 @@ router.put('/:noteTreeId/move-before/:beforeNoteTreeId', auth.checkApiAuth, wrap
     await sql.doInTransaction(async () => {
         // we don't change dateModified so other changes are prioritized in case of conflict
         // also we would have to sync all those modified note trees otherwise hash checks would fail
-        await sql.execute("UPDATE notes_tree SET notePosition = notePosition + 1 WHERE parentNoteId = ? AND notePosition >= ? AND isDeleted = 0",
+        await sql.execute("UPDATE note_tree SET notePosition = notePosition + 1 WHERE parentNoteId = ? AND notePosition >= ? AND isDeleted = 0",
             [beforeNote.parentNoteId, beforeNote.notePosition]);
 
         await sync_table.addNoteReorderingSync(beforeNote.parentNoteId, sourceId);
 
         const now = utils.nowDate();
 
-        await sql.execute("UPDATE notes_tree SET parentNoteId = ?, notePosition = ?, dateModified = ? WHERE noteTreeId = ?",
+        await sql.execute("UPDATE note_tree SET parentNoteId = ?, notePosition = ?, dateModified = ? WHERE noteTreeId = ?",
             [beforeNote.parentNoteId, beforeNote.notePosition, now, noteTreeId]);
 
         await sync_table.addNoteTreeSync(noteTreeId, sourceId);
@@ -87,12 +87,12 @@ router.put('/:noteTreeId/move-after/:afterNoteTreeId', auth.checkApiAuth, wrap(a
     await sql.doInTransaction(async () => {
         // we don't change dateModified so other changes are prioritized in case of conflict
         // also we would have to sync all those modified note trees otherwise hash checks would fail
-        await sql.execute("UPDATE notes_tree SET notePosition = notePosition + 1 WHERE parentNoteId = ? AND notePosition > ? AND isDeleted = 0",
+        await sql.execute("UPDATE note_tree SET notePosition = notePosition + 1 WHERE parentNoteId = ? AND notePosition > ? AND isDeleted = 0",
             [afterNote.parentNoteId, afterNote.notePosition]);
 
         await sync_table.addNoteReorderingSync(afterNote.parentNoteId, sourceId);
 
-        await sql.execute("UPDATE notes_tree SET parentNoteId = ?, notePosition = ?, dateModified = ? WHERE noteTreeId = ?",
+        await sql.execute("UPDATE note_tree SET parentNoteId = ?, notePosition = ?, dateModified = ? WHERE noteTreeId = ?",
             [afterNote.parentNoteId, afterNote.notePosition + 1, utils.nowDate(), noteTreeId]);
 
         await sync_table.addNoteTreeSync(noteTreeId, sourceId);
@@ -106,7 +106,7 @@ router.put('/:noteTreeId/expanded/:expanded', auth.checkApiAuth, wrap(async (req
     const expanded = req.params.expanded;
 
     await sql.doInTransaction(async () => {
-        await sql.execute("UPDATE notes_tree SET isExpanded = ? WHERE noteTreeId = ?", [expanded, noteTreeId]);
+        await sql.execute("UPDATE note_tree SET isExpanded = ? WHERE noteTreeId = ?", [expanded, noteTreeId]);
 
         // we don't sync expanded attribute
     });

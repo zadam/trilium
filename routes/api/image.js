@@ -77,7 +77,7 @@ router.post('', auth.checkApiAuthOrElectron, multer.single('upload'), wrap(async
 
         const noteImageId = utils.newNoteImageId();
 
-        await sql.insert("notes_image", {
+        await sql.insert("note_images", {
             noteImageId: noteImageId,
             noteId: noteId,
             imageId: imageId,

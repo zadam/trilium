@@ -11,9 +11,9 @@ router.get('/', auth.checkApiAuth, wrap(async (req, res, next) => {
         `SELECT 
             notes.isDeleted AS current_isDeleted,
             notes.title AS current_title,
-            notes_history.*
+            note_revisions.*
         FROM 
-            notes_history
+            note_revisions
             JOIN notes USING(noteId)
         ORDER BY 
             dateModifiedTo DESC 

@@ -12,7 +12,7 @@ const noteHistory = (function() {
         await showNoteHistoryDialog(noteEditor.getCurrentNoteId());
     }
 
-    async function showNoteHistoryDialog(noteId, noteHistoryId) {
+    async function showNoteHistoryDialog(noteId, noteRevisionId) {
         glob.activeDialog = dialogEl;
 
         dialogEl.dialog({
@@ -30,17 +30,17 @@ const noteHistory = (function() {
             const dateModified = parseDate(item.dateModifiedFrom);
 
             listEl.append($('<option>', {
-                value: item.noteHistoryId,
+                value: item.noteRevisionId,
                 text: formatDateTime(dateModified)
             }));
         }
 
         if (historyItems.length > 0) {
-            if (!noteHistoryId) {
-                noteHistoryId = listEl.find("option:first").val();
+            if (!noteRevisionId) {
+                noteRevisionId = listEl.find("option:first").val();
             }
 
-            listEl.val(noteHistoryId).trigger('change');
+            listEl.val(noteRevisionId).trigger('change');
         }
         else {
             titleEl.text("No history for this note yet...");
@@ -56,7 +56,7 @@ const noteHistory = (function() {
     listEl.on('change', () => {
         const optVal = listEl.find(":selected").val();
 
-        const historyItem = historyItems.find(r => r.noteHistoryId === optVal);
+        const historyItem = historyItems.find(r => r.noteRevisionId === optVal);
 
         titleEl.html(historyItem.title);
         contentEl.html(historyItem.content);
@@ -65,9 +65,9 @@ const noteHistory = (function() {
     $(document).on('click', "a[action='note-history']", event => {
         const linkEl = $(event.target);
         const noteId = linkEl.attr('note-path');
-        const noteHistoryId = linkEl.attr('note-history-id');
+        const noteRevisionId = linkEl.attr('note-history-id');
 
-        showNoteHistoryDialog(noteId, noteHistoryId);
+        showNoteHistoryDialog(noteId, noteRevisionId);
 
         return false;
     });

@@ -13,17 +13,17 @@ const wrap = require('express-promise-wrap').wrap;
 router.get('/', auth.checkApiAuth, wrap(async (req, res, next) => {
     const notes = await sql.getAll(`
       SELECT 
-        notes_tree.*, 
+        note_tree.*, 
         notes.title, 
         notes.isProtected,
         notes.type
       FROM 
-        notes_tree 
+        note_tree 
       JOIN 
-        notes ON notes.noteId = notes_tree.noteId
+        notes ON notes.noteId = note_tree.noteId
       WHERE 
         notes.isDeleted = 0 
-        AND notes_tree.isDeleted = 0
+        AND note_tree.isDeleted = 0
       ORDER BY 
         notePosition`);
 
@@ -41,7 +41,7 @@ router.put('/:noteTreeId/set-prefix', auth.checkApiAuth, wrap(async (req, res, n
     const prefix = utils.isEmptyOrWhitespace(req.body.prefix) ? null : req.body.prefix;
 
     await sql.doInTransaction(async () => {
-        await sql.execute("UPDATE notes_tree SET prefix = ?, dateModified = ? WHERE noteTreeId = ?", [prefix, utils.nowDate(), noteTreeId]);
+        await sql.execute("UPDATE note_tree SET prefix = ?, dateModified = ? WHERE noteTreeId = ?", [prefix, utils.nowDate(), noteTreeId]);
 
         await sync_table.addNoteTreeSync(noteTreeId, sourceId);
     });

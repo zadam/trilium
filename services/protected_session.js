@@ -72,11 +72,11 @@ function decryptNoteHistoryRow(dataKey, hist) {
     }
 
     if (hist.title) {
-        hist.title = data_encryption.decryptString(dataKey, data_encryption.noteTitleIv(hist.noteHistoryId), hist.title);
+        hist.title = data_encryption.decryptString(dataKey, data_encryption.noteTitleIv(hist.noteRevisionId), hist.title);
     }
 
     if (hist.content) {
-        hist.content = data_encryption.decryptString(dataKey, data_encryption.noteTextIv(hist.noteHistoryId), hist.content);
+        hist.content = data_encryption.decryptString(dataKey, data_encryption.noteTextIv(hist.noteRevisionId), hist.content);
     }
 }
 
@@ -98,8 +98,8 @@ function encryptNote(dataKey, note) {
 function encryptNoteHistoryRow(dataKey, history) {
     dataKey = getDataKey(dataKey);
 
-    history.title = data_encryption.encrypt(dataKey, data_encryption.noteTitleIv(history.noteHistoryId), history.title);
-    history.content = data_encryption.encrypt(dataKey, data_encryption.noteTextIv(history.noteHistoryId), history.content);
+    history.title = data_encryption.encrypt(dataKey, data_encryption.noteTitleIv(history.noteRevisionId), history.title);
+    history.content = data_encryption.encrypt(dataKey, data_encryption.noteTextIv(history.noteRevisionId), history.content);
 }
 
 module.exports = {

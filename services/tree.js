@@ -28,7 +28,7 @@ async function validateParentChild(res, parentNoteId, childNoteId, noteTreeId = 
 }
 
 async function getExistingNoteTree(parentNoteId, childNoteId) {
-    return await sql.getFirst('SELECT * FROM notes_tree WHERE noteId = ? AND parentNoteId = ? AND isDeleted = 0', [childNoteId, parentNoteId]);
+    return await sql.getFirst('SELECT * FROM note_tree WHERE noteId = ? AND parentNoteId = ? AND isDeleted = 0', [childNoteId, parentNoteId]);
 }
 
 /**
@@ -51,7 +51,7 @@ async function checkTreeCycle(parentNoteId, childNoteId) {
             return false;
         }
 
-        const parentNoteIds = await sql.getFirstColumn("SELECT DISTINCT parentNoteId FROM notes_tree WHERE noteId = ? AND isDeleted = 0", [parentNoteId]);
+        const parentNoteIds = await sql.getFirstColumn("SELECT DISTINCT parentNoteId FROM note_tree WHERE noteId = ? AND isDeleted = 0", [parentNoteId]);
 
         for (const pid of parentNoteIds) {
             if (!await checkTreeCycleInner(pid)) {
@@ -66,13 +66,13 @@ async function checkTreeCycle(parentNoteId, childNoteId) {
 }
 
 async function getNoteTree(noteTreeId) {
-    return sql.getFirst("SELECT * FROM notes_tree WHERE noteTreeId = ?", [noteTreeId]);
+    return sql.getFirst("SELECT * FROM note_tree WHERE noteTreeId = ?", [noteTreeId]);
 }
 
 async function loadSubTreeNoteIds(parentNoteId, subTreeNoteIds) {
     subTreeNoteIds.push(parentNoteId);
 
-    const children = await sql.getFirstColumn("SELECT noteId FROM notes_tree WHERE parentNoteId = ? AND isDeleted = 0", [parentNoteId]);
+    const children = await sql.getFirstColumn("SELECT noteId FROM note_tree WHERE parentNoteId = ? AND isDeleted = 0", [parentNoteId]);
 
     for (const childNoteId of children) {
         await loadSubTreeNoteIds(childNoteId, subTreeNoteIds);
@@ -82,8 +82,8 @@ async function loadSubTreeNoteIds(parentNoteId, subTreeNoteIds) {
 async function sortNotesAlphabetically(parentNoteId, req, sourceId) {
     await sql.doInTransaction(async () => {
         const notes = await sql.getAll(`SELECT noteTreeId, noteId, title, isProtected 
-                                       FROM notes JOIN notes_tree USING(noteId) 
-                                       WHERE notes_tree.isDeleted = 0 AND parentNoteId = ?`, [parentNoteId]);
+                                       FROM notes JOIN note_tree USING(noteId) 
+                                       WHERE note_tree.isDeleted = 0 AND parentNoteId = ?`, [parentNoteId]);
 
         protected_session.decryptNotes(req, notes);
 
@@ -92,7 +92,7 @@ async function sortNotesAlphabetically(parentNoteId, req, sourceId) {
         let position = 1;
 
         for (const note of notes) {
-            await sql.execute("UPDATE notes_tree SET notePosition = ? WHERE noteTreeId = ?",
+            await sql.execute("UPDATE note_tree SET notePosition = ? WHERE noteTreeId = ?",
                 [position, note.noteTreeId]);
 
             position++;

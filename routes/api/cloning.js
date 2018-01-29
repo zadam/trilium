@@ -19,7 +19,7 @@ router.put('/:childNoteId/clone-to/:parentNoteId', auth.checkApiAuth, wrap(async
         return;
     }
 
-    const maxNotePos = await sql.getFirstValue('SELECT MAX(notePosition) FROM notes_tree WHERE parentNoteId = ? AND isDeleted = 0', [parentNoteId]);
+    const maxNotePos = await sql.getFirstValue('SELECT MAX(notePosition) FROM note_tree WHERE parentNoteId = ? AND isDeleted = 0', [parentNoteId]);
     const newNotePos = maxNotePos === null ? 0 : maxNotePos + 1;
 
     await sql.doInTransaction(async () => {
@@ -34,11 +34,11 @@ router.put('/:childNoteId/clone-to/:parentNoteId', auth.checkApiAuth, wrap(async
             isDeleted: 0
         };
 
-        await sql.replace("notes_tree", noteTree);
+        await sql.replace("note_tree", noteTree);
 
         await sync_table.addNoteTreeSync(noteTree.noteTreeId, sourceId);
 
-        await sql.execute("UPDATE notes_tree SET isExpanded = 1 WHERE noteId = ?", [parentNoteId]);
+        await sql.execute("UPDATE note_tree SET isExpanded = 1 WHERE noteId = ?", [parentNoteId]);
     });
 
     res.send({ success: true });
@@ -58,7 +58,7 @@ router.put('/:noteId/clone-after/:afterNoteTreeId', auth.checkApiAuth, wrap(asyn
     await sql.doInTransaction(async () => {
         // we don't change dateModified so other changes are prioritized in case of conflict
         // also we would have to sync all those modified note trees otherwise hash checks would fail
-        await sql.execute("UPDATE notes_tree SET notePosition = notePosition + 1 WHERE parentNoteId = ? AND notePosition > ? AND isDeleted = 0",
+        await sql.execute("UPDATE note_tree SET notePosition = notePosition + 1 WHERE parentNoteId = ? AND notePosition > ? AND isDeleted = 0",
             [afterNote.parentNoteId, afterNote.notePosition]);
 
         await sync_table.addNoteReorderingSync(afterNote.parentNoteId, sourceId);
@@ -73,7 +73,7 @@ router.put('/:noteId/clone-after/:afterNoteTreeId', auth.checkApiAuth, wrap(asyn
             isDeleted: 0
         };
 
-        await sql.replace("notes_tree", noteTree);
+        await sql.replace("note_tree", noteTree);
 
         await sync_table.addNoteTreeSync(noteTree.noteTreeId, sourceId);
     });
