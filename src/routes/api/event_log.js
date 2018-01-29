@@ -9,13 +9,13 @@ const wrap = require('express-promise-wrap').wrap;
 router.get('', auth.checkApiAuth, wrap(async (req, res, next) => {
     await deleteOld();
 
-    const result = await sql.getAll("SELECT * FROM event_log ORDER BY dateAdded DESC");
+    const result = await sql.getRows("SELECT * FROM event_log ORDER BY dateAdded DESC");
 
     res.send(result);
 }));
 
 async function deleteOld() {
-    const cutoffId = await sql.getFirstValue("SELECT id FROM event_log ORDER BY id DESC LIMIT 1000, 1");
+    const cutoffId = await sql.getValue("SELECT id FROM event_log ORDER BY id DESC LIMIT 1000, 1");
 
     if (cutoffId) {
         await sql.doInTransaction(async () => {

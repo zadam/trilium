@@ -10,7 +10,7 @@ async function getNoteAttributeMap(noteId) {
 }
 
 async function getNoteIdWithAttribute(name, value) {
-    return await sql.getFirstValue(`SELECT notes.noteId FROM notes JOIN attributes USING(noteId) 
+    return await sql.getValue(`SELECT notes.noteId FROM notes JOIN attributes USING(noteId) 
           WHERE notes.isDeleted = 0 AND attributes.name = ? AND attributes.value = ?`, [name, value]);
 }
 
@@ -18,11 +18,11 @@ async function getNotesWithAttribute(dataKey, name, value) {
     let notes;
 
     if (value !== undefined) {
-        notes = await sql.getAll(`SELECT notes.* FROM notes JOIN attributes USING(noteId) 
+        notes = await sql.getRows(`SELECT notes.* FROM notes JOIN attributes USING(noteId) 
           WHERE notes.isDeleted = 0 AND attributes.name = ? AND attributes.value = ?`, [name, value]);
     }
     else {
-        notes = await sql.getAll(`SELECT notes.* FROM notes JOIN attributes USING(noteId) 
+        notes = await sql.getRows(`SELECT notes.* FROM notes JOIN attributes USING(noteId) 
           WHERE notes.isDeleted = 0 AND attributes.name = ?`, [name]);
     }
 
@@ -40,7 +40,7 @@ async function getNoteWithAttribute(dataKey, name, value) {
 }
 
 async function getNoteIdsWithAttribute(name) {
-    return await sql.getFirstColumn(`SELECT DISTINCT notes.noteId FROM notes JOIN attributes USING(noteId) 
+    return await sql.getColumn(`SELECT DISTINCT notes.noteId FROM notes JOIN attributes USING(noteId) 
           WHERE notes.isDeleted = 0 AND attributes.name = ?`, [name]);
 }
 

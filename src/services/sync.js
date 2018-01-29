@@ -173,7 +173,7 @@ async function pushSync(syncContext) {
     let lastSyncedPush = await getLastSyncedPush();
 
     while (true) {
-        const sync = await sql.getFirstOrNull('SELECT * FROM sync WHERE id > ? LIMIT 1', [lastSyncedPush]);
+        const sync = await sql.getRowOrNull('SELECT * FROM sync WHERE id > ? LIMIT 1', [lastSyncedPush]);
 
         if (sync === null) {
             // nothing to sync
@@ -200,13 +200,13 @@ async function pushEntity(sync, syncContext) {
     let entity;
 
     if (sync.entityName === 'notes') {
-        entity = await sql.getFirst('SELECT * FROM notes WHERE noteId = ?', [sync.entityId]);
+        entity = await sql.getRow('SELECT * FROM notes WHERE noteId = ?', [sync.entityId]);
     }
     else if (sync.entityName === 'note_tree') {
-        entity = await sql.getFirst('SELECT * FROM note_tree WHERE noteTreeId = ?', [sync.entityId]);
+        entity = await sql.getRow('SELECT * FROM note_tree WHERE noteTreeId = ?', [sync.entityId]);
     }
     else if (sync.entityName === 'note_revisions') {
-        entity = await sql.getFirst('SELECT * FROM note_revisions WHERE noteRevisionId = ?', [sync.entityId]);
+        entity = await sql.getRow('SELECT * FROM note_revisions WHERE noteRevisionId = ?', [sync.entityId]);
     }
     else if (sync.entityName === 'note_reordering') {
         entity = {
@@ -215,23 +215,23 @@ async function pushEntity(sync, syncContext) {
         };
     }
     else if (sync.entityName === 'options') {
-        entity = await sql.getFirst('SELECT * FROM options WHERE name = ?', [sync.entityId]);
+        entity = await sql.getRow('SELECT * FROM options WHERE name = ?', [sync.entityId]);
     }
     else if (sync.entityName === 'recent_notes') {
-        entity = await sql.getFirst('SELECT * FROM recent_notes WHERE noteTreeId = ?', [sync.entityId]);
+        entity = await sql.getRow('SELECT * FROM recent_notes WHERE noteTreeId = ?', [sync.entityId]);
     }
     else if (sync.entityName === 'images') {
-        entity = await sql.getFirst('SELECT * FROM images WHERE imageId = ?', [sync.entityId]);
+        entity = await sql.getRow('SELECT * FROM images WHERE imageId = ?', [sync.entityId]);
 
         if (entity.data !== null) {
             entity.data = entity.data.toString('base64');
         }
     }
     else if (sync.entityName === 'note_images') {
-        entity = await sql.getFirst('SELECT * FROM note_images WHERE noteImageId = ?', [sync.entityId]);
+        entity = await sql.getRow('SELECT * FROM note_images WHERE noteImageId = ?', [sync.entityId]);
     }
     else if (sync.entityName === 'attributes') {
-        entity = await sql.getFirst('SELECT * FROM attributes WHERE attributeId = ?', [sync.entityId]);
+        entity = await sql.getRow('SELECT * FROM attributes WHERE attributeId = ?', [sync.entityId]);
     }
     else {
         throw new Error(`Unrecognized entity type ${sync.entityName} in sync #${sync.id}`);
@@ -262,7 +262,7 @@ async function checkContentHash(syncContext) {
     }
 
     const lastSyncedPush = await getLastSyncedPush();
-    const notPushedSyncs = await sql.getFirstValue("SELECT COUNT(*) FROM sync WHERE id > ?", [lastSyncedPush]);
+    const notPushedSyncs = await sql.getValue("SELECT COUNT(*) FROM sync WHERE id > ?", [lastSyncedPush]);
 
     if (notPushedSyncs > 0) {
         log.info("There's " + notPushedSyncs + " outstanding pushes, skipping content check.");

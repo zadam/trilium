@@ -29,7 +29,7 @@ async function generateSourceId() {
 }
 
 async function refreshSourceIds() {
-    allSourceIds = await sql.getFirstColumn("SELECT sourceId FROM source_ids ORDER BY dateCreated DESC");
+    allSourceIds = await sql.getColumn("SELECT sourceId FROM source_ids ORDER BY dateCreated DESC");
 }
 
 let allSourceIds = [];

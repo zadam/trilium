@@ -19,7 +19,7 @@ router.put('/:childNoteId/clone-to/:parentNoteId', auth.checkApiAuth, wrap(async
         return;
     }
 
-    const maxNotePos = await sql.getFirstValue('SELECT MAX(notePosition) FROM note_tree WHERE parentNoteId = ? AND isDeleted = 0', [parentNoteId]);
+    const maxNotePos = await sql.getValue('SELECT MAX(notePosition) FROM note_tree WHERE parentNoteId = ? AND isDeleted = 0', [parentNoteId]);
     const newNotePos = maxNotePos === null ? 0 : maxNotePos + 1;
 
     await sql.doInTransaction(async () => {

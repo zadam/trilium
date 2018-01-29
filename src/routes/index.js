@@ -10,7 +10,7 @@ const wrap = require('express-promise-wrap').wrap;
 router.get('', auth.checkAuth, wrap(async (req, res, next) => {
     res.render('index', {
         sourceId: await source_id.generateSourceId(),
-        maxSyncIdAtLoad: await sql.getFirstValue("SELECT MAX(id) FROM sync")
+        maxSyncIdAtLoad: await sql.getValue("SELECT MAX(id) FROM sync")
     });
 }));
 

@@ -15,7 +15,7 @@ const wrap = require('express-promise-wrap').wrap;
 router.get('/:noteId', auth.checkApiAuth, wrap(async (req, res, next) => {
     const noteId = req.params.noteId;
 
-    const detail = await sql.getFirst("SELECT * FROM notes WHERE noteId = ?", [noteId]);
+    const detail = await sql.getRow("SELECT * FROM notes WHERE noteId = ?", [noteId]);
 
     if (!detail) {
         log.info("Note " + noteId + " has not been found.");
@@ -61,7 +61,7 @@ router.get('/', auth.checkApiAuth, wrap(async (req, res, next) => {
     const search = '%' + utils.sanitizeSql(req.query.search) + '%';
 
     // searching in protected notes is pointless because of encryption
-    const noteIds = await sql.getFirstColumn(`SELECT noteId FROM notes 
+    const noteIds = await sql.getColumn(`SELECT noteId FROM notes 
               WHERE isDeleted = 0 AND isProtected = 0 AND (title LIKE ? OR content LIKE ?)`, [search, search]);
 
     res.send(noteIds);

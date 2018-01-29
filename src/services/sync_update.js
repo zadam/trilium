@@ -5,7 +5,7 @@ const notes = require('./notes');
 const sync_table = require('./sync_table');
 
 async function updateNote(entity, sourceId) {
-    const origNote = await sql.getFirst("SELECT * FROM notes WHERE noteId = ?", [entity.noteId]);
+    const origNote = await sql.getRow("SELECT * FROM notes WHERE noteId = ?", [entity.noteId]);
 
     if (!origNote || origNote.dateModified <= entity.dateModified) {
         await sql.doInTransaction(async () => {
@@ -20,7 +20,7 @@ async function updateNote(entity, sourceId) {
 }
 
 async function updateNoteTree(entity, sourceId) {
-    const orig = await sql.getFirstOrNull("SELECT * FROM note_tree WHERE noteTreeId = ?", [entity.noteTreeId]);
+    const orig = await sql.getRowOrNull("SELECT * FROM note_tree WHERE noteTreeId = ?", [entity.noteTreeId]);
 
     await sql.doInTransaction(async () => {
         if (orig === null || orig.dateModified < entity.dateModified) {
@@ -36,7 +36,7 @@ async function updateNoteTree(entity, sourceId) {
 }
 
 async function updateNoteHistory(entity, sourceId) {
-    const orig = await sql.getFirstOrNull("SELECT * FROM note_revisions WHERE noteRevisionId = ?", [entity.noteRevisionId]);
+    const orig = await sql.getRowOrNull("SELECT * FROM note_revisions WHERE noteRevisionId = ?", [entity.noteRevisionId]);
 
     await sql.doInTransaction(async () => {
         // we update note history even if date modified to is the same because the only thing which might have changed
@@ -62,7 +62,7 @@ async function updateNoteReordering(entity, sourceId) {
 }
 
 async function updateOptions(entity, sourceId) {
-    const orig = await sql.getFirstOrNull("SELECT * FROM options WHERE name = ?", [entity.name]);
+    const orig = await sql.getRowOrNull("SELECT * FROM options WHERE name = ?", [entity.name]);
 
     if (!orig.isSynced) {
         return;
@@ -80,7 +80,7 @@ async function updateOptions(entity, sourceId) {
 }
 
 async function updateRecentNotes(entity, sourceId) {
-    const orig = await sql.getFirstOrNull("SELECT * FROM recent_notes WHERE noteTreeId = ?", [entity.noteTreeId]);
+    const orig = await sql.getRowOrNull("SELECT * FROM recent_notes WHERE noteTreeId = ?", [entity.noteTreeId]);
 
     if (orig === null || orig.dateAccessed < entity.dateAccessed) {
         await sql.doInTransaction(async () => {
@@ -96,7 +96,7 @@ async function updateImage(entity, sourceId) {
         entity.data = Buffer.from(entity.data, 'base64');
     }
 
-    const origImage = await sql.getFirst("SELECT * FROM images WHERE imageId = ?", [entity.imageId]);
+    const origImage = await sql.getRow("SELECT * FROM images WHERE imageId = ?", [entity.imageId]);
 
     if (!origImage || origImage.dateModified <= entity.dateModified) {
         await sql.doInTransaction(async () => {
@@ -110,7 +110,7 @@ async function updateImage(entity, sourceId) {
 }
 
 async function updateNoteImage(entity, sourceId) {
-    const origNoteImage = await sql.getFirst("SELECT * FROM note_images WHERE noteImageId = ?", [entity.noteImageId]);
+    const origNoteImage = await sql.getRow("SELECT * FROM note_images WHERE noteImageId = ?", [entity.noteImageId]);
 
     if (!origNoteImage || origNoteImage.dateModified <= entity.dateModified) {
         await sql.doInTransaction(async () => {
@@ -124,7 +124,7 @@ async function updateNoteImage(entity, sourceId) {
 }
 
 async function updateAttribute(entity, sourceId) {
-    const origAttribute = await sql.getFirst("SELECT * FROM attributes WHERE attributeId = ?", [entity.attributeId]);
+    const origAttribute = await sql.getRow("SELECT * FROM attributes WHERE attributeId = ?", [entity.attributeId]);
 
     if (!origAttribute || origAttribute.dateModified <= entity.dateModified) {
         await sql.doInTransaction(async () => {

@@ -10,7 +10,7 @@ const wrap = require('express-promise-wrap').wrap;
 
 router.get('/:noteId', auth.checkApiAuth, wrap(async (req, res, next) => {
     const noteId = req.params.noteId;
-    const history = await sql.getAll("SELECT * FROM note_revisions WHERE noteId = ? order by dateModifiedTo desc", [noteId]);
+    const history = await sql.getRows("SELECT * FROM note_revisions WHERE noteId = ? order by dateModifiedTo desc", [noteId]);
     protected_session.decryptNoteHistoryRows(req, history);
 
     res.send(history);

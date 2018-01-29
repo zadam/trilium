@@ -5,10 +5,10 @@ const app_info = require('./app_info');
 
 async function getOptionOrNull(name) {
     try {
-        return await sql.getFirstOrNull("SELECT value FROM options WHERE name = ?", [name]);
+        return await sql.getRowOrNull("SELECT value FROM options WHERE name = ?", [name]);
     }
     catch (e) {
-        return await sql.getFirstOrNull("SELECT opt_value FROM options WHERE opt_name = ?", [name]);
+        return await sql.getRowOrNull("SELECT opt_value FROM options WHERE opt_name = ?", [name]);
     }
 }
 
@@ -26,10 +26,10 @@ async function setOption(name, value, sourceId = null) {
     let opt;
 
     try {
-        opt = await sql.getFirst("SELECT * FROM options WHERE name = ?", [name]);
+        opt = await sql.getRow("SELECT * FROM options WHERE name = ?", [name]);
     }
     catch (e) {
-        opt = await sql.getFirst("SELECT * FROM options WHERE opt_name = ?", [name]);
+        opt = await sql.getRow("SELECT * FROM options WHERE opt_name = ?", [name]);
     }
 
     if (!opt) {

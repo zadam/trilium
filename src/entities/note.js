@@ -10,7 +10,11 @@ class Note {
     }
 
     async attributes() {
-        return this.sql.getAll("SELECT * FROM attributes WHERE noteId = ?", [this.noteId]);
+        return this.sql.getRows("SELECT * FROM attributes WHERE noteId = ?", [this.noteId]);
+    }
+
+    async revisions() {
+        return this.sql.getRows("SELECT * FROM note_revisions WHERE noteId = ?", [this.noteId]);
     }
 }
 

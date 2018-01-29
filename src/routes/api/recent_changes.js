@@ -7,7 +7,7 @@ const auth = require('../../services/auth');
 const wrap = require('express-promise-wrap').wrap;
 
 router.get('/', auth.checkApiAuth, wrap(async (req, res, next) => {
-    const recentChanges = await sql.getAll(
+    const recentChanges = await sql.getRows(
         `SELECT 
             notes.isDeleted AS current_isDeleted,
             notes.title AS current_title,

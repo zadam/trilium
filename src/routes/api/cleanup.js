@@ -11,7 +11,7 @@ const wrap = require('express-promise-wrap').wrap;
 
 router.post('/cleanup-soft-deleted-items', auth.checkApiAuth, wrap(async (req, res, next) => {
     await sql.doInTransaction(async () => {
-        const noteIdsToDelete = await sql.getFirstColumn("SELECT noteId FROM notes WHERE isDeleted = 1");
+        const noteIdsToDelete = await sql.getColumn("SELECT noteId FROM notes WHERE isDeleted = 1");
         const noteIdsSql = noteIdsToDelete
             .map(noteId => "'" + utils.sanitizeSql(noteId) + "'")
             .join(', ');
@@ -49,7 +49,7 @@ router.post('/cleanup-unused-images', auth.checkApiAuth, wrap(async (req, res, n
     const sourceId = req.headers.source_id;
 
     await sql.doInTransaction(async () => {
-        const unusedImageIds = await sql.getFirstColumn(`
+        const unusedImageIds = await sql.getColumn(`
           SELECT images.imageId 
           FROM images 
             LEFT JOIN note_images ON note_images.imageId = images.imageId AND note_images.isDeleted = 0

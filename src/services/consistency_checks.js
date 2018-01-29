@@ -9,7 +9,7 @@ const utils = require('./utils');
 async function runCheck(query, errorText, errorList) {
     utils.assertArguments(query, errorText, errorList);
 
-    const result = await sql.getFirstColumn(query);
+    const result = await sql.getColumn(query);
 
     if (result.length > 0) {
         const resultText = result.map(val => "'" + val + "'").join(', ');
@@ -23,7 +23,7 @@ async function runCheck(query, errorText, errorList) {
 
 async function checkTreeCycles(errorList) {
     const childToParents = {};
-    const rows = await sql.getAll("SELECT noteId, parentNoteId FROM note_tree WHERE isDeleted = 0");
+    const rows = await sql.getRows("SELECT noteId, parentNoteId FROM note_tree WHERE isDeleted = 0");
 
     for (const row of rows) {
         const childNoteId = row.noteId;

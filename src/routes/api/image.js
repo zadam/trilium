@@ -19,7 +19,7 @@ const RESOURCE_DIR = require('../../services/resource_dir').RESOURCE_DIR;
 const fs = require('fs');
 
 router.get('/:imageId/:filename', auth.checkApiAuthOrElectron, wrap(async (req, res, next) => {
-    const image = await sql.getFirst("SELECT * FROM images WHERE imageId = ?", [req.params.imageId]);
+    const image = await sql.getRow("SELECT * FROM images WHERE imageId = ?", [req.params.imageId]);
 
     if (!image) {
         return res.status(404).send({});
@@ -39,7 +39,7 @@ router.post('', auth.checkApiAuthOrElectron, multer.single('upload'), wrap(async
     const noteId = req.query.noteId;
     const file = req.file;
 
-    const note = await sql.getFirst("SELECT * FROM notes WHERE noteId = ?", [noteId]);
+    const note = await sql.getRow("SELECT * FROM notes WHERE noteId = ?", [noteId]);
 
     if (!note) {
         return res.status(404).send(`Note ${noteId} doesn't exist.`);

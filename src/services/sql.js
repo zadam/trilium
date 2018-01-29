@@ -25,7 +25,7 @@ const dbReady = new Promise((resolve, reject) => {
             resolve(db);
         };
 
-        const tableResults = await getAll("SELECT name FROM sqlite_master WHERE type='table' AND name='notes'");
+        const tableResults = await getRows("SELECT name FROM sqlite_master WHERE type='table' AND name='notes'");
         if (tableResults.length !== 1) {
             log.info("Connected to db, but schema doesn't exist. Initializing schema ...");
 
@@ -42,7 +42,7 @@ const dbReady = new Promise((resolve, reject) => {
                 await executeScript(imagesSql);
                 await executeScript(notesImageSql);
 
-                const startNoteId = await getFirstValue("SELECT noteId FROM note_tree WHERE parentNoteId = 'root' AND isDeleted = 0 ORDER BY notePosition");
+                const startNoteId = await getValue("SELECT noteId FROM note_tree WHERE parentNoteId = 'root' AND isDeleted = 0 ORDER BY notePosition");
 
                 await require('./options').initOptions(startNoteId);
                 await require('./sync_table').fillAllSyncRows();
@@ -110,18 +110,18 @@ async function rollback() {
     return await wrap(async db => db.run("ROLLBACK"));
 }
 
-async function getFirst(query, params = []) {
+async function getRow(query, params = []) {
     return await wrap(async db => db.get(query, ...params));
 }
 
-async function getFirstOrNull(query, params = []) {
+async function getRowOrNull(query, params = []) {
     const all = await wrap(async db => db.all(query, ...params));
 
     return all.length > 0 ? all[0] : null;
 }
 
-async function getFirstValue(query, params = []) {
-    const row = await getFirstOrNull(query, params);
+async function getValue(query, params = []) {
+    const row = await getRowOrNull(query, params);
 
     if (!row) {
         return null;
@@ -130,19 +130,25 @@ async function getFirstValue(query, params = []) {
     return row[Object.keys(row)[0]];
 }
 
-async function getAll(query, params = []) {
+async function getRows(query, params = []) {
     return await wrap(async db => db.all(query, ...params));
 }
 
-async function getAllEntities(query, params = []) {
-    const rows = await getAll(query, params);
+async function getEntities(query, params = []) {
+    const rows = await getRows(query, params);
+
+    return rows.map(row => new Note(module.exports, row));
+}
+
+async function getEntity(query, params = []) {
+    const rows = await getRows(query, params);
 
     return rows.map(row => new Note(module.exports, row));
 }
 
 async function getMap(query, params = []) {
     const map = {};
-    const results = await getAll(query, params);
+    const results = await getRows(query, params);
 
     for (const row of results) {
         const keys = Object.keys(row);
@@ -153,9 +159,9 @@ async function getMap(query, params = []) {
     return map;
 }
 
-async function getFirstColumn(query, params = []) {
+async function getColumn(query, params = []) {
     const list = [];
-    const result = await getAll(query, params);
+    const result = await getRows(query, params);
 
     if (result.length === 0) {
         return list;
@@ -236,10 +242,10 @@ async function isDbUpToDate() {
     let dbVersion;
 
     try {
-        dbVersion = parseInt(await getFirstValue("SELECT value FROM options WHERE name = 'db_version'"));
+        dbVersion = parseInt(await getValue("SELECT value FROM options WHERE name = 'db_version'"));
     }
     catch (e) {
-        dbVersion = parseInt(await getFirstValue("SELECT opt_value FROM options WHERE opt_name = 'db_version'"));
+        dbVersion = parseInt(await getValue("SELECT opt_value FROM options WHERE opt_name = 'db_version'"));
     }
 
     const upToDate = dbVersion >= app_info.db_version;
@@ -255,10 +261,10 @@ async function isUserInitialized() {
     let username;
 
     try {
-        username = await getFirstValue("SELECT value FROM options WHERE name = 'username'");
+        username = await getValue("SELECT value FROM options WHERE name = 'username'");
     }
     catch (e) {
-        username = await getFirstValue("SELECT opt_value FROM options WHERE opt_name = 'username'");
+        username = await getValue("SELECT opt_value FROM options WHERE opt_name = 'username'");
     }
 
     return !!username;
@@ -269,13 +275,14 @@ module.exports = {
     isUserInitialized,
     insert,
     replace,
-    getFirstValue,
-    getFirst,
-    getFirstOrNull,
-    getAll,
-    getAllEntities,
+    getValue,
+    getRow,
+    getRowOrNull,
+    getRows,
+    getEntities,
+    getEntity,
     getMap,
-    getFirstColumn,
+    getColumn,
     execute,
     executeScript,
     doInTransaction,

@@ -11,7 +11,7 @@ const wrap = require('express-promise-wrap').wrap;
 router.get('/:noteId/attributes', auth.checkApiAuth, wrap(async (req, res, next) => {
     const noteId = req.params.noteId;
 
-    res.send(await sql.getAll("SELECT * FROM attributes WHERE noteId = ? ORDER BY dateCreated", [noteId]));
+    res.send(await sql.getRows("SELECT * FROM attributes WHERE noteId = ? ORDER BY dateCreated", [noteId]));
 }));
 
 router.put('/:noteId/attributes', auth.checkApiAuth, wrap(async (req, res, next) => {
@@ -42,7 +42,7 @@ router.put('/:noteId/attributes', auth.checkApiAuth, wrap(async (req, res, next)
         }
     });
 
-    res.send(await sql.getAll("SELECT * FROM attributes WHERE noteId = ? ORDER BY dateCreated", [noteId]));
+    res.send(await sql.getRows("SELECT * FROM attributes WHERE noteId = ? ORDER BY dateCreated", [noteId]));
 }));
 
 module.exports = router;

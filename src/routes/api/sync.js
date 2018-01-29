@@ -15,7 +15,7 @@ const wrap = require('express-promise-wrap').wrap;
 router.get('/check', auth.checkApiAuth, wrap(async (req, res, next) => {
     res.send({
         'hashes': await content_hash.getHashes(),
-        'max_sync_id': await sql.getFirstValue('SELECT MAX(id) FROM sync')
+        'max_sync_id': await sql.getValue('SELECT MAX(id) FROM sync')
     });
 }));
 
@@ -53,12 +53,12 @@ router.post('/force-note-sync/:noteId', auth.checkApiAuth, wrap(async (req, res,
     await sql.doInTransaction(async () => {
         await sync_table.addNoteSync(noteId);
 
-        for (const noteTreeId of await sql.getFirstColumn("SELECT noteTreeId FROM note_tree WHERE isDeleted = 0 AND noteId = ?", [noteId])) {
+        for (const noteTreeId of await sql.getColumn("SELECT noteTreeId FROM note_tree WHERE isDeleted = 0 AND noteId = ?", [noteId])) {
             await sync_table.addNoteTreeSync(noteTreeId);
             await sync_table.addRecentNoteSync(noteTreeId);
         }
 
-        for (const noteRevisionId of await sql.getFirstColumn("SELECT noteRevisionId FROM note_revisions WHERE noteId = ?", [noteId])) {
+        for (const noteRevisionId of await sql.getColumn("SELECT noteRevisionId FROM note_revisions WHERE noteId = ?", [noteId])) {
             await sync_table.addNoteHistorySync(noteRevisionId);
         }
     });
@@ -74,32 +74,32 @@ router.post('/force-note-sync/:noteId', auth.checkApiAuth, wrap(async (req, res,
 router.get('/changed', auth.checkApiAuth, wrap(async (req, res, next) => {
     const lastSyncId = parseInt(req.query.lastSyncId);
 
-    res.send(await sql.getAll("SELECT * FROM sync WHERE id > ?", [lastSyncId]));
+    res.send(await sql.getRows("SELECT * FROM sync WHERE id > ?", [lastSyncId]));
 }));
 
 router.get('/notes/:noteId', auth.checkApiAuth, wrap(async (req, res, next) => {
     const noteId = req.params.noteId;
 
     res.send({
-        entity: await sql.getFirst("SELECT * FROM notes WHERE noteId = ?", [noteId])
+        entity: await sql.getRow("SELECT * FROM notes WHERE noteId = ?", [noteId])
     });
 }));
 
 router.get('/note_tree/:noteTreeId', auth.checkApiAuth, wrap(async (req, res, next) => {
     const noteTreeId = req.params.noteTreeId;
 
-    res.send(await sql.getFirst("SELECT * FROM note_tree WHERE noteTreeId = ?", [noteTreeId]));
+    res.send(await sql.getRow("SELECT * FROM note_tree WHERE noteTreeId = ?", [noteTreeId]));
 }));
 
 router.get('/note_revisions/:noteRevisionId', auth.checkApiAuth, wrap(async (req, res, next) => {
     const noteRevisionId = req.params.noteRevisionId;
 
-    res.send(await sql.getFirst("SELECT * FROM note_revisions WHERE noteRevisionId = ?", [noteRevisionId]));
+    res.send(await sql.getRow("SELECT * FROM note_revisions WHERE noteRevisionId = ?", [noteRevisionId]));
 }));
 
 router.get('/options/:name', auth.checkApiAuth, wrap(async (req, res, next) => {
     const name = req.params.name;
-    const opt = await sql.getFirst("SELECT * FROM options WHERE name = ?", [name]);
+    const opt = await sql.getRow("SELECT * FROM options WHERE name = ?", [name]);
 
     if (!opt.isSynced) {
         res.send("This option can't be synced.");
@@ -121,12 +121,12 @@ router.get('/note_reordering/:parentNoteId', auth.checkApiAuth, wrap(async (req,
 router.get('/recent_notes/:noteTreeId', auth.checkApiAuth, wrap(async (req, res, next) => {
     const noteTreeId = req.params.noteTreeId;
 
-    res.send(await sql.getFirst("SELECT * FROM recent_notes WHERE noteTreeId = ?", [noteTreeId]));
+    res.send(await sql.getRow("SELECT * FROM recent_notes WHERE noteTreeId = ?", [noteTreeId]));
 }));
 
 router.get('/images/:imageId', auth.checkApiAuth, wrap(async (req, res, next) => {
     const imageId = req.params.imageId;
-    const entity = await sql.getFirst("SELECT * FROM images WHERE imageId = ?", [imageId]);
+    const entity = await sql.getRow("SELECT * FROM images WHERE imageId = ?", [imageId]);
 
     if (entity && entity.data !== null) {
         entity.data = entity.data.toString('base64');
@@ -138,13 +138,13 @@ router.get('/images/:imageId', auth.checkApiAuth, wrap(async (req, res, next) =>
 router.get('/note_images/:noteImageId', auth.checkApiAuth, wrap(async (req, res, next) => {
     const noteImageId = req.params.noteImageId;
 
-    res.send(await sql.getFirst("SELECT * FROM note_images WHERE noteImageId = ?", [noteImageId]));
+    res.send(await sql.getRow("SELECT * FROM note_images WHERE noteImageId = ?", [noteImageId]));
 }));
 
 router.get('/attributes/:attributeId', auth.checkApiAuth, wrap(async (req, res, next) => {
     const attributeId = req.params.attributeId;
 
-    res.send(await sql.getFirst("SELECT * FROM attributes WHERE attributeId = ?", [attributeId]));
+    res.send(await sql.getRow("SELECT * FROM attributes WHERE attributeId = ?", [attributeId]));
 }));
 
 router.put('/notes', auth.checkApiAuth, wrap(async (req, res, next) => {

@@ -19,14 +19,14 @@ async function createNote(parentNoteId, noteTitle, noteText) {
 }
 
 async function getNoteStartingWith(parentNoteId, startsWith) {
-    return await sql.getFirstValue(`SELECT noteId FROM notes JOIN note_tree USING(noteId) 
+    return await sql.getValue(`SELECT noteId FROM notes JOIN note_tree USING(noteId) 
                                     WHERE parentNoteId = ? AND title LIKE '${startsWith}%'
                                     AND notes.isDeleted = 0 AND isProtected = 0 
                                     AND note_tree.isDeleted = 0`, [parentNoteId]);
 }
 
 async function getRootNoteId() {
-    let rootNoteId = await sql.getFirstValue(`SELECT notes.noteId FROM notes JOIN attributes USING(noteId) 
+    let rootNoteId = await sql.getValue(`SELECT notes.noteId FROM notes JOIN attributes USING(noteId) 
               WHERE attributes.name = '${CALENDAR_ROOT_ATTRIBUTE}' AND notes.isDeleted = 0`);
 
     if (!rootNoteId) {

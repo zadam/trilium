@@ -49,7 +49,7 @@ async function getNoteWithSubtreeScript(noteId, req) {
 }
 
 async function getSubTreeScripts(parentId, includedNoteIds, dataKey) {
-    const children = await sql.getAll(`SELECT notes.noteId, notes.title, notes.content, notes.isProtected, notes.mime 
+    const children = await sql.getRows(`SELECT notes.noteId, notes.title, notes.content, notes.isProtected, notes.mime 
                                      FROM notes JOIN note_tree USING(noteId)
                                      WHERE note_tree.isDeleted = 0 AND notes.isDeleted = 0
                                            AND note_tree.parentNoteId = ? AND notes.type = 'code'

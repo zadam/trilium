@@ -17,7 +17,7 @@ async function getHashes() {
     const startTime = new Date();
 
     const hashes = {
-        notes: getHash(await sql.getAll(`
+        notes: getHash(await sql.getRows(`
             SELECT
               noteId,
               title,
@@ -29,7 +29,7 @@ async function getHashes() {
             FROM notes
             ORDER BY noteId`)),
 
-        note_tree: getHash(await sql.getAll(`
+        note_tree: getHash(await sql.getRows(`
             SELECT
                noteTreeId,
                noteId,
@@ -41,7 +41,7 @@ async function getHashes() {
              FROM note_tree
              ORDER BY noteTreeId`)),
 
-        note_revisions: getHash(await sql.getAll(`
+        note_revisions: getHash(await sql.getRows(`
             SELECT
               noteRevisionId,
               noteId,
@@ -52,7 +52,7 @@ async function getHashes() {
             FROM note_revisions
             ORDER BY noteRevisionId`)),
 
-        recent_notes: getHash(await sql.getAll(`
+        recent_notes: getHash(await sql.getRows(`
            SELECT
              noteTreeId,
              notePath,
@@ -61,7 +61,7 @@ async function getHashes() {
            FROM recent_notes
            ORDER BY notePath`)),
 
-        options: getHash(await sql.getAll(`
+        options: getHash(await sql.getRows(`
            SELECT 
              name,
              value 
@@ -71,7 +71,7 @@ async function getHashes() {
 
         // we don't include image data on purpose because they are quite large, checksum is good enough
         // to represent the data anyway
-        images: getHash(await sql.getAll(`
+        images: getHash(await sql.getRows(`
           SELECT 
             imageId,
             format,
@@ -83,7 +83,7 @@ async function getHashes() {
           FROM images  
           ORDER BY imageId`)),
 
-        attributes: getHash(await sql.getAll(`
+        attributes: getHash(await sql.getRows(`
           SELECT 
             attributeId,
             noteId

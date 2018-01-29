@@ -6,7 +6,7 @@ const attributes = require('./attributes');
 const protected_session = require('./protected_session');
 
 async function getNoteById(noteId, dataKey) {
-    const note = await sql.getFirst("SELECT * FROM notes WHERE noteId = ?", [noteId]);
+    const note = await sql.getRow("SELECT * FROM notes WHERE noteId = ?", [noteId]);
 
     protected_session.decryptNote(dataKey, note);
 
@@ -53,12 +53,12 @@ async function createNewNote(parentNoteId, noteOpts, dataKey, sourceId) {
     let newNotePos = 0;
 
     if (noteOpts.target === 'into') {
-        const maxNotePos = await sql.getFirstValue('SELECT MAX(notePosition) FROM note_tree WHERE parentNoteId = ? AND isDeleted = 0', [parentNoteId]);
+        const maxNotePos = await sql.getValue('SELECT MAX(notePosition) FROM note_tree WHERE parentNoteId = ? AND isDeleted = 0', [parentNoteId]);
 
         newNotePos = maxNotePos === null ? 0 : maxNotePos + 1;
     }
     else if (noteOpts.target === 'after') {
-        const afterNote = await sql.getFirst('SELECT notePosition FROM note_tree WHERE noteTreeId = ?', [noteOpts.target_noteTreeId]);
+        const afterNote = await sql.getRow('SELECT notePosition FROM note_tree WHERE noteTreeId = ?', [noteOpts.target_noteTreeId]);
 
         newNotePos = afterNote.notePosition + 1;
 
@@ -73,7 +73,7 @@ async function createNewNote(parentNoteId, noteOpts, dataKey, sourceId) {
     }
 
     if (parentNoteId !== 'root') {
-        const parent = await sql.getFirst("SELECT * FROM notes WHERE noteId = ?", [parentNoteId]);
+        const parent = await sql.getRow("SELECT * FROM notes WHERE noteId = ?", [parentNoteId]);
 
         if (!noteOpts.type) {
             noteOpts.type = parent.type;
@@ -125,11 +125,11 @@ async function createNewNote(parentNoteId, noteOpts, dataKey, sourceId) {
 }
 
 async function protectNoteRecursively(noteId, dataKey, protect, sourceId) {
-    const note = await sql.getFirst("SELECT * FROM notes WHERE noteId = ?", [noteId]);
+    const note = await sql.getRow("SELECT * FROM notes WHERE noteId = ?", [noteId]);
 
     await protectNote(note, dataKey, protect, sourceId);
 
-    const children = await sql.getFirstColumn("SELECT noteId FROM note_tree WHERE parentNoteId = ? AND isDeleted = 0", [noteId]);
+    const children = await sql.getColumn("SELECT noteId FROM note_tree WHERE parentNoteId = ? AND isDeleted = 0", [noteId]);
 
     for (const childNoteId of children) {
         await protectNoteRecursively(childNoteId, dataKey, protect, sourceId);
@@ -165,7 +165,7 @@ async function protectNote(note, dataKey, protect, sourceId) {
 }
 
 async function protectNoteHistory(noteId, dataKey, protect, sourceId) {
-    const historyToChange = await sql.getAll("SELECT * FROM note_revisions WHERE noteId = ? AND isProtected != ?", [noteId, protect]);
+    const historyToChange = await sql.getRows("SELECT * FROM note_revisions WHERE noteId = ? AND isProtected != ?", [noteId, protect]);
 
     for (const history of historyToChange) {
         if (protect) {
@@ -187,7 +187,7 @@ async function protectNoteHistory(noteId, dataKey, protect, sourceId) {
 }
 
 async function saveNoteHistory(noteId, dataKey, sourceId, nowStr) {
-    const oldNote = await sql.getFirst("SELECT * FROM notes WHERE noteId = ?", [noteId]);
+    const oldNote = await sql.getRow("SELECT * FROM notes WHERE noteId = ?", [noteId]);
 
     if (oldNote.isProtected) {
         protected_session.decryptNote(dataKey, oldNote);
@@ -212,7 +212,7 @@ async function saveNoteHistory(noteId, dataKey, sourceId, nowStr) {
 }
 
 async function saveNoteImages(noteId, noteText, sourceId) {
-    const existingNoteImages = await sql.getAll("SELECT * FROM note_images WHERE noteId = ?", [noteId]);
+    const existingNoteImages = await sql.getRows("SELECT * FROM note_images WHERE noteId = ?", [noteId]);
     const foundImageIds = [];
     const now = utils.nowDate();
     const re = /src="\/api\/images\/([a-zA-Z0-9]+)\//g;
@@ -272,7 +272,7 @@ async function updateNote(noteId, newNote, dataKey, sourceId) {
 
     const historyCutoff = utils.dateStr(new Date(now.getTime() - historySnapshotTimeInterval * 1000));
 
-    const existingnoteRevisionId = await sql.getFirstValue(
+    const existingnoteRevisionId = await sql.getValue(
         "SELECT noteRevisionId FROM note_revisions WHERE noteId = ? AND dateModifiedTo >= ?", [noteId, historyCutoff]);
 
     await sql.doInTransaction(async () => {
@@ -301,7 +301,7 @@ async function updateNote(noteId, newNote, dataKey, sourceId) {
 }
 
 async function deleteNote(noteTreeId, sourceId) {
-    const noteTree = await sql.getFirstOrNull("SELECT * FROM note_tree WHERE noteTreeId = ?", [noteTreeId]);
+    const noteTree = await sql.getRowOrNull("SELECT * FROM note_tree WHERE noteTreeId = ?", [noteTreeId]);
 
     if (!noteTree || noteTree.isDeleted === 1) {
         return;
@@ -312,15 +312,15 @@ async function deleteNote(noteTreeId, sourceId) {
     await sql.execute("UPDATE note_tree SET isDeleted = 1, dateModified = ? WHERE noteTreeId = ?", [now, noteTreeId]);
     await sync_table.addNoteTreeSync(noteTreeId, sourceId);
 
-    const noteId = await sql.getFirstValue("SELECT noteId FROM note_tree WHERE noteTreeId = ?", [noteTreeId]);
+    const noteId = await sql.getValue("SELECT noteId FROM note_tree WHERE noteTreeId = ?", [noteTreeId]);
 
-    const notDeletedNoteTreesCount = await sql.getFirstValue("SELECT COUNT(*) FROM note_tree WHERE noteId = ? AND isDeleted = 0", [noteId]);
+    const notDeletedNoteTreesCount = await sql.getValue("SELECT COUNT(*) FROM note_tree WHERE noteId = ? AND isDeleted = 0", [noteId]);
 
     if (!notDeletedNoteTreesCount) {
         await sql.execute("UPDATE notes SET isDeleted = 1, dateModified = ? WHERE noteId = ?", [now, noteId]);
         await sync_table.addNoteSync(noteId, sourceId);
 
-        const children = await sql.getAll("SELECT noteTreeId FROM note_tree WHERE parentNoteId = ? AND isDeleted = 0", [noteId]);
+        const children = await sql.getRows("SELECT noteTreeId FROM note_tree WHERE parentNoteId = ? AND isDeleted = 0", [noteId]);
 
         for (const child of children) {
             await deleteNote(child.noteTreeId, sourceId);

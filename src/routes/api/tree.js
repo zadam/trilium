@@ -11,7 +11,7 @@ const sync_table = require('../../services/sync_table');
 const wrap = require('express-promise-wrap').wrap;
 
 router.get('/', auth.checkApiAuth, wrap(async (req, res, next) => {
-    const notes = await sql.getAll(`
+    const notes = await sql.getRows(`
       SELECT 
         note_tree.*, 
         notes.title, 

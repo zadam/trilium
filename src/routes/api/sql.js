@@ -12,7 +12,7 @@ router.post('/execute', auth.checkApiAuth, wrap(async (req, res, next) => {
     try {
         res.send({
             success: true,
-            rows: await sql.getAll(query)
+            rows: await sql.getRows(query)
         });
     }
     catch (e) {
