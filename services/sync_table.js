@@ -1,5 +1,5 @@
 const sql = require('./sql');
-const sourceId = require('./source_id');
+const source_id = require('./source_id');
 const utils = require('./utils');
 const sync_setup = require('./sync_setup');
 const log = require('./log');
@@ -45,7 +45,7 @@ async function addEntitySync(entityName, entityId, sourceId) {
         entityName: entityName,
         entityId: entityId,
         syncDate: utils.nowDate(),
-        sourceId: sourceId || sourceId.getCurrentSourceId()
+        sourceId: sourceId || source_id.getCurrentSourceId()
     });
 
     if (!sync_setup.isSyncSetup) {

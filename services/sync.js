@@ -5,7 +5,7 @@ const rp = require('request-promise');
 const sql = require('./sql');
 const options = require('./options');
 const utils = require('./utils');
-const sourceId = require('./source_id');
+const source_id = require('./source_id');
 const notes = require('./notes');
 const syncUpdate = require('./sync_update');
 const content_hash = require('./content_hash');
@@ -80,7 +80,7 @@ async function login() {
         hash: hash
     });
 
-    if (sourceId.isLocalSourceId(resp.sourceId)) {
+    if (source_id.isLocalSourceId(resp.sourceId)) {
         throw new Error(`Sync server has source ID ${resp.sourceId} which is also local. Try restarting sync server.`);
     }
 
@@ -109,7 +109,7 @@ async function pullSync(syncContext) {
     log.info("Pulled " + syncRows.length + " changes from " + changesUri);
 
     for (const sync of syncRows) {
-        if (sourceId.isLocalSourceId(sync.sourceId)) {
+        if (source_id.isLocalSourceId(sync.sourceId)) {
             log.info(`Skipping pull #${sync.id} ${sync.entityName} ${sync.entityId} because ${sync.sourceId} is a local source id.`);
 
             await setLastSyncedPull(sync.id);
