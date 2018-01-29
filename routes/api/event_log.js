@@ -9,7 +9,7 @@ const wrap = require('express-promise-wrap').wrap;
 router.get('', auth.checkApiAuth, wrap(async (req, res, next) => {
     await deleteOld();
 
-    const result = await sql.getAll("SELECT * FROM event_log ORDER BY date_added DESC");
+    const result = await sql.getAll("SELECT * FROM event_log ORDER BY dateAdded DESC");
 
     res.send(result);
 }));

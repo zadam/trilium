@@ -11,29 +11,29 @@ const DATE_ATTRIBUTE = 'date_note';
 
 async function createNote(parentNoteId, noteTitle, noteText) {
     return (await notes.createNewNote(parentNoteId, {
-        note_title: noteTitle,
-        note_text: noteText,
+        title: noteTitle,
+        content: noteText,
         target: 'into',
-        is_protected: false
+        isProtected: false
     })).noteId;
 }
 
 async function getNoteStartingWith(parentNoteId, startsWith) {
-    return await sql.getFirstValue(`SELECT note_id FROM notes JOIN notes_tree USING(note_id) 
-                                    WHERE parent_note_id = ? AND note_title LIKE '${startsWith}%'
-                                    AND notes.is_deleted = 0 AND is_protected = 0 
-                                    AND notes_tree.is_deleted = 0`, [parentNoteId]);
+    return await sql.getFirstValue(`SELECT noteId FROM notes JOIN notes_tree USING(noteId) 
+                                    WHERE parentNoteId = ? AND title LIKE '${startsWith}%'
+                                    AND notes.isDeleted = 0 AND isProtected = 0 
+                                    AND notes_tree.isDeleted = 0`, [parentNoteId]);
 }
 
 async function getRootNoteId() {
-    let rootNoteId = await sql.getFirstValue(`SELECT notes.note_id FROM notes JOIN attributes USING(note_id) 
-              WHERE attributes.name = '${CALENDAR_ROOT_ATTRIBUTE}' AND notes.is_deleted = 0`);
+    let rootNoteId = await sql.getFirstValue(`SELECT notes.noteId FROM notes JOIN attributes USING(noteId) 
+              WHERE attributes.name = '${CALENDAR_ROOT_ATTRIBUTE}' AND notes.isDeleted = 0`);
 
     if (!rootNoteId) {
         rootNoteId = (await notes.createNewNote('root', {
-            note_title: 'Calendar',
+            title: 'Calendar',
             target: 'into',
-            is_protected: false
+            isProtected: false
         })).noteId;
 
         await attributes.createAttribute(rootNoteId, CALENDAR_ROOT_ATTRIBUTE);

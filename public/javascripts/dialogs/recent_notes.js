@@ -14,7 +14,7 @@ const recentNotes = (function() {
     async function reload() {
         const result = await server.get('recent-notes');
 
-        list = result.map(r => r.note_path);
+        list = result.map(r => r.notePath);
     }
 
     function addRecentNote(noteTreeId, notePath) {
@@ -23,7 +23,7 @@ const recentNotes = (function() {
             if (notePath && notePath === noteTree.getCurrentNotePath()) {
                 const result = await server.put('recent-notes/' + noteTreeId + '/' + encodeURIComponent(notePath));
 
-                list = result.map(r => r.note_path);
+                list = result.map(r => r.notePath);
             }
         }, 1500);
     }

@@ -19,7 +19,7 @@ const RESOURCE_DIR = require('../../services/resource_dir').RESOURCE_DIR;
 const fs = require('fs');
 
 router.get('/:imageId/:filename', auth.checkApiAuthOrElectron, wrap(async (req, res, next) => {
-    const image = await sql.getFirst("SELECT * FROM images WHERE image_id = ?", [req.params.imageId]);
+    const image = await sql.getFirst("SELECT * FROM images WHERE imageId = ?", [req.params.imageId]);
 
     if (!image) {
         return res.status(404).send({});
@@ -35,11 +35,11 @@ router.get('/:imageId/:filename', auth.checkApiAuthOrElectron, wrap(async (req, 
 }));
 
 router.post('', auth.checkApiAuthOrElectron, multer.single('upload'), wrap(async (req, res, next) => {
-    const sourceId = req.headers.source_id;
+    const sourceId = req.headers.sourceId;
     const noteId = req.query.noteId;
     const file = req.file;
 
-    const note = await sql.getFirst("SELECT * FROM notes WHERE note_id = ?", [noteId]);
+    const note = await sql.getFirst("SELECT * FROM notes WHERE noteId = ?", [noteId]);
 
     if (!note) {
         return res.status(404).send(`Note ${noteId} doesn't exist.`);
@@ -63,14 +63,14 @@ router.post('', auth.checkApiAuthOrElectron, multer.single('upload'), wrap(async
 
     await sql.doInTransaction(async () => {
         await sql.insert("images", {
-            image_id: imageId,
+            imageId: imageId,
             format: imageFormat.ext,
             name: fileName,
             checksum: utils.hash(optimizedImage),
             data: optimizedImage,
-            is_deleted: 0,
-            date_modified: now,
-            date_created: now
+            isDeleted: 0,
+            dateModified: now,
+            dateCreated: now
         });
 
         await sync_table.addImageSync(imageId, sourceId);
@@ -78,12 +78,12 @@ router.post('', auth.checkApiAuthOrElectron, multer.single('upload'), wrap(async
         const noteImageId = utils.newNoteImageId();
 
         await sql.insert("notes_image", {
-            note_image_id: noteImageId,
-            note_id: noteId,
-            image_id: imageId,
-            is_deleted: 0,
-            date_modified: now,
-            date_created: now
+            noteImageId: noteImageId,
+            noteId: noteId,
+            imageId: imageId,
+            isDeleted: 0,
+            dateModified: now,
+            dateCreated: now
         });
 
         await sync_table.addNoteImageSync(noteImageId, sourceId);

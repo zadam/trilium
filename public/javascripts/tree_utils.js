@@ -4,7 +4,7 @@ const treeUtils = (function() {
     const treeEl = $("#tree");
 
     function getParentProtectedStatus(node) {
-        return isTopLevelNode(node) ? 0 : node.getParent().data.is_protected;
+        return isTopLevelNode(node) ? 0 : node.getParent().data.isProtected;
     }
 
     function getNodeByKey(key) {
@@ -21,8 +21,8 @@ const treeUtils = (function() {
         const path = [];
 
         while (node && !isRootNode(node)) {
-            if (node.data.note_id) {
-                path.push(node.data.note_id);
+            if (node.data.noteId) {
+                path.push(node.data.noteId);
             }
 
             node = node.getParent();
@@ -32,7 +32,7 @@ const treeUtils = (function() {
     }
 
     function setNodeTitleWithPrefix(node) {
-        const noteTitle = noteTree.getNoteTitle(node.data.note_id);
+        const noteTitle = noteTree.getNoteTitle(node.data.noteId);
         const prefix = node.data.prefix;
 
         const title = (prefix ? (prefix + " - ") : "") + noteTitle;

@@ -19,7 +19,7 @@ const attributesDialog = (function() {
 
         this.addNewRow = function() {
             self.attributes.push({
-                attribute_id: '',
+                attributeId: '',
                 name: '',
                 value: ''
             });

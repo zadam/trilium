@@ -9,7 +9,7 @@ const server = (function() {
 
         return {
             protected_session_id: protectedSessionId,
-            source_id: glob.sourceId
+            sourceId: glob.sourceId
         };
     }
 

@@ -18,10 +18,10 @@ const eventLog = (function() {
         listEl.html('');
 
         for (const event of result) {
-            const dateTime = formatDateTime(parseDate(event.date_added));
+            const dateTime = formatDateTime(parseDate(event.dateAdded));
 
-            if (event.note_id) {
-                const noteLink = link.createNoteLink(event.note_id).prop('outerHTML');
+            if (event.noteId) {
+                const noteLink = link.createNoteLink(event.noteId).prop('outerHTML');
 
                 event.comment = event.comment.replace('<note>', noteLink);
             }

@@ -24,22 +24,22 @@ const recentChanges = (function() {
             const dayEl = $('<div>').append($('<b>').html(formatDate(dateDay))).append(changesListEl);
 
             for (const change of dayChanges) {
-                const formattedTime = formatTime(parseDate(change.date_modified_to));
+                const formattedTime = formatTime(parseDate(change.dateModifiedTo));
 
                 const revLink = $("<a>", {
                     href: 'javascript:',
                     text: 'rev'
                 }).attr('action', 'note-history')
-                    .attr('note-path', change.note_id)
-                    .attr('note-history-id', change.note_history_id);
+                    .attr('note-path', change.noteId)
+                    .attr('note-history-id', change.noteHistoryId);
 
                 let noteLink;
 
-                if (change.current_is_deleted) {
-                    noteLink = change.current_note_title;
+                if (change.current_isDeleted) {
+                    noteLink = change.current_title;
                 }
                 else {
-                    noteLink = link.createNoteLink(change.note_id, change.note_title);
+                    noteLink = link.createNoteLink(change.noteId, change.title);
                 }
 
                 changesListEl.append($('<li>')
@@ -57,7 +57,7 @@ const recentChanges = (function() {
         const dayCache = {};
 
         for (const row of result) {
-            let dateDay = parseDate(row.date_modified_to);
+            let dateDay = parseDate(row.dateModifiedTo);
             dateDay.setHours(0);
             dateDay.setMinutes(0);
             dateDay.setSeconds(0);

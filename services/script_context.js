@@ -12,7 +12,7 @@ function ScriptContext(noteId, dataKey) {
 
     function deserializePayload(note) {
         if (note && note.type === "code" && note.mime === "application/json") {
-            note.payload = JSON.parse(note.note_text);
+            note.payload = JSON.parse(note.content);
         }
     }
 
@@ -46,10 +46,10 @@ function ScriptContext(noteId, dataKey) {
 
     this.createNote = async function (parentNoteId, name, payload, extraOptions = {}) {
         const note = {
-            note_title: name,
-            note_text: extraOptions.json ? serializePayload(payload) : payload,
+            title: name,
+            content: extraOptions.json ? serializePayload(payload) : payload,
             target: 'into',
-            is_protected: extraOptions.isProtected !== undefined ? extraOptions.isProtected : false,
+            isProtected: extraOptions.isProtected !== undefined ? extraOptions.isProtected : false,
             type: extraOptions.type,
             mime: extraOptions.mime
         };
@@ -77,20 +77,20 @@ function ScriptContext(noteId, dataKey) {
 
     this.updateNote = async function (note) {
         if (note.type === 'code' && note.mime === 'application/json') {
-            note.note_text = serializePayload(note.payload);
+            note.content = serializePayload(note.payload);
         }
 
-        log.info("new note text: ", note.note_text);
+        log.info("new note text: ", note.content);
 
         delete note.payload;
 
-        if (note.is_protected) {
+        if (note.isProtected) {
             protected_session.encryptNote(this.dataKey, note);
         }
 
         await sql.replace("notes", note);
 
-        await sync_table.addNoteSync(note.note_id);
+        await sync_table.addNoteSync(note.noteId);
     };
 
     this.log = function(message) {

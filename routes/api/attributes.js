@@ -11,7 +11,7 @@ const wrap = require('express-promise-wrap').wrap;
 router.get('/:noteId/attributes', auth.checkApiAuth, wrap(async (req, res, next) => {
     const noteId = req.params.noteId;
 
-    res.send(await sql.getAll("SELECT * FROM attributes WHERE note_id = ? ORDER BY date_created", [noteId]));
+    res.send(await sql.getAll("SELECT * FROM attributes WHERE noteId = ? ORDER BY dateCreated", [noteId]));
 }));
 
 router.put('/:noteId/attributes', auth.checkApiAuth, wrap(async (req, res, next) => {
@@ -21,28 +21,28 @@ router.put('/:noteId/attributes', auth.checkApiAuth, wrap(async (req, res, next)
 
     await sql.doInTransaction(async () => {
         for (const attr of attributes) {
-            if (attr.attribute_id) {
-                await sql.execute("UPDATE attributes SET name = ?, value = ?, date_modified = ? WHERE attribute_id = ?",
-                    [attr.name, attr.value, now, attr.attribute_id]);
+            if (attr.attributeId) {
+                await sql.execute("UPDATE attributes SET name = ?, value = ?, dateModified = ? WHERE attributeId = ?",
+                    [attr.name, attr.value, now, attr.attributeId]);
             }
             else {
-                attr.attribute_id = utils.newAttributeId();
+                attr.attributeId = utils.newAttributeId();
 
                 await sql.insert("attributes", {
-                   attribute_id: attr.attribute_id,
-                   note_id: noteId,
+                   attributeId: attr.attributeId,
+                   noteId: noteId,
                    name: attr.name,
                    value: attr.value,
-                   date_created: now,
-                   date_modified: now
+                   dateCreated: now,
+                   dateModified: now
                 });
             }
 
-            await sync_table.addAttributeSync(attr.attribute_id);
+            await sync_table.addAttributeSync(attr.attributeId);
         }
     });
 
-    res.send(await sql.getAll("SELECT * FROM attributes WHERE note_id = ? ORDER BY date_created", [noteId]));
+    res.send(await sql.getAll("SELECT * FROM attributes WHERE noteId = ? ORDER BY dateCreated", [noteId]));
 }));
 
 module.exports = router;

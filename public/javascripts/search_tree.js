@@ -46,7 +46,7 @@ const searchTree = (function() {
             }
 
             // Pass a string to perform case insensitive matching
-            getTree().filterBranches(node => noteIds.includes(node.data.note_id));
+            getTree().filterBranches(node => noteIds.includes(node.data.noteId));
         }
     }).focus();
 

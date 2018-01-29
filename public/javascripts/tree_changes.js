@@ -3,7 +3,7 @@
 const treeChanges = (function() {
     async function moveBeforeNode(nodesToMove, beforeNode) {
         for (const nodeToMove of nodesToMove) {
-            const resp = await server.put('tree/' + nodeToMove.data.note_tree_id + '/move-before/' + beforeNode.data.note_tree_id);
+            const resp = await server.put('tree/' + nodeToMove.data.noteTreeId + '/move-before/' + beforeNode.data.noteTreeId);
 
             if (!resp.success) {
                 alert(resp.message);
@@ -18,7 +18,7 @@ const treeChanges = (function() {
         nodesToMove.reverse(); // need to reverse to keep the note order
 
         for (const nodeToMove of nodesToMove) {
-            const resp = await server.put('tree/' + nodeToMove.data.note_tree_id + '/move-after/' + afterNode.data.note_tree_id);
+            const resp = await server.put('tree/' + nodeToMove.data.noteTreeId + '/move-after/' + afterNode.data.noteTreeId);
 
             if (!resp.success) {
                 alert(resp.message);
@@ -31,7 +31,7 @@ const treeChanges = (function() {
 
     async function moveToNode(nodesToMove, toNode) {
         for (const nodeToMove of nodesToMove) {
-            const resp = await server.put('tree/' + nodeToMove.data.note_tree_id + '/move-to/' + toNode.data.note_id);
+            const resp = await server.put('tree/' + nodeToMove.data.noteTreeId + '/move-to/' + toNode.data.noteId);
 
             if (!resp.success) {
                 alert(resp.message);
@@ -61,7 +61,7 @@ const treeChanges = (function() {
         }
 
         for (const node of nodes) {
-            await server.remove('tree/' + node.data.note_tree_id);
+            await server.remove('tree/' + node.data.noteTreeId);
         }
 
         // following code assumes that nodes contain only top-most selected nodes - getSelectedNodes has been
@@ -93,7 +93,7 @@ const treeChanges = (function() {
             return;
         }
 
-        const resp = await server.put('tree/' + node.data.note_tree_id + '/move-after/' + node.getParent().data.note_tree_id);
+        const resp = await server.put('tree/' + node.data.noteTreeId + '/move-after/' + node.getParent().data.noteTreeId);
 
         if (!resp.success) {
             alert(resp.message);
@@ -109,15 +109,15 @@ const treeChanges = (function() {
     }
 
     function changeNode(node, func) {
-        assertArguments(node.data.parent_note_id, node.data.note_id);
+        assertArguments(node.data.parentNoteId, node.data.noteId);
 
-        noteTree.removeParentChildRelation(node.data.parent_note_id, node.data.note_id);
+        noteTree.removeParentChildRelation(node.data.parentNoteId, node.data.noteId);
 
         func(node);
 
-        node.data.parent_note_id = isTopLevelNode(node) ? 'root' : node.getParent().data.note_id;
+        node.data.parentNoteId = isTopLevelNode(node) ? 'root' : node.getParent().data.noteId;
 
-        noteTree.setParentChildRelation(node.data.note_tree_id, node.data.parent_note_id, node.data.note_id);
+        noteTree.setParentChildRelation(node.data.noteTreeId, node.data.parentNoteId, node.data.noteId);
 
         noteTree.setCurrentNotePathToHash(node);
     }

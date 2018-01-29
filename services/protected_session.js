@@ -43,16 +43,16 @@ function isProtectedSessionAvailable(req) {
 function decryptNote(dataKey, note) {
     dataKey = getDataKey(dataKey);
 
-    if (!note.is_protected) {
+    if (!note.isProtected) {
         return;
     }
 
-    if (note.note_title) {
-        note.note_title = data_encryption.decryptString(dataKey, data_encryption.noteTitleIv(note.note_id), note.note_title);
+    if (note.title) {
+        note.title = data_encryption.decryptString(dataKey, data_encryption.noteTitleIv(note.noteId), note.title);
     }
 
-    if (note.note_text) {
-        note.note_text = data_encryption.decryptString(dataKey, data_encryption.noteTextIv(note.note_id), note.note_text);
+    if (note.content) {
+        note.content = data_encryption.decryptString(dataKey, data_encryption.noteTextIv(note.noteId), note.content);
     }
 }
 
@@ -67,16 +67,16 @@ function decryptNotes(dataKey, notes) {
 function decryptNoteHistoryRow(dataKey, hist) {
     dataKey = getDataKey(dataKey);
 
-    if (!hist.is_protected) {
+    if (!hist.isProtected) {
         return;
     }
 
-    if (hist.note_title) {
-        hist.note_title = data_encryption.decryptString(dataKey, data_encryption.noteTitleIv(hist.note_history_id), hist.note_title);
+    if (hist.title) {
+        hist.title = data_encryption.decryptString(dataKey, data_encryption.noteTitleIv(hist.noteHistoryId), hist.title);
     }
 
-    if (hist.note_text) {
-        hist.note_text = data_encryption.decryptString(dataKey, data_encryption.noteTextIv(hist.note_history_id), hist.note_text);
+    if (hist.content) {
+        hist.content = data_encryption.decryptString(dataKey, data_encryption.noteTextIv(hist.noteHistoryId), hist.content);
     }
 }
 
@@ -91,15 +91,15 @@ function decryptNoteHistoryRows(dataKey, historyRows) {
 function encryptNote(dataKey, note) {
     dataKey = getDataKey(dataKey);
 
-    note.note_title = data_encryption.encrypt(dataKey, data_encryption.noteTitleIv(note.note_id), note.note_title);
-    note.note_text = data_encryption.encrypt(dataKey, data_encryption.noteTextIv(note.note_id), note.note_text);
+    note.title = data_encryption.encrypt(dataKey, data_encryption.noteTitleIv(note.noteId), note.title);
+    note.content = data_encryption.encrypt(dataKey, data_encryption.noteTextIv(note.noteId), note.content);
 }
 
 function encryptNoteHistoryRow(dataKey, history) {
     dataKey = getDataKey(dataKey);
 
-    history.note_title = data_encryption.encrypt(dataKey, data_encryption.noteTitleIv(history.note_history_id), history.note_title);
-    history.note_text = data_encryption.encrypt(dataKey, data_encryption.noteTextIv(history.note_history_id), history.note_text);
+    history.title = data_encryption.encrypt(dataKey, data_encryption.noteTitleIv(history.noteHistoryId), history.title);
+    history.content = data_encryption.encrypt(dataKey, data_encryption.noteTextIv(history.noteHistoryId), history.content);
 }
 
 module.exports = {

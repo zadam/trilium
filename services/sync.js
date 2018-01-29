@@ -5,7 +5,7 @@ const rp = require('request-promise');
 const sql = require('./sql');
 const options = require('./options');
 const utils = require('./utils');
-const source_id = require('./source_id');
+const sourceId = require('./sourceId');
 const notes = require('./notes');
 const syncUpdate = require('./sync_update');
 const content_hash = require('./content_hash');
@@ -80,7 +80,7 @@ async function login() {
         hash: hash
     });
 
-    if (source_id.isLocalSourceId(resp.sourceId)) {
+    if (sourceId.isLocalSourceId(resp.sourceId)) {
         throw new Error(`Sync server has source ID ${resp.sourceId} which is also local. Try restarting sync server.`);
     }
 
@@ -109,48 +109,48 @@ async function pullSync(syncContext) {
     log.info("Pulled " + syncRows.length + " changes from " + changesUri);
 
     for (const sync of syncRows) {
-        if (source_id.isLocalSourceId(sync.source_id)) {
-            log.info(`Skipping pull #${sync.id} ${sync.entity_name} ${sync.entity_id} because ${sync.source_id} is a local source id.`);
+        if (sourceId.isLocalSourceId(sync.sourceId)) {
+            log.info(`Skipping pull #${sync.id} ${sync.entityName} ${sync.entityId} because ${sync.sourceId} is a local source id.`);
 
             await setLastSyncedPull(sync.id);
 
             continue;
         }
 
-        const resp = await syncRequest(syncContext, 'GET', "/api/sync/" + sync.entity_name + "/" + encodeURIComponent(sync.entity_id));
+        const resp = await syncRequest(syncContext, 'GET', "/api/sync/" + sync.entityName + "/" + encodeURIComponent(sync.entityId));
 
-        if (!resp || (sync.entity_name === 'notes' && !resp.entity)) {
-            log.error(`Empty response to pull for sync #${sync.id} ${sync.entity_name}, id=${sync.entity_id}`);
+        if (!resp || (sync.entityName === 'notes' && !resp.entity)) {
+            log.error(`Empty response to pull for sync #${sync.id} ${sync.entityName}, id=${sync.entityId}`);
         }
-        else if (sync.entity_name === 'notes') {
+        else if (sync.entityName === 'notes') {
             await syncUpdate.updateNote(resp.entity, syncContext.sourceId);
         }
-        else if (sync.entity_name === 'notes_tree') {
+        else if (sync.entityName === 'notes_tree') {
             await syncUpdate.updateNoteTree(resp, syncContext.sourceId);
         }
-        else if (sync.entity_name === 'notes_history') {
+        else if (sync.entityName === 'notes_history') {
             await syncUpdate.updateNoteHistory(resp, syncContext.sourceId);
         }
-        else if (sync.entity_name === 'notes_reordering') {
+        else if (sync.entityName === 'notes_reordering') {
             await syncUpdate.updateNoteReordering(resp, syncContext.sourceId);
         }
-        else if (sync.entity_name === 'options') {
+        else if (sync.entityName === 'options') {
             await syncUpdate.updateOptions(resp, syncContext.sourceId);
         }
-        else if (sync.entity_name === 'recent_notes') {
+        else if (sync.entityName === 'recent_notes') {
             await syncUpdate.updateRecentNotes(resp, syncContext.sourceId);
         }
-        else if (sync.entity_name === 'images') {
+        else if (sync.entityName === 'images') {
             await syncUpdate.updateImage(resp, syncContext.sourceId);
         }
-        else if (sync.entity_name === 'notes_image') {
+        else if (sync.entityName === 'notes_image') {
             await syncUpdate.updateNoteImage(resp, syncContext.sourceId);
         }
-        else if (sync.entity_name === 'attributes') {
+        else if (sync.entityName === 'attributes') {
             await syncUpdate.updateAttribute(resp, syncContext.sourceId);
         }
         else {
-            throw new Error(`Unrecognized entity type ${sync.entity_name} in sync #${sync.id}`);
+            throw new Error(`Unrecognized entity type ${sync.entityName} in sync #${sync.id}`);
         }
 
         await setLastSyncedPull(sync.id);
@@ -183,8 +183,8 @@ async function pushSync(syncContext) {
             break;
         }
 
-        if (sync.source_id === syncContext.sourceId) {
-            log.info(`Skipping push #${sync.id} ${sync.entity_name} ${sync.entity_id} because it originates from sync target`);
+        if (sync.sourceId === syncContext.sourceId) {
+            log.info(`Skipping push #${sync.id} ${sync.entityName} ${sync.entityId} because it originates from sync target`);
         }
         else {
             await pushEntity(sync, syncContext);
@@ -199,57 +199,57 @@ async function pushSync(syncContext) {
 async function pushEntity(sync, syncContext) {
     let entity;
 
-    if (sync.entity_name === 'notes') {
-        entity = await sql.getFirst('SELECT * FROM notes WHERE note_id = ?', [sync.entity_id]);
+    if (sync.entityName === 'notes') {
+        entity = await sql.getFirst('SELECT * FROM notes WHERE noteId = ?', [sync.entityId]);
     }
-    else if (sync.entity_name === 'notes_tree') {
-        entity = await sql.getFirst('SELECT * FROM notes_tree WHERE note_tree_id = ?', [sync.entity_id]);
+    else if (sync.entityName === 'notes_tree') {
+        entity = await sql.getFirst('SELECT * FROM notes_tree WHERE noteTreeId = ?', [sync.entityId]);
     }
-    else if (sync.entity_name === 'notes_history') {
-        entity = await sql.getFirst('SELECT * FROM notes_history WHERE note_history_id = ?', [sync.entity_id]);
+    else if (sync.entityName === 'notes_history') {
+        entity = await sql.getFirst('SELECT * FROM notes_history WHERE noteHistoryId = ?', [sync.entityId]);
     }
-    else if (sync.entity_name === 'notes_reordering') {
+    else if (sync.entityName === 'notes_reordering') {
         entity = {
-            parent_note_id: sync.entity_id,
-            ordering: await sql.getMap('SELECT note_tree_id, note_position FROM notes_tree WHERE parent_note_id = ? AND is_deleted = 0', [sync.entity_id])
+            parentNoteId: sync.entityId,
+            ordering: await sql.getMap('SELECT noteTreeId, notePosition FROM notes_tree WHERE parentNoteId = ? AND isDeleted = 0', [sync.entityId])
         };
     }
-    else if (sync.entity_name === 'options') {
-        entity = await sql.getFirst('SELECT * FROM options WHERE opt_name = ?', [sync.entity_id]);
+    else if (sync.entityName === 'options') {
+        entity = await sql.getFirst('SELECT * FROM options WHERE name = ?', [sync.entityId]);
     }
-    else if (sync.entity_name === 'recent_notes') {
-        entity = await sql.getFirst('SELECT * FROM recent_notes WHERE note_tree_id = ?', [sync.entity_id]);
+    else if (sync.entityName === 'recent_notes') {
+        entity = await sql.getFirst('SELECT * FROM recent_notes WHERE noteTreeId = ?', [sync.entityId]);
     }
-    else if (sync.entity_name === 'images') {
-        entity = await sql.getFirst('SELECT * FROM images WHERE image_id = ?', [sync.entity_id]);
+    else if (sync.entityName === 'images') {
+        entity = await sql.getFirst('SELECT * FROM images WHERE imageId = ?', [sync.entityId]);
 
         if (entity.data !== null) {
             entity.data = entity.data.toString('base64');
         }
     }
-    else if (sync.entity_name === 'notes_image') {
-        entity = await sql.getFirst('SELECT * FROM notes_image WHERE note_image_id = ?', [sync.entity_id]);
+    else if (sync.entityName === 'notes_image') {
+        entity = await sql.getFirst('SELECT * FROM notes_image WHERE noteImageId = ?', [sync.entityId]);
     }
-    else if (sync.entity_name === 'attributes') {
-        entity = await sql.getFirst('SELECT * FROM attributes WHERE attribute_id = ?', [sync.entity_id]);
+    else if (sync.entityName === 'attributes') {
+        entity = await sql.getFirst('SELECT * FROM attributes WHERE attributeId = ?', [sync.entityId]);
     }
     else {
-        throw new Error(`Unrecognized entity type ${sync.entity_name} in sync #${sync.id}`);
+        throw new Error(`Unrecognized entity type ${sync.entityName} in sync #${sync.id}`);
     }
 
     if (!entity) {
-        log.info(`Sync #${sync.id} entity for ${sync.entity_name} ${sync.entity_id} doesn't exist. Skipping.`);
+        log.info(`Sync #${sync.id} entity for ${sync.entityName} ${sync.entityId} doesn't exist. Skipping.`);
         return;
     }
 
-    log.info(`Pushing changes in sync #${sync.id} ${sync.entity_name} ${sync.entity_id}`);
+    log.info(`Pushing changes in sync #${sync.id} ${sync.entityName} ${sync.entityId}`);
 
     const payload = {
-        sourceId: source_id.getCurrentSourceId(),
+        sourceId: sourceId.getCurrentSourceId(),
         entity: entity
     };
 
-    await syncRequest(syncContext, 'PUT', '/api/sync/' + sync.entity_name, payload);
+    await syncRequest(syncContext, 'PUT', '/api/sync/' + sync.entityName, payload);
 }
 
 async function checkContentHash(syncContext) {

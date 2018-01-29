@@ -23,11 +23,11 @@ async function runCheck(query, errorText, errorList) {
 
 async function checkTreeCycles(errorList) {
     const childToParents = {};
-    const rows = await sql.getAll("SELECT note_id, parent_note_id FROM notes_tree WHERE is_deleted = 0");
+    const rows = await sql.getAll("SELECT noteId, parentNoteId FROM notes_tree WHERE isDeleted = 0");
 
     for (const row of rows) {
-        const childNoteId = row.note_id;
-        const parentNoteId = row.parent_note_id;
+        const childNoteId = row.noteId;
+        const parentNoteId = row.parentNoteId;
 
         if (!childToParents[childNoteId]) {
             childToParents[childNoteId] = [];
@@ -67,19 +67,19 @@ async function runSyncRowChecks(table, key, errorList) {
           ${key} 
         FROM 
           ${table} 
-          LEFT JOIN sync ON sync.entity_name = '${table}' AND entity_id = ${key} 
+          LEFT JOIN sync ON sync.entityName = '${table}' AND entityId = ${key} 
         WHERE 
           sync.id IS NULL`,
         `Missing sync records for ${key} in table ${table}`, errorList);
 
     await runCheck(`
         SELECT 
-          entity_id 
+          entityId 
         FROM 
           sync 
-          LEFT JOIN ${table} ON entity_id = ${key} 
+          LEFT JOIN ${table} ON entityId = ${key} 
         WHERE 
-          sync.entity_name = '${table}' 
+          sync.entityName = '${table}' 
           AND ${key} IS NULL`,
         `Missing ${table} records for existing sync rows`, errorList);
 }
@@ -89,140 +89,140 @@ async function runAllChecks() {
 
     await runCheck(`
           SELECT 
-            note_id 
+            noteId 
           FROM 
             notes 
-            LEFT JOIN notes_tree USING(note_id) 
+            LEFT JOIN notes_tree USING(noteId) 
           WHERE 
-            note_id != 'root' 
-            AND notes_tree.note_tree_id IS NULL`,
+            noteId != 'root' 
+            AND notes_tree.noteTreeId IS NULL`,
         "Missing notes_tree records for following note IDs", errorList);
 
     await runCheck(`
           SELECT 
-            note_tree_id || ' > ' || notes_tree.note_id 
+            noteTreeId || ' > ' || notes_tree.noteId 
           FROM 
             notes_tree 
-            LEFT JOIN notes USING(note_id) 
+            LEFT JOIN notes USING(noteId) 
           WHERE 
-            notes.note_id IS NULL`,
+            notes.noteId IS NULL`,
         "Missing notes records for following note tree ID > note ID", errorList);
 
     await runCheck(`
           SELECT 
-            note_tree_id 
+            noteTreeId 
           FROM 
             notes_tree 
-            JOIN notes USING(note_id) 
+            JOIN notes USING(noteId) 
           WHERE 
-            notes.is_deleted = 1 
-            AND notes_tree.is_deleted = 0`,
+            notes.isDeleted = 1 
+            AND notes_tree.isDeleted = 0`,
         "Note tree is not deleted even though main note is deleted for following note tree IDs", errorList);
 
     await runCheck(`
           SELECT 
-            child.note_tree_id
+            child.noteTreeId
           FROM 
             notes_tree AS child
           WHERE 
-            child.is_deleted = 0
-            AND child.parent_note_id != 'root'
-            AND (SELECT COUNT(*) FROM notes_tree AS parent WHERE parent.note_id = child.parent_note_id 
-                                                                 AND parent.is_deleted = 0) = 0`,
+            child.isDeleted = 0
+            AND child.parentNoteId != 'root'
+            AND (SELECT COUNT(*) FROM notes_tree AS parent WHERE parent.noteId = child.parentNoteId 
+                                                                 AND parent.isDeleted = 0) = 0`,
         "All parent note trees are deleted but child note tree is not for these child note tree IDs", errorList);
 
     // we do extra JOIN to eliminate orphan notes without note tree (which are reported separately)
     await runCheck(`
           SELECT
-            DISTINCT note_id
+            DISTINCT noteId
           FROM
             notes
-            JOIN notes_tree USING(note_id)
+            JOIN notes_tree USING(noteId)
           WHERE
-            (SELECT COUNT(*) FROM notes_tree WHERE notes.note_id = notes_tree.note_id AND notes_tree.is_deleted = 0) = 0
-            AND notes.is_deleted = 0
+            (SELECT COUNT(*) FROM notes_tree WHERE notes.noteId = notes_tree.noteId AND notes_tree.isDeleted = 0) = 0
+            AND notes.isDeleted = 0
     `, 'No undeleted note trees for note IDs', errorList);
 
     await runCheck(`
           SELECT 
-            child.parent_note_id || ' > ' || child.note_id 
+            child.parentNoteId || ' > ' || child.noteId 
           FROM notes_tree 
             AS child 
-            LEFT JOIN notes_tree AS parent ON parent.note_id = child.parent_note_id 
+            LEFT JOIN notes_tree AS parent ON parent.noteId = child.parentNoteId 
           WHERE 
-            parent.note_id IS NULL 
-            AND child.parent_note_id != 'root'`,
+            parent.noteId IS NULL 
+            AND child.parentNoteId != 'root'`,
         "Not existing parent in the following parent > child relations", errorList);
 
     await runCheck(`
           SELECT 
-            note_history_id || ' > ' || notes_history.note_id 
+            noteHistoryId || ' > ' || notes_history.noteId 
           FROM 
-            notes_history LEFT JOIN notes USING(note_id) 
+            notes_history LEFT JOIN notes USING(noteId) 
           WHERE 
-            notes.note_id IS NULL`,
+            notes.noteId IS NULL`,
         "Missing notes records for following note history ID > note ID", errorList);
 
     await runCheck(`
           SELECT 
-            notes_tree.parent_note_id || ' > ' || notes_tree.note_id 
+            notes_tree.parentNoteId || ' > ' || notes_tree.noteId 
           FROM 
             notes_tree 
           WHERE 
-            notes_tree.is_deleted = 0
+            notes_tree.isDeleted = 0
           GROUP BY 
-            notes_tree.parent_note_id,
-            notes_tree.note_id
+            notes_tree.parentNoteId,
+            notes_tree.noteId
           HAVING 
             COUNT(*) > 1`,
         "Duplicate undeleted parent note <-> note relationship - parent note ID > note ID", errorList);
 
     await runCheck(`
           SELECT 
-            images.image_id
+            images.imageId
           FROM 
             images
-            LEFT JOIN notes_image ON notes_image.image_id = images.image_id
+            LEFT JOIN notes_image ON notes_image.imageId = images.imageId
           WHERE 
-            notes_image.note_image_id IS NULL`,
+            notes_image.noteImageId IS NULL`,
         "Image with no note relation", errorList);
 
     await runCheck(`
           SELECT 
-            notes_image.note_image_id
+            notes_image.noteImageId
           FROM 
             notes_image
-            JOIN images USING(image_id)
+            JOIN images USING(imageId)
           WHERE 
-            notes_image.is_deleted = 0
-            AND images.is_deleted = 1`,
-        "Note image is not deleted while image is deleted for note_image_id", errorList);
+            notes_image.isDeleted = 0
+            AND images.isDeleted = 1`,
+        "Note image is not deleted while image is deleted for noteImageId", errorList);
 
     await runCheck(`
           SELECT 
-            note_id
+            noteId
           FROM 
             notes
           WHERE 
-            is_deleted = 0
-            AND (note_title IS NULL OR note_text IS NULL)`,
+            isDeleted = 0
+            AND (title IS NULL OR content IS NULL)`,
         "Note has null title or text", errorList);
 
     await runCheck(`
           SELECT 
-            note_id
+            noteId
           FROM 
             notes
           WHERE 
             type != 'text' AND type != 'code' AND type != 'render'`,
         "Note has invalid type", errorList);
 
-    await runSyncRowChecks("notes", "note_id", errorList);
-    await runSyncRowChecks("notes_history", "note_history_id", errorList);
-    await runSyncRowChecks("notes_tree", "note_tree_id", errorList);
-    await runSyncRowChecks("recent_notes", "note_tree_id", errorList);
-    await runSyncRowChecks("images", "image_id", errorList);
-    await runSyncRowChecks("notes_image", "note_image_id", errorList);
+    await runSyncRowChecks("notes", "noteId", errorList);
+    await runSyncRowChecks("notes_history", "noteHistoryId", errorList);
+    await runSyncRowChecks("notes_tree", "noteTreeId", errorList);
+    await runSyncRowChecks("recent_notes", "noteTreeId", errorList);
+    await runSyncRowChecks("images", "imageId", errorList);
+    await runSyncRowChecks("notes_image", "noteImageId", errorList);
 
     if (errorList.length === 0) {
         // we run this only if basic checks passed since this assumes basic data consistency

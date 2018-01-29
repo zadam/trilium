@@ -16,19 +16,19 @@ router.get('', auth.checkApiAuth, wrap(async (req, res, next) => {
 router.put('/:noteTreeId/:notePath', auth.checkApiAuth, wrap(async (req, res, next) => {
     const noteTreeId = req.params.noteTreeId;
     const notePath = req.params.notePath;
-    const sourceId = req.headers.source_id;
+    const sourceId = req.headers.sourceId;
 
     await sql.doInTransaction(async () => {
         await sql.replace('recent_notes', {
-            note_tree_id: noteTreeId,
-            note_path: notePath,
-            date_accessed: utils.nowDate(),
-            is_deleted: 0
+            noteTreeId: noteTreeId,
+            notePath: notePath,
+            dateAccessed: utils.nowDate(),
+            isDeleted: 0
         });
 
         await sync_table.addRecentNoteSync(noteTreeId, sourceId);
 
-        await options.setOption('start_note_path', notePath, sourceId);
+        await options.setOption('start_notePath', notePath, sourceId);
     });
 
     res.send(await getRecentNotes());
@@ -40,12 +40,12 @@ async function getRecentNotes() {
         recent_notes.* 
       FROM 
         recent_notes
-        JOIN notes_tree USING(note_tree_id)
+        JOIN notes_tree USING(noteTreeId)
       WHERE
-        recent_notes.is_deleted = 0
-        AND notes_tree.is_deleted = 0
+        recent_notes.isDeleted = 0
+        AND notes_tree.isDeleted = 0
       ORDER BY 
-        date_accessed DESC`);
+        dateAccessed DESC`);
 }
 
 module.exports = router;

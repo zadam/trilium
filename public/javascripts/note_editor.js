@@ -24,7 +24,7 @@ const noteEditor = (function() {
     }
 
     function getCurrentNoteId() {
-        return currentNote ? currentNote.detail.note_id : null;
+        return currentNote ? currentNote.detail.noteId : null;
     }
 
     function noteChanged() {
@@ -60,23 +60,23 @@ const noteEditor = (function() {
 
         await saveNoteToServer(note);
 
-        if (note.detail.is_protected) {
+        if (note.detail.isProtected) {
             protected_session.touchProtectedSession();
         }
     }
 
     function updateNoteFromInputs(note) {
         if (note.detail.type === 'text') {
-            note.detail.note_text = editor.getData();
+            note.detail.content = editor.getData();
 
             // if content is only tags/whitespace (typically <p>&nbsp;</p>), then just make it empty
             // this is important when setting new note to code
-            if (jQuery(note.detail.note_text).text().trim() === '') {
-                note.detail.note_text = ''
+            if (jQuery(note.detail.content).text().trim() === '') {
+                note.detail.content = ''
             }
         }
         else if (note.detail.type === 'code') {
-            note.detail.note_text = codeEditor.getValue();
+            note.detail.content = codeEditor.getValue();
         }
         else if (note.detail.type === 'render') {
             // nothing
@@ -87,13 +87,13 @@ const noteEditor = (function() {
 
         const title = noteTitleEl.val();
 
-        note.detail.note_title = title;
+        note.detail.title = title;
 
-        noteTree.setNoteTitle(note.detail.note_id, title);
+        noteTree.setNoteTitle(note.detail.noteId, title);
     }
 
     async function saveNoteToServer(note) {
-        await server.put('notes/' + note.detail.note_id, note);
+        await server.put('notes/' + note.detail.noteId, note);
 
         isNoteChanged = false;
 
@@ -101,7 +101,7 @@ const noteEditor = (function() {
     }
 
     function setNoteBackgroundIfProtected(note) {
-        const isProtected = !!note.detail.is_protected;
+        const isProtected = !!note.detail.isProtected;
 
         noteDetailWrapperEl.toggleClass("protected", isProtected);
         protectButton.toggle(!isProtected);
@@ -125,9 +125,9 @@ const noteEditor = (function() {
 
         noteIdDisplayEl.html(noteId);
 
-        await protected_session.ensureProtectedSession(currentNote.detail.is_protected, false);
+        await protected_session.ensureProtectedSession(currentNote.detail.isProtected, false);
 
-        if (currentNote.detail.is_protected) {
+        if (currentNote.detail.isProtected) {
             protected_session.touchProtectedSession();
         }
 
@@ -139,14 +139,14 @@ const noteEditor = (function() {
 
         noteChangeDisabled = true;
 
-        noteTitleEl.val(currentNote.detail.note_title);
+        noteTitleEl.val(currentNote.detail.title);
 
         noteType.setNoteType(currentNote.detail.type);
         noteType.setNoteMime(currentNote.detail.mime);
 
         if (currentNote.detail.type === 'text') {
             // temporary workaround for https://github.com/ckeditor/ckeditor5-enter/issues/49
-            editor.setData(currentNote.detail.note_text ? currentNote.detail.note_text : "<p></p>");
+            editor.setData(currentNote.detail.content ? currentNote.detail.content : "<p></p>");
 
             noteDetailEl.show();
             noteDetailCodeEl.hide();
@@ -158,7 +158,7 @@ const noteEditor = (function() {
             noteDetailRenderEl.html('').hide();
 
             // this needs to happen after the element is shown, otherwise the editor won't be refresheds
-            codeEditor.setValue(currentNote.detail.note_text);
+            codeEditor.setValue(currentNote.detail.content);
 
             const info = CodeMirror.findModeByMIME(currentNote.detail.mime);
 

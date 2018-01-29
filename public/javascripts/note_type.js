@@ -73,7 +73,7 @@ const noteType = (function() {
         async function save() {
             const note = noteEditor.getCurrentNote();
 
-            await server.put('notes/' + note.detail.note_id
+            await server.put('notes/' + note.detail.noteId
                 + '/type/' + encodeURIComponent(self.type())
                 + '/mime/' + encodeURIComponent(self.mime()));
 

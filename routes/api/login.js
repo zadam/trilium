@@ -4,7 +4,7 @@ const express = require('express');
 const router = express.Router();
 const options = require('../../services/options');
 const utils = require('../../services/utils');
-const source_id = require('../../services/source_id');
+const sourceId = require('../../services/sourceId');
 const auth = require('../../services/auth');
 const password_encryption = require('../../services/password_encryption');
 const protected_session = require('../../services/protected_session');
@@ -43,7 +43,7 @@ router.post('/sync', wrap(async (req, res, next) => {
     req.session.loggedIn = true;
 
     res.send({
-        sourceId: source_id.getCurrentSourceId()
+        sourceId: sourceId.getCurrentSourceId()
     });
 }));
 

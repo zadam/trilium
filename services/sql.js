@@ -41,7 +41,7 @@ const dbReady = new Promise((resolve, reject) => {
                 await executeScript(imagesSql);
                 await executeScript(notesImageSql);
 
-                const startNoteId = await getFirstValue("SELECT note_id FROM notes_tree WHERE parent_note_id = 'root' AND is_deleted = 0 ORDER BY note_position");
+                const startNoteId = await getFirstValue("SELECT noteId FROM notes_tree WHERE parentNoteId = 'root' AND isDeleted = 0 ORDER BY notePosition");
 
                 await require('./options').initOptions(startNoteId);
                 await require('./sync_table').fillAllSyncRows();
@@ -226,7 +226,7 @@ async function doInTransaction(func) {
 }
 
 async function isDbUpToDate() {
-    const dbVersion = parseInt(await getFirstValue("SELECT opt_value FROM options WHERE opt_name = 'db_version'"));
+    const dbVersion = parseInt(await getFirstValue("SELECT value FROM options WHERE name = 'db_version'"));
 
     const upToDate = dbVersion >= app_info.db_version;
 
@@ -238,7 +238,7 @@ async function isDbUpToDate() {
 }
 
 async function isUserInitialized() {
-    const username = await getFirstValue("SELECT opt_value FROM options WHERE opt_name = 'username'");
+    const username = await getFirstValue("SELECT value FROM options WHERE name = 'username'");
 
     return !!username;
 }

@@ -13,32 +13,32 @@ router.put('/:childNoteId/clone-to/:parentNoteId', auth.checkApiAuth, wrap(async
     const parentNoteId = req.params.parentNoteId;
     const childNoteId = req.params.childNoteId;
     const prefix = req.body.prefix;
-    const sourceId = req.headers.source_id;
+    const sourceId = req.headers.sourceId;
 
     if (!await tree.validateParentChild(res, parentNoteId, childNoteId)) {
         return;
     }
 
-    const maxNotePos = await sql.getFirstValue('SELECT MAX(note_position) FROM notes_tree WHERE parent_note_id = ? AND is_deleted = 0', [parentNoteId]);
+    const maxNotePos = await sql.getFirstValue('SELECT MAX(notePosition) FROM notes_tree WHERE parentNoteId = ? AND isDeleted = 0', [parentNoteId]);
     const newNotePos = maxNotePos === null ? 0 : maxNotePos + 1;
 
     await sql.doInTransaction(async () => {
         const noteTree = {
-            note_tree_id: utils.newNoteTreeId(),
-            note_id: childNoteId,
-            parent_note_id: parentNoteId,
+            noteTreeId: utils.newNoteTreeId(),
+            noteId: childNoteId,
+            parentNoteId: parentNoteId,
             prefix: prefix,
-            note_position: newNotePos,
-            is_expanded: 0,
-            date_modified: utils.nowDate(),
-            is_deleted: 0
+            notePosition: newNotePos,
+            isExpanded: 0,
+            dateModified: utils.nowDate(),
+            isDeleted: 0
         };
 
         await sql.replace("notes_tree", noteTree);
 
-        await sync_table.addNoteTreeSync(noteTree.note_tree_id, sourceId);
+        await sync_table.addNoteTreeSync(noteTree.noteTreeId, sourceId);
 
-        await sql.execute("UPDATE notes_tree SET is_expanded = 1 WHERE note_id = ?", [parentNoteId]);
+        await sql.execute("UPDATE notes_tree SET isExpanded = 1 WHERE noteId = ?", [parentNoteId]);
     });
 
     res.send({ success: true });
@@ -47,35 +47,35 @@ router.put('/:childNoteId/clone-to/:parentNoteId', auth.checkApiAuth, wrap(async
 router.put('/:noteId/clone-after/:afterNoteTreeId', auth.checkApiAuth, wrap(async (req, res, next) => {
     const noteId = req.params.noteId;
     const afterNoteTreeId = req.params.afterNoteTreeId;
-    const sourceId = req.headers.source_id;
+    const sourceId = req.headers.sourceId;
 
     const afterNote = await tree.getNoteTree(afterNoteTreeId);
 
-    if (!await tree.validateParentChild(res, afterNote.parent_note_id, noteId)) {
+    if (!await tree.validateParentChild(res, afterNote.parentNoteId, noteId)) {
         return;
     }
 
     await sql.doInTransaction(async () => {
-        // we don't change date_modified so other changes are prioritized in case of conflict
+        // we don't change dateModified so other changes are prioritized in case of conflict
         // also we would have to sync all those modified note trees otherwise hash checks would fail
-        await sql.execute("UPDATE notes_tree SET note_position = note_position + 1 WHERE parent_note_id = ? AND note_position > ? AND is_deleted = 0",
-            [afterNote.parent_note_id, afterNote.note_position]);
+        await sql.execute("UPDATE notes_tree SET notePosition = notePosition + 1 WHERE parentNoteId = ? AND notePosition > ? AND isDeleted = 0",
+            [afterNote.parentNoteId, afterNote.notePosition]);
 
-        await sync_table.addNoteReorderingSync(afterNote.parent_note_id, sourceId);
+        await sync_table.addNoteReorderingSync(afterNote.parentNoteId, sourceId);
 
         const noteTree = {
-            note_tree_id: utils.newNoteTreeId(),
-            note_id: noteId,
-            parent_note_id: afterNote.parent_note_id,
-            note_position: afterNote.note_position + 1,
-            is_expanded: 0,
-            date_modified: utils.nowDate(),
-            is_deleted: 0
+            noteTreeId: utils.newNoteTreeId(),
+            noteId: noteId,
+            parentNoteId: afterNote.parentNoteId,
+            notePosition: afterNote.notePosition + 1,
+            isExpanded: 0,
+            dateModified: utils.nowDate(),
+            isDeleted: 0
         };
 
         await sql.replace("notes_tree", noteTree);
 
-        await sync_table.addNoteTreeSync(noteTree.note_tree_id, sourceId);
+        await sync_table.addNoteTreeSync(noteTree.noteTreeId, sourceId);
     });
 
     res.send({ success: true });

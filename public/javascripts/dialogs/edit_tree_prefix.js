@@ -18,11 +18,11 @@ const editTreePrefix = (function() {
 
         const currentNode = noteTree.getCurrentNode();
 
-        noteTreeId = currentNode.data.note_tree_id;
+        noteTreeId = currentNode.data.noteTreeId;
 
         treePrefixInputEl.val(currentNode.data.prefix).focus();
 
-        const noteTitle = noteTree.getNoteTitle(currentNode.data.note_id);
+        const noteTitle = noteTree.getNoteTitle(currentNode.data.noteId);
 
         noteTitleEl.html(noteTitle);
     }

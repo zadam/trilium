@@ -27,10 +27,10 @@ const noteHistory = (function() {
         historyItems = await server.get('notes-history/' + noteId);
 
         for (const item of historyItems) {
-            const dateModified = parseDate(item.date_modified_from);
+            const dateModified = parseDate(item.dateModifiedFrom);
 
             listEl.append($('<option>', {
-                value: item.note_history_id,
+                value: item.noteHistoryId,
                 text: formatDateTime(dateModified)
             }));
         }
@@ -56,10 +56,10 @@ const noteHistory = (function() {
     listEl.on('change', () => {
         const optVal = listEl.find(":selected").val();
 
-        const historyItem = historyItems.find(r => r.note_history_id === optVal);
+        const historyItem = historyItems.find(r => r.noteHistoryId === optVal);
 
-        titleEl.html(historyItem.note_title);
-        contentEl.html(historyItem.note_text);
+        titleEl.html(historyItem.title);
+        contentEl.html(historyItem.content);
     });
 
     $(document).on('click', "a[action='note-history']", event => {

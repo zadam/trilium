@@ -13,7 +13,7 @@ const noteSource = (function() {
             height: 500
         });
 
-        const noteText = noteEditor.getCurrentNote().detail.note_text;
+        const noteText = noteEditor.getCurrentNote().detail.content;
 
         noteSourceEl.text(formatHtml(noteText));
     }

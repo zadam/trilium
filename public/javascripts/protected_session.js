@@ -113,11 +113,11 @@ const protected_session = (function() {
 
         noteEditor.updateNoteFromInputs(note);
 
-        note.detail.is_protected = true;
+        note.detail.isProtected = true;
 
         await noteEditor.saveNoteToServer(note);
 
-        noteTree.setProtected(note.detail.note_id, note.detail.is_protected);
+        noteTree.setProtected(note.detail.noteId, note.detail.isProtected);
 
         noteEditor.setNoteBackgroundIfProtected(note);
     }
@@ -129,11 +129,11 @@ const protected_session = (function() {
 
         noteEditor.updateNoteFromInputs(note);
 
-        note.detail.is_protected = false;
+        note.detail.isProtected = false;
 
         await noteEditor.saveNoteToServer(note);
 
-        noteTree.setProtected(note.detail.note_id, note.detail.is_protected);
+        noteTree.setProtected(note.detail.noteId, note.detail.isProtected);
 
         noteEditor.setNoteBackgroundIfProtected(note);
     }

@@ -3,45 +3,45 @@ const utils = require('./utils');
 const sync_table = require('./sync_table');
 const app_info = require('./app_info');
 
-async function getOptionOrNull(optName) {
-    return await sql.getFirstOrNull("SELECT opt_value FROM options WHERE opt_name = ?", [optName]);
+async function getOptionOrNull(name) {
+    return await sql.getFirstOrNull("SELECT value FROM options WHERE name = ?", [name]);
 }
 
-async function getOption(optName) {
-    const row = await getOptionOrNull(optName);
+async function getOption(name) {
+    const row = await getOptionOrNull(name);
 
     if (!row) {
-        throw new Error("Option " + optName + " doesn't exist");
+        throw new Error("Option " + name + " doesn't exist");
     }
 
-    return row['opt_value'];
+    return row['value'];
 }
 
-async function setOption(optName, optValue, sourceId = null) {
-    const opt = await sql.getFirst("SELECT * FROM options WHERE opt_name = ?", [optName]);
+async function setOption(name, value, sourceId = null) {
+    const opt = await sql.getFirst("SELECT * FROM options WHERE name = ?", [name]);
 
     if (!opt) {
-        throw new Error(`Option ${optName} doesn't exist`);
+        throw new Error(`Option ${name} doesn't exist`);
     }
 
-    if (opt.is_synced) {
-        await sync_table.addOptionsSync(optName, sourceId);
+    if (opt.isSynced) {
+        await sync_table.addOptionsSync(name, sourceId);
     }
 
-    await sql.execute("UPDATE options SET opt_value = ?, date_modified = ? WHERE opt_name = ?",
-        [optValue, utils.nowDate(), optName]);
+    await sql.execute("UPDATE options SET value = ?, dateModified = ? WHERE name = ?",
+        [value, utils.nowDate(), name]);
 }
 
-async function createOption(optName, optValue, isSynced, sourceId = null) {
+async function createOption(name, value, isSynced, sourceId = null) {
     await sql.insert("options", {
-        opt_name: optName,
-        opt_value: optValue,
-        is_synced: isSynced,
-        date_modified: utils.nowDate()
+        name: name,
+        value: value,
+        isSynced: isSynced,
+        dateModified: utils.nowDate()
     });
 
     if (isSynced) {
-        await sync_table.addOptionsSync(optName, sourceId);
+        await sync_table.addOptionsSync(name, sourceId);
     }
 }
 
@@ -56,7 +56,7 @@ async function initOptions(startNotePath) {
     await createOption('encrypted_data_key', '', true);
     await createOption('encrypted_data_key_iv', '', true);
 
-    await createOption('start_note_path', startNotePath, false);
+    await createOption('start_notePath', startNotePath, false);
     await createOption('protected_session_timeout', 600, true);
     await createOption('history_snapshot_time_interval', 600, true);
     await createOption('last_backup_date', utils.nowDate(), false);

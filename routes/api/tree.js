@@ -14,34 +14,34 @@ router.get('/', auth.checkApiAuth, wrap(async (req, res, next) => {
     const notes = await sql.getAll(`
       SELECT 
         notes_tree.*, 
-        notes.note_title, 
-        notes.is_protected,
+        notes.title, 
+        notes.isProtected,
         notes.type
       FROM 
         notes_tree 
       JOIN 
-        notes ON notes.note_id = notes_tree.note_id
+        notes ON notes.noteId = notes_tree.noteId
       WHERE 
-        notes.is_deleted = 0 
-        AND notes_tree.is_deleted = 0
+        notes.isDeleted = 0 
+        AND notes_tree.isDeleted = 0
       ORDER BY 
-        note_position`);
+        notePosition`);
 
     protected_session.decryptNotes(req, notes);
 
     res.send({
         notes: notes,
-        start_note_path: await options.getOption('start_note_path')
+        start_notePath: await options.getOption('start_notePath')
     });
 }));
 
 router.put('/:noteTreeId/set-prefix', auth.checkApiAuth, wrap(async (req, res, next) => {
     const noteTreeId = req.params.noteTreeId;
-    const sourceId = req.headers.source_id;
+    const sourceId = req.headers.sourceId;
     const prefix = utils.isEmptyOrWhitespace(req.body.prefix) ? null : req.body.prefix;
 
     await sql.doInTransaction(async () => {
-        await sql.execute("UPDATE notes_tree SET prefix = ?, date_modified = ? WHERE note_tree_id = ?", [prefix, utils.nowDate(), noteTreeId]);
+        await sql.execute("UPDATE notes_tree SET prefix = ?, dateModified = ? WHERE noteTreeId = ?", [prefix, utils.nowDate(), noteTreeId]);
 
         await sync_table.addNoteTreeSync(noteTreeId, sourceId);
     });

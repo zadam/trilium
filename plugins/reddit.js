@@ -16,10 +16,10 @@ const REDDIT_DATE_ATTRIBUTE = 'reddit_date_note';
 
 async function createNote(parentNoteId, noteTitle, noteText) {
     return (await notes.createNewNote(parentNoteId, {
-        note_title: noteTitle,
-        note_text: noteText,
+        title: noteTitle,
+        content: noteText,
         target: 'into',
-        is_protected: false
+        isProtected: false
     })).noteId;
 }
 

@@ -48,7 +48,7 @@ const noteTree = (function() {
         return title;
     }
 
-    // note that if you want to access data like note_id or is_protected, you need to go into "data" property
+    // note that if you want to access data like noteId or isProtected, you need to go into "data" property
     function getCurrentNode() {
         return treeEl.fancytree("getActiveNode");
     }
@@ -64,7 +64,7 @@ const noteTree = (function() {
 
         const noteTree = notesTreeMap[noteTreeId];
 
-        return getNodesByNoteId(noteTree.note_id).filter(node => node.data.note_tree_id === noteTreeId);
+        return getNodesByNoteId(noteTree.noteId).filter(node => node.data.noteTreeId === noteTreeId);
     }
 
     function getNodesByNoteId(noteId) {
@@ -125,13 +125,13 @@ const noteTree = (function() {
         notesTreeMap = {};
 
         for (const note of notes) {
-            notesTreeMap[note.note_tree_id] = note;
+            notesTreeMap[note.noteTreeId] = note;
 
-            noteIdToTitle[note.note_id] = note.note_title;
+            noteIdToTitle[note.noteId] = note.title;
 
-            delete note.note_title; // this should not be used. Use noteIdToTitle instead
+            delete note.title; // this should not be used. Use noteIdToTitle instead
 
-            setParentChildRelation(note.note_tree_id, note.parent_note_id, note.note_id);
+            setParentChildRelation(note.noteTreeId, note.parentNoteId, note.noteId);
         }
 
         return prepareNoteTreeInner('root');
@@ -142,11 +142,11 @@ const noteTree = (function() {
 
         const extraClasses = [];
 
-        if (note.is_protected) {
+        if (note.isProtected) {
             extraClasses.push("protected");
         }
 
-        if (childToParents[note.note_id].length > 1) {
+        if (childToParents[note.noteId].length > 1) {
             extraClasses.push("multiple-parents");
         }
 
@@ -172,18 +172,18 @@ const noteTree = (function() {
             const noteTreeId = getNoteTreeId(parentNoteId, noteId);
             const noteTree = notesTreeMap[noteTreeId];
 
-            const title = (noteTree.prefix ? (noteTree.prefix + " - ") : "") + noteIdToTitle[noteTree.note_id];
+            const title = (noteTree.prefix ? (noteTree.prefix + " - ") : "") + noteIdToTitle[noteTree.noteId];
 
             const node = {
-                note_id: noteTree.note_id,
-                parent_note_id: noteTree.parent_note_id,
-                note_tree_id: noteTree.note_tree_id,
-                is_protected: noteTree.is_protected,
+                noteId: noteTree.noteId,
+                parentNoteId: noteTree.parentNoteId,
+                noteTreeId: noteTree.noteTreeId,
+                isProtected: noteTree.isProtected,
                 prefix: noteTree.prefix,
                 title: escapeHtml(title),
                 extraClasses: getExtraClasses(noteTree),
-                refKey: noteTree.note_id,
-                expanded: noteTree.is_expanded
+                refKey: noteTree.noteId,
+                expanded: noteTree.isExpanded
             };
 
             if (parentToChildren[noteId] && parentToChildren[noteId].length > 0) {
@@ -213,7 +213,7 @@ const noteTree = (function() {
         let parentNoteId = 'root';
 
         for (const childNoteId of runPath) {
-            const node = getNodesByNoteId(childNoteId).find(node => node.data.parent_note_id === parentNoteId);
+            const node = getNodesByNoteId(childNoteId).find(node => node.data.parentNoteId === parentNoteId);
 
             if (childNoteId === noteId) {
                 return node;
@@ -326,7 +326,7 @@ const noteTree = (function() {
 
                 let item;
 
-                if (node.getParent().data.note_id === parentNoteId) {
+                if (node.getParent().data.noteId === parentNoteId) {
                     item = $("<span/>").attr("title", "Current note").append(title);
                 }
                 else {
@@ -386,7 +386,7 @@ const noteTree = (function() {
         assertArguments(node);
 
         const currentNotePath = treeUtils.getNotePath(node);
-        const currentNoteTreeId = node.data.note_tree_id;
+        const currentNoteTreeId = node.data.noteTreeId;
 
         document.location.hash = currentNotePath;
 
@@ -480,7 +480,7 @@ const noteTree = (function() {
                 collapseTree(node);
             },
             "alt+s": node => {
-                sortAlphabetically(node.data.note_id);
+                sortAlphabetically(node.data.noteId);
 
                 return false;
             },
@@ -570,15 +570,15 @@ const noteTree = (function() {
 
                 setCurrentNotePathToHash(data.node);
 
-                noteEditor.switchToNote(node.note_id);
+                noteEditor.switchToNote(node.noteId);
 
-                showParentList(node.note_id, data.node);
+                showParentList(node.noteId, data.node);
             },
             expand: (event, data) => {
-                setExpandedToServer(data.node.data.note_tree_id, true);
+                setExpandedToServer(data.node.data.noteTreeId, true);
             },
             collapse: (event, data) => {
-                setExpandedToServer(data.node.data.note_tree_id, false);
+                setExpandedToServer(data.node.data.noteTreeId, false);
             },
             init: (event, data) => {
                 const noteId = treeUtils.getNoteIdFromNotePath(startNotePath);
@@ -615,7 +615,7 @@ const noteTree = (function() {
             lazyLoad: function(event, data){
                 const node = data.node.data;
 
-                data.result = prepareNoteTreeInner(node.note_id);
+                data.result = prepareNoteTreeInner(node.noteId);
             },
             clones: {
                 highlightActiveClones: true
@@ -642,7 +642,7 @@ const noteTree = (function() {
 
     function loadTree() {
         return server.get('tree').then(resp => {
-            startNotePath = resp.start_note_path;
+            startNotePath = resp.start_notePath;
 
             if (document.location.hash) {
                 startNotePath = getNotePathFromAddress();
@@ -677,11 +677,11 @@ const noteTree = (function() {
     }
 
     function setNoteTreeBackgroundBasedOnProtectedStatus(noteId) {
-        getNodesByNoteId(noteId).map(node => node.toggleClass("protected", !!node.data.is_protected));
+        getNodesByNoteId(noteId).map(node => node.toggleClass("protected", !!node.data.isProtected));
     }
 
     function setProtected(noteId, isProtected) {
-        getNodesByNoteId(noteId).map(node => node.data.is_protected = isProtected);
+        getNodesByNoteId(noteId).map(node => node.data.isProtected = isProtected);
 
         setNoteTreeBackgroundBasedOnProtectedStatus(noteId);
     }
@@ -750,27 +750,27 @@ const noteTree = (function() {
         const newNoteName = "new note";
 
         const result = await server.post('notes/' + parentNoteId + '/children', {
-            note_title: newNoteName,
+            title: newNoteName,
             target: target,
-            target_note_tree_id: node.data.note_tree_id,
-            is_protected: isProtected
+            target_noteTreeId: node.data.noteTreeId,
+            isProtected: isProtected
         });
 
-        setParentChildRelation(result.note_tree_id, parentNoteId, result.note_id);
+        setParentChildRelation(result.noteTreeId, parentNoteId, result.noteId);
 
-        notesTreeMap[result.note_tree_id] = result;
+        notesTreeMap[result.noteTreeId] = result;
 
-        noteIdToTitle[result.note_id] = newNoteName;
+        noteIdToTitle[result.noteId] = newNoteName;
 
         noteEditor.newNoteCreated();
 
         const newNode = {
             title: newNoteName,
-            note_id: result.note_id,
-            parent_note_id: parentNoteId,
-            refKey: result.note_id,
-            note_tree_id: result.note_tree_id,
-            is_protected: isProtected,
+            noteId: result.noteId,
+            parentNoteId: parentNoteId,
+            refKey: result.noteId,
+            noteTreeId: result.noteTreeId,
+            isProtected: isProtected,
             extraClasses: getExtraClasses(result.note)
         };
 
@@ -805,7 +805,7 @@ const noteTree = (function() {
 
     $(document).bind('keydown', 'ctrl+o', e => {
         const node = getCurrentNode();
-        const parentNoteId = node.data.parent_note_id;
+        const parentNoteId = node.data.parentNoteId;
         const isProtected = treeUtils.getParentProtectedStatus(node);
 
         createNote(node, parentNoteId, 'after', isProtected);
@@ -816,7 +816,7 @@ const noteTree = (function() {
     $(document).bind('keydown', 'ctrl+p', e => {
         const node = getCurrentNode();
 
-        createNote(node, node.data.note_id, 'into', node.data.is_protected);
+        createNote(node, node.data.noteId, 'into', node.data.isProtected);
 
         e.preventDefault();
     });

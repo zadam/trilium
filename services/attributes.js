@@ -6,24 +6,24 @@ const sync_table = require('./sync_table');
 const protected_session = require('./protected_session');
 
 async function getNoteAttributeMap(noteId) {
-    return await sql.getMap(`SELECT name, value FROM attributes WHERE note_id = ?`, [noteId]);
+    return await sql.getMap(`SELECT name, value FROM attributes WHERE noteId = ?`, [noteId]);
 }
 
 async function getNoteIdWithAttribute(name, value) {
-    return await sql.getFirstValue(`SELECT notes.note_id FROM notes JOIN attributes USING(note_id) 
-          WHERE notes.is_deleted = 0 AND attributes.name = ? AND attributes.value = ?`, [name, value]);
+    return await sql.getFirstValue(`SELECT notes.noteId FROM notes JOIN attributes USING(noteId) 
+          WHERE notes.isDeleted = 0 AND attributes.name = ? AND attributes.value = ?`, [name, value]);
 }
 
 async function getNotesWithAttribute(dataKey, name, value) {
     let notes;
 
     if (value !== undefined) {
-        notes = await sql.getAll(`SELECT notes.* FROM notes JOIN attributes USING(note_id) 
-          WHERE notes.is_deleted = 0 AND attributes.name = ? AND attributes.value = ?`, [name, value]);
+        notes = await sql.getAll(`SELECT notes.* FROM notes JOIN attributes USING(noteId) 
+          WHERE notes.isDeleted = 0 AND attributes.name = ? AND attributes.value = ?`, [name, value]);
     }
     else {
-        notes = await sql.getAll(`SELECT notes.* FROM notes JOIN attributes USING(note_id) 
-          WHERE notes.is_deleted = 0 AND attributes.name = ?`, [name]);
+        notes = await sql.getAll(`SELECT notes.* FROM notes JOIN attributes USING(noteId) 
+          WHERE notes.isDeleted = 0 AND attributes.name = ?`, [name]);
     }
 
     for (const note of notes) {
@@ -40,8 +40,8 @@ async function getNoteWithAttribute(dataKey, name, value) {
 }
 
 async function getNoteIdsWithAttribute(name) {
-    return await sql.getFirstColumn(`SELECT DISTINCT notes.note_id FROM notes JOIN attributes USING(note_id) 
-          WHERE notes.is_deleted = 0 AND attributes.name = ?`, [name]);
+    return await sql.getFirstColumn(`SELECT DISTINCT notes.noteId FROM notes JOIN attributes USING(noteId) 
+          WHERE notes.isDeleted = 0 AND attributes.name = ?`, [name]);
 }
 
 async function createAttribute(noteId, name, value = null, sourceId = null) {
@@ -49,12 +49,12 @@ async function createAttribute(noteId, name, value = null, sourceId = null) {
     const attributeId = utils.newAttributeId();
 
     await sql.insert("attributes", {
-        attribute_id: attributeId,
-        note_id: noteId,
+        attributeId: attributeId,
+        noteId: noteId,
         name: name,
         value: value,
-        date_modified: now,
-        date_created: now
+        dateModified: now,
+        dateCreated: now
     });
 
     await sync_table.addAttributeSync(attributeId, sourceId);

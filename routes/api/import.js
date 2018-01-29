@@ -22,7 +22,7 @@ router.get('/:directory/to/:parentNoteId', auth.checkApiAuth, wrap(async (req, r
 }));
 
 async function importNotes(dir, parentNoteId) {
-    const parent = await sql.getFirst("SELECT * FROM notes WHERE note_id = ?", [parentNoteId]);
+    const parent = await sql.getFirst("SELECT * FROM notes WHERE noteId = ?", [parentNoteId]);
 
     if (!parent) {
         return;
@@ -52,7 +52,7 @@ async function importNotes(dir, parentNoteId) {
             noteTitle = match[2];
         }
         else {
-            let maxPos = await sql.getFirstValue("SELECT MAX(note_position) FROM notes_tree WHERE parent_note_id = ? AND is_deleted = 0", [parentNoteId]);
+            let maxPos = await sql.getFirstValue("SELECT MAX(notePosition) FROM notes_tree WHERE parentNoteId = ? AND isDeleted = 0", [parentNoteId]);
             if (maxPos) {
                 notePos = maxPos + 1;
             }
@@ -71,27 +71,27 @@ async function importNotes(dir, parentNoteId) {
         const now = utils.nowDate();
 
         await sql.insert('notes_tree', {
-            note_tree_id: noteTreeId,
-            note_id: noteId,
-            parent_note_id: parentNoteId,
-            note_position: notePos,
-            is_expanded: 0,
-            is_deleted: 0,
-            date_modified: now
+            noteTreeId: noteTreeId,
+            noteId: noteId,
+            parentNoteId: parentNoteId,
+            notePosition: notePos,
+            isExpanded: 0,
+            isDeleted: 0,
+            dateModified: now
         });
 
         await sync_table.addNoteTreeSync(noteTreeId);
 
         await sql.insert('notes', {
-            note_id: noteId,
-            note_title: noteTitle,
-            note_text: noteText,
-            is_deleted: 0,
-            is_protected: 0,
+            noteId: noteId,
+            title: noteTitle,
+            content: noteText,
+            isDeleted: 0,
+            isProtected: 0,
             type: 'text',
             mime: 'text/html',
-            date_created: now,
-            date_modified: now
+            dateCreated: now,
+            dateModified: now
         });
 
         await sync_table.addNoteSync(noteId);

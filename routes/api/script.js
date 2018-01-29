@@ -33,7 +33,7 @@ router.get('/startup', auth.checkApiAuth, wrap(async (req, res, next) => {
 router.get('/subtree/:noteId', auth.checkApiAuth, wrap(async (req, res, next) => {
     const noteId = req.params.noteId;
 
-    const noteScript = (await notes.getNoteById(noteId, req)).note_text;
+    const noteScript = (await notes.getNoteById(noteId, req)).content;
 
     const subTreeScripts = await getSubTreeScripts(noteId, [noteId], req);
 
@@ -41,7 +41,7 @@ router.get('/subtree/:noteId', auth.checkApiAuth, wrap(async (req, res, next) =>
 }));
 
 async function getNoteWithSubtreeScript(noteId, req) {
-    const noteScript = (await notes.getNoteById(noteId, req)).note_text;
+    const noteScript = (await notes.getNoteById(noteId, req)).content;
 
     const subTreeScripts = await getSubTreeScripts(noteId, [noteId], req);
 
@@ -49,10 +49,10 @@ async function getNoteWithSubtreeScript(noteId, req) {
 }
 
 async function getSubTreeScripts(parentId, includedNoteIds, dataKey) {
-    const children = await sql.getAll(`SELECT notes.note_id, notes.note_title, notes.note_text, notes.is_protected, notes.mime 
-                                     FROM notes JOIN notes_tree USING(note_id)
-                                     WHERE notes_tree.is_deleted = 0 AND notes.is_deleted = 0
-                                           AND notes_tree.parent_note_id = ? AND notes.type = 'code'
+    const children = await sql.getAll(`SELECT notes.noteId, notes.title, notes.content, notes.isProtected, notes.mime 
+                                     FROM notes JOIN notes_tree USING(noteId)
+                                     WHERE notes_tree.isDeleted = 0 AND notes.isDeleted = 0
+                                           AND notes_tree.parentNoteId = ? AND notes.type = 'code'
                                            AND (notes.mime = 'application/javascript' OR notes.mime = 'text/html')`, [parentId]);
 
     protected_session.decryptNotes(dataKey, children);
@@ -60,19 +60,19 @@ async function getSubTreeScripts(parentId, includedNoteIds, dataKey) {
     let script = "\r\n";
 
     for (const child of children) {
-        if (includedNoteIds.includes(child.note_id)) {
+        if (includedNoteIds.includes(child.noteId)) {
             return;
         }
 
-        includedNoteIds.push(child.note_id);
+        includedNoteIds.push(child.noteId);
 
-        script += await getSubTreeScripts(child.note_id, includedNoteIds, dataKey);
+        script += await getSubTreeScripts(child.noteId, includedNoteIds, dataKey);
 
         if (child.mime === 'application/javascript') {
-            child.note_text = '<script>' + child.note_text + '</script>';
+            child.content = '<script>' + child.content + '</script>';
         }
 
-        script += child.note_text + "\r\n";
+        script += child.content + "\r\n";
     }
 
     return script;

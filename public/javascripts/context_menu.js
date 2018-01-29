@@ -17,7 +17,7 @@ const contextMenu = (function() {
         }
         else if (clipboardMode === 'copy') {
             for (const noteId of clipboardIds) {
-                await cloning.cloneNoteAfter(noteId, node.data.note_tree_id);
+                await cloning.cloneNoteAfter(noteId, node.data.noteTreeId);
             }
 
             // copy will keep clipboardIds and clipboardMode so it's possible to paste into multiple places
@@ -41,7 +41,7 @@ const contextMenu = (function() {
         }
         else if (clipboardMode === 'copy') {
             for (const noteId of clipboardIds) {
-                await cloning.cloneNoteTo(noteId, node.data.note_id);
+                await cloning.cloneNoteTo(noteId, node.data.noteId);
             }
             // copy will keep clipboardIds and clipboardMode so it's possible to paste into multiple places
         }
@@ -54,7 +54,7 @@ const contextMenu = (function() {
     }
 
     function copy(nodes) {
-        clipboardIds = nodes.map(node => node.data.note_id);
+        clipboardIds = nodes.map(node => node.data.noteId);
         clipboardMode = 'copy';
 
         showMessage("Note(s) have been copied into clipboard.");
@@ -107,22 +107,22 @@ const contextMenu = (function() {
             const node = $.ui.fancytree.getNode(ui.target);
 
             if (ui.cmd === "insertNoteHere") {
-                const parentNoteId = node.data.parent_note_id;
+                const parentNoteId = node.data.parentNoteId;
                 const isProtected = treeUtils.getParentProtectedStatus(node);
 
                 noteTree.createNote(node, parentNoteId, 'after', isProtected);
             }
             else if (ui.cmd === "insertChildNote") {
-                noteTree.createNote(node, node.data.note_id, 'into');
+                noteTree.createNote(node, node.data.noteId, 'into');
             }
             else if (ui.cmd === "editTreePrefix") {
                 editTreePrefix.showDialog(node);
             }
             else if (ui.cmd === "protectSubTree") {
-                protected_session.protectSubTree(node.data.note_id, true);
+                protected_session.protectSubTree(node.data.noteId, true);
             }
             else if (ui.cmd === "unprotectSubTree") {
-                protected_session.protectSubTree(node.data.note_id, false);
+                protected_session.protectSubTree(node.data.noteId, false);
             }
             else if (ui.cmd === "copy") {
                 copy(noteTree.getSelectedNodes());
@@ -143,10 +143,10 @@ const contextMenu = (function() {
                 noteTree.collapseTree(node);
             }
             else if (ui.cmd === "force-note-sync") {
-                forceNoteSync(node.data.note_id);
+                forceNoteSync(node.data.noteId);
             }
             else if (ui.cmd === "sort-alphabetically") {
-                noteTree.sortAlphabetically(node.data.note_id);
+                noteTree.sortAlphabetically(node.data.noteId);
             }
             else {
                 messaging.logError("Unknown command: " + ui.cmd);

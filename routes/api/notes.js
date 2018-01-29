@@ -15,7 +15,7 @@ const wrap = require('express-promise-wrap').wrap;
 router.get('/:noteId', auth.checkApiAuth, wrap(async (req, res, next) => {
     const noteId = req.params.noteId;
 
-    const detail = await sql.getFirst("SELECT * FROM notes WHERE note_id = ?", [noteId]);
+    const detail = await sql.getFirst("SELECT * FROM notes WHERE noteId = ?", [noteId]);
 
     if (!detail) {
         log.info("Note " + noteId + " has not been found.");
@@ -31,7 +31,7 @@ router.get('/:noteId', auth.checkApiAuth, wrap(async (req, res, next) => {
 }));
 
 router.post('/:parentNoteId/children', auth.checkApiAuth, wrap(async (req, res, next) => {
-    const sourceId = req.headers.source_id;
+    const sourceId = req.headers.sourceId;
     const parentNoteId = req.params.parentNoteId;
     const newNote = req.body;
 
@@ -39,8 +39,8 @@ router.post('/:parentNoteId/children', auth.checkApiAuth, wrap(async (req, res, 
         const { noteId, noteTreeId, note } = await notes.createNewNote(parentNoteId, newNote, req, sourceId);
 
         res.send({
-            'note_id': noteId,
-            'note_tree_id': noteTreeId,
+            'noteId': noteId,
+            'noteTreeId': noteTreeId,
             'note': note
         });
     });
@@ -49,7 +49,7 @@ router.post('/:parentNoteId/children', auth.checkApiAuth, wrap(async (req, res, 
 router.put('/:noteId', auth.checkApiAuth, wrap(async (req, res, next) => {
     const note = req.body;
     const noteId = req.params.noteId;
-    const sourceId = req.headers.source_id;
+    const sourceId = req.headers.sourceId;
     const dataKey = protected_session.getDataKey(req);
 
     await notes.updateNote(noteId, note, dataKey, sourceId);
@@ -61,15 +61,15 @@ router.get('/', auth.checkApiAuth, wrap(async (req, res, next) => {
     const search = '%' + utils.sanitizeSql(req.query.search) + '%';
 
     // searching in protected notes is pointless because of encryption
-    const noteIds = await sql.getFirstColumn(`SELECT note_id FROM notes 
-              WHERE is_deleted = 0 AND is_protected = 0 AND (note_title LIKE ? OR note_text LIKE ?)`, [search, search]);
+    const noteIds = await sql.getFirstColumn(`SELECT noteId FROM notes 
+              WHERE isDeleted = 0 AND isProtected = 0 AND (title LIKE ? OR content LIKE ?)`, [search, search]);
 
     res.send(noteIds);
 }));
 
 router.put('/:noteId/sort', auth.checkApiAuth, wrap(async (req, res, next) => {
     const noteId = req.params.noteId;
-    const sourceId = req.headers.source_id;
+    const sourceId = req.headers.sourceId;
     const dataKey = protected_session.getDataKey(req);
 
     await tree.sortNotesAlphabetically(noteId, dataKey, sourceId);
@@ -81,7 +81,7 @@ router.put('/:noteId/protect-sub-tree/:isProtected', auth.checkApiAuth, wrap(asy
     const noteId = req.params.noteId;
     const isProtected = !!parseInt(req.params.isProtected);
     const dataKey = protected_session.getDataKey(req);
-    const sourceId = req.headers.source_id;
+    const sourceId = req.headers.sourceId;
 
     await sql.doInTransaction(async () => {
         await notes.protectNoteRecursively(noteId, dataKey, isProtected, sourceId);
@@ -94,10 +94,10 @@ router.put(/\/(.*)\/type\/(.*)\/mime\/(.*)/, auth.checkApiAuth, wrap(async (req,
     const noteId = req.params[0];
     const type = req.params[1];
     const mime = req.params[2];
-    const sourceId = req.headers.source_id;
+    const sourceId = req.headers.sourceId;
 
     await sql.doInTransaction(async () => {
-       await sql.execute("UPDATE notes SET type = ?, mime = ?, date_modified = ? WHERE note_id = ?",
+       await sql.execute("UPDATE notes SET type = ?, mime = ?, dateModified = ? WHERE noteId = ?",
            [type, mime, utils.nowDate(), noteId]);
 
        await sync_table.addNoteSync(noteId, sourceId);

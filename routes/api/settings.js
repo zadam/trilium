@@ -11,13 +11,13 @@ const wrap = require('express-promise-wrap').wrap;
 const ALLOWED_OPTIONS = ['protected_session_timeout', 'history_snapshot_time_interval'];
 
 router.get('/all', auth.checkApiAuth, wrap(async (req, res, next) => {
-    const settings = await sql.getMap("SELECT opt_name, opt_value FROM options");
+    const settings = await sql.getMap("SELECT name, value FROM options");
 
     res.send(settings);
 }));
 
 router.get('/', auth.checkApiAuth, wrap(async (req, res, next) => {
-    const settings = await sql.getMap("SELECT opt_name, opt_value FROM options WHERE opt_name IN ("
+    const settings = await sql.getMap("SELECT name, value FROM options WHERE name IN ("
         + ALLOWED_OPTIONS.map(x => '?').join(",") + ")", ALLOWED_OPTIONS);
 
     res.send(settings);
@@ -25,7 +25,7 @@ router.get('/', auth.checkApiAuth, wrap(async (req, res, next) => {
 
 router.post('/', auth.checkApiAuth, wrap(async (req, res, next) => {
     const body = req.body;
-    const sourceId = req.headers.source_id;
+    const sourceId = req.headers.sourceId;
 
     if (ALLOWED_OPTIONS.includes(body['name'])) {
         const optionName = await options.getOption(body['name']);

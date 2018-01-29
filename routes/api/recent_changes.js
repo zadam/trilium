@@ -9,14 +9,14 @@ const wrap = require('express-promise-wrap').wrap;
 router.get('/', auth.checkApiAuth, wrap(async (req, res, next) => {
     const recentChanges = await sql.getAll(
         `SELECT 
-            notes.is_deleted AS current_is_deleted,
-            notes.note_title AS current_note_title,
+            notes.isDeleted AS current_isDeleted,
+            notes.title AS current_title,
             notes_history.*
         FROM 
             notes_history
-            JOIN notes USING(note_id)
+            JOIN notes USING(noteId)
         ORDER BY 
-            date_modified_to DESC 
+            dateModifiedTo DESC 
         LIMIT 1000`);
 
     res.send(recentChanges);

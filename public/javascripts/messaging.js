@@ -27,23 +27,23 @@ const messaging = (function() {
                 lastSyncId = message.data[message.data.length - 1].id;
             }
 
-            const syncData = message.data.filter(sync => sync.source_id !== glob.sourceId);
+            const syncData = message.data.filter(sync => sync.sourceId !== glob.sourceId);
 
-            if (syncData.some(sync => sync.entity_name === 'notes_tree')
-                || syncData.some(sync => sync.entity_name === 'notes')) {
+            if (syncData.some(sync => sync.entityName === 'notes_tree')
+                || syncData.some(sync => sync.entityName === 'notes')) {
 
                 console.log(now(), "Reloading tree because of background changes");
 
                 noteTree.reload();
             }
 
-            if (syncData.some(sync => sync.entity_name === 'notes' && sync.entity_id === noteEditor.getCurrentNoteId())) {
+            if (syncData.some(sync => sync.entityName === 'notes' && sync.entityId === noteEditor.getCurrentNoteId())) {
                 showMessage('Reloading note because background change');
 
                 noteEditor.reload();
             }
 
-            if (syncData.some(sync => sync.entity_name === 'recent_notes')) {
+            if (syncData.some(sync => sync.entityName === 'recent_notes')) {
                 console.log(now(), "Reloading recent notes because of background changes");
 
                 recentNotes.reload();

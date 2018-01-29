@@ -4,9 +4,9 @@ const sql = require('./sql');
 
 async function saveSourceId(sourceId) {
     await sql.doInTransaction(async () => {
-        await sql.insert("source_ids", {
-            source_id: sourceId,
-            date_created: utils.nowDate()
+        await sql.insert("sourceIds", {
+            sourceId: sourceId,
+            dateCreated: utils.nowDate()
         });
     });
 
@@ -29,7 +29,7 @@ async function generateSourceId() {
 }
 
 async function refreshSourceIds() {
-    allSourceIds = await sql.getFirstColumn("SELECT source_id FROM source_ids ORDER BY date_created DESC");
+    allSourceIds = await sql.getFirstColumn("SELECT sourceId FROM source_ids ORDER BY dateCreated DESC");
 }
 
 let allSourceIds = [];
