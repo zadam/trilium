@@ -28,7 +28,7 @@ router.put('/:noteTreeId/:notePath', auth.checkApiAuth, wrap(async (req, res, ne
 
         await sync_table.addRecentNoteSync(noteTreeId, sourceId);
 
-        await options.setOption('start_notePath', notePath, sourceId);
+        await options.setOption('start_note_path', notePath, sourceId);
     });
 
     res.send(await getRecentNotes());

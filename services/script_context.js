@@ -61,7 +61,7 @@ function ScriptContext(noteId, dataKey) {
 
         if (!note.type) {
             note.type = "text";
-            note.mime = "";
+            note.mime = "text/html";
         }
 
         const noteId = (await notes.createNewNote(parentNoteId, note)).noteId;

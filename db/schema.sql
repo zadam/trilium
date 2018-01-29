@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS "notes" (
     `is_protected`	INT NOT NULL DEFAULT 0,
     `is_deleted`	INT NOT NULL DEFAULT 0,
     `date_created`	TEXT NOT NULL,
-    `date_modified`	TEXT NOT NULL, type TEXT NOT NULL DEFAULT 'text', mime TEXT NOT NULL DEFAULT 'text',
+    `date_modified`	TEXT NOT NULL, type TEXT NOT NULL DEFAULT 'text', mime TEXT NOT NULL DEFAULT 'text/html',
     PRIMARY KEY(`note_id`)
 );
 CREATE INDEX `IDX_notes_is_deleted` ON `notes` (

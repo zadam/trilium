@@ -1,5 +1,5 @@
 const sql = require('./sql');
-const sourceId = require('./sourceId');
+const sourceId = require('./source_id');
 const utils = require('./utils');
 const sync_setup = require('./sync_setup');
 const log = require('./log');

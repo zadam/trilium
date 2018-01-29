@@ -642,7 +642,7 @@ const noteTree = (function() {
 
     function loadTree() {
         return server.get('tree').then(resp => {
-            startNotePath = resp.start_notePath;
+            startNotePath = resp.start_note_path;
 
             if (document.location.hash) {
                 startNotePath = getNotePathFromAddress();

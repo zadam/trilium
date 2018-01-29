@@ -4,7 +4,12 @@ const sync_table = require('./sync_table');
 const app_info = require('./app_info');
 
 async function getOptionOrNull(name) {
-    return await sql.getFirstOrNull("SELECT value FROM options WHERE name = ?", [name]);
+    try {
+        return await sql.getFirstOrNull("SELECT value FROM options WHERE name = ?", [name]);
+    }
+    catch (e) {
+        return await sql.getFirstOrNull("SELECT opt_value FROM options WHERE opt_name = ?", [name]);
+    }
 }
 
 async function getOption(name) {
@@ -14,11 +19,18 @@ async function getOption(name) {
         throw new Error("Option " + name + " doesn't exist");
     }
 
-    return row['value'];
+    return row['value'] ? row['value'] : row['opt_value'];
 }
 
 async function setOption(name, value, sourceId = null) {
-    const opt = await sql.getFirst("SELECT * FROM options WHERE name = ?", [name]);
+    let opt;
+
+    try {
+        opt = await sql.getFirst("SELECT * FROM options WHERE name = ?", [name]);
+    }
+    catch (e) {
+        opt = await sql.getFirst("SELECT * FROM options WHERE opt_name = ?", [name]);
+    }
 
     if (!opt) {
         throw new Error(`Option ${name} doesn't exist`);
@@ -28,8 +40,14 @@ async function setOption(name, value, sourceId = null) {
         await sync_table.addOptionsSync(name, sourceId);
     }
 
-    await sql.execute("UPDATE options SET value = ?, dateModified = ? WHERE name = ?",
-        [value, utils.nowDate(), name]);
+    try {
+        await sql.execute("UPDATE options SET value = ?, dateModified = ? WHERE name = ?",
+            [value, utils.nowDate(), name]);
+    }
+    catch (e) {
+        await sql.execute("UPDATE options SET opt_value = ?, date_modified = ? WHERE opt_name = ?",
+            [value, utils.nowDate(), name]);
+    }
 }
 
 async function createOption(name, value, isSynced, sourceId = null) {
@@ -56,7 +74,7 @@ async function initOptions(startNotePath) {
     await createOption('encrypted_data_key', '', true);
     await createOption('encrypted_data_key_iv', '', true);
 
-    await createOption('start_notePath', startNotePath, false);
+    await createOption('start_note_path', startNotePath, false);
     await createOption('protected_session_timeout', 600, true);
     await createOption('history_snapshot_time_interval', 600, true);
     await createOption('last_backup_date', utils.nowDate(), false);

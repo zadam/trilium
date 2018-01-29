@@ -4,7 +4,7 @@ const sql = require('./sql');
 
 async function saveSourceId(sourceId) {
     await sql.doInTransaction(async () => {
-        await sql.insert("sourceIds", {
+        await sql.insert("source_ids", {
             sourceId: sourceId,
             dateCreated: utils.nowDate()
         });

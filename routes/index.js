@@ -3,7 +3,7 @@
 const express = require('express');
 const router = express.Router();
 const auth = require('../services/auth');
-const sourceId = require('../services/sourceId');
+const sourceId = require('../services/source_id');
 const sql = require('../services/sql');
 const wrap = require('express-promise-wrap').wrap;
 
