@@ -91,9 +91,9 @@ const server = (function() {
         }
 
         return await $.ajax(options).catch(e => {
-            showError("Error when calling " + method + " " + url + ": " + e.status + " - " + e.statusText);
-
-            throw e;
+            const message = "Error when calling " + method + " " + url + ": " + e.status + " - " + e.statusText;
+            showError(message);
+            throwError(message);
         });
     }
 

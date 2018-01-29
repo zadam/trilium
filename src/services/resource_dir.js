@@ -2,7 +2,7 @@ const log = require('./log');
 const path = require('path');
 const fs = require('fs');
 
-const RESOURCE_DIR = path.resolve(__dirname, "..");
+const RESOURCE_DIR = path.resolve(__dirname, "../..");
 
 const DB_INIT_DIR = path.resolve(RESOURCE_DIR, "db");
 

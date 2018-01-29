@@ -5,20 +5,20 @@ process.on('unhandledRejection', error => {
     console.log(error);
 
     // but also try to log it into file
-    require('../services/log').info(error);
+    require('./services/log').info(error);
 });
 
-const { app, sessionParser } = require('../app');
+const { app, sessionParser } = require('./app');
 const debug = require('debug')('node:server');
 const fs = require('fs');
 const http = require('http');
 const https = require('https');
-const config = require('../services/config');
-const log = require('../services/log');
-const app_info = require('../services/app_info');
-const messaging = require('../services/messaging');
-const utils = require('../services/utils');
-const sql = require('../services/sql');
+const config = require('./services/config');
+const log = require('./services/log');
+const app_info = require('./services/app_info');
+const messaging = require('./services/messaging');
+const utils = require('./services/utils');
+const sql = require('./services/sql');
 
 const port = normalizePort(config['Network']['port'] || '3000');
 app.set('port', port);
@@ -58,7 +58,7 @@ httpServer.on('listening', onListening);
 sql.dbReady.then(() => messaging.init(httpServer, sessionParser));
 
 if (utils.isElectron()) {
-    const electronRouting = require('../routes/electron');
+    const electronRouting = require('./routes/electron');
     electronRouting(app);
 }
 

@@ -1,4 +1,5 @@
 'use strict';
+
 const electron = require('electron');
 const path = require('path');
 const config = require('./services/config');
@@ -68,4 +69,4 @@ app.on('ready', () => {
     mainWindow = createMainWindow();
 });
 
-require('./bin/www');
+require('./www');
