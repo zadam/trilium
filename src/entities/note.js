@@ -1,10 +1,17 @@
 "use strict";
 
 const Entity = require('./entity');
+const protected_session = require('../services/protected_session');
 
 class Note extends Entity {
+    static get tableName() { return "notes"; }
+
     constructor(repository, row) {
         super(repository, row);
+
+        if (this.isProtected) {
+            protected_session.decryptNote(this.dataKey, this);
+        }
 
         if (this.isJson()) {
             this.jsonContent = JSON.parse(this.content);
@@ -29,6 +36,14 @@ class Note extends Entity {
 
     async getTrees() {
         return this.repository.getEntities("SELECT * FROM note_tree WHERE isDeleted = 0 AND noteId = ?", [this.noteId]);
+    }
+
+    beforeSaving() {
+        this.content = JSON.stringify(this.jsonContent, null, 4);
+
+        if (this.isProtected) {
+            protected_session.encryptNote(this.dataKey, this);
+        }
     }
 }
 

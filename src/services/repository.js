@@ -57,6 +57,20 @@ class Repository {
 
         return entity;
     }
+
+    async updateEntity(entity) {
+        if (entity.beforeSaving) {
+            entity.beforeSaving();
+        }
+
+        const clone = {...entity};
+
+        delete clone.dataKey;
+        delete clone.jsonContent;
+        delete clone.repository;
+
+        await sql.replace(entity.constructor.tableName, entity);
+    }
 }
 
 module.exports = Repository;

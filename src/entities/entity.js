@@ -4,7 +4,7 @@ const utils = require('../services/utils');
 
 class Entity {
     constructor(repository, row) {
-        utils.assertArguments(repository, row)
+        utils.assertArguments(repository, row);
 
         this.repository = repository;
 
