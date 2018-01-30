@@ -18,11 +18,11 @@ async function getNotesWithAttribute(dataKey, name, value) {
     let notes;
 
     if (value !== undefined) {
-        notes = await sql.getRows(`SELECT notes.* FROM notes JOIN attributes USING(noteId) 
+        notes = await sql.getEntities(`SELECT notes.* FROM notes JOIN attributes USING(noteId) 
           WHERE notes.isDeleted = 0 AND attributes.name = ? AND attributes.value = ?`, [name, value]);
     }
     else {
-        notes = await sql.getRows(`SELECT notes.* FROM notes JOIN attributes USING(noteId) 
+        notes = await sql.getEntities(`SELECT notes.* FROM notes JOIN attributes USING(noteId) 
           WHERE notes.isDeleted = 0 AND attributes.name = ?`, [name]);
     }
 

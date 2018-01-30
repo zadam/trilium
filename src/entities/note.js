@@ -3,6 +3,14 @@
 const Entity = require('./entity');
 
 class Note extends Entity {
+    constructor(sql, row) {
+        super(sql, row);
+
+        if (this.type === "code" && this.mime === "application/json") {
+            this.jsonContent = JSON.parse(this.content);
+        }
+    }
+
     async getAttributes() {
         return this.sql.getEntities("SELECT * FROM attributes WHERE noteId = ?", [this.noteId]);
     }

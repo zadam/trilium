@@ -10,32 +10,16 @@ function ScriptContext(noteId, dataKey) {
     this.scriptNoteId = noteId;
     this.dataKey = protected_session.getDataKey(dataKey);
 
-    function deserializePayload(note) {
-        if (note && note.type === "code" && note.mime === "application/json") {
-            note.payload = JSON.parse(note.content);
-        }
-    }
-
     function serializePayload(payload) {
         return JSON.stringify(payload, null, '\t');
     }
 
     this.getNoteById = async function(noteId) {
-        const note = await notes.getNoteById(noteId, this.dataKey);
-
-        deserializePayload(note);
-
-        return note;
+        return notes.getNoteById(noteId, this.dataKey);
     };
 
     this.getNotesWithAttribute = async function (attrName, attrValue) {
-        const notes = await attributes.getNotesWithAttribute(this.dataKey, attrName, attrValue);
-
-        for (const note of notes) {
-            deserializePayload(note);
-        }
-
-        return notes;
+        return await attributes.getNotesWithAttribute(this.dataKey, attrName, attrValue);
     };
 
     this.getNoteWithAttribute = async function (attrName, attrValue) {
@@ -77,12 +61,10 @@ function ScriptContext(noteId, dataKey) {
 
     this.updateNote = async function (note) {
         if (note.type === 'code' && note.mime === 'application/json') {
-            note.content = serializePayload(note.payload);
+            note.content = serializePayload(note.jsonContent);
         }
 
-        log.info("new note text: ", note.content);
-
-        delete note.payload;
+        delete note.jsonContent;
 
         if (note.isProtected) {
             protected_session.encryptNote(this.dataKey, note);

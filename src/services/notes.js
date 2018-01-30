@@ -6,7 +6,7 @@ const attributes = require('./attributes');
 const protected_session = require('./protected_session');
 
 async function getNoteById(noteId, dataKey) {
-    const note = await sql.getRow("SELECT * FROM notes WHERE noteId = ?", [noteId]);
+    const note = await sql.getEntity("SELECT * FROM notes WHERE noteId = ?", [noteId]);
 
     protected_session.decryptNote(dataKey, note);
 
