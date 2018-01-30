@@ -3,7 +3,7 @@
 const sql = require('./sql');
 const utils = require('./utils');
 const sync_table = require('./sync_table');
-const protected_session = require('./protected_session');
+const Repository = require('./repository');
 
 async function getNoteAttributeMap(noteId) {
     return await sql.getMap(`SELECT name, value FROM attributes WHERE noteId = ?`, [noteId]);
@@ -15,19 +15,17 @@ async function getNoteIdWithAttribute(name, value) {
 }
 
 async function getNotesWithAttribute(dataKey, name, value) {
+    const repository = new Repository(dataKey);
+
     let notes;
 
     if (value !== undefined) {
-        notes = await sql.getEntities(`SELECT notes.* FROM notes JOIN attributes USING(noteId) 
+        notes = await repository.getEntities(`SELECT notes.* FROM notes JOIN attributes USING(noteId) 
           WHERE notes.isDeleted = 0 AND attributes.name = ? AND attributes.value = ?`, [name, value]);
     }
     else {
-        notes = await sql.getEntities(`SELECT notes.* FROM notes JOIN attributes USING(noteId) 
+        notes = await repository.getEntities(`SELECT notes.* FROM notes JOIN attributes USING(noteId) 
           WHERE notes.isDeleted = 0 AND attributes.name = ?`, [name]);
-    }
-
-    for (const note of notes) {
-        protected_session.decryptNote(dataKey, note);
     }
 
     return notes;

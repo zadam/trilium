@@ -5,17 +5,19 @@ const attributes = require('./attributes');
 const date_notes = require('./date_notes');
 const sql = require('./sql');
 const sync_table = require('./sync_table');
+const Repository = require('./repository');
 
 function ScriptContext(noteId, dataKey) {
     this.scriptNoteId = noteId;
     this.dataKey = protected_session.getDataKey(dataKey);
+    this.repository = new Repository(dataKey);
 
     function serializePayload(payload) {
         return JSON.stringify(payload, null, '\t');
     }
 
     this.getNoteById = async function(noteId) {
-        return notes.getNoteById(noteId, this.dataKey);
+        return this.repository.getNote(noteId);
     };
 
     this.getNotesWithAttribute = async function (attrName, attrValue) {
@@ -60,7 +62,7 @@ function ScriptContext(noteId, dataKey) {
     };
 
     this.updateNote = async function (note) {
-        if (note.type === 'code' && note.mime === 'application/json') {
+        if (note.isJson()) {
             note.content = serializePayload(note.jsonContent);
         }
 

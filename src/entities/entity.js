@@ -1,8 +1,12 @@
 "use strict";
 
+const utils = require('../services/utils');
+
 class Entity {
-    constructor(sql, row) {
-        this.sql = sql;
+    constructor(repository, row) {
+        utils.assertArguments(repository, row)
+
+        this.repository = repository;
 
         for (const key in row) {
             this[key] = row[key];

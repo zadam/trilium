@@ -5,21 +5,6 @@ const sync_table = require('./sync_table');
 const attributes = require('./attributes');
 const protected_session = require('./protected_session');
 
-async function getNoteById(noteId, dataKey) {
-    const note = await sql.getEntity("SELECT * FROM notes WHERE noteId = ?", [noteId]);
-
-    protected_session.decryptNote(dataKey, note);
-
-    return note;
-}
-
-async function getJsonNoteById(noteId, dataKey) {
-    const note = await getNoteById(noteId, dataKey);
-    note.data = JSON.parse(note.content);
-
-    return note;
-}
-
 async function updateJsonNote(noteId, data) {
     const ret = await createNewNote(noteId, {
         title: name,
@@ -329,7 +314,6 @@ async function deleteNote(noteTreeId, sourceId) {
 }
 
 module.exports = {
-    getNoteById,
     createNewNote,
     updateNote,
     deleteNote,

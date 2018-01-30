@@ -4,7 +4,7 @@ const Entity = require('./entity');
 
 class NoteRevision extends Entity {
     async getNote() {
-        return this.sql.getEntity("SELECT * FROM notes WHERE noteId = ?", [this.noteId]);
+        return this.repository.getEntity("SELECT * FROM notes WHERE noteId = ?", [this.noteId]);
     }
 }
 

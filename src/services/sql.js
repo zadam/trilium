@@ -6,10 +6,6 @@ const fs = require('fs');
 const sqlite = require('sqlite');
 const app_info = require('./app_info');
 const resource_dir = require('./resource_dir');
-const Note = require('../entities/note');
-const NoteRevision = require('../entities/note_revision');
-const NoteTree = require('../entities/note_tree');
-const Attribute = require('../entities/attribute');
 
 async function createConnection() {
     return await sqlite.open(dataDir.DOCUMENT_PATH, {Promise});
@@ -135,45 +131,6 @@ async function getValue(query, params = []) {
 
 async function getRows(query, params = []) {
     return await wrap(async db => db.all(query, ...params));
-}
-
-async function getEntities(query, params = []) {
-    const rows = await getRows(query, params);
-
-    return rows.map(createEntityFromRow);
-}
-
-async function getEntity(query, params = []) {
-    const row = await getRowOrNull(query, params);
-
-    if (!row) {
-        return null;
-    }
-
-    return createEntityFromRow(row);
-}
-
-function createEntityFromRow(row) {
-    let entity;
-    let sql = module.exports;
-
-    if (row.attributeId) {
-        entity = new Attribute(sql, row);
-    }
-    else if (row.noteRevisionId) {
-        entity = new NoteRevision(sql, row);
-    }
-    else if (row.noteTreeId) {
-        entity = new NoteTree(sql, row);
-    }
-    else if (row.noteId) {
-        entity = new Note(sql, row);
-    }
-    else {
-        throw new Error('Unknown entity type for row: ' + JSON.stringify(row));
-    }
-
-    return entity;
 }
 
 async function getMap(query, params = []) {
@@ -309,8 +266,6 @@ module.exports = {
     getRow,
     getRowOrNull,
     getRows,
-    getEntities,
-    getEntity,
     getMap,
     getColumn,
     execute,
