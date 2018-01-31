@@ -105,6 +105,7 @@ module.exports = {
     addImageSync,
     addNoteImageSync,
     addAttributeSync,
+    addEntitySync,
     cleanupSyncRowsForMissingEntities,
     fillAllSyncRows
 };

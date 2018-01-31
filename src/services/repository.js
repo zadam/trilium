@@ -4,6 +4,7 @@ const Note = require('../entities/note');
 const NoteRevision = require('../entities/note_revision');
 const NoteTree = require('../entities/note_tree');
 const Attribute = require('../entities/attribute');
+const sync_table = require('../services/sync_table');
 
 class Repository {
     constructor(dataKey) {
@@ -70,6 +71,10 @@ class Repository {
         delete clone.repository;
 
         await sql.replace(entity.constructor.tableName, entity);
+
+        const primaryKey = entity[entity.constructor.primaryKeyName];
+
+        await sync_table.addEntitySync(entity.constructor.tableName, primaryKey);
     }
 }
 

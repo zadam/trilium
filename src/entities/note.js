@@ -5,6 +5,7 @@ const protected_session = require('../services/protected_session');
 
 class Note extends Entity {
     static get tableName() { return "notes"; }
+    static get primaryKeyName() { return "noteId"; }
 
     constructor(repository, row) {
         super(repository, row);
