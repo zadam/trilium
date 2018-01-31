@@ -2,10 +2,10 @@ const log = require('./log');
 const sql = require('./sql');
 const ScriptContext = require('./script_context');
 
-async function executeScript(noteId, dataKey, script, params) {
+async function executeScript(dataKey, script, params) {
     log.info('Executing script: ' + script);
 
-    const ctx = new ScriptContext(noteId, dataKey);
+    const ctx = new ScriptContext(dataKey);
 
     const paramsStr = getParams(params);
 

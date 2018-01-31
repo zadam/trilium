@@ -237,6 +237,7 @@ div.ui-tooltip {
 
 .CodeMirror {
     height: 100%;
+    font-family: "Liberation Mono", "Lucida Console", monospace;
 }
 
 #note-id-display {

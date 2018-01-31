@@ -36,7 +36,9 @@ const server = (function() {
             script = script.toString();
         }
 
-        return await post('script/exec/noteId', { script: script, params: params });
+        const ret = await post('script/exec', { script: script, params: params });
+
+        return ret.executionResult;
     }
 
     let i = 1;

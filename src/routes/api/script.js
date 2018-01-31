@@ -9,12 +9,12 @@ const attributes = require('../../services/attributes');
 const script = require('../../services/script');
 const Repository = require('../../services/repository');
 
-router.post('/exec/:noteId', auth.checkApiAuth, wrap(async (req, res, next) => {
-    const noteId = req.params.noteId;
+router.post('/exec', auth.checkApiAuth, wrap(async (req, res, next) => {
+    const ret = await script.executeScript(req, req.body.script, req.body.params);
 
-    const ret = await script.executeScript(noteId, req, req.body.script, req.body.params);
-
-    res.send(ret);
+    res.send({
+        executionResult: ret
+    });
 }));
 
 router.get('/startup', auth.checkApiAuth, wrap(async (req, res, next) => {

@@ -6,7 +6,6 @@ const date_notes = require('./date_notes');
 const Repository = require('./repository');
 
 function ScriptContext(noteId, dataKey) {
-    this.scriptNoteId = noteId;
     this.dataKey = protected_session.getDataKey(dataKey);
     this.repository = new Repository(dataKey);
 
@@ -58,7 +57,7 @@ function ScriptContext(noteId, dataKey) {
     this.updateEntity = this.repository.updateEntity;
 
     this.log = function(message) {
-        log.info(`Script ${this.scriptNoteId}: ${message}`);
+        log.info(`Script: ${message}`);
     };
 
     this.getDateNoteId = date_notes.getDateNoteId;

@@ -64,7 +64,7 @@ class Repository {
             entity.beforeSaving();
         }
 
-        const clone = {...entity};
+        const clone = Object.assign({}, entity);
 
         delete clone.dataKey;
         delete clone.jsonContent;
