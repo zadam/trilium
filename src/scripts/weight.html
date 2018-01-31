@@ -1,0 +1,97 @@
+<form id="weight-form" style="display: flex; width: 500px; justify-content: space-around; align-items: flex-end;">
+    <div>
+        <label for="weight-date">Date</label>
+        <input type="text" id="weight-date" class="form-control" style="width: 150px; text-align: center;" />
+    </div>
+    <div>
+        <label for="weight">Weight</label>
+        <input type="number" id="weight" value="80.0" step="0.1" class="form-control" style="text-align: center; width: 100px;" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Add</button>
+</form>
+
+<br/><br/>
+
+<canvas id="canvas"></canvas>
+
+<script>
+(async function() {
+    const dateEl = $("#weight-date");
+    const weightEl = $("#weight");
+
+    dateEl.datepicker();
+    dateEl.datepicker('option', 'dateFormat', 'yy-mm-dd');
+    dateEl.datepicker('setDate', new Date());
+
+    async function saveWeight() {
+        await server.exec([dateEl.val(), weightEl.val()], async (date, weight) => {
+            const dataNote = await this.getNoteWithAttribute('date_data', date);
+
+            if (dataNote) {
+                dataNote.jsonContent.weight = weight;
+
+                await this.updateEntity(dataNote);
+            }
+            else {
+                const parentNoteId = await this.getDateNoteId(date);
+                const jsonContent = { weight: weight };
+
+                await this.createNote(parentNoteId, 'data', jsonContent, {
+                    json: true,
+                    attributes: {
+                        date_data: date
+                    }
+                });
+            }
+        });
+
+        showMessage("Weight has been saved");
+
+        drawChart();
+    }
+
+    async function drawChart() {
+        const data = await server.exec([], async () => {
+            const notes = await this.getNotesWithAttribute('date_data');
+            const data = [];
+
+            for (const note of notes) {
+                const dateAttr = await note.getAttribute('date_data');
+
+                data.push({
+                    date: dateAttr.value,
+                    weight: note.jsonContent.weight
+                });
+            }
+
+            return data;
+        });
+
+        var config = {
+            type: 'line',
+            data: {
+                labels: data.map(row => row.date),
+                datasets: [{
+                    label: "Weight",
+                    backgroundColor: 'red',
+                    borderColor: 'red',
+                    data: data.map(row => row.weight),
+                    fill: false
+                }]
+            }
+        };
+
+        var ctx = $("#canvas")[0].getContext("2d");
+        new Chart(ctx, config);
+    }
+
+    $("#weight-form").submit(event => {
+        saveWeight();
+
+        event.preventDefault();
+    });
+
+    drawChart();
+})();
+</script>
