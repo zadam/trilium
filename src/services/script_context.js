@@ -3,18 +3,12 @@ const protected_session = require('./protected_session');
 const notes = require('./notes');
 const attributes = require('./attributes');
 const date_notes = require('./date_notes');
-const sql = require('./sql');
-const sync_table = require('./sync_table');
 const Repository = require('./repository');
 
 function ScriptContext(noteId, dataKey) {
     this.scriptNoteId = noteId;
     this.dataKey = protected_session.getDataKey(dataKey);
     this.repository = new Repository(dataKey);
-
-    function serializePayload(payload) {
-        return JSON.stringify(payload, null, '\t');
-    }
 
     this.getNoteById = async function(noteId) {
         return this.repository.getNote(noteId);
@@ -25,15 +19,15 @@ function ScriptContext(noteId, dataKey) {
     };
 
     this.getNoteWithAttribute = async function (attrName, attrValue) {
-        const notes = this.getNotesWithAttribute(attrName, attrValue);
+        const notes = await this.getNotesWithAttribute(attrName, attrValue);
 
         return notes.length > 0 ? notes[0] : null;
     };
 
-    this.createNote = async function (parentNoteId, name, payload, extraOptions = {}) {
+    this.createNote = async function (parentNoteId, name, jsonContent, extraOptions = {}) {
         const note = {
             title: name,
-            content: extraOptions.json ? serializePayload(payload) : payload,
+            content: extraOptions.json ? JSON.stringify(jsonContent, null, '\t') : jsonContent,
             target: 'into',
             isProtected: extraOptions.isProtected !== undefined ? extraOptions.isProtected : false,
             type: extraOptions.type,
@@ -50,7 +44,7 @@ function ScriptContext(noteId, dataKey) {
             note.mime = "text/html";
         }
 
-        const noteId = (await notes.createNewNote(parentNoteId, note)).noteId;
+        const noteId = (await notes.createNewNote(parentNoteId, note, this.dataKey)).noteId;
 
         if (extraOptions.attributes) {
             for (const attrName in extraOptions.attributes) {
@@ -61,21 +55,7 @@ function ScriptContext(noteId, dataKey) {
         return noteId;
     };
 
-    this.updateNote = async function (note) {
-        if (note.isJson()) {
-            note.content = serializePayload(note.jsonContent);
-        }
-
-        delete note.jsonContent;
-
-        if (note.isProtected) {
-            protected_session.encryptNote(this.dataKey, note);
-        }
-
-        await sql.replace("notes", note);
-
-        await sync_table.addNoteSync(note.noteId);
-    };
+    this.updateEntity = this.repository.updateEntity;
 
     this.log = function(message) {
         log.info(`Script ${this.scriptNoteId}: ${message}`);

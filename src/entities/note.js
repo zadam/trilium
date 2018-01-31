@@ -40,7 +40,7 @@ class Note extends Entity {
     }
 
     beforeSaving() {
-        this.content = JSON.stringify(this.jsonContent, null, 4);
+        this.content = JSON.stringify(this.jsonContent, null, '\t');
 
         if (this.isProtected) {
             protected_session.encryptNote(this.dataKey, this);

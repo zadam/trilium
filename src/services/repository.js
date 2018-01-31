@@ -70,7 +70,7 @@ class Repository {
         delete clone.jsonContent;
         delete clone.repository;
 
-        await sql.replace(entity.constructor.tableName, entity);
+        await sql.replace(entity.constructor.tableName, clone);
 
         const primaryKey = entity[entity.constructor.primaryKeyName];
 

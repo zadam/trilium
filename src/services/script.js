@@ -15,8 +15,6 @@ async function executeScript(noteId, dataKey, script, params) {
         ret = await (function() { return eval(`(${script})(${paramsStr})`); }.call(ctx));
     });
 
-    log.info('Execution result: ' + ret);
-
     return ret;
 }
 
