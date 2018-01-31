@@ -3,6 +3,7 @@
   "description": "Trilium Notes",
   "version": "0.5.1-beta",
   "license": "AGPL-3.0-only",
+  "main": "electron.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/zadam/trilium.git"
@@ -12,7 +13,7 @@
     "test-electron": "xo",
     "rebuild-electron": "electron-rebuild",
     "start-electron": "electron src/electron",
-    "build-electron": "electron-packager src/electron --out=dist --asar --overwrite --all",
+    "build-electron": "electron-packager . --out=dist --asar --overwrite --all",
     "start-forge": "electron-forge start",
     "package-forge": "electron-forge package",
     "make-forge": "electron-forge make",

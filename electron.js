@@ -2,7 +2,7 @@
 
 const electron = require('electron');
 const path = require('path');
-const config = require('./services/config');
+const config = require('./src/services/config');
 const url = require("url");
 
 const app = electron.app;
@@ -69,4 +69,4 @@ app.on('ready', () => {
     mainWindow = createMainWindow();
 });
 
-require('./www');
+require('./src/www');
