@@ -12,7 +12,7 @@
     "start": "node ./bin/www",
     "test-electron": "xo",
     "rebuild-electron": "electron-rebuild",
-    "start-electron": "electron src/electron",
+    "start-electron": "electron .",
     "build-electron": "electron-packager . --out=dist --asar --overwrite --all",
     "start-forge": "electron-forge start",
     "package-forge": "electron-forge package",

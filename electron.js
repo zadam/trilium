@@ -24,7 +24,7 @@ function createMainWindow() {
         width: 1200,
         height: 900,
         title: 'Trilium Notes',
-        icon: path.join(__dirname, 'public/images/app-icons/png/256x256.png')
+        icon: path.join(__dirname, 'src/public/images/app-icons/png/256x256.png')
     });
 
     const port = config['Network']['port'] || '3000';
