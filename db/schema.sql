@@ -1,119 +1,121 @@
 CREATE TABLE IF NOT EXISTS "options" (
-	`opt_name`	TEXT NOT NULL PRIMARY KEY,
-	`opt_value`	TEXT,
-	`date_modified` INT
-, is_synced INTEGER NOT NULL DEFAULT 0);
+    `name`	TEXT NOT NULL PRIMARY KEY,
+    `value`	TEXT,
+    `dateModified` INT,
+    isSynced INTEGER NOT NULL DEFAULT 0);
 CREATE TABLE IF NOT EXISTS "sync" (
-    `id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    `entity_name`	TEXT NOT NULL,
-    `entity_id`	TEXT NOT NULL,
-    `source_id` TEXT NOT NULL,
-    `sync_date`	TEXT NOT NULL);
-CREATE UNIQUE INDEX `IDX_sync_entity_name_id` ON `sync` (
-  `entity_name`,
-  `entity_id`
-);
-CREATE INDEX `IDX_sync_sync_date` ON `sync` (
-  `sync_date`
-);
-CREATE TABLE `source_ids` (
-  `source_id`	TEXT NOT NULL,
-  `date_created`	TEXT NOT NULL,
-  PRIMARY KEY(`source_id`)
+  `id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  `entityName`	TEXT NOT NULL,
+  `entityId`	TEXT NOT NULL,
+  `sourceId` TEXT NOT NULL,
+  `syncDate`	TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS "source_ids" (
+  `sourceId`	TEXT NOT NULL,
+  `dateCreated`	TEXT NOT NULL,
+  PRIMARY KEY(`sourceId`)
 );
 CREATE TABLE IF NOT EXISTS "notes" (
-    `note_id`	TEXT NOT NULL,
-    `note_title`	TEXT,
-    `note_text`	TEXT,
-    `is_protected`	INT NOT NULL DEFAULT 0,
-    `is_deleted`	INT NOT NULL DEFAULT 0,
-    `date_created`	TEXT NOT NULL,
-    `date_modified`	TEXT NOT NULL, type TEXT NOT NULL DEFAULT 'text', mime TEXT NOT NULL DEFAULT 'text/html',
-    PRIMARY KEY(`note_id`)
+  `noteId`	TEXT NOT NULL,
+  `title`	TEXT,
+  `content`	TEXT,
+  `isProtected`	INT NOT NULL DEFAULT 0,
+  `isDeleted`	INT NOT NULL DEFAULT 0,
+  `dateCreated`	TEXT NOT NULL,
+  `dateModified`	TEXT NOT NULL,
+  type TEXT NOT NULL DEFAULT 'text',
+  mime TEXT NOT NULL DEFAULT 'text/html',
+  PRIMARY KEY(`noteId`)
 );
-CREATE INDEX `IDX_notes_is_deleted` ON `notes` (
-    `is_deleted`
+CREATE TABLE IF NOT EXISTS "event_log" (
+  `id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  `noteId`	TEXT,
+  `comment`	TEXT,
+  `dateAdded`	TEXT NOT NULL,
+  FOREIGN KEY(noteId) REFERENCES notes(noteId)
 );
-CREATE TABLE `event_log` (
-    `id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    `note_id`	TEXT,
-    `comment`	TEXT,
-    `date_added`	TEXT NOT NULL,
-    FOREIGN KEY(note_id) REFERENCES notes(note_id)
-);
-CREATE TABLE IF NOT EXISTS "notes_tree" (
-  `note_tree_id`	TEXT NOT NULL,
-  `note_id`	TEXT NOT NULL,
-  `parent_note_id`	TEXT NOT NULL,
-  `note_position`	INTEGER NOT NULL,
+CREATE TABLE IF NOT EXISTS "note_tree" (
+  `noteTreeId`	TEXT NOT NULL,
+  `noteId`	TEXT NOT NULL,
+  `parentNoteId`	TEXT NOT NULL,
+  `notePosition`	INTEGER NOT NULL,
   `prefix`	TEXT,
-  `is_expanded`	BOOLEAN,
-  `is_deleted`	INTEGER NOT NULL DEFAULT 0,
-  `date_modified`	TEXT NOT NULL,
-  PRIMARY KEY(`note_tree_id`)
+  `isExpanded`	BOOLEAN,
+  `isDeleted`	INTEGER NOT NULL DEFAULT 0,
+  `dateModified`	TEXT NOT NULL,
+  PRIMARY KEY(`noteTreeId`)
 );
-CREATE INDEX `IDX_notes_tree_note_id` ON `notes_tree` (
-  `note_id`
+CREATE TABLE IF NOT EXISTS "note_revisions" (
+  `noteRevisionId`	TEXT NOT NULL PRIMARY KEY,
+  `noteId`	TEXT NOT NULL,
+  `title`	TEXT,
+  `content`	TEXT,
+  `isProtected`	INT NOT NULL DEFAULT 0,
+  `dateModifiedFrom` TEXT NOT NULL,
+  `dateModifiedTo` TEXT NOT NULL
 );
-CREATE TABLE IF NOT EXISTS "notes_history" (
-  `note_history_id`	TEXT NOT NULL PRIMARY KEY,
-  `note_id`	TEXT NOT NULL,
-  `note_title`	TEXT,
-  `note_text`	TEXT,
-  `is_protected`	INT NOT NULL DEFAULT 0,
-  `date_modified_from` TEXT NOT NULL,
-  `date_modified_to` TEXT NOT NULL
+CREATE TABLE IF NOT EXISTS "recent_notes" (
+  `noteTreeId` TEXT NOT NULL PRIMARY KEY,
+  `notePath` TEXT NOT NULL,
+  `dateAccessed` TEXT NOT NULL,
+  isDeleted INT
 );
-CREATE INDEX `IDX_notes_history_note_id` ON `notes_history` (
-  `note_id`
-);
-CREATE INDEX `IDX_notes_history_note_date_modified_from` ON `notes_history` (
-  `date_modified_from`
-);
-CREATE INDEX `IDX_notes_history_note_date_modified_to` ON `notes_history` (
-  `date_modified_to`
-);
-CREATE TABLE `recent_notes` (
-  `note_tree_id` TEXT NOT NULL PRIMARY KEY,
-  `note_path` TEXT NOT NULL,
-  `date_accessed` TEXT NOT NULL,
-  is_deleted INT
-);
-CREATE INDEX `IDX_notes_tree_note_id_parent_note_id` ON `notes_tree` (
-  `note_id`,
-  `parent_note_id`
-);
-CREATE TABLE images
+CREATE TABLE IF NOT EXISTS "images"
 (
-  image_id TEXT PRIMARY KEY NOT NULL,
+  imageId TEXT PRIMARY KEY NOT NULL,
   format TEXT NOT NULL,
   checksum TEXT NOT NULL,
   name TEXT NOT NULL,
   data BLOB,
-  is_deleted INT NOT NULL DEFAULT 0,
-  date_modified TEXT NOT NULL,
-  date_created TEXT NOT NULL
+  isDeleted INT NOT NULL DEFAULT 0,
+  dateModified TEXT NOT NULL,
+  dateCreated TEXT NOT NULL
 );
-CREATE TABLE notes_image
+CREATE TABLE note_images
 (
-  note_image_id TEXT PRIMARY KEY NOT NULL,
-  note_id TEXT NOT NULL,
-  image_id TEXT NOT NULL,
-  is_deleted INT NOT NULL DEFAULT 0,
-  date_modified TEXT NOT NULL,
-  date_created TEXT NOT NULL
+  noteImageId TEXT PRIMARY KEY NOT NULL,
+  noteId TEXT NOT NULL,
+  imageId TEXT NOT NULL,
+  isDeleted INT NOT NULL DEFAULT 0,
+  dateModified TEXT NOT NULL,
+  dateCreated TEXT NOT NULL
 );
-CREATE INDEX notes_image_note_id_index ON notes_image (note_id);
-CREATE INDEX notes_image_image_id_index ON notes_image (image_id);
-CREATE INDEX notes_image_note_id_image_id_index ON notes_image (note_id, image_id);
-CREATE TABLE attributes
+CREATE TABLE IF NOT EXISTS "attributes"
 (
-  attribute_id TEXT PRIMARY KEY NOT NULL,
-  note_id TEXT NOT NULL,
+  attributeId TEXT PRIMARY KEY NOT NULL,
+  noteId TEXT NOT NULL,
   name TEXT NOT NULL,
   value TEXT,
-  date_created TEXT NOT NULL,
-  date_modified TEXT NOT NULL
+  dateCreated TEXT NOT NULL,
+  dateModified TEXT NOT NULL
 );
-CREATE INDEX attributes_note_id_index ON attributes (note_id);
-CREATE UNIQUE INDEX attributes_note_id_name_index ON attributes (note_id, name);
+CREATE UNIQUE INDEX `IDX_sync_entityName_entityId` ON `sync` (
+  `entityName`,
+  `entityId`
+);
+CREATE INDEX `IDX_sync_syncDate` ON `sync` (
+  `syncDate`
+);
+CREATE INDEX `IDX_notes_isDeleted` ON `notes` (
+  `isDeleted`
+);
+CREATE INDEX `IDX_note_tree_noteId` ON `note_tree` (
+  `noteId`
+);
+CREATE INDEX `IDX_note_tree_noteId_parentNoteId` ON `note_tree` (
+  `noteId`,
+  `parentNoteId`
+);
+CREATE INDEX `IDX_note_revisions_noteId` ON `note_revisions` (
+  `noteId`
+);
+CREATE INDEX `IDX_note_revisions_dateModifiedFrom` ON `note_revisions` (
+  `dateModifiedFrom`
+);
+CREATE INDEX `IDX_note_revisions_dateModifiedTo` ON `note_revisions` (
+  `dateModifiedTo`
+);
+CREATE INDEX IDX_note_images_noteId ON note_images (noteId);
+CREATE INDEX IDX_note_images_imageId ON note_images (imageId);
+CREATE INDEX IDX_note_images_noteId_imageId ON note_images (noteId, imageId);
+CREATE INDEX IDX_attributes_noteId ON attributes (noteId);
+CREATE UNIQUE INDEX IDX_attributes_noteId_name ON attributes (noteId, name);
