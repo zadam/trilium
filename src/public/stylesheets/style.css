@@ -108,7 +108,7 @@ span.fancytree-active:not(.fancytree-focused) .fancytree-title {
 }
 
 #header-title {
-    padding: 5px 50px 5px 10px;
+    padding: 5px 20px 5px 10px;
     font-size: large;
     font-weight: bold;
 }

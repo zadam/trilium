@@ -42,7 +42,7 @@ const attributesDialog = (function() {
         dialogEl.dialog({
             modal: true,
             width: 800,
-            height: 700
+            height: 500
         });
 
         attributesModel.loadAttributes();
