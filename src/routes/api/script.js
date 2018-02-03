@@ -19,11 +19,12 @@ router.post('/exec', auth.checkApiAuth, wrap(async (req, res, next) => {
 
 router.get('/startup', auth.checkApiAuth, wrap(async (req, res, next) => {
     const noteIds = await attributes.getNoteIdsWithAttribute("run_on_startup");
+    const repository = new Repository(req);
 
     const scripts = [];
 
     for (const noteId of noteIds) {
-        scripts.push(await getNoteWithSubtreeScript(noteId, req));
+        scripts.push(await getNoteWithSubtreeScript(noteId, repository));
     }
 
     res.send(scripts);
@@ -41,10 +42,10 @@ router.get('/subtree/:noteId', auth.checkApiAuth, wrap(async (req, res, next) =>
     res.send(subTreeScripts + noteScript);
 }));
 
-async function getNoteWithSubtreeScript(noteId, req) {
-    const noteScript = (await notes.getNoteById(noteId, req)).content;
+async function getNoteWithSubtreeScript(noteId, repository) {
+    const noteScript = (await repository.getNote(noteId)).content;
 
-    const subTreeScripts = await getSubTreeScripts(noteId, [noteId], req);
+    const subTreeScripts = await getSubTreeScripts(noteId, [noteId], repository);
 
     return subTreeScripts + noteScript;
 }

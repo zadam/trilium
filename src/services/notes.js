@@ -5,32 +5,6 @@ const sync_table = require('./sync_table');
 const attributes = require('./attributes');
 const protected_session = require('./protected_session');
 
-async function updateJsonNote(noteId, data) {
-    const ret = await createNewNote(noteId, {
-        title: name,
-        content: JSON.stringify(data),
-        target: 'into',
-        isProtected: false,
-        type: 'code',
-        mime: 'application/json'
-    });
-
-    return ret.noteId;
-}
-
-async function createNewJsonNote(parentNoteId, name, payload) {
-    const ret = await createNewNote(parentNoteId, {
-        title: name,
-        content: JSON.stringify(payload),
-        target: 'into',
-        isProtected: false,
-        type: 'code',
-        mime: 'application/json'
-    });
-
-    return ret.noteId;
-}
-
 async function createNewNote(parentNoteId, noteOpts, dataKey, sourceId) {
     const noteId = utils.newNoteId();
     const noteTreeId = utils.newNoteTreeId();

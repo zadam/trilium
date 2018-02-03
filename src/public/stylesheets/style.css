@@ -190,11 +190,6 @@ div.ui-tooltip {
     float: right;
 }
 
-#note-id-display {
-    color: lightgrey;
-    margin-left: 10px;
-}
-
 #note-source {
     height: 98%;
     width: 100%;
@@ -245,6 +240,7 @@ div.ui-tooltip {
     right: 10px;
     bottom: 5px;
     z-index: 1000;
+    color: lightgrey;
 }
 
 #note-type-dropdown {

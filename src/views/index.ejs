@@ -20,12 +20,18 @@
           <button class="btn btn-xs" onclick="eventLog.showDialog();">Event log</button>
         </div>
 
+        <div id="plugin-buttons">
+        </div>
+
         <div>
           <button class="btn btn-xs" onclick="syncNow();" title="Number of outstanding changes to be pushed to server">
+            <span class="ui-icon ui-icon-refresh"></span>
+
             Sync now (<span id="changes-to-push-count">0</span>)
           </button>
 
-          <button class="btn btn-xs" onclick="settings.showDialog();">Settings</button>
+          <button class="btn btn-xs" onclick="settings.showDialog();">
+            <span class="ui-icon ui-icon-gear"></span> Settings</button>
 
           <form action="logout" id="logout-button" method="POST" style="display: inline;">
             <input type="submit" class="btn btn-xs" value="Logout">
@@ -492,7 +498,7 @@
     <script src="javascripts/link.js"></script>
     <script src="javascripts/sync.js"></script>
     <script src="javascripts/messaging.js"></script>
-
+    <script src="javascripts/api.js"></script>
 
     <script type="text/javascript">
       // we hide container initally because otherwise it is rendered first without CSS and then flickers into
