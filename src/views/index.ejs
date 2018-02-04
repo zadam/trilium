@@ -383,10 +383,8 @@
 
     <div id="attributes-dialog" title="Note attributes" style="display: none; padding: 20px;">
       <form data-bind="submit: save">
-      <div style="display: flex; justify-content: space-between; padding: 15px; padding-top: 0;">
-        <button class="btn-default" type="button" data-bind="click: addNewRow">Add new attribute</button>
-
-        <button class="btn-primary" type="submit">Save</button>
+      <div style="text-align: center">
+        <button class="btn-primary btn-large" type="submit">Save</button>
       </div>
 
       <div style="height: 97%; overflow: auto">
@@ -402,10 +400,13 @@
             <tr>
               <td data-bind="text: attributeId"></td>
               <td>
-                <input type="text" data-bind="value: name"/>
+                <input type="text" data-bind="value: name, event: { change: $parent.attributeChanged }"/>
+
+                <div style="color: red" data-bind="if: $parent.isNotUnique($index())">Attribute name must be unique per note.</div>
+                <div style="color: red" data-bind="if: $parent.isEmptyName($index())">Attribute name can't be empty.</div>
               </td>
               <td>
-                <input type="text" data-bind="value: value" style="width: 300px"/>
+                <input type="text" data-bind="value: value, event: { change: $parent.attributeChanged }" style="width: 300px"/>
               </td>
             </tr>
           </tbody>
