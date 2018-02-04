@@ -54,24 +54,6 @@ $(document).bind('keydown', 'ctrl+f', () => {
     }
 });
 
-$(document).bind('keydown', "ctrl+shift+left", () => {
-    const node = noteTree.getCurrentNode();
-    node.navigate($.ui.keyCode.LEFT, true);
-
-    $("#note-detail").focus();
-
-    return false;
-});
-
-$(document).bind('keydown', "ctrl+shift+right", () => {
-    const node = noteTree.getCurrentNode();
-    node.navigate($.ui.keyCode.RIGHT, true);
-
-    $("#note-detail").focus();
-
-    return false;
-});
-
 $(document).bind('keydown', "ctrl+shift+up", () => {
     const node = noteTree.getCurrentNode();
     node.navigate($.ui.keyCode.UP, true);
