@@ -2,6 +2,7 @@
 
 const attributesDialog = (function() {
     const dialogEl = $("#attributes-dialog");
+    const saveAttributesButton = $("#save-attributes-button");
     const attributesModel = new AttributesModel();
     let attributeNames = [];
 
@@ -35,6 +36,11 @@ const attributesDialog = (function() {
         }
 
         this.save = async function() {
+            // we need to defocus from input (in case of enter-triggered save) because value is updated
+            // on blur event (because of conflict with jQuery UI Autocomplete). Without this, input would
+            // stay in focus, blur wouldn't be triggered and change wouldn't be updated in the viewmodel.
+            saveAttributesButton.focus();
+
             if (!isValid()) {
                 alert("Please fix all validation errors and try saving again.");
                 return;
@@ -142,6 +148,8 @@ const attributesDialog = (function() {
 
         $(this).autocomplete("search", $(this).val());
     });
+
+    $(document).on('blur', '.attribute-name', function (e) { console.log("blur!"); });
 
     $(document).on('focus', '.attribute-value', async function (e) {
         if (!$(this).hasClass("ui-autocomplete-input")) {
