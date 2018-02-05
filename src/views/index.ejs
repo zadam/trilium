@@ -58,12 +58,11 @@
         </div>
 
         <div id="search-box" style="display: none; padding: 10px; margin-top: 10px;">
-          <p>
+          <div style="display: flex; align-items: center;">
             <label>Search:</label>
-            <input name="search-text" autocomplete="off">
-            <button id="reset-search-button">&times;</button>
-            <span id="matches"></span>
-          </p>
+            <input name="search-text" style="flex-grow: 100; margin-left: 5px; margin-right: 5px;" autocomplete="off">
+            <button id="reset-search-button" class="btn btn-sm" title="Reset search">&times;</button>
+          </div>
         </div>
       </div>
 
@@ -145,7 +144,7 @@
       </div>
 
       <div id="attribute-list">
-        <button class="btn-default btn-sm" onclick="attributesDialog.showDialog();">Attributes:</button>
+        <button class="btn btn-sm" onclick="attributesDialog.showDialog();">Attributes:</button>
 
         <span id="attribute-list-inner"></span>
       </div>
