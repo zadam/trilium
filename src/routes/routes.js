@@ -40,7 +40,7 @@ function register(app) {
     app.use('/api/notes', notesApiRoute);
     app.use('/api/tree', treeChangesApiRoute);
     app.use('/api/notes', cloningApiRoute);
-    app.use('/api/notes', attributesRoute);
+    app.use('/api', attributesRoute);
     app.use('/api/notes-history', noteHistoryApiRoute);
     app.use('/api/recent-changes', recentChangesApiRoute);
     app.use('/api/settings', settingsApiRoute);

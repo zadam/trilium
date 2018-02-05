@@ -105,7 +105,7 @@ $(window).on('beforeunload', () => {
 // Overrides the default autocomplete filter function to search for matched on atleast 1 word in each of the input term's words
 $.ui.autocomplete.filter = (array, terms) => {
     if (!terms) {
-        return [];
+        return array;
     }
 
     const startDate = new Date();

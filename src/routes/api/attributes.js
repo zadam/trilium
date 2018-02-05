@@ -7,14 +7,15 @@ const auth = require('../../services/auth');
 const sync_table = require('../../services/sync_table');
 const utils = require('../../services/utils');
 const wrap = require('express-promise-wrap').wrap;
+const attributes = require('../../services/attributes');
 
-router.get('/:noteId/attributes', auth.checkApiAuth, wrap(async (req, res, next) => {
+router.get('/notes/:noteId/attributes', auth.checkApiAuth, wrap(async (req, res, next) => {
     const noteId = req.params.noteId;
 
     res.send(await sql.getRows("SELECT * FROM attributes WHERE noteId = ? ORDER BY dateCreated", [noteId]));
 }));
 
-router.put('/:noteId/attributes', auth.checkApiAuth, wrap(async (req, res, next) => {
+router.put('/notes/:noteId/attributes', auth.checkApiAuth, wrap(async (req, res, next) => {
     const noteId = req.params.noteId;
     const attributes = req.body;
     const now = utils.nowDate();
@@ -43,6 +44,22 @@ router.put('/:noteId/attributes', auth.checkApiAuth, wrap(async (req, res, next)
     });
 
     res.send(await sql.getRows("SELECT * FROM attributes WHERE noteId = ? ORDER BY dateCreated", [noteId]));
+}));
+
+router.get('/attributes/names', auth.checkApiAuth, wrap(async (req, res, next) => {
+    const noteId = req.params.noteId;
+
+    const names = await sql.getColumn("SELECT DISTINCT name FROM attributes");
+
+    for (const attr of attributes.BUILTIN_ATTRIBUTES) {
+        if (!names.includes(attr)) {
+            names.push(attr);
+        }
+    }
+
+    names.sort();
+
+    res.send(names);
 }));
 
 module.exports = router;

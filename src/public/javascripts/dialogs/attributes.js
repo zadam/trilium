@@ -3,6 +3,7 @@
 const attributesDialog = (function() {
     const dialogEl = $("#attributes-dialog");
     const attributesModel = new AttributesModel();
+    let attributeNames = [];
 
     function AttributesModel() {
         const self = this;
@@ -17,6 +18,10 @@ const attributesDialog = (function() {
             self.attributes(attributes.map(ko.observable));
 
             addLastEmptyRow();
+
+            attributeNames = await server.get('attributes/names');
+
+            $(".attribute-name:last").focus();
         };
 
         function isValid() {
@@ -54,11 +59,7 @@ const attributesDialog = (function() {
             const attrs = self.attributes();
             const last = attrs[attrs.length - 1]();
 
-//            console.log("last", attrs.map(attr => attr()));
-
             if (last.name.trim() !== "" || last.value !== "") {
-                console.log("Adding new row");
-
                 self.attributes.push(ko.observable({
                     attributeId: '',
                     name: '',
@@ -68,8 +69,6 @@ const attributesDialog = (function() {
         }
 
         this.attributeChanged = function (row) {
-            console.log(row);
-
             addLastEmptyRow();
 
             for (const attr of self.attributes()) {
@@ -123,6 +122,22 @@ const attributesDialog = (function() {
     });
 
     ko.applyBindings(attributesModel, document.getElementById('attributes-dialog'));
+
+    $(document).on('focus', '.attribute-name:not(.ui-autocomplete-input)', function (e) {
+        $(this).autocomplete({
+            // shouldn't be required and autocomplete should just accept array of strings, but that fails
+            // because we have overriden filter() function in init.js
+            source: attributeNames.map(attr => {
+                return {
+                    label: attr,
+                    value: attr
+                }
+            }),
+            minLength: 0
+        });
+
+        $(this).autocomplete("search", $(this).val());
+    });
 
     return {
         showDialog
