@@ -406,7 +406,7 @@
                 <div style="color: red" data-bind="if: $parent.isEmptyName($index())">Attribute name can't be empty.</div>
               </td>
               <td>
-                <input type="text" data-bind="value: value, event: { change: $parent.attributeChanged }" style="width: 300px"/>
+                <input type="text" class="attribute-value" data-bind="value: value, event: { change: $parent.attributeChanged }" style="width: 300px"/>
               </td>
             </tr>
           </tbody>

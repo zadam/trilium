@@ -106,13 +106,13 @@ const attributesDialog = (function() {
     async function showDialog() {
         glob.activeDialog = dialogEl;
 
+        await attributesModel.loadAttributes();
+
         dialogEl.dialog({
             modal: true,
             width: 800,
             height: 500
         });
-
-        attributesModel.loadAttributes();
     }
 
     $(document).bind('keydown', 'alt+a', e => {
@@ -123,18 +123,50 @@ const attributesDialog = (function() {
 
     ko.applyBindings(attributesModel, document.getElementById('attributes-dialog'));
 
-    $(document).on('focus', '.attribute-name:not(.ui-autocomplete-input)', function (e) {
-        $(this).autocomplete({
-            // shouldn't be required and autocomplete should just accept array of strings, but that fails
-            // because we have overriden filter() function in init.js
-            source: attributeNames.map(attr => {
-                return {
-                    label: attr,
-                    value: attr
-                }
-            }),
-            minLength: 0
-        });
+    $(document).on('focus', '.attribute-name', function (e) {
+        if (!$(this).hasClass("ui-autocomplete-input")) {
+            $(this).autocomplete({
+                // shouldn't be required and autocomplete should just accept array of strings, but that fails
+                // because we have overriden filter() function in init.js
+                source: attributeNames.map(attr => {
+                    return {
+                        label: attr,
+                        value: attr
+                    }
+                }),
+                minLength: 0
+            });
+        }
+
+        $(this).autocomplete("search", $(this).val());
+    });
+
+    $(document).on('focus', '.attribute-value', async function (e) {
+        if (!$(this).hasClass("ui-autocomplete-input")) {
+            const attributeName = $(this).parent().parent().find('.attribute-name').val();
+
+            if (attributeName.trim() === "") {
+                return;
+            }
+
+            const attributeValues = await server.get('attributes/values/' + encodeURIComponent(attributeName));
+
+            if (attributeValues.length === 0) {
+                return;
+            }
+
+            $(this).autocomplete({
+                // shouldn't be required and autocomplete should just accept array of strings, but that fails
+                // because we have overriden filter() function in init.js
+                source: attributeValues.map(attr => {
+                    return {
+                        label: attr,
+                        value: attr
+                    }
+                }),
+                minLength: 0
+            });
+        }
 
         $(this).autocomplete("search", $(this).val());
     });

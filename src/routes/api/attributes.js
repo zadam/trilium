@@ -47,8 +47,6 @@ router.put('/notes/:noteId/attributes', auth.checkApiAuth, wrap(async (req, res,
 }));
 
 router.get('/attributes/names', auth.checkApiAuth, wrap(async (req, res, next) => {
-    const noteId = req.params.noteId;
-
     const names = await sql.getColumn("SELECT DISTINCT name FROM attributes");
 
     for (const attr of attributes.BUILTIN_ATTRIBUTES) {
@@ -60,6 +58,14 @@ router.get('/attributes/names', auth.checkApiAuth, wrap(async (req, res, next) =
     names.sort();
 
     res.send(names);
+}));
+
+router.get('/attributes/values/:attributeName', auth.checkApiAuth, wrap(async (req, res, next) => {
+    const attributeName = req.params.attributeName;
+
+    const values = await sql.getColumn("SELECT DISTINCT value FROM attributes WHERE name = ? ORDER BY value", [attributeName]);
+
+    res.send(values);
 }));
 
 module.exports = router;
