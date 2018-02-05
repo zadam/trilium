@@ -6,7 +6,8 @@
     grid-template-areas: "header header"
                          "tree-actions title"
                          "tree note-content"
-                         "parent-list note-content";
+                         "parent-list note-content"
+                         "parent-list attribute-list";
     grid-template-columns: 2fr 5fr;
     grid-template-rows: auto
                         auto
@@ -238,7 +239,7 @@ div.ui-tooltip {
 #note-id-display {
     position: absolute;
     right: 10px;
-    bottom: 5px;
+    bottom: 8px;
     z-index: 1000;
     color: lightgrey;
 }
@@ -250,3 +251,15 @@ div.ui-tooltip {
 }
 
 .cm-matchhighlight {background-color: #eeeeee}
+
+#attribute-list {
+    grid-area: attribute-list;
+    color: #777777;
+    border-top: 1px solid #eee;
+    padding: 5px; display: none;
+}
+
+#attribute-list button {
+    padding: 2px;
+    margin-right: 10px;
+}

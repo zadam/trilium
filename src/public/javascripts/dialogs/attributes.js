@@ -53,6 +53,8 @@ const attributesDialog = (function() {
             addLastEmptyRow();
 
             showMessage("Attributes have been saved.");
+
+            noteEditor.loadAttributeList();
         };
 
         function addLastEmptyRow() {

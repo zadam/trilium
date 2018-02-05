@@ -9,6 +9,8 @@ const noteEditor = (function() {
     const unprotectButton = $("#unprotect-button");
     const noteDetailWrapperEl = $("#note-detail-wrapper");
     const noteIdDisplayEl = $("#note-id-display");
+    const attributeListEl = $("#attribute-list");
+    const attributeListInnerEl = $("#attribute-list-inner");
 
     let editor = null;
     let codeEditor = null;
@@ -187,6 +189,27 @@ const noteEditor = (function() {
 
         // after loading new note make sure editor is scrolled to the top
         noteDetailWrapperEl.scrollTop(0);
+
+        loadAttributeList();
+    }
+
+    async function loadAttributeList() {
+        const noteId = getCurrentNoteId();
+
+        const attributes = await server.get('notes/' + noteId + '/attributes');
+
+        attributeListInnerEl.html('');
+
+        if (attributes.length > 0) {
+            for (const attr of attributes) {
+                attributeListInnerEl.append(formatAttribute(attr) + " ");
+            }
+
+            attributeListEl.show();
+        }
+        else {
+            attributeListEl.hide();
+        }
     }
 
     async function loadNote(noteId) {
@@ -290,6 +313,7 @@ const noteEditor = (function() {
         newNoteCreated,
         getEditor,
         focus,
-        executeCurrentNote
+        executeCurrentNote,
+        loadAttributeList
     };
 })();

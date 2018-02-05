@@ -119,3 +119,17 @@ function executeScript(script) {
     // last \r\n is necessary if script contains line comment on its last line
     eval("(async function() {" + script + "\r\n})()");
 }
+
+function formatValueWithWhitespace(val) {
+    return /\s/.test(val) ? '"' + val + '"' : val;
+}
+
+function formatAttribute(attr) {
+    let str = "@" + formatValueWithWhitespace(attr.name);
+
+    if (attr.value !== "") {
+        str += "=" + formatValueWithWhitespace(attr.value);
+    }
+
+    return str;
+}

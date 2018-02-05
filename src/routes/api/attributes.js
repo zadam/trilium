@@ -63,7 +63,7 @@ router.get('/attributes/names', auth.checkApiAuth, wrap(async (req, res, next) =
 router.get('/attributes/values/:attributeName', auth.checkApiAuth, wrap(async (req, res, next) => {
     const attributeName = req.params.attributeName;
 
-    const values = await sql.getColumn("SELECT DISTINCT value FROM attributes WHERE name = ? ORDER BY value", [attributeName]);
+    const values = await sql.getColumn("SELECT DISTINCT value FROM attributes WHERE name = ? AND value != '' ORDER BY value", [attributeName]);
 
     res.send(values);
 }));
