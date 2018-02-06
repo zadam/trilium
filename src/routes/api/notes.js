@@ -58,15 +58,9 @@ router.put('/:noteId', auth.checkApiAuth, wrap(async (req, res, next) => {
 }));
 
 router.get('/', auth.checkApiAuth, wrap(async (req, res, next) => {
-    console.log("Search: ", req.query.search);
-
     let {attrFilters, searchText} = parseFilters(req.query.search);
 
-    console.log(attrFilters);
-
     const {query, params} = getSearchQuery(attrFilters, searchText);
-
-    console.log(query, params);
 
     const noteIds = await sql.getColumn(query, params);
 
@@ -78,11 +72,7 @@ function parseFilters(searchText) {
 
     const attrRegex = /(\b(and|or)\s+)?@(!?)([\w_-]+|"[^"]+")((=|!=|<|<=|>|>=)([\w_-]+|"[^"]+"))?/i;
 
-    console.log("attrRegex", attrRegex);
-
     let match = attrRegex.exec(searchText);
-
-    console.log("Match: ", match);
 
     function trimQuotes(str) { return str.startsWith('"') ? str.substr(1, str.length - 2) : str; }
 
