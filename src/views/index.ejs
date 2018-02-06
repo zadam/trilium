@@ -56,13 +56,13 @@
             <img src="images/icons/search.png" alt="Search in notes"/>
           </a>
         </div>
+      </div>
 
-        <div id="search-box" style="display: none; padding: 10px; margin-top: 10px;">
-          <div style="display: flex; align-items: center;">
-            <label>Search:</label>
-            <input name="search-text" style="flex-grow: 100; margin-left: 5px; margin-right: 5px;" autocomplete="off">
-            <button id="reset-search-button" class="btn btn-sm" title="Reset search">&times;</button>
-          </div>
+      <div id="search-box" class="hide-toggle" style="grid-area: search; display: none; padding: 10px; margin-top: 10px;">
+        <div style="display: flex; align-items: center;">
+          <label>Search:</label>
+          <input name="search-text" style="flex-grow: 100; margin-left: 5px; margin-right: 5px;" autocomplete="off">
+          <button id="reset-search-button" class="btn btn-sm" title="Reset search">&times;</button>
         </div>
       </div>
 
@@ -72,7 +72,7 @@
       <div id="parent-list" class="hide-toggle">
         <p><strong>Note locations:</strong></p>
 
-        <ul id="parent-list-list"></ul>
+        <ul id="parent-list-inner"></ul>
       </div>
 
       <div class="hide-toggle" style="grid-area: title;">

@@ -3,7 +3,7 @@
 const noteTree = (function() {
     const treeEl = $("#tree");
     const parentListEl = $("#parent-list");
-    const parentListListEl = $("#parent-list-list");
+    const parentListListEl = $("#parent-list-inner");
 
     let startNotePath = null;
     let notesTreeMap = {};

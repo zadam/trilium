@@ -5,13 +5,18 @@
     display: grid;
     grid-template-areas: "header header"
                          "tree-actions title"
+                         "search note-content"
                          "tree note-content"
                          "parent-list note-content"
                          "parent-list attribute-list";
     grid-template-columns: 2fr 5fr;
     grid-template-rows: auto
                         auto
-                        1fr;
+                        auto
+                        1fr
+                        auto
+                        auto;
+
     justify-content: center;
     grid-gap: 10px;
 }
@@ -135,6 +140,7 @@ div.ui-tooltip {
     margin-left: 20px;
     border-top: 2px solid #eee;
     padding-top: 10px;
+    grid-area: parent-list;
 }
 
 #parent-list ul {
