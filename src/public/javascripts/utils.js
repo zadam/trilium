@@ -121,7 +121,7 @@ function executeScript(script) {
 }
 
 function formatValueWithWhitespace(val) {
-    return /\s/.test(val) ? '"' + val + '"' : val;
+    return /[^\w_-]/.test(val) ? '"' + val + '"' : val;
 }
 
 function formatAttribute(attr) {
