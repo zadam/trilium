@@ -22,7 +22,8 @@ const attributesDialog = (function() {
 
             attributeNames = await server.get('attributes/names');
 
-            $(".attribute-name:last").focus();
+            // attribute might not be rendered immediatelly so could not focus
+            setTimeout(() => $(".attribute-name:last").focus(), 100);
         };
 
         function isValid() {
@@ -65,9 +66,9 @@ const attributesDialog = (function() {
 
         function addLastEmptyRow() {
             const attrs = self.attributes();
-            const last = attrs[attrs.length - 1]();
+            const last = attrs.length === 0 ? null : attrs[attrs.length - 1]();
 
-            if (last.name.trim() !== "" || last.value !== "") {
+            if (!last || last.name.trim() !== "" || last.value !== "") {
                 self.attributes.push(ko.observable({
                     attributeId: '',
                     name: '',
@@ -148,8 +149,6 @@ const attributesDialog = (function() {
 
         $(this).autocomplete("search", $(this).val());
     });
-
-    $(document).on('blur', '.attribute-name', function (e) { console.log("blur!"); });
 
     $(document).on('focus', '.attribute-value', async function (e) {
         if (!$(this).hasClass("ui-autocomplete-input")) {
