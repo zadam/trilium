@@ -2,12 +2,8 @@
 
 const recentNotes = (function() {
     const dialogEl = $("#recent-notes-dialog");
-    const selectBoxEl = $('#recent-notes-select-box');
-    const jumpToButtonEl = $('#recent-notes-jump-to');
-    const addLinkButtonEl = $('#recent-notes-add-link');
-    const addCurrentAsChildEl = $("#recent-notes-add-current-as-child");
-    const addRecentAsChildEl = $("#recent-notes-add-recent-as-child");
-    const noteDetailEl = $('#note-detail');
+    const searchInputEl = $('#recent-notes-search-input');
+
     // list of recent note paths
     let list = [];
 
@@ -33,93 +29,45 @@ const recentNotes = (function() {
 
         dialogEl.dialog({
             modal: true,
-            width: 800
+            width: 800,
+            height: 400
         });
 
-        selectBoxEl.find('option').remove();
+        searchInputEl.val('');
 
         // remove the current note
         const recNotes = list.filter(note => note !== noteTree.getCurrentNotePath());
 
-        $.each(recNotes, (key, valueNotePath) => {
-            const noteTitle = noteTree.getNotePathTitle(valueNotePath);
+        searchInputEl.autocomplete({
+            source: recNotes.map(notePath => {
+                const noteTitle = noteTree.getNotePathTitle(notePath);
 
-            const option = $("<option></option>")
-                .attr("value", valueNotePath)
-                .text(noteTitle);
+                return {
+                    label: noteTitle,
+                    value: notePath
+                }
+            }),
+            minLength: 0,
+            autoFocus: true,
+            select: function (event, ui) {
+                noteTree.activateNode(ui.item.value);
 
-            // select the first one (most recent one) by default
-            if (key === 0) {
-                option.attr("selected", "selected");
+                searchInputEl.autocomplete('destroy');
+                dialogEl.dialog('close');
+            },
+            focus: function (event, ui) {
+                event.preventDefault();
+            },
+            close: function (event, ui) {
+                searchInputEl.autocomplete('destroy');
+                dialogEl.dialog('close');
+            },
+            create: () => searchInputEl.autocomplete("search", ""),
+            classes: {
+                "ui-autocomplete": "recent-notes-autocomplete"
             }
-
-            selectBoxEl.append(option);
         });
     }
-
-    function getSelectedNotePath() {
-        return selectBoxEl.find("option:selected").val();
-    }
-
-    function getSelectedNoteId() {
-        const notePath = getSelectedNotePath();
-        return treeUtils.getNoteIdFromNotePath(notePath);
-    }
-
-    function setActiveNoteBasedOnRecentNotes() {
-        const notePath = getSelectedNotePath();
-
-        noteTree.activateNode(notePath);
-
-        dialogEl.dialog('close');
-    }
-
-    function addLinkBasedOnRecentNotes() {
-        const notePath = getSelectedNotePath();
-        const noteId = treeUtils.getNoteIdFromNotePath(notePath);
-
-        const linkTitle = noteTree.getNoteTitle(noteId);
-
-        dialogEl.dialog("close");
-
-        link.addLinkToEditor(linkTitle, '#' + notePath);
-    }
-
-    async function addCurrentAsChild() {
-        await cloning.cloneNoteTo(noteEditor.getCurrentNoteId(), getSelectedNoteId());
-
-        dialogEl.dialog("close");
-    }
-
-    async function addRecentAsChild() {
-        await cloning.cloneNoteTo(getSelectedNoteId(), noteEditor.getCurrentNoteId());
-
-        dialogEl.dialog("close");
-    }
-
-    selectBoxEl.keydown(e => {
-        const key = e.which;
-
-        // to get keycodes use http://keycode.info/
-        if (key === 13)// the enter key code
-        {
-            setActiveNoteBasedOnRecentNotes();
-        }
-        else if (key === 76 /* l */) {
-            addLinkBasedOnRecentNotes();
-        }
-        else if (key === 67 /* c */) {
-            addCurrentAsChild();
-        }
-        else if (key === 82 /* r */) {
-            addRecentAsChild()
-        }
-        else {
-            return; // avoid prevent default
-        }
-
-        e.preventDefault();
-    });
 
     reload();
 
@@ -128,15 +76,6 @@ const recentNotes = (function() {
 
         e.preventDefault();
     });
-
-    selectBoxEl.dblclick(e => {
-        setActiveNoteBasedOnRecentNotes();
-    });
-
-    jumpToButtonEl.click(setActiveNoteBasedOnRecentNotes);
-    addLinkButtonEl.click(addLinkBasedOnRecentNotes);
-    addCurrentAsChildEl.click(addCurrentAsChild);
-    addRecentAsChildEl.click(addRecentAsChild);
 
     return {
         showDialog,
