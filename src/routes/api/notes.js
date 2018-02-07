@@ -62,6 +62,8 @@ router.get('/', auth.checkApiAuth, wrap(async (req, res, next) => {
 
     const {query, params} = getSearchQuery(attrFilters, searchText);
 
+    console.log(query, params);
+
     const noteIds = await sql.getColumn(query, params);
 
     res.send(noteIds);
@@ -152,7 +154,7 @@ function getSearchQuery(attrFilters, searchText) {
         searchParams.push(searchText); // two occurences in searchCondition
     }
 
-    const query = `SELECT notes.noteId FROM notes
+    const query = `SELECT DISTINCT notes.noteId FROM notes
             ${joins.join('\r\n')}
               WHERE 
                 notes.isDeleted = 0

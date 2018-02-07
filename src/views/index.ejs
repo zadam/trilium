@@ -394,8 +394,7 @@
               <td>
                 <!-- Change to valueUpdate: blur is necessary because jQuery UI autocomplete hijacks change event -->
                 <input type="text" class="attribute-name" data-bind="value: name, valueUpdate: 'blur',  event: { blur: $parent.attributeChanged }"/>
-
-                <div style="color: red" data-bind="if: $parent.isNotUnique($index())">Attribute name must be unique per note.</div>
+                <div style="color: yellowgreen" data-bind="if: $parent.isNotUnique($index())"><span class="glyphicon glyphicon-info-sign"></span> Duplicate attribute.</div>
                 <div style="color: red" data-bind="if: $parent.isEmptyName($index())">Attribute name can't be empty.</div>
               </td>
               <td>

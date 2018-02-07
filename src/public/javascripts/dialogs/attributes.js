@@ -28,7 +28,7 @@ const attributesDialog = (function() {
 
         function isValid() {
             for (let attrs = self.attributes(), i = 0; i < attrs.length; i++) {
-                if (self.isEmptyName(i) || self.isNotUnique(i)) {
+                if (self.isEmptyName(i)) {
                     return false;
                 }
             }
