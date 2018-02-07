@@ -24,7 +24,7 @@ class Note extends Entity {
     }
 
     async getAttributes() {
-        return this.repository.getEntities("SELECT * FROM attributes WHERE noteId = ?", [this.noteId]);
+        return this.repository.getEntities("SELECT * FROM attributes WHERE noteId = ? AND isDeleted = 0", [this.noteId]);
     }
 
     async getAttribute(name) {

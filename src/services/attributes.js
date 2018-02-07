@@ -13,7 +13,10 @@ async function getNoteAttributeMap(noteId) {
 
 async function getNoteIdWithAttribute(name, value) {
     return await sql.getValue(`SELECT notes.noteId FROM notes JOIN attributes USING(noteId) 
-          WHERE notes.isDeleted = 0 AND attributes.name = ? AND attributes.value = ?`, [name, value]);
+          WHERE notes.isDeleted = 0
+                AND attributes.isDeleted = 0
+                AND attributes.name = ? 
+                AND attributes.value = ?`, [name, value]);
 }
 
 async function getNotesWithAttribute(dataKey, name, value) {
@@ -23,11 +26,11 @@ async function getNotesWithAttribute(dataKey, name, value) {
 
     if (value !== undefined) {
         notes = await repository.getEntities(`SELECT notes.* FROM notes JOIN attributes USING(noteId) 
-          WHERE notes.isDeleted = 0 AND attributes.name = ? AND attributes.value = ?`, [name, value]);
+          WHERE notes.isDeleted = 0 AND attributes.isDeleted = 0 AND attributes.name = ? AND attributes.value = ?`, [name, value]);
     }
     else {
         notes = await repository.getEntities(`SELECT notes.* FROM notes JOIN attributes USING(noteId) 
-          WHERE notes.isDeleted = 0 AND attributes.name = ?`, [name]);
+          WHERE notes.isDeleted = 0 AND attributes.isDeleted = 0 AND attributes.name = ?`, [name]);
     }
 
     return notes;
@@ -41,7 +44,7 @@ async function getNoteWithAttribute(dataKey, name, value) {
 
 async function getNoteIdsWithAttribute(name) {
     return await sql.getColumn(`SELECT DISTINCT notes.noteId FROM notes JOIN attributes USING(noteId) 
-          WHERE notes.isDeleted = 0 AND attributes.name = ?`, [name]);
+          WHERE notes.isDeleted = 0 AND attributes.isDeleted = 0 AND attributes.name = ? AND attributes.isDeleted = 0`, [name]);
 }
 
 async function createAttribute(noteId, name, value = null, sourceId = null) {
@@ -54,7 +57,8 @@ async function createAttribute(noteId, name, value = null, sourceId = null) {
         name: name,
         value: value,
         dateModified: now,
-        dateCreated: now
+        dateCreated: now,
+        isDeleted: false
     });
 
     await sync_table.addAttributeSync(attributeId, sourceId);

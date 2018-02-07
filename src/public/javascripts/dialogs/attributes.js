@@ -26,6 +26,19 @@ const attributesDialog = (function() {
             setTimeout(() => $(".attribute-name:last").focus(), 100);
         };
 
+        this.deleteAttribute = function(data, event) {
+            const attr = self.getTargetAttribute(event);
+            const attrData = attr();
+
+            if (attrData) {
+                attrData.isDeleted = 1;
+
+                attr(attrData);
+
+                addLastEmptyRow();
+            }
+        };
+
         function isValid() {
             for (let attrs = self.attributes(), i = 0; i < attrs.length; i++) {
                 if (self.isEmptyName(i)) {
@@ -65,26 +78,25 @@ const attributesDialog = (function() {
         };
 
         function addLastEmptyRow() {
-            const attrs = self.attributes();
+            const attrs = self.attributes().filter(attr => attr().isDeleted === 0);
             const last = attrs.length === 0 ? null : attrs[attrs.length - 1]();
 
             if (!last || last.name.trim() !== "" || last.value !== "") {
                 self.attributes.push(ko.observable({
                     attributeId: '',
                     name: '',
-                    value: ''
+                    value: '',
+                    isDeleted: 0
                 }));
             }
         }
 
-        this.attributeChanged = function (row) {
+        this.attributeChanged = function (data, event) {
             addLastEmptyRow();
 
-            for (const attr of self.attributes()) {
-                if (row.attributeId === attr().attributeId) {
-                    attr.valueHasMutated();
-                }
-            }
+            const attr = self.getTargetAttribute(event);
+
+            attr.valueHasMutated();
         };
 
         this.isNotUnique = function(index) {
@@ -109,6 +121,13 @@ const attributesDialog = (function() {
             const cur = self.attributes()[index]();
 
             return cur.name.trim() === "" && (cur.attributeId !== "" || cur.value !== "");
+        };
+
+        this.getTargetAttribute = function(event) {
+            const context = ko.contextFor(event.target);
+            const index = context.$index();
+
+            return self.attributes()[index];
         }
     }
 

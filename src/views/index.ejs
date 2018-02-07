@@ -376,7 +376,7 @@
     <div id="attributes-dialog" title="Note attributes" style="display: none; padding: 20px;">
       <form data-bind="submit: save">
       <div style="text-align: center">
-        <button class="btn btn-large" style="width: 200px;" id="save-attributes-button" type="submit">Save <kbd>enter</kbd></button>
+        <button class="btn btn-large" style="width: 200px;" id="save-attributes-button" type="submit">Save changes <kbd>enter</kbd></button>
       </div>
 
       <div style="height: 97%; overflow: auto">
@@ -386,10 +386,11 @@
               <th>ID</th>
               <th>Name</th>
               <th>Value</th>
+              <th></th>
             </tr>
           </thead>
           <tbody data-bind="foreach: attributes">
-            <tr>
+           <tr data-bind="if: isDeleted == 0">
               <td data-bind="text: attributeId"></td>
               <td>
                 <!-- Change to valueUpdate: blur is necessary because jQuery UI autocomplete hijacks change event -->
@@ -399,6 +400,9 @@
               </td>
               <td>
                 <input type="text" class="attribute-value" data-bind="value: value, valueUpdate: 'blur', event: { blur: $parent.attributeChanged }" style="width: 300px"/>
+              </td>
+              <td title="Delete" style="padding: 13px;">
+                <span class="glyphicon glyphicon-trash" data-bind="click: $parent.deleteAttribute"></span>
               </td>
             </tr>
           </tbody>

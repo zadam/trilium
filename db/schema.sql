@@ -86,7 +86,8 @@ CREATE TABLE IF NOT EXISTS "attributes"
   name TEXT NOT NULL,
   value TEXT,
   dateCreated TEXT NOT NULL,
-  dateModified TEXT NOT NULL
+  dateModified TEXT NOT NULL,
+  isDeleted INT NOT NULL
 );
 CREATE UNIQUE INDEX `IDX_sync_entityName_entityId` ON `sync` (
   `entityName`,
