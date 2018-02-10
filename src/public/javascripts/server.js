@@ -104,6 +104,8 @@ const server = (function() {
         post,
         put,
         remove,
-        exec
+        exec,
+        // don't remove, used from CKEditor image upload!
+        getHeaders
     }
 })();
