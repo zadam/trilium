@@ -1,28 +1,28 @@
 "use strict";
 
 const jumpToNote = (function() {
-    const dialogEl = $("#jump-to-note-dialog");
-    const autoCompleteEl = $("#jump-to-note-autocomplete");
-    const formEl = $("#jump-to-note-form");
+    const $dialog = $("#jump-to-note-dialog");
+    const $autoComplete = $("#jump-to-note-autocomplete");
+    const $form = $("#jump-to-note-form");
 
     async function showDialog() {
-        glob.activeDialog = dialogEl;
+        glob.activeDialog = $dialog;
 
-        autoCompleteEl.val('');
+        $autoComplete.val('');
 
-        dialogEl.dialog({
+        $dialog.dialog({
             modal: true,
             width: 800
         });
 
-        await autoCompleteEl.autocomplete({
+        await $autoComplete.autocomplete({
             source: await stopWatch("building autocomplete", noteTree.getAutocompleteItems),
             minLength: 0
         });
     }
 
     function getSelectedNotePath() {
-        const val = autoCompleteEl.val();
+        const val = $autoComplete.val();
         return link.getNodePathFromLabel(val);
     }
 
@@ -32,7 +32,7 @@ const jumpToNote = (function() {
         if (notePath) {
             noteTree.activateNode(notePath);
 
-            dialogEl.dialog('close');
+            $dialog.dialog('close');
         }
     }
 
@@ -42,8 +42,8 @@ const jumpToNote = (function() {
         e.preventDefault();
     });
 
-    formEl.submit(() => {
-        const action = dialogEl.find("button:focus").val();
+    $form.submit(() => {
+        const action = $dialog.find("button:focus").val();
 
         goToNote();
 

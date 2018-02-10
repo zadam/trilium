@@ -1,16 +1,16 @@
 "use strict";
 
 const sqlConsole = (function() {
-    const dialogEl = $("#sql-console-dialog");
-    const queryEl = $('#sql-console-query');
-    const executeButton = $('#sql-console-execute');
-    const resultHeadEl = $('#sql-console-results thead');
-    const resultBodyEl = $('#sql-console-results tbody');
+    const $dialog = $("#sql-console-dialog");
+    const $query = $('#sql-console-query');
+    const $executeButton = $('#sql-console-execute');
+    const $resultHead = $('#sql-console-results thead');
+    const $resultBody = $('#sql-console-results tbody');
 
     function showDialog() {
-        glob.activeDialog = dialogEl;
+        glob.activeDialog = $dialog;
 
-        dialogEl.dialog({
+        $dialog.dialog({
             modal: true,
             width: $(window).width(),
             height: $(window).height()
@@ -18,7 +18,7 @@ const sqlConsole = (function() {
     }
 
     async function execute() {
-        const sqlQuery = queryEl.val();
+        const sqlQuery = $query.val();
 
         const result = await server.post("sql/execute", {
             query: sqlQuery
@@ -34,8 +34,8 @@ const sqlConsole = (function() {
 
         const rows = result.rows;
 
-        resultHeadEl.empty();
-        resultBodyEl.empty();
+        $resultHead.empty();
+        $resultBody.empty();
 
         if (rows.length > 0) {
             const result = rows[0];
@@ -45,7 +45,7 @@ const sqlConsole = (function() {
                 rowEl.append($("<th>").html(key));
             }
 
-            resultHeadEl.append(rowEl);
+            $resultHead.append(rowEl);
         }
 
         for (const result of rows) {
@@ -55,15 +55,15 @@ const sqlConsole = (function() {
                 rowEl.append($("<td>").html(result[key]));
             }
 
-            resultBodyEl.append(rowEl);
+            $resultBody.append(rowEl);
         }
     }
 
     $(document).bind('keydown', 'alt+o', showDialog);
 
-    queryEl.bind('keydown', 'ctrl+return', execute);
+    $query.bind('keydown', 'ctrl+return', execute);
 
-    executeButton.click(execute);
+    $executeButton.click(execute);
 
     return {
         showDialog

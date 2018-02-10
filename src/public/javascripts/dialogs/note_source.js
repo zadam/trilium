@@ -1,13 +1,13 @@
 "use strict";
 
 const noteSource = (function() {
-    const dialogEl = $("#note-source-dialog");
-    const noteSourceEl = $("#note-source");
+    const $dialog = $("#note-source-dialog");
+    const $noteSource = $("#note-source");
 
     function showDialog() {
-        glob.activeDialog = dialogEl;
+        glob.activeDialog = $dialog;
 
-        dialogEl.dialog({
+        $dialog.dialog({
             modal: true,
             width: 800,
             height: 500
@@ -15,7 +15,7 @@ const noteSource = (function() {
 
         const noteText = noteEditor.getCurrentNote().detail.content;
 
-        noteSourceEl.text(formatHtml(noteText));
+        $noteSource.text(formatHtml(noteText));
     }
 
     function formatHtml(str) {

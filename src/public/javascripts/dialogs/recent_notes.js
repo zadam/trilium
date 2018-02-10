@@ -1,8 +1,8 @@
 "use strict";
 
 const recentNotes = (function() {
-    const dialogEl = $("#recent-notes-dialog");
-    const searchInputEl = $('#recent-notes-search-input');
+    const $dialog = $("#recent-notes-dialog");
+    const $searchInput = $('#recent-notes-search-input');
 
     // list of recent note paths
     let list = [];
@@ -25,20 +25,20 @@ const recentNotes = (function() {
     }
 
     function showDialog() {
-        glob.activeDialog = dialogEl;
+        glob.activeDialog = $dialog;
 
-        dialogEl.dialog({
+        $dialog.dialog({
             modal: true,
             width: 800,
             height: 400
         });
 
-        searchInputEl.val('');
+        $searchInput.val('');
 
         // remove the current note
         const recNotes = list.filter(note => note !== noteTree.getCurrentNotePath());
 
-        searchInputEl.autocomplete({
+        $searchInput.autocomplete({
             source: recNotes.map(notePath => {
                 const noteTitle = noteTree.getNotePathTitle(notePath);
 
@@ -52,17 +52,17 @@ const recentNotes = (function() {
             select: function (event, ui) {
                 noteTree.activateNode(ui.item.value);
 
-                searchInputEl.autocomplete('destroy');
-                dialogEl.dialog('close');
+                $searchInput.autocomplete('destroy');
+                $dialog.dialog('close');
             },
             focus: function (event, ui) {
                 event.preventDefault();
             },
             close: function (event, ui) {
-                searchInputEl.autocomplete('destroy');
-                dialogEl.dialog('close');
+                $searchInput.autocomplete('destroy');
+                $dialog.dialog('close');
             },
-            create: () => searchInputEl.autocomplete("search", ""),
+            create: () => $searchInput.autocomplete("search", ""),
             classes: {
                 "ui-autocomplete": "recent-notes-autocomplete"
             }

@@ -1,8 +1,8 @@
 "use strict";
 
 const settings = (function() {
-    const dialogEl = $("#settings-dialog");
-    const tabsEl = $("#settings-tabs");
+    const $dialog = $("#settings-dialog");
+    const $tabs = $("#settings-tabs");
 
     const settingModules = [];
 
@@ -11,16 +11,16 @@ const settings = (function() {
     }
 
     async function showDialog() {
-        glob.activeDialog = dialogEl;
+        glob.activeDialog = $dialog;
 
         const settings = await server.get('settings');
 
-        dialogEl.dialog({
+        $dialog.dialog({
             modal: true,
             width: 900
         });
 
-        tabsEl.tabs();
+        $tabs.tabs();
 
         for (const module of settingModules) {
             if (module.settingsLoaded) {
@@ -46,22 +46,22 @@ const settings = (function() {
 })();
 
 settings.addModule((function() {
-    const formEl = $("#change-password-form");
-    const oldPasswordEl = $("#old-password");
-    const newPassword1El = $("#new-password1");
-    const newPassword2El = $("#new-password2");
+    const $form = $("#change-password-form");
+    const $oldPassword = $("#old-password");
+    const $newPassword1 = $("#new-password1");
+    const $newPassword2 = $("#new-password2");
 
     function settingsLoaded(settings) {
     }
 
-    formEl.submit(() => {
-        const oldPassword = oldPasswordEl.val();
-        const newPassword1 = newPassword1El.val();
-        const newPassword2 = newPassword2El.val();
+    $form.submit(() => {
+        const oldPassword = $oldPassword.val();
+        const newPassword1 = $newPassword1.val();
+        const newPassword2 = $newPassword2.val();
 
-        oldPasswordEl.val('');
-        newPassword1El.val('');
-        newPassword2El.val('');
+        $oldPassword.val('');
+        $newPassword1.val('');
+        $newPassword2.val('');
 
         if (newPassword1 !== newPassword2) {
             alert("New passwords are not the same.");
@@ -92,16 +92,16 @@ settings.addModule((function() {
 })());
 
 settings.addModule((function() {
-    const formEl = $("#protected-session-timeout-form");
-    const protectedSessionTimeoutEl = $("#protected-session-timeout-in-seconds");
+    const $form = $("#protected-session-timeout-form");
+    const $protectedSessionTimeout = $("#protected-session-timeout-in-seconds");
     const settingName = 'protected_session_timeout';
 
     function settingsLoaded(settings) {
-        protectedSessionTimeoutEl.val(settings[settingName]);
+        $protectedSessionTimeout.val(settings[settingName]);
     }
 
-    formEl.submit(() => {
-        const protectedSessionTimeout = protectedSessionTimeoutEl.val();
+    $form.submit(() => {
+        const protectedSessionTimeout = $protectedSessionTimeout.val();
 
         settings.saveSettings(settingName, protectedSessionTimeout).then(() => {
             protected_session.setProtectedSessionTimeout(protectedSessionTimeout);
@@ -116,16 +116,16 @@ settings.addModule((function() {
 })());
 
 settings.addModule((function () {
-    const formEl = $("#history-snapshot-time-interval-form");
-    const timeIntervalEl = $("#history-snapshot-time-interval-in-seconds");
+    const $form = $("#history-snapshot-time-interval-form");
+    const $timeInterval = $("#history-snapshot-time-interval-in-seconds");
     const settingName = 'history_snapshot_time_interval';
 
     function settingsLoaded(settings) {
-        timeIntervalEl.val(settings[settingName]);
+        $timeInterval.val(settings[settingName]);
     }
 
-    formEl.submit(() => {
-        settings.saveSettings(settingName, timeIntervalEl.val());
+    $form.submit(() => {
+        settings.saveSettings(settingName, $timeInterval.val());
 
         return false;
     });
@@ -136,50 +136,50 @@ settings.addModule((function () {
 })());
 
 settings.addModule((async function () {
-    const appVersionEl = $("#app-version");
-    const dbVersionEl = $("#db-version");
-    const buildDateEl = $("#build-date");
-    const buildRevisionEl = $("#build-revision");
+    const $appVersion = $("#app-version");
+    const $dbVersion = $("#db-version");
+    const $buildDate = $("#build-date");
+    const $buildRevision = $("#build-revision");
 
     const appInfo = await server.get('app-info');
 
-    appVersionEl.html(appInfo.app_version);
-    dbVersionEl.html(appInfo.db_version);
-    buildDateEl.html(appInfo.build_date);
-    buildRevisionEl.html(appInfo.build_revision);
-    buildRevisionEl.attr('href', 'https://github.com/zadam/trilium/commit/' + appInfo.build_revision);
+    $appVersion.html(appInfo.app_version);
+    $dbVersion.html(appInfo.db_version);
+    $buildDate.html(appInfo.build_date);
+    $buildRevision.html(appInfo.build_revision);
+    $buildRevision.attr('href', 'https://github.com/zadam/trilium/commit/' + appInfo.build_revision);
 
     return {};
 })());
 
 settings.addModule((async function () {
-    const forceFullSyncButton = $("#force-full-sync-button");
-    const fillSyncRowsButton = $("#fill-sync-rows-button");
-    const anonymizeButton = $("#anonymize-button");
-    const cleanupSoftDeletedButton = $("#cleanup-soft-deleted-items-button");
-    const cleanupUnusedImagesButton = $("#cleanup-unused-images-button");
-    const vacuumDatabaseButton = $("#vacuum-database-button");
+    const $forceFullSyncButton = $("#force-full-sync-button");
+    const $fillSyncRowsButton = $("#fill-sync-rows-button");
+    const $anonymizeButton = $("#anonymize-button");
+    const $cleanupSoftDeletedButton = $("#cleanup-soft-deleted-items-button");
+    const $cleanupUnusedImagesButton = $("#cleanup-unused-images-button");
+    const $vacuumDatabaseButton = $("#vacuum-database-button");
 
-    forceFullSyncButton.click(async () => {
+    $forceFullSyncButton.click(async () => {
         await server.post('sync/force-full-sync');
 
         showMessage("Full sync triggered");
     });
 
-    fillSyncRowsButton.click(async () => {
+    $fillSyncRowsButton.click(async () => {
         await server.post('sync/fill-sync-rows');
 
         showMessage("Sync rows filled successfully");
     });
 
 
-    anonymizeButton.click(async () => {
+    $anonymizeButton.click(async () => {
         await server.post('anonymization/anonymize');
 
         showMessage("Created anonymized database");
     });
 
-    cleanupSoftDeletedButton.click(async () => {
+    $cleanupSoftDeletedButton.click(async () => {
         if (confirm("Do you really want to clean up soft-deleted items?")) {
             await server.post('cleanup/cleanup-soft-deleted-items');
 
@@ -187,7 +187,7 @@ settings.addModule((async function () {
         }
     });
 
-    cleanupUnusedImagesButton.click(async () => {
+    $cleanupUnusedImagesButton.click(async () => {
         if (confirm("Do you really want to clean up unused images?")) {
             await server.post('cleanup/cleanup-unused-images');
 
@@ -195,7 +195,7 @@ settings.addModule((async function () {
         }
     });
 
-    vacuumDatabaseButton.click(async () => {
+    $vacuumDatabaseButton.click(async () => {
         await server.post('cleanup/vacuum-database');
 
         showMessage("Database has been vacuumed");

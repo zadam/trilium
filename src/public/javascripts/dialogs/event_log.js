@@ -1,13 +1,13 @@
 "use strict";
 
 const eventLog = (function() {
-    const dialogEl = $("#event-log-dialog");
-    const listEl = $("#event-log-list");
+    const $dialog = $("#event-log-dialog");
+    const $list = $("#event-log-list");
 
     async function showDialog() {
-        glob.activeDialog = dialogEl;
+        glob.activeDialog = $dialog;
 
-        dialogEl.dialog({
+        $dialog.dialog({
             modal: true,
             width: 800,
             height: 700
@@ -15,7 +15,7 @@ const eventLog = (function() {
 
         const result = await server.get('event-log');
 
-        listEl.html('');
+        $list.html('');
 
         for (const event of result) {
             const dateTime = formatDateTime(parseDate(event.dateAdded));
@@ -28,7 +28,7 @@ const eventLog = (function() {
 
             const eventEl = $('<li>').html(dateTime + " - " + event.comment);
 
-            listEl.append(eventEl);
+            $list.append(eventEl);
         }
     }
 

@@ -33,6 +33,8 @@ const attributesDialog = (function() {
                 update: function() {
                     let position = 0;
 
+                    // we need to update positions by searching in the DOM, because order of the
+                    // attributes in the viewmodel (self.attributes()) stays the same
                     $attributesBody.find('input[name="position"]').each(function() {
                         const attr = self.getTargetAttribute(this);
 

@@ -1,17 +1,17 @@
 "use strict";
 
 const editTreePrefix = (function() {
-    const dialogEl = $("#edit-tree-prefix-dialog");
-    const formEl = $("#edit-tree-prefix-form");
-    const treePrefixInputEl = $("#tree-prefix-input");
-    const noteTitleEl = $('#tree-prefix-note-title');
+    const $dialog = $("#edit-tree-prefix-dialog");
+    const $form = $("#edit-tree-prefix-form");
+    const $treePrefixInput = $("#tree-prefix-input");
+    const $noteTitle = $('#tree-prefix-note-title');
 
     let noteTreeId;
 
     async function showDialog() {
-        glob.activeDialog = dialogEl;
+        glob.activeDialog = $dialog;
 
-        await dialogEl.dialog({
+        await $dialog.dialog({
             modal: true,
             width: 500
         });
@@ -20,21 +20,21 @@ const editTreePrefix = (function() {
 
         noteTreeId = currentNode.data.noteTreeId;
 
-        treePrefixInputEl.val(currentNode.data.prefix).focus();
+        $treePrefixInput.val(currentNode.data.prefix).focus();
 
         const noteTitle = noteTree.getNoteTitle(currentNode.data.noteId);
 
-        noteTitleEl.html(noteTitle);
+        $noteTitle.html(noteTitle);
     }
 
-    formEl.submit(() => {
-        const prefix = treePrefixInputEl.val();
+    $form.submit(() => {
+        const prefix = $treePrefixInput.val();
 
         server.put('tree/' + noteTreeId + '/set-prefix', {
             prefix: prefix
         }).then(() => noteTree.setPrefix(noteTreeId, prefix));
 
-        dialogEl.dialog("close");
+        $dialog.dialog("close");
 
         return false;
     });

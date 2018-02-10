@@ -1,12 +1,12 @@
 "use strict";
 
 const recentChanges = (function() {
-    const dialogEl = $("#recent-changes-dialog");
+    const $dialog = $("#recent-changes-dialog");
 
     async function showDialog() {
-        glob.activeDialog = dialogEl;
+        glob.activeDialog = $dialog;
 
-        dialogEl.dialog({
+        $dialog.dialog({
             modal: true,
             width: 800,
             height: 700
@@ -14,7 +14,7 @@ const recentChanges = (function() {
 
         const result = await server.get('recent-changes/');
 
-        dialogEl.html('');
+        $dialog.html('');
 
         const groupedByDate = groupByDate(result);
 
@@ -48,7 +48,7 @@ const recentChanges = (function() {
                     .append(' (').append(revLink).append(')'));
             }
 
-            dialogEl.append(dayEl);
+            $dialog.append(dayEl);
         }
     }
 
