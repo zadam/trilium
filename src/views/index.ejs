@@ -383,6 +383,7 @@
         <table id="attributes-table" class="table">
           <thead>
             <tr>
+              <th></th>
               <th>ID</th>
               <th>Name</th>
               <th>Value</th>
@@ -390,8 +391,13 @@
             </tr>
           </thead>
           <tbody data-bind="foreach: attributes">
-           <tr data-bind="if: isDeleted == 0">
-              <td data-bind="text: attributeId"></td>
+            <tr data-bind="if: isDeleted == 0">
+              <td class="handle">
+                <span class="glyphicon glyphicon-resize-vertical"></span>
+                <input type="hidden" name="position" data-bind="value: position"/>
+              </td>
+              <!-- ID column has specific width because if it's empty its size can be deformed when dragging -->
+              <td data-bind="text: attributeId" style="width: 150px;"></td>
               <td>
                 <!-- Change to valueUpdate: blur is necessary because jQuery UI autocomplete hijacks change event -->
                 <input type="text" class="attribute-name" data-bind="value: name, valueUpdate: 'blur',  event: { blur: $parent.attributeChanged }"/>

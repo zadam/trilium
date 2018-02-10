@@ -1,8 +1,10 @@
 "use strict";
 
 const attributesDialog = (function() {
-    const dialogEl = $("#attributes-dialog");
-    const saveAttributesButton = $("#save-attributes-button");
+    const $dialog = $("#attributes-dialog");
+    const $saveAttributesButton = $("#save-attributes-button");
+    const $attributesBody = $('#attributes-table tbody');
+
     const attributesModel = new AttributesModel();
     let attributeNames = [];
 
@@ -24,10 +26,24 @@ const attributesDialog = (function() {
 
             // attribute might not be rendered immediatelly so could not focus
             setTimeout(() => $(".attribute-name:last").focus(), 100);
+
+            $attributesBody.sortable({
+                handle: '.handle',
+                containment: $attributesBody,
+                update: function() {
+                    let position = 0;
+
+                    $attributesBody.find('input[name="position"]').each(function() {
+                        const attr = self.getTargetAttribute(this);
+
+                        attr().position = position++;
+                    });
+                }
+            });
         };
 
         this.deleteAttribute = function(data, event) {
-            const attr = self.getTargetAttribute(event);
+            const attr = self.getTargetAttribute(event.target);
             const attrData = attr();
 
             if (attrData) {
@@ -53,7 +69,7 @@ const attributesDialog = (function() {
             // we need to defocus from input (in case of enter-triggered save) because value is updated
             // on blur event (because of conflict with jQuery UI Autocomplete). Without this, input would
             // stay in focus, blur wouldn't be triggered and change wouldn't be updated in the viewmodel.
-            saveAttributesButton.focus();
+            $saveAttributesButton.focus();
 
             if (!isValid()) {
                 alert("Please fix all validation errors and try saving again.");
@@ -86,7 +102,8 @@ const attributesDialog = (function() {
                     attributeId: '',
                     name: '',
                     value: '',
-                    isDeleted: 0
+                    isDeleted: 0,
+                    position: 0
                 }));
             }
         }
@@ -94,7 +111,7 @@ const attributesDialog = (function() {
         this.attributeChanged = function (data, event) {
             addLastEmptyRow();
 
-            const attr = self.getTargetAttribute(event);
+            const attr = self.getTargetAttribute(event.target);
 
             attr.valueHasMutated();
         };
@@ -123,8 +140,8 @@ const attributesDialog = (function() {
             return cur.name.trim() === "" && (cur.attributeId !== "" || cur.value !== "");
         };
 
-        this.getTargetAttribute = function(event) {
-            const context = ko.contextFor(event.target);
+        this.getTargetAttribute = function(target) {
+            const context = ko.contextFor(target);
             const index = context.$index();
 
             return self.attributes()[index];
@@ -132,11 +149,11 @@ const attributesDialog = (function() {
     }
 
     async function showDialog() {
-        glob.activeDialog = dialogEl;
+        glob.activeDialog = $dialog;
 
         await attributesModel.loadAttributes();
 
-        dialogEl.dialog({
+        $dialog.dialog({
             modal: true,
             width: 800,
             height: 500

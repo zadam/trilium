@@ -12,7 +12,7 @@ const attributes = require('../../services/attributes');
 router.get('/notes/:noteId/attributes', auth.checkApiAuth, wrap(async (req, res, next) => {
     const noteId = req.params.noteId;
 
-    res.send(await sql.getRows("SELECT * FROM attributes WHERE isDeleted = 0 AND noteId = ? ORDER BY dateCreated", [noteId]));
+    res.send(await sql.getRows("SELECT * FROM attributes WHERE isDeleted = 0 AND noteId = ? ORDER BY position, dateCreated", [noteId]));
 }));
 
 router.put('/notes/:noteId/attributes', auth.checkApiAuth, wrap(async (req, res, next) => {
@@ -23,8 +23,8 @@ router.put('/notes/:noteId/attributes', auth.checkApiAuth, wrap(async (req, res,
     await sql.doInTransaction(async () => {
         for (const attr of attributes) {
             if (attr.attributeId) {
-                await sql.execute("UPDATE attributes SET name = ?, value = ?, dateModified = ?, isDeleted = ? WHERE attributeId = ?",
-                    [attr.name, attr.value, now, attr.isDeleted, attr.attributeId]);
+                await sql.execute("UPDATE attributes SET name = ?, value = ?, dateModified = ?, isDeleted = ?, position = ? WHERE attributeId = ?",
+                    [attr.name, attr.value, now, attr.isDeleted, attr.position, attr.attributeId]);
             }
             else {
                 // if it was "created" and then immediatelly deleted, we just don't create it at all
@@ -35,13 +35,14 @@ router.put('/notes/:noteId/attributes', auth.checkApiAuth, wrap(async (req, res,
                 attr.attributeId = utils.newAttributeId();
 
                 await sql.insert("attributes", {
-                   attributeId: attr.attributeId,
-                   noteId: noteId,
-                   name: attr.name,
-                   value: attr.value,
-                   dateCreated: now,
-                   dateModified: now,
-                   isDeleted: false
+                    attributeId: attr.attributeId,
+                    noteId: noteId,
+                    name: attr.name,
+                    value: attr.value,
+                    position: attr.position,
+                    dateCreated: now,
+                    dateModified: now,
+                    isDeleted: false
                 });
             }
 
@@ -49,7 +50,7 @@ router.put('/notes/:noteId/attributes', auth.checkApiAuth, wrap(async (req, res,
         }
     });
 
-    res.send(await sql.getRows("SELECT * FROM attributes WHERE isDeleted = 0 AND noteId = ? ORDER BY dateCreated", [noteId]));
+    res.send(await sql.getRows("SELECT * FROM attributes WHERE isDeleted = 0 AND noteId = ? ORDER BY position, dateCreated", [noteId]));
 }));
 
 router.get('/attributes/names', auth.checkApiAuth, wrap(async (req, res, next) => {
