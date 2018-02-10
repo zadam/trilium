@@ -7,18 +7,38 @@ const sqlConsole = (function() {
     const $resultHead = $('#sql-console-results thead');
     const $resultBody = $('#sql-console-results tbody');
 
+    let codeEditor;
+
     function showDialog() {
         glob.activeDialog = $dialog;
 
         $dialog.dialog({
             modal: true,
             width: $(window).width(),
-            height: $(window).height()
+            height: $(window).height(),
+            open: function() {
+                CodeMirror.keyMap.default["Shift-Tab"] = "indentLess";
+                CodeMirror.keyMap.default["Tab"] = "indentMore";
+
+                CodeMirror.modeURL = 'libraries/codemirror/mode/%N/%N.js';
+
+                codeEditor = CodeMirror($query[0], {
+                    value: "",
+                    viewportMargin: Infinity,
+                    indentUnit: 4,
+                    highlightSelectionMatches: { showToken: /\w/, annotateScrollbar: false }
+                });
+
+                codeEditor.setOption("mode", "text/x-sqlite");
+                CodeMirror.autoLoadMode(codeEditor, "sql");
+
+                codeEditor.focus();
+            }
         });
     }
 
     async function execute() {
-        const sqlQuery = $query.val();
+        const sqlQuery = codeEditor.getValue();
 
         const result = await server.post("sql/execute", {
             query: sqlQuery
