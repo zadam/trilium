@@ -47,13 +47,19 @@ function dateStr(date) {
  * @param str - needs to be in the ISO 8601 format "YYYY-MM-DDTHH:MM:SS.sssZ" format as outputted by dateStr().
  *              also is assumed to be GMT time (as indicated by the "Z" at the end), *not* local time
  */
-function parseDate(str) {
+function parseDateTime(str) {
     try {
         return new Date(Date.parse(str));
     }
     catch (e) {
         throw new Error("Can't parse date from " + str + ": " + e.stack);
     }
+}
+
+function parseDate(str) {
+    const datePart = str.substr(0, 10);
+
+    return parseDateTime(datePart + "T12:00:00.000Z");
 }
 
 function toBase64(plainText) {
@@ -117,6 +123,7 @@ module.exports = {
     nowDate,
     dateStr,
     parseDate,
+    parseDateTime,
     newNoteId,
     newNoteTreeId,
     newnoteRevisionId,

@@ -235,7 +235,7 @@ async function updateNote(noteId, newNote, dataKey, sourceId) {
         "SELECT noteRevisionId FROM note_revisions WHERE noteId = ? AND dateModifiedTo >= ?", [noteId, historyCutoff]);
 
     await sql.doInTransaction(async () => {
-        const msSinceDateCreated = now.getTime() - utils.parseDate(newNote.detail.dateCreated).getTime();
+        const msSinceDateCreated = now.getTime() - utils.parseDateTime(newNote.detail.dateCreated).getTime();
 
         if (attributesMap.disable_versioning !== 'true'
             && !existingnoteRevisionId

@@ -10,7 +10,7 @@ const sync_mutex = require('./sync_mutex');
 
 async function regularBackup() {
     const now = new Date();
-    const lastBackupDate = utils.parseDate(await options.getOption('last_backup_date'));
+    const lastBackupDate = utils.parseDateTime(await options.getOption('last_backup_date'));
 
     console.log(lastBackupDate);
 

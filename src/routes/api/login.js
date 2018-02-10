@@ -14,7 +14,7 @@ const wrap = require('express-promise-wrap').wrap;
 router.post('/sync', wrap(async (req, res, next) => {
     const timestampStr = req.body.timestamp;
 
-    const timestamp = utils.parseDate(timestampStr);
+    const timestamp = utils.parseDateTime(timestampStr);
 
     const now = new Date();
 

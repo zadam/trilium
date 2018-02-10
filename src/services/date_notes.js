@@ -3,11 +3,15 @@
 const sql = require('./sql');
 const notes = require('./notes');
 const attributes = require('./attributes');
+const utils = require('./utils');
 
 const CALENDAR_ROOT_ATTRIBUTE = 'calendar_root';
 const YEAR_ATTRIBUTE = 'year_note';
 const MONTH_ATTRIBUTE = 'month_note';
 const DATE_ATTRIBUTE = 'date_note';
+
+const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
 async function createNote(parentNoteId, noteTitle, noteText) {
     return (await notes.createNewNote(parentNoteId, {
@@ -72,7 +76,11 @@ async function getMonthNoteId(dateTimeStr, rootNoteId) {
         monthNoteId = await getNoteStartingWith(yearNoteId, monthNumber);
 
         if (!monthNoteId) {
-            monthNoteId = await createNote(yearNoteId, monthNumber);
+            const dateObj = utils.parseDate(dateTimeStr);
+
+            const noteTitle = monthNumber + " - " + MONTHS[dateObj.getMonth()];
+
+            monthNoteId = await createNote(yearNoteId, noteTitle);
         }
 
         await attributes.createAttribute(monthNoteId, MONTH_ATTRIBUTE, monthStr);
@@ -97,7 +105,11 @@ async function getDateNoteId(dateTimeStr, rootNoteId = null) {
         dateNoteId = await getNoteStartingWith(monthNoteId, dayNumber);
 
         if (!dateNoteId) {
-            dateNoteId = await createNote(monthNoteId, dayNumber);
+            const dateObj = utils.parseDate(dateTimeStr);
+
+            const noteTitle = dayNumber + " - " + DAYS[dateObj.getDay()];
+
+            dateNoteId = await createNote(monthNoteId, noteTitle);
         }
 
         await attributes.createAttribute(dateNoteId, DATE_ATTRIBUTE, dateStr);
