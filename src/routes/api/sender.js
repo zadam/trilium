@@ -88,4 +88,19 @@ router.post('/image', checkSenderToken, multer.single('upload'), wrap(async (req
     res.send({});
 }));
 
+router.post('/note', checkSenderToken, wrap(async (req, res, next) => {
+    const parentNoteId = await date_notes.getDateNoteId(req.headers['x-local-date']);
+
+    await notes.createNewNote(parentNoteId, {
+        title: req.body.title,
+        content: req.body.content,
+        target: 'into',
+        isProtected: false,
+        type: 'text',
+        mime: 'text/html'
+    });
+
+    res.send({});
+}));
+
 module.exports = router;
