@@ -11,7 +11,7 @@ function newNoteTreeId() {
     return randomString(12);
 }
 
-function newnoteRevisionId() {
+function newNoteRevisionId() {
     return randomString(12);
 }
 
@@ -24,6 +24,10 @@ function newNoteImageId() {
 }
 
 function newAttributeId() {
+    return randomString(12);
+}
+
+function newApiTokenId() {
     return randomString(12);
 }
 
@@ -126,10 +130,11 @@ module.exports = {
     parseDateTime,
     newNoteId,
     newNoteTreeId,
-    newnoteRevisionId,
+    newNoteRevisionId,
     newImageId,
     newNoteImageId,
     newAttributeId,
+    newApiTokenId,
     toBase64,
     fromBase64,
     hmac,

@@ -154,10 +154,10 @@ async function saveNoteHistory(noteId, dataKey, sourceId, nowStr) {
         note.isProtected = false;
     }
 
-    const newnoteRevisionId = utils.newnoteRevisionId();
+    const newNoteRevisionId = utils.newNoteRevisionId();
 
     await sql.insert('note_revisions', {
-        noteRevisionId: newnoteRevisionId,
+        noteRevisionId: newNoteRevisionId,
         noteId: noteId,
         // title and text should be decrypted now
         title: oldNote.title,
@@ -167,7 +167,7 @@ async function saveNoteHistory(noteId, dataKey, sourceId, nowStr) {
         dateModifiedTo: nowStr
     });
 
-    await sync_table.addNoteHistorySync(newnoteRevisionId, sourceId);
+    await sync_table.addNoteHistorySync(newNoteRevisionId, sourceId);
 }
 
 async function saveNoteImages(noteId, noteText, sourceId) {

@@ -147,6 +147,12 @@ router.get('/attributes/:attributeId', auth.checkApiAuth, wrap(async (req, res, 
     res.send(await sql.getRow("SELECT * FROM attributes WHERE attributeId = ?", [attributeId]));
 }));
 
+router.get('/api_tokens/:apiTokenId', auth.checkApiAuth, wrap(async (req, res, next) => {
+    const apiTokenId = req.params.apiTokenId;
+
+    res.send(await sql.getRow("SELECT * FROM api_tokens WHERE apiTokenId = ?", [apiTokenId]));
+}));
+
 router.put('/notes', auth.checkApiAuth, wrap(async (req, res, next) => {
     await syncUpdate.updateNote(req.body.entity, req.body.sourceId);
 
@@ -197,6 +203,12 @@ router.put('/note_images', auth.checkApiAuth, wrap(async (req, res, next) => {
 
 router.put('/attributes', auth.checkApiAuth, wrap(async (req, res, next) => {
     await syncUpdate.updateAttribute(req.body.entity, req.body.sourceId);
+
+    res.send({});
+}));
+
+router.put('/api_tokens', auth.checkApiAuth, wrap(async (req, res, next) => {
+    await syncUpdate.updateApiToken(req.body.entity, req.body.sourceId);
 
     res.send({});
 }));

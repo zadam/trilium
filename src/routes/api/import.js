@@ -66,7 +66,7 @@ async function importNotes(dir, parentNoteId) {
         const noteText = fs.readFileSync(path, "utf8");
 
         const noteId = utils.newNoteId();
-        const noteTreeId = utils.newnoteRevisionId();
+        const noteTreeId = utils.newNoteRevisionId();
 
         const now = utils.nowDate();
 

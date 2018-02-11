@@ -149,6 +149,9 @@ async function pullSync(syncContext) {
         else if (sync.entityName === 'attributes') {
             await syncUpdate.updateAttribute(resp, syncContext.sourceId);
         }
+        else if (sync.entityName === 'api_tokens') {
+            await syncUpdate.updateApiToken(resp, syncContext.sourceId);
+        }
         else {
             throw new Error(`Unrecognized entity type ${sync.entityName} in sync #${sync.id}`);
         }
@@ -232,6 +235,9 @@ async function pushEntity(sync, syncContext) {
     }
     else if (sync.entityName === 'attributes') {
         entity = await sql.getRow('SELECT * FROM attributes WHERE attributeId = ?', [sync.entityId]);
+    }
+    else if (sync.entityName === 'api_tokens') {
+        entity = await sql.getRow('SELECT * FROM api_tokens WHERE apiTokenId = ?', [sync.entityId]);
     }
     else {
         throw new Error(`Unrecognized entity type ${sync.entityName} in sync #${sync.id}`);

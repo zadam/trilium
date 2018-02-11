@@ -223,6 +223,8 @@ async function runAllChecks() {
     await runSyncRowChecks("recent_notes", "noteTreeId", errorList);
     await runSyncRowChecks("images", "imageId", errorList);
     await runSyncRowChecks("note_images", "noteImageId", errorList);
+    await runSyncRowChecks("attributes", "attributeId", errorList);
+    await runSyncRowChecks("api_tokens", "apiTokenId", errorList);
 
     if (errorList.length === 0) {
         // we run this only if basic checks passed since this assumes basic data consistency

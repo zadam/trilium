@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS "api_tokens"
+(
+  apiTokenId TEXT PRIMARY KEY NOT NULL,
+  token TEXT NOT NULL,
+  dateCreated TEXT NOT NULL,
+  isDeleted INT NOT NULL DEFAULT 0
+);

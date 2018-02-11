@@ -137,6 +137,20 @@ async function updateAttribute(entity, sourceId) {
     }
 }
 
+async function updateApiToken(entity, sourceId) {
+    const apiTokenId = await sql.getRow("SELECT * FROM api_tokens WHERE apiTokenId = ?", [entity.apiTokenId]);
+
+    if (!apiTokenId) {
+        await sql.doInTransaction(async () => {
+            await sql.replace("api_tokens", entity);
+
+            await sync_table.addApiTokenSync(entity.apiTokenId, sourceId);
+        });
+
+        log.info("Update/sync API token " + entity.apiTokenId);
+    }
+}
+
 module.exports = {
     updateNote,
     updateNoteTree,
@@ -146,5 +160,6 @@ module.exports = {
     updateRecentNotes,
     updateImage,
     updateNoteImage,
-    updateAttribute
+    updateAttribute,
+    updateApiToken
 };

@@ -28,6 +28,7 @@ const cleanupRoute = require('./api/cleanup');
 const imageRoute = require('./api/image');
 const attributesRoute = require('./api/attributes');
 const scriptRoute = require('./api/script');
+const senderRoute = require('./api/sender');
 
 function register(app) {
     app.use('/', indexRoute);
@@ -59,6 +60,7 @@ function register(app) {
     app.use('/api/cleanup', cleanupRoute);
     app.use('/api/images', imageRoute);
     app.use('/api/script', scriptRoute);
+    app.use('/api/sender', senderRoute);
 }
 
 module.exports = {
