@@ -66,7 +66,7 @@ router.post('/image', checkSenderToken, multer.single('upload'), wrap(async (req
         return res.status(400).send("Unknown image type: " + file.mimetype);
     }
 
-    const parentNoteId = await date_notes.getDateNoteId(utils.nowDate());
+    const parentNoteId = await date_notes.getDateNoteId(req.headers['x-local-date']);
 
     const noteId = (await notes.createNewNote(parentNoteId, {
         title: "Sender image",
