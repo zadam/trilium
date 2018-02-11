@@ -45,7 +45,8 @@ async function getRecentNotes() {
         recent_notes.isDeleted = 0
         AND note_tree.isDeleted = 0
       ORDER BY 
-        dateAccessed DESC`);
+        dateAccessed DESC
+      LIMIT 200`);
 }
 
 module.exports = router;

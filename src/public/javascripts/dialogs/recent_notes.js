@@ -40,7 +40,16 @@ const recentNotes = (function() {
 
         $searchInput.autocomplete({
             source: recNotes.map(notePath => {
-                const noteTitle = noteTree.getNotePathTitle(notePath);
+                let noteTitle;
+
+                try {
+                    noteTitle = noteTree.getNotePathTitle(notePath);
+                }
+                catch (e) {
+                    noteTitle = "[error - can't find note title]";
+
+                    messaging.logError("Could not find title for notePath=" + notePath + ", stack=" + e.stack);
+                }
 
                 return {
                     label: noteTitle,
