@@ -59,9 +59,15 @@ const recentNotes = (function() {
                 event.preventDefault();
             },
             close: function (event, ui) {
-                // keep autocomplete open
-                // we're kind of abusing autocomplete to work in a way which it's not designed for
-                $searchInput.autocomplete("search", "")
+                if (event.keyCode === 27) { // escape closes dialog
+                    $searchInput.autocomplete('destroy');
+                    $dialog.dialog('close');
+                }
+                else {
+                    // keep autocomplete open
+                    // we're kind of abusing autocomplete to work in a way which it's not designed for
+                    $searchInput.autocomplete("search", "");
+                }
             },
             create: () => $searchInput.autocomplete("search", ""),
             classes: {
