@@ -59,8 +59,9 @@ const recentNotes = (function() {
                 event.preventDefault();
             },
             close: function (event, ui) {
-                $searchInput.autocomplete('destroy');
-                $dialog.dialog('close');
+                // keep autocomplete open
+                // we're kind of abusing autocomplete to work in a way which it's not designed for
+                $searchInput.autocomplete("search", "")
             },
             create: () => $searchInput.autocomplete("search", ""),
             classes: {
