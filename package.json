@@ -1,7 +1,7 @@
 {
   "name": "trilium",
   "description": "Trilium Notes",
-  "version": "0.5.6",
+  "version": "0.6.0-beta",
   "license": "AGPL-3.0-only",
   "main": "electron.js",
   "repository": {
