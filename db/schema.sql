@@ -85,6 +85,7 @@ CREATE TABLE IF NOT EXISTS "attributes"
   noteId TEXT NOT NULL,
   name TEXT NOT NULL,
   value TEXT,
+  position INT NOT NULL DEFAULT 0,
   dateCreated TEXT NOT NULL,
   dateModified TEXT NOT NULL,
   isDeleted INT NOT NULL
