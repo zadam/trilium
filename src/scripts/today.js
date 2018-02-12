@@ -9,3 +9,5 @@ window.goToday = async function() {
 
     api.activateNote(todayNoteId);
 };
+
+$(document).bind('keydown', "alt+t", window.goToday);
