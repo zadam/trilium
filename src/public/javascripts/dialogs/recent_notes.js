@@ -30,7 +30,7 @@ const recentNotes = (function() {
         $dialog.dialog({
             modal: true,
             width: 800,
-            height: 400
+            height: 100
         });
 
         $searchInput.val('');
