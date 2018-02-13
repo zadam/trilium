@@ -116,6 +116,32 @@ const noteEditor = (function() {
         isNewNoteCreated = true;
     }
 
+    function setContent(content) {
+        if (currentNote.detail.type === 'text') {
+            // temporary workaround for https://github.com/ckeditor/ckeditor5-enter/issues/49
+            editor.setData(content ? content : "<p></p>");
+
+            noteDetailEl.show();
+            noteDetailCodeEl.hide();
+            noteDetailRenderEl.html('').hide();
+        }
+        else if (currentNote.detail.type === 'code') {
+            noteDetailEl.hide();
+            noteDetailCodeEl.show();
+            noteDetailRenderEl.html('').hide();
+
+            // this needs to happen after the element is shown, otherwise the editor won't be refresheds
+            codeEditor.setValue(content);
+
+            const info = CodeMirror.findModeByMIME(currentNote.detail.mime);
+
+            if (info) {
+                codeEditor.setOption("mode", info.mime);
+                CodeMirror.autoLoadMode(codeEditor, info.mode);
+            }
+        }
+    }
+
     async function loadNoteToEditor(noteId) {
         currentNote = await loadNote(noteId);
 
@@ -146,30 +172,7 @@ const noteEditor = (function() {
         noteType.setNoteType(currentNote.detail.type);
         noteType.setNoteMime(currentNote.detail.mime);
 
-        if (currentNote.detail.type === 'text') {
-            // temporary workaround for https://github.com/ckeditor/ckeditor5-enter/issues/49
-            editor.setData(currentNote.detail.content ? currentNote.detail.content : "<p></p>");
-
-            noteDetailEl.show();
-            noteDetailCodeEl.hide();
-            noteDetailRenderEl.html('').hide();
-        }
-        else if (currentNote.detail.type === 'code') {
-            noteDetailEl.hide();
-            noteDetailCodeEl.show();
-            noteDetailRenderEl.html('').hide();
-
-            // this needs to happen after the element is shown, otherwise the editor won't be refresheds
-            codeEditor.setValue(currentNote.detail.content);
-
-            const info = CodeMirror.findModeByMIME(currentNote.detail.mime);
-
-            if (info) {
-                codeEditor.setOption("mode", info.mime);
-                CodeMirror.autoLoadMode(codeEditor, info.mode);
-            }
-        }
-        else if (currentNote.detail.type === 'render') {
+        if (currentNote.detail.type === 'render') {
             noteDetailEl.hide();
             noteDetailCodeEl.hide();
             noteDetailRenderEl.html('').show();
@@ -179,7 +182,7 @@ const noteEditor = (function() {
             noteDetailRenderEl.html(subTree);
         }
         else {
-            throwError("Unrecognized type " + currentNote.detail.type);
+            setContent(currentNote.detail.content);
         }
 
         noteChangeDisabled = false;
@@ -314,6 +317,7 @@ const noteEditor = (function() {
         getEditor,
         focus,
         executeCurrentNote,
-        loadAttributeList
+        loadAttributeList,
+        setContent
     };
 })();

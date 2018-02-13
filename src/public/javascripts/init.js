@@ -193,3 +193,21 @@ $(document).ready(() => {
         }
     });
 });
+
+if (isElectron()) {
+    require('electron').ipcRenderer.on('create-sub-note', async function(event, message) {
+        const {parentNoteId, content} = JSON.parse(message);
+
+        if (!noteTree.noteExists(parentNoteId)) {
+            await noteTree.reload();
+        }
+
+        await noteTree.activateNode(parentNoteId);
+
+        const node = noteTree.getCurrentNode();
+
+        await noteTree.createNote(node, node.data.noteId, 'into', node.data.isProtected);
+
+        setTimeout(() => noteEditor.setContent(content), 1000);
+    });
+}

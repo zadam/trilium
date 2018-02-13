@@ -43,6 +43,14 @@ function nowDate() {
     return dateStr(new Date());
 }
 
+function localDate() {
+    const date = new Date();
+
+    return date.getFullYear() + "-"
+        + (date.getMonth() < 9 ? "0" : "") + (date.getMonth() + 1) + "-"
+        + (date.getDate() < 10 ? "0" : "") + date.getDate();
+}
+
 function dateStr(date) {
     return date.toISOString();
 }
@@ -125,6 +133,7 @@ module.exports = {
     randomSecureToken,
     randomString,
     nowDate,
+    localDate,
     dateStr,
     parseDate,
     parseDateTime,

@@ -6,6 +6,8 @@ const config = require('./src/services/config');
 const url = require("url");
 
 const app = electron.app;
+const globalShortcut = electron.globalShortcut;
+const clipboard = electron.clipboard;
 
 // Adds debug features like hotkeys for triggering dev tools and reload
 require('electron-debug')();
@@ -67,6 +69,40 @@ app.on('activate', () => {
 
 app.on('ready', () => {
     mainWindow = createMainWindow();
+
+    const date_notes = require('./src/services/date_notes');
+    const utils = require('./src/services/utils');
+
+    globalShortcut.register('CommandOrControl+Alt+P', async () => {
+        const parentNoteId = await date_notes.getDateNoteId(utils.nowDate());
+
+        // window may be hidden / not in focus
+        mainWindow.focus();
+
+        mainWindow.webContents.send('create-sub-note', JSON.stringify({
+            parentNoteId: parentNoteId,
+            content: ''
+        }));
+    });
+
+    globalShortcut.register('CommandOrControl+Alt+C', async () => {
+        const parentNoteId = await date_notes.getDateNoteId(utils.nowDate());
+
+        // window may be hidden / not in focus
+        mainWindow.focus();
+
+        let content = clipboard.readText();
+        content = content.replace(/(\r\n|\n)/g, "<p>");
+
+        mainWindow.webContents.send('create-sub-note', JSON.stringify({
+            parentNoteId: parentNoteId,
+            content: content
+        }));
+    });
+});
+
+app.on('will-quit', () => {
+    globalShortcut.unregisterAll();
 });
 
 require('./src/www');

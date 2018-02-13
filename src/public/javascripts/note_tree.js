@@ -640,16 +640,15 @@ const noteTree = (function() {
         return document.location.hash.substr(1); // strip initial #
     }
 
-    function loadTree() {
-        return server.get('tree').then(resp => {
-            startNotePath = resp.start_note_path;
+    async function loadTree() {
+        const resp = await server.get('tree');
+        startNotePath = resp.start_note_path;
 
-            if (document.location.hash) {
-                startNotePath = getNotePathFromAddress();
-            }
+        if (document.location.hash) {
+            startNotePath = getNotePathFromAddress();
+        }
 
-            return prepareNoteTree(resp.notes);
-        });
+        return prepareNoteTree(resp.notes);
     }
 
     $(() => loadTree().then(noteTree => initFancyTree(noteTree)));
@@ -775,7 +774,7 @@ const noteTree = (function() {
         };
 
         if (target === 'after') {
-            node.appendSibling(newNode).setActive(true);
+            await node.appendSibling(newNode).setActive(true);
         }
         else if (target === 'into') {
             if (!node.getChildren() && node.isFolder()) {
@@ -785,7 +784,7 @@ const noteTree = (function() {
                 node.addChildren(newNode);
             }
 
-            node.getLastChild().setActive(true);
+            await node.getLastChild().setActive(true);
 
             node.folder = true;
             node.renderTitle();
@@ -801,6 +800,10 @@ const noteTree = (function() {
         await server.put('notes/' + noteId + '/sort');
 
         await reload();
+    }
+
+    function noteExists(noteId) {
+        return !!childToParents[noteId];
     }
 
     $(document).bind('keydown', 'ctrl+o', e => {
@@ -876,6 +879,7 @@ const noteTree = (function() {
         removeParentChildRelation,
         setParentChildRelation,
         getSelectedNodes,
-        sortAlphabetically
+        sortAlphabetically,
+        noteExists
     };
 })();
