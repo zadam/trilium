@@ -40,7 +40,8 @@
                 await this.createNote(parentNoteId, 'data', jsonContent, {
                     json: true,
                     attributes: {
-                        date_data: date
+                        date_data: date,
+                        hide_in_autocomplete: null
                     }
                 });
             }
@@ -70,7 +71,9 @@
             return data;
         });
 
-        var config = {
+        const ctx = $("#canvas")[0].getContext("2d");
+
+        new Chart(ctx, {
             type: 'line',
             data: {
                 labels: data.map(row => row.date),
@@ -82,10 +85,7 @@
                     fill: false
                 }]
             }
-        };
-
-        var ctx = $("#canvas")[0].getContext("2d");
-        new Chart(ctx, config);
+        });
     }
 
     $("#weight-form").submit(event => {
