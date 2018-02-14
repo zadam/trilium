@@ -38,6 +38,7 @@ async function getDateNoteIdForReddit(dateTimeStr, rootNoteId) {
         redditDateNoteId = await createNote(dateNoteId, "Reddit");
 
         await attributes.createAttribute(redditDateNoteId, REDDIT_DATE_ATTRIBUTE, dateStr);
+        await attributes.createAttribute(redditDateNoteId, "hide_in_autocomplete");
     }
 
     return redditDateNoteId;
