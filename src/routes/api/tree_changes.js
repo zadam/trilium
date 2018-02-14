@@ -61,10 +61,8 @@ router.put('/:noteTreeId/move-before/:beforeNoteTreeId', auth.checkApiAuth, wrap
 
         await sync_table.addNoteReorderingSync(beforeNote.parentNoteId, sourceId);
 
-        const now = utils.nowDate();
-
         await sql.execute("UPDATE note_tree SET parentNoteId = ?, notePosition = ?, dateModified = ? WHERE noteTreeId = ?",
-            [beforeNote.parentNoteId, beforeNote.notePosition, now, noteTreeId]);
+            [beforeNote.parentNoteId, beforeNote.notePosition, utils.nowDate(), noteTreeId]);
 
         await sync_table.addNoteTreeSync(noteTreeId, sourceId);
     });

@@ -805,6 +805,8 @@ const noteTree = (function() {
             throwError("Unrecognized target: " + target);
         }
 
+        clearSelectedNodes(); // to unmark previously active node
+
         showMessage("Created!");
     }
 
