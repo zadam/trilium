@@ -120,6 +120,7 @@ CREATE INDEX IDX_note_images_noteId ON note_images (noteId);
 CREATE INDEX IDX_note_images_imageId ON note_images (imageId);
 CREATE INDEX IDX_note_images_noteId_imageId ON note_images (noteId, imageId);
 CREATE INDEX IDX_attributes_noteId ON attributes (noteId);
+CREATE INDEX IDX_attributes_name_value ON attributes (name, value);
 
 CREATE TABLE IF NOT EXISTS "api_tokens"
 (

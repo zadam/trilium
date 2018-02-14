@@ -1,0 +1,1 @@
+CREATE INDEX IDX_attributes_name_value ON attributes (name, value);

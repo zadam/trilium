@@ -29,8 +29,20 @@ router.get('/', auth.checkApiAuth, wrap(async (req, res, next) => {
 
     protected_session.decryptNotes(req, notes);
 
+    const hiddenInAutocomplete = await sql.getColumn(`
+      SELECT 
+        DISTINCT noteId 
+      FROM 
+        attributes
+        JOIN notes USING(noteId)
+      WHERE
+        attributes.name = 'hide_in_autocomplete' 
+        AND attributes.isDeleted = 0
+        AND notes.isDeleted = 0`);
+
     res.send({
         notes: notes,
+        hiddenInAutocomplete: hiddenInAutocomplete,
         start_note_path: await options.getOption('start_note_path')
     });
 }));

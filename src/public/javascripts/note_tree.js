@@ -14,6 +14,8 @@ const noteTree = (function() {
     let parentChildToNoteTreeId = {};
     let noteIdToTitle = {};
 
+    let hiddenInAutocomplete = {};
+
     function getNoteTreeId(parentNoteId, childNoteId) {
         assertArguments(parentNoteId, childNoteId);
 
@@ -648,6 +650,12 @@ const noteTree = (function() {
             startNotePath = getNotePathFromAddress();
         }
 
+        hiddenInAutocomplete = {};
+
+        for (const noteId of resp.hiddenInAutocomplete) {
+            hiddenInAutocomplete[noteId] = true;
+        }
+
         return prepareNoteTree(resp.notes);
     }
 
@@ -705,6 +713,10 @@ const noteTree = (function() {
         const autocompleteItems = [];
 
         for (const childNoteId of parentToChildren[parentNoteId]) {
+            if (hiddenInAutocomplete[childNoteId]) {
+                continue;
+            }
+
             const childNotePath = (notePath ? (notePath + '/') : '') + childNoteId;
             const childTitlePath = (titlePath ? (titlePath + ' / ') : '') + getNoteTitle(childNoteId, parentNoteId);
 

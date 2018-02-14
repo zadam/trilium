@@ -5,7 +5,12 @@ const utils = require('./utils');
 const sync_table = require('./sync_table');
 const Repository = require('./repository');
 
-const BUILTIN_ATTRIBUTES = [ 'run_on_startup', 'disable_versioning', 'calendar_root' ];
+const BUILTIN_ATTRIBUTES = [
+    'run_on_startup',
+    'disable_versioning',
+    'calendar_root',
+    'hide_in_autocomplete'
+];
 
 async function getNoteAttributeMap(noteId) {
     return await sql.getMap(`SELECT name, value FROM attributes WHERE noteId = ?`, [noteId]);
