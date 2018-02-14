@@ -70,34 +70,16 @@ app.on('activate', () => {
 app.on('ready', () => {
     mainWindow = createMainWindow();
 
-    const date_notes = require('./src/services/date_notes');
-    const utils = require('./src/services/utils');
-
     globalShortcut.register('CommandOrControl+Alt+P', async () => {
+        const date_notes = require('./src/services/date_notes');
+        const utils = require('./src/services/utils');
+
         const parentNoteId = await date_notes.getDateNoteId(utils.nowDate());
 
         // window may be hidden / not in focus
         mainWindow.focus();
 
-        mainWindow.webContents.send('create-sub-note', JSON.stringify({
-            parentNoteId: parentNoteId,
-            content: ''
-        }));
-    });
-
-    globalShortcut.register('CommandOrControl+Alt+C', async () => {
-        const parentNoteId = await date_notes.getDateNoteId(utils.nowDate());
-
-        // window may be hidden / not in focus
-        mainWindow.focus();
-
-        let content = clipboard.readText();
-        content = content.replace(/(\r\n|\n)/g, "<p>");
-
-        mainWindow.webContents.send('create-sub-note', JSON.stringify({
-            parentNoteId: parentNoteId,
-            content: content
-        }));
+        mainWindow.webContents.send('create-day-sub-note', parentNoteId);
     });
 });
 

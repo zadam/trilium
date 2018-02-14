@@ -199,9 +199,8 @@ $(document).ready(() => {
 });
 
 if (isElectron()) {
-    require('electron').ipcRenderer.on('create-sub-note', async function(event, message) {
-        const {parentNoteId, content} = JSON.parse(message);
-
+    require('electron').ipcRenderer.on('create-day-sub-note', async function(event, parentNoteId) {
+        // this might occur when day note had to be created
         if (!noteTree.noteExists(parentNoteId)) {
             await noteTree.reload();
         }
@@ -211,7 +210,5 @@ if (isElectron()) {
         const node = noteTree.getCurrentNode();
 
         await noteTree.createNote(node, node.data.noteId, 'into', node.data.isProtected);
-
-        setTimeout(() => noteEditor.setContent(content), 1000);
     });
 }
