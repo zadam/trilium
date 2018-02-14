@@ -126,6 +126,10 @@ $.ui.autocomplete.filter = (array, terms) => {
 
         if (found) {
             results.push(item);
+
+            if (results.length > 100) {
+                break;
+            }
         }
     }
 
