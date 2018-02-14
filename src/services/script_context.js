@@ -54,6 +54,8 @@ function ScriptContext(noteId, dataKey) {
         return noteId;
     };
 
+    this.createAttribute = attributes.createAttribute;
+
     this.updateEntity = this.repository.updateEntity;
 
     this.log = function(message) {
