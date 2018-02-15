@@ -130,6 +130,7 @@
               <li><a onclick="noteHistory.showCurrentNoteHistory();"><kbd>Alt+H</kbd> History</a></li>
               <li><a onclick="attributesDialog.showDialog();"><kbd>Alt+A</kbd> Attributes</a></li>
               <li><a onclick="noteSource.showDialog();"><kbd>Ctrl+U</kbd> HTML source</a></li>
+              <li><a onclick="uploadAttachment();">Upload attachment</a></li>
             </ul>
           </div>
         </div>
@@ -141,6 +142,13 @@
         <div id="note-detail-code"></div>
 
         <div id="note-detail-render"></div>
+
+        <div id="note-detail-attachment">
+          Attachment!!!
+
+        </div>
+
+        <input type="file" id="file-upload" style="display: none" />
       </div>
 
       <div id="attribute-list">

@@ -1,9 +1,9 @@
 "use strict";
 
 const noteTree = (function() {
-    const treeEl = $("#tree");
-    const parentListEl = $("#parent-list");
-    const parentListListEl = $("#parent-list-inner");
+    const $tree = $("#tree");
+    const $parentList = $("#parent-list");
+    const $parentListList = $("#parent-list-inner");
 
     let startNotePath = null;
     let notesTreeMap = {};
@@ -52,7 +52,7 @@ const noteTree = (function() {
 
     // note that if you want to access data like noteId or isProtected, you need to go into "data" property
     function getCurrentNode() {
-        return treeEl.fancytree("getActiveNode");
+        return $tree.fancytree("getActiveNode");
     }
 
     function getCurrentNotePath() {
@@ -314,11 +314,11 @@ const noteTree = (function() {
         }
 
         if (parents.length <= 1) {
-            parentListEl.hide();
+            $parentList.hide();
         }
         else {
-            parentListEl.show();
-            parentListListEl.empty();
+            $parentList.show();
+            $parentListList.empty();
 
             for (const parentNoteId of parents) {
                 const parentNotePath = getSomeNotePath(parentNoteId);
@@ -335,7 +335,7 @@ const noteTree = (function() {
                     item = link.createNoteLink(notePath, title);
                 }
 
-                parentListListEl.append($("<li/>").append(item));
+                $parentListList.append($("<li/>").append(item));
             }
         }
     }
@@ -543,7 +543,7 @@ const noteTree = (function() {
             }
         };
 
-        treeEl.fancytree({
+        $tree.fancytree({
             autoScroll: true,
             keyboard: false, // we takover keyboard handling in the hotkeys plugin
             extensions: ["hotkeys", "filter", "dnd", "clones"],
@@ -624,11 +624,11 @@ const noteTree = (function() {
             }
         });
 
-        treeEl.contextmenu(contextMenu.contextMenuSettings);
+        $tree.contextmenu(contextMenu.contextMenuSettings);
     }
 
     function getTree() {
-        return treeEl.fancytree('getTree');
+        return $tree.fancytree('getTree');
     }
 
     async function reload() {
@@ -663,7 +663,7 @@ const noteTree = (function() {
 
     function collapseTree(node = null) {
         if (!node) {
-            node = treeEl.fancytree("getRootNode");
+            node = $tree.fancytree("getRootNode");
         }
 
         node.setExpanded(false);
@@ -744,7 +744,7 @@ const noteTree = (function() {
     }
 
     async function createNewTopLevelNote() {
-        const rootNode = treeEl.fancytree("getRootNode");
+        const rootNode = $tree.fancytree("getRootNode");
 
         await createNote(rootNode, "root", "into");
     }

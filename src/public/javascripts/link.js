@@ -41,11 +41,11 @@ const link = (function() {
     function goToLink(e) {
         e.preventDefault();
 
-        const linkEl = $(e.target);
-        let notePath = linkEl.attr("note-path");
+        const $link = $(e.target);
+        let notePath = $link.attr("note-path");
 
         if (!notePath) {
-            const address = linkEl.attr("note-path") ? linkEl.attr("note-path") : linkEl.attr('href');
+            const address = $link.attr("note-path") ? $link.attr("note-path") : $link.attr('href');
 
             if (!address) {
                 return;

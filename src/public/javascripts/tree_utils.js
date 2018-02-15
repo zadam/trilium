@@ -1,14 +1,14 @@
 "use strict";
 
 const treeUtils = (function() {
-    const treeEl = $("#tree");
+    const $tree = $("#tree");
 
     function getParentProtectedStatus(node) {
         return isTopLevelNode(node) ? 0 : node.getParent().data.isProtected;
     }
 
     function getNodeByKey(key) {
-        return treeEl.fancytree('getNodeByKey', key);
+        return $tree.fancytree('getNodeByKey', key);
     }
 
     function getNoteIdFromNotePath(notePath) {

@@ -1,10 +1,10 @@
 "use strict";
 
 const protected_session = (function() {
-    const dialogEl = $("#protected-session-password-dialog");
-    const passwordFormEl = $("#protected-session-password-form");
-    const passwordEl = $("#protected-session-password");
-    const noteDetailWrapperEl = $("#note-detail-wrapper");
+    const $dialog = $("#protected-session-password-dialog");
+    const $passwordForm = $("#protected-session-password-form");
+    const $password = $("#protected-session-password");
+    const $noteDetailWrapper = $("#note-detail-wrapper");
 
     let protectedSessionDeferred = null;
     let lastProtectedSessionOperationDate = null;
@@ -25,9 +25,9 @@ const protected_session = (function() {
         if (requireProtectedSession && !isProtectedSessionAvailable()) {
             protectedSessionDeferred = dfd;
 
-            noteDetailWrapperEl.hide();
+            $noteDetailWrapper.hide();
 
-            dialogEl.dialog({
+            $dialog.dialog({
                 modal: modal,
                 width: 400,
                 open: () => {
@@ -46,8 +46,8 @@ const protected_session = (function() {
     }
 
     async function setupProtectedSession() {
-        const password = passwordEl.val();
-        passwordEl.val("");
+        const password = $password.val();
+        $password.val("");
 
         const response = await enterProtectedSession(password);
 
@@ -58,15 +58,15 @@ const protected_session = (function() {
 
         protectedSessionId = response.protectedSessionId;
 
-        dialogEl.dialog("close");
+        $dialog.dialog("close");
 
         noteEditor.reload();
         noteTree.reload();
 
         if (protectedSessionDeferred !== null) {
-            ensureDialogIsClosed(dialogEl, passwordEl);
+            ensureDialogIsClosed($dialog, $password);
 
-            noteDetailWrapperEl.show();
+            $noteDetailWrapper.show();
 
             protectedSessionDeferred.resolve();
 
@@ -77,11 +77,11 @@ const protected_session = (function() {
     function ensureDialogIsClosed() {
         // this may fal if the dialog has not been previously opened
         try {
-            dialogEl.dialog('close');
+            $dialog.dialog('close');
         }
         catch (e) {}
 
-        passwordEl.val('');
+        $password.val('');
     }
 
     async function enterProtectedSession(password) {
@@ -155,7 +155,7 @@ const protected_session = (function() {
         noteEditor.reload();
     }
 
-    passwordFormEl.submit(() => {
+    $passwordForm.submit(() => {
         setupProtectedSession();
 
         return false;

@@ -29,6 +29,7 @@ const imageRoute = require('./api/image');
 const attributesRoute = require('./api/attributes');
 const scriptRoute = require('./api/script');
 const senderRoute = require('./api/sender');
+const attachmentsRoute = require('./api/attachments');
 
 function register(app) {
     app.use('/', indexRoute);
@@ -61,6 +62,7 @@ function register(app) {
     app.use('/api/images', imageRoute);
     app.use('/api/script', scriptRoute);
     app.use('/api/sender', senderRoute);
+    app.use('/api/attachments', attachmentsRoute);
 }
 
 module.exports = {

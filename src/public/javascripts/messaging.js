@@ -1,7 +1,7 @@
 "use strict";
 
 const messaging = (function() {
-    const changesToPushCountEl = $("#changes-to-push-count");
+    const $changesToPushCount = $("#changes-to-push-count");
 
     function logError(message) {
         console.log(now(), message); // needs to be separate from .trace()
@@ -52,7 +52,7 @@ const messaging = (function() {
             // we don't detect image changes here since images themselves are immutable and references should be
             // updated in note detail as well
 
-            changesToPushCountEl.html(message.changesToPushCount);
+            $changesToPushCount.html(message.changesToPushCount);
         }
         else if (message.type === 'sync-hash-check-failed') {
             showError("Sync check failed!", 60000);

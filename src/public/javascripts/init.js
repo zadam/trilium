@@ -212,3 +212,25 @@ if (isElectron()) {
         await noteTree.createNote(node, node.data.noteId, 'into', node.data.isProtected);
     });
 }
+
+function uploadAttachment() {
+    $("#file-upload").trigger('click');
+}
+
+$("#file-upload").change(async function() {
+    const formData = new FormData();
+    formData.append('upload', this.files[0]);
+
+    const resp = await $.ajax({
+        url: baseApiUrl + 'attachments/upload/' + noteEditor.getCurrentNoteId(),
+        headers: server.getHeaders(),
+        data: formData,
+        type: 'POST',
+        contentType: false, // NEEDED, DON'T OMIT THIS
+        processData: false, // NEEDED, DON'T OMIT THIS
+    });
+
+    await noteTree.reload();
+
+    await noteTree.activateNode(resp.noteId);
+});

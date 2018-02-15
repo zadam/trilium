@@ -1,16 +1,19 @@
 "use strict";
 
 const noteEditor = (function() {
-    const noteTitleEl = $("#note-title");
-    const noteDetailEl = $('#note-detail');
-    const noteDetailCodeEl = $('#note-detail-code');
-    const noteDetailRenderEl = $('#note-detail-render');
-    const protectButton = $("#protect-button");
-    const unprotectButton = $("#unprotect-button");
-    const noteDetailWrapperEl = $("#note-detail-wrapper");
-    const noteIdDisplayEl = $("#note-id-display");
-    const attributeListEl = $("#attribute-list");
-    const attributeListInnerEl = $("#attribute-list-inner");
+    const $noteTitle = $("#note-title");
+
+    const $noteDetail = $('#note-detail');
+    const $noteDetailCode = $('#note-detail-code');
+    const $noteDetailRender = $('#note-detail-render');
+    const $noteDetailAttachment = $('#note-detail-attachment');
+
+    const $protectButton = $("#protect-button");
+    const $unprotectButton = $("#unprotect-button");
+    const $noteDetailWrapper = $("#note-detail-wrapper");
+    const $noteIdDisplay = $("#note-id-display");
+    const $attributeList = $("#attribute-list");
+    const $attributeListInner = $("#attribute-list-inner");
 
     let editor = null;
     let codeEditor = null;
@@ -87,7 +90,7 @@ const noteEditor = (function() {
             throwError("Unrecognized type: " + note.detail.type);
         }
 
-        const title = noteTitleEl.val();
+        const title = $noteTitle.val();
 
         note.detail.title = title;
 
@@ -105,9 +108,9 @@ const noteEditor = (function() {
     function setNoteBackgroundIfProtected(note) {
         const isProtected = !!note.detail.isProtected;
 
-        noteDetailWrapperEl.toggleClass("protected", isProtected);
-        protectButton.toggle(!isProtected);
-        unprotectButton.toggle(isProtected);
+        $noteDetailWrapper.toggleClass("protected", isProtected);
+        $protectButton.toggle(!isProtected);
+        $unprotectButton.toggle(isProtected);
     }
 
     let isNewNoteCreated = false;
@@ -121,14 +124,10 @@ const noteEditor = (function() {
             // temporary workaround for https://github.com/ckeditor/ckeditor5-enter/issues/49
             editor.setData(content ? content : "<p></p>");
 
-            noteDetailEl.show();
-            noteDetailCodeEl.hide();
-            noteDetailRenderEl.html('').hide();
+            $noteDetail.show();
         }
         else if (currentNote.detail.type === 'code') {
-            noteDetailEl.hide();
-            noteDetailCodeEl.show();
-            noteDetailRenderEl.html('').hide();
+            $noteDetailCode.show();
 
             // this needs to happen after the element is shown, otherwise the editor won't be refresheds
             codeEditor.setValue(content);
@@ -148,10 +147,10 @@ const noteEditor = (function() {
         if (isNewNoteCreated) {
             isNewNoteCreated = false;
 
-            noteTitleEl.focus().select();
+            $noteTitle.focus().select();
         }
 
-        noteIdDisplayEl.html(noteId);
+        $noteIdDisplay.html(noteId);
 
         await protected_session.ensureProtectedSession(currentNote.detail.isProtected, false);
 
@@ -163,23 +162,29 @@ const noteEditor = (function() {
         // to login, but we chose instead to come to another node - at that point the dialog is still visible and this will close it.
         protected_session.ensureDialogIsClosed();
 
-        noteDetailWrapperEl.show();
+        $noteDetailWrapper.show();
 
         noteChangeDisabled = true;
 
-        noteTitleEl.val(currentNote.detail.title);
+        $noteTitle.val(currentNote.detail.title);
 
         noteType.setNoteType(currentNote.detail.type);
         noteType.setNoteMime(currentNote.detail.mime);
 
+        $noteDetail.hide();
+        $noteDetailCode.hide();
+        $noteDetailRender.html('').hide();
+        $noteDetailAttachment.hide();
+
         if (currentNote.detail.type === 'render') {
-            noteDetailEl.hide();
-            noteDetailCodeEl.hide();
-            noteDetailRenderEl.html('').show();
+            $noteDetailRender.show();
 
             const subTree = await server.get('script/subtree/' + getCurrentNoteId());
 
-            noteDetailRenderEl.html(subTree);
+            $noteDetailRender.html(subTree);
+        }
+        else if (currentNote.detail.type === 'file') {
+            $noteDetailAttachment.show();
         }
         else {
             setContent(currentNote.detail.content);
@@ -191,7 +196,7 @@ const noteEditor = (function() {
         noteTree.setNoteTreeBackgroundBasedOnProtectedStatus(noteId);
 
         // after loading new note make sure editor is scrolled to the top
-        noteDetailWrapperEl.scrollTop(0);
+        $noteDetailWrapper.scrollTop(0);
 
         loadAttributeList();
     }
@@ -201,17 +206,17 @@ const noteEditor = (function() {
 
         const attributes = await server.get('notes/' + noteId + '/attributes');
 
-        attributeListInnerEl.html('');
+        $attributeListInner.html('');
 
         if (attributes.length > 0) {
             for (const attr of attributes) {
-                attributeListInnerEl.append(formatAttribute(attr) + " ");
+                $attributeListInner.append(formatAttribute(attr) + " ");
             }
 
-            attributeListEl.show();
+            $attributeList.show();
         }
         else {
-            attributeListEl.hide();
+            $attributeList.hide();
         }
     }
 
@@ -227,7 +232,7 @@ const noteEditor = (function() {
         const note = getCurrentNote();
 
         if (note.detail.type === 'text') {
-            noteDetailEl.focus();
+            $noteDetail.focus();
         }
         else if (note.detail.type === 'code') {
             codeEditor.focus();
@@ -258,10 +263,10 @@ const noteEditor = (function() {
     }
 
     $(document).ready(() => {
-        noteTitleEl.on('input', () => {
+        $noteTitle.on('input', () => {
             noteChanged();
 
-            const title = noteTitleEl.val();
+            const title = $noteTitle.val();
 
             noteTree.setNoteTitle(getCurrentNoteId(), title);
         });
@@ -295,7 +300,7 @@ const noteEditor = (function() {
         codeEditor.on('change', noteChanged);
 
         // so that tab jumps from note title (which has tabindex 1)
-        noteDetailEl.attr("tabindex", 2);
+        $noteDetail.attr("tabindex", 2);
     });
 
     $(document).bind('keydown', "ctrl+return", executeCurrentNote);

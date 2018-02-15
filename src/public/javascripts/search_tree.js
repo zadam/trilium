@@ -1,40 +1,40 @@
 "use strict";
 
 const searchTree = (function() {
-    const treeEl = $("#tree");
-    const searchInputEl = $("input[name='search-text']");
-    const resetSearchButton = $("button#reset-search-button");
-    const searchBoxEl = $("#search-box");
+    const $tree = $("#tree");
+    const $searchInput = $("input[name='search-text']");
+    const $resetSearchButton = $("button#reset-search-button");
+    const $searchBox = $("#search-box");
 
-    resetSearchButton.click(resetSearch);
+    $resetSearchButton.click(resetSearch);
 
     function toggleSearch() {
-        if (searchBoxEl.is(":hidden")) {
-            searchBoxEl.show();
-            searchInputEl.focus();
+        if ($searchBox.is(":hidden")) {
+            $searchBox.show();
+            $searchInput.focus();
         }
         else {
             resetSearch();
 
-            searchBoxEl.hide();
+            $searchBox.hide();
         }
     }
 
     function resetSearch() {
-        searchInputEl.val("");
+        $searchInput.val("");
 
         getTree().clearFilter();
     }
 
     function getTree() {
-        return treeEl.fancytree('getTree');
+        return $tree.fancytree('getTree');
     }
 
-    searchInputEl.keyup(async e => {
-        const searchText = searchInputEl.val();
+    $searchInput.keyup(async e => {
+        const searchText = $searchInput.val();
 
         if (e && e.which === $.ui.keyCode.ESCAPE || $.trim(searchText) === "") {
-            resetSearchButton.click();
+            $resetSearchButton.click();
             return;
         }
 

@@ -1,5 +1,5 @@
 const api = (function() {
-    const pluginButtonsEl = $("#plugin-buttons");
+    const $pluginButtons = $("#plugin-buttons");
 
     async function activateNote(notePath) {
         await noteTree.activateNode(notePath);
@@ -10,7 +10,7 @@ const api = (function() {
 
         button.attr('id', buttonId);
 
-        pluginButtonsEl.append(button);
+        $pluginButtons.append(button);
     }
 
 

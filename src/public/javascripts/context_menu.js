@@ -1,7 +1,7 @@
 "use strict";
 
 const contextMenu = (function() {
-    const treeEl = $("#tree");
+    const $tree = $("#tree");
 
     let clipboardIds = [];
     let clipboardMode = null;
@@ -93,8 +93,8 @@ const contextMenu = (function() {
         beforeOpen: (event, ui) => {
             const node = $.ui.fancytree.getNode(ui.target);
             // Modify menu entries depending on node status
-            treeEl.contextmenu("enableEntry", "pasteAfter", clipboardIds.length > 0);
-            treeEl.contextmenu("enableEntry", "pasteInto", clipboardIds.length > 0);
+            $tree.contextmenu("enableEntry", "pasteAfter", clipboardIds.length > 0);
+            $tree.contextmenu("enableEntry", "pasteInto", clipboardIds.length > 0);
 
             // Activate node on right-click
             node.setActive();

@@ -1,7 +1,7 @@
 "use strict";
 
 const noteType = (function() {
-    const executeScriptButton = $("#execute-script-button");
+    const $executeScriptButton = $("#execute-script-button");
     const noteTypeModel = new NoteTypeModel();
 
     function NoteTypeModel() {
@@ -114,7 +114,7 @@ const noteType = (function() {
         };
 
         this.updateExecuteScriptButtonVisibility = function() {
-            executeScriptButton.toggle(self.mime() === 'application/javascript');
+            $executeScriptButton.toggle(self.mime() === 'application/javascript');
         }
     }
 
