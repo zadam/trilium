@@ -207,9 +207,11 @@ if (isElectron()) {
 
         await noteTree.activateNode(parentNoteId);
 
-        const node = noteTree.getCurrentNode();
+        setTimeout(() => {
+            const node = noteTree.getCurrentNode();
 
-        await noteTree.createNote(node, node.data.noteId, 'into', node.data.isProtected);
+            noteTree.createNote(node, node.data.noteId, 'into', node.data.isProtected);
+        }, 500);
     });
 }
 
