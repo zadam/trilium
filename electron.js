@@ -3,11 +3,11 @@
 const electron = require('electron');
 const path = require('path');
 const config = require('./src/services/config');
+const log = require('./src/services/log');
 const url = require("url");
 
 const app = electron.app;
 const globalShortcut = electron.globalShortcut;
-const clipboard = electron.clipboard;
 
 // Adds debug features like hotkeys for triggering dev tools and reload
 require('electron-debug')();
@@ -70,7 +70,7 @@ app.on('activate', () => {
 app.on('ready', () => {
     mainWindow = createMainWindow();
 
-    globalShortcut.register('CommandOrControl+Alt+P', async () => {
+    const result = globalShortcut.register('CommandOrControl+Alt+P', async () => {
         const date_notes = require('./src/services/date_notes');
         const utils = require('./src/services/utils');
 
@@ -81,6 +81,10 @@ app.on('ready', () => {
 
         mainWindow.webContents.send('create-day-sub-note', parentNoteId);
     });
+
+    if (!result) {
+        log.error("Could not register global shortcut CTRL+ALT+P");
+    }
 });
 
 app.on('will-quit', () => {
