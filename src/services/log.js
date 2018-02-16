@@ -22,7 +22,7 @@ function info(message) {
 
 function error(message) {
     // we're using .info() instead of .error() because simple-node-logger emits weird error for showError()
-    info(message);
+    info("ERROR: " + message);
 }
 
 const requestBlacklist = [ "/libraries", "/javascripts", "/images", "/stylesheets" ];
