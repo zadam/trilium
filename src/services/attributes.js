@@ -52,7 +52,7 @@ async function getNoteIdsWithAttribute(name) {
           WHERE notes.isDeleted = 0 AND attributes.isDeleted = 0 AND attributes.name = ? AND attributes.isDeleted = 0`, [name]);
 }
 
-async function createAttribute(noteId, name, value = null, sourceId = null) {
+async function createAttribute(noteId, name, value = "", sourceId = null) {
     const now = utils.nowDate();
     const attributeId = utils.newAttributeId();
 
