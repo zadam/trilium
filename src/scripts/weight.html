@@ -1,4 +1,4 @@
-<form id="weight-form" style="display: flex; width: 500px; justify-content: space-around; align-items: flex-end;">
+<form id="weight-form" style="display: flex; width: 700px; justify-content: space-around; align-items: flex-end;">
     <div>
         <label for="weight-date">Date</label>
         <input type="text" id="weight-date" class="form-control" style="width: 150px; text-align: center;" />
@@ -6,6 +6,10 @@
     <div>
         <label for="weight">Weight</label>
         <input type="number" id="weight" value="80.0" step="0.1" class="form-control" style="text-align: center; width: 100px;" />
+    </div>
+    <div>
+        <label for="comment">Comment</label>
+        <input type="text" id="comment" class="form-control" style="width: 200px;" />
     </div>
 
     <button type="submit" class="btn btn-primary">Add</button>
@@ -17,26 +21,36 @@
 
 <script>
     (async function() {
-        const dateEl = $("#weight-date");
-        const weightEl = $("#weight");
+        const $form = $("#weight-form");
+        const $date = $("#weight-date");
+        const $weight = $("#weight");
+        const $comment = $("#comment");
         let chart;
 
-        dateEl.datepicker();
-        dateEl.datepicker('option', 'dateFormat', 'yy-mm-dd');
-        dateEl.datepicker('setDate', new Date());
+        $date.datepicker();
+        $date.datepicker('option', 'dateFormat', 'yy-mm-dd');
+        $date.datepicker('setDate', new Date());
 
         async function saveWeight() {
-            await server.exec([dateEl.val(), weightEl.val()], async (date, weight) => {
+            await server.exec([$date.val(), $weight.val(), $comment.val()], async (date, weight, comment) => {
                 const dataNote = await this.getNoteWithAttribute('date_data', date);
 
                 if (dataNote) {
                     dataNote.jsonContent.weight = weight;
+
+                    if (comment) {
+                        dataNote.jsonContent.weight_comment = comment;
+                    }
 
                     await this.updateEntity(dataNote);
                 }
                 else {
                     const parentNoteId = await this.getDateNoteId(date);
                     const jsonContent = { weight: weight };
+
+                    if (comment) {
+                        jsonContent.weight_comment = comment;
+                    }
 
                     await this.createNote(parentNoteId, 'data', jsonContent, {
                         json: true,
@@ -50,9 +64,7 @@
 
             showMessage("Weight has been saved");
 
-            const data = await getData();
-
-            chart.data = data;
+            chart.data = await getData();
             chart.update();
         }
 
@@ -63,7 +75,25 @@
 
             chart = new Chart(ctx, {
                 type: 'line',
-                data: data
+                data: data,
+                options: {
+                    tooltips: {
+                        enabled: true,
+                        mode: 'single',
+                        callbacks: {
+                            label: function (tooltipItem, data) {
+                                const multistringText = [tooltipItem.yLabel];
+                                const comment = data.comments[tooltipItem['index']];
+
+                                if (comment) {
+                                    multistringText.push(comment);
+                                }
+
+                                return multistringText;
+                            }
+                        }
+                    },
+                }
             });
         }
 
@@ -77,7 +107,8 @@
 
                     data.push({
                         date: dateAttr.value,
-                        weight: note.jsonContent.weight
+                        weight: note.jsonContent.weight,
+                        comment: note.jsonContent.weight_comment
                     });
                 }
 
@@ -86,23 +117,30 @@
                 return data;
             });
 
+            const colors = data.map(row => row.comment ? 'darkred' : 'red');
+
             const datasets = [{
                 label: "Weight",
                 backgroundColor: 'red',
                 borderColor: 'red',
                 data: data.map(row => row.weight),
+                // this is to emphasize points with color
+                pointBackgroundColor: colors,
+                pointBorderColor: colors,
                 fill: false
             }];
 
             const labels = data.map(row => row.date);
+            const comments = data.map(row => row.comment);
 
             return {
                 labels: labels,
-                datasets: datasets
+                datasets: datasets,
+                comments: comments
             };
         }
 
-        $("#weight-form").submit(event => {
+        $form.submit(event => {
             saveWeight();
 
             event.preventDefault();
