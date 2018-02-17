@@ -53,6 +53,10 @@ async function getNoteIdsWithAttribute(name) {
 }
 
 async function createAttribute(noteId, name, value = "", sourceId = null) {
+    if (value === null || value === undefined) {
+        value = "";
+    }
+
     const now = utils.nowDate();
     const attributeId = utils.newAttributeId();
 
