@@ -19,7 +19,14 @@ async function executeScript(dataKey, script, params) {
 }
 
 function getParams(params) {
-    return params.map(p => JSON.stringify(p)).join(",");
+    return params.map(p => {
+        if (typeof p === "string" && p.startsWith("!@#Function: ")) {
+            return p.substr(13);
+        }
+        else {
+            return JSON.stringify(p);
+        }
+    }).join(",");
 }
 
 module.exports = {

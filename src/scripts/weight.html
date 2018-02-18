@@ -117,16 +117,11 @@
                 return data;
             });
 
-            const colors = data.map(row => row.comment ? 'darkred' : 'red');
-
             const datasets = [{
                 label: "Weight",
                 backgroundColor: 'red',
                 borderColor: 'red',
                 data: data.map(row => row.weight),
-                // this is to emphasize points with color
-                pointBackgroundColor: colors,
-                pointBorderColor: colors,
                 fill: false
             }];
 

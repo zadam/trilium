@@ -31,12 +31,23 @@ const server = (function() {
         return await call('DELETE', url);
     }
 
+    function prepareParams(params) {
+        return params.map(p => {
+            if (typeof p === "function") {
+                return "!@#Function: " + p.toString();
+            }
+            else {
+                return p;
+            }
+        });
+    }
+
     async function exec(params, script) {
         if (typeof script === "function") {
             script = script.toString();
         }
 
-        const ret = await post('script/exec', { script: script, params: params });
+        const ret = await post('script/exec', { script: script, params: prepareParams(params) });
 
         return ret.executionResult;
     }
