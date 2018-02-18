@@ -31,26 +31,28 @@ router.get('/startup', auth.checkApiAuth, wrap(async (req, res, next) => {
 }));
 
 router.get('/subtree/:noteId', auth.checkApiAuth, wrap(async (req, res, next) => {
+    const repository = new Repository(req);
     const noteId = req.params.noteId;
 
-    const repository = new Repository(req);
-
-    const noteScript = (await repository.getNote(noteId)).content;
-
-    const subTreeScripts = await getSubTreeScripts(noteId, [noteId], repository);
-
-    res.send(subTreeScripts + noteScript);
+    res.send(await getNoteWithSubtreeScript(noteId, repository));
 }));
 
 async function getNoteWithSubtreeScript(noteId, repository) {
-    const noteScript = (await repository.getNote(noteId)).content;
+    const note = await repository.getNote(noteId);
 
-    const subTreeScripts = await getSubTreeScripts(noteId, [noteId], repository);
+    let noteScript = note.content;
+
+    if (note.isJavaScript()) {
+        // last \r\n is necessary if script contains line comment on its last line
+        noteScript = "(async function() {" + noteScript + "\r\n})()";
+    }
+
+    const subTreeScripts = await getSubTreeScripts(noteId, [noteId], repository, note.isJavaScript());
 
     return subTreeScripts + noteScript;
 }
 
-async function getSubTreeScripts(parentId, includedNoteIds, repository) {
+async function getSubTreeScripts(parentId, includedNoteIds, repository, isJavaScript) {
     const children = await repository.getEntities(`
                                       SELECT notes.* 
                                       FROM notes JOIN note_tree USING(noteId)
@@ -69,7 +71,7 @@ async function getSubTreeScripts(parentId, includedNoteIds, repository) {
 
         script += await getSubTreeScripts(child.noteId, includedNoteIds, repository);
 
-        if (child.mime === 'application/javascript') {
+        if (!isJavaScript && child.mime === 'application/javascript') {
             child.content = '<script>' + child.content + '</script>';
         }
 

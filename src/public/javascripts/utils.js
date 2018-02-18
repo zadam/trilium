@@ -116,8 +116,7 @@ async function stopWatch(what, func) {
 }
 
 function executeScript(script) {
-    // last \r\n is necessary if script contains line comment on its last line
-    eval("(async function() {" + script + "\r\n})()");
+    eval(script);
 }
 
 function formatValueWithWhitespace(val) {

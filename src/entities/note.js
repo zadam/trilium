@@ -23,6 +23,10 @@ class Note extends Entity {
         return this.type === "code" && this.mime === "application/json";
     }
 
+    isJavaScript() {
+        return this.type === "code" && this.mime === "application/javascript";
+    }
+
     async getAttributes() {
         return this.repository.getEntities("SELECT * FROM attributes WHERE noteId = ? AND isDeleted = 0", [this.noteId]);
     }
