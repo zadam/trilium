@@ -14,6 +14,10 @@ const noteEditor = (function() {
     const $noteIdDisplay = $("#note-id-display");
     const $attributeList = $("#attribute-list");
     const $attributeListInner = $("#attribute-list-inner");
+    const $attachmentFileName = $("#attachment-filename");
+    const $attachmentFileType = $("#attachment-filetype");
+    const $attachmentFileSize = $("#attachment-filesize");
+    const $attachmentDownload = $("#attachment-download");
 
     let editor = null;
     let codeEditor = null;
@@ -83,7 +87,7 @@ const noteEditor = (function() {
         else if (note.detail.type === 'code') {
             note.detail.content = codeEditor.getValue();
         }
-        else if (note.detail.type === 'render') {
+        else if (note.detail.type === 'render' || note.detail.type === 'file') {
             // nothing
         }
         else {
@@ -185,6 +189,10 @@ const noteEditor = (function() {
         }
         else if (currentNote.detail.type === 'file') {
             $noteDetailAttachment.show();
+
+            $attachmentFileName.text(currentNote.attributes.original_file_name);
+            $attachmentFileSize.text(currentNote.attributes.file_size + " bytes");
+            $attachmentFileType.text(currentNote.detail.mime);
         }
         else {
             setContent(currentNote.detail.content);
@@ -237,7 +245,7 @@ const noteEditor = (function() {
         else if (note.detail.type === 'code') {
             codeEditor.focus();
         }
-        else if (note.detail.type === 'render') {
+        else if (note.detail.type === 'render' || note.detail.type === 'file') {
             // do nothing
         }
         else {
@@ -261,6 +269,10 @@ const noteEditor = (function() {
             executeScript(script);
         }
     }
+
+    $attachmentDownload.click(() => {
+        window.location.href = "/api/attachments/download/" + getCurrentNoteId();
+    });
 
     $(document).ready(() => {
         $noteTitle.on('input', () => {

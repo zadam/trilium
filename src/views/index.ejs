@@ -105,7 +105,7 @@
                   onclick="noteEditor.executeCurrentNote()">Execute <kbd>Ctrl+Enter</kbd></button>
 
           <div class="dropdown" id="note-type">
-            <button id="dLabel" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-sm">
+            <button data-bind="disable: isDisabled()" id="dLabel" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-sm">
               Type: <span data-bind="text: typeString()"></span>
               <span class="caret"></span>
             </button>
@@ -144,8 +144,25 @@
         <div id="note-detail-render"></div>
 
         <div id="note-detail-attachment">
-          Attachment!!!
-
+          <table id="attachment-table">
+            <tr>
+              <th>File name:</th>
+              <td id="attachment-filename"></td>
+            </tr>
+            <tr>
+              <th>File type:</th>
+              <td id="attachment-filetype"></td>
+            </tr>
+            <tr>
+              <th>File size:</th>
+              <td id="attachment-filesize"></td>
+            </tr>
+            <tr>
+              <td>
+                <button id="attachment-download" class="btn btn-primary" type="button">Download</button>
+              </td>
+            </tr>
+          </table>
         </div>
 
         <input type="file" id="file-upload" style="display: none" />

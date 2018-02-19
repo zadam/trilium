@@ -116,6 +116,7 @@ const server = (function() {
         put,
         remove,
         exec,
+        ajax,
         // don't remove, used from CKEditor image upload!
         getHeaders
     }

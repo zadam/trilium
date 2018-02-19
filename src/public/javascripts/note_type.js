@@ -65,9 +65,16 @@ const noteType = (function() {
             else if (type === 'render') {
                 return 'Render HTML note';
             }
+            else if (type === 'file') {
+                return 'Attachment';
+            }
             else {
                 throwError('Unrecognized type: ' + type);
             }
+        };
+
+        this.isDisabled = function() {
+            return self.type() === "file";
         };
 
         async function save() {

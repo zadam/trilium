@@ -32,7 +32,7 @@
         $date.datepicker('setDate', new Date());
 
         async function saveWeight() {
-            await server.exec([$date.val(), $weight.val(), $comment.val()], async (date, weight, comment) => {
+            await server.exec([$date.val(), parseFloat($weight.val()), $comment.val()], async (date, weight, comment) => {
                 const dataNote = await this.getNoteWithAttribute('date_data', date);
 
                 if (dataNote) {

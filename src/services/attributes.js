@@ -13,7 +13,7 @@ const BUILTIN_ATTRIBUTES = [
 ];
 
 async function getNoteAttributeMap(noteId) {
-    return await sql.getMap(`SELECT name, value FROM attributes WHERE noteId = ?`, [noteId]);
+    return await sql.getMap(`SELECT name, value FROM attributes WHERE noteId = ? AND isDeleted = 0`, [noteId]);
 }
 
 async function getNoteIdWithAttribute(name, value) {
