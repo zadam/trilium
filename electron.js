@@ -15,6 +15,8 @@ require('electron-debug')();
 // Prevent window being garbage collected
 let mainWindow;
 
+require('electron-dl')({ saveAs: true });
+
 function onClosed() {
     // Dereference the window
     // For multiple windows store them in an array

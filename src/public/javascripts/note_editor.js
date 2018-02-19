@@ -18,6 +18,7 @@ const noteEditor = (function() {
     const $attachmentFileType = $("#attachment-filetype");
     const $attachmentFileSize = $("#attachment-filesize");
     const $attachmentDownload = $("#attachment-download");
+    const $attachmentOpen = $("#attachment-open");
 
     let editor = null;
     let codeEditor = null;
@@ -271,8 +272,36 @@ const noteEditor = (function() {
     }
 
     $attachmentDownload.click(() => {
-        window.location.href = "/api/attachments/download/" + getCurrentNoteId();
+        if (isElectron()) {
+            const remote = require('electron').remote;
+
+            remote.getCurrentWebContents().downloadURL(getAttachmentUrl());
+        }
+        else {
+            window.location.href = getAttachmentUrl();
+        }
     });
+
+    $attachmentOpen.click(() => {
+        if (isElectron()) {
+            const open = require("open");
+
+            open(getAttachmentUrl());
+        }
+        else {
+            window.location.href = getAttachmentUrl();
+        }
+    });
+
+    function getAttachmentUrl() {
+        // electron needs absolute URL so we extract current host, port, protocol
+        const url = new URL(window.location.href);
+        const host = url.protocol + "//" + url.hostname + ":" + url.port;
+
+        const downloadUrl = "/api/attachments/download/" + getCurrentNoteId();
+
+        return host + downloadUrl;
+    }
 
     $(document).ready(() => {
         $noteTitle.on('input', () => {
