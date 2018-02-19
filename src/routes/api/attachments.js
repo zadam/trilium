@@ -32,8 +32,8 @@ router.post('/upload/:parentNoteId', auth.checkApiAuthOrElectron, multer.single(
             mime: file.mimetype
         }, req, sourceId)).noteId;
 
-        await attributes.createAttribute(noteId, "original_file_name", originalName);
-        await attributes.createAttribute(noteId, "file_size", size);
+        await attributes.createAttribute(noteId, "original_file_name", originalName, sourceId);
+        await attributes.createAttribute(noteId, "file_size", size, sourceId);
 
         res.send({
             noteId: noteId

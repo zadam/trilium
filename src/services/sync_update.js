@@ -1,10 +1,17 @@
 const sql = require('./sql');
 const log = require('./log');
 const eventLog = require('./event_log');
-const notes = require('./notes');
 const sync_table = require('./sync_table');
 
+function deserializeNoteContentBuffer(note) {
+    if (note.type === 'file') {
+        note.content = new Buffer(note.content, 'binary');
+    }
+}
+
 async function updateNote(entity, sourceId) {
+    deserializeNoteContentBuffer(entity);
+
     const origNote = await sql.getRow("SELECT * FROM notes WHERE noteId = ?", [entity.noteId]);
 
     if (!origNote || origNote.dateModified <= entity.dateModified) {

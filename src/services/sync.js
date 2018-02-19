@@ -204,6 +204,8 @@ async function pushEntity(sync, syncContext) {
 
     if (sync.entityName === 'notes') {
         entity = await sql.getRow('SELECT * FROM notes WHERE noteId = ?', [sync.entityId]);
+
+        serializeNoteContentBuffer(entity);
     }
     else if (sync.entityName === 'note_tree') {
         entity = await sql.getRow('SELECT * FROM note_tree WHERE noteTreeId = ?', [sync.entityId]);
@@ -256,6 +258,12 @@ async function pushEntity(sync, syncContext) {
     };
 
     await syncRequest(syncContext, 'PUT', '/api/sync/' + sync.entityName, payload);
+}
+
+function serializeNoteContentBuffer(note) {
+    if (note.type === 'file') {
+        note.content = note.content.toString("binary");
+    }
 }
 
 async function checkContentHash(syncContext) {
@@ -350,5 +358,6 @@ sql.dbReady.then(() => {
 });
 
 module.exports = {
-    sync
+    sync,
+    serializeNoteContentBuffer
 };

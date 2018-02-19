@@ -79,9 +79,12 @@ router.get('/changed', auth.checkApiAuth, wrap(async (req, res, next) => {
 
 router.get('/notes/:noteId', auth.checkApiAuth, wrap(async (req, res, next) => {
     const noteId = req.params.noteId;
+    const entity = await sql.getRow("SELECT * FROM notes WHERE noteId = ?", [noteId]);
+
+    sync.serializeNoteContentBuffer(entity);
 
     res.send({
-        entity: await sql.getRow("SELECT * FROM notes WHERE noteId = ?", [noteId])
+        entity: entity
     });
 }));
 
