@@ -84,7 +84,7 @@ const messaging = (function() {
     let connectionBrokenNotification = null;
 
     setInterval(async () => {
-        if (new Date().getTime() - lastPingTs > 5000) {
+        if (new Date().getTime() - lastPingTs > 30000) {
             if (!connectionBrokenNotification) {
                 connectionBrokenNotification = $.notify({
                     // options
