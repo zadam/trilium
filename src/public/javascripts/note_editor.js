@@ -124,14 +124,42 @@ const noteEditor = (function() {
         isNewNoteCreated = true;
     }
 
-    function setContent(content) {
+    async function setContent(content) {
         if (currentNote.detail.type === 'text') {
+            if (!editor) {
+                await requireLibrary(CKEDITOR);
+
+                editor = await BalloonEditor.create($noteDetail[0], {});
+
+                editor.document.on('change', noteChanged);
+            }
+
             // temporary workaround for https://github.com/ckeditor/ckeditor5-enter/issues/49
             editor.setData(content ? content : "<p></p>");
 
             $noteDetail.show();
         }
         else if (currentNote.detail.type === 'code') {
+            if (!codeEditor) {
+                await requireLibrary(CODE_MIRROR);
+
+                CodeMirror.keyMap.default["Shift-Tab"] = "indentLess";
+                CodeMirror.keyMap.default["Tab"] = "indentMore";
+
+                CodeMirror.modeURL = 'libraries/codemirror/mode/%N/%N.js';
+
+                codeEditor = CodeMirror($("#note-detail-code")[0], {
+                    value: "",
+                    viewportMargin: Infinity,
+                    indentUnit: 4,
+                    matchBrackets: true,
+                    matchTags: { bothTags: true },
+                    highlightSelectionMatches: { showToken: /\w/, annotateScrollbar: false }
+                });
+
+                codeEditor.on('change', noteChanged);
+            }
+
             $noteDetailCode.show();
 
             // this needs to happen after the element is shown, otherwise the editor won't be refresheds
@@ -196,7 +224,7 @@ const noteEditor = (function() {
             $attachmentFileType.text(currentNote.detail.mime);
         }
         else {
-            setContent(currentNote.detail.content);
+            await setContent(currentNote.detail.content);
         }
 
         noteChangeDisabled = false;
@@ -311,34 +339,6 @@ const noteEditor = (function() {
 
             noteTree.setNoteTitle(getCurrentNoteId(), title);
         });
-
-        BalloonEditor
-            .create(document.querySelector('#note-detail'), {
-            })
-            .then(edit => {
-                editor = edit;
-
-                editor.document.on('change', noteChanged);
-            })
-            .catch(error => {
-                console.error(error);
-            });
-
-        CodeMirror.keyMap.default["Shift-Tab"] = "indentLess";
-        CodeMirror.keyMap.default["Tab"] = "indentMore";
-
-        CodeMirror.modeURL = 'libraries/codemirror/mode/%N/%N.js';
-
-        codeEditor = CodeMirror($("#note-detail-code")[0], {
-            value: "",
-            viewportMargin: Infinity,
-            indentUnit: 4,
-            matchBrackets: true,
-            matchTags: { bothTags: true },
-            highlightSelectionMatches: { showToken: /\w/, annotateScrollbar: false }
-        });
-
-        codeEditor.on('change', noteChanged);
 
         // so that tab jumps from note title (which has tabindex 1)
         $noteDetail.attr("tabindex", 2);

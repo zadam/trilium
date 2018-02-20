@@ -17,24 +17,32 @@ const sqlConsole = (function() {
             width: $(window).width(),
             height: $(window).height(),
             open: function() {
-                CodeMirror.keyMap.default["Shift-Tab"] = "indentLess";
-                CodeMirror.keyMap.default["Tab"] = "indentMore";
-
-                CodeMirror.modeURL = 'libraries/codemirror/mode/%N/%N.js';
-
-                codeEditor = CodeMirror($query[0], {
-                    value: "",
-                    viewportMargin: Infinity,
-                    indentUnit: 4,
-                    highlightSelectionMatches: { showToken: /\w/, annotateScrollbar: false }
-                });
-
-                codeEditor.setOption("mode", "text/x-sqlite");
-                CodeMirror.autoLoadMode(codeEditor, "sql");
-
-                codeEditor.focus();
+                initEditor();
             }
         });
+    }
+
+    async function initEditor() {
+        if (!codeEditor) {
+            await requireLibrary(CODE_MIRROR);
+
+            CodeMirror.keyMap.default["Shift-Tab"] = "indentLess";
+            CodeMirror.keyMap.default["Tab"] = "indentMore";
+
+            CodeMirror.modeURL = 'libraries/codemirror/mode/%N/%N.js';
+
+            codeEditor = CodeMirror($query[0], {
+                value: "",
+                viewportMargin: Infinity,
+                indentUnit: 4,
+                highlightSelectionMatches: {showToken: /\w/, annotateScrollbar: false}
+            });
+
+            codeEditor.setOption("mode", "text/x-sqlite");
+            CodeMirror.autoLoadMode(codeEditor, "sql");
+        }
+
+        codeEditor.focus();
     }
 
     async function execute() {

@@ -132,3 +132,56 @@ function formatAttribute(attr) {
 
     return str;
 }
+
+const CKEDITOR = { "js": ["libraries/ckeditor/ckeditor.js"] };
+
+const CODE_MIRROR = {
+    js: [
+        "libraries/codemirror/codemirror.js",
+        "libraries/codemirror/addon/mode/loadmode.js",
+        "libraries/codemirror/addon/fold/xml-fold.js",
+        "libraries/codemirror/addon/edit/matchbrackets.js",
+        "libraries/codemirror/addon/edit/matchtags.js",
+        "libraries/codemirror/addon/search/match-highlighter.js",
+        "libraries/codemirror/mode/meta.js"
+    ],
+    css: [
+        "libraries/codemirror/codemirror.css"
+    ]
+};
+
+async function requireLibrary(library) {
+    if (library.css) {
+        library.css.map(cssUrl => requireCss(cssUrl));
+    }
+
+    if (library.js) {
+        for (const scriptUrl of library.js) {
+            await requireScript(scriptUrl);
+        }
+    }
+}
+
+async function requireScript(url) {
+    const scripts = Array
+        .from(document.querySelectorAll('script'))
+        .map(scr => scr.src);
+
+    if (!scripts.includes(url)) {
+        return $.ajax({
+            url: url,
+            dataType: "script",
+            cache: true
+        })
+    }
+}
+
+async function requireCss(url) {
+    const css = Array
+        .from(document.querySelectorAll('link'))
+        .map(scr => scr.href);
+
+    if (!css.includes(url)) {
+        $('head').append($('<link rel="stylesheet" type="text/css" />').attr('href', url));
+    }
+}
