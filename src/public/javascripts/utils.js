@@ -150,6 +150,17 @@ const CODE_MIRROR = {
     ]
 };
 
+const JS_LINT = {
+    js: [
+        "libraries/codemirror/addon/lint/lint.js",
+        "libraries/codemirror/addon/lint/eslint.js",
+        "libraries/eslint.js"
+    ],
+    css: [
+        "libraries/codemirror/addon/lint/lint.css"
+    ]
+};
+
 async function requireLibrary(library) {
     if (library.css) {
         library.css.map(cssUrl => requireCss(cssUrl));

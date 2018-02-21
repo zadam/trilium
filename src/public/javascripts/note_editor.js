@@ -142,6 +142,7 @@ const noteEditor = (function() {
         else if (currentNote.detail.type === 'code') {
             if (!codeEditor) {
                 await requireLibrary(CODE_MIRROR);
+                await requireLibrary(JS_LINT);
 
                 CodeMirror.keyMap.default["Shift-Tab"] = "indentLess";
                 CodeMirror.keyMap.default["Tab"] = "indentMore";
@@ -154,7 +155,10 @@ const noteEditor = (function() {
                     indentUnit: 4,
                     matchBrackets: true,
                     matchTags: { bothTags: true },
-                    highlightSelectionMatches: { showToken: /\w/, annotateScrollbar: false }
+                    highlightSelectionMatches: { showToken: /\w/, annotateScrollbar: false },
+                    lint: true,
+                    gutters: ["CodeMirror-lint-markers"],
+                    lineNumbers: true
                 });
 
                 codeEditor.on('change', noteChanged);
