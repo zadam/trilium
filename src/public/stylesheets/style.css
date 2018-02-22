@@ -72,6 +72,11 @@ span.fancytree-node.fancytree-folder.code > span.fancytree-icon {
     background-image: url("../images/icons/code-folder.png");
 }
 
+span.fancytree-node.attachment > span.fancytree-icon {
+    background-position: 0 0;
+    background-image: url("../images/icons/paperclip.png");
+}
+
 span.fancytree-node.protected > span.fancytree-icon {
     filter: drop-shadow(2px 2px 2px black);
 }

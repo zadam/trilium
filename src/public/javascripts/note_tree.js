@@ -155,6 +155,9 @@ const noteTree = (function() {
         if (note.type === 'code') {
             extraClasses.push("code");
         }
+        else if (note.type === 'file') {
+            extraClasses.push('attachment');
+        }
 
         return extraClasses.join(" ");
     }
