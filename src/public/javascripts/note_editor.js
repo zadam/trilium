@@ -142,7 +142,6 @@ const noteEditor = (function() {
         else if (currentNote.detail.type === 'code') {
             if (!codeEditor) {
                 await requireLibrary(CODE_MIRROR);
-                await requireLibrary(JS_LINT);
 
                 CodeMirror.keyMap.default["Shift-Tab"] = "indentLess";
                 CodeMirror.keyMap.default["Tab"] = "indentMore";

@@ -11,8 +11,8 @@
 })(function(CodeMirror) {
   "use strict";
 
-  function validator(text, options) {
-    console.log("Validating script");
+  async function validator(text, options) {
+    await requireLibrary(ESLINT);
 
     var errors = new eslint().verify(text, {
         root: true,
@@ -41,8 +41,6 @@
             'object-shorthand': ['error', 'methods'],
         }
     });
-
-    console.log(errors);
 
     var result = [];
     if (errors) parseErrors(errors, result);

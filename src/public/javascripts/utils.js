@@ -143,23 +143,17 @@ const CODE_MIRROR = {
         "libraries/codemirror/addon/edit/matchbrackets.js",
         "libraries/codemirror/addon/edit/matchtags.js",
         "libraries/codemirror/addon/search/match-highlighter.js",
-        "libraries/codemirror/mode/meta.js"
-    ],
-    css: [
-        "libraries/codemirror/codemirror.css"
-    ]
-};
-
-const JS_LINT = {
-    js: [
+        "libraries/codemirror/mode/meta.js",
         "libraries/codemirror/addon/lint/lint.js",
-        "libraries/codemirror/addon/lint/eslint.js",
-        "libraries/eslint.js"
+        "libraries/codemirror/addon/lint/eslint.js"
     ],
     css: [
+        "libraries/codemirror/codemirror.css",
         "libraries/codemirror/addon/lint/lint.css"
     ]
 };
+
+const ESLINT = { js: [ "libraries/eslint.js" ] };
 
 async function requireLibrary(library) {
     if (library.css) {
@@ -173,13 +167,13 @@ async function requireLibrary(library) {
     }
 }
 
-async function requireScript(url) {
-    const scripts = Array
-        .from(document.querySelectorAll('script'))
-        .map(scr => scr.src);
+const dynamicallyLoadedScripts = [];
 
-    if (!scripts.includes(url)) {
-        return $.ajax({
+async function requireScript(url) {
+    if (!dynamicallyLoadedScripts.includes(url)) {
+        dynamicallyLoadedScripts.push(url);
+
+        return await $.ajax({
             url: url,
             dataType: "script",
             cache: true
