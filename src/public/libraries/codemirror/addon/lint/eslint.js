@@ -11,7 +11,7 @@
 })(function(CodeMirror) {
   "use strict";
 
-  async function validator(text, options) {
+  async function validator(text, options) {console.log("Validating...");
     await requireLibrary(ESLINT);
 
     var errors = new eslint().verify(text, {
@@ -48,6 +48,8 @@
   }
 
   CodeMirror.registerHelper("lint", "javascript", validator);
+  // CodeMirror.registerHelper("lint", "htmlmixed", validator);
+  // CodeMirror.registerHelper("lint", "html", validator);
 
   function parseErrors(errors, output) {
     for (const error of errors) {

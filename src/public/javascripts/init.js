@@ -114,22 +114,32 @@ $.ui.autocomplete.filter = (array, terms) => {
     const tokens = terms.toLowerCase().split(" ");
 
     for (const item of array) {
-        let found = true;
         const lcLabel = item.label.toLowerCase();
 
-        for (const token of tokens) {
-            if (lcLabel.indexOf(token) === -1) {
-                found = false;
-                break;
+        const found = tokens.every(token => lcLabel.indexOf(token) !== -1);
+        if (!found) {
+            continue;
+        }
+
+        // this is not completely correct and might cause minor problems with note with names containing this " / "
+        const lastSegmentIndex = lcLabel.lastIndexOf(" / ");
+
+        if (lastSegmentIndex !== -1) {
+            const lastSegment = lcLabel.substr(lastSegmentIndex + 3);
+
+            // at least some token needs to be in the last segment (leaf note), otherwise this
+            // particular note is not that interesting (query is satisfied by parent note)
+            const foundInLastSegment = tokens.some(token => lastSegment.indexOf(token) !== -1);
+
+            if (!foundInLastSegment) {
+                continue;
             }
         }
 
-        if (found) {
-            results.push(item);
+        results.push(item);
 
-            if (results.length > 100) {
-                break;
-            }
+        if (results.length > 100) {
+            break;
         }
     }
 
