@@ -174,6 +174,8 @@ const noteEditor = (function() {
                 codeEditor.setOption("mode", info.mime);
                 CodeMirror.autoLoadMode(codeEditor, info.mode);
             }
+
+            codeEditor.refresh();
         }
     }
 

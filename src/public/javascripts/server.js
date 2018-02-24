@@ -32,6 +32,10 @@ const server = (function() {
     }
 
     function prepareParams(params) {
+        if (!params) {
+            return params;
+        }
+
         return params.map(p => {
             if (typeof p === "function") {
                 return "!@#Function: " + p.toString();
@@ -50,6 +54,13 @@ const server = (function() {
         const ret = await post('script/exec', { script: script, params: prepareParams(params) });
 
         return ret.executionResult;
+    }
+
+    async function setJob(opts) {
+        opts.job = opts.job.toString();
+        opts.params = prepareParams(opts.params);
+
+        await post('script/job', opts);
     }
 
     let i = 1;
@@ -116,6 +127,7 @@ const server = (function() {
         put,
         remove,
         exec,
+        setJob,
         ajax,
         // don't remove, used from CKEditor image upload!
         getHeaders

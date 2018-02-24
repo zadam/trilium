@@ -17,6 +17,12 @@ router.post('/exec', auth.checkApiAuth, wrap(async (req, res, next) => {
     });
 }));
 
+router.post('/job', auth.checkApiAuth, wrap(async (req, res, next) => {
+    await script.setJob(req.body);
+
+    res.send({});
+}));
+
 router.get('/startup', auth.checkApiAuth, wrap(async (req, res, next) => {
     const noteIds = await attributes.getNoteIdsWithAttribute("run_on_startup");
     const repository = new Repository(req);

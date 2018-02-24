@@ -29,7 +29,7 @@ async function getNoteStartingWith(parentNoteId, startsWith) {
                                     AND note_tree.isDeleted = 0`, [parentNoteId]);
 }
 
-async function getRootNoteId() {
+async function getRootCalendarNoteId() {
     let rootNoteId = await sql.getValue(`SELECT notes.noteId FROM notes JOIN attributes USING(noteId) 
               WHERE attributes.name = '${CALENDAR_ROOT_ATTRIBUTE}' AND notes.isDeleted = 0`);
 
@@ -91,7 +91,7 @@ async function getMonthNoteId(dateTimeStr, rootNoteId) {
 
 async function getDateNoteId(dateTimeStr, rootNoteId = null) {
     if (!rootNoteId) {
-        rootNoteId = await getRootNoteId();
+        rootNoteId = await getRootCalendarNoteId();
     }
 
     const dateStr = dateTimeStr.substr(0, 10);
@@ -119,7 +119,7 @@ async function getDateNoteId(dateTimeStr, rootNoteId = null) {
 }
 
 module.exports = {
-    getRootNoteId,
+    getRootCalendarNoteId,
     getYearNoteId,
     getMonthNoteId,
     getDateNoteId

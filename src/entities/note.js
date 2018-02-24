@@ -43,6 +43,48 @@ class Note extends Entity {
         return this.repository.getEntities("SELECT * FROM note_tree WHERE isDeleted = 0 AND noteId = ?", [this.noteId]);
     }
 
+    async getChild(name) {
+        return this.repository.getEntity(`
+          SELECT notes.* 
+          FROM note_tree 
+            JOIN notes USING(noteId) 
+          WHERE notes.isDeleted = 0
+                AND note_tree.isDeleted = 0
+                AND note_tree.parentNoteId = ?
+                AND notes.title = ?`, [this.noteId, name]);
+    }
+
+    async getChildren() {
+        return this.repository.getEntities(`
+          SELECT notes.* 
+          FROM note_tree 
+            JOIN notes USING(noteId) 
+          WHERE notes.isDeleted = 0
+                AND note_tree.isDeleted = 0
+                AND note_tree.parentNoteId = ?`, [this.noteId]);
+    }
+
+    async getParents() {
+        return this.repository.getEntities(`
+          SELECT parent_notes.* 
+          FROM 
+            note_tree AS child_tree 
+            JOIN notes AS parent_notes ON parent_notes.noteId = child_tree.parentNoteId 
+          WHERE child_tree.noteId = ?
+                AND child_tree.isDeleted = 0
+                AND parent_notes.isDeleted = 0`, [this.noteId]);
+    }
+
+    async getNoteTree() {
+        return this.repository.getEntities(`
+          SELECT note_tree.* 
+          FROM note_tree 
+            JOIN notes USING(noteId) 
+          WHERE notes.isDeleted = 0
+                AND note_tree.isDeleted = 0
+                AND note_tree.noteId = ?`, [this.noteId]);
+    }
+
     beforeSaving() {
         this.content = JSON.stringify(this.jsonContent, null, '\t');
 

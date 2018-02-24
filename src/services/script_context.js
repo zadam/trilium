@@ -23,10 +23,10 @@ function ScriptContext(noteId, dataKey) {
         return notes.length > 0 ? notes[0] : null;
     };
 
-    this.createNote = async function (parentNoteId, name, jsonContent, extraOptions = {}) {
+    this.createNote = async function (parentNoteId, title, content = "", extraOptions = {}) {
         const note = {
-            title: name,
-            content: extraOptions.json ? JSON.stringify(jsonContent, null, '\t') : jsonContent,
+            title: title,
+            content: extraOptions.json ? JSON.stringify(content, null, '\t') : content,
             target: 'into',
             isProtected: extraOptions.isProtected !== undefined ? extraOptions.isProtected : false,
             type: extraOptions.type,
@@ -58,10 +58,9 @@ function ScriptContext(noteId, dataKey) {
 
     this.updateEntity = this.repository.updateEntity;
 
-    this.log = function(message) {
-        log.info(`Script: ${message}`);
-    };
+    this.log = message => log.info(`Script: ${message}`);
 
+    this.getRootCalendarNoteId = date_notes.getRootCalendarNoteId;
     this.getDateNoteId = date_notes.getDateNoteId;
 }
 

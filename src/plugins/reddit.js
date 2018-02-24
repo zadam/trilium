@@ -109,7 +109,7 @@ karma: ${comment.score}, created at ${dateTimeStr}</p><p></p>`
 let redditAccounts = [];
 
 async function runImport() {
-    const rootNoteId = await date_notes.getRootNoteId();
+    const rootNoteId = await date_notes.getRootCalendarNoteId();
 
     // technically mutex shouldn't be necessary but we want to avoid doing potentially expensive import
     // concurrently with sync
