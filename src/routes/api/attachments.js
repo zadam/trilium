@@ -6,6 +6,7 @@ const sql = require('../../services/sql');
 const auth = require('../../services/auth');
 const notes = require('../../services/notes');
 const attributes = require('../../services/attributes');
+const protected_session = require('../../services/protected_session');
 const multer = require('multer')();
 const wrap = require('express-promise-wrap').wrap;
 
@@ -44,9 +45,21 @@ router.post('/upload/:parentNoteId', auth.checkApiAuthOrElectron, multer.single(
 router.get('/download/:noteId', auth.checkApiAuthOrElectron, wrap(async (req, res, next) => {
     const noteId = req.params.noteId;
     const note = await sql.getRow("SELECT * FROM notes WHERE noteId = ?", [noteId]);
+    const protectedSessionId = req.query.protectedSessionId;
 
     if (!note) {
-        return res.status(404).send(`Note ${parentNoteId} doesn't exist.`);
+        return res.status(404).send(`Note ${noteId} doesn't exist.`);
+    }
+
+    if (note.isProtected) {
+        const dataKey = protected_session.getDataKeyForProtectedSessionId(protectedSessionId);
+
+        if (!dataKey) {
+            res.status(401).send("Protected session not available");
+            return;
+        }
+
+        protected_session.decryptNote(dataKey, note);
     }
 
     const attributeMap = await attributes.getNoteAttributeMap(noteId);

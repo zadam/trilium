@@ -26,6 +26,10 @@ function getDataKey(obj) {
 
     const protectedSessionId = getProtectedSessionId(obj);
 
+    return getDataKeyForProtectedSessionId(protectedSessionId);
+}
+
+function getDataKeyForProtectedSessionId(protectedSessionId) {
     if (protectedSessionId && session.protectedSessionId === protectedSessionId) {
         return session.decryptedDataKey;
     }
@@ -52,7 +56,14 @@ function decryptNote(dataKey, note) {
     }
 
     if (note.content) {
-        note.content = data_encryption.decryptString(dataKey, data_encryption.noteTextIv(note.noteId), note.content);
+        const contentIv = data_encryption.noteContentIv(note.noteId);
+
+        if (note.type === 'file') {
+            note.content = data_encryption.decrypt(dataKey, contentIv, note.content);
+        }
+        else {
+            note.content = data_encryption.decryptString(dataKey, contentIv, note.content);
+        }
     }
 }
 
@@ -76,7 +87,7 @@ function decryptNoteHistoryRow(dataKey, hist) {
     }
 
     if (hist.content) {
-        hist.content = data_encryption.decryptString(dataKey, data_encryption.noteTextIv(hist.noteRevisionId), hist.content);
+        hist.content = data_encryption.decryptString(dataKey, data_encryption.noteContentIv(hist.noteRevisionId), hist.content);
     }
 }
 
@@ -92,19 +103,20 @@ function encryptNote(dataKey, note) {
     dataKey = getDataKey(dataKey);
 
     note.title = data_encryption.encrypt(dataKey, data_encryption.noteTitleIv(note.noteId), note.title);
-    note.content = data_encryption.encrypt(dataKey, data_encryption.noteTextIv(note.noteId), note.content);
+    note.content = data_encryption.encrypt(dataKey, data_encryption.noteContentIv(note.noteId), note.content);
 }
 
 function encryptNoteHistoryRow(dataKey, history) {
     dataKey = getDataKey(dataKey);
 
     history.title = data_encryption.encrypt(dataKey, data_encryption.noteTitleIv(history.noteRevisionId), history.title);
-    history.content = data_encryption.encrypt(dataKey, data_encryption.noteTextIv(history.noteRevisionId), history.content);
+    history.content = data_encryption.encrypt(dataKey, data_encryption.noteContentIv(history.noteRevisionId), history.content);
 }
 
 module.exports = {
     setDataKey,
     getDataKey,
+    getDataKeyForProtectedSessionId,
     isProtectedSessionAvailable,
     decryptNote,
     decryptNotes,

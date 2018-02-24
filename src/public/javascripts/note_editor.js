@@ -329,7 +329,8 @@ const noteEditor = (function() {
         const url = new URL(window.location.href);
         const host = url.protocol + "//" + url.hostname + ":" + url.port;
 
-        const downloadUrl = "/api/attachments/download/" + getCurrentNoteId();
+        const downloadUrl = "/api/attachments/download/" + getCurrentNoteId()
+            + "?protectedSessionId=" + encodeURIComponent(protected_session.getProtectedSessionId());
 
         return host + downloadUrl;
     }

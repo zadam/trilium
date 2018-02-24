@@ -148,10 +148,14 @@ async function protectNoteHistory(noteId, dataKey, protect, sourceId) {
 async function saveNoteHistory(noteId, dataKey, sourceId, nowStr) {
     const oldNote = await sql.getRow("SELECT * FROM notes WHERE noteId = ?", [noteId]);
 
+    if (oldNote.type === 'file') {
+        return;
+    }
+
     if (oldNote.isProtected) {
         protected_session.decryptNote(dataKey, oldNote);
 
-        note.isProtected = false;
+        oldNote.isProtected = false;
     }
 
     const newNoteRevisionId = utils.newNoteRevisionId();
@@ -217,7 +221,21 @@ async function saveNoteImages(noteId, noteText, sourceId) {
     }
 }
 
+async function loadFile(noteId, newNote, dataKey) {
+    const oldNote = await sql.getRow("SELECT * FROM notes WHERE noteId = ?", [noteId]);
+
+    if (oldNote.isProtected) {
+        await protected_session.decryptNote(dataKey, oldNote);
+    }
+
+    newNote.detail.content = oldNote.content;
+}
+
 async function updateNote(noteId, newNote, dataKey, sourceId) {
+    if (newNote.detail.type === 'file') {
+        await loadFile(noteId, newNote, dataKey);
+    }
+
     if (newNote.detail.isProtected) {
         await protected_session.encryptNote(dataKey, newNote.detail);
     }

@@ -88,7 +88,7 @@ function noteTitleIv(iv) {
     return "0" + iv;
 }
 
-function noteTextIv(iv) {
+function noteContentIv(iv) {
     return "1" + iv;
 }
 
@@ -97,5 +97,5 @@ module.exports = {
     decrypt,
     decryptString,
     noteTitleIv,
-    noteTextIv
+    noteContentIv
 };
