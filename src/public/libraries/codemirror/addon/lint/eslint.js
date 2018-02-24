@@ -11,8 +11,14 @@
 })(function(CodeMirror) {
   "use strict";
 
-  async function validator(text, options) {console.log("Validating...");
+  async function validator(text, options) {
     await requireLibrary(ESLINT);
+
+    if (text.length > 20000) {
+        console.log("Skipping linting because of large size: ", text.length);
+
+        return [];
+    }
 
     var errors = new eslint().verify(text, {
         root: true,
@@ -29,7 +35,6 @@
             'import/no-extraneous-dependencies': 'off',
             'func-names': 'off',
             'no-multi-spaces': 'off',
-            'spaced-comment': ["error", "always", { "markers": ["/"] }],
             'comma-dangle': ['error'],
             'padded-blocks': 'off',
             'linebreak-style': 'off',

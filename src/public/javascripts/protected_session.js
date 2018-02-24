@@ -25,7 +25,9 @@ const protected_session = (function() {
         if (requireProtectedSession && !isProtectedSessionAvailable()) {
             protectedSessionDeferred = dfd;
 
-            $noteDetailWrapper.hide();
+            if (noteTree.getCurrentNode().data.isProtected) {
+                $noteDetailWrapper.hide();
+            }
 
             $dialog.dialog({
                 modal: modal,
