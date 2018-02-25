@@ -20,6 +20,5 @@ module.exports = {
     DOCUMENT_PATH,
     BACKUP_DIR,
     LOG_DIR,
-    EXPORT_DIR,
     ANONYMIZED_DB_DIR
 };

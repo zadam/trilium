@@ -85,9 +85,12 @@ const contextMenu = (function() {
             {title: "Paste into <kbd>Ctrl+V</kbd>", cmd: "pasteInto", uiIcon: "ui-icon-clipboard"},
             {title: "Paste after", cmd: "pasteAfter", uiIcon: "ui-icon-clipboard"},
             {title: "----"},
-            {title: "Collapse sub-tree <kbd>Alt+-</kbd>", cmd: "collapse-sub-tree", uiIcon: "ui-icon-minus"},
-            {title: "Force note sync", cmd: "force-note-sync", uiIcon: "ui-icon-refresh"},
-            {title: "Sort alphabetically <kbd>Alt+S</kbd>", cmd: "sort-alphabetically", uiIcon: " ui-icon-arrowthick-2-n-s"}
+            {title: "Export sub-tree", cmd: "exportSubTree", uiIcon: " ui-icon-arrowthick-1-ne"},
+            {title: "Import sub-tree into", cmd: "importSubTree", uiIcon: "ui-icon-arrowthick-1-sw"},
+            {title: "----"},
+            {title: "Collapse sub-tree <kbd>Alt+-</kbd>", cmd: "collapseSubTree", uiIcon: "ui-icon-minus"},
+            {title: "Force note sync", cmd: "forceNoteSync", uiIcon: "ui-icon-refresh"},
+            {title: "Sort alphabetically <kbd>Alt+S</kbd>", cmd: "sortAlphabetically", uiIcon: " ui-icon-arrowthick-2-n-s"}
 
         ],
         beforeOpen: (event, ui) => {
@@ -139,13 +142,19 @@ const contextMenu = (function() {
             else if (ui.cmd === "delete") {
                 treeChanges.deleteNodes(noteTree.getSelectedNodes(true));
             }
-            else if (ui.cmd === "collapse-sub-tree") {
+            else if (ui.cmd === "exportSubTree") {
+                exportSubTree(node.data.noteId);
+            }
+            else if (ui.cmd === "importSubTree") {
+                importSubTree(node.data.noteId);
+            }
+            else if (ui.cmd === "collapseSubTree") {
                 noteTree.collapseTree(node);
             }
-            else if (ui.cmd === "force-note-sync") {
+            else if (ui.cmd === "forceNoteSync") {
                 forceNoteSync(node.data.noteId);
             }
-            else if (ui.cmd === "sort-alphabetically") {
+            else if (ui.cmd === "sortAlphabetically") {
                 noteTree.sortAlphabetically(node.data.noteId);
             }
             else {

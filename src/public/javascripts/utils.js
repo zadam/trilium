@@ -190,3 +190,19 @@ async function requireCss(url) {
         $('head').append($('<link rel="stylesheet" type="text/css" />').attr('href', url));
     }
 }
+
+function getHost() {
+    const url = new URL(window.location.href);
+    return url.protocol + "//" + url.hostname + ":" + url.port;
+}
+
+function download(url) {
+    if (isElectron()) {
+        const remote = require('electron').remote;
+
+        remote.getCurrentWebContents().downloadURL(url);
+    }
+    else {
+        window.location.href = url;
+    }
+}

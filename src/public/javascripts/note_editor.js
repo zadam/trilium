@@ -304,16 +304,7 @@ const noteEditor = (function() {
         }
     }
 
-    $attachmentDownload.click(() => {
-        if (isElectron()) {
-            const remote = require('electron').remote;
-
-            remote.getCurrentWebContents().downloadURL(getAttachmentUrl());
-        }
-        else {
-            window.location.href = getAttachmentUrl();
-        }
-    });
+    $attachmentDownload.click(() => download(getAttachmentUrl()));
 
     $attachmentOpen.click(() => {
         if (isElectron()) {
@@ -328,13 +319,8 @@ const noteEditor = (function() {
 
     function getAttachmentUrl() {
         // electron needs absolute URL so we extract current host, port, protocol
-        const url = new URL(window.location.href);
-        const host = url.protocol + "//" + url.hostname + ":" + url.port;
-
-        const downloadUrl = "/api/attachments/download/" + getCurrentNoteId()
+        return getHost() + "/api/attachments/download/" + getCurrentNoteId()
             + "?protectedSessionId=" + encodeURIComponent(protected_session.getProtectedSessionId());
-
-        return host + downloadUrl;
     }
 
     $(document).ready(() => {
