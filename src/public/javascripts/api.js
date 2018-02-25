@@ -13,9 +13,9 @@ const api = (function() {
         $pluginButtons.append(button);
     }
 
-
     return {
         addButtonToToolbar,
-        activateNote
+        activateNote,
+        getInstanceName: noteTree.getInstanceName
     }
 })();

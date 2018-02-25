@@ -12,7 +12,7 @@ async function executeScript(dataKey, script, params) {
     let ret;
 
     await sql.doInTransaction(async () => {
-        ret = await (function() { return eval(`(${script})(${paramsStr})`); }.call(ctx));
+        ret = await (function() { return eval(`const api = this; (${script})(${paramsStr})`); }.call(ctx));
     });
 
     return ret;

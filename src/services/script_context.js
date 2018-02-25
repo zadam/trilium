@@ -3,18 +3,21 @@ const protected_session = require('./protected_session');
 const notes = require('./notes');
 const attributes = require('./attributes');
 const date_notes = require('./date_notes');
+const config = require('./config');
 const Repository = require('./repository');
 
 function ScriptContext(noteId, dataKey) {
-    this.dataKey = protected_session.getDataKey(dataKey);
-    this.repository = new Repository(dataKey);
+    dataKey = protected_session.getDataKey(dataKey);
+    const repository = new Repository(dataKey);
+
+    this.getInstanceName = () => config.General ? config.General.instanceName : null;
 
     this.getNoteById = async function(noteId) {
-        return this.repository.getNote(noteId);
+        return repository.getNote(noteId);
     };
 
     this.getNotesWithAttribute = async function (attrName, attrValue) {
-        return await attributes.getNotesWithAttribute(this.dataKey, attrName, attrValue);
+        return await attributes.getNotesWithAttribute(dataKey, attrName, attrValue);
     };
 
     this.getNoteWithAttribute = async function (attrName, attrValue) {
@@ -43,7 +46,7 @@ function ScriptContext(noteId, dataKey) {
             note.mime = "text/html";
         }
 
-        const noteId = (await notes.createNewNote(parentNoteId, note, this.dataKey)).noteId;
+        const noteId = (await notes.createNewNote(parentNoteId, note, dataKey)).noteId;
 
         if (extraOptions.attributes) {
             for (const attrName in extraOptions.attributes) {
@@ -56,7 +59,7 @@ function ScriptContext(noteId, dataKey) {
 
     this.createAttribute = attributes.createAttribute;
 
-    this.updateEntity = this.repository.updateEntity;
+    this.updateEntity = repository.updateEntity;
 
     this.log = message => log.info(`Script: ${message}`);
 

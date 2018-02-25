@@ -5,6 +5,8 @@ const noteTree = (function() {
     const $parentList = $("#parent-list");
     const $parentListList = $("#parent-list-inner");
 
+    let instanceName = null; // should have better place
+
     let startNotePath = null;
     let notesTreeMap = {};
 
@@ -648,6 +650,7 @@ const noteTree = (function() {
     async function loadTree() {
         const resp = await server.get('tree');
         startNotePath = resp.start_note_path;
+        instanceName = resp.instanceName;
 
         if (document.location.hash) {
             startNotePath = getNotePathFromAddress();
@@ -823,6 +826,10 @@ const noteTree = (function() {
         return !!childToParents[noteId];
     }
 
+    function getInstanceName() {
+        return instanceName;
+    }
+
     $(document).bind('keydown', 'ctrl+o', e => {
         const node = getCurrentNode();
         const parentNoteId = node.data.parentNoteId;
@@ -897,6 +904,7 @@ const noteTree = (function() {
         setParentChildRelation,
         getSelectedNodes,
         sortAlphabetically,
-        noteExists
+        noteExists,
+        getInstanceName
     };
 })();

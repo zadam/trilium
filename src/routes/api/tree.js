@@ -6,6 +6,7 @@ const sql = require('../../services/sql');
 const options = require('../../services/options');
 const utils = require('../../services/utils');
 const auth = require('../../services/auth');
+const config = require('../../services/config');
 const protected_session = require('../../services/protected_session');
 const sync_table = require('../../services/sync_table');
 const wrap = require('express-promise-wrap').wrap;
@@ -41,6 +42,7 @@ router.get('/', auth.checkApiAuth, wrap(async (req, res, next) => {
         AND notes.isDeleted = 0`);
 
     res.send({
+        instanceName: config.General ? config.General.instanceName : null,
         notes: notes,
         hiddenInAutocomplete: hiddenInAutocomplete,
         start_note_path: await options.getOption('start_note_path')
