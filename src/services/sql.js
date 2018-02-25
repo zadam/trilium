@@ -195,6 +195,7 @@ async function doInTransaction(func) {
         await transactionPromise;
     }
 
+    let ret = null;
     const error = new Error(); // to capture correct stack trace in case of exception
 
     transactionActive = true;
@@ -202,7 +203,7 @@ async function doInTransaction(func) {
         try {
             await beginTransaction();
 
-            await func();
+            ret = await func();
 
             await commit();
 
@@ -223,6 +224,8 @@ async function doInTransaction(func) {
     if (transactionActive) {
         await transactionPromise;
     }
+
+    return ret;
 }
 
 async function isDbUpToDate() {

@@ -1,21 +1,15 @@
-const log = require('./log');
 const sql = require('./sql');
 const ScriptContext = require('./script_context');
 
 async function executeScript(dataKey, script, params) {
-    log.info('Executing script: ' + script);
-
     const ctx = new ScriptContext(dataKey);
-
     const paramsStr = getParams(params);
 
-    let ret;
+    return await sql.doInTransaction(async () => execute(ctx, script, paramsStr));
+}
 
-    await sql.doInTransaction(async () => {
-        ret = await (function() { return eval(`const api = this; (${script})(${paramsStr})`); }.call(ctx));
-    });
-
-    return ret;
+async function execute(ctx, script, paramsStr) {
+    return await (function() { return eval(`const api = this; (${script})(${paramsStr})`); }.call(ctx));
 }
 
 const timeouts = {};
@@ -35,15 +29,31 @@ function clearExistingJob(name) {
     }
 }
 
-async function setJob(opts) {
-    clearExistingJob(opts.name);
+async function executeJob(script, params, manualTransactionHandling) {
+    const ctx = new ScriptContext();
+    const paramsStr = getParams(params);
 
-    if (opts.runEveryMs && opts.runEveryMs > 0) {
-        intervals[opts.name] = setInterval(() => executeScript(null, opts.job, opts.params), opts.runEveryMs);
+    if (manualTransactionHandling) {
+        return await execute(ctx, script, paramsStr);
+    }
+    else {
+        return await sql.doInTransaction(async () => execute(ctx, script, paramsStr));
+    }
+}
+
+async function setJob(opts) {
+    const { name, runEveryMs, initialRunAfterMs } = opts;
+
+    clearExistingJob(name);
+
+    const jobFunc = () => executeJob(opts.job, opts.params, opts.manualTransactionHandling);
+
+    if (runEveryMs && runEveryMs > 0) {
+        intervals[name] = setInterval(jobFunc, runEveryMs);
     }
 
-    if (opts.initialRunAfterMs && opts.initialRunAfterMs > 0) {
-        timeouts[opts.name] = setTimeout(() => executeScript(null, opts.job, opts.params), opts.initialRunAfterMs);
+    if (initialRunAfterMs && initialRunAfterMs > 0) {
+        timeouts[name] = setTimeout(jobFunc, initialRunAfterMs);
     }
 }
 

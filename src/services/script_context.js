@@ -1,12 +1,13 @@
 const log = require('./log');
 const protected_session = require('./protected_session');
 const notes = require('./notes');
+const sql = require('./sql');
 const attributes = require('./attributes');
 const date_notes = require('./date_notes');
 const config = require('./config');
 const Repository = require('./repository');
 
-function ScriptContext(noteId, dataKey) {
+function ScriptContext(dataKey) {
     dataKey = protected_session.getDataKey(dataKey);
     const repository = new Repository(dataKey);
 
@@ -65,6 +66,8 @@ function ScriptContext(noteId, dataKey) {
 
     this.getRootCalendarNoteId = date_notes.getRootCalendarNoteId;
     this.getDateNoteId = date_notes.getDateNoteId;
+
+    this.transaction = sql.doInTransaction;
 }
 
 module.exports = ScriptContext;

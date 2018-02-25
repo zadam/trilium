@@ -716,6 +716,9 @@ const noteTree = (function() {
             titlePath = '';
         }
 
+        // https://github.com/zadam/trilium/issues/46
+        // unfortunately not easy to implement because we don't have an easy access to note's isProtected property
+
         const autocompleteItems = [];
 
         for (const childNoteId of parentToChildren[parentNoteId]) {
