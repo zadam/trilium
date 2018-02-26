@@ -83,6 +83,37 @@ async function createNewNote(parentNoteId, noteOpts, dataKey, sourceId) {
     };
 }
 
+async function createNote(parentNoteId, title, content = "", extraOptions = {}) {
+    const note = {
+        title: title,
+        content: extraOptions.json ? JSON.stringify(content, null, '\t') : content,
+        target: 'into',
+        isProtected: extraOptions.isProtected !== undefined ? extraOptions.isProtected : false,
+        type: extraOptions.type,
+        mime: extraOptions.mime
+    };
+
+    if (extraOptions.json) {
+        note.type = "code";
+        note.mime = "application/json";
+    }
+
+    if (!note.type) {
+        note.type = "text";
+        note.mime = "text/html";
+    }
+
+    const {noteId} = await createNewNote(parentNoteId, note, extraOptions.dataKey, extraOptions.sourceId);
+
+    if (extraOptions.attributes) {
+        for (const attrName in extraOptions.attributes) {
+            await attributes.createAttribute(noteId, attrName, extraOptions.attributes[attrName]);
+        }
+    }
+
+    return noteId;
+}
+
 async function protectNoteRecursively(noteId, dataKey, protect, sourceId) {
     const note = await sql.getRow("SELECT * FROM notes WHERE noteId = ?", [noteId]);
 
@@ -307,6 +338,7 @@ async function deleteNote(noteTreeId, sourceId) {
 
 module.exports = {
     createNewNote,
+    createNote,
     updateNote,
     deleteNote,
     protectNoteRecursively

@@ -27,35 +27,10 @@ function ScriptContext(dataKey) {
         return notes.length > 0 ? notes[0] : null;
     };
 
-    this.createNote = async function (parentNoteId, title, content = "", extraOptions = {}) {
-        const note = {
-            title: title,
-            content: extraOptions.json ? JSON.stringify(content, null, '\t') : content,
-            target: 'into',
-            isProtected: extraOptions.isProtected !== undefined ? extraOptions.isProtected : false,
-            type: extraOptions.type,
-            mime: extraOptions.mime
-        };
+    this.createNote = async function(parentNoteId, title, content = "", extraOptions = {}) {
+        extraOptions.dataKey = dataKey;
 
-        if (extraOptions.json) {
-            note.type = "code";
-            note.mime = "application/json";
-        }
-
-        if (!note.type) {
-            note.type = "text";
-            note.mime = "text/html";
-        }
-
-        const noteId = (await notes.createNewNote(parentNoteId, note, dataKey)).noteId;
-
-        if (extraOptions.attributes) {
-            for (const attrName in extraOptions.attributes) {
-                await attributes.createAttribute(noteId, attrName, extraOptions.attributes[attrName]);
-            }
-        }
-
-        return noteId;
+        notes.createNote(parentNoteId, title, content, extraOptions);
     };
 
     this.createAttribute = attributes.createAttribute;

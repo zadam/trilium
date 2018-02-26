@@ -226,10 +226,10 @@ if (isElectron()) {
 }
 
 function uploadAttachment() {
-    $("#file-upload").trigger('click');
+    $("#attachment-upload").trigger('click');
 }
 
-$("#file-upload").change(async function() {
+$("#attachment-upload").change(async function() {
     const formData = new FormData();
     formData.append('upload', this.files[0]);
 

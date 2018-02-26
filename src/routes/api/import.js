@@ -2,104 +2,128 @@
 
 const express = require('express');
 const router = express.Router();
-const fs = require('fs');
 const sql = require('../../services/sql');
-const data_dir = require('../../services/data_dir');
-const utils = require('../../services/utils');
-const sync_table = require('../../services/sync_table');
 const auth = require('../../services/auth');
+const notes = require('../../services/notes');
 const wrap = require('express-promise-wrap').wrap;
+const tar = require('tar-stream');
+const multer = require('multer')();
+const stream = require('stream');
+const path = require('path');
 
-router.get('/:directory/to/:parentNoteId', auth.checkApiAuth, wrap(async (req, res, next) => {
-    const directory = req.params.directory.replace(/[^0-9a-zA-Z_-]/gi, '');
+function getFileName(name) {
+    let key;
+
+    if (name.endsWith(".dat")) {
+        key = "data";
+        name = name.substr(0, name.length - 4);
+    }
+    else if (name.endsWith((".meta"))) {
+        key = "meta";
+        name = name.substr(0, name.length - 5);
+    }
+    else {
+        throw new Error("Unknown file type in import archive: " + name);
+    }
+    return {name, key};
+}
+
+async function parseImportFile(file) {
+    const fileMap = {};
+    const files = [];
+
+    const extract = tar.extract();
+
+    extract.on('entry', function(header, stream, next) {
+        let {name, key} = getFileName(header.name);
+
+        let file = fileMap[name];
+
+        if (!file) {
+            file = fileMap[name] = {
+                children: []
+            };
+
+            let parentFileName = path.dirname(header.name);
+
+            if (parentFileName && parentFileName !== '.') {
+                fileMap[parentFileName].children.push(file);
+            }
+            else {
+                files.push(file);
+            }
+        }
+
+        const chunks = [];
+
+        stream.on("data", function (chunk) {
+            chunks.push(chunk);
+        });
+
+        // header is the tar header
+        // stream is the content body (might be an empty stream)
+        // call next when you are done with this entry
+
+        stream.on('end', function() {
+            file[key] = Buffer.concat(chunks);
+
+            if (key === "meta") {
+                file[key] = JSON.parse(file[key].toString("UTF-8"));
+            }
+
+            next(); // ready for next entry
+        });
+
+        stream.resume(); // just auto drain the stream
+    });
+
+    return new Promise(resolve => {
+        extract.on('finish', function() {
+            resolve(files);
+        });
+
+        const bufferStream = new stream.PassThrough();
+        bufferStream.end(file.buffer);
+
+        bufferStream.pipe(extract);
+    });
+}
+
+router.post('/:parentNoteId', auth.checkApiAuthOrElectron, multer.single('upload'), wrap(async (req, res, next) => {
+    const sourceId = req.headers.source_id;
     const parentNoteId = req.params.parentNoteId;
+    const file = req.file;
 
-    const dir = data_dir.EXPORT_DIR + '/' + directory;
+    const note = await sql.getRow("SELECT * FROM notes WHERE noteId = ?", [parentNoteId]);
 
-    await sql.doInTransaction(async () => await importNotes(dir, parentNoteId));
+    if (!note) {
+        return res.status(404).send(`Note ${parentNoteId} doesn't exist.`);
+    }
+
+    const files = await parseImportFile(file);
+
+    await sql.doInTransaction(async () => {
+        await importNotes(files, parentNoteId, sourceId);
+    });
 
     res.send({});
 }));
 
-async function importNotes(dir, parentNoteId) {
-    const parent = await sql.getRow("SELECT * FROM notes WHERE noteId = ?", [parentNoteId]);
-
-    if (!parent) {
-        return;
-    }
-
-    const fileList = fs.readdirSync(dir);
-
-    for (const file of fileList) {
-        const path = dir + '/' + file;
-
-        if (fs.lstatSync(path).isDirectory()) {
-            continue;
+async function importNotes(files, parentNoteId, sourceId) {
+    for (const file of files) {
+        if (file.meta.type !== 'file') {
+            file.data = file.data.toString("UTF-8");
         }
 
-        if (!file.endsWith('.html')) {
-            continue;
-        }
-
-        const fileNameWithoutExt = file.substr(0, file.length - 5);
-
-        let noteTitle;
-        let notePos;
-
-        const match = fileNameWithoutExt.match(/^([0-9]{4})-(.*)$/);
-        if (match) {
-            notePos = parseInt(match[1]);
-            noteTitle = match[2];
-        }
-        else {
-            let maxPos = await sql.getValue("SELECT MAX(notePosition) FROM note_tree WHERE parentNoteId = ? AND isDeleted = 0", [parentNoteId]);
-            if (maxPos) {
-                notePos = maxPos + 1;
-            }
-            else {
-                notePos = 0;
-            }
-
-            noteTitle = fileNameWithoutExt;
-        }
-
-        const noteText = fs.readFileSync(path, "utf8");
-
-        const noteId = utils.newNoteId();
-        const noteTreeId = utils.newNoteRevisionId();
-
-        const now = utils.nowDate();
-
-        await sql.insert('note_tree', {
-            noteTreeId: noteTreeId,
-            noteId: noteId,
-            parentNoteId: parentNoteId,
-            notePosition: notePos,
-            isExpanded: 0,
-            isDeleted: 0,
-            dateModified: now
+        const noteId = await notes.createNote(parentNoteId, file.meta.title, file.data, {
+            type: file.meta.type,
+            mime: file.meta.mime,
+            attributes: file.meta.attributes,
+            sourceId: sourceId
         });
 
-        await sync_table.addNoteTreeSync(noteTreeId);
-
-        await sql.insert('notes', {
-            noteId: noteId,
-            title: noteTitle,
-            content: noteText,
-            isDeleted: 0,
-            isProtected: 0,
-            type: 'text',
-            mime: 'text/html',
-            dateCreated: now,
-            dateModified: now
-        });
-
-        await sync_table.addNoteSync(noteId);
-
-        const noteDir = dir + '/' + fileNameWithoutExt;
-
-        if (fs.existsSync(noteDir) && fs.lstatSync(noteDir).isDirectory()) {
-            await importNotes(noteDir, noteId);
+        if (file.children.length > 0) {
+            await importNotes(file.children, noteId, sourceId);
         }
     }
 }

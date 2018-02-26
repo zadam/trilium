@@ -57,6 +57,7 @@
     "session-file-store": "^1.1.2",
     "simple-node-logger": "^0.93.30",
     "sqlite": "^2.9.0",
+    "tar-stream": "^1.5.5",
     "unescape": "^1.0.1",
     "ws": "^3.3.2"
   },

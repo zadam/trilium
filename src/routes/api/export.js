@@ -31,6 +31,10 @@ async function exportNote(noteTreeId, directory, pack) {
     const noteTree = await sql.getRow("SELECT * FROM note_tree WHERE noteTreeId = ?", [noteTreeId]);
     const note = await sql.getRow("SELECT * FROM notes WHERE noteId = ?", [noteTree.noteId]);
 
+    if (note.isProtected) {
+        return;
+    }
+
     const content = note.type === 'text' ? html.prettyPrint(note.content, {indent_size: 2}) : note.content;
 
     const childFileName = directory + sanitize(note.title);
