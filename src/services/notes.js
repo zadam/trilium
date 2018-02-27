@@ -84,6 +84,9 @@ async function createNewNote(parentNoteId, noteOpts, dataKey, sourceId) {
 }
 
 async function createNote(parentNoteId, title, content = "", extraOptions = {}) {
+    if (!parentNoteId) throw new Error("Empty parentNoteId");
+    if (!title) throw new Error("Empty title");
+
     const note = {
         title: title,
         content: extraOptions.json ? JSON.stringify(content, null, '\t') : content,

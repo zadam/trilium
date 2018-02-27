@@ -35,17 +35,20 @@ async function exportNote(noteTreeId, directory, pack) {
         return;
     }
 
-    const content = note.type === 'text' ? html.prettyPrint(note.content, {indent_size: 2}) : note.content;
-
-    const childFileName = directory + sanitize(note.title);
-
-    console.log(childFileName);
-
-    pack.entry({ name: childFileName + ".dat", size: content.length }, content);
-
     const metadata = await getMetadata(note);
 
-    pack.entry({ name: childFileName + ".meta", size: metadata.length }, metadata);
+    if ('exclude_from_export' in metadata.attributes) {
+        return;
+    }
+
+    const metadataJson = JSON.stringify(metadata, null, '\t');
+    const childFileName = directory + sanitize(note.title);
+
+    pack.entry({ name: childFileName + ".meta", size: metadataJson.length }, metadataJson);
+
+    const content = note.type === 'text' ? html.prettyPrint(note.content, {indent_size: 2}) : note.content;
+
+    pack.entry({ name: childFileName + ".dat", size: content.length }, content);
 
     const children = await sql.getRows("SELECT * FROM note_tree WHERE parentNoteId = ? AND isDeleted = 0", [note.noteId]);
 
@@ -59,14 +62,12 @@ async function exportNote(noteTreeId, directory, pack) {
 }
 
 async function getMetadata(note) {
-    const meta = {
+    return {
         title: note.title,
         type: note.type,
         mime: note.mime,
         attributes: await attributes.getNoteAttributeMap(note.noteId)
     };
-
-    return JSON.stringify(meta, null, '\t')
 }
 
 module.exports = router;

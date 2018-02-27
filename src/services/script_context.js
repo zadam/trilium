@@ -2,14 +2,23 @@ const log = require('./log');
 const protected_session = require('./protected_session');
 const notes = require('./notes');
 const sql = require('./sql');
+const utils = require('./utils');
 const attributes = require('./attributes');
 const date_notes = require('./date_notes');
 const config = require('./config');
 const Repository = require('./repository');
+const axios = require('axios');
 
 function ScriptContext(dataKey) {
     dataKey = protected_session.getDataKey(dataKey);
     const repository = new Repository(dataKey);
+
+    this.axios = axios;
+
+    this.utils = {
+        unescapeHtml: utils.unescapeHtml,
+        isoDateTimeStr: utils.dateStr
+    };
 
     this.getInstanceName = () => config.General ? config.General.instanceName : null;
 
@@ -30,7 +39,7 @@ function ScriptContext(dataKey) {
     this.createNote = async function(parentNoteId, title, content = "", extraOptions = {}) {
         extraOptions.dataKey = dataKey;
 
-        notes.createNote(parentNoteId, title, content, extraOptions);
+        return await notes.createNote(parentNoteId, title, content, extraOptions);
     };
 
     this.createAttribute = attributes.createAttribute;

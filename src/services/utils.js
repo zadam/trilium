@@ -2,6 +2,7 @@
 
 const crypto = require('crypto');
 const randtoken = require('rand-token').generator({source: 'crypto'});
+const unescape = require('unescape');
 
 function newNoteId() {
     return randomString(12);
@@ -129,6 +130,10 @@ async function stopWatch(what, func) {
     return ret;
 }
 
+function unescapeHtml(str) {
+    return unescape(str);
+}
+
 module.exports = {
     randomSecureToken,
     randomString,
@@ -153,5 +158,6 @@ module.exports = {
     getDateTimeForFile,
     sanitizeSql,
     assertArguments,
-    stopWatch
+    stopWatch,
+    unescapeHtml
 };
