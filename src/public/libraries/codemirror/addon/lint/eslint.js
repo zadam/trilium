@@ -39,8 +39,7 @@
         const errors = new eslint().verify(text, {
             root: true,
             parserOptions: {
-                ecmaVersion: 2017,
-                sourceType: 'module'
+                ecmaVersion: 2017
             },
             extends: ['eslint:recommended', 'airbnb-base'],
             env: {
@@ -49,11 +48,11 @@
             rules: {
                 'import/no-unresolved': 'off',
                 'func-names': 'off',
-                'comma-dangle': ['error'],
+                'comma-dangle': ['warn'],
                 'padded-blocks': 'off',
                 'linebreak-style': 'off',
                 'class-methods-use-this': 'off',
-                'no-unused-vars': ['error', { vars: 'local', args: 'after-used' }],
+                'no-unused-vars': ['warn', { vars: 'local', args: 'after-used' }],
                 'no-nested-ternary': 'off',
                 'no-underscore-dangle': ['error', {'allow': ['_super', '_lookupFactory']}]
             }
