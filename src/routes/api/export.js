@@ -10,7 +10,7 @@ const wrap = require('express-promise-wrap').wrap;
 const tar = require('tar-stream');
 const sanitize = require("sanitize-filename");
 
-router.get('/:noteId/', auth.checkApiAuth, wrap(async (req, res, next) => {
+router.get('/:noteId/', auth.checkApiAuthOrElectron, wrap(async (req, res, next) => {
     const noteId = req.params.noteId;
 
     const noteTreeId = await sql.getValue('SELECT noteTreeId FROM note_tree WHERE noteId = ?', [noteId]);

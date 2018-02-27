@@ -1,7 +1,8 @@
 "use strict";
 
 function exportSubTree(noteId) {
-    const url = getHost() + "/api/export/" + noteId;
+    const url = getHost() + "/api/export/" + noteId + "?protectedSessionId="
+        + encodeURIComponent(protected_session.getProtectedSessionId());
 
     download(url);
 }
