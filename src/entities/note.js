@@ -24,7 +24,8 @@ class Note extends Entity {
     }
 
     isJavaScript() {
-        return this.type === "code" && this.mime === "application/javascript";
+        return (this.type === "code" || this.type === "file")
+            && (this.mime === "application/javascript" || this.mime === "application/x-javascript");
     }
 
     async getAttributes() {

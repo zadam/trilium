@@ -63,8 +63,10 @@ async function getSubTreeScripts(parentId, includedNoteIds, repository, isJavaSc
                                       SELECT notes.* 
                                       FROM notes JOIN note_tree USING(noteId)
                                       WHERE note_tree.isDeleted = 0 AND notes.isDeleted = 0
-                                           AND note_tree.parentNoteId = ? AND notes.type = 'code'
-                                           AND (notes.mime = 'application/javascript' OR notes.mime = 'text/html')`, [parentId]);
+                                           AND note_tree.parentNoteId = ? AND (notes.type = 'code' OR notes.type = 'file')
+                                           AND (notes.mime = 'application/javascript' 
+                                                OR notes.mime = 'application/x-javascript' 
+                                                OR notes.mime = 'text/html')`, [parentId]);
 
     let script = "\r\n";
 
@@ -77,7 +79,7 @@ async function getSubTreeScripts(parentId, includedNoteIds, repository, isJavaSc
 
         script += await getSubTreeScripts(child.noteId, includedNoteIds, repository);
 
-        if (!isJavaScript && child.mime === 'application/javascript') {
+        if (!isJavaScript && child.isJavaScript()) {
             child.content = '<script>' + child.content + '</script>';
         }
 
