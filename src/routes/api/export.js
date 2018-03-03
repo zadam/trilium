@@ -3,21 +3,22 @@
 const express = require('express');
 const router = express.Router();
 const sql = require('../../services/sql');
-const attributes = require('../../services/attributes');
 const html = require('html');
 const auth = require('../../services/auth');
 const wrap = require('express-promise-wrap').wrap;
 const tar = require('tar-stream');
 const sanitize = require("sanitize-filename");
+const Repository = require("../../services/repository");
 
 router.get('/:noteId/', auth.checkApiAuthOrElectron, wrap(async (req, res, next) => {
     const noteId = req.params.noteId;
+    const repo = new Repository(req);
 
     const noteTreeId = await sql.getValue('SELECT noteTreeId FROM note_tree WHERE noteId = ?', [noteId]);
 
     const pack = tar.pack();
 
-    const name = await exportNote(noteTreeId, '', pack);
+    const name = await exportNote(noteTreeId, '', pack, repo);
 
     pack.finalize();
 
@@ -27,9 +28,9 @@ router.get('/:noteId/', auth.checkApiAuthOrElectron, wrap(async (req, res, next)
     pack.pipe(res);
 }));
 
-async function exportNote(noteTreeId, directory, pack) {
+async function exportNote(noteTreeId, directory, pack, repo) {
     const noteTree = await sql.getRow("SELECT * FROM note_tree WHERE noteTreeId = ?", [noteTreeId]);
-    const note = await sql.getRow("SELECT * FROM notes WHERE noteId = ?", [noteTree.noteId]);
+    const note = await repo.getEntity("SELECT notes.* FROM notes WHERE noteId = ?", [noteTree.noteId]);
 
     if (note.isProtected) {
         return;
@@ -54,7 +55,7 @@ async function exportNote(noteTreeId, directory, pack) {
 
     if (children.length > 0) {
         for (const child of children) {
-            await exportNote(child.noteTreeId, childFileName + "/", pack);
+            await exportNote(child.noteTreeId, childFileName + "/", pack, repo);
         }
     }
 
@@ -66,7 +67,12 @@ async function getMetadata(note) {
         title: note.title,
         type: note.type,
         mime: note.mime,
-        attributes: await attributes.getNoteAttributeMap(note.noteId)
+        attributes: (await note.getAttributes()).map(attr => {
+            return {
+                name: attr.name,
+                value: attr.value
+            };
+        })
     };
 }
 

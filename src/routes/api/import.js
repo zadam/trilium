@@ -4,6 +4,7 @@ const express = require('express');
 const router = express.Router();
 const sql = require('../../services/sql');
 const auth = require('../../services/auth');
+const attributes = require('../../services/attributes');
 const notes = require('../../services/notes');
 const wrap = require('express-promise-wrap').wrap;
 const tar = require('tar-stream');
@@ -118,9 +119,12 @@ async function importNotes(files, parentNoteId, sourceId) {
         const noteId = await notes.createNote(parentNoteId, file.meta.title, file.data, {
             type: file.meta.type,
             mime: file.meta.mime,
-            attributes: file.meta.attributes,
             sourceId: sourceId
         });
+
+        for (const attr of file.meta.attributes) {
+            await attributes.createAttribute(noteId, attr.name, attr.value);
+        }
 
         if (file.children.length > 0) {
             await importNotes(file.children, noteId, sourceId);

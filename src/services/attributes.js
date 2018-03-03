@@ -62,12 +62,14 @@ async function createAttribute(noteId, name, value = "", sourceId = null) {
 
     const now = utils.nowDate();
     const attributeId = utils.newAttributeId();
+    const position = 1 + await sql.getValue(`SELECT COALESCE(MAX(position), 0) FROM attributes WHERE noteId = ?`, [noteId]);
 
     await sql.insert("attributes", {
         attributeId: attributeId,
         noteId: noteId,
         name: name,
         value: value,
+        position: position,
         dateModified: now,
         dateCreated: now,
         isDeleted: false
