@@ -19,7 +19,7 @@ async function runNotesWithAttribute(runAttrValue) {
     }
 }
 
-setTimeout(() => runNotesWithAttribute('on_startup'), 10 * 1000);
+setTimeout(() => runNotesWithAttribute('backend_startup'), 10 * 1000);
 
 setInterval(() => runNotesWithAttribute('hourly'), 3600 * 1000);
 

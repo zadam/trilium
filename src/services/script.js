@@ -6,11 +6,10 @@ async function executeNote(note) {
         return;
     }
 
-    const ctx = new ScriptContext();
+    const manualTransactionHandling = (await note.getAttributeMap()).manual_transaction_handling !== undefined;
+    const noteScript = await getNoteScript(note);
 
-    return await sql.doInTransaction(async () => {
-        return await (function() { return eval(`const api = this; (async function() {${note.content}\n\r})()`); }.call(ctx));
-    });
+    return await executeJob(noteScript, [], manualTransactionHandling);
 }
 
 async function executeScript(dataKey, script, params) {
@@ -84,8 +83,38 @@ function getParams(params) {
     }).join(",");
 }
 
+async function getNoteScript(note) {
+    const subTreeScripts = await getSubTreeScripts(note, [note.noteId]);
+
+    // last \r\n is necessary if script contains line comment on its last line
+    return "async function() {" + subTreeScripts + note.content + "\r\n}";
+}
+
+/**
+ * @param includedNoteIds - if multiple child note scripts reference same dependency (child note),
+ *                          it will be included just once
+ */
+async function getSubTreeScripts(parent, includedNoteIds) {
+    let script = "\r\n";
+
+    for (const child of await parent.getChildren()) {
+        if (!child.isJavaScript() || includedNoteIds.includes(child.noteId)) {
+            continue;
+        }
+
+        includedNoteIds.push(child.noteId);
+
+        script += await getSubTreeScripts(child.noteId, includedNoteIds);
+
+        script += child.content + "\r\n";
+    }
+
+    return script;
+}
+
 module.exports = {
     executeNote,
     executeScript,
-    setJob
+    setJob,
+    getNoteScript
 };

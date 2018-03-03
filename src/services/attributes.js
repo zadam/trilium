@@ -11,7 +11,8 @@ const BUILTIN_ATTRIBUTES = [
     'calendar_root',
     'hide_in_autocomplete',
     'exclude_from_export',
-    'run'
+    'run',
+    'manual_transaction_handling'
 ];
 
 async function getNoteAttributeMap(noteId) {

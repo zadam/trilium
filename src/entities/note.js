@@ -32,6 +32,17 @@ class Note extends Entity {
         return this.repository.getEntities("SELECT * FROM attributes WHERE noteId = ? AND isDeleted = 0", [this.noteId]);
     }
 
+    // WARNING: this doesn't take into account the possibility to have multi-valued attributes!
+    async getAttributeMap() {
+        const map = {};
+
+        for (const attr of await this.getAttributes()) {
+            map[attr.name] = attr.value;
+        }
+
+        return map;
+    }
+
     async getAttribute(name) {
         return this.repository.getEntity("SELECT * FROM attributes WHERE noteId = ? AND name = ?", [this.noteId, name]);
     }
