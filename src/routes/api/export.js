@@ -64,6 +64,7 @@ async function exportNote(noteTreeId, directory, pack, repo) {
 
 async function getMetadata(note) {
     return {
+        version: 1,
         title: note.title,
         type: note.type,
         mime: note.mime,

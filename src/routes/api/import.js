@@ -112,6 +112,10 @@ router.post('/:parentNoteId', auth.checkApiAuthOrElectron, multer.single('upload
 
 async function importNotes(files, parentNoteId, sourceId) {
     for (const file of files) {
+        if (file.meta.version !== 1) {
+            throw new Error("Can't read meta data version " + file.meta.version);
+        }
+
         if (file.meta.type !== 'file') {
             file.data = file.data.toString("UTF-8");
         }
