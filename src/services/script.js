@@ -1,6 +1,18 @@
 const sql = require('./sql');
 const ScriptContext = require('./script_context');
 
+async function executeNote(note) {
+    if (note.isProtected || !note.isJavaScript()) {
+        return;
+    }
+
+    const ctx = new ScriptContext();
+
+    return await sql.doInTransaction(async () => {
+        return await (function() { return eval(`const api = this; (async function() {${note.content}\n\r})()`); }.call(ctx));
+    });
+}
+
 async function executeScript(dataKey, script, params) {
     const ctx = new ScriptContext(dataKey);
     const paramsStr = getParams(params);
@@ -73,6 +85,7 @@ function getParams(params) {
 }
 
 module.exports = {
+    executeNote,
     executeScript,
     setJob
 };

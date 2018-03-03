@@ -73,6 +73,8 @@ require('./services/backup');
 // trigger consistency checks timer
 require('./services/consistency_checks');
 
+require('./services/scheduler');
+
 module.exports = {
     app,
     sessionParser

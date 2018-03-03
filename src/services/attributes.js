@@ -10,7 +10,8 @@ const BUILTIN_ATTRIBUTES = [
     'disable_versioning',
     'calendar_root',
     'hide_in_autocomplete',
-    'exclude_from_export'
+    'exclude_from_export',
+    'run'
 ];
 
 async function getNoteAttributeMap(noteId) {
