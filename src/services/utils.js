@@ -134,6 +134,18 @@ function unescapeHtml(str) {
     return unescape(str);
 }
 
+function toObject(array, fn) {
+    const obj = {};
+
+    for (const item of array) {
+        const ret = fn(item);
+
+        obj[ret[0]] = ret[1];
+    }
+
+    return obj;
+}
+
 module.exports = {
     randomSecureToken,
     randomString,
@@ -159,5 +171,6 @@ module.exports = {
     sanitizeSql,
     assertArguments,
     stopWatch,
-    unescapeHtml
+    unescapeHtml,
+    toObject
 };

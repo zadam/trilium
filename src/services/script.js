@@ -8,12 +8,12 @@ async function executeNote(note) {
 
     const manualTransactionHandling = (await note.getAttributeMap()).manual_transaction_handling !== undefined;
 
-    const modules = await getModules([note], []);
+    const bundle = await getScriptBundle(note);
 
     // last \r\n is necessary if script contains line comment on its last line
-    const script = "async function() {\r\n" + modules.script + "\r\n}";
+    const script = "async function() {\r\n" + bundle.script + "\r\n}";
 
-    const ctx = new ScriptContext(null, note, module.allModules);
+    const ctx = new ScriptContext(null, note, bundle.allNotes);
 
     if (manualTransactionHandling) {
         return await execute(ctx, script, '');
@@ -31,8 +31,6 @@ async function executeScript(dataKey, script, params) {
 }
 
 async function execute(ctx, script, paramsStr) {
-    console.log(`const api = this; (${script})(${paramsStr})`);
-
     return await (function() { return eval(`const api = this;\r\n(${script})(${paramsStr})`); }.call(ctx));
 }
 
@@ -107,47 +105,45 @@ async function getNoteScript(note) {
 
 }
 
-/**
- * @param includedNoteIds - if multiple child note scripts reference same dependency (child note),
- *                          it will be included just once
- */
-async function getModules(children, includedNoteIds) {
-    const modules = [];
-    let allModules = [];
-    let script = '';
-
-    for (const child of children) {
-        if (!child.isJavaScript()) {
-            continue;
-        }
-
-        modules.push(child);
-
-        if (includedNoteIds.includes(child.noteId)) {
-            continue;
-        }
-
-        includedNoteIds.push(child.noteId);
-
-        const children = await getModules(await child.getChildren(), includedNoteIds);
-
-        allModules = allModules.concat(children.allModules);
-
-        script += children.script;
-
-        script += `
-api.__modules['${child.noteId}'] = {};
-await (async function(module, api, startNote, currentNote` + (children.modules.length > 0 ? ', ' : '') +
-        children.modules.map(child => child.title).join(', ') + `) {
-${child.content}
-})(api.__modules['${child.noteId}'], api, api.__startNote, api.__notes['${child.noteId}']` + (children.modules.length > 0 ? ', ' : '') +
-        children.modules.map(child => `api.__modules['${child.noteId}'].exports`).join(', ') + `);
-`;
+async function getScriptBundle(note, includedNoteIds = []) {
+    if (!note.isJavaScript()) {
+        return;
     }
 
-    allModules = allModules.concat(modules);
+    const bundle = {
+        note: note,
+        script: '',
+        allNotes: [note]
+    };
 
-    return { script, modules, allModules };
+    if (includedNoteIds.includes(note.noteId)) {
+        return bundle;
+    }
+
+    includedNoteIds.push(note.noteId);
+
+    const modules = [];
+
+    for (const child of await note.getChildren()) {
+        const childBundle = await getScriptBundle(child, includedNoteIds);
+
+        if (childBundle) {
+            modules.push(childBundle.note);
+            bundle.script += childBundle.script;
+            bundle.allNotes = bundle.allNotes.concat(childBundle.allNotes);
+        }
+    }
+
+    bundle.script += `
+api.__modules['${note.noteId}'] = {};
+await (async function(module, api, startNote, currentNote` + (modules.length > 0 ? ', ' : '') +
+        modules.map(child => child.title).join(', ') + `) {
+${note.content}
+})(api.__modules['${note.noteId}'], api, api.__startNote, api.__notes['${note.noteId}']` + (modules.length > 0 ? ', ' : '') +
+        modules.map(mod => `api.__modules['${mod.noteId}'].exports`).join(', ') + `);
+`;
+
+    return bundle;
 }
 
 module.exports = {

@@ -9,20 +9,15 @@ const config = require('./config');
 const Repository = require('./repository');
 const axios = require('axios');
 
-function ScriptContext(dataKey, note, allNotes) {
+function ScriptContext(dataKey, startNote, allNotes) {
     dataKey = protected_session.getDataKey(dataKey);
     const repository = new Repository(dataKey);
 
-    this.axios = axios;
-
-    this.__startNote = note;
-    this.__notes = {};
-
-    if (allNotes) {
-        allNotes.forEach(note => this.__notes[note.noteId] = note);
-    }
-
+    this.__startNote = startNote;
+    this.__notes = utils.toObject(allNotes, note => [note.noteId, note]);
     this.__modules = {};
+
+    this.axios = axios;
 
     this.utils = {
         unescapeHtml: utils.unescapeHtml,
