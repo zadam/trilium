@@ -1,4 +1,4 @@
-const api = (function() {
+function Api() {
     const $pluginButtons = $("#plugin-buttons");
 
     async function activateNote(notePath) {
@@ -14,8 +14,10 @@ const api = (function() {
     }
 
     return {
+        __modules: {},
+        __notes: {},
         addButtonToToolbar,
         activateNote,
         getInstanceName: noteTree.getInstanceName
     }
-})();
+}

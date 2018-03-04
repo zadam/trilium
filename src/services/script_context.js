@@ -31,7 +31,7 @@ function ScriptContext(dataKey, startNote, allNotes) {
     };
 
     this.getNotesWithAttribute = async function (attrName, attrValue) {
-        return await attributes.getNotesWithAttribute(dataKey, attrName, attrValue);
+        return await attributes.getNotesWithAttribute(repository, attrName, attrValue);
     };
 
     this.getNoteWithAttribute = async function (attrName, attrValue) {

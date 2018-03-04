@@ -101,10 +101,6 @@ async function getRenderScript(note) {
     return "async function() {" + subTreeScripts + note.content + "\r\n}";
 }
 
-async function getNoteScript(note) {
-
-}
-
 async function getScriptBundle(note, includedNoteIds = []) {
     if (!note.isJavaScript()) {
         return;
@@ -150,6 +146,6 @@ module.exports = {
     executeNote,
     executeScript,
     setJob,
-    getNoteScript,
+    getScriptBundle,
     getRenderScript
 };

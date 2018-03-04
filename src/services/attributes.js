@@ -3,10 +3,10 @@
 const sql = require('./sql');
 const utils = require('./utils');
 const sync_table = require('./sync_table');
-const Repository = require('./repository');
 
 const BUILTIN_ATTRIBUTES = [
-    'run_on_startup',
+    'frontend_startup',
+    'backend_startup',
     'disable_versioning',
     'calendar_root',
     'hide_in_autocomplete',
@@ -27,9 +27,7 @@ async function getNoteIdWithAttribute(name, value) {
                 AND attributes.value = ?`, [name, value]);
 }
 
-async function getNotesWithAttribute(dataKey, name, value) {
-    const repository = new Repository(dataKey);
-
+async function getNotesWithAttribute(repository, name, value) {
     let notes;
 
     if (value !== undefined) {
@@ -44,8 +42,8 @@ async function getNotesWithAttribute(dataKey, name, value) {
     return notes;
 }
 
-async function getNoteWithAttribute(dataKey, name, value) {
-    const notes = getNotesWithAttribute(dataKey, name, value);
+async function getNoteWithAttribute(repository, name, value) {
+    const notes = getNotesWithAttribute(repository, name, value);
 
     return notes.length > 0 ? notes[0] : null;
 }

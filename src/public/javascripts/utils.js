@@ -116,7 +116,16 @@ async function stopWatch(what, func) {
 }
 
 function executeScript(script) {
-    eval(script);
+    const completeScript = `
+(async function() {
+    const api = Api();
+    
+    ${script}
+})();`;
+
+    console.log(completeScript);
+
+    eval(completeScript);
 }
 
 function formatValueWithWhitespace(val) {

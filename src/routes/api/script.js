@@ -23,15 +23,15 @@ router.post('/job', auth.checkApiAuth, wrap(async (req, res, next) => {
 }));
 
 router.get('/startup', auth.checkApiAuth, wrap(async (req, res, next) => {
-    const noteIds = await attributes.getNoteIdsWithAttribute("run", "frontend_startup");
     const repository = new Repository(req);
+    const notes = await attributes.getNotesWithAttribute(repository, "run", "frontend_startup");
 
     const scripts = [];
 
-    for (const noteId of noteIds) {
-        const note = await repository.getNote(noteId);
+    for (const note of notes) {
+        const bundle = await script.getScriptBundle(note);
 
-        scripts.push(await script.getNoteScript(note));
+        scripts.push(bundle.script);
     }
 
     res.send(scripts);
@@ -40,8 +40,9 @@ router.get('/startup', auth.checkApiAuth, wrap(async (req, res, next) => {
 router.get('/subtree/:noteId', auth.checkApiAuth, wrap(async (req, res, next) => {
     const repository = new Repository(req);
     const note = await repository.getNote(req.params.noteId);
+    const bundle = await script.getScriptBundle(note);
 
-    res.send(await script.getNoteScript(note, repository));
+    res.send(bundle.script);
 }));
 
 router.get('/render/:noteId', auth.checkApiAuth, wrap(async (req, res, next) => {
