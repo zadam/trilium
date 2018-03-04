@@ -217,7 +217,7 @@ const noteEditor = (function() {
         if (currentNote.detail.type === 'render') {
             $noteDetailRender.show();
 
-            const subTree = await server.get('script/subtree/' + getCurrentNoteId());
+            const subTree = await server.get('script/render/' + getCurrentNoteId());
 
             $noteDetailRender.html(subTree);
         }

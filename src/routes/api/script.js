@@ -44,4 +44,11 @@ router.get('/subtree/:noteId', auth.checkApiAuth, wrap(async (req, res, next) =>
     res.send(await script.getNoteScript(note, repository));
 }));
 
+router.get('/render/:noteId', auth.checkApiAuth, wrap(async (req, res, next) => {
+    const repository = new Repository(req);
+    const note = await repository.getNote(req.params.noteId);
+
+    res.send(await script.getRenderScript(note, repository));
+}));
+
 module.exports = router;

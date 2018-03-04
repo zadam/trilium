@@ -7,9 +7,20 @@ async function executeNote(note) {
     }
 
     const manualTransactionHandling = (await note.getAttributeMap()).manual_transaction_handling !== undefined;
-    const noteScript = await getNoteScript(note);
 
-    return await executeJob(noteScript, [], manualTransactionHandling);
+    const modules = await getModules([note], []);
+
+    // last \r\n is necessary if script contains line comment on its last line
+    const script = "async function() {\r\n" + modules.script + "\r\n}";
+
+    const ctx = new ScriptContext(null, note, module.allModules);
+
+    if (manualTransactionHandling) {
+        return await execute(ctx, script, '');
+    }
+    else {
+        return await sql.doInTransaction(async () => execute(ctx, script, ''));
+    }
 }
 
 async function executeScript(dataKey, script, params) {
@@ -20,7 +31,9 @@ async function executeScript(dataKey, script, params) {
 }
 
 async function execute(ctx, script, paramsStr) {
-    return await (function() { return eval(`const api = this; (${script})(${paramsStr})`); }.call(ctx));
+    console.log(`const api = this; (${script})(${paramsStr})`);
+
+    return await (function() { return eval(`const api = this;\r\n(${script})(${paramsStr})`); }.call(ctx));
 }
 
 const timeouts = {};
@@ -83,38 +96,64 @@ function getParams(params) {
     }).join(",");
 }
 
-async function getNoteScript(note) {
-    const subTreeScripts = await getSubTreeScripts(note, [note.noteId]);
+async function getRenderScript(note) {
+    const subTreeScripts = await getModules(note, [note.noteId]);
 
     // last \r\n is necessary if script contains line comment on its last line
     return "async function() {" + subTreeScripts + note.content + "\r\n}";
+}
+
+async function getNoteScript(note) {
+
 }
 
 /**
  * @param includedNoteIds - if multiple child note scripts reference same dependency (child note),
  *                          it will be included just once
  */
-async function getSubTreeScripts(parent, includedNoteIds) {
-    let script = "\r\n";
+async function getModules(children, includedNoteIds) {
+    const modules = [];
+    let allModules = [];
+    let script = '';
 
-    for (const child of await parent.getChildren()) {
-        if (!child.isJavaScript() || includedNoteIds.includes(child.noteId)) {
+    for (const child of children) {
+        if (!child.isJavaScript()) {
+            continue;
+        }
+
+        modules.push(child);
+
+        if (includedNoteIds.includes(child.noteId)) {
             continue;
         }
 
         includedNoteIds.push(child.noteId);
 
-        script += await getSubTreeScripts(child.noteId, includedNoteIds);
+        const children = await getModules(await child.getChildren(), includedNoteIds);
 
-        script += child.content + "\r\n";
+        allModules = allModules.concat(children.allModules);
+
+        script += children.script;
+
+        script += `
+api.__modules['${child.noteId}'] = {};
+await (async function(module, api, startNote, currentNote` + (children.modules.length > 0 ? ', ' : '') +
+        children.modules.map(child => child.title).join(', ') + `) {
+${child.content}
+})(api.__modules['${child.noteId}'], api, api.__startNote, api.__notes['${child.noteId}']` + (children.modules.length > 0 ? ', ' : '') +
+        children.modules.map(child => `api.__modules['${child.noteId}'].exports`).join(', ') + `);
+`;
     }
 
-    return script;
+    allModules = allModules.concat(modules);
+
+    return { script, modules, allModules };
 }
 
 module.exports = {
     executeNote,
     executeScript,
     setJob,
-    getNoteScript
+    getNoteScript,
+    getRenderScript
 };
