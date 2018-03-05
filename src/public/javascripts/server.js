@@ -56,13 +56,6 @@ const server = (function() {
         return ret.executionResult;
     }
 
-    async function setJob(opts) {
-        opts.job = opts.job.toString();
-        opts.params = prepareParams(opts.params);
-
-        await post('script/job', opts);
-    }
-
     let i = 1;
     const reqResolves = {};
 
@@ -127,7 +120,6 @@ const server = (function() {
         put,
         remove,
         exec,
-        setJob,
         ajax,
         // don't remove, used from CKEditor image upload!
         getHeaders

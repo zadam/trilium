@@ -16,12 +16,6 @@ router.post('/exec', auth.checkApiAuth, wrap(async (req, res, next) => {
     });
 }));
 
-router.post('/job', auth.checkApiAuth, wrap(async (req, res, next) => {
-    await script.setJob(req.body);
-
-    res.send({});
-}));
-
 router.get('/startup', auth.checkApiAuth, wrap(async (req, res, next) => {
     const repository = new Repository(req);
     const notes = await attributes.getNotesWithAttribute(repository, "run", "frontend_startup");
