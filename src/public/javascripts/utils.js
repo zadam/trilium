@@ -123,8 +123,6 @@ function executeScript(script) {
     ${script}
 })();`;
 
-    console.log(completeScript);
-
     eval(completeScript);
 }
 

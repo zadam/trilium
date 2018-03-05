@@ -31,31 +31,6 @@ const server = (function() {
         return await call('DELETE', url);
     }
 
-    function prepareParams(params) {
-        if (!params) {
-            return params;
-        }
-
-        return params.map(p => {
-            if (typeof p === "function") {
-                return "!@#Function: " + p.toString();
-            }
-            else {
-                return p;
-            }
-        });
-    }
-
-    async function exec(params, script) {
-        if (typeof script === "function") {
-            script = script.toString();
-        }
-
-        const ret = await post('script/exec', { script: script, params: prepareParams(params) });
-
-        return ret.executionResult;
-    }
-
     let i = 1;
     const reqResolves = {};
 
@@ -119,7 +94,6 @@ const server = (function() {
         post,
         put,
         remove,
-        exec,
         ajax,
         // don't remove, used from CKEditor image upload!
         getHeaders
