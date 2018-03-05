@@ -298,9 +298,9 @@ const noteEditor = (function() {
             // make sure note is saved so we load latest changes
             await saveNoteIfChanged();
 
-            const script = await server.get('script/subtree/' + getCurrentNoteId());
+            const bundle = await server.get('script/subtree/' + getCurrentNoteId());
 
-            executeScript(script);
+            executeBundle(bundle);
         }
     }
 

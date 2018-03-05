@@ -115,15 +115,10 @@ async function stopWatch(what, func) {
     return ret;
 }
 
-function executeScript(script) {
-    const completeScript = `
-(async function() {
-    const api = Api();
-    
-    ${script}
-})();`;
+async function executeBundle(bundle) {
+    const api = Api(bundle.note, bundle.allNotes);
 
-    eval(completeScript);
+    return await (function() { return eval(`const api = this; (async function() { ${bundle.script}\r\n})()`); }.call(api));
 }
 
 function formatValueWithWhitespace(val) {
@@ -212,4 +207,16 @@ function download(url) {
     else {
         window.location.href = url;
     }
+}
+
+function toObject(array, fn) {
+    const obj = {};
+
+    for (const item of array) {
+        const ret = fn(item);
+
+        obj[ret[0]] = ret[1];
+    }
+
+    return obj;
 }

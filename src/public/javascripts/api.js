@@ -1,4 +1,4 @@
-function Api() {
+function Api(startNote, allNotes) {
     const $pluginButtons = $("#plugin-buttons");
 
     async function activateNote(notePath) {
@@ -33,14 +33,19 @@ function Api() {
             script = script.toString();
         }
 
-        const ret = await server.post('script/exec', { script: script, params: prepareParams(params) });
+        const ret = await server.post('script/exec', {
+            script: script,
+            params: prepareParams(params),
+            startNoteId: startNote.noteId
+        });
 
         return ret.executionResult;
     }
 
     return {
+        __startNote: startNote,
+        __notes: toObject(allNotes, note => [note.noteId, note]),
         __modules: {},
-        __notes: {},
         addButtonToToolbar,
         activateNote,
         getInstanceName: noteTree.getInstanceName,

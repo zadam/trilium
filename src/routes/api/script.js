@@ -9,7 +9,7 @@ const script = require('../../services/script');
 const Repository = require('../../services/repository');
 
 router.post('/exec', auth.checkApiAuth, wrap(async (req, res, next) => {
-    const ret = await script.executeScript(req, req.body.script, req.body.params);
+    const ret = await script.executeScript(req, req.body.script, req.body.params, req.body.startNoteId);
 
     res.send({
         executionResult: ret
@@ -25,7 +25,7 @@ router.get('/startup', auth.checkApiAuth, wrap(async (req, res, next) => {
     for (const note of notes) {
         const bundle = await script.getScriptBundle(note);
 
-        scripts.push(bundle.script);
+        scripts.push(bundle);
     }
 
     res.send(scripts);
@@ -36,14 +36,15 @@ router.get('/subtree/:noteId', auth.checkApiAuth, wrap(async (req, res, next) =>
     const note = await repository.getNote(req.params.noteId);
     const bundle = await script.getScriptBundle(note);
 
-    res.send(bundle.script);
+    res.send(bundle);
 }));
 
 router.get('/render/:noteId', auth.checkApiAuth, wrap(async (req, res, next) => {
     const repository = new Repository(req);
     const note = await repository.getNote(req.params.noteId);
+    const bundle = await script.getRenderScript(note);
 
-    res.send(await script.getRenderScript(note));
+    res.send(bundle);
 }));
 
 module.exports = router;

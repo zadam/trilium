@@ -1,5 +1,6 @@
 const sql = require('./sql');
 const ScriptContext = require('./script_context');
+const Repository = require('./repository');
 
 async function executeNote(note) {
     if (note.isProtected || !note.isJavaScript()) {
@@ -23,15 +24,18 @@ async function executeNote(note) {
     }
 }
 
-async function executeScript(dataKey, script, params) {
-    const ctx = new ScriptContext(dataKey, null, []);
+async function executeScript(dataKey, script, params, startNoteId) {
+    const repository = new Repository(dataKey);
+    const startNote = await repository.getNote(startNoteId);
+
+    const ctx = new ScriptContext(dataKey, startNote, []);
     const paramsStr = getParams(params);
 
     return await sql.doInTransaction(async () => execute(ctx, script, paramsStr));
 }
 
 async function execute(ctx, script, paramsStr) {
-    return await (function() { return eval(`const api = this;\r\n(${script})(${paramsStr})`); }.call(ctx));
+    return await (function() { return eval(`const api = this;const startNote = api.__startNote;\r\n(${script}\r\n)(${paramsStr})`); }.call(ctx));
 }
 
 function getParams(params) {
