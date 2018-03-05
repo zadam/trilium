@@ -12,7 +12,8 @@ const BUILTIN_ATTRIBUTES = [
     'hide_in_autocomplete',
     'exclude_from_export',
     'run',
-    'manual_transaction_handling'
+    'manual_transaction_handling',
+    'disable_inclusion'
 ];
 
 async function getNoteAttributeMap(noteId) {

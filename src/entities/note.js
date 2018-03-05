@@ -47,6 +47,13 @@ class Note extends Entity {
         return map;
     }
 
+    async hasAttribute(name) {
+        const map = await this.getAttributeMap();
+
+        return map.hasOwnProperty(name);
+    }
+
+    // WARNING: this doesn't take into account the possibility to have multi-valued attributes!
     async getAttribute(name) {
         return this.repository.getEntity("SELECT * FROM attributes WHERE noteId = ? AND name = ?", [this.noteId, name]);
     }

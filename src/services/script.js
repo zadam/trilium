@@ -61,6 +61,10 @@ async function getScriptBundle(note, includedNoteIds = []) {
         return;
     }
 
+    if (await note.hasAttribute('disable_inclusion')) {
+        return;
+    }
+
     const bundle = {
         note: note,
         script: '',
