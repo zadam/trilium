@@ -24,7 +24,7 @@ async function executeNote(note) {
 }
 
 async function executeScript(dataKey, script, params) {
-    const ctx = new ScriptContext(dataKey);
+    const ctx = new ScriptContext(dataKey, null, []);
     const paramsStr = getParams(params);
 
     return await sql.doInTransaction(async () => execute(ctx, script, paramsStr));
@@ -95,20 +95,21 @@ function getParams(params) {
 }
 
 async function getRenderScript(note) {
-    const subTreeScripts = await getModules(note, [note.noteId]);
+    const bundle = await getScriptBundle(note);
 
-    // last \r\n is necessary if script contains line comment on its last line
-    return "async function() {" + subTreeScripts + note.content + "\r\n}";
+    return `<script type="text/javascript">(async function() {\r\nconst api = Api();\r\n${bundle.script}\r\n})();</script>`
+        + bundle.html;
 }
 
 async function getScriptBundle(note, includedNoteIds = []) {
-    if (!note.isJavaScript()) {
+    if (!note.isJavaScript() && !note.isHtml() && note.type !== 'render') {
         return;
     }
 
     const bundle = {
         note: note,
         script: '',
+        html: '',
         allNotes: [note]
     };
 
@@ -126,18 +127,24 @@ async function getScriptBundle(note, includedNoteIds = []) {
         if (childBundle) {
             modules.push(childBundle.note);
             bundle.script += childBundle.script;
+            bundle.html += childBundle.html;
             bundle.allNotes = bundle.allNotes.concat(childBundle.allNotes);
         }
     }
 
-    bundle.script += `
+    if (note.isJavaScript()) {
+        bundle.script += `
 api.__modules['${note.noteId}'] = {};
-await (async function(module, api, startNote, currentNote` + (modules.length > 0 ? ', ' : '') +
-        modules.map(child => child.title).join(', ') + `) {
+await (async function(exports, module, api, startNote, currentNote` + (modules.length > 0 ? ', ' : '') +
+            modules.map(child => child.title).join(', ') + `) {
 ${note.content}
-})(api.__modules['${note.noteId}'], api, api.__startNote, api.__notes['${note.noteId}']` + (modules.length > 0 ? ', ' : '') +
-        modules.map(mod => `api.__modules['${mod.noteId}'].exports`).join(', ') + `);
+})({}, api.__modules['${note.noteId}'], api, api.__startNote, api.__notes['${note.noteId}']` + (modules.length > 0 ? ', ' : '') +
+            modules.map(mod => `api.__modules['${mod.noteId}'].exports`).join(', ') + `);
 `;
+    }
+    else if (note.isHtml()) {
+        bundle.html += note.content;
+    }
 
     return bundle;
 }

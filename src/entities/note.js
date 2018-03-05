@@ -28,6 +28,10 @@ class Note extends Entity {
             && (this.mime === "application/javascript" || this.mime === "application/x-javascript");
     }
 
+    isHtml() {
+        return (this.type === "code" || this.type === "file") && this.mime === "text/html";
+    }
+
     async getAttributes() {
         return this.repository.getEntities("SELECT * FROM attributes WHERE noteId = ? AND isDeleted = 0", [this.noteId]);
     }
@@ -73,7 +77,8 @@ class Note extends Entity {
             JOIN notes USING(noteId) 
           WHERE notes.isDeleted = 0
                 AND note_tree.isDeleted = 0
-                AND note_tree.parentNoteId = ?`, [this.noteId]);
+                AND note_tree.parentNoteId = ?
+          ORDER BY note_tree.notePosition`, [this.noteId]);
     }
 
     async getParents() {

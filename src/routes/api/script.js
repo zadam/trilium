@@ -49,7 +49,7 @@ router.get('/render/:noteId', auth.checkApiAuth, wrap(async (req, res, next) => 
     const repository = new Repository(req);
     const note = await repository.getNote(req.params.noteId);
 
-    res.send(await script.getRenderScript(note, repository));
+    res.send(await script.getRenderScript(note));
 }));
 
 module.exports = router;
