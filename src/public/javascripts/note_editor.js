@@ -298,9 +298,17 @@ const noteEditor = (function() {
             // make sure note is saved so we load latest changes
             await saveNoteIfChanged();
 
-            const bundle = await server.get('script/subtree/' + getCurrentNoteId());
+            if (currentNote.detail.mime.endsWith("env=frontend")) {
+                const bundle = await server.get('script/subtree/' + getCurrentNoteId());
 
-            executeBundle(bundle);
+                executeBundle(bundle);
+            }
+
+            if (currentNote.detail.mime.endsWith("env=backend")) {
+                await server.post('script/run/' + getCurrentNoteId());
+            }
+
+            showMessage("Note executed");
         }
     }
 

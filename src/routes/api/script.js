@@ -16,6 +16,17 @@ router.post('/exec', auth.checkApiAuth, wrap(async (req, res, next) => {
     });
 }));
 
+router.post('/run/:noteId', auth.checkApiAuth, wrap(async (req, res, next) => {
+    const repository = new Repository(req);
+    const note = await repository.getNote(req.params.noteId);
+
+    const ret = await script.executeNote(note);
+
+    res.send({
+        executionResult: ret
+    });
+}));
+
 router.get('/startup', auth.checkApiAuth, wrap(async (req, res, next) => {
     const repository = new Repository(req);
     const notes = await attributes.getNotesWithAttribute(repository, "run", "frontend_startup");
