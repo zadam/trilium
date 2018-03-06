@@ -25,7 +25,8 @@ const noteType = (function() {
             { mime: 'text/html', title: 'HTML' },
             { mime: 'message/http', title: 'HTTP' },
             { mime: 'text/x-java', title: 'Java' },
-            { mime: 'application/javascript', title: 'JavaScript' },
+            { mime: 'application/javascript;env=frontend', title: 'JavaScript frontend' },
+            { mime: 'application/javascript;env=backend', title: 'JavaScript backend' },
             { mime: 'application/json', title: 'JSON' },
             { mime: 'text/x-kotlin', title: 'Kotlin' },
             { mime: 'text/x-lua', title: 'Lua' },
@@ -121,7 +122,7 @@ const noteType = (function() {
         };
 
         this.updateExecuteScriptButtonVisibility = function() {
-            $executeScriptButton.toggle(self.mime() === 'application/javascript');
+            $executeScriptButton.toggle(self.mime().startsWith('application/javascript'));
         }
     }
 
