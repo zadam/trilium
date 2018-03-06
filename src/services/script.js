@@ -60,13 +60,17 @@ async function getRenderScript(note) {
         + bundle.html;
 }
 
-async function getScriptBundle(note, includedNoteIds = []) {
+async function getScriptBundle(note, scriptEnv, includedNoteIds = []) {
     if (!note.isJavaScript() && !note.isHtml() && note.type !== 'render') {
         return;
     }
 
     if (await note.hasAttribute('disable_inclusion')) {
         return;
+    }
+
+    if (!scriptEnv) {
+        scriptEnv = note.getScriptEnv();
     }
 
     const bundle = {
@@ -82,10 +86,16 @@ async function getScriptBundle(note, includedNoteIds = []) {
 
     includedNoteIds.push(note.noteId);
 
+    bundle.script = `api.__modules['${note.noteId}'] = { __noteId: '${note.noteId}', __env: '${note.getScriptEnv()}'};`;
+
+    if (note.type !== 'file' && scriptEnv !== note.getScriptEnv()) {
+        return bundle;
+    }
+
     const modules = [];
 
     for (const child of await note.getChildren()) {
-        const childBundle = await getScriptBundle(child, includedNoteIds);
+        const childBundle = await getScriptBundle(child, scriptEnv, includedNoteIds);
 
         if (childBundle) {
             modules.push(childBundle.note);
@@ -97,7 +107,6 @@ async function getScriptBundle(note, includedNoteIds = []) {
 
     if (note.isJavaScript()) {
         bundle.script += `
-api.__modules['${note.noteId}'] = {};
 await (async function(exports, module, api, startNote, currentNote` + (modules.length > 0 ? ', ' : '') +
             modules.map(child => child.title).join(', ') + `) {
 ${note.content}

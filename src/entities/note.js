@@ -32,6 +32,18 @@ class Note extends Entity {
         return (this.type === "code" || this.type === "file") && this.mime === "text/html";
     }
 
+    getScriptEnv() {
+        if (this.isHtml() || (this.isJavaScript() && this.mime.endsWith('env=frontend'))) {
+            return "frontend";
+        }
+
+        if (this.isJavaScript() && this.mime.endsWith('env=backend')) {
+            return "backend";
+        }
+
+        return null;
+    }
+
     async getAttributes() {
         return this.repository.getEntities("SELECT * FROM attributes WHERE noteId = ? AND isDeleted = 0", [this.noteId]);
     }
