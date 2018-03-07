@@ -50,12 +50,4 @@ router.get('/bundle/:noteId', auth.checkApiAuth, wrap(async (req, res, next) => 
     res.send(bundle);
 }));
 
-router.get('/render/:noteId', auth.checkApiAuth, wrap(async (req, res, next) => {
-    const repository = new Repository(req);
-    const note = await repository.getNote(req.params.noteId);
-    const bundle = await script.getRenderScript(note);
-
-    res.send(bundle);
-}));
-
 module.exports = router;

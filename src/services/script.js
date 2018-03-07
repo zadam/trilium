@@ -40,7 +40,8 @@ async function executeScript(dataKey, script, params, startNoteId, currentNoteId
     const startNote = await repository.getNote(startNoteId);
     const currentNote = await repository.getNote(currentNoteId);
 
-    currentNote.content = `(${script}\r\n)(${getParams(params)})`;
+    currentNote.content = `return await (${script}\r\n)(${getParams(params)})`;
+    currentNote.type = 'code';
     currentNote.mime = 'application/javascript;env=backend';
 
     const bundle = await getScriptBundle(currentNote);
@@ -67,14 +68,7 @@ function getParams(params) {
     }).join(",");
 }
 
-async function getRenderScript(note) {
-    const bundle = await getScriptBundle(note);
-
-    return `<script type="text/javascript">(async function() {\r\nconst api = Api();\r\n${bundle.script}\r\n})();</script>`
-        + bundle.html;
-}
-
-async function getScriptBundle(note, scriptEnv, includedNoteIds = []) {
+async function getScriptBundle(note, root = true, scriptEnv = null, includedNoteIds = []) {
     if (!note.isJavaScript() && !note.isHtml() && note.type !== 'render') {
         return;
     }
@@ -83,7 +77,7 @@ async function getScriptBundle(note, scriptEnv, includedNoteIds = []) {
         return;
     }
 
-    if (!scriptEnv) {
+    if (root) {
         scriptEnv = note.getScriptEnv();
     }
 
@@ -107,7 +101,7 @@ async function getScriptBundle(note, scriptEnv, includedNoteIds = []) {
     const modules = [];
 
     for (const child of await note.getChildren()) {
-        const childBundle = await getScriptBundle(child, scriptEnv, includedNoteIds);
+        const childBundle = await getScriptBundle(child, false, scriptEnv, includedNoteIds);
 
         if (childBundle) {
             modules.push(childBundle.note);
@@ -120,7 +114,7 @@ async function getScriptBundle(note, scriptEnv, includedNoteIds = []) {
     if (note.isJavaScript()) {
         bundle.script += `
 apiContext.modules['${note.noteId}'] = {};
-await (async function(exports, module, api` + (modules.length > 0 ? ', ' : '') +
+${root ? 'return ' : ''}await (async function(exports, module, api` + (modules.length > 0 ? ', ' : '') +
             modules.map(child => sanitizeVariableName(child.title)).join(', ') + `) {
 ${note.content}
 })({}, apiContext.modules['${note.noteId}'], apiContext.apis['${note.noteId}']` + (modules.length > 0 ? ', ' : '') +
@@ -141,6 +135,5 @@ function sanitizeVariableName(str) {
 module.exports = {
     executeNote,
     executeScript,
-    getScriptBundle,
-    getRenderScript
+    getScriptBundle
 };

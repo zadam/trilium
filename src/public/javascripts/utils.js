@@ -116,9 +116,7 @@ async function stopWatch(what, func) {
 }
 
 async function executeBundle(bundle) {
-    const apiContext = ApiContext(bundle.note, bundle.allNotes);
-
-    console.log((`const apiContext = this; (async function() { ${bundle.script}\r\n})()`));
+    const apiContext = ScriptContext(bundle.note, bundle.allNotes);
 
     return await (function() { return eval(`const apiContext = this; (async function() { ${bundle.script}\r\n})()`); }.call(apiContext));
 }

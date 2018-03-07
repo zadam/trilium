@@ -217,9 +217,11 @@ const noteEditor = (function() {
         if (currentNote.detail.type === 'render') {
             $noteDetailRender.show();
 
-            const html = await server.get('script/render/' + getCurrentNoteId());
+            const bundle = await server.get('script/bundle/' + getCurrentNoteId());
 
-            $noteDetailRender.html(html);
+            $noteDetailRender.html(bundle.html);
+
+            executeBundle(bundle);
         }
         else if (currentNote.detail.type === 'file') {
             $noteDetailAttachment.show();

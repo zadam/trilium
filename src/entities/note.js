@@ -37,6 +37,10 @@ class Note extends Entity {
             return "frontend";
         }
 
+        if (this.type === 'render') {
+            return "frontend";
+        }
+
         if (this.isJavaScript() && this.mime.endsWith('env=backend')) {
             return "backend";
         }

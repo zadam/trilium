@@ -1,12 +1,12 @@
-function ApiContext(startNote, allNotes) {
+function ScriptContext(startNote, allNotes) {
     return {
         modules: {},
         notes: toObject(allNotes, note => [note.noteId, note]),
-        apis: toObject(allNotes, note => [note.noteId, Api(startNote, note)]),
+        apis: toObject(allNotes, note => [note.noteId, ScriptApi(startNote, note)]),
     };
 }
 
-function Api(startNote, currentNote) {
+function ScriptApi(startNote, currentNote) {
     const $pluginButtons = $("#plugin-buttons");
 
     async function activateNote(notePath) {

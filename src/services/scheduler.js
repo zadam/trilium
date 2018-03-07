@@ -8,6 +8,7 @@ async function runNotesWithAttribute(runAttrValue) {
         SELECT notes.* 
         FROM notes 
           JOIN attributes ON attributes.noteId = notes.noteId
+                           AND attributes.isDeleted = 0
                            AND attributes.name = 'run' 
                            AND attributes.value = ? 
         WHERE
