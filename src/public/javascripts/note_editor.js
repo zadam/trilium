@@ -299,7 +299,7 @@ const noteEditor = (function() {
             await saveNoteIfChanged();
 
             if (currentNote.detail.mime.endsWith("env=frontend")) {
-                const bundle = await server.get('script/subtree/' + getCurrentNoteId());
+                const bundle = await server.get('script/bundle/' + getCurrentNoteId());
 
                 executeBundle(bundle);
             }

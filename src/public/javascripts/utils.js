@@ -116,9 +116,11 @@ async function stopWatch(what, func) {
 }
 
 async function executeBundle(bundle) {
-    const api = Api(bundle.note, bundle.allNotes);
+    const apiContext = ApiContext(bundle.note, bundle.allNotes);
 
-    return await (function() { return eval(`const api = this; (async function() { ${bundle.script}\r\n})()`); }.call(api));
+    console.log((`const apiContext = this; (async function() { ${bundle.script}\r\n})()`));
+
+    return await (function() { return eval(`const apiContext = this; (async function() { ${bundle.script}\r\n})()`); }.call(apiContext));
 }
 
 function formatValueWithWhitespace(val) {

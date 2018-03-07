@@ -15,7 +15,7 @@ async function runNotesWithAttribute(runAttrValue) {
           AND notes.isDeleted = 0`, [runAttrValue]);
 
     for (const note of notes) {
-        script.executeNote(note);
+        script.executeNote(null, note);
     }
 }
 

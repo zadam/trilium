@@ -1,4 +1,12 @@
-function Api(startNote, allNotes) {
+function ApiContext(startNote, allNotes) {
+    return {
+        modules: {},
+        notes: toObject(allNotes, note => [note.noteId, note]),
+        apis: toObject(allNotes, note => [note.noteId, Api(startNote, note)]),
+    };
+}
+
+function Api(startNote, currentNote) {
     const $pluginButtons = $("#plugin-buttons");
 
     async function activateNote(notePath) {
@@ -28,7 +36,7 @@ function Api(startNote, allNotes) {
         });
     }
 
-    async function runOnServer(script, params) {
+    async function runOnServer(script, params = []) {
         if (typeof script === "function") {
             script = script.toString();
         }
@@ -36,16 +44,16 @@ function Api(startNote, allNotes) {
         const ret = await server.post('script/exec', {
             script: script,
             params: prepareParams(params),
-            startNoteId: startNote.noteId
+            startNoteId: startNote.noteId,
+            currentNoteId: currentNote.noteId
         });
 
         return ret.executionResult;
     }
 
     return {
-        __startNote: startNote,
-        __notes: toObject(allNotes, note => [note.noteId, note]),
-        __modules: {},
+        startNote: startNote,
+        currentNote: currentNote,
         addButtonToToolbar,
         activateNote,
         getInstanceName: noteTree.getInstanceName,

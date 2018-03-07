@@ -201,9 +201,9 @@ window.onerror = function (msg, url, lineNo, columnNo, error) {
 $("#logout-button").toggle(!isElectron());
 
 $(document).ready(() => {
-    server.get("script/startup").then(scripts => {
-        for (const script of scripts) {
-            executeBundle(script);
+    server.get("script/startup").then(scriptBundles => {
+        for (const bundle of scriptBundles) {
+            executeBundle(bundle);
         }
     });
 });

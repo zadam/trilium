@@ -9,7 +9,7 @@ const script = require('../../services/script');
 const Repository = require('../../services/repository');
 
 router.post('/exec', auth.checkApiAuth, wrap(async (req, res, next) => {
-    const ret = await script.executeScript(req, req.body.script, req.body.params, req.body.startNoteId);
+    const ret = await script.executeScript(req, req.body.script, req.body.params, req.body.startNoteId, req.body.currentNoteId);
 
     res.send({
         executionResult: ret
@@ -20,7 +20,7 @@ router.post('/run/:noteId', auth.checkApiAuth, wrap(async (req, res, next) => {
     const repository = new Repository(req);
     const note = await repository.getNote(req.params.noteId);
 
-    const ret = await script.executeNote(note);
+    const ret = await script.executeNote(req, note);
 
     res.send({
         executionResult: ret
@@ -42,7 +42,7 @@ router.get('/startup', auth.checkApiAuth, wrap(async (req, res, next) => {
     res.send(scripts);
 }));
 
-router.get('/subtree/:noteId', auth.checkApiAuth, wrap(async (req, res, next) => {
+router.get('/bundle/:noteId', auth.checkApiAuth, wrap(async (req, res, next) => {
     const repository = new Repository(req);
     const note = await repository.getNote(req.params.noteId);
     const bundle = await script.getScriptBundle(note);

@@ -11,11 +11,16 @@ const axios = require('axios');
 
 function ScriptContext(dataKey, startNote, allNotes) {
     dataKey = protected_session.getDataKey(dataKey);
-    const repository = new Repository(dataKey);
 
-    this.__startNote = startNote;
-    this.__notes = utils.toObject(allNotes, note => [note.noteId, note]);
-    this.__modules = {};
+    this.modules = {};
+    this.notes = utils.toObject(allNotes, note => [note.noteId, note]);
+    this.apis = utils.toObject(allNotes, note => [note.noteId, new ScriptApi(dataKey, startNote, note)]);
+}
+
+function ScriptApi(dataKey, startNote, currentNote) {
+    const repository = new Repository(dataKey);
+    this.startNote = startNote;
+    this.currentNote = currentNote;
 
     this.axios = axios;
 
@@ -50,7 +55,7 @@ function ScriptContext(dataKey, startNote, allNotes) {
 
     this.updateEntity = repository.updateEntity;
 
-    this.log = message => log.info(`Script: ${message}`);
+    this.log = message => log.info(`Script ${currentNote.noteId}: ${message}`);
 
     this.getRootCalendarNoteId = date_notes.getRootCalendarNoteId;
     this.getDateNoteId = date_notes.getDateNoteId;

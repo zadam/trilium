@@ -2,21 +2,28 @@ const sql = require('./sql');
 const ScriptContext = require('./script_context');
 const Repository = require('./repository');
 
-async function executeNote(note) {
-    if (note.isProtected || !note.isJavaScript()) {
+async function executeNote(dataKey, note) {
+    if (!note.isJavaScript()) {
         return;
     }
 
-    const manualTransactionHandling = (await note.getAttributeMap()).manual_transaction_handling !== undefined;
-
     const bundle = await getScriptBundle(note);
+
+    await executeBundle(dataKey, bundle);
+}
+
+async function executeBundle(dataKey, bundle, startNote) {
+    if (!startNote) {
+        // this is the default case, the only exception is when we want to preserve frontend startNote
+        startNote = bundle.note;
+    }
 
     // last \r\n is necessary if script contains line comment on its last line
     const script = "async function() {\r\n" + bundle.script + "\r\n}";
 
-    const ctx = new ScriptContext(null, note, bundle.allNotes);
+    const ctx = new ScriptContext(dataKey, startNote, bundle.allNotes);
 
-    if (manualTransactionHandling) {
+    if (await bundle.note.hasAttribute('manual_transaction_handling')) {
         return await execute(ctx, script, '');
     }
     else {
@@ -24,18 +31,25 @@ async function executeNote(note) {
     }
 }
 
-async function executeScript(dataKey, script, params, startNoteId) {
+/**
+ * This method preserves frontend startNode - that's why we start execution from currentNote and override
+ * bundle's startNote.
+ */
+async function executeScript(dataKey, script, params, startNoteId, currentNoteId) {
     const repository = new Repository(dataKey);
     const startNote = await repository.getNote(startNoteId);
+    const currentNote = await repository.getNote(currentNoteId);
 
-    const ctx = new ScriptContext(dataKey, startNote, []);
-    const paramsStr = getParams(params);
+    currentNote.content = `(${script}\r\n)(${getParams(params)})`;
+    currentNote.mime = 'application/javascript;env=backend';
 
-    return await sql.doInTransaction(async () => execute(ctx, script, paramsStr));
+    const bundle = await getScriptBundle(currentNote);
+
+    return await executeBundle(dataKey, bundle, startNote);
 }
 
 async function execute(ctx, script, paramsStr) {
-    return await (function() { return eval(`const api = this;const startNote = api.__startNote;\r\n(${script}\r\n)(${paramsStr})`); }.call(ctx));
+    return await (function() { return eval(`const apiContext = this;\r\n(${script}\r\n)(${paramsStr})`); }.call(ctx));
 }
 
 function getParams(params) {
@@ -73,6 +87,10 @@ async function getScriptBundle(note, scriptEnv, includedNoteIds = []) {
         scriptEnv = note.getScriptEnv();
     }
 
+    if (note.type !== 'file' && scriptEnv !== note.getScriptEnv()) {
+        return;
+    }
+
     const bundle = {
         note: note,
         script: '',
@@ -85,12 +103,6 @@ async function getScriptBundle(note, scriptEnv, includedNoteIds = []) {
     }
 
     includedNoteIds.push(note.noteId);
-
-    bundle.script = `api.__modules['${note.noteId}'] = { __noteId: '${note.noteId}', __env: '${note.getScriptEnv()}'};`;
-
-    if (note.type !== 'file' && scriptEnv !== note.getScriptEnv()) {
-        return bundle;
-    }
 
     const modules = [];
 
@@ -107,11 +119,12 @@ async function getScriptBundle(note, scriptEnv, includedNoteIds = []) {
 
     if (note.isJavaScript()) {
         bundle.script += `
-await (async function(exports, module, api, startNote, currentNote` + (modules.length > 0 ? ', ' : '') +
-            modules.map(child => child.title).join(', ') + `) {
+apiContext.modules['${note.noteId}'] = {};
+await (async function(exports, module, api` + (modules.length > 0 ? ', ' : '') +
+            modules.map(child => sanitizeVariableName(child.title)).join(', ') + `) {
 ${note.content}
-})({}, api.__modules['${note.noteId}'], api, api.__startNote, api.__notes['${note.noteId}']` + (modules.length > 0 ? ', ' : '') +
-            modules.map(mod => `api.__modules['${mod.noteId}'].exports`).join(', ') + `);
+})({}, apiContext.modules['${note.noteId}'], apiContext.apis['${note.noteId}']` + (modules.length > 0 ? ', ' : '') +
+            modules.map(mod => `apiContext.modules['${mod.noteId}'].exports`).join(', ') + `);
 `;
     }
     else if (note.isHtml()) {
@@ -119,6 +132,10 @@ ${note.content}
     }
 
     return bundle;
+}
+
+function sanitizeVariableName(str) {
+    return str.replace(/[^a-z0-9_]/gim, "");
 }
 
 module.exports = {
