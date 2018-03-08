@@ -48,7 +48,11 @@ const sqlConsole = (function() {
         codeEditor.focus();
     }
 
-    async function execute() {
+    async function execute(e) {
+        // stop from propagating upwards (dangerous especially with ctrl+enter executable javascript notes)
+        e.preventDefault();
+        e.stopPropagation();
+
         const sqlQuery = codeEditor.getValue();
 
         const result = await server.post("sql/execute", {
