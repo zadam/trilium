@@ -113,6 +113,9 @@ span.fancytree-active:not(.fancytree-focused) .fancytree-title {
 
 .icon-action {
     cursor: pointer;
+    display: block;
+    height: 24px;
+    width: 24px;
 }
 
 #protect-button, #unprotect-button {

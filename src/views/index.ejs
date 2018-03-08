@@ -40,21 +40,17 @@
 
       <div class="hide-toggle" style="grid-area: tree-actions;">
         <div style="display: flex; justify-content: space-around; padding: 10px 0 10px 0; margin: 0 20px 0 20px; border: 1px solid #ccc;">
-          <a onclick="noteTree.createNewTopLevelNote()" title="Create new top level note" class="icon-action">
-            <img src="images/icons/file-plus.png" alt="Create new top level note"/>
-          </a>
+          <a onclick="noteTree.createNewTopLevelNote()" title="Create new top level note" class="icon-action"
+             style="background: url('images/icons/file-plus.png')"></a>
 
-          <a onclick="noteTree.collapseTree()" title="Collapse note tree" class="icon-action">
-            <img src="images/icons/list.png" alt="Collapse note tree"/>
-          </a>
+          <a onclick="noteTree.collapseTree()" title="Collapse note tree" class="icon-action"
+             style="background: url('images/icons/list.png')"></a>
 
-          <a onclick="noteTree.scrollToCurrentNote()" title="Scroll to current note. Shortcut CTRL+." class="icon-action">
-            <img src="images/icons/crosshair.png" alt="Scroll to current note"/>
-          </a>
+          <a onclick="noteTree.scrollToCurrentNote()" title="Scroll to current note. Shortcut CTRL+." class="icon-action"
+             style="background: url('images/icons/crosshair.png')"></a>
 
-          <a onclick="searchTree.toggleSearch()" title="Search in notes" class="icon-action">
-            <img src="images/icons/search.png" alt="Search in notes"/>
-          </a>
+          <a onclick="searchTree.toggleSearch()" title="Search in notes" class="icon-action"
+             style="background: url('images/icons/search.png')"></a>
         </div>
 
         <input type="file" id="import-upload" style="display: none" />
@@ -83,17 +79,13 @@
              title="Protect the note so that password will be required to view the note"
              class="icon-action"
              id="protect-button"
-             style="display: none;">
-            <img src="images/icons/lock.png" alt="Protect note"/>
-          </a>
+             style="display: none; background: url('images/icons/lock.png')"></a>
 
           <a onclick="protected_session.unprotectNoteAndSendToServer()"
              title="Unprotect note so that password will not be required to access this note in the future"
              class="icon-action"
              id="unprotect-button"
-             style="display: none;">
-            <img src="images/icons/unlock.png" alt="Unprotect note"/>
-          </a>
+             style="display: none; background: url('images/icons/unlock.png')"></a>
 
           &nbsp;
 
