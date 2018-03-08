@@ -13,7 +13,8 @@ const BUILTIN_ATTRIBUTES = [
     'exclude_from_export',
     'run',
     'manual_transaction_handling',
-    'disable_inclusion'
+    'disable_inclusion',
+    'app_css'
 ];
 
 async function getNoteAttributeMap(noteId) {
