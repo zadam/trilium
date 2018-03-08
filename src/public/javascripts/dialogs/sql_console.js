@@ -29,6 +29,9 @@ const sqlConsole = (function() {
             CodeMirror.keyMap.default["Shift-Tab"] = "indentLess";
             CodeMirror.keyMap.default["Tab"] = "indentMore";
 
+            // removing Escape binding so that Escape will propagate to the dialog (which will close on escape)
+            delete CodeMirror.keyMap.basic["Esc"];
+
             CodeMirror.modeURL = 'libraries/codemirror/mode/%N/%N.js';
 
             codeEditor = CodeMirror($query[0], {
