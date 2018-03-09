@@ -38,7 +38,7 @@ async function exportNote(noteTreeId, directory, pack, repo) {
 
     const metadata = await getMetadata(note);
 
-    if ('exclude_from_export' in metadata.attributes) {
+    if (metadata.attributes.find(attr => attr.name === 'exclude_from_export')) {
         return;
     }
 
