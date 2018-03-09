@@ -36,7 +36,9 @@ router.get('/startup', auth.checkApiAuth, wrap(async (req, res, next) => {
     for (const note of notes) {
         const bundle = await script.getScriptBundle(note);
 
-        scripts.push(bundle);
+        if (bundle) {
+            scripts.push(bundle);
+        }
     }
 
     res.send(scripts);
