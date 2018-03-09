@@ -73,7 +73,7 @@ async function getScriptBundle(note, root = true, scriptEnv = null, includedNote
         return;
     }
 
-    if (await note.hasAttribute('disable_inclusion')) {
+    if (!root && await note.hasAttribute('disable_inclusion')) {
         return;
     }
 
