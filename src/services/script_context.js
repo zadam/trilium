@@ -15,6 +15,18 @@ function ScriptContext(dataKey, startNote, allNotes) {
     this.modules = {};
     this.notes = utils.toObject(allNotes, note => [note.noteId, note]);
     this.apis = utils.toObject(allNotes, note => [note.noteId, new ScriptApi(dataKey, startNote, note)]);
+    this.require = moduleNoteIds => {
+        return moduleName => {
+            const candidates = allNotes.filter(note => moduleNoteIds.includes(note.noteId));
+            const note = candidates.find(c => c.title === moduleName);
+
+            if (!note) {
+                throw new Error("Could not find module note " + moduleName);
+            }
+
+            return this.modules[note.noteId].exports;
+        }
+    };
 }
 
 function ScriptApi(dataKey, startNote, currentNote) {
@@ -26,7 +38,8 @@ function ScriptApi(dataKey, startNote, currentNote) {
 
     this.utils = {
         unescapeHtml: utils.unescapeHtml,
-        isoDateTimeStr: utils.dateStr
+        isoDateTimeStr: utils.dateStr,
+        isoDateStr: date => utils.dateStr(date).substr(0, 10)
     };
 
     this.getInstanceName = () => config.General ? config.General.instanceName : null;

@@ -111,13 +111,15 @@ async function getScriptBundle(note, root = true, scriptEnv = null, includedNote
         }
     }
 
+    const moduleNoteIds = modules.map(mod => mod.noteId);
+
     if (note.isJavaScript()) {
         bundle.script += `
 apiContext.modules['${note.noteId}'] = {};
-${root ? 'return ' : ''}await (async function(exports, module, api` + (modules.length > 0 ? ', ' : '') +
+${root ? 'return ' : ''}await (async function(exports, module, require, api` + (modules.length > 0 ? ', ' : '') +
             modules.map(child => sanitizeVariableName(child.title)).join(', ') + `) {
 ${note.content}
-})({}, apiContext.modules['${note.noteId}'], apiContext.apis['${note.noteId}']` + (modules.length > 0 ? ', ' : '') +
+})({}, apiContext.modules['${note.noteId}'], apiContext.require(${JSON.stringify(moduleNoteIds)}), apiContext.apis['${note.noteId}']` + (modules.length > 0 ? ', ' : '') +
             modules.map(mod => `apiContext.modules['${mod.noteId}'].exports`).join(', ') + `);
 `;
     }
