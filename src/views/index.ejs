@@ -106,6 +106,8 @@
             <ul id="note-type-dropdown" class="dropdown-menu dropdown-menu-right" aria-labelledby="dLabel">
               <li data-bind="click: selectText, css: { selected: type() == 'text' }"><span class="check">&check;</span> <strong>Text</strong></li>
               <li role="separator" class="divider"></li>
+              <li data-bind="click: selectSavedSearch, css: { selected: type() == 'search' }"><span class="check">&check;</span> <strong>Saved search</strong></li>
+              <li role="separator" class="divider"></li>
               <li data-bind="click: selectRender, css: { selected: type() == 'render' && mime() == '' }"><span class="check">&check;</span> <strong>Render HTML note</strong></li>
               <li role="separator" class="divider"></li>
               <li data-bind="click: selectCode, css: { selected: type() == 'code' && mime() == '' }"><span class="check">&check;</span> <strong>Code</strong></li>
@@ -131,13 +133,51 @@
       </div>
 
       <div style="position: relative; overflow: auto; grid-area: note-content; padding-left: 10px; padding-top: 10px;" id="note-detail-wrapper">
-        <div id="note-detail"></div>
+        <div id="note-detail" style="display: none;"></div>
 
-        <div id="note-detail-code"></div>
+        <div id="note-detail-search" style="display: none;">
+          <div style="display: flex; align-items: center;">
+            <strong>Search string: &nbsp; &nbsp;</strong>
+            <textarea rows="4" cols="50" id="search-string"></textarea>
+          </div>
 
-        <div id="note-detail-render"></div>
+          <br />
 
-        <div id="note-detail-attachment">
+          <h4>Help</h4>
+          <p>
+            <ul>
+              <li>
+                <code>@abc</code> - matches notes with attribute abc</li>
+              <li>
+                <code>@!abc</code> - matches notes without abc attribute (maybe not the best syntax)</li>
+              <li>
+                <code>@abc=true</code> - matches notes with attribute abc having value true</li>
+              <li><code>@abc!=true</code></li>
+              <li>
+                <code>@"weird attribute"="weird value"</code> - works also with whitespace inside names values</li>
+              <li>
+                <code>@abc and @def</code> - matches notes with both abc and def</li>
+              <li>
+                <code>@abc @def</code> - AND relation is implicit when specifying multiple attributes</li>
+              <li>
+                <code>@abc or @def</code> - OR relation</li>
+              <li>
+                <code>@abc&lt;=5</code> - numerical comparison (also &gt;, &gt;=, &lt;).</li>
+              <li>
+                <code>some search string @abc @def</code> - combination of fulltext and attribute search - both of them need to match (OR not supported)</li>
+              <li>
+                <code>@abc @def some search string</code> - same combination</li>
+            </ul>
+
+            <a href="https://github.com/zadam/trilium/wiki/Attributes">Complete help on search syntax</a>
+          </p>
+        </div>
+
+        <div id="note-detail-code" style="display: none;"></div>
+
+        <div id="note-detail-render" style="display: none;"></div>
+
+        <div id="note-detail-attachment" style="display: none;">
           <table id="attachment-table">
             <tr>
               <th>File name:</th>

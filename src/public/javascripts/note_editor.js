@@ -5,6 +5,7 @@ const noteEditor = (function() {
 
     const $noteDetail = $('#note-detail');
     const $noteDetailCode = $('#note-detail-code');
+    const $noteDetailSearch = $('#note-detail-search');
     const $noteDetailRender = $('#note-detail-render');
     const $noteDetailAttachment = $('#note-detail-attachment');
 
@@ -19,6 +20,7 @@ const noteEditor = (function() {
     const $attachmentFileSize = $("#attachment-filesize");
     const $attachmentDownload = $("#attachment-download");
     const $attachmentOpen = $("#attachment-open");
+    const $searchString = $("#search-string");
 
     let editor = null;
     let codeEditor = null;
@@ -89,6 +91,11 @@ const noteEditor = (function() {
         }
         else if (note.detail.type === 'code') {
             note.detail.content = codeEditor.getValue();
+        }
+        else if (note.detail.type === 'search') {
+            note.detail.content = JSON.stringify({
+                searchString: $searchString.val()
+            });
         }
         else if (note.detail.type === 'render' || note.detail.type === 'file') {
             // nothing
@@ -179,6 +186,21 @@ const noteEditor = (function() {
 
             codeEditor.refresh();
         }
+        else if (currentNote.detail.type === 'search') {
+            $noteDetailSearch.show();
+
+            try {
+                const json = JSON.parse(content);
+
+                $searchString.val(json.searchString);
+            }
+            catch (e) {
+                console.log(e);
+                $searchString.val('');
+            }
+
+            $searchString.on('input', noteChanged);
+        }
     }
 
     async function loadNoteToEditor(noteId) {
@@ -212,6 +234,7 @@ const noteEditor = (function() {
         noteType.setNoteMime(currentNote.detail.mime);
 
         $noteDetail.hide();
+        $noteDetailSearch.hide();
         $noteDetailCode.hide();
         $noteDetailRender.html('').hide();
         $noteDetailAttachment.hide();
@@ -283,7 +306,7 @@ const noteEditor = (function() {
         else if (note.detail.type === 'code') {
             codeEditor.focus();
         }
-        else if (note.detail.type === 'render' || note.detail.type === 'file') {
+        else if (note.detail.type === 'render' || note.detail.type === 'file' || note.detail.type === 'search') {
             // do nothing
         }
         else {

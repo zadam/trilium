@@ -154,15 +154,7 @@ const noteTree = (function() {
             extraClasses.push("multiple-parents");
         }
 
-        if (note.type === 'code') {
-            extraClasses.push("code");
-        }
-        else if (note.type === 'render') {
-            extraClasses.push('render');
-        }
-        else if (note.type === 'file') {
-            extraClasses.push('attachment');
-        }
+        extraClasses.push(note.type);
 
         return extraClasses.join(" ");
     }

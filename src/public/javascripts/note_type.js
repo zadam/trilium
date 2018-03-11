@@ -63,6 +63,9 @@ const noteType = (function() {
                     return found ? found.title : mime;
                 }
             }
+            else if (type === 'search') {
+                return 'Saved search';
+            }
             else if (type === 'render') {
                 return 'Render HTML note';
             }
@@ -95,6 +98,13 @@ const noteType = (function() {
 
         this.selectText = function() {
             self.type('text');
+            self.mime('');
+
+            save();
+        };
+
+        this.selectSavedSearch = function() {
+            self.type('search');
             self.mime('');
 
             save();
