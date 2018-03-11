@@ -82,6 +82,11 @@ span.fancytree-node.render > span.fancytree-icon {
     background-image: url("../images/icons/play.png");
 }
 
+span.fancytree-node.search > span.fancytree-icon {
+    background-position: 0 0;
+    background-image: url("../images/icons/search-small.png");
+}
+
 span.fancytree-node.protected > span.fancytree-icon {
     filter: drop-shadow(2px 2px 2px black);
 }
