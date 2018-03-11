@@ -1,4 +1,6 @@
 # Trilium Notes
+
+[![Join the chat at https://gitter.im/trilium-notes/Lobby](https://badges.gitter.im/trilium-notes/Lobby.svg)](https://gitter.im/trilium-notes/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 Trilium Notes is a hierarchical note taking application. Picture tells a thousand words:
 
 ![](https://raw.githubusercontent.com/wiki/zadam/trilium/images/screenshot.png)
