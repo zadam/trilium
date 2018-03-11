@@ -41,5 +41,6 @@ List of documentation pages:
 * [Protected notes](https://github.com/zadam/trilium/wiki/Protected-notes)
 * [Synchronization](https://github.com/zadam/trilium/wiki/Synchronization)
 * [Document](https://github.com/zadam/trilium/wiki/Document)
+* [Theming](https://github.com/zadam/trilium/wiki/Theming)
 * [Keyboard shortcuts](https://github.com/zadam/trilium/wiki/Keyboard-shortcuts)
 * [Troubleshooting](https://github.com/zadam/trilium/wiki/Troubleshooting)
