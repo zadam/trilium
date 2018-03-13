@@ -14,9 +14,19 @@ const noteTree = (function() {
     let childToParents = {};
 
     let parentChildToNoteTreeId = {};
-    let noteIdToTitle = {};
+    let noteIdToNote = {};
 
     let hiddenInAutocomplete = {};
+
+    function getNote(noteId) {
+        const note = noteIdToNote[noteId];
+
+        if (!note) {
+            throwError("Can't find title for noteId='" + noteId + "'");
+        }
+
+        return note;
+    }
 
     function getNoteTreeId(parentNoteId, childNoteId) {
         assertArguments(parentNoteId, childNoteId);
@@ -31,11 +41,7 @@ const noteTree = (function() {
     function getNoteTitle(noteId, parentNoteId = null) {
         assertArguments(noteId);
 
-        let title = noteIdToTitle[noteId];
-
-        if (!title) {
-            throwError("Can't find title for noteId='" + noteId + "'");
-        }
+        let title = getNote(noteId).title;
 
         if (parentNoteId !== null) {
             const noteTreeId = getNoteTreeId(parentNoteId, noteId);
@@ -131,9 +137,14 @@ const noteTree = (function() {
         for (const note of notes) {
             notesTreeMap[note.noteTreeId] = note;
 
-            noteIdToTitle[note.noteId] = note.title;
+            noteIdToNote[note.noteId] = {
+                title: note.title,
+                isProtected: note.isProtected,
+                type: note.type,
+                mime: note.mime
+            };
 
-            delete note.title; // this should not be used. Use noteIdToTitle instead
+            delete note.title; // this should not be used. Use noteIdToNote instead
 
             setParentChildRelation(note.noteTreeId, note.parentNoteId, note.noteId);
         }
@@ -174,7 +185,7 @@ const noteTree = (function() {
             const noteTreeId = getNoteTreeId(parentNoteId, noteId);
             const noteTree = notesTreeMap[noteTreeId];
 
-            const title = (noteTree.prefix ? (noteTree.prefix + " - ") : "") + noteIdToTitle[noteTree.noteId];
+            const title = (noteTree.prefix ? (noteTree.prefix + " - ") : "") + getNote(noteTree.noteId).title;
 
             const node = {
                 noteId: noteTree.noteId,
@@ -585,7 +596,7 @@ const noteTree = (function() {
             init: (event, data) => {
                 const noteId = treeUtils.getNoteIdFromNotePath(startNotePath);
 
-                if (noteIdToTitle[noteId] === undefined) {
+                if (noteIdToNote[noteId] === undefined) {
                     // note doesn't exist so don't try to activate it
                     startNotePath = null;
                 }
@@ -742,7 +753,7 @@ const noteTree = (function() {
     function setNoteTitle(noteId, title) {
         assertArguments(noteId);
 
-        noteIdToTitle[noteId] = title;
+        getNote(noteId).title = title;
 
         getNodesByNoteId(noteId).map(clone => treeUtils.setNodeTitleWithPrefix(clone));
     }
@@ -775,7 +786,12 @@ const noteTree = (function() {
 
         notesTreeMap[result.noteTreeId] = result;
 
-        noteIdToTitle[result.noteId] = newNoteName;
+        noteIdToNote[result.noteId] = {
+            title: result.title,
+            isProtected: result.isProtected,
+            type: result.type,
+            mime: result.mime
+        };
 
         noteEditor.newNoteCreated();
 
