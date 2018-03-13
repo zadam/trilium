@@ -63,14 +63,14 @@ const noteType = (function() {
                     return found ? found.title : mime;
                 }
             }
-            else if (type === 'search') {
-                return 'Saved search';
-            }
             else if (type === 'render') {
                 return 'Render HTML note';
             }
             else if (type === 'file') {
                 return 'Attachment';
+            }
+            else if (type === 'search') {
+                // ignore and do nothing, "type" will be hidden since it's not possible to switch to and from search
             }
             else {
                 throwError('Unrecognized type: ' + type);
@@ -98,13 +98,6 @@ const noteType = (function() {
 
         this.selectText = function() {
             self.type('text');
-            self.mime('');
-
-            save();
-        };
-
-        this.selectSavedSearch = function() {
-            self.type('search');
             self.mime('');
 
             save();
