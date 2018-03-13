@@ -654,14 +654,28 @@ const noteTree = (function() {
         $tree.contextmenu(contextMenu.contextMenuSettings);
     }
 
-    async function loadSearchNote(noteId) {
-        const note = await server.get('notes/' + noteId);
+    async function loadSearchNote(searchNoteId) {
+        const note = await server.get('notes/' + searchNoteId);
 
         const json = JSON.parse(note.detail.content);
 
         const noteIds = await server.get('notes?search=' + encodeURIComponent(json.searchString));
 
-        console.log("Found: ", noteIds);
+        for (const noteId of noteIds) {
+            const noteTreeId = "virt" + randomString(10);
+
+            notesTreeMap[noteTreeId] = {
+                noteTreeId: noteTreeId,
+                noteId: noteId,
+                parentNoteId: searchNoteId,
+                prefix: '',
+                virtual: true
+            };
+
+            setParentChildRelation(noteTreeId, searchNoteId, noteId);
+        }
+
+        return prepareNoteTreeInner(searchNoteId);
     }
 
     function getTree() {
