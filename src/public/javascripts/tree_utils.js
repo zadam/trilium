@@ -31,20 +31,10 @@ const treeUtils = (function() {
         return path.reverse().join("/");
     }
 
-    function setNodeTitleWithPrefix(node) {
-        const noteTitle = noteTree.getNoteTitle(node.data.noteId);
-        const prefix = node.data.prefix;
-
-        const title = (prefix ? (prefix + " - ") : "") + noteTitle;
-
-        node.setTitle(escapeHtml(title));
-    }
-
     return {
         getParentProtectedStatus,
         getNodeByKey,
         getNotePath,
         getNoteIdFromNotePath,
-        setNodeTitleWithPrefix
     };
 })();

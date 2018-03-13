@@ -19,8 +19,9 @@ const editTreePrefix = (function() {
         const currentNode = noteTree.getCurrentNode();
 
         noteTreeId = currentNode.data.noteTreeId;
+        const nt = noteTree.getNoteTree(noteTreeId);
 
-        $treePrefixInput.val(currentNode.data.prefix).focus();
+        $treePrefixInput.val(nt.prefix).focus();
 
         const noteTitle = noteTree.getNoteTitle(currentNode.data.noteId);
 

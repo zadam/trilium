@@ -89,11 +89,18 @@ const noteTree = (function() {
 
         notesTreeMap[noteTreeId].prefix = prefix;
 
-        getNodesByNoteTreeId(noteTreeId).map(node => {
-            node.data.prefix = prefix;
+        getNodesByNoteTreeId(noteTreeId).map(node => setNodeTitleWithPrefix(node));
+    }
 
-            treeUtils.setNodeTitleWithPrefix(node);
-        });
+    function setNodeTitleWithPrefix(node) {
+        const noteTitle = getNoteTitle(node.data.noteId);
+        const noteTree = notesTreeMap[node.data.noteTreeId];
+
+        const prefix = noteTree.prefix;
+
+        const title = (prefix ? (prefix + " - ") : "") + noteTitle;
+
+        node.setTitle(escapeHtml(title));
     }
 
     function removeParentChildRelation(parentNoteId, childNoteId) {
@@ -138,6 +145,7 @@ const noteTree = (function() {
             notesTreeMap[note.noteTreeId] = note;
 
             noteIdToNote[note.noteId] = {
+                noteId: note.noteId,
                 title: note.title,
                 isProtected: note.isProtected,
                 type: note.type,
@@ -182,24 +190,26 @@ const noteTree = (function() {
         const noteList = [];
 
         for (const noteId of childNoteIds) {
+            const note = getNote(noteId);
             const noteTreeId = getNoteTreeId(parentNoteId, noteId);
             const noteTree = notesTreeMap[noteTreeId];
 
-            const title = (noteTree.prefix ? (noteTree.prefix + " - ") : "") + getNote(noteTree.noteId).title;
+            const title = (noteTree.prefix ? (noteTree.prefix + " - ") : "") + note.title;
 
             const node = {
-                noteId: noteTree.noteId,
+                noteId: noteId,
                 parentNoteId: noteTree.parentNoteId,
                 noteTreeId: noteTree.noteTreeId,
-                isProtected: noteTree.isProtected,
-                prefix: noteTree.prefix,
+                isProtected: note.isProtected,
                 title: escapeHtml(title),
-                extraClasses: getExtraClasses(noteTree),
-                refKey: noteTree.noteId,
+                extraClasses: getExtraClasses(note),
+                refKey: noteId,
                 expanded: noteTree.isExpanded
             };
 
-            if (parentToChildren[noteId] && parentToChildren[noteId].length > 0) {
+            const hasChildren = parentToChildren[noteId] && parentToChildren[noteId].length > 0;
+
+            if (hasChildren || note.type === 'search') {
                 node.folder = true;
 
                 if (node.expanded) {
@@ -626,9 +636,15 @@ const noteTree = (function() {
             },
             dnd: dragAndDropSetup,
             lazyLoad: function(event, data){
-                const node = data.node.data;
+                const noteId = data.node.data.noteId;
+                const note = getNote(noteId);
 
-                data.result = prepareNoteTreeInner(node.noteId);
+                if (note.type === 'search') {
+                    data.result = loadSearchNote(noteId);
+                }
+                else {
+                    data.result = prepareNoteTreeInner(noteId);
+                }
             },
             clones: {
                 highlightActiveClones: true
@@ -636,6 +652,16 @@ const noteTree = (function() {
         });
 
         $tree.contextmenu(contextMenu.contextMenuSettings);
+    }
+
+    async function loadSearchNote(noteId) {
+        const note = await server.get('notes/' + noteId);
+
+        const json = JSON.parse(note.detail.content);
+
+        const noteIds = await server.get('notes?search=' + encodeURIComponent(json.searchString));
+
+        console.log("Found: ", noteIds);
     }
 
     function getTree() {
@@ -755,7 +781,7 @@ const noteTree = (function() {
 
         getNote(noteId).title = title;
 
-        getNodesByNoteId(noteId).map(clone => treeUtils.setNodeTitleWithPrefix(clone));
+        getNodesByNoteId(noteId).map(clone => setNodeTitleWithPrefix(clone));
     }
 
     async function createNewTopLevelNote() {
@@ -787,6 +813,7 @@ const noteTree = (function() {
         notesTreeMap[result.noteTreeId] = result;
 
         noteIdToNote[result.noteId] = {
+            noteId: result.noteId,
             title: result.title,
             isProtected: result.isProtected,
             type: result.type,
@@ -842,6 +869,10 @@ const noteTree = (function() {
 
     function getInstanceName() {
         return instanceName;
+    }
+
+    function getNoteTree(noteTreeId) {
+        return notesTreeMap[noteTreeId];
     }
 
     $(document).bind('keydown', 'ctrl+o', e => {
@@ -919,6 +950,7 @@ const noteTree = (function() {
         getSelectedNodes,
         sortAlphabetically,
         noteExists,
-        getInstanceName
+        getInstanceName,
+        getNoteTree
     };
 })();
