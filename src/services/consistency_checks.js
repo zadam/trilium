@@ -217,6 +217,16 @@ async function runAllChecks() {
             type != 'text' AND type != 'code' AND type != 'render' AND type != 'file' AND type != 'search'`,
         "Note has invalid type", errorList);
 
+    await runCheck(`
+          SELECT 
+            parentNoteId
+          FROM 
+            note_tree
+            JOIN notes ON notes.noteId = note_tree.parentNoteId
+          WHERE 
+            type == 'search'`,
+        "Search note has children", errorList);
+
     await runSyncRowChecks("notes", "noteId", errorList);
     await runSyncRowChecks("note_revisions", "noteRevisionId", errorList);
     await runSyncRowChecks("note_tree", "noteTreeId", errorList);
