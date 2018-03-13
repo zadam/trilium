@@ -95,9 +95,17 @@ const contextMenu = (function() {
         ],
         beforeOpen: (event, ui) => {
             const node = $.ui.fancytree.getNode(ui.target);
+            const nt = noteTree.getNoteTree(node.data.noteTreeId);
+            const note = noteTree.getNote(node.data.noteId);
+            const parentNote = noteTree.getNote(nt.parentNoteId);
+
             // Modify menu entries depending on node status
-            $tree.contextmenu("enableEntry", "pasteAfter", clipboardIds.length > 0);
-            $tree.contextmenu("enableEntry", "pasteInto", clipboardIds.length > 0);
+            $tree.contextmenu("enableEntry", "pasteAfter", clipboardIds.length > 0 && (!parentNote || parentNote.type !== 'search'));
+            $tree.contextmenu("enableEntry", "pasteInto", clipboardIds.length > 0 && note.type !== 'search');
+            $tree.contextmenu("enableEntry", "insertNoteHere", !parentNote || parentNote.type !== 'search');
+            $tree.contextmenu("enableEntry", "insertChildNote", note.type !== 'search');
+            $tree.contextmenu("enableEntry", "importSubTree", note.type !== 'search');
+            $tree.contextmenu("enableEntry", "exportSubTree", note.type !== 'search');
 
             // Activate node on right-click
             node.setActive();

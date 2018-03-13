@@ -204,7 +204,7 @@ const noteTree = (function() {
                 title: escapeHtml(title),
                 extraClasses: getExtraClasses(note),
                 refKey: noteId,
-                expanded: noteTree.isExpanded
+                expanded: note.type !== 'search' && noteTree.isExpanded
             };
 
             const hasChildren = parentToChildren[noteId] && parentToChildren[noteId].length > 0;
@@ -212,7 +212,7 @@ const noteTree = (function() {
             if (hasChildren || note.type === 'search') {
                 node.folder = true;
 
-                if (node.expanded) {
+                if (node.expanded && note.type !== 'search') {
                     node.children = prepareNoteTreeInner(noteId);
                 }
                 else {
@@ -889,6 +889,10 @@ const noteTree = (function() {
         return notesTreeMap[noteTreeId];
     }
 
+    function getNote(noteId) {
+        return noteIdToNote[noteId];
+    }
+
     $(document).bind('keydown', 'ctrl+o', e => {
         const node = getCurrentNode();
         const parentNoteId = node.data.parentNoteId;
@@ -965,6 +969,7 @@ const noteTree = (function() {
         sortAlphabetically,
         noteExists,
         getInstanceName,
-        getNoteTree
+        getNoteTree,
+        getNote
     };
 })();
