@@ -58,9 +58,14 @@
 
       <div id="search-box" class="hide-toggle" style="grid-area: search; display: none; padding: 10px; margin-top: 10px;">
         <div style="display: flex; align-items: center;">
-          <label>Search:</label>
-          <input name="search-text" style="flex-grow: 100; margin-left: 5px; margin-right: 5px;" autocomplete="off">
-          <button id="reset-search-button" class="btn btn-sm" title="Reset search">&times;</button>
+          <input name="search-text" placeholder="Search text, attributes" style="flex-grow: 100; margin-left: 5px; margin-right: 5px;" autocomplete="off">
+          <button id="do-search-button" class="btn btn-primary btn-sm" title="Search">Search</button>
+        </div>
+
+        <div style="display: flex; align-items: center; justify-content: space-evenly; margin-top: 10px;">
+          <button id="reset-search-button" class="btn btn-sm" title="Reset search">Reset search</button>
+
+          <button id="save-search-button" class="btn btn-sm" title="Save search">Save search</button>
         </div>
       </div>
 

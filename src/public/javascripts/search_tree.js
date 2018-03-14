@@ -3,7 +3,9 @@
 const searchTree = (function() {
     const $tree = $("#tree");
     const $searchInput = $("input[name='search-text']");
-    const $resetSearchButton = $("button#reset-search-button");
+    const $resetSearchButton = $("#reset-search-button");
+    const $doSearchButton = $("#do-search-button");
+    const $saveSearchButton = $("#save-search-button");
     const $searchBox = $("#search-box");
 
     $resetSearchButton.click(resetSearch);
@@ -30,7 +32,20 @@ const searchTree = (function() {
         return $tree.fancytree('getTree');
     }
 
-    $searchInput.keyup(async e => {
+    async function doSearch() {
+        const searchText = $searchInput.val();
+
+        const noteIds = await server.get('notes?search=' + encodeURIComponent(searchText));
+
+        for (const noteId of noteIds) {
+            await noteTree.expandToNote(noteId, {noAnimation: true, noEvents: true});
+        }
+
+        // Pass a string to perform case insensitive matching
+        getTree().filterBranches(node => noteIds.includes(node.data.noteId));
+    }
+
+    $searchInput.keyup(e => {
         const searchText = $searchInput.val();
 
         if (e && e.which === $.ui.keyCode.ESCAPE || $.trim(searchText) === "") {
@@ -39,16 +54,13 @@ const searchTree = (function() {
         }
 
         if (e && e.which === $.ui.keyCode.ENTER) {
-            const noteIds = await server.get('notes?search=' + encodeURIComponent(searchText));
-
-            for (const noteId of noteIds) {
-                await noteTree.expandToNote(noteId, {noAnimation: true, noEvents: true});
-            }
-
-            // Pass a string to perform case insensitive matching
-            getTree().filterBranches(node => noteIds.includes(node.data.noteId));
+            doSearch();
         }
     }).focus();
+
+    $doSearchButton.click(doSearch);
+
+    $saveSearchButton.click(() => alert("Save search"));
 
     $(document).bind('keydown', 'ctrl+s', e => {
         toggleSearch();
