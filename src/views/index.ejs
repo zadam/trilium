@@ -8,7 +8,7 @@
     <div id="container" style="display:none;">
       <div id="header" class="hide-toggle">
         <div id="header-title">
-          <img src="images/app-icons/png/24x24.png">
+          <img src="/images/app-icons/png/24x24.png">
 
           Trilium Notes
         </div>
@@ -41,16 +41,16 @@
       <div class="hide-toggle" style="grid-area: tree-actions;">
         <div style="display: flex; justify-content: space-around; padding: 10px 0 10px 0; margin: 0 20px 0 20px; border: 1px solid #ccc;">
           <a id="create-top-level-note-button" title="Create new top level note" class="icon-action"
-             style="background: url('images/icons/file-plus.png')"></a>
+             style="background: url('/images/icons/file-plus.png')"></a>
 
           <a id="collapse-tree-button" title="Collapse note tree" class="icon-action"
-             style="background: url('images/icons/list.png')"></a>
+             style="background: url('/images/icons/list.png')"></a>
 
           <a id="scroll-to-current-note-button" title="Scroll to current note. Shortcut CTRL+." class="icon-action"
-             style="background: url('images/icons/crosshair.png')"></a>
+             style="background: url('/images/icons/crosshair.png')"></a>
 
           <a id="toggle-search-button" title="Search in notes" class="icon-action"
-             style="background: url('images/icons/search.png')"></a>
+             style="background: url('/images/icons/search.png')"></a>
         </div>
 
         <input type="file" id="import-upload" style="display: none" />
@@ -101,7 +101,7 @@
                   id="execute-script-button">Execute <kbd>Ctrl+Enter</kbd></button>
 
           <div class="dropdown" id="note-type" data-bind="visible: type() != 'search'">
-            <button data-bind="disable: isDisabled()" id="dLabel" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-sm">
+            <button data-bind="disable: isDisabled()" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-sm">
               Type: <span data-bind="text: typeString()"></span>
               <span class="caret"></span>
             </button>
@@ -118,7 +118,7 @@
           </div>
 
           <div class="dropdown" style="margin-left: 10px; margin-right: 10px;">
-            <button id="dLabel" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-sm">
+            <button type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-sm">
               Note actions
               <span class="caret"></span>
             </button>
@@ -495,67 +495,67 @@
     <!-- Required for correct loading of scripts in Electron -->
     <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
 
-    <script src="libraries/jquery.min.js"></script>
+    <script src="/libraries/jquery.min.js"></script>
 
     <!-- bootstrap needs to be included before jQuery UI, otherwise close icon in the dialog will be missing -->
-    <link href="libraries/bootstrap/css/bootstrap.css" rel="stylesheet">
-    <script src="libraries/bootstrap/js/bootstrap.js"></script>
+    <link href="/libraries/bootstrap/css/bootstrap.css" rel="stylesheet">
+    <script src="/libraries/bootstrap/js/bootstrap.js"></script>
 
-    <link href="libraries/jqueryui/jquery-ui.min.css" rel="stylesheet">
-    <script src="libraries/jqueryui/jquery-ui.min.js"></script>
+    <link href="/libraries/jqueryui/jquery-ui.min.css" rel="stylesheet">
+    <script src="/libraries/jqueryui/jquery-ui.min.js"></script>
 
-    <script src="libraries/bootstrap-notify.min.js"></script>
+    <script src="/libraries/bootstrap-notify.min.js"></script>
 
     <!-- Include Fancytree skin and library -->
-    <link href="libraries/fancytree/skin-win8/ui.fancytree.css" rel="stylesheet">
-    <script src="libraries/fancytree/jquery.fancytree-all.min.js"></script>
+    <link href="/libraries/fancytree/skin-win8/ui.fancytree.css" rel="stylesheet">
+    <script src="/libraries/fancytree/jquery.fancytree-all.min.js"></script>
 
-    <script src="libraries/jquery.hotkeys.js"></script>
-    <script src="libraries/jquery.fancytree.hotkeys.js"></script>
+    <script src="/libraries/jquery.hotkeys.js"></script>
+    <script src="/libraries/jquery.fancytree.hotkeys.js"></script>
 
-    <script src="libraries/jquery.ui-contextmenu.min.js"></script>
+    <script src="/libraries/jquery.ui-contextmenu.min.js"></script>
 
-    <script src="libraries/knockout.min.js"></script>
+    <script src="/libraries/knockout.min.js"></script>
 
-    <link href="stylesheets/style.css" rel="stylesheet">
+    <link href="/stylesheets/style.css" rel="stylesheet">
 
-    <script src="javascripts/bootstrap.js" type="module"></script>
+    <script src="/javascripts/bootstrap.js" type="module"></script>
 
-    <script src="javascripts/utils.js"></script>
-    <script src="javascripts/init.js"></script>
-    <script src="javascripts/server.js"></script>
+    <script src="/javascripts/utils.js"></script>
+    <script src="/javascripts/init.js"></script>
+    <script src="/javascripts/server.js"></script>
 
     <!-- Tree scripts -->
-    <script src="javascripts/note_tree.js"></script>
-    <script src="javascripts/tree_changes.js"></script>
-    <script src="javascripts/cloning.js"></script>
-    <script src="javascripts/tree_utils.js"></script>
-    <script src="javascripts/drag_and_drop.js"></script>
-    <script src="javascripts/context_menu.js"></script>
-    <script src="javascripts/export.js"></script>
+    <script src="/javascripts/note_tree.js"></script>
+    <script src="/javascripts/tree_changes.js"></script>
+    <script src="/javascripts/cloning.js"></script>
+    <script src="/javascripts/tree_utils.js"></script>
+    <script src="/javascripts/drag_and_drop.js"></script>
+    <script src="/javascripts/context_menu.js"></script>
+    <script src="/javascripts/export.js"></script>
 
     <!-- Note detail -->
-    <script src="javascripts/note_editor.js"></script>
-    <script src="javascripts/protected_session.js"></script>
-    <script src="javascripts/note_type.js"></script>
+    <script src="/javascripts/note_editor.js"></script>
+    <script src="/javascripts/protected_session.js"></script>
+    <script src="/javascripts/note_type.js"></script>
 
     <!-- dialogs -->
-    <script src="javascripts/dialogs/recent_notes.js"></script>
-    <script src="javascripts/dialogs/add_link.js"></script>
-    <script src="javascripts/dialogs/jump_to_note.js"></script>
-    <script src="javascripts/dialogs/settings.js"></script>
-    <script src="javascripts/dialogs/note_history.js"></script>
-    <script src="javascripts/dialogs/recent_changes.js"></script>
-    <script src="javascripts/dialogs/event_log.js"></script>
-    <script src="javascripts/dialogs/edit_tree_prefix.js"></script>
-    <script src="javascripts/dialogs/sql_console.js"></script>
-    <script src="javascripts/dialogs/note_source.js"></script>
-    <script src="javascripts/dialogs/attributes.js"></script>
+    <script src="/javascripts/dialogs/recent_notes.js"></script>
+    <script src="/javascripts/dialogs/add_link.js"></script>
+    <script src="/javascripts/dialogs/jump_to_note.js"></script>
+    <script src="/javascripts/dialogs/settings.js"></script>
+    <script src="/javascripts/dialogs/note_history.js"></script>
+    <script src="/javascripts/dialogs/recent_changes.js"></script>
+    <script src="/javascripts/dialogs/event_log.js"></script>
+    <script src="/javascripts/dialogs/edit_tree_prefix.js"></script>
+    <script src="/javascripts/dialogs/sql_console.js"></script>
+    <script src="/javascripts/dialogs/note_source.js"></script>
+    <script src="/javascripts/dialogs/attributes.js"></script>
 
-    <script src="javascripts/link.js"></script>
-    <script src="javascripts/sync.js"></script>
-    <script src="javascripts/messaging.js"></script>
-    <script src="javascripts/api.js"></script>
+    <script src="/javascripts/link.js"></script>
+    <script src="/javascripts/sync.js"></script>
+    <script src="/javascripts/messaging.js"></script>
+    <script src="/javascripts/api.js"></script>
 
     <script type="text/javascript">
       // we hide container initally because otherwise it is rendered first without CSS and then flickers into
