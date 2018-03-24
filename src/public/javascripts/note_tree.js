@@ -659,7 +659,7 @@ const noteTree = (function() {
 
         const json = JSON.parse(note.detail.content);
 
-        const noteIds = await server.get('notes?search=' + encodeURIComponent(json.searchString));
+        const noteIds = await server.get('search/' + encodeURIComponent(json.searchString));
 
         for (const noteId of noteIds) {
             const noteTreeId = "virt" + randomString(10);

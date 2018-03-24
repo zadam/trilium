@@ -30,6 +30,7 @@ const attributesRoute = require('./api/attributes');
 const scriptRoute = require('./api/script');
 const senderRoute = require('./api/sender');
 const attachmentsRoute = require('./api/attachments');
+const searchRoute = require('./api/search');
 
 function register(app) {
     app.use('/', indexRoute);
@@ -63,6 +64,7 @@ function register(app) {
     app.use('/api/script', scriptRoute);
     app.use('/api/sender', senderRoute);
     app.use('/api/attachments', attachmentsRoute);
+    app.use('/api/search', searchRoute);
 }
 
 module.exports = {

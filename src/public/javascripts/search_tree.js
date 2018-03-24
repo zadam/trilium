@@ -35,7 +35,7 @@ const searchTree = (function() {
     async function doSearch() {
         const searchText = $searchInput.val();
 
-        const noteIds = await server.get('notes?search=' + encodeURIComponent(searchText));
+        const noteIds = await server.get('search/' + encodeURIComponent(searchText));
 
         for (const noteId of noteIds) {
             await noteTree.expandToNote(noteId, {noAnimation: true, noEvents: true});
@@ -60,7 +60,13 @@ const searchTree = (function() {
 
     $doSearchButton.click(doSearch);
 
-    $saveSearchButton.click(() => alert("Save search"));
+    $saveSearchButton.click(async () => {
+        const {noteId} = await server.post('search/' + encodeURIComponent($searchInput.val()));
+
+        await noteTree.reload();
+
+        await noteTree.activateNode(noteId);
+    });
 
     $(document).bind('keydown', 'ctrl+s', e => {
         toggleSearch();

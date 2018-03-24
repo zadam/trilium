@@ -96,7 +96,7 @@ async function createNote(parentNoteId, title, content = "", extraOptions = {}) 
         mime: extraOptions.mime
     };
 
-    if (extraOptions.json) {
+    if (extraOptions.json && !note.type) {
         note.type = "code";
         note.mime = "application/json";
     }
