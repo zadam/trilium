@@ -1,6 +1,7 @@
 "use strict";
 
 const recentChanges = (function() {
+    const $showDialogButton = $("#recent-changes-button");
     const $dialog = $("#recent-changes-dialog");
 
     async function showDialog() {
@@ -82,6 +83,8 @@ const recentChanges = (function() {
     }
 
     $(document).bind('keydown', 'alt+r', showDialog);
+
+    $showDialogButton.click(showDialog);
 
     return {
         showDialog

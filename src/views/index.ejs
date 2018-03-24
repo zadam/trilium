@@ -14,22 +14,22 @@
         </div>
 
         <div style="flex-grow: 100;">
-          <button class="btn btn-xs" onclick="jumpToNote.showDialog();" title="CTRL+J">Jump to note</button>
-          <button class="btn btn-xs" onclick="recentNotes.showDialog();" title="CTRL+E">Recent notes</button>
-          <button class="btn btn-xs" onclick="recentChanges.showDialog();">Recent changes</button>
+          <button class="btn btn-xs" id="jump-to-note-button" title="CTRL+J">Jump to note</button>
+          <button class="btn btn-xs" id="recent-notes-button" title="CTRL+E">Recent notes</button>
+          <button class="btn btn-xs" id="recent-changes-button">Recent changes</button>
         </div>
 
         <div id="plugin-buttons">
         </div>
 
         <div>
-          <button class="btn btn-xs" onclick="syncNow();" title="Number of outstanding changes to be pushed to server">
+          <button class="btn btn-xs" id="sync-now-button" title="Number of outstanding changes to be pushed to server">
             <span class="ui-icon ui-icon-refresh"></span>
 
             Sync now (<span id="changes-to-push-count">0</span>)
           </button>
 
-          <button class="btn btn-xs" onclick="settings.showDialog();">
+          <button class="btn btn-xs" id="settings-button">
             <span class="ui-icon ui-icon-gear"></span> Settings</button>
 
           <form action="logout" id="logout-button" method="POST" style="display: inline;">
@@ -40,16 +40,16 @@
 
       <div class="hide-toggle" style="grid-area: tree-actions;">
         <div style="display: flex; justify-content: space-around; padding: 10px 0 10px 0; margin: 0 20px 0 20px; border: 1px solid #ccc;">
-          <a onclick="noteTree.createNewTopLevelNote()" title="Create new top level note" class="icon-action"
+          <a id="create-top-level-note-button" title="Create new top level note" class="icon-action"
              style="background: url('images/icons/file-plus.png')"></a>
 
-          <a onclick="noteTree.collapseTree()" title="Collapse note tree" class="icon-action"
+          <a id="collapse-tree-button" title="Collapse note tree" class="icon-action"
              style="background: url('images/icons/list.png')"></a>
 
-          <a onclick="noteTree.scrollToCurrentNote()" title="Scroll to current note. Shortcut CTRL+." class="icon-action"
+          <a id="scroll-to-current-note-button" title="Scroll to current note. Shortcut CTRL+." class="icon-action"
              style="background: url('images/icons/crosshair.png')"></a>
 
-          <a onclick="searchTree.toggleSearch()" title="Search in notes" class="icon-action"
+          <a id="toggle-search-button" title="Search in notes" class="icon-action"
              style="background: url('images/icons/search.png')"></a>
         </div>
 
@@ -80,14 +80,12 @@
 
       <div class="hide-toggle" style="grid-area: title;">
         <div style="display: flex; align-items: center;">
-          <a onclick="protected_session.protectNoteAndSendToServer()"
-             title="Protect the note so that password will be required to view the note"
+          <a title="Protect the note so that password will be required to view the note"
              class="icon-action"
              id="protect-button"
              style="display: none; background: url('images/icons/lock.png')"></a>
 
-          <a onclick="protected_session.unprotectNoteAndSendToServer()"
-             title="Unprotect note so that password will not be required to access this note in the future"
+          <a title="Unprotect note so that password will not be required to access this note in the future"
              class="icon-action"
              id="unprotect-button"
              style="display: none; background: url('images/icons/unlock.png')"></a>
@@ -100,8 +98,7 @@
 
           <button class="btn btn-sm"
                   style="display: none; margin-right: 10px"
-                  id="execute-script-button"
-                  onclick="noteEditor.executeCurrentNote()">Execute <kbd>Ctrl+Enter</kbd></button>
+                  id="execute-script-button">Execute <kbd>Ctrl+Enter</kbd></button>
 
           <div class="dropdown" id="note-type" data-bind="visible: type() != 'search'">
             <button data-bind="disable: isDisabled()" id="dLabel" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-sm">
@@ -126,10 +123,10 @@
               <span class="caret"></span>
             </button>
             <ul class="dropdown-menu dropdown-menu-right" aria-labelledby="dLabel">
-              <li><a onclick="noteHistory.showCurrentNoteHistory();"><kbd>Alt+H</kbd> History</a></li>
-              <li><a onclick="attributesDialog.showDialog();"><kbd>Alt+A</kbd> Attributes</a></li>
-              <li><a onclick="noteSource.showDialog();"><kbd>Ctrl+U</kbd> HTML source</a></li>
-              <li><a onclick="uploadAttachment();">Upload attachment</a></li>
+              <li><a id="show-history-button"><kbd>Alt+H</kbd> History</a></li>
+              <li><a class="show-attributes-button"><kbd>Alt+A</kbd> Attributes</a></li>
+              <li><a id="show-source-button"><kbd>Ctrl+U</kbd> HTML source</a></li>
+              <li><a id="upload-attachment-button">Upload attachment</a></li>
             </ul>
           </div>
         </div>
@@ -208,7 +205,7 @@
       </div>
 
       <div id="attribute-list">
-        <button class="btn btn-sm" onclick="attributesDialog.showDialog();">Attributes:</button>
+        <button class="btn btn-sm show-attributes-button">Attributes:</button>
 
         <span id="attribute-list-inner"></span>
       </div>

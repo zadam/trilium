@@ -22,6 +22,8 @@ const noteEditor = (function() {
     const $attachmentOpen = $("#attachment-open");
     const $searchString = $("#search-string");
 
+    const $executeScriptButton = $("#execute-script-button");
+
     let editor = null;
     let codeEditor = null;
 
@@ -372,6 +374,8 @@ const noteEditor = (function() {
     });
 
     $(document).bind('keydown', "ctrl+return", executeCurrentNote);
+
+    $executeScriptButton.click(executeCurrentNote());
 
     setInterval(saveNoteIfChanged, 5000);
 

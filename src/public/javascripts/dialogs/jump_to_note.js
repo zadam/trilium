@@ -1,6 +1,7 @@
 "use strict";
 
 const jumpToNote = (function() {
+    const $showDialogButton = $("#jump-to-note-button");
     const $dialog = $("#jump-to-note-dialog");
     const $autoComplete = $("#jump-to-note-autocomplete");
     const $form = $("#jump-to-note-form");
@@ -49,6 +50,8 @@ const jumpToNote = (function() {
 
         return false;
     });
+
+    $showDialogButton.click(showDialog);
 
     return {
         showDialog

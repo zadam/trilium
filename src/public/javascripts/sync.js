@@ -15,6 +15,8 @@ async function syncNow() {
     }
 }
 
+$("#sync-now-button").click(syncNow);
+
 async function forceNoteSync(noteId) {
     const result = await server.post('sync/force-note-sync/' + noteId);
 

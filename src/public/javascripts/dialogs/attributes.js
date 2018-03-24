@@ -1,6 +1,7 @@
 "use strict";
 
 const attributesDialog = (function() {
+    const $showDialogButton = $(".show-attributes-button");
     const $dialog = $("#attributes-dialog");
     const $saveAttributesButton = $("#save-attributes-button");
     const $attributesBody = $('#attributes-table tbody');
@@ -217,6 +218,8 @@ const attributesDialog = (function() {
 
         $(this).autocomplete("search", $(this).val());
     });
+
+    $showDialogButton.click(showDialog);
 
     return {
         showDialog

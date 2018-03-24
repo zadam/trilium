@@ -7,6 +7,7 @@ const searchTree = (function() {
     const $doSearchButton = $("#do-search-button");
     const $saveSearchButton = $("#save-search-button");
     const $searchBox = $("#search-box");
+    const $toggleSearchButton = $("#toggle-search-button");
 
     $resetSearchButton.click(resetSearch);
 
@@ -73,6 +74,8 @@ const searchTree = (function() {
 
         e.preventDefault();
     });
+
+    $toggleSearchButton.click(toggleSearch);
 
     return {
         toggleSearch

@@ -1,6 +1,7 @@
 "use strict";
 
 const recentNotes = (function() {
+    const $showDialogButton = $("#recent-notes-button");
     const $dialog = $("#recent-notes-dialog");
     const $searchInput = $('#recent-notes-search-input');
 
@@ -93,6 +94,8 @@ const recentNotes = (function() {
 
         e.preventDefault();
     });
+
+    $showDialogButton.click(showDialog);
 
     return {
         showDialog,

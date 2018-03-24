@@ -1,6 +1,7 @@
 "use strict";
 
 const settings = (function() {
+    const $showDialogButton = $("#settings-button");
     const $dialog = $("#settings-dialog");
     const $tabs = $("#settings-tabs");
 
@@ -37,6 +38,8 @@ const settings = (function() {
 
         showMessage("Settings change have been saved.");
     }
+
+    $showDialogButton.click(showDialog);
 
     return {
         showDialog,

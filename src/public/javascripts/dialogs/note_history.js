@@ -1,6 +1,7 @@
 "use strict";
 
 const noteHistory = (function() {
+    const $showDialogButton = $("#show-history-button");
     const $dialog = $("#note-history-dialog");
     const $list = $("#note-history-list");
     const $content = $("#note-history-content");
@@ -71,6 +72,8 @@ const noteHistory = (function() {
 
         return false;
     });
+
+    $showDialogButton.click(showCurrentNoteHistory);
 
     return {
         showCurrentNoteHistory

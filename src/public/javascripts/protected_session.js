@@ -5,6 +5,8 @@ const protected_session = (function() {
     const $passwordForm = $("#protected-session-password-form");
     const $password = $("#protected-session-password");
     const $noteDetailWrapper = $("#note-detail-wrapper");
+    const $protectButton = $("#protect-button");
+    const $unprotectButton = $("#unprotect-button");
 
     let protectedSessionDeferred = null;
     let lastProtectedSessionOperationDate = null;
@@ -168,6 +170,9 @@ const protected_session = (function() {
             resetProtectedSession();
         }
     }, 5000);
+
+    $protectButton.click(protectNoteAndSendToServer);
+    $unprotectButton.click(unprotectNoteAndSendToServer);
 
     return {
         setProtectedSessionTimeout,

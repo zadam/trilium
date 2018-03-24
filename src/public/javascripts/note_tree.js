@@ -4,6 +4,9 @@ const noteTree = (function() {
     const $tree = $("#tree");
     const $parentList = $("#parent-list");
     const $parentListList = $("#parent-list-inner");
+    const $createTopLevelNoteButton = $("#create-top-level-note-button");
+    const $collapseTreeButton = $("#collapse-tree-button");
+    const $scrollToCurrentNoteButton = $("#scroll-to-current-note-button");
 
     let instanceName = null; // should have better place
 
@@ -944,6 +947,10 @@ const noteTree = (function() {
             e.preventDefault();
         });
     }
+
+    $createTopLevelNoteButton.click(createNewTopLevelNote);
+    $collapseTreeButton.click(collapseTree);
+    $scrollToCurrentNoteButton.click(scrollToCurrentNote);
 
     return {
         reload,

@@ -229,6 +229,8 @@ function uploadAttachment() {
     $("#attachment-upload").trigger('click');
 }
 
+$("#upload-attachment-button").click(uploadAttachment);
+
 $("#attachment-upload").change(async function() {
     const formData = new FormData();
     formData.append('upload', this.files[0]);

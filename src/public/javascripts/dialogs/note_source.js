@@ -1,6 +1,7 @@
 "use strict";
 
 const noteSource = (function() {
+    const $showDialogButton = $("#show-source-button");
     const $dialog = $("#note-source-dialog");
     const $noteSource = $("#note-source");
 
@@ -50,6 +51,8 @@ const noteSource = (function() {
 
         e.preventDefault();
     });
+
+    $showDialogButton.click(showDialog);
 
     return {
         showDialog
