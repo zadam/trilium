@@ -211,7 +211,7 @@ $(document).ready(() => {
 if (isElectron()) {
     require('electron').ipcRenderer.on('create-day-sub-note', async function(event, parentNoteId) {
         // this might occur when day note had to be created
-        if (!treeService.noteExists(parentNoteId)) {
+        if (!await treeService.noteExists(parentNoteId)) {
             await treeService.reload();
         }
 

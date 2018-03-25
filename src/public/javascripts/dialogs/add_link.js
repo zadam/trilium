@@ -19,7 +19,7 @@ const addLink = (function() {
         linkTypeChanged();
     }
 
-    function showDialog() {
+    async function showDialog() {
         glob.activeDialog = $dialog;
 
         if (noteEditor.getCurrentNoteType() === 'text') {
@@ -49,7 +49,7 @@ const addLink = (function() {
         }
 
         $autoComplete.autocomplete({
-            source: treeService.getAutocompleteItems(),
+            source: await treeService.getAutocompleteItems(),
             minLength: 0,
             change: () => {
                 const val = $autoComplete.val();

@@ -311,7 +311,7 @@ const treeService = (function() {
     async function expandToNote(notePath, expandOpts) {
         assertArguments(notePath);
 
-        const runPath = getRunPath(notePath);
+        const runPath = await getRunPath(notePath);
 
         const noteId = treeUtils.getNoteIdFromNotePath(notePath);
 
@@ -345,7 +345,7 @@ const treeService = (function() {
      * Accepts notePath and tries to resolve it. Part of the path might not be valid because of note moving (which causes
      * path change) or other corruption, in that case this will try to get some other valid path to the correct note.
      */
-    function getRunPath(notePath) {
+    async function getRunPath(notePath) {
         assertArguments(notePath);
 
         const path = notePath.split("/").reverse();
@@ -363,20 +363,21 @@ const treeService = (function() {
             const parentNoteId = path[i++];
 
             if (childNoteId !== null) {
-                const parents = childToParents[childNoteId];
+                const child = treeCache.getNote(childNoteId);
+                const parents = await child.getParentNotes();
 
                 if (!parents) {
                     messaging.logError("No parents found for " + childNoteId);
                     return;
                 }
 
-                if (!parents.includes(parentNoteId)) {
+                if (!parents.some(p => p.noteId === parentNoteId)) {
                     console.log(now(), "Did not find parent " + parentNoteId + " for child " + childNoteId);
 
                     if (parents.length > 0) {
                         console.log(now(), "Available parents:", parents);
 
-                        const someNotePath = getSomeNotePath(parents[0]);
+                        const someNotePath = await getSomeNotePath(parents[0]);
 
                         if (someNotePath) { // in case it's root the path may be empty
                             const pathToRoot = someNotePath.split("/").reverse();
@@ -407,12 +408,13 @@ const treeService = (function() {
         return effectivePath.reverse();
     }
 
-    function showParentList(noteId, node) {
+    async function showParentList(noteId, node) {
         assertArguments(noteId, node);
 
-        const parents = childToParents[noteId];
+        const note = treeCache.getNote(noteId);
+        const parents = await note.getParentNotes();
 
-        if (!parents) {
+        if (!parents.length) {
             throwError("Can't find parents for noteId=" + noteId);
         }
 
@@ -423,15 +425,15 @@ const treeService = (function() {
             $parentList.show();
             $parentListList.empty();
 
-            for (const parentNoteId of parents) {
-                const parentNotePath = getSomeNotePath(parentNoteId);
+            for (const parentNote of parents) {
+                const parentNotePath = await getSomeNotePath(parentNote);
                 // this is to avoid having root notes leading '/'
                 const notePath = parentNotePath ? (parentNotePath + '/' + noteId) : noteId;
                 const title = getNotePathTitle(notePath);
 
                 let item;
 
-                if (node.getParent().data.noteId === parentNoteId) {
+                if (node.getParent().data.noteId === parentNote.noteId) {
                     item = $("<span/>").attr("title", "Current note").append(title);
                 }
                 else {
@@ -459,21 +461,23 @@ const treeService = (function() {
         return titlePath.join(' / ');
     }
 
-    function getSomeNotePath(noteId) {
-        assertArguments(noteId);
+    async function getSomeNotePath(note) {
+        assertArguments(note);
 
         const path = [];
 
-        let cur = noteId;
+        let cur = note;
 
-        while (cur !== 'root') {
-            path.push(cur);
+        while (cur.noteId !== 'root') {
+            path.push(cur.noteId);
 
-            if (!childToParents[cur]) {
+            const parents = await cur.getParentNotes();
+
+            if (!parents.length) {
                 throwError("Can't find parents for " + cur);
             }
 
-            cur = childToParents[cur][0];
+            cur = parents[0];
         }
 
         return path.reverse().join('/');
@@ -821,12 +825,15 @@ const treeService = (function() {
         setBranchBackgroundBasedOnProtectedStatus(noteId);
     }
 
-    function getAutocompleteItems(parentNoteId, notePath, titlePath) {
+    async function getAutocompleteItems(parentNoteId, notePath, titlePath) {
         if (!parentNoteId) {
             parentNoteId = 'root';
         }
 
-        if (!parentToChildren[parentNoteId]) {
+        const parentNote = treeCache.getNote(parentNoteId);
+        const childNotes = await parentNote.getChildNotes();
+
+        if (!childNotes.length) {
             return [];
         }
 
@@ -843,20 +850,20 @@ const treeService = (function() {
 
         const autocompleteItems = [];
 
-        for (const childNoteId of parentToChildren[parentNoteId]) {
-            if (hiddenInAutocomplete[childNoteId]) {
+        for (const childNote of childNotes) {
+            if (childNote.hideInAutocomplete) {
                 continue;
             }
 
-            const childNotePath = (notePath ? (notePath + '/') : '') + childNoteId;
-            const childTitlePath = (titlePath ? (titlePath + ' / ') : '') + getNoteTitle(childNoteId, parentNoteId);
+            const childNotePath = (notePath ? (notePath + '/') : '') + childNote.noteId;
+            const childTitlePath = (titlePath ? (titlePath + ' / ') : '') + getNoteTitle(childNote.noteId, parentNoteId);
 
             autocompleteItems.push({
                 value: childTitlePath + ' (' + childNotePath + ')',
                 label: childTitlePath
             });
 
-            const childItems = getAutocompleteItems(childNoteId, childNotePath, childTitlePath);
+            const childItems = await getAutocompleteItems(childNote.noteId, childNotePath, childTitlePath);
 
             for (const childItem of childItems) {
                 autocompleteItems.push(childItem);
@@ -953,8 +960,8 @@ const treeService = (function() {
         await reload();
     }
 
-    function noteExists(noteId) {
-        return !!childToParents[noteId];
+    async function noteExists(noteId) {
+        return !!treeCache.getNote(noteId);
     }
 
     function getInstanceName() {
