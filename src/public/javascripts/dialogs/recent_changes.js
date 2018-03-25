@@ -1,7 +1,7 @@
 "use strict";
 
-import link from '../link.js';
-import utils from '../utils.js';
+import link from '../services/link.js';
+import utils from '../services/utils.js';
 
 const $showDialogButton = $("#recent-changes-button");
 const $dialog = $("#recent-changes-dialog");

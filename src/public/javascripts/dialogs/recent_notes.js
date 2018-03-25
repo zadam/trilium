@@ -1,8 +1,8 @@
 "use strict";
 
-import treeService from '../note_tree.js';
-import server from '../server.js';
-import messaging from '../messaging.js';
+import treeService from '../services/tree_service.js';
+import server from '../services/server.js';
+import messaging from '../services/messaging.js';
 
 const $showDialogButton = $("#recent-notes-button");
 const $dialog = $("#recent-notes-dialog");

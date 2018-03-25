@@ -1,6 +1,6 @@
 "use strict";
 
-import utils from '../utils.js';
+import utils from '../services/utils.js';
 
 const $dialog = $("#sql-console-dialog");
 const $query = $('#sql-console-query');

@@ -1,6 +1,6 @@
 "use strict";
 
-import treeService from './note_tree.js';
+import treeService from './tree_service.js';
 import noteType from './note_type.js';
 import protected_session from './protected_session.js';
 import utils from './utils.js';

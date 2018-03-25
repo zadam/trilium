@@ -4,13 +4,13 @@ import contextMenu from './context_menu.js';
 import dragAndDropSetup from './drag_and_drop.js';
 import link from './link.js';
 import messaging from './messaging.js';
-import noteEditor from './note_editor.js';
+import noteDetail from './note_detail.js';
 import protected_session from './protected_session.js';
 import treeChanges from './tree_changes.js';
 import treeUtils from './tree_utils.js';
 import utils from './utils.js';
 import server from './server.js';
-import recentNotes from './dialogs/recent_notes.js';
+import recentNotes from '../dialogs/recent_notes.js';
 import treeCache from './tree_cache.js';
 
 const $tree = $("#tree");
@@ -494,7 +494,7 @@ function initFancyTree(branch) {
             return false;
         },
         "return": node => {
-            noteEditor.focus();
+            noteDetail.focus();
 
             return false;
         },
@@ -557,7 +557,7 @@ function initFancyTree(branch) {
 
             setCurrentNotePathToHash(data.node);
 
-            noteEditor.switchToNote(node.noteId);
+            noteDetail.switchToNote(node.noteId);
 
             showParentList(node.noteId, data.node);
         },
@@ -793,7 +793,7 @@ async function createNote(node, parentNoteId, target, isProtected) {
 
     treeCache.add(note, branch);
 
-    noteEditor.newNoteCreated();
+    noteDetail.newNoteCreated();
 
     const newNode = {
         title: newNoteName,

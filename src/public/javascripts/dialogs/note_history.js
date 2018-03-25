@@ -1,7 +1,7 @@
 "use strict";
 
-import noteEditor from '../note_editor.js';
-import utils from '../utils.js';
+import noteDetail from '../services/note_detail.js';
+import utils from '../services/utils.js';
 
 const $showDialogButton = $("#show-history-button");
 const $dialog = $("#note-history-dialog");
@@ -12,7 +12,7 @@ const $title = $("#note-history-title");
 let historyItems = [];
 
 async function showCurrentNoteHistory() {
-    await showNoteHistoryDialog(noteEditor.getCurrentNoteId());
+    await showNoteHistoryDialog(noteDetail.getCurrentNoteId());
 }
 
 async function showNoteHistoryDialog(noteId, noteRevisionId) {

@@ -1,10 +1,10 @@
 "use strict";
 
-import treeService from '../note_tree.js';
-import cloning from '../cloning.js';
-import link from '../link.js';
-import noteEditor from '../note_editor.js';
-import treeUtils from '../tree_utils.js';
+import treeService from '../services/tree_service.js';
+import cloning from '../services/cloning.js';
+import link from '../services/link.js';
+import noteDetail from '../services/note_detail.js';
+import treeUtils from '../services/tree_utils.js';
 
 const $dialog = $("#add-link-dialog");
 const $form = $("#add-link-form");
@@ -27,7 +27,7 @@ function setLinkType(linkType) {
 async function showDialog() {
     glob.activeDialog = $dialog;
 
-    if (noteEditor.getCurrentNoteType() === 'text') {
+    if (noteDetail.getCurrentNoteType() === 'text') {
         $linkTypeHtml.prop('disabled', false);
 
         setLinkType('html');
@@ -99,14 +99,14 @@ $form.submit(() => {
         else if (linkType === 'selected-to-current') {
             const prefix = $clonePrefix.val();
 
-            cloning.cloneNoteTo(noteId, noteEditor.getCurrentNoteId(), prefix);
+            cloning.cloneNoteTo(noteId, noteDetail.getCurrentNoteId(), prefix);
 
             $dialog.dialog("close");
         }
         else if (linkType === 'current-to-selected') {
             const prefix = $clonePrefix.val();
 
-            cloning.cloneNoteTo(noteEditor.getCurrentNoteId(), noteId, prefix);
+            cloning.cloneNoteTo(noteDetail.getCurrentNoteId(), noteId, prefix);
 
             $dialog.dialog("close");
         }

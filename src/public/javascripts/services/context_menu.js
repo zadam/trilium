@@ -1,6 +1,6 @@
 "use strict";
 
-import treeService from './note_tree.js';
+import treeService from './tree_service.js';
 import cloning from './cloning.js';
 import exportService from './export.js';
 import messaging from './messaging.js';

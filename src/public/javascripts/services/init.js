@@ -1,9 +1,9 @@
 "use strict";
 
-import treeService from './note_tree.js';
+import treeService from './tree_service.js';
 import link from './link.js';
 import messaging from './messaging.js';
-import noteEditor from './note_editor.js';
+import noteDetail from './note_detail.js';
 import treeUtils from './tree_utils.js';
 import utils from './utils.js';
 import server from './server.js';
@@ -107,7 +107,7 @@ $("#note-title").bind('keydown', 'return', () => $("#note-detail").focus());
 $(window).on('beforeunload', () => {
     // this makes sure that when user e.g. reloads the page or navigates away from the page, the note's content is saved
     // this sends the request asynchronously and doesn't wait for result
-    noteEditor.saveNoteIfChanged();
+    noteDetail.saveNoteIfChanged();
 });
 
 // Overrides the default autocomplete filter function to search for matched on atleast 1 word in each of the input term's words
@@ -164,7 +164,7 @@ $(document).tooltip({
         if (notePath !== null) {
             const noteId = treeUtils.getNoteIdFromNotePath(notePath);
 
-            noteEditor.loadNote(noteId).then(note => callback(note.detail.content));
+            noteDetail.loadNote(noteId).then(note => callback(note.detail.content));
         }
     },
     close: function(event, ui)
@@ -244,7 +244,7 @@ $("#attachment-upload").change(async function() {
     formData.append('upload', this.files[0]);
 
     const resp = await $.ajax({
-        url: baseApiUrl + 'attachments/upload/' + noteEditor.getCurrentNoteId(),
+        url: baseApiUrl + 'attachments/upload/' + noteDetail.getCurrentNoteId(),
         headers: server.getHeaders(),
         data: formData,
         type: 'POST',

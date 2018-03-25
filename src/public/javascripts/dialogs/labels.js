@@ -1,7 +1,7 @@
 "use strict";
 
-import noteEditor from '../note_editor.js';
-import utils from '../utils.js';
+import noteDetail from '../services/note_detail.js';
+import utils from '../services/utils.js';
 
 const $showDialogButton = $(".show-labels-button");
 const $dialog = $("#labels-dialog");
@@ -17,7 +17,7 @@ function LabelsModel() {
     this.labels = ko.observableArray();
 
     this.loadLabels = async function() {
-        const noteId = noteEditor.getCurrentNoteId();
+        const noteId = noteDetail.getCurrentNoteId();
 
         const labels = await server.get('notes/' + noteId + '/labels');
 
@@ -81,7 +81,7 @@ function LabelsModel() {
             return;
         }
 
-        const noteId = noteEditor.getCurrentNoteId();
+        const noteId = noteDetail.getCurrentNoteId();
 
         const labelsToSave = self.labels()
             .map(attr => attr())
@@ -95,7 +95,7 @@ function LabelsModel() {
 
         utils.showMessage("Labels have been saved.");
 
-        noteEditor.loadLabelList();
+        noteDetail.loadLabelList();
     };
 
     function addLastEmptyRow() {

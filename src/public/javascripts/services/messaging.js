@@ -1,8 +1,7 @@
 "use strict";
 
-import treeService from './note_tree.js';
-import noteEditor from './note_editor.js';
-import sync from './sync.js';
+import treeService from './tree_service.js';
+import noteDetailService from './note_detail.js';
 import utils from './utils.js';
 
 const $changesToPushCount = $("#changes-to-push-count");
@@ -41,10 +40,10 @@ function messageHandler(event) {
             treeService.reload();
         }
 
-        if (syncData.some(sync => sync.entityName === 'notes' && sync.entityId === noteEditor.getCurrentNoteId())) {
+        if (syncData.some(sync => sync.entityName === 'notes' && sync.entityId === noteDetailService.getCurrentNoteId())) {
             utils.showMessage('Reloading note because of background changes');
 
-            noteEditor.reload();
+            noteDetailService.reload();
         }
 
         if (syncData.some(sync => sync.entityName === 'recent_notes')) {

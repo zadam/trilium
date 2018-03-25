@@ -1,7 +1,7 @@
 "use strict";
 
-import treeService from './note_tree.js';
-import noteEditor from './note_editor.js';
+import treeService from './tree_service.js';
+import noteDetail from './note_detail.js';
 import utils from './utils.js';
 import server from './server.js';
 
@@ -68,7 +68,7 @@ async function setupProtectedSession() {
 
     $dialog.dialog("close");
 
-    noteEditor.reload();
+    noteDetail.reload();
     treeService.reload();
 
     if (protectedSessionDeferred !== null) {
@@ -117,33 +117,33 @@ function isProtectedSessionAvailable() {
 async function protectNoteAndSendToServer() {
     await ensureProtectedSession(true, true);
 
-    const note = noteEditor.getCurrentNote();
+    const note = noteDetail.getCurrentNote();
 
-    noteEditor.updateNoteFromInputs(note);
+    noteDetail.updateNoteFromInputs(note);
 
     note.detail.isProtected = true;
 
-    await noteEditor.saveNoteToServer(note);
+    await noteDetail.saveNoteToServer(note);
 
     treeService.setProtected(note.detail.noteId, note.detail.isProtected);
 
-    noteEditor.setNoteBackgroundIfProtected(note);
+    noteDetail.setNoteBackgroundIfProtected(note);
 }
 
 async function unprotectNoteAndSendToServer() {
     await ensureProtectedSession(true, true);
 
-    const note = noteEditor.getCurrentNote();
+    const note = noteDetail.getCurrentNote();
 
-    noteEditor.updateNoteFromInputs(note);
+    noteDetail.updateNoteFromInputs(note);
 
     note.detail.isProtected = false;
 
-    await noteEditor.saveNoteToServer(note);
+    await noteDetail.saveNoteToServer(note);
 
     treeService.setProtected(note.detail.noteId, note.detail.isProtected);
 
-    noteEditor.setNoteBackgroundIfProtected(note);
+    noteDetail.setNoteBackgroundIfProtected(note);
 }
 
 function touchProtectedSession() {
@@ -160,7 +160,7 @@ async function protectSubTree(noteId, protect) {
     utils.showMessage("Request to un/protect sub tree has finished successfully");
 
     treeService.reload();
-    noteEditor.reload();
+    noteDetail.reload();
 }
 
 $passwordForm.submit(() => {

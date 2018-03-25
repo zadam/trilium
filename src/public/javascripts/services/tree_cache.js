@@ -1,6 +1,6 @@
 import utils from "./utils.js";
-import Branch from "./entities/branch.js";
-import NoteShort from "./entities/note_short.js";
+import Branch from "../entities/branch.js";
+import NoteShort from "../entities/note_short.js";
 
 class TreeCache {
     load(noteRows, branchRows) {

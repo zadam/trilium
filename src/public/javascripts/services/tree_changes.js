@@ -1,6 +1,6 @@
 "use strict";
 
-import treeService from './note_tree.js';
+import treeService from './tree_service.js';
 import utils from './utils.js';
 
 async function moveBeforeNode(nodesToMove, beforeNode) {

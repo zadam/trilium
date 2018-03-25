@@ -1,7 +1,7 @@
 "use strict";
 
-import treeService from './note_tree.js';
-import noteEditor from './note_editor.js';
+import treeService from './tree_service.js';
+import noteDetail from './note_detail.js';
 import treeUtils from './tree_utils.js';
 
 function getNotePathFromLink(url) {
@@ -77,14 +77,14 @@ function goToLink(e) {
 }
 
 function addLinkToEditor(linkTitle, linkHref) {
-    const editor = noteEditor.getEditor();
+    const editor = noteDetail.getEditor();
     const doc = editor.document;
 
     doc.enqueueChanges(() => editor.data.insertLink(linkTitle, linkHref), doc.selection);
 }
 
 function addTextToEditor(text) {
-    const editor = noteEditor.getEditor();
+    const editor = noteDetail.getEditor();
     const doc = editor.document;
 
     doc.enqueueChanges(() => editor.data.insertText(text), doc.selection);

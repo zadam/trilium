@@ -1,7 +1,7 @@
 "use strict";
 
-import treeService from './note_tree.js';
-import noteEditor from './note_editor.js';
+import treeService from './tree_service.js';
+import noteDetail from './note_detail.js';
 import utils from './utils.js';
 
 const $executeScriptButton = $("#execute-script-button");
@@ -85,13 +85,13 @@ function NoteTypeModel() {
     };
 
     async function save() {
-        const note = noteEditor.getCurrentNote();
+        const note = noteDetail.getCurrentNote();
 
         await server.put('notes/' + note.detail.noteId
             + '/type/' + encodeURIComponent(self.type())
             + '/mime/' + encodeURIComponent(self.mime()));
 
-        await noteEditor.reload();
+        await noteDetail.reload();
 
         // for the note icon to be updated in the tree
         await treeService.reload();

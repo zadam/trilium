@@ -1,8 +1,8 @@
 "use strict";
 
-import protected_session from '../protected_session.js';
-import utils from '../utils.js';
-import server from '../server.js';
+import protected_session from '../services/protected_session.js';
+import utils from '../services/utils.js';
+import server from '../services/server.js';
 
 const $showDialogButton = $("#settings-button");
 const $dialog = $("#settings-dialog");

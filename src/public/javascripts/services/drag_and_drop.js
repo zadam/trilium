@@ -1,6 +1,6 @@
 "use strict";
 
-import treeService from './note_tree.js';
+import treeService from './tree_service.js';
 import treeChanges from './tree_changes.js';
 
 const dragAndDropSetup = {

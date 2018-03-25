@@ -1,8 +1,8 @@
 "use strict";
 
-import treeService from '../note_tree.js';
-import link from '../link.js';
-import utils from '../utils.js';
+import treeService from '../services/tree_service.js';
+import link from '../services/link.js';
+import utils from '../services/utils.js';
 
 const $showDialogButton = $("#jump-to-note-button");
 const $dialog = $("#jump-to-note-dialog");
