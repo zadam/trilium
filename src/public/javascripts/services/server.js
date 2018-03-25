@@ -62,18 +62,6 @@ async function call(method, url, data) {
     }
 }
 
-if (utils.isElectron()) {
-    const ipc = require('electron').ipcRenderer;
-
-    ipc.on('server-response', (event, arg) => {
-        console.log(utils.now(), "Response #" + arg.requestId + ": " + arg.statusCode);
-
-        reqResolves[arg.requestId](arg.body);
-
-        delete reqResolves[arg.requestId];
-    });
-}
-
 async function ajax(url, method, data) {
     const options = {
         url: baseApiUrl + url,
@@ -92,6 +80,20 @@ async function ajax(url, method, data) {
         utils.throwError(message);
     });
 }
+
+setTimeout(() => {
+    if (utils.isElectron()) {
+        const ipc = require('electron').ipcRenderer;
+
+        ipc.on('server-response', (event, arg) => {
+            console.log(utils.now(), "Response #" + arg.requestId + ": " + arg.statusCode);
+
+            reqResolves[arg.requestId](arg.body);
+
+            delete reqResolves[arg.requestId];
+        });
+    }
+}, 100);
 
 export default {
     get,

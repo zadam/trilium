@@ -90,7 +90,7 @@ function showDialog() {
     });
 }
 
-reload();
+setTimeout(reload, 100);
 
 $(document).bind('keydown', 'ctrl+e', e => {
     showDialog();
