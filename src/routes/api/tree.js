@@ -12,39 +12,56 @@ const sync_table = require('../../services/sync_table');
 const wrap = require('express-promise-wrap').wrap;
 
 router.get('/', auth.checkApiAuth, wrap(async (req, res, next) => {
-    const notes = await sql.getRows(`
+    const noteTree = await sql.getRows(`
       SELECT 
-        note_tree.*, 
-        notes.title, 
-        notes.isProtected,
-        notes.type
-      FROM 
+        noteTreeId,
+        noteId,
+        parentNoteId,
+        notePosition,
+        prefix,
+        isExpanded
+      FROM
         note_tree 
-      JOIN 
-        notes ON notes.noteId = note_tree.noteId
       WHERE 
-        notes.isDeleted = 0 
-        AND note_tree.isDeleted = 0
+        isDeleted = 0
       ORDER BY 
         notePosition`);
 
+    let notes = [{
+        noteId: 'root',
+        title: 'root',
+        isProtected: false,
+        type: 'none',
+        mime: 'none'
+    }];
+
+    notes = notes.concat(await sql.getRows(`
+      SELECT 
+        notes.noteId,
+        notes.title,
+        notes.isProtected,
+        notes.type,
+        notes.mime,
+        hideInAutocomplete.attributeId AS 'hideInAutocomplete'
+      FROM
+        notes
+        LEFT JOIN attributes AS hideInAutocomplete ON hideInAutocomplete.noteId = notes.noteId
+                             AND hideInAutocomplete.name = 'hide_in_autocomplete'
+                             AND hideInAutocomplete.isDeleted = 0
+      WHERE 
+        notes.isDeleted = 0`));
+
     protected_session.decryptNotes(req, notes);
 
-    const hiddenInAutocomplete = await sql.getColumn(`
-      SELECT 
-        DISTINCT noteId 
-      FROM 
-        attributes
-        JOIN notes USING(noteId)
-      WHERE
-        attributes.name = 'hide_in_autocomplete' 
-        AND attributes.isDeleted = 0
-        AND notes.isDeleted = 0`);
+    notes.forEach(note => {
+        note.hideInAutocomplete = !!note.hideInAutocomplete;
+        note.isProtected = !!note.isProtected;
+    });
 
     res.send({
         instanceName: config.General ? config.General.instanceName : null,
+        noteTree: noteTree,
         notes: notes,
-        hiddenInAutocomplete: hiddenInAutocomplete,
         start_note_path: await options.getOption('start_note_path')
     });
 }));

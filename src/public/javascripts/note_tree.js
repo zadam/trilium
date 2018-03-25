@@ -1,6 +1,118 @@
 "use strict";
 
+class TreeCache {
+    constructor(noteRows, noteTreeRows) {
+        this.parents = [];
+        this.children = [];
+        this.childParentToNoteTree = {};
+
+        this.notes = {};
+        for (const noteRow of noteRows) {
+            const note = new NoteShort(this, noteRow);
+
+            this.notes[note.noteId] = note;
+        }
+
+        this.noteTree = {};
+        for (const noteTreeRow of noteTreeRows) {
+            const nt = new NoteTree(this, noteTreeRow);
+
+            this.noteTree[nt.noteTreeId] = nt;
+            this.addNoteTree(nt);
+        }
+    }
+
+    getNote(noteId) {
+        return this.notes[noteId];
+    }
+
+    addNoteTree(nt) {
+        this.parents[nt.noteId] = this.parents[nt.noteId] || [];
+        this.parents[nt.noteId].push(this.notes[nt.parentNoteId]);
+
+        this.children[nt.parentNoteId] = this.children[nt.parentNoteId] || [];
+        this.children[nt.parentNoteId].push(this.notes[nt.noteId]);
+
+        this.childParentToNoteTree[nt.noteId + '-' + nt.parentNoteId] = nt;
+    }
+
+    add(note, nt) {
+        this.notes[note.noteId] = note;
+    }
+
+    async getNoteTree(childNoteId, parentNoteId) {
+        return this.childParentToNoteTree[childNoteId + '-' + parentNoteId];
+    }
+}
+
+class NoteShort {
+    constructor(treeCache, row) {
+        this.treeCache = treeCache;
+        this.noteId = row.noteId;
+        this.title = row.title;
+        this.isProtected = row.isProtected;
+        this.type = row.type;
+        this.mime = row.mime;
+        this.hideInAutocomplete = row.hideInAutocomplete;
+    }
+
+    async getNoteTrees() {
+        const noteTrees = [];
+
+        for (const parent of this.treeCache.parents[this.noteId]) {
+            noteTrees.push(await this.treeCache.getNoteTree(this.noteId, p.noteId));
+        }
+
+        return noteTrees;
+    }
+
+    async getChildNoteTrees() {
+        const noteTrees = [];
+
+        for (const child of this.treeCache.children[this.noteId]) {
+            noteTrees.push(await this.treeCache.getNoteTree(child.noteId, this.noteId));
+        }
+
+        return noteTrees;
+    }
+
+    async getParentNotes() {
+        return this.treeCache.parents[this.noteId] || [];
+    }
+
+    async getChildNotes() {
+        return this.treeCache.children[this.noteId] || [];
+    }
+
+    get toString() {
+        return `Note(noteId=${this.noteId}, title=${this.title})`;
+    }
+}
+
+class NoteTree {
+    constructor(treeCache, row) {
+        this.treeCache = treeCache;
+        this.noteTreeId = row.noteTreeId;
+        this.noteId = row.noteId;
+        this.note = null;
+        this.parentNoteId = row.parentNoteId;
+        this.notePosition = row.notePosition;
+        this.prefix = row.prefix;
+        this.isExpanded = row.isExpanded;
+    }
+
+    async getNote() {
+        return this.treeCache.getNote(this.noteId);
+    }
+
+    get toString() {
+        return `NoteTree(noteTreeId=${this.noteTreeId})`;
+    }
+}
+
 const noteTree = (function() {
+    let treeCache;
+
     const $tree = $("#tree");
     const $parentList = $("#parent-list");
     const $parentListList = $("#parent-list-inner");
@@ -11,18 +123,14 @@ const noteTree = (function() {
     let instanceName = null; // should have better place
 
     let startNotePath = null;
-    let notesTreeMap = {};
 
-    let parentToChildren = {};
-    let childToParents = {};
-
-    let parentChildToNoteTreeId = {};
-    let noteIdToNote = {};
-
-    let hiddenInAutocomplete = {};
+    /** @type {Object.<string, NoteShort>} */
+    let noteMap = {};
+    /** @type {Object.<string, NoteTree>} */
+    let noteTreeMap = {};
 
     function getNote(noteId) {
-        const note = noteIdToNote[noteId];
+        const note = noteMap[noteId];
 
         if (!note) {
             throwError("Can't find title for noteId='" + noteId + "'");
@@ -34,6 +142,8 @@ const noteTree = (function() {
     function getNoteTreeId(parentNoteId, childNoteId) {
         assertArguments(parentNoteId, childNoteId);
 
+
+
         const key = parentNoteId + "-" + childNoteId;
 
         // this can return undefined and client code should deal with it somehow
@@ -44,13 +154,13 @@ const noteTree = (function() {
     function getNoteTitle(noteId, parentNoteId = null) {
         assertArguments(noteId);
 
-        let title = getNote(noteId).title;
+        let title = treeCache.getNote(noteId).title;
 
         if (parentNoteId !== null) {
             const noteTreeId = getNoteTreeId(parentNoteId, noteId);
 
             if (noteTreeId) {
-                const noteTree = notesTreeMap[noteTreeId];
+                const noteTree = noteTreeMap[noteTreeId];
 
                 if (noteTree.prefix) {
                     title = noteTree.prefix + ' - ' + title;
@@ -75,7 +185,7 @@ const noteTree = (function() {
     function getNodesByNoteTreeId(noteTreeId) {
         assertArguments(noteTreeId);
 
-        const noteTree = notesTreeMap[noteTreeId];
+        const noteTree = noteTreeMap[noteTreeId];
 
         return getNodesByNoteId(noteTree.noteId).filter(node => node.data.noteTreeId === noteTreeId);
     }
@@ -90,14 +200,14 @@ const noteTree = (function() {
     function setPrefix(noteTreeId, prefix) {
         assertArguments(noteTreeId);
 
-        notesTreeMap[noteTreeId].prefix = prefix;
+        noteTreeMap[noteTreeId].prefix = prefix;
 
         getNodesByNoteTreeId(noteTreeId).map(node => setNodeTitleWithPrefix(node));
     }
 
     function setNodeTitleWithPrefix(node) {
         const noteTitle = getNoteTitle(node.data.noteId);
-        const noteTree = notesTreeMap[node.data.noteTreeId];
+        const noteTree = noteTreeMap[node.data.noteTreeId];
 
         const prefix = noteTree.prefix;
 
@@ -109,61 +219,38 @@ const noteTree = (function() {
     function removeParentChildRelation(parentNoteId, childNoteId) {
         assertArguments(parentNoteId, childNoteId);
 
-        const key = parentNoteId + "-" + childNoteId;
+        const parentNote = noteMap[parentNoteId];
+        const childNote = noteMap[childNoteId];
 
-        delete parentChildToNoteTreeId[key];
-
-        parentToChildren[parentNoteId] = parentToChildren[parentNoteId].filter(noteId => noteId !== childNoteId);
-        childToParents[childNoteId] = childToParents[childNoteId].filter(noteId => noteId !== parentNoteId);
+        parentNote.children = parentNote.children.filter(note => note.noteId !== childNoteId);
+        childNote.parents = childNote.parents.filter(note => note.noteId !== parentNoteId);
+        childNote.noteTree = childNote.noteTree.filter(nt => nt.parentNoteId !== parentNoteId);
     }
 
     function setParentChildRelation(noteTreeId, parentNoteId, childNoteId) {
         assertArguments(noteTreeId, parentNoteId, childNoteId);
 
-        const key = parentNoteId + "-" + childNoteId;
+        const parentNote = noteMap[parentNoteId];
+        const childNote = noteMap[childNoteId];
 
-        parentChildToNoteTreeId[key] = noteTreeId;
+        // FIXME: assert
 
-        if (!parentToChildren[parentNoteId]) {
-            parentToChildren[parentNoteId] = [];
-        }
+        childNote.parents.push(parentNote);
+        parentNote.children.push(childNote);
 
-        parentToChildren[parentNoteId].push(childNoteId);
-
-        if (!childToParents[childNoteId]) {
-            childToParents[childNoteId] = [];
-        }
-
-        childToParents[childNoteId].push(parentNoteId);
+        const noteTree = noteTreeMap[noteTreeId];
+        childNote.noteTree.push(noteTree);
     }
 
-    function prepareNoteTree(notes) {
-        assertArguments(notes);
+    async function prepareNoteTree(noteRows, noteTreeRows) {
+        assertArguments(noteRows);
 
-        parentToChildren = {};
-        childToParents = {};
-        notesTreeMap = {};
+        treeCache = new TreeCache(noteRows, noteTreeRows);
 
-        for (const note of notes) {
-            notesTreeMap[note.noteTreeId] = note;
-
-            noteIdToNote[note.noteId] = {
-                noteId: note.noteId,
-                title: note.title,
-                isProtected: note.isProtected,
-                type: note.type,
-                mime: note.mime
-            };
-
-            delete note.title; // this should not be used. Use noteIdToNote instead
-
-            setParentChildRelation(note.noteTreeId, note.parentNoteId, note.noteId);
-        }
-
-        return prepareNoteTreeInner('root');
+        return await prepareNoteTreeInner(treeCache.getNote('root'));
     }
 
-    function getExtraClasses(note) {
+    async function getExtraClasses(note) {
         assertArguments(note);
 
         const extraClasses = [];
@@ -172,7 +259,7 @@ const noteTree = (function() {
             extraClasses.push("protected");
         }
 
-        if (childToParents[note.noteId].length > 1) {
+        if ((await note.getParentNotes()).length > 1) {
             extraClasses.push("multiple-parents");
         }
 
@@ -181,42 +268,40 @@ const noteTree = (function() {
         return extraClasses.join(" ");
     }
 
-    function prepareNoteTreeInner(parentNoteId) {
-        assertArguments(parentNoteId);
+    async function prepareNoteTreeInner(parentNote) {
+        assertArguments(parentNote);
 
-        const childNoteIds = parentToChildren[parentNoteId];
-        if (!childNoteIds) {
-            messaging.logError("No children for " + parentNoteId + ". This shouldn't happen.");
+        const childrenNoteTrees = await parentNote.getChildNoteTrees();
+
+        if (!childrenNoteTrees) {
+            messaging.logError(`No children for ${parentNote}. This shouldn't happen.`);
             return;
         }
 
         const noteList = [];
 
-        for (const noteId of childNoteIds) {
-            const note = getNote(noteId);
-            const noteTreeId = getNoteTreeId(parentNoteId, noteId);
-            const noteTree = notesTreeMap[noteTreeId];
-
+        for (const noteTree of childrenNoteTrees) {
+            const note = await noteTree.getNote();
             const title = (noteTree.prefix ? (noteTree.prefix + " - ") : "") + note.title;
 
             const node = {
-                noteId: noteId,
+                noteId: note.noteId,
                 parentNoteId: noteTree.parentNoteId,
                 noteTreeId: noteTree.noteTreeId,
                 isProtected: note.isProtected,
                 title: escapeHtml(title),
                 extraClasses: getExtraClasses(note),
-                refKey: noteId,
+                refKey: note.noteId,
                 expanded: note.type !== 'search' && noteTree.isExpanded
             };
 
-            const hasChildren = parentToChildren[noteId] && parentToChildren[noteId].length > 0;
+            const hasChildren = (await note.getChildNotes()).length > 0;
 
             if (hasChildren || note.type === 'search') {
                 node.folder = true;
 
                 if (node.expanded && note.type !== 'search') {
-                    node.children = prepareNoteTreeInner(noteId);
+                    node.children = await prepareNoteTreeInner(note);
                 }
                 else {
                     node.lazy = true;
@@ -609,7 +694,7 @@ const noteTree = (function() {
             init: (event, data) => {
                 const noteId = treeUtils.getNoteIdFromNotePath(startNotePath);
 
-                if (noteIdToNote[noteId] === undefined) {
+                if (noteMap[noteId] === undefined) {
                     // note doesn't exist so don't try to activate it
                     startNotePath = null;
                 }
@@ -638,7 +723,7 @@ const noteTree = (function() {
                 mode: "hide"       // Grayout unmatched nodes (pass "hide" to remove unmatched node instead)
             },
             dnd: dragAndDropSetup,
-            lazyLoad: function(event, data){
+            lazyLoad: async function(event, data){
                 const noteId = data.node.data.noteId;
                 const note = getNote(noteId);
 
@@ -646,7 +731,7 @@ const noteTree = (function() {
                     data.result = loadSearchNote(noteId);
                 }
                 else {
-                    data.result = prepareNoteTreeInner(noteId);
+                    data.result = await prepareNoteTreeInner(note);
                 }
             },
             clones: {
@@ -667,7 +752,7 @@ const noteTree = (function() {
         for (const noteId of noteIds) {
             const noteTreeId = "virt" + randomString(10);
 
-            notesTreeMap[noteTreeId] = {
+            noteTreeMap[noteTreeId] = {
                 noteTreeId: noteTreeId,
                 noteId: noteId,
                 parentNoteId: searchNoteId,
@@ -678,7 +763,7 @@ const noteTree = (function() {
             setParentChildRelation(noteTreeId, searchNoteId, noteId);
         }
 
-        return prepareNoteTreeInner(searchNoteId);
+        return await prepareNoteTreeInner(searchNoteId);
     }
 
     function getTree() {
@@ -705,13 +790,7 @@ const noteTree = (function() {
             startNotePath = getNotePathFromAddress();
         }
 
-        hiddenInAutocomplete = {};
-
-        for (const noteId of resp.hiddenInAutocomplete) {
-            hiddenInAutocomplete[noteId] = true;
-        }
-
-        return prepareNoteTree(resp.notes);
+        return await prepareNoteTree(resp.notes, resp.noteTree);
     }
 
     $(() => loadTree().then(noteTree => initFancyTree(noteTree)));
@@ -827,9 +906,9 @@ const noteTree = (function() {
 
         setParentChildRelation(result.noteTreeId, parentNoteId, result.noteId);
 
-        notesTreeMap[result.noteTreeId] = result;
+        noteTreeMap[result.noteTreeId] = result;
 
-        noteIdToNote[result.noteId] = {
+        noteMap[result.noteId] = {
             noteId: result.noteId,
             title: result.title,
             isProtected: result.isProtected,
@@ -889,11 +968,7 @@ const noteTree = (function() {
     }
 
     function getNoteTree(noteTreeId) {
-        return notesTreeMap[noteTreeId];
-    }
-
-    function getNote(noteId) {
-        return noteIdToNote[noteId];
+        return noteTreeMap[noteTreeId];
     }
 
     $(document).bind('keydown', 'ctrl+o', e => {
