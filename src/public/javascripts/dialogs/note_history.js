@@ -2,7 +2,6 @@ import noteDetailService from '../services/note_detail.js';
 import utils from '../services/utils.js';
 import server from '../services/server.js';
 
-const $showDialogButton = $("#show-history-button");
 const $dialog = $("#note-history-dialog");
 const $list = $("#note-history-list");
 const $content = $("#note-history-content");
@@ -49,12 +48,6 @@ async function showNoteHistoryDialog(noteId, noteRevisionId) {
     }
 }
 
-$(document).bind('keydown', 'alt+h', e => {
-    showCurrentNoteHistory();
-
-    e.preventDefault();
-});
-
 $list.on('change', () => {
     const optVal = $list.find(":selected").val();
 
@@ -73,8 +66,6 @@ $(document).on('click', "a[action='note-history']", event => {
 
     return false;
 });
-
-$showDialogButton.click(showCurrentNoteHistory);
 
 export default {
     showCurrentNoteHistory

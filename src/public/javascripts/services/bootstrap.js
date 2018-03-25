@@ -1,14 +1,12 @@
-import addLink from '../dialogs/add_link.js';
-import editTreePrefix from '../dialogs/edit_tree_prefix.js';
-import eventLog from '../dialogs/event_log.js';
-import jumpToNote from '../dialogs/jump_to_note.js';
+import addLinkDialog from '../dialogs/add_link.js';
+import jumpToNoteDialog from '../dialogs/jump_to_note.js';
 import labelsDialog from '../dialogs/labels.js';
-import noteHistory from '../dialogs/note_history.js';
-import noteSource from '../dialogs/note_source.js';
-import recentChanges from '../dialogs/recent_changes.js';
-import recentNotes from '../dialogs/recent_notes.js';
-import settings from '../dialogs/settings.js';
-import sqlConsole from '../dialogs/sql_console.js';
+import noteRevisionsDialog from '../dialogs/note_history.js';
+import noteSourceDialog from '../dialogs/note_source.js';
+import recentChangesDialog from '../dialogs/recent_changes.js';
+import recentNotesDialog from '../dialogs/recent_notes.js';
+import settingsDialog from '../dialogs/settings.js';
+import sqlConsoleDialog from '../dialogs/sql_console.js';
 
 import cloning from './cloning.js';
 import contextMenu from './context_menu.js';
@@ -19,25 +17,38 @@ import messaging from './messaging.js';
 import noteDetail from './note_detail.js';
 import noteType from './note_type.js';
 import protected_session from './protected_session.js';
+import searchTreeService from './search_tree.js';
 import ScriptApi from './script_api.js';
 import ScriptContext from './script_context.js';
 import sync from './sync.js';
+import treeService from './tree.js';
 import treeChanges from './tree_changes.js';
 import treeUtils from './tree_utils.js';
 import utils from './utils.js';
 
-import searchTreeService from './search_tree.js';
 import './init.js';
-import treeService from './tree.js';
-const $toggleSearchButton = $("#toggle-search-button");
 
-$toggleSearchButton.click(searchTreeService.toggleSearch);
-bindShortcut('ctrl+s', searchTreeService.toggleSearch);
+utils.bindShortcut('ctrl+l', addLinkDialog.showDialog);
 
-function bindShortcut(keyboardShortcut, handler) {
-    $(document).bind('keydown', keyboardShortcut, e => {
-        handler();
+$("#jump-to-note-button").click(jumpToNoteDialog.showDialog);
+utils.bindShortcut('ctrl+j', jumpToNoteDialog.showDialog);
 
-        e.preventDefault();
-    });
-}
+$("#show-history-button").click(noteRevisionsDialog.showCurrentNoteHistory);
+
+$("#show-source-button").click(noteSourceDialog.showDialog);
+utils.bindShortcut('ctrl+u', noteSourceDialog.showDialog);
+
+$("#recent-changes-button").click(recentChangesDialog.showDialog);
+
+$("#recent-notes-button").click(recentNotesDialog.showDialog);
+utils.bindShortcut('ctrl+e', recentNotesDialog.showDialog);
+
+$("#toggle-search-button").click(searchTreeService.toggleSearch);
+utils.bindShortcut('ctrl+s', searchTreeService.toggleSearch);
+
+$(".show-labels-button").click(labelsDialog.showDialog);
+utils.bindShortcut('alt+l', labelsDialog.showDialog);
+
+$("#settings-button").click(settingsDialog.showDialog);
+
+utils.bindShortcut('alt+o', sqlConsoleDialog.showDialog);

@@ -2,7 +2,6 @@ import noteDetailService from '../services/note_detail.js';
 import utils from '../services/utils.js';
 import server from '../services/server.js';
 
-const $showDialogButton = $(".show-labels-button");
 const $dialog = $("#labels-dialog");
 const $saveLabelsButton = $("#save-labels-button");
 const $labelsBody = $('#labels-table tbody');
@@ -164,12 +163,6 @@ async function showDialog() {
     });
 }
 
-$(document).bind('keydown', 'alt+l', e => {
-    showDialog();
-
-    e.preventDefault();
-});
-
 ko.applyBindings(labelsModel, document.getElementById('labels-dialog'));
 
 $(document).on('focus', '.label-name', function (e) {
@@ -219,8 +212,6 @@ $(document).on('focus', '.label-value', async function (e) {
 
     $(this).autocomplete("search", $(this).val());
 });
-
-$showDialogButton.click(showDialog);
 
 export default {
     showDialog

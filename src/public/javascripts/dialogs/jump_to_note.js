@@ -2,7 +2,6 @@ import treeService from '../services/tree.js';
 import linkService from '../services/link.js';
 import utils from '../services/utils.js';
 
-const $showDialogButton = $("#jump-to-note-button");
 const $dialog = $("#jump-to-note-dialog");
 const $autoComplete = $("#jump-to-note-autocomplete");
 const $form = $("#jump-to-note-form");
@@ -38,21 +37,11 @@ function goToNote() {
     }
 }
 
-$(document).bind('keydown', 'ctrl+j', e => {
-    showDialog();
-
-    e.preventDefault();
-});
-
 $form.submit(() => {
-    const action = $dialog.find("button:focus").val();
-
     goToNote();
 
     return false;
 });
-
-$showDialogButton.click(showDialog);
 
 export default {
     showDialog

@@ -28,10 +28,11 @@
     }
 
     async function validatorJavaScript(text, options) {
-        if (noteEditor.getCurrentNote().detail.mime === 'application/json') {
-            // eslint doesn't seem to validate pure JSON well
-            return [];
-        }
+        // FIXME!!!
+        // if (noteEditor.getCurrentNote().detail.mime === 'application/json') {
+        //     // eslint doesn't seem to validate pure JSON well
+        //     return [];
+        // }
 
         await requireLibrary(ESLINT);
 

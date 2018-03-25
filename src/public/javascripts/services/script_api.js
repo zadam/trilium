@@ -1,4 +1,5 @@
 import treeService from './tree.js';
+import server from './server.js';
 
 function ScriptApi(startNote, currentNote) {
     const $pluginButtons = $("#plugin-buttons");

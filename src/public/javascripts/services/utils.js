@@ -236,6 +236,14 @@ function randomString(len) {
     return text;
 }
 
+function bindShortcut(keyboardShortcut, handler) {
+    $(document).bind('keydown', keyboardShortcut, e => {
+        handler();
+
+        e.preventDefault();
+    });
+}
+
 export default {
     reloadApp,
     showMessage,
@@ -266,5 +274,6 @@ export default {
     getHost,
     download,
     toObject,
-    randomString
+    randomString,
+    bindShortcut
 };

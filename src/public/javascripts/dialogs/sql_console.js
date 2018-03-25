@@ -94,8 +94,6 @@ async function execute(e) {
     }
 }
 
-$(document).bind('keydown', 'alt+o', showDialog);
-
 $query.bind('keydown', 'ctrl+return', execute);
 
 $executeButton.click(execute);

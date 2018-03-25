@@ -2,7 +2,6 @@ import treeService from '../services/tree.js';
 import messagingService from '../services/messaging.js';
 import server from '../services/server.js';
 
-const $showDialogButton = $("#recent-notes-button");
 const $dialog = $("#recent-notes-dialog");
 const $searchInput = $('#recent-notes-search-input');
 
@@ -92,14 +91,6 @@ async function showDialog() {
 }
 
 setTimeout(reload, 100);
-
-$(document).bind('keydown', 'ctrl+e', e => {
-    showDialog();
-
-    e.preventDefault();
-});
-
-$showDialogButton.click(showDialog);
 
 export default {
     showDialog,

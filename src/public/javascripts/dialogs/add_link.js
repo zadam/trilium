@@ -128,12 +128,6 @@ function linkTypeChanged() {
 
 $linkTypes.change(linkTypeChanged);
 
-$(document).bind('keydown', 'ctrl+l', e => {
-    showDialog();
-
-    e.preventDefault();
-});
-
 export default {
     showDialog
 };

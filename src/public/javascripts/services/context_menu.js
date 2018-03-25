@@ -6,6 +6,7 @@ import protectedSessionService from './protected_session.js';
 import treeChangesService from './tree_changes.js';
 import treeUtils from './tree_utils.js';
 import utils from './utils.js';
+import editTreePrefixDialog from '../dialogs/edit_tree_prefix.js';
 
 const $tree = $("#tree");
 
@@ -133,7 +134,7 @@ const contextMenuSettings = {
             treeService.createNote(node, node.data.noteId, 'into');
         }
         else if (ui.cmd === "editTreePrefix") {
-            editTreePrefix.showDialog(node);
+            editTreePrefixDialog.showDialog(node);
         }
         else if (ui.cmd === "protectSubTree") {
             protectedSessionService.protectSubTree(node.data.noteId, true);

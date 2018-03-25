@@ -9,6 +9,7 @@ import treeUtils from './tree_utils.js';
 import utils from './utils.js';
 import server from './server.js';
 import recentNotesDialog from '../dialogs/recent_notes.js';
+import editTreePrefixDialog from '../dialogs/edit_tree_prefix.js';
 import treeCache from './tree_cache.js';
 
 const $tree = $("#tree");
@@ -480,7 +481,7 @@ function initFancyTree(branch) {
             return false;
         },
         "f2": node => {
-            editTreePrefix.showDialog(node);
+            editTreePrefixDialog.showDialog(node);
         },
         "alt+-": node => {
             collapseTree(node);
@@ -605,16 +606,16 @@ function initFancyTree(branch) {
             mode: "hide"       // Grayout unmatched nodes (pass "hide" to remove unmatched node instead)
         },
         dnd: dragAndDropSetup,
-        lazyLoad: async function(event, data){
+        lazyLoad: function(event, data) {
             const noteId = data.node.data.noteId;
-            const note = await getNote(noteId);
-
-            if (note.type === 'search') {
-                data.result = loadSearchNote(noteId);
-            }
-            else {
-                data.result = prepareBranchInner(note);
-            }
+            data.result = getNote(noteId).then(note => {
+                if (note.type === 'search') {
+                    return loadSearchNote(noteId);
+                }
+                else {
+                    return prepareBranchInner(note);
+                }
+            });
         },
         clones: {
             highlightActiveClones: true

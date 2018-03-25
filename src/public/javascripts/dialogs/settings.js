@@ -4,7 +4,6 @@ import protectedSessionService from '../services/protected_session.js';
 import utils from '../services/utils.js';
 import server from '../services/server.js';
 
-const $showDialogButton = $("#settings-button");
 const $dialog = $("#settings-dialog");
 const $tabs = $("#settings-tabs");
 
@@ -42,12 +41,9 @@ async function saveSettings(settingName, settingValue) {
     utils.showMessage("Settings change have been saved.");
 }
 
-$showDialogButton.click(showDialog);
-
 export default {
     showDialog,
-    saveSettings,
-    addModule
+    saveSettings
 };
 
 addModule((function() {

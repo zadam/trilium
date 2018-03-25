@@ -1,6 +1,5 @@
 import noteDetailService from '../services/note_detail.js';
 
-const $showDialogButton = $("#show-source-button");
 const $dialog = $("#note-source-dialog");
 const $noteSource = $("#note-source");
 
@@ -44,14 +43,6 @@ function formatNode(node, level) {
 
     return node;
 }
-
-$(document).bind('keydown', 'ctrl+u', e => {
-    showDialog();
-
-    e.preventDefault();
-});
-
-$showDialogButton.click(showDialog);
 
 export default {
     showDialog
