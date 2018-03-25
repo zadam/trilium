@@ -12,7 +12,7 @@ Trilium Notes is a hierarchical note taking application. Picture tells a thousan
 * WYSIWYG (What You See Is What You Get) editing
 * Fast and easy [navigation between notes](https://github.com/zadam/trilium/wiki/Note-navigation)
 * Seamless note versioning
-* Note attributes can be used to tag/label notes as an alternative note organization and querying
+* Note labels can be used to tag/label notes as an alternative note organization and querying
 * Can be deployed as web application and / or desktop application with offline access (electron based)
 * [Synchronization with](https://github.com/zadam/trilium/wiki/Synchronization) self-hosted sync server
 * Strong [note encryption](https://github.com/zadam/trilium/wiki/Protected-notes)
@@ -37,7 +37,7 @@ List of documentation pages:
 * [Installation as webapp](https://github.com/zadam/trilium/wiki/Installation-as-webapp)
 * [Note navigation](https://github.com/zadam/trilium/wiki/Note-navigation)
 * [Tree manipulation](https://github.com/zadam/trilium/wiki/Tree-manipulation)
-* [Attributes](https://github.com/zadam/trilium/wiki/Attributes)
+* [Labels](https://github.com/zadam/trilium/wiki/Labels)
 * [Links](https://github.com/zadam/trilium/wiki/Links)
 * [Cloning notes](https://github.com/zadam/trilium/wiki/Cloning-notes)
 * [Protected notes](https://github.com/zadam/trilium/wiki/Protected-notes)
