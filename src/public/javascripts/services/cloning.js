@@ -1,6 +1,4 @@
-"use strict";
-
-import treeService from './tree_service.js';
+import treeService from './tree.js';
 
 async function cloneNoteTo(childNoteId, parentNoteId, prefix) {
     const resp = await server.put('notes/' + childNoteId + '/clone-to/' + parentNoteId, {

@@ -1,6 +1,4 @@
-"use strict";
-
-import noteDetail from '../services/note_detail.js';
+import noteDetailService from '../services/note_detail.js';
 
 const $showDialogButton = $("#show-source-button");
 const $dialog = $("#note-source-dialog");
@@ -15,7 +13,7 @@ function showDialog() {
         height: 500
     });
 
-    const noteText = noteDetail.getCurrentNote().detail.content;
+    const noteText = noteDetailService.getCurrentNote().detail.content;
 
     $noteSource.text(formatHtml(noteText));
 }

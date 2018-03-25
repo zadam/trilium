@@ -1,6 +1,4 @@
-"use strict";
-
-import link from '../services/link.js';
+import linkService from '../services/link.js';
 import utils from '../services/utils.js';
 
 const $showDialogButton = $("#recent-changes-button");
@@ -42,7 +40,7 @@ async function showDialog() {
                 noteLink = change.current_title;
             }
             else {
-                noteLink = link.createNoteLink(change.noteId, change.title);
+                noteLink = linkService.createNoteLink(change.noteId, change.title);
             }
 
             changesListEl.append($('<li>')

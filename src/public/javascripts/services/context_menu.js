@@ -1,11 +1,9 @@
-"use strict";
-
-import treeService from './tree_service.js';
-import cloning from './cloning.js';
+import treeService from './tree.js';
+import cloningService from './cloning.js';
 import exportService from './export.js';
-import messaging from './messaging.js';
-import protected_session from './protected_session.js';
-import treeChanges from './tree_changes.js';
+import messagingService from './messaging.js';
+import protectedSessionService from './protected_session.js';
+import treeChangesService from './tree_changes.js';
 import treeUtils from './tree_utils.js';
 import utils from './utils.js';
 
@@ -18,14 +16,14 @@ async function pasteAfter(node) {
     if (clipboardMode === 'cut') {
         const nodes = clipboardIds.map(nodeKey => treeUtils.getNodeByKey(nodeKey));
 
-        await treeChanges.moveAfterNode(nodes, node);
+        await treeChangesService.moveAfterNode(nodes, node);
 
         clipboardIds = [];
         clipboardMode = null;
     }
     else if (clipboardMode === 'copy') {
         for (const noteId of clipboardIds) {
-            await cloning.cloneNoteAfter(noteId, node.data.branchId);
+            await cloningService.cloneNoteAfter(noteId, node.data.branchId);
         }
 
         // copy will keep clipboardIds and clipboardMode so it's possible to paste into multiple places
@@ -42,14 +40,14 @@ async function pasteInto(node) {
     if (clipboardMode === 'cut') {
         const nodes = clipboardIds.map(nodeKey => treeUtils.getNodeByKey(nodeKey));
 
-        await treeChanges.moveToNode(nodes, node);
+        await treeChangesService.moveToNode(nodes, node);
 
         clipboardIds = [];
         clipboardMode = null;
     }
     else if (clipboardMode === 'copy') {
         for (const noteId of clipboardIds) {
-            await cloning.cloneNoteTo(noteId, node.data.noteId);
+            await cloningService.cloneNoteTo(noteId, node.data.noteId);
         }
         // copy will keep clipboardIds and clipboardMode so it's possible to paste into multiple places
     }
@@ -138,10 +136,10 @@ const contextMenuSettings = {
             editTreePrefix.showDialog(node);
         }
         else if (ui.cmd === "protectSubTree") {
-            protected_session.protectSubTree(node.data.noteId, true);
+            protectedSessionService.protectSubTree(node.data.noteId, true);
         }
         else if (ui.cmd === "unprotectSubTree") {
-            protected_session.protectSubTree(node.data.noteId, false);
+            protectedSessionService.protectSubTree(node.data.noteId, false);
         }
         else if (ui.cmd === "copy") {
             copy(treeService.getSelectedNodes());
@@ -156,7 +154,7 @@ const contextMenuSettings = {
             pasteInto(node);
         }
         else if (ui.cmd === "delete") {
-            treeChanges.deleteNodes(treeService.getSelectedNodes(true));
+            treeChangesService.deleteNodes(treeService.getSelectedNodes(true));
         }
         else if (ui.cmd === "exportSubTree") {
             exportService.exportSubTree(node.data.noteId);
@@ -174,7 +172,7 @@ const contextMenuSettings = {
             treeService.sortAlphabetically(node.data.noteId);
         }
         else {
-            messaging.logError("Unknown command: " + ui.cmd);
+            messagingService.logError("Unknown command: " + ui.cmd);
         }
     }
 };

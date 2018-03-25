@@ -1,7 +1,5 @@
-"use strict";
-
-import link from './link.js';
-import messaging from './messaging.js';
+import linkService from './link.js';
+import messagingService from './messaging.js';
 import ScriptContext from './script_context.js';
 
 function reloadApp() {
@@ -35,7 +33,7 @@ function showError(message, delay = 10000) {
 }
 
 function throwError(message) {
-    messaging.logError(message);
+    messagingService.logError(message);
 
     throw new Error(message);
 }
@@ -191,7 +189,7 @@ async function requireScript(url) {
 
 async function requireCss(url) {
     const css = Array
-        .from(document.querySelectorAll('link'))
+        .from(document.querySelectorAll('linkService'))
         .map(scr => scr.href);
 
     if (!css.includes(url)) {

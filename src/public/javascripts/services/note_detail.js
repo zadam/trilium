@@ -1,8 +1,6 @@
-"use strict";
-
-import treeService from './tree_service.js';
-import noteType from './note_type.js';
-import protected_session from './protected_session.js';
+import treeService from './tree.js';
+import noteTypeService from './note_type.js';
+import protectedSessionService from './protected_session.js';
 import utils from './utils.js';
 import server from './server.js';
 
@@ -80,7 +78,7 @@ async function saveNoteIfChanged() {
     await saveNoteToServer(note);
 
     if (note.detail.isProtected) {
-        protected_session.touchProtectedSession();
+        protectedSessionService.touchProtectedSession();
     }
 }
 
@@ -221,15 +219,15 @@ async function loadNoteToEditor(noteId) {
 
     $noteIdDisplay.html(noteId);
 
-    await protected_session.ensureProtectedSession(currentNote.detail.isProtected, false);
+    await protectedSessionService.ensureProtectedSession(currentNote.detail.isProtected, false);
 
     if (currentNote.detail.isProtected) {
-        protected_session.touchProtectedSession();
+        protectedSessionService.touchProtectedSession();
     }
 
     // this might be important if we focused on protected note when not in protected note and we got a dialog
     // to login, but we chose instead to come to another node - at that point the dialog is still visible and this will close it.
-    protected_session.ensureDialogIsClosed();
+    protectedSessionService.ensureDialogIsClosed();
 
     $noteDetailWrapper.show();
 
@@ -237,8 +235,8 @@ async function loadNoteToEditor(noteId) {
 
     $noteTitle.val(currentNote.detail.title);
 
-    noteType.setNoteType(currentNote.detail.type);
-    noteType.setNoteMime(currentNote.detail.mime);
+    noteTypeService.setNoteType(currentNote.detail.type);
+    noteTypeService.setNoteMime(currentNote.detail.mime);
 
     $noteDetail.hide();
     $noteDetailSearch.hide();
@@ -362,7 +360,7 @@ $attachmentOpen.click(() => {
 function getAttachmentUrl() {
     // electron needs absolute URL so we extract current host, port, protocol
     return utils.getHost() + "/api/attachments/download/" + getCurrentNoteId()
-        + "?protectedSessionId=" + encodeURIComponent(protected_session.getProtectedSessionId());
+        + "?protectedSessionId=" + encodeURIComponent(protectedSessionService.getProtectedSessionId());
 }
 
 $(document).ready(() => {

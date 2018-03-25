@@ -1,9 +1,7 @@
-"use strict";
-
-import treeService from './tree_service.js';
-import link from './link.js';
-import messaging from './messaging.js';
-import noteDetail from './note_detail.js';
+import treeService from './tree.js';
+import linkService from './link.js';
+import messagingService from './messaging.js';
+import noteDetailService from './note_detail.js';
 import treeUtils from './tree_utils.js';
 import utils from './utils.js';
 import server from './server.js';
@@ -24,7 +22,7 @@ $(document).bind('keydown', 'alt+t', e => {
     const date = new Date();
     const dateString = utils.formatDateTime(date);
 
-    link.addTextToEditor(dateString);
+    linkService.addTextToEditor(dateString);
 
     e.preventDefault();
 });
@@ -107,7 +105,7 @@ $("#note-title").bind('keydown', 'return', () => $("#note-detail").focus());
 $(window).on('beforeunload', () => {
     // this makes sure that when user e.g. reloads the page or navigates away from the page, the note's content is saved
     // this sends the request asynchronously and doesn't wait for result
-    noteDetail.saveNoteIfChanged();
+    noteDetailService.saveNoteIfChanged();
 });
 
 // Overrides the default autocomplete filter function to search for matched on atleast 1 word in each of the input term's words
@@ -159,12 +157,12 @@ $.ui.autocomplete.filter = (array, terms) => {
 $(document).tooltip({
     items: "#note-detail a",
     content: function(callback) {
-        const notePath = link.getNotePathFromLink($(this).attr("href"));
+        const notePath = linkService.getNotePathFromLink($(this).attr("href"));
 
         if (notePath !== null) {
             const noteId = treeUtils.getNoteIdFromNotePath(notePath);
 
-            noteDetail.loadNote(noteId).then(note => callback(note.detail.content));
+            noteDetailService.loadNote(noteId).then(note => callback(note.detail.content));
         }
     },
     close: function(event, ui)
@@ -201,7 +199,7 @@ window.onerror = function (msg, url, lineNo, columnNo, error) {
         ].join(' - ');
     }
 
-    messaging.logError(message);
+    messagingService.logError(message);
 
     return false;
 };
@@ -244,7 +242,7 @@ $("#attachment-upload").change(async function() {
     formData.append('upload', this.files[0]);
 
     const resp = await $.ajax({
-        url: baseApiUrl + 'attachments/upload/' + noteDetail.getCurrentNoteId(),
+        url: baseApiUrl + 'attachments/upload/' + noteDetailService.getCurrentNoteId(),
         headers: server.getHeaders(),
         data: formData,
         type: 'POST',

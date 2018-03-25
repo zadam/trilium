@@ -28,7 +28,7 @@ import utils from './utils.js';
 
 import searchTreeService from './search_tree.js';
 import './init.js';
-import treeService from './tree_service.js';
+import treeService from './tree.js';
 const $toggleSearchButton = $("#toggle-search-button");
 
 $toggleSearchButton.click(searchTreeService.toggleSearch);

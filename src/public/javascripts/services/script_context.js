@@ -1,5 +1,3 @@
-"use strict";
-
 import ScriptApi from './script_api.js';
 import utils from './utils.js';
 

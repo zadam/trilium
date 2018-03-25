@@ -1,9 +1,7 @@
-"use strict";
-
-import treeService from '../services/tree_service.js';
-import cloning from '../services/cloning.js';
-import link from '../services/link.js';
-import noteDetail from '../services/note_detail.js';
+import treeService from '../services/tree.js';
+import cloningService from '../services/cloning.js';
+import linkService from '../services/link.js';
+import noteDetailService from '../services/note_detail.js';
 import treeUtils from '../services/tree_utils.js';
 
 const $dialog = $("#add-link-dialog");
@@ -27,7 +25,7 @@ function setLinkType(linkType) {
 async function showDialog() {
     glob.activeDialog = $dialog;
 
-    if (noteDetail.getCurrentNoteType() === 'text') {
+    if (noteDetailService.getCurrentNoteType() === 'text') {
         $linkTypeHtml.prop('disabled', false);
 
         setLinkType('html');
@@ -58,7 +56,7 @@ async function showDialog() {
         minLength: 0,
         change: () => {
             const val = $autoComplete.val();
-            const notePath = link.getNodePathFromLabel(val);
+            const notePath = linkService.getNodePathFromLabel(val);
             if (!notePath) {
                 return;
             }
@@ -72,7 +70,7 @@ async function showDialog() {
         // this is called when user goes through autocomplete list with keyboard
         // at this point the item isn't selected yet so we use supplied ui.item to see WHERE the cursor is
         focus: (event, ui) => {
-            const notePath = link.getNodePathFromLabel(ui.item.value);
+            const notePath = linkService.getNodePathFromLabel(ui.item.value);
             const noteId = treeUtils.getNoteIdFromNotePath(notePath);
 
             setDefaultLinkTitle(noteId);
@@ -83,7 +81,7 @@ async function showDialog() {
 $form.submit(() => {
     const value = $autoComplete.val();
 
-    const notePath = link.getNodePathFromLabel(value);
+    const notePath = linkService.getNodePathFromLabel(value);
     const noteId = treeUtils.getNoteIdFromNotePath(notePath);
 
     if (notePath) {
@@ -94,19 +92,19 @@ $form.submit(() => {
 
             $dialog.dialog("close");
 
-            link.addLinkToEditor(linkTitle, '#' + notePath);
+            linkService.addLinkToEditor(linkTitle, '#' + notePath);
         }
         else if (linkType === 'selected-to-current') {
             const prefix = $clonePrefix.val();
 
-            cloning.cloneNoteTo(noteId, noteDetail.getCurrentNoteId(), prefix);
+            cloningService.cloneNoteTo(noteId, noteDetailService.getCurrentNoteId(), prefix);
 
             $dialog.dialog("close");
         }
         else if (linkType === 'current-to-selected') {
             const prefix = $clonePrefix.val();
 
-            cloning.cloneNoteTo(noteDetail.getCurrentNoteId(), noteId, prefix);
+            cloningService.cloneNoteTo(noteDetailService.getCurrentNoteId(), noteId, prefix);
 
             $dialog.dialog("close");
         }

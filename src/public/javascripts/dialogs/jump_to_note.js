@@ -1,7 +1,5 @@
-"use strict";
-
-import treeService from '../services/tree_service.js';
-import link from '../services/link.js';
+import treeService from '../services/tree.js';
+import linkService from '../services/link.js';
 import utils from '../services/utils.js';
 
 const $showDialogButton = $("#jump-to-note-button");
@@ -27,7 +25,7 @@ async function showDialog() {
 
 function getSelectedNotePath() {
     const val = $autoComplete.val();
-    return link.getNodePathFromLabel(val);
+    return linkService.getNodePathFromLabel(val);
 }
 
 function goToNote() {

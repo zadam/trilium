@@ -1,9 +1,7 @@
-"use strict";
-
-import treeService from './tree_service.js';
+import treeService from './tree.js';
 import noteDetailService from './note_detail.js';
 import utils from './utils.js';
-import recentNotes from '../dialogs/recent_notes.js';
+import recentNotesDialog from '../dialogs/recent_notes.js';
 
 const $changesToPushCount = $("#changes-to-push-count");
 
@@ -54,7 +52,7 @@ function messageHandler(event) {
         if (syncData.some(sync => sync.entityName === 'recent_notes')) {
             console.log(utils.now(), "Reloading recent notes because of background changes");
 
-            recentNotes.reload();
+            recentNotesDialog.reload();
         }
 
         // we don't detect image changes here since images themselves are immutable and references should be

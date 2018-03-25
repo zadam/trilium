@@ -1,6 +1,4 @@
-"use strict";
-
-import treeService from './tree_service.js';
+import treeService from './tree.js';
 
 const $tree = $("#tree");
 const $searchInput = $("input[name='search-text']");

@@ -1,6 +1,4 @@
-"use strict";
-
-import treeService from '../services/tree_service.js';
+import treeService from '../services/tree.js';
 
 const $dialog = $("#edit-tree-prefix-dialog");
 const $form = $("#edit-tree-prefix-form");

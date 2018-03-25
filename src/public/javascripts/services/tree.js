@@ -1,16 +1,14 @@
-"use strict";
-
-import contextMenu from './context_menu.js';
+import contextMenuService from './context_menu.js';
 import dragAndDropSetup from './drag_and_drop.js';
-import link from './link.js';
-import messaging from './messaging.js';
-import noteDetail from './note_detail.js';
-import protected_session from './protected_session.js';
-import treeChanges from './tree_changes.js';
+import linkService from './link.js';
+import messagingService from './messaging.js';
+import noteDetailService from './note_detail.js';
+import protectedSessionService from './protected_session.js';
+import treeChangesService from './tree_changes.js';
 import treeUtils from './tree_utils.js';
 import utils from './utils.js';
 import server from './server.js';
-import recentNotes from '../dialogs/recent_notes.js';
+import recentNotesDialog from '../dialogs/recent_notes.js';
 import treeCache from './tree_cache.js';
 
 const $tree = $("#tree");
@@ -146,7 +144,7 @@ async function prepareBranchInner(parentNote) {
     const childBranches = await parentNote.getChildBranches();
 
     if (!childBranches) {
-        messaging.logError(`No children for ${parentNote}. This shouldn't happen.`);
+        messagingService.logError(`No children for ${parentNote}. This shouldn't happen.`);
         return;
     }
 
@@ -245,7 +243,7 @@ async function getRunPath(notePath) {
             const parents = await child.getParentNotes();
 
             if (!parents) {
-                messaging.logError("No parents found for " + childNoteId);
+                messagingService.logError("No parents found for " + childNoteId);
                 return;
             }
 
@@ -268,7 +266,7 @@ async function getRunPath(notePath) {
                     break;
                 }
                 else {
-                    messaging.logError("No parents, can't activate node.");
+                    messagingService.logError("No parents, can't activate node.");
                     return;
                 }
             }
@@ -315,7 +313,7 @@ async function showParentList(noteId, node) {
                 item = $("<span/>").attr("title", "Current note").append(title);
             }
             else {
-                item = link.createNoteLink(notePath, title);
+                item = linkService.createNoteLink(notePath, title);
             }
 
             $parentListList.append($("<li/>").append(item));
@@ -377,7 +375,7 @@ function setCurrentNotePathToHash(node) {
 
     document.location.hash = currentNotePath;
 
-    recentNotes.addRecentNote(currentBranchId, currentNotePath);
+    recentNotesDialog.addRecentNote(currentBranchId, currentNotePath);
 }
 
 function getSelectedNodes(stopOnParents = false) {
@@ -401,13 +399,13 @@ function initFancyTree(branch) {
 
     const keybindings = {
         "del": node => {
-            treeChanges.deleteNodes(getSelectedNodes(true));
+            treeChangesService.deleteNodes(getSelectedNodes(true));
         },
         "ctrl+up": node => {
             const beforeNode = node.getPrevSibling();
 
             if (beforeNode !== null) {
-                treeChanges.moveBeforeNode([node], beforeNode);
+                treeChangesService.moveBeforeNode([node], beforeNode);
             }
 
             return false;
@@ -415,13 +413,13 @@ function initFancyTree(branch) {
         "ctrl+down": node => {
             let afterNode = node.getNextSibling();
             if (afterNode !== null) {
-                treeChanges.moveAfterNode([node], afterNode);
+                treeChangesService.moveAfterNode([node], afterNode);
             }
 
             return false;
         },
         "ctrl+left": node => {
-            treeChanges.moveNodeUpInHierarchy(node);
+            treeChangesService.moveNodeUpInHierarchy(node);
 
             return false;
         },
@@ -429,7 +427,7 @@ function initFancyTree(branch) {
             let toNode = node.getPrevSibling();
 
             if (toNode !== null) {
-                treeChanges.moveToNode([node], toNode);
+                treeChangesService.moveToNode([node], toNode);
             }
 
             return false;
@@ -479,22 +477,22 @@ function initFancyTree(branch) {
             return false;
         },
         "ctrl+c": () => {
-            contextMenu.copy(getSelectedNodes());
+            contextMenuService.copy(getSelectedNodes());
 
             return false;
         },
         "ctrl+x": () => {
-            contextMenu.cut(getSelectedNodes());
+            contextMenuService.cut(getSelectedNodes());
 
             return false;
         },
         "ctrl+v": node => {
-            contextMenu.pasteInto(node);
+            contextMenuService.pasteInto(node);
 
             return false;
         },
         "return": node => {
-            noteDetail.focus();
+            noteDetailService.focus();
 
             return false;
         },
@@ -557,7 +555,7 @@ function initFancyTree(branch) {
 
             setCurrentNotePathToHash(data.node);
 
-            noteDetail.switchToNote(node.noteId);
+            noteDetailService.switchToNote(node.noteId);
 
             showParentList(node.noteId, data.node);
         },
@@ -615,7 +613,7 @@ function initFancyTree(branch) {
         }
     });
 
-    $tree.contextmenu(contextMenu.contextMenuSettings);
+    $tree.contextmenu(contextMenuService.contextMenuSettings);
 }
 
 async function loadSearchNote(searchNoteId) {
@@ -768,7 +766,7 @@ async function createNote(node, parentNoteId, target, isProtected) {
 
     // if isProtected isn't available (user didn't enter password yet), then note is created as unencrypted
     // but this is quite weird since user doesn't see WHERE the note is being created so it shouldn't occur often
-    if (!isProtected || !protected_session.isProtectedSessionAvailable()) {
+    if (!isProtected || !protectedSessionService.isProtectedSessionAvailable()) {
         isProtected = false;
     }
 
@@ -793,7 +791,7 @@ async function createNote(node, parentNoteId, target, isProtected) {
 
     treeCache.add(note, branch);
 
-    noteDetail.newNoteCreated();
+    noteDetailService.newNoteCreated();
 
     const newNode = {
         title: newNoteName,
@@ -869,7 +867,7 @@ $(document).bind('keydown', 'ctrl+p', e => {
 $(document).bind('keydown', 'ctrl+del', e => {
     const node = getCurrentNode();
 
-    treeChanges.deleteNodes([node]);
+    treeChangesService.deleteNodes([node]);
 
     e.preventDefault();
 });

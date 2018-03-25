@@ -1,7 +1,5 @@
-"use strict";
-
-import treeService from './tree_service.js';
-import treeChanges from './tree_changes.js';
+import treeService from './tree.js';
+import treeChangesService from './tree_changes.js';
 
 const dragAndDropSetup = {
     autoExpandMS: 600,
@@ -55,13 +53,13 @@ const dragAndDropSetup = {
         const selectedNodes = treeService.getSelectedNodes();
 
         if (data.hitMode === "before") {
-            treeChanges.moveBeforeNode(selectedNodes, node);
+            treeChangesService.moveBeforeNode(selectedNodes, node);
         }
         else if (data.hitMode === "after") {
-            treeChanges.moveAfterNode(selectedNodes, node);
+            treeChangesService.moveAfterNode(selectedNodes, node);
         }
         else if (data.hitMode === "over") {
-            treeChanges.moveToNode(selectedNodes, node);
+            treeChangesService.moveToNode(selectedNodes, node);
         }
         else {
             throw new Exception("Unknown hitMode=" + data.hitMode);

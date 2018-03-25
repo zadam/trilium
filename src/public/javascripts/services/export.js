@@ -1,12 +1,10 @@
-"use strict";
-
-import treeService from './tree_service.js';
-import protected_session from './protected_session.js';
+import treeService from './tree.js';
+import protectedSessionService from './protected_session.js';
 import utils from './utils.js';
 
 function exportSubTree(noteId) {
     const url = utils.getHost() + "/api/export/" + noteId + "?protectedSessionId="
-        + encodeURIComponent(protected_session.getProtectedSessionId());
+        + encodeURIComponent(protectedSessionService.getProtectedSessionId());
 
     utils.download(url);
 }

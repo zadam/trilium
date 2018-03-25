@@ -1,6 +1,4 @@
-"use strict";
-
-import treeService from './tree_service.js';
+import treeService from './tree.js';
 import noteDetail from './note_detail.js';
 import utils from './utils.js';
 

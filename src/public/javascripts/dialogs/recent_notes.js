@@ -1,8 +1,6 @@
-"use strict";
-
-import treeService from '../services/tree_service.js';
+import treeService from '../services/tree.js';
+import messagingService from '../services/messaging.js';
 import server from '../services/server.js';
-import messaging from '../services/messaging.js';
 
 const $showDialogButton = $("#recent-notes-button");
 const $dialog = $("#recent-notes-dialog");
@@ -53,7 +51,7 @@ function showDialog() {
             catch (e) {
                 noteTitle = "[error - can't find note title]";
 
-                messaging.logError("Could not find title for notePath=" + notePath + ", stack=" + e.stack);
+                messagingService.logError("Could not find title for notePath=" + notePath + ", stack=" + e.stack);
             }
 
             return {
