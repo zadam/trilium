@@ -35,14 +35,14 @@ const server = (function() {
     const reqResolves = {};
 
     async function call(method, url, data) {
-        if (isElectron()) {
+        if (utils.isElectron()) {
             const ipc = require('electron').ipcRenderer;
             const requestId = i++;
 
             return new Promise((resolve, reject) => {
                 reqResolves[requestId] = resolve;
 
-                console.log(now(), "Request #" + requestId + " to " + method + " " + url);
+                console.log(utils.now(), "Request #" + requestId + " to " + method + " " + url);
 
                 ipc.send('server-request', {
                     requestId: requestId,
@@ -58,11 +58,11 @@ const server = (function() {
         }
     }
 
-    if (isElectron()) {
+    if (utils.isElectron()) {
         const ipc = require('electron').ipcRenderer;
 
         ipc.on('server-response', (event, arg) => {
-            console.log(now(), "Response #" + arg.requestId + ": " + arg.statusCode);
+            console.log(utils.now(), "Response #" + arg.requestId + ": " + arg.statusCode);
 
             reqResolves[arg.requestId](arg.body);
 
@@ -84,8 +84,8 @@ const server = (function() {
 
         return await $.ajax(options).catch(e => {
             const message = "Error when calling " + method + " " + url + ": " + e.status + " - " + e.statusText;
-            showError(message);
-            throwError(message);
+            utils.showError(message);
+            utils.throwError(message);
         });
     }
 

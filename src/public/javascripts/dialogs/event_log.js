@@ -18,7 +18,7 @@ const eventLog = (function() {
         $list.html('');
 
         for (const event of result) {
-            const dateTime = formatDateTime(parseDate(event.dateAdded));
+            const dateTime = utils.formatDateTime(utils.parseDate(event.dateAdded));
 
             if (event.noteId) {
                 const noteLink = link.createNoteLink(event.noteId).prop('outerHTML');

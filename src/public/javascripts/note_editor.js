@@ -103,7 +103,7 @@ const noteEditor = (function() {
             // nothing
         }
         else {
-            throwError("Unrecognized type: " + note.detail.type);
+            utils.throwError("Unrecognized type: " + note.detail.type);
         }
 
         const title = $noteTitle.val();
@@ -118,7 +118,7 @@ const noteEditor = (function() {
 
         isNoteChanged = false;
 
-        showMessage("Saved!");
+        utils.showMessage("Saved!");
     }
 
     function setNoteBackgroundIfProtected(note) {
@@ -138,7 +138,7 @@ const noteEditor = (function() {
     async function setContent(content) {
         if (currentNote.detail.type === 'text') {
             if (!editor) {
-                await requireLibrary(CKEDITOR);
+                await utils.requireLibrary(utils.CKEDITOR);
 
                 editor = await BalloonEditor.create($noteDetail[0], {});
 
@@ -152,7 +152,7 @@ const noteEditor = (function() {
         }
         else if (currentNote.detail.type === 'code') {
             if (!codeEditor) {
-                await requireLibrary(CODE_MIRROR);
+                await utils.requireLibrary(utils.CODE_MIRROR);
 
                 CodeMirror.keyMap.default["Shift-Tab"] = "indentLess";
                 CodeMirror.keyMap.default["Tab"] = "indentMore";
@@ -248,7 +248,7 @@ const noteEditor = (function() {
 
             $noteDetailRender.html(bundle.html);
 
-            executeBundle(bundle);
+            utils.executeBundle(bundle);
         }
         else if (currentNote.detail.type === 'file') {
             $noteDetailAttachment.show();
@@ -281,7 +281,7 @@ const noteEditor = (function() {
 
         if (labels.length > 0) {
             for (const attr of labels) {
-                $labelListInner.append(formatLabel(attr) + " ");
+                $labelListInner.append(utils.formatLabel(attr) + " ");
             }
 
             $labelList.show();
@@ -312,7 +312,7 @@ const noteEditor = (function() {
             // do nothing
         }
         else {
-            throwError('Unrecognized type: ' + note.detail.type);
+            utils.throwError('Unrecognized type: ' + note.detail.type);
         }
     }
 
@@ -330,21 +330,21 @@ const noteEditor = (function() {
             if (currentNote.detail.mime.endsWith("env=frontend")) {
                 const bundle = await server.get('script/bundle/' + getCurrentNoteId());
 
-                executeBundle(bundle);
+                utils.executeBundle(bundle);
             }
 
             if (currentNote.detail.mime.endsWith("env=backend")) {
                 await server.post('script/run/' + getCurrentNoteId());
             }
 
-            showMessage("Note executed");
+            utils.showMessage("Note executed");
         }
     }
 
-    $attachmentDownload.click(() => download(getAttachmentUrl()));
+    $attachmentDownload.click(() => utils.download(getAttachmentUrl()));
 
     $attachmentOpen.click(() => {
-        if (isElectron()) {
+        if (utils.isElectron()) {
             const open = require("open");
 
             open(getAttachmentUrl());
@@ -356,7 +356,7 @@ const noteEditor = (function() {
 
     function getAttachmentUrl() {
         // electron needs absolute URL so we extract current host, port, protocol
-        return getHost() + "/api/attachments/download/" + getCurrentNoteId()
+        return utils.getHost() + "/api/attachments/download/" + getCurrentNoteId()
             + "?protectedSessionId=" + encodeURIComponent(protected_session.getProtectedSessionId());
     }
 

@@ -24,7 +24,7 @@ const sqlConsole = (function() {
 
     async function initEditor() {
         if (!codeEditor) {
-            await requireLibrary(CODE_MIRROR);
+            await utils.requireLibrary(utils.CODE_MIRROR);
 
             CodeMirror.keyMap.default["Shift-Tab"] = "indentLess";
             CodeMirror.keyMap.default["Tab"] = "indentMore";
@@ -60,11 +60,11 @@ const sqlConsole = (function() {
         });
 
         if (!result.success) {
-            showError(result.error);
+            utils.showError(result.error);
             return;
         }
         else {
-            showMessage("Query was executed successfully.");
+            utils.showMessage("Query was executed successfully.");
         }
 
         const rows = result.rows;

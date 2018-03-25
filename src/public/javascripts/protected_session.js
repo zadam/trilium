@@ -56,7 +56,7 @@ const protected_session = (function() {
         const response = await enterProtectedSession(password);
 
         if (!response.success) {
-            showError("Wrong password.");
+            utils.showError("Wrong password.");
             return;
         }
 
@@ -103,7 +103,7 @@ const protected_session = (function() {
 
         // most secure solution - guarantees nothing remained in memory
         // since this expires because user doesn't use the app, it shouldn't be disruptive
-        reloadApp();
+        utils.reloadApp();
     }
 
     function isProtectedSessionAvailable() {
@@ -153,7 +153,7 @@ const protected_session = (function() {
 
         await server.put('notes/' + noteId + "/protect-sub-tree/" + (protect ? 1 : 0));
 
-        showMessage("Request to un/protect sub tree has finished successfully");
+        utils.showMessage("Request to un/protect sub tree has finished successfully");
 
         treeService.reload();
         noteEditor.reload();

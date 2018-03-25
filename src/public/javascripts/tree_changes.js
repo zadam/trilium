@@ -72,7 +72,7 @@ const treeChanges = (function() {
             next = nodes[0].getPrevSibling();
         }
 
-        if (!next && !isTopLevelNode(nodes[0])) {
+        if (!next && !utils.isTopLevelNode(nodes[0])) {
             next = nodes[0].getParent();
         }
 
@@ -85,11 +85,11 @@ const treeChanges = (function() {
 
         treeService.reload();
 
-        showMessage("Note(s) has been deleted.");
+        utils.showMessage("Note(s) has been deleted.");
     }
 
     async function moveNodeUpInHierarchy(node) {
-        if (isTopLevelNode(node)) {
+        if (utils.isTopLevelNode(node)) {
             return;
         }
 
@@ -100,7 +100,7 @@ const treeChanges = (function() {
             return;
         }
 
-        if (!isTopLevelNode(node) && node.getParent().getChildren().length <= 1) {
+        if (!utils.isTopLevelNode(node) && node.getParent().getChildren().length <= 1) {
             node.getParent().folder = false;
             node.getParent().renderTitle();
         }
@@ -109,13 +109,13 @@ const treeChanges = (function() {
     }
 
     function changeNode(node, func) {
-        assertArguments(node.data.parentNoteId, node.data.noteId);
+        utils.assertArguments(node.data.parentNoteId, node.data.noteId);
 
         treeService.removeParentChildRelation(node.data.parentNoteId, node.data.noteId);
 
         func(node);
 
-        node.data.parentNoteId = isTopLevelNode(node) ? 'root' : node.getParent().data.noteId;
+        node.data.parentNoteId = utils.isTopLevelNode(node) ? 'root' : node.getParent().data.noteId;
 
         treeService.setParentChildRelation(node.data.branchId, node.data.parentNoteId, node.data.noteId);
 

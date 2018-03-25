@@ -26,7 +26,7 @@ const contextMenu = (function() {
             // just do nothing
         }
         else {
-            throwError("Unrecognized clipboard mode=" + clipboardMode);
+            utils.throwError("Unrecognized clipboard mode=" + clipboardMode);
         }
     }
 
@@ -49,7 +49,7 @@ const contextMenu = (function() {
             // just do nothing
         }
         else {
-            throwError("Unrecognized clipboard mode=" + mode);
+            utils.throwError("Unrecognized clipboard mode=" + mode);
         }
     }
 
@@ -57,14 +57,14 @@ const contextMenu = (function() {
         clipboardIds = nodes.map(node => node.data.noteId);
         clipboardMode = 'copy';
 
-        showMessage("Note(s) have been copied into clipboard.");
+        utils.showMessage("Note(s) have been copied into clipboard.");
     }
 
     function cut(nodes) {
         clipboardIds = nodes.map(node => node.key);
         clipboardMode = 'cut';
 
-        showMessage("Note(s) have been cut into clipboard.");
+        utils.showMessage("Note(s) have been cut into clipboard.");
     }
 
     const contextMenuSettings = {

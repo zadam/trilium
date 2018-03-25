@@ -135,38 +135,22 @@ const treeService = (function() {
         const note = noteMap[noteId];
 
         if (!note) {
-            throwError("Can't find title for noteId='" + noteId + "'");
+            utils.throwError("Can't find title for noteId='" + noteId + "'");
         }
 
         return note;
     }
 
-    function getBranchId(parentNoteId, childNoteId) {
-        assertArguments(parentNoteId, childNoteId);
-
-
-
-        const key = parentNoteId + "-" + childNoteId;
-
-        // this can return undefined and client code should deal with it somehow
-
-        return parentChildToBranchId[key];
-    }
-
     function getNoteTitle(noteId, parentNoteId = null) {
-        assertArguments(noteId);
+        utils.assertArguments(noteId);
 
         let title = treeCache.getNote(noteId).title;
 
         if (parentNoteId !== null) {
-            const branchId = getBranchId(parentNoteId, noteId);
+            const branch = treeCache.getBranch(noteId, parentNoteId);
 
-            if (branchId) {
-                const branch = branchMap[branchId];
-
-                if (branch.prefix) {
-                    title = branch.prefix + ' - ' + title;
-                }
+            if (branch && branch.prefix) {
+                title = branch.prefix + ' - ' + title;
             }
         }
 
@@ -185,7 +169,7 @@ const treeService = (function() {
     }
 
     function getNodesByBranchId(branchId) {
-        assertArguments(branchId);
+        utils.assertArguments(branchId);
 
         const branch = branchMap[branchId];
 
@@ -193,14 +177,14 @@ const treeService = (function() {
     }
 
     function getNodesByNoteId(noteId) {
-        assertArguments(noteId);
+        utils.assertArguments(noteId);
 
         const list = getTree().getNodesByRef(noteId);
         return list ? list : []; // if no nodes with this refKey are found, fancy tree returns null
     }
 
     function setPrefix(branchId, prefix) {
-        assertArguments(branchId);
+        utils.assertArguments(branchId);
 
         branchMap[branchId].prefix = prefix;
 
@@ -215,11 +199,11 @@ const treeService = (function() {
 
         const title = (prefix ? (prefix + " - ") : "") + noteTitle;
 
-        node.setTitle(escapeHtml(title));
+        node.setTitle(utils.escapeHtml(title));
     }
 
     function removeParentChildRelation(parentNoteId, childNoteId) {
-        assertArguments(parentNoteId, childNoteId);
+        utils.assertArguments(parentNoteId, childNoteId);
 
         const parentNote = noteMap[parentNoteId];
         const childNote = noteMap[childNoteId];
@@ -228,7 +212,7 @@ const treeService = (function() {
     }
 
     function setParentChildRelation(branchId, parentNoteId, childNoteId) {
-        assertArguments(branchId, parentNoteId, childNoteId);
+        utils.assertArguments(branchId, parentNoteId, childNoteId);
 
         const parentNote = noteMap[parentNoteId];
         const childNote = noteMap[childNoteId];
@@ -237,7 +221,7 @@ const treeService = (function() {
     }
 
     async function prepareBranch(noteRows, branchRows) {
-        assertArguments(noteRows);
+        utils.assertArguments(noteRows);
 
         treeCache = new TreeCache(noteRows, branchRows);
 
@@ -245,7 +229,7 @@ const treeService = (function() {
     }
 
     async function getExtraClasses(note) {
-        assertArguments(note);
+        utils.assertArguments(note);
 
         const extraClasses = [];
 
@@ -263,7 +247,7 @@ const treeService = (function() {
     }
 
     async function prepareBranchInner(parentNote) {
-        assertArguments(parentNote);
+        utils.assertArguments(parentNote);
 
         const childBranches = await parentNote.getChildBranches();
 
@@ -283,7 +267,7 @@ const treeService = (function() {
                 parentNoteId: branch.parentNoteId,
                 branchId: branch.branchId,
                 isProtected: note.isProtected,
-                title: escapeHtml(title),
+                title: utils.escapeHtml(title),
                 extraClasses: getExtraClasses(note),
                 refKey: note.noteId,
                 expanded: note.type !== 'search' && branch.isExpanded
@@ -309,7 +293,7 @@ const treeService = (function() {
     }
 
     async function expandToNote(notePath, expandOpts) {
-        assertArguments(notePath);
+        utils.assertArguments(notePath);
 
         const runPath = await getRunPath(notePath);
 
@@ -332,7 +316,7 @@ const treeService = (function() {
     }
 
     async function activateNode(notePath) {
-        assertArguments(notePath);
+        utils.assertArguments(notePath);
 
         const node = await expandToNote(notePath);
 
@@ -346,7 +330,7 @@ const treeService = (function() {
      * path change) or other corruption, in that case this will try to get some other valid path to the correct note.
      */
     async function getRunPath(notePath) {
-        assertArguments(notePath);
+        utils.assertArguments(notePath);
 
         const path = notePath.split("/").reverse();
         path.push('root');
@@ -372,10 +356,10 @@ const treeService = (function() {
                 }
 
                 if (!parents.some(p => p.noteId === parentNoteId)) {
-                    console.log(now(), "Did not find parent " + parentNoteId + " for child " + childNoteId);
+                    console.log(utils.now(), "Did not find parent " + parentNoteId + " for child " + childNoteId);
 
                     if (parents.length > 0) {
-                        console.log(now(), "Available parents:", parents);
+                        console.log(utils.now(), "Available parents:", parents);
 
                         const someNotePath = await getSomeNotePath(parents[0]);
 
@@ -409,13 +393,13 @@ const treeService = (function() {
     }
 
     async function showParentList(noteId, node) {
-        assertArguments(noteId, node);
+        utils.assertArguments(noteId, node);
 
         const note = treeCache.getNote(noteId);
         const parents = await note.getParentNotes();
 
         if (!parents.length) {
-            throwError("Can't find parents for noteId=" + noteId);
+            utils.throwError("Can't find parents for noteId=" + noteId);
         }
 
         if (parents.length <= 1) {
@@ -446,7 +430,7 @@ const treeService = (function() {
     }
 
     function getNotePathTitle(notePath) {
-        assertArguments(notePath);
+        utils.assertArguments(notePath);
 
         const titlePath = [];
 
@@ -462,7 +446,7 @@ const treeService = (function() {
     }
 
     async function getSomeNotePath(note) {
-        assertArguments(note);
+        utils.assertArguments(note);
 
         const path = [];
 
@@ -474,7 +458,7 @@ const treeService = (function() {
             const parents = await cur.getParentNotes();
 
             if (!parents.length) {
-                throwError("Can't find parents for " + cur);
+                utils.throwError("Can't find parents for " + cur);
             }
 
             cur = parents[0];
@@ -484,7 +468,7 @@ const treeService = (function() {
     }
 
     async function setExpandedToServer(branchId, isExpanded) {
-        assertArguments(branchId);
+        utils.assertArguments(branchId);
 
         const expandedNum = isExpanded ? 1 : 0;
 
@@ -492,7 +476,7 @@ const treeService = (function() {
     }
 
     function setCurrentNotePathToHash(node) {
-        assertArguments(node);
+        utils.assertArguments(node);
 
         const currentNotePath = treeUtils.getNotePath(node);
         const currentBranchId = node.data.branchId;
@@ -519,7 +503,7 @@ const treeService = (function() {
     }
 
     function initFancyTree(branch) {
-        assertArguments(branch);
+        utils.assertArguments(branch);
 
         const keybindings = {
             "del": node => {
@@ -621,7 +605,7 @@ const treeService = (function() {
                 return false;
             },
             "backspace": node => {
-                if (!isTopLevelNode(node)) {
+                if (!utils.isTopLevelNode(node)) {
                     node.getParent().setActive().then(() => clearSelectedNodes());
                 }
             },
@@ -748,7 +732,7 @@ const treeService = (function() {
         const noteIds = await server.get('search/' + encodeURIComponent(json.searchString));
 
         for (const noteId of noteIds) {
-            const branchId = "virt" + randomString(10);
+            const branchId = "virt" + utils.randomString(10);
 
             branchMap[branchId] = {
                 branchId: branchId,
@@ -874,7 +858,7 @@ const treeService = (function() {
     }
 
     function setNoteTitle(noteId, title) {
-        assertArguments(noteId);
+        utils.assertArguments(noteId);
 
         getNote(noteId).title = title;
 
@@ -888,7 +872,7 @@ const treeService = (function() {
     }
 
     async function createNote(node, parentNoteId, target, isProtected) {
-        assertArguments(node, parentNoteId, target);
+        utils.assertArguments(node, parentNoteId, target);
 
         // if isProtected isn't available (user didn't enter password yet), then note is created as unencrypted
         // but this is quite weird since user doesn't see WHERE the note is being created so it shouldn't occur often
@@ -946,12 +930,12 @@ const treeService = (function() {
             node.renderTitle();
         }
         else {
-            throwError("Unrecognized target: " + target);
+            utils.throwError("Unrecognized target: " + target);
         }
 
         clearSelectedNodes(); // to unmark previously active node
 
-        showMessage("Created!");
+        utils.showMessage("Created!");
     }
 
     async function sortAlphabetically(noteId) {
@@ -1010,7 +994,7 @@ const treeService = (function() {
         }
     });
 
-    if (isElectron()) {
+    if (utils.isElectron()) {
         $(document).bind('keydown', 'alt+left', e => {
             window.history.back();
 

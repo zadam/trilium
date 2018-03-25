@@ -4,7 +4,7 @@ const messaging = (function() {
     const $changesToPushCount = $("#changes-to-push-count");
 
     function logError(message) {
-        console.log(now(), message); // needs to be separate from .trace()
+        console.log(utils.now(), message); // needs to be separate from .trace()
         console.trace();
 
         if (ws && ws.readyState === 1) {
@@ -22,7 +22,7 @@ const messaging = (function() {
             lastPingTs = new Date().getTime();
 
             if (message.data.length > 0) {
-                console.log(now(), "Sync data: ", message.data);
+                console.log(utils.now(), "Sync data: ", message.data);
 
                 lastSyncId = message.data[message.data.length - 1].id;
             }
@@ -32,19 +32,19 @@ const messaging = (function() {
             if (syncData.some(sync => sync.entityName === 'branches')
                 || syncData.some(sync => sync.entityName === 'notes')) {
 
-                console.log(now(), "Reloading tree because of background changes");
+                console.log(utils.now(), "Reloading tree because of background changes");
 
                 treeService.reload();
             }
 
             if (syncData.some(sync => sync.entityName === 'notes' && sync.entityId === noteEditor.getCurrentNoteId())) {
-                showMessage('Reloading note because of background changes');
+                utils.showMessage('Reloading note because of background changes');
 
                 noteEditor.reload();
             }
 
             if (syncData.some(sync => sync.entityName === 'recent_notes')) {
-                console.log(now(), "Reloading recent notes because of background changes");
+                console.log(utils.now(), "Reloading recent notes because of background changes");
 
                 recentNotes.reload();
             }
@@ -55,10 +55,10 @@ const messaging = (function() {
             $changesToPushCount.html(message.changesToPushCount);
         }
         else if (message.type === 'sync-hash-check-failed') {
-            showError("Sync check failed!", 60000);
+            utils.utils.showError("Sync check failed!", 60000);
         }
         else if (message.type === 'consistency-checks-failed') {
-            showError("Consistency checks failed! See logs for details.", 50 * 60000);
+            utils.showError("Consistency checks failed! See logs for details.", 50 * 60000);
         }
     }
 
@@ -67,7 +67,7 @@ const messaging = (function() {
 
         // use wss for secure messaging
         const ws = new WebSocket(protocol + "://" + location.host);
-        ws.onopen = event => console.log(now(), "Connected to server with WebSocket");
+        ws.onopen = event => console.log(utils.now(), "Connected to server with WebSocket");
         ws.onmessage = messageHandler;
         ws.onclose = function(){
             // Try to reconnect in 5 seconds
@@ -100,7 +100,7 @@ const messaging = (function() {
             await connectionBrokenNotification.close();
             connectionBrokenNotification = null;
 
-            showMessage("Re-connected to server");
+            utils.showMessage("Re-connected to server");
         }
 
         ws.send(JSON.stringify({

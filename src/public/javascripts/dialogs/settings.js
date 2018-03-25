@@ -36,7 +36,7 @@ const settings = (function() {
             value: settingValue
         });
 
-        showMessage("Settings change have been saved.");
+        utils.showMessage("Settings change have been saved.");
     }
 
     $showDialogButton.click(showDialog);
@@ -82,7 +82,7 @@ settings.addModule((function() {
                 protected_session.resetProtectedSession();
             }
             else {
-                showError(result.message);
+                utils.showError(result.message);
             }
         });
 
@@ -166,27 +166,27 @@ settings.addModule((async function () {
     $forceFullSyncButton.click(async () => {
         await server.post('sync/force-full-sync');
 
-        showMessage("Full sync triggered");
+        utils.showMessage("Full sync triggered");
     });
 
     $fillSyncRowsButton.click(async () => {
         await server.post('sync/fill-sync-rows');
 
-        showMessage("Sync rows filled successfully");
+        utils.showMessage("Sync rows filled successfully");
     });
 
 
     $anonymizeButton.click(async () => {
         await server.post('anonymization/anonymize');
 
-        showMessage("Created anonymized database");
+        utils.showMessage("Created anonymized database");
     });
 
     $cleanupSoftDeletedButton.click(async () => {
         if (confirm("Do you really want to clean up soft-deleted items?")) {
             await server.post('cleanup/cleanup-soft-deleted-items');
 
-            showMessage("Soft deleted items have been cleaned up");
+            utils.showMessage("Soft deleted items have been cleaned up");
         }
     });
 
@@ -194,14 +194,14 @@ settings.addModule((async function () {
         if (confirm("Do you really want to clean up unused images?")) {
             await server.post('cleanup/cleanup-unused-images');
 
-            showMessage("Unused images have been cleaned up");
+            utils.showMessage("Unused images have been cleaned up");
         }
     });
 
     $vacuumDatabaseButton.click(async () => {
         await server.post('cleanup/vacuum-database');
 
-        showMessage("Database has been vacuumed");
+        utils.showMessage("Database has been vacuumed");
     });
 
     return {};

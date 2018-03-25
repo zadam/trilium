@@ -22,10 +22,10 @@ const recentChanges = (function() {
         for (const [dateDay, dayChanges] of groupedByDate) {
             const changesListEl = $('<ul>');
 
-            const dayEl = $('<div>').append($('<b>').html(formatDate(dateDay))).append(changesListEl);
+            const dayEl = $('<div>').append($('<b>').html(utils.formatDate(dateDay))).append(changesListEl);
 
             for (const change of dayChanges) {
-                const formattedTime = formatTime(parseDate(change.dateModifiedTo));
+                const formattedTime = utils.formatTime(utils.parseDate(change.dateModifiedTo));
 
                 const revLink = $("<a>", {
                     href: 'javascript:',
@@ -58,7 +58,7 @@ const recentChanges = (function() {
         const dayCache = {};
 
         for (const row of result) {
-            let dateDay = parseDate(row.dateModifiedTo);
+            let dateDay = utils.parseDate(row.dateModifiedTo);
             dateDay.setHours(0);
             dateDay.setMinutes(0);
             dateDay.setSeconds(0);

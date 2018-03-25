@@ -14,7 +14,7 @@ $(document).bind('keydown', 'alt+m', e => {
 // hide (toggle) everything except for the note content for distraction free writing
 $(document).bind('keydown', 'alt+t', e => {
     const date = new Date();
-    const dateString = formatDateTime(date);
+    const dateString = utils.formatDateTime(date);
 
     link.addTextToEditor(dateString);
 
@@ -22,19 +22,19 @@ $(document).bind('keydown', 'alt+t', e => {
 });
 
 $(document).bind('keydown', 'f5', () => {
-    reloadApp();
+    utils.reloadApp();
 
     return false;
 });
 
 $(document).bind('keydown', 'ctrl+r', () => {
-    reloadApp();
+    utils.reloadApp();
 
     return false;
 });
 
 $(document).bind('keydown', 'ctrl+shift+i', () => {
-    if (isElectron()) {
+    if (utils.isElectron()) {
         require('electron').remote.getCurrentWindow().toggleDevTools();
 
         return false;
@@ -42,7 +42,7 @@ $(document).bind('keydown', 'ctrl+shift+i', () => {
 });
 
 $(document).bind('keydown', 'ctrl+f', () => {
-    if (isElectron()) {
+    if (utils.isElectron()) {
         const searchInPage = require('electron-in-page-search').default;
         const remote = require('electron').remote;
 
@@ -73,7 +73,7 @@ $(document).bind('keydown', "ctrl+shift+down", () => {
 });
 
 $(document).bind('keydown', 'ctrl+-', () => {
-    if (isElectron()) {
+    if (utils.isElectron()) {
         const webFrame = require('electron').webFrame;
 
         if (webFrame.getZoomFactor() > 0.2) {
@@ -85,7 +85,7 @@ $(document).bind('keydown', 'ctrl+-', () => {
 });
 
 $(document).bind('keydown', 'ctrl+=', () => {
-    if (isElectron()) {
+    if (utils.isElectron()) {
         const webFrame = require('electron').webFrame;
 
         webFrame.setZoomFactor(webFrame.getZoomFactor() + 0.1);
@@ -198,17 +198,17 @@ window.onerror = function (msg, url, lineNo, columnNo, error) {
     return false;
 };
 
-$("#logout-button").toggle(!isElectron());
+$("#logout-button").toggle(!utils.isElectron());
 
 $(document).ready(() => {
     server.get("script/startup").then(scriptBundles => {
         for (const bundle of scriptBundles) {
-            executeBundle(bundle);
+            utils.executeBundle(bundle);
         }
     });
 });
 
-if (isElectron()) {
+if (utils.isElectron()) {
     require('electron').ipcRenderer.on('create-day-sub-note', async function(event, parentNoteId) {
         // this might occur when day note had to be created
         if (!await treeService.noteExists(parentNoteId)) {

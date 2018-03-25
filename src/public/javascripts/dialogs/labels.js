@@ -91,7 +91,7 @@ const labelsDialog = (function() {
 
             addLastEmptyRow();
 
-            showMessage("Labels have been saved.");
+            utils.showMessage("Labels have been saved.");
 
             noteEditor.loadLabelList();
         };

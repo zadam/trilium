@@ -17,7 +17,7 @@ const jumpToNote = (function() {
         });
 
         await $autoComplete.autocomplete({
-            source: await stopWatch("building autocomplete", treeService.getAutocompleteItems),
+            source: await utils.stopWatch("building autocomplete", treeService.getAutocompleteItems),
             minLength: 0
         });
     }

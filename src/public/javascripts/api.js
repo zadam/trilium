@@ -3,8 +3,8 @@ function ScriptContext(startNote, allNotes) {
 
     return {
         modules: modules,
-        notes: toObject(allNotes, note => [note.noteId, note]),
-        apis: toObject(allNotes, note => [note.noteId, ScriptApi(startNote, note)]),
+        notes: utils.toObject(allNotes, note => [note.noteId, note]),
+        apis: utils.toObject(allNotes, note => [note.noteId, ScriptApi(startNote, note)]),
         require: moduleNoteIds => {
             return moduleName => {
                 const candidates = allNotes.filter(note => moduleNoteIds.includes(note.noteId));

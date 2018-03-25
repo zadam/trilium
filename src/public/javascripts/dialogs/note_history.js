@@ -28,11 +28,11 @@ const noteHistory = (function() {
         historyItems = await server.get('notes-history/' + noteId);
 
         for (const item of historyItems) {
-            const dateModified = parseDate(item.dateModifiedFrom);
+            const dateModified = utils.parseDate(item.dateModifiedFrom);
 
             $list.append($('<option>', {
                 value: item.noteRevisionId,
-                text: formatDateTime(dateModified)
+                text: utils.formatDateTime(dateModified)
             }));
         }
 

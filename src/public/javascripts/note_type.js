@@ -73,7 +73,7 @@ const noteType = (function() {
                 // ignore and do nothing, "type" will be hidden since it's not possible to switch to and from search
             }
             else {
-                throwError('Unrecognized type: ' + type);
+                utils.throwError('Unrecognized type: ' + type);
             }
         };
 
