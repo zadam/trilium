@@ -117,6 +117,7 @@ const treeChanges = (function() {
 
         node.data.parentNoteId = utils.isTopLevelNode(node) ? 'root' : node.getParent().data.noteId;
 
+        // FIXME!!!
         treeService.setParentChildRelation(node.data.branchId, node.data.parentNoteId, node.data.noteId);
 
         treeService.setCurrentNotePathToHash(node);

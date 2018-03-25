@@ -6,6 +6,7 @@ class TreeCache {
         this.children = [];
         this.childParentToBranch = {};
 
+        /** @type {Object.<string, NoteShort>} */
         this.notes = {};
         for (const noteRow of noteRows) {
             const note = new NoteShort(this, noteRow);
@@ -13,11 +14,11 @@ class TreeCache {
             this.notes[note.noteId] = note;
         }
 
+        /** @type {Object.<string, Branch>} */
         this.branches = {};
         for (const branchRow of branchRows) {
             const branch = new Branch(this, branchRow);
 
-            this.branches[branch.branchId] = branch;
             this.addBranch(branch);
         }
     }
@@ -27,6 +28,8 @@ class TreeCache {
     }
 
     addBranch(branch) {
+        this.branches[branch.branchId] = branch;
+
         this.parents[branch.noteId] = this.parents[branch.noteId] || [];
         this.parents[branch.noteId].push(this.notes[branch.parentNoteId]);
 
@@ -42,7 +45,11 @@ class TreeCache {
         this.addBranch(branch);
     }
 
-    async getBranch(childNoteId, parentNoteId) {
+    getBranch(branchId) {
+        return this.branches[branchId];
+    }
+
+    getBranchByParentChild(childNoteId, parentNoteId) {
         return this.childParentToBranch[childNoteId + '-' + parentNoteId];
     }
 }
@@ -62,7 +69,7 @@ class NoteShort {
         const branches = [];
 
         for (const parent of this.treeCache.parents[this.noteId]) {
-            branches.push(await this.treeCache.getBranch(this.noteId, p.noteId));
+            branches.push(await this.treeCache.getBranchByParentChild(this.noteId, p.noteId));
         }
 
         return branches;
@@ -72,7 +79,7 @@ class NoteShort {
         const branches = [];
 
         for (const child of this.treeCache.children[this.noteId]) {
-            branches.push(await this.treeCache.getBranch(child.noteId, this.noteId));
+            branches.push(await this.treeCache.getBranchByParentChild(child.noteId, this.noteId));
         }
 
         return branches;
@@ -126,13 +133,8 @@ const treeService = (function() {
 
     let startNotePath = null;
 
-    /** @type {Object.<string, NoteShort>} */
-    let noteMap = {};
-    /** @type {Object.<string, Branch>} */
-    let branchMap = {};
-
     function getNote(noteId) {
-        const note = noteMap[noteId];
+        const note = treeCache.getNote(noteId);
 
         if (!note) {
             utils.throwError("Can't find title for noteId='" + noteId + "'");
@@ -147,7 +149,7 @@ const treeService = (function() {
         let title = treeCache.getNote(noteId).title;
 
         if (parentNoteId !== null) {
-            const branch = treeCache.getBranch(noteId, parentNoteId);
+            const branch = treeCache.getBranchByParentChild(noteId, parentNoteId);
 
             if (branch && branch.prefix) {
                 title = branch.prefix + ' - ' + title;
@@ -171,7 +173,7 @@ const treeService = (function() {
     function getNodesByBranchId(branchId) {
         utils.assertArguments(branchId);
 
-        const branch = branchMap[branchId];
+        const branch = treeCache.getBranch(branchId);
 
         return getNodesByNoteId(branch.noteId).filter(node => node.data.branchId === branchId);
     }
@@ -186,14 +188,14 @@ const treeService = (function() {
     function setPrefix(branchId, prefix) {
         utils.assertArguments(branchId);
 
-        branchMap[branchId].prefix = prefix;
+        treeCache.getBranch(branchId).prefix = prefix;
 
         getNodesByBranchId(branchId).map(node => setNodeTitleWithPrefix(node));
     }
 
     function setNodeTitleWithPrefix(node) {
         const noteTitle = getNoteTitle(node.data.noteId);
-        const branch = branchMap[node.data.branchId];
+        const branch = treeCache.getBranch(node.data.branchId);
 
         const prefix = branch.prefix;
 
@@ -209,15 +211,6 @@ const treeService = (function() {
         const childNote = noteMap[childNoteId];
 
         // FIXME
-    }
-
-    function setParentChildRelation(branchId, parentNoteId, childNoteId) {
-        utils.assertArguments(branchId, parentNoteId, childNoteId);
-
-        const parentNote = noteMap[parentNoteId];
-        const childNote = noteMap[childNoteId];
-
-        // FIXME: assert
     }
 
     async function prepareBranch(noteRows, branchRows) {
@@ -268,7 +261,7 @@ const treeService = (function() {
                 branchId: branch.branchId,
                 isProtected: note.isProtected,
                 title: utils.escapeHtml(title),
-                extraClasses: getExtraClasses(note),
+                extraClasses: await getExtraClasses(note),
                 refKey: note.noteId,
                 expanded: note.type !== 'search' && branch.isExpanded
             };
@@ -676,7 +669,7 @@ const treeService = (function() {
             init: (event, data) => {
                 const noteId = treeUtils.getNoteIdFromNotePath(startNotePath);
 
-                if (noteMap[noteId] === undefined) {
+                if (treeCache.getNote(noteId) === undefined) {
                     // note doesn't exist so don't try to activate it
                     startNotePath = null;
                 }
@@ -705,7 +698,7 @@ const treeService = (function() {
                 mode: "hide"       // Grayout unmatched nodes (pass "hide" to remove unmatched node instead)
             },
             dnd: dragAndDropSetup,
-            lazyLoad: async function(event, data){
+            lazyLoad: function(event, data){
                 const noteId = data.node.data.noteId;
                 const note = getNote(noteId);
 
@@ -713,7 +706,7 @@ const treeService = (function() {
                     data.result = loadSearchNote(noteId);
                 }
                 else {
-                    data.result = await prepareBranchInner(note);
+                    data.result = prepareBranchInner(note);
                 }
             },
             clones: {
@@ -734,15 +727,13 @@ const treeService = (function() {
         for (const noteId of noteIds) {
             const branchId = "virt" + utils.randomString(10);
 
-            branchMap[branchId] = {
+            treeCache.addBranch({
                 branchId: branchId,
                 noteId: noteId,
                 parentNoteId: searchNoteId,
                 prefix: '',
                 virtual: true
-            };
-
-            setParentChildRelation(branchId, searchNoteId, noteId);
+            });
         }
 
         return await prepareBranchInner(searchNoteId);
@@ -889,17 +880,17 @@ const treeService = (function() {
             isProtected: isProtected
         });
 
-        setParentChildRelation(result.branchId, parentNoteId, result.noteId);
-
-        branchMap[result.branchId] = result;
-
-        noteMap[result.noteId] = {
+        const note = new NoteShort(treeCache, {
             noteId: result.noteId,
             title: result.title,
             isProtected: result.isProtected,
             type: result.type,
             mime: result.mime
-        };
+        });
+
+        const branch = new Branch(treeCache, result);
+
+        treeCache.add(note, branch);
 
         noteEditor.newNoteCreated();
 
@@ -910,7 +901,7 @@ const treeService = (function() {
             refKey: result.noteId,
             branchId: result.branchId,
             isProtected: isProtected,
-            extraClasses: getExtraClasses(result.note)
+            extraClasses: await getExtraClasses(note)
         };
 
         if (target === 'after') {
@@ -1031,7 +1022,6 @@ const treeService = (function() {
         setPrefix,
         getNotePathTitle,
         removeParentChildRelation,
-        setParentChildRelation,
         getSelectedNodes,
         sortAlphabetically,
         noteExists,
