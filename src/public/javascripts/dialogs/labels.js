@@ -164,7 +164,7 @@ async function showDialog() {
     });
 }
 
-$(document).bind('keydown', 'alt+a', e => {
+$(document).bind('keydown', 'alt+l', e => {
     showDialog();
 
     e.preventDefault();
