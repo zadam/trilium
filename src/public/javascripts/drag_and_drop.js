@@ -1,5 +1,8 @@
 "use strict";
 
+import treeService from './note_tree.js';
+import treeChanges from './tree_changes.js';
+
 const dragAndDropSetup = {
     autoExpandMS: 600,
     draggable: { // modify default jQuery draggable options
@@ -65,3 +68,5 @@ const dragAndDropSetup = {
         }
     }
 };
+
+export default dragAndDropSetup;

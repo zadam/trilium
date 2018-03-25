@@ -1,31 +1,31 @@
 "use strict";
 
-const syncService = (function() {
-    async function syncNow() {
-        const result = await server.post('sync/now');
+import utils from './utils.js';
 
-        if (result.success) {
-            utils.showMessage("Sync finished successfully.");
-        }
-        else {
-            if (result.message.length > 50) {
-                result.message = result.message.substr(0, 50);
-            }
+async function syncNow() {
+    const result = await server.post('sync/now');
 
-            utils.showError("Sync failed: " + result.message);
-        }
+    if (result.success) {
+        utils.showMessage("Sync finished successfully.");
     }
+    else {
+        if (result.message.length > 50) {
+            result.message = result.message.substr(0, 50);
+        }
 
-    $("#sync-now-button").click(syncNow);
-
-    async function forceNoteSync(noteId) {
-        const result = await server.post('sync/force-note-sync/' + noteId);
-
-        utils.showMessage("Note added to sync queue.");
+        utils.showError("Sync failed: " + result.message);
     }
+}
 
-    return {
-        syncNow,
-        forceNoteSync
-    };
-})();
+$("#sync-now-button").click(syncNow);
+
+async function forceNoteSync(noteId) {
+    const result = await server.post('sync/force-note-sync/' + noteId);
+
+    utils.showMessage("Note added to sync queue.");
+}
+
+export default {
+    syncNow,
+    forceNoteSync
+};

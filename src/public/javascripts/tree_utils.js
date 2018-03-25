@@ -1,40 +1,40 @@
 "use strict";
 
-const treeUtils = (function() {
-    const $tree = $("#tree");
+import utils from './utils.js';
 
-    function getParentProtectedStatus(node) {
-        return utils.isTopLevelNode(node) ? 0 : node.getParent().data.isProtected;
-    }
+const $tree = $("#tree");
 
-    function getNodeByKey(key) {
-        return $tree.fancytree('getNodeByKey', key);
-    }
+function getParentProtectedStatus(node) {
+    return utils.isTopLevelNode(node) ? 0 : node.getParent().data.isProtected;
+}
 
-    function getNoteIdFromNotePath(notePath) {
-        const path = notePath.split("/");
+function getNodeByKey(key) {
+    return $tree.fancytree('getNodeByKey', key);
+}
 
-        return path[path.length - 1];
-    }
+function getNoteIdFromNotePath(notePath) {
+    const path = notePath.split("/");
 
-    function getNotePath(node) {
-        const path = [];
+    return path[path.length - 1];
+}
 
-        while (node && !utils.isRootNode(node)) {
-            if (node.data.noteId) {
-                path.push(node.data.noteId);
-            }
+function getNotePath(node) {
+    const path = [];
 
-            node = node.getParent();
+    while (node && !utils.isRootNode(node)) {
+        if (node.data.noteId) {
+            path.push(node.data.noteId);
         }
 
-        return path.reverse().join("/");
+        node = node.getParent();
     }
 
-    return {
-        getParentProtectedStatus,
-        getNodeByKey,
-        getNotePath,
-        getNoteIdFromNotePath,
-    };
-})();
+    return path.reverse().join("/");
+}
+
+export default {
+    getParentProtectedStatus,
+    getNodeByKey,
+    getNotePath,
+    getNoteIdFromNotePath,
+};

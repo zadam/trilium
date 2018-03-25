@@ -1,39 +1,41 @@
 "use strict";
 
-const exportService = (function () {
-    function exportSubTree(noteId) {
-        const url = utils.getHost() + "/api/export/" + noteId + "?protectedSessionId="
-            + encodeURIComponent(protected_session.getProtectedSessionId());
+import treeService from './note_tree.js';
+import protected_session from './protected_session.js';
+import utils from './utils.js';
 
-        utils.download(url);
-    }
+function exportSubTree(noteId) {
+    const url = utils.getHost() + "/api/export/" + noteId + "?protectedSessionId="
+        + encodeURIComponent(protected_session.getProtectedSessionId());
 
-    let importNoteId;
+    utils.download(url);
+}
 
-    function importSubTree(noteId) {
-        importNoteId = noteId;
+let importNoteId;
 
-        $("#import-upload").trigger('click');
-    }
+function importSubTree(noteId) {
+    importNoteId = noteId;
 
-    $("#import-upload").change(async function() {
-        const formData = new FormData();
-        formData.append('upload', this.files[0]);
+    $("#import-upload").trigger('click');
+}
 
-        await $.ajax({
-            url: baseApiUrl + 'import/' + importNoteId,
-            headers: server.getHeaders(),
-            data: formData,
-            type: 'POST',
-            contentType: false, // NEEDED, DON'T OMIT THIS
-            processData: false, // NEEDED, DON'T OMIT THIS
-        });
+$("#import-upload").change(async function() {
+    const formData = new FormData();
+    formData.append('upload', this.files[0]);
 
-        await treeService.reload();
+    await $.ajax({
+        url: baseApiUrl + 'import/' + importNoteId,
+        headers: server.getHeaders(),
+        data: formData,
+        type: 'POST',
+        contentType: false, // NEEDED, DON'T OMIT THIS
+        processData: false, // NEEDED, DON'T OMIT THIS
     });
 
-    return {
-        exportSubTree,
-        importSubTree
-    };
-})();
+    await treeService.reload();
+});
+
+export default {
+    exportSubTree,
+    importSubTree
+};

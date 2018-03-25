@@ -1,5 +1,7 @@
 "use strict";
 
+import treeService from './note_tree.js';
+
 const $tree = $("#tree");
 const $searchInput = $("input[name='search-text']");
 const $resetSearchButton = $("#reset-search-button");

@@ -1,46 +1,46 @@
 "use strict";
 
-const editTreePrefix = (function() {
-    const $dialog = $("#edit-tree-prefix-dialog");
-    const $form = $("#edit-tree-prefix-form");
-    const $treePrefixInput = $("#tree-prefix-input");
-    const $noteTitle = $('#tree-prefix-note-title');
+import treeService from '../note_tree.js';
 
-    let branchId;
+const $dialog = $("#edit-tree-prefix-dialog");
+const $form = $("#edit-tree-prefix-form");
+const $treePrefixInput = $("#tree-prefix-input");
+const $noteTitle = $('#tree-prefix-note-title');
 
-    async function showDialog() {
-        glob.activeDialog = $dialog;
+let branchId;
 
-        await $dialog.dialog({
-            modal: true,
-            width: 500
-        });
+async function showDialog() {
+    glob.activeDialog = $dialog;
 
-        const currentNode = treeService.getCurrentNode();
-
-        branchId = currentNode.data.branchId;
-        const nt = treeService.getBranch(branchId);
-
-        $treePrefixInput.val(nt.prefix).focus();
-
-        const noteTitle = treeService.getNoteTitle(currentNode.data.noteId);
-
-        $noteTitle.html(noteTitle);
-    }
-
-    $form.submit(() => {
-        const prefix = $treePrefixInput.val();
-
-        server.put('tree/' + branchId + '/set-prefix', {
-            prefix: prefix
-        }).then(() => treeService.setPrefix(branchId, prefix));
-
-        $dialog.dialog("close");
-
-        return false;
+    await $dialog.dialog({
+        modal: true,
+        width: 500
     });
 
-    return {
-        showDialog
-    };
-})();
+    const currentNode = treeService.getCurrentNode();
+
+    branchId = currentNode.data.branchId;
+    const nt = treeService.getBranch(branchId);
+
+    $treePrefixInput.val(nt.prefix).focus();
+
+    const noteTitle = treeService.getNoteTitle(currentNode.data.noteId);
+
+    $noteTitle.html(noteTitle);
+}
+
+$form.submit(() => {
+    const prefix = $treePrefixInput.val();
+
+    server.put('tree/' + branchId + '/set-prefix', {
+        prefix: prefix
+    }).then(() => treeService.setPrefix(branchId, prefix));
+
+    $dialog.dialog("close");
+
+    return false;
+});
+
+export default {
+    showDialog
+};

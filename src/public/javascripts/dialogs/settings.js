@@ -1,54 +1,56 @@
 "use strict";
 
-const settings = (function() {
-    const $showDialogButton = $("#settings-button");
-    const $dialog = $("#settings-dialog");
-    const $tabs = $("#settings-tabs");
+import protected_session from '../protected_session.js';
+import utils from '../utils.js';
+import server from '../server.js';
 
-    const settingModules = [];
+const $showDialogButton = $("#settings-button");
+const $dialog = $("#settings-dialog");
+const $tabs = $("#settings-tabs");
 
-    function addModule(module) {
-        settingModules.push(module);
-    }
+const settingModules = [];
 
-    async function showDialog() {
-        glob.activeDialog = $dialog;
+function addModule(module) {
+    settingModules.push(module);
+}
 
-        const settings = await server.get('settings');
+async function showDialog() {
+    glob.activeDialog = $dialog;
 
-        $dialog.dialog({
-            modal: true,
-            width: 900
-        });
+    const settings = await server.get('settings');
 
-        $tabs.tabs();
+    $dialog.dialog({
+        modal: true,
+        width: 900
+    });
 
-        for (const module of settingModules) {
-            if (module.settingsLoaded) {
-                module.settingsLoaded(settings);
-            }
+    $tabs.tabs();
+
+    for (const module of settingModules) {
+        if (module.settingsLoaded) {
+            module.settingsLoaded(settings);
         }
     }
+}
 
-    async function saveSettings(settingName, settingValue) {
-        await server.post('settings', {
-            name: settingName,
-            value: settingValue
-        });
+async function saveSettings(settingName, settingValue) {
+    await server.post('settings', {
+        name: settingName,
+        value: settingValue
+    });
 
-        utils.showMessage("Settings change have been saved.");
-    }
+    utils.showMessage("Settings change have been saved.");
+}
 
-    $showDialogButton.click(showDialog);
+$showDialogButton.click(showDialog);
 
-    return {
-        showDialog,
-        saveSettings,
-        addModule
-    };
-})();
+export default {
+    showDialog,
+    saveSettings,
+    addModule
+};
 
-settings.addModule((function() {
+addModule((function() {
     const $form = $("#change-password-form");
     const $oldPassword = $("#old-password");
     const $newPassword1 = $("#new-password1");
@@ -94,7 +96,7 @@ settings.addModule((function() {
     };
 })());
 
-settings.addModule((function() {
+addModule((function() {
     const $form = $("#protected-session-timeout-form");
     const $protectedSessionTimeout = $("#protected-session-timeout-in-seconds");
     const settingName = 'protected_session_timeout';
@@ -118,7 +120,7 @@ settings.addModule((function() {
     };
 })());
 
-settings.addModule((function () {
+addModule((function () {
     const $form = $("#history-snapshot-time-interval-form");
     const $timeInterval = $("#history-snapshot-time-interval-in-seconds");
     const settingName = 'history_snapshot_time_interval';
@@ -138,7 +140,7 @@ settings.addModule((function () {
     };
 })());
 
-settings.addModule((async function () {
+addModule((async function () {
     const $appVersion = $("#app-version");
     const $dbVersion = $("#db-version");
     const $buildDate = $("#build-date");
@@ -155,7 +157,7 @@ settings.addModule((async function () {
     return {};
 })());
 
-settings.addModule((async function () {
+addModule((async function () {
     const $forceFullSyncButton = $("#force-full-sync-button");
     const $fillSyncRowsButton = $("#fill-sync-rows-button");
     const $anonymizeButton = $("#anonymize-button");

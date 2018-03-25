@@ -1,38 +1,39 @@
 "use strict";
 
-const eventLog = (function() {
-    const $dialog = $("#event-log-dialog");
-    const $list = $("#event-log-list");
+import link from '../link.js';
+import utils from '../utils.js';
 
-    async function showDialog() {
-        glob.activeDialog = $dialog;
+const $dialog = $("#event-log-dialog");
+const $list = $("#event-log-list");
 
-        $dialog.dialog({
-            modal: true,
-            width: 800,
-            height: 700
-        });
+async function showDialog() {
+    glob.activeDialog = $dialog;
 
-        const result = await server.get('event-log');
+    $dialog.dialog({
+        modal: true,
+        width: 800,
+        height: 700
+    });
 
-        $list.html('');
+    const result = await server.get('event-log');
 
-        for (const event of result) {
-            const dateTime = utils.formatDateTime(utils.parseDate(event.dateAdded));
+    $list.html('');
 
-            if (event.noteId) {
-                const noteLink = link.createNoteLink(event.noteId).prop('outerHTML');
+    for (const event of result) {
+        const dateTime = utils.formatDateTime(utils.parseDate(event.dateAdded));
 
-                event.comment = event.comment.replace('<note>', noteLink);
-            }
+        if (event.noteId) {
+            const noteLink = link.createNoteLink(event.noteId).prop('outerHTML');
 
-            const eventEl = $('<li>').html(dateTime + " - " + event.comment);
-
-            $list.append(eventEl);
+            event.comment = event.comment.replace('<note>', noteLink);
         }
-    }
 
-    return {
-        showDialog
-    };
-})();
+        const eventEl = $('<li>').html(dateTime + " - " + event.comment);
+
+        $list.append(eventEl);
+    }
+}
+
+export default {
+    showDialog
+};

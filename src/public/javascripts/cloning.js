@@ -1,33 +1,33 @@
 "use strict";
 
-const cloning = (function() {
-    async function cloneNoteTo(childNoteId, parentNoteId, prefix) {
-        const resp = await server.put('notes/' + childNoteId + '/clone-to/' + parentNoteId, {
-            prefix: prefix
-        });
+import treeService from './note_tree.js';
 
-        if (!resp.success) {
-            alert(resp.message);
-            return;
-        }
+async function cloneNoteTo(childNoteId, parentNoteId, prefix) {
+    const resp = await server.put('notes/' + childNoteId + '/clone-to/' + parentNoteId, {
+        prefix: prefix
+    });
 
-        await treeService.reload();
+    if (!resp.success) {
+        alert(resp.message);
+        return;
     }
 
-    // beware that first arg is noteId and second is branchId!
-    async function cloneNoteAfter(noteId, afterBranchId) {
-        const resp = await server.put('notes/' + noteId + '/clone-after/' + afterBranchId);
+    await treeService.reload();
+}
 
-        if (!resp.success) {
-            alert(resp.message);
-            return;
-        }
+// beware that first arg is noteId and second is branchId!
+async function cloneNoteAfter(noteId, afterBranchId) {
+    const resp = await server.put('notes/' + noteId + '/clone-after/' + afterBranchId);
 
-        await treeService.reload();
+    if (!resp.success) {
+        alert(resp.message);
+        return;
     }
 
-    return {
-        cloneNoteAfter,
-        cloneNoteTo
-    };
-})();
+    await treeService.reload();
+}
+
+export default {
+    cloneNoteAfter,
+    cloneNoteTo
+};

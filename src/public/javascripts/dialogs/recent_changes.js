@@ -1,92 +1,93 @@
 "use strict";
 
-const recentChanges = (function() {
-    const $showDialogButton = $("#recent-changes-button");
-    const $dialog = $("#recent-changes-dialog");
+import link from '../link.js';
+import utils from '../utils.js';
 
-    async function showDialog() {
-        glob.activeDialog = $dialog;
+const $showDialogButton = $("#recent-changes-button");
+const $dialog = $("#recent-changes-dialog");
 
-        $dialog.dialog({
-            modal: true,
-            width: 800,
-            height: 700
-        });
+async function showDialog() {
+    glob.activeDialog = $dialog;
 
-        const result = await server.get('recent-changes/');
+    $dialog.dialog({
+        modal: true,
+        width: 800,
+        height: 700
+    });
 
-        $dialog.html('');
+    const result = await server.get('recent-changes/');
 
-        const groupedByDate = groupByDate(result);
+    $dialog.html('');
 
-        for (const [dateDay, dayChanges] of groupedByDate) {
-            const changesListEl = $('<ul>');
+    const groupedByDate = groupByDate(result);
 
-            const dayEl = $('<div>').append($('<b>').html(utils.formatDate(dateDay))).append(changesListEl);
+    for (const [dateDay, dayChanges] of groupedByDate) {
+        const changesListEl = $('<ul>');
 
-            for (const change of dayChanges) {
-                const formattedTime = utils.formatTime(utils.parseDate(change.dateModifiedTo));
+        const dayEl = $('<div>').append($('<b>').html(utils.formatDate(dateDay))).append(changesListEl);
 
-                const revLink = $("<a>", {
-                    href: 'javascript:',
-                    text: 'rev'
-                }).attr('action', 'note-history')
-                    .attr('note-path', change.noteId)
-                    .attr('note-history-id', change.noteRevisionId);
+        for (const change of dayChanges) {
+            const formattedTime = utils.formatTime(utils.parseDate(change.dateModifiedTo));
 
-                let noteLink;
+            const revLink = $("<a>", {
+                href: 'javascript:',
+                text: 'rev'
+            }).attr('action', 'note-history')
+                .attr('note-path', change.noteId)
+                .attr('note-history-id', change.noteRevisionId);
 
-                if (change.current_isDeleted) {
-                    noteLink = change.current_title;
-                }
-                else {
-                    noteLink = link.createNoteLink(change.noteId, change.title);
-                }
+            let noteLink;
 
-                changesListEl.append($('<li>')
-                    .append(formattedTime + ' - ')
-                    .append(noteLink)
-                    .append(' (').append(revLink).append(')'));
-            }
-
-            $dialog.append(dayEl);
-        }
-    }
-
-    function groupByDate(result) {
-        const groupedByDate = new Map();
-        const dayCache = {};
-
-        for (const row of result) {
-            let dateDay = utils.parseDate(row.dateModifiedTo);
-            dateDay.setHours(0);
-            dateDay.setMinutes(0);
-            dateDay.setSeconds(0);
-            dateDay.setMilliseconds(0);
-
-            // this stupidity is to make sure that we always use the same day object because Map uses only
-            // reference equality
-            if (dayCache[dateDay]) {
-                dateDay = dayCache[dateDay];
+            if (change.current_isDeleted) {
+                noteLink = change.current_title;
             }
             else {
-                dayCache[dateDay] = dateDay;
+                noteLink = link.createNoteLink(change.noteId, change.title);
             }
 
-            if (!groupedByDate.has(dateDay)) {
-                groupedByDate.set(dateDay, []);
-            }
-
-            groupedByDate.get(dateDay).push(row);
+            changesListEl.append($('<li>')
+                .append(formattedTime + ' - ')
+                .append(noteLink)
+                .append(' (').append(revLink).append(')'));
         }
-        return groupedByDate;
+
+        $dialog.append(dayEl);
     }
+}
 
-    $(document).bind('keydown', 'alt+r', showDialog);
+function groupByDate(result) {
+    const groupedByDate = new Map();
+    const dayCache = {};
 
-    $showDialogButton.click(showDialog);
+    for (const row of result) {
+        let dateDay = utils.parseDate(row.dateModifiedTo);
+        dateDay.setHours(0);
+        dateDay.setMinutes(0);
+        dateDay.setSeconds(0);
+        dateDay.setMilliseconds(0);
 
-    return {
-        showDialog
-    };
-})();
+        // this stupidity is to make sure that we always use the same day object because Map uses only
+        // reference equality
+        if (dayCache[dateDay]) {
+            dateDay = dayCache[dateDay];
+        }
+        else {
+            dayCache[dateDay] = dateDay;
+        }
+
+        if (!groupedByDate.has(dateDay)) {
+            groupedByDate.set(dateDay, []);
+        }
+
+        groupedByDate.get(dateDay).push(row);
+    }
+    return groupedByDate;
+}
+
+$(document).bind('keydown', 'alt+r', showDialog);
+
+$showDialogButton.click(showDialog);
+
+export default {
+    showDialog
+};

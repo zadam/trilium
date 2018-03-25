@@ -1,59 +1,61 @@
 "use strict";
 
-const jumpToNote = (function() {
-    const $showDialogButton = $("#jump-to-note-button");
-    const $dialog = $("#jump-to-note-dialog");
-    const $autoComplete = $("#jump-to-note-autocomplete");
-    const $form = $("#jump-to-note-form");
+import treeService from '../note_tree.js';
+import link from '../link.js';
+import utils from '../utils.js';
 
-    async function showDialog() {
-        glob.activeDialog = $dialog;
+const $showDialogButton = $("#jump-to-note-button");
+const $dialog = $("#jump-to-note-dialog");
+const $autoComplete = $("#jump-to-note-autocomplete");
+const $form = $("#jump-to-note-form");
 
-        $autoComplete.val('');
+async function showDialog() {
+    glob.activeDialog = $dialog;
 
-        $dialog.dialog({
-            modal: true,
-            width: 800
-        });
+    $autoComplete.val('');
 
-        await $autoComplete.autocomplete({
-            source: await utils.stopWatch("building autocomplete", treeService.getAutocompleteItems),
-            minLength: 0
-        });
-    }
-
-    function getSelectedNotePath() {
-        const val = $autoComplete.val();
-        return link.getNodePathFromLabel(val);
-    }
-
-    function goToNote() {
-        const notePath = getSelectedNotePath();
-
-        if (notePath) {
-            treeService.activateNode(notePath);
-
-            $dialog.dialog('close');
-        }
-    }
-
-    $(document).bind('keydown', 'ctrl+j', e => {
-        showDialog();
-
-        e.preventDefault();
+    $dialog.dialog({
+        modal: true,
+        width: 800
     });
 
-    $form.submit(() => {
-        const action = $dialog.find("button:focus").val();
-
-        goToNote();
-
-        return false;
+    await $autoComplete.autocomplete({
+        source: await utils.stopWatch("building autocomplete", treeService.getAutocompleteItems),
+        minLength: 0
     });
+}
 
-    $showDialogButton.click(showDialog);
+function getSelectedNotePath() {
+    const val = $autoComplete.val();
+    return link.getNodePathFromLabel(val);
+}
 
-    return {
-        showDialog
-    };
-})();
+function goToNote() {
+    const notePath = getSelectedNotePath();
+
+    if (notePath) {
+        treeService.activateNode(notePath);
+
+        $dialog.dialog('close');
+    }
+}
+
+$(document).bind('keydown', 'ctrl+j', e => {
+    showDialog();
+
+    e.preventDefault();
+});
+
+$form.submit(() => {
+    const action = $dialog.find("button:focus").val();
+
+    goToNote();
+
+    return false;
+});
+
+$showDialogButton.click(showDialog);
+
+export default {
+    showDialog
+};

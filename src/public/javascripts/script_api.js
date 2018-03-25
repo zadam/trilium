@@ -1,3 +1,5 @@
+import treeService from './note_tree.js';
+
 function ScriptApi(startNote, currentNote) {
     const $pluginButtons = $("#plugin-buttons");
 
@@ -52,3 +54,5 @@ function ScriptApi(startNote, currentNote) {
         runOnServer
     }
 }
+
+export default ScriptApi;
