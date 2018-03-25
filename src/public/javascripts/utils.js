@@ -125,7 +125,7 @@ function formatValueWithWhitespace(val) {
     return /[^\w_-]/.test(val) ? '"' + val + '"' : val;
 }
 
-function formatAttribute(attr) {
+function formatLabel(attr) {
     let str = "@" + formatValueWithWhitespace(attr.name);
 
     if (attr.value !== "") {

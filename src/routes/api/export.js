@@ -38,7 +38,7 @@ async function exportNote(branchId, directory, pack, repo) {
 
     const metadata = await getMetadata(note);
 
-    if (metadata.attributes.find(attr => attr.name === 'exclude_from_export')) {
+    if (metadata.labels.find(attr => attr.name === 'exclude_from_export')) {
         return;
     }
 
@@ -68,7 +68,7 @@ async function getMetadata(note) {
         title: note.title,
         type: note.type,
         mime: note.mime,
-        attributes: (await note.getAttributes()).map(attr => {
+        labels: (await note.getLabels()).map(attr => {
             return {
                 name: attr.name,
                 value: attr.value

@@ -13,8 +13,8 @@ const noteEditor = (function() {
     const $unprotectButton = $("#unprotect-button");
     const $noteDetailWrapper = $("#note-detail-wrapper");
     const $noteIdDisplay = $("#note-id-display");
-    const $attributeList = $("#attribute-list");
-    const $attributeListInner = $("#attribute-list-inner");
+    const $labelList = $("#label-list");
+    const $labelListInner = $("#label-list-inner");
     const $attachmentFileName = $("#attachment-filename");
     const $attachmentFileType = $("#attachment-filetype");
     const $attachmentFileSize = $("#attachment-filesize");
@@ -253,8 +253,8 @@ const noteEditor = (function() {
         else if (currentNote.detail.type === 'file') {
             $noteDetailAttachment.show();
 
-            $attachmentFileName.text(currentNote.attributes.original_file_name);
-            $attachmentFileSize.text(currentNote.attributes.file_size + " bytes");
+            $attachmentFileName.text(currentNote.labels.original_file_name);
+            $attachmentFileSize.text(currentNote.labels.file_size + " bytes");
             $attachmentFileType.text(currentNote.detail.mime);
         }
         else {
@@ -269,25 +269,25 @@ const noteEditor = (function() {
         // after loading new note make sure editor is scrolled to the top
         $noteDetailWrapper.scrollTop(0);
 
-        loadAttributeList();
+        loadLabelList();
     }
 
-    async function loadAttributeList() {
+    async function loadLabelList() {
         const noteId = getCurrentNoteId();
 
-        const attributes = await server.get('notes/' + noteId + '/attributes');
+        const labels = await server.get('notes/' + noteId + '/labels');
 
-        $attributeListInner.html('');
+        $labelListInner.html('');
 
-        if (attributes.length > 0) {
-            for (const attr of attributes) {
-                $attributeListInner.append(formatAttribute(attr) + " ");
+        if (labels.length > 0) {
+            for (const attr of labels) {
+                $labelListInner.append(formatLabel(attr) + " ");
             }
 
-            $attributeList.show();
+            $labelList.show();
         }
         else {
-            $attributeList.hide();
+            $labelList.hide();
         }
     }
 
@@ -394,7 +394,7 @@ const noteEditor = (function() {
         getEditor,
         focus,
         executeCurrentNote,
-        loadAttributeList,
+        loadLabelList,
         setContent
     };
 })();

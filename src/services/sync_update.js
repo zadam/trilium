@@ -130,17 +130,17 @@ async function updateNoteImage(entity, sourceId) {
     }
 }
 
-async function updateAttribute(entity, sourceId) {
-    const origAttribute = await sql.getRow("SELECT * FROM attributes WHERE attributeId = ?", [entity.attributeId]);
+async function updateLabel(entity, sourceId) {
+    const origLabel = await sql.getRow("SELECT * FROM labels WHERE labelId = ?", [entity.labelId]);
 
-    if (!origAttribute || origAttribute.dateModified <= entity.dateModified) {
+    if (!origLabel || origLabel.dateModified <= entity.dateModified) {
         await sql.doInTransaction(async () => {
-            await sql.replace("attributes", entity);
+            await sql.replace("labels", entity);
 
-            await sync_table.addAttributeSync(entity.attributeId, sourceId);
+            await sync_table.addLabelSync(entity.labelId, sourceId);
         });
 
-        log.info("Update/sync attribute " + entity.attributeId);
+        log.info("Update/sync label " + entity.labelId);
     }
 }
 
@@ -167,6 +167,6 @@ module.exports = {
     updateRecentNotes,
     updateImage,
     updateNoteImage,
-    updateAttribute,
+    updateLabel,
     updateApiToken
 };

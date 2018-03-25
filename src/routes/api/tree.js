@@ -42,10 +42,10 @@ router.get('/', auth.checkApiAuth, wrap(async (req, res, next) => {
         notes.isProtected,
         notes.type,
         notes.mime,
-        hideInAutocomplete.attributeId AS 'hideInAutocomplete'
+        hideInAutocomplete.labelId AS 'hideInAutocomplete'
       FROM
         notes
-        LEFT JOIN attributes AS hideInAutocomplete ON hideInAutocomplete.noteId = notes.noteId
+        LEFT JOIN labels AS hideInAutocomplete ON hideInAutocomplete.noteId = notes.noteId
                              AND hideInAutocomplete.name = 'hide_in_autocomplete'
                              AND hideInAutocomplete.isDeleted = 0
       WHERE 

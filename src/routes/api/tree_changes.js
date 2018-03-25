@@ -106,7 +106,7 @@ router.put('/:branchId/expanded/:expanded', auth.checkApiAuth, wrap(async (req, 
     await sql.doInTransaction(async () => {
         await sql.execute("UPDATE branches SET isExpanded = ? WHERE branchId = ?", [expanded, branchId]);
 
-        // we don't sync expanded attribute
+        // we don't sync expanded label
     });
 
     res.send({});

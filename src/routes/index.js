@@ -6,7 +6,7 @@ const auth = require('../services/auth');
 const source_id = require('../services/source_id');
 const sql = require('../services/sql');
 const Repository = require('../services/repository');
-const attributes = require('../services/attributes');
+const labels = require('../services/labels');
 const wrap = require('express-promise-wrap').wrap;
 
 router.get('', auth.checkAuth, wrap(async (req, res, next) => {
@@ -21,7 +21,7 @@ router.get('', auth.checkAuth, wrap(async (req, res, next) => {
 
 async function getAppCss(repository) {
     let css = '';
-    const notes = attributes.getNotesWithAttribute(repository, 'app_css');
+    const notes = labels.getNotesWithLabel(repository, 'app_css');
 
     for (const note of await notes) {
         css += `/* ${note.noteId} */

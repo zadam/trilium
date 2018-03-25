@@ -1,43 +1,43 @@
 "use strict";
 
-const attributesDialog = (function() {
-    const $showDialogButton = $(".show-attributes-button");
-    const $dialog = $("#attributes-dialog");
-    const $saveAttributesButton = $("#save-attributes-button");
-    const $attributesBody = $('#attributes-table tbody');
+const labelsDialog = (function() {
+    const $showDialogButton = $(".show-labels-button");
+    const $dialog = $("#labels-dialog");
+    const $saveLabelsButton = $("#save-labels-button");
+    const $labelsBody = $('#labels-table tbody');
 
-    const attributesModel = new AttributesModel();
-    let attributeNames = [];
+    const labelsModel = new LabelsModel();
+    let labelNames = [];
 
-    function AttributesModel() {
+    function LabelsModel() {
         const self = this;
 
-        this.attributes = ko.observableArray();
+        this.labels = ko.observableArray();
 
-        this.loadAttributes = async function() {
+        this.loadLabels = async function() {
             const noteId = noteEditor.getCurrentNoteId();
 
-            const attributes = await server.get('notes/' + noteId + '/attributes');
+            const labels = await server.get('notes/' + noteId + '/labels');
 
-            self.attributes(attributes.map(ko.observable));
+            self.labels(labels.map(ko.observable));
 
             addLastEmptyRow();
 
-            attributeNames = await server.get('attributes/names');
+            labelNames = await server.get('labels/names');
 
-            // attribute might not be rendered immediatelly so could not focus
-            setTimeout(() => $(".attribute-name:last").focus(), 100);
+            // label might not be rendered immediatelly so could not focus
+            setTimeout(() => $(".label-name:last").focus(), 100);
 
-            $attributesBody.sortable({
+            $labelsBody.sortable({
                 handle: '.handle',
-                containment: $attributesBody,
+                containment: $labelsBody,
                 update: function() {
                     let position = 0;
 
                     // we need to update positions by searching in the DOM, because order of the
-                    // attributes in the viewmodel (self.attributes()) stays the same
-                    $attributesBody.find('input[name="position"]').each(function() {
-                        const attr = self.getTargetAttribute(this);
+                    // labels in the viewmodel (self.labels()) stays the same
+                    $labelsBody.find('input[name="position"]').each(function() {
+                        const attr = self.getTargetLabel(this);
 
                         attr().position = position++;
                     });
@@ -45,8 +45,8 @@ const attributesDialog = (function() {
             });
         };
 
-        this.deleteAttribute = function(data, event) {
-            const attr = self.getTargetAttribute(event.target);
+        this.deleteLabel = function(data, event) {
+            const attr = self.getTargetLabel(event.target);
             const attrData = attr();
 
             if (attrData) {
@@ -59,7 +59,7 @@ const attributesDialog = (function() {
         };
 
         function isValid() {
-            for (let attrs = self.attributes(), i = 0; i < attrs.length; i++) {
+            for (let attrs = self.labels(), i = 0; i < attrs.length; i++) {
                 if (self.isEmptyName(i)) {
                     return false;
                 }
@@ -72,7 +72,7 @@ const attributesDialog = (function() {
             // we need to defocus from input (in case of enter-triggered save) because value is updated
             // on blur event (because of conflict with jQuery UI Autocomplete). Without this, input would
             // stay in focus, blur wouldn't be triggered and change wouldn't be updated in the viewmodel.
-            $saveAttributesButton.focus();
+            $saveLabelsButton.focus();
 
             if (!isValid()) {
                 alert("Please fix all validation errors and try saving again.");
@@ -81,28 +81,28 @@ const attributesDialog = (function() {
 
             const noteId = noteEditor.getCurrentNoteId();
 
-            const attributesToSave = self.attributes()
+            const labelsToSave = self.labels()
                 .map(attr => attr())
-                .filter(attr => attr.attributeId !== "" || attr.name !== "");
+                .filter(attr => attr.labelId !== "" || attr.name !== "");
 
-            const attributes = await server.put('notes/' + noteId + '/attributes', attributesToSave);
+            const labels = await server.put('notes/' + noteId + '/labels', labelsToSave);
 
-            self.attributes(attributes.map(ko.observable));
+            self.labels(labels.map(ko.observable));
 
             addLastEmptyRow();
 
-            showMessage("Attributes have been saved.");
+            showMessage("Labels have been saved.");
 
-            noteEditor.loadAttributeList();
+            noteEditor.loadLabelList();
         };
 
         function addLastEmptyRow() {
-            const attrs = self.attributes().filter(attr => attr().isDeleted === 0);
+            const attrs = self.labels().filter(attr => attr().isDeleted === 0);
             const last = attrs.length === 0 ? null : attrs[attrs.length - 1]();
 
             if (!last || last.name.trim() !== "" || last.value !== "") {
-                self.attributes.push(ko.observable({
-                    attributeId: '',
+                self.labels.push(ko.observable({
+                    labelId: '',
                     name: '',
                     value: '',
                     isDeleted: 0,
@@ -111,22 +111,22 @@ const attributesDialog = (function() {
             }
         }
 
-        this.attributeChanged = function (data, event) {
+        this.labelChanged = function (data, event) {
             addLastEmptyRow();
 
-            const attr = self.getTargetAttribute(event.target);
+            const attr = self.getTargetLabel(event.target);
 
             attr.valueHasMutated();
         };
 
         this.isNotUnique = function(index) {
-            const cur = self.attributes()[index]();
+            const cur = self.labels()[index]();
 
             if (cur.name.trim() === "") {
                 return false;
             }
 
-            for (let attrs = self.attributes(), i = 0; i < attrs.length; i++) {
+            for (let attrs = self.labels(), i = 0; i < attrs.length; i++) {
                 const attr = attrs[i]();
 
                 if (index !== i && cur.name === attr.name) {
@@ -138,23 +138,23 @@ const attributesDialog = (function() {
         };
 
         this.isEmptyName = function(index) {
-            const cur = self.attributes()[index]();
+            const cur = self.labels()[index]();
 
-            return cur.name.trim() === "" && (cur.attributeId !== "" || cur.value !== "");
+            return cur.name.trim() === "" && (cur.labelId !== "" || cur.value !== "");
         };
 
-        this.getTargetAttribute = function(target) {
+        this.getTargetLabel = function(target) {
             const context = ko.contextFor(target);
             const index = context.$index();
 
-            return self.attributes()[index];
+            return self.labels()[index];
         }
     }
 
     async function showDialog() {
         glob.activeDialog = $dialog;
 
-        await attributesModel.loadAttributes();
+        await labelsModel.loadLabels();
 
         $dialog.dialog({
             modal: true,
@@ -169,14 +169,14 @@ const attributesDialog = (function() {
         e.preventDefault();
     });
 
-    ko.applyBindings(attributesModel, document.getElementById('attributes-dialog'));
+    ko.applyBindings(labelsModel, document.getElementById('labels-dialog'));
 
-    $(document).on('focus', '.attribute-name', function (e) {
+    $(document).on('focus', '.label-name', function (e) {
         if (!$(this).hasClass("ui-autocomplete-input")) {
             $(this).autocomplete({
                 // shouldn't be required and autocomplete should just accept array of strings, but that fails
                 // because we have overriden filter() function in init.js
-                source: attributeNames.map(attr => {
+                source: labelNames.map(attr => {
                     return {
                         label: attr,
                         value: attr
@@ -189,24 +189,24 @@ const attributesDialog = (function() {
         $(this).autocomplete("search", $(this).val());
     });
 
-    $(document).on('focus', '.attribute-value', async function (e) {
+    $(document).on('focus', '.label-value', async function (e) {
         if (!$(this).hasClass("ui-autocomplete-input")) {
-            const attributeName = $(this).parent().parent().find('.attribute-name').val();
+            const labelName = $(this).parent().parent().find('.label-name').val();
 
-            if (attributeName.trim() === "") {
+            if (labelName.trim() === "") {
                 return;
             }
 
-            const attributeValues = await server.get('attributes/values/' + encodeURIComponent(attributeName));
+            const labelValues = await server.get('labels/values/' + encodeURIComponent(labelName));
 
-            if (attributeValues.length === 0) {
+            if (labelValues.length === 0) {
                 return;
             }
 
             $(this).autocomplete({
                 // shouldn't be required and autocomplete should just accept array of strings, but that fails
                 // because we have overriden filter() function in init.js
-                source: attributeValues.map(attr => {
+                source: labelValues.map(attr => {
                     return {
                         label: attr,
                         value: attr

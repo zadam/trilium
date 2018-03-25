@@ -48,30 +48,30 @@ class Note extends Entity {
         return null;
     }
 
-    async getAttributes() {
-        return this.repository.getEntities("SELECT * FROM attributes WHERE noteId = ? AND isDeleted = 0", [this.noteId]);
+    async getLabels() {
+        return this.repository.getEntities("SELECT * FROM labels WHERE noteId = ? AND isDeleted = 0", [this.noteId]);
     }
 
-    // WARNING: this doesn't take into account the possibility to have multi-valued attributes!
-    async getAttributeMap() {
+    // WARNING: this doesn't take into account the possibility to have multi-valued labels!
+    async getLabelMap() {
         const map = {};
 
-        for (const attr of await this.getAttributes()) {
+        for (const attr of await this.getLabels()) {
             map[attr.name] = attr.value;
         }
 
         return map;
     }
 
-    async hasAttribute(name) {
-        const map = await this.getAttributeMap();
+    async hasLabel(name) {
+        const map = await this.getLabelMap();
 
         return map.hasOwnProperty(name);
     }
 
-    // WARNING: this doesn't take into account the possibility to have multi-valued attributes!
-    async getAttribute(name) {
-        return this.repository.getEntity("SELECT * FROM attributes WHERE noteId = ? AND name = ?", [this.noteId, name]);
+    // WARNING: this doesn't take into account the possibility to have multi-valued labels!
+    async getLabel(name) {
+        return this.repository.getEntity("SELECT * FROM labels WHERE noteId = ? AND name = ?", [this.noteId, name]);
     }
 
     async getRevisions() {

@@ -7,16 +7,16 @@ module.exports = function(attrFilters, searchText) {
     let i = 1;
 
     for (const filter of attrFilters) {
-        joins.push(`LEFT JOIN attributes AS attr${i} ON attr${i}.noteId = notes.noteId AND attr${i}.name = ?`);
+        joins.push(`LEFT JOIN labels AS attr${i} ON attr${i}.noteId = notes.noteId AND attr${i}.name = ?`);
         joinParams.push(filter.name);
 
         where += " " + filter.relation + " ";
 
         if (filter.operator === 'exists') {
-            where += `attr${i}.attributeId IS NOT NULL`;
+            where += `attr${i}.labelId IS NOT NULL`;
         }
         else if (filter.operator === 'not-exists') {
-            where += `attr${i}.attributeId IS NULL`;
+            where += `attr${i}.labelId IS NULL`;
         }
         else if (filter.operator === '=' || filter.operator === '!=') {
             where += `attr${i}.value ${filter.operator} ?`;

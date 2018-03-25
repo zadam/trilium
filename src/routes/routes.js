@@ -26,7 +26,7 @@ const sqlRoute = require('./api/sql');
 const anonymizationRoute = require('./api/anonymization');
 const cleanupRoute = require('./api/cleanup');
 const imageRoute = require('./api/image');
-const attributesRoute = require('./api/attributes');
+const labelsRoute = require('./api/labels');
 const scriptRoute = require('./api/script');
 const senderRoute = require('./api/sender');
 const attachmentsRoute = require('./api/attachments');
@@ -43,7 +43,7 @@ function register(app) {
     app.use('/api/notes', notesApiRoute);
     app.use('/api/tree', treeChangesApiRoute);
     app.use('/api/notes', cloningApiRoute);
-    app.use('/api', attributesRoute);
+    app.use('/api', labelsRoute);
     app.use('/api/notes-history', noteHistoryApiRoute);
     app.use('/api/recent-changes', recentChangesApiRoute);
     app.use('/api/settings', settingsApiRoute);

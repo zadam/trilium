@@ -144,10 +144,10 @@ router.get('/note_images/:noteImageId', auth.checkApiAuth, wrap(async (req, res,
     res.send(await sql.getRow("SELECT * FROM note_images WHERE noteImageId = ?", [noteImageId]));
 }));
 
-router.get('/attributes/:attributeId', auth.checkApiAuth, wrap(async (req, res, next) => {
-    const attributeId = req.params.attributeId;
+router.get('/labels/:labelId', auth.checkApiAuth, wrap(async (req, res, next) => {
+    const labelId = req.params.labelId;
 
-    res.send(await sql.getRow("SELECT * FROM attributes WHERE attributeId = ?", [attributeId]));
+    res.send(await sql.getRow("SELECT * FROM labels WHERE labelId = ?", [labelId]));
 }));
 
 router.get('/api_tokens/:apiTokenId', auth.checkApiAuth, wrap(async (req, res, next) => {
@@ -204,8 +204,8 @@ router.put('/note_images', auth.checkApiAuth, wrap(async (req, res, next) => {
     res.send({});
 }));
 
-router.put('/attributes', auth.checkApiAuth, wrap(async (req, res, next) => {
-    await syncUpdate.updateAttribute(req.body.entity, req.body.sourceId);
+router.put('/labels', auth.checkApiAuth, wrap(async (req, res, next) => {
+    await syncUpdate.updateLabel(req.body.entity, req.body.sourceId);
 
     res.send({});
 }));

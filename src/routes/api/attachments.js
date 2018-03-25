@@ -5,7 +5,7 @@ const router = express.Router();
 const sql = require('../../services/sql');
 const auth = require('../../services/auth');
 const notes = require('../../services/notes');
-const attributes = require('../../services/attributes');
+const labels = require('../../services/labels');
 const protected_session = require('../../services/protected_session');
 const multer = require('multer')();
 const wrap = require('express-promise-wrap').wrap;
@@ -33,8 +33,8 @@ router.post('/upload/:parentNoteId', auth.checkApiAuthOrElectron, multer.single(
             mime: file.mimetype
         }, req, sourceId)).noteId;
 
-        await attributes.createAttribute(noteId, "original_file_name", originalName, sourceId);
-        await attributes.createAttribute(noteId, "file_size", size, sourceId);
+        await labels.createLabel(noteId, "original_file_name", originalName, sourceId);
+        await labels.createLabel(noteId, "file_size", size, sourceId);
 
         res.send({
             noteId: noteId
@@ -62,8 +62,8 @@ router.get('/download/:noteId', auth.checkApiAuthOrElectron, wrap(async (req, re
         protected_session.decryptNote(dataKey, note);
     }
 
-    const attributeMap = await attributes.getNoteAttributeMap(noteId);
-    const fileName = attributeMap.original_file_name ? attributeMap.original_file_name : note.title;
+    const labelMap = await labels.getNoteLabelMap(noteId);
+    const fileName = labelMap.original_file_name ? labelMap.original_file_name : note.title;
 
     res.setHeader('Content-Disposition', 'attachment; filename=' + fileName);
     res.setHeader('Content-Type', note.mime);

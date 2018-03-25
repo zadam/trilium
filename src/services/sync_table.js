@@ -36,8 +36,8 @@ async function addNoteImageSync(noteImageId, sourceId) {
     await addEntitySync("note_images", noteImageId, sourceId);
 }
 
-async function addAttributeSync(attributeId, sourceId) {
-    await addEntitySync("attributes", attributeId, sourceId);
+async function addLabelSync(labelId, sourceId) {
+    await addEntitySync("labels", labelId, sourceId);
 }
 
 async function addApiTokenSync(apiTokenId, sourceId) {
@@ -96,7 +96,7 @@ async function fillAllSyncRows() {
     await fillSyncRows("recent_notes", "branchId");
     await fillSyncRows("images", "imageId");
     await fillSyncRows("note_images", "noteImageId");
-    await fillSyncRows("attributes", "attributeId");
+    await fillSyncRows("labels", "labelId");
     await fillSyncRows("api_tokens", "apiTokenId");
 }
 
@@ -109,7 +109,7 @@ module.exports = {
     addRecentNoteSync,
     addImageSync,
     addNoteImageSync,
-    addAttributeSync,
+    addLabelSync,
     addApiTokenSync,
     addEntitySync,
     cleanupSyncRowsForMissingEntities,

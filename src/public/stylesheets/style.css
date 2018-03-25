@@ -8,7 +8,7 @@
                          "search note-content"
                          "tree note-content"
                          "parent-list note-content"
-                         "parent-list attribute-list";
+                         "parent-list label-list";
     grid-template-columns: 2fr 5fr;
     grid-template-rows: auto
                         auto
@@ -269,14 +269,14 @@ div.ui-tooltip {
 
 .cm-matchhighlight {background-color: #eeeeee}
 
-#attribute-list {
-    grid-area: attribute-list;
+#label-list {
+    grid-area: label-list;
     color: #777777;
     border-top: 1px solid #eee;
     padding: 5px; display: none;
 }
 
-#attribute-list button {
+#label-list button {
     padding: 2px;
     margin-right: 5px;
 }

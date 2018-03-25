@@ -4,7 +4,7 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../../services/auth');
 const wrap = require('express-promise-wrap').wrap;
-const attributes = require('../../services/attributes');
+const labels = require('../../services/labels');
 const script = require('../../services/script');
 const Repository = require('../../services/repository');
 
@@ -29,7 +29,7 @@ router.post('/run/:noteId', auth.checkApiAuth, wrap(async (req, res, next) => {
 
 router.get('/startup', auth.checkApiAuth, wrap(async (req, res, next) => {
     const repository = new Repository(req);
-    const notes = await attributes.getNotesWithAttribute(repository, "run", "frontend_startup");
+    const notes = await labels.getNotesWithLabel(repository, "run", "frontend_startup");
 
     const scripts = [];
 

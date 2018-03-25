@@ -18,7 +18,7 @@ module.exports = function(searchText) {
             value: match[7] !== undefined ? trimQuotes(match[7]) : null
         });
 
-        // remove attributes from further fulltext search
+        // remove labels from further fulltext search
         searchText = searchText.split(match[0]).join('');
 
         match = attrRegex.exec(searchText);

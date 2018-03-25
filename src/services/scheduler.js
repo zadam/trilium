@@ -3,14 +3,14 @@ const Repository = require('./repository');
 
 const repo = new Repository();
 
-async function runNotesWithAttribute(runAttrValue) {
+async function runNotesWithLabel(runAttrValue) {
     const notes = await repo.getEntities(`
         SELECT notes.* 
         FROM notes 
-          JOIN attributes ON attributes.noteId = notes.noteId
-                           AND attributes.isDeleted = 0
-                           AND attributes.name = 'run' 
-                           AND attributes.value = ? 
+          JOIN labels ON labels.noteId = notes.noteId
+                           AND labels.isDeleted = 0
+                           AND labels.name = 'run' 
+                           AND labels.value = ? 
         WHERE
           notes.type = 'code'
           AND notes.isDeleted = 0`, [runAttrValue]);
@@ -20,8 +20,8 @@ async function runNotesWithAttribute(runAttrValue) {
     }
 }
 
-setTimeout(() => runNotesWithAttribute('backend_startup'), 10 * 1000);
+setTimeout(() => runNotesWithLabel('backend_startup'), 10 * 1000);
 
-setInterval(() => runNotesWithAttribute('hourly'), 3600 * 1000);
+setInterval(() => runNotesWithLabel('hourly'), 3600 * 1000);
 
-setInterval(() => runNotesWithAttribute('daily'), 24 * 3600 * 1000);
+setInterval(() => runNotesWithLabel('daily'), 24 * 3600 * 1000);

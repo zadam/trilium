@@ -146,8 +146,8 @@ async function pullSync(syncContext) {
         else if (sync.entityName === 'note_images') {
             await syncUpdate.updateNoteImage(resp, syncContext.sourceId);
         }
-        else if (sync.entityName === 'attributes') {
-            await syncUpdate.updateAttribute(resp, syncContext.sourceId);
+        else if (sync.entityName === 'labels') {
+            await syncUpdate.updateLabel(resp, syncContext.sourceId);
         }
         else if (sync.entityName === 'api_tokens') {
             await syncUpdate.updateApiToken(resp, syncContext.sourceId);
@@ -235,8 +235,8 @@ async function pushEntity(sync, syncContext) {
     else if (sync.entityName === 'note_images') {
         entity = await sql.getRow('SELECT * FROM note_images WHERE noteImageId = ?', [sync.entityId]);
     }
-    else if (sync.entityName === 'attributes') {
-        entity = await sql.getRow('SELECT * FROM attributes WHERE attributeId = ?', [sync.entityId]);
+    else if (sync.entityName === 'labels') {
+        entity = await sql.getRow('SELECT * FROM labels WHERE labelId = ?', [sync.entityId]);
     }
     else if (sync.entityName === 'api_tokens') {
         entity = await sql.getRow('SELECT * FROM api_tokens WHERE apiTokenId = ?', [sync.entityId]);

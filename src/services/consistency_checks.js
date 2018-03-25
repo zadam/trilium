@@ -233,7 +233,7 @@ async function runAllChecks() {
     await runSyncRowChecks("recent_notes", "branchId", errorList);
     await runSyncRowChecks("images", "imageId", errorList);
     await runSyncRowChecks("note_images", "noteImageId", errorList);
-    await runSyncRowChecks("attributes", "attributeId", errorList);
+    await runSyncRowChecks("labels", "labelId", errorList);
     await runSyncRowChecks("api_tokens", "apiTokenId", errorList);
 
     if (errorList.length === 0) {

@@ -3,7 +3,7 @@ const protected_session = require('./protected_session');
 const notes = require('./notes');
 const sql = require('./sql');
 const utils = require('./utils');
-const attributes = require('./attributes');
+const labels = require('./labels');
 const date_notes = require('./date_notes');
 const config = require('./config');
 const Repository = require('./repository');
@@ -48,12 +48,12 @@ function ScriptApi(dataKey, startNote, currentNote) {
         return repository.getNote(noteId);
     };
 
-    this.getNotesWithAttribute = async function (attrName, attrValue) {
-        return await attributes.getNotesWithAttribute(repository, attrName, attrValue);
+    this.getNotesWithLabel = async function (attrName, attrValue) {
+        return await labels.getNotesWithLabel(repository, attrName, attrValue);
     };
 
-    this.getNoteWithAttribute = async function (attrName, attrValue) {
-        const notes = await this.getNotesWithAttribute(attrName, attrValue);
+    this.getNoteWithLabel = async function (attrName, attrValue) {
+        const notes = await this.getNotesWithLabel(attrName, attrValue);
 
         return notes.length > 0 ? notes[0] : null;
     };
@@ -64,7 +64,7 @@ function ScriptApi(dataKey, startNote, currentNote) {
         return await notes.createNote(parentNoteId, title, content, extraOptions);
     };
 
-    this.createAttribute = attributes.createAttribute;
+    this.createLabel = labels.createLabel;
 
     this.updateEntity = repository.updateEntity;
 

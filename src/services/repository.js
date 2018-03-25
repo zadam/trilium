@@ -3,7 +3,7 @@ const protected_session = require('./protected_session');
 const Note = require('../entities/note');
 const NoteRevision = require('../entities/note_revision');
 const Branch = require('../entities/branch');
-const Attribute = require('../entities/attribute');
+const Label = require('../entities/label');
 const sync_table = require('../services/sync_table');
 
 class Repository {
@@ -40,8 +40,8 @@ class Repository {
     createEntityFromRow(row) {
         let entity;
 
-        if (row.attributeId) {
-            entity = new Attribute(this, row);
+        if (row.labelId) {
+            entity = new Label(this, row);
         }
         else if (row.noteRevisionId) {
             entity = new NoteRevision(this, row);

@@ -2,13 +2,13 @@
 
 const Entity = require('./entity');
 
-class Attribute extends Entity {
-    static get tableName() { return "attributes"; }
-    static get primaryKeyName() { return "attributeId"; }
+class Label extends Entity {
+    static get tableName() { return "labels"; }
+    static get primaryKeyName() { return "labelId"; }
 
     async getNote() {
         return this.repository.getEntity("SELECT * FROM notes WHERE noteId = ?", [this.noteId]);
     }
 }
 
-module.exports = Attribute;
+module.exports = Label;

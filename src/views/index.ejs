@@ -58,7 +58,7 @@
 
       <div id="search-box" class="hide-toggle" style="grid-area: search; display: none; padding: 10px; margin-top: 10px;">
         <div style="display: flex; align-items: center;">
-          <input name="search-text" placeholder="Search text, attributes" style="flex-grow: 100; margin-left: 5px; margin-right: 5px;" autocomplete="off">
+          <input name="search-text" placeholder="Search text, labels" style="flex-grow: 100; margin-left: 5px; margin-right: 5px;" autocomplete="off">
           <button id="do-search-button" class="btn btn-primary btn-sm" title="Search">Search</button>
         </div>
 
@@ -124,7 +124,7 @@
             </button>
             <ul class="dropdown-menu dropdown-menu-right" aria-labelledby="dLabel">
               <li><a id="show-history-button"><kbd>Alt+H</kbd> History</a></li>
-              <li><a class="show-attributes-button"><kbd>Alt+A</kbd> Attributes</a></li>
+              <li><a class="show-labels-button"><kbd>Alt+A</kbd> Labels</a></li>
               <li><a id="show-source-button"><kbd>Ctrl+U</kbd> HTML source</a></li>
               <li><a id="upload-attachment-button">Upload attachment</a></li>
             </ul>
@@ -147,29 +147,29 @@
           <p>
             <ul>
               <li>
-                <code>@abc</code> - matches notes with attribute abc</li>
+                <code>@abc</code> - matches notes with label abc</li>
               <li>
-                <code>@!abc</code> - matches notes without abc attribute (maybe not the best syntax)</li>
+                <code>@!abc</code> - matches notes without abc label (maybe not the best syntax)</li>
               <li>
-                <code>@abc=true</code> - matches notes with attribute abc having value true</li>
+                <code>@abc=true</code> - matches notes with label abc having value true</li>
               <li><code>@abc!=true</code></li>
               <li>
-                <code>@"weird attribute"="weird value"</code> - works also with whitespace inside names values</li>
+                <code>@"weird label"="weird value"</code> - works also with whitespace inside names values</li>
               <li>
                 <code>@abc and @def</code> - matches notes with both abc and def</li>
               <li>
-                <code>@abc @def</code> - AND relation is implicit when specifying multiple attributes</li>
+                <code>@abc @def</code> - AND relation is implicit when specifying multiple labels</li>
               <li>
                 <code>@abc or @def</code> - OR relation</li>
               <li>
                 <code>@abc&lt;=5</code> - numerical comparison (also &gt;, &gt;=, &lt;).</li>
               <li>
-                <code>some search string @abc @def</code> - combination of fulltext and attribute search - both of them need to match (OR not supported)</li>
+                <code>some search string @abc @def</code> - combination of fulltext and label search - both of them need to match (OR not supported)</li>
               <li>
                 <code>@abc @def some search string</code> - same combination</li>
             </ul>
 
-            <a href="https://github.com/zadam/trilium/wiki/Attributes">Complete help on search syntax</a>
+            <a href="https://github.com/zadam/trilium/wiki/Labels">Complete help on search syntax</a>
           </p>
         </div>
 
@@ -204,10 +204,10 @@
         <input type="file" id="attachment-upload" style="display: none" />
       </div>
 
-      <div id="attribute-list">
-        <button class="btn btn-sm show-attributes-button">Attributes:</button>
+      <div id="label-list">
+        <button class="btn btn-sm show-labels-button">Labels:</button>
 
-        <span id="attribute-list-inner"></span>
+        <span id="label-list-inner"></span>
       </div>
     </div>
 
@@ -437,14 +437,14 @@
       <textarea id="note-source" readonly="readonly"></textarea>
     </div>
 
-    <div id="attributes-dialog" title="Note attributes" style="display: none; padding: 20px;">
+    <div id="labels-dialog" title="Note labels" style="display: none; padding: 20px;">
       <form data-bind="submit: save">
       <div style="text-align: center">
-        <button class="btn btn-large" style="width: 200px;" id="save-attributes-button" type="submit">Save changes <kbd>enter</kbd></button>
+        <button class="btn btn-large" style="width: 200px;" id="save-labels-button" type="submit">Save changes <kbd>enter</kbd></button>
       </div>
 
       <div style="height: 97%; overflow: auto">
-        <table id="attributes-table" class="table">
+        <table id="labels-table" class="table">
           <thead>
             <tr>
               <th></th>
@@ -454,25 +454,25 @@
               <th></th>
             </tr>
           </thead>
-          <tbody data-bind="foreach: attributes">
+          <tbody data-bind="foreach: labels">
             <tr data-bind="if: isDeleted == 0">
               <td class="handle">
                 <span class="glyphicon glyphicon-resize-vertical"></span>
                 <input type="hidden" name="position" data-bind="value: position"/>
               </td>
               <!-- ID column has specific width because if it's empty its size can be deformed when dragging -->
-              <td data-bind="text: attributeId" style="width: 150px;"></td>
+              <td data-bind="text: labelId" style="width: 150px;"></td>
               <td>
                 <!-- Change to valueUpdate: blur is necessary because jQuery UI autocomplete hijacks change event -->
-                <input type="text" class="attribute-name" data-bind="value: name, valueUpdate: 'blur',  event: { blur: $parent.attributeChanged }"/>
-                <div style="color: yellowgreen" data-bind="if: $parent.isNotUnique($index())"><span class="glyphicon glyphicon-info-sign"></span> Duplicate attribute.</div>
-                <div style="color: red" data-bind="if: $parent.isEmptyName($index())">Attribute name can't be empty.</div>
+                <input type="text" class="label-name" data-bind="value: name, valueUpdate: 'blur',  event: { blur: $parent.labelChanged }"/>
+                <div style="color: yellowgreen" data-bind="if: $parent.isNotUnique($index())"><span class="glyphicon glyphicon-info-sign"></span> Duplicate label.</div>
+                <div style="color: red" data-bind="if: $parent.isEmptyName($index())">Label name can't be empty.</div>
               </td>
               <td>
-                <input type="text" class="attribute-value" data-bind="value: value, valueUpdate: 'blur', event: { blur: $parent.attributeChanged }" style="width: 300px"/>
+                <input type="text" class="label-value" data-bind="value: value, valueUpdate: 'blur', event: { blur: $parent.labelChanged }" style="width: 300px"/>
               </td>
               <td title="Delete" style="padding: 13px;">
-                <span class="glyphicon glyphicon-trash" data-bind="click: $parent.deleteAttribute"></span>
+                <span class="glyphicon glyphicon-trash" data-bind="click: $parent.deleteLabel"></span>
               </td>
             </tr>
           </tbody>
@@ -550,7 +550,7 @@
     <script src="/javascripts/dialogs/edit_tree_prefix.js"></script>
     <script src="/javascripts/dialogs/sql_console.js"></script>
     <script src="/javascripts/dialogs/note_source.js"></script>
-    <script src="/javascripts/dialogs/attributes.js"></script>
+    <script src="/javascripts/dialogs/labels.js"></script>
 
     <script src="/javascripts/link.js"></script>
     <script src="/javascripts/sync.js"></script>

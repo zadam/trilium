@@ -2,7 +2,7 @@ const sql = require('./sql');
 const options = require('./options');
 const utils = require('./utils');
 const sync_table = require('./sync_table');
-const attributes = require('./attributes');
+const labels = require('./labels');
 const protected_session = require('./protected_session');
 
 async function createNewNote(parentNoteId, noteOpts, dataKey, sourceId) {
@@ -108,9 +108,9 @@ async function createNote(parentNoteId, title, content = "", extraOptions = {}) 
 
     const {noteId} = await createNewNote(parentNoteId, note, extraOptions.dataKey, extraOptions.sourceId);
 
-    if (extraOptions.attributes) {
-        for (const attrName in extraOptions.attributes) {
-            await attributes.createAttribute(noteId, attrName, extraOptions.attributes[attrName]);
+    if (extraOptions.labels) {
+        for (const attrName in extraOptions.labels) {
+            await labels.createLabel(noteId, attrName, extraOptions.labels[attrName]);
         }
     }
 
@@ -274,7 +274,7 @@ async function updateNote(noteId, newNote, dataKey, sourceId) {
         await protected_session.encryptNote(dataKey, newNote.detail);
     }
 
-    const attributesMap = await attributes.getNoteAttributeMap(noteId);
+    const labelsMap = await labels.getNoteLabelMap(noteId);
 
     const now = new Date();
     const nowStr = utils.nowDate();
@@ -289,7 +289,7 @@ async function updateNote(noteId, newNote, dataKey, sourceId) {
     await sql.doInTransaction(async () => {
         const msSinceDateCreated = now.getTime() - utils.parseDateTime(newNote.detail.dateCreated).getTime();
 
-        if (attributesMap.disable_versioning !== 'true'
+        if (labelsMap.disable_versioning !== 'true'
             && !existingnoteRevisionId
             && msSinceDateCreated >= historySnapshotTimeInterval * 1000) {
 

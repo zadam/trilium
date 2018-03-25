@@ -23,7 +23,7 @@ async function executeBundle(dataKey, bundle, startNote) {
 
     const ctx = new ScriptContext(dataKey, startNote, bundle.allNotes);
 
-    if (await bundle.note.hasAttribute('manual_transaction_handling')) {
+    if (await bundle.note.hasLabel('manual_transaction_handling')) {
         return await execute(ctx, script, '');
     }
     else {
@@ -73,7 +73,7 @@ async function getScriptBundle(note, root = true, scriptEnv = null, includedNote
         return;
     }
 
-    if (!root && await note.hasAttribute('disable_inclusion')) {
+    if (!root && await note.hasLabel('disable_inclusion')) {
         return;
     }
 

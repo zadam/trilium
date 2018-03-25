@@ -24,7 +24,7 @@ function newNoteImageId() {
     return randomString(12);
 }
 
-function newAttributeId() {
+function newLabelId() {
     return randomString(12);
 }
 
@@ -159,7 +159,7 @@ module.exports = {
     newNoteRevisionId,
     newImageId,
     newNoteImageId,
-    newAttributeId,
+    newLabelId,
     newApiTokenId,
     toBase64,
     fromBase64,
