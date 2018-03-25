@@ -151,16 +151,16 @@ const contextMenu = (function() {
                 treeChanges.deleteNodes(treeService.getSelectedNodes(true));
             }
             else if (ui.cmd === "exportSubTree") {
-                exportSubTree(node.data.noteId);
+                exportService.exportSubTree(node.data.noteId);
             }
             else if (ui.cmd === "importSubTree") {
-                importSubTree(node.data.noteId);
+                exportService.importSubTree(node.data.noteId);
             }
             else if (ui.cmd === "collapseSubTree") {
                 treeService.collapseTree(node);
             }
             else if (ui.cmd === "forceNoteSync") {
-                forceNoteSync(node.data.noteId);
+                syncService.forceNoteSync(node.data.noteId);
             }
             else if (ui.cmd === "sortAlphabetically") {
                 treeService.sortAlphabetically(node.data.noteId);
