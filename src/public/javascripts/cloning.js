@@ -11,19 +11,19 @@ const cloning = (function() {
             return;
         }
 
-        await noteTree.reload();
+        await treeService.reload();
     }
 
-    // beware that first arg is noteId and second is noteTreeId!
-    async function cloneNoteAfter(noteId, afterNoteTreeId) {
-        const resp = await server.put('notes/' + noteId + '/clone-after/' + afterNoteTreeId);
+    // beware that first arg is noteId and second is branchId!
+    async function cloneNoteAfter(noteId, afterBranchId) {
+        const resp = await server.put('notes/' + noteId + '/clone-after/' + afterBranchId);
 
         if (!resp.success) {
             alert(resp.message);
             return;
         }
 
-        await noteTree.reload();
+        await treeService.reload();
     }
 
     return {

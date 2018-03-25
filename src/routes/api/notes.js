@@ -48,11 +48,11 @@ router.post('/:parentNoteId/children', auth.checkApiAuth, wrap(async (req, res, 
     const newNote = req.body;
 
     await sql.doInTransaction(async () => {
-        const { noteId, noteTreeId, note } = await notes.createNewNote(parentNoteId, newNote, req, sourceId);
+        const { noteId, branchId, note } = await notes.createNewNote(parentNoteId, newNote, req, sourceId);
 
         res.send({
             'noteId': noteId,
-            'noteTreeId': noteTreeId,
+            'branchId': branchId,
             'note': note
         });
     });

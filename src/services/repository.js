@@ -2,7 +2,7 @@ const sql = require('./sql');
 const protected_session = require('./protected_session');
 const Note = require('../entities/note');
 const NoteRevision = require('../entities/note_revision');
-const NoteTree = require('../entities/note_tree');
+const Branch = require('../entities/branch');
 const Attribute = require('../entities/attribute');
 const sync_table = require('../services/sync_table');
 
@@ -46,8 +46,8 @@ class Repository {
         else if (row.noteRevisionId) {
             entity = new NoteRevision(this, row);
         }
-        else if (row.noteTreeId) {
-            entity = new NoteTree(this, row);
+        else if (row.branchId) {
+            entity = new Branch(this, row);
         }
         else if (row.noteId) {
             entity = new Note(this, row);

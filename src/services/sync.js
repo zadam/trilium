@@ -125,8 +125,8 @@ async function pullSync(syncContext) {
         else if (sync.entityName === 'notes') {
             await syncUpdate.updateNote(resp.entity, syncContext.sourceId);
         }
-        else if (sync.entityName === 'note_tree') {
-            await syncUpdate.updateNoteTree(resp, syncContext.sourceId);
+        else if (sync.entityName === 'branches') {
+            await syncUpdate.updateBranch(resp, syncContext.sourceId);
         }
         else if (sync.entityName === 'note_revisions') {
             await syncUpdate.updateNoteHistory(resp, syncContext.sourceId);
@@ -207,8 +207,8 @@ async function pushEntity(sync, syncContext) {
 
         serializeNoteContentBuffer(entity);
     }
-    else if (sync.entityName === 'note_tree') {
-        entity = await sql.getRow('SELECT * FROM note_tree WHERE noteTreeId = ?', [sync.entityId]);
+    else if (sync.entityName === 'branches') {
+        entity = await sql.getRow('SELECT * FROM branches WHERE branchId = ?', [sync.entityId]);
     }
     else if (sync.entityName === 'note_revisions') {
         entity = await sql.getRow('SELECT * FROM note_revisions WHERE noteRevisionId = ?', [sync.entityId]);
@@ -216,14 +216,14 @@ async function pushEntity(sync, syncContext) {
     else if (sync.entityName === 'note_reordering') {
         entity = {
             parentNoteId: sync.entityId,
-            ordering: await sql.getMap('SELECT noteTreeId, notePosition FROM note_tree WHERE parentNoteId = ? AND isDeleted = 0', [sync.entityId])
+            ordering: await sql.getMap('SELECT branchId, notePosition FROM branches WHERE parentNoteId = ? AND isDeleted = 0', [sync.entityId])
         };
     }
     else if (sync.entityName === 'options') {
         entity = await sql.getRow('SELECT * FROM options WHERE name = ?', [sync.entityId]);
     }
     else if (sync.entityName === 'recent_notes') {
-        entity = await sql.getRow('SELECT * FROM recent_notes WHERE noteTreeId = ?', [sync.entityId]);
+        entity = await sql.getRow('SELECT * FROM recent_notes WHERE branchId = ?', [sync.entityId]);
     }
     else if (sync.entityName === 'images') {
         entity = await sql.getRow('SELECT * FROM images WHERE imageId = ?', [sync.entityId]);

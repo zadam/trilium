@@ -6,7 +6,7 @@ const editTreePrefix = (function() {
     const $treePrefixInput = $("#tree-prefix-input");
     const $noteTitle = $('#tree-prefix-note-title');
 
-    let noteTreeId;
+    let branchId;
 
     async function showDialog() {
         glob.activeDialog = $dialog;
@@ -16,14 +16,14 @@ const editTreePrefix = (function() {
             width: 500
         });
 
-        const currentNode = noteTree.getCurrentNode();
+        const currentNode = treeService.getCurrentNode();
 
-        noteTreeId = currentNode.data.noteTreeId;
-        const nt = noteTree.getNoteTree(noteTreeId);
+        branchId = currentNode.data.branchId;
+        const nt = treeService.getBranch(branchId);
 
         $treePrefixInput.val(nt.prefix).focus();
 
-        const noteTitle = noteTree.getNoteTitle(currentNode.data.noteId);
+        const noteTitle = treeService.getNoteTitle(currentNode.data.noteId);
 
         $noteTitle.html(noteTitle);
     }
@@ -31,9 +31,9 @@ const editTreePrefix = (function() {
     $form.submit(() => {
         const prefix = $treePrefixInput.val();
 
-        server.put('tree/' + noteTreeId + '/set-prefix', {
+        server.put('tree/' + branchId + '/set-prefix', {
             prefix: prefix
-        }).then(() => noteTree.setPrefix(noteTreeId, prefix));
+        }).then(() => treeService.setPrefix(branchId, prefix));
 
         $dialog.dialog("close");
 

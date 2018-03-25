@@ -53,9 +53,9 @@ router.post('/force-note-sync/:noteId', auth.checkApiAuth, wrap(async (req, res,
     await sql.doInTransaction(async () => {
         await sync_table.addNoteSync(noteId);
 
-        for (const noteTreeId of await sql.getColumn("SELECT noteTreeId FROM note_tree WHERE isDeleted = 0 AND noteId = ?", [noteId])) {
-            await sync_table.addNoteTreeSync(noteTreeId);
-            await sync_table.addRecentNoteSync(noteTreeId);
+        for (const branchId of await sql.getColumn("SELECT branchId FROM branches WHERE isDeleted = 0 AND noteId = ?", [noteId])) {
+            await sync_table.addBranchSync(branchId);
+            await sync_table.addRecentNoteSync(branchId);
         }
 
         for (const noteRevisionId of await sql.getColumn("SELECT noteRevisionId FROM note_revisions WHERE noteId = ?", [noteId])) {
@@ -88,10 +88,10 @@ router.get('/notes/:noteId', auth.checkApiAuth, wrap(async (req, res, next) => {
     });
 }));
 
-router.get('/note_tree/:noteTreeId', auth.checkApiAuth, wrap(async (req, res, next) => {
-    const noteTreeId = req.params.noteTreeId;
+router.get('/branches/:branchId', auth.checkApiAuth, wrap(async (req, res, next) => {
+    const branchId = req.params.branchId;
 
-    res.send(await sql.getRow("SELECT * FROM note_tree WHERE noteTreeId = ?", [noteTreeId]));
+    res.send(await sql.getRow("SELECT * FROM branches WHERE branchId = ?", [branchId]));
 }));
 
 router.get('/note_revisions/:noteRevisionId', auth.checkApiAuth, wrap(async (req, res, next) => {
@@ -117,14 +117,14 @@ router.get('/note_reordering/:parentNoteId', auth.checkApiAuth, wrap(async (req,
 
     res.send({
         parentNoteId: parentNoteId,
-        ordering: await sql.getMap("SELECT noteTreeId, notePosition FROM note_tree WHERE parentNoteId = ? AND isDeleted = 0", [parentNoteId])
+        ordering: await sql.getMap("SELECT branchId, notePosition FROM branches WHERE parentNoteId = ? AND isDeleted = 0", [parentNoteId])
     });
 }));
 
-router.get('/recent_notes/:noteTreeId', auth.checkApiAuth, wrap(async (req, res, next) => {
-    const noteTreeId = req.params.noteTreeId;
+router.get('/recent_notes/:branchId', auth.checkApiAuth, wrap(async (req, res, next) => {
+    const branchId = req.params.branchId;
 
-    res.send(await sql.getRow("SELECT * FROM recent_notes WHERE noteTreeId = ?", [noteTreeId]));
+    res.send(await sql.getRow("SELECT * FROM recent_notes WHERE branchId = ?", [branchId]));
 }));
 
 router.get('/images/:imageId', auth.checkApiAuth, wrap(async (req, res, next) => {
@@ -162,8 +162,8 @@ router.put('/notes', auth.checkApiAuth, wrap(async (req, res, next) => {
     res.send({});
 }));
 
-router.put('/note_tree', auth.checkApiAuth, wrap(async (req, res, next) => {
-    await syncUpdate.updateNoteTree(req.body.entity, req.body.sourceId);
+router.put('/branches', auth.checkApiAuth, wrap(async (req, res, next) => {
+    await syncUpdate.updateBranch(req.body.entity, req.body.sourceId);
 
     res.send({});
 }));

@@ -24,7 +24,7 @@ router.post('/cleanup-soft-deleted-items', auth.checkApiAuth, wrap(async (req, r
 
         await sql.execute(`DELETE FROM attributes WHERE noteId IN (${noteIdsSql})`);
 
-        await sql.execute("DELETE FROM note_tree WHERE isDeleted = 1");
+        await sql.execute("DELETE FROM branches WHERE isDeleted = 1");
 
         await sql.execute("DELETE FROM note_images WHERE isDeleted = 1");
 
@@ -35,9 +35,9 @@ router.post('/cleanup-soft-deleted-items', auth.checkApiAuth, wrap(async (req, r
         await sql.execute("DELETE FROM recent_notes");
 
         await sync_table.cleanupSyncRowsForMissingEntities("notes", "noteId");
-        await sync_table.cleanupSyncRowsForMissingEntities("note_tree", "noteTreeId");
+        await sync_table.cleanupSyncRowsForMissingEntities("branches", "branchId");
         await sync_table.cleanupSyncRowsForMissingEntities("note_revisions", "noteRevisionId");
-        await sync_table.cleanupSyncRowsForMissingEntities("recent_notes", "noteTreeId");
+        await sync_table.cleanupSyncRowsForMissingEntities("recent_notes", "branchId");
 
         log.info("Following notes has been completely cleaned from database: " + noteIdsSql);
     });

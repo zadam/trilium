@@ -27,7 +27,7 @@ const protected_session = (function() {
         if (requireProtectedSession && !isProtectedSessionAvailable()) {
             protectedSessionDeferred = dfd;
 
-            if (noteTree.getCurrentNode().data.isProtected) {
+            if (treeService.getCurrentNode().data.isProtected) {
                 $noteDetailWrapper.hide();
             }
 
@@ -37,7 +37,7 @@ const protected_session = (function() {
                 open: () => {
                     if (!modal) {
                         // dialog steals focus for itself, which is not what we want for non-modal (viewing)
-                        noteTree.getCurrentNode().setFocus();
+                        treeService.getCurrentNode().setFocus();
                     }
                 }
             });
@@ -65,7 +65,7 @@ const protected_session = (function() {
         $dialog.dialog("close");
 
         noteEditor.reload();
-        noteTree.reload();
+        treeService.reload();
 
         if (protectedSessionDeferred !== null) {
             ensureDialogIsClosed($dialog, $password);
@@ -121,7 +121,7 @@ const protected_session = (function() {
 
         await noteEditor.saveNoteToServer(note);
 
-        noteTree.setProtected(note.detail.noteId, note.detail.isProtected);
+        treeService.setProtected(note.detail.noteId, note.detail.isProtected);
 
         noteEditor.setNoteBackgroundIfProtected(note);
     }
@@ -137,7 +137,7 @@ const protected_session = (function() {
 
         await noteEditor.saveNoteToServer(note);
 
-        noteTree.setProtected(note.detail.noteId, note.detail.isProtected);
+        treeService.setProtected(note.detail.noteId, note.detail.isProtected);
 
         noteEditor.setNoteBackgroundIfProtected(note);
     }
@@ -155,7 +155,7 @@ const protected_session = (function() {
 
         showMessage("Request to un/protect sub tree has finished successfully");
 
-        noteTree.reload();
+        treeService.reload();
         noteEditor.reload();
     }
 

@@ -8,7 +8,7 @@ function newNoteId() {
     return randomString(12);
 }
 
-function newNoteTreeId() {
+function newBranchId() {
     return randomString(12);
 }
 
@@ -155,7 +155,7 @@ module.exports = {
     parseDate,
     parseDateTime,
     newNoteId,
-    newNoteTreeId,
+    newBranchId,
     newNoteRevisionId,
     newImageId,
     newNoteImageId,

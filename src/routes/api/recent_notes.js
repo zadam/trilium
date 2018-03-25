@@ -13,20 +13,20 @@ router.get('', auth.checkApiAuth, wrap(async (req, res, next) => {
     res.send(await getRecentNotes());
 }));
 
-router.put('/:noteTreeId/:notePath', auth.checkApiAuth, wrap(async (req, res, next) => {
-    const noteTreeId = req.params.noteTreeId;
+router.put('/:branchId/:notePath', auth.checkApiAuth, wrap(async (req, res, next) => {
+    const branchId = req.params.branchId;
     const notePath = req.params.notePath;
     const sourceId = req.headers.source_id;
 
     await sql.doInTransaction(async () => {
         await sql.replace('recent_notes', {
-            noteTreeId: noteTreeId,
+            branchId: branchId,
             notePath: notePath,
             dateAccessed: utils.nowDate(),
             isDeleted: 0
         });
 
-        await sync_table.addRecentNoteSync(noteTreeId, sourceId);
+        await sync_table.addRecentNoteSync(branchId, sourceId);
 
         await options.setOption('start_note_path', notePath, sourceId);
     });
@@ -40,10 +40,10 @@ async function getRecentNotes() {
         recent_notes.* 
       FROM 
         recent_notes
-        JOIN note_tree USING(noteTreeId)
+        JOIN branches USING(branchId)
       WHERE
         recent_notes.isDeleted = 0
-        AND note_tree.isDeleted = 0
+        AND branches.isDeleted = 0
       ORDER BY 
         dateAccessed DESC
       LIMIT 200`);

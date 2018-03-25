@@ -23,10 +23,10 @@ async function createNote(parentNoteId, noteTitle, noteText) {
 }
 
 async function getNoteStartingWith(parentNoteId, startsWith) {
-    return await sql.getValue(`SELECT noteId FROM notes JOIN note_tree USING(noteId) 
+    return await sql.getValue(`SELECT noteId FROM notes JOIN branches USING(noteId) 
                                     WHERE parentNoteId = ? AND title LIKE '${startsWith}%'
                                     AND notes.isDeleted = 0 AND isProtected = 0 
-                                    AND note_tree.isDeleted = 0`, [parentNoteId]);
+                                    AND branches.isDeleted = 0`, [parentNoteId]);
 }
 
 async function getRootCalendarNoteId() {

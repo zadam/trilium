@@ -4,10 +4,10 @@ const sql = require('./sql');
 const sync_table = require('./sync_table');
 const protected_session = require('./protected_session');
 
-async function validateParentChild(res, parentNoteId, childNoteId, noteTreeId = null) {
-    const existing = await getExistingNoteTree(parentNoteId, childNoteId);
+async function validateParentChild(res, parentNoteId, childNoteId, branchId = null) {
+    const existing = await getExistingBranch(parentNoteId, childNoteId);
 
-    if (existing && (noteTreeId === null || existing.noteTreeId !== noteTreeId)) {
+    if (existing && (branchId === null || existing.branchId !== branchId)) {
         res.send({
             success: false,
             message: 'This note already exists in the target.'
@@ -28,8 +28,8 @@ async function validateParentChild(res, parentNoteId, childNoteId, noteTreeId = 
     return true;
 }
 
-async function getExistingNoteTree(parentNoteId, childNoteId) {
-    return await sql.getRow('SELECT * FROM note_tree WHERE noteId = ? AND parentNoteId = ? AND isDeleted = 0', [childNoteId, parentNoteId]);
+async function getExistingBranch(parentNoteId, childNoteId) {
+    return await sql.getRow('SELECT * FROM branches WHERE noteId = ? AND parentNoteId = ? AND isDeleted = 0', [childNoteId, parentNoteId]);
 }
 
 /**
@@ -52,7 +52,7 @@ async function checkTreeCycle(parentNoteId, childNoteId) {
             return false;
         }
 
-        const parentNoteIds = await sql.getColumn("SELECT DISTINCT parentNoteId FROM note_tree WHERE noteId = ? AND isDeleted = 0", [parentNoteId]);
+        const parentNoteIds = await sql.getColumn("SELECT DISTINCT parentNoteId FROM branches WHERE noteId = ? AND isDeleted = 0", [parentNoteId]);
 
         for (const pid of parentNoteIds) {
             if (!await checkTreeCycleInner(pid)) {
@@ -66,14 +66,14 @@ async function checkTreeCycle(parentNoteId, childNoteId) {
     return await checkTreeCycleInner(parentNoteId);
 }
 
-async function getNoteTree(noteTreeId) {
-    return sql.getRow("SELECT * FROM note_tree WHERE noteTreeId = ?", [noteTreeId]);
+async function getBranch(branchId) {
+    return sql.getRow("SELECT * FROM branches WHERE branchId = ?", [branchId]);
 }
 
 async function loadSubTreeNoteIds(parentNoteId, subTreeNoteIds) {
     subTreeNoteIds.push(parentNoteId);
 
-    const children = await sql.getColumn("SELECT noteId FROM note_tree WHERE parentNoteId = ? AND isDeleted = 0", [parentNoteId]);
+    const children = await sql.getColumn("SELECT noteId FROM branches WHERE parentNoteId = ? AND isDeleted = 0", [parentNoteId]);
 
     for (const childNoteId of children) {
         await loadSubTreeNoteIds(childNoteId, subTreeNoteIds);
@@ -82,9 +82,9 @@ async function loadSubTreeNoteIds(parentNoteId, subTreeNoteIds) {
 
 async function sortNotesAlphabetically(parentNoteId, req, sourceId) {
     await sql.doInTransaction(async () => {
-        const notes = await sql.getRows(`SELECT noteTreeId, noteId, title, isProtected 
-                                       FROM notes JOIN note_tree USING(noteId) 
-                                       WHERE note_tree.isDeleted = 0 AND parentNoteId = ?`, [parentNoteId]);
+        const notes = await sql.getRows(`SELECT branchId, noteId, title, isProtected 
+                                       FROM notes JOIN branches USING(noteId) 
+                                       WHERE branches.isDeleted = 0 AND parentNoteId = ?`, [parentNoteId]);
 
         protected_session.decryptNotes(req, notes);
 
@@ -93,8 +93,8 @@ async function sortNotesAlphabetically(parentNoteId, req, sourceId) {
         let position = 1;
 
         for (const note of notes) {
-            await sql.execute("UPDATE note_tree SET notePosition = ? WHERE noteTreeId = ?",
-                [position, note.noteTreeId]);
+            await sql.execute("UPDATE branches SET notePosition = ? WHERE branchId = ?",
+                [position, note.branchId]);
 
             position++;
         }
@@ -105,6 +105,6 @@ async function sortNotesAlphabetically(parentNoteId, req, sourceId) {
 
 module.exports = {
     validateParentChild,
-    getNoteTree,
+    getBranch,
     sortNotesAlphabetically
 };

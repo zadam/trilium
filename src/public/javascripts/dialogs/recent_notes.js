@@ -14,11 +14,11 @@ const recentNotes = (function() {
         list = result.map(r => r.notePath);
     }
 
-    function addRecentNote(noteTreeId, notePath) {
+    function addRecentNote(branchId, notePath) {
         setTimeout(async () => {
             // we include the note into recent list only if the user stayed on the note at least 5 seconds
-            if (notePath && notePath === noteTree.getCurrentNotePath()) {
-                const result = await server.put('recent-notes/' + noteTreeId + '/' + encodeURIComponent(notePath));
+            if (notePath && notePath === treeService.getCurrentNotePath()) {
+                const result = await server.put('recent-notes/' + branchId + '/' + encodeURIComponent(notePath));
 
                 list = result.map(r => r.notePath);
             }
@@ -38,14 +38,14 @@ const recentNotes = (function() {
         $searchInput.val('');
 
         // remove the current note
-        const recNotes = list.filter(note => note !== noteTree.getCurrentNotePath());
+        const recNotes = list.filter(note => note !== treeService.getCurrentNotePath());
 
         $searchInput.autocomplete({
             source: recNotes.map(notePath => {
                 let noteTitle;
 
                 try {
-                    noteTitle = noteTree.getNotePathTitle(notePath);
+                    noteTitle = treeService.getNotePathTitle(notePath);
                 }
                 catch (e) {
                     noteTitle = "[error - can't find note title]";
@@ -61,7 +61,7 @@ const recentNotes = (function() {
             minLength: 0,
             autoFocus: true,
             select: function (event, ui) {
-                noteTree.activateNode(ui.item.value);
+                treeService.activateNode(ui.item.value);
 
                 $searchInput.autocomplete('destroy');
                 $dialog.dialog('close');

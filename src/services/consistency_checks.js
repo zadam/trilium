@@ -23,7 +23,7 @@ async function runCheck(query, errorText, errorList) {
 
 async function checkTreeCycles(errorList) {
     const childToParents = {};
-    const rows = await sql.getRows("SELECT noteId, parentNoteId FROM note_tree WHERE isDeleted = 0");
+    const rows = await sql.getRows("SELECT noteId, parentNoteId FROM branches WHERE isDeleted = 0");
 
     for (const row of rows) {
         const childNoteId = row.noteId;
@@ -92,17 +92,17 @@ async function runAllChecks() {
             noteId 
           FROM 
             notes 
-            LEFT JOIN note_tree USING(noteId) 
+            LEFT JOIN branches USING(noteId) 
           WHERE 
             noteId != 'root' 
-            AND note_tree.noteTreeId IS NULL`,
-        "Missing note_tree records for following note IDs", errorList);
+            AND branches.branchId IS NULL`,
+        "Missing branches records for following note IDs", errorList);
 
     await runCheck(`
           SELECT 
-            noteTreeId || ' > ' || note_tree.noteId 
+            branchId || ' > ' || branches.noteId 
           FROM 
-            note_tree 
+            branches 
             LEFT JOIN notes USING(noteId) 
           WHERE 
             notes.noteId IS NULL`,
@@ -110,24 +110,24 @@ async function runAllChecks() {
 
     await runCheck(`
           SELECT 
-            noteTreeId 
+            branchId 
           FROM 
-            note_tree 
+            branches 
             JOIN notes USING(noteId) 
           WHERE 
             notes.isDeleted = 1 
-            AND note_tree.isDeleted = 0`,
+            AND branches.isDeleted = 0`,
         "Note tree is not deleted even though main note is deleted for following note tree IDs", errorList);
 
     await runCheck(`
           SELECT 
-            child.noteTreeId
+            child.branchId
           FROM 
-            note_tree AS child
+            branches AS child
           WHERE 
             child.isDeleted = 0
             AND child.parentNoteId != 'root'
-            AND (SELECT COUNT(*) FROM note_tree AS parent WHERE parent.noteId = child.parentNoteId 
+            AND (SELECT COUNT(*) FROM branches AS parent WHERE parent.noteId = child.parentNoteId 
                                                                  AND parent.isDeleted = 0) = 0`,
         "All parent note trees are deleted but child note tree is not for these child note tree IDs", errorList);
 
@@ -137,18 +137,18 @@ async function runAllChecks() {
             DISTINCT noteId
           FROM
             notes
-            JOIN note_tree USING(noteId)
+            JOIN branches USING(noteId)
           WHERE
-            (SELECT COUNT(*) FROM note_tree WHERE notes.noteId = note_tree.noteId AND note_tree.isDeleted = 0) = 0
+            (SELECT COUNT(*) FROM branches WHERE notes.noteId = branches.noteId AND branches.isDeleted = 0) = 0
             AND notes.isDeleted = 0
     `, 'No undeleted note trees for note IDs', errorList);
 
     await runCheck(`
           SELECT 
             child.parentNoteId || ' > ' || child.noteId 
-          FROM note_tree 
+          FROM branches 
             AS child 
-            LEFT JOIN note_tree AS parent ON parent.noteId = child.parentNoteId 
+            LEFT JOIN branches AS parent ON parent.noteId = child.parentNoteId 
           WHERE 
             parent.noteId IS NULL 
             AND child.parentNoteId != 'root'`,
@@ -165,14 +165,14 @@ async function runAllChecks() {
 
     await runCheck(`
           SELECT 
-            note_tree.parentNoteId || ' > ' || note_tree.noteId 
+            branches.parentNoteId || ' > ' || branches.noteId 
           FROM 
-            note_tree 
+            branches 
           WHERE 
-            note_tree.isDeleted = 0
+            branches.isDeleted = 0
           GROUP BY 
-            note_tree.parentNoteId,
-            note_tree.noteId
+            branches.parentNoteId,
+            branches.noteId
           HAVING 
             COUNT(*) > 1`,
         "Duplicate undeleted parent note <-> note relationship - parent note ID > note ID", errorList);
@@ -221,16 +221,16 @@ async function runAllChecks() {
           SELECT 
             parentNoteId
           FROM 
-            note_tree
-            JOIN notes ON notes.noteId = note_tree.parentNoteId
+            branches
+            JOIN notes ON notes.noteId = branches.parentNoteId
           WHERE 
             type == 'search'`,
         "Search note has children", errorList);
 
     await runSyncRowChecks("notes", "noteId", errorList);
     await runSyncRowChecks("note_revisions", "noteRevisionId", errorList);
-    await runSyncRowChecks("note_tree", "noteTreeId", errorList);
-    await runSyncRowChecks("recent_notes", "noteTreeId", errorList);
+    await runSyncRowChecks("branches", "branchId", errorList);
+    await runSyncRowChecks("recent_notes", "branchId", errorList);
     await runSyncRowChecks("images", "imageId", errorList);
     await runSyncRowChecks("note_images", "noteImageId", errorList);
     await runSyncRowChecks("attributes", "attributeId", errorList);

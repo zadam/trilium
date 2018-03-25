@@ -8,8 +8,8 @@ async function addNoteSync(noteId, sourceId) {
     await addEntitySync("notes", noteId, sourceId)
 }
 
-async function addNoteTreeSync(noteTreeId, sourceId) {
-    await addEntitySync("note_tree", noteTreeId, sourceId)
+async function addBranchSync(branchId, sourceId) {
+    await addEntitySync("branches", branchId, sourceId)
 }
 
 async function addNoteReorderingSync(parentNoteId, sourceId) {
@@ -24,8 +24,8 @@ async function addOptionsSync(name, sourceId) {
     await addEntitySync("options", name, sourceId);
 }
 
-async function addRecentNoteSync(noteTreeId, sourceId) {
-    await addEntitySync("recent_notes", noteTreeId, sourceId);
+async function addRecentNoteSync(branchId, sourceId) {
+    await addEntitySync("recent_notes", branchId, sourceId);
 }
 
 async function addImageSync(imageId, sourceId) {
@@ -91,9 +91,9 @@ async function fillSyncRows(entityName, entityKey) {
 
 async function fillAllSyncRows() {
     await fillSyncRows("notes", "noteId");
-    await fillSyncRows("note_tree", "noteTreeId");
+    await fillSyncRows("branches", "branchId");
     await fillSyncRows("note_revisions", "noteRevisionId");
-    await fillSyncRows("recent_notes", "noteTreeId");
+    await fillSyncRows("recent_notes", "branchId");
     await fillSyncRows("images", "imageId");
     await fillSyncRows("note_images", "noteImageId");
     await fillSyncRows("attributes", "attributeId");
@@ -102,7 +102,7 @@ async function fillAllSyncRows() {
 
 module.exports = {
     addNoteSync,
-    addNoteTreeSync,
+    addBranchSync,
     addNoteReorderingSync,
     addNoteHistorySync,
     addOptionsSync,

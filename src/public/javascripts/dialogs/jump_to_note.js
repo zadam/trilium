@@ -17,7 +17,7 @@ const jumpToNote = (function() {
         });
 
         await $autoComplete.autocomplete({
-            source: await stopWatch("building autocomplete", noteTree.getAutocompleteItems),
+            source: await stopWatch("building autocomplete", treeService.getAutocompleteItems),
             minLength: 0
         });
     }
@@ -31,7 +31,7 @@ const jumpToNote = (function() {
         const notePath = getSelectedNotePath();
 
         if (notePath) {
-            noteTree.activateNode(notePath);
+            treeService.activateNode(notePath);
 
             $dialog.dialog('close');
         }

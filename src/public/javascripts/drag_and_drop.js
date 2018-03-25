@@ -49,7 +49,7 @@ const dragAndDropSetup = {
         const nodeToMove = data.otherNode;
         nodeToMove.setSelected(true);
 
-        const selectedNodes = noteTree.getSelectedNodes();
+        const selectedNodes = treeService.getSelectedNodes();
 
         if (data.hitMode === "before") {
             treeChanges.moveBeforeNode(selectedNodes, node);

@@ -28,5 +28,5 @@ $("#import-upload").change(async function() {
         processData: false, // NEEDED, DON'T OMIT THIS
     });
 
-    await noteTree.reload();
+    await treeService.reload();
 });

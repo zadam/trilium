@@ -3,7 +3,7 @@
 const treeChanges = (function() {
     async function moveBeforeNode(nodesToMove, beforeNode) {
         for (const nodeToMove of nodesToMove) {
-            const resp = await server.put('tree/' + nodeToMove.data.noteTreeId + '/move-before/' + beforeNode.data.noteTreeId);
+            const resp = await server.put('tree/' + nodeToMove.data.branchId + '/move-before/' + beforeNode.data.branchId);
 
             if (!resp.success) {
                 alert(resp.message);
@@ -18,7 +18,7 @@ const treeChanges = (function() {
         nodesToMove.reverse(); // need to reverse to keep the note order
 
         for (const nodeToMove of nodesToMove) {
-            const resp = await server.put('tree/' + nodeToMove.data.noteTreeId + '/move-after/' + afterNode.data.noteTreeId);
+            const resp = await server.put('tree/' + nodeToMove.data.branchId + '/move-after/' + afterNode.data.branchId);
 
             if (!resp.success) {
                 alert(resp.message);
@@ -31,7 +31,7 @@ const treeChanges = (function() {
 
     async function moveToNode(nodesToMove, toNode) {
         for (const nodeToMove of nodesToMove) {
-            const resp = await server.put('tree/' + nodeToMove.data.noteTreeId + '/move-to/' + toNode.data.noteId);
+            const resp = await server.put('tree/' + nodeToMove.data.branchId + '/move-to/' + toNode.data.noteId);
 
             if (!resp.success) {
                 alert(resp.message);
@@ -61,7 +61,7 @@ const treeChanges = (function() {
         }
 
         for (const node of nodes) {
-            await server.remove('tree/' + node.data.noteTreeId);
+            await server.remove('tree/' + node.data.branchId);
         }
 
         // following code assumes that nodes contain only top-most selected nodes - getSelectedNodes has been
@@ -80,10 +80,10 @@ const treeChanges = (function() {
             // activate next element after this one is deleted so we don't lose focus
             next.setActive();
 
-            noteTree.setCurrentNotePathToHash(next);
+            treeService.setCurrentNotePathToHash(next);
         }
 
-        noteTree.reload();
+        treeService.reload();
 
         showMessage("Note(s) has been deleted.");
     }
@@ -93,7 +93,7 @@ const treeChanges = (function() {
             return;
         }
 
-        const resp = await server.put('tree/' + node.data.noteTreeId + '/move-after/' + node.getParent().data.noteTreeId);
+        const resp = await server.put('tree/' + node.data.branchId + '/move-after/' + node.getParent().data.branchId);
 
         if (!resp.success) {
             alert(resp.message);
@@ -111,15 +111,15 @@ const treeChanges = (function() {
     function changeNode(node, func) {
         assertArguments(node.data.parentNoteId, node.data.noteId);
 
-        noteTree.removeParentChildRelation(node.data.parentNoteId, node.data.noteId);
+        treeService.removeParentChildRelation(node.data.parentNoteId, node.data.noteId);
 
         func(node);
 
         node.data.parentNoteId = isTopLevelNode(node) ? 'root' : node.getParent().data.noteId;
 
-        noteTree.setParentChildRelation(node.data.noteTreeId, node.data.parentNoteId, node.data.noteId);
+        treeService.setParentChildRelation(node.data.branchId, node.data.parentNoteId, node.data.noteId);
 
-        noteTree.setCurrentNotePathToHash(node);
+        treeService.setCurrentNotePathToHash(node);
     }
 
     return {

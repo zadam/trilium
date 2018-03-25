@@ -110,7 +110,7 @@ const noteEditor = (function() {
 
         note.detail.title = title;
 
-        noteTree.setNoteTitle(note.detail.noteId, title);
+        treeService.setNoteTitle(note.detail.noteId, title);
     }
 
     async function saveNoteToServer(note) {
@@ -264,7 +264,7 @@ const noteEditor = (function() {
         noteChangeDisabled = false;
 
         setNoteBackgroundIfProtected(currentNote);
-        noteTree.setNoteTreeBackgroundBasedOnProtectedStatus(noteId);
+        treeService.setBranchBackgroundBasedOnProtectedStatus(noteId);
 
         // after loading new note make sure editor is scrolled to the top
         $noteDetailWrapper.scrollTop(0);
@@ -366,7 +366,7 @@ const noteEditor = (function() {
 
             const title = $noteTitle.val();
 
-            noteTree.setNoteTitle(getCurrentNoteId(), title);
+            treeService.setNoteTitle(getCurrentNoteId(), title);
         });
 
         // so that tab jumps from note title (which has tabindex 1)

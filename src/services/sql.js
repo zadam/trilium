@@ -30,7 +30,7 @@ const dbReady = new Promise((resolve, reject) => {
 
             const schema = fs.readFileSync(resource_dir.DB_INIT_DIR + '/schema.sql', 'UTF-8');
             const notesSql = fs.readFileSync(resource_dir.DB_INIT_DIR + '/main_notes.sql', 'UTF-8');
-            const notesTreeSql = fs.readFileSync(resource_dir.DB_INIT_DIR + '/main_note_tree.sql', 'UTF-8');
+            const notesTreeSql = fs.readFileSync(resource_dir.DB_INIT_DIR + '/main_branches.sql', 'UTF-8');
             const imagesSql = fs.readFileSync(resource_dir.DB_INIT_DIR + '/main_images.sql', 'UTF-8');
             const notesImageSql = fs.readFileSync(resource_dir.DB_INIT_DIR + '/main_note_images.sql', 'UTF-8');
 
@@ -41,7 +41,7 @@ const dbReady = new Promise((resolve, reject) => {
                 await executeScript(imagesSql);
                 await executeScript(notesImageSql);
 
-                const startNoteId = await getValue("SELECT noteId FROM note_tree WHERE parentNoteId = 'root' AND isDeleted = 0 ORDER BY notePosition");
+                const startNoteId = await getValue("SELECT noteId FROM branches WHERE parentNoteId = 'root' AND isDeleted = 0 ORDER BY notePosition");
 
                 await require('./options').initOptions(startNoteId);
                 await require('./sync_table').fillAllSyncRows();

@@ -79,50 +79,50 @@ class Note extends Entity {
     }
 
     async getTrees() {
-        return this.repository.getEntities("SELECT * FROM note_tree WHERE isDeleted = 0 AND noteId = ?", [this.noteId]);
+        return this.repository.getEntities("SELECT * FROM branches WHERE isDeleted = 0 AND noteId = ?", [this.noteId]);
     }
 
     async getChild(name) {
         return this.repository.getEntity(`
           SELECT notes.* 
-          FROM note_tree 
+          FROM branches 
             JOIN notes USING(noteId) 
           WHERE notes.isDeleted = 0
-                AND note_tree.isDeleted = 0
-                AND note_tree.parentNoteId = ?
+                AND branches.isDeleted = 0
+                AND branches.parentNoteId = ?
                 AND notes.title = ?`, [this.noteId, name]);
     }
 
     async getChildren() {
         return this.repository.getEntities(`
           SELECT notes.* 
-          FROM note_tree 
+          FROM branches 
             JOIN notes USING(noteId) 
           WHERE notes.isDeleted = 0
-                AND note_tree.isDeleted = 0
-                AND note_tree.parentNoteId = ?
-          ORDER BY note_tree.notePosition`, [this.noteId]);
+                AND branches.isDeleted = 0
+                AND branches.parentNoteId = ?
+          ORDER BY branches.notePosition`, [this.noteId]);
     }
 
     async getParents() {
         return this.repository.getEntities(`
           SELECT parent_notes.* 
           FROM 
-            note_tree AS child_tree 
+            branches AS child_tree 
             JOIN notes AS parent_notes ON parent_notes.noteId = child_tree.parentNoteId 
           WHERE child_tree.noteId = ?
                 AND child_tree.isDeleted = 0
                 AND parent_notes.isDeleted = 0`, [this.noteId]);
     }
 
-    async getNoteTree() {
+    async getBranch() {
         return this.repository.getEntities(`
-          SELECT note_tree.* 
-          FROM note_tree 
+          SELECT branches.* 
+          FROM branches 
             JOIN notes USING(noteId) 
           WHERE notes.isDeleted = 0
-                AND note_tree.isDeleted = 0
-                AND note_tree.noteId = ?`, [this.noteId]);
+                AND branches.isDeleted = 0
+                AND branches.noteId = ?`, [this.noteId]);
     }
 
     beforeSaving() {

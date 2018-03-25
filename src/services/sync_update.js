@@ -26,18 +26,18 @@ async function updateNote(entity, sourceId) {
     }
 }
 
-async function updateNoteTree(entity, sourceId) {
-    const orig = await sql.getRowOrNull("SELECT * FROM note_tree WHERE noteTreeId = ?", [entity.noteTreeId]);
+async function updateBranch(entity, sourceId) {
+    const orig = await sql.getRowOrNull("SELECT * FROM branches WHERE branchId = ?", [entity.branchId]);
 
     await sql.doInTransaction(async () => {
         if (orig === null || orig.dateModified < entity.dateModified) {
             delete entity.isExpanded;
 
-            await sql.replace('note_tree', entity);
+            await sql.replace('branches', entity);
 
-            await sync_table.addNoteTreeSync(entity.noteTreeId, sourceId);
+            await sync_table.addBranchSync(entity.branchId, sourceId);
 
-            log.info("Update/sync note tree " + entity.noteTreeId);
+            log.info("Update/sync note tree " + entity.branchId);
         }
     });
 }
@@ -61,7 +61,7 @@ async function updateNoteHistory(entity, sourceId) {
 async function updateNoteReordering(entity, sourceId) {
     await sql.doInTransaction(async () => {
         Object.keys(entity.ordering).forEach(async key => {
-            await sql.execute("UPDATE note_tree SET notePosition = ? WHERE noteTreeId = ?", [entity.ordering[key], key]);
+            await sql.execute("UPDATE branches SET notePosition = ? WHERE branchId = ?", [entity.ordering[key], key]);
         });
 
         await sync_table.addNoteReorderingSync(entity.parentNoteId, sourceId);
@@ -87,13 +87,13 @@ async function updateOptions(entity, sourceId) {
 }
 
 async function updateRecentNotes(entity, sourceId) {
-    const orig = await sql.getRowOrNull("SELECT * FROM recent_notes WHERE noteTreeId = ?", [entity.noteTreeId]);
+    const orig = await sql.getRowOrNull("SELECT * FROM recent_notes WHERE branchId = ?", [entity.branchId]);
 
     if (orig === null || orig.dateAccessed < entity.dateAccessed) {
         await sql.doInTransaction(async () => {
             await sql.replace('recent_notes', entity);
 
-            await sync_table.addRecentNoteSync(entity.noteTreeId, sourceId);
+            await sync_table.addRecentNoteSync(entity.branchId, sourceId);
         });
     }
 }
@@ -160,7 +160,7 @@ async function updateApiToken(entity, sourceId) {
 
 module.exports = {
     updateNote,
-    updateNoteTree,
+    updateBranch,
     updateNoteHistory,
     updateNoteReordering,
     updateOptions,

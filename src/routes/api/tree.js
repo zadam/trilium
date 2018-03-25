@@ -12,16 +12,16 @@ const sync_table = require('../../services/sync_table');
 const wrap = require('express-promise-wrap').wrap;
 
 router.get('/', auth.checkApiAuth, wrap(async (req, res, next) => {
-    const noteTree = await sql.getRows(`
+    const branches = await sql.getRows(`
       SELECT 
-        noteTreeId,
+        branchId,
         noteId,
         parentNoteId,
         notePosition,
         prefix,
         isExpanded
       FROM
-        note_tree 
+        branches 
       WHERE 
         isDeleted = 0
       ORDER BY 
@@ -60,21 +60,21 @@ router.get('/', auth.checkApiAuth, wrap(async (req, res, next) => {
 
     res.send({
         instanceName: config.General ? config.General.instanceName : null,
-        noteTree: noteTree,
+        branches: branches,
         notes: notes,
         start_note_path: await options.getOption('start_note_path')
     });
 }));
 
-router.put('/:noteTreeId/set-prefix', auth.checkApiAuth, wrap(async (req, res, next) => {
-    const noteTreeId = req.params.noteTreeId;
+router.put('/:branchId/set-prefix', auth.checkApiAuth, wrap(async (req, res, next) => {
+    const branchId = req.params.branchId;
     const sourceId = req.headers.source_id;
     const prefix = utils.isEmptyOrWhitespace(req.body.prefix) ? null : req.body.prefix;
 
     await sql.doInTransaction(async () => {
-        await sql.execute("UPDATE note_tree SET prefix = ?, dateModified = ? WHERE noteTreeId = ?", [prefix, utils.nowDate(), noteTreeId]);
+        await sql.execute("UPDATE branches SET prefix = ?, dateModified = ? WHERE branchId = ?", [prefix, utils.nowDate(), branchId]);
 
-        await sync_table.addNoteTreeSync(noteTreeId, sourceId);
+        await sync_table.addBranchSync(branchId, sourceId);
     });
 
     res.send({});

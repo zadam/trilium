@@ -91,7 +91,7 @@ const noteType = (function() {
             await noteEditor.reload();
 
             // for the note icon to be updated in the tree
-            await noteTree.reload();
+            await treeService.reload();
 
             self.updateExecuteScriptButtonVisibility();
         }

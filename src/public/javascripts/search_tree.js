@@ -35,7 +35,7 @@ async function doSearch() {
     const noteIds = await server.get('search/' + encodeURIComponent(searchText));
 
     for (const noteId of noteIds) {
-        await noteTree.expandToNote(noteId, {noAnimation: true, noEvents: true});
+        await treeService.expandToNote(noteId, {noAnimation: true, noEvents: true});
     }
 
     // Pass a string to perform case insensitive matching
@@ -45,9 +45,9 @@ async function doSearch() {
 async function saveSearch() {
     const {noteId} = await server.post('search/' + encodeURIComponent($searchInput.val()));
 
-    await noteTree.reload();
+    await treeService.reload();
 
-    await noteTree.activateNode(noteId);
+    await treeService.activateNode(noteId);
 }
 
 $searchInput.keyup(e => {

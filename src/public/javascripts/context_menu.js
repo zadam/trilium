@@ -17,7 +17,7 @@ const contextMenu = (function() {
         }
         else if (clipboardMode === 'copy') {
             for (const noteId of clipboardIds) {
-                await cloning.cloneNoteAfter(noteId, node.data.noteTreeId);
+                await cloning.cloneNoteAfter(noteId, node.data.branchId);
             }
 
             // copy will keep clipboardIds and clipboardMode so it's possible to paste into multiple places
@@ -95,9 +95,9 @@ const contextMenu = (function() {
         ],
         beforeOpen: (event, ui) => {
             const node = $.ui.fancytree.getNode(ui.target);
-            const nt = noteTree.getNoteTree(node.data.noteTreeId);
-            const note = noteTree.getNote(node.data.noteId);
-            const parentNote = noteTree.getNote(nt.parentNoteId);
+            const branch = treeService.getBranch(node.data.branchId);
+            const note = treeService.getNote(node.data.noteId);
+            const parentNote = treeService.getNote(branch.parentNoteId);
 
             // Modify menu entries depending on node status
             $tree.contextmenu("enableEntry", "pasteAfter", clipboardIds.length > 0 && (!parentNote || parentNote.type !== 'search'));
@@ -121,10 +121,10 @@ const contextMenu = (function() {
                 const parentNoteId = node.data.parentNoteId;
                 const isProtected = treeUtils.getParentProtectedStatus(node);
 
-                noteTree.createNote(node, parentNoteId, 'after', isProtected);
+                treeService.createNote(node, parentNoteId, 'after', isProtected);
             }
             else if (ui.cmd === "insertChildNote") {
-                noteTree.createNote(node, node.data.noteId, 'into');
+                treeService.createNote(node, node.data.noteId, 'into');
             }
             else if (ui.cmd === "editTreePrefix") {
                 editTreePrefix.showDialog(node);
@@ -136,10 +136,10 @@ const contextMenu = (function() {
                 protected_session.protectSubTree(node.data.noteId, false);
             }
             else if (ui.cmd === "copy") {
-                copy(noteTree.getSelectedNodes());
+                copy(treeService.getSelectedNodes());
             }
             else if (ui.cmd === "cut") {
-                cut(noteTree.getSelectedNodes());
+                cut(treeService.getSelectedNodes());
             }
             else if (ui.cmd === "pasteAfter") {
                 pasteAfter(node);
@@ -148,7 +148,7 @@ const contextMenu = (function() {
                 pasteInto(node);
             }
             else if (ui.cmd === "delete") {
-                treeChanges.deleteNodes(noteTree.getSelectedNodes(true));
+                treeChanges.deleteNodes(treeService.getSelectedNodes(true));
             }
             else if (ui.cmd === "exportSubTree") {
                 exportSubTree(node.data.noteId);
@@ -157,13 +157,13 @@ const contextMenu = (function() {
                 importSubTree(node.data.noteId);
             }
             else if (ui.cmd === "collapseSubTree") {
-                noteTree.collapseTree(node);
+                treeService.collapseTree(node);
             }
             else if (ui.cmd === "forceNoteSync") {
                 forceNoteSync(node.data.noteId);
             }
             else if (ui.cmd === "sortAlphabetically") {
-                noteTree.sortAlphabetically(node.data.noteId);
+                treeService.sortAlphabetically(node.data.noteId);
             }
             else {
                 messaging.logError("Unknown command: " + ui.cmd);

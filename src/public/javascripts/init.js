@@ -55,7 +55,7 @@ $(document).bind('keydown', 'ctrl+f', () => {
 });
 
 $(document).bind('keydown', "ctrl+shift+up", () => {
-    const node = noteTree.getCurrentNode();
+    const node = treeService.getCurrentNode();
     node.navigate($.ui.keyCode.UP, true);
 
     $("#note-detail").focus();
@@ -64,7 +64,7 @@ $(document).bind('keydown', "ctrl+shift+up", () => {
 });
 
 $(document).bind('keydown', "ctrl+shift+down", () => {
-    const node = noteTree.getCurrentNode();
+    const node = treeService.getCurrentNode();
     node.navigate($.ui.keyCode.DOWN, true);
 
     $("#note-detail").focus();
@@ -211,16 +211,16 @@ $(document).ready(() => {
 if (isElectron()) {
     require('electron').ipcRenderer.on('create-day-sub-note', async function(event, parentNoteId) {
         // this might occur when day note had to be created
-        if (!noteTree.noteExists(parentNoteId)) {
-            await noteTree.reload();
+        if (!treeService.noteExists(parentNoteId)) {
+            await treeService.reload();
         }
 
-        await noteTree.activateNode(parentNoteId);
+        await treeService.activateNode(parentNoteId);
 
         setTimeout(() => {
-            const node = noteTree.getCurrentNode();
+            const node = treeService.getCurrentNode();
 
-            noteTree.createNote(node, node.data.noteId, 'into', node.data.isProtected);
+            treeService.createNote(node, node.data.noteId, 'into', node.data.isProtected);
         }, 500);
     });
 }
@@ -244,7 +244,7 @@ $("#attachment-upload").change(async function() {
         processData: false, // NEEDED, DON'T OMIT THIS
     });
 
-    await noteTree.reload();
+    await treeService.reload();
 
-    await noteTree.activateNode(resp.noteId);
+    await treeService.activateNode(resp.noteId);
 });

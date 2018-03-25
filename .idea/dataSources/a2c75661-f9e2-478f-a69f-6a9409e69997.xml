@@ -11,11 +11,11 @@
     <collation id="5" parent="1" name="RTRIM"/>
     <table id="6" parent="2" name="api_tokens"/>
     <table id="7" parent="2" name="attributes"/>
-    <table id="8" parent="2" name="event_log"/>
-    <table id="9" parent="2" name="images"/>
-    <table id="10" parent="2" name="note_images"/>
-    <table id="11" parent="2" name="note_revisions"/>
-    <table id="12" parent="2" name="note_tree"/>
+    <table id="8" parent="2" name="branches"/>
+    <table id="9" parent="2" name="event_log"/>
+    <table id="10" parent="2" name="images"/>
+    <table id="11" parent="2" name="note_images"/>
+    <table id="12" parent="2" name="note_revisions"/>
     <table id="13" parent="2" name="notes"/>
     <table id="14" parent="2" name="options"/>
     <table id="15" parent="2" name="recent_notes"/>
@@ -122,199 +122,202 @@ value</ColNames>
       <Primary>1</Primary>
       <UnderlyingIndexName>sqlite_autoindex_attributes_1</UnderlyingIndexName>
     </key>
-    <column id="38" parent="8" name="id">
+    <column id="38" parent="8" name="branchId">
+      <Position>1</Position>
+      <DataType>TEXT|0s</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="39" parent="8" name="noteId">
+      <Position>2</Position>
+      <DataType>TEXT|0s</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="40" parent="8" name="parentNoteId">
+      <Position>3</Position>
+      <DataType>TEXT|0s</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="41" parent="8" name="notePosition">
+      <Position>4</Position>
+      <DataType>INTEGER|0s</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="42" parent="8" name="prefix">
+      <Position>5</Position>
+      <DataType>TEXT|0s</DataType>
+    </column>
+    <column id="43" parent="8" name="isExpanded">
+      <Position>6</Position>
+      <DataType>BOOLEAN|0s</DataType>
+    </column>
+    <column id="44" parent="8" name="isDeleted">
+      <Position>7</Position>
+      <DataType>INTEGER|0s</DataType>
+      <NotNull>1</NotNull>
+      <DefaultExpression>0</DefaultExpression>
+    </column>
+    <column id="45" parent="8" name="dateModified">
+      <Position>8</Position>
+      <DataType>TEXT|0s</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <index id="46" parent="8" name="sqlite_autoindex_branches_1">
+      <NameSurrogate>1</NameSurrogate>
+      <ColNames>branchId</ColNames>
+      <ColumnCollations></ColumnCollations>
+      <Unique>1</Unique>
+    </index>
+    <index id="47" parent="8" name="IDX_branches_noteId_parentNoteId">
+      <ColNames>noteId
+parentNoteId</ColNames>
+      <ColumnCollations>
+</ColumnCollations>
+    </index>
+    <index id="48" parent="8" name="IDX_branches_noteId">
+      <ColNames>noteId</ColNames>
+      <ColumnCollations></ColumnCollations>
+    </index>
+    <key id="49" parent="8">
+      <ColNames>branchId</ColNames>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>sqlite_autoindex_branches_1</UnderlyingIndexName>
+    </key>
+    <column id="50" parent="9" name="id">
       <Position>1</Position>
       <DataType>INTEGER|0s</DataType>
       <NotNull>1</NotNull>
       <SequenceIdentity>1</SequenceIdentity>
     </column>
-    <column id="39" parent="8" name="noteId">
+    <column id="51" parent="9" name="noteId">
       <Position>2</Position>
       <DataType>TEXT|0s</DataType>
     </column>
-    <column id="40" parent="8" name="comment">
+    <column id="52" parent="9" name="comment">
       <Position>3</Position>
       <DataType>TEXT|0s</DataType>
     </column>
-    <column id="41" parent="8" name="dateAdded">
+    <column id="53" parent="9" name="dateAdded">
       <Position>4</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
     </column>
-    <key id="42" parent="8">
+    <key id="54" parent="9">
       <ColNames>id</ColNames>
       <Primary>1</Primary>
     </key>
-    <foreign-key id="43" parent="8">
+    <foreign-key id="55" parent="9">
       <ColNames>noteId</ColNames>
       <RefTableName>notes</RefTableName>
       <RefColNames>noteId</RefColNames>
     </foreign-key>
-    <column id="44" parent="9" name="imageId">
+    <column id="56" parent="10" name="imageId">
       <Position>1</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
     </column>
-    <column id="45" parent="9" name="format">
+    <column id="57" parent="10" name="format">
       <Position>2</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
     </column>
-    <column id="46" parent="9" name="checksum">
+    <column id="58" parent="10" name="checksum">
       <Position>3</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
     </column>
-    <column id="47" parent="9" name="name">
+    <column id="59" parent="10" name="name">
       <Position>4</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
     </column>
-    <column id="48" parent="9" name="data">
+    <column id="60" parent="10" name="data">
       <Position>5</Position>
       <DataType>BLOB|0s</DataType>
     </column>
-    <column id="49" parent="9" name="isDeleted">
+    <column id="61" parent="10" name="isDeleted">
       <Position>6</Position>
       <DataType>INT|0s</DataType>
       <NotNull>1</NotNull>
       <DefaultExpression>0</DefaultExpression>
     </column>
-    <column id="50" parent="9" name="dateModified">
+    <column id="62" parent="10" name="dateModified">
       <Position>7</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
     </column>
-    <column id="51" parent="9" name="dateCreated">
+    <column id="63" parent="10" name="dateCreated">
       <Position>8</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
     </column>
-    <index id="52" parent="9" name="sqlite_autoindex_images_1">
+    <index id="64" parent="10" name="sqlite_autoindex_images_1">
       <NameSurrogate>1</NameSurrogate>
       <ColNames>imageId</ColNames>
       <ColumnCollations></ColumnCollations>
       <Unique>1</Unique>
     </index>
-    <key id="53" parent="9">
+    <key id="65" parent="10">
       <ColNames>imageId</ColNames>
       <Primary>1</Primary>
       <UnderlyingIndexName>sqlite_autoindex_images_1</UnderlyingIndexName>
     </key>
-    <column id="54" parent="10" name="noteImageId">
+    <column id="66" parent="11" name="noteImageId">
       <Position>1</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
     </column>
-    <column id="55" parent="10" name="noteId">
+    <column id="67" parent="11" name="noteId">
       <Position>2</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
     </column>
-    <column id="56" parent="10" name="imageId">
+    <column id="68" parent="11" name="imageId">
       <Position>3</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
     </column>
-    <column id="57" parent="10" name="isDeleted">
+    <column id="69" parent="11" name="isDeleted">
       <Position>4</Position>
       <DataType>INT|0s</DataType>
       <NotNull>1</NotNull>
       <DefaultExpression>0</DefaultExpression>
     </column>
-    <column id="58" parent="10" name="dateModified">
+    <column id="70" parent="11" name="dateModified">
       <Position>5</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
     </column>
-    <column id="59" parent="10" name="dateCreated">
+    <column id="71" parent="11" name="dateCreated">
       <Position>6</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
     </column>
-    <index id="60" parent="10" name="sqlite_autoindex_note_images_1">
+    <index id="72" parent="11" name="sqlite_autoindex_note_images_1">
       <NameSurrogate>1</NameSurrogate>
       <ColNames>noteImageId</ColNames>
       <ColumnCollations></ColumnCollations>
       <Unique>1</Unique>
     </index>
-    <index id="61" parent="10" name="IDX_note_images_noteId_imageId">
+    <index id="73" parent="11" name="IDX_note_images_noteId_imageId">
       <ColNames>noteId
 imageId</ColNames>
       <ColumnCollations>
 </ColumnCollations>
     </index>
-    <index id="62" parent="10" name="IDX_note_images_noteId">
+    <index id="74" parent="11" name="IDX_note_images_noteId">
       <ColNames>noteId</ColNames>
       <ColumnCollations></ColumnCollations>
     </index>
-    <index id="63" parent="10" name="IDX_note_images_imageId">
+    <index id="75" parent="11" name="IDX_note_images_imageId">
       <ColNames>imageId</ColNames>
       <ColumnCollations></ColumnCollations>
     </index>
-    <key id="64" parent="10">
+    <key id="76" parent="11">
       <ColNames>noteImageId</ColNames>
       <Primary>1</Primary>
       <UnderlyingIndexName>sqlite_autoindex_note_images_1</UnderlyingIndexName>
     </key>
-    <column id="65" parent="11" name="noteRevisionId">
-      <Position>1</Position>
-      <DataType>TEXT|0s</DataType>
-      <NotNull>1</NotNull>
-    </column>
-    <column id="66" parent="11" name="noteId">
-      <Position>2</Position>
-      <DataType>TEXT|0s</DataType>
-      <NotNull>1</NotNull>
-    </column>
-    <column id="67" parent="11" name="title">
-      <Position>3</Position>
-      <DataType>TEXT|0s</DataType>
-    </column>
-    <column id="68" parent="11" name="content">
-      <Position>4</Position>
-      <DataType>TEXT|0s</DataType>
-    </column>
-    <column id="69" parent="11" name="isProtected">
-      <Position>5</Position>
-      <DataType>INT|0s</DataType>
-      <NotNull>1</NotNull>
-      <DefaultExpression>0</DefaultExpression>
-    </column>
-    <column id="70" parent="11" name="dateModifiedFrom">
-      <Position>6</Position>
-      <DataType>TEXT|0s</DataType>
-      <NotNull>1</NotNull>
-    </column>
-    <column id="71" parent="11" name="dateModifiedTo">
-      <Position>7</Position>
-      <DataType>TEXT|0s</DataType>
-      <NotNull>1</NotNull>
-    </column>
-    <index id="72" parent="11" name="sqlite_autoindex_note_revisions_1">
-      <NameSurrogate>1</NameSurrogate>
-      <ColNames>noteRevisionId</ColNames>
-      <ColumnCollations></ColumnCollations>
-      <Unique>1</Unique>
-    </index>
-    <index id="73" parent="11" name="IDX_note_revisions_noteId">
-      <ColNames>noteId</ColNames>
-      <ColumnCollations></ColumnCollations>
-    </index>
-    <index id="74" parent="11" name="IDX_note_revisions_dateModifiedFrom">
-      <ColNames>dateModifiedFrom</ColNames>
-      <ColumnCollations></ColumnCollations>
-    </index>
-    <index id="75" parent="11" name="IDX_note_revisions_dateModifiedTo">
-      <ColNames>dateModifiedTo</ColNames>
-      <ColumnCollations></ColumnCollations>
-    </index>
-    <key id="76" parent="11">
-      <ColNames>noteRevisionId</ColNames>
-      <Primary>1</Primary>
-      <UnderlyingIndexName>sqlite_autoindex_note_revisions_1</UnderlyingIndexName>
-    </key>
-    <column id="77" parent="12" name="noteTreeId">
+    <column id="77" parent="12" name="noteRevisionId">
       <Position>1</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
@@ -324,55 +327,52 @@ imageId</ColNames>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
     </column>
-    <column id="79" parent="12" name="parentNoteId">
+    <column id="79" parent="12" name="title">
       <Position>3</Position>
       <DataType>TEXT|0s</DataType>
-      <NotNull>1</NotNull>
     </column>
-    <column id="80" parent="12" name="notePosition">
+    <column id="80" parent="12" name="content">
       <Position>4</Position>
-      <DataType>INTEGER|0s</DataType>
-      <NotNull>1</NotNull>
-    </column>
-    <column id="81" parent="12" name="prefix">
-      <Position>5</Position>
       <DataType>TEXT|0s</DataType>
     </column>
-    <column id="82" parent="12" name="isExpanded">
-      <Position>6</Position>
-      <DataType>BOOLEAN|0s</DataType>
-    </column>
-    <column id="83" parent="12" name="isDeleted">
-      <Position>7</Position>
-      <DataType>INTEGER|0s</DataType>
+    <column id="81" parent="12" name="isProtected">
+      <Position>5</Position>
+      <DataType>INT|0s</DataType>
       <NotNull>1</NotNull>
       <DefaultExpression>0</DefaultExpression>
     </column>
-    <column id="84" parent="12" name="dateModified">
-      <Position>8</Position>
+    <column id="82" parent="12" name="dateModifiedFrom">
+      <Position>6</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
     </column>
-    <index id="85" parent="12" name="sqlite_autoindex_note_tree_1">
+    <column id="83" parent="12" name="dateModifiedTo">
+      <Position>7</Position>
+      <DataType>TEXT|0s</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <index id="84" parent="12" name="sqlite_autoindex_note_revisions_1">
       <NameSurrogate>1</NameSurrogate>
-      <ColNames>noteTreeId</ColNames>
+      <ColNames>noteRevisionId</ColNames>
       <ColumnCollations></ColumnCollations>
       <Unique>1</Unique>
     </index>
-    <index id="86" parent="12" name="IDX_note_tree_noteId_parentNoteId">
-      <ColNames>noteId
-parentNoteId</ColNames>
-      <ColumnCollations>
-</ColumnCollations>
-    </index>
-    <index id="87" parent="12" name="IDX_note_tree_noteId">
+    <index id="85" parent="12" name="IDX_note_revisions_noteId">
       <ColNames>noteId</ColNames>
       <ColumnCollations></ColumnCollations>
     </index>
+    <index id="86" parent="12" name="IDX_note_revisions_dateModifiedFrom">
+      <ColNames>dateModifiedFrom</ColNames>
+      <ColumnCollations></ColumnCollations>
+    </index>
+    <index id="87" parent="12" name="IDX_note_revisions_dateModifiedTo">
+      <ColNames>dateModifiedTo</ColNames>
+      <ColumnCollations></ColumnCollations>
+    </index>
     <key id="88" parent="12">
-      <ColNames>noteTreeId</ColNames>
+      <ColNames>noteRevisionId</ColNames>
       <Primary>1</Primary>
-      <UnderlyingIndexName>sqlite_autoindex_note_tree_1</UnderlyingIndexName>
+      <UnderlyingIndexName>sqlite_autoindex_note_revisions_1</UnderlyingIndexName>
     </key>
     <column id="89" parent="13" name="noteId">
       <Position>1</Position>
@@ -466,7 +466,7 @@ parentNoteId</ColNames>
       <Primary>1</Primary>
       <UnderlyingIndexName>sqlite_autoindex_options_1</UnderlyingIndexName>
     </key>
-    <column id="107" parent="15" name="noteTreeId">
+    <column id="107" parent="15" name="branchId">
       <Position>1</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
@@ -487,12 +487,12 @@ parentNoteId</ColNames>
     </column>
     <index id="111" parent="15" name="sqlite_autoindex_recent_notes_1">
       <NameSurrogate>1</NameSurrogate>
-      <ColNames>noteTreeId</ColNames>
+      <ColNames>branchId</ColNames>
       <ColumnCollations></ColumnCollations>
       <Unique>1</Unique>
     </index>
     <key id="112" parent="15">
-      <ColNames>noteTreeId</ColNames>
+      <ColNames>branchId</ColNames>
       <Primary>1</Primary>
       <UnderlyingIndexName>sqlite_autoindex_recent_notes_1</UnderlyingIndexName>
     </key>

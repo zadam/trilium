@@ -43,13 +43,13 @@ const addLink = (function() {
         $linkTitle.val('');
 
         function setDefaultLinkTitle(noteId) {
-            const noteTitle = noteTree.getNoteTitle(noteId);
+            const noteTitle = treeService.getNoteTitle(noteId);
 
             $linkTitle.val(noteTitle);
         }
 
         $autoComplete.autocomplete({
-            source: noteTree.getAutocompleteItems(),
+            source: treeService.getAutocompleteItems(),
             minLength: 0,
             change: () => {
                 const val = $autoComplete.val();

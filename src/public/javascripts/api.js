@@ -24,7 +24,7 @@ function ScriptApi(startNote, currentNote) {
     const $pluginButtons = $("#plugin-buttons");
 
     async function activateNote(notePath) {
-        await noteTree.activateNode(notePath);
+        await treeService.activateNode(notePath);
     }
 
     function addButtonToToolbar(buttonId, button) {
@@ -70,7 +70,7 @@ function ScriptApi(startNote, currentNote) {
         currentNote: currentNote,
         addButtonToToolbar,
         activateNote,
-        getInstanceName: noteTree.getInstanceName,
+        getInstanceName: treeService.getInstanceName,
         runOnServer
     }
 }

@@ -26,7 +26,7 @@ const link = (function() {
         if (!noteTitle) {
             const noteId = treeUtils.getNoteIdFromNotePath(notePath);
 
-            noteTitle = noteTree.getNoteTitle(noteId);
+            noteTitle = treeService.getNoteTitle(noteId);
         }
 
         const noteLink = $("<a>", {
@@ -60,7 +60,7 @@ const link = (function() {
             notePath = getNotePathFromLink(address);
         }
 
-        noteTree.activateNode(notePath);
+        treeService.activateNode(notePath);
 
         // this is quite ugly hack, but it seems like we can't close the tooltip otherwise
         $("[role='tooltip']").remove();

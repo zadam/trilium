@@ -14,11 +14,11 @@ router.get('/:noteId/', auth.checkApiAuthOrElectron, wrap(async (req, res, next)
     const noteId = req.params.noteId;
     const repo = new Repository(req);
 
-    const noteTreeId = await sql.getValue('SELECT noteTreeId FROM note_tree WHERE noteId = ?', [noteId]);
+    const branchId = await sql.getValue('SELECT branchId FROM branches WHERE noteId = ?', [noteId]);
 
     const pack = tar.pack();
 
-    const name = await exportNote(noteTreeId, '', pack, repo);
+    const name = await exportNote(branchId, '', pack, repo);
 
     pack.finalize();
 
@@ -28,9 +28,9 @@ router.get('/:noteId/', auth.checkApiAuthOrElectron, wrap(async (req, res, next)
     pack.pipe(res);
 }));
 
-async function exportNote(noteTreeId, directory, pack, repo) {
-    const noteTree = await sql.getRow("SELECT * FROM note_tree WHERE noteTreeId = ?", [noteTreeId]);
-    const note = await repo.getEntity("SELECT notes.* FROM notes WHERE noteId = ?", [noteTree.noteId]);
+async function exportNote(branchId, directory, pack, repo) {
+    const branch = await sql.getRow("SELECT * FROM branches WHERE branchId = ?", [branchId]);
+    const note = await repo.getEntity("SELECT notes.* FROM notes WHERE noteId = ?", [branch.noteId]);
 
     if (note.isProtected) {
         return;
@@ -51,11 +51,11 @@ async function exportNote(noteTreeId, directory, pack, repo) {
 
     pack.entry({ name: childFileName + ".dat", size: content.length }, content);
 
-    const children = await sql.getRows("SELECT * FROM note_tree WHERE parentNoteId = ? AND isDeleted = 0", [note.noteId]);
+    const children = await sql.getRows("SELECT * FROM branches WHERE parentNoteId = ? AND isDeleted = 0", [note.noteId]);
 
     if (children.length > 0) {
         for (const child of children) {
-            await exportNote(child.noteTreeId, childFileName + "/", pack, repo);
+            await exportNote(child.branchId, childFileName + "/", pack, repo);
         }
     }
 
