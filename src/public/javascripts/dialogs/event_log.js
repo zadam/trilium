@@ -1,5 +1,6 @@
 import linkService from '../services/link.js';
 import utils from '../services/utils.js';
+import server from '../services/server.js';
 
 const $dialog = $("#event-log-dialog");
 const $list = $("#event-log-list");

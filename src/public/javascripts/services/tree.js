@@ -22,23 +22,23 @@ let instanceName = null; // should have better place
 
 let startNotePath = null;
 
-function getNote(noteId) {
-    const note = treeCache.getNote(noteId);
+async function getNote(noteId) {
+    const note = await treeCache.getNote(noteId);
 
     if (!note) {
-        utils.throwError("Can't find title for noteId='" + noteId + "'");
+        utils.throwError(`Can't find title for noteId='${noteId}'`);
     }
 
     return note;
 }
 
-function getNoteTitle(noteId, parentNoteId = null) {
+async function getNoteTitle(noteId, parentNoteId = null) {
     utils.assertArguments(noteId);
 
-    let title = treeCache.getNote(noteId).title;
+    let {title} = await treeCache.getNote(noteId);
 
     if (parentNoteId !== null) {
-        const branch = treeCache.getBranchByChildParent(noteId, parentNoteId);
+        const branch = await treeCache.getBranchByChildParent(noteId, parentNoteId);
 
         if (branch && branch.prefix) {
             title = branch.prefix + ' - ' + title;
@@ -59,10 +59,10 @@ function getCurrentNotePath() {
     return treeUtils.getNotePath(node);
 }
 
-function getNodesByBranchId(branchId) {
+async function getNodesByBranchId(branchId) {
     utils.assertArguments(branchId);
 
-    const branch = treeCache.getBranch(branchId);
+    const branch = await treeCache.getBranch(branchId);
 
     return getNodesByNoteId(branch.noteId).filter(node => node.data.branchId === branchId);
 }
@@ -74,17 +74,21 @@ function getNodesByNoteId(noteId) {
     return list ? list : []; // if no nodes with this refKey are found, fancy tree returns null
 }
 
-function setPrefix(branchId, prefix) {
+async function setPrefix(branchId, prefix) {
     utils.assertArguments(branchId);
 
-    treeCache.getBranch(branchId).prefix = prefix;
+    const branch = await treeCache.getBranch(branchId);
 
-    getNodesByBranchId(branchId).map(node => setNodeTitleWithPrefix(node));
+    branch.prefix = prefix;
+
+    for (const node of await getNodesByBranchId(branchId)) {
+        await setNodeTitleWithPrefix(node);
+    }
 }
 
-function setNodeTitleWithPrefix(node) {
-    const noteTitle = getNoteTitle(node.data.noteId);
-    const branch = treeCache.getBranch(node.data.branchId);
+async function setNodeTitleWithPrefix(node) {
+    const noteTitle = await getNoteTitle(node.data.noteId);
+    const branch = await treeCache.getBranch(node.data.branchId);
 
     const prefix = branch.prefix;
 
@@ -102,14 +106,14 @@ function removeParentChildRelation(parentNoteId, childNoteId) {
     delete treeCache.childParentToBranch[childNoteId + '-' + parentNoteId];
 }
 
-function setParentChildRelation(branchId, parentNoteId, childNoteId) {
+async function setParentChildRelation(branchId, parentNoteId, childNoteId) {
     treeCache.parents[childNoteId] = treeCache.parents[childNoteId] || [];
-    treeCache.parents[childNoteId].push(treeCache.getNote(parentNoteId));
+    treeCache.parents[childNoteId].push(await treeCache.getNote(parentNoteId));
 
     treeCache.children[parentNoteId] = treeCache.children[parentNoteId] || [];
-    treeCache.children[parentNoteId].push(treeCache.getNote(childNoteId));
+    treeCache.children[parentNoteId].push(await treeCache.getNote(childNoteId));
 
-    treeCache.childParentToBranch[childNoteId + '-' + parentNoteId] = treeCache.getBranch(branchId);
+    treeCache.childParentToBranch[childNoteId + '-' + parentNoteId] = await treeCache.getBranch(branchId);
 }
 
 async function prepareBranch(noteRows, branchRows) {
@@ -117,7 +121,7 @@ async function prepareBranch(noteRows, branchRows) {
 
     treeCache.load(noteRows, branchRows);
 
-    return await prepareBranchInner(treeCache.getNote('root'));
+    return await prepareBranchInner(await treeCache.getNote('root'));
 }
 
 async function getExtraClasses(note) {
@@ -239,7 +243,7 @@ async function getRunPath(notePath) {
         const parentNoteId = path[i++];
 
         if (childNoteId !== null) {
-            const child = treeCache.getNote(childNoteId);
+            const child = await treeCache.getNote(childNoteId);
             const parents = await child.getParentNotes();
 
             if (!parents) {
@@ -287,7 +291,7 @@ async function getRunPath(notePath) {
 async function showParentList(noteId, node) {
     utils.assertArguments(noteId, node);
 
-    const note = treeCache.getNote(noteId);
+    const note = await treeCache.getNote(noteId);
     const parents = await note.getParentNotes();
 
     if (!parents.length) {
@@ -305,7 +309,7 @@ async function showParentList(noteId, node) {
             const parentNotePath = await getSomeNotePath(parentNote);
             // this is to avoid having root notes leading '/'
             const notePath = parentNotePath ? (parentNotePath + '/' + noteId) : noteId;
-            const title = getNotePathTitle(notePath);
+            const title = await getNotePathTitle(notePath);
 
             let item;
 
@@ -321,7 +325,7 @@ async function showParentList(noteId, node) {
     }
 }
 
-function getNotePathTitle(notePath) {
+async function getNotePathTitle(notePath) {
     utils.assertArguments(notePath);
 
     const titlePath = [];
@@ -329,7 +333,7 @@ function getNotePathTitle(notePath) {
     let parentNoteId = 'root';
 
     for (const noteId of notePath.split('/')) {
-        titlePath.push(getNoteTitle(noteId, parentNoteId));
+        titlePath.push(await getNoteTitle(noteId, parentNoteId));
 
         parentNoteId = noteId;
     }
@@ -391,6 +395,23 @@ function clearSelectedNodes() {
 
     if (currentNode) {
         currentNode.setSelected(true);
+    }
+}
+
+async function treeInitialized() {
+    const noteId = treeUtils.getNoteIdFromNotePath(startNotePath);
+
+    if ((await treeCache.getNote(noteId)) === undefined) {
+        // note doesn't exist so don't try to activate it
+        startNotePath = null;
+    }
+
+    if (startNotePath) {
+        activateNode(startNotePath);
+
+        // looks like this this doesn't work when triggered immediatelly after activating node
+        // so waiting a second helps
+        setTimeout(scrollToCurrentNote, 1000);
     }
 }
 
@@ -566,20 +587,7 @@ function initFancyTree(branch) {
             setExpandedToServer(data.node.data.branchId, false);
         },
         init: (event, data) => {
-            const noteId = treeUtils.getNoteIdFromNotePath(startNotePath);
-
-            if (treeCache.getNote(noteId) === undefined) {
-                // note doesn't exist so don't try to activate it
-                startNotePath = null;
-            }
-
-            if (startNotePath) {
-                activateNode(startNotePath);
-
-                // looks like this this doesn't work when triggered immediatelly after activating node
-                // so waiting a second helps
-                setTimeout(scrollToCurrentNote, 1000);
-            }
+            treeInitialized();
         },
         hotkeys: {
             keydown: keybindings
@@ -597,9 +605,9 @@ function initFancyTree(branch) {
             mode: "hide"       // Grayout unmatched nodes (pass "hide" to remove unmatched node instead)
         },
         dnd: dragAndDropSetup,
-        lazyLoad: function(event, data){
+        lazyLoad: async function(event, data){
             const noteId = data.node.data.noteId;
-            const note = getNote(noteId);
+            const note = await getNote(noteId);
 
             if (note.type === 'search') {
                 data.result = loadSearchNote(noteId);
@@ -635,7 +643,7 @@ async function loadSearchNote(searchNoteId) {
         });
     }
 
-    return await prepareBranchInner(treeCache.getNote(searchNoteId));
+    return await prepareBranchInner(await treeCache.getNote(searchNoteId));
 }
 
 function getTree() {
@@ -704,7 +712,7 @@ async function getAutocompleteItems(parentNoteId, notePath, titlePath) {
         parentNoteId = 'root';
     }
 
-    const parentNote = treeCache.getNote(parentNoteId);
+    const parentNote = await treeCache.getNote(parentNoteId);
     const childNotes = await parentNote.getChildNotes();
 
     if (!childNotes.length) {
@@ -730,7 +738,7 @@ async function getAutocompleteItems(parentNoteId, notePath, titlePath) {
         }
 
         const childNotePath = (notePath ? (notePath + '/') : '') + childNote.noteId;
-        const childTitlePath = (titlePath ? (titlePath + ' / ') : '') + getNoteTitle(childNote.noteId, parentNoteId);
+        const childTitlePath = (titlePath ? (titlePath + ' / ') : '') + await getNoteTitle(childNote.noteId, parentNoteId);
 
         autocompleteItems.push({
             value: childTitlePath + ' (' + childNotePath + ')',
@@ -747,12 +755,14 @@ async function getAutocompleteItems(parentNoteId, notePath, titlePath) {
     return autocompleteItems;
 }
 
-function setNoteTitle(noteId, title) {
+async function setNoteTitle(noteId, title) {
     utils.assertArguments(noteId);
 
     getNote(noteId).title = title;
 
-    getNodesByNoteId(noteId).map(clone => setNodeTitleWithPrefix(clone));
+    for (const clone of getNodesByNoteId(noteId)) {
+        await setNodeTitleWithPrefix(clone);
+    }
 }
 
 async function createNewTopLevelNote() {
@@ -835,15 +845,15 @@ async function sortAlphabetically(noteId) {
 }
 
 async function noteExists(noteId) {
-    return !!treeCache.getNote(noteId);
+    return !!(await treeCache.getNote(noteId));
 }
 
 function getInstanceName() {
     return instanceName;
 }
 
-function getBranch(branchId) {
-    return branchMap[branchId];
+async function getBranch(branchId) {
+    return await treeCache.getBranch(branchId);
 }
 
 $(document).bind('keydown', 'ctrl+o', e => {

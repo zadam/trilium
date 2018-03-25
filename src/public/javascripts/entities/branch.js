@@ -11,7 +11,7 @@ class Branch {
     }
 
     async getNote() {
-        return this.treeCache.getNote(this.noteId);
+        return await this.treeCache.getNote(this.noteId);
     }
 
     get toString() {

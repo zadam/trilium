@@ -1,5 +1,6 @@
 import noteDetailService from '../services/note_detail.js';
 import utils from '../services/utils.js';
+import server from '../services/server.js';
 
 const $showDialogButton = $("#show-history-button");
 const $dialog = $("#note-history-dialog");

@@ -1,4 +1,5 @@
 import utils from '../services/utils.js';
+import server from '../services/server.js';
 
 const $dialog = $("#sql-console-dialog");
 const $query = $('#sql-console-query');

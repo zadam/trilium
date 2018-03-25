@@ -25,7 +25,8 @@ class TreeCache {
         }
     }
 
-    getNote(noteId) {
+    /** @return NoteShort */
+    async getNote(noteId) {
         return this.notes[noteId];
     }
 
@@ -47,11 +48,13 @@ class TreeCache {
         this.addBranch(branch);
     }
 
-    getBranch(branchId) {
+    /** @return Branch */
+    async getBranch(branchId) {
         return this.branches[branchId];
     }
 
-    getBranchByChildParent(childNoteId, parentNoteId) {
+    /** @return Branch */
+    async getBranchByChildParent(childNoteId, parentNoteId) {
         const key = (childNoteId + '-' + parentNoteId);
         const branch = this.childParentToBranch[key];
 

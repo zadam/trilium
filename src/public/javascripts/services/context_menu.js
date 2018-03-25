@@ -99,11 +99,11 @@ const contextMenuSettings = {
         {title: "Sort alphabetically <kbd>Alt+S</kbd>", cmd: "sortAlphabetically", uiIcon: " ui-icon-arrowthick-2-n-s"}
 
     ],
-    beforeOpen: (event, ui) => {
+    beforeOpen: async (event, ui) => {
         const node = $.ui.fancytree.getNode(ui.target);
-        const branch = treeService.getBranch(node.data.branchId);
-        const note = treeService.getNote(node.data.noteId);
-        const parentNote = treeService.getNote(branch.parentNoteId);
+        const branch = await treeService.getBranch(node.data.branchId);
+        const note = await treeService.getNote(node.data.noteId);
+        const parentNote = await treeService.getNote(branch.parentNoteId);
 
         // Modify menu entries depending on node status
         $tree.contextmenu("enableEntry", "pasteAfter", clipboardIds.length > 0 && (!parentNote || parentNote.type !== 'search'));

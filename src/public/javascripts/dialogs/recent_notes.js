@@ -26,7 +26,7 @@ function addRecentNote(branchId, notePath) {
     }, 1500);
 }
 
-function showDialog() {
+async function showDialog() {
     glob.activeDialog = $dialog;
 
     $dialog.dialog({
@@ -40,25 +40,28 @@ function showDialog() {
 
     // remove the current note
     const recNotes = list.filter(note => note !== treeService.getCurrentNotePath());
+    const items = [];
+
+    for (const notePath of recNotes) {
+        let noteTitle;
+
+        try {
+            noteTitle = await treeService.getNotePathTitle(notePath);
+        }
+        catch (e) {
+            noteTitle = "[error - can't find note title]";
+
+            messagingService.logError("Could not find title for notePath=" + notePath + ", stack=" + e.stack);
+        }
+
+        items.push({
+            label: noteTitle,
+            value: notePath
+        });
+    }
 
     $searchInput.autocomplete({
-        source: recNotes.map(notePath => {
-            let noteTitle;
-
-            try {
-                noteTitle = treeService.getNotePathTitle(notePath);
-            }
-            catch (e) {
-                noteTitle = "[error - can't find note title]";
-
-                messagingService.logError("Could not find title for notePath=" + notePath + ", stack=" + e.stack);
-            }
-
-            return {
-                label: noteTitle,
-                value: notePath
-            }
-        }),
+        source: items,
         minLength: 0,
         autoFocus: true,
         select: function (event, ui) {

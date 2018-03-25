@@ -1,5 +1,6 @@
 import linkService from '../services/link.js';
 import utils from '../services/utils.js';
+import server from '../services/server.js';
 
 const $showDialogButton = $("#recent-changes-button");
 const $dialog = $("#recent-changes-dialog");
