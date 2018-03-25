@@ -11,134 +11,7 @@ import treeUtils from './tree_utils.js';
 import utils from './utils.js';
 import server from './server.js';
 import recentNotes from './dialogs/recent_notes.js';
-
-class TreeCache {
-    constructor(noteRows, branchRows) {
-        this.parents = [];
-        this.children = [];
-        this.childParentToBranch = {};
-
-        /** @type {Object.<string, NoteShort>} */
-        this.notes = {};
-        for (const noteRow of noteRows) {
-            const note = new NoteShort(this, noteRow);
-
-            this.notes[note.noteId] = note;
-        }
-
-        /** @type {Object.<string, Branch>} */
-        this.branches = {};
-        for (const branchRow of branchRows) {
-            const branch = new Branch(this, branchRow);
-
-            this.addBranch(branch);
-        }
-    }
-
-    getNote(noteId) {
-        return this.notes[noteId];
-    }
-
-    addBranch(branch) {
-        this.branches[branch.branchId] = branch;
-
-        this.parents[branch.noteId] = this.parents[branch.noteId] || [];
-        this.parents[branch.noteId].push(this.notes[branch.parentNoteId]);
-
-        this.children[branch.parentNoteId] = this.children[branch.parentNoteId] || [];
-        this.children[branch.parentNoteId].push(this.notes[branch.noteId]);
-
-        this.childParentToBranch[branch.noteId + '-' + branch.parentNoteId] = branch;
-    }
-
-    add(note, branch) {
-        this.notes[note.noteId] = note;
-
-        this.addBranch(branch);
-    }
-
-    getBranch(branchId) {
-        return this.branches[branchId];
-    }
-
-    getBranchByChildParent(childNoteId, parentNoteId) {
-        const key = (childNoteId + '-' + parentNoteId);
-        const branch = this.childParentToBranch[key];
-
-        if (!branch) {
-            utils.throwError("Cannot find branch for child-parent=" + key);
-        }
-
-        return branch;
-    }
-}
-
-class NoteShort {
-    constructor(treeCache, row) {
-        this.treeCache = treeCache;
-        this.noteId = row.noteId;
-        this.title = row.title;
-        this.isProtected = row.isProtected;
-        this.type = row.type;
-        this.mime = row.mime;
-        this.hideInAutocomplete = row.hideInAutocomplete;
-    }
-
-    async getBranches() {
-        const branches = [];
-
-        for (const parent of this.treeCache.parents[this.noteId]) {
-            branches.push(await this.treeCache.getBranchByChildParent(this.noteId, p.noteId));
-        }
-
-        return branches;
-    }
-
-    async getChildBranches() {
-        const branches = [];
-
-        for (const child of this.treeCache.children[this.noteId]) {
-            branches.push(await this.treeCache.getBranchByChildParent(child.noteId, this.noteId));
-        }
-
-        return branches;
-    }
-
-    async getParentNotes() {
-        return this.treeCache.parents[this.noteId] || [];
-    }
-
-    async getChildNotes() {
-        return this.treeCache.children[this.noteId] || [];
-    }
-
-    get toString() {
-        return `Note(noteId=${this.noteId}, title=${this.title})`;
-    }
-}
-
-class Branch {
-    constructor(treeCache, row) {
-        this.treeCache = treeCache;
-        this.branchId = row.branchId;
-        this.noteId = row.noteId;
-        this.note = null;
-        this.parentNoteId = row.parentNoteId;
-        this.notePosition = row.notePosition;
-        this.prefix = row.prefix;
-        this.isExpanded = row.isExpanded;
-    }
-
-    async getNote() {
-        return this.treeCache.getNote(this.noteId);
-    }
-
-    get toString() {
-        return `Branch(branchId=${this.branchId})`;
-    }
-}
-
-let treeCache;
+import treeCache from './tree_cache.js';
 
 const $tree = $("#tree");
 const $parentList = $("#parent-list");
@@ -244,7 +117,7 @@ function setParentChildRelation(branchId, parentNoteId, childNoteId) {
 async function prepareBranch(noteRows, branchRows) {
     utils.assertArguments(noteRows);
 
-    treeCache = new TreeCache(noteRows, branchRows);
+    treeCache.load(noteRows, branchRows);
 
     return await prepareBranchInner(treeCache.getNote('root'));
 }
