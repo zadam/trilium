@@ -3,8 +3,13 @@
 import treeService from './tree_service.js';
 import noteDetailService from './note_detail.js';
 import utils from './utils.js';
+import recentNotes from '../dialogs/recent_notes.js';
 
 const $changesToPushCount = $("#changes-to-push-count");
+
+let ws;
+let lastSyncId;
+let lastPingTs;
 
 function logError(message) {
     console.log(utils.now(), message); // needs to be separate from .trace()
@@ -80,36 +85,38 @@ function connectWebSocket() {
     return ws;
 }
 
-const ws = connectWebSocket();
+setTimeout(() => {
+    ws = connectWebSocket();
 
-let lastSyncId = glob.maxSyncIdAtLoad;
-let lastPingTs = new Date().getTime();
-let connectionBrokenNotification = null;
+    lastSyncId = glob.maxSyncIdAtLoad;
+    lastPingTs = new Date().getTime();
+    let connectionBrokenNotification = null;
 
-setInterval(async () => {
-    if (new Date().getTime() - lastPingTs > 30000) {
-        if (!connectionBrokenNotification) {
-            connectionBrokenNotification = $.notify({
-                // options
-                message: "Lost connection to server"
-            },{
-                // settings
-                type: 'danger',
-                delay: 100000000 // keep it until we explicitly close it
-            });
+    setInterval(async () => {
+        if (new Date().getTime() - lastPingTs > 30000) {
+            if (!connectionBrokenNotification) {
+                connectionBrokenNotification = $.notify({
+                    // options
+                    message: "Lost connection to server"
+                },{
+                    // settings
+                    type: 'danger',
+                    delay: 100000000 // keep it until we explicitly close it
+                });
+            }
         }
-    }
-    else if (connectionBrokenNotification) {
-        await connectionBrokenNotification.close();
-        connectionBrokenNotification = null;
+        else if (connectionBrokenNotification) {
+            await connectionBrokenNotification.close();
+            connectionBrokenNotification = null;
 
-        utils.showMessage("Re-connected to server");
-    }
+            utils.showMessage("Re-connected to server");
+        }
 
-    ws.send(JSON.stringify({
-        type: 'ping',
-        lastSyncId: lastSyncId
-    }));
+        ws.send(JSON.stringify({
+            type: 'ping',
+            lastSyncId: lastSyncId
+        }));
+    }, 1000);
 }, 1000);
 
 export default {
