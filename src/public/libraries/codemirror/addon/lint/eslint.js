@@ -28,13 +28,12 @@
     }
 
     async function validatorJavaScript(text, options) {
-        // FIXME!!!
-        // if (noteEditor.getCurrentNote().detail.mime === 'application/json') {
-        //     // eslint doesn't seem to validate pure JSON well
-        //     return [];
-        // }
+        if (glob.getCurrentNote().detail.mime === 'application/json') {
+            // eslint doesn't seem to validate pure JSON well
+            return [];
+        }
 
-        await requireLibrary(ESLINT);
+        await glob.requireLibrary(glob.ESLINT);
 
         if (text.length > 20000) {
             console.log("Skipping linting because of large size: ", text.length);

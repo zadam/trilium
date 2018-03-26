@@ -520,29 +520,29 @@ function initFancyTree(branch) {
         },
         "backspace": node => {
             if (!utils.isTopLevelNode(node)) {
-                node.getParent().setActive().then(() => clearSelectedNodes());
+                node.getParent().setActive().then(clearSelectedNodes);
             }
         },
         // code below shouldn't be necessary normally, however there's some problem with interaction with context menu plugin
         // after opening context menu, standard shortcuts don't work, but they are detected here
         // so we essentially takeover the standard handling with our implementation.
         "left": node => {
-            node.navigate($.ui.keyCode.LEFT, true).then(() => clearSelectedNodes());
+            node.navigate($.ui.keyCode.LEFT, true).then(clearSelectedNodes);
 
             return false;
         },
         "right": node => {
-            node.navigate($.ui.keyCode.RIGHT, true).then(() => clearSelectedNodes());
+            node.navigate($.ui.keyCode.RIGHT, true).then(clearSelectedNodes);
 
             return false;
         },
         "up": node => {
-            node.navigate($.ui.keyCode.UP, true).then(() => clearSelectedNodes());
+            node.navigate($.ui.keyCode.UP, true).then(clearSelectedNodes);
 
             return false;
         },
         "down": node => {
-            node.navigate($.ui.keyCode.DOWN, true).then(() => clearSelectedNodes());
+            node.navigate($.ui.keyCode.DOWN, true).then(clearSelectedNodes);
 
             return false;
         }

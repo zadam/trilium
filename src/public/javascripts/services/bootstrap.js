@@ -14,7 +14,7 @@ import dragAndDropSetup from './drag_and_drop.js';
 import exportService from './export.js';
 import link from './link.js';
 import messaging from './messaging.js';
-import noteDetail from './note_detail.js';
+import noteDetailService from './note_detail.js';
 import noteType from './note_type.js';
 import protected_session from './protected_session.js';
 import searchTreeService from './search_tree.js';
@@ -25,8 +25,18 @@ import treeService from './tree.js';
 import treeChanges from './tree_changes.js';
 import treeUtils from './tree_utils.js';
 import utils from './utils.js';
+import server from './server.js';
 
 import './init.js';
+
+// required for CKEditor image upload plugin
+window.glob.getCurrentNode = treeService.getCurrentNode;
+window.glob.getHeaders = server.getHeaders;
+
+// required for ESLint plugin
+window.glob.getCurrentNote = noteDetailService.getCurrentNote;
+window.glob.requireLibrary = utils.requireLibrary;
+window.glob.ESLINT = utils.ESLINT;
 
 utils.bindShortcut('ctrl+l', addLinkDialog.showDialog);
 
