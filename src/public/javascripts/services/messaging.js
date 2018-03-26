@@ -1,9 +1,8 @@
-import treeService from './tree.js';
-import noteDetailService from './note_detail.js';
 import utils from './utils.js';
-import recentNotesDialog from '../dialogs/recent_notes.js';
 
 const $changesToPushCount = $("#changes-to-push-count");
+
+const messageHandlers = [];
 
 let ws;
 let lastSyncId;
@@ -21,7 +20,11 @@ function logError(message) {
     }
 }
 
-function messageHandler(event) {
+function subscribeToMessages(messageHandler) {
+    messageHandlers.push(messageHandler);
+}
+
+function handleMessage(event) {
     const message = JSON.parse(event.data);
 
     if (message.type === 'sync') {
@@ -35,28 +38,9 @@ function messageHandler(event) {
 
         const syncData = message.data.filter(sync => sync.sourceId !== glob.sourceId);
 
-        if (syncData.some(sync => sync.entityName === 'branches')
-            || syncData.some(sync => sync.entityName === 'notes')) {
-
-            console.log(utils.now(), "Reloading tree because of background changes");
-
-            treeService.reload();
+        for (const messageHandler of messageHandlers) {
+            messageHandler(syncData);
         }
-
-        if (syncData.some(sync => sync.entityName === 'notes' && sync.entityId === noteDetailService.getCurrentNoteId())) {
-            utils.showMessage('Reloading note because of background changes');
-
-            noteDetailService.reload();
-        }
-
-        if (syncData.some(sync => sync.entityName === 'recent_notes')) {
-            console.log(utils.now(), "Reloading recent notes because of background changes");
-
-            recentNotesDialog.reload();
-        }
-
-        // we don't detect image changes here since images themselves are immutable and references should be
-        // updated in note detail as well
 
         $changesToPushCount.html(message.changesToPushCount);
     }
@@ -74,7 +58,7 @@ function connectWebSocket() {
     // use wss for secure messaging
     const ws = new WebSocket(protocol + "://" + location.host);
     ws.onopen = event => console.log(utils.now(), "Connected to server with WebSocket");
-    ws.onmessage = messageHandler;
+    ws.onmessage = handleMessage;
     ws.onclose = function(){
         // Try to reconnect in 5 seconds
         setTimeout(() => connectWebSocket(), 5000);
@@ -118,5 +102,6 @@ setTimeout(() => {
 }, 1000);
 
 export default {
-    logError
+    logError,
+    subscribeToMessages
 };

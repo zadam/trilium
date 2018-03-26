@@ -2,6 +2,7 @@ import treeService from './tree.js';
 import noteDetail from './note_detail.js';
 import utils from './utils.js';
 import server from './server.js';
+import protectedSessionHolder from './protected_session_holder.js';
 
 const $dialog = $("#protected-session-password-dialog");
 const $passwordForm = $("#protected-session-password-form");
@@ -11,22 +12,11 @@ const $protectButton = $("#protect-button");
 const $unprotectButton = $("#unprotect-button");
 
 let protectedSessionDeferred = null;
-let lastProtectedSessionOperationDate = null;
-let protectedSessionTimeout = null;
-let protectedSessionId = null;
-
-$(document).ready(() => {
-    server.get('settings/all').then(settings => protectedSessionTimeout = settings.protected_session_timeout);
-});
-
-function setProtectedSessionTimeout(encSessTimeout) {
-    protectedSessionTimeout = encSessTimeout;
-}
 
 function ensureProtectedSession(requireProtectedSession, modal) {
     const dfd = $.Deferred();
 
-    if (requireProtectedSession && !isProtectedSessionAvailable()) {
+    if (requireProtectedSession && !protectedSessionHolder.isProtectedSessionAvailable()) {
         protectedSessionDeferred = dfd;
 
         if (treeService.getCurrentNode().data.isProtected) {
@@ -62,7 +52,7 @@ async function setupProtectedSession() {
         return;
     }
 
-    protectedSessionId = response.protectedSessionId;
+    protectedSessionHolder.setProtectedSessionId(response.protectedSessionId);
 
     $dialog.dialog("close");
 
@@ -94,22 +84,6 @@ async function enterProtectedSession(password) {
     return await server.post('login/protected', {
         password: password
     });
-}
-
-function getProtectedSessionId() {
-    return protectedSessionId;
-}
-
-function resetProtectedSession() {
-    protectedSessionId = null;
-
-    // most secure solution - guarantees nothing remained in memory
-    // since this expires because user doesn't use the app, it shouldn't be disruptive
-    utils.reloadApp();
-}
-
-function isProtectedSessionAvailable() {
-    return protectedSessionId !== null;
 }
 
 async function protectNoteAndSendToServer() {
@@ -144,12 +118,6 @@ async function unprotectNoteAndSendToServer() {
     noteDetail.setNoteBackgroundIfProtected(note);
 }
 
-function touchProtectedSession() {
-    if (isProtectedSessionAvailable()) {
-        lastProtectedSessionOperationDate = new Date();
-    }
-}
-
 async function protectSubTree(noteId, protect) {
     await ensureProtectedSession(true, true);
 
@@ -167,24 +135,13 @@ $passwordForm.submit(() => {
     return false;
 });
 
-setInterval(() => {
-    if (lastProtectedSessionOperationDate !== null && new Date().getTime() - lastProtectedSessionOperationDate.getTime() > protectedSessionTimeout * 1000) {
-        resetProtectedSession();
-    }
-}, 5000);
-
 $protectButton.click(protectNoteAndSendToServer);
 $unprotectButton.click(unprotectNoteAndSendToServer);
 
 export default {
-    setProtectedSessionTimeout,
     ensureProtectedSession,
-    resetProtectedSession,
-    isProtectedSessionAvailable,
     protectNoteAndSendToServer,
     unprotectNoteAndSendToServer,
-    getProtectedSessionId,
-    touchProtectedSession,
     protectSubTree,
     ensureDialogIsClosed
 };

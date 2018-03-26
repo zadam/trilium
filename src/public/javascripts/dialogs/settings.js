@@ -1,6 +1,6 @@
 "use strict";
 
-import protectedSessionService from '../services/protected_session.js';
+import protectedSessionHolder from '../services/protected_session_holder.js';
 import utils from '../services/utils.js';
 import server from '../services/server.js';
 
@@ -77,7 +77,7 @@ addModule((function() {
                 alert("Password has been changed. Trilium will be reloaded after you press OK.");
 
                 // password changed so current protected session is invalid and needs to be cleared
-                protectedSessionService.resetProtectedSession();
+                protectedSessionHolder.resetProtectedSession();
             }
             else {
                 utils.showError(result.message);
@@ -105,7 +105,7 @@ addModule((function() {
         const protectedSessionTimeout = $protectedSessionTimeout.val();
 
         settings.saveSettings(settingName, protectedSessionTimeout).then(() => {
-            protectedSessionService.setProtectedSessionTimeout(protectedSessionTimeout);
+            protectedSessionHolder.setProtectedSessionTimeout(protectedSessionTimeout);
         });
 
         return false;

@@ -1,6 +1,7 @@
 import treeService from '../services/tree.js';
 import messagingService from '../services/messaging.js';
 import server from '../services/server.js';
+import utils from "../services/utils";
 
 const $dialog = $("#recent-notes-dialog");
 const $searchInput = $('#recent-notes-search-input');
@@ -91,6 +92,14 @@ async function showDialog() {
 }
 
 setTimeout(reload, 100);
+
+messagingService.subscribeToMessages(syncData => {
+    if (syncData.some(sync => sync.entityName === 'recent_notes')) {
+        console.log(utils.now(), "Reloading recent notes because of background changes");
+
+        reload();
+    }
+});
 
 export default {
     showDialog,

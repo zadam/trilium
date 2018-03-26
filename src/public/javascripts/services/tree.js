@@ -3,7 +3,7 @@ import dragAndDropSetup from './drag_and_drop.js';
 import linkService from './link.js';
 import messagingService from './messaging.js';
 import noteDetailService from './note_detail.js';
-import protectedSessionService from './protected_session.js';
+import protectedSessionHolder from './protected_session_holder.js';
 import treeChangesService from './tree_changes.js';
 import treeUtils from './tree_utils.js';
 import utils from './utils.js';
@@ -777,7 +777,7 @@ async function createNote(node, parentNoteId, target, isProtected) {
 
     // if isProtected isn't available (user didn't enter password yet), then note is created as unencrypted
     // but this is quite weird since user doesn't see WHERE the note is being created so it shouldn't occur often
-    if (!isProtected || !protectedSessionService.isProtectedSessionAvailable()) {
+    if (!isProtected || !protectedSessionHolder.isProtectedSessionAvailable()) {
         isProtected = false;
     }
 
@@ -856,6 +856,16 @@ function getInstanceName() {
 async function getBranch(branchId) {
     return await treeCache.getBranch(branchId);
 }
+
+messagingService.subscribeToMessages(syncData => {
+    if (syncData.some(sync => sync.entityName === 'branches')
+        || syncData.some(sync => sync.entityName === 'notes')) {
+
+        console.log(utils.now(), "Reloading tree because of background changes");
+
+        reload();
+    }
+});
 
 $(document).bind('keydown', 'ctrl+o', e => {
     const node = getCurrentNode();

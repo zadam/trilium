@@ -1,5 +1,4 @@
-//import messagingService from './messaging.js';
-//import ScriptContext from './script_context.js';
+import messagingService from './messaging.js';
 
 function reloadApp() {
     window.location.reload(true);
@@ -114,14 +113,6 @@ async function stopWatch(what, func) {
     console.log(`${what} took ${tookMs}ms`);
 
     return ret;
-}
-
-async function executeBundle(bundle) {
-    const apiContext = ScriptContext(bundle.note, bundle.allNotes);
-
-    return await (function () {
-        return eval(`const apiContext = this; (async function() { ${bundle.script}\r\n})()`);
-    }.call(apiContext));
 }
 
 function formatValueWithWhitespace(val) {
@@ -263,7 +254,6 @@ export default {
     isRootNode,
     escapeHtml,
     stopWatch,
-    executeBundle,
     formatValueWithWhitespace,
     formatLabel,
     requireLibrary,

@@ -1,11 +1,11 @@
-import protectedSessionService from './protected_session.js';
+import protectedSessionHolder from './protected_session_holder.js';
 import utils from './utils.js';
 
 function getHeaders() {
     let protectedSessionId = null;
 
     try { // this is because protected session might not be declared in some cases - like when it's included in migration page
-        protectedSessionId = protectedSessionService.getProtectedSessionId();
+        protectedSessionId = protectedSessionHolder.getProtectedSessionId();
     }
     catch(e) {}
 

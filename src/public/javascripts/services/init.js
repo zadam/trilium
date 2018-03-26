@@ -5,6 +5,7 @@ import noteDetailService from './note_detail.js';
 import treeUtils from './tree_utils.js';
 import utils from './utils.js';
 import server from './server.js';
+import bundleService from './bundle.js';
 
 // hot keys are active also inside inputs and content editables
 jQuery.hotkeys.options.filterInputAcceptingElements = false;
@@ -209,7 +210,7 @@ $("#logout-button").toggle(!utils.isElectron());
 $(document).ready(() => {
     server.get("script/startup").then(scriptBundles => {
         for (const bundle of scriptBundles) {
-            utils.executeBundle(bundle);
+            bundleService.executeBundle(bundle);
         }
     });
 });

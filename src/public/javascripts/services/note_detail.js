@@ -1,8 +1,11 @@
 import treeService from './tree.js';
 import noteTypeService from './note_type.js';
 import protectedSessionService from './protected_session.js';
+import protectedSessionHolder from './protected_session_holder.js';
 import utils from './utils.js';
 import server from './server.js';
+import messagingService from "./messaging.js";
+import bundleService from "./bundle.js";
 
 const $noteTitle = $("#note-title");
 
@@ -78,7 +81,7 @@ async function saveNoteIfChanged() {
     await saveNoteToServer(note);
 
     if (note.detail.isProtected) {
-        protectedSessionService.touchProtectedSession();
+        protectedSessionHolder.touchProtectedSession();
     }
 }
 
@@ -222,7 +225,7 @@ async function loadNoteToEditor(noteId) {
     await protectedSessionService.ensureProtectedSession(currentNote.detail.isProtected, false);
 
     if (currentNote.detail.isProtected) {
-        protectedSessionService.touchProtectedSession();
+        protectedSessionHolder.touchProtectedSession();
     }
 
     // this might be important if we focused on protected note when not in protected note and we got a dialog
@@ -251,7 +254,7 @@ async function loadNoteToEditor(noteId) {
 
         $noteDetailRender.html(bundle.html);
 
-        utils.executeBundle(bundle);
+        bundleService.executeBundle(bundle);
     }
     else if (currentNote.detail.type === 'file') {
         $noteDetailAttachment.show();
@@ -333,7 +336,7 @@ async function executeCurrentNote() {
         if (currentNote.detail.mime.endsWith("env=frontend")) {
             const bundle = await server.get('script/bundle/' + getCurrentNoteId());
 
-            utils.executeBundle(bundle);
+            bundleService.executeBundle(bundle);
         }
 
         if (currentNote.detail.mime.endsWith("env=backend")) {
@@ -360,8 +363,16 @@ $attachmentOpen.click(() => {
 function getAttachmentUrl() {
     // electron needs absolute URL so we extract current host, port, protocol
     return utils.getHost() + "/api/attachments/download/" + getCurrentNoteId()
-        + "?protectedSessionId=" + encodeURIComponent(protectedSessionService.getProtectedSessionId());
+        + "?protectedSessionId=" + encodeURIComponent(protectedSessionHolder.getProtectedSessionId());
 }
+
+messagingService.subscribeToMessages(syncData => {
+    if (syncData.some(sync => sync.entityName === 'notes' && sync.entityId === getCurrentNoteId())) {
+        utils.showMessage('Reloading note because of background changes');
+
+        reload();
+    }
+});
 
 $(document).ready(() => {
     $noteTitle.on('input', () => {
