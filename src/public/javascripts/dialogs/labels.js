@@ -1,6 +1,7 @@
 import noteDetailService from '../services/note_detail.js';
 import utils from '../services/utils.js';
 import server from '../services/server.js';
+import infoService from "../services/info.js";
 
 const $dialog = $("#labels-dialog");
 const $saveLabelsButton = $("#save-labels-button");
@@ -91,7 +92,7 @@ function LabelsModel() {
 
         addLastEmptyRow();
 
-        utils.showMessage("Labels have been saved.");
+        infoService.showMessage("Labels have been saved.");
 
         noteDetailService.loadLabelList();
     };

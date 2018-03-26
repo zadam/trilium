@@ -1,4 +1,4 @@
-import ScriptContext from "./script_context";
+import ScriptContext from "./script_context.js";
 
 async function executeBundle(bundle) {
     const apiContext = ScriptContext(bundle.note, bundle.allNotes);

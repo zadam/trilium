@@ -1,6 +1,7 @@
 import utils from "./utils.js";
 import Branch from "../entities/branch.js";
 import NoteShort from "../entities/note_short.js";
+import infoService from "./info.js";
 
 class TreeCache {
     load(noteRows, branchRows) {
@@ -59,7 +60,7 @@ class TreeCache {
         const branch = this.childParentToBranch[key];
 
         if (!branch) {
-            utils.throwError("Cannot find branch for child-parent=" + key);
+            infoService.throwError("Cannot find branch for child-parent=" + key);
         }
 
         return branch;

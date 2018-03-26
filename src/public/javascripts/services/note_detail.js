@@ -6,6 +6,7 @@ import utils from './utils.js';
 import server from './server.js';
 import messagingService from "./messaging.js";
 import bundleService from "./bundle.js";
+import infoService from "./info.js";
 
 const $noteTitle = $("#note-title");
 
@@ -109,7 +110,7 @@ function updateNoteFromInputs(note) {
         // nothing
     }
     else {
-        utils.throwError("Unrecognized type: " + note.detail.type);
+        infoService.throwError("Unrecognized type: " + note.detail.type);
     }
 
     const title = $noteTitle.val();
@@ -124,7 +125,7 @@ async function saveNoteToServer(note) {
 
     isNoteChanged = false;
 
-    utils.showMessage("Saved!");
+    infoService.showMessage("Saved!");
 }
 
 function setNoteBackgroundIfProtected(note) {
@@ -318,7 +319,7 @@ function focus() {
         // do nothing
     }
     else {
-        utils.throwError('Unrecognized type: ' + note.detail.type);
+        infoService.throwError('Unrecognized type: ' + note.detail.type);
     }
 }
 
@@ -343,7 +344,7 @@ async function executeCurrentNote() {
             await server.post('script/run/' + getCurrentNoteId());
         }
 
-        utils.showMessage("Note executed");
+        infoService.showMessage("Note executed");
     }
 }
 
@@ -368,7 +369,7 @@ function getAttachmentUrl() {
 
 messagingService.subscribeToMessages(syncData => {
     if (syncData.some(sync => sync.entityName === 'notes' && sync.entityId === getCurrentNoteId())) {
-        utils.showMessage('Reloading note because of background changes');
+        infoService.showMessage('Reloading note because of background changes');
 
         reload();
     }

@@ -7,6 +7,7 @@ import treeChangesService from './tree_changes.js';
 import treeUtils from './tree_utils.js';
 import utils from './utils.js';
 import editTreePrefixDialog from '../dialogs/edit_tree_prefix.js';
+import infoService from "./info.js";
 
 const $tree = $("#tree");
 
@@ -33,7 +34,7 @@ async function pasteAfter(node) {
         // just do nothing
     }
     else {
-        utils.throwError("Unrecognized clipboard mode=" + clipboardMode);
+        infoService.throwError("Unrecognized clipboard mode=" + clipboardMode);
     }
 }
 
@@ -56,7 +57,7 @@ async function pasteInto(node) {
         // just do nothing
     }
     else {
-        utils.throwError("Unrecognized clipboard mode=" + mode);
+        infoService.throwError("Unrecognized clipboard mode=" + mode);
     }
 }
 
@@ -64,14 +65,14 @@ function copy(nodes) {
     clipboardIds = nodes.map(node => node.data.noteId);
     clipboardMode = 'copy';
 
-    utils.showMessage("Note(s) have been copied into clipboard.");
+    infoService.showMessage("Note(s) have been copied into clipboard.");
 }
 
 function cut(nodes) {
     clipboardIds = nodes.map(node => node.key);
     clipboardMode = 'cut';
 
-    utils.showMessage("Note(s) have been cut into clipboard.");
+    infoService.showMessage("Note(s) have been cut into clipboard.");
 }
 
 const contextMenuSettings = {

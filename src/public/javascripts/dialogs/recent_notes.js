@@ -1,7 +1,7 @@
 import treeService from '../services/tree.js';
 import messagingService from '../services/messaging.js';
 import server from '../services/server.js';
-import utils from "../services/utils";
+import utils from "../services/utils.js";
 
 const $dialog = $("#recent-notes-dialog");
 const $searchInput = $('#recent-notes-search-input');

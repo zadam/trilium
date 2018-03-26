@@ -1,5 +1,6 @@
 import utils from '../services/utils.js';
 import server from '../services/server.js';
+import infoService from "../services/info.js";
 
 const $dialog = $("#sql-console-dialog");
 const $query = $('#sql-console-query');
@@ -60,11 +61,11 @@ async function execute(e) {
     });
 
     if (!result.success) {
-        utils.showError(result.error);
+        infoService.showError(result.error);
         return;
     }
     else {
-        utils.showMessage("Query was executed successfully.");
+        infoService.showMessage("Query was executed successfully.");
     }
 
     const rows = result.rows;

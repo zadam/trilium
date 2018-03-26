@@ -1,6 +1,7 @@
 import treeService from './tree.js';
 import noteDetail from './note_detail.js';
 import utils from './utils.js';
+import infoService from "./info.js";
 
 const $executeScriptButton = $("#execute-script-button");
 const noteTypeModel = new NoteTypeModel();
@@ -74,7 +75,7 @@ function NoteTypeModel() {
             // ignore and do nothing, "type" will be hidden since it's not possible to switch to and from search
         }
         else {
-            utils.throwError('Unrecognized type: ' + type);
+            infoService.throwError('Unrecognized type: ' + type);
         }
     };
 

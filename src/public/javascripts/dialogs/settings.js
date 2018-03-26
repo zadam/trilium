@@ -3,6 +3,7 @@
 import protectedSessionHolder from '../services/protected_session_holder.js';
 import utils from '../services/utils.js';
 import server from '../services/server.js';
+import infoService from "../services/info.js";
 
 const $dialog = $("#settings-dialog");
 const $tabs = $("#settings-tabs");
@@ -38,7 +39,7 @@ async function saveSettings(settingName, settingValue) {
         value: settingValue
     });
 
-    utils.showMessage("Settings change have been saved.");
+    infoService.showMessage("Settings change have been saved.");
 }
 
 export default {
@@ -80,7 +81,7 @@ addModule((function() {
                 protectedSessionHolder.resetProtectedSession();
             }
             else {
-                utils.showError(result.message);
+                infoService.showError(result.message);
             }
         });
 
@@ -164,27 +165,27 @@ addModule((async function () {
     $forceFullSyncButton.click(async () => {
         await server.post('sync/force-full-sync');
 
-        utils.showMessage("Full sync triggered");
+        infoService.showMessage("Full sync triggered");
     });
 
     $fillSyncRowsButton.click(async () => {
         await server.post('sync/fill-sync-rows');
 
-        utils.showMessage("Sync rows filled successfully");
+        infoService.showMessage("Sync rows filled successfully");
     });
 
 
     $anonymizeButton.click(async () => {
         await server.post('anonymization/anonymize');
 
-        utils.showMessage("Created anonymized database");
+        infoService.showMessage("Created anonymized database");
     });
 
     $cleanupSoftDeletedButton.click(async () => {
         if (confirm("Do you really want to clean up soft-deleted items?")) {
             await server.post('cleanup/cleanup-soft-deleted-items');
 
-            utils.showMessage("Soft deleted items have been cleaned up");
+            infoService.showMessage("Soft deleted items have been cleaned up");
         }
     });
 
@@ -192,14 +193,14 @@ addModule((async function () {
         if (confirm("Do you really want to clean up unused images?")) {
             await server.post('cleanup/cleanup-unused-images');
 
-            utils.showMessage("Unused images have been cleaned up");
+            infoService.showMessage("Unused images have been cleaned up");
         }
     });
 
     $vacuumDatabaseButton.click(async () => {
         await server.post('cleanup/vacuum-database');
 
-        utils.showMessage("Database has been vacuumed");
+        infoService.showMessage("Database has been vacuumed");
     });
 
     return {};

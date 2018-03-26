@@ -1,4 +1,5 @@
 import utils from './utils.js';
+import infoService from "./info.js";
 
 const $changesToPushCount = $("#changes-to-push-count");
 
@@ -45,10 +46,10 @@ function handleMessage(event) {
         $changesToPushCount.html(message.changesToPushCount);
     }
     else if (message.type === 'sync-hash-check-failed') {
-        utils.utils.showError("Sync check failed!", 60000);
+        infoService.showError("Sync check failed!", 60000);
     }
     else if (message.type === 'consistency-checks-failed') {
-        utils.showError("Consistency checks failed! See logs for details.", 50 * 60000);
+        infoService.showError("Consistency checks failed! See logs for details.", 50 * 60000);
     }
 }
 
@@ -91,7 +92,7 @@ setTimeout(() => {
             await connectionBrokenNotification.close();
             connectionBrokenNotification = null;
 
-            utils.showMessage("Re-connected to server");
+            infoService.showMessage("Re-connected to server");
         }
 
         ws.send(JSON.stringify({

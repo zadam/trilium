@@ -1,39 +1,5 @@
-import messagingService from './messaging.js';
-
 function reloadApp() {
     window.location.reload(true);
-}
-
-function showMessage(message) {
-    console.log(now(), "message: ", message);
-
-    $.notify({
-        // options
-        message: message
-    }, {
-        // settings
-        type: 'success',
-        delay: 3000
-    });
-}
-
-function showError(message, delay = 10000) {
-    console.log(now(), "error: ", message);
-
-    $.notify({
-        // options
-        message: message
-    }, {
-        // settings
-        type: 'danger',
-        delay: delay
-    });
-}
-
-function throwError(message) {
-    messagingService.logError(message);
-
-    throw new Error(message);
 }
 
 function parseDate(str) {
@@ -80,14 +46,8 @@ function isElectron() {
 function assertArguments() {
     for (const i in arguments) {
         if (!arguments[i]) {
-            throwError(`Argument idx#${i} should not be falsy: ${arguments[i]}`);
+            throw new Error(`Argument idx#${i} should not be falsy: ${arguments[i]}`);
         }
-    }
-}
-
-function assert(expr, message) {
-    if (!expr) {
-        throwError(message);
     }
 }
 
@@ -236,9 +196,6 @@ function bindShortcut(keyboardShortcut, handler) {
 
 export default {
     reloadApp,
-    showMessage,
-    showError,
-    throwError,
     parseDate,
     padNum,
     formatTime,
@@ -249,7 +206,6 @@ export default {
     now,
     isElectron,
     assertArguments,
-    assert,
     isTopLevelNode,
     isRootNode,
     escapeHtml,

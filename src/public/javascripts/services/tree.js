@@ -11,6 +11,7 @@ import server from './server.js';
 import recentNotesDialog from '../dialogs/recent_notes.js';
 import editTreePrefixDialog from '../dialogs/edit_tree_prefix.js';
 import treeCache from './tree_cache.js';
+import infoService from "./info.js";
 
 const $tree = $("#tree");
 const $parentList = $("#parent-list");
@@ -27,7 +28,7 @@ async function getNote(noteId) {
     const note = await treeCache.getNote(noteId);
 
     if (!note) {
-        utils.throwError(`Can't find title for noteId='${noteId}'`);
+        infoService.throwError(`Can't find title for noteId='${noteId}'`);
     }
 
     return note;
@@ -296,7 +297,7 @@ async function showParentList(noteId, node) {
     const parents = await note.getParentNotes();
 
     if (!parents.length) {
-        utils.throwError("Can't find parents for noteId=" + noteId);
+        infoService.throwError("Can't find parents for noteId=" + noteId);
     }
 
     if (parents.length <= 1) {
@@ -355,7 +356,7 @@ async function getSomeNotePath(note) {
         const parents = await cur.getParentNotes();
 
         if (!parents.length) {
-            utils.throwError("Can't find parents for " + cur);
+            infoService.throwError("Can't find parents for " + cur);
         }
 
         cur = parents[0];
@@ -831,12 +832,12 @@ async function createNote(node, parentNoteId, target, isProtected) {
         node.renderTitle();
     }
     else {
-        utils.throwError("Unrecognized target: " + target);
+        infoService.throwError("Unrecognized target: " + target);
     }
 
     clearSelectedNodes(); // to unmark previously active node
 
-    utils.showMessage("Created!");
+    infoService.showMessage("Created!");
 }
 
 async function sortAlphabetically(noteId) {

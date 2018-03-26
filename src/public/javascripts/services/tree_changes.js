@@ -1,6 +1,7 @@
 import treeService from './tree.js';
 import utils from './utils.js';
 import server from './server.js';
+import infoService from "./info.js";
 
 async function moveBeforeNode(nodesToMove, beforeNode) {
     for (const nodeToMove of nodesToMove) {
@@ -86,7 +87,7 @@ async function deleteNodes(nodes) {
 
     treeService.reload();
 
-    utils.showMessage("Note(s) has been deleted.");
+    infoService.showMessage("Note(s) has been deleted.");
 }
 
 async function moveNodeUpInHierarchy(node) {

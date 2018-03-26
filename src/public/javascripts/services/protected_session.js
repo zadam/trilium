@@ -3,6 +3,7 @@ import noteDetail from './note_detail.js';
 import utils from './utils.js';
 import server from './server.js';
 import protectedSessionHolder from './protected_session_holder.js';
+import infoService from "./info.js";
 
 const $dialog = $("#protected-session-password-dialog");
 const $passwordForm = $("#protected-session-password-form");
@@ -48,7 +49,7 @@ async function setupProtectedSession() {
     const response = await enterProtectedSession(password);
 
     if (!response.success) {
-        utils.showError("Wrong password.");
+        infoService.showError("Wrong password.");
         return;
     }
 
@@ -123,7 +124,7 @@ async function protectSubTree(noteId, protect) {
 
     await server.put('notes/' + noteId + "/protect-sub-tree/" + (protect ? 1 : 0));
 
-    utils.showMessage("Request to un/protect sub tree has finished successfully");
+    infoService.showMessage("Request to un/protect sub tree has finished successfully");
 
     treeService.reload();
     noteDetail.reload();

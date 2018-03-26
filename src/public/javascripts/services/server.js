@@ -1,5 +1,6 @@
 import protectedSessionHolder from './protected_session_holder.js';
 import utils from './utils.js';
+import infoService from "./info.js";
 
 function getHeaders() {
     let protectedSessionId = null;
@@ -74,8 +75,8 @@ async function ajax(url, method, data) {
 
     return await $.ajax(options).catch(e => {
         const message = "Error when calling " + method + " " + url + ": " + e.status + " - " + e.statusText;
-        utils.showError(message);
-        utils.throwError(message);
+        infoService.showError(message);
+        infoService.throwError(message);
     });
 }
 
