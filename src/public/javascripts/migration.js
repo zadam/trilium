@@ -1,4 +1,4 @@
-"use strict";
+import server from './services/server.js';
 
 $(document).ready(() => {
     server.get('migration').then(result => {

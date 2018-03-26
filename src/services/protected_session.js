@@ -75,7 +75,7 @@ function decryptNotes(dataKey, notes) {
     }
 }
 
-function decryptNoteHistoryRow(dataKey, hist) {
+function decryptNoteRevision(dataKey, hist) {
     dataKey = getDataKey(dataKey);
 
     if (!hist.isProtected) {
@@ -91,11 +91,11 @@ function decryptNoteHistoryRow(dataKey, hist) {
     }
 }
 
-function decryptNoteHistoryRows(dataKey, historyRows) {
+function decryptNoteRevisions(dataKey, noteRevisions) {
     dataKey = getDataKey(dataKey);
 
-    for (const hist of historyRows) {
-        decryptNoteHistoryRow(dataKey, hist);
+    for (const revision of noteRevisions) {
+        decryptNoteRevision(dataKey, revision);
     }
 }
 
@@ -106,11 +106,11 @@ function encryptNote(dataKey, note) {
     note.content = data_encryption.encrypt(dataKey, data_encryption.noteContentIv(note.noteId), note.content);
 }
 
-function encryptNoteHistoryRow(dataKey, history) {
+function encryptNoteRevision(dataKey, revision) {
     dataKey = getDataKey(dataKey);
 
-    history.title = data_encryption.encrypt(dataKey, data_encryption.noteTitleIv(history.noteRevisionId), history.title);
-    history.content = data_encryption.encrypt(dataKey, data_encryption.noteContentIv(history.noteRevisionId), history.content);
+    revision.title = data_encryption.encrypt(dataKey, data_encryption.noteTitleIv(revision.noteRevisionId), revision.title);
+    revision.content = data_encryption.encrypt(dataKey, data_encryption.noteContentIv(revision.noteRevisionId), revision.content);
 }
 
 module.exports = {
@@ -120,8 +120,8 @@ module.exports = {
     isProtectedSessionAvailable,
     decryptNote,
     decryptNotes,
-    decryptNoteHistoryRow,
-    decryptNoteHistoryRows,
+    decryptNoteRevision,
+    decryptNoteRevisions,
     encryptNote,
-    encryptNoteHistoryRow
+    encryptNoteRevision
 };

@@ -1,6 +1,5 @@
-import linkService from './link.js';
-import messagingService from './messaging.js';
-import ScriptContext from './script_context.js';
+//import messagingService from './messaging.js';
+//import ScriptContext from './script_context.js';
 
 function reloadApp() {
     window.location.reload(true);
@@ -189,7 +188,7 @@ async function requireScript(url) {
 
 async function requireCss(url) {
     const css = Array
-        .from(document.querySelectorAll('linkService'))
+        .from(document.querySelectorAll('link'))
         .map(scr => scr.href);
 
     if (!css.includes(url)) {

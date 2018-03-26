@@ -30,9 +30,9 @@ async function showDialog() {
             const revLink = $("<a>", {
                 href: 'javascript:',
                 text: 'rev'
-            }).attr('action', 'note-history')
+            }).attr('action', 'note-revision')
                 .attr('note-path', change.noteId)
-                .attr('note-history-id', change.noteRevisionId);
+                .attr('note-revision-id', change.noteRevisionId);
 
             let noteLink;
 

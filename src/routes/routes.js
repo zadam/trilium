@@ -9,7 +9,7 @@ const treeApiRoute = require('./api/tree');
 const notesApiRoute = require('./api/notes');
 const treeChangesApiRoute = require('./api/tree_changes');
 const cloningApiRoute = require('./api/cloning');
-const noteHistoryApiRoute = require('./api/note_history');
+const noteRevisionsApiRoute = require('./api/note_revisions');
 const recentChangesApiRoute = require('./api/recent_changes');
 const settingsApiRoute = require('./api/settings');
 const passwordApiRoute = require('./api/password');
@@ -44,7 +44,7 @@ function register(app) {
     app.use('/api/tree', treeChangesApiRoute);
     app.use('/api/notes', cloningApiRoute);
     app.use('/api', labelsRoute);
-    app.use('/api/notes-history', noteHistoryApiRoute);
+    app.use('/api/notes-revisions', noteRevisionsApiRoute);
     app.use('/api/recent-changes', recentChangesApiRoute);
     app.use('/api/settings', settingsApiRoute);
     app.use('/api/password', passwordApiRoute);

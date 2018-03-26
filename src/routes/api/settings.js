@@ -8,7 +8,7 @@ const auth = require('../../services/auth');
 const wrap = require('express-promise-wrap').wrap;
 
 // options allowed to be updated directly in settings dialog
-const ALLOWED_OPTIONS = ['protected_session_timeout', 'history_snapshot_time_interval'];
+const ALLOWED_OPTIONS = ['protected_session_timeout', 'note_revision_snapshot_time_interval'];
 
 router.get('/all', auth.checkApiAuth, wrap(async (req, res, next) => {
     const settings = await sql.getMap("SELECT name, value FROM options");

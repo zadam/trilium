@@ -129,7 +129,7 @@ async function pullSync(syncContext) {
             await syncUpdate.updateBranch(resp, syncContext.sourceId);
         }
         else if (sync.entityName === 'note_revisions') {
-            await syncUpdate.updateNoteHistory(resp, syncContext.sourceId);
+            await syncUpdate.updateNoteRevision(resp, syncContext.sourceId);
         }
         else if (sync.entityName === 'note_reordering') {
             await syncUpdate.updateNoteReordering(resp, syncContext.sourceId);

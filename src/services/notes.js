@@ -154,32 +154,32 @@ async function protectNote(note, dataKey, protect, sourceId) {
         await sync_table.addNoteSync(note.noteId, sourceId);
     }
 
-    await protectNoteHistory(note.noteId, dataKey, protect, sourceId);
+    await protectNoteRevisions(note.noteId, dataKey, protect, sourceId);
 }
 
-async function protectNoteHistory(noteId, dataKey, protect, sourceId) {
-    const historyToChange = await sql.getRows("SELECT * FROM note_revisions WHERE noteId = ? AND isProtected != ?", [noteId, protect]);
+async function protectNoteRevisions(noteId, dataKey, protect, sourceId) {
+    const revisionsToChange = await sql.getRows("SELECT * FROM note_revisions WHERE noteId = ? AND isProtected != ?", [noteId, protect]);
 
-    for (const history of historyToChange) {
+    for (const revision of revisionsToChange) {
         if (protect) {
-            protected_session.encryptNoteHistoryRow(dataKey, history);
+            protected_session.encryptNoteRevision(dataKey, revision);
 
-            history.isProtected = true;
+            revision.isProtected = true;
         }
         else {
-            protected_session.decryptNoteHistoryRow(dataKey, history);
+            protected_session.decryptNoteRevision(dataKey, revision);
 
-            history.isProtected = false;
+            revision.isProtected = false;
         }
 
         await sql.execute("UPDATE note_revisions SET title = ?, content = ?, isProtected = ? WHERE noteRevisionId = ?",
-            [history.title, history.content, history.isProtected, history.noteRevisionId]);
+            [revision.title, revision.content, revision.isProtected, revision.noteRevisionId]);
 
-        await sync_table.addNoteHistorySync(history.noteRevisionId, sourceId);
+        await sync_table.addNoteRevisionSync(revision.noteRevisionId, sourceId);
     }
 }
 
-async function saveNoteHistory(noteId, dataKey, sourceId, nowStr) {
+async function saveNoteRevision(noteId, dataKey, sourceId, nowStr) {
     const oldNote = await sql.getRow("SELECT * FROM notes WHERE noteId = ?", [noteId]);
 
     if (oldNote.type === 'file') {
@@ -200,12 +200,12 @@ async function saveNoteHistory(noteId, dataKey, sourceId, nowStr) {
         // title and text should be decrypted now
         title: oldNote.title,
         content: oldNote.content,
-        isProtected: 0, // will be fixed in the protectNoteHistory() call
+        isProtected: 0, // will be fixed in the protectNoteRevisions() call
         dateModifiedFrom: oldNote.dateModified,
         dateModifiedTo: nowStr
     });
 
-    await sync_table.addNoteHistorySync(newNoteRevisionId, sourceId);
+    await sync_table.addNoteRevisionSync(newNoteRevisionId, sourceId);
 }
 
 async function saveNoteImages(noteId, noteText, sourceId) {
@@ -279,26 +279,26 @@ async function updateNote(noteId, newNote, dataKey, sourceId) {
     const now = new Date();
     const nowStr = utils.nowDate();
 
-    const historySnapshotTimeInterval = parseInt(await options.getOption('history_snapshot_time_interval'));
+    const noteRevisionSnapshotTimeInterval = parseInt(await options.getOption('note_revision_snapshot_time_interval'));
 
-    const historyCutoff = utils.dateStr(new Date(now.getTime() - historySnapshotTimeInterval * 1000));
+    const revisionCutoff = utils.dateStr(new Date(now.getTime() - noteRevisionSnapshotTimeInterval * 1000));
 
     const existingnoteRevisionId = await sql.getValue(
-        "SELECT noteRevisionId FROM note_revisions WHERE noteId = ? AND dateModifiedTo >= ?", [noteId, historyCutoff]);
+        "SELECT noteRevisionId FROM note_revisions WHERE noteId = ? AND dateModifiedTo >= ?", [noteId, revisionCutoff]);
 
     await sql.doInTransaction(async () => {
         const msSinceDateCreated = now.getTime() - utils.parseDateTime(newNote.detail.dateCreated).getTime();
 
         if (labelsMap.disable_versioning !== 'true'
             && !existingnoteRevisionId
-            && msSinceDateCreated >= historySnapshotTimeInterval * 1000) {
+            && msSinceDateCreated >= noteRevisionSnapshotTimeInterval * 1000) {
 
-            await saveNoteHistory(noteId, dataKey, sourceId, nowStr);
+            await saveNoteRevision(noteId, dataKey, sourceId, nowStr);
         }
 
         await saveNoteImages(noteId, newNote.detail.content, sourceId);
 
-        await protectNoteHistory(noteId, dataKey, newNote.detail.isProtected);
+        await protectNoteRevisions(noteId, dataKey, newNote.detail.isProtected);
 
         await sql.execute("UPDATE notes SET title = ?, content = ?, isProtected = ?, dateModified = ? WHERE noteId = ?", [
             newNote.detail.title,

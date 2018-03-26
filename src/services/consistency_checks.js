@@ -161,7 +161,7 @@ async function runAllChecks() {
             note_revisions LEFT JOIN notes USING(noteId) 
           WHERE 
             notes.noteId IS NULL`,
-        "Missing notes records for following note history ID > note ID", errorList);
+        "Missing notes records for following note revision ID > note ID", errorList);
 
     await runCheck(`
           SELECT 

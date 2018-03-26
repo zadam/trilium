@@ -1,7 +1,7 @@
 import addLinkDialog from '../dialogs/add_link.js';
 import jumpToNoteDialog from '../dialogs/jump_to_note.js';
 import labelsDialog from '../dialogs/labels.js';
-import noteRevisionsDialog from '../dialogs/note_history.js';
+import noteRevisionsDialog from '../dialogs/note_revisions.js';
 import noteSourceDialog from '../dialogs/note_source.js';
 import recentChangesDialog from '../dialogs/recent_changes.js';
 import recentNotesDialog from '../dialogs/recent_notes.js';
@@ -43,7 +43,7 @@ utils.bindShortcut('ctrl+l', addLinkDialog.showDialog);
 $("#jump-to-note-button").click(jumpToNoteDialog.showDialog);
 utils.bindShortcut('ctrl+j', jumpToNoteDialog.showDialog);
 
-$("#show-history-button").click(noteRevisionsDialog.showCurrentNoteHistory);
+$("#show-note-revisions-button").click(noteRevisionsDialog.showCurrentNoteRevisions);
 
 $("#show-source-button").click(noteSourceDialog.showDialog);
 utils.bindShortcut('ctrl+u', noteSourceDialog.showDialog);

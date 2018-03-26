@@ -59,7 +59,7 @@ router.post('/force-note-sync/:noteId', auth.checkApiAuth, wrap(async (req, res,
         }
 
         for (const noteRevisionId of await sql.getColumn("SELECT noteRevisionId FROM note_revisions WHERE noteId = ?", [noteId])) {
-            await sync_table.addNoteHistorySync(noteRevisionId);
+            await sync_table.addNoteRevisionsSync(noteRevisionId);
         }
     });
 
@@ -169,7 +169,7 @@ router.put('/branches', auth.checkApiAuth, wrap(async (req, res, next) => {
 }));
 
 router.put('/note_revisions', auth.checkApiAuth, wrap(async (req, res, next) => {
-    await syncUpdate.updateNoteHistory(req.body.entity, req.body.sourceId);
+    await syncUpdate.updateNoteRevision(req.body.entity, req.body.sourceId);
 
     res.send({});
 }));

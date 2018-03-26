@@ -42,18 +42,18 @@ async function updateBranch(entity, sourceId) {
     });
 }
 
-async function updateNoteHistory(entity, sourceId) {
+async function updateNoteRevision(entity, sourceId) {
     const orig = await sql.getRowOrNull("SELECT * FROM note_revisions WHERE noteRevisionId = ?", [entity.noteRevisionId]);
 
     await sql.doInTransaction(async () => {
-        // we update note history even if date modified to is the same because the only thing which might have changed
+        // we update note revision even if date modified to is the same because the only thing which might have changed
         // is the protected status (and correnspondingly title and content) which doesn't affect the dateModifiedTo
         if (orig === null || orig.dateModifiedTo <= entity.dateModifiedTo) {
             await sql.replace('note_revisions', entity);
 
-            await sync_table.addNoteHistorySync(entity.noteRevisionId, sourceId);
+            await sync_table.addNoteRevisionSync(entity.noteRevisionId, sourceId);
 
-            log.info("Update/sync note history " + entity.noteRevisionId);
+            log.info("Update/sync note revision " + entity.noteRevisionId);
         }
     });
 }
@@ -161,7 +161,7 @@ async function updateApiToken(entity, sourceId) {
 module.exports = {
     updateNote,
     updateBranch,
-    updateNoteHistory,
+    updateNoteRevision,
     updateNoteReordering,
     updateOptions,
     updateRecentNotes,

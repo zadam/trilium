@@ -16,7 +16,7 @@ async function addNoteReorderingSync(parentNoteId, sourceId) {
     await addEntitySync("note_reordering", parentNoteId, sourceId)
 }
 
-async function addNoteHistorySync(noteRevisionId, sourceId) {
+async function addNoteRevisionSync(noteRevisionId, sourceId) {
     await addEntitySync("note_revisions", noteRevisionId, sourceId);
 }
 
@@ -104,7 +104,7 @@ module.exports = {
     addNoteSync,
     addBranchSync,
     addNoteReorderingSync,
-    addNoteHistorySync,
+    addNoteRevisionSync,
     addOptionsSync,
     addRecentNoteSync,
     addImageSync,

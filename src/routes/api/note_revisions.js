@@ -10,10 +10,10 @@ const wrap = require('express-promise-wrap').wrap;
 
 router.get('/:noteId', auth.checkApiAuth, wrap(async (req, res, next) => {
     const noteId = req.params.noteId;
-    const history = await sql.getRows("SELECT * FROM note_revisions WHERE noteId = ? order by dateModifiedTo desc", [noteId]);
-    protected_session.decryptNoteHistoryRows(req, history);
+    const revisions = await sql.getRows("SELECT * FROM note_revisions WHERE noteId = ? order by dateModifiedTo desc", [noteId]);
+    protected_session.decryptNoteRevisions(req, revisions);
 
-    res.send(history);
+    res.send(revisions);
 }));
 
 router.put('', auth.checkApiAuth, wrap(async (req, res, next) => {
@@ -22,7 +22,7 @@ router.put('', auth.checkApiAuth, wrap(async (req, res, next) => {
     await sql.doInTransaction(async () => {
         await sql.replace("note_revisions", req.body);
 
-        await sync_table.addNoteHistorySync(req.body.noteRevisionId, sourceId);
+        await sync_table.addNoteRevisionSync(req.body.noteRevisionId, sourceId);
     });
 
     res.send();

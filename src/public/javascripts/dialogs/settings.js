@@ -117,9 +117,9 @@ addModule((function() {
 })());
 
 addModule((function () {
-    const $form = $("#history-snapshot-time-interval-form");
-    const $timeInterval = $("#history-snapshot-time-interval-in-seconds");
-    const settingName = 'history_snapshot_time_interval';
+    const $form = $("#note-revision-snapshot-time-interval-form");
+    const $timeInterval = $("#note-revision-snapshot-time-interval-in-seconds");
+    const settingName = 'note_revision_snapshot_time_interval';
 
     function settingsLoaded(settings) {
         $timeInterval.val(settings[settingName]);

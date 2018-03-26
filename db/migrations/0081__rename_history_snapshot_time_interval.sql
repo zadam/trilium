@@ -1,0 +1,1 @@
+UPDATE options SET name = 'note_revision_snapshot_time_interval' WHERE name = 'history_snapshot_time_interval';

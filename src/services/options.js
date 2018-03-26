@@ -76,7 +76,7 @@ async function initOptions(startNotePath) {
 
     await createOption('start_note_path', startNotePath, false);
     await createOption('protected_session_timeout', 600, true);
-    await createOption('history_snapshot_time_interval', 600, true);
+    await createOption('note_revision_snapshot_time_interval', 600, true);
     await createOption('last_backup_date', utils.nowDate(), false);
     await createOption('db_version', app_info.db_version, false);
 
