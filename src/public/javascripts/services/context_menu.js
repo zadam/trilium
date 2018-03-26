@@ -8,6 +8,7 @@ import treeUtils from './tree_utils.js';
 import utils from './utils.js';
 import editTreePrefixDialog from '../dialogs/edit_tree_prefix.js';
 import infoService from "./info.js";
+import treeCache from "./tree_cache.js";
 
 const $tree = $("#tree");
 
@@ -103,9 +104,9 @@ const contextMenuSettings = {
     ],
     beforeOpen: async (event, ui) => {
         const node = $.ui.fancytree.getNode(ui.target);
-        const branch = await treeService.getBranch(node.data.branchId);
-        const note = await treeService.getNote(node.data.noteId);
-        const parentNote = await treeService.getNote(branch.parentNoteId);
+        const branch = await treeCache.getBranch(branchId);
+        const note = await treeCache.getNote(node.data.noteId);
+        const parentNote = await treeCache.getNote(branch.parentNoteId);
 
         // Modify menu entries depending on node status
         $tree.contextmenu("enableEntry", "pasteAfter", clipboardIds.length > 0 && (!parentNote || parentNote.type !== 'search'));

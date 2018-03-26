@@ -62,3 +62,8 @@ utils.bindShortcut('alt+l', labelsDialog.showDialog);
 $("#settings-button").click(settingsDialog.showDialog);
 
 utils.bindShortcut('alt+o', sqlConsoleDialog.showDialog);
+
+if (utils.isElectron()) {
+    utils.bindShortcut('alt+left', window.history.back);
+    utils.bindShortcut('alt+right', window.history.forward);
+}

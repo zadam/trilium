@@ -6,6 +6,7 @@ import treeUtils from './tree_utils.js';
 import utils from './utils.js';
 import server from './server.js';
 import bundleService from './bundle.js';
+import treeCache from "./tree_cache.js";
 
 // hot keys are active also inside inputs and content editables
 jQuery.hotkeys.options.filterInputAcceptingElements = false;
@@ -218,7 +219,7 @@ $(document).ready(() => {
 if (utils.isElectron()) {
     require('electron').ipcRenderer.on('create-day-sub-note', async function(event, parentNoteId) {
         // this might occur when day note had to be created
-        if (!await treeService.noteExists(parentNoteId)) {
+        if (!await treeCache.getNote(parentNoteId)) {
             await treeService.reload();
         }
 

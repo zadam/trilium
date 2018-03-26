@@ -1,7 +1,8 @@
 import messagingService from "./messaging.js";
+import utils from "./utils.js";
 
 function showMessage(message) {
-    console.log(now(), "message: ", message);
+    console.log(utils.now(), "message: ", message);
 
     $.notify({
         // options
@@ -14,7 +15,7 @@ function showMessage(message) {
 }
 
 function showError(message, delay = 10000) {
-    console.log(now(), "error: ", message);
+    console.log(utils.now(), "error: ", message);
 
     $.notify({
         // options

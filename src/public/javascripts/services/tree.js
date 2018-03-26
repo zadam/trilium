@@ -24,16 +24,6 @@ let instanceName = null; // should have better place
 
 let startNotePath = null;
 
-async function getNote(noteId) {
-    const note = await treeCache.getNote(noteId);
-
-    if (!note) {
-        infoService.throwError(`Can't find title for noteId='${noteId}'`);
-    }
-
-    return note;
-}
-
 async function getNoteTitle(noteId, parentNoteId = null) {
     utils.assertArguments(noteId);
 
@@ -403,7 +393,7 @@ function clearSelectedNodes() {
 async function treeInitialized() {
     const noteId = treeUtils.getNoteIdFromNotePath(startNotePath);
 
-    if ((await treeCache.getNote(noteId)) === undefined) {
+    if (!await treeCache.getNote(noteId)) {
         // note doesn't exist so don't try to activate it
         startNotePath = null;
     }
@@ -609,7 +599,7 @@ function initFancyTree(branch) {
         dnd: dragAndDropSetup,
         lazyLoad: function(event, data) {
             const noteId = data.node.data.noteId;
-            data.result = getNote(noteId).then(note => {
+            data.result = treeCache.getNote(noteId).then(note => {
                 if (note.type === 'search') {
                     return loadSearchNote(noteId);
                 }
@@ -760,7 +750,9 @@ async function getAutocompleteItems(parentNoteId, notePath, titlePath) {
 async function setNoteTitle(noteId, title) {
     utils.assertArguments(noteId);
 
-    getNote(noteId).title = title;
+    const note = await treeCache.getNote(noteId);
+
+    note.title = title;
 
     for (const clone of getNodesByNoteId(noteId)) {
         await setNodeTitleWithPrefix(clone);
@@ -846,16 +838,8 @@ async function sortAlphabetically(noteId) {
     await reload();
 }
 
-async function noteExists(noteId) {
-    return !!(await treeCache.getNote(noteId));
-}
-
 function getInstanceName() {
     return instanceName;
-}
-
-async function getBranch(branchId) {
-    return await treeCache.getBranch(branchId);
 }
 
 messagingService.subscribeToMessages(syncData => {
@@ -868,33 +852,27 @@ messagingService.subscribeToMessages(syncData => {
     }
 });
 
-$(document).bind('keydown', 'ctrl+o', e => {
+utils.bindShortcut('ctrl+o', () => {
     const node = getCurrentNode();
     const parentNoteId = node.data.parentNoteId;
     const isProtected = treeUtils.getParentProtectedStatus(node);
 
     createNote(node, parentNoteId, 'after', isProtected);
-
-    e.preventDefault();
 });
 
-$(document).bind('keydown', 'ctrl+p', e => {
+utils.bindShortcut('ctrl+p', () => {
     const node = getCurrentNode();
 
     createNote(node, node.data.noteId, 'into', node.data.isProtected);
-
-    e.preventDefault();
 });
 
-$(document).bind('keydown', 'ctrl+del', e => {
+utils.bindShortcut('ctrl+del', () => {
     const node = getCurrentNode();
 
     treeChangesService.deleteNodes([node]);
-
-    e.preventDefault();
 });
 
-$(document).bind('keydown', 'ctrl+.', scrollToCurrentNote);
+utils.bindShortcut('ctrl+.', scrollToCurrentNote);
 
 $(window).bind('hashchange', function() {
     const notePath = getNotePathFromAddress();
@@ -905,20 +883,6 @@ $(window).bind('hashchange', function() {
         activateNode(notePath);
     }
 });
-
-if (utils.isElectron()) {
-    $(document).bind('keydown', 'alt+left', e => {
-        window.history.back();
-
-        e.preventDefault();
-    });
-
-    $(document).bind('keydown', 'alt+right', e => {
-        window.history.forward();
-
-        e.preventDefault();
-    });
-}
 
 $createTopLevelNoteButton.click(createNewTopLevelNote);
 $collapseTreeButton.click(collapseTree);
@@ -946,8 +910,5 @@ export default {
     setParentChildRelation,
     getSelectedNodes,
     sortAlphabetically,
-    noteExists,
-    getInstanceName,
-    getBranch,
-    getNote
+    getInstanceName
 };
