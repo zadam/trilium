@@ -167,9 +167,9 @@ function toObject(array, fn) {
     const obj = {};
 
     for (const item of array) {
-        const ret = fn(item);
+        const [key, value] = fn(item);
 
-        obj[ret[0]] = ret[1];
+        obj[key] = value;
     }
 
     return obj;

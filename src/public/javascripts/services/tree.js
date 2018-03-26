@@ -12,6 +12,7 @@ import recentNotesDialog from '../dialogs/recent_notes.js';
 import editTreePrefixDialog from '../dialogs/edit_tree_prefix.js';
 import treeCache from './tree_cache.js';
 import infoService from "./info.js";
+import Branch from '../entities/branch.js';
 
 const $tree = $("#tree");
 const $parentList = $("#parent-list");
@@ -615,25 +616,22 @@ function initFancyTree(branch) {
 }
 
 async function loadSearchNote(searchNoteId) {
-    const note = await server.get('notes/' + searchNoteId);
-
-    const json = JSON.parse(note.detail.content);
-
-    const noteIds = await server.get('search/' + encodeURIComponent(json.searchString));
+    const searchNote = await noteDetailService.loadNote(searchNoteId);
+    const noteIds = await server.get('search/' + encodeURIComponent(searchNote.jsonContent.searchString));
 
     for (const noteId of noteIds) {
-        const branchId = "virt" + utils.randomString(10);
-
-        treeCache.addBranch({
-            branchId: branchId,
+        const branch = new Branch(treeCache, {
+            branchId: "virt" + utils.randomString(10),
             noteId: noteId,
             parentNoteId: searchNoteId,
             prefix: '',
             virtual: true
         });
+
+        treeCache.addBranch(branch);
     }
 
-    return await prepareBranchInner(await treeCache.getNote(searchNoteId));
+    return await prepareBranchInner(searchNote);
 }
 
 function getTree() {

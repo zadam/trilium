@@ -20,7 +20,7 @@ class Note extends Entity {
     }
 
     isJson() {
-        return this.type === "code" && this.mime === "application/json";
+        return this.mime === "application/json";
     }
 
     isJavaScript() {

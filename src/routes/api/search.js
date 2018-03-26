@@ -26,7 +26,8 @@ router.post('/:searchString', auth.checkApiAuth, wrap(async (req, res, next) => 
 
     const noteId = await notes.createNote('root', 'Search note', noteContent, {
         json: true,
-        type: 'search'
+        type: 'search',
+        mime: "application/json"
     });
 
     res.send({ noteId });

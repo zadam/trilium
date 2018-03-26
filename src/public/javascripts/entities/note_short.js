@@ -9,6 +9,10 @@ class NoteShort {
         this.hideInAutocomplete = row.hideInAutocomplete;
     }
 
+    isJson() {
+        return this.mime === "application/json";
+    }
+
     async getBranches() {
         const branches = [];
 

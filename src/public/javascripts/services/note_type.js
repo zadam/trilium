@@ -1,6 +1,6 @@
 import treeService from './tree.js';
 import noteDetail from './note_detail.js';
-import utils from './utils.js';
+import server from './server.js';
 import infoService from "./info.js";
 
 const $executeScriptButton = $("#execute-script-button");
@@ -86,7 +86,7 @@ function NoteTypeModel() {
     async function save() {
         const note = noteDetail.getCurrentNote();
 
-        await server.put('notes/' + note.detail.noteId
+        await server.put('notes/' + note.noteId
             + '/type/' + encodeURIComponent(self.type())
             + '/mime/' + encodeURIComponent(self.mime()));
 

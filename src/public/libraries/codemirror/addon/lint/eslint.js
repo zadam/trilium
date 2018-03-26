@@ -28,7 +28,7 @@
     }
 
     async function validatorJavaScript(text, options) {
-        if (glob.getCurrentNote().detail.mime === 'application/json') {
+        if (glob.getCurrentNote().mime === 'application/json') {
             // eslint doesn't seem to validate pure JSON well
             return [];
         }

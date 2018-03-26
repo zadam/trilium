@@ -164,7 +164,7 @@ $(document).tooltip({
         if (notePath !== null) {
             const noteId = treeUtils.getNoteIdFromNotePath(notePath);
 
-            noteDetailService.loadNote(noteId).then(note => callback(note.detail.content));
+            noteDetailService.loadNote(noteId).then(note => callback(note.content));
         }
     },
     close: function(event, ui)

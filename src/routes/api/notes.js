@@ -5,7 +5,6 @@ const router = express.Router();
 const auth = require('../../services/auth');
 const sql = require('../../services/sql');
 const notes = require('../../services/notes');
-const labels = require('../../services/labels');
 const log = require('../../services/log');
 const utils = require('../../services/utils');
 const protected_session = require('../../services/protected_session');
@@ -26,20 +25,12 @@ router.get('/:noteId', auth.checkApiAuth, wrap(async (req, res, next) => {
 
     protected_session.decryptNote(req, detail);
 
-    let labelMap = null;
-
     if (detail.type === 'file') {
-        // no need to transfer attachment payload for this request
+        // no need to transfer (potentially large) attachment payload for this request
         detail.content = null;
-
-        // labels contain important attachment metadata - filename and size
-        labelMap = await labels.getNoteLabelMap(noteId);
     }
 
-    res.send({
-        detail: detail,
-        labels: labelMap
-    });
+    res.send(detail);
 }));
 
 router.post('/:parentNoteId/children', auth.checkApiAuth, wrap(async (req, res, next) => {

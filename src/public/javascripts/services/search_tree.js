@@ -1,4 +1,5 @@
 import treeService from './tree.js';
+import server from './server.js';
 
 const $tree = $("#tree");
 const $searchInput = $("input[name='search-text']");
@@ -44,6 +45,8 @@ async function doSearch() {
 
 async function saveSearch() {
     const {noteId} = await server.post('search/' + encodeURIComponent($searchInput.val()));
+
+    resetSearch();
 
     await treeService.reload();
 

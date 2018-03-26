@@ -94,11 +94,11 @@ async function protectNoteAndSendToServer() {
 
     noteDetail.updateNoteFromInputs(note);
 
-    note.detail.isProtected = true;
+    note.isProtected = true;
 
     await noteDetail.saveNoteToServer(note);
 
-    treeService.setProtected(note.detail.noteId, note.detail.isProtected);
+    treeService.setProtected(note.noteId, note.isProtected);
 
     noteDetail.setNoteBackgroundIfProtected(note);
 }
@@ -110,11 +110,11 @@ async function unprotectNoteAndSendToServer() {
 
     noteDetail.updateNoteFromInputs(note);
 
-    note.detail.isProtected = false;
+    note.isProtected = false;
 
     await noteDetail.saveNoteToServer(note);
 
-    treeService.setProtected(note.detail.noteId, note.detail.isProtected);
+    treeService.setProtected(note.noteId, note.isProtected);
 
     noteDetail.setNoteBackgroundIfProtected(note);
 }

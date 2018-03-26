@@ -12,7 +12,7 @@ function showDialog() {
         height: 500
     });
 
-    const noteText = noteDetailService.getCurrentNote().detail.content;
+    const noteText = noteDetailService.getCurrentNote().content;
 
     $noteSource.text(formatHtml(noteText));
 }

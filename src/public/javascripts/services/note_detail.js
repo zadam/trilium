@@ -7,6 +7,8 @@ import server from './server.js';
 import messagingService from "./messaging.js";
 import bundleService from "./bundle.js";
 import infoService from "./info.js";
+import treeCache from "./tree_cache.js";
+import NoteFull from "../entities/note_full.js";
 
 const $noteTitle = $("#note-title");
 
@@ -45,7 +47,7 @@ function getCurrentNote() {
 }
 
 function getCurrentNoteId() {
-    return currentNote ? currentNote.detail.noteId : null;
+    return currentNote ? currentNote.noteId : null;
 }
 
 function noteChanged() {
@@ -81,13 +83,13 @@ async function saveNoteIfChanged() {
 
     await saveNoteToServer(note);
 
-    if (note.detail.isProtected) {
+    if (note.isProtected) {
         protectedSessionHolder.touchProtectedSession();
     }
 }
 
 function updateNoteFromInputs(note) {
-    if (note.detail.type === 'text') {
+    if (note.type === 'text') {
         let content = editor.getData();
 
         // if content is only tags/whitespace (typically <p>&nbsp;</p>), then just make it empty
@@ -96,32 +98,32 @@ function updateNoteFromInputs(note) {
             content = '';
         }
 
-        note.detail.content = content;
+        note.content = content;
     }
-    else if (note.detail.type === 'code') {
-        note.detail.content = codeEditor.getValue();
+    else if (note.type === 'code') {
+        note.content = codeEditor.getValue();
     }
-    else if (note.detail.type === 'search') {
-        note.detail.content = JSON.stringify({
+    else if (note.type === 'search') {
+        note.content = JSON.stringify({
             searchString: $searchString.val()
         });
     }
-    else if (note.detail.type === 'render' || note.detail.type === 'file') {
+    else if (note.type === 'render' || note.type === 'file') {
         // nothing
     }
     else {
-        infoService.throwError("Unrecognized type: " + note.detail.type);
+        infoService.throwError("Unrecognized type: " + note.type);
     }
 
     const title = $noteTitle.val();
 
-    note.detail.title = title;
+    note.title = title;
 
-    treeService.setNoteTitle(note.detail.noteId, title);
+    treeService.setNoteTitle(note.noteId, title);
 }
 
 async function saveNoteToServer(note) {
-    await server.put('notes/' + note.detail.noteId, note);
+    await server.put('notes/' + note.noteId, note);
 
     isNoteChanged = false;
 
@@ -129,7 +131,7 @@ async function saveNoteToServer(note) {
 }
 
 function setNoteBackgroundIfProtected(note) {
-    const isProtected = !!note.detail.isProtected;
+    const isProtected = !!note.isProtected;
 
     $noteDetailWrapper.toggleClass("protected", isProtected);
     $protectButton.toggle(!isProtected);
@@ -143,7 +145,7 @@ function newNoteCreated() {
 }
 
 async function setContent(content) {
-    if (currentNote.detail.type === 'text') {
+    if (currentNote.type === 'text') {
         if (!editor) {
             await utils.requireLibrary(utils.CKEDITOR);
 
@@ -157,7 +159,7 @@ async function setContent(content) {
 
         $noteDetail.show();
     }
-    else if (currentNote.detail.type === 'code') {
+    else if (currentNote.type === 'code') {
         if (!codeEditor) {
             await utils.requireLibrary(utils.CODE_MIRROR);
 
@@ -186,7 +188,7 @@ async function setContent(content) {
         // this needs to happen after the element is shown, otherwise the editor won't be refresheds
         codeEditor.setValue(content);
 
-        const info = CodeMirror.findModeByMIME(currentNote.detail.mime);
+        const info = CodeMirror.findModeByMIME(currentNote.mime);
 
         if (info) {
             codeEditor.setOption("mode", info.mime);
@@ -195,7 +197,7 @@ async function setContent(content) {
 
         codeEditor.refresh();
     }
-    else if (currentNote.detail.type === 'search') {
+    else if (currentNote.type === 'search') {
         $noteDetailSearch.show();
 
         try {
@@ -223,9 +225,9 @@ async function loadNoteToEditor(noteId) {
 
     $noteIdDisplay.html(noteId);
 
-    await protectedSessionService.ensureProtectedSession(currentNote.detail.isProtected, false);
+    await protectedSessionService.ensureProtectedSession(currentNote.isProtected, false);
 
-    if (currentNote.detail.isProtected) {
+    if (currentNote.isProtected) {
         protectedSessionHolder.touchProtectedSession();
     }
 
@@ -237,10 +239,10 @@ async function loadNoteToEditor(noteId) {
 
     noteChangeDisabled = true;
 
-    $noteTitle.val(currentNote.detail.title);
+    $noteTitle.val(currentNote.title);
 
-    noteTypeService.setNoteType(currentNote.detail.type);
-    noteTypeService.setNoteMime(currentNote.detail.mime);
+    noteTypeService.setNoteType(currentNote.type);
+    noteTypeService.setNoteMime(currentNote.mime);
 
     $noteDetail.hide();
     $noteDetailSearch.hide();
@@ -248,7 +250,7 @@ async function loadNoteToEditor(noteId) {
     $noteDetailRender.html('').hide();
     $noteDetailAttachment.hide();
 
-    if (currentNote.detail.type === 'render') {
+    if (currentNote.type === 'render') {
         $noteDetailRender.show();
 
         const bundle = await server.get('script/bundle/' + getCurrentNoteId());
@@ -257,15 +259,18 @@ async function loadNoteToEditor(noteId) {
 
         bundleService.executeBundle(bundle);
     }
-    else if (currentNote.detail.type === 'file') {
+    else if (currentNote.type === 'file') {
+        const labels = await server.get('notes/' + currentNote.noteId + '/labels');
+        const labelMap = utils.toObject(labels, l => [l.name, l.value]);
+
         $noteDetailAttachment.show();
 
-        $attachmentFileName.text(currentNote.labels.original_file_name);
-        $attachmentFileSize.text(currentNote.labels.file_size + " bytes");
-        $attachmentFileType.text(currentNote.detail.mime);
+        $attachmentFileName.text(labelMap.original_file_name);
+        $attachmentFileSize.text(labelMap.file_size + " bytes");
+        $attachmentFileType.text(currentNote.mime);
     }
     else {
-        await setContent(currentNote.detail.content);
+        await setContent(currentNote.content);
     }
 
     noteChangeDisabled = false;
@@ -299,7 +304,9 @@ async function loadLabelList() {
 }
 
 async function loadNote(noteId) {
-    return await server.get('notes/' + noteId);
+    const row = await server.get('notes/' + noteId);
+
+    return new NoteFull(treeCache, row);
 }
 
 function getEditor() {
@@ -309,24 +316,24 @@ function getEditor() {
 function focus() {
     const note = getCurrentNote();
 
-    if (note.detail.type === 'text') {
+    if (note.type === 'text') {
         $noteDetail.focus();
     }
-    else if (note.detail.type === 'code') {
+    else if (note.type === 'code') {
         codeEditor.focus();
     }
-    else if (note.detail.type === 'render' || note.detail.type === 'file' || note.detail.type === 'search') {
+    else if (note.type === 'render' || note.type === 'file' || note.type === 'search') {
         // do nothing
     }
     else {
-        infoService.throwError('Unrecognized type: ' + note.detail.type);
+        infoService.throwError('Unrecognized type: ' + note.type);
     }
 }
 
 function getCurrentNoteType() {
     const currentNote = getCurrentNote();
 
-    return currentNote ? currentNote.detail.type : null;
+    return currentNote ? currentNote.type : null;
 }
 
 async function executeCurrentNote() {
@@ -334,13 +341,13 @@ async function executeCurrentNote() {
         // make sure note is saved so we load latest changes
         await saveNoteIfChanged();
 
-        if (currentNote.detail.mime.endsWith("env=frontend")) {
+        if (currentNote.mime.endsWith("env=frontend")) {
             const bundle = await server.get('script/bundle/' + getCurrentNoteId());
 
             bundleService.executeBundle(bundle);
         }
 
-        if (currentNote.detail.mime.endsWith("env=backend")) {
+        if (currentNote.mime.endsWith("env=backend")) {
             await server.post('script/run/' + getCurrentNoteId());
         }
 
