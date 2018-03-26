@@ -51,7 +51,7 @@ function ScriptApi(startNote, currentNote) {
         currentNote: currentNote,
         addButtonToToolbar,
         activateNote,
-        getInstanceName: treeService.getInstanceName,
+        getInstanceName: () => window.glob.instanceName,
         runOnServer
     }
 }

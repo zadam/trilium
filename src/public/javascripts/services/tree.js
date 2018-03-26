@@ -20,8 +20,6 @@ const $createTopLevelNoteButton = $("#create-top-level-note-button");
 const $collapseTreeButton = $("#collapse-tree-button");
 const $scrollToCurrentNoteButton = $("#scroll-to-current-note-button");
 
-let instanceName = null; // should have better place
-
 let startNotePath = null;
 
 async function getNoteTitle(noteId, parentNoteId = null) {
@@ -656,7 +654,7 @@ function getNotePathFromAddress() {
 async function loadTree() {
     const resp = await server.get('tree');
     startNotePath = resp.start_note_path;
-    instanceName = resp.instanceName;
+    window.glob.instanceName = resp.instanceName;
 
     if (document.location.hash) {
         startNotePath = getNotePathFromAddress();
@@ -838,10 +836,6 @@ async function sortAlphabetically(noteId) {
     await reload();
 }
 
-function getInstanceName() {
-    return instanceName;
-}
-
 messagingService.subscribeToMessages(syncData => {
     if (syncData.some(sync => sync.entityName === 'branches')
         || syncData.some(sync => sync.entityName === 'notes')) {
@@ -909,6 +903,5 @@ export default {
     removeParentChildRelation,
     setParentChildRelation,
     getSelectedNodes,
-    sortAlphabetically,
-    getInstanceName
+    sortAlphabetically
 };
