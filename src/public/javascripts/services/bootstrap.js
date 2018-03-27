@@ -26,8 +26,10 @@ import treeChanges from './tree_changes.js';
 import treeUtils from './tree_utils.js';
 import utils from './utils.js';
 import server from './server.js';
-
-import './init.js';
+import entrypoints from './entrypoints.js';
+import tooltip from './tooltip.js';
+import bundle from "./bundle.js";
+import treeCache from "./tree_cache.js";
 
 // required for CKEditor image upload plugin
 window.glob.getCurrentNode = treeService.getCurrentNode;
@@ -38,32 +40,52 @@ window.glob.getCurrentNote = noteDetailService.getCurrentNote;
 window.glob.requireLibrary = utils.requireLibrary;
 window.glob.ESLINT = utils.ESLINT;
 
-utils.bindShortcut('ctrl+l', addLinkDialog.showDialog);
+window.onerror = function (msg, url, lineNo, columnNo, error) {
+    const string = msg.toLowerCase();
 
-$("#jump-to-note-button").click(jumpToNoteDialog.showDialog);
-utils.bindShortcut('ctrl+j', jumpToNoteDialog.showDialog);
+    let message = "Uncaught error: ";
 
-$("#show-note-revisions-button").click(noteRevisionsDialog.showCurrentNoteRevisions);
+    if (string.indexOf("script error") > -1){
+        message += 'No details available';
+    }
+    else {
+        message += [
+            'Message: ' + msg,
+            'URL: ' + url,
+            'Line: ' + lineNo,
+            'Column: ' + columnNo,
+            'Error object: ' + JSON.stringify(error)
+        ].join(' - ');
+    }
 
-$("#show-source-button").click(noteSourceDialog.showDialog);
-utils.bindShortcut('ctrl+u', noteSourceDialog.showDialog);
+    messagingService.logError(message);
 
-$("#recent-changes-button").click(recentChangesDialog.showDialog);
+    return false;
+};
 
-$("#recent-notes-button").click(recentNotesDialog.showDialog);
-utils.bindShortcut('ctrl+e', recentNotesDialog.showDialog);
-
-$("#toggle-search-button").click(searchTreeService.toggleSearch);
-utils.bindShortcut('ctrl+s', searchTreeService.toggleSearch);
-
-$(".show-labels-button").click(labelsDialog.showDialog);
-utils.bindShortcut('alt+l', labelsDialog.showDialog);
-
-$("#settings-button").click(settingsDialog.showDialog);
-
-utils.bindShortcut('alt+o', sqlConsoleDialog.showDialog);
+$("#logout-button").toggle(!utils.isElectron());
 
 if (utils.isElectron()) {
-    utils.bindShortcut('alt+left', window.history.back);
-    utils.bindShortcut('alt+right', window.history.forward);
+    require('electron').ipcRenderer.on('create-day-sub-note', async function(event, parentNoteId) {
+        // this might occur when day note had to be created
+        if (!await treeCache.getNote(parentNoteId)) {
+            await treeService.reload();
+        }
+
+        await treeService.activateNode(parentNoteId);
+
+        setTimeout(() => {
+            const node = treeService.getCurrentNode();
+
+            treeService.createNote(node, node.data.noteId, 'into', node.data.isProtected);
+        }, 500);
+    });
 }
+
+treeService.showTree();
+
+entrypoints.registerEntrypoints();
+
+tooltip.setupTooltip();
+
+$(document).ready(bundle.executeStartupBundles);

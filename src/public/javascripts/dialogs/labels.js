@@ -170,7 +170,7 @@ $(document).on('focus', '.label-name', function (e) {
     if (!$(this).hasClass("ui-autocomplete-input")) {
         $(this).autocomplete({
             // shouldn't be required and autocomplete should just accept array of strings, but that fails
-            // because we have overriden filter() function in init.js
+            // because we have overriden filter() function in autocomplete.js
             source: labelNames.map(attr => {
                 return {
                     label: attr,
@@ -200,7 +200,7 @@ $(document).on('focus', '.label-value', async function (e) {
 
         $(this).autocomplete({
             // shouldn't be required and autocomplete should just accept array of strings, but that fails
-            // because we have overriden filter() function in init.js
+            // because we have overriden filter() function in autocomplete.js
             source: labelValues.map(attr => {
                 return {
                     label: attr,

@@ -86,9 +86,9 @@ async function deleteNodes(nodes) {
         treeService.setCurrentNotePathToHash(next);
     }
 
-    treeService.reload();
-
     infoService.showMessage("Note(s) has been deleted.");
+
+    await treeService.reload();
 }
 
 async function moveNodeUpInHierarchy(node) {

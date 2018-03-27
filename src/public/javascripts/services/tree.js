@@ -610,8 +610,6 @@ async function loadTree() {
     return await prepareBranch(resp.notes, resp.branches);
 }
 
-$(() => loadTree().then(branch => initFancyTree(branch)));
-
 function collapseTree(node = null) {
     if (!node) {
         node = $tree.fancytree("getRootNode");
@@ -733,6 +731,12 @@ async function sortAlphabetically(noteId) {
     await reload();
 }
 
+async function showTree() {
+    const tree = await loadTree();
+
+    initFancyTree(tree);
+}
+
 messagingService.subscribeToMessages(syncData => {
     if (syncData.some(sync => sync.entityName === 'branches')
         || syncData.some(sync => sync.entityName === 'notes')) {
@@ -797,5 +801,6 @@ export default {
     createNewTopLevelNote,
     createNote,
     getSelectedNodes,
-    sortAlphabetically
+    sortAlphabetically,
+    showTree
 };

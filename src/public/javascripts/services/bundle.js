@@ -1,4 +1,5 @@
 import ScriptContext from "./script_context.js";
+import server from "./server.js";
 
 async function executeBundle(bundle) {
     const apiContext = ScriptContext(bundle.note, bundle.allNotes);
@@ -8,6 +9,15 @@ async function executeBundle(bundle) {
     }.call(apiContext));
 }
 
+async function executeStartupBundles() {
+    const scriptBundles = await server.get("script/startup");
+
+    for (const bundle of scriptBundles) {
+        await executeBundle(bundle);
+    }
+}
+
 export default {
-    executeBundle
+    executeBundle,
+    executeStartupBundles
 }
