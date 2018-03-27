@@ -72,25 +72,6 @@ async function setNodeTitleWithPrefix(node) {
     node.setTitle(utils.escapeHtml(title));
 }
 
-function removeParentChildRelation(parentNoteId, childNoteId) {
-    utils.assertArguments(parentNoteId, childNoteId);
-
-    treeCache.parents[childNoteId] = treeCache.parents[childNoteId].filter(p => p.noteId !== parentNoteId);
-    treeCache.children[parentNoteId] = treeCache.children[parentNoteId].filter(ch => ch.noteId !== childNoteId);
-
-    delete treeCache.childParentToBranch[childNoteId + '-' + parentNoteId];
-}
-
-async function setParentChildRelation(branchId, parentNoteId, childNoteId) {
-    treeCache.parents[childNoteId] = treeCache.parents[childNoteId] || [];
-    treeCache.parents[childNoteId].push(await treeCache.getNote(parentNoteId));
-
-    treeCache.children[parentNoteId] = treeCache.children[parentNoteId] || [];
-    treeCache.children[parentNoteId].push(await treeCache.getNote(childNoteId));
-
-    treeCache.childParentToBranch[childNoteId + '-' + parentNoteId] = await treeCache.getBranch(branchId);
-}
-
 async function prepareBranch(noteRows, branchRows) {
     utils.assertArguments(noteRows);
 
@@ -641,8 +622,6 @@ function collapseTree(node = null) {
     node.visit(node => node.setExpanded(false));
 }
 
-$(document).bind('keydown', 'alt+c', () => collapseTree()); // don't use shortened form since collapseTree() accepts argument
-
 function scrollToCurrentNote() {
     const node = getCurrentNode();
 
@@ -796,6 +775,8 @@ $(window).bind('hashchange', function() {
     }
 });
 
+utils.bindShortcut('alt+c', () => collapseTree()); // don't use shortened form since collapseTree() accepts argument
+
 $createTopLevelNoteButton.click(createNewTopLevelNote);
 $collapseTreeButton.click(collapseTree);
 $scrollToCurrentNoteButton.click(scrollToCurrentNote);
@@ -815,8 +796,6 @@ export default {
     setPrefix,
     createNewTopLevelNote,
     createNote,
-    removeParentChildRelation,
-    setParentChildRelation,
     getSelectedNodes,
     sortAlphabetically
 };

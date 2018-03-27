@@ -2,6 +2,7 @@ import treeService from './tree.js';
 import utils from './utils.js';
 import server from './server.js';
 import infoService from "./info.js";
+import treeCache from "./tree_cache.js";
 
 async function moveBeforeNode(nodesToMove, beforeNode) {
     for (const nodeToMove of nodesToMove) {
@@ -12,7 +13,7 @@ async function moveBeforeNode(nodesToMove, beforeNode) {
             return;
         }
 
-        changeNode(nodeToMove, node => node.moveTo(beforeNode, 'before'));
+        await changeNode(nodeToMove, node => node.moveTo(beforeNode, 'before'));
     }
 }
 
@@ -27,7 +28,7 @@ async function moveAfterNode(nodesToMove, afterNode) {
             return;
         }
 
-        changeNode(nodeToMove, node => node.moveTo(afterNode, 'after'));
+        await changeNode(nodeToMove, node => node.moveTo(afterNode, 'after'));
     }
 }
 
@@ -40,7 +41,7 @@ async function moveToNode(nodesToMove, toNode) {
             return;
         }
 
-        changeNode(nodeToMove, node => {
+        await changeNode(nodeToMove, node => {
             // first expand which will force lazy load and only then move the node
             // if this is not expanded before moving, then lazy load won't happen because it already contains node
             // this doesn't work if this isn't a folder yet, that's why we expand second time below
@@ -107,19 +108,20 @@ async function moveNodeUpInHierarchy(node) {
         node.getParent().renderTitle();
     }
 
-    changeNode(node, node => node.moveTo(node.getParent(), 'after'));
+    await changeNode(node, node => node.moveTo(node.getParent(), 'after'));
 }
 
-function changeNode(node, func) {
+async function changeNode(node, func) {
     utils.assertArguments(node.data.parentNoteId, node.data.noteId);
 
-    treeService.removeParentChildRelation(node.data.parentNoteId, node.data.noteId);
+    const childNoteId = node.data.noteId;
+    const oldParentNoteId = node.data.parentNoteId;
 
     func(node);
 
-    node.data.parentNoteId = utils.isTopLevelNode(node) ? 'root' : node.getParent().data.noteId;
+    const newParentNoteId = node.data.parentNoteId = utils.isTopLevelNode(node) ? 'root' : node.getParent().data.noteId;
 
-    treeService.setParentChildRelation(node.data.branchId, node.data.parentNoteId, node.data.noteId);
+    await treeCache.moveNote(childNoteId, oldParentNoteId, newParentNoteId);
 
     treeService.setCurrentNotePathToHash(node);
 }

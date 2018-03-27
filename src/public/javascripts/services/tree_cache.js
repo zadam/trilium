@@ -65,6 +65,47 @@ class TreeCache {
 
         return branch;
     }
+
+    /* Move note from one parent to another. */
+    async moveNote(childNoteId, oldParentNoteId, newParentNoteId) {
+        utils.assertArguments(childNoteId, oldParentNoteId, newParentNoteId);
+
+        if (oldParentNoteId === newParentNoteId) {
+            return;
+        }
+
+        treeCache.childParentToBranch[childNoteId + '-' + newParentNoteId] = treeCache.childParentToBranch[childNoteId + '-' + oldParentNoteId];
+        delete treeCache.childParentToBranch[childNoteId + '-' + oldParentNoteId]; // this is correct because we know that oldParentId isn't same as newParentId
+
+        // remove old associations
+        treeCache.parents[childNoteId] = treeCache.parents[childNoteId].filter(p => p.noteId !== oldParentNoteId);
+        treeCache.children[oldParentNoteId] = treeCache.children[oldParentNoteId].filter(ch => ch.noteId !== childNoteId);
+
+        // add new associations
+        treeCache.parents[childNoteId].push(await treeCache.getNote(newParentNoteId));
+
+        treeCache.children[newParentNoteId] = treeCache.children[newParentNoteId] || []; // this might be first child
+        treeCache.children[newParentNoteId].push(await treeCache.getNote(childNoteId));
+    }
+
+    removeParentChildRelation(parentNoteId, childNoteId) {
+        utils.assertArguments(parentNoteId, childNoteId);
+
+        treeCache.parents[childNoteId] = treeCache.parents[childNoteId].filter(p => p.noteId !== parentNoteId);
+        treeCache.children[parentNoteId] = treeCache.children[parentNoteId].filter(ch => ch.noteId !== childNoteId);
+
+        delete treeCache.childParentToBranch[childNoteId + '-' + parentNoteId];
+    }
+
+    async setParentChildRelation(branchId, parentNoteId, childNoteId) {
+        treeCache.parents[childNoteId] = treeCache.parents[childNoteId] || [];
+        treeCache.parents[childNoteId].push(await treeCache.getNote(parentNoteId));
+
+        treeCache.children[parentNoteId] = treeCache.children[parentNoteId] || [];
+        treeCache.children[parentNoteId].push(await treeCache.getNote(childNoteId));
+
+        treeCache.childParentToBranch[childNoteId + '-' + parentNoteId] = await treeCache.getBranch(branchId);
+    }
 }
 
 const treeCache = new TreeCache();
