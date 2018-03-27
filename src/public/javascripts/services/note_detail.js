@@ -9,11 +9,12 @@ import bundleService from "./bundle.js";
 import infoService from "./info.js";
 import treeCache from "./tree_cache.js";
 import NoteFull from "../entities/note_full.js";
+import noteDetailCode from './note_detail_code.js';
+import noteDetailText from './note_detail_text.js';
 
 const $noteTitle = $("#note-title");
 
-const $noteDetailText = $('#note-detail-text');
-const $noteDetailCode = $('#note-detail-code');
+const $noteDetailComponents = $(".note-detail-component");
 const $noteDetailSearch = $('#note-detail-search');
 const $noteDetailRender = $('#note-detail-render');
 const $noteDetailAttachment = $('#note-detail-attachment');
@@ -31,11 +32,6 @@ const $attachmentDownload = $("#attachment-download");
 const $attachmentOpen = $("#attachment-open");
 const $searchString = $("#search-string");
 
-const $executeScriptButton = $("#execute-script-button");
-
-let textEditor = null;
-let codeEditor = null;
-
 let currentNote = null;
 
 let noteChangeDisabled = false;
@@ -48,6 +44,12 @@ function getCurrentNote() {
 
 function getCurrentNoteId() {
     return currentNote ? currentNote.noteId : null;
+}
+
+function getCurrentNoteType() {
+    const currentNote = getCurrentNote();
+
+    return currentNote ? currentNote.type : null;
 }
 
 function noteChanged() {
@@ -90,18 +92,10 @@ async function saveNoteIfChanged() {
 
 function updateNoteFromInputs(note) {
     if (note.type === 'text') {
-        let content = textEditor.getData();
-
-        // if content is only tags/whitespace (typically <p>&nbsp;</p>), then just make it empty
-        // this is important when setting new note to code
-        if (jQuery(content).text().trim() === '' && !content.includes("<img")) {
-            content = '';
-        }
-
-        note.content = content;
+        note.content = noteDetailText.getContent();
     }
     else if (note.type === 'code') {
-        note.content = codeEditor.getValue();
+        note.content = noteDetailCode.getContent();
     }
     else if (note.type === 'search') {
         note.content = JSON.stringify({
@@ -151,7 +145,7 @@ async function showRenderNote() {
 
     $noteDetailRender.html(bundle.html);
 
-    bundleService.executeBundle(bundle);
+    await bundleService.executeBundle(bundle);
 }
 
 async function showFileNote() {
@@ -163,60 +157,6 @@ async function showFileNote() {
     $attachmentFileName.text(labelMap.original_file_name);
     $attachmentFileSize.text(labelMap.file_size + " bytes");
     $attachmentFileType.text(currentNote.mime);
-}
-
-async function showTextNote() {
-    if (!textEditor) {
-        await utils.requireLibrary(utils.CKEDITOR);
-
-        textEditor = await BalloonEditor.create($noteDetailText[0], {});
-
-        textEditor.document.on('change', noteChanged);
-    }
-
-    // temporary workaround for https://github.com/ckeditor/ckeditor5-enter/issues/49
-    textEditor.setData(currentNote.content || "<p></p>");
-
-    $noteDetailText.show();
-}
-
-async function showCodeNote() {
-    if (!codeEditor) {
-        await utils.requireLibrary(utils.CODE_MIRROR);
-
-        CodeMirror.keyMap.default["Shift-Tab"] = "indentLess";
-        CodeMirror.keyMap.default["Tab"] = "indentMore";
-
-        CodeMirror.modeURL = 'libraries/codemirror/mode/%N/%N.js';
-
-        codeEditor = CodeMirror($("#note-detail-code")[0], {
-            value: "",
-            viewportMargin: Infinity,
-            indentUnit: 4,
-            matchBrackets: true,
-            matchTags: {bothTags: true},
-            highlightSelectionMatches: {showToken: /\w/, annotateScrollbar: false},
-            lint: true,
-            gutters: ["CodeMirror-lint-markers"],
-            lineNumbers: true
-        });
-
-        codeEditor.on('change', noteChanged);
-    }
-
-    $noteDetailCode.show();
-
-    // this needs to happen after the element is shown, otherwise the editor won't be refresheds
-    codeEditor.setValue(currentNote.content);
-
-    const info = CodeMirror.findModeByMIME(currentNote.mime);
-
-    if (info) {
-        codeEditor.setOption("mode", info.mime);
-        CodeMirror.autoLoadMode(codeEditor, info.mode);
-    }
-
-    codeEditor.refresh();
 }
 
 function showSearchNote() {
@@ -235,6 +175,18 @@ function showSearchNote() {
     $searchString.on('input', noteChanged);
 }
 
+async function handleProtectedSession() {
+    await protectedSessionService.ensureProtectedSession(currentNote.isProtected, false);
+
+    if (currentNote.isProtected) {
+        protectedSessionHolder.touchProtectedSession();
+    }
+
+    // this might be important if we focused on protected note when not in protected note and we got a dialog
+    // to login, but we chose instead to come to another node - at that point the dialog is still visible and this will close it.
+    protectedSessionService.ensureDialogIsClosed();
+}
+
 async function loadNoteToEditor(noteId) {
     currentNote = await loadNote(noteId);
 
@@ -246,48 +198,39 @@ async function loadNoteToEditor(noteId) {
 
     $noteIdDisplay.html(noteId);
 
-    await protectedSessionService.ensureProtectedSession(currentNote.isProtected, false);
-
-    if (currentNote.isProtected) {
-        protectedSessionHolder.touchProtectedSession();
-    }
-
-    // this might be important if we focused on protected note when not in protected note and we got a dialog
-    // to login, but we chose instead to come to another node - at that point the dialog is still visible and this will close it.
-    protectedSessionService.ensureDialogIsClosed();
+    await handleProtectedSession();
 
     $noteDetailWrapper.show();
 
     noteChangeDisabled = true;
 
-    $noteTitle.val(currentNote.title);
+    try {
+        $noteTitle.val(currentNote.title);
 
-    noteTypeService.setNoteType(currentNote.type);
-    noteTypeService.setNoteMime(currentNote.mime);
+        noteTypeService.setNoteType(currentNote.type);
+        noteTypeService.setNoteMime(currentNote.mime);
 
-    $noteDetailText.hide();
-    $noteDetailSearch.hide();
-    $noteDetailCode.hide();
-    $noteDetailRender.html('').hide();
-    $noteDetailAttachment.hide();
+        $noteDetailComponents.hide();
 
-    if (currentNote.type === 'render') {
-        await showRenderNote();
+        if (currentNote.type === 'render') {
+            await showRenderNote();
+        }
+        else if (currentNote.type === 'file') {
+            await showFileNote();
+        }
+        else if (currentNote.type === 'text') {
+            await noteDetailText.showTextNote();
+        }
+        else if (currentNote.type === 'code') {
+            await noteDetailCode.showCodeNote();
+        }
+        else if (currentNote.type === 'search') {
+            showSearchNote();
+        }
     }
-    else if (currentNote.type === 'file') {
-        await showFileNote();
+    finally {
+        noteChangeDisabled = false;
     }
-    else if (currentNote.type === 'text') {
-        await showTextNote();
-    }
-    else if (currentNote.type === 'code') {
-        await showCodeNote();
-    }
-    else if (currentNote.type === 'search') {
-        showSearchNote();
-    }
-
-    noteChangeDisabled = false;
 
     setNoteBackgroundIfProtected(currentNote);
     treeService.setBranchBackgroundBasedOnProtectedStatus(noteId);
@@ -295,7 +238,7 @@ async function loadNoteToEditor(noteId) {
     // after loading new note make sure editor is scrolled to the top
     $noteDetailWrapper.scrollTop(0);
 
-    loadLabelList();
+    await loadLabelList();
 }
 
 async function loadLabelList() {
@@ -323,49 +266,20 @@ async function loadNote(noteId) {
     return new NoteFull(treeCache, row);
 }
 
-function getEditor() {
-    return textEditor;
-}
-
 function focus() {
     const note = getCurrentNote();
 
     if (note.type === 'text') {
-        $noteDetailText.focus();
+        noteDetailText.focus();
     }
     else if (note.type === 'code') {
-        codeEditor.focus();
+        noteDetailCode.focus();
     }
     else if (note.type === 'render' || note.type === 'file' || note.type === 'search') {
         // do nothing
     }
     else {
         infoService.throwError('Unrecognized type: ' + note.type);
-    }
-}
-
-function getCurrentNoteType() {
-    const currentNote = getCurrentNote();
-
-    return currentNote ? currentNote.type : null;
-}
-
-async function executeCurrentNote() {
-    if (getCurrentNoteType() === 'code') {
-        // make sure note is saved so we load latest changes
-        await saveNoteIfChanged();
-
-        if (currentNote.mime.endsWith("env=frontend")) {
-            const bundle = await server.get('script/bundle/' + getCurrentNoteId());
-
-            bundleService.executeBundle(bundle);
-        }
-
-        if (currentNote.mime.endsWith("env=backend")) {
-            await server.post('script/run/' + getCurrentNoteId());
-        }
-
-        infoService.showMessage("Note executed");
     }
 }
 
@@ -405,17 +319,12 @@ $(document).ready(() => {
         treeService.setNoteTitle(getCurrentNoteId(), title);
     });
 
-    // so that tab jumps from note title (which has tabindex 1)
-    $noteDetailText.attr("tabindex", 2);
+    noteDetailText.focus();
 });
 
 // this makes sure that when user e.g. reloads the page or navigates away from the page, the note's content is saved
 // this sends the request asynchronously and doesn't wait for result
 $(window).on('beforeunload', saveNoteIfChanged);
-
-$(document).bind('keydown', "ctrl+return", executeCurrentNote);
-
-$executeScriptButton.click(executeCurrentNote());
 
 setInterval(saveNoteIfChanged, 5000);
 
@@ -430,7 +339,8 @@ export default {
     getCurrentNoteType,
     getCurrentNoteId,
     newNoteCreated,
-    getEditor,
     focus,
-    loadLabelList
+    loadLabelList,
+    saveNoteIfChanged,
+    noteChanged
 };

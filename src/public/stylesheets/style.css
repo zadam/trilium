@@ -28,6 +28,10 @@
     align-items: center;
 }
 
+.note-detail-component {
+    display: none;
+}
+
 #note-detail-text {
     border: 0 !important;
     box-shadow: none !important;

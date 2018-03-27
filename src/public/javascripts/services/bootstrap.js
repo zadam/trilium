@@ -13,7 +13,7 @@ import contextMenu from './context_menu.js';
 import dragAndDropSetup from './drag_and_drop.js';
 import exportService from './export.js';
 import link from './link.js';
-import messaging from './messaging.js';
+import messagingService from './messaging.js';
 import noteDetailService from './note_detail.js';
 import noteType from './note_type.js';
 import protected_session from './protected_session.js';
