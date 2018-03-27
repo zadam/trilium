@@ -12,6 +12,7 @@ import recentNotesDialog from '../dialogs/recent_notes.js';
 import editTreePrefixDialog from '../dialogs/edit_tree_prefix.js';
 import treeCache from './tree_cache.js';
 import infoService from "./info.js";
+import treeBuilder from "./tree_builder.js";
 import Branch from '../entities/branch.js';
 
 const $tree = $("#tree");
@@ -70,78 +71,6 @@ async function setNodeTitleWithPrefix(node) {
     const title = (prefix ? (prefix + " - ") : "") + noteTitle;
 
     node.setTitle(utils.escapeHtml(title));
-}
-
-async function prepareBranch(noteRows, branchRows) {
-    utils.assertArguments(noteRows);
-
-    treeCache.load(noteRows, branchRows);
-
-    return await prepareBranchInner(await treeCache.getNote('root'));
-}
-
-async function getExtraClasses(note) {
-    utils.assertArguments(note);
-
-    const extraClasses = [];
-
-    if (note.isProtected) {
-        extraClasses.push("protected");
-    }
-
-    if ((await note.getParentNotes()).length > 1) {
-        extraClasses.push("multiple-parents");
-    }
-
-    extraClasses.push(note.type);
-
-    return extraClasses.join(" ");
-}
-
-async function prepareBranchInner(parentNote) {
-    utils.assertArguments(parentNote);
-
-    const childBranches = await parentNote.getChildBranches();
-
-    if (!childBranches) {
-        messagingService.logError(`No children for ${parentNote}. This shouldn't happen.`);
-        return;
-    }
-
-    const noteList = [];
-
-    for (const branch of childBranches) {
-        const note = await branch.getNote();
-        const title = (branch.prefix ? (branch.prefix + " - ") : "") + note.title;
-
-        const node = {
-            noteId: note.noteId,
-            parentNoteId: branch.parentNoteId,
-            branchId: branch.branchId,
-            isProtected: note.isProtected,
-            title: utils.escapeHtml(title),
-            extraClasses: await getExtraClasses(note),
-            refKey: note.noteId,
-            expanded: note.type !== 'search' && branch.isExpanded
-        };
-
-        const hasChildren = (await note.getChildNotes()).length > 0;
-
-        if (hasChildren || note.type === 'search') {
-            node.folder = true;
-
-            if (node.expanded && note.type !== 'search') {
-                node.children = await prepareBranchInner(note);
-            }
-            else {
-                node.lazy = true;
-            }
-        }
-
-        noteList.push(node);
-    }
-
-    return noteList;
 }
 
 async function expandToNote(notePath, expandOpts) {
@@ -547,14 +476,7 @@ function initFancyTree(branch) {
         dnd: dragAndDropSetup,
         lazyLoad: function(event, data) {
             const noteId = data.node.data.noteId;
-            data.result = treeCache.getNote(noteId).then(note => {
-                if (note.type === 'search') {
-                    return loadSearchNote(noteId);
-                }
-                else {
-                    return prepareBranchInner(note);
-                }
-            });
+            data.result = treeCache.getNote(noteId).then(note => treeBuilder.prepareBranch(note));
         },
         clones: {
             highlightActiveClones: true
@@ -562,25 +484,6 @@ function initFancyTree(branch) {
     });
 
     $tree.contextmenu(contextMenuService.contextMenuSettings);
-}
-
-async function loadSearchNote(searchNoteId) {
-    const searchNote = await noteDetailService.loadNote(searchNoteId);
-    const noteIds = await server.get('search/' + encodeURIComponent(searchNote.jsonContent.searchString));
-
-    for (const noteId of noteIds) {
-        const branch = new Branch(treeCache, {
-            branchId: "virt" + utils.randomString(10),
-            noteId: noteId,
-            parentNoteId: searchNoteId,
-            prefix: '',
-            virtual: true
-        });
-
-        treeCache.addBranch(branch);
-    }
-
-    return await prepareBranchInner(searchNote);
 }
 
 function getTree() {
@@ -607,7 +510,7 @@ async function loadTree() {
         startNotePath = getNotePathFromAddress();
     }
 
-    return await prepareBranch(resp.notes, resp.branches);
+    return await treeBuilder.prepareTree(resp.notes, resp.branches);
 }
 
 function collapseTree(node = null) {
@@ -697,7 +600,7 @@ async function createNote(node, parentNoteId, target, isProtected) {
         refKey: result.noteId,
         branchId: result.branchId,
         isProtected: isProtected,
-        extraClasses: await getExtraClasses(note)
+        extraClasses: await treeBuilder.getExtraClasses(note)
     };
 
     if (target === 'after') {
