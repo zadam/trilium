@@ -12,7 +12,7 @@ import NoteFull from "../entities/note_full.js";
 
 const $noteTitle = $("#note-title");
 
-const $noteDetail = $('#note-detail');
+const $noteDetailText = $('#note-detail-text');
 const $noteDetailCode = $('#note-detail-code');
 const $noteDetailSearch = $('#note-detail-search');
 const $noteDetailRender = $('#note-detail-render');
@@ -33,7 +33,7 @@ const $searchString = $("#search-string");
 
 const $executeScriptButton = $("#execute-script-button");
 
-let editor = null;
+let textEditor = null;
 let codeEditor = null;
 
 let currentNote = null;
@@ -90,7 +90,7 @@ async function saveNoteIfChanged() {
 
 function updateNoteFromInputs(note) {
     if (note.type === 'text') {
-        let content = editor.getData();
+        let content = textEditor.getData();
 
         // if content is only tags/whitespace (typically <p>&nbsp;</p>), then just make it empty
         // this is important when setting new note to code
@@ -144,74 +144,95 @@ function newNoteCreated() {
     isNewNoteCreated = true;
 }
 
-async function setContent(content) {
-    if (currentNote.type === 'text') {
-        if (!editor) {
-            await utils.requireLibrary(utils.CKEDITOR);
+async function showRenderNote() {
+    $noteDetailRender.show();
 
-            editor = await BalloonEditor.create($noteDetail[0], {});
+    const bundle = await server.get('script/bundle/' + getCurrentNoteId());
 
-            editor.document.on('change', noteChanged);
-        }
+    $noteDetailRender.html(bundle.html);
 
-        // temporary workaround for https://github.com/ckeditor/ckeditor5-enter/issues/49
-        editor.setData(content ? content : "<p></p>");
+    bundleService.executeBundle(bundle);
+}
 
-        $noteDetail.show();
+async function showFileNote() {
+    const labels = await server.get('notes/' + currentNote.noteId + '/labels');
+    const labelMap = utils.toObject(labels, l => [l.name, l.value]);
+
+    $noteDetailAttachment.show();
+
+    $attachmentFileName.text(labelMap.original_file_name);
+    $attachmentFileSize.text(labelMap.file_size + " bytes");
+    $attachmentFileType.text(currentNote.mime);
+}
+
+async function showTextNote() {
+    if (!textEditor) {
+        await utils.requireLibrary(utils.CKEDITOR);
+
+        textEditor = await BalloonEditor.create($noteDetailText[0], {});
+
+        textEditor.document.on('change', noteChanged);
     }
-    else if (currentNote.type === 'code') {
-        if (!codeEditor) {
-            await utils.requireLibrary(utils.CODE_MIRROR);
 
-            CodeMirror.keyMap.default["Shift-Tab"] = "indentLess";
-            CodeMirror.keyMap.default["Tab"] = "indentMore";
+    // temporary workaround for https://github.com/ckeditor/ckeditor5-enter/issues/49
+    textEditor.setData(currentNote.content || "<p></p>");
 
-            CodeMirror.modeURL = 'libraries/codemirror/mode/%N/%N.js';
+    $noteDetailText.show();
+}
 
-            codeEditor = CodeMirror($("#note-detail-code")[0], {
-                value: "",
-                viewportMargin: Infinity,
-                indentUnit: 4,
-                matchBrackets: true,
-                matchTags: { bothTags: true },
-                highlightSelectionMatches: { showToken: /\w/, annotateScrollbar: false },
-                lint: true,
-                gutters: ["CodeMirror-lint-markers"],
-                lineNumbers: true
-            });
+async function showCodeNote() {
+    if (!codeEditor) {
+        await utils.requireLibrary(utils.CODE_MIRROR);
 
-            codeEditor.on('change', noteChanged);
-        }
+        CodeMirror.keyMap.default["Shift-Tab"] = "indentLess";
+        CodeMirror.keyMap.default["Tab"] = "indentMore";
 
-        $noteDetailCode.show();
+        CodeMirror.modeURL = 'libraries/codemirror/mode/%N/%N.js';
 
-        // this needs to happen after the element is shown, otherwise the editor won't be refresheds
-        codeEditor.setValue(content);
+        codeEditor = CodeMirror($("#note-detail-code")[0], {
+            value: "",
+            viewportMargin: Infinity,
+            indentUnit: 4,
+            matchBrackets: true,
+            matchTags: {bothTags: true},
+            highlightSelectionMatches: {showToken: /\w/, annotateScrollbar: false},
+            lint: true,
+            gutters: ["CodeMirror-lint-markers"],
+            lineNumbers: true
+        });
 
-        const info = CodeMirror.findModeByMIME(currentNote.mime);
-
-        if (info) {
-            codeEditor.setOption("mode", info.mime);
-            CodeMirror.autoLoadMode(codeEditor, info.mode);
-        }
-
-        codeEditor.refresh();
+        codeEditor.on('change', noteChanged);
     }
-    else if (currentNote.type === 'search') {
-        $noteDetailSearch.show();
 
-        try {
-            const json = JSON.parse(content);
+    $noteDetailCode.show();
 
-            $searchString.val(json.searchString);
-        }
-        catch (e) {
-            console.log(e);
-            $searchString.val('');
-        }
+    // this needs to happen after the element is shown, otherwise the editor won't be refresheds
+    codeEditor.setValue(currentNote.content);
 
-        $searchString.on('input', noteChanged);
+    const info = CodeMirror.findModeByMIME(currentNote.mime);
+
+    if (info) {
+        codeEditor.setOption("mode", info.mime);
+        CodeMirror.autoLoadMode(codeEditor, info.mode);
     }
+
+    codeEditor.refresh();
+}
+
+function showSearchNote() {
+    $noteDetailSearch.show();
+
+    try {
+        const json = JSON.parse(currentNote.content);
+
+        $searchString.val(json.searchString);
+    }
+    catch (e) {
+        console.log(e);
+        $searchString.val('');
+    }
+
+    $searchString.on('input', noteChanged);
 }
 
 async function loadNoteToEditor(noteId) {
@@ -244,33 +265,26 @@ async function loadNoteToEditor(noteId) {
     noteTypeService.setNoteType(currentNote.type);
     noteTypeService.setNoteMime(currentNote.mime);
 
-    $noteDetail.hide();
+    $noteDetailText.hide();
     $noteDetailSearch.hide();
     $noteDetailCode.hide();
     $noteDetailRender.html('').hide();
     $noteDetailAttachment.hide();
 
     if (currentNote.type === 'render') {
-        $noteDetailRender.show();
-
-        const bundle = await server.get('script/bundle/' + getCurrentNoteId());
-
-        $noteDetailRender.html(bundle.html);
-
-        bundleService.executeBundle(bundle);
+        await showRenderNote();
     }
     else if (currentNote.type === 'file') {
-        const labels = await server.get('notes/' + currentNote.noteId + '/labels');
-        const labelMap = utils.toObject(labels, l => [l.name, l.value]);
-
-        $noteDetailAttachment.show();
-
-        $attachmentFileName.text(labelMap.original_file_name);
-        $attachmentFileSize.text(labelMap.file_size + " bytes");
-        $attachmentFileType.text(currentNote.mime);
+        await showFileNote();
     }
-    else {
-        await setContent(currentNote.content);
+    else if (currentNote.type === 'text') {
+        await showTextNote();
+    }
+    else if (currentNote.type === 'code') {
+        await showCodeNote();
+    }
+    else if (currentNote.type === 'search') {
+        showSearchNote();
     }
 
     noteChangeDisabled = false;
@@ -310,14 +324,14 @@ async function loadNote(noteId) {
 }
 
 function getEditor() {
-    return editor;
+    return textEditor;
 }
 
 function focus() {
     const note = getCurrentNote();
 
     if (note.type === 'text') {
-        $noteDetail.focus();
+        $noteDetailText.focus();
     }
     else if (note.type === 'code') {
         codeEditor.focus();
@@ -392,7 +406,7 @@ $(document).ready(() => {
     });
 
     // so that tab jumps from note title (which has tabindex 1)
-    $noteDetail.attr("tabindex", 2);
+    $noteDetailText.attr("tabindex", 2);
 });
 
 // this makes sure that when user e.g. reloads the page or navigates away from the page, the note's content is saved
@@ -408,7 +422,6 @@ setInterval(saveNoteIfChanged, 5000);
 export default {
     reload,
     switchToNote,
-    saveNoteIfChanged,
     updateNoteFromInputs,
     saveNoteToServer,
     setNoteBackgroundIfProtected,
@@ -419,7 +432,5 @@ export default {
     newNoteCreated,
     getEditor,
     focus,
-    executeCurrentNote,
-    loadLabelList,
-    setContent
+    loadLabelList
 };

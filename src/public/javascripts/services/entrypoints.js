@@ -84,18 +84,21 @@ function registerEntrypoints() {
         }
     });
 
+    // FIXME: do we really need these at this point?
     utils.bindShortcut("ctrl+shift+up", () => {
         const node = treeService.getCurrentNode();
         node.navigate($.ui.keyCode.UP, true);
 
-        $("#note-detail").focus();
+        $("#note-detail-text").focus();
     });
 
+
+    // FIXME: do we really need these at this point?
     utils.bindShortcut("ctrl+shift+down", () => {
         const node = treeService.getCurrentNode();
         node.navigate($.ui.keyCode.DOWN, true);
 
-        $("#note-detail").focus();
+        $("#note-detail-text").focus();
     });
 
     $(document).bind('keydown', 'ctrl+-', () => {
@@ -120,7 +123,7 @@ function registerEntrypoints() {
         }
     });
 
-    $("#note-title").bind('keydown', 'return', () => $("#note-detail").focus());
+    $("#note-title").bind('keydown', 'return', () => $("#note-detail-text").focus());
 
     $("#upload-attachment-button").click(attachmentService.uploadAttachment);
 }

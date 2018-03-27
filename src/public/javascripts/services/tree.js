@@ -276,7 +276,7 @@ async function treeInitialized() {
     }
 
     if (startNotePath) {
-        activateNode(startNotePath);
+        await activateNode(startNotePath);
 
         // looks like this this doesn't work when triggered immediatelly after activating node
         // so waiting a second helps
@@ -322,7 +322,7 @@ function initFancyTree(branch) {
         },
         expand: (event, data) => setExpandedToServer(data.node.data.branchId, true),
         collapse: (event, data) => setExpandedToServer(data.node.data.branchId, false),
-        init: (event, data) => treeInitialized,
+        init: (event, data) => treeInitialized(), // don't collapse to short form
         hotkeys: {
             keydown: treeKeyBindings
         },

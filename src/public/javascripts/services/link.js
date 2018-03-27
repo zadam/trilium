@@ -92,7 +92,7 @@ function addTextToEditor(text) {
 // of opening the link in new window/tab
 $(document).on('click', "a[action='note']", goToLink);
 $(document).on('click', 'div.popover-content a, div.ui-tooltip-content a', goToLink);
-$(document).on('dblclick', '#note-detail a', goToLink);
+$(document).on('dblclick', '#note-detail-text a', goToLink);
 
 export default {
     getNodePathFromLabel,

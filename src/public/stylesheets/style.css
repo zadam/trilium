@@ -28,7 +28,7 @@
     align-items: center;
 }
 
-#note-detail {
+#note-detail-text {
     border: 0 !important;
     box-shadow: none !important;
     /* This is because with empty content height of editor is 0 and it's impossible to click into it */
@@ -40,7 +40,7 @@
     background-color: #eee;
 }
 
-#note-detail p {
+#note-detail-text p {
     padding: 0;
     margin: 0;
 }
