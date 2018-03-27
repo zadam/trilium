@@ -9,10 +9,10 @@ import treeUtils from './tree_utils.js';
 import utils from './utils.js';
 import server from './server.js';
 import recentNotesDialog from '../dialogs/recent_notes.js';
-import editTreePrefixDialog from '../dialogs/edit_tree_prefix.js';
 import treeCache from './tree_cache.js';
 import infoService from "./info.js";
 import treeBuilder from "./tree_builder.js";
+import treeKeyBindings from "./tree_keybindings.js";
 import Branch from '../entities/branch.js';
 
 const $tree = $("#tree");
@@ -287,135 +287,6 @@ async function treeInitialized() {
 function initFancyTree(branch) {
     utils.assertArguments(branch);
 
-    const keybindings = {
-        "del": node => {
-            treeChangesService.deleteNodes(getSelectedNodes(true));
-        },
-        "ctrl+up": node => {
-            const beforeNode = node.getPrevSibling();
-
-            if (beforeNode !== null) {
-                treeChangesService.moveBeforeNode([node], beforeNode);
-            }
-
-            return false;
-        },
-        "ctrl+down": node => {
-            let afterNode = node.getNextSibling();
-            if (afterNode !== null) {
-                treeChangesService.moveAfterNode([node], afterNode);
-            }
-
-            return false;
-        },
-        "ctrl+left": node => {
-            treeChangesService.moveNodeUpInHierarchy(node);
-
-            return false;
-        },
-        "ctrl+right": node => {
-            let toNode = node.getPrevSibling();
-
-            if (toNode !== null) {
-                treeChangesService.moveToNode([node], toNode);
-            }
-
-            return false;
-        },
-        "shift+up": node => {
-            node.navigate($.ui.keyCode.UP, true).then(() => {
-                const currentNode = getCurrentNode();
-
-                if (currentNode.isSelected()) {
-                    node.setSelected(false);
-                }
-
-                currentNode.setSelected(true);
-            });
-
-            return false;
-        },
-        "shift+down": node => {
-            node.navigate($.ui.keyCode.DOWN, true).then(() => {
-                const currentNode = getCurrentNode();
-
-                if (currentNode.isSelected()) {
-                    node.setSelected(false);
-                }
-
-                currentNode.setSelected(true);
-            });
-
-            return false;
-        },
-        "f2": node => {
-            editTreePrefixDialog.showDialog(node);
-        },
-        "alt+-": node => {
-            collapseTree(node);
-        },
-        "alt+s": node => {
-            sortAlphabetically(node.data.noteId);
-
-            return false;
-        },
-        "ctrl+a": node => {
-            for (const child of node.getParent().getChildren()) {
-                child.setSelected(true);
-            }
-
-            return false;
-        },
-        "ctrl+c": () => {
-            contextMenuService.copy(getSelectedNodes());
-
-            return false;
-        },
-        "ctrl+x": () => {
-            contextMenuService.cut(getSelectedNodes());
-
-            return false;
-        },
-        "ctrl+v": node => {
-            contextMenuService.pasteInto(node);
-
-            return false;
-        },
-        "return": node => {
-            noteDetailService.focus();
-
-            return false;
-        },
-        "backspace": node => {
-            if (!utils.isTopLevelNode(node)) {
-                node.getParent().setActive().then(clearSelectedNodes);
-            }
-        },
-        // code below shouldn't be necessary normally, however there's some problem with interaction with context menu plugin
-        // after opening context menu, standard shortcuts don't work, but they are detected here
-        // so we essentially takeover the standard handling with our implementation.
-        "left": node => {
-            node.navigate($.ui.keyCode.LEFT, true).then(clearSelectedNodes);
-
-            return false;
-        },
-        "right": node => {
-            node.navigate($.ui.keyCode.RIGHT, true).then(clearSelectedNodes);
-
-            return false;
-        },
-        "up": node => {
-            node.navigate($.ui.keyCode.UP, true).then(clearSelectedNodes);
-
-            return false;
-        },
-        "down": node => {
-            node.navigate($.ui.keyCode.DOWN, true).then(clearSelectedNodes);
-
-            return false;
-        }
-    };
-
     $tree.fancytree({
         autoScroll: true,
         keyboard: false, // we takover keyboard handling in the hotkeys plugin
@@ -449,17 +320,11 @@ function initFancyTree(branch) {
 
             showParentList(node.noteId, data.node);
         },
-        expand: (event, data) => {
-            setExpandedToServer(data.node.data.branchId, true);
-        },
-        collapse: (event, data) => {
-            setExpandedToServer(data.node.data.branchId, false);
-        },
-        init: (event, data) => {
-            treeInitialized();
-        },
+        expand: (event, data) => setExpandedToServer(data.node.data.branchId, true),
+        collapse: (event, data) => setExpandedToServer(data.node.data.branchId, false),
+        init: (event, data) => treeInitialized,
         hotkeys: {
-            keydown: keybindings
+            keydown: treeKeyBindings
         },
         filter: {
             autoApply: true,   // Re-apply last filter if lazy data is loaded
@@ -704,6 +569,7 @@ export default {
     createNewTopLevelNote,
     createNote,
     getSelectedNodes,
+    clearSelectedNodes,
     sortAlphabetically,
     showTree
 };
