@@ -27,7 +27,7 @@ function createNoteLink(notePath, noteTitle) {
     if (!noteTitle) {
         const noteId = treeUtils.getNoteIdFromNotePath(notePath);
 
-        noteTitle = treeService.getNoteTitle(noteId);
+        noteTitle = treeUtils.getNoteTitle(noteId);
     }
 
     const noteLink = $("<a>", {

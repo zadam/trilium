@@ -1,6 +1,7 @@
 import treeService from '../services/tree.js';
 import linkService from '../services/link.js';
 import utils from '../services/utils.js';
+import autocompleteService from '../services/autocomplete.js';
 
 const $dialog = $("#jump-to-note-dialog");
 const $autoComplete = $("#jump-to-note-autocomplete");
@@ -17,7 +18,7 @@ async function showDialog() {
     });
 
     await $autoComplete.autocomplete({
-        source: await utils.stopWatch("building autocomplete", treeService.getAutocompleteItems),
+        source: await utils.stopWatch("building autocomplete", autocompleteService.getAutocompleteItems),
         minLength: 0
     });
 }

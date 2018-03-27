@@ -1,6 +1,7 @@
 import treeService from '../services/tree.js';
 import server from '../services/server.js';
 import treeCache from "../services/tree_cache.js";
+import treeUtils from "../services/tree_utils.js";
 
 const $dialog = $("#edit-tree-prefix-dialog");
 const $form = $("#edit-tree-prefix-form");
@@ -24,7 +25,7 @@ async function showDialog() {
 
     $treePrefixInput.val(branch.prefix).focus();
 
-    const noteTitle = treeService.getNoteTitle(currentNode.data.noteId);
+    const noteTitle = treeUtils.getNoteTitle(currentNode.data.noteId);
 
     $noteTitle.html(noteTitle);
 }

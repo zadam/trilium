@@ -23,22 +23,6 @@ const $scrollToCurrentNoteButton = $("#scroll-to-current-note-button");
 
 let startNotePath = null;
 
-async function getNoteTitle(noteId, parentNoteId = null) {
-    utils.assertArguments(noteId);
-
-    let {title} = await treeCache.getNote(noteId);
-
-    if (parentNoteId !== null) {
-        const branch = await treeCache.getBranchByChildParent(noteId, parentNoteId);
-
-        if (branch && branch.prefix) {
-            title = branch.prefix + ' - ' + title;
-        }
-    }
-
-    return title;
-}
-
 // note that if you want to access data like noteId or isProtected, you need to go into "data" property
 function getCurrentNode() {
     return $tree.fancytree("getActiveNode");
@@ -78,7 +62,7 @@ async function setPrefix(branchId, prefix) {
 }
 
 async function setNodeTitleWithPrefix(node) {
-    const noteTitle = await getNoteTitle(node.data.noteId);
+    const noteTitle = await treeUtils.getNoteTitle(node.data.noteId);
     const branch = await treeCache.getBranch(node.data.branchId);
 
     const prefix = branch.prefix;
@@ -300,7 +284,7 @@ async function showParentList(noteId, node) {
             const parentNotePath = await getSomeNotePath(parentNote);
             // this is to avoid having root notes leading '/'
             const notePath = parentNotePath ? (parentNotePath + '/' + noteId) : noteId;
-            const title = await getNotePathTitle(notePath);
+            const title = await treeUtils.getNotePathTitle(notePath);
 
             let item;
 
@@ -314,22 +298,6 @@ async function showParentList(noteId, node) {
             $parentListList.append($("<li/>").append(item));
         }
     }
-}
-
-async function getNotePathTitle(notePath) {
-    utils.assertArguments(notePath);
-
-    const titlePath = [];
-
-    let parentNoteId = 'root';
-
-    for (const noteId of notePath.split('/')) {
-        titlePath.push(await getNoteTitle(noteId, parentNoteId));
-
-        parentNoteId = noteId;
-    }
-
-    return titlePath.join(' / ');
 }
 
 async function getSomeNotePath(note) {
@@ -695,54 +663,6 @@ function setProtected(noteId, isProtected) {
     setBranchBackgroundBasedOnProtectedStatus(noteId);
 }
 
-async function getAutocompleteItems(parentNoteId, notePath, titlePath) {
-    if (!parentNoteId) {
-        parentNoteId = 'root';
-    }
-
-    const parentNote = await treeCache.getNote(parentNoteId);
-    const childNotes = await parentNote.getChildNotes();
-
-    if (!childNotes.length) {
-        return [];
-    }
-
-    if (!notePath) {
-        notePath = '';
-    }
-
-    if (!titlePath) {
-        titlePath = '';
-    }
-
-    // https://github.com/zadam/trilium/issues/46
-    // unfortunately not easy to implement because we don't have an easy access to note's isProtected property
-
-    const autocompleteItems = [];
-
-    for (const childNote of childNotes) {
-        if (childNote.hideInAutocomplete) {
-            continue;
-        }
-
-        const childNotePath = (notePath ? (notePath + '/') : '') + childNote.noteId;
-        const childTitlePath = (titlePath ? (titlePath + ' / ') : '') + await getNoteTitle(childNote.noteId, parentNoteId);
-
-        autocompleteItems.push({
-            value: childTitlePath + ' (' + childNotePath + ')',
-            label: childTitlePath
-        });
-
-        const childItems = await getAutocompleteItems(childNote.noteId, childNotePath, childTitlePath);
-
-        for (const childItem of childItems) {
-            autocompleteItems.push(childItem);
-        }
-    }
-
-    return autocompleteItems;
-}
-
 async function setNoteTitle(noteId, title) {
     utils.assertArguments(noteId);
 
@@ -886,18 +806,15 @@ export default {
     scrollToCurrentNote,
     setBranchBackgroundBasedOnProtectedStatus,
     setProtected,
-    getCurrentNode,
     expandToNote,
     activateNode,
+    getCurrentNode,
     getCurrentNotePath,
-    getNoteTitle,
     setCurrentNotePathToHash,
-    getAutocompleteItems,
     setNoteTitle,
+    setPrefix,
     createNewTopLevelNote,
     createNote,
-    setPrefix,
-    getNotePathTitle,
     removeParentChildRelation,
     setParentChildRelation,
     getSelectedNodes,

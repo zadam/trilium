@@ -2,6 +2,7 @@ import treeService from '../services/tree.js';
 import messagingService from '../services/messaging.js';
 import server from '../services/server.js';
 import utils from "../services/utils.js";
+import treeUtils from "../services/tree_utils.js";
 
 const $dialog = $("#recent-notes-dialog");
 const $searchInput = $('#recent-notes-search-input');
@@ -46,7 +47,7 @@ async function showDialog() {
         let noteTitle;
 
         try {
-            noteTitle = await treeService.getNotePathTitle(notePath);
+            noteTitle = await treeUtils.getNotePathTitle(notePath);
         }
         catch (e) {
             noteTitle = "[error - can't find note title]";

@@ -13,33 +13,19 @@ jQuery.hotkeys.options.filterInputAcceptingElements = false;
 jQuery.hotkeys.options.filterContentEditable = false;
 jQuery.hotkeys.options.filterTextInputs = false;
 
-$(document).bind('keydown', 'alt+m', e => {
-    $(".hide-toggle").toggleClass("suppressed");
-
-    e.preventDefault();
-});
+utils.bindShortcut('alt+m', e => $(".hide-toggle").toggleClass("suppressed"));
 
 // hide (toggle) everything except for the note content for distraction free writing
-$(document).bind('keydown', 'alt+t', e => {
+utils.bindShortcut('alt+t', e => {
     const date = new Date();
     const dateString = utils.formatDateTime(date);
 
     linkService.addTextToEditor(dateString);
-
-    e.preventDefault();
 });
 
-$(document).bind('keydown', 'f5', () => {
-    utils.reloadApp();
+utils.bindShortcut('f5', utils.reloadApp);
 
-    return false;
-});
-
-$(document).bind('keydown', 'ctrl+r', () => {
-    utils.reloadApp();
-
-    return false;
-});
+utils.bindShortcut('ctrl+r', utils.reloadApp);
 
 $(document).bind('keydown', 'ctrl+shift+i', () => {
     if (utils.isElectron()) {
@@ -62,22 +48,18 @@ $(document).bind('keydown', 'ctrl+f', () => {
     }
 });
 
-$(document).bind('keydown', "ctrl+shift+up", () => {
+utils.bindShortcut("ctrl+shift+up", () => {
     const node = treeService.getCurrentNode();
     node.navigate($.ui.keyCode.UP, true);
 
     $("#note-detail").focus();
-
-    return false;
 });
 
-$(document).bind('keydown', "ctrl+shift+down", () => {
+utils.bindShortcut("ctrl+shift+down", () => {
     const node = treeService.getCurrentNode();
     node.navigate($.ui.keyCode.DOWN, true);
 
     $("#note-detail").focus();
-
-    return false;
 });
 
 $(document).bind('keydown', 'ctrl+-', () => {
@@ -109,52 +91,6 @@ $(window).on('beforeunload', () => {
     // this sends the request asynchronously and doesn't wait for result
     noteDetailService.saveNoteIfChanged();
 });
-
-// Overrides the default autocomplete filter function to search for matched on atleast 1 word in each of the input term's words
-$.ui.autocomplete.filter = (array, terms) => {
-    if (!terms) {
-        return array;
-    }
-
-    const startDate = new Date();
-
-    const results = [];
-    const tokens = terms.toLowerCase().split(" ");
-
-    for (const item of array) {
-        const lcLabel = item.label.toLowerCase();
-
-        const found = tokens.every(token => lcLabel.indexOf(token) !== -1);
-        if (!found) {
-            continue;
-        }
-
-        // this is not completely correct and might cause minor problems with note with names containing this " / "
-        const lastSegmentIndex = lcLabel.lastIndexOf(" / ");
-
-        if (lastSegmentIndex !== -1) {
-            const lastSegment = lcLabel.substr(lastSegmentIndex + 3);
-
-            // at least some token needs to be in the last segment (leaf note), otherwise this
-            // particular note is not that interesting (query is satisfied by parent note)
-            const foundInLastSegment = tokens.some(token => lastSegment.indexOf(token) !== -1);
-
-            if (!foundInLastSegment) {
-                continue;
-            }
-        }
-
-        results.push(item);
-
-        if (results.length > 100) {
-            break;
-        }
-    }
-
-    console.log("Search took " + (new Date().getTime() - startDate.getTime()) + "ms");
-
-    return results;
-};
 
 $(document).tooltip({
     items: "#note-detail a",

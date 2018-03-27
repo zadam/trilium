@@ -1,4 +1,5 @@
 import utils from './utils.js';
+import treeCache from "./tree_cache.js";
 
 const $tree = $("#tree");
 
@@ -30,9 +31,43 @@ function getNotePath(node) {
     return path.reverse().join("/");
 }
 
+async function getNoteTitle(noteId, parentNoteId = null) {
+    utils.assertArguments(noteId);
+
+    let {title} = await treeCache.getNote(noteId);
+
+    if (parentNoteId !== null) {
+        const branch = await treeCache.getBranchByChildParent(noteId, parentNoteId);
+
+        if (branch && branch.prefix) {
+            title = branch.prefix + ' - ' + title;
+        }
+    }
+
+    return title;
+}
+
+async function getNotePathTitle(notePath) {
+    utils.assertArguments(notePath);
+
+    const titlePath = [];
+
+    let parentNoteId = 'root';
+
+    for (const noteId of notePath.split('/')) {
+        titlePath.push(await getNoteTitle(noteId, parentNoteId));
+
+        parentNoteId = noteId;
+    }
+
+    return titlePath.join(' / ');
+}
+
 export default {
     getParentProtectedStatus,
     getNodeByKey,
     getNotePath,
     getNoteIdFromNotePath,
+    getNoteTitle,
+    getNotePathTitle,
 };

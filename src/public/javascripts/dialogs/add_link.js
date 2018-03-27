@@ -3,6 +3,7 @@ import cloningService from '../services/cloning.js';
 import linkService from '../services/link.js';
 import noteDetailService from '../services/note_detail.js';
 import treeUtils from '../services/tree_utils.js';
+import autocompleteService from '../services/autocomplete.js';
 
 const $dialog = $("#add-link-dialog");
 const $form = $("#add-link-form");
@@ -46,13 +47,13 @@ async function showDialog() {
     $linkTitle.val('');
 
     function setDefaultLinkTitle(noteId) {
-        const noteTitle = treeService.getNoteTitle(noteId);
+        const noteTitle = treeUtils.getNoteTitle(noteId);
 
         $linkTitle.val(noteTitle);
     }
 
     $autoComplete.autocomplete({
-        source: await treeService.getAutocompleteItems(),
+        source: await autocompleteService.getAutocompleteItems(),
         minLength: 0,
         change: () => {
             const val = $autoComplete.val();
