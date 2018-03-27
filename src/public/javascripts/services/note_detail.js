@@ -11,13 +11,13 @@ import treeCache from "./tree_cache.js";
 import NoteFull from "../entities/note_full.js";
 import noteDetailCode from './note_detail_code.js';
 import noteDetailText from './note_detail_text.js';
+import noteDetailAttachment from './note_detail_attachment.js';
 
 const $noteTitle = $("#note-title");
 
 const $noteDetailComponents = $(".note-detail-component");
 const $noteDetailSearch = $('#note-detail-search');
 const $noteDetailRender = $('#note-detail-render');
-const $noteDetailAttachment = $('#note-detail-attachment');
 
 const $protectButton = $("#protect-button");
 const $unprotectButton = $("#unprotect-button");
@@ -25,11 +25,6 @@ const $noteDetailWrapper = $("#note-detail-wrapper");
 const $noteIdDisplay = $("#note-id-display");
 const $labelList = $("#label-list");
 const $labelListInner = $("#label-list-inner");
-const $attachmentFileName = $("#attachment-filename");
-const $attachmentFileType = $("#attachment-filetype");
-const $attachmentFileSize = $("#attachment-filesize");
-const $attachmentDownload = $("#attachment-download");
-const $attachmentOpen = $("#attachment-open");
 const $searchString = $("#search-string");
 
 let currentNote = null;
@@ -148,17 +143,6 @@ async function showRenderNote() {
     await bundleService.executeBundle(bundle);
 }
 
-async function showFileNote() {
-    const labels = await server.get('notes/' + currentNote.noteId + '/labels');
-    const labelMap = utils.toObject(labels, l => [l.name, l.value]);
-
-    $noteDetailAttachment.show();
-
-    $attachmentFileName.text(labelMap.original_file_name);
-    $attachmentFileSize.text(labelMap.file_size + " bytes");
-    $attachmentFileType.text(currentNote.mime);
-}
-
 function showSearchNote() {
     $noteDetailSearch.show();
 
@@ -216,7 +200,7 @@ async function loadNoteToEditor(noteId) {
             await showRenderNote();
         }
         else if (currentNote.type === 'file') {
-            await showFileNote();
+            await noteDetailAttachment.showFileNote();
         }
         else if (currentNote.type === 'text') {
             await noteDetailText.showTextNote();
@@ -249,8 +233,8 @@ async function loadLabelList() {
     $labelListInner.html('');
 
     if (labels.length > 0) {
-        for (const attr of labels) {
-            $labelListInner.append(utils.formatLabel(attr) + " ");
+        for (const label of labels) {
+            $labelListInner.append(utils.formatLabel(label) + " ");
         }
 
         $labelList.show();
@@ -281,25 +265,6 @@ function focus() {
     else {
         infoService.throwError('Unrecognized type: ' + note.type);
     }
-}
-
-$attachmentDownload.click(() => utils.download(getAttachmentUrl()));
-
-$attachmentOpen.click(() => {
-    if (utils.isElectron()) {
-        const open = require("open");
-
-        open(getAttachmentUrl());
-    }
-    else {
-        window.location.href = getAttachmentUrl();
-    }
-});
-
-function getAttachmentUrl() {
-    // electron needs absolute URL so we extract current host, port, protocol
-    return utils.getHost() + "/api/attachments/download/" + getCurrentNoteId()
-        + "?protectedSessionId=" + encodeURIComponent(protectedSessionHolder.getProtectedSessionId());
 }
 
 messagingService.subscribeToMessages(syncData => {
