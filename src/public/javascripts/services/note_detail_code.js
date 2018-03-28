@@ -9,7 +9,7 @@ let codeEditor = null;
 const $noteDetailCode = $('#note-detail-code');
 const $executeScriptButton = $("#execute-script-button");
 
-async function showCodeNote() {
+async function show() {
     if (!codeEditor) {
         await utils.requireLibrary(utils.CODE_MIRROR);
 
@@ -84,7 +84,7 @@ $(document).bind('keydown', "ctrl+return", executeCurrentNote);
 $executeScriptButton.click(executeCurrentNote);
 
 export default {
-    showCodeNote,
+    show,
     getContent,
     focus
 }

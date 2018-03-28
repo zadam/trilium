@@ -9,7 +9,7 @@ function getContent() {
     });
 }
 
-function showSearchNote() {
+function show() {
     $noteDetailSearch.show();
 
     try {
@@ -27,6 +27,6 @@ function showSearchNote() {
 
 export default {
     getContent,
-    showSearchNote,
+    show,
     focus: () => null
 }

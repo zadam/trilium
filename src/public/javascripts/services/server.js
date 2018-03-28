@@ -69,7 +69,12 @@ async function ajax(url, method, data) {
     };
 
     if (data) {
-        options.data = JSON.stringify(data);
+        try {
+            options.data = JSON.stringify(data);
+        }
+        catch (e) {
+            console.log("Can't stringify data: ", data, " because of error: ", e)
+        }
         options.contentType = "application/json";
     }
 

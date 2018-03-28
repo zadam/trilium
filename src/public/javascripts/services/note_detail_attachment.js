@@ -11,7 +11,7 @@ const $attachmentFileSize = $("#attachment-filesize");
 const $attachmentDownload = $("#attachment-download");
 const $attachmentOpen = $("#attachment-open");
 
-async function showFileNote() {
+async function show() {
     const currentNote = noteDetailService.getCurrentNote();
 
     const labels = await server.get('notes/' + currentNote.noteId + '/labels');
@@ -44,7 +44,7 @@ function getAttachmentUrl() {
 }
 
 export default {
-    showFileNote,
+    show,
     getContent: () => null,
     focus: () => null
 }

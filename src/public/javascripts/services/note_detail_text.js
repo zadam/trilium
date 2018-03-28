@@ -5,7 +5,7 @@ const $noteDetailText = $('#note-detail-text');
 
 let textEditor = null;
 
-async function showTextNote() {
+async function show() {
     if (!textEditor) {
         await utils.requireLibrary(utils.CKEDITOR);
 
@@ -41,7 +41,7 @@ function getEditor() {
 }
 
 export default {
-    showTextNote,
+    show,
     getEditor,
     getContent,
     focus

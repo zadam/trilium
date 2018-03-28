@@ -31,6 +31,23 @@ let noteChangeDisabled = false;
 
 let isNoteChanged = false;
 
+const components = {
+    'code': noteDetailCode,
+    'text': noteDetailText,
+    'file': noteDetailAttachment,
+    'search': noteDetailSearch,
+    'render': noteDetailRender
+};
+
+function getComponent(type) {
+    if (components[type]) {
+        return components[type];
+    }
+    else {
+        infoService.throwError("Unrecognized type: " + type);
+    }
+}
+
 function getCurrentNote() {
     return currentNote;
 }
@@ -84,23 +101,8 @@ async function saveNoteIfChanged() {
 }
 
 function updateNoteFromInputs(note) {
-    if (note.type === 'text') {
-        note.content = noteDetailText.getContent();
-    }
-    else if (note.type === 'code') {
-        note.content = noteDetailCode.getContent();
-    }
-    else if (note.type === 'search') {
-        note.content = noteDetailSearch.getContent();
-    }
-    else if (note.type === 'render') {
-        // nothing
-    }
-    else {
-        infoService.throwError("Unrecognized type: " + note.type);
-    }
-
     note.title = $noteTitle.val();
+    note.content = getComponent(note.type).getContent();
 
     treeService.setNoteTitle(note.noteId, note.title);
 }
@@ -164,21 +166,7 @@ async function loadNoteToEditor(noteId) {
 
         $noteDetailComponents.hide();
 
-        if (currentNote.type === 'render') {
-            await noteDetailRender.showRenderNote();
-        }
-        else if (currentNote.type === 'file') {
-            await noteDetailAttachment.showFileNote();
-        }
-        else if (currentNote.type === 'text') {
-            await noteDetailText.showTextNote();
-        }
-        else if (currentNote.type === 'code') {
-            await noteDetailCode.showCodeNote();
-        }
-        else if (currentNote.type === 'search') {
-            noteDetailSearch.showSearchNote();
-        }
+        await getComponent(currentNote.type).show();
     }
     finally {
         noteChangeDisabled = false;
@@ -221,18 +209,7 @@ async function loadNote(noteId) {
 function focus() {
     const note = getCurrentNote();
 
-    if (note.type === 'text') {
-        noteDetailText.focus();
-    }
-    else if (note.type === 'code') {
-        noteDetailCode.focus();
-    }
-    else if (note.type === 'render' || note.type === 'file' || note.type === 'search') {
-        // do nothing
-    }
-    else {
-        infoService.throwError('Unrecognized type: ' + note.type);
-    }
+    getComponent(note.type).focus();
 }
 
 messagingService.subscribeToMessages(syncData => {

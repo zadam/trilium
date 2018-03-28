@@ -4,7 +4,7 @@ import noteDetailService from "./note_detail.js";
 
 const $noteDetailRender = $('#note-detail-render');
 
-async function showRenderNote() {
+async function show() {
     $noteDetailRender.show();
 
     const bundle = await server.get('script/bundle/' + noteDetailService.getCurrentNoteId());
@@ -15,7 +15,7 @@ async function showRenderNote() {
 }
 
 export default {
-    showRenderNote,
+    show,
     getContent: () => null,
     focus: () => null
 }
