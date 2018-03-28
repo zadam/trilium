@@ -5,19 +5,18 @@ import protectedSessionHolder from './protected_session_holder.js';
 import utils from './utils.js';
 import server from './server.js';
 import messagingService from "./messaging.js";
-import bundleService from "./bundle.js";
 import infoService from "./info.js";
 import treeCache from "./tree_cache.js";
 import NoteFull from "../entities/note_full.js";
 import noteDetailCode from './note_detail_code.js';
 import noteDetailText from './note_detail_text.js';
 import noteDetailAttachment from './note_detail_attachment.js';
+import noteDetailSearch from './note_detail_search.js';
+import noteDetailRender from './note_detail_render.js';
 
 const $noteTitle = $("#note-title");
 
 const $noteDetailComponents = $(".note-detail-component");
-const $noteDetailSearch = $('#note-detail-search');
-const $noteDetailRender = $('#note-detail-render');
 
 const $protectButton = $("#protect-button");
 const $unprotectButton = $("#unprotect-button");
@@ -25,7 +24,6 @@ const $noteDetailWrapper = $("#note-detail-wrapper");
 const $noteIdDisplay = $("#note-id-display");
 const $labelList = $("#label-list");
 const $labelListInner = $("#label-list-inner");
-const $searchString = $("#search-string");
 
 let currentNote = null;
 
@@ -93,22 +91,18 @@ function updateNoteFromInputs(note) {
         note.content = noteDetailCode.getContent();
     }
     else if (note.type === 'search') {
-        note.content = JSON.stringify({
-            searchString: $searchString.val()
-        });
+        note.content = noteDetailSearch.getContent();
     }
-    else if (note.type === 'render' || note.type === 'file') {
+    else if (note.type === 'render') {
         // nothing
     }
     else {
         infoService.throwError("Unrecognized type: " + note.type);
     }
 
-    const title = $noteTitle.val();
+    note.title = $noteTitle.val();
 
-    note.title = title;
-
-    treeService.setNoteTitle(note.noteId, title);
+    treeService.setNoteTitle(note.noteId, note.title);
 }
 
 async function saveNoteToServer(note) {
@@ -131,32 +125,6 @@ let isNewNoteCreated = false;
 
 function newNoteCreated() {
     isNewNoteCreated = true;
-}
-
-async function showRenderNote() {
-    $noteDetailRender.show();
-
-    const bundle = await server.get('script/bundle/' + getCurrentNoteId());
-
-    $noteDetailRender.html(bundle.html);
-
-    await bundleService.executeBundle(bundle);
-}
-
-function showSearchNote() {
-    $noteDetailSearch.show();
-
-    try {
-        const json = JSON.parse(currentNote.content);
-
-        $searchString.val(json.searchString);
-    }
-    catch (e) {
-        console.log(e);
-        $searchString.val('');
-    }
-
-    $searchString.on('input', noteChanged);
 }
 
 async function handleProtectedSession() {
@@ -197,7 +165,7 @@ async function loadNoteToEditor(noteId) {
         $noteDetailComponents.hide();
 
         if (currentNote.type === 'render') {
-            await showRenderNote();
+            await noteDetailRender.showRenderNote();
         }
         else if (currentNote.type === 'file') {
             await noteDetailAttachment.showFileNote();
@@ -209,7 +177,7 @@ async function loadNoteToEditor(noteId) {
             await noteDetailCode.showCodeNote();
         }
         else if (currentNote.type === 'search') {
-            showSearchNote();
+            noteDetailSearch.showSearchNote();
         }
     }
     finally {

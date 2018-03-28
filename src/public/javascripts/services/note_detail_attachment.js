@@ -44,5 +44,7 @@ function getAttachmentUrl() {
 }
 
 export default {
-    showFileNote
+    showFileNote,
+    getContent: () => null,
+    focus: () => null
 }
