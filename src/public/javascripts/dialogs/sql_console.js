@@ -1,4 +1,5 @@
 import utils from '../services/utils.js';
+import libraryLoader from '../services/library_loader.js';
 import server from '../services/server.js';
 import infoService from "../services/info.js";
 
@@ -25,7 +26,7 @@ function showDialog() {
 
 async function initEditor() {
     if (!codeEditor) {
-        await utils.requireLibrary(utils.CODE_MIRROR);
+        await libraryLoader.requireLibrary(libraryLoader.CODE_MIRROR);
 
         CodeMirror.keyMap.default["Shift-Tab"] = "indentLess";
         CodeMirror.keyMap.default["Tab"] = "indentMore";

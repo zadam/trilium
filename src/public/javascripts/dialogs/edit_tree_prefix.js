@@ -30,14 +30,18 @@ async function showDialog() {
     $noteTitle.html(noteTitle);
 }
 
-$form.submit(() => {
+async function savePrefix() {
     const prefix = $treePrefixInput.val();
 
-    server.put('tree/' + branchId + '/set-prefix', {
-        prefix: prefix
-    }).then(() => treeService.setPrefix(branchId, prefix));
+    await server.put('tree/' + branchId + '/set-prefix', { prefix: prefix });
+
+    await treeService.setPrefix(branchId, prefix);
 
     $dialog.dialog("close");
+}
+
+$form.submit(() => {
+    savePrefix();
 
     return false;
 });

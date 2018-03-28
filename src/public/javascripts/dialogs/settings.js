@@ -8,10 +8,10 @@ import infoService from "../services/info.js";
 const $dialog = $("#settings-dialog");
 const $tabs = $("#settings-tabs");
 
-const settingModules = [];
+const tabHandlers = [];
 
-function addModule(module) {
-    settingModules.push(module);
+function addTabHandler(handler) {
+    tabHandlers.push(handler);
 }
 
 async function showDialog() {
@@ -26,9 +26,9 @@ async function showDialog() {
 
     $tabs.tabs();
 
-    for (const module of settingModules) {
-        if (module.settingsLoaded) {
-            module.settingsLoaded(settings);
+    for (const handler of tabHandlers) {
+        if (handler.settingsLoaded) {
+            handler.settingsLoaded(settings);
         }
     }
 }
@@ -47,7 +47,7 @@ export default {
     saveSettings
 };
 
-addModule((function() {
+addTabHandler((function() {
     const $form = $("#change-password-form");
     const $oldPassword = $("#old-password");
     const $newPassword1 = $("#new-password1");
@@ -93,7 +93,7 @@ addModule((function() {
     };
 })());
 
-addModule((function() {
+addTabHandler((function() {
     const $form = $("#protected-session-timeout-form");
     const $protectedSessionTimeout = $("#protected-session-timeout-in-seconds");
     const settingName = 'protected_session_timeout';
@@ -117,7 +117,7 @@ addModule((function() {
     };
 })());
 
-addModule((function () {
+addTabHandler((function () {
     const $form = $("#note-revision-snapshot-time-interval-form");
     const $timeInterval = $("#note-revision-snapshot-time-interval-in-seconds");
     const settingName = 'note_revision_snapshot_time_interval';
@@ -137,7 +137,7 @@ addModule((function () {
     };
 })());
 
-addModule((async function () {
+addTabHandler((async function () {
     const $appVersion = $("#app-version");
     const $dbVersion = $("#db-version");
     const $buildDate = $("#build-date");
@@ -154,7 +154,7 @@ addModule((async function () {
     return {};
 })());
 
-addModule((async function () {
+addTabHandler((async function () {
     const $forceFullSyncButton = $("#force-full-sync-button");
     const $fillSyncRowsButton = $("#fill-sync-rows-button");
     const $anonymizeButton = $("#anonymize-button");

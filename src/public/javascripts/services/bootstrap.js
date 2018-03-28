@@ -30,6 +30,7 @@ import entrypoints from './entrypoints.js';
 import tooltip from './tooltip.js';
 import bundle from "./bundle.js";
 import treeCache from "./tree_cache.js";
+import libraryLoader from "./library_loader.js";
 
 // required for CKEditor image upload plugin
 window.glob.getCurrentNode = treeService.getCurrentNode;
@@ -37,8 +38,8 @@ window.glob.getHeaders = server.getHeaders;
 
 // required for ESLint plugin
 window.glob.getCurrentNote = noteDetailService.getCurrentNote;
-window.glob.requireLibrary = utils.requireLibrary;
-window.glob.ESLINT = utils.ESLINT;
+window.glob.requireLibrary = libraryLoader.requireLibrary;
+window.glob.ESLINT = libraryLoader.ESLINT;
 
 window.onerror = function (msg, url, lineNo, columnNo, error) {
     const string = msg.toLowerCase();

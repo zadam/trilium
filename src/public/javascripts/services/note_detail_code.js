@@ -1,4 +1,5 @@
 import utils from "./utils.js";
+import libraryLoader from "./library_loader.js";
 import bundleService from "./bundle.js";
 import infoService from "./info.js";
 import server from "./server.js";
@@ -11,7 +12,7 @@ const $executeScriptButton = $("#execute-script-button");
 
 async function show() {
     if (!codeEditor) {
-        await utils.requireLibrary(utils.CODE_MIRROR);
+        await libraryLoader.requireLibrary(libraryLoader.CODE_MIRROR);
 
         CodeMirror.keyMap.default["Shift-Tab"] = "indentLess";
         CodeMirror.keyMap.default["Tab"] = "indentMore";

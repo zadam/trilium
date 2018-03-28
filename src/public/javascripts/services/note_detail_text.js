@@ -1,4 +1,4 @@
-import utils from "./utils.js";
+import libraryLoader from "./library_loader.js";
 import noteDetailService from './note_detail.js';
 
 const $noteDetailText = $('#note-detail-text');
@@ -7,7 +7,7 @@ let textEditor = null;
 
 async function show() {
     if (!textEditor) {
-        await utils.requireLibrary(utils.CKEDITOR);
+        await libraryLoader.requireLibrary(libraryLoader.CKEDITOR);
 
         textEditor = await BalloonEditor.create($noteDetailText[0], {});
 

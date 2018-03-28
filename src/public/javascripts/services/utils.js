@@ -89,64 +89,6 @@ function formatLabel(attr) {
     return str;
 }
 
-const CKEDITOR = {"js": ["libraries/ckeditor/ckeditor.js"]};
-
-const CODE_MIRROR = {
-    js: [
-        "libraries/codemirror/codemirror.js",
-        "libraries/codemirror/addon/mode/loadmode.js",
-        "libraries/codemirror/addon/fold/xml-fold.js",
-        "libraries/codemirror/addon/edit/matchbrackets.js",
-        "libraries/codemirror/addon/edit/matchtags.js",
-        "libraries/codemirror/addon/search/match-highlighter.js",
-        "libraries/codemirror/mode/meta.js",
-        "libraries/codemirror/addon/lint/lint.js",
-        "libraries/codemirror/addon/lint/eslint.js"
-    ],
-    css: [
-        "libraries/codemirror/codemirror.css",
-        "libraries/codemirror/addon/lint/lint.css"
-    ]
-};
-
-const ESLINT = {js: ["libraries/eslint.js"]};
-
-async function requireLibrary(library) {
-    if (library.css) {
-        library.css.map(cssUrl => requireCss(cssUrl));
-    }
-
-    if (library.js) {
-        for (const scriptUrl of library.js) {
-            await requireScript(scriptUrl);
-        }
-    }
-}
-
-const dynamicallyLoadedScripts = [];
-
-async function requireScript(url) {
-    if (!dynamicallyLoadedScripts.includes(url)) {
-        dynamicallyLoadedScripts.push(url);
-
-        return await $.ajax({
-            url: url,
-            dataType: "script",
-            cache: true
-        })
-    }
-}
-
-async function requireCss(url) {
-    const css = Array
-        .from(document.querySelectorAll('link'))
-        .map(scr => scr.href);
-
-    if (!css.includes(url)) {
-        $('head').append($('<link rel="stylesheet" type="text/css" />').attr('href', url));
-    }
-}
-
 function getHost() {
     const url = new URL(window.location.href);
     return url.protocol + "//" + url.hostname + ":" + url.port;
@@ -212,10 +154,6 @@ export default {
     stopWatch,
     formatValueWithWhitespace,
     formatLabel,
-    requireLibrary,
-    CKEDITOR,
-    CODE_MIRROR,
-    ESLINT,
     getHost,
     download,
     toObject,

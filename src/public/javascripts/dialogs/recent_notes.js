@@ -27,6 +27,21 @@ function addRecentNote(branchId, notePath) {
     }, 1500);
 }
 
+async function getNoteTitle(notePath) {
+    let noteTitle;
+
+    try {
+        noteTitle = await treeUtils.getNotePathTitle(notePath);
+    }
+    catch (e) {
+        noteTitle = "[error - can't find note title]";
+
+        messagingService.logError("Could not find title for notePath=" + notePath + ", stack=" + e.stack);
+    }
+
+    return noteTitle;
+}
+
 async function showDialog() {
     glob.activeDialog = $dialog;
 
@@ -44,19 +59,8 @@ async function showDialog() {
     const items = [];
 
     for (const notePath of recNotes) {
-        let noteTitle;
-
-        try {
-            noteTitle = await treeUtils.getNotePathTitle(notePath);
-        }
-        catch (e) {
-            noteTitle = "[error - can't find note title]";
-
-            messagingService.logError("Could not find title for notePath=" + notePath + ", stack=" + e.stack);
-        }
-
         items.push({
-            label: noteTitle,
+            label: await getNoteTitle(notePath),
             value: notePath
         });
     }

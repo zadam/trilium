@@ -29,7 +29,7 @@ function formatNode(node, level) {
     const indentAfter  = new Array(level - 1).join('  ');
     let textNode;
 
-    for (let i = 0; i < node.children.length; i++) {
+    for (const i = 0; i < node.children.length; i++) {
         textNode = document.createTextNode('\n' + indentBefore);
         node.insertBefore(textNode, node.children[i]);
 

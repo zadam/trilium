@@ -1,4 +1,3 @@
-import treeService from '../services/tree.js';
 import cloningService from '../services/cloning.js';
 import linkService from '../services/link.js';
 import noteDetailService from '../services/note_detail.js';
