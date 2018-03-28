@@ -126,7 +126,7 @@
               <li><a id="show-note-revisions-button">Note revisions</a></li>
               <li><a class="show-labels-button"><kbd>Alt+L</kbd> Labels</a></li>
               <li><a id="show-source-button"><kbd>Ctrl+U</kbd> HTML source</a></li>
-              <li><a id="upload-attachment-button">Upload attachment</a></li>
+              <li><a id="upload-file-button">Upload file</a></li>
             </ul>
           </div>
         </div>
@@ -177,31 +177,31 @@
 
         <div id="note-detail-render" class="note-detail-component"></div>
 
-        <div id="note-detail-attachment" class="note-detail-component">
-          <table id="attachment-table">
+        <div id="note-detail-file" class="note-detail-component">
+          <table id="file-table">
             <tr>
               <th>File name:</th>
-              <td id="attachment-filename"></td>
+              <td id="file-filename"></td>
             </tr>
             <tr>
               <th>File type:</th>
-              <td id="attachment-filetype"></td>
+              <td id="file-filetype"></td>
             </tr>
             <tr>
               <th>File size:</th>
-              <td id="attachment-filesize"></td>
+              <td id="file-filesize"></td>
             </tr>
             <tr>
               <td>
-                <button id="attachment-download" class="btn btn-primary" type="button">Download</button>
+                <button id="file-download" class="btn btn-primary" type="button">Download</button>
                 &nbsp;
-                <button id="attachment-open" class="btn btn-primary" type="button">Open</button>
+                <button id="file-open" class="btn btn-primary" type="button">Open</button>
               </td>
             </tr>
           </table>
         </div>
 
-        <input type="file" id="attachment-upload" style="display: none" />
+        <input type="file" id="file-upload" style="display: none" />
       </div>
 
       <div id="label-list">

@@ -26,7 +26,7 @@ router.get('/:noteId', auth.checkApiAuth, wrap(async (req, res, next) => {
     protected_session.decryptNote(req, detail);
 
     if (detail.type === 'file') {
-        // no need to transfer (potentially large) attachment payload for this request
+        // no need to transfer (potentially large) file payload for this request
         detail.content = null;
     }
 

@@ -285,7 +285,7 @@ div.ui-tooltip {
     margin-right: 5px;
 }
 
-#attachment-table th, #attachment-table td {
+#file-table th, #file-table td {
     padding: 10px;
     font-size: large;
 }

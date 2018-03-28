@@ -1,7 +1,7 @@
 import utils from "./utils.js";
 import treeService from "./tree.js";
 import linkService from "./link.js";
-import attachmentService from "./attachment.js";
+import fileService from "./file.js";
 import noteRevisionsDialog from "../dialogs/note_revisions.js";
 import settingsDialog from "../dialogs/settings.js";
 import addLinkDialog from "../dialogs/add_link.js";
@@ -125,7 +125,7 @@ function registerEntrypoints() {
 
     $("#note-title").bind('keydown', 'return', () => $("#note-detail-text").focus());
 
-    $("#upload-attachment-button").click(attachmentService.uploadAttachment);
+    $("#upload-file-button").click(fileService.uploadFile);
 }
 
 export default {

@@ -2,16 +2,16 @@ import noteDetailService from "./note_detail.js";
 import treeService from "./tree.js";
 import server from "./server.js";
 
-function uploadAttachment() {
-    $("#attachment-upload").trigger('click');
+function uploadFile() {
+    $("#file-upload").trigger('click');
 }
 
-$("#attachment-upload").change(async function() {
+$("#file-upload").change(async function() {
     const formData = new FormData();
     formData.append('upload', this.files[0]);
 
     const resp = await $.ajax({
-        url: baseApiUrl + 'attachments/upload/' + noteDetailService.getCurrentNoteId(),
+        url: baseApiUrl + 'files/upload/' + noteDetailService.getCurrentNoteId(),
         headers: server.getHeaders(),
         data: formData,
         type: 'POST',
@@ -25,5 +25,5 @@ $("#attachment-upload").change(async function() {
 });
 
 export default {
-    uploadAttachment
+    uploadFile
 }

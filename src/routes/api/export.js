@@ -22,7 +22,7 @@ router.get('/:noteId/', auth.checkApiAuthOrElectron, wrap(async (req, res, next)
 
     pack.finalize();
 
-    res.setHeader('Content-Disposition', 'attachment; filename="' + name + '.tar"');
+    res.setHeader('Content-Disposition', 'file; filename="' + name + '.tar"');
     res.setHeader('Content-Type', 'application/tar');
 
     pack.pipe(res);

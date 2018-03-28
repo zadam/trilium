@@ -10,7 +10,7 @@ import treeCache from "./tree_cache.js";
 import NoteFull from "../entities/note_full.js";
 import noteDetailCode from './note_detail_code.js';
 import noteDetailText from './note_detail_text.js';
-import noteDetailAttachment from './note_detail_attachment.js';
+import noteDetailFile from './note_detail_file.js';
 import noteDetailSearch from './note_detail_search.js';
 import noteDetailRender from './note_detail_render.js';
 
@@ -34,7 +34,7 @@ let isNoteChanged = false;
 const components = {
     'code': noteDetailCode,
     'text': noteDetailText,
-    'file': noteDetailAttachment,
+    'file': noteDetailFile,
     'search': noteDetailSearch,
     'render': noteDetailRender
 };

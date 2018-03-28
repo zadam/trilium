@@ -69,7 +69,7 @@ function NoteTypeModel() {
             return 'Render HTML note';
         }
         else if (type === 'file') {
-            return 'Attachment';
+            return 'File';
         }
         else if (type === 'search') {
             // ignore and do nothing, "type" will be hidden since it's not possible to switch to and from search

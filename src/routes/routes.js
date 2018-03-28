@@ -29,7 +29,7 @@ const imageRoute = require('./api/image');
 const labelsRoute = require('./api/labels');
 const scriptRoute = require('./api/script');
 const senderRoute = require('./api/sender');
-const attachmentsRoute = require('./api/attachments');
+const filesRoute = require('./api/file_upload');
 const searchRoute = require('./api/search');
 
 function register(app) {
@@ -63,7 +63,7 @@ function register(app) {
     app.use('/api/images', imageRoute);
     app.use('/api/script', scriptRoute);
     app.use('/api/sender', senderRoute);
-    app.use('/api/attachments', attachmentsRoute);
+    app.use('/api/files', filesRoute);
     app.use('/api/search', searchRoute);
 }
 

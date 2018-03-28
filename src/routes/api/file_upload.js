@@ -65,7 +65,7 @@ router.get('/download/:noteId', auth.checkApiAuthOrElectron, wrap(async (req, re
     const labelMap = await labels.getNoteLabelMap(noteId);
     const fileName = labelMap.original_file_name ? labelMap.original_file_name : note.title;
 
-    res.setHeader('Content-Disposition', 'attachment; filename=' + fileName);
+    res.setHeader('Content-Disposition', 'file; filename=' + fileName);
     res.setHeader('Content-Type', note.mime);
 
     res.send(note.content);
