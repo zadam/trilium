@@ -108,7 +108,11 @@ function updateNoteFromInputs(note) {
 }
 
 async function saveNoteToServer(note) {
-    await server.put('notes/' + note.noteId, note);
+    const dto = Object.assign({}, note);
+    delete dto.treeCache;
+    delete dto.hideInAutocomplete;
+
+    await server.put('notes/' + dto.noteId, dto);
 
     isNoteChanged = false;
 

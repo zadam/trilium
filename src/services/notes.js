@@ -262,16 +262,16 @@ async function loadFile(noteId, newNote, dataKey) {
         await protected_session.decryptNote(dataKey, oldNote);
     }
 
-    newNote.detail.content = oldNote.content;
+    newNote.content = oldNote.content;
 }
 
 async function updateNote(noteId, newNote, dataKey, sourceId) {
-    if (newNote.detail.type === 'file') {
+    if (newNote.type === 'file') {
         await loadFile(noteId, newNote, dataKey);
     }
 
-    if (newNote.detail.isProtected) {
-        await protected_session.encryptNote(dataKey, newNote.detail);
+    if (newNote.isProtected) {
+        await protected_session.encryptNote(dataKey, newNote);
     }
 
     const labelsMap = await labels.getNoteLabelMap(noteId);
@@ -287,7 +287,7 @@ async function updateNote(noteId, newNote, dataKey, sourceId) {
         "SELECT noteRevisionId FROM note_revisions WHERE noteId = ? AND dateModifiedTo >= ?", [noteId, revisionCutoff]);
 
     await sql.doInTransaction(async () => {
-        const msSinceDateCreated = now.getTime() - utils.parseDateTime(newNote.detail.dateCreated).getTime();
+        const msSinceDateCreated = now.getTime() - utils.parseDateTime(newNote.dateCreated).getTime();
 
         if (labelsMap.disable_versioning !== 'true'
             && !existingnoteRevisionId
@@ -296,14 +296,14 @@ async function updateNote(noteId, newNote, dataKey, sourceId) {
             await saveNoteRevision(noteId, dataKey, sourceId, nowStr);
         }
 
-        await saveNoteImages(noteId, newNote.detail.content, sourceId);
+        await saveNoteImages(noteId, newNote.content, sourceId);
 
-        await protectNoteRevisions(noteId, dataKey, newNote.detail.isProtected);
+        await protectNoteRevisions(noteId, dataKey, newNote.isProtected);
 
         await sql.execute("UPDATE notes SET title = ?, content = ?, isProtected = ?, dateModified = ? WHERE noteId = ?", [
-            newNote.detail.title,
-            newNote.detail.content,
-            newNote.detail.isProtected,
+            newNote.title,
+            newNote.content,
+            newNote.isProtected,
             nowStr,
             noteId]);
 

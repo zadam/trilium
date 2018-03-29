@@ -6,6 +6,7 @@ const fs = require('fs');
 const sqlite = require('sqlite');
 const app_info = require('./app_info');
 const resource_dir = require('./resource_dir');
+const cls = require('./cls');
 
 async function createConnection() {
     return await sqlite.open(dataDir.DOCUMENT_PATH, {Promise});
@@ -15,7 +16,7 @@ const dbConnected = createConnection();
 
 let dbReadyResolve = null;
 const dbReady = new Promise((resolve, reject) => {
-    dbConnected.then(async db => {
+    dbConnected.then(cls.wrap(async db => {
         await execute("PRAGMA foreign_keys = ON");
 
         dbReadyResolve = () => {
@@ -65,7 +66,7 @@ const dbReady = new Promise((resolve, reject) => {
 
             resolve(db);
         }
-    })
+    }))
     .catch(e => {
         console.log("Error connecting to DB.", e);
         process.exit(1);
@@ -191,6 +192,15 @@ let transactionActive = false;
 let transactionPromise = null;
 
 async function doInTransaction(func) {
+    if (cls.namespace.get('isInTransaction')) {
+        console.log("Transaction already active");
+
+        return await func();
+    }
+    else {
+        console.log("Starting new transaction");
+    }
+
     while (transactionActive) {
         await transactionPromise;
     }
@@ -201,6 +211,8 @@ async function doInTransaction(func) {
     transactionActive = true;
     transactionPromise = new Promise(async (resolve, reject) => {
         try {
+            cls.namespace.set('isInTransaction', true);
+
             await beginTransaction();
 
             ret = await func();
@@ -218,6 +230,9 @@ async function doInTransaction(func) {
             transactionActive = false;
 
             reject(e);
+        }
+        finally {
+            cls.namespace.set('isInTransaction', false);
         }
     });
 

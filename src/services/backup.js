@@ -7,6 +7,7 @@ const dataDir = require('./data_dir');
 const log = require('./log');
 const sql = require('./sql');
 const sync_mutex = require('./sync_mutex');
+const cls = require('./cls');
 
 async function regularBackup() {
     const now = new Date();
@@ -64,10 +65,10 @@ if (!fs.existsSync(dataDir.BACKUP_DIR)) {
 }
 
 sql.dbReady.then(() => {
-    setInterval(regularBackup, 60 * 60 * 1000);
+    setInterval(cls.wrap(regularBackup), 60 * 60 * 1000);
 
     // kickoff backup immediately
-    setTimeout(regularBackup, 1000);
+    setTimeout(cls.wrap(regularBackup), 1000);
 });
 
 module.exports = {

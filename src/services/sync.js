@@ -15,6 +15,7 @@ const app_info = require('./app_info');
 const messaging = require('./messaging');
 const sync_setup = require('./sync_setup');
 const sync_mutex = require('./sync_mutex');
+const cls = require('./cls');
 
 let proxyToggle = true;
 let syncServerCertificate = null;
@@ -347,10 +348,10 @@ sql.dbReady.then(() => {
             syncServerCertificate = fs.readFileSync(sync_setup.SYNC_CERT_PATH);
         }
 
-        setInterval(sync, 60000);
+        setInterval(cls.wrap(sync), 60000);
 
         // kickoff initial sync immediately
-        setTimeout(sync, 1000);
+        setTimeout(cls.wrap(sync), 1000);
     }
     else {
         log.info("Sync server not configured, sync timer not running.")

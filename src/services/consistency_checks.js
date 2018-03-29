@@ -5,6 +5,7 @@ const log = require('./log');
 const messaging = require('./messaging');
 const sync_mutex = require('./sync_mutex');
 const utils = require('./utils');
+const cls = require('./cls');
 
 async function runCheck(query, errorText, errorList) {
     utils.assertArguments(query, errorText, errorList);
@@ -268,10 +269,10 @@ async function runChecks() {
 }
 
 sql.dbReady.then(() => {
-    setInterval(runChecks, 60 * 60 * 1000);
+    setInterval(cls.wrap(runChecks), 60 * 60 * 1000);
 
     // kickoff backup immediately
-    setTimeout(runChecks, 10000);
+    setTimeout(cls.wrap(runChecks), 10000);
 });
 
 module.exports = {

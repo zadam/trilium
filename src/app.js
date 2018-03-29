@@ -9,6 +9,7 @@ const session = require('express-session');
 const FileStore = require('session-file-store')(session);
 const os = require('os');
 const sessionSecret = require('./services/session_secret');
+const cls = require('./services/cls');
 
 const app = express();
 
@@ -21,6 +22,17 @@ app.use(helmet());
 app.use((req, res, next) => {
     log.request(req);
     next();
+});
+
+app.use((req, res, next) => {
+    cls.namespace.bindEmitter(req);
+    cls.namespace.bindEmitter(res);
+
+    cls.init(() => {
+        cls.namespace.set("Hi");
+
+        next();
+    });
 });
 
 app.use(bodyParser.json({limit: '50mb'}));

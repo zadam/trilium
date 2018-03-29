@@ -55,7 +55,9 @@ router.put('/:noteId', auth.checkApiAuth, wrap(async (req, res, next) => {
     const sourceId = req.headers.source_id;
     const dataKey = protected_session.getDataKey(req);
 
-    await notes.updateNote(noteId, note, dataKey, sourceId);
+    await sql.doInTransaction(async () => {
+        await notes.updateNote(noteId, note, dataKey, sourceId);
+    });
 
     res.send({});
 }));

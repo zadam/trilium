@@ -1,6 +1,7 @@
 const utils = require('./utils');
 const log = require('./log');
 const sql = require('./sql');
+const cls = require('./cls');
 
 async function saveSourceId(sourceId) {
     await sql.doInTransaction(async () => {
@@ -41,7 +42,7 @@ function isLocalSourceId(srcId) {
 const currentSourceId = createSourceId();
 
 // this will also refresh source IDs
-sql.dbReady.then(() => saveSourceId(currentSourceId));
+sql.dbReady.then(cls.wrap(() => saveSourceId(currentSourceId)));
 
 function getCurrentSourceId() {
     return currentSourceId;
