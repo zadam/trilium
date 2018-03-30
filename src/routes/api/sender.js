@@ -13,7 +13,7 @@ const password_encryption = require('../../services/password_encryption');
 const options = require('../../services/options');
 const sync_table = require('../../services/sync_table');
 
-router.post('/login', wrap(async (req, res, next) => {
+async function login(req) {
     const username = req.body.username;
     const password = req.body.password;
 
@@ -21,61 +21,44 @@ router.post('/login', wrap(async (req, res, next) => {
     const isPasswordValid = await password_encryption.verifyPassword(password);
 
     if (!isUsernameValid || !isPasswordValid) {
-        res.status(401).send("Incorrect username/password");
+        return [401, "Incorrect username/password"];
     }
-    else {
-        const token = utils.randomSecureToken();
 
-        await sql.doInTransaction(async () => {
-            const apiTokenId = utils.newApiTokenId();
+    const token = utils.randomSecureToken();
 
-            await sql.insert("api_tokens", {
-                apiTokenId: apiTokenId,
-                token: token,
-                dateCreated: utils.nowDate(),
-                isDeleted: false
-            });
+    const apiTokenId = utils.newApiTokenId();
 
-            await sync_table.addApiTokenSync(apiTokenId);
-        });
+    await sql.insert("api_tokens", {
+        apiTokenId: apiTokenId,
+        token: token,
+        dateCreated: utils.nowDate(),
+        isDeleted: false
+    });
 
-        res.send({
-            token: token
-        });
-    }
-}));
+    await sync_table.addApiTokenSync(apiTokenId);
 
-async function checkSenderToken(req, res, next) {
-    const token = req.headers.authorization;
-
-    if (await sql.getValue("SELECT COUNT(*) FROM api_tokens WHERE isDeleted = 0 AND token = ?", [token]) === 0) {
-        res.status(401).send("Not authorized");
-    }
-    else if (await sql.isDbUpToDate()) {
-        next();
-    }
-    else {
-        res.status(409).send("Mismatched app versions"); // need better response than that
-    }
+    return {
+        token: token
+    };
 }
 
-router.post('/image', checkSenderToken, multer.single('upload'), wrap(async (req, res, next) => {
+async function uploadImage(req) {
     const file = req.file;
 
     if (!["image/png", "image/jpeg", "image/gif"].includes(file.mimetype)) {
-        return res.status(400).send("Unknown image type: " + file.mimetype);
+        return [400, "Unknown image type: " + file.mimetype];
     }
 
     const parentNoteId = await date_notes.getDateNoteId(req.headers['x-local-date']);
 
-    const noteId = (await notes.createNewNote(parentNoteId, {
+    const {noteId} = await notes.createNewNote(parentNoteId, {
         title: "Sender image",
         content: "",
         target: 'into',
         isProtected: false,
         type: 'text',
         mime: 'text/html'
-    })).noteId;
+    });
 
     const {fileName, imageId} = await image.saveImage(file, null, noteId);
 
@@ -84,11 +67,9 @@ router.post('/image', checkSenderToken, multer.single('upload'), wrap(async (req
     const content = `<img src="${url}"/>`;
 
     await sql.execute("UPDATE notes SET content = ? WHERE noteId = ?", [content, noteId]);
+}
 
-    res.send({});
-}));
-
-router.post('/note', checkSenderToken, wrap(async (req, res, next) => {
+async function saveNote(req) {
     const parentNoteId = await date_notes.getDateNoteId(req.headers['x-local-date']);
 
     await notes.createNewNote(parentNoteId, {
@@ -99,8 +80,10 @@ router.post('/note', checkSenderToken, wrap(async (req, res, next) => {
         type: 'text',
         mime: 'text/html'
     });
+}
 
-    res.send({});
-}));
-
-module.exports = router;
+module.exports = {
+    login,
+    uploadImage,
+    saveNote
+};

@@ -72,11 +72,26 @@ async function checkAppNotInitialized(req, res, next) {
     }
 }
 
+async function checkSenderToken(req, res, next) {
+    const token = req.headers.authorization;
+
+    if (await sql.getValue("SELECT COUNT(*) FROM api_tokens WHERE isDeleted = 0 AND token = ?", [token]) === 0) {
+        res.status(401).send("Not authorized");
+    }
+    else if (await sql.isDbUpToDate()) {
+        next();
+    }
+    else {
+        res.status(409).send("Mismatched app versions"); // need better response than that
+    }
+}
+
 module.exports = {
     checkAuth,
     checkAuthForMigrationPage,
     checkApiAuth,
     checkApiAuthForMigrationPage,
     checkAppNotInitialized,
-    checkApiAuthOrElectron
+    checkApiAuthOrElectron,
+    checkSenderToken
 };

@@ -92,6 +92,7 @@ function route(method, path, middleware, routeHandler, resultHandler) {
 }
 
 const GET = 'get', POST = 'post', PUT = 'put', DELETE = 'delete';
+const uploadMiddleware = multer.single('upload');
 
 function register(app) {
     app.use('/', indexRoute);
@@ -180,10 +181,23 @@ function register(app) {
 
     httpApiRoute(GET, '/api/images/:imageId/:filename', imageRoute.returnImage);
     httpApiRoute(POST, '/api/images', imageRoute.uploadImage);
-    app.use('/api/script', scriptRoute);
-    app.use('/api/sender', senderRoute);
-    app.use('/api/files', filesRoute);
-    app.use('/api/search', searchRoute);
+
+    apiRoute(POST, '/api/script/exec', scriptRoute.exec);
+    apiRoute(POST, '/api/script/run/:noteId', scriptRoute.run);
+    apiRoute(GET, '/api/script/startup', scriptRoute.getStartupBundles);
+    apiRoute(GET, '/api/script/bundle/:noteId', scriptRoute.getBundle);
+
+    route(POST, '/api/sender/login', [], senderRoute.login, apiResultHandler);
+    route(POST, '/api/sender/image', [auth.checkSenderToken], senderRoute.uploadImage, apiResultHandler);
+    route(POST, '/api/sender/note', [auth.checkSenderToken], senderRoute.saveNote, apiResultHandler);
+
+    route(POST, '/api/files/upload/:parentNoteId', [auth.checkApiAuthOrElectron, uploadMiddleware],
+        filesRoute.uploadFile, apiResultHandler);
+
+    route(GET, '/api/files/download/:noteId', [auth.checkApiAuthOrElectron], filesRoute.downloadFile);
+
+    apiRoute(GET, '/api/search/:searchString', searchRoute.searchNotes);
+    apiRoute(POST, '/api/search/:searchString', searchRoute.saveSearchToNote);
 
     app.use('', router);
 

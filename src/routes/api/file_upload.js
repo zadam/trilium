@@ -1,16 +1,11 @@
 "use strict";
 
-const express = require('express');
-const router = express.Router();
 const sql = require('../../services/sql');
-const auth = require('../../services/auth');
 const notes = require('../../services/notes');
 const labels = require('../../services/labels');
 const protected_session = require('../../services/protected_session');
-const multer = require('multer')();
-const wrap = require('express-promise-wrap').wrap;
 
-router.post('/upload/:parentNoteId', auth.checkApiAuthOrElectron, multer.single('upload'), wrap(async (req, res, next) => {
+async function uploadFile(req) {
     const sourceId = req.headers.source_id;
     const parentNoteId = req.params.parentNoteId;
     const file = req.file;
@@ -20,29 +15,27 @@ router.post('/upload/:parentNoteId', auth.checkApiAuthOrElectron, multer.single(
     const note = await sql.getRow("SELECT * FROM notes WHERE noteId = ?", [parentNoteId]);
 
     if (!note) {
-        return res.status(404).send(`Note ${parentNoteId} doesn't exist.`);
+        return [404, `Note ${parentNoteId} doesn't exist.`];
     }
 
-    await sql.doInTransaction(async () => {
-        const noteId = (await notes.createNewNote(parentNoteId, {
-            title: originalName,
-            content: file.buffer,
-            target: 'into',
-            isProtected: false,
-            type: 'file',
-            mime: file.mimetype
-        }, req, sourceId)).noteId;
+    const {noteId} = await notes.createNewNote(parentNoteId, {
+        title: originalName,
+        content: file.buffer,
+        target: 'into',
+        isProtected: false,
+        type: 'file',
+        mime: file.mimetype
+    }, req, sourceId);
 
-        await labels.createLabel(noteId, "original_file_name", originalName, sourceId);
-        await labels.createLabel(noteId, "file_size", size, sourceId);
+    await labels.createLabel(noteId, "original_file_name", originalName, sourceId);
+    await labels.createLabel(noteId, "file_size", size, sourceId);
 
-        res.send({
-            noteId: noteId
-        });
-    });
-}));
+    return {
+        noteId: noteId
+    };
+}
 
-router.get('/download/:noteId', auth.checkApiAuthOrElectron, wrap(async (req, res, next) => {
+async function downloadFile(req, res) {
     const noteId = req.params.noteId;
     const note = await sql.getRow("SELECT * FROM notes WHERE noteId = ?", [noteId]);
     const protectedSessionId = req.query.protectedSessionId;
@@ -69,6 +62,9 @@ router.get('/download/:noteId', auth.checkApiAuthOrElectron, wrap(async (req, re
     res.setHeader('Content-Type', note.mime);
 
     res.send(note.content);
-}));
+}
 
-module.exports = router;
+module.exports = {
+    uploadFile,
+    downloadFile
+};
