@@ -32,6 +32,39 @@ const senderRoute = require('./api/sender');
 const filesRoute = require('./api/file_upload');
 const searchRoute = require('./api/search');
 
+const express = require('express');
+const router = express.Router();
+const auth = require('../services/auth');
+const cls = require('../services/cls');
+const sql = require('../services/sql');
+
+function apiRoute(method, path, handler) {
+    router[method](path, auth.checkApiAuth, async (req, res, next) => {
+        try {
+            const resp = await cls.init(async () => {
+                return await sql.doInTransaction(async () => {
+                    return await handler(req, res, next);
+                });
+            });
+
+            if (Array.isArray(resp)) {
+                res.status(resp[0]).send(resp[1]);
+            }
+            else if (resp === undefined) {
+                res.status(200);
+            }
+            else {
+                res.status(200).send(resp);
+            }
+        }
+        catch (e) {
+            next(e);
+        }
+    });
+}
+
+const GET = 'get', POST = 'post', PUT = 'put', DELETE = 'delete';
+
 function register(app) {
     app.use('/', indexRoute);
     app.use('/login', loginRoute);
@@ -39,9 +72,22 @@ function register(app) {
     app.use('/migration', migrationRoute);
     app.use('/setup', setupRoute);
 
-    app.use('/api/tree', treeApiRoute);
-    app.use('/api/notes', notesApiRoute);
-    app.use('/api/tree', treeChangesApiRoute);
+    apiRoute(GET, '/api/tree', treeApiRoute.getTree);
+    apiRoute(PUT, '/api/tree/:branchId/set-prefix', treeApiRoute.setPrefix);
+
+    apiRoute(PUT, '/api/tree/:branchId/move-to/:parentNoteId', treeChangesApiRoute.moveBranchToParent);
+    apiRoute(PUT, '/api/tree/:branchId/move-before/:beforeBranchId', treeChangesApiRoute.moveBranchBeforeNote);
+    apiRoute(PUT, '/api/tree/:branchId/move-after/:afterBranchId', treeChangesApiRoute.moveBranchAfterNote);
+    apiRoute(PUT, '/api/tree/:branchId/expanded/:expanded', treeChangesApiRoute.setExpanded);
+    apiRoute(DELETE, '/api/tree/:branchId', treeChangesApiRoute.deleteBranch);
+
+    apiRoute(GET, '/api/notes/:noteId', notesApiRoute.getNote);
+    apiRoute(PUT, '/api/notes/:noteId', notesApiRoute.updateNote);
+    apiRoute(POST, '/api/notes/:parentNoteId/children', notesApiRoute.createNote);
+    apiRoute(PUT, '/api/notes/:noteId/sort', notesApiRoute.sortNotes);
+    apiRoute(PUT, '/api/notes/:noteId/protect-sub-tree/:isProtected', notesApiRoute.protectBranch);
+    apiRoute(PUT, /\/api\/notes\/(.*)\/type\/(.*)\/mime\/(.*)/, notesApiRoute.setNoteTypeMime);
+
     app.use('/api/notes', cloningApiRoute);
     app.use('/api', labelsRoute);
     app.use('/api/notes-revisions', noteRevisionsApiRoute);
@@ -65,6 +111,7 @@ function register(app) {
     app.use('/api/sender', senderRoute);
     app.use('/api/files', filesRoute);
     app.use('/api/search', searchRoute);
+    app.use('', router);
 }
 
 module.exports = {

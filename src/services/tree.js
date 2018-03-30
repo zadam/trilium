@@ -4,28 +4,24 @@ const sql = require('./sql');
 const sync_table = require('./sync_table');
 const protected_session = require('./protected_session');
 
-async function validateParentChild(res, parentNoteId, childNoteId, branchId = null) {
+async function validateParentChild(parentNoteId, childNoteId, branchId = null) {
     const existing = await getExistingBranch(parentNoteId, childNoteId);
 
     if (existing && (branchId === null || existing.branchId !== branchId)) {
-        res.send({
+        return {
             success: false,
             message: 'This note already exists in the target.'
-        });
-
-        return false;
+        };
     }
 
     if (!await checkTreeCycle(parentNoteId, childNoteId)) {
-        res.send({
+        return {
             success: false,
             message: 'Moving note here would create cycle.'
-        });
-
-        return false;
+        };
     }
 
-    return true;
+    return { success: true };
 }
 
 async function getExistingBranch(parentNoteId, childNoteId) {

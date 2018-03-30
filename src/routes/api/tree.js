@@ -1,17 +1,13 @@
 "use strict";
 
-const express = require('express');
-const router = express.Router();
 const sql = require('../../services/sql');
 const options = require('../../services/options');
 const utils = require('../../services/utils');
-const auth = require('../../services/auth');
 const config = require('../../services/config');
 const protected_session = require('../../services/protected_session');
 const sync_table = require('../../services/sync_table');
-const wrap = require('express-promise-wrap').wrap;
 
-router.get('/', auth.checkApiAuth, wrap(async (req, res, next) => {
+async function getTree(req) {
     const branches = await sql.getRows(`
       SELECT 
         branchId,
@@ -27,15 +23,13 @@ router.get('/', auth.checkApiAuth, wrap(async (req, res, next) => {
       ORDER BY 
         notePosition`);
 
-    let notes = [{
+    const notes = [{
         noteId: 'root',
         title: 'root',
         isProtected: false,
         type: 'none',
         mime: 'none'
-    }];
-
-    notes = notes.concat(await sql.getRows(`
+    }].concat(await sql.getRows(`
       SELECT 
         notes.noteId,
         notes.title,
@@ -58,15 +52,15 @@ router.get('/', auth.checkApiAuth, wrap(async (req, res, next) => {
         note.isProtected = !!note.isProtected;
     });
 
-    res.send({
+    return {
         instanceName: config.General ? config.General.instanceName : null,
         branches: branches,
         notes: notes,
         start_note_path: await options.getOption('start_note_path')
-    });
-}));
+    };
+}
 
-router.put('/:branchId/set-prefix', auth.checkApiAuth, wrap(async (req, res, next) => {
+async function setPrefix(req) {
     const branchId = req.params.branchId;
     const sourceId = req.headers.source_id;
     const prefix = utils.isEmptyOrWhitespace(req.body.prefix) ? null : req.body.prefix;
@@ -77,7 +71,10 @@ router.put('/:branchId/set-prefix', auth.checkApiAuth, wrap(async (req, res, nex
         await sync_table.addBranchSync(branchId, sourceId);
     });
 
-    res.send({});
-}));
+    return {};
+}
 
-module.exports = router;
+module.exports = {
+    getTree,
+    setPrefix
+};
