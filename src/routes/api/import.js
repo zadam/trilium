@@ -90,7 +90,7 @@ async function parseImportFile(file) {
     });
 }
 
-async function importTar(req, res) {
+async function importTar(req) {
     const sourceId = req.headers.source_id;
     const parentNoteId = req.params.parentNoteId;
     const file = req.file;
@@ -98,14 +98,12 @@ async function importTar(req, res) {
     const note = await sql.getRow("SELECT * FROM notes WHERE noteId = ?", [parentNoteId]);
 
     if (!note) {
-        return res.status(404).send(`Note ${parentNoteId} doesn't exist.`);
+        return [404, `Note ${parentNoteId} doesn't exist.`];
     }
 
     const files = await parseImportFile(file);
 
     await importNotes(files, parentNoteId, sourceId);
-
-    res.send({});
 }
 
 async function importNotes(files, parentNoteId, sourceId) {

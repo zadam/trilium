@@ -1,6 +1,5 @@
 const indexRoute = require('./index');
 const loginRoute = require('./login');
-const logoutRoute = require('./logout');
 const migrationRoute = require('./migration');
 const setupRoute = require('./setup');
 const multer = require('multer')();
@@ -63,11 +62,6 @@ function apiRoute(method, path, routeHandler) {
     route(method, path, [auth.checkApiAuth], routeHandler, apiResultHandler);
 }
 
-// API routes requiring HTTP protocol. This means we ignore route return value and make an electron auth exception
-function httpApiRoute(method, path, routeHandler) {
-    route(method, path, [auth.checkApiAuth, multer.single('upload')], routeHandler);
-}
-
 function route(method, path, middleware, routeHandler, resultHandler) {
     router[method](path, ...middleware, async (req, res, next) => {
         try {
@@ -95,11 +89,12 @@ const GET = 'get', POST = 'post', PUT = 'put', DELETE = 'delete';
 const uploadMiddleware = multer.single('upload');
 
 function register(app) {
-    app.use('/', indexRoute);
-    app.use('/login', loginRoute);
-    app.use('/logout', logoutRoute);
-    app.use('/migration', migrationRoute);
-    app.use('/setup', setupRoute);
+    route(GET, '/', [auth.checkAuth], indexRoute.index);
+    route(GET, '/login', [], loginRoute.loginPage);
+    route(POST, '/login', [], loginRoute.login);
+    route(POST, '/logout', [auth.checkAuth], loginRoute.logout);
+    route(GET, '/migration', [auth.checkAuthForMigrationPage], migrationRoute.migrationPage);
+    route(GET, '/setup', [auth.checkAppNotInitialized], setupRoute.setupPage);
 
     apiRoute(GET, '/api/tree', treeApiRoute.getTree);
     apiRoute(PUT, '/api/tree/:branchId/set-prefix', treeApiRoute.setPrefix);
@@ -167,8 +162,8 @@ function register(app) {
     apiRoute(PUT, '/api/recent-notes/:branchId/:notePath', recentNotesRoute.addRecentNote);
     apiRoute(GET, '/api/app-info', appInfoRoute.getAppInfo);
 
-    httpApiRoute(GET, '/api/export/:noteId', exportRoute.exportNote);
-    httpApiRoute(POST, '/api/import/:parentNoteId', importRoute.importTar);
+    route(GET, '/api/export/:noteId', [auth.checkApiAuthOrElectron], exportRoute.exportNote);
+    route(POST, '/api/import/:parentNoteId', [auth.checkApiAuthOrElectron], importRoute.importTar, apiResultHandler);
 
     route(POST, '/api/setup', [auth.checkAppNotInitialized], setupApiRoute.setup, apiResultHandler);
 
@@ -179,8 +174,8 @@ function register(app) {
     apiRoute(POST, '/api/cleanup/cleanup-unused-images', cleanupRoute.cleanupUnusedImages);
     apiRoute(POST, '/api/cleanup/vacuum-database', cleanupRoute.vacuumDatabase);
 
-    httpApiRoute(GET, '/api/images/:imageId/:filename', imageRoute.returnImage);
-    httpApiRoute(POST, '/api/images', imageRoute.uploadImage);
+    route(GET, '/api/images/:imageId/:filename', [auth.checkApiAuthOrElectron], imageRoute.returnImage);
+    route(POST, '/api/images', [auth.checkApiAuthOrElectron], imageRoute.uploadImage, apiResultHandler);
 
     apiRoute(POST, '/api/script/exec', scriptRoute.exec);
     apiRoute(POST, '/api/script/run/:noteId', scriptRoute.run);
@@ -199,11 +194,14 @@ function register(app) {
     apiRoute(GET, '/api/search/:searchString', searchRoute.searchNotes);
     apiRoute(POST, '/api/search/:searchString', searchRoute.saveSearchToNote);
 
+    route(GET, '/api/migration', [auth.checkApiAuthForMigrationPage], migrationApiRoute.getMigrationInfo, apiResultHandler);
+    route(POST, '/api/migration', [auth.checkApiAuthForMigrationPage], migrationApiRoute.executeMigration, apiResultHandler);
+
+    route(POST, '/api/login/sync', [], loginApiRoute.loginSync, apiResultHandler);
+    // this is for entering protected mode so user has to be already logged-in (that's the reason we don't require username)
+    apiRoute(POST, '/api/login/protected', loginApiRoute.loginToProtectedSession);
+
     app.use('', router);
-
-
-    app.use('/api/migration', migrationApiRoute);
-    app.use('/api/login', loginApiRoute);
 }
 
 module.exports = {

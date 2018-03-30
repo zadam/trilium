@@ -1,15 +1,11 @@
 "use strict";
 
-const express = require('express');
-const router = express.Router();
-const auth = require('../services/auth');
 const source_id = require('../services/source_id');
 const sql = require('../services/sql');
 const Repository = require('../services/repository');
 const labels = require('../services/labels');
-const wrap = require('express-promise-wrap').wrap;
 
-router.get('', auth.checkAuth, wrap(async (req, res, next) => {
+async function index(req, res) {
     const repository = new Repository(req);
 
     res.render('index', {
@@ -17,7 +13,7 @@ router.get('', auth.checkAuth, wrap(async (req, res, next) => {
         maxSyncIdAtLoad: await sql.getValue("SELECT MAX(id) FROM sync"),
         appCss: await getAppCss(repository)
     });
-}));
+}
 
 async function getAppCss(repository) {
     let css = '';
@@ -33,4 +29,6 @@ ${note.content}
     return css;
 }
 
-module.exports = router;
+module.exports = {
+    index
+};

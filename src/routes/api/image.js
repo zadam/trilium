@@ -1,12 +1,7 @@
 "use strict";
 
-const express = require('express');
-const router = express.Router();
 const sql = require('../../services/sql');
-const auth = require('../../services/auth');
 const image = require('../../services/image');
-const multer = require('multer')();
-const wrap = require('express-promise-wrap').wrap;
 const RESOURCE_DIR = require('../../services/resource_dir').RESOURCE_DIR;
 const fs = require('fs');
 
@@ -14,7 +9,7 @@ async function returnImage(req, res) {
     const image = await sql.getRow("SELECT * FROM images WHERE imageId = ?", [req.params.imageId]);
 
     if (!image) {
-        return res.status(404).send({});
+        return res.sendStatus(404);
     }
     else if (image.data === null) {
         res.set('Content-Type', 'image/png');
@@ -26,7 +21,7 @@ async function returnImage(req, res) {
     res.send(image.data);
 }
 
-async function uploadImage(req, res) {
+async function uploadImage(req) {
     const sourceId = req.headers.source_id;
     const noteId = req.query.noteId;
     const file = req.file;
@@ -34,19 +29,19 @@ async function uploadImage(req, res) {
     const note = await sql.getRow("SELECT * FROM notes WHERE noteId = ?", [noteId]);
 
     if (!note) {
-        return res.status(404).send(`Note ${noteId} doesn't exist.`);
+        return [404, `Note ${noteId} doesn't exist.`];
     }
 
     if (!["image/png", "image/jpeg", "image/gif"].includes(file.mimetype)) {
-        return res.status(400).send("Unknown image type: " + file.mimetype);
+        return [400, "Unknown image type: " + file.mimetype];
     }
 
     const {fileName, imageId} = await image.saveImage(file, sourceId, noteId);
 
-    res.send({
+    return {
         uploaded: true,
         url: `/api/images/${imageId}/${fileName}`
-    });
+    };
 }
 
 module.exports = {

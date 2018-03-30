@@ -1,17 +1,14 @@
 "use strict";
 
-const express = require('express');
-const router = express.Router();
 const utils = require('../services/utils');
 const options = require('../services/options');
 const my_scrypt = require('../services/my_scrypt');
-const wrap = require('express-promise-wrap').wrap;
 
-router.get('', wrap(async (req, res, next) => {
-    res.render('login', { 'failedAuth': false });
-}));
+function loginPage(req, res) {
+    res.render('login', { failedAuth: false });
+}
 
-router.post('', wrap(async (req, res, next) => {
+async function login(req, res) {
     const userName = await options.getOption('username');
 
     const guessedPassword = req.body.password;
@@ -33,15 +30,27 @@ router.post('', wrap(async (req, res, next) => {
     else {
         res.render('login', {'failedAuth': true});
     }
-}));
+}
 
-
-async function verifyPassword(guessed_password) {
+async function verifyPassword(guessedPassword) {
     const hashed_password = utils.fromBase64(await options.getOption('password_verification_hash'));
 
-    const guess_hashed = await my_scrypt.getVerificationHash(guessed_password);
+    const guess_hashed = await my_scrypt.getVerificationHash(guessedPassword);
 
     return guess_hashed.equals(hashed_password);
 }
 
-module.exports = router;
+function logout(req, res) {
+    req.session.regenerate(() => {
+        req.session.loggedIn = false;
+
+        res.redirect('/');
+    });
+
+}
+
+module.exports = {
+    loginPage,
+    login,
+    logout
+};
