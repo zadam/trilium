@@ -120,7 +120,32 @@ function register(app) {
 
     apiRoute(POST, '/api/password/change', passwordApiRoute.changePassword);
 
-    app.use('/api/sync', syncApiRoute);
+    apiRoute(GET, '/api/sync/check', syncApiRoute.checkSync);
+    apiRoute(POST, '/api/sync/now', syncApiRoute.syncNow);
+    apiRoute(POST, '/api/sync/fill-sync-rows', syncApiRoute.fillSyncRows);
+    apiRoute(POST, '/api/sync/force-full-sync', syncApiRoute.forceFullSync);
+    apiRoute(POST, '/api/sync/force-note-sync/:noteId', syncApiRoute.forceNoteSync);
+    apiRoute(GET, '/api/sync/changed', syncApiRoute.getChanged);
+    apiRoute(GET, '/api/sync/notes/:noteId', syncApiRoute.getNote);
+    apiRoute(GET, '/api/sync/branches/:branchId', syncApiRoute.getBranch);
+    apiRoute(GET, '/api/sync/note_revisions/:noteRevisionId', syncApiRoute.getNoteRevision);
+    apiRoute(GET, '/api/sync/options/:name', syncApiRoute.getOption);
+    apiRoute(GET, '/api/sync/note_reordering/:parentNoteId', syncApiRoute.getNoteReordering);
+    apiRoute(GET, '/api/sync/recent_notes/:branchId', syncApiRoute.getRecentNote);
+    apiRoute(GET, '/api/sync/images/:imageId', syncApiRoute.getImage);
+    apiRoute(GET, '/api/sync/note_images/:noteImageId', syncApiRoute.getNoteImage);
+    apiRoute(GET, '/api/sync/labels/:labelId', syncApiRoute.getLabel);
+    apiRoute(GET, '/api/sync/api_tokens/:apiTokenId', syncApiRoute.getApiToken);
+    apiRoute(PUT, '/api/sync/notes', syncApiRoute.updateNote);
+    apiRoute(PUT, '/api/sync/note_revisions', syncApiRoute.updateNoteRevision);
+    apiRoute(PUT, '/api/sync/note_reordering', syncApiRoute.updateNoteReordering);
+    apiRoute(PUT, '/api/sync/options', syncApiRoute.updateOption);
+    apiRoute(PUT, '/api/sync/recent_notes', syncApiRoute.updateRecentNote);
+    apiRoute(PUT, '/api/sync/images', syncApiRoute.updateImage);
+    apiRoute(PUT, '/api/sync/note_images', syncApiRoute.updateNoteImage);
+    apiRoute(PUT, '/api/sync/labels', syncApiRoute.updateLabel);
+    apiRoute(PUT, '/api/sync/api_tokens', syncApiRoute.updateApiToken);
+
     app.use('/api/login', loginApiRoute);
     app.use('/api/event-log', eventLogRoute);
     app.use('/api/recent-notes', recentNotesRoute);
