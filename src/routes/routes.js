@@ -32,6 +32,7 @@ const senderRoute = require('./api/sender');
 const filesRoute = require('./api/file_upload');
 const searchRoute = require('./api/search');
 
+const log = require('../services/log');
 const express = require('express');
 const router = express.Router();
 const auth = require('../services/auth');
@@ -41,20 +42,29 @@ const sql = require('../services/sql');
 function apiRoute(method, path, handler) {
     router[method](path, auth.checkApiAuth, async (req, res, next) => {
         try {
-            const resp = await cls.init(async () => {
+            const result = await cls.init(async () => {
+                cls.namespace.set('sourceId', req.headers.source_id);
+
                 return await sql.doInTransaction(async () => {
                     return await handler(req, res, next);
                 });
             });
 
-            if (Array.isArray(resp)) {
-                res.status(resp[0]).send(resp[1]);
+            // if it's an array and first element is integer then we consider this to be [statusCode, response] format
+            if (Array.isArray(result) && result.length > 0 && Number.isInteger(result[0])) {
+                const [statusCode, response] = result;
+
+                res.status(statusCode).send(response);
+
+                if (statusCode !== 200) {
+                    log.info(`${method} ${path} returned ${statusCode} with response ${JSON.stringify(response)}`);
+                }
             }
-            else if (resp === undefined) {
+            else if (result === undefined) {
                 res.status(200);
             }
             else {
-                res.status(200).send(resp);
+                res.status(200).send(result);
             }
         }
         catch (e) {
@@ -88,8 +98,14 @@ function register(app) {
     apiRoute(PUT, '/api/notes/:noteId/protect-sub-tree/:isProtected', notesApiRoute.protectBranch);
     apiRoute(PUT, /\/api\/notes\/(.*)\/type\/(.*)\/mime\/(.*)/, notesApiRoute.setNoteTypeMime);
 
-    app.use('/api/notes', cloningApiRoute);
-    app.use('/api', labelsRoute);
+    apiRoute(PUT, '/api/notes/:childNoteId/clone-to/:parentNoteId', cloningApiRoute.cloneNoteToParent);
+    apiRoute(PUT, '/api/notes/:noteId/clone-after/:afterBranchId', cloningApiRoute.cloneNoteAfter);
+
+    apiRoute(GET, '/api/notes/:noteId/labels', labelsRoute.getNoteLabels);
+    apiRoute(PUT, '/api/notes/:noteId/labels', labelsRoute.updateNoteLabels);
+    apiRoute(GET, '/api/labels/names', labelsRoute.getAllLabelNames);
+    apiRoute(GET, '/api/labels/values/:labelName', labelsRoute.getValuesForLabel);
+
     app.use('/api/notes-revisions', noteRevisionsApiRoute);
     app.use('/api/recent-changes', recentChangesApiRoute);
     app.use('/api/settings', settingsApiRoute);

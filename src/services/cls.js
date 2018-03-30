@@ -9,8 +9,13 @@ function wrap(callback) {
     return async () => await init(callback);
 }
 
+function getSourceId() {
+    return namespace.get('sourceId');
+}
+
 module.exports = {
     init,
     wrap,
-    namespace
+    namespace,
+    getSourceId
 };

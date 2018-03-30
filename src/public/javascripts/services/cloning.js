@@ -1,4 +1,5 @@
 import treeService from './tree.js';
+import server from './server.js';
 
 async function cloneNoteTo(childNoteId, parentNoteId, prefix) {
     const resp = await server.put('notes/' + childNoteId + '/clone-to/' + parentNoteId, {
