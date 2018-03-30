@@ -3,6 +3,7 @@ const loginRoute = require('./login');
 const logoutRoute = require('./logout');
 const migrationRoute = require('./migration');
 const setupRoute = require('./setup');
+const multer = require('multer')();
 
 // API routes
 const treeApiRoute = require('./api/tree');
@@ -39,17 +40,13 @@ const auth = require('../services/auth');
 const cls = require('../services/cls');
 const sql = require('../services/sql');
 
-function apiRoute(method, path, handler) {
-    router[method](path, auth.checkApiAuth, async (req, res, next) => {
-        try {
-            const result = await cls.init(async () => {
-                cls.namespace.set('sourceId', req.headers.source_id);
-
-                return await sql.doInTransaction(async () => {
-                    return await handler(req, res, next);
-                });
-            });
-
+function apiRoute(method, path, routeHandler) {
+    route({
+        method,
+        path,
+        middleware: [auth.checkApiAuth],
+        routeHandler,
+        resultHandler: (res, result) => {
             // if it's an array and first element is integer then we consider this to be [statusCode, response] format
             if (Array.isArray(result) && result.length > 0 && Number.isInteger(result[0])) {
                 const [statusCode, response] = result;
@@ -67,12 +64,38 @@ function apiRoute(method, path, handler) {
                 res.status(200).send(result);
             }
         }
+    });
+}
+
+// API routes requiring HTTP protocol. This means we ignore route return value and make an electron auth exception
+function httpApiRoute(method, path, routeHandler) {
+    route({
+        method,
+        path,
+        middleware: [auth.checkApiAuth, multer.single('upload')],
+        routeHandler
+    })
+}
+
+function route({ method, path, middleware, routeHandler, resultHandler }) {
+    router[method](path, ...middleware, async (req, res, next) => {
+        try {
+            const result = await cls.init(async () => {
+                cls.namespace.set('sourceId', req.headers.source_id);
+
+                return await sql.doInTransaction(async () => {
+                    return await routeHandler(req, res, next);
+                });
+            });
+
+            if (resultHandler) {
+                resultHandler(res, result);
+            }
+        }
         catch (e) {
             log.info(`${method} ${path} threw exception: ` + e.stack);
 
-            res.send(500);
-
-            next(e);
+            res.sendStatus(500);
         }
     });
 }
@@ -146,12 +169,16 @@ function register(app) {
     apiRoute(PUT, '/api/sync/labels', syncApiRoute.updateLabel);
     apiRoute(PUT, '/api/sync/api_tokens', syncApiRoute.updateApiToken);
 
-    app.use('/api/login', loginApiRoute);
-    app.use('/api/event-log', eventLogRoute);
-    app.use('/api/recent-notes', recentNotesRoute);
-    app.use('/api/app-info', appInfoRoute);
-    app.use('/api/export', exportRoute);
-    app.use('/api/import', importRoute);
+    apiRoute(GET, '/api/event-log', eventLogRoute.getEventLog);
+
+    apiRoute(GET, '/api/recent-notes', recentNotesRoute.getRecentNotes);
+    apiRoute(PUT, '/api/recent-notes/:branchId/:notePath', recentNotesRoute.addRecentNote);
+    apiRoute(GET, '/api/app-info', appInfoRoute.getAppInfo);
+
+    httpApiRoute(GET, '/api/export/:noteId', exportRoute.exportNote);
+
+    httpApiRoute(POST, '/api/import/:parentNoteId', importRoute.importTar);
+
     app.use('/api/setup', setupApiRoute);
     app.use('/api/sql', sqlRoute);
     app.use('/api/anonymization', anonymizationRoute);
@@ -166,6 +193,7 @@ function register(app) {
 
 
     app.use('/api/migration', migrationApiRoute);
+    app.use('/api/login', loginApiRoute);
 }
 
 module.exports = {

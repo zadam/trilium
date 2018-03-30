@@ -1,18 +1,12 @@
 "use strict";
 
-const express = require('express');
-const router = express.Router();
 const sql = require('../../services/sql');
-const auth = require('../../services/auth');
-const wrap = require('express-promise-wrap').wrap;
 
-router.get('', auth.checkApiAuth, wrap(async (req, res, next) => {
+async function getEventLog() {
     await deleteOld();
 
-    const result = await sql.getRows("SELECT * FROM event_log ORDER BY dateAdded DESC");
-
-    res.send(result);
-}));
+    return await sql.getRows("SELECT * FROM event_log ORDER BY dateAdded DESC");
+}
 
 async function deleteOld() {
     const cutoffId = await sql.getValue("SELECT id FROM event_log ORDER BY id DESC LIMIT 1000, 1");
@@ -24,4 +18,6 @@ async function deleteOld() {
     }
 }
 
-module.exports = router;
+module.exports = {
+    getEventLog
+};

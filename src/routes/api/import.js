@@ -90,7 +90,7 @@ async function parseImportFile(file) {
     });
 }
 
-router.post('/:parentNoteId', auth.checkApiAuthOrElectron, multer.single('upload'), wrap(async (req, res, next) => {
+async function importTar(req, res) {
     const sourceId = req.headers.source_id;
     const parentNoteId = req.params.parentNoteId;
     const file = req.file;
@@ -103,12 +103,10 @@ router.post('/:parentNoteId', auth.checkApiAuthOrElectron, multer.single('upload
 
     const files = await parseImportFile(file);
 
-    await sql.doInTransaction(async () => {
-        await importNotes(files, parentNoteId, sourceId);
-    });
+    await importNotes(files, parentNoteId, sourceId);
 
     res.send({});
-}));
+}
 
 async function importNotes(files, parentNoteId, sourceId) {
     for (const file of files) {
@@ -136,4 +134,6 @@ async function importNotes(files, parentNoteId, sourceId) {
     }
 }
 
-module.exports = router;
+module.exports = {
+    importTar
+};

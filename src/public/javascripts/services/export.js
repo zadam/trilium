@@ -1,6 +1,7 @@
 import treeService from './tree.js';
 import protectedSessionHolder from './protected_session_holder.js';
 import utils from './utils.js';
+import server from './server.js';
 
 function exportSubTree(noteId) {
     const url = utils.getHost() + "/api/export/" + noteId + "?protectedSessionId="
