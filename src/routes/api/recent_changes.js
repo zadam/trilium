@@ -1,12 +1,8 @@
 "use strict";
 
-const express = require('express');
-const router = express.Router();
 const sql = require('../../services/sql');
-const auth = require('../../services/auth');
-const wrap = require('express-promise-wrap').wrap;
 
-router.get('/', auth.checkApiAuth, wrap(async (req, res, next) => {
+async function getRecentChanges() {
     const recentChanges = await sql.getRows(
         `SELECT 
             notes.isDeleted AS current_isDeleted,
@@ -19,7 +15,9 @@ router.get('/', auth.checkApiAuth, wrap(async (req, res, next) => {
             dateModifiedTo DESC 
         LIMIT 1000`);
 
-    res.send(recentChanges);
-}));
+    return recentChanges;
+}
 
-module.exports = router;
+module.exports = {
+    getRecentChanges
+};

@@ -105,7 +105,7 @@ addTabHandler((function() {
     $form.submit(() => {
         const protectedSessionTimeout = $protectedSessionTimeout.val();
 
-        settings.saveSettings(settingName, protectedSessionTimeout).then(() => {
+        saveSettings(settingName, protectedSessionTimeout).then(() => {
             protectedSessionHolder.setProtectedSessionTimeout(protectedSessionTimeout);
         });
 
@@ -127,7 +127,7 @@ addTabHandler((function () {
     }
 
     $form.submit(() => {
-        settings.saveSettings(settingName, $timeInterval.val());
+        saveSettings(settingName, $timeInterval.val());
 
         return false;
     });

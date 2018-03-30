@@ -25,7 +25,7 @@ async function showNoteRevisionsDialog(noteId, noteRevisionId) {
     $list.empty();
     $content.empty();
 
-    revisionItems = await server.get('notes-revisions/' + noteId);
+    revisionItems = await server.get('note-revisions/' + noteId);
 
     for (const item of revisionItems) {
         const dateModified = utils.parseDate(item.dateModifiedFrom);

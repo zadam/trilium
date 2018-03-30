@@ -61,13 +61,17 @@ function apiRoute(method, path, handler) {
                 }
             }
             else if (result === undefined) {
-                res.status(200);
+                res.status(200).send();
             }
             else {
                 res.status(200).send(result);
             }
         }
         catch (e) {
+            log.info(`${method} ${path} threw exception: ` + e.stack);
+
+            res.send(500);
+
             next(e);
         }
     });
@@ -106,11 +110,16 @@ function register(app) {
     apiRoute(GET, '/api/labels/names', labelsRoute.getAllLabelNames);
     apiRoute(GET, '/api/labels/values/:labelName', labelsRoute.getValuesForLabel);
 
-    app.use('/api/notes-revisions', noteRevisionsApiRoute);
-    app.use('/api/recent-changes', recentChangesApiRoute);
-    app.use('/api/settings', settingsApiRoute);
-    app.use('/api/password', passwordApiRoute);
-    app.use('/api/migration', migrationApiRoute);
+    apiRoute(GET, '/api/note-revisions/:noteId', noteRevisionsApiRoute.getNoteRevisions);
+
+    apiRoute(GET, '/api/recent-changes', recentChangesApiRoute.getRecentChanges);
+
+    apiRoute(GET, '/api/settings', settingsApiRoute.getAllowedSettings);
+    apiRoute(GET, '/api/settings/all', settingsApiRoute.getAllSettings);
+    apiRoute(POST, '/api/settings', settingsApiRoute.updateSetting);
+
+    apiRoute(POST, '/api/password/change', passwordApiRoute.changePassword);
+
     app.use('/api/sync', syncApiRoute);
     app.use('/api/login', loginApiRoute);
     app.use('/api/event-log', eventLogRoute);
@@ -127,7 +136,11 @@ function register(app) {
     app.use('/api/sender', senderRoute);
     app.use('/api/files', filesRoute);
     app.use('/api/search', searchRoute);
+
     app.use('', router);
+
+
+    app.use('/api/migration', migrationApiRoute);
 }
 
 module.exports = {
