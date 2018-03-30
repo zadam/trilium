@@ -10,7 +10,7 @@ const wrap = require('express-promise-wrap').wrap;
 const RESOURCE_DIR = require('../../services/resource_dir').RESOURCE_DIR;
 const fs = require('fs');
 
-router.get('/:imageId/:filename', auth.checkApiAuthOrElectron, wrap(async (req, res, next) => {
+async function returnImage(req, res) {
     const image = await sql.getRow("SELECT * FROM images WHERE imageId = ?", [req.params.imageId]);
 
     if (!image) {
@@ -24,9 +24,9 @@ router.get('/:imageId/:filename', auth.checkApiAuthOrElectron, wrap(async (req, 
     res.set('Content-Type', 'image/' + image.format);
 
     res.send(image.data);
-}));
+}
 
-router.post('', auth.checkApiAuthOrElectron, multer.single('upload'), wrap(async (req, res, next) => {
+async function uploadImage(req, res) {
     const sourceId = req.headers.source_id;
     const noteId = req.query.noteId;
     const file = req.file;
@@ -47,6 +47,9 @@ router.post('', auth.checkApiAuthOrElectron, multer.single('upload'), wrap(async
         uploaded: true,
         url: `/api/images/${imageId}/${fileName}`
     });
-}));
+}
 
-module.exports = router;
+module.exports = {
+    returnImage,
+    uploadImage
+};

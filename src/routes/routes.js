@@ -40,44 +40,35 @@ const auth = require('../services/auth');
 const cls = require('../services/cls');
 const sql = require('../services/sql');
 
-function apiRoute(method, path, routeHandler) {
-    route({
-        method,
-        path,
-        middleware: [auth.checkApiAuth],
-        routeHandler,
-        resultHandler: (res, result) => {
-            // if it's an array and first element is integer then we consider this to be [statusCode, response] format
-            if (Array.isArray(result) && result.length > 0 && Number.isInteger(result[0])) {
-                const [statusCode, response] = result;
+function apiResultHandler(res, result) {
+    // if it's an array and first element is integer then we consider this to be [statusCode, response] format
+    if (Array.isArray(result) && result.length > 0 && Number.isInteger(result[0])) {
+        const [statusCode, response] = result;
 
-                res.status(statusCode).send(response);
+        res.status(statusCode).send(response);
 
-                if (statusCode !== 200) {
-                    log.info(`${method} ${path} returned ${statusCode} with response ${JSON.stringify(response)}`);
-                }
-            }
-            else if (result === undefined) {
-                res.status(200).send();
-            }
-            else {
-                res.status(200).send(result);
-            }
+        if (statusCode !== 200) {
+            log.info(`${method} ${path} returned ${statusCode} with response ${JSON.stringify(response)}`);
         }
-    });
+    }
+    else if (result === undefined) {
+        res.status(200).send();
+    }
+    else {
+        res.status(200).send(result);
+    }
+}
+
+function apiRoute(method, path, routeHandler) {
+    route(method, path, [auth.checkApiAuth], routeHandler, apiResultHandler);
 }
 
 // API routes requiring HTTP protocol. This means we ignore route return value and make an electron auth exception
 function httpApiRoute(method, path, routeHandler) {
-    route({
-        method,
-        path,
-        middleware: [auth.checkApiAuth, multer.single('upload')],
-        routeHandler
-    })
+    route(method, path, [auth.checkApiAuth, multer.single('upload')], routeHandler);
 }
 
-function route({ method, path, middleware, routeHandler, resultHandler }) {
+function route(method, path, middleware, routeHandler, resultHandler) {
     router[method](path, ...middleware, async (req, res, next) => {
         try {
             const result = await cls.init(async () => {
@@ -176,14 +167,19 @@ function register(app) {
     apiRoute(GET, '/api/app-info', appInfoRoute.getAppInfo);
 
     httpApiRoute(GET, '/api/export/:noteId', exportRoute.exportNote);
-
     httpApiRoute(POST, '/api/import/:parentNoteId', importRoute.importTar);
 
-    app.use('/api/setup', setupApiRoute);
-    app.use('/api/sql', sqlRoute);
-    app.use('/api/anonymization', anonymizationRoute);
-    app.use('/api/cleanup', cleanupRoute);
-    app.use('/api/images', imageRoute);
+    route(POST, '/api/setup', [auth.checkAppNotInitialized], setupApiRoute.setup, apiResultHandler);
+
+    apiRoute(POST, '/api/sql/execute', sqlRoute.execute);
+    apiRoute(POST, '/api/anonymization/anonymize', anonymizationRoute.anonymize);
+
+    apiRoute(POST, '/api/cleanup/cleanup-soft-deleted-items', cleanupRoute.cleanupSoftDeletedItems);
+    apiRoute(POST, '/api/cleanup/cleanup-unused-images', cleanupRoute.cleanupUnusedImages);
+    apiRoute(POST, '/api/cleanup/vacuum-database', cleanupRoute.vacuumDatabase);
+
+    httpApiRoute(GET, '/api/images/:imageId/:filename', imageRoute.returnImage);
+    httpApiRoute(POST, '/api/images', imageRoute.uploadImage);
     app.use('/api/script', scriptRoute);
     app.use('/api/sender', senderRoute);
     app.use('/api/files', filesRoute);
