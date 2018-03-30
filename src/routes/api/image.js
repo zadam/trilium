@@ -22,7 +22,6 @@ async function returnImage(req, res) {
 }
 
 async function uploadImage(req) {
-    const sourceId = req.headers.source_id;
     const noteId = req.query.noteId;
     const file = req.file;
 
@@ -36,7 +35,7 @@ async function uploadImage(req) {
         return [400, "Unknown image type: " + file.mimetype];
     }
 
-    const {fileName, imageId} = await image.saveImage(file, sourceId, noteId);
+    const {fileName, imageId} = await image.saveImage(file, noteId);
 
     return {
         uploaded: true,

@@ -11,7 +11,7 @@ const jimp = require('jimp');
 const imageType = require('image-type');
 const sanitizeFilename = require('sanitize-filename');
 
-async function saveImage(file, sourceId, noteId) {
+async function saveImage(file, noteId) {
     const resizedImage = await resize(file.buffer);
     const optimizedImage = await optimize(resizedImage);
 
@@ -35,7 +35,7 @@ async function saveImage(file, sourceId, noteId) {
             dateCreated: now
         });
 
-        await sync_table.addImageSync(imageId, sourceId);
+        await sync_table.addImageSync(imageId);
 
         const noteImageId = utils.newNoteImageId();
 
@@ -48,7 +48,7 @@ async function saveImage(file, sourceId, noteId) {
             dateCreated: now
         });
 
-        await sync_table.addNoteImageSync(noteImageId, sourceId);
+        await sync_table.addNoteImageSync(noteImageId);
     });
     return {fileName, imageId};
 }

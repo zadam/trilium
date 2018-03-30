@@ -24,7 +24,6 @@ async function getRecentNotes() {
 async function addRecentNote(req) {
     const branchId = req.params.branchId;
     const notePath = req.params.notePath;
-    const sourceId = req.headers.source_id;
 
     await sql.replace('recent_notes', {
         branchId: branchId,
@@ -33,9 +32,9 @@ async function addRecentNote(req) {
         isDeleted: 0
     });
 
-    await sync_table.addRecentNoteSync(branchId, sourceId);
+    await sync_table.addRecentNoteSync(branchId);
 
-    await options.setOption('start_note_path', notePath, sourceId);
+    await options.setOption('start_note_path', notePath);
 
     return await getRecentNotes();
 }

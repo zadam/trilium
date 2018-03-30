@@ -6,7 +6,6 @@ const labels = require('../../services/labels');
 const protected_session = require('../../services/protected_session');
 
 async function uploadFile(req) {
-    const sourceId = req.headers.source_id;
     const parentNoteId = req.params.parentNoteId;
     const file = req.file;
     const originalName = file.originalname;
@@ -25,10 +24,10 @@ async function uploadFile(req) {
         isProtected: false,
         type: 'file',
         mime: file.mimetype
-    }, req, sourceId);
+    }, req);
 
-    await labels.createLabel(noteId, "original_file_name", originalName, sourceId);
-    await labels.createLabel(noteId, "file_size", size, sourceId);
+    await labels.createLabel(noteId, "original_file_name", originalName);
+    await labels.createLabel(noteId, "file_size", size);
 
     return {
         noteId: noteId

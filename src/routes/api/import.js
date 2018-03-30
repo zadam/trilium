@@ -91,7 +91,6 @@ async function parseImportFile(file) {
 }
 
 async function importTar(req) {
-    const sourceId = req.headers.source_id;
     const parentNoteId = req.params.parentNoteId;
     const file = req.file;
 
@@ -103,10 +102,10 @@ async function importTar(req) {
 
     const files = await parseImportFile(file);
 
-    await importNotes(files, parentNoteId, sourceId);
+    await importNotes(files, parentNoteId);
 }
 
-async function importNotes(files, parentNoteId, sourceId) {
+async function importNotes(files, parentNoteId) {
     for (const file of files) {
         if (file.meta.version !== 1) {
             throw new Error("Can't read meta data version " + file.meta.version);
@@ -118,8 +117,7 @@ async function importNotes(files, parentNoteId, sourceId) {
 
         const noteId = await notes.createNote(parentNoteId, file.meta.title, file.data, {
             type: file.meta.type,
-            mime: file.meta.mime,
-            sourceId: sourceId
+            mime: file.meta.mime
         });
 
         for (const attr of file.meta.labels) {
@@ -127,7 +125,7 @@ async function importNotes(files, parentNoteId, sourceId) {
         }
 
         if (file.children.length > 0) {
-            await importNotes(file.children, noteId, sourceId);
+            await importNotes(file.children, noteId);
         }
     }
 }

@@ -9,7 +9,6 @@ async function cloneNoteToParent(req) {
     const parentNoteId = req.params.parentNoteId;
     const childNoteId = req.params.childNoteId;
     const prefix = req.body.prefix;
-    const sourceId = req.headers.source_id;
 
     const validationResult = await tree.validateParentChild(parentNoteId, childNoteId);
 
@@ -33,7 +32,7 @@ async function cloneNoteToParent(req) {
 
     await sql.replace("branches", branch);
 
-    await sync_table.addBranchSync(branch.branchId, sourceId);
+    await sync_table.addBranchSync(branch.branchId);
 
     await sql.execute("UPDATE branches SET isExpanded = 1 WHERE noteId = ?", [parentNoteId]);
 
@@ -43,7 +42,6 @@ async function cloneNoteToParent(req) {
 async function cloneNoteAfter(req) {
     const noteId = req.params.noteId;
     const afterBranchId = req.params.afterBranchId;
-    const sourceId = req.headers.source_id;
 
     const afterNote = await tree.getBranch(afterBranchId);
 
@@ -58,7 +56,7 @@ async function cloneNoteAfter(req) {
     await sql.execute("UPDATE branches SET notePosition = notePosition + 1 WHERE parentNoteId = ? AND notePosition > ? AND isDeleted = 0",
         [afterNote.parentNoteId, afterNote.notePosition]);
 
-    await sync_table.addNoteReorderingSync(afterNote.parentNoteId, sourceId);
+    await sync_table.addNoteReorderingSync(afterNote.parentNoteId);
 
     const branch = {
         branchId: utils.newBranchId(),
@@ -72,7 +70,7 @@ async function cloneNoteAfter(req) {
 
     await sql.replace("branches", branch);
 
-    await sync_table.addBranchSync(branch.branchId, sourceId);
+    await sync_table.addBranchSync(branch.branchId);
 
     return { success: true };
 }

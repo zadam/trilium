@@ -38,8 +38,6 @@ async function cleanupSoftDeletedItems() {
 }
 
 async function cleanupUnusedImages() {
-    const sourceId = req.headers.source_id;
-
     const unusedImageIds = await sql.getColumn(`
       SELECT images.imageId 
       FROM images 
@@ -56,7 +54,7 @@ async function cleanupUnusedImages() {
         await sql.execute("UPDATE images SET isDeleted = 1, data = null, dateModified = ? WHERE imageId = ?",
             [now, imageId]);
 
-        await sync_table.addImageSync(imageId, sourceId);
+        await sync_table.addImageSync(imageId);
     }
 }
 

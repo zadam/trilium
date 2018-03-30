@@ -31,11 +31,10 @@ async function getNote(req) {
 }
 
 async function createNote(req) {
-    const sourceId = req.headers.source_id;
     const parentNoteId = req.params.parentNoteId;
     const newNote = req.body;
 
-    const { noteId, branchId, note } = await notes.createNewNote(parentNoteId, newNote, req, sourceId);
+    const { noteId, branchId, note } = await notes.createNewNote(parentNoteId, newNote, req);
 
     return {
         'noteId': noteId,
@@ -47,39 +46,35 @@ async function createNote(req) {
 async function updateNote(req) {
     const note = req.body;
     const noteId = req.params.noteId;
-    const sourceId = req.headers.source_id;
     const dataKey = protected_session.getDataKey(req);
 
-    await notes.updateNote(noteId, note, dataKey, sourceId);
+    await notes.updateNote(noteId, note, dataKey);
 }
 
 async function sortNotes(req) {
     const noteId = req.params.noteId;
-    const sourceId = req.headers.source_id;
     const dataKey = protected_session.getDataKey(req);
 
-    await tree.sortNotesAlphabetically(noteId, dataKey, sourceId);
+    await tree.sortNotesAlphabetically(noteId, dataKey);
 }
 
 async function protectBranch(req) {
     const noteId = req.params.noteId;
     const isProtected = !!parseInt(req.params.isProtected);
     const dataKey = protected_session.getDataKey(req);
-    const sourceId = req.headers.source_id;
 
-    await notes.protectNoteRecursively(noteId, dataKey, isProtected, sourceId);
+    await notes.protectNoteRecursively(noteId, dataKey, isProtected);
 }
 
 async function setNoteTypeMime(req) {
     const noteId = req.params[0];
     const type = req.params[1];
     const mime = req.params[2];
-    const sourceId = req.headers.source_id;
 
     await sql.execute("UPDATE notes SET type = ?, mime = ?, dateModified = ? WHERE noteId = ?",
         [type, mime, utils.nowDate(), noteId]);
 
-    await sync_table.addNoteSync(noteId, sourceId);
+    await sync_table.addNoteSync(noteId);
 }
 
 module.exports = {

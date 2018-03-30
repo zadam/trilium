@@ -14,7 +14,6 @@ const notes = require('../../services/notes');
 async function moveBranchToParent(req) {
     const branchId = req.params.branchId;
     const parentNoteId = req.params.parentNoteId;
-    const sourceId = req.headers.source_id;
 
     const noteToMove = await tree.getBranch(branchId);
 
@@ -32,7 +31,7 @@ async function moveBranchToParent(req) {
     await sql.execute("UPDATE branches SET parentNoteId = ?, notePosition = ?, dateModified = ? WHERE branchId = ?",
         [parentNoteId, newNotePos, now, branchId]);
 
-    await sync_table.addBranchSync(branchId, sourceId);
+    await sync_table.addBranchSync(branchId);
 
     return { success: true };
 }
@@ -40,7 +39,6 @@ async function moveBranchToParent(req) {
 async function moveBranchBeforeNote(req) {
     const branchId = req.params.branchId;
     const beforeBranchId = req.params.beforeBranchId;
-    const sourceId = req.headers.source_id;
 
     const noteToMove = await tree.getBranch(branchId);
     const beforeNote = await tree.getBranch(beforeBranchId);
@@ -56,12 +54,12 @@ async function moveBranchBeforeNote(req) {
     await sql.execute("UPDATE branches SET notePosition = notePosition + 1 WHERE parentNoteId = ? AND notePosition >= ? AND isDeleted = 0",
         [beforeNote.parentNoteId, beforeNote.notePosition]);
 
-    await sync_table.addNoteReorderingSync(beforeNote.parentNoteId, sourceId);
+    await sync_table.addNoteReorderingSync(beforeNote.parentNoteId);
 
     await sql.execute("UPDATE branches SET parentNoteId = ?, notePosition = ?, dateModified = ? WHERE branchId = ?",
         [beforeNote.parentNoteId, beforeNote.notePosition, utils.nowDate(), branchId]);
 
-    await sync_table.addBranchSync(branchId, sourceId);
+    await sync_table.addBranchSync(branchId);
 
     return { success: true };
 }
@@ -69,7 +67,6 @@ async function moveBranchBeforeNote(req) {
 async function moveBranchAfterNote(req) {
     const branchId = req.params.branchId;
     const afterBranchId = req.params.afterBranchId;
-    const sourceId = req.headers.source_id;
 
     const noteToMove = await tree.getBranch(branchId);
     const afterNote = await tree.getBranch(afterBranchId);
@@ -85,12 +82,12 @@ async function moveBranchAfterNote(req) {
     await sql.execute("UPDATE branches SET notePosition = notePosition + 1 WHERE parentNoteId = ? AND notePosition > ? AND isDeleted = 0",
         [afterNote.parentNoteId, afterNote.notePosition]);
 
-    await sync_table.addNoteReorderingSync(afterNote.parentNoteId, sourceId);
+    await sync_table.addNoteReorderingSync(afterNote.parentNoteId);
 
     await sql.execute("UPDATE branches SET parentNoteId = ?, notePosition = ?, dateModified = ? WHERE branchId = ?",
         [afterNote.parentNoteId, afterNote.notePosition + 1, utils.nowDate(), branchId]);
 
-    await sync_table.addBranchSync(branchId, sourceId);
+    await sync_table.addBranchSync(branchId);
 
     return { success: true };
 }
@@ -104,7 +101,7 @@ async function setExpanded(req) {
 }
 
 async function deleteBranch(req) {
-    await notes.deleteNote(req.params.branchId, req.headers.source_id);
+    await notes.deleteNote(req.params.branchId);
 }
 
 module.exports = {

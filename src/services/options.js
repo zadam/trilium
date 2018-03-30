@@ -22,7 +22,7 @@ async function getOption(name) {
     return row['value'] ? row['value'] : row['opt_value'];
 }
 
-async function setOption(name, value, sourceId = null) {
+async function setOption(name, value) {
     const opt = await sql.getRow("SELECT * FROM options WHERE name = ?", [name]);
 
     if (!opt) {
@@ -30,14 +30,14 @@ async function setOption(name, value, sourceId = null) {
     }
 
     if (opt.isSynced) {
-        await sync_table.addOptionsSync(name, sourceId);
+        await sync_table.addOptionsSync(name);
     }
 
     await sql.execute("UPDATE options SET value = ?, dateModified = ? WHERE name = ?",
         [value, utils.nowDate(), name]);
 }
 
-async function createOption(name, value, isSynced, sourceId = null) {
+async function createOption(name, value, isSynced) {
     await sql.insert("options", {
         name: name,
         value: value,
@@ -46,7 +46,7 @@ async function createOption(name, value, isSynced, sourceId = null) {
     });
 
     if (isSynced) {
-        await sync_table.addOptionsSync(name, sourceId);
+        await sync_table.addOptionsSync(name);
     }
 }
 

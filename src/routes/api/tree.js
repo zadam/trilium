@@ -62,13 +62,12 @@ async function getTree(req) {
 
 async function setPrefix(req) {
     const branchId = req.params.branchId;
-    const sourceId = req.headers.source_id;
     const prefix = utils.isEmptyOrWhitespace(req.body.prefix) ? null : req.body.prefix;
 
     await sql.doInTransaction(async () => {
         await sql.execute("UPDATE branches SET prefix = ?, dateModified = ? WHERE branchId = ?", [prefix, utils.nowDate(), branchId]);
 
-        await sync_table.addBranchSync(branchId, sourceId);
+        await sync_table.addBranchSync(branchId);
     });
 
     return {};

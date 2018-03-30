@@ -55,7 +55,7 @@ async function getNoteIdsWithLabel(name) {
           WHERE notes.isDeleted = 0 AND labels.isDeleted = 0 AND labels.name = ? AND labels.isDeleted = 0`, [name]);
 }
 
-async function createLabel(noteId, name, value = "", sourceId = null) {
+async function createLabel(noteId, name, value = "") {
     if (value === null || value === undefined) {
         value = "";
     }
@@ -75,7 +75,7 @@ async function createLabel(noteId, name, value = "", sourceId = null) {
         isDeleted: false
     });
 
-    await sync_table.addLabelSync(labelId, sourceId);
+    await sync_table.addLabelSync(labelId);
 }
 
 module.exports = {

@@ -5,7 +5,7 @@ const sync_table = require('./sync_table');
 const labels = require('./labels');
 const protected_session = require('./protected_session');
 
-async function createNewNote(parentNoteId, noteOpts, dataKey, sourceId) {
+async function createNewNote(parentNoteId, noteOpts, dataKey) {
     const noteId = utils.newNoteId();
     const branchId = utils.newBranchId();
 
@@ -25,7 +25,7 @@ async function createNewNote(parentNoteId, noteOpts, dataKey, sourceId) {
         await sql.execute('UPDATE branches SET notePosition = notePosition + 1 WHERE parentNoteId = ? AND notePosition > ? AND isDeleted = 0',
             [parentNoteId, afterNote.notePosition]);
 
-        await sync_table.addNoteReorderingSync(parentNoteId, sourceId);
+        await sync_table.addNoteReorderingSync(parentNoteId);
     }
     else {
         throw new Error('Unknown target: ' + noteOpts.target);
@@ -62,7 +62,7 @@ async function createNewNote(parentNoteId, noteOpts, dataKey, sourceId) {
 
     await sql.insert("notes", note);
 
-    await sync_table.addNoteSync(noteId, sourceId);
+    await sync_table.addNoteSync(noteId);
 
     await sql.insert("branches", {
         branchId: branchId,
@@ -74,7 +74,7 @@ async function createNewNote(parentNoteId, noteOpts, dataKey, sourceId) {
         isDeleted: 0
     });
 
-    await sync_table.addBranchSync(branchId, sourceId);
+    await sync_table.addBranchSync(branchId);
 
     return {
         noteId,
@@ -106,7 +106,7 @@ async function createNote(parentNoteId, title, content = "", extraOptions = {}) 
         note.mime = "text/html";
     }
 
-    const {noteId} = await createNewNote(parentNoteId, note, extraOptions.dataKey, extraOptions.sourceId);
+    const {noteId} = await createNewNote(parentNoteId, note, extraOptions.dataKey);
 
     if (extraOptions.labels) {
         for (const attrName in extraOptions.labels) {
@@ -117,19 +117,19 @@ async function createNote(parentNoteId, title, content = "", extraOptions = {}) 
     return noteId;
 }
 
-async function protectNoteRecursively(noteId, dataKey, protect, sourceId) {
+async function protectNoteRecursively(noteId, dataKey, protect) {
     const note = await sql.getRow("SELECT * FROM notes WHERE noteId = ?", [noteId]);
 
-    await protectNote(note, dataKey, protect, sourceId);
+    await protectNote(note, dataKey, protect);
 
     const children = await sql.getColumn("SELECT noteId FROM branches WHERE parentNoteId = ? AND isDeleted = 0", [noteId]);
 
     for (const childNoteId of children) {
-        await protectNoteRecursively(childNoteId, dataKey, protect, sourceId);
+        await protectNoteRecursively(childNoteId, dataKey, protect);
     }
 }
 
-async function protectNote(note, dataKey, protect, sourceId) {
+async function protectNote(note, dataKey, protect) {
     let changed = false;
 
     if (protect && !note.isProtected) {
@@ -151,13 +151,13 @@ async function protectNote(note, dataKey, protect, sourceId) {
         await sql.execute("UPDATE notes SET title = ?, content = ?, isProtected = ? WHERE noteId = ?",
             [note.title, note.content, note.isProtected, note.noteId]);
 
-        await sync_table.addNoteSync(note.noteId, sourceId);
+        await sync_table.addNoteSync(note.noteId);
     }
 
-    await protectNoteRevisions(note.noteId, dataKey, protect, sourceId);
+    await protectNoteRevisions(note.noteId, dataKey, protect);
 }
 
-async function protectNoteRevisions(noteId, dataKey, protect, sourceId) {
+async function protectNoteRevisions(noteId, dataKey, protect) {
     const revisionsToChange = await sql.getRows("SELECT * FROM note_revisions WHERE noteId = ? AND isProtected != ?", [noteId, protect]);
 
     for (const revision of revisionsToChange) {
@@ -175,11 +175,11 @@ async function protectNoteRevisions(noteId, dataKey, protect, sourceId) {
         await sql.execute("UPDATE note_revisions SET title = ?, content = ?, isProtected = ? WHERE noteRevisionId = ?",
             [revision.title, revision.content, revision.isProtected, revision.noteRevisionId]);
 
-        await sync_table.addNoteRevisionSync(revision.noteRevisionId, sourceId);
+        await sync_table.addNoteRevisionSync(revision.noteRevisionId);
     }
 }
 
-async function saveNoteRevision(noteId, dataKey, sourceId, nowStr) {
+async function saveNoteRevision(noteId, dataKey, nowStr) {
     const oldNote = await sql.getRow("SELECT * FROM notes WHERE noteId = ?", [noteId]);
 
     if (oldNote.type === 'file') {
@@ -205,10 +205,10 @@ async function saveNoteRevision(noteId, dataKey, sourceId, nowStr) {
         dateModifiedTo: nowStr
     });
 
-    await sync_table.addNoteRevisionSync(newNoteRevisionId, sourceId);
+    await sync_table.addNoteRevisionSync(newNoteRevisionId);
 }
 
-async function saveNoteImages(noteId, noteText, sourceId) {
+async function saveNoteImages(noteId, noteText) {
     const existingNoteImages = await sql.getRows("SELECT * FROM note_images WHERE noteId = ?", [noteId]);
     const foundImageIds = [];
     const now = utils.nowDate();
@@ -231,13 +231,13 @@ async function saveNoteImages(noteId, noteText, sourceId) {
                 dateCreated: now
             });
 
-            await sync_table.addNoteImageSync(noteImageId, sourceId);
+            await sync_table.addNoteImageSync(noteImageId);
         }
         else if (existingNoteImage.isDeleted) {
             await sql.execute("UPDATE note_images SET isDeleted = 0, dateModified = ? WHERE noteImageId = ?",
                 [now, existingNoteImage.noteImageId]);
 
-            await sync_table.addNoteImageSync(existingNoteImage.noteImageId, sourceId);
+            await sync_table.addNoteImageSync(existingNoteImage.noteImageId);
         }
         // else we don't need to do anything
 
@@ -251,7 +251,7 @@ async function saveNoteImages(noteId, noteText, sourceId) {
         await sql.execute("UPDATE note_images SET isDeleted = 1, dateModified = ? WHERE noteImageId = ?",
             [now, unusedNoteImage.noteImageId]);
 
-        await sync_table.addNoteImageSync(unusedNoteImage.noteImageId, sourceId);
+        await sync_table.addNoteImageSync(unusedNoteImage.noteImageId);
     }
 }
 
@@ -265,7 +265,7 @@ async function loadFile(noteId, newNote, dataKey) {
     newNote.content = oldNote.content;
 }
 
-async function updateNote(noteId, newNote, dataKey, sourceId) {
+async function updateNote(noteId, newNote, dataKey) {
     if (newNote.type === 'file') {
         await loadFile(noteId, newNote, dataKey);
     }
@@ -293,10 +293,10 @@ async function updateNote(noteId, newNote, dataKey, sourceId) {
             && !existingnoteRevisionId
             && msSinceDateCreated >= noteRevisionSnapshotTimeInterval * 1000) {
 
-            await saveNoteRevision(noteId, dataKey, sourceId, nowStr);
+            await saveNoteRevision(noteId, dataKey, nowStr);
         }
 
-        await saveNoteImages(noteId, newNote.content, sourceId);
+        await saveNoteImages(noteId, newNote.content);
 
         await protectNoteRevisions(noteId, dataKey, newNote.isProtected);
 
@@ -307,11 +307,11 @@ async function updateNote(noteId, newNote, dataKey, sourceId) {
             nowStr,
             noteId]);
 
-        await sync_table.addNoteSync(noteId, sourceId);
+        await sync_table.addNoteSync(noteId);
     });
 }
 
-async function deleteNote(branchId, sourceId) {
+async function deleteNote(branchId) {
     const branch = await sql.getRowOrNull("SELECT * FROM branches WHERE branchId = ?", [branchId]);
 
     if (!branch || branch.isDeleted === 1) {
@@ -321,7 +321,7 @@ async function deleteNote(branchId, sourceId) {
     const now = utils.nowDate();
 
     await sql.execute("UPDATE branches SET isDeleted = 1, dateModified = ? WHERE branchId = ?", [now, branchId]);
-    await sync_table.addBranchSync(branchId, sourceId);
+    await sync_table.addBranchSync(branchId);
 
     const noteId = await sql.getValue("SELECT noteId FROM branches WHERE branchId = ?", [branchId]);
 
@@ -329,12 +329,12 @@ async function deleteNote(branchId, sourceId) {
 
     if (!notDeletedBranchsCount) {
         await sql.execute("UPDATE notes SET isDeleted = 1, dateModified = ? WHERE noteId = ?", [now, noteId]);
-        await sync_table.addNoteSync(noteId, sourceId);
+        await sync_table.addNoteSync(noteId);
 
         const children = await sql.getRows("SELECT branchId FROM branches WHERE parentNoteId = ? AND isDeleted = 0", [noteId]);
 
         for (const child of children) {
-            await deleteNote(child.branchId, sourceId);
+            await deleteNote(child.branchId);
         }
     }
 }

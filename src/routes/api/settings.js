@@ -19,13 +19,12 @@ async function getAllowedSettings() {
 
 async function updateSetting(req) {
     const body = req.body;
-    const sourceId = req.headers.source_id;
 
     if (!ALLOWED_OPTIONS.includes(body['name'])) {
         return [400, "not allowed option to set"];
     }
 
-    await options.setOption(body['name'], body['value'], sourceId);
+    await options.setOption(body['name'], body['value']);
 }
 
 module.exports = {

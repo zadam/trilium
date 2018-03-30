@@ -3,6 +3,7 @@ const source_id = require('./source_id');
 const utils = require('./utils');
 const sync_setup = require('./sync_setup');
 const log = require('./log');
+const cls = require('./cls');
 
 async function addNoteSync(noteId, sourceId) {
     await addEntitySync("notes", noteId, sourceId)
@@ -49,7 +50,7 @@ async function addEntitySync(entityName, entityId, sourceId) {
         entityName: entityName,
         entityId: entityId,
         syncDate: utils.nowDate(),
-        sourceId: sourceId || source_id.getCurrentSourceId()
+        sourceId: sourceId || cls.getSourceId() || source_id.getCurrentSourceId()
     });
 
     if (!sync_setup.isSyncSetup) {

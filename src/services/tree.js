@@ -76,7 +76,7 @@ async function loadSubTreeNoteIds(parentNoteId, subTreeNoteIds) {
     }
 }
 
-async function sortNotesAlphabetically(parentNoteId, req, sourceId) {
+async function sortNotesAlphabetically(parentNoteId, req) {
     await sql.doInTransaction(async () => {
         const notes = await sql.getRows(`SELECT branchId, noteId, title, isProtected 
                                        FROM notes JOIN branches USING(noteId) 
@@ -95,7 +95,7 @@ async function sortNotesAlphabetically(parentNoteId, req, sourceId) {
             position++;
         }
 
-        await sync_table.addNoteReorderingSync(parentNoteId, sourceId);
+        await sync_table.addNoteReorderingSync(parentNoteId);
     });
 }
 
