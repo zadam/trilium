@@ -2,7 +2,7 @@
 
 const labels = require('../../services/labels');
 const script = require('../../services/script');
-const Repository = require('../../services/repository');
+const repository = require('../../services/repository');
 
 async function exec(req) {
     const ret = await script.executeScript(req, req.body.script, req.body.params, req.body.startNoteId, req.body.currentNoteId);
@@ -13,7 +13,6 @@ async function exec(req) {
 }
 
 async function run(req) {
-    const repository = new Repository(req);
     const note = await repository.getNote(req.params.noteId);
 
     const ret = await script.executeNote(req, note);
@@ -24,8 +23,7 @@ async function run(req) {
 }
 
 async function getStartupBundles(req) {
-    const repository = new Repository(req);
-    const notes = await labels.getNotesWithLabel(repository, "run", "frontend_startup");
+    const notes = await labels.getNotesWithLabel("run", "frontend_startup");
 
     const bundles = [];
 
@@ -41,11 +39,8 @@ async function getStartupBundles(req) {
 }
 
 async function getBundle(req) {
-    const repository = new Repository(req);
     const note = await repository.getNote(req.params.noteId);
-    const bundle = await script.getScriptBundle(note);
-
-    return bundle;
+    return await script.getScriptBundle(note);
 }
 
 module.exports = {

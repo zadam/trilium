@@ -4,17 +4,16 @@ const sql = require('../../services/sql');
 const html = require('html');
 const tar = require('tar-stream');
 const sanitize = require("sanitize-filename");
-const Repository = require("../../services/repository");
+const repository = require("../../services/repository");
 
 async function exportNote(req, res) {
     const noteId = req.params.noteId;
-    const repo = new Repository(req);
 
     const branchId = await sql.getValue('SELECT branchId FROM branches WHERE noteId = ?', [noteId]);
 
     const pack = tar.pack();
 
-    const name = await exportNoteInner(branchId, '', pack, repo);
+    const name = await exportNoteInner(branchId, '', pack);
 
     pack.finalize();
 
@@ -24,9 +23,9 @@ async function exportNote(req, res) {
     pack.pipe(res);
 }
 
-async function exportNoteInner(branchId, directory, pack, repo) {
+async function exportNoteInner(branchId, directory, pack) {
     const branch = await sql.getRow("SELECT * FROM branches WHERE branchId = ?", [branchId]);
-    const note = await repo.getEntity("SELECT notes.* FROM notes WHERE noteId = ?", [branch.noteId]);
+    const note = await repository.getEntity("SELECT notes.* FROM notes WHERE noteId = ?", [branch.noteId]);
 
     if (note.isProtected) {
         return;
@@ -51,7 +50,7 @@ async function exportNoteInner(branchId, directory, pack, repo) {
 
     if (children.length > 0) {
         for (const child of children) {
-            await exportNoteInner(child.branchId, childFileName + "/", pack, repo);
+            await exportNoteInner(child.branchId, childFileName + "/", pack);
         }
     }
 

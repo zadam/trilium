@@ -3,6 +3,7 @@
 const sql = require('./sql');
 const utils = require('./utils');
 const sync_table = require('./sync_table');
+const repository = require('./repository');
 
 const BUILTIN_LABELS = [
     'frontend_startup',
@@ -29,7 +30,7 @@ async function getNoteIdWithLabel(name, value) {
                 AND labels.value = ?`, [name, value]);
 }
 
-async function getNotesWithLabel(repository, name, value) {
+async function getNotesWithLabel(name, value) {
     let notes;
 
     if (value !== undefined) {
@@ -44,8 +45,8 @@ async function getNotesWithLabel(repository, name, value) {
     return notes;
 }
 
-async function getNoteWithLabel(repository, name, value) {
-    const notes = getNotesWithLabel(repository, name, value);
+async function getNoteWithLabel(name, value) {
+    const notes = getNotesWithLabel(name, value);
 
     return notes.length > 0 ? notes[0] : null;
 }

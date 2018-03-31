@@ -1,6 +1,6 @@
 const sql = require('./sql');
 const ScriptContext = require('./script_context');
-const Repository = require('./repository');
+const repository = require('./repository');
 
 async function executeNote(note) {
     if (!note.isJavaScript()) {
@@ -36,7 +36,6 @@ async function executeBundle(bundle, startNote) {
  * bundle's startNote.
  */
 async function executeScript(script, params, startNoteId, currentNoteId) {
-    const repository = new Repository();
     const startNote = await repository.getNote(startNoteId);
     const currentNote = await repository.getNote(currentNoteId);
 

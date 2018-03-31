@@ -2,22 +2,20 @@
 
 const source_id = require('../services/source_id');
 const sql = require('../services/sql');
-const Repository = require('../services/repository');
+const repository = require('../services/repository');
 const labels = require('../services/labels');
 
 async function index(req, res) {
-    const repository = new Repository(req);
-
     res.render('index', {
         sourceId: await source_id.generateSourceId(),
         maxSyncIdAtLoad: await sql.getValue("SELECT MAX(id) FROM sync"),
-        appCss: await getAppCss(repository)
+        appCss: await getAppCss()
     });
 }
 
-async function getAppCss(repository) {
+async function getAppCss() {
     let css = '';
-    const notes = labels.getNotesWithLabel(repository, 'app_css');
+    const notes = labels.getNotesWithLabel('app_css');
 
     for (const note of await notes) {
         css += `/* ${note.noteId} */

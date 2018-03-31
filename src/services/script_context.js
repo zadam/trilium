@@ -1,12 +1,11 @@
 const log = require('./log');
-const protected_session = require('./protected_session');
 const notes = require('./notes');
 const sql = require('./sql');
 const utils = require('./utils');
 const labels = require('./labels');
 const date_notes = require('./date_notes');
 const config = require('./config');
-const Repository = require('./repository');
+const repository = require('./repository');
 const axios = require('axios');
 
 function ScriptContext(startNote, allNotes) {
@@ -28,7 +27,6 @@ function ScriptContext(startNote, allNotes) {
 }
 
 function ScriptApi(startNote, currentNote) {
-    const repository = new Repository();
     this.startNote = startNote;
     this.currentNote = currentNote;
 
@@ -47,7 +45,7 @@ function ScriptApi(startNote, currentNote) {
     };
 
     this.getNotesWithLabel = async function (attrName, attrValue) {
-        return await labels.getNotesWithLabel(repository, attrName, attrValue);
+        return await labels.getNotesWithLabel(attrName, attrValue);
     };
 
     this.getNoteWithLabel = async function (attrName, attrValue) {

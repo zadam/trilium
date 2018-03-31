@@ -3,10 +3,8 @@
 const utils = require('../services/utils');
 
 class Entity {
-    constructor(repository, row) {
-        utils.assertArguments(repository, row);
-
-        this.repository = repository;
+    constructor(row) {
+        utils.assertArguments(row);
 
         for (const key in row) {
             this[key] = row[key];

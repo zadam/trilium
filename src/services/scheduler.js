@@ -1,11 +1,9 @@
 const script = require('./script');
-const Repository = require('./repository');
+const repository = require('./repository');
 const cls = require('./cls');
 
-const repo = new Repository();
-
 async function runNotesWithLabel(runAttrValue) {
-    const notes = await repo.getEntities(`
+    const notes = await repository.getEntities(`
         SELECT notes.* 
         FROM notes 
           JOIN labels ON labels.noteId = notes.noteId
@@ -17,7 +15,7 @@ async function runNotesWithLabel(runAttrValue) {
           AND notes.isDeleted = 0`, [runAttrValue]);
 
     for (const note of notes) {
-        script.executeNote(null, note);
+        script.executeNote(note);
     }
 }
 
