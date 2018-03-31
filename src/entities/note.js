@@ -11,7 +11,7 @@ class Note extends Entity {
         super(repository, row);
 
         if (this.isProtected) {
-            protected_session.decryptNote(this.dataKey, this);
+            protected_session.decryptNote(this);
         }
 
         if (this.isJson()) {
@@ -129,7 +129,7 @@ class Note extends Entity {
         this.content = JSON.stringify(this.jsonContent, null, '\t');
 
         if (this.isProtected) {
-            protected_session.encryptNote(this.dataKey, this);
+            protected_session.encryptNote(this);
         }
     }
 }

@@ -2,17 +2,17 @@ const sql = require('./sql');
 const ScriptContext = require('./script_context');
 const Repository = require('./repository');
 
-async function executeNote(dataKey, note) {
+async function executeNote(note) {
     if (!note.isJavaScript()) {
         return;
     }
 
     const bundle = await getScriptBundle(note);
 
-    await executeBundle(dataKey, bundle);
+    await executeBundle(bundle);
 }
 
-async function executeBundle(dataKey, bundle, startNote) {
+async function executeBundle(bundle, startNote) {
     if (!startNote) {
         // this is the default case, the only exception is when we want to preserve frontend startNote
         startNote = bundle.note;
@@ -21,7 +21,7 @@ async function executeBundle(dataKey, bundle, startNote) {
     // last \r\n is necessary if script contains line comment on its last line
     const script = "async function() {\r\n" + bundle.script + "\r\n}";
 
-    const ctx = new ScriptContext(dataKey, startNote, bundle.allNotes);
+    const ctx = new ScriptContext(startNote, bundle.allNotes);
 
     if (await bundle.note.hasLabel('manual_transaction_handling')) {
         return await execute(ctx, script, '');
@@ -35,8 +35,8 @@ async function executeBundle(dataKey, bundle, startNote) {
  * This method preserves frontend startNode - that's why we start execution from currentNote and override
  * bundle's startNote.
  */
-async function executeScript(dataKey, script, params, startNoteId, currentNoteId) {
-    const repository = new Repository(dataKey);
+async function executeScript(script, params, startNoteId, currentNoteId) {
+    const repository = new Repository();
     const startNote = await repository.getNote(startNoteId);
     const currentNote = await repository.getNote(currentNoteId);
 
@@ -46,7 +46,7 @@ async function executeScript(dataKey, script, params, startNoteId, currentNoteId
 
     const bundle = await getScriptBundle(currentNote);
 
-    return await executeBundle(dataKey, bundle, startNote);
+    return await executeBundle(bundle, startNote);
 }
 
 async function execute(ctx, script, paramsStr) {

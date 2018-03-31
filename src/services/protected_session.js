@@ -2,50 +2,43 @@
 
 const utils = require('./utils');
 const data_encryption = require('./data_encryption');
-const session = {};
+const dataKeyMap = {};
+const cls = require('./cls');
 
 function setDataKey(req, decryptedDataKey) {
-    session.decryptedDataKey = Array.from(decryptedDataKey); // can't store buffer in session
-    session.protectedSessionId = utils.randomSecureToken(32);
+    const protectedSessionId = utils.randomSecureToken(32);
 
-    return session.protectedSessionId;
+    dataKeyMap[protectedSessionId] = Array.from(decryptedDataKey); // can't store buffer in session
+
+    return protectedSessionId;
 }
 
-function getProtectedSessionId(req) {
-    return req.headers.protected_session_id;
+function setProtectedSessionId(req) {
+    cls.namespace.set('protectedSessionId', req.headers.protected_session_id);
 }
 
-/**
- * @param obj - can be either array, in that case it's considered to be already dataKey and we just return it
- *              if it's not a array, we consider it a request object and try to pull dataKey based on the session id header
- */
-function getDataKey(obj) {
-    if (!obj || obj.constructor.name === 'Array') {
-        return obj;
-    }
+function getProtectedSessionId() {
+    return cls.namespace.get('protectedSessionId');
+}
 
-    const protectedSessionId = getProtectedSessionId(obj);
+function getDataKey() {
+    const protectedSessionId = getProtectedSessionId();
 
-    return getDataKeyForProtectedSessionId(protectedSessionId);
+    return dataKeyMap[protectedSessionId];
 }
 
 function getDataKeyForProtectedSessionId(protectedSessionId) {
-    if (protectedSessionId && session.protectedSessionId === protectedSessionId) {
-        return session.decryptedDataKey;
-    }
-    else {
-        return null;
-    }
+    return dataKeyMap[protectedSessionId];
 }
 
 function isProtectedSessionAvailable(req) {
     const protectedSessionId = getProtectedSessionId(req);
 
-    return protectedSessionId && session.protectedSessionId === protectedSessionId;
+    return !!dataKeyMap[protectedSessionId];
 }
 
-function decryptNote(dataKey, note) {
-    dataKey = getDataKey(dataKey);
+function decryptNote(note) {
+    const dataKey = getDataKey();
 
     if (!note.isProtected) {
         return;
@@ -67,16 +60,16 @@ function decryptNote(dataKey, note) {
     }
 }
 
-function decryptNotes(dataKey, notes) {
-    dataKey = getDataKey(dataKey);
+function decryptNotes(notes) {
+    const dataKey = getDataKey();
 
     for (const note of notes) {
-        decryptNote(dataKey, note);
+        decryptNote(note);
     }
 }
 
-function decryptNoteRevision(dataKey, hist) {
-    dataKey = getDataKey(dataKey);
+function decryptNoteRevision(hist) {
+    const dataKey = getDataKey();
 
     if (!hist.isProtected) {
         return;
@@ -91,23 +84,21 @@ function decryptNoteRevision(dataKey, hist) {
     }
 }
 
-function decryptNoteRevisions(dataKey, noteRevisions) {
-    dataKey = getDataKey(dataKey);
-
+function decryptNoteRevisions(noteRevisions) {
     for (const revision of noteRevisions) {
-        decryptNoteRevision(dataKey, revision);
+        decryptNoteRevision(revision);
     }
 }
 
-function encryptNote(dataKey, note) {
-    dataKey = getDataKey(dataKey);
+function encryptNote(note) {
+    const dataKey = getDataKey();
 
     note.title = data_encryption.encrypt(dataKey, data_encryption.noteTitleIv(note.noteId), note.title);
     note.content = data_encryption.encrypt(dataKey, data_encryption.noteContentIv(note.noteId), note.content);
 }
 
-function encryptNoteRevision(dataKey, revision) {
-    dataKey = getDataKey(dataKey);
+function encryptNoteRevision(revision) {
+    const dataKey = getDataKey();
 
     revision.title = data_encryption.encrypt(dataKey, data_encryption.noteTitleIv(revision.noteRevisionId), revision.title);
     revision.content = data_encryption.encrypt(dataKey, data_encryption.noteContentIv(revision.noteRevisionId), revision.content);
@@ -123,5 +114,6 @@ module.exports = {
     decryptNoteRevision,
     decryptNoteRevisions,
     encryptNote,
-    encryptNoteRevision
+    encryptNoteRevision,
+    setProtectedSessionId
 };

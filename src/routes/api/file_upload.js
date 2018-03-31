@@ -37,21 +37,18 @@ async function uploadFile(req) {
 async function downloadFile(req, res) {
     const noteId = req.params.noteId;
     const note = await sql.getRow("SELECT * FROM notes WHERE noteId = ?", [noteId]);
-    const protectedSessionId = req.query.protectedSessionId;
 
     if (!note) {
         return res.status(404).send(`Note ${noteId} doesn't exist.`);
     }
 
     if (note.isProtected) {
-        const dataKey = protected_session.getDataKeyForProtectedSessionId(protectedSessionId);
-
-        if (!dataKey) {
+        if (!protected_session.isProtectedSessionAvailable()) {
             res.status(401).send("Protected session not available");
             return;
         }
 
-        protected_session.decryptNote(dataKey, note);
+        protected_session.decryptNote(note);
     }
 
     const labelMap = await labels.getNoteLabelMap(noteId);

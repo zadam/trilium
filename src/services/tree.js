@@ -76,13 +76,13 @@ async function loadSubTreeNoteIds(parentNoteId, subTreeNoteIds) {
     }
 }
 
-async function sortNotesAlphabetically(parentNoteId, req) {
+async function sortNotesAlphabetically(parentNoteId) {
     await sql.doInTransaction(async () => {
         const notes = await sql.getRows(`SELECT branchId, noteId, title, isProtected 
                                        FROM notes JOIN branches USING(noteId) 
                                        WHERE branches.isDeleted = 0 AND parentNoteId = ?`, [parentNoteId]);
 
-        protected_session.decryptNotes(req, notes);
+        protected_session.decryptNotes(notes);
 
         notes.sort((a, b) => a.title.toLowerCase() < b.title.toLowerCase() ? -1 : 1);
 

@@ -9,12 +9,10 @@ const config = require('./config');
 const Repository = require('./repository');
 const axios = require('axios');
 
-function ScriptContext(dataKey, startNote, allNotes) {
-    dataKey = protected_session.getDataKey(dataKey);
-
+function ScriptContext(startNote, allNotes) {
     this.modules = {};
     this.notes = utils.toObject(allNotes, note => [note.noteId, note]);
-    this.apis = utils.toObject(allNotes, note => [note.noteId, new ScriptApi(dataKey, startNote, note)]);
+    this.apis = utils.toObject(allNotes, note => [note.noteId, new ScriptApi(startNote, note)]);
     this.require = moduleNoteIds => {
         return moduleName => {
             const candidates = allNotes.filter(note => moduleNoteIds.includes(note.noteId));
@@ -29,8 +27,8 @@ function ScriptContext(dataKey, startNote, allNotes) {
     };
 }
 
-function ScriptApi(dataKey, startNote, currentNote) {
-    const repository = new Repository(dataKey);
+function ScriptApi(startNote, currentNote) {
+    const repository = new Repository();
     this.startNote = startNote;
     this.currentNote = currentNote;
 
@@ -59,8 +57,6 @@ function ScriptApi(dataKey, startNote, currentNote) {
     };
 
     this.createNote = async function(parentNoteId, title, content = "", extraOptions = {}) {
-        extraOptions.dataKey = dataKey;
-
         return await notes.createNote(parentNoteId, title, content, extraOptions);
     };
 

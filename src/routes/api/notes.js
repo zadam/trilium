@@ -20,7 +20,7 @@ async function getNote(req) {
         return [404, "Note " + noteId + " has not been found."];
     }
 
-    protected_session.decryptNote(req, note);
+    protected_session.decryptNote(note);
 
     if (note.type === 'file') {
         // no need to transfer (potentially large) file payload for this request
@@ -46,24 +46,21 @@ async function createNote(req) {
 async function updateNote(req) {
     const note = req.body;
     const noteId = req.params.noteId;
-    const dataKey = protected_session.getDataKey(req);
 
-    await notes.updateNote(noteId, note, dataKey);
+    await notes.updateNote(noteId, note);
 }
 
 async function sortNotes(req) {
     const noteId = req.params.noteId;
-    const dataKey = protected_session.getDataKey(req);
 
-    await tree.sortNotesAlphabetically(noteId, dataKey);
+    await tree.sortNotesAlphabetically(noteId);
 }
 
 async function protectBranch(req) {
     const noteId = req.params.noteId;
     const isProtected = !!parseInt(req.params.isProtected);
-    const dataKey = protected_session.getDataKey(req);
 
-    await notes.protectNoteRecursively(noteId, dataKey, isProtected);
+    await notes.protectNoteRecursively(noteId, isProtected);
 }
 
 async function setNoteTypeMime(req) {

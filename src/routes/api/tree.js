@@ -45,7 +45,7 @@ async function getTree(req) {
       WHERE 
         notes.isDeleted = 0`));
 
-    protected_session.decryptNotes(req, notes);
+    protected_session.decryptNotes(notes);
 
     notes.forEach(note => {
         note.hideInAutocomplete = !!note.hideInAutocomplete;

@@ -38,6 +38,7 @@ const router = express.Router();
 const auth = require('../services/auth');
 const cls = require('../services/cls');
 const sql = require('../services/sql');
+const protectedSessionService = require('../services/protected_session');
 
 function apiResultHandler(res, result) {
     // if it's an array and first element is integer then we consider this to be [statusCode, response] format
@@ -67,6 +68,7 @@ function route(method, path, middleware, routeHandler, resultHandler) {
         try {
             const result = await cls.init(async () => {
                 cls.namespace.set('sourceId', req.headers.source_id);
+                protectedSessionService.setProtectedSessionId(req);
 
                 return await sql.doInTransaction(async () => {
                     return await routeHandler(req, res, next);

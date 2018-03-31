@@ -7,16 +7,8 @@ const Label = require('../entities/label');
 const sync_table = require('../services/sync_table');
 
 class Repository {
-    constructor(dataKey) {
-        this.dataKey = protected_session.getDataKey(dataKey);
-    }
-
     async getEntities(query, params = []) {
         const rows = await sql.getRows(query, params);
-
-        for (const row of rows) {
-            row.dataKey = this.dataKey;
-        }
 
         return rows.map(row => this.createEntityFromRow(row));
     }
@@ -27,8 +19,6 @@ class Repository {
         if (!row) {
             return null;
         }
-
-        row.dataKey = this.dataKey;
 
         return this.createEntityFromRow(row);
     }
@@ -66,7 +56,6 @@ class Repository {
 
         const clone = Object.assign({}, entity);
 
-        delete clone.dataKey;
         delete clone.jsonContent;
         delete clone.repository;
 
