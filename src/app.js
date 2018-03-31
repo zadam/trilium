@@ -10,6 +10,7 @@ const FileStore = require('session-file-store')(session);
 const os = require('os');
 const sessionSecret = require('./services/session_secret');
 const cls = require('./services/cls');
+require('./entities/entity_constructor');
 
 const app = express();
 

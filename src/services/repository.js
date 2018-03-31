@@ -1,16 +1,18 @@
 "use strict";
 
 const sql = require('./sql');
-const Note = require('../entities/note');
-const NoteRevision = require('../entities/note_revision');
-const Branch = require('../entities/branch');
-const Label = require('../entities/label');
 const sync_table = require('../services/sync_table');
+
+let entityConstructor;
+
+async function setEntityConstructor(constructor) {
+    entityConstructor = constructor;
+}
 
 async function getEntities(query, params = []) {
     const rows = await sql.getRows(query, params);
 
-    return rows.map(row => this.createEntityFromRow(row));
+    return rows.map(entityConstructor);
 }
 
 async function getEntity(query, params = []) {
@@ -20,33 +22,11 @@ async function getEntity(query, params = []) {
         return null;
     }
 
-    return this.createEntityFromRow(row);
+    return entityConstructor(row);
 }
 
 async function getNote(noteId) {
-    return await this.getEntity("SELECT * FROM notes WHERE noteId = ?", [noteId]);
-}
-
-function createEntityFromRow(row) {
-    let entity;
-
-    if (row.labelId) {
-        entity = new Label(row);
-    }
-    else if (row.noteRevisionId) {
-        entity = new NoteRevision(row);
-    }
-    else if (row.branchId) {
-        entity = new Branch(row);
-    }
-    else if (row.noteId) {
-        entity = new Note(row);
-    }
-    else {
-        throw new Error('Unknown entity type for row: ' + JSON.stringify(row));
-    }
-
-    return entity;
+    return await getEntity("SELECT * FROM notes WHERE noteId = ?", [noteId]);
 }
 
 async function updateEntity(entity) {
@@ -69,5 +49,6 @@ module.exports = {
     getEntities,
     getEntity,
     getNote,
-    updateEntity
+    updateEntity,
+    setEntityConstructor
 };

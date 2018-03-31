@@ -4,6 +4,7 @@ const utils = require('./utils');
 const sync_table = require('./sync_table');
 const labels = require('./labels');
 const protected_session = require('./protected_session');
+const repository = require('./repository');
 
 async function createNewNote(parentNoteId, noteOpts) {
     const noteId = utils.newNoteId();
@@ -117,15 +118,11 @@ async function createNote(parentNoteId, title, content = "", extraOptions = {}) 
     return noteId;
 }
 
-async function protectNoteRecursively(noteId, protect) {
-    const note = await sql.getRow("SELECT * FROM notes WHERE noteId = ?", [noteId]);
-
+async function protectNoteRecursively(note, protect) {
     await protectNote(note, protect);
 
-    const children = await sql.getColumn("SELECT noteId FROM branches WHERE parentNoteId = ? AND isDeleted = 0", [noteId]);
-
-    for (const childNoteId of children) {
-        await protectNoteRecursively(childNoteId, protect);
+    for (const child of await note.getChildren()) {
+        await protectNoteRecursively(child, protect);
     }
 }
 
@@ -133,47 +130,43 @@ async function protectNote(note, protect) {
     let changed = false;
 
     if (protect && !note.isProtected) {
-        protected_session.encryptNote(note);
-
         note.isProtected = true;
 
         changed = true;
     }
     else if (!protect && note.isProtected) {
-        protected_session.decryptNote(note);
-
         note.isProtected = false;
 
         changed = true;
     }
 
     if (changed) {
-        await sql.execute("UPDATE notes SET title = ?, content = ?, isProtected = ? WHERE noteId = ?",
-            [note.title, note.content, note.isProtected, note.noteId]);
+        await repository.updateEntity(note);
 
         await sync_table.addNoteSync(note.noteId);
     }
 
-    await protectNoteRevisions(note.noteId, protect);
+    await protectNoteRevisions(note, protect);
 }
 
-async function protectNoteRevisions(noteId, protect) {
-    const revisionsToChange = await sql.getRows("SELECT * FROM note_revisions WHERE noteId = ? AND isProtected != ?", [noteId, protect]);
+async function protectNoteRevisions(note, protect) {
+    for (const revision of await note.getRevisions()) {
+        let changed = false;
 
-    for (const revision of revisionsToChange) {
-        if (protect) {
-            protected_session.encryptNoteRevision(revision);
-
+        if (protect && !revision.isProtected) {
             revision.isProtected = true;
-        }
-        else {
-            protected_session.decryptNoteRevision(revision);
 
+            changed = true;
+        }
+        else if(!protect && revision.isProtected) {
             revision.isProtected = false;
+
+            changed = true;
         }
 
-        await sql.execute("UPDATE note_revisions SET title = ?, content = ?, isProtected = ? WHERE noteRevisionId = ?",
-            [revision.title, revision.content, revision.isProtected, revision.noteRevisionId]);
+        if (changed) {
+            await repository.updateEntity(revision);
+        }
 
         await sync_table.addNoteRevisionSync(revision.noteRevisionId);
     }
@@ -298,7 +291,7 @@ async function updateNote(noteId, newNote) {
 
         await saveNoteImages(noteId, newNote.content);
 
-        await protectNoteRevisions(noteId, newNote.isProtected);
+        await protectNoteRevisions(await repository.getNote(noteId), newNote.isProtected);
 
         await sql.execute("UPDATE notes SET title = ?, content = ?, isProtected = ?, dateModified = ? WHERE noteId = ?", [
             newNote.title,

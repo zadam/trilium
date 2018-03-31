@@ -41,7 +41,7 @@ function ScriptApi(startNote, currentNote) {
     this.getInstanceName = () => config.General ? config.General.instanceName : null;
 
     this.getNoteById = async function(noteId) {
-        return repository.getNote(noteId);
+        return await repository.getNote(noteId);
     };
 
     this.getNotesWithLabel = async function (attrName, attrValue) {

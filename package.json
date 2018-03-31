@@ -34,7 +34,6 @@
     "electron-in-page-search": "^1.2.4",
     "electron-rebuild": "^1.7.3",
     "express": "~4.16.3",
-    "express-promise-wrap": "^0.2.2",
     "express-session": "^1.15.6",
     "fs-extra": "^4.0.3",
     "helmet": "^3.12.0",

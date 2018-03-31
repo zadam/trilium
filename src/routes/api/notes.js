@@ -1,15 +1,12 @@
 "use strict";
 
-const express = require('express');
-const router = express.Router();
-const auth = require('../../services/auth');
 const sql = require('../../services/sql');
 const notes = require('../../services/notes');
 const utils = require('../../services/utils');
 const protected_session = require('../../services/protected_session');
 const tree = require('../../services/tree');
 const sync_table = require('../../services/sync_table');
-const wrap = require('express-promise-wrap').wrap;
+const repository = require('../../services/repository');
 
 async function getNote(req) {
     const noteId = req.params.noteId;
@@ -58,9 +55,10 @@ async function sortNotes(req) {
 
 async function protectBranch(req) {
     const noteId = req.params.noteId;
-    const isProtected = !!parseInt(req.params.isProtected);
+    const note = repository.getNote(noteId);
+    const protect = !!parseInt(req.params.isProtected);
 
-    await notes.protectNoteRecursively(noteId, isProtected);
+    await notes.protectNoteRecursively(note, protect);
 }
 
 async function setNoteTypeMime(req) {

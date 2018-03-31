@@ -1,14 +1,9 @@
 "use strict";
 
-const express = require('express');
-const router = express.Router();
 const sql = require('../../services/sql');
-const auth = require('../../services/auth');
 const labels = require('../../services/labels');
 const notes = require('../../services/notes');
-const wrap = require('express-promise-wrap').wrap;
 const tar = require('tar-stream');
-const multer = require('multer')();
 const stream = require('stream');
 const path = require('path');
 

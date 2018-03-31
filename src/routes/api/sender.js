@@ -1,14 +1,10 @@
 "use strict";
 
-const express = require('express');
-const router = express.Router();
 const image = require('../../services/image');
 const utils = require('../../services/utils');
 const date_notes = require('../../services/date_notes');
 const sql = require('../../services/sql');
-const wrap = require('express-promise-wrap').wrap;
 const notes = require('../../services/notes');
-const multer = require('multer')();
 const password_encryption = require('../../services/password_encryption');
 const options = require('../../services/options');
 const sync_table = require('../../services/sync_table');

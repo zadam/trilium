@@ -2,13 +2,14 @@
 
 const Entity = require('./entity');
 const protected_session = require('../services/protected_session');
+const repository = require('../services/repository');
 
 class Note extends Entity {
     static get tableName() { return "notes"; }
     static get primaryKeyName() { return "noteId"; }
 
-    constructor(repository, row) {
-        super(repository, row);
+    constructor(row) {
+        super(row);
 
         if (this.isProtected) {
             protected_session.decryptNote(this);
@@ -49,7 +50,7 @@ class Note extends Entity {
     }
 
     async getLabels() {
-        return this.repository.getEntities("SELECT * FROM labels WHERE noteId = ? AND isDeleted = 0", [this.noteId]);
+        return await repository.getEntities("SELECT * FROM labels WHERE noteId = ? AND isDeleted = 0", [this.noteId]);
     }
 
     // WARNING: this doesn't take into account the possibility to have multi-valued labels!
@@ -71,19 +72,19 @@ class Note extends Entity {
 
     // WARNING: this doesn't take into account the possibility to have multi-valued labels!
     async getLabel(name) {
-        return this.repository.getEntity("SELECT * FROM labels WHERE noteId = ? AND name = ?", [this.noteId, name]);
+        return await repository.getEntity("SELECT * FROM labels WHERE noteId = ? AND name = ?", [this.noteId, name]);
     }
 
     async getRevisions() {
-        return this.repository.getEntities("SELECT * FROM note_revisions WHERE noteId = ?", [this.noteId]);
+        return await repository.getEntities("SELECT * FROM note_revisions WHERE noteId = ?", [this.noteId]);
     }
 
     async getTrees() {
-        return this.repository.getEntities("SELECT * FROM branches WHERE isDeleted = 0 AND noteId = ?", [this.noteId]);
+        return await repository.getEntities("SELECT * FROM branches WHERE isDeleted = 0 AND noteId = ?", [this.noteId]);
     }
 
     async getChild(name) {
-        return this.repository.getEntity(`
+        return await repository.getEntity(`
           SELECT notes.* 
           FROM branches 
             JOIN notes USING(noteId) 
@@ -94,7 +95,7 @@ class Note extends Entity {
     }
 
     async getChildren() {
-        return this.repository.getEntities(`
+        return await repository.getEntities(`
           SELECT notes.* 
           FROM branches 
             JOIN notes USING(noteId) 
@@ -105,7 +106,7 @@ class Note extends Entity {
     }
 
     async getParents() {
-        return this.repository.getEntities(`
+        return await repository.getEntities(`
           SELECT parent_notes.* 
           FROM 
             branches AS child_tree 
@@ -116,7 +117,7 @@ class Note extends Entity {
     }
 
     async getBranch() {
-        return this.repository.getEntities(`
+        return await repository.getEntities(`
           SELECT branches.* 
           FROM branches 
             JOIN notes USING(noteId) 
