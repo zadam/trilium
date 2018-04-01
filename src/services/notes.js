@@ -3,15 +3,13 @@ const options = require('./options');
 const utils = require('./utils');
 const sync_table = require('./sync_table');
 const labels = require('./labels');
-const protected_session = require('./protected_session');
 const repository = require('./repository');
+const Note = require('../entities/note');
 const NoteImage = require('../entities/note_image');
 const NoteRevision = require('../entities/note_revision');
+const Branch = require('../entities/branch');
 
-async function createNewNote(parentNoteId, noteOpts) {
-    const noteId = utils.newNoteId();
-    const branchId = utils.newBranchId();
-
+async function getNewNotePosition(parentNoteId, noteOpts) {
     let newNotePos = 0;
 
     if (noteOpts.target === 'into') {
@@ -33,9 +31,14 @@ async function createNewNote(parentNoteId, noteOpts) {
     else {
         throw new Error('Unknown target: ' + noteOpts.target);
     }
+    return newNotePos;
+}
+
+async function createNewNote(parentNoteId, noteOpts) {
+    const newNotePos = await getNewNotePosition(parentNoteId, noteOpts);
 
     if (parentNoteId !== 'root') {
-        const parent = await sql.getRow("SELECT * FROM notes WHERE noteId = ?", [parentNoteId]);
+        const parent = await repository.getNote(parentNoteId);
 
         if (!noteOpts.type) {
             noteOpts.type = parent.type;
@@ -46,42 +49,31 @@ async function createNewNote(parentNoteId, noteOpts) {
         }
     }
 
-    const now = utils.nowDate();
-
-    const note = {
-        noteId: noteId,
+    const note = new Note({
+        noteId: utils.newNoteId(),
         title: noteOpts.title,
         content: noteOpts.content ? noteOpts.content : '',
         isProtected: noteOpts.isProtected,
         type: noteOpts.type ? noteOpts.type : 'text',
-        mime: noteOpts.mime ? noteOpts.mime : 'text/html',
-        dateCreated: now,
-        dateModified: now
-    };
+        mime: noteOpts.mime ? noteOpts.mime : 'text/html'
+    });
 
-    if (note.isProtected) {
-        protected_session.encryptNote(note);
-    }
+    await repository.updateEntity(note);
 
-    await sql.insert("notes", note);
-
-    await sync_table.addNoteSync(noteId);
-
-    await sql.insert("branches", {
-        branchId: branchId,
-        noteId: noteId,
+    const branch = new Branch({
+        branchId: utils.newBranchId(),
+        noteId: note.noteId,
         parentNoteId: parentNoteId,
         notePosition: newNotePos,
         isExpanded: 0,
-        dateModified: now,
         isDeleted: 0
     });
 
-    await sync_table.addBranchSync(branchId);
+    await repository.updateEntity(branch);
 
     return {
-        noteId,
-        branchId,
+        noteId: note.noteId,
+        branchId: branch.branchId,
         note
     };
 }

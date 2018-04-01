@@ -14,6 +14,7 @@ import infoService from "./info.js";
 import treeBuilder from "./tree_builder.js";
 import treeKeyBindings from "./tree_keybindings.js";
 import Branch from '../entities/branch.js';
+import NoteShort from '../entities/note_short.js';
 
 const $tree = $("#tree");
 const $parentList = $("#parent-list");
