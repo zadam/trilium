@@ -84,11 +84,11 @@ class Note extends Entity {
         return await repository.getEntities("SELECT * FROM note_images WHERE noteId = ? AND isDeleted = 0", [this.noteId]);
     }
 
-    async getTrees() {
+    async getBranches() {
         return await repository.getEntities("SELECT * FROM branches WHERE isDeleted = 0 AND noteId = ?", [this.noteId]);
     }
 
-    async getChild(name) {
+    async getChildNote(name) {
         return await repository.getEntity(`
           SELECT notes.* 
           FROM branches 
@@ -99,7 +99,7 @@ class Note extends Entity {
                 AND notes.title = ?`, [this.noteId, name]);
     }
 
-    async getChildren() {
+    async getChildNotes() {
         return await repository.getEntities(`
           SELECT notes.* 
           FROM branches 
@@ -110,7 +110,16 @@ class Note extends Entity {
           ORDER BY branches.notePosition`, [this.noteId]);
     }
 
-    async getParents() {
+    async getChildBranches() {
+        return await repository.getEntities(`
+          SELECT branches.* 
+          FROM branches 
+          WHERE branches.isDeleted = 0
+                AND branches.parentNoteId = ?
+          ORDER BY branches.notePosition`, [this.noteId]);
+    }
+
+    async getParentNotes() {
         return await repository.getEntities(`
           SELECT parent_notes.* 
           FROM 
@@ -119,16 +128,6 @@ class Note extends Entity {
           WHERE child_tree.noteId = ?
                 AND child_tree.isDeleted = 0
                 AND parent_notes.isDeleted = 0`, [this.noteId]);
-    }
-
-    async getBranch() {
-        return await repository.getEntities(`
-          SELECT branches.* 
-          FROM branches 
-            JOIN notes USING(noteId) 
-          WHERE notes.isDeleted = 0
-                AND branches.isDeleted = 0
-                AND branches.noteId = ?`, [this.noteId]);
     }
 
     beforeSaving() {

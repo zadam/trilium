@@ -115,7 +115,7 @@ async function createNote(parentNoteId, title, content = "", extraOptions = {}) 
 async function protectNoteRecursively(note, protect) {
     await protectNote(note, protect);
 
-    for (const child of await note.getChildren()) {
+    for (const child of await note.getChildNotes()) {
         await protectNoteRecursively(child, protect);
     }
 }
@@ -229,30 +229,23 @@ async function updateNote(noteId, noteUpdates) {
     await protectNoteRevisions(note);
 }
 
-async function deleteNote(branchId) {
-    const branch = await sql.getRowOrNull("SELECT * FROM branches WHERE branchId = ?", [branchId]);
-
+async function deleteNote(branch) {
     if (!branch || branch.isDeleted === 1) {
         return;
     }
 
-    const now = utils.nowDate();
+    branch.isDeleted = true;
+    await branch.save();
 
-    await sql.execute("UPDATE branches SET isDeleted = 1, dateModified = ? WHERE branchId = ?", [now, branchId]);
-    await sync_table.addBranchSync(branchId);
+    const note = await branch.getNote();
+    const notDeletedBranches = await note.getBranches();
 
-    const noteId = await sql.getValue("SELECT noteId FROM branches WHERE branchId = ?", [branchId]);
+    if (notDeletedBranches.length === 0) {
+        note.isDeleted = true;
+        await note.save();
 
-    const notDeletedBranchsCount = await sql.getValue("SELECT COUNT(*) FROM branches WHERE noteId = ? AND isDeleted = 0", [noteId]);
-
-    if (!notDeletedBranchsCount) {
-        await sql.execute("UPDATE notes SET isDeleted = 1, dateModified = ? WHERE noteId = ?", [now, noteId]);
-        await sync_table.addNoteSync(noteId);
-
-        const children = await sql.getRows("SELECT branchId FROM branches WHERE parentNoteId = ? AND isDeleted = 0", [noteId]);
-
-        for (const child of children) {
-            await deleteNote(child.branchId);
+        for (const childBranch of await note.getChildBranches()) {
+            await deleteNote(childBranch);
         }
     }
 }

@@ -29,6 +29,10 @@ async function getNote(noteId) {
     return await getEntity("SELECT * FROM notes WHERE noteId = ?", [noteId]);
 }
 
+async function getBranch(branchId) {
+    return await getEntity("SELECT * FROM branches WHERE branchId = ?", [branchId]);
+}
+
 async function updateEntity(entity) {
     if (entity.beforeSaving) {
         entity.beforeSaving();
@@ -49,6 +53,7 @@ module.exports = {
     getEntities,
     getEntity,
     getNote,
+    getBranch,
     updateEntity,
     setEntityConstructor
 };

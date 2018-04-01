@@ -7,7 +7,7 @@ import editTreePrefixDialog from "../dialogs/edit_tree_prefix.js";
 
 const keyBindings = {
     "del": node => {
-        treeChangesService.deleteNodes(getSelectedNodes(true));
+        treeChangesService.deleteNodes(treeService.getSelectedNodes(true));
     },
     "ctrl+up": node => {
         const beforeNode = node.getPrevSibling();

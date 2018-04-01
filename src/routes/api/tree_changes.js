@@ -5,6 +5,7 @@ const utils = require('../../services/utils');
 const sync_table = require('../../services/sync_table');
 const tree = require('../../services/tree');
 const notes = require('../../services/notes');
+const repository = require('../../services/repository');
 
 /**
  * Code in this file deals with moving and cloning note tree rows. Relationship between note and parent note is unique
@@ -101,7 +102,9 @@ async function setExpanded(req) {
 }
 
 async function deleteBranch(req) {
-    await notes.deleteNote(req.params.branchId);
+    const branch = await repository.getBranch(req.params.branchId);
+
+    await notes.deleteNote(branch);
 }
 
 module.exports = {

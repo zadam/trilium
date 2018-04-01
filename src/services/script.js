@@ -99,7 +99,7 @@ async function getScriptBundle(note, root = true, scriptEnv = null, includedNote
 
     const modules = [];
 
-    for (const child of await note.getChildren()) {
+    for (const child of await note.getChildNotes()) {
         const childBundle = await getScriptBundle(child, false, scriptEnv, includedNoteIds);
 
         if (childBundle) {

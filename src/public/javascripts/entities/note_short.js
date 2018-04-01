@@ -17,7 +17,7 @@ class NoteShort {
         const branches = [];
 
         for (const parent of this.treeCache.parents[this.noteId]) {
-            branches.push(await this.treeCache.getBranchByChildParent(this.noteId, p.noteId));
+            branches.push(await this.treeCache.getBranchByChildParent(this.noteId, parent.noteId));
         }
 
         return branches;
