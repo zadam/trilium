@@ -9,16 +9,16 @@ const NoteImage = require('../entities/note_image');
 const NoteRevision = require('../entities/note_revision');
 const Branch = require('../entities/branch');
 
-async function getNewNotePosition(parentNoteId, noteOpts) {
+async function getNewNotePosition(parentNoteId, noteData) {
     let newNotePos = 0;
 
-    if (noteOpts.target === 'into') {
+    if (noteData.target === 'into') {
         const maxNotePos = await sql.getValue('SELECT MAX(notePosition) FROM branches WHERE parentNoteId = ? AND isDeleted = 0', [parentNoteId]);
 
         newNotePos = maxNotePos === null ? 0 : maxNotePos + 1;
     }
-    else if (noteOpts.target === 'after') {
-        const afterNote = await sql.getRow('SELECT notePosition FROM branches WHERE branchId = ?', [noteOpts.target_branchId]);
+    else if (noteData.target === 'after') {
+        const afterNote = await sql.getRow('SELECT notePosition FROM branches WHERE branchId = ?', [noteData.target_branchId]);
 
         newNotePos = afterNote.notePosition + 1;
 
@@ -29,44 +29,36 @@ async function getNewNotePosition(parentNoteId, noteOpts) {
         await sync_table.addNoteReorderingSync(parentNoteId);
     }
     else {
-        throw new Error('Unknown target: ' + noteOpts.target);
+        throw new Error('Unknown target: ' + noteData.target);
     }
     return newNotePos;
 }
 
-async function createNewNote(parentNoteId, noteOpts) {
-    const newNotePos = await getNewNotePosition(parentNoteId, noteOpts);
+async function createNewNote(parentNoteId, noteData) {
+    const newNotePos = await getNewNotePosition(parentNoteId, noteData);
 
     if (parentNoteId !== 'root') {
         const parent = await repository.getNote(parentNoteId);
 
-        if (!noteOpts.type) {
-            noteOpts.type = parent.type;
-        }
-
-        if (!noteOpts.mime) {
-            noteOpts.mime = parent.mime;
-        }
+        noteData.type = noteData.type || parent.type;
+        noteData.mime = noteData.mime || parent.mime;
     }
 
     const note = new Note({
-        noteId: utils.newNoteId(),
-        title: noteOpts.title,
-        content: noteOpts.content ? noteOpts.content : '',
-        isProtected: noteOpts.isProtected,
-        type: noteOpts.type ? noteOpts.type : 'text',
-        mime: noteOpts.mime ? noteOpts.mime : 'text/html'
+        title: noteData.title,
+        content: noteData.content || '',
+        isProtected: noteData.isProtected,
+        type: noteData.type || 'text',
+        mime: noteData.mime || 'text/html'
     });
 
     await note.save();
 
     const branch = new Branch({
-        branchId: utils.newBranchId(),
         noteId: note.noteId,
         parentNoteId: parentNoteId,
         notePosition: newNotePos,
-        isExpanded: 0,
-        isDeleted: 0
+        isExpanded: 0
     });
 
     await branch.save();
@@ -85,7 +77,7 @@ async function createNote(parentNoteId, title, content = "", extraOptions = {}) 
         title: title,
         content: extraOptions.json ? JSON.stringify(content, null, '\t') : content,
         target: 'into',
-        isProtected: extraOptions.isProtected !== undefined ? extraOptions.isProtected : false,
+        isProtected: !!extraOptions.isProtected,
         type: extraOptions.type,
         mime: extraOptions.mime
     };
@@ -93,11 +85,6 @@ async function createNote(parentNoteId, title, content = "", extraOptions = {}) 
     if (extraOptions.json && !noteData.type) {
         noteData.type = "code";
         noteData.mime = "application/json";
-    }
-
-    if (!noteData.type) {
-        noteData.type = "text";
-        noteData.mime = "text/html";
     }
 
     const {note} = await createNewNote(parentNoteId, noteData);
@@ -123,7 +110,7 @@ async function protectNote(note, protect) {
     if (protect !== note.isProtected) {
         note.isProtected = protect;
 
-        await repository.updateEntity(note);
+        await note.save();
     }
 
     await protectNoteRevisions(note);
@@ -134,7 +121,7 @@ async function protectNoteRevisions(note) {
         if (note.isProtected !== revision.isProtected) {
             revision.isProtected = note.isProtected;
 
-            await repository.updateEntity(revision);
+            await revision.save();
         }
     }
 }
@@ -154,12 +141,10 @@ async function saveNoteImages(note) {
         const existingNoteImage = existingNoteImages.find(ni => ni.imageId === imageId);
 
         if (!existingNoteImage) {
-            await repository.updateEntity(new NoteImage({
-                noteImageId: utils.newNoteImageId(),
+            await (new NoteImage({
                 noteId: note.noteId,
-                imageId: imageId,
-                isDeleted: 0
-            }));
+                imageId: imageId
+            })).save();
         }
         // else we don't need to do anything
 
@@ -170,9 +155,9 @@ async function saveNoteImages(note) {
     const unusedNoteImages = existingNoteImages.filter(ni => !foundImageIds.includes(ni.imageId));
 
     for (const unusedNoteImage of unusedNoteImages) {
-        unusedNoteImage.isDeleted = 1;
+        unusedNoteImage.isDeleted = true;
 
-        await repository.updateEntity(unusedNoteImage);
+        await unusedNoteImage.save();
     }
 }
 
@@ -194,8 +179,7 @@ async function saveNoteRevision(note) {
         && !existingnoteRevisionId
         && msSinceDateCreated >= noteRevisionSnapshotTimeInterval * 1000) {
 
-        await repository.updateEntity(new NoteRevision({
-            noteRevisionId: utils.newNoteRevisionId(),
+        await (new NoteRevision({
             noteId: note.noteId,
             // title and text should be decrypted now
             title: note.title,
@@ -203,7 +187,7 @@ async function saveNoteRevision(note) {
             isProtected: 0, // will be fixed in the protectNoteRevisions() call
             dateModifiedFrom: note.dateModified,
             dateModifiedTo: utils.nowDate()
-        }));
+        })).save();
     }
 }
 
@@ -220,8 +204,7 @@ async function updateNote(noteId, noteUpdates) {
     note.title = noteUpdates.title;
     note.content = noteUpdates.content;
     note.isProtected = noteUpdates.isProtected;
-
-    await repository.updateEntity(note);
+    await note.save();
 
     await saveNoteImages(note);
 

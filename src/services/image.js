@@ -1,8 +1,8 @@
 "use strict";
 
 const utils = require('./utils');
-const sql = require('./sql');
-const sync_table = require('./sync_table');
+const Image = require('../entities/image');
+const NoteImage = require('../entities/note_image');
 const imagemin = require('imagemin');
 const imageminMozJpeg = require('imagemin-mozjpeg');
 const imageminPngQuant = require('imagemin-pngquant');
@@ -20,37 +20,23 @@ async function saveImage(file, noteId) {
     const fileNameWithouExtension = file.originalname.replace(/\.[^/.]+$/, "");
     const fileName = sanitizeFilename(fileNameWithouExtension + "." + imageFormat.ext);
 
-    const imageId = utils.newImageId();
-    const now = utils.nowDate();
-
-    await sql.doInTransaction(async () => {
-        await sql.insert("images", {
-            imageId: imageId,
-            format: imageFormat.ext,
-            name: fileName,
-            checksum: utils.hash(optimizedImage),
-            data: optimizedImage,
-            isDeleted: 0,
-            dateModified: now,
-            dateCreated: now
-        });
-
-        await sync_table.addImageSync(imageId);
-
-        const noteImageId = utils.newNoteImageId();
-
-        await sql.insert("note_images", {
-            noteImageId: noteImageId,
-            noteId: noteId,
-            imageId: imageId,
-            isDeleted: 0,
-            dateModified: now,
-            dateCreated: now
-        });
-
-        await sync_table.addNoteImageSync(noteImageId);
+    const image = new Image({
+        format: imageFormat.ext,
+        name: fileName,
+        checksum: utils.hash(optimizedImage),
+        data: optimizedImage
     });
-    return {fileName, imageId};
+
+    await image.save();
+
+    const noteImage = new NoteImage({
+        noteId: noteId,
+        imageId: image.imageId
+    });
+
+    await noteImage.save();
+
+    return {fileName, imageId: image.imageId};
 }
 
 const MAX_SIZE = 1000;

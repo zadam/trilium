@@ -46,7 +46,7 @@ async function forceNoteSync(req) {
     }
 
     for (const noteRevisionId of await sql.getColumn("SELECT noteRevisionId FROM note_revisions WHERE noteId = ?", [noteId])) {
-        await sync_table.addNoteRevisionsSync(noteRevisionId);
+        await sync_table.addNoteRevisionSync(noteRevisionId);
     }
 
     log.info("Forcing note sync for " + noteId);

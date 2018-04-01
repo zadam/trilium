@@ -131,12 +131,20 @@ class Note extends Entity {
     }
 
     beforeSaving() {
+        if (!this.noteId) {
+            this.noteId = utils.newNoteId();
+        }
+
         if (this.isJson()) {
             this.content = JSON.stringify(this.jsonContent, null, '\t');
         }
 
         if (this.isProtected) {
             protected_session.encryptNote(this);
+        }
+
+        if (!this.isDeleted) {
+            this.isDeleted = false;
         }
 
         if (!this.dateCreated) {

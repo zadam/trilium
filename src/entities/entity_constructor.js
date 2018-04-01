@@ -5,6 +5,7 @@ const NoteImage = require('../entities/note_image');
 const Branch = require('../entities/branch');
 const Label = require('../entities/label');
 const RecentNote = require('../entities/recent_note');
+const ApiToken = require('../entities/api_token');
 const repository = require('../services/repository');
 
 function createEntityFromRow(row) {
@@ -24,6 +25,9 @@ function createEntityFromRow(row) {
     }
     else if (row.branchId && row.notePath) {
         entity = new RecentNote(row);
+    }
+    else if (row.apiTokenId) {
+        entity = new ApiToken(row);
     }
     else if (row.branchId) {
         entity = new Branch(row);

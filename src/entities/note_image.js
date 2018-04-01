@@ -17,6 +17,14 @@ class NoteImage extends Entity {
     }
 
     beforeSaving() {
+        if (!this.noteImageId) {
+            this.noteImageId = utils.newNoteImageId();
+        }
+
+        if (!this.isDeleted) {
+            this.isDeleted = false;
+        }
+
         if (!this.dateCreated) {
             this.dateCreated = utils.nowDate();
         }

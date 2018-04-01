@@ -21,14 +21,11 @@ async function cloneNoteToParent(req) {
     const newNotePos = maxNotePos === null ? 0 : maxNotePos + 1;
 
     const branch = new Branch({
-        branchId: utils.newBranchId(),
         noteId: childNoteId,
         parentNoteId: parentNoteId,
         prefix: prefix,
         notePosition: newNotePos,
-        isExpanded: 0,
-        dateModified: utils.nowDate(),
-        isDeleted: 0
+        isExpanded: 0
     });
 
     await branch.save();
@@ -58,13 +55,10 @@ async function cloneNoteAfter(req) {
     await sync_table.addNoteReorderingSync(afterNote.parentNoteId);
 
     const branch = new Branch({
-        branchId: utils.newBranchId(),
         noteId: noteId,
         parentNoteId: afterNote.parentNoteId,
         notePosition: afterNote.notePosition + 1,
-        isExpanded: 0,
-        dateModified: utils.nowDate(),
-        isDeleted: 0
+        isExpanded: 0
     });
 
     await branch.save();

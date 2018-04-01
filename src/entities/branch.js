@@ -13,6 +13,14 @@ class Branch extends Entity {
     }
 
     beforeSaving() {
+        if (!this.branchId) {
+            this.branchId = utils.newBranchId();
+        }
+
+        if (!this.isDeleted) {
+            this.isDeleted = false;
+        }
+
         this.dateModified = utils.nowDate()
     }
 }

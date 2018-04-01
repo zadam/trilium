@@ -29,7 +29,6 @@ async function updateNoteLabels(req) {
             }
 
             labelEntity = new Label();
-            labelEntity.labelId = utils.newLabelId();
             labelEntity.noteId = noteId;
         }
 

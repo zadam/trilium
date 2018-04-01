@@ -7,7 +7,7 @@ const sql = require('../../services/sql');
 const notes = require('../../services/notes');
 const password_encryption = require('../../services/password_encryption');
 const options = require('../../services/options');
-const sync_table = require('../../services/sync_table');
+const ApiToken = require('../../entities/api_token');
 
 async function login(req) {
     const username = req.body.username;
@@ -20,21 +20,11 @@ async function login(req) {
         return [401, "Incorrect username/password"];
     }
 
-    const token = utils.randomSecureToken();
-
-    const apiTokenId = utils.newApiTokenId();
-
-    await sql.insert("api_tokens", {
-        apiTokenId: apiTokenId,
-        token: token,
-        dateCreated: utils.nowDate(),
-        isDeleted: false
-    });
-
-    await sync_table.addApiTokenSync(apiTokenId);
+    const apiToken = new ApiToken({ token: utils.randomSecureToken() });
+    await apiToken.save();
 
     return {
-        token: token
+        token: apiToken.token
     };
 }
 

@@ -3,13 +3,13 @@
 const Entity = require('./entity');
 const utils = require('../services/utils');
 
-class Image extends Entity {
-    static get tableName() { return "images"; }
-    static get primaryKeyName() { return "imageId"; }
+class ApiToken extends Entity {
+    static get tableName() { return "api_tokens"; }
+    static get primaryKeyName() { return "apiTokenId"; }
 
     beforeSaving() {
-        if (!this.imageId) {
-            this.imageId = utils.newImageId();
+        if (!this.apiTokenId) {
+            this.apiTokenId = utils.newApiTokenId();
         }
 
         if (!this.isDeleted) {
@@ -19,9 +19,7 @@ class Image extends Entity {
         if (!this.dateCreated) {
             this.dateCreated = utils.nowDate();
         }
-
-        this.dateModified = utils.nowDate();
     }
 }
 
-module.exports = Image;
+module.exports = ApiToken;

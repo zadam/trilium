@@ -1,10 +1,7 @@
 "use strict";
 
-const sql = require('../../services/sql');
 const notes = require('../../services/notes');
-const utils = require('../../services/utils');
 const tree = require('../../services/tree');
-const sync_table = require('../../services/sync_table');
 const repository = require('../../services/repository');
 
 async function getNote(req) {
@@ -57,14 +54,12 @@ async function protectBranch(req) {
 }
 
 async function setNoteTypeMime(req) {
-    const noteId = req.params[0];
-    const type = req.params[1];
-    const mime = req.params[2];
+    const [noteId, type, mime] = req.params;
 
-    await sql.execute("UPDATE notes SET type = ?, mime = ?, dateModified = ? WHERE noteId = ?",
-        [type, mime, utils.nowDate(), noteId]);
-
-    await sync_table.addNoteSync(noteId);
+    const note = await repository.getNote(noteId);
+    note.type = type;
+    note.mime = mime;
+    await note.save();
 }
 
 module.exports = {

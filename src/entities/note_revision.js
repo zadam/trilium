@@ -2,6 +2,7 @@
 
 const Entity = require('./entity');
 const protected_session = require('../services/protected_session');
+const utils = require('../services/utils');
 const repository = require('../services/repository');
 
 class NoteRevision extends Entity {
@@ -21,6 +22,10 @@ class NoteRevision extends Entity {
     }
 
     beforeSaving() {
+        if (!this.noteRevisionId) {
+            this.noteRevisionId = utils.newNoteRevisionId();
+        }
+
         if (this.isProtected) {
             protected_session.encryptNoteRevision(this);
         }
