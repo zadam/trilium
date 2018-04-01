@@ -6,7 +6,7 @@ const my_scrypt = require('./my_scrypt');
 const utils = require('./utils');
 const password_encryption = require('./password_encryption');
 
-async function changePassword(currentPassword, newPassword, req) {
+async function changePassword(currentPassword, newPassword) {
     if (!await password_encryption.verifyPassword(currentPassword)) {
         return {
             success: false,

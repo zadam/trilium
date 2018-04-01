@@ -41,11 +41,11 @@ async function moveToNode(nodesToMove, toNode) {
             return;
         }
 
-        await changeNode(nodeToMove, node => {
+        await changeNode(nodeToMove, async node => {
             // first expand which will force lazy load and only then move the node
             // if this is not expanded before moving, then lazy load won't happen because it already contains node
             // this doesn't work if this isn't a folder yet, that's why we expand second time below
-            toNode.setExpanded(true);
+            await toNode.setExpanded(true);
 
             node.moveTo(toNode);
 
@@ -53,7 +53,7 @@ async function moveToNode(nodesToMove, toNode) {
             toNode.renderTitle();
 
             // this expands the note in case it become the folder only after the move
-            toNode.setExpanded(true);
+            await toNode.setExpanded(true);
         });
     }
 }
@@ -117,7 +117,7 @@ async function changeNode(node, func) {
     const childNoteId = node.data.noteId;
     const oldParentNoteId = node.data.parentNoteId;
 
-    func(node);
+    await func(node);
 
     const newParentNoteId = node.data.parentNoteId = utils.isTopLevelNode(node) ? 'root' : node.getParent().data.noteId;
 

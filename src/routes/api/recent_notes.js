@@ -1,12 +1,12 @@
 "use strict";
 
-const sql = require('../../services/sql');
+const repository = require('../../services/repository');
 const utils = require('../../services/utils');
-const sync_table = require('../../services/sync_table');
 const options = require('../../services/options');
+const RecentNote = require('../../entities/recent_note');
 
 async function getRecentNotes() {
-    return await sql.getRows(`
+    return await repository.getEntities(`
       SELECT 
         recent_notes.* 
       FROM 
@@ -20,19 +20,18 @@ async function getRecentNotes() {
       LIMIT 200`);
 }
 
-
 async function addRecentNote(req) {
     const branchId = req.params.branchId;
     const notePath = req.params.notePath;
 
-    await sql.replace('recent_notes', {
+    const recentNote = new RecentNote({
         branchId: branchId,
         notePath: notePath,
         dateAccessed: utils.nowDate(),
         isDeleted: 0
     });
 
-    await sync_table.addRecentNoteSync(branchId);
+    await recentNote.save();
 
     await options.setOption('start_note_path', notePath);
 

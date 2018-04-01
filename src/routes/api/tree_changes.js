@@ -27,12 +27,10 @@ async function moveBranchToParent(req) {
     const maxNotePos = await sql.getValue('SELECT MAX(notePosition) FROM branches WHERE parentNoteId = ? AND isDeleted = 0', [parentNoteId]);
     const newNotePos = maxNotePos === null ? 0 : maxNotePos + 1;
 
-    const now = utils.nowDate();
-
-    await sql.execute("UPDATE branches SET parentNoteId = ?, notePosition = ?, dateModified = ? WHERE branchId = ?",
-        [parentNoteId, newNotePos, now, branchId]);
-
-    await sync_table.addBranchSync(branchId);
+    const branch = await repository.getBranch(branchId);
+    branch.parentNoteId = parentNoteId;
+    branch.notePosition = newNotePos;
+    await branch.save();
 
     return { success: true };
 }
@@ -57,10 +55,10 @@ async function moveBranchBeforeNote(req) {
 
     await sync_table.addNoteReorderingSync(beforeNote.parentNoteId);
 
-    await sql.execute("UPDATE branches SET parentNoteId = ?, notePosition = ?, dateModified = ? WHERE branchId = ?",
-        [beforeNote.parentNoteId, beforeNote.notePosition, utils.nowDate(), branchId]);
-
-    await sync_table.addBranchSync(branchId);
+    const branch = await repository.getBranch(branchId);
+    branch.parentNoteId = beforeNote.parentNoteId;
+    branch.notePosition = beforeNote.notePosition;
+    await branch.save();
 
     return { success: true };
 }
@@ -85,10 +83,10 @@ async function moveBranchAfterNote(req) {
 
     await sync_table.addNoteReorderingSync(afterNote.parentNoteId);
 
-    await sql.execute("UPDATE branches SET parentNoteId = ?, notePosition = ?, dateModified = ? WHERE branchId = ?",
-        [afterNote.parentNoteId, afterNote.notePosition + 1, utils.nowDate(), branchId]);
-
-    await sync_table.addBranchSync(branchId);
+    const branch = await repository.getBranch(branchId);
+    branch.parentNoteId = afterNote.parentNoteId;
+    branch.notePosition = afterNote.notePosition + 1;
+    await branch.save();
 
     return { success: true };
 }

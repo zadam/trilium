@@ -5,21 +5,17 @@ const script = require('../../services/script');
 const repository = require('../../services/repository');
 
 async function exec(req) {
-    const ret = await script.executeScript(req, req.body.script, req.body.params, req.body.startNoteId, req.body.currentNoteId);
+    const result = await script.executeScript(req.body.script, req.body.params, req.body.startNoteId, req.body.currentNoteId);
 
-    return {
-        executionResult: ret
-    };
+    return { executionResult: result };
 }
 
 async function run(req) {
     const note = await repository.getNote(req.params.noteId);
 
-    const ret = await script.executeNote(req, note);
+    const result = await script.executeNote(req, note);
 
-    return {
-        executionResult: ret
-    };
+    return { executionResult: result };
 }
 
 async function getStartupBundles(req) {
