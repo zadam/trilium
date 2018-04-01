@@ -1,5 +1,6 @@
 const Note = require('../entities/note');
 const NoteRevision = require('../entities/note_revision');
+const Image = require('../entities/image');
 const NoteImage = require('../entities/note_image');
 const Branch = require('../entities/branch');
 const Label = require('../entities/label');
@@ -16,6 +17,9 @@ function createEntityFromRow(row) {
     }
     else if (row.noteImageId) {
         entity = new NoteImage(row);
+    }
+    else if (row.imageId) {
+        entity = new Image(row);
     }
     else if (row.branchId) {
         entity = new Branch(row);

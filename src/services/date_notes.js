@@ -14,12 +14,14 @@ const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Satur
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
 async function createNote(parentNoteId, noteTitle, noteText) {
-    return (await notes.createNewNote(parentNoteId, {
+    const {note} = await notes.createNewNote(parentNoteId, {
         title: noteTitle,
         content: noteText,
         target: 'into',
         isProtected: false
-    })).noteId;
+    });
+
+    return note.noteId;
 }
 
 async function getNoteStartingWith(parentNoteId, startsWith) {
@@ -34,11 +36,13 @@ async function getRootCalendarNoteId() {
               WHERE labels.name = '${CALENDAR_ROOT_LABEL}' AND notes.isDeleted = 0`);
 
     if (!rootNoteId) {
-        rootNoteId = (await notes.createNewNote('root', {
+        const {rootNote} = await notes.createNewNote('root', {
             title: 'Calendar',
             target: 'into',
             isProtected: false
-        })).noteId;
+        });
+
+        const rootNoteId = rootNote.noteId;
 
         await labels.createLabel(rootNoteId, CALENDAR_ROOT_LABEL);
     }

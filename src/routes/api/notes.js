@@ -3,21 +3,17 @@
 const sql = require('../../services/sql');
 const notes = require('../../services/notes');
 const utils = require('../../services/utils');
-const protected_session = require('../../services/protected_session');
 const tree = require('../../services/tree');
 const sync_table = require('../../services/sync_table');
 const repository = require('../../services/repository');
 
 async function getNote(req) {
     const noteId = req.params.noteId;
-
-    const note = await sql.getRow("SELECT * FROM notes WHERE noteId = ?", [noteId]);
+    const note = await repository.getNote(noteId);
 
     if (!note) {
         return [404, "Note " + noteId + " has not been found."];
     }
-
-    protected_session.decryptNote(note);
 
     if (note.type === 'file') {
         // no need to transfer (potentially large) file payload for this request
@@ -31,12 +27,11 @@ async function createNote(req) {
     const parentNoteId = req.params.parentNoteId;
     const newNote = req.body;
 
-    const { noteId, branchId, note } = await notes.createNewNote(parentNoteId, newNote, req);
+    const { note, branch } = await notes.createNewNote(parentNoteId, newNote, req);
 
     return {
-        'noteId': noteId,
-        'branchId': branchId,
-        'note': note
+        note,
+        branch
     };
 }
 

@@ -15,6 +15,18 @@ function LabelsModel() {
 
     this.labels = ko.observableArray();
 
+    this.updateLabelPositions = function() {
+        let position = 0;
+
+        // we need to update positions by searching in the DOM, because order of the
+        // labels in the viewmodel (self.labels()) stays the same
+        $labelsBody.find('input[name="position"]').each(function() {
+            const label = self.getTargetLabel(this);
+
+            label().position = position++;
+        });
+    };
+
     this.loadLabels = async function() {
         const noteId = noteDetailService.getCurrentNoteId();
 
@@ -32,17 +44,7 @@ function LabelsModel() {
         $labelsBody.sortable({
             handle: '.handle',
             containment: $labelsBody,
-            update: function() {
-                let position = 0;
-
-                // we need to update positions by searching in the DOM, because order of the
-                // labels in the viewmodel (self.labels()) stays the same
-                $labelsBody.find('input[name="position"]').each(function() {
-                    const label = self.getTargetLabel(this);
-
-                    label().position = position++;
-                });
-            }
+            update: this.updateLabelPositions
         });
     };
 
@@ -79,6 +81,8 @@ function LabelsModel() {
             alert("Please fix all validation errors and try saving again.");
             return;
         }
+
+        self.updateLabelPositions();
 
         const noteId = noteDetailService.getCurrentNoteId();
 

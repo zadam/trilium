@@ -72,9 +72,7 @@ async function createNewNote(parentNoteId, noteOpts) {
     await branch.save();
 
     return {
-        noteId: note.noteId,
         note,
-        branchId: branch.branchId,
         branch
     };
 }
@@ -83,7 +81,7 @@ async function createNote(parentNoteId, title, content = "", extraOptions = {}) 
     if (!parentNoteId) throw new Error("Empty parentNoteId");
     if (!title) throw new Error("Empty title");
 
-    const note = {
+    const noteData = {
         title: title,
         content: extraOptions.json ? JSON.stringify(content, null, '\t') : content,
         target: 'into',
@@ -92,25 +90,25 @@ async function createNote(parentNoteId, title, content = "", extraOptions = {}) 
         mime: extraOptions.mime
     };
 
-    if (extraOptions.json && !note.type) {
-        note.type = "code";
-        note.mime = "application/json";
+    if (extraOptions.json && !noteData.type) {
+        noteData.type = "code";
+        noteData.mime = "application/json";
     }
 
-    if (!note.type) {
-        note.type = "text";
-        note.mime = "text/html";
+    if (!noteData.type) {
+        noteData.type = "text";
+        noteData.mime = "text/html";
     }
 
-    const {noteId} = await createNewNote(parentNoteId, note);
+    const {note} = await createNewNote(parentNoteId, noteData);
 
     if (extraOptions.labels) {
         for (const labelName in extraOptions.labels) {
-            await labels.createLabel(noteId, labelName, extraOptions.labels[labelName]);
+            await labels.createLabel(note.noteId, labelName, extraOptions.labels[labelName]);
         }
     }
 
-    return noteId;
+    return note.noteId;
 }
 
 async function protectNoteRecursively(note, protect) {

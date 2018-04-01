@@ -37,6 +37,10 @@ async function getImage(imageId) {
     return await getEntity("SELECT * FROM images WHERE imageId = ?", [imageId]);
 }
 
+async function getLabel(labelId) {
+    return await getEntity("SELECT * FROM labels WHERE labelId = ?", [labelId]);
+}
+
 async function updateEntity(entity) {
     if (entity.beforeSaving) {
         entity.beforeSaving();
@@ -59,6 +63,7 @@ module.exports = {
     getNote,
     getBranch,
     getImage,
+    getLabel,
     updateEntity,
     setEntityConstructor
 };

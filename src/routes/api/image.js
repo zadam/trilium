@@ -1,12 +1,12 @@
 "use strict";
 
-const sql = require('../../services/sql');
 const image = require('../../services/image');
+const repository = require('../../services/repository');
 const RESOURCE_DIR = require('../../services/resource_dir').RESOURCE_DIR;
 const fs = require('fs');
 
 async function returnImage(req, res) {
-    const image = await sql.getRow("SELECT * FROM images WHERE imageId = ?", [req.params.imageId]);
+    const image = await repository.getImage(req.params.imageId);
 
     if (!image) {
         return res.sendStatus(404);
@@ -25,7 +25,7 @@ async function uploadImage(req) {
     const noteId = req.query.noteId;
     const file = req.file;
 
-    const note = await sql.getRow("SELECT * FROM notes WHERE noteId = ?", [noteId]);
+    const note = await repository.getNote(noteId);
 
     if (!note) {
         return [404, `Note ${noteId} doesn't exist.`];

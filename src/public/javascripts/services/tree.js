@@ -438,35 +438,28 @@ async function createNote(node, parentNoteId, target, isProtected) {
 
     const newNoteName = "new note";
 
-    const result = await server.post('notes/' + parentNoteId + '/children', {
+    const {note, branch} = await server.post('notes/' + parentNoteId + '/children', {
         title: newNoteName,
         target: target,
         target_branchId: node.data.branchId,
         isProtected: isProtected
     });
 
-    const note = new NoteShort(treeCache, {
-        noteId: result.noteId,
-        title: result.title,
-        isProtected: result.isProtected,
-        type: result.type,
-        mime: result.mime
-    });
+    const noteEntity = new NoteShort(treeCache, note);
+    const branchEntity = new Branch(treeCache, branch);
 
-    const branch = new Branch(treeCache, result);
-
-    treeCache.add(note, branch);
+    treeCache.add(noteEntity, branchEntity);
 
     noteDetailService.newNoteCreated();
 
     const newNode = {
         title: newNoteName,
-        noteId: result.noteId,
+        noteId: branchEntity.noteId,
         parentNoteId: parentNoteId,
-        refKey: result.noteId,
-        branchId: result.branchId,
+        refKey: branchEntity.noteId,
+        branchId: branchEntity.branchId,
         isProtected: isProtected,
-        extraClasses: await treeBuilder.getExtraClasses(note)
+        extraClasses: await treeBuilder.getExtraClasses(noteEntity)
     };
 
     if (target === 'after') {

@@ -47,7 +47,7 @@ async function uploadImage(req) {
 
     const parentNoteId = await date_notes.getDateNoteId(req.headers['x-local-date']);
 
-    const {noteId} = await notes.createNewNote(parentNoteId, {
+    const {note} = await notes.createNewNote(parentNoteId, {
         title: "Sender image",
         content: "",
         target: 'into',
@@ -56,13 +56,13 @@ async function uploadImage(req) {
         mime: 'text/html'
     });
 
-    const {fileName, imageId} = await image.saveImage(file, null, noteId);
+    const {fileName, imageId} = await image.saveImage(file, null, note.noteId);
 
     const url = `/api/images/${imageId}/${fileName}`;
 
     const content = `<img src="${url}"/>`;
 
-    await sql.execute("UPDATE notes SET content = ? WHERE noteId = ?", [content, noteId]);
+    await sql.execute("UPDATE notes SET content = ? WHERE noteId = ?", [content, note.noteId]);
 }
 
 async function saveNote(req) {

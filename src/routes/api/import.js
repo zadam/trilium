@@ -1,6 +1,6 @@
 "use strict";
 
-const sql = require('../../services/sql');
+const repository = require('../../services/repository');
 const labels = require('../../services/labels');
 const notes = require('../../services/notes');
 const tar = require('tar-stream');
@@ -89,9 +89,9 @@ async function importTar(req) {
     const parentNoteId = req.params.parentNoteId;
     const file = req.file;
 
-    const note = await sql.getRow("SELECT * FROM notes WHERE noteId = ?", [parentNoteId]);
+    const parentNote = await repository.getNote(parentNoteId);
 
-    if (!note) {
+    if (!parentNote) {
         return [404, `Note ${parentNoteId} doesn't exist.`];
     }
 
