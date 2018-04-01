@@ -2,6 +2,7 @@
 
 const Entity = require('./entity');
 const repository = require('../services/repository');
+const utils = require('../services/utils');
 
 class Label extends Entity {
     static get tableName() { return "labels"; }
@@ -9,6 +10,14 @@ class Label extends Entity {
 
     async getNote() {
         return await repository.getEntity("SELECT * FROM notes WHERE noteId = ?", [this.noteId]);
+    }
+
+    beforeSaving() {
+        if (!this.dateCreated) {
+            this.dateCreated = utils.nowDate();
+        }
+
+        this.dateModified = utils.nowDate();
     }
 }
 

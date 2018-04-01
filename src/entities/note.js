@@ -3,6 +3,7 @@
 const Entity = require('./entity');
 const protected_session = require('../services/protected_session');
 const repository = require('../services/repository');
+const utils = require('../services/utils');
 
 class Note extends Entity {
     static get tableName() { return "notes"; }
@@ -79,6 +80,10 @@ class Note extends Entity {
         return await repository.getEntities("SELECT * FROM note_revisions WHERE noteId = ?", [this.noteId]);
     }
 
+    async getNoteImages() {
+        return await repository.getEntities("SELECT * FROM note_images WHERE noteId = ? AND isDeleted = 0", [this.noteId]);
+    }
+
     async getTrees() {
         return await repository.getEntities("SELECT * FROM branches WHERE isDeleted = 0 AND noteId = ?", [this.noteId]);
     }
@@ -127,11 +132,19 @@ class Note extends Entity {
     }
 
     beforeSaving() {
-        this.content = JSON.stringify(this.jsonContent, null, '\t');
+        if (this.isJson()) {
+            this.content = JSON.stringify(this.jsonContent, null, '\t');
+        }
 
         if (this.isProtected) {
             protected_session.encryptNote(this);
         }
+
+        if (!this.dateCreated) {
+            this.dateCreated = utils.nowDate();
+        }
+
+        this.dateModified = utils.nowDate();
     }
 }
 

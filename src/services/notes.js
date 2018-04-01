@@ -5,6 +5,8 @@ const sync_table = require('./sync_table');
 const labels = require('./labels');
 const protected_session = require('./protected_session');
 const repository = require('./repository');
+const NoteImage = require('../entities/note_image');
+const NoteRevision = require('../entities/note_revision');
 
 async function createNewNote(parentNoteId, noteOpts) {
     const noteId = utils.newNoteId();
@@ -127,110 +129,46 @@ async function protectNoteRecursively(note, protect) {
 }
 
 async function protectNote(note, protect) {
-    let changed = false;
+    if (protect !== note.isProtected) {
+        note.isProtected = protect;
 
-    if (protect && !note.isProtected) {
-        note.isProtected = true;
-
-        changed = true;
-    }
-    else if (!protect && note.isProtected) {
-        note.isProtected = false;
-
-        changed = true;
-    }
-
-    if (changed) {
         await repository.updateEntity(note);
-
-        await sync_table.addNoteSync(note.noteId);
     }
 
-    await protectNoteRevisions(note, protect);
+    await protectNoteRevisions(note);
 }
 
-async function protectNoteRevisions(note, protect) {
+async function protectNoteRevisions(note) {
     for (const revision of await note.getRevisions()) {
-        let changed = false;
+        if (note.isProtected !== revision.isProtected) {
+            revision.isProtected = note.isProtected;
 
-        if (protect && !revision.isProtected) {
-            revision.isProtected = true;
-
-            changed = true;
-        }
-        else if(!protect && revision.isProtected) {
-            revision.isProtected = false;
-
-            changed = true;
-        }
-
-        if (changed) {
             await repository.updateEntity(revision);
         }
-
-        await sync_table.addNoteRevisionSync(revision.noteRevisionId);
     }
 }
 
-async function saveNoteRevision(noteId, nowStr) {
-    const oldNote = await sql.getRow("SELECT * FROM notes WHERE noteId = ?", [noteId]);
-
-    if (oldNote.type === 'file') {
+async function saveNoteImages(note) {
+    if (note.type !== 'text') {
         return;
     }
 
-    if (oldNote.isProtected) {
-        protected_session.decryptNote(oldNote);
-
-        oldNote.isProtected = false;
-    }
-
-    const newNoteRevisionId = utils.newNoteRevisionId();
-
-    await sql.insert('note_revisions', {
-        noteRevisionId: newNoteRevisionId,
-        noteId: noteId,
-        // title and text should be decrypted now
-        title: oldNote.title,
-        content: oldNote.content,
-        isProtected: 0, // will be fixed in the protectNoteRevisions() call
-        dateModifiedFrom: oldNote.dateModified,
-        dateModifiedTo: nowStr
-    });
-
-    await sync_table.addNoteRevisionSync(newNoteRevisionId);
-}
-
-async function saveNoteImages(noteId, noteText) {
-    const existingNoteImages = await sql.getRows("SELECT * FROM note_images WHERE noteId = ?", [noteId]);
+    const existingNoteImages = await note.getNoteImages();
     const foundImageIds = [];
-    const now = utils.nowDate();
     const re = /src="\/api\/images\/([a-zA-Z0-9]+)\//g;
     let match;
 
-    while (match = re.exec(noteText)) {
+    while (match = re.exec(note.content)) {
         const imageId = match[1];
         const existingNoteImage = existingNoteImages.find(ni => ni.imageId === imageId);
 
         if (!existingNoteImage) {
-            const noteImageId = utils.newNoteImageId();
-
-            await sql.insert("note_images", {
-                noteImageId: noteImageId,
-                noteId: noteId,
+            await repository.updateEntity(new NoteImage({
+                noteImageId: utils.newNoteImageId(),
+                noteId: note.noteId,
                 imageId: imageId,
-                isDeleted: 0,
-                dateModified: now,
-                dateCreated: now
-            });
-
-            await sync_table.addNoteImageSync(noteImageId);
-        }
-        else if (existingNoteImage.isDeleted) {
-            await sql.execute("UPDATE note_images SET isDeleted = 0, dateModified = ? WHERE noteImageId = ?",
-                [now, existingNoteImage.noteImageId]);
-
-            await sync_table.addNoteImageSync(existingNoteImage.noteImageId);
+                isDeleted: 0
+            }));
         }
         // else we don't need to do anything
 
@@ -241,67 +179,62 @@ async function saveNoteImages(noteId, noteText) {
     const unusedNoteImages = existingNoteImages.filter(ni => !foundImageIds.includes(ni.imageId));
 
     for (const unusedNoteImage of unusedNoteImages) {
-        await sql.execute("UPDATE note_images SET isDeleted = 1, dateModified = ? WHERE noteImageId = ?",
-            [now, unusedNoteImage.noteImageId]);
+        unusedNoteImage.isDeleted = 1;
 
-        await sync_table.addNoteImageSync(unusedNoteImage.noteImageId);
+        await repository.updateEntity(unusedNoteImage);
     }
 }
 
-async function loadFile(noteId, newNote) {
-    const oldNote = await sql.getRow("SELECT * FROM notes WHERE noteId = ?", [noteId]);
-
-    if (oldNote.isProtected) {
-        await protected_session.decryptNote(oldNote);
-    }
-
-    newNote.content = oldNote.content;
-}
-
-async function updateNote(noteId, newNote) {
-    if (newNote.type === 'file') {
-        await loadFile(noteId, newNote);
-    }
-
-    if (newNote.isProtected) {
-        await protected_session.encryptNote(newNote);
-    }
-
-    const labelsMap = await labels.getNoteLabelMap(noteId);
+async function saveNoteRevision(note) {
+    const labelsMap = await note.getLabelMap();
 
     const now = new Date();
-    const nowStr = utils.nowDate();
-
     const noteRevisionSnapshotTimeInterval = parseInt(await options.getOption('note_revision_snapshot_time_interval'));
 
     const revisionCutoff = utils.dateStr(new Date(now.getTime() - noteRevisionSnapshotTimeInterval * 1000));
 
     const existingnoteRevisionId = await sql.getValue(
-        "SELECT noteRevisionId FROM note_revisions WHERE noteId = ? AND dateModifiedTo >= ?", [noteId, revisionCutoff]);
+        "SELECT noteRevisionId FROM note_revisions WHERE noteId = ? AND dateModifiedTo >= ?", [note.noteId, revisionCutoff]);
 
-    await sql.doInTransaction(async () => {
-        const msSinceDateCreated = now.getTime() - utils.parseDateTime(newNote.dateCreated).getTime();
+    const msSinceDateCreated = now.getTime() - utils.parseDateTime(note.dateCreated).getTime();
 
-        if (labelsMap.disable_versioning !== 'true'
-            && !existingnoteRevisionId
-            && msSinceDateCreated >= noteRevisionSnapshotTimeInterval * 1000) {
+    if (note.type !== 'file'
+        && labelsMap.disable_versioning !== 'true'
+        && !existingnoteRevisionId
+        && msSinceDateCreated >= noteRevisionSnapshotTimeInterval * 1000) {
 
-            await saveNoteRevision(noteId, nowStr);
-        }
+        await repository.updateEntity(new NoteRevision({
+            noteRevisionId: utils.newNoteRevisionId(),
+            noteId: note.noteId,
+            // title and text should be decrypted now
+            title: note.title,
+            content: note.content,
+            isProtected: 0, // will be fixed in the protectNoteRevisions() call
+            dateModifiedFrom: note.dateModified,
+            dateModifiedTo: utils.nowDate()
+        }));
+    }
+}
 
-        await saveNoteImages(noteId, newNote.content);
+async function updateNote(noteId, noteUpdates) {
+    const note = await repository.getNote(noteId);
 
-        await protectNoteRevisions(await repository.getNote(noteId), newNote.isProtected);
+    if (note.type === 'file') {
+        // for update file, newNote doesn't contain file payloads
+        noteUpdates.content = note.content;
+    }
 
-        await sql.execute("UPDATE notes SET title = ?, content = ?, isProtected = ?, dateModified = ? WHERE noteId = ?", [
-            newNote.title,
-            newNote.content,
-            newNote.isProtected,
-            nowStr,
-            noteId]);
+    await saveNoteRevision(note);
 
-        await sync_table.addNoteSync(noteId);
-    });
+    note.title = noteUpdates.title;
+    note.content = noteUpdates.content;
+    note.isProtected = noteUpdates.isProtected;
+
+    await repository.updateEntity(note);
+
+    await saveNoteImages(note);
+
+    await protectNoteRevisions(note);
 }
 
 async function deleteNote(branchId) {

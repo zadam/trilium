@@ -177,7 +177,7 @@ function register(app) {
     apiRoute(POST, '/api/cleanup/vacuum-database', cleanupRoute.vacuumDatabase);
 
     route(GET, '/api/images/:imageId/:filename', [auth.checkApiAuthOrElectron], imageRoute.returnImage);
-    route(POST, '/api/images', [auth.checkApiAuthOrElectron], imageRoute.uploadImage, apiResultHandler);
+    route(POST, '/api/images', [auth.checkApiAuthOrElectron, uploadMiddleware], imageRoute.uploadImage, apiResultHandler);
 
     apiRoute(POST, '/api/script/exec', scriptRoute.exec);
     apiRoute(POST, '/api/script/run/:noteId', scriptRoute.run);
