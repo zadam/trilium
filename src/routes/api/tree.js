@@ -5,9 +5,9 @@ const options = require('../../services/options');
 const utils = require('../../services/utils');
 const config = require('../../services/config');
 const protected_session = require('../../services/protected_session');
-const sync_table = require('../../services/sync_table');
+const repository = require('../../services/repository');
 
-async function getTree(req) {
+async function getTree() {
     const branches = await sql.getRows(`
       SELECT 
         branchId,
@@ -64,13 +64,9 @@ async function setPrefix(req) {
     const branchId = req.params.branchId;
     const prefix = utils.isEmptyOrWhitespace(req.body.prefix) ? null : req.body.prefix;
 
-    await sql.doInTransaction(async () => {
-        await sql.execute("UPDATE branches SET prefix = ?, dateModified = ? WHERE branchId = ?", [prefix, utils.nowDate(), branchId]);
-
-        await sync_table.addBranchSync(branchId);
-    });
-
-    return {};
+    const branch = await repository.getBranch(branchId);
+    branch.prefix = prefix;
+    await branch.save();
 }
 
 module.exports = {

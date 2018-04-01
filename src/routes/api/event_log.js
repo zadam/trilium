@@ -12,9 +12,7 @@ async function deleteOld() {
     const cutoffId = await sql.getValue("SELECT id FROM event_log ORDER BY id DESC LIMIT 1000, 1");
 
     if (cutoffId) {
-        await sql.doInTransaction(async () => {
-            await sql.execute("DELETE FROM event_log WHERE id < ?", [cutoffId]);
-        });
+        await sql.execute("DELETE FROM event_log WHERE id < ?", [cutoffId]);
     }
 }
 

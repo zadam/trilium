@@ -58,7 +58,7 @@ async function createNewNote(parentNoteId, noteOpts) {
         mime: noteOpts.mime ? noteOpts.mime : 'text/html'
     });
 
-    await repository.updateEntity(note);
+    await note.save();
 
     const branch = new Branch({
         branchId: utils.newBranchId(),
@@ -69,12 +69,13 @@ async function createNewNote(parentNoteId, noteOpts) {
         isDeleted: 0
     });
 
-    await repository.updateEntity(branch);
+    await branch.save();
 
     return {
         noteId: note.noteId,
+        note,
         branchId: branch.branchId,
-        note
+        branch
     };
 }
 

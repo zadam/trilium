@@ -4,6 +4,7 @@ const sql = require('../../services/sql');
 const utils = require('../../services/utils');
 const sync_table = require('../../services/sync_table');
 const tree = require('../../services/tree');
+const Branch = require('../../entities/branch');
 
 async function cloneNoteToParent(req) {
     const parentNoteId = req.params.parentNoteId;
@@ -19,7 +20,7 @@ async function cloneNoteToParent(req) {
     const maxNotePos = await sql.getValue('SELECT MAX(notePosition) FROM branches WHERE parentNoteId = ? AND isDeleted = 0', [parentNoteId]);
     const newNotePos = maxNotePos === null ? 0 : maxNotePos + 1;
 
-    const branch = {
+    const branch = new Branch({
         branchId: utils.newBranchId(),
         noteId: childNoteId,
         parentNoteId: parentNoteId,
@@ -28,11 +29,9 @@ async function cloneNoteToParent(req) {
         isExpanded: 0,
         dateModified: utils.nowDate(),
         isDeleted: 0
-    };
+    });
 
-    await sql.replace("branches", branch);
-
-    await sync_table.addBranchSync(branch.branchId);
+    await branch.save();
 
     await sql.execute("UPDATE branches SET isExpanded = 1 WHERE noteId = ?", [parentNoteId]);
 
@@ -58,7 +57,7 @@ async function cloneNoteAfter(req) {
 
     await sync_table.addNoteReorderingSync(afterNote.parentNoteId);
 
-    const branch = {
+    const branch = new Branch({
         branchId: utils.newBranchId(),
         noteId: noteId,
         parentNoteId: afterNote.parentNoteId,
@@ -66,11 +65,9 @@ async function cloneNoteAfter(req) {
         isExpanded: 0,
         dateModified: utils.nowDate(),
         isDeleted: 0
-    };
+    });
 
-    await sql.replace("branches", branch);
-
-    await sync_table.addBranchSync(branch.branchId);
+    await branch.save();
 
     return { success: true };
 }

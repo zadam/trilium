@@ -27,10 +27,6 @@ function getDataKey() {
     return dataKeyMap[protectedSessionId];
 }
 
-function getDataKeyForProtectedSessionId(protectedSessionId) {
-    return dataKeyMap[protectedSessionId];
-}
-
 function isProtectedSessionAvailable(req) {
     const protectedSessionId = getProtectedSessionId(req);
 
@@ -84,12 +80,6 @@ function decryptNoteRevision(hist) {
     }
 }
 
-function decryptNoteRevisions(noteRevisions) {
-    for (const revision of noteRevisions) {
-        decryptNoteRevision(revision);
-    }
-}
-
 function encryptNote(note) {
     const dataKey = getDataKey();
 
@@ -107,12 +97,10 @@ function encryptNoteRevision(revision) {
 module.exports = {
     setDataKey,
     getDataKey,
-    getDataKeyForProtectedSessionId,
     isProtectedSessionAvailable,
     decryptNote,
     decryptNotes,
     decryptNoteRevision,
-    decryptNoteRevisions,
     encryptNote,
     encryptNoteRevision,
     setProtectedSessionId

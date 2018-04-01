@@ -24,8 +24,8 @@ async function exportNote(req, res) {
 }
 
 async function exportNoteInner(branchId, directory, pack) {
-    const branch = await sql.getRow("SELECT * FROM branches WHERE branchId = ?", [branchId]);
-    const note = await repository.getEntity("SELECT notes.* FROM notes WHERE noteId = ?", [branch.noteId]);
+    const branch = await repository.getBranch(branchId);
+    const note = await branch.getNote();
 
     if (note.isProtected) {
         return;
@@ -46,12 +46,8 @@ async function exportNoteInner(branchId, directory, pack) {
 
     pack.entry({ name: childFileName + ".dat", size: content.length }, content);
 
-    const children = await sql.getRows("SELECT * FROM branches WHERE parentNoteId = ? AND isDeleted = 0", [note.noteId]);
-
-    if (children.length > 0) {
-        for (const child of children) {
-            await exportNoteInner(child.branchId, childFileName + "/", pack);
-        }
+    for (const child of await note.getChildBranches()) {
+        await exportNoteInner(child.branchId, childFileName + "/", pack);
     }
 
     return childFileName;

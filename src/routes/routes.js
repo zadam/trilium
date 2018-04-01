@@ -52,7 +52,7 @@ function apiResultHandler(res, result) {
         }
     }
     else if (result === undefined) {
-        res.status(200).send();
+        res.status(204).send();
     }
     else {
         res.status(200).send(result);
