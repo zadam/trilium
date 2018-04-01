@@ -1,4 +1,4 @@
-module.exports = function(attrFilters, searchText) {
+module.exports = function(labelFilters, searchText) {
     const joins = [];
     const joinParams = [];
     let where = '1';
@@ -6,31 +6,31 @@ module.exports = function(attrFilters, searchText) {
 
     let i = 1;
 
-    for (const filter of attrFilters) {
-        joins.push(`LEFT JOIN labels AS attr${i} ON attr${i}.noteId = notes.noteId AND attr${i}.name = ?`);
+    for (const filter of labelFilters) {
+        joins.push(`LEFT JOIN labels AS label${i} ON label${i}.noteId = notes.noteId AND label${i}.name = ?`);
         joinParams.push(filter.name);
 
         where += " " + filter.relation + " ";
 
         if (filter.operator === 'exists') {
-            where += `attr${i}.labelId IS NOT NULL`;
+            where += `label${i}.labelId IS NOT NULL`;
         }
         else if (filter.operator === 'not-exists') {
-            where += `attr${i}.labelId IS NULL`;
+            where += `label${i}.labelId IS NULL`;
         }
         else if (filter.operator === '=' || filter.operator === '!=') {
-            where += `attr${i}.value ${filter.operator} ?`;
+            where += `label${i}.value ${filter.operator} ?`;
             whereParams.push(filter.value);
         }
         else if ([">", ">=", "<", "<="].includes(filter.operator)) {
             const floatParam = parseFloat(filter.value);
 
             if (isNaN(floatParam)) {
-                where += `attr${i}.value ${filter.operator} ?`;
+                where += `label${i}.value ${filter.operator} ?`;
                 whereParams.push(filter.value);
             }
             else {
-                where += `CAST(attr${i}.value AS DECIMAL) ${filter.operator} ?`;
+                where += `CAST(label${i}.value AS DECIMAL) ${filter.operator} ?`;
                 whereParams.push(floatParam);
             }
         }

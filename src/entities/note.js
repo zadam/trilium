@@ -58,8 +58,8 @@ class Note extends Entity {
     async getLabelMap() {
         const map = {};
 
-        for (const attr of await this.getLabels()) {
-            map[attr.name] = attr.value;
+        for (const label of await this.getLabels()) {
+            map[label.name] = label.value;
         }
 
         return map;

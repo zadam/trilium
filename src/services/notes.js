@@ -104,8 +104,8 @@ async function createNote(parentNoteId, title, content = "", extraOptions = {}) 
     const {noteId} = await createNewNote(parentNoteId, note);
 
     if (extraOptions.labels) {
-        for (const attrName in extraOptions.labels) {
-            await labels.createLabel(noteId, attrName, extraOptions.labels[attrName]);
+        for (const labelName in extraOptions.labels) {
+            await labels.createLabel(noteId, labelName, extraOptions.labels[labelName]);
         }
     }
 

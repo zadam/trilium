@@ -34,9 +34,7 @@ async function backupNow() {
 
         log.info("Created backup at " + backupFile);
 
-        await sql.doInTransaction(async () => {
-            await options.setOption('last_backup_date', now);
-        });
+        await options.setOption('last_backup_date', now);
     });
 }
 

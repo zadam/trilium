@@ -6,9 +6,9 @@ const parseFilters = require('../../services/parse_filters');
 const buildSearchQuery = require('../../services/build_search_query');
 
 async function searchNotes(req) {
-    const {attrFilters, searchText} = parseFilters(req.params.searchString);
+    const {labelFilters, searchText} = parseFilters(req.params.searchString);
 
-    const {query, params} = buildSearchQuery(attrFilters, searchText);
+    const {query, params} = buildSearchQuery(labelFilters, searchText);
 
     const noteIds = await sql.getColumn(query, params);
 

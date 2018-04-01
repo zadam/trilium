@@ -16,32 +16,32 @@ async function updateNoteLabels(req, res, next) {
     const labels = req.body;
     const now = utils.nowDate();
 
-    for (const attr of labels) {
-        if (attr.labelId) {
+    for (const label of labels) {
+        if (label.labelId) {
             await sql.execute("UPDATE labels SET name = ?, value = ?, dateModified = ?, isDeleted = ?, position = ? WHERE labelId = ?",
-                [attr.name, attr.value, now, attr.isDeleted, attr.position, attr.labelId]);
+                [label.name, label.value, now, label.isDeleted, label.position, label.labelId]);
         }
         else {
             // if it was "created" and then immediatelly deleted, we just don't create it at all
-            if (attr.isDeleted) {
+            if (label.isDeleted) {
                 continue;
             }
 
-            attr.labelId = utils.newLabelId();
+            label.labelId = utils.newLabelId();
 
             await sql.insert("labels", {
-                labelId: attr.labelId,
+                labelId: label.labelId,
                 noteId: noteId,
-                name: attr.name,
-                value: attr.value,
-                position: attr.position,
+                name: label.name,
+                value: label.value,
+                position: label.position,
                 dateCreated: now,
                 dateModified: now,
                 isDeleted: false
             });
         }
 
-        await sync_table.addLabelSync(attr.labelId);
+        await sync_table.addLabelSync(label.labelId);
     }
 
     return await sql.getRows("SELECT * FROM labels WHERE isDeleted = 0 AND noteId = ? ORDER BY position, dateCreated", [noteId]);
@@ -50,9 +50,9 @@ async function updateNoteLabels(req, res, next) {
 async function getAllLabelNames(req) {
     const names = await sql.getColumn("SELECT DISTINCT name FROM labels WHERE isDeleted = 0");
 
-    for (const attr of labels.BUILTIN_LABELS) {
-        if (!names.includes(attr)) {
-            names.push(attr);
+    for (const label of labels.BUILTIN_LABELS) {
+        if (!names.includes(label)) {
+            names.push(label);
         }
     }
 

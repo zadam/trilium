@@ -115,8 +115,8 @@ async function importNotes(files, parentNoteId) {
             mime: file.meta.mime
         });
 
-        for (const attr of file.meta.labels) {
-            await labels.createLabel(noteId, attr.name, attr.value);
+        for (const label of file.meta.labels) {
+            await labels.createLabel(noteId, label.name, label.value);
         }
 
         if (file.children.length > 0) {

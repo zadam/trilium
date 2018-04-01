@@ -79,11 +79,11 @@ function formatValueWithWhitespace(val) {
     return /[^\w_-]/.test(val) ? '"' + val + '"' : val;
 }
 
-function formatLabel(attr) {
-    let str = "@" + formatValueWithWhitespace(attr.name);
+function formatLabel(label) {
+    let str = "@" + formatValueWithWhitespace(label.name);
 
-    if (attr.value !== "") {
-        str += "=" + formatValueWithWhitespace(attr.value);
+    if (label.value !== "") {
+        str += "=" + formatValueWithWhitespace(label.value);
     }
 
     return str;

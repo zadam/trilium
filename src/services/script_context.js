@@ -44,12 +44,12 @@ function ScriptApi(startNote, currentNote) {
         return await repository.getNote(noteId);
     };
 
-    this.getNotesWithLabel = async function (attrName, attrValue) {
-        return await labels.getNotesWithLabel(attrName, attrValue);
+    this.getNotesWithLabel = async function (labelName, labelValue) {
+        return await labels.getNotesWithLabel(labelName, labelValue);
     };
 
-    this.getNoteWithLabel = async function (attrName, attrValue) {
-        const notes = await this.getNotesWithLabel(attrName, attrValue);
+    this.getNoteWithLabel = async function (labelName, labelValue) {
+        const notes = await this.getNotesWithLabel(labelName, labelValue);
 
         return notes.length > 0 ? notes[0] : null;
     };

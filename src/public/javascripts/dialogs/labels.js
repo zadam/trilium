@@ -38,29 +38,29 @@ function LabelsModel() {
                 // we need to update positions by searching in the DOM, because order of the
                 // labels in the viewmodel (self.labels()) stays the same
                 $labelsBody.find('input[name="position"]').each(function() {
-                    const attr = self.getTargetLabel(this);
+                    const label = self.getTargetLabel(this);
 
-                    attr().position = position++;
+                    label().position = position++;
                 });
             }
         });
     };
 
     this.deleteLabel = function(data, event) {
-        const attr = self.getTargetLabel(event.target);
-        const attrData = attr();
+        const label = self.getTargetLabel(event.target);
+        const labelData = label();
 
-        if (attrData) {
-            attrData.isDeleted = 1;
+        if (labelData) {
+            labelData.isDeleted = 1;
 
-            attr(attrData);
+            label(labelData);
 
             addLastEmptyRow();
         }
     };
 
     function isValid() {
-        for (let attrs = self.labels(), i = 0; i < attrs.length; i++) {
+        for (let labels = self.labels(), i = 0; i < labels.length; i++) {
             if (self.isEmptyName(i)) {
                 return false;
             }
@@ -83,8 +83,8 @@ function LabelsModel() {
         const noteId = noteDetailService.getCurrentNoteId();
 
         const labelsToSave = self.labels()
-            .map(attr => attr())
-            .filter(attr => attr.labelId !== "" || attr.name !== "");
+            .map(label => label())
+            .filter(label => label.labelId !== "" || label.name !== "");
 
         const labels = await server.put('notes/' + noteId + '/labels', labelsToSave);
 
@@ -98,8 +98,8 @@ function LabelsModel() {
     };
 
     function addLastEmptyRow() {
-        const attrs = self.labels().filter(attr => attr().isDeleted === 0);
-        const last = attrs.length === 0 ? null : attrs[attrs.length - 1]();
+        const labels = self.labels().filter(attr => attr().isDeleted === 0);
+        const last = labels.length === 0 ? null : labels[labels.length - 1]();
 
         if (!last || last.name.trim() !== "" || last.value !== "") {
             self.labels.push(ko.observable({
@@ -115,9 +115,9 @@ function LabelsModel() {
     this.labelChanged = function (data, event) {
         addLastEmptyRow();
 
-        const attr = self.getTargetLabel(event.target);
+        const label = self.getTargetLabel(event.target);
 
-        attr.valueHasMutated();
+        label.valueHasMutated();
     };
 
     this.isNotUnique = function(index) {
@@ -127,10 +127,10 @@ function LabelsModel() {
             return false;
         }
 
-        for (let attrs = self.labels(), i = 0; i < attrs.length; i++) {
-            const attr = attrs[i]();
+        for (let labels = self.labels(), i = 0; i < labels.length; i++) {
+            const label = labels[i]();
 
-            if (index !== i && cur.name === attr.name) {
+            if (index !== i && cur.name === label.name) {
                 return true;
             }
         }
@@ -171,10 +171,10 @@ $(document).on('focus', '.label-name', function (e) {
         $(this).autocomplete({
             // shouldn't be required and autocomplete should just accept array of strings, but that fails
             // because we have overriden filter() function in autocomplete.js
-            source: labelNames.map(attr => {
+            source: labelNames.map(label => {
                 return {
-                    label: attr,
-                    value: attr
+                    label: label,
+                    value: label
                 }
             }),
             minLength: 0
@@ -201,10 +201,10 @@ $(document).on('focus', '.label-value', async function (e) {
         $(this).autocomplete({
             // shouldn't be required and autocomplete should just accept array of strings, but that fails
             // because we have overriden filter() function in autocomplete.js
-            source: labelValues.map(attr => {
+            source: labelValues.map(label => {
                 return {
-                    label: attr,
-                    value: attr
+                    label: label,
+                    value: label
                 }
             }),
             minLength: 0
