@@ -244,14 +244,7 @@ async function doInTransaction(func) {
 }
 
 async function isDbUpToDate() {
-    let dbVersion;
-
-    try {
-        dbVersion = parseInt(await getValue("SELECT value FROM options WHERE name = 'db_version'"));
-    }
-    catch (e) {
-        dbVersion = parseInt(await getValue("SELECT opt_value FROM options WHERE opt_name = 'db_version'"));
-    }
+    const dbVersion = parseInt(await getValue("SELECT value FROM options WHERE name = 'db_version'"));
 
     const upToDate = dbVersion >= app_info.db_version;
 
@@ -263,14 +256,7 @@ async function isDbUpToDate() {
 }
 
 async function isUserInitialized() {
-    let username;
-
-    try {
-        username = await getValue("SELECT value FROM options WHERE name = 'username'");
-    }
-    catch (e) {
-        username = await getValue("SELECT opt_value FROM options WHERE opt_name = 'username'");
-    }
+    const username = await getValue("SELECT value FROM options WHERE name = 'username'");
 
     return !!username;
 }

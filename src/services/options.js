@@ -4,12 +4,7 @@ const sync_table = require('./sync_table');
 const app_info = require('./app_info');
 
 async function getOptionOrNull(name) {
-    try {
-        return await sql.getRowOrNull("SELECT value FROM options WHERE name = ?", [name]);
-    }
-    catch (e) {
-        return await sql.getRowOrNull("SELECT opt_value FROM options WHERE opt_name = ?", [name]);
-    }
+    return await sql.getRowOrNull("SELECT value FROM options WHERE name = ?", [name]);
 }
 
 async function getOption(name) {
@@ -19,7 +14,7 @@ async function getOption(name) {
         throw new Error("Option " + name + " doesn't exist");
     }
 
-    return row['value'] ? row['value'] : row['opt_value'];
+    return row.value;
 }
 
 async function setOption(name, value) {
