@@ -83,16 +83,36 @@ async function getHashes() {
           FROM images  
           ORDER BY imageId`)),
 
+        note_images: getHash(await sql.getRows(`
+          SELECT
+            noteImageId,
+            noteId,
+            imageId,
+            isDeleted,
+            dateModified,
+            dateCreated
+          FROM note_images
+          ORDER BY noteImageId`)),
+
         labels: getHash(await sql.getRows(`
           SELECT 
             labelId,
-            noteId
+            noteId,
             name,
-            value
+            value,
             dateModified,
             dateCreated
           FROM labels  
-          ORDER BY labelId`))
+          ORDER BY labelId`)),
+
+        api_tokens: getHash(await sql.getRows(`
+          SELECT 
+            apiTokenId,
+            token,
+            dateCreated,
+            isDeleted
+          FROM api_tokens  
+          ORDER BY apiTokenId`))
     };
 
     const elapseTimeMs = new Date().getTime() - startTime.getTime();

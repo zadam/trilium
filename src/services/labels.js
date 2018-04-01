@@ -4,6 +4,7 @@ const sql = require('./sql');
 const utils = require('./utils');
 const sync_table = require('./sync_table');
 const repository = require('./repository');
+const Label = require('../entities/label');
 
 const BUILTIN_LABELS = [
     'frontend_startup',
@@ -61,22 +62,17 @@ async function createLabel(noteId, name, value = "") {
         value = "";
     }
 
-    const now = utils.nowDate();
     const labelId = utils.newLabelId();
     const position = 1 + await sql.getValue(`SELECT COALESCE(MAX(position), 0) FROM labels WHERE noteId = ?`, [noteId]);
 
-    await sql.insert("labels", {
+    await (new Label({
         labelId: labelId,
         noteId: noteId,
         name: name,
         value: value,
         position: position,
-        dateModified: now,
-        dateCreated: now,
         isDeleted: false
-    });
-
-    await sync_table.addLabelSync(labelId);
+    })).save();
 }
 
 module.exports = {
