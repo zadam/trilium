@@ -2,7 +2,6 @@
 
 const sql = require('./sql');
 const utils = require('./utils');
-const sync_table = require('./sync_table');
 const repository = require('./repository');
 const Label = require('../entities/label');
 
@@ -58,21 +57,15 @@ async function getNoteIdsWithLabel(name) {
 }
 
 async function createLabel(noteId, name, value = "") {
-    if (value === null || value === undefined) {
-        value = "";
-    }
-
-    const labelId = utils.newLabelId();
-    const position = 1 + await sql.getValue(`SELECT COALESCE(MAX(position), 0) FROM labels WHERE noteId = ?`, [noteId]);
-
-    await (new Label({
-        labelId: labelId,
+    const label = new Label({
         noteId: noteId,
         name: name,
-        value: value,
-        position: position,
-        isDeleted: false
-    })).save();
+        value: value
+    });
+
+    await label.save();
+
+    return label;
 }
 
 module.exports = {

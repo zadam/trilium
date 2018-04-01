@@ -43,18 +43,20 @@ async function getLabel(labelId) {
 
 async function updateEntity(entity) {
     if (entity.beforeSaving) {
-        entity.beforeSaving();
+        await entity.beforeSaving();
     }
 
     const clone = Object.assign({}, entity);
 
     delete clone.jsonContent;
 
-    await sql.replace(entity.constructor.tableName, clone);
+    await sql.doInTransaction(async () => {
+        await sql.replace(entity.constructor.tableName, clone);
 
-    const primaryKey = entity[entity.constructor.primaryKeyName];
+        const primaryKey = entity[entity.constructor.primaryKeyName];
 
-    await sync_table.addEntitySync(entity.constructor.tableName, primaryKey);
+        await sync_table.addEntitySync(entity.constructor.tableName, primaryKey);
+    });
 }
 
 module.exports = {

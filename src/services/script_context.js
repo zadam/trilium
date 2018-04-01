@@ -40,9 +40,12 @@ function ScriptApi(startNote, currentNote) {
 
     this.getInstanceName = () => config.General ? config.General.instanceName : null;
 
-    this.getNoteById = async function(noteId) {
-        return await repository.getNote(noteId);
-    };
+    this.getNote = repository.getNote;
+    this.getBranch = repository.getBranch;
+    this.getLabel = repository.getLabel;
+    this.getImage = repository.getImage;
+    this.getEntity = repository.getEntity;
+    this.getEntities = repository.getEntities;
 
     this.getNotesWithLabel = async function (labelName, labelValue) {
         return await labels.getNotesWithLabel(labelName, labelValue);
@@ -59,8 +62,6 @@ function ScriptApi(startNote, currentNote) {
     };
 
     this.createLabel = labels.createLabel;
-
-    this.updateEntity = repository.updateEntity;
 
     this.log = message => log.info(`Script ${currentNote.noteId}: ${message}`);
 

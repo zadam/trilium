@@ -95,9 +95,7 @@ async function getLastSyncedPull() {
 }
 
 async function setLastSyncedPull(syncId) {
-    await sql.doInTransaction(async () => {
-        await options.setOption('last_synced_pull', syncId);
-    });
+    await options.setOption('last_synced_pull', syncId);
 }
 
 async function pullSync(syncContext) {
@@ -168,9 +166,7 @@ async function getLastSyncedPush() {
 }
 
 async function setLastSyncedPush(lastSyncedPush) {
-    await sql.doInTransaction(async () => {
-        await options.setOption('last_synced_push', lastSyncedPush);
-    });
+    await options.setOption('last_synced_push', lastSyncedPush);
 }
 
 async function pushSync(syncContext) {
