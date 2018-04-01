@@ -5,7 +5,7 @@ import noteRevisionsDialog from '../dialogs/note_revisions.js';
 import noteSourceDialog from '../dialogs/note_source.js';
 import recentChangesDialog from '../dialogs/recent_changes.js';
 import recentNotesDialog from '../dialogs/recent_notes.js';
-import settingsDialog from '../dialogs/settings.js';
+import optionsDialog from '../dialogs/options.js';
 import sqlConsoleDialog from '../dialogs/sql_console.js';
 
 import cloning from './cloning.js';

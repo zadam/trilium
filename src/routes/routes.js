@@ -11,7 +11,7 @@ const treeChangesApiRoute = require('./api/tree_changes');
 const cloningApiRoute = require('./api/cloning');
 const noteRevisionsApiRoute = require('./api/note_revisions');
 const recentChangesApiRoute = require('./api/recent_changes');
-const settingsApiRoute = require('./api/settings');
+const optionsApiRoute = require('./api/options');
 const passwordApiRoute = require('./api/password');
 const migrationApiRoute = require('./api/migration');
 const syncApiRoute = require('./api/sync');
@@ -126,9 +126,9 @@ function register(app) {
 
     apiRoute(GET, '/api/recent-changes', recentChangesApiRoute.getRecentChanges);
 
-    apiRoute(GET, '/api/settings', settingsApiRoute.getAllowedSettings);
-    apiRoute(GET, '/api/settings/all', settingsApiRoute.getAllSettings);
-    apiRoute(POST, '/api/settings', settingsApiRoute.updateSetting);
+    apiRoute(GET, '/api/options', optionsApiRoute.getAllowedOptions);
+    apiRoute(GET, '/api/options/all', optionsApiRoute.getAllOptions);
+    apiRoute(POST, '/api/options', optionsApiRoute.updateOption);
 
     apiRoute(POST, '/api/password/change', passwordApiRoute.changePassword);
 

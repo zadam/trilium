@@ -5,8 +5,8 @@ import utils from '../services/utils.js';
 import server from '../services/server.js';
 import infoService from "../services/info.js";
 
-const $dialog = $("#settings-dialog");
-const $tabs = $("#settings-tabs");
+const $dialog = $("#options-dialog");
+const $tabs = $("#options-tabs");
 
 const tabHandlers = [];
 
@@ -17,7 +17,7 @@ function addTabHandler(handler) {
 async function showDialog() {
     glob.activeDialog = $dialog;
 
-    const settings = await server.get('settings');
+    const options = await server.get('options');
 
     $dialog.dialog({
         modal: true,
@@ -27,24 +27,24 @@ async function showDialog() {
     $tabs.tabs();
 
     for (const handler of tabHandlers) {
-        if (handler.settingsLoaded) {
-            handler.settingsLoaded(settings);
+        if (handler.optionsLoaded) {
+            handler.optionsLoaded(options);
         }
     }
 }
 
-async function saveSettings(settingName, settingValue) {
-    await server.post('settings', {
-        name: settingName,
-        value: settingValue
+async function saveOptions(optionName, optionValue) {
+    await server.post('options', {
+        name: optionName,
+        value: optionValue
     });
 
-    infoService.showMessage("Settings change have been saved.");
+    infoService.showMessage("Options change have been saved.");
 }
 
 export default {
     showDialog,
-    saveSettings
+    saveOptions
 };
 
 addTabHandler((function() {
@@ -53,7 +53,7 @@ addTabHandler((function() {
     const $newPassword1 = $("#new-password1");
     const $newPassword2 = $("#new-password2");
 
-    function settingsLoaded(settings) {
+    function optionsLoaded(options) {
     }
 
     $form.submit(() => {
@@ -89,23 +89,23 @@ addTabHandler((function() {
     });
 
     return {
-        settingsLoaded
+        optionsLoaded
     };
 })());
 
 addTabHandler((function() {
     const $form = $("#protected-session-timeout-form");
     const $protectedSessionTimeout = $("#protected-session-timeout-in-seconds");
-    const settingName = 'protected_session_timeout';
+    const optionName = 'protected_session_timeout';
 
-    function settingsLoaded(settings) {
-        $protectedSessionTimeout.val(settings[settingName]);
+    function optionsLoaded(options) {
+        $protectedSessionTimeout.val(options[optionName]);
     }
 
     $form.submit(() => {
         const protectedSessionTimeout = $protectedSessionTimeout.val();
 
-        saveSettings(settingName, protectedSessionTimeout).then(() => {
+        saveOptions(optionName, protectedSessionTimeout).then(() => {
             protectedSessionHolder.setProtectedSessionTimeout(protectedSessionTimeout);
         });
 
@@ -113,27 +113,27 @@ addTabHandler((function() {
     });
 
     return {
-        settingsLoaded
+        optionsLoaded
     };
 })());
 
 addTabHandler((function () {
     const $form = $("#note-revision-snapshot-time-interval-form");
     const $timeInterval = $("#note-revision-snapshot-time-interval-in-seconds");
-    const settingName = 'note_revision_snapshot_time_interval';
+    const optionName = 'note_revision_snapshot_time_interval';
 
-    function settingsLoaded(settings) {
-        $timeInterval.val(settings[settingName]);
+    function optionsLoaded(options) {
+        $timeInterval.val(options[optionName]);
     }
 
     $form.submit(() => {
-        saveSettings(settingName, $timeInterval.val());
+        saveOptions(optionName, $timeInterval.val());
 
         return false;
     });
 
     return {
-        settingsLoaded
+        optionsLoaded
     };
 })());
 

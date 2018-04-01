@@ -82,7 +82,7 @@ setTimeout(() => {
                     // options
                     message: "Lost connection to server"
                 },{
-                    // settings
+                    // options
                     type: 'danger',
                     delay: 100000000 // keep it until we explicitly close it
                 });

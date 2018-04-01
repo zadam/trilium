@@ -3,7 +3,7 @@ import treeService from "./tree.js";
 import linkService from "./link.js";
 import fileService from "./file.js";
 import noteRevisionsDialog from "../dialogs/note_revisions.js";
-import settingsDialog from "../dialogs/settings.js";
+import optionsDialog from "../dialogs/options.js";
 import addLinkDialog from "../dialogs/add_link.js";
 import recentNotesDialog from "../dialogs/recent_notes.js";
 import jumpToNoteDialog from "../dialogs/jump_to_note.js";
@@ -40,7 +40,7 @@ function registerEntrypoints() {
     $(".show-labels-button").click(labelsDialog.showDialog);
     utils.bindShortcut('alt+l', labelsDialog.showDialog);
 
-    $("#settings-button").click(settingsDialog.showDialog);
+    $("#options-button").click(optionsDialog.showDialog);
 
     utils.bindShortcut('alt+o', sqlConsoleDialog.showDialog);
 

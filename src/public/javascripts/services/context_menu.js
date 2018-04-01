@@ -76,7 +76,7 @@ function cut(nodes) {
     infoService.showMessage("Note(s) have been cut into clipboard.");
 }
 
-const contextMenuSettings = {
+const contextMenuOptions = {
     delegate: "span.fancytree-title",
     autoFocus: true,
     menu: [
@@ -185,5 +185,5 @@ export default {
     pasteInto,
     cut,
     copy,
-    contextMenuSettings
+    contextMenuOptions
 };

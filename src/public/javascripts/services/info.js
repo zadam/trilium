@@ -8,7 +8,7 @@ function showMessage(message) {
         // options
         message: message
     }, {
-        // settings
+        // options
         type: 'success',
         delay: 3000
     });
@@ -21,7 +21,7 @@ function showError(message, delay = 10000) {
         // options
         message: message
     }, {
-        // settings
+        // options
         type: 'danger',
         delay: delay
     });

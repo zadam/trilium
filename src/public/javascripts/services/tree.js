@@ -349,7 +349,7 @@ function initFancyTree(branch) {
         }
     });
 
-    $tree.contextmenu(contextMenuService.contextMenuSettings);
+    $tree.contextmenu(contextMenuService.contextMenuOptions);
 }
 
 function getTree() {
