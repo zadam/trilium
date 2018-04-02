@@ -1,7 +1,7 @@
 const sql = require('./sql');
 const log = require('./log');
-const eventLog = require('./event_log');
-const sync_table = require('./sync_table');
+const eventLogService = require('./event_log');
+const syncTableService = require('./sync_table');
 
 function deserializeNoteContentBuffer(note) {
     if (note.type === 'file') {
@@ -18,8 +18,8 @@ async function updateNote(entity, sourceId) {
         await sql.doInTransaction(async () => {
             await sql.replace("notes", entity);
 
-            await sync_table.addNoteSync(entity.noteId, sourceId);
-            await eventLog.addNoteEvent(entity.noteId, "Synced note <note>");
+            await syncTableService.addNoteSync(entity.noteId, sourceId);
+            await eventLogService.addNoteEvent(entity.noteId, "Synced note <note>");
         });
 
         log.info("Update/sync note " + entity.noteId);
@@ -35,7 +35,7 @@ async function updateBranch(entity, sourceId) {
 
             await sql.replace('branches', entity);
 
-            await sync_table.addBranchSync(entity.branchId, sourceId);
+            await syncTableService.addBranchSync(entity.branchId, sourceId);
 
             log.info("Update/sync note tree " + entity.branchId);
         }
@@ -51,7 +51,7 @@ async function updateNoteRevision(entity, sourceId) {
         if (orig === null || orig.dateModifiedTo <= entity.dateModifiedTo) {
             await sql.replace('note_revisions', entity);
 
-            await sync_table.addNoteRevisionSync(entity.noteRevisionId, sourceId);
+            await syncTableService.addNoteRevisionSync(entity.noteRevisionId, sourceId);
 
             log.info("Update/sync note revision " + entity.noteRevisionId);
         }
@@ -64,7 +64,7 @@ async function updateNoteReordering(entity, sourceId) {
             await sql.execute("UPDATE branches SET notePosition = ? WHERE branchId = ?", [entity.ordering[key], key]);
         });
 
-        await sync_table.addNoteReorderingSync(entity.parentNoteId, sourceId);
+        await syncTableService.addNoteReorderingSync(entity.parentNoteId, sourceId);
     });
 }
 
@@ -79,9 +79,9 @@ async function updateOptions(entity, sourceId) {
         if (orig === null || orig.dateModified < entity.dateModified) {
             await sql.replace('options', entity);
 
-            await sync_table.addOptionsSync(entity.name, sourceId);
+            await syncTableService.addOptionsSync(entity.name, sourceId);
 
-            await eventLog.addEvent("Synced option " + entity.name);
+            await eventLogService.addEvent("Synced option " + entity.name);
         }
     });
 }
@@ -93,7 +93,7 @@ async function updateRecentNotes(entity, sourceId) {
         await sql.doInTransaction(async () => {
             await sql.replace('recent_notes', entity);
 
-            await sync_table.addRecentNoteSync(entity.branchId, sourceId);
+            await syncTableService.addRecentNoteSync(entity.branchId, sourceId);
         });
     }
 }
@@ -109,7 +109,7 @@ async function updateImage(entity, sourceId) {
         await sql.doInTransaction(async () => {
             await sql.replace("images", entity);
 
-            await sync_table.addImageSync(entity.imageId, sourceId);
+            await syncTableService.addImageSync(entity.imageId, sourceId);
         });
 
         log.info("Update/sync image " + entity.imageId);
@@ -123,7 +123,7 @@ async function updateNoteImage(entity, sourceId) {
         await sql.doInTransaction(async () => {
             await sql.replace("note_images", entity);
 
-            await sync_table.addNoteImageSync(entity.noteImageId, sourceId);
+            await syncTableService.addNoteImageSync(entity.noteImageId, sourceId);
         });
 
         log.info("Update/sync note image " + entity.noteImageId);
@@ -137,7 +137,7 @@ async function updateLabel(entity, sourceId) {
         await sql.doInTransaction(async () => {
             await sql.replace("labels", entity);
 
-            await sync_table.addLabelSync(entity.labelId, sourceId);
+            await syncTableService.addLabelSync(entity.labelId, sourceId);
         });
 
         log.info("Update/sync label " + entity.labelId);
@@ -151,7 +151,7 @@ async function updateApiToken(entity, sourceId) {
         await sql.doInTransaction(async () => {
             await sql.replace("api_tokens", entity);
 
-            await sync_table.addApiTokenSync(entity.apiTokenId, sourceId);
+            await syncTableService.addApiTokenSync(entity.apiTokenId, sourceId);
         });
 
         log.info("Update/sync API token " + entity.apiTokenId);

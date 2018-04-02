@@ -1,7 +1,7 @@
 "use strict";
 
-const notes = require('../../services/notes');
-const tree = require('../../services/tree');
+const noteService = require('../../services/notes');
+const treeService = require('../../services/tree');
 const repository = require('../../services/repository');
 
 async function getNote(req) {
@@ -24,7 +24,7 @@ async function createNote(req) {
     const parentNoteId = req.params.parentNoteId;
     const newNote = req.body;
 
-    const { note, branch } = await notes.createNewNote(parentNoteId, newNote, req);
+    const { note, branch } = await noteService.createNewNote(parentNoteId, newNote, req);
 
     return {
         note,
@@ -36,13 +36,13 @@ async function updateNote(req) {
     const note = req.body;
     const noteId = req.params.noteId;
 
-    await notes.updateNote(noteId, note);
+    await noteService.updateNote(noteId, note);
 }
 
 async function sortNotes(req) {
     const noteId = req.params.noteId;
 
-    await tree.sortNotesAlphabetically(noteId);
+    await treeService.sortNotesAlphabetically(noteId);
 }
 
 async function protectBranch(req) {
@@ -50,7 +50,7 @@ async function protectBranch(req) {
     const note = repository.getNote(noteId);
     const protect = !!parseInt(req.params.isProtected);
 
-    await notes.protectNoteRecursively(note, protect);
+    await noteService.protectNoteRecursively(note, protect);
 }
 
 async function setNoteTypeMime(req) {

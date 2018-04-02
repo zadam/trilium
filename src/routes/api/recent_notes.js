@@ -2,7 +2,7 @@
 
 const repository = require('../../services/repository');
 const utils = require('../../services/utils');
-const options = require('../../services/options');
+const optionService = require('../../services/options');
 const RecentNote = require('../../entities/recent_note');
 
 async function getRecentNotes() {
@@ -33,7 +33,7 @@ async function addRecentNote(req) {
 
     await recentNote.save();
 
-    await options.setOption('start_note_path', notePath);
+    await optionService.setOption('start_note_path', notePath);
 
     return await getRecentNotes();
 }

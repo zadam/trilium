@@ -1,7 +1,7 @@
 "use strict";
 
 const sql = require('../../services/sql');
-const notes = require('../../services/notes');
+const noteService = require('../../services/notes');
 const parseFilters = require('../../services/parse_filters');
 const buildSearchQuery = require('../../services/build_search_query');
 
@@ -20,7 +20,7 @@ async function saveSearchToNote(req) {
         searchString: req.params.searchString
     };
 
-    const noteId = await notes.createNote('root', 'Search note', noteContent, {
+    const noteId = await noteService.createNote('root', 'Search note', noteContent, {
         json: true,
         type: 'search',
         mime: "application/json"

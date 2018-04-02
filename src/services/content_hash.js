@@ -1,6 +1,5 @@
 const sql = require('./sql');
 const utils = require('./utils');
-const options = require('./options');
 const log = require('./log');
 
 function getHash(rows) {

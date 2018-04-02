@@ -4,9 +4,9 @@ const ini = require('ini');
 const fs = require('fs');
 const dataDir = require('./data_dir');
 const path = require('path');
-const resource_dir = require('./resource_dir');
+const resourceDir = require('./resource_dir');
 
-const configSampleFilePath = path.resolve(resource_dir.RESOURCE_DIR, "config-sample.ini");
+const configSampleFilePath = path.resolve(resourceDir.RESOURCE_DIR, "config-sample.ini");
 
 const configFilePath = dataDir.TRILIUM_DATA_DIR + '/config.ini';
 

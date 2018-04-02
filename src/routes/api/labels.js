@@ -1,8 +1,7 @@
 "use strict";
 
 const sql = require('../../services/sql');
-const utils = require('../../services/utils');
-const labels = require('../../services/labels');
+const labelService = require('../../services/labels');
 const repository = require('../../services/repository');
 const Label = require('../../entities/label');
 
@@ -46,7 +45,7 @@ async function updateNoteLabels(req) {
 async function getAllLabelNames() {
     const names = await sql.getColumn("SELECT DISTINCT name FROM labels WHERE isDeleted = 0");
 
-    for (const label of labels.BUILTIN_LABELS) {
+    for (const label of labelService.BUILTIN_LABELS) {
         if (!names.includes(label)) {
             names.push(label);
         }

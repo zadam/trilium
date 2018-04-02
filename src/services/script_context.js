@@ -1,9 +1,9 @@
 const log = require('./log');
-const notes = require('./notes');
+const noteService = require('./notes');
 const sql = require('./sql');
 const utils = require('./utils');
-const labels = require('./labels');
-const date_notes = require('./date_notes');
+const labelService = require('./labels');
+const dateNoteService = require('./date_notes');
 const config = require('./config');
 const repository = require('./repository');
 const axios = require('axios');
@@ -48,7 +48,7 @@ function ScriptApi(startNote, currentNote) {
     this.getEntities = repository.getEntities;
 
     this.getNotesWithLabel = async function (labelName, labelValue) {
-        return await labels.getNotesWithLabel(labelName, labelValue);
+        return await labelService.getNotesWithLabel(labelName, labelValue);
     };
 
     this.getNoteWithLabel = async function (labelName, labelValue) {
@@ -58,15 +58,15 @@ function ScriptApi(startNote, currentNote) {
     };
 
     this.createNote = async function(parentNoteId, title, content = "", extraOptions = {}) {
-        return await notes.createNote(parentNoteId, title, content, extraOptions);
+        return await noteService.createNote(parentNoteId, title, content, extraOptions);
     };
 
-    this.createLabel = labels.createLabel;
+    this.createLabel = labelService.createLabel;
 
     this.log = message => log.info(`Script ${currentNote.noteId}: ${message}`);
 
-    this.getRootCalendarNoteId = date_notes.getRootCalendarNoteId;
-    this.getDateNoteId = date_notes.getDateNoteId;
+    this.getRootCalendarNoteId = dateNoteService.getRootCalendarNoteId;
+    this.getDateNoteId = dateNoteService.getDateNoteId;
 
     this.transaction = sql.doInTransaction;
 }

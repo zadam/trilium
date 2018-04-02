@@ -1,6 +1,6 @@
 "use strict";
 
-const migration = require('./migration');
+const migrationService = require('./migration');
 const sql = require('./sql');
 const utils = require('./utils');
 

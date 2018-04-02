@@ -1,4 +1,4 @@
-const script = require('./script');
+const scriptService = require('./script');
 const repository = require('./repository');
 const cls = require('./cls');
 
@@ -15,7 +15,7 @@ async function runNotesWithLabel(runAttrValue) {
           AND notes.isDeleted = 0`, [runAttrValue]);
 
     for (const note of notes) {
-        script.executeNote(note);
+        scriptService.executeNote(note);
     }
 }
 

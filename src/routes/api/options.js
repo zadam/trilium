@@ -1,7 +1,7 @@
 "use strict";
 
 const sql = require('../../services/sql');
-const options = require('../../services/options');
+const optionService = require('../../services/options');
 
 // options allowed to be updated directly in options dialog
 const ALLOWED_OPTIONS = ['protected_session_timeout', 'note_revision_snapshot_time_interval'];
@@ -20,7 +20,7 @@ async function updateOption(req) {
         return [400, "not allowed option to set"];
     }
 
-    await options.setOption(name, value);
+    await optionService.setOption(name, value);
 }
 
 module.exports = {

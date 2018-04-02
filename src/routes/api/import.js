@@ -1,8 +1,8 @@
 "use strict";
 
 const repository = require('../../services/repository');
-const labels = require('../../services/labels');
-const notes = require('../../services/notes');
+const labelService = require('../../services/labels');
+const noteService = require('../../services/notes');
 const tar = require('tar-stream');
 const stream = require('stream');
 const path = require('path');
@@ -110,13 +110,13 @@ async function importNotes(files, parentNoteId) {
             file.data = file.data.toString("UTF-8");
         }
 
-        const noteId = await notes.createNote(parentNoteId, file.meta.title, file.data, {
+        const noteId = await noteService.createNote(parentNoteId, file.meta.title, file.data, {
             type: file.meta.type,
             mime: file.meta.mime
         });
 
         for (const label of file.meta.labels) {
-            await labels.createLabel(noteId, label.name, label.value);
+            await labelService.createLabel(noteId, label.name, label.value);
         }
 
         if (file.children.length > 0) {

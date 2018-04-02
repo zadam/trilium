@@ -1,8 +1,8 @@
 const sql = require('./sql');
-const options = require('./options');
+const optionService = require('./options');
 const utils = require('./utils');
-const sync_table = require('./sync_table');
-const labels = require('./labels');
+const syncTableService = require('./sync_table');
+const labelService = require('./labels');
 const repository = require('./repository');
 const Note = require('../entities/note');
 const NoteImage = require('../entities/note_image');
@@ -26,7 +26,7 @@ async function getNewNotePosition(parentNoteId, noteData) {
         await sql.execute('UPDATE branches SET notePosition = notePosition + 1 WHERE parentNoteId = ? AND notePosition > ? AND isDeleted = 0',
             [parentNoteId, afterNote.notePosition]);
 
-        await sync_table.addNoteReorderingSync(parentNoteId);
+        await syncTableService.addNoteReorderingSync(parentNoteId);
     }
     else {
         throw new Error('Unknown target: ' + noteData.target);
@@ -91,7 +91,7 @@ async function createNote(parentNoteId, title, content = "", extraOptions = {}) 
 
     if (extraOptions.labels) {
         for (const labelName in extraOptions.labels) {
-            await labels.createLabel(note.noteId, labelName, extraOptions.labels[labelName]);
+            await labelService.createLabel(note.noteId, labelName, extraOptions.labels[labelName]);
         }
     }
 
@@ -165,7 +165,7 @@ async function saveNoteRevision(note) {
     const labelsMap = await note.getLabelMap();
 
     const now = new Date();
-    const noteRevisionSnapshotTimeInterval = parseInt(await options.getOption('note_revision_snapshot_time_interval'));
+    const noteRevisionSnapshotTimeInterval = parseInt(await optionService.getOption('note_revision_snapshot_time_interval'));
 
     const revisionCutoff = utils.dateStr(new Date(now.getTime() - noteRevisionSnapshotTimeInterval * 1000));
 

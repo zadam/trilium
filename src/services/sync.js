@@ -3,18 +3,18 @@
 const log = require('./log');
 const rp = require('request-promise');
 const sql = require('./sql');
-const options = require('./options');
+const optionService = require('./options');
 const utils = require('./utils');
-const source_id = require('./source_id');
-const notes = require('./notes');
-const syncUpdate = require('./sync_update');
-const content_hash = require('./content_hash');
-const event_log = require('./event_log');
+const sourceIdService = require('./source_id');
+const noteService = require('./notes');
+const syncUpdateService = require('./sync_update');
+const contentHashService = require('./content_hash');
+const eventLogService = require('./event_log');
 const fs = require('fs');
-const app_info = require('./app_info');
-const messaging = require('./messaging');
-const sync_setup = require('./sync_setup');
-const sync_mutex = require('./sync_mutex');
+const appInfo = require('./app_info');
+const messagingService = require('./messaging');
+const syncSetup = require('./sync_setup');
+const syncMutexService = require('./sync_mutex');
 const cls = require('./cls');
 
 let proxyToggle = true;
@@ -22,7 +22,7 @@ let syncServerCertificate = null;
 
 async function sync() {
     try {
-        await sync_mutex.doExclusively(async () => {
+        await syncMutexService.doExclusively(async () => {
             if (!await sql.isDbUpToDate()) {
                 return {
                     success: false,
@@ -70,18 +70,18 @@ async function sync() {
 async function login() {
     const timestamp = utils.nowDate();
 
-    const documentSecret = await options.getOption('document_secret');
+    const documentSecret = await optionService.getOption('document_secret');
     const hash = utils.hmac(documentSecret, timestamp);
 
     const syncContext = { cookieJar: rp.jar() };
 
     const resp = await syncRequest(syncContext, 'POST', '/api/login/sync', {
         timestamp: timestamp,
-        dbVersion: app_info.db_version,
+        dbVersion: appInfo.db_version,
         hash: hash
     });
 
-    if (source_id.isLocalSourceId(resp.sourceId)) {
+    if (sourceIdService.isLocalSourceId(resp.sourceId)) {
         throw new Error(`Sync server has source ID ${resp.sourceId} which is also local. Try restarting sync server.`);
     }
 
@@ -91,11 +91,11 @@ async function login() {
 }
 
 async function getLastSyncedPull() {
-    return parseInt(await options.getOption('last_synced_pull'));
+    return parseInt(await optionService.getOption('last_synced_pull'));
 }
 
 async function setLastSyncedPull(syncId) {
-    await options.setOption('last_synced_pull', syncId);
+    await optionService.setOption('last_synced_pull', syncId);
 }
 
 async function pullSync(syncContext) {
@@ -108,7 +108,7 @@ async function pullSync(syncContext) {
     log.info("Pulled " + syncRows.length + " changes from " + changesUri);
 
     for (const sync of syncRows) {
-        if (source_id.isLocalSourceId(sync.sourceId)) {
+        if (sourceIdService.isLocalSourceId(sync.sourceId)) {
             log.info(`Skipping pull #${sync.id} ${sync.entityName} ${sync.entityId} because ${sync.sourceId} is a local source id.`);
 
             await setLastSyncedPull(sync.id);
@@ -122,34 +122,34 @@ async function pullSync(syncContext) {
             log.error(`Empty response to pull for sync #${sync.id} ${sync.entityName}, id=${sync.entityId}`);
         }
         else if (sync.entityName === 'notes') {
-            await syncUpdate.updateNote(resp.entity, syncContext.sourceId);
+            await syncUpdateService.updateNote(resp.entity, syncContext.sourceId);
         }
         else if (sync.entityName === 'branches') {
-            await syncUpdate.updateBranch(resp, syncContext.sourceId);
+            await syncUpdateService.updateBranch(resp, syncContext.sourceId);
         }
         else if (sync.entityName === 'note_revisions') {
-            await syncUpdate.updateNoteRevision(resp, syncContext.sourceId);
+            await syncUpdateService.updateNoteRevision(resp, syncContext.sourceId);
         }
         else if (sync.entityName === 'note_reordering') {
-            await syncUpdate.updateNoteReordering(resp, syncContext.sourceId);
+            await syncUpdateService.updateNoteReordering(resp, syncContext.sourceId);
         }
         else if (sync.entityName === 'options') {
-            await syncUpdate.updateOptions(resp, syncContext.sourceId);
+            await syncUpdateService.updateOptions(resp, syncContext.sourceId);
         }
         else if (sync.entityName === 'recent_notes') {
-            await syncUpdate.updateRecentNotes(resp, syncContext.sourceId);
+            await syncUpdateService.updateRecentNotes(resp, syncContext.sourceId);
         }
         else if (sync.entityName === 'images') {
-            await syncUpdate.updateImage(resp, syncContext.sourceId);
+            await syncUpdateService.updateImage(resp, syncContext.sourceId);
         }
         else if (sync.entityName === 'note_images') {
-            await syncUpdate.updateNoteImage(resp, syncContext.sourceId);
+            await syncUpdateService.updateNoteImage(resp, syncContext.sourceId);
         }
         else if (sync.entityName === 'labels') {
-            await syncUpdate.updateLabel(resp, syncContext.sourceId);
+            await syncUpdateService.updateLabel(resp, syncContext.sourceId);
         }
         else if (sync.entityName === 'api_tokens') {
-            await syncUpdate.updateApiToken(resp, syncContext.sourceId);
+            await syncUpdateService.updateApiToken(resp, syncContext.sourceId);
         }
         else {
             throw new Error(`Unrecognized entity type ${sync.entityName} in sync #${sync.id}`);
@@ -162,11 +162,11 @@ async function pullSync(syncContext) {
 }
 
 async function getLastSyncedPush() {
-    return parseInt(await options.getOption('last_synced_push'));
+    return parseInt(await optionService.getOption('last_synced_push'));
 }
 
 async function setLastSyncedPush(lastSyncedPush) {
-    await options.setOption('last_synced_push', lastSyncedPush);
+    await optionService.setOption('last_synced_push', lastSyncedPush);
 }
 
 async function pushSync(syncContext) {
@@ -250,7 +250,7 @@ async function pushEntity(sync, syncContext) {
     log.info(`Pushing changes in sync #${sync.id} ${sync.entityName} ${sync.entityId}`);
 
     const payload = {
-        sourceId: source_id.getCurrentSourceId(),
+        sourceId: sourceIdService.getCurrentSourceId(),
         entity: entity
     };
 
@@ -281,18 +281,18 @@ async function checkContentHash(syncContext) {
         return;
     }
 
-    const hashes = await content_hash.getHashes();
+    const hashes = await contentHashService.getHashes();
     let allChecksPassed = true;
 
     for (const key in hashes) {
         if (hashes[key] !== resp.hashes[key]) {
             allChecksPassed = false;
 
-            await event_log.addEvent(`Content hash check for ${key} FAILED. Local is ${hashes[key]}, remote is ${resp.hashes[key]}`);
+            await eventLogService.addEvent(`Content hash check for ${key} FAILED. Local is ${hashes[key]}, remote is ${resp.hashes[key]}`);
 
             if (key !== 'recent_notes') {
                 // let's not get alarmed about recent notes which get updated often and can cause failures in race conditions
-                await messaging.sendMessageToAllClients({type: 'sync-hash-check-failed'});
+                await messagingService.sendMessageToAllClients({type: 'sync-hash-check-failed'});
             }
         }
     }
@@ -303,7 +303,7 @@ async function checkContentHash(syncContext) {
 }
 
 async function syncRequest(syncContext, method, uri, body) {
-    const fullUri = sync_setup.SYNC_SERVER + uri;
+    const fullUri = syncSetup.SYNC_SERVER + uri;
 
     try {
         const options = {
@@ -312,15 +312,15 @@ async function syncRequest(syncContext, method, uri, body) {
             jar: syncContext.cookieJar,
             json: true,
             body: body,
-            timeout: sync_setup.SYNC_TIMEOUT
+            timeout: syncSetup.SYNC_TIMEOUT
         };
 
         if (syncServerCertificate) {
             options.ca = syncServerCertificate;
         }
 
-        if (sync_setup.SYNC_PROXY && proxyToggle) {
-            options.proxy = sync_setup.SYNC_PROXY;
+        if (syncSetup.SYNC_PROXY && proxyToggle) {
+            options.proxy = syncSetup.SYNC_PROXY;
         }
 
         return await rp(options);
@@ -331,17 +331,17 @@ async function syncRequest(syncContext, method, uri, body) {
 }
 
 sql.dbReady.then(() => {
-    if (sync_setup.isSyncSetup) {
-        log.info("Setting up sync to " + sync_setup.SYNC_SERVER + " with timeout " + sync_setup.SYNC_TIMEOUT);
+    if (syncSetup.isSyncSetup) {
+        log.info("Setting up sync to " + syncSetup.SYNC_SERVER + " with timeout " + syncSetup.SYNC_TIMEOUT);
 
-        if (sync_setup.SYNC_PROXY) {
-            log.info("Sync proxy: " + sync_setup.SYNC_PROXY);
+        if (syncSetup.SYNC_PROXY) {
+            log.info("Sync proxy: " + syncSetup.SYNC_PROXY);
         }
 
-        if (sync_setup.SYNC_CERT_PATH) {
-            log.info('Sync certificate: ' + sync_setup.SYNC_CERT_PATH);
+        if (syncSetup.SYNC_CERT_PATH) {
+            log.info('Sync certificate: ' + syncSetup.SYNC_CERT_PATH);
 
-            syncServerCertificate = fs.readFileSync(sync_setup.SYNC_CERT_PATH);
+            syncServerCertificate = fs.readFileSync(syncSetup.SYNC_CERT_PATH);
         }
 
         setInterval(cls.wrap(sync), 60000);

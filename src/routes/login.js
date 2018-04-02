@@ -1,15 +1,15 @@
 "use strict";
 
 const utils = require('../services/utils');
-const options = require('../services/options');
-const my_scrypt = require('../services/my_scrypt');
+const optionService = require('../services/options');
+const myScryptService = require('../services/my_scrypt');
 
 function loginPage(req, res) {
     res.render('login', { failedAuth: false });
 }
 
 async function login(req, res) {
-    const userName = await options.getOption('username');
+    const userName = await optionService.getOption('username');
 
     const guessedPassword = req.body.password;
 
@@ -33,9 +33,9 @@ async function login(req, res) {
 }
 
 async function verifyPassword(guessedPassword) {
-    const hashed_password = utils.fromBase64(await options.getOption('password_verification_hash'));
+    const hashed_password = utils.fromBase64(await optionService.getOption('password_verification_hash'));
 
-    const guess_hashed = await my_scrypt.getVerificationHash(guessedPassword);
+    const guess_hashed = await myScryptService.getVerificationHash(guessedPassword);
 
     return guess_hashed.equals(hashed_password);
 }

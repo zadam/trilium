@@ -1,20 +1,20 @@
 "use strict";
 
-const image = require('../../services/image');
+const imageService = require('../../services/image');
 const utils = require('../../services/utils');
-const date_notes = require('../../services/date_notes');
+const dateNoteService = require('../../services/date_notes');
 const sql = require('../../services/sql');
-const notes = require('../../services/notes');
-const password_encryption = require('../../services/password_encryption');
-const options = require('../../services/options');
+const noteService = require('../../services/notes');
+const passwordEncryptionService = require('../../services/password_encryption');
+const optionService = require('../../services/options');
 const ApiToken = require('../../entities/api_token');
 
 async function login(req) {
     const username = req.body.username;
     const password = req.body.password;
 
-    const isUsernameValid = username === await options.getOption('username');
-    const isPasswordValid = await password_encryption.verifyPassword(password);
+    const isUsernameValid = username === await optionService.getOption('username');
+    const isPasswordValid = await passwordEncryptionService.verifyPassword(password);
 
     if (!isUsernameValid || !isPasswordValid) {
         return [401, "Incorrect username/password"];
@@ -35,9 +35,9 @@ async function uploadImage(req) {
         return [400, "Unknown image type: " + file.mimetype];
     }
 
-    const parentNoteId = await date_notes.getDateNoteId(req.headers['x-local-date']);
+    const parentNoteId = await dateNoteService.getDateNoteId(req.headers['x-local-date']);
 
-    const {note} = await notes.createNewNote(parentNoteId, {
+    const {note} = await noteService.createNewNote(parentNoteId, {
         title: "Sender image",
         content: "",
         target: 'into',
@@ -46,7 +46,7 @@ async function uploadImage(req) {
         mime: 'text/html'
     });
 
-    const {fileName, imageId} = await image.saveImage(file, null, note.noteId);
+    const {fileName, imageId} = await imageService.saveImage(file, null, note.noteId);
 
     const url = `/api/images/${imageId}/${fileName}`;
 
@@ -56,9 +56,9 @@ async function uploadImage(req) {
 }
 
 async function saveNote(req) {
-    const parentNoteId = await date_notes.getDateNoteId(req.headers['x-local-date']);
+    const parentNoteId = await dateNoteService.getDateNoteId(req.headers['x-local-date']);
 
-    await notes.createNewNote(parentNoteId, {
+    await noteService.createNewNote(parentNoteId, {
         title: req.body.title,
         content: req.body.content,
         target: 'into',

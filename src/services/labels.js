@@ -1,7 +1,6 @@
 "use strict";
 
 const sql = require('./sql');
-const utils = require('./utils');
 const repository = require('./repository');
 const Label = require('../entities/label');
 

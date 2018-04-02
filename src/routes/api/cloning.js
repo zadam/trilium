@@ -1,7 +1,7 @@
 "use strict";
 
 const sql = require('../../services/sql');
-const sync_table = require('../../services/sync_table');
+const syncTable = require('../../services/sync_table');
 const tree = require('../../services/tree');
 const Branch = require('../../entities/branch');
 
@@ -51,7 +51,7 @@ async function cloneNoteAfter(req) {
     await sql.execute("UPDATE branches SET notePosition = notePosition + 1 WHERE parentNoteId = ? AND notePosition > ? AND isDeleted = 0",
         [afterNote.parentNoteId, afterNote.notePosition]);
 
-    await sync_table.addNoteReorderingSync(afterNote.parentNoteId);
+    await syncTable.addNoteReorderingSync(afterNote.parentNoteId);
 
     const branch = new Branch({
         noteId: noteId,

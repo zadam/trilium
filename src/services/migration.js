@@ -1,19 +1,19 @@
-const backup = require('./backup');
+const backupService = require('./backup');
 const sql = require('./sql');
-const options = require('./options');
+const optionService = require('./options');
 const fs = require('fs-extra');
 const log = require('./log');
-const resource_dir = require('./resource_dir');
+const resourceDir = require('./resource_dir');
 
 async function migrate() {
     const migrations = [];
 
     // backup before attempting migration
-    await backup.backupNow();
+    await backupService.backupNow();
 
-    const currentDbVersion = parseInt(await options.getOption('db_version'));
+    const currentDbVersion = parseInt(await optionService.getOption('db_version'));
 
-    fs.readdirSync(resource_dir.MIGRATIONS_DIR).forEach(file => {
+    fs.readdirSync(resourceDir.MIGRATIONS_DIR).forEach(file => {
         const match = file.match(/([0-9]{4})__([a-zA-Z0-9_ ]+)\.(sql|js)/);
 
         if (match) {
@@ -46,7 +46,7 @@ async function migrate() {
 
             await sql.doInTransaction(async () => {
                 if (mig.type === 'sql') {
-                    const migrationSql = fs.readFileSync(resource_dir.MIGRATIONS_DIR + "/" + mig.file).toString('utf8');
+                    const migrationSql = fs.readFileSync(resourceDir.MIGRATIONS_DIR + "/" + mig.file).toString('utf8');
 
                     console.log("Migration with SQL script: " + migrationSql);
 
@@ -55,14 +55,14 @@ async function migrate() {
                 else if (mig.type === 'js') {
                     console.log("Migration with JS module");
 
-                    const migrationModule = require("../" + resource_dir.MIGRATIONS_DIR + "/" + mig.file);
+                    const migrationModule = require("../" + resourceDir.MIGRATIONS_DIR + "/" + mig.file);
                     await migrationModule(db);
                 }
                 else {
                     throw new Error("Unknown migration type " + mig.type);
                 }
 
-                await options.setOption("db_version", mig.dbVersion);
+                await optionService.setOption("db_version", mig.dbVersion);
 
             });
 

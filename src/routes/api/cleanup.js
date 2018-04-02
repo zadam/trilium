@@ -2,7 +2,7 @@
 
 const sql = require('../../services/sql');
 const utils = require('../../services/utils');
-const sync_table = require('../../services/sync_table');
+const syncTable = require('../../services/sync_table');
 const log = require('../../services/log');
 const repository = require('../../services/repository');
 
@@ -30,13 +30,13 @@ async function cleanupSoftDeletedItems() {
 
     await sql.execute("DELETE FROM recent_notes");
 
-    await sync_table.cleanupSyncRowsForMissingEntities("notes", "noteId");
-    await sync_table.cleanupSyncRowsForMissingEntities("branches", "branchId");
-    await sync_table.cleanupSyncRowsForMissingEntities("note_revisions", "noteRevisionId");
-    await sync_table.cleanupSyncRowsForMissingEntities("recent_notes", "branchId");
-    await sync_table.cleanupSyncRowsForMissingEntities("images", "imageId");
-    await sync_table.cleanupSyncRowsForMissingEntities("note_images", "noteImageId");
-    await sync_table.cleanupSyncRowsForMissingEntities("labels", "labelId");
+    await syncTable.cleanupSyncRowsForMissingEntities("notes", "noteId");
+    await syncTable.cleanupSyncRowsForMissingEntities("branches", "branchId");
+    await syncTable.cleanupSyncRowsForMissingEntities("note_revisions", "noteRevisionId");
+    await syncTable.cleanupSyncRowsForMissingEntities("recent_notes", "branchId");
+    await syncTable.cleanupSyncRowsForMissingEntities("images", "imageId");
+    await syncTable.cleanupSyncRowsForMissingEntities("note_images", "noteImageId");
+    await syncTable.cleanupSyncRowsForMissingEntities("labels", "labelId");
 
     log.info("Following notes has been completely cleaned from database: " + noteIdsSql);
 }

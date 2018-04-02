@@ -1,8 +1,8 @@
 "use strict";
 
 const sql = require('./sql');
-const sync_table = require('./sync_table');
-const protected_session = require('./protected_session');
+const syncTableService = require('./sync_table');
+const protectedSessionService = require('./protected_session');
 
 async function validateParentChild(parentNoteId, childNoteId, branchId = null) {
     const existing = await getExistingBranch(parentNoteId, childNoteId);
@@ -82,7 +82,7 @@ async function sortNotesAlphabetically(parentNoteId) {
                                        FROM notes JOIN branches USING(noteId) 
                                        WHERE branches.isDeleted = 0 AND parentNoteId = ?`, [parentNoteId]);
 
-        protected_session.decryptNotes(notes);
+        protectedSessionService.decryptNotes(notes);
 
         notes.sort((a, b) => a.title.toLowerCase() < b.title.toLowerCase() ? -1 : 1);
 
@@ -95,7 +95,7 @@ async function sortNotesAlphabetically(parentNoteId) {
             position++;
         }
 
-        await sync_table.addNoteReorderingSync(parentNoteId);
+        await syncTableService.addNoteReorderingSync(parentNoteId);
     });
 }
 

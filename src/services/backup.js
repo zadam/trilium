@@ -1,17 +1,17 @@
 "use strict";
 
 const utils = require('./utils');
-const options = require('./options');
+const optionService = require('./options');
 const fs = require('fs-extra');
 const dataDir = require('./data_dir');
 const log = require('./log');
 const sql = require('./sql');
-const sync_mutex = require('./sync_mutex');
+const syncMutexService = require('./sync_mutex');
 const cls = require('./cls');
 
 async function regularBackup() {
     const now = new Date();
-    const lastBackupDate = utils.parseDateTime(await options.getOption('last_backup_date'));
+    const lastBackupDate = utils.parseDateTime(await optionService.getOption('last_backup_date'));
 
     console.log(lastBackupDate);
 
@@ -25,7 +25,7 @@ async function regularBackup() {
 async function backupNow() {
     // we don't want to backup DB in the middle of sync with potentially inconsistent DB state
 
-    await sync_mutex.doExclusively(async () => {
+    await syncMutexService.doExclusively(async () => {
         const now = utils.nowDate();
 
         const backupFile = dataDir.BACKUP_DIR + "/" + "backup-" + utils.getDateTimeForFile() + ".db";
@@ -34,7 +34,7 @@ async function backupNow() {
 
         log.info("Created backup at " + backupFile);
 
-        await options.setOption('last_backup_date', now);
+        await optionService.setOption('last_backup_date', now);
     });
 }
 

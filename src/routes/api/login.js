@@ -2,10 +2,10 @@
 
 const options = require('../../services/options');
 const utils = require('../../services/utils');
-const source_id = require('../../services/source_id');
-const password_encryption = require('../../services/password_encryption');
-const protected_session = require('../../services/protected_session');
-const app_info = require('../../services/app_info');
+const sourceIdService = require('../../services/source_id');
+const passwordEncryptionService = require('../../services/password_encryption');
+const protectedSessionService = require('../../services/protected_session');
+const appInfo = require('../../services/app_info');
 
 async function loginSync(req) {
     const timestampStr = req.body.timestamp;
@@ -20,8 +20,8 @@ async function loginSync(req) {
 
     const dbVersion = req.body.dbVersion;
 
-    if (dbVersion !== app_info.db_version) {
-        return [400, { message: 'Non-matching db versions, local is version ' + app_info.db_version }];
+    if (dbVersion !== appInfo.db_version) {
+        return [400, { message: 'Non-matching db versions, local is version ' + appInfo.db_version }];
     }
 
     const documentSecret = await options.getOption('document_secret');
@@ -36,23 +36,23 @@ async function loginSync(req) {
     req.session.loggedIn = true;
 
     return {
-        sourceId: source_id.getCurrentSourceId()
+        sourceId: sourceIdService.getCurrentSourceId()
     };
 }
 
 async function loginToProtectedSession(req) {
     const password = req.body.password;
 
-    if (!await password_encryption.verifyPassword(password)) {
+    if (!await passwordEncryptionService.verifyPassword(password)) {
         return {
             success: false,
             message: "Given current password doesn't match hash"
         };
     }
 
-    const decryptedDataKey = await password_encryption.getDataKey(password);
+    const decryptedDataKey = await passwordEncryptionService.getDataKey(password);
 
-    const protectedSessionId = protected_session.setDataKey(req, decryptedDataKey);
+    const protectedSessionId = protectedSessionService.setDataKey(req, decryptedDataKey);
 
     return {
         success: true,

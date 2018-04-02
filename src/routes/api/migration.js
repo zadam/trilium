@@ -1,18 +1,18 @@
 "use strict";
 
-const options = require('../../services/options');
-const migration = require('../../services/migration');
-const app_info = require('../../services/app_info');
+const optionService = require('../../services/options');
+const migrationService = require('../../services/migration');
+const appInfo = require('../../services/app_info');
 
 async function getMigrationInfo() {
     return {
-        db_version: parseInt(await options.getOption('db_version')),
-        app_db_version: app_info.db_version
+        db_version: parseInt(await optionService.getOption('db_version')),
+        app_db_version: appInfo.db_version
     };
 }
 
 async function executeMigration() {
-    const migrations = await migration.migrate();
+    const migrations = await migrationService.migrate();
 
     return {
         migrations: migrations

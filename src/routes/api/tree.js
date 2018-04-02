@@ -1,11 +1,9 @@
 "use strict";
 
 const sql = require('../../services/sql');
-const options = require('../../services/options');
-const utils = require('../../services/utils');
+const optionService = require('../../services/options');
 const config = require('../../services/config');
-const protected_session = require('../../services/protected_session');
-const repository = require('../../services/repository');
+const protectedSessionService = require('../../services/protected_session');
 
 async function getTree() {
     const branches = await sql.getRows(`
@@ -45,7 +43,7 @@ async function getTree() {
       WHERE 
         notes.isDeleted = 0`));
 
-    protected_session.decryptNotes(notes);
+    protectedSessionService.decryptNotes(notes);
 
     notes.forEach(note => {
         note.hideInAutocomplete = !!note.hideInAutocomplete;
@@ -56,7 +54,7 @@ async function getTree() {
         instanceName: config.General ? config.General.instanceName : null,
         branches: branches,
         notes: notes,
-        start_note_path: await options.getOption('start_note_path')
+        start_note_path: await optionService.getOption('start_note_path')
     };
 }
 

@@ -1,18 +1,18 @@
 "use strict";
 
-const data_dir = require('./data_dir');
+const dataDir = require('./data_dir');
 const utils = require('./utils');
 const fs = require('fs-extra');
 const sqlite = require('sqlite');
 
 async function anonymize() {
-    if (!fs.existsSync(data_dir.ANONYMIZED_DB_DIR)) {
-        fs.mkdirSync(data_dir.ANONYMIZED_DB_DIR, 0o700);
+    if (!fs.existsSync(dataDir.ANONYMIZED_DB_DIR)) {
+        fs.mkdirSync(dataDir.ANONYMIZED_DB_DIR, 0o700);
     }
 
-    const anonymizedFile = data_dir.ANONYMIZED_DB_DIR + "/" + "backup-" + utils.getDateTimeForFile() + ".db";
+    const anonymizedFile = dataDir.ANONYMIZED_DB_DIR + "/" + "backup-" + utils.getDateTimeForFile() + ".db";
 
-    fs.copySync(data_dir.DOCUMENT_PATH, anonymizedFile);
+    fs.copySync(dataDir.DOCUMENT_PATH, anonymizedFile);
 
     const db = await sqlite.open(anonymizedFile, {Promise});
 

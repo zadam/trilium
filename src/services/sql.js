@@ -4,8 +4,8 @@ const log = require('./log');
 const dataDir = require('./data_dir');
 const fs = require('fs');
 const sqlite = require('sqlite');
-const app_info = require('./app_info');
-const resource_dir = require('./resource_dir');
+const appInfo = require('./app_info');
+const resourceDir = require('./resource_dir');
 const cls = require('./cls');
 
 async function createConnection() {
@@ -29,11 +29,11 @@ const dbReady = new Promise((resolve, reject) => {
         if (tableResults.length !== 1) {
             log.info("Connected to db, but schema doesn't exist. Initializing schema ...");
 
-            const schema = fs.readFileSync(resource_dir.DB_INIT_DIR + '/schema.sql', 'UTF-8');
-            const notesSql = fs.readFileSync(resource_dir.DB_INIT_DIR + '/main_notes.sql', 'UTF-8');
-            const notesTreeSql = fs.readFileSync(resource_dir.DB_INIT_DIR + '/main_branches.sql', 'UTF-8');
-            const imagesSql = fs.readFileSync(resource_dir.DB_INIT_DIR + '/main_images.sql', 'UTF-8');
-            const notesImageSql = fs.readFileSync(resource_dir.DB_INIT_DIR + '/main_note_images.sql', 'UTF-8');
+            const schema = fs.readFileSync(resourceDir.DB_INIT_DIR + '/schema.sql', 'UTF-8');
+            const notesSql = fs.readFileSync(resourceDir.DB_INIT_DIR + '/main_notes.sql', 'UTF-8');
+            const notesTreeSql = fs.readFileSync(resourceDir.DB_INIT_DIR + '/main_branches.sql', 'UTF-8');
+            const imagesSql = fs.readFileSync(resourceDir.DB_INIT_DIR + '/main_images.sql', 'UTF-8');
+            const notesImageSql = fs.readFileSync(resourceDir.DB_INIT_DIR + '/main_note_images.sql', 'UTF-8');
 
             await doInTransaction(async () => {
                 await executeScript(schema);
@@ -241,10 +241,10 @@ async function doInTransaction(func) {
 async function isDbUpToDate() {
     const dbVersion = parseInt(await getValue("SELECT value FROM options WHERE name = 'db_version'"));
 
-    const upToDate = dbVersion >= app_info.db_version;
+    const upToDate = dbVersion >= appInfo.db_version;
 
     if (!upToDate) {
-        log.info("App db version is " + app_info.db_version + ", while db version is " + dbVersion + ". Migration needed.");
+        log.info("App db version is " + appInfo.db_version + ", while db version is " + dbVersion + ". Migration needed.");
     }
 
     return upToDate;

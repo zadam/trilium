@@ -1,13 +1,12 @@
 "use strict";
 
-const source_id = require('../services/source_id');
+const sourceIdService = require('../services/source_id');
 const sql = require('../services/sql');
-const repository = require('../services/repository');
-const labels = require('../services/labels');
+const labelService = require('../services/labels');
 
 async function index(req, res) {
     res.render('index', {
-        sourceId: await source_id.generateSourceId(),
+        sourceId: await sourceIdService.generateSourceId(),
         maxSyncIdAtLoad: await sql.getValue("SELECT MAX(id) FROM sync"),
         appCss: await getAppCss()
     });
@@ -15,7 +14,7 @@ async function index(req, res) {
 
 async function getAppCss() {
     let css = '';
-    const notes = labels.getNotesWithLabel('app_css');
+    const notes = labelService.getNotesWithLabel('app_css');
 
     for (const note of await notes) {
         css += `/* ${note.noteId} */

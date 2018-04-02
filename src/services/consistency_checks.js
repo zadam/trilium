@@ -2,8 +2,8 @@
 
 const sql = require('./sql');
 const log = require('./log');
-const messaging = require('./messaging');
-const sync_mutex = require('./sync_mutex');
+const messagingService = require('./messaging');
+const syncMutexService = require('./sync_mutex');
 const utils = require('./utils');
 const cls = require('./cls');
 
@@ -250,7 +250,7 @@ async function runChecks() {
     let errorList;
     let elapsedTimeMs;
 
-    await sync_mutex.doExclusively(async () => {
+    await syncMutexService.doExclusively(async () => {
         const startTime = new Date();
 
         errorList = await runAllChecks();
@@ -261,7 +261,7 @@ async function runChecks() {
     if (errorList.length > 0) {
         log.info(`Consistency checks failed (took ${elapsedTimeMs}ms) with these errors: ` + JSON.stringify(errorList));
 
-        messaging.sendMessageToAllClients({type: 'consistency-checks-failed'});
+        messagingService.sendMessageToAllClients({type: 'consistency-checks-failed'});
     }
     else {
         log.info(`All consistency checks passed (took ${elapsedTimeMs}ms)`);

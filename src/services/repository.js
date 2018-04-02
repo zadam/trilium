@@ -1,7 +1,7 @@
 "use strict";
 
 const sql = require('./sql');
-const sync_table = require('../services/sync_table');
+const syncTableService = require('../services/sync_table');
 
 let entityConstructor;
 
@@ -55,7 +55,7 @@ async function updateEntity(entity) {
 
         const primaryKey = entity[entity.constructor.primaryKeyName];
 
-        await sync_table.addEntitySync(entity.constructor.tableName, primaryKey);
+        await syncTableService.addEntitySync(entity.constructor.tableName, primaryKey);
     });
 }
 

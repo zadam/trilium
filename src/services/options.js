@@ -1,7 +1,7 @@
 const sql = require('./sql');
 const utils = require('./utils');
-const sync_table = require('./sync_table');
-const app_info = require('./app_info');
+const syncTableService = require('./sync_table');
+const appInfo = require('./app_info');
 
 async function getOptionOrNull(name) {
     return await sql.getRowOrNull("SELECT value FROM options WHERE name = ?", [name]);
@@ -25,7 +25,7 @@ async function setOption(name, value) {
     }
 
     if (opt.isSynced) {
-        await sync_table.addOptionsSync(name);
+        await syncTableService.addOptionsSync(name);
     }
 
     await sql.execute("UPDATE options SET value = ?, dateModified = ? WHERE name = ?",
@@ -41,7 +41,7 @@ async function createOption(name, value, isSynced) {
     });
 
     if (isSynced) {
-        await sync_table.addOptionsSync(name);
+        await syncTableService.addOptionsSync(name);
     }
 }
 
@@ -60,9 +60,9 @@ async function initOptions(startNotePath) {
     await createOption('protected_session_timeout', 600, true);
     await createOption('note_revision_snapshot_time_interval', 600, true);
     await createOption('last_backup_date', utils.nowDate(), false);
-    await createOption('db_version', app_info.db_version, false);
+    await createOption('db_version', appInfo.db_version, false);
 
-    await createOption('last_synced_pull', app_info.db_version, false);
+    await createOption('last_synced_pull', appInfo.db_version, false);
     await createOption('last_synced_push', 0, false);
 }
 

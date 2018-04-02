@@ -1,58 +1,58 @@
 "use strict";
 
-const sync = require('../../services/sync');
-const syncUpdate = require('../../services/sync_update');
-const sync_table = require('../../services/sync_table');
+const syncService = require('../../services/sync');
+const syncUpdateService = require('../../services/sync_update');
+const syncTableService = require('../../services/sync_table');
 const sql = require('../../services/sql');
-const options = require('../../services/options');
-const content_hash = require('../../services/content_hash');
+const optionService = require('../../services/options');
+const contentHashService = require('../../services/content_hash');
 const log = require('../../services/log');
 
 async function checkSync() {
     return {
-        'hashes': await content_hash.getHashes(),
+        'hashes': await contentHashService.getHashes(),
         'max_sync_id': await sql.getValue('SELECT MAX(id) FROM sync')
     };
 }
 
 async function syncNow() {
-    return await sync.sync();
+    return await syncService.sync();
 }
 
 async function fillSyncRows() {
-    await sync_table.fillAllSyncRows();
+    await syncTableService.fillAllSyncRows();
 
     log.info("Sync rows have been filled.");
 }
 
 async function forceFullSync() {
-    await options.setOption('last_synced_pull', 0);
-    await options.setOption('last_synced_push', 0);
+    await optionService.setOption('last_synced_pull', 0);
+    await optionService.setOption('last_synced_push', 0);
 
     log.info("Forcing full sync.");
 
     // not awaiting for the job to finish (will probably take a long time)
-    sync.sync();
+    syncService.sync();
 }
 
 async function forceNoteSync(req) {
     const noteId = req.params.noteId;
 
-    await sync_table.addNoteSync(noteId);
+    await syncTableService.addNoteSync(noteId);
 
     for (const branchId of await sql.getColumn("SELECT branchId FROM branches WHERE isDeleted = 0 AND noteId = ?", [noteId])) {
-        await sync_table.addBranchSync(branchId);
-        await sync_table.addRecentNoteSync(branchId);
+        await syncTableService.addBranchSync(branchId);
+        await syncTableService.addRecentNoteSync(branchId);
     }
 
     for (const noteRevisionId of await sql.getColumn("SELECT noteRevisionId FROM note_revisions WHERE noteId = ?", [noteId])) {
-        await sync_table.addNoteRevisionSync(noteRevisionId);
+        await syncTableService.addNoteRevisionSync(noteRevisionId);
     }
 
     log.info("Forcing note sync for " + noteId);
 
     // not awaiting for the job to finish (will probably take a long time)
-    sync.sync();
+    syncService.sync();
 }
 
 async function getChanged() {
@@ -65,7 +65,7 @@ async function getNote(req) {
     const noteId = req.params.noteId;
     const entity = await sql.getRow("SELECT * FROM notes WHERE noteId = ?", [noteId]);
 
-    sync.serializeNoteContentBuffer(entity);
+    syncService.serializeNoteContentBuffer(entity);
 
     return {
         entity: entity
@@ -141,43 +141,43 @@ async function getApiToken(req) {
 }
 
 async function updateNote(req) {
-    await syncUpdate.updateNote(req.body.entity, req.body.sourceId);
+    await syncUpdateService.updateNote(req.body.entity, req.body.sourceId);
 }
 
 async function updateBranch(req) {
-    await syncUpdate.updateBranch(req.body.entity, req.body.sourceId);
+    await syncUpdateService.updateBranch(req.body.entity, req.body.sourceId);
 }
 
 async function updateNoteRevision(req) {
-    await syncUpdate.updateNoteRevision(req.body.entity, req.body.sourceId);
+    await syncUpdateService.updateNoteRevision(req.body.entity, req.body.sourceId);
 }
 
 async function updateNoteReordering(req) {
-    await syncUpdate.updateNoteReordering(req.body.entity, req.body.sourceId);
+    await syncUpdateService.updateNoteReordering(req.body.entity, req.body.sourceId);
 }
 
 async function updateOption(req) {
-    await syncUpdate.updateOptions(req.body.entity, req.body.sourceId);
+    await syncUpdateService.updateOptions(req.body.entity, req.body.sourceId);
 }
 
 async function updateRecentNote(req) {
-    await syncUpdate.updateRecentNotes(req.body.entity, req.body.sourceId);
+    await syncUpdateService.updateRecentNotes(req.body.entity, req.body.sourceId);
 }
 
 async function updateImage(req) {
-    await syncUpdate.updateImage(req.body.entity, req.body.sourceId);
+    await syncUpdateService.updateImage(req.body.entity, req.body.sourceId);
 }
 
 async function updateNoteImage(req) {
-    await syncUpdate.updateNoteImage(req.body.entity, req.body.sourceId);
+    await syncUpdateService.updateNoteImage(req.body.entity, req.body.sourceId);
 }
 
 async function updateLabel(req) {
-    await syncUpdate.updateLabel(req.body.entity, req.body.sourceId);
+    await syncUpdateService.updateLabel(req.body.entity, req.body.sourceId);
 }
 
 async function updateApiToken(req) {
-    await syncUpdate.updateApiToken(req.body.entity, req.body.sourceId);
+    await syncUpdateService.updateApiToken(req.body.entity, req.body.sourceId);
 }
 
 module.exports = {

@@ -1,8 +1,8 @@
 "use strict";
 
-const notes = require('../../services/notes');
-const labels = require('../../services/labels');
-const protected_session = require('../../services/protected_session');
+const noteService = require('../../services/notes');
+const labelService = require('../../services/labels');
+const protectedSessionService = require('../../services/protected_session');
 const repository = require('../../services/repository');
 
 async function uploadFile(req) {
@@ -17,7 +17,7 @@ async function uploadFile(req) {
         return [404, `Note ${parentNoteId} doesn't exist.`];
     }
 
-    const {note} = await notes.createNewNote(parentNoteId, {
+    const {note} = await noteService.createNewNote(parentNoteId, {
         title: originalName,
         content: file.buffer,
         target: 'into',
@@ -26,8 +26,8 @@ async function uploadFile(req) {
         mime: file.mimetype
     });
 
-    await labels.createLabel(note.noteId, "original_file_name", originalName);
-    await labels.createLabel(note.noteId, "file_size", size);
+    await labelService.createLabel(note.noteId, "original_file_name", originalName);
+    await labelService.createLabel(note.noteId, "file_size", size);
 
     return {
         noteId: note.noteId
@@ -42,7 +42,7 @@ async function downloadFile(req, res) {
         return res.status(404).send(`Note ${noteId} doesn't exist.`);
     }
 
-    if (note.isProtected && !protected_session.isProtectedSessionAvailable()) {
+    if (note.isProtected && !protectedSessionService.isProtectedSessionAvailable()) {
         res.status(401).send("Protected session not available");
         return;
     }

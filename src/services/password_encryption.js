@@ -1,37 +1,37 @@
-const options = require('./options');
-const my_scrypt = require('./my_scrypt');
+const optionService = require('./options');
+const myScryptService = require('./my_scrypt');
 const utils = require('./utils');
-const data_encryption = require('./data_encryption');
+const dataEncryptionService = require('./data_encryption');
 
 async function verifyPassword(password) {
-    const givenPasswordHash = utils.toBase64(await my_scrypt.getVerificationHash(password));
+    const givenPasswordHash = utils.toBase64(await myScryptService.getVerificationHash(password));
 
-    const dbPasswordHash = await options.getOption('password_verification_hash');
+    const dbPasswordHash = await optionService.getOption('password_verification_hash');
 
     return givenPasswordHash === dbPasswordHash;
 }
 
 async function setDataKey(password, plainTextDataKey) {
-    const passwordDerivedKey = await my_scrypt.getPasswordDerivedKey(password);
+    const passwordDerivedKey = await myScryptService.getPasswordDerivedKey(password);
 
     const encryptedDataKeyIv = utils.randomString(16);
 
-    await options.setOption('encrypted_data_key_iv', encryptedDataKeyIv);
+    await optionService.setOption('encrypted_data_key_iv', encryptedDataKeyIv);
 
     const buffer = Buffer.from(plainTextDataKey);
 
-    const newEncryptedDataKey = data_encryption.encrypt(passwordDerivedKey, encryptedDataKeyIv, buffer);
+    const newEncryptedDataKey = dataEncryptionService.encrypt(passwordDerivedKey, encryptedDataKeyIv, buffer);
 
-    await options.setOption('encrypted_data_key', newEncryptedDataKey);
+    await optionService.setOption('encrypted_data_key', newEncryptedDataKey);
 }
 
 async function getDataKey(password) {
-    const passwordDerivedKey = await my_scrypt.getPasswordDerivedKey(password);
+    const passwordDerivedKey = await myScryptService.getPasswordDerivedKey(password);
 
-    const encryptedDataKeyIv = await options.getOption('encrypted_data_key_iv');
-    const encryptedDataKey = await options.getOption('encrypted_data_key');
+    const encryptedDataKeyIv = await optionService.getOption('encrypted_data_key_iv');
+    const encryptedDataKey = await optionService.getOption('encrypted_data_key');
 
-    const decryptedDataKey = data_encryption.decrypt(passwordDerivedKey, encryptedDataKeyIv, encryptedDataKey);
+    const decryptedDataKey = dataEncryptionService.decrypt(passwordDerivedKey, encryptedDataKeyIv, encryptedDataKey);
 
     return decryptedDataKey;
 }
