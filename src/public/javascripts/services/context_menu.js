@@ -3,9 +3,8 @@ import cloningService from './cloning.js';
 import exportService from './export.js';
 import messagingService from './messaging.js';
 import protectedSessionService from './protected_session.js';
-import treeChangesService from './tree_changes.js';
+import treeChangesService from './branches.js';
 import treeUtils from './tree_utils.js';
-import utils from './utils.js';
 import editTreePrefixDialog from '../dialogs/edit_tree_prefix.js';
 import infoService from "./info.js";
 import treeCache from "./tree_cache.js";
@@ -86,18 +85,18 @@ const contextMenuOptions = {
         {title: "----"},
         {title: "Edit tree prefix <kbd>F2</kbd>", cmd: "editTreePrefix", uiIcon: "ui-icon-pencil"},
         {title: "----"},
-        {title: "Protect sub-tree", cmd: "protectSubTree", uiIcon: "ui-icon-locked"},
-        {title: "Unprotect sub-tree", cmd: "unprotectSubTree", uiIcon: "ui-icon-unlocked"},
+        {title: "Protect branch", cmd: "protectBranch", uiIcon: "ui-icon-locked"},
+        {title: "Unprotect branch", cmd: "unprotectBranch", uiIcon: "ui-icon-unlocked"},
         {title: "----"},
         {title: "Copy / clone <kbd>Ctrl+C</kbd>", cmd: "copy", uiIcon: "ui-icon-copy"},
         {title: "Cut <kbd>Ctrl+X</kbd>", cmd: "cut", uiIcon: "ui-icon-scissors"},
         {title: "Paste into <kbd>Ctrl+V</kbd>", cmd: "pasteInto", uiIcon: "ui-icon-clipboard"},
         {title: "Paste after", cmd: "pasteAfter", uiIcon: "ui-icon-clipboard"},
         {title: "----"},
-        {title: "Export sub-tree", cmd: "exportSubTree", uiIcon: " ui-icon-arrowthick-1-ne"},
-        {title: "Import sub-tree into", cmd: "importSubTree", uiIcon: "ui-icon-arrowthick-1-sw"},
+        {title: "Export branch", cmd: "exportBranch", uiIcon: " ui-icon-arrowthick-1-ne"},
+        {title: "Import into branch", cmd: "importBranch", uiIcon: "ui-icon-arrowthick-1-sw"},
         {title: "----"},
-        {title: "Collapse sub-tree <kbd>Alt+-</kbd>", cmd: "collapseSubTree", uiIcon: "ui-icon-minus"},
+        {title: "Collapse branch <kbd>Alt+-</kbd>", cmd: "collapseBranch", uiIcon: "ui-icon-minus"},
         {title: "Force note sync", cmd: "forceNoteSync", uiIcon: "ui-icon-refresh"},
         {title: "Sort alphabetically <kbd>Alt+S</kbd>", cmd: "sortAlphabetically", uiIcon: " ui-icon-arrowthick-2-n-s"}
 
@@ -113,8 +112,8 @@ const contextMenuOptions = {
         $tree.contextmenu("enableEntry", "pasteInto", clipboardIds.length > 0 && note.type !== 'search');
         $tree.contextmenu("enableEntry", "insertNoteHere", !parentNote || parentNote.type !== 'search');
         $tree.contextmenu("enableEntry", "insertChildNote", note.type !== 'search');
-        $tree.contextmenu("enableEntry", "importSubTree", note.type !== 'search');
-        $tree.contextmenu("enableEntry", "exportSubTree", note.type !== 'search');
+        $tree.contextmenu("enableEntry", "importBranch", note.type !== 'search');
+        $tree.contextmenu("enableEntry", "exportBranch", note.type !== 'search');
 
         // Activate node on right-click
         node.setActive();
@@ -138,11 +137,11 @@ const contextMenuOptions = {
         else if (ui.cmd === "editTreePrefix") {
             editTreePrefixDialog.showDialog(node);
         }
-        else if (ui.cmd === "protectSubTree") {
-            protectedSessionService.protectSubTree(node.data.noteId, true);
+        else if (ui.cmd === "protectBranch") {
+            protectedSessionService.protectBranch(node.data.noteId, true);
         }
-        else if (ui.cmd === "unprotectSubTree") {
-            protectedSessionService.protectSubTree(node.data.noteId, false);
+        else if (ui.cmd === "unprotectBranch") {
+            protectedSessionService.protectBranch(node.data.noteId, false);
         }
         else if (ui.cmd === "copy") {
             copy(treeService.getSelectedNodes());
@@ -159,13 +158,13 @@ const contextMenuOptions = {
         else if (ui.cmd === "delete") {
             treeChangesService.deleteNodes(treeService.getSelectedNodes(true));
         }
-        else if (ui.cmd === "exportSubTree") {
-            exportService.exportSubTree(node.data.noteId);
+        else if (ui.cmd === "exportBranch") {
+            exportService.exportBranch(node.data.noteId);
         }
-        else if (ui.cmd === "importSubTree") {
-            exportService.importSubTree(node.data.noteId);
+        else if (ui.cmd === "importBranch") {
+            exportService.importBranch(node.data.noteId);
         }
-        else if (ui.cmd === "collapseSubTree") {
+        else if (ui.cmd === "collapseBranch") {
             treeService.collapseTree(node);
         }
         else if (ui.cmd === "forceNoteSync") {

@@ -1,17 +1,16 @@
 "use strict";
 
 const sql = require('../../services/sql');
-const utils = require('../../services/utils');
 const sync_table = require('../../services/sync_table');
 const tree = require('../../services/tree');
 const Branch = require('../../entities/branch');
 
 async function cloneNoteToParent(req) {
+    const noteId = req.params.noteId;
     const parentNoteId = req.params.parentNoteId;
-    const childNoteId = req.params.childNoteId;
     const prefix = req.body.prefix;
 
-    const validationResult = await tree.validateParentChild(parentNoteId, childNoteId);
+    const validationResult = await tree.validateParentChild(parentNoteId, noteId);
 
     if (!validationResult.success) {
         return validationResult;
@@ -21,7 +20,7 @@ async function cloneNoteToParent(req) {
     const newNotePos = maxNotePos === null ? 0 : maxNotePos + 1;
 
     const branch = new Branch({
-        noteId: childNoteId,
+        noteId: noteId,
         parentNoteId: parentNoteId,
         prefix: prefix,
         notePosition: newNotePos,

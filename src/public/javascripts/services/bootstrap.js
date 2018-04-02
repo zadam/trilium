@@ -22,7 +22,7 @@ import ScriptApi from './script_api.js';
 import ScriptContext from './script_context.js';
 import sync from './sync.js';
 import treeService from './tree.js';
-import treeChanges from './tree_changes.js';
+import treeChanges from './branches.js';
 import treeUtils from './tree_utils.js';
 import utils from './utils.js';
 import server from './server.js';

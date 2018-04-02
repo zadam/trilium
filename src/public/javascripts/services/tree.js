@@ -4,7 +4,7 @@ import linkService from './link.js';
 import messagingService from './messaging.js';
 import noteDetailService from './note_detail.js';
 import protectedSessionHolder from './protected_session_holder.js';
-import treeChangesService from './tree_changes.js';
+import treeChangesService from './branches.js';
 import treeUtils from './tree_utils.js';
 import utils from './utils.js';
 import server from './server.js';
@@ -238,7 +238,7 @@ async function setExpandedToServer(branchId, isExpanded) {
 
     const expandedNum = isExpanded ? 1 : 0;
 
-    await server.put('tree/' + branchId + '/expanded/' + expandedNum);
+    await server.put('branches/' + branchId + '/expanded/' + expandedNum);
 }
 
 function setCurrentNotePathToHash(node) {

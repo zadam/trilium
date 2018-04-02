@@ -60,16 +60,6 @@ async function getTree() {
     };
 }
 
-async function setPrefix(req) {
-    const branchId = req.params.branchId;
-    const prefix = utils.isEmptyOrWhitespace(req.body.prefix) ? null : req.body.prefix;
-
-    const branch = await repository.getBranch(branchId);
-    branch.prefix = prefix;
-    await branch.save();
-}
-
 module.exports = {
-    getTree,
-    setPrefix
+    getTree
 };

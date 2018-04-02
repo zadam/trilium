@@ -119,10 +119,10 @@ async function unprotectNoteAndSendToServer() {
     noteDetail.setNoteBackgroundIfProtected(note);
 }
 
-async function protectSubTree(noteId, protect) {
+async function protectBranch(noteId, protect) {
     await ensureProtectedSession(true, true);
 
-    await server.put('notes/' + noteId + "/protect-sub-tree/" + (protect ? 1 : 0));
+    await server.put('notes/' + noteId + "/protect/" + (protect ? 1 : 0));
 
     infoService.showMessage("Request to un/protect sub tree has finished successfully");
 
@@ -143,6 +143,6 @@ export default {
     ensureProtectedSession,
     protectNoteAndSendToServer,
     unprotectNoteAndSendToServer,
-    protectSubTree,
+    protectBranch,
     ensureDialogIsClosed
 };

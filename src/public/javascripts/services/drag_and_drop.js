@@ -1,5 +1,5 @@
 import treeService from './tree.js';
-import treeChangesService from './tree_changes.js';
+import treeChangesService from './branches.js';
 
 const dragAndDropSetup = {
     autoExpandMS: 600,

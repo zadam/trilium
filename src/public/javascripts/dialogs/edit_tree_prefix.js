@@ -33,7 +33,7 @@ async function showDialog() {
 async function savePrefix() {
     const prefix = $treePrefixInput.val();
 
-    await server.put('tree/' + branchId + '/set-prefix', { prefix: prefix });
+    await server.put('branches/' + branchId + '/set-prefix', { prefix: prefix });
 
     await treeService.setPrefix(branchId, prefix);
 

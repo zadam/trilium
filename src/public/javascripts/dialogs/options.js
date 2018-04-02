@@ -34,10 +34,7 @@ async function showDialog() {
 }
 
 async function saveOptions(optionName, optionValue) {
-    await server.post('options', {
-        name: optionName,
-        value: optionValue
-    });
+    await server.put('options/' + encodeURIComponent(optionName) + '/' + encodeURIComponent(optionValue));
 
     infoService.showMessage("Options change have been saved.");
 }

@@ -6,11 +6,7 @@ const options = require('../../services/options');
 // options allowed to be updated directly in options dialog
 const ALLOWED_OPTIONS = ['protected_session_timeout', 'note_revision_snapshot_time_interval'];
 
-async function getAllOptions() {
-    return await sql.getMap("SELECT name, value FROM options");
-}
-
-async function getAllowedOptions() {
+async function getOptions() {
     const options = await sql.getMap("SELECT name, value FROM options WHERE name IN ("
         + ALLOWED_OPTIONS.map(x => '?').join(",") + ")", ALLOWED_OPTIONS);
 
@@ -18,17 +14,16 @@ async function getAllowedOptions() {
 }
 
 async function updateOption(req) {
-    const body = req.body;
+    const {name, value} = req.params;
 
-    if (!ALLOWED_OPTIONS.includes(body['name'])) {
+    if (!ALLOWED_OPTIONS.includes(name)) {
         return [400, "not allowed option to set"];
     }
 
-    await options.setOption(body['name'], body['value']);
+    await options.setOption(name, value);
 }
 
 module.exports = {
-    getAllowedOptions,
-    getAllOptions,
+    getOptions,
     updateOption
 };

@@ -6,7 +6,7 @@ import treeCache from "./tree_cache.js";
 
 async function moveBeforeNode(nodesToMove, beforeNode) {
     for (const nodeToMove of nodesToMove) {
-        const resp = await server.put('tree/' + nodeToMove.data.branchId + '/move-before/' + beforeNode.data.branchId);
+        const resp = await server.put('branches/' + nodeToMove.data.branchId + '/move-before/' + beforeNode.data.branchId);
 
         if (!resp.success) {
             alert(resp.message);
@@ -21,7 +21,7 @@ async function moveAfterNode(nodesToMove, afterNode) {
     nodesToMove.reverse(); // need to reverse to keep the note order
 
     for (const nodeToMove of nodesToMove) {
-        const resp = await server.put('tree/' + nodeToMove.data.branchId + '/move-after/' + afterNode.data.branchId);
+        const resp = await server.put('branches/' + nodeToMove.data.branchId + '/move-after/' + afterNode.data.branchId);
 
         if (!resp.success) {
             alert(resp.message);
@@ -34,7 +34,7 @@ async function moveAfterNode(nodesToMove, afterNode) {
 
 async function moveToNode(nodesToMove, toNode) {
     for (const nodeToMove of nodesToMove) {
-        const resp = await server.put('tree/' + nodeToMove.data.branchId + '/move-to/' + toNode.data.noteId);
+        const resp = await server.put('branches/' + nodeToMove.data.branchId + '/move-to/' + toNode.data.noteId);
 
         if (!resp.success) {
             alert(resp.message);
@@ -64,7 +64,7 @@ async function deleteNodes(nodes) {
     }
 
     for (const node of nodes) {
-        await server.remove('tree/' + node.data.branchId);
+        await server.remove('branches/' + node.data.branchId);
     }
 
     // following code assumes that nodes contain only top-most selected nodes - getSelectedNodes has been
@@ -96,7 +96,7 @@ async function moveNodeUpInHierarchy(node) {
         return;
     }
 
-    const resp = await server.put('tree/' + node.data.branchId + '/move-after/' + node.getParent().data.branchId);
+    const resp = await server.put('branches/' + node.data.branchId + '/move-after/' + node.getParent().data.branchId);
 
     if (!resp.success) {
         alert(resp.message);

@@ -86,18 +86,18 @@ async function parseImportFile(file) {
 }
 
 async function importTar(req) {
-    const parentNoteId = req.params.parentNoteId;
+    const noteId = req.params.noteId;
     const file = req.file;
 
-    const parentNote = await repository.getNote(parentNoteId);
+    const parentNote = await repository.getNote(noteId);
 
     if (!parentNote) {
-        return [404, `Note ${parentNoteId} doesn't exist.`];
+        return [404, `Note ${noteId} doesn't exist.`];
     }
 
     const files = await parseImportFile(file);
 
-    await importNotes(files, parentNoteId);
+    await importNotes(files, noteId);
 }
 
 async function importNotes(files, parentNoteId) {

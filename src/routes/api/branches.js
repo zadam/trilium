@@ -105,10 +105,20 @@ async function deleteBranch(req) {
     await notes.deleteNote(branch);
 }
 
+async function setPrefix(req) {
+    const branchId = req.params.branchId;
+    const prefix = utils.isEmptyOrWhitespace(req.body.prefix) ? null : req.body.prefix;
+
+    const branch = await repository.getBranch(branchId);
+    branch.prefix = prefix;
+    await branch.save();
+}
+
 module.exports = {
     moveBranchToParent,
     moveBranchBeforeNote,
     moveBranchAfterNote,
     setExpanded,
-    deleteBranch
+    deleteBranch,
+    setPrefix
 };

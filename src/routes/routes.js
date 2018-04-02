@@ -7,7 +7,7 @@ const multer = require('multer')();
 // API routes
 const treeApiRoute = require('./api/tree');
 const notesApiRoute = require('./api/notes');
-const treeChangesApiRoute = require('./api/tree_changes');
+const branchesApiRoute = require('./api/branches');
 const cloningApiRoute = require('./api/cloning');
 const noteRevisionsApiRoute = require('./api/note_revisions');
 const recentChangesApiRoute = require('./api/recent_changes');
@@ -99,36 +99,37 @@ function register(app) {
     route(GET, '/setup', [auth.checkAppNotInitialized], setupRoute.setupPage);
 
     apiRoute(GET, '/api/tree', treeApiRoute.getTree);
-    apiRoute(PUT, '/api/tree/:branchId/set-prefix', treeApiRoute.setPrefix);
+    apiRoute(PUT, '/api/branches/:branchId/set-prefix', branchesApiRoute.setPrefix);
 
-    apiRoute(PUT, '/api/tree/:branchId/move-to/:parentNoteId', treeChangesApiRoute.moveBranchToParent);
-    apiRoute(PUT, '/api/tree/:branchId/move-before/:beforeBranchId', treeChangesApiRoute.moveBranchBeforeNote);
-    apiRoute(PUT, '/api/tree/:branchId/move-after/:afterBranchId', treeChangesApiRoute.moveBranchAfterNote);
-    apiRoute(PUT, '/api/tree/:branchId/expanded/:expanded', treeChangesApiRoute.setExpanded);
-    apiRoute(DELETE, '/api/tree/:branchId', treeChangesApiRoute.deleteBranch);
+    apiRoute(PUT, '/api/branches/:branchId/move-to/:parentNoteId', branchesApiRoute.moveBranchToParent);
+    apiRoute(PUT, '/api/branches/:branchId/move-before/:beforeBranchId', branchesApiRoute.moveBranchBeforeNote);
+    apiRoute(PUT, '/api/branches/:branchId/move-after/:afterBranchId', branchesApiRoute.moveBranchAfterNote);
+    apiRoute(PUT, '/api/branches/:branchId/expanded/:expanded', branchesApiRoute.setExpanded);
+    apiRoute(DELETE, '/api/branches/:branchId', branchesApiRoute.deleteBranch);
 
     apiRoute(GET, '/api/notes/:noteId', notesApiRoute.getNote);
     apiRoute(PUT, '/api/notes/:noteId', notesApiRoute.updateNote);
     apiRoute(POST, '/api/notes/:parentNoteId/children', notesApiRoute.createNote);
     apiRoute(PUT, '/api/notes/:noteId/sort', notesApiRoute.sortNotes);
-    apiRoute(PUT, '/api/notes/:noteId/protect-sub-tree/:isProtected', notesApiRoute.protectBranch);
+    apiRoute(PUT, '/api/notes/:noteId/protect/:isProtected', notesApiRoute.protectBranch);
     apiRoute(PUT, /\/api\/notes\/(.*)\/type\/(.*)\/mime\/(.*)/, notesApiRoute.setNoteTypeMime);
+    apiRoute(GET, '/api/notes/:noteId/revisions', noteRevisionsApiRoute.getNoteRevisions);
 
-    apiRoute(PUT, '/api/notes/:childNoteId/clone-to/:parentNoteId', cloningApiRoute.cloneNoteToParent);
+    apiRoute(PUT, '/api/notes/:noteId/clone-to/:parentNoteId', cloningApiRoute.cloneNoteToParent);
     apiRoute(PUT, '/api/notes/:noteId/clone-after/:afterBranchId', cloningApiRoute.cloneNoteAfter);
+
+    route(GET, '/api/notes/:noteId/export', [auth.checkApiAuthOrElectron], exportRoute.exportNote);
+    route(POST, '/api/notes/:noteId/import', [auth.checkApiAuthOrElectron, uploadMiddleware], importRoute.importTar, apiResultHandler);
 
     apiRoute(GET, '/api/notes/:noteId/labels', labelsRoute.getNoteLabels);
     apiRoute(PUT, '/api/notes/:noteId/labels', labelsRoute.updateNoteLabels);
     apiRoute(GET, '/api/labels/names', labelsRoute.getAllLabelNames);
     apiRoute(GET, '/api/labels/values/:labelName', labelsRoute.getValuesForLabel);
 
-    apiRoute(GET, '/api/note-revisions/:noteId', noteRevisionsApiRoute.getNoteRevisions);
-
     apiRoute(GET, '/api/recent-changes', recentChangesApiRoute.getRecentChanges);
 
-    apiRoute(GET, '/api/options', optionsApiRoute.getAllowedOptions);
-    apiRoute(GET, '/api/options/all', optionsApiRoute.getAllOptions);
-    apiRoute(POST, '/api/options', optionsApiRoute.updateOption);
+    apiRoute(GET, '/api/options', optionsApiRoute.getOptions);
+    apiRoute(PUT, '/api/options/:name/:value', optionsApiRoute.updateOption);
 
     apiRoute(POST, '/api/password/change', passwordApiRoute.changePassword);
 
@@ -163,9 +164,6 @@ function register(app) {
     apiRoute(GET, '/api/recent-notes', recentNotesRoute.getRecentNotes);
     apiRoute(PUT, '/api/recent-notes/:branchId/:notePath', recentNotesRoute.addRecentNote);
     apiRoute(GET, '/api/app-info', appInfoRoute.getAppInfo);
-
-    route(GET, '/api/export/:noteId', [auth.checkApiAuthOrElectron], exportRoute.exportNote);
-    route(POST, '/api/import/:parentNoteId', [auth.checkApiAuthOrElectron], importRoute.importTar, apiResultHandler);
 
     route(POST, '/api/setup', [auth.checkAppNotInitialized], setupApiRoute.setup, apiResultHandler);
 
