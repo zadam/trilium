@@ -119,12 +119,20 @@ function register(app) {
     apiRoute(PUT, '/api/notes/:noteId/clone-after/:afterBranchId', cloningApiRoute.cloneNoteAfter);
 
     route(GET, '/api/notes/:noteId/export', [auth.checkApiAuthOrElectron], exportRoute.exportNote);
-    route(POST, '/api/notes/:noteId/import', [auth.checkApiAuthOrElectron, uploadMiddleware], importRoute.importTar, apiResultHandler);
+    route(POST, '/api/notes/:parentNoteId/import', [auth.checkApiAuthOrElectron, uploadMiddleware], importRoute.importTar, apiResultHandler);
+
+    route(POST, '/api/notes/:parentNoteId/upload', [auth.checkApiAuthOrElectron, uploadMiddleware],
+        filesRoute.uploadFile, apiResultHandler);
+
+    route(GET, '/api/notes/:noteId/download', [auth.checkApiAuthOrElectron], filesRoute.downloadFile);
 
     apiRoute(GET, '/api/notes/:noteId/labels', labelsRoute.getNoteLabels);
     apiRoute(PUT, '/api/notes/:noteId/labels', labelsRoute.updateNoteLabels);
     apiRoute(GET, '/api/labels/names', labelsRoute.getAllLabelNames);
     apiRoute(GET, '/api/labels/values/:labelName', labelsRoute.getValuesForLabel);
+
+    route(GET, '/api/images/:imageId/:filename', [auth.checkApiAuthOrElectron], imageRoute.returnImage);
+    route(POST, '/api/images', [auth.checkApiAuthOrElectron, uploadMiddleware], imageRoute.uploadImage, apiResultHandler);
 
     apiRoute(GET, '/api/recent-changes', recentChangesApiRoute.getRecentChanges);
 
@@ -174,9 +182,6 @@ function register(app) {
     apiRoute(POST, '/api/cleanup/cleanup-unused-images', cleanupRoute.cleanupUnusedImages);
     apiRoute(POST, '/api/cleanup/vacuum-database', cleanupRoute.vacuumDatabase);
 
-    route(GET, '/api/images/:imageId/:filename', [auth.checkApiAuthOrElectron], imageRoute.returnImage);
-    route(POST, '/api/images', [auth.checkApiAuthOrElectron, uploadMiddleware], imageRoute.uploadImage, apiResultHandler);
-
     apiRoute(POST, '/api/script/exec', scriptRoute.exec);
     apiRoute(POST, '/api/script/run/:noteId', scriptRoute.run);
     apiRoute(GET, '/api/script/startup', scriptRoute.getStartupBundles);
@@ -185,11 +190,6 @@ function register(app) {
     route(POST, '/api/sender/login', [], senderRoute.login, apiResultHandler);
     route(POST, '/api/sender/image', [auth.checkSenderToken], senderRoute.uploadImage, apiResultHandler);
     route(POST, '/api/sender/note', [auth.checkSenderToken], senderRoute.saveNote, apiResultHandler);
-
-    route(POST, '/api/files/upload/:parentNoteId', [auth.checkApiAuthOrElectron, uploadMiddleware],
-        filesRoute.uploadFile, apiResultHandler);
-
-    route(GET, '/api/files/download/:noteId', [auth.checkApiAuthOrElectron], filesRoute.downloadFile);
 
     apiRoute(GET, '/api/search/:searchString', searchRoute.searchNotes);
     apiRoute(POST, '/api/search/:searchString', searchRoute.saveSearchToNote);

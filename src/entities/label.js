@@ -18,13 +18,13 @@ class Label extends Entity {
             this.labelId = utils.newLabelId();
         }
 
-        if (this.value) {
+        if (!this.value) {
             // null value isn't allowed
             this.value = "";
         }
 
         if (this.position === undefined) {
-            this.position = 1 + await sql.getValue(`SELECT COALESCE(MAX(position), 0) FROM labels WHERE noteId = ?`, [noteId]);
+            this.position = 1 + await sql.getValue(`SELECT COALESCE(MAX(position), 0) FROM labels WHERE noteId = ?`, [this.noteId]);
         }
 
         if (!this.isDeleted) {

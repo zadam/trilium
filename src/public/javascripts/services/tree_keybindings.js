@@ -3,7 +3,7 @@ import utils from "./utils.js";
 import treeChangesService from "./branches.js";
 import contextMenuService from "./context_menu.js";
 import treeService from "./tree.js";
-import editTreePrefixDialog from "../dialogs/edit_tree_prefix.js";
+import editBranchPrefixDialog from "../dialogs/branch_prefix.js";
 
 const keyBindings = {
     "del": node => {
@@ -67,7 +67,7 @@ const keyBindings = {
         return false;
     },
     "f2": node => {
-        editTreePrefixDialog.showDialog(node);
+        editBranchPrefixDialog.showDialog(node);
     },
     "alt+-": node => {
         treeService.collapseTree(node);

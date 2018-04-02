@@ -193,12 +193,7 @@ let transactionPromise = null;
 
 async function doInTransaction(func) {
     if (cls.namespace.get('isInTransaction')) {
-        console.log("Transaction already active");
-
         return await func();
-    }
-    else {
-        console.log("Starting new transaction");
     }
 
     while (transactionActive) {

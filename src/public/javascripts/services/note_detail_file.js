@@ -39,8 +39,8 @@ $fileOpen.click(() => {
 
 function getFileUrl() {
     // electron needs absolute URL so we extract current host, port, protocol
-    return utils.getHost() + "/api/files/download/" + noteDetailService.getCurrentNoteId()
-        + "?protectedSessionId=" + encodeURIComponent(protectedSessionHolder.getProtectedSessionId());
+    return utils.getHost() + "/api/notes/" + noteDetailService.getCurrentNoteId()
+        + "/download?protectedSessionId=" + encodeURIComponent(protectedSessionHolder.getProtectedSessionId());
 }
 
 export default {

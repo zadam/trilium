@@ -11,7 +11,7 @@ $("#file-upload").change(async function() {
     formData.append('upload', this.files[0]);
 
     const resp = await $.ajax({
-        url: baseApiUrl + 'files/upload/' + noteDetailService.getCurrentNoteId(),
+        url: baseApiUrl + 'notes/' + noteDetailService.getCurrentNoteId() + '/upload',
         headers: server.getHeaders(),
         data: formData,
         type: 'POST',

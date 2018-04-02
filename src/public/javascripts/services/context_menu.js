@@ -5,7 +5,7 @@ import messagingService from './messaging.js';
 import protectedSessionService from './protected_session.js';
 import treeChangesService from './branches.js';
 import treeUtils from './tree_utils.js';
-import editTreePrefixDialog from '../dialogs/edit_tree_prefix.js';
+import branchPrefixDialog from '../dialogs/branch_prefix.js';
 import infoService from "./info.js";
 import treeCache from "./tree_cache.js";
 
@@ -83,7 +83,7 @@ const contextMenuOptions = {
         {title: "Insert child note <kbd>Ctrl+P</kbd>", cmd: "insertChildNote", uiIcon: "ui-icon-plus"},
         {title: "Delete <kbd>Ctrl+Del</kbd>", cmd: "delete", uiIcon: "ui-icon-trash"},
         {title: "----"},
-        {title: "Edit tree prefix <kbd>F2</kbd>", cmd: "editTreePrefix", uiIcon: "ui-icon-pencil"},
+        {title: "Edit branch prefix <kbd>F2</kbd>", cmd: "editBranchPrefix", uiIcon: "ui-icon-pencil"},
         {title: "----"},
         {title: "Protect branch", cmd: "protectBranch", uiIcon: "ui-icon-locked"},
         {title: "Unprotect branch", cmd: "unprotectBranch", uiIcon: "ui-icon-unlocked"},
@@ -134,8 +134,8 @@ const contextMenuOptions = {
         else if (ui.cmd === "insertChildNote") {
             treeService.createNote(node, node.data.noteId, 'into');
         }
-        else if (ui.cmd === "editTreePrefix") {
-            editTreePrefixDialog.showDialog(node);
+        else if (ui.cmd === "editBranchPrefix") {
+            branchPrefixDialog.showDialog(node);
         }
         else if (ui.cmd === "protectBranch") {
             protectedSessionService.protectBranch(node.data.noteId, true);
