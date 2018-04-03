@@ -22,9 +22,7 @@ class NoteRevision extends Entity {
     }
 
     beforeSaving() {
-        if (!this.noteRevisionId) {
-            this.noteRevisionId = utils.newNoteRevisionId();
-        }
+        super.beforeSaving();
 
         if (this.isProtected) {
             protected_session.encryptNoteRevision(this);

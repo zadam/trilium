@@ -14,9 +14,7 @@ class Label extends Entity {
     }
 
     async beforeSaving() {
-        if (!this.labelId) {
-            this.labelId = utils.newLabelId();
-        }
+        super.beforeSaving();
 
         if (!this.value) {
             // null value isn't allowed

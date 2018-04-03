@@ -13,9 +13,7 @@ class Branch extends Entity {
     }
 
     beforeSaving() {
-        if (!this.branchId) {
-            this.branchId = utils.newBranchId();
-        }
+        super.beforeSaving();
 
         if (!this.isDeleted) {
             this.isDeleted = false;

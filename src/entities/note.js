@@ -131,9 +131,7 @@ class Note extends Entity {
     }
 
     beforeSaving() {
-        if (!this.noteId) {
-            this.noteId = utils.newNoteId();
-        }
+        super.beforeSaving();
 
         if (this.isJson()) {
             this.content = JSON.stringify(this.jsonContent, null, '\t');

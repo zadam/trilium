@@ -12,6 +12,12 @@ class Entity {
         }
     }
 
+    beforeSaving() {
+        if (!this[this.constructor.primaryKeyName]) {
+            this[this.constructor.primaryKeyName] = utils.newEntityId();
+        }
+    }
+
     async save() {
         await repository.updateEntity(this);
     }

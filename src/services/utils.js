@@ -4,31 +4,7 @@ const crypto = require('crypto');
 const randtoken = require('rand-token').generator({source: 'crypto'});
 const unescape = require('unescape');
 
-function newNoteId() {
-    return randomString(12);
-}
-
-function newBranchId() {
-    return randomString(12);
-}
-
-function newNoteRevisionId() {
-    return randomString(12);
-}
-
-function newImageId() {
-    return randomString(12);
-}
-
-function newNoteImageId() {
-    return randomString(12);
-}
-
-function newLabelId() {
-    return randomString(12);
-}
-
-function newApiTokenId() {
+function newEntityId() {
     return randomString(12);
 }
 
@@ -154,13 +130,7 @@ module.exports = {
     dateStr,
     parseDate,
     parseDateTime,
-    newNoteId,
-    newBranchId,
-    newNoteRevisionId,
-    newImageId,
-    newNoteImageId,
-    newLabelId,
-    newApiTokenId,
+    newEntityId,
     toBase64,
     fromBase64,
     hmac,

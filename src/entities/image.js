@@ -8,9 +8,7 @@ class Image extends Entity {
     static get primaryKeyName() { return "imageId"; }
 
     beforeSaving() {
-        if (!this.imageId) {
-            this.imageId = utils.newImageId();
-        }
+        super.beforeSaving();
 
         if (!this.isDeleted) {
             this.isDeleted = false;

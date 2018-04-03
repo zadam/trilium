@@ -8,9 +8,7 @@ class ApiToken extends Entity {
     static get primaryKeyName() { return "apiTokenId"; }
 
     beforeSaving() {
-        if (!this.apiTokenId) {
-            this.apiTokenId = utils.newApiTokenId();
-        }
+        super.beforeSaving();
 
         if (!this.isDeleted) {
             this.isDeleted = false;
