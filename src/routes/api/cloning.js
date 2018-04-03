@@ -19,15 +19,13 @@ async function cloneNoteToParent(req) {
     const maxNotePos = await sql.getValue('SELECT MAX(notePosition) FROM branches WHERE parentNoteId = ? AND isDeleted = 0', [parentNoteId]);
     const newNotePos = maxNotePos === null ? 0 : maxNotePos + 1;
 
-    const branch = new Branch({
+    const branch = await new Branch({
         noteId: noteId,
         parentNoteId: parentNoteId,
         prefix: prefix,
         notePosition: newNotePos,
         isExpanded: 0
-    });
-
-    await branch.save();
+    }).save();
 
     await sql.execute("UPDATE branches SET isExpanded = 1 WHERE noteId = ?", [parentNoteId]);
 
@@ -53,14 +51,12 @@ async function cloneNoteAfter(req) {
 
     await syncTable.addNoteReorderingSync(afterNote.parentNoteId);
 
-    const branch = new Branch({
+    const branch = await new Branch({
         noteId: noteId,
         parentNoteId: afterNote.parentNoteId,
         notePosition: afterNote.notePosition + 1,
         isExpanded: 0
-    });
-
-    await branch.save();
+    }).save();
 
     return { success: true };
 }

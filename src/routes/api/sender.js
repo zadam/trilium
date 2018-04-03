@@ -20,8 +20,9 @@ async function login(req) {
         return [401, "Incorrect username/password"];
     }
 
-    const apiToken = new ApiToken({ token: utils.randomSecureToken() });
-    await apiToken.save();
+    const apiToken = await new ApiToken({
+        token: utils.randomSecureToken()
+    }).save();
 
     return {
         token: apiToken.token

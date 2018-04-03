@@ -20,21 +20,17 @@ async function saveImage(file, noteId) {
     const fileNameWithouExtension = file.originalname.replace(/\.[^/.]+$/, "");
     const fileName = sanitizeFilename(fileNameWithouExtension + "." + imageFormat.ext);
 
-    const image = new Image({
+    const image = await new Image({
         format: imageFormat.ext,
         name: fileName,
         checksum: utils.hash(optimizedImage),
         data: optimizedImage
-    });
+    }).save();
 
-    await image.save();
-
-    const noteImage = new NoteImage({
+    await new NoteImage({
         noteId: noteId,
         imageId: image.imageId
-    });
-
-    await noteImage.save();
+    }).save();
 
     return {fileName, imageId: image.imageId};
 }

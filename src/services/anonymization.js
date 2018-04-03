@@ -10,7 +10,7 @@ async function anonymize() {
         fs.mkdirSync(dataDir.ANONYMIZED_DB_DIR, 0o700);
     }
 
-    const anonymizedFile = dataDir.ANONYMIZED_DB_DIR + "/" + "backup-" + dateUtils.getDateTimeForFile() + ".db";
+    const anonymizedFile = dataDir.ANONYMIZED_DB_DIR + "/" + "anonymized-" + dateUtils.getDateTimeForFile() + ".db";
 
     fs.copySync(dataDir.DOCUMENT_PATH, anonymizedFile);
 

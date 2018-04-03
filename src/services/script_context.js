@@ -48,21 +48,11 @@ function ScriptApi(startNote, currentNote) {
     this.getEntity = repository.getEntity;
     this.getEntities = repository.getEntities;
 
-    this.getNotesWithLabel = async function (labelName, labelValue) {
-        return await labelService.getNotesWithLabel(labelName, labelValue);
-    };
-
-    this.getNoteWithLabel = async function (labelName, labelValue) {
-        const notes = await this.getNotesWithLabel(labelName, labelValue);
-
-        return notes.length > 0 ? notes[0] : null;
-    };
-
-    this.createNote = async function(parentNoteId, title, content = "", extraOptions = {}) {
-        return await noteService.createNote(parentNoteId, title, content, extraOptions);
-    };
-
     this.createLabel = labelService.createLabel;
+    this.getNotesWithLabel = labelService.getNotesWithLabel;
+    this.getNoteWithLabel = labelService.getNoteWithLabel;
+
+    this.createNote = noteService.createNote;
 
     this.log = message => log.info(`Script ${currentNote.noteId}: ${message}`);
 

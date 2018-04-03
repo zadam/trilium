@@ -4,12 +4,8 @@ const dateUtils = require('./date_utils');
 const syncTableService = require('./sync_table');
 const appInfo = require('./app_info');
 
-async function getOptionOrNull(name) {
-    return await sql.getRowOrNull("SELECT value FROM options WHERE name = ?", [name]);
-}
-
 async function getOption(name) {
-    const row = await getOptionOrNull(name);
+    const row = await await sql.getRowOrNull("SELECT value FROM options WHERE name = ?", [name]);
 
     if (!row) {
         throw new Error("Option " + name + " doesn't exist");
@@ -69,8 +65,6 @@ async function initOptions(startNotePath) {
 
 module.exports = {
     getOption,
-    getOptionOrNull,
     setOption,
-    initOptions,
-    createOption
+    initOptions
 };

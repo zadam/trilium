@@ -15,10 +15,6 @@ const BUILTIN_LABELS = [
     'appCss'
 ];
 
-async function getNoteLabelMap(noteId) {
-    return await sql.getMap(`SELECT name, value FROM labels WHERE noteId = ? AND isDeleted = 0`, [noteId]);
-}
-
 async function getNoteIdWithLabel(name, value) {
     return await sql.getValue(`SELECT notes.noteId FROM notes JOIN labels USING(noteId) 
           WHERE notes.isDeleted = 0
@@ -54,19 +50,14 @@ async function getNoteIdsWithLabel(name) {
 }
 
 async function createLabel(noteId, name, value = "") {
-    const label = new Label({
+    return await new Label({
         noteId: noteId,
         name: name,
         value: value
-    });
-
-    await label.save();
-
-    return label;
+    }).save();
 }
 
 module.exports = {
-    getNoteLabelMap,
     getNoteIdWithLabel,
     getNotesWithLabel,
     getNoteWithLabel,

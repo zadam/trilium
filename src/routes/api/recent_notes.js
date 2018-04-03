@@ -24,14 +24,12 @@ async function addRecentNote(req) {
     const branchId = req.params.branchId;
     const notePath = req.params.notePath;
 
-    const recentNote = new RecentNote({
+    await new RecentNote({
         branchId: branchId,
         notePath: notePath,
         dateAccessed: dateUtils.nowDate(),
         isDeleted: 0
-    });
-
-    await recentNote.save();
+    }).save();
 
     await optionService.setOption('startNotePath', notePath);
 

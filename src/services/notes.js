@@ -44,24 +44,20 @@ async function createNewNote(parentNoteId, noteData) {
         noteData.mime = noteData.mime || parent.mime;
     }
 
-    const note = new Note({
+    const note = await new Note({
         title: noteData.title,
         content: noteData.content || '',
         isProtected: noteData.isProtected,
         type: noteData.type || 'text',
         mime: noteData.mime || 'text/html'
-    });
+    }).save();
 
-    await note.save();
-
-    const branch = new Branch({
+    const branch = await new Branch({
         noteId: note.noteId,
         parentNoteId: parentNoteId,
         notePosition: newNotePos,
         isExpanded: 0
-    });
-
-    await branch.save();
+    }).save();
 
     return {
         note,
@@ -141,10 +137,10 @@ async function saveNoteImages(note) {
         const existingNoteImage = existingNoteImages.find(ni => ni.imageId === imageId);
 
         if (!existingNoteImage) {
-            await (new NoteImage({
+            await new NoteImage({
                 noteId: note.noteId,
                 imageId: imageId
-            })).save();
+            }).save();
         }
         // else we don't need to do anything
 
@@ -179,7 +175,7 @@ async function saveNoteRevision(note) {
         && !existingnoteRevisionId
         && msSinceDateCreated >= noteRevisionSnapshotTimeInterval * 1000) {
 
-        await (new NoteRevision({
+        await new NoteRevision({
             noteId: note.noteId,
             // title and text should be decrypted now
             title: note.title,
@@ -187,7 +183,7 @@ async function saveNoteRevision(note) {
             isProtected: 0, // will be fixed in the protectNoteRevisions() call
             dateModifiedFrom: note.dateModified,
             dateModifiedTo: dateUtils.nowDate()
-        })).save();
+        }).save();
     }
 }
 

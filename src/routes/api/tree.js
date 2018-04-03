@@ -2,7 +2,6 @@
 
 const sql = require('../../services/sql');
 const optionService = require('../../services/options');
-const config = require('../../services/config');
 const protectedSessionService = require('../../services/protected_session');
 
 async function getTree() {

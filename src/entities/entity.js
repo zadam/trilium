@@ -18,6 +18,8 @@ class Entity {
 
     async save() {
         await repository.updateEntity(this);
+
+        return this;
     }
 }
 
