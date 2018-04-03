@@ -4,13 +4,13 @@ const optionService = require('./options');
 const scrypt = require('scrypt');
 
 async function getVerificationHash(password) {
-    const salt = await optionService.getOption('password_verification_salt');
+    const salt = await optionService.getOption('passwordVerificationSalt');
 
     return getScryptHash(password, salt);
 }
 
 async function getPasswordDerivedKey(password) {
-    const salt = await optionService.getOption('password_derived_key_salt');
+    const salt = await optionService.getOption('passwordDerivedKeySalt');
 
     return getScryptHash(password, salt);
 }

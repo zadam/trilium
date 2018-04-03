@@ -11,7 +11,7 @@ const cls = require('./cls');
 
 async function regularBackup() {
     const now = new Date();
-    const lastBackupDate = dateUtils.parseDateTime(await optionService.getOption('last_backup_date'));
+    const lastBackupDate = dateUtils.parseDateTime(await optionService.getOption('lastBackupDate'));
 
     console.log(lastBackupDate);
 
@@ -32,7 +32,7 @@ async function backupNow() {
 
         log.info("Created backup at " + backupFile);
 
-        await optionService.setOption('last_backup_date', dateUtils.nowDate());
+        await optionService.setOption('lastBackupDate', dateUtils.nowDate());
     });
 }
 

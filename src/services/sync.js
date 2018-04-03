@@ -71,14 +71,14 @@ async function sync() {
 async function login() {
     const timestamp = dateUtils.nowDate();
 
-    const documentSecret = await optionService.getOption('document_secret');
+    const documentSecret = await optionService.getOption('documentSecret');
     const hash = utils.hmac(documentSecret, timestamp);
 
     const syncContext = { cookieJar: rp.jar() };
 
     const resp = await syncRequest(syncContext, 'POST', '/api/login/sync', {
         timestamp: timestamp,
-        dbVersion: appInfo.db_version,
+        dbVersion: appInfo.dbVersion,
         hash: hash
     });
 
@@ -92,11 +92,11 @@ async function login() {
 }
 
 async function getLastSyncedPull() {
-    return parseInt(await optionService.getOption('last_synced_pull'));
+    return parseInt(await optionService.getOption('lastSyncedPull'));
 }
 
 async function setLastSyncedPull(syncId) {
-    await optionService.setOption('last_synced_pull', syncId);
+    await optionService.setOption('lastSyncedPull', syncId);
 }
 
 async function pullSync(syncContext) {
@@ -163,11 +163,11 @@ async function pullSync(syncContext) {
 }
 
 async function getLastSyncedPush() {
-    return parseInt(await optionService.getOption('last_synced_push'));
+    return parseInt(await optionService.getOption('lastSyncedPush'));
 }
 
 async function setLastSyncedPush(lastSyncedPush) {
-    await optionService.setOption('last_synced_push', lastSyncedPush);
+    await optionService.setOption('lastSyncedPush', lastSyncedPush);
 }
 
 async function pushSync(syncContext) {

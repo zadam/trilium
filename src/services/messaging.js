@@ -66,7 +66,7 @@ async function sendMessageToAllClients(message) {
 async function sendPing(client, lastSentSyncId) {
     const syncData = await sql.getRows("SELECT * FROM sync WHERE id > ?", [lastSentSyncId]);
 
-    const lastSyncedPush = await optionService.getOption('last_synced_push');
+    const lastSyncedPush = await optionService.getOption('lastSyncedPush');
 
     const changesToPushCount = await sql.getValue("SELECT COUNT(*) FROM sync WHERE id > ?", [lastSyncedPush]);
 

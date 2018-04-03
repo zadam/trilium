@@ -165,7 +165,7 @@ async function saveNoteRevision(note) {
     const labelsMap = await note.getLabelMap();
 
     const now = new Date();
-    const noteRevisionSnapshotTimeInterval = parseInt(await optionService.getOption('note_revision_snapshot_time_interval'));
+    const noteRevisionSnapshotTimeInterval = parseInt(await optionService.getOption('noteRevisionSnapshotTimeInterval'));
 
     const revisionCutoff = dateUtils.dateStr(new Date(now.getTime() - noteRevisionSnapshotTimeInterval * 1000));
 

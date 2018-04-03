@@ -51,7 +51,7 @@ async function getTree() {
     });
 
     return {
-        start_note_path: await optionService.getOption('start_note_path'),
+        startNotePath: await optionService.getOption('startNotePath'),
         branches: branches,
         notes: notes
     };

@@ -93,7 +93,7 @@ addTabHandler((function() {
 addTabHandler((function() {
     const $form = $("#protected-session-timeout-form");
     const $protectedSessionTimeout = $("#protected-session-timeout-in-seconds");
-    const optionName = 'protected_session_timeout';
+    const optionName = 'protectedSessionTimeout';
 
     function optionsLoaded(options) {
         $protectedSessionTimeout.val(options[optionName]);
@@ -117,7 +117,7 @@ addTabHandler((function() {
 addTabHandler((function () {
     const $form = $("#note-revision-snapshot-time-interval-form");
     const $timeInterval = $("#note-revision-snapshot-time-interval-in-seconds");
-    const optionName = 'note_revision_snapshot_time_interval';
+    const optionName = 'noteRevisionSnapshotTimeInterval';
 
     function optionsLoaded(options) {
         $timeInterval.val(options[optionName]);
@@ -143,7 +143,7 @@ addTabHandler((async function () {
     const appInfo = await server.get('app-info');
 
     $appVersion.html(appInfo.app_version);
-    $dbVersion.html(appInfo.db_version);
+    $dbVersion.html(appInfo.dbVersion);
     $buildDate.html(appInfo.build_date);
     $buildRevision.html(appInfo.build_revision);
     $buildRevision.attr('href', 'https://github.com/zadam/trilium/commit/' + appInfo.build_revision);

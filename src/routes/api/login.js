@@ -21,11 +21,11 @@ async function loginSync(req) {
 
     const dbVersion = req.body.dbVersion;
 
-    if (dbVersion !== appInfo.db_version) {
-        return [400, { message: 'Non-matching db versions, local is version ' + appInfo.db_version }];
+    if (dbVersion !== appInfo.dbVersion) {
+        return [400, { message: 'Non-matching db versions, local is version ' + appInfo.dbVersion }];
     }
 
-    const documentSecret = await options.getOption('document_secret');
+    const documentSecret = await options.getOption('documentSecret');
     const expectedHash = utils.hmac(documentSecret, timestampStr);
 
     const givenHash = req.body.hash;

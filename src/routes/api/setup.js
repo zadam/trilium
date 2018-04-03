@@ -11,11 +11,11 @@ async function setup(req) {
 
     await optionService.setOption('username', username);
 
-    await optionService.setOption('password_verification_salt', utils.randomSecureToken(32));
-    await optionService.setOption('password_derived_key_salt', utils.randomSecureToken(32));
+    await optionService.setOption('passwordVerificationSalt', utils.randomSecureToken(32));
+    await optionService.setOption('passwordDerivedKeySalt', utils.randomSecureToken(32));
 
     const passwordVerificationKey = utils.toBase64(await myScryptService.getVerificationHash(password));
-    await optionService.setOption('password_verification_hash', passwordVerificationKey);
+    await optionService.setOption('passwordVerificationHash', passwordVerificationKey);
 
     await passwordEncryptionService.setDataKey(password, utils.randomSecureToken(16));
 

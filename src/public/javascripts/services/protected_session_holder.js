@@ -6,7 +6,7 @@ let protectedSessionTimeout = null;
 let protectedSessionId = null;
 
 $(document).ready(() => {
-    server.get('options').then(options => protectedSessionTimeout = options.protected_session_timeout);
+    server.get('options').then(options => protectedSessionTimeout = options.protectedSessionTimeout);
 });
 
 setInterval(() => {

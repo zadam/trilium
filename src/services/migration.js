@@ -12,7 +12,7 @@ async function migrate() {
     // backup before attempting migration
     await backupService.backupNow();
 
-    const currentDbVersion = parseInt(await optionService.getOption('db_version'));
+    const currentDbVersion = parseInt(await optionService.getOption('dbVersion'));
 
     fs.readdirSync(resourceDir.MIGRATIONS_DIR).forEach(file => {
         const match = file.match(/([0-9]{4})__([a-zA-Z0-9_ ]+)\.(sql|js)/);
@@ -63,7 +63,7 @@ async function migrate() {
                     throw new Error("Unknown migration type " + mig.type);
                 }
 
-                await optionService.setOption("db_version", mig.dbVersion);
+                await optionService.setOption("dbVersion", mig.dbVersion);
 
             });
 

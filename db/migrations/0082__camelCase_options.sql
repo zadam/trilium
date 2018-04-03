@@ -1,0 +1,14 @@
+UPDATE "options" SET "name" = 'passwordVerificationHash' WHERE "name" = 'password_verification_hash';
+UPDATE "options" SET "name" = 'dbVersion' WHERE "name" = 'db_version';
+UPDATE "options" SET "name" = 'passwordDerivedKeySalt' WHERE "name" = 'password_derived_key_salt';
+UPDATE "options" SET "name" = 'documentId' WHERE "name" = 'document_id';
+UPDATE "options" SET "name" = 'lastSyncedPull' WHERE "name" = 'last_synced_pull';
+UPDATE "options" SET "name" = 'startNotePath' WHERE "name" = 'start_note_path';
+UPDATE "options" SET "name" = 'lastSyncedPush' WHERE "name" = 'last_synced_push';
+UPDATE "options" SET "name" = 'documentSecret' WHERE "name" = 'document_secret';
+UPDATE "options" SET "name" = 'lastBackupDate' WHERE "name" = 'last_backup_date';
+UPDATE "options" SET "name" = 'noteRevisionSnapshotTimeInterval' WHERE "name" = 'note_revision_snapshot_time_interval';
+UPDATE "options" SET "name" = 'protectedSessionTimeout' WHERE "name" = 'protected_session_timeout';
+UPDATE "options" SET "name" = 'encryptedDataKey' WHERE "name" = 'encrypted_data_key';
+UPDATE "options" SET "name" = 'encryptedDataKeyIv' WHERE "name" = 'encrypted_data_key_iv';
+UPDATE "options" SET "name" = 'passwordVerificationSalt' WHERE "name" = 'password_verification_salt';

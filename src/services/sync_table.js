@@ -56,7 +56,7 @@ async function addEntitySync(entityName, entityId, sourceId) {
     if (!syncSetup.isSyncSetup) {
         // this is because the "server" instances shouldn't have outstanding pushes
         // useful when you fork the DB for new "client" instance, it won't try to sync the whole DB
-        await sql.execute("UPDATE options SET value = (SELECT MAX(id) FROM sync) WHERE name IN('last_synced_push', 'last_synced_pull')");
+        await sql.execute("UPDATE options SET value = (SELECT MAX(id) FROM sync) WHERE name IN('lastSyncedPush', 'lastSyncedPull')");
     }
 }
 

@@ -20,7 +20,7 @@ async function changePassword(currentPassword, newPassword) {
     await sql.doInTransaction(async () => {
         await passwordEncryptionService.setDataKey(newPassword, decryptedDataKey);
 
-        await optionService.setOption('password_verification_hash', newPasswordVerificationKey);
+        await optionService.setOption('passwordVerificationHash', newPasswordVerificationKey);
     });
 
     return {

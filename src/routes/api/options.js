@@ -4,7 +4,7 @@ const sql = require('../../services/sql');
 const optionService = require('../../services/options');
 
 // options allowed to be updated directly in options dialog
-const ALLOWED_OPTIONS = ['protected_session_timeout', 'note_revision_snapshot_time_interval'];
+const ALLOWED_OPTIONS = ['protectedSessionTimeout', 'noteRevisionSnapshotTimeInterval'];
 
 async function getOptions() {
     const options = await sql.getMap("SELECT name, value FROM options WHERE name IN ("

@@ -6,7 +6,7 @@ const dataEncryptionService = require('./data_encryption');
 async function verifyPassword(password) {
     const givenPasswordHash = utils.toBase64(await myScryptService.getVerificationHash(password));
 
-    const dbPasswordHash = await optionService.getOption('password_verification_hash');
+    const dbPasswordHash = await optionService.getOption('passwordVerificationHash');
 
     return givenPasswordHash === dbPasswordHash;
 }
@@ -16,20 +16,20 @@ async function setDataKey(password, plainTextDataKey) {
 
     const encryptedDataKeyIv = utils.randomString(16);
 
-    await optionService.setOption('encrypted_data_key_iv', encryptedDataKeyIv);
+    await optionService.setOption('encryptedDataKeyIv', encryptedDataKeyIv);
 
     const buffer = Buffer.from(plainTextDataKey);
 
     const newEncryptedDataKey = dataEncryptionService.encrypt(passwordDerivedKey, encryptedDataKeyIv, buffer);
 
-    await optionService.setOption('encrypted_data_key', newEncryptedDataKey);
+    await optionService.setOption('encryptedDataKey', newEncryptedDataKey);
 }
 
 async function getDataKey(password) {
     const passwordDerivedKey = await myScryptService.getPasswordDerivedKey(password);
 
-    const encryptedDataKeyIv = await optionService.getOption('encrypted_data_key_iv');
-    const encryptedDataKey = await optionService.getOption('encrypted_data_key');
+    const encryptedDataKeyIv = await optionService.getOption('encryptedDataKeyIv');
+    const encryptedDataKey = await optionService.getOption('encryptedDataKey');
 
     const decryptedDataKey = dataEncryptionService.decrypt(passwordDerivedKey, encryptedDataKeyIv, encryptedDataKey);
 

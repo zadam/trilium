@@ -6,8 +6,8 @@ const appInfo = require('../../services/app_info');
 
 async function getMigrationInfo() {
     return {
-        db_version: parseInt(await optionService.getOption('db_version')),
-        app_db_version: appInfo.db_version
+        dbVersion: parseInt(await optionService.getOption('dbVersion')),
+        app_dbVersion: appInfo.dbVersion
     };
 }
 

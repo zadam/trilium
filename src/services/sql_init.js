@@ -76,12 +76,12 @@ function setDbReadyAsResolved() {
 }
 
 async function isDbUpToDate() {
-    const dbVersion = parseInt(await sql.getValue("SELECT value FROM options WHERE name = 'db_version'"));
+    const dbVersion = parseInt(await sql.getValue("SELECT value FROM options WHERE name = 'dbVersion'"));
 
-    const upToDate = dbVersion >= appInfo.db_version;
+    const upToDate = dbVersion >= appInfo.dbVersion;
 
     if (!upToDate) {
-        log.info("App db version is " + appInfo.db_version + ", while db version is " + dbVersion + ". Migration needed.");
+        log.info("App db version is " + appInfo.dbVersion + ", while db version is " + dbVersion + ". Migration needed.");
     }
 
     return upToDate;

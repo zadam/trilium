@@ -47,24 +47,24 @@ async function createOption(name, value, isSynced) {
 }
 
 async function initOptions(startNotePath) {
-    await createOption('document_id', utils.randomSecureToken(16), false);
-    await createOption('document_secret', utils.randomSecureToken(16), false);
+    await createOption('documentId', utils.randomSecureToken(16), false);
+    await createOption('documentSecret', utils.randomSecureToken(16), false);
 
     await createOption('username', '', true);
-    await createOption('password_verification_hash', '', true);
-    await createOption('password_verification_salt', '', true);
-    await createOption('password_derived_key_salt', '', true);
-    await createOption('encrypted_data_key', '', true);
-    await createOption('encrypted_data_key_iv', '', true);
+    await createOption('passwordVerificationHash', '', true);
+    await createOption('passwordVerificationSalt', '', true);
+    await createOption('passwordDerivedKeySalt', '', true);
+    await createOption('encryptedDataKey', '', true);
+    await createOption('encryptedDataKey_iv', '', true);
 
-    await createOption('start_note_path', startNotePath, false);
-    await createOption('protected_session_timeout', 600, true);
-    await createOption('note_revision_snapshot_time_interval', 600, true);
-    await createOption('last_backup_date', dateUtils.nowDate(), false);
-    await createOption('db_version', appInfo.db_version, false);
+    await createOption('startNotePath', startNotePath, false);
+    await createOption('protectedSessionTimeout', 600, true);
+    await createOption('noteRevisionSnapshotTimeInterval', 600, true);
+    await createOption('lastBackupDate', dateUtils.nowDate(), false);
+    await createOption('dbVersion', appInfo.dbVersion, false);
 
-    await createOption('last_synced_pull', appInfo.db_version, false);
-    await createOption('last_synced_push', 0, false);
+    await createOption('lastSyncedPull', appInfo.dbVersion, false);
+    await createOption('lastSyncedPush', 0, false);
 }
 
 module.exports = {

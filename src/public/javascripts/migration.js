@@ -2,8 +2,8 @@ import server from './services/server.js';
 
 $(document).ready(() => {
     server.get('migration').then(result => {
-        const appDbVersion = result.app_db_version;
-        const dbVersion = result.db_version;
+        const appDbVersion = result.app_dbVersion;
+        const dbVersion = result.dbVersion;
 
         if (appDbVersion === dbVersion) {
             $("#up-to-date").show();
@@ -26,7 +26,7 @@ $("#run-migration").click(async () => {
 
     for (const migration of result.migrations) {
         const row = $('<tr>')
-            .append($('<td>').html(migration.db_version))
+            .append($('<td>').html(migration.dbVersion))
             .append($('<td>').html(migration.name))
             .append($('<td>').html(migration.success ? 'Yes' : 'No'))
             .append($('<td>').html(migration.success ? 'N/A' : migration.error));

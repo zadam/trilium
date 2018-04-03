@@ -26,8 +26,8 @@ async function fillSyncRows() {
 }
 
 async function forceFullSync() {
-    await optionService.setOption('last_synced_pull', 0);
-    await optionService.setOption('last_synced_push', 0);
+    await optionService.setOption('lastSyncedPull', 0);
+    await optionService.setOption('lastSyncedPush', 0);
 
     log.info("Forcing full sync.");
 

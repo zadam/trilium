@@ -33,7 +33,7 @@ async function addRecentNote(req) {
 
     await recentNote.save();
 
-    await optionService.setOption('start_note_path', notePath);
+    await optionService.setOption('startNotePath', notePath);
 
     return await getRecentNotes();
 }

@@ -33,7 +33,7 @@ async function login(req, res) {
 }
 
 async function verifyPassword(guessedPassword) {
-    const hashed_password = utils.fromBase64(await optionService.getOption('password_verification_hash'));
+    const hashed_password = utils.fromBase64(await optionService.getOption('passwordVerificationHash'));
 
     const guess_hashed = await myScryptService.getVerificationHash(guessedPassword);
 
