@@ -55,7 +55,7 @@ async function initOptions(startNotePath) {
     await createOption('passwordVerificationSalt', '', true);
     await createOption('passwordDerivedKeySalt', '', true);
     await createOption('encryptedDataKey', '', true);
-    await createOption('encryptedDataKey_iv', '', true);
+    await createOption('encryptedDataKeyIv', '', true);
 
     await createOption('startNotePath', startNotePath, false);
     await createOption('protectedSessionTimeout', 600, true);

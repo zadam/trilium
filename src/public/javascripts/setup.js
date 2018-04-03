@@ -1,3 +1,5 @@
+import server from './services/server.js';
+
 $("#setup-form").submit(() => {
     const username = $("#username").val();
     const password1 = $("#password1").val();
