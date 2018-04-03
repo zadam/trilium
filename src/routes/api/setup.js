@@ -1,7 +1,7 @@
 "use strict";
 
 const optionService = require('../../services/options');
-const sql = require('../../services/sql');
+const sqlInit = require('../../services/sql_init');
 const utils = require('../../services/utils');
 const myScryptService = require('../../services/my_scrypt');
 const passwordEncryptionService = require('../../services/password_encryption');
@@ -19,7 +19,7 @@ async function setup(req) {
 
     await passwordEncryptionService.setDataKey(password, utils.randomSecureToken(16));
 
-    sql.setDbReadyAsResolved();
+    sqlInit.setDbReadyAsResolved();
 }
 
 module.exports = {

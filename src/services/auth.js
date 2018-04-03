@@ -2,16 +2,17 @@
 
 const migrationService = require('./migration');
 const sql = require('./sql');
+const sqlInit = require('./sql_init');
 const utils = require('./utils');
 
 async function checkAuth(req, res, next) {
-    if (!await sql.isUserInitialized()) {
+    if (!await sqlInit.isUserInitialized()) {
         res.redirect("setup");
     }
     else if (!req.session.loggedIn && !utils.isElectron()) {
         res.redirect("login");
     }
-    else if (!await sql.isDbUpToDate()) {
+    else if (!await sqlInit.isDbUpToDate()) {
         res.redirect("migration");
     }
     else {
@@ -34,7 +35,7 @@ async function checkApiAuthOrElectron(req, res, next) {
     if (!req.session.loggedIn && !utils.isElectron()) {
         res.status(401).send("Not authorized");
     }
-    else if (await sql.isDbUpToDate()) {
+    else if (await sqlInit.isDbUpToDate()) {
         next();
     }
     else {
@@ -46,7 +47,7 @@ async function checkApiAuth(req, res, next) {
     if (!req.session.loggedIn) {
         res.status(401).send("Not authorized");
     }
-    else if (await sql.isDbUpToDate()) {
+    else if (await sqlInit.isDbUpToDate()) {
         next();
     }
     else {
@@ -64,7 +65,7 @@ async function checkApiAuthForMigrationPage(req, res, next) {
 }
 
 async function checkAppNotInitialized(req, res, next) {
-    if (await sql.isUserInitialized()) {
+    if (await sqlInit.isUserInitialized()) {
         res.status(400).send("App already initialized.");
     }
     else {
@@ -78,7 +79,7 @@ async function checkSenderToken(req, res, next) {
     if (await sql.getValue("SELECT COUNT(*) FROM api_tokens WHERE isDeleted = 0 AND token = ?", [token]) === 0) {
         res.status(401).send("Not authorized");
     }
-    else if (await sql.isDbUpToDate()) {
+    else if (await sqlInit.isDbUpToDate()) {
         next();
     }
     else {

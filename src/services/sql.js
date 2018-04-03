@@ -1,80 +1,12 @@
 "use strict";
 
 const log = require('./log');
-const dataDir = require('./data_dir');
-const fs = require('fs');
-const sqlite = require('sqlite');
-const appInfo = require('./app_info');
-const resourceDir = require('./resource_dir');
 const cls = require('./cls');
 
-async function createConnection() {
-    return await sqlite.open(dataDir.DOCUMENT_PATH, {Promise});
-}
+let dbConnection;
 
-const dbConnected = createConnection();
-
-let dbReadyResolve = null;
-const dbReady = new Promise((resolve, reject) => {
-    dbConnected.then(cls.wrap(async db => {
-        await execute("PRAGMA foreign_keys = ON");
-
-        dbReadyResolve = () => {
-            log.info("DB ready.");
-
-            resolve(db);
-        };
-
-        const tableResults = await getRows("SELECT name FROM sqlite_master WHERE type='table' AND name='notes'");
-        if (tableResults.length !== 1) {
-            log.info("Connected to db, but schema doesn't exist. Initializing schema ...");
-
-            const schema = fs.readFileSync(resourceDir.DB_INIT_DIR + '/schema.sql', 'UTF-8');
-            const notesSql = fs.readFileSync(resourceDir.DB_INIT_DIR + '/main_notes.sql', 'UTF-8');
-            const notesTreeSql = fs.readFileSync(resourceDir.DB_INIT_DIR + '/main_branches.sql', 'UTF-8');
-            const imagesSql = fs.readFileSync(resourceDir.DB_INIT_DIR + '/main_images.sql', 'UTF-8');
-            const notesImageSql = fs.readFileSync(resourceDir.DB_INIT_DIR + '/main_note_images.sql', 'UTF-8');
-
-            await doInTransaction(async () => {
-                await executeScript(schema);
-                await executeScript(notesSql);
-                await executeScript(notesTreeSql);
-                await executeScript(imagesSql);
-                await executeScript(notesImageSql);
-
-                const startNoteId = await getValue("SELECT noteId FROM branches WHERE parentNoteId = 'root' AND isDeleted = 0 ORDER BY notePosition");
-
-                await require('./options').initOptions(startNoteId);
-                await require('./sync_table').fillAllSyncRows();
-            });
-
-            log.info("Schema and initial content generated. Waiting for user to enter username/password to finish setup.");
-
-            // we don't resolve dbReady promise because user needs to setup the username and password to initialize
-            // the database
-        }
-        else {
-            if (!await isUserInitialized()) {
-                log.info("Login/password not initialized. DB not ready.");
-
-                return;
-            }
-
-            if (!await isDbUpToDate()) {
-                return;
-            }
-
-            resolve(db);
-        }
-    }))
-    .catch(e => {
-        console.log("Error connecting to DB.", e);
-        process.exit(1);
-    });
-});
-
-function setDbReadyAsResolved() {
-    dbReadyResolve();
+function setDbConnection(connection) {
+    dbConnection = connection;
 }
 
 async function insert(table_name, rec, replace = false) {
@@ -174,10 +106,9 @@ async function executeScript(query) {
 
 async function wrap(func) {
     const thisError = new Error();
-    const db = await dbConnected;
 
     try {
-        return await func(db);
+        return await func(dbConnection);
     }
     catch (e) {
         log.error("Error executing query. Inner exception: " + e.stack + thisError.stack);
@@ -238,27 +169,8 @@ async function doInTransaction(func) {
     return ret;
 }
 
-async function isDbUpToDate() {
-    const dbVersion = parseInt(await getValue("SELECT value FROM options WHERE name = 'db_version'"));
-
-    const upToDate = dbVersion >= appInfo.db_version;
-
-    if (!upToDate) {
-        log.info("App db version is " + appInfo.db_version + ", while db version is " + dbVersion + ". Migration needed.");
-    }
-
-    return upToDate;
-}
-
-async function isUserInitialized() {
-    const username = await getValue("SELECT value FROM options WHERE name = 'username'");
-
-    return !!username;
-}
-
 module.exports = {
-    dbReady,
-    isUserInitialized,
+    setDbConnection,
     insert,
     replace,
     getValue,
@@ -269,7 +181,5 @@ module.exports = {
     getColumn,
     execute,
     executeScript,
-    doInTransaction,
-    setDbReadyAsResolved,
-    isDbUpToDate
+    doInTransaction
 };

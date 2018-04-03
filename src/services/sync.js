@@ -3,6 +3,7 @@
 const log = require('./log');
 const rp = require('request-promise');
 const sql = require('./sql');
+const sqlInit = require('./sql_init');
 const optionService = require('./options');
 const utils = require('./utils');
 const sourceIdService = require('./source_id');
@@ -23,7 +24,7 @@ let syncServerCertificate = null;
 async function sync() {
     try {
         await syncMutexService.doExclusively(async () => {
-            if (!await sql.isDbUpToDate()) {
+            if (!await sqlInit.isDbUpToDate()) {
                 return {
                     success: false,
                     message: "DB not up to date"
@@ -330,7 +331,7 @@ async function syncRequest(syncContext, method, uri, body) {
     }
 }
 
-sql.dbReady.then(() => {
+sqlInit.dbReady.then(() => {
     if (syncSetup.isSyncSetup) {
         log.info("Setting up sync to " + syncSetup.SYNC_SERVER + " with timeout " + syncSetup.SYNC_TIMEOUT);
 

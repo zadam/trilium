@@ -1,5 +1,6 @@
 const backupService = require('./backup');
 const sql = require('./sql');
+const sqlInit = require('./sql_init');
 const optionService = require('./options');
 const fs = require('fs-extra');
 const log = require('./log');
@@ -84,8 +85,8 @@ async function migrate() {
         }
     }
 
-    if (sql.isDbUpToDate()) {
-        sql.setDbReadyAsResolved();
+    if (sqlInit.isDbUpToDate()) {
+        sqlInit.setDbReadyAsResolved();
     }
 
     return migrations;

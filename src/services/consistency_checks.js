@@ -1,6 +1,7 @@
 "use strict";
 
 const sql = require('./sql');
+const sqlInit = require('./sql_init');
 const log = require('./log');
 const messagingService = require('./messaging');
 const syncMutexService = require('./sync_mutex');
@@ -265,7 +266,7 @@ async function runChecks() {
     }
 }
 
-sql.dbReady.then(() => {
+sqlInit.dbReady.then(() => {
     setInterval(cls.wrap(runChecks), 60 * 60 * 1000);
 
     // kickoff backup immediately
