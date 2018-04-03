@@ -175,7 +175,7 @@ async function saveNoteRevision(note) {
     const msSinceDateCreated = now.getTime() - dateUtils.parseDateTime(note.dateCreated).getTime();
 
     if (note.type !== 'file'
-        && labelsMap.disable_versioning !== 'true'
+        && labelsMap.disableVersioning !== 'true'
         && !existingnoteRevisionId
         && msSinceDateCreated >= noteRevisionSnapshotTimeInterval * 1000) {
 

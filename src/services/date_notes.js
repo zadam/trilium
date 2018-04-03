@@ -5,7 +5,7 @@ const noteService = require('./notes');
 const labelService = require('./labels');
 const dateUtils = require('./date_utils');
 
-const CALENDAR_ROOT_LABEL = 'calendar_root';
+const CALENDAR_ROOT_LABEL = 'calendarRoot';
 const YEAR_LABEL = 'year_note';
 const MONTH_LABEL = 'month_note';
 const DATE_LABEL = 'date_note';

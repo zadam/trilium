@@ -38,7 +38,7 @@ async function getTree() {
       FROM
         notes
         LEFT JOIN labels AS hideInAutocomplete ON hideInAutocomplete.noteId = notes.noteId
-                             AND hideInAutocomplete.name = 'hide_in_autocomplete'
+                             AND hideInAutocomplete.name = 'hideInAutocomplete'
                              AND hideInAutocomplete.isDeleted = 0
       WHERE 
         notes.isDeleted = 0`));

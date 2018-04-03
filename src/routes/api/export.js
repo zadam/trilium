@@ -33,7 +33,7 @@ async function exportNoteInner(branchId, directory, pack) {
 
     const metadata = await getMetadata(note);
 
-    if (metadata.labels.find(label => label.name === 'exclude_from_export')) {
+    if (metadata.labels.find(label => label.name === 'excludeFromExport')) {
         return;
     }
 

@@ -16,7 +16,7 @@ async function index(req, res) {
 
 async function getAppCss() {
     let css = '';
-    const notes = labelService.getNotesWithLabel('app_css');
+    const notes = labelService.getNotesWithLabel('appCss');
 
     for (const note of await notes) {
         css += `/* ${note.noteId} */

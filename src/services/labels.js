@@ -5,16 +5,14 @@ const repository = require('./repository');
 const Label = require('../entities/label');
 
 const BUILTIN_LABELS = [
-    'frontend_startup',
-    'backend_startup',
-    'disable_versioning',
-    'calendar_root',
-    'hide_in_autocomplete',
-    'exclude_from_export',
+    'disableVersioning',
+    'calendarRoot',
+    'hideInAutocomplete',
+    'excludeFromExport',
     'run',
-    'manual_transaction_handling',
-    'disable_inclusion',
-    'app_css'
+    'manualTransactionHandling',
+    'disableInclusion',
+    'appCss'
 ];
 
 async function getNoteLabelMap(noteId) {
