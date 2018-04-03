@@ -1,6 +1,6 @@
 const sql = require('./sql');
 const optionService = require('./options');
-const utils = require('./utils');
+const dateUtils = require('./date_utils');
 const syncTableService = require('./sync_table');
 const labelService = require('./labels');
 const repository = require('./repository');
@@ -167,12 +167,12 @@ async function saveNoteRevision(note) {
     const now = new Date();
     const noteRevisionSnapshotTimeInterval = parseInt(await optionService.getOption('note_revision_snapshot_time_interval'));
 
-    const revisionCutoff = utils.dateStr(new Date(now.getTime() - noteRevisionSnapshotTimeInterval * 1000));
+    const revisionCutoff = dateUtils.dateStr(new Date(now.getTime() - noteRevisionSnapshotTimeInterval * 1000));
 
     const existingnoteRevisionId = await sql.getValue(
         "SELECT noteRevisionId FROM note_revisions WHERE noteId = ? AND dateModifiedTo >= ?", [note.noteId, revisionCutoff]);
 
-    const msSinceDateCreated = now.getTime() - utils.parseDateTime(note.dateCreated).getTime();
+    const msSinceDateCreated = now.getTime() - dateUtils.parseDateTime(note.dateCreated).getTime();
 
     if (note.type !== 'file'
         && labelsMap.disable_versioning !== 'true'
@@ -186,7 +186,7 @@ async function saveNoteRevision(note) {
             content: note.content,
             isProtected: 0, // will be fixed in the protectNoteRevisions() call
             dateModifiedFrom: note.dateModified,
-            dateModifiedTo: utils.nowDate()
+            dateModifiedTo: dateUtils.nowDate()
         })).save();
     }
 }

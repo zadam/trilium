@@ -3,7 +3,7 @@
 const sql = require('./sql');
 const noteService = require('./notes');
 const labelService = require('./labels');
-const utils = require('./utils');
+const dateUtils = require('./date_utils');
 
 const CALENDAR_ROOT_LABEL = 'calendar_root';
 const YEAR_LABEL = 'year_note';
@@ -80,7 +80,7 @@ async function getMonthNoteId(dateTimeStr, rootNoteId) {
         monthNoteId = await getNoteStartingWith(yearNoteId, monthNumber);
 
         if (!monthNoteId) {
-            const dateObj = utils.parseDate(dateTimeStr);
+            const dateObj = dateUtils.parseDate(dateTimeStr);
 
             const noteTitle = monthNumber + " - " + MONTHS[dateObj.getMonth()];
 
@@ -109,7 +109,7 @@ async function getDateNoteId(dateTimeStr, rootNoteId = null) {
         dateNoteId = await getNoteStartingWith(monthNoteId, dayNumber);
 
         if (!dateNoteId) {
-            const dateObj = utils.parseDate(dateTimeStr);
+            const dateObj = dateUtils.parseDate(dateTimeStr);
 
             const noteTitle = dayNumber + " - " + DAYS[dateObj.getDay()];
 

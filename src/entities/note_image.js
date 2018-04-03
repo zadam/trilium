@@ -2,7 +2,7 @@
 
 const Entity = require('./entity');
 const repository = require('../services/repository');
-const utils = require('../services/utils');
+const dateUtils = require('../services/date_utils');
 
 class NoteImage extends Entity {
     static get tableName() { return "note_images"; }
@@ -24,10 +24,10 @@ class NoteImage extends Entity {
         }
 
         if (!this.dateCreated) {
-            this.dateCreated = utils.nowDate();
+            this.dateCreated = dateUtils.nowDate();
         }
 
-        this.dateModified = utils.nowDate();
+        this.dateModified = dateUtils.nowDate();
     }
 }
 

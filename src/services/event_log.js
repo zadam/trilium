@@ -1,5 +1,5 @@
 const sql = require('./sql');
-const utils = require('./utils');
+const dateUtils = require('./date_utils');
 const log = require('./log');
 
 async function addEvent(comment) {
@@ -10,7 +10,7 @@ async function addNoteEvent(noteId, comment) {
     await sql.insert('event_log', {
        noteId : noteId,
        comment: comment,
-       dateAdded: utils.nowDate()
+       dateAdded: dateUtils.nowDate()
     });
 
     log.info("Event log for " + noteId + ": " + comment);

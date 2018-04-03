@@ -2,6 +2,7 @@
 
 const options = require('../../services/options');
 const utils = require('../../services/utils');
+const dateUtils = require('../../services/date_utils');
 const sourceIdService = require('../../services/source_id');
 const passwordEncryptionService = require('../../services/password_encryption');
 const protectedSessionService = require('../../services/protected_session');
@@ -10,7 +11,7 @@ const appInfo = require('../../services/app_info');
 async function loginSync(req) {
     const timestampStr = req.body.timestamp;
 
-    const timestamp = utils.parseDateTime(timestampStr);
+    const timestamp = dateUtils.parseDateTime(timestampStr);
 
     const now = new Date();
 

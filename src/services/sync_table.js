@@ -1,6 +1,6 @@
 const sql = require('./sql');
 const sourceIdService = require('./source_id');
-const utils = require('./utils');
+const dateUtils = require('./date_utils');
 const syncSetup = require('./sync_setup');
 const log = require('./log');
 const cls = require('./cls');
@@ -49,7 +49,7 @@ async function addEntitySync(entityName, entityId, sourceId) {
     await sql.replace("sync", {
         entityName: entityName,
         entityId: entityId,
-        syncDate: utils.nowDate(),
+        syncDate: dateUtils.nowDate(),
         sourceId: sourceId || cls.getSourceId() || sourceIdService.getCurrentSourceId()
     });
 
@@ -84,7 +84,7 @@ async function fillSyncRows(entityName, entityKey) {
                 entityName: entityName,
                 entityId: entityId,
                 sourceId: "SYNC_FILL",
-                syncDate: utils.nowDate()
+                syncDate: dateUtils.nowDate()
             });
         }
     }

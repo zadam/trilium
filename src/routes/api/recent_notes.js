@@ -1,7 +1,7 @@
 "use strict";
 
 const repository = require('../../services/repository');
-const utils = require('../../services/utils');
+const dateUtils = require('../../services/date_utils');
 const optionService = require('../../services/options');
 const RecentNote = require('../../entities/recent_note');
 
@@ -27,7 +27,7 @@ async function addRecentNote(req) {
     const recentNote = new RecentNote({
         branchId: branchId,
         notePath: notePath,
-        dateAccessed: utils.nowDate(),
+        dateAccessed: dateUtils.nowDate(),
         isDeleted: 0
     });
 

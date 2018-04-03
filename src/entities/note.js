@@ -3,7 +3,7 @@
 const Entity = require('./entity');
 const protected_session = require('../services/protected_session');
 const repository = require('../services/repository');
-const utils = require('../services/utils');
+const dateUtils = require('../services/date_utils');
 
 class Note extends Entity {
     static get tableName() { return "notes"; }
@@ -146,10 +146,10 @@ class Note extends Entity {
         }
 
         if (!this.dateCreated) {
-            this.dateCreated = utils.nowDate();
+            this.dateCreated = dateUtils.nowDate();
         }
 
-        this.dateModified = utils.nowDate();
+        this.dateModified = dateUtils.nowDate();
     }
 }
 

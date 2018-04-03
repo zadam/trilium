@@ -1,7 +1,7 @@
 "use strict";
 
 const Entity = require('./entity');
-const utils = require('../services/utils');
+const dateUtils = require('../services/date_utils');
 const repository = require('../services/repository');
 
 class Branch extends Entity {
@@ -19,7 +19,7 @@ class Branch extends Entity {
             this.isDeleted = false;
         }
 
-        this.dateModified = utils.nowDate()
+        this.dateModified = dateUtils.nowDate()
     }
 }
 

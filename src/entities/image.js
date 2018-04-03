@@ -1,7 +1,7 @@
 "use strict";
 
 const Entity = require('./entity');
-const utils = require('../services/utils');
+const dateUtils = require('../services/date_utils');
 
 class Image extends Entity {
     static get tableName() { return "images"; }
@@ -15,10 +15,10 @@ class Image extends Entity {
         }
 
         if (!this.dateCreated) {
-            this.dateCreated = utils.nowDate();
+            this.dateCreated = dateUtils.nowDate();
         }
 
-        this.dateModified = utils.nowDate();
+        this.dateModified = dateUtils.nowDate();
     }
 }
 

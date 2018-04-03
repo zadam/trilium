@@ -2,7 +2,7 @@
 
 const Entity = require('./entity');
 const repository = require('../services/repository');
-const utils = require('../services/utils');
+const dateUtils = require('../services/date_utils');
 const sql = require('../services/sql');
 
 class Label extends Entity {
@@ -30,10 +30,10 @@ class Label extends Entity {
         }
 
         if (!this.dateCreated) {
-            this.dateCreated = utils.nowDate();
+            this.dateCreated = dateUtils.nowDate();
         }
 
-        this.dateModified = utils.nowDate();
+        this.dateModified = dateUtils.nowDate();
     }
 }
 

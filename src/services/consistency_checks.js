@@ -4,12 +4,9 @@ const sql = require('./sql');
 const log = require('./log');
 const messagingService = require('./messaging');
 const syncMutexService = require('./sync_mutex');
-const utils = require('./utils');
 const cls = require('./cls');
 
 async function runCheck(query, errorText, errorList) {
-    utils.assertArguments(query, errorText, errorList);
-
     const result = await sql.getColumn(query);
 
     if (result.length > 0) {

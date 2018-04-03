@@ -1,5 +1,6 @@
 const sql = require('./sql');
 const utils = require('./utils');
+const dateUtils = require('./date_utils');
 const syncTableService = require('./sync_table');
 const appInfo = require('./app_info');
 
@@ -29,7 +30,7 @@ async function setOption(name, value) {
     }
 
     await sql.execute("UPDATE options SET value = ?, dateModified = ? WHERE name = ?",
-        [value, utils.nowDate(), name]);
+        [value, dateUtils.nowDate(), name]);
 }
 
 async function createOption(name, value, isSynced) {
@@ -37,7 +38,7 @@ async function createOption(name, value, isSynced) {
         name: name,
         value: value,
         isSynced: isSynced,
-        dateModified: utils.nowDate()
+        dateModified: dateUtils.nowDate()
     });
 
     if (isSynced) {
@@ -59,7 +60,7 @@ async function initOptions(startNotePath) {
     await createOption('start_note_path', startNotePath, false);
     await createOption('protected_session_timeout', 600, true);
     await createOption('note_revision_snapshot_time_interval', 600, true);
-    await createOption('last_backup_date', utils.nowDate(), false);
+    await createOption('last_backup_date', dateUtils.nowDate(), false);
     await createOption('db_version', appInfo.db_version, false);
 
     await createOption('last_synced_pull', appInfo.db_version, false);

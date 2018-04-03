@@ -1,4 +1,5 @@
 const utils = require('./utils');
+const dateUtils = require('./date_utils');
 const log = require('./log');
 const sql = require('./sql');
 const cls = require('./cls');
@@ -6,7 +7,7 @@ const cls = require('./cls');
 async function saveSourceId(sourceId) {
     await sql.insert("source_ids", {
         sourceId: sourceId,
-        dateCreated: utils.nowDate()
+        dateCreated: dateUtils.nowDate()
     });
 
     await refreshSourceIds();

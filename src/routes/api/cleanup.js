@@ -50,8 +50,6 @@ async function cleanupUnusedImages() {
         images.isDeleted = 0
         AND note_images.noteImageId IS NULL`);
 
-    const now = utils.nowDate();
-
     for (const imageId of unusedImageIds) {
         log.info(`Deleting unused image: ${imageId}`);
 

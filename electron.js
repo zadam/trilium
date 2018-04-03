@@ -73,10 +73,10 @@ app.on('ready', () => {
     mainWindow = createMainWindow();
 
     const result = globalShortcut.register('CommandOrControl+Alt+P', async () => {
-        const date_notes = require('./src/services/date_notes');
-        const utils = require('./src/services/utils');
+        const dateNoteService = require('./src/services/date_notes');
+        const dateUtils = require('./src/services/date_utils');
 
-        const parentNoteId = await date_notes.getDateNoteId(utils.nowDate());
+        const parentNoteId = await dateNoteService.getDateNoteId(dateUtils.nowDate());
 
         // window may be hidden / not in focus
         mainWindow.focus();

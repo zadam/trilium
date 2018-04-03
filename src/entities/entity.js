@@ -5,8 +5,6 @@ const repository = require('../services/repository');
 
 class Entity {
     constructor(row = {}) {
-        utils.assertArguments(row);
-
         for (const key in row) {
             this[key] = row[key];
         }

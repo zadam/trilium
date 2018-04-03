@@ -2,6 +2,7 @@ const log = require('./log');
 const noteService = require('./notes');
 const sql = require('./sql');
 const utils = require('./utils');
+const dateUtils = require('./date_utils');
 const labelService = require('./labels');
 const dateNoteService = require('./date_notes');
 const config = require('./config');
@@ -34,8 +35,8 @@ function ScriptApi(startNote, currentNote) {
 
     this.utils = {
         unescapeHtml: utils.unescapeHtml,
-        isoDateTimeStr: utils.dateStr,
-        isoDateStr: date => utils.dateStr(date).substr(0, 10)
+        isoDateTimeStr: dateUtils.dateStr,
+        isoDateStr: date => dateUtils.dateStr(date).substr(0, 10)
     };
 
     this.getInstanceName = () => config.General ? config.General.instanceName : null;

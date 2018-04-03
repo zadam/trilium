@@ -6,7 +6,7 @@ const sql = require('./sql');
 const optionService = require('./options');
 const utils = require('./utils');
 const sourceIdService = require('./source_id');
-const noteService = require('./notes');
+const dateUtils = require('./date_utils');
 const syncUpdateService = require('./sync_update');
 const contentHashService = require('./content_hash');
 const eventLogService = require('./event_log');
@@ -68,7 +68,7 @@ async function sync() {
 }
 
 async function login() {
-    const timestamp = utils.nowDate();
+    const timestamp = dateUtils.nowDate();
 
     const documentSecret = await optionService.getOption('document_secret');
     const hash = utils.hmac(documentSecret, timestamp);

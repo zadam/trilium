@@ -1,7 +1,7 @@
 "use strict";
 
 const dataDir = require('./data_dir');
-const utils = require('./utils');
+const dateUtils = require('./date_utils');
 const fs = require('fs-extra');
 const sqlite = require('sqlite');
 
@@ -10,7 +10,7 @@ async function anonymize() {
         fs.mkdirSync(dataDir.ANONYMIZED_DB_DIR, 0o700);
     }
 
-    const anonymizedFile = dataDir.ANONYMIZED_DB_DIR + "/" + "backup-" + utils.getDateTimeForFile() + ".db";
+    const anonymizedFile = dataDir.ANONYMIZED_DB_DIR + "/" + "backup-" + dateUtils.getDateTimeForFile() + ".db";
 
     fs.copySync(dataDir.DOCUMENT_PATH, anonymizedFile);
 

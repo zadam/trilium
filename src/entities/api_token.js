@@ -1,7 +1,7 @@
 "use strict";
 
 const Entity = require('./entity');
-const utils = require('../services/utils');
+const dateUtils = require('../services/date_utils');
 
 class ApiToken extends Entity {
     static get tableName() { return "api_tokens"; }
@@ -15,7 +15,7 @@ class ApiToken extends Entity {
         }
 
         if (!this.dateCreated) {
-            this.dateCreated = utils.nowDate();
+            this.dateCreated = dateUtils.nowDate();
         }
     }
 }

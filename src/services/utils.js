@@ -16,41 +16,6 @@ function randomSecureToken(bytes = 32) {
     return crypto.randomBytes(bytes).toString('base64');
 }
 
-function nowDate() {
-    return dateStr(new Date());
-}
-
-function localDate() {
-    const date = new Date();
-
-    return date.getFullYear() + "-"
-        + (date.getMonth() < 9 ? "0" : "") + (date.getMonth() + 1) + "-"
-        + (date.getDate() < 10 ? "0" : "") + date.getDate();
-}
-
-function dateStr(date) {
-    return date.toISOString();
-}
-
-/**
- * @param str - needs to be in the ISO 8601 format "YYYY-MM-DDTHH:MM:SS.sssZ" format as outputted by dateStr().
- *              also is assumed to be GMT time (as indicated by the "Z" at the end), *not* local time
- */
-function parseDateTime(str) {
-    try {
-        return new Date(Date.parse(str));
-    }
-    catch (e) {
-        throw new Error("Can't parse date from " + str + ": " + e.stack);
-    }
-}
-
-function parseDate(str) {
-    const datePart = str.substr(0, 10);
-
-    return parseDateTime(datePart + "T12:00:00.000Z");
-}
-
 function toBase64(plainText) {
     return Buffer.from(plainText).toString('base64');
 }
@@ -77,21 +42,9 @@ function isEmptyOrWhitespace(str) {
     return str === null || str.match(/^ *$/) !== null;
 }
 
-function getDateTimeForFile() {
-    return new Date().toISOString().substr(0, 19).replace(/:/g, '');
-}
-
 function sanitizeSql(str) {
     // should be improved or usage eliminated
     return str.replace(/'/g, "\\'");
-}
-
-function assertArguments() {
-    for (const i in arguments) {
-        if (!arguments[i]) {
-            throw new Error(`Argument idx#${i} should not be falsy: ${arguments[i]}`);
-        }
-    }
 }
 
 async function stopWatch(what, func) {
@@ -125,11 +78,6 @@ function toObject(array, fn) {
 module.exports = {
     randomSecureToken,
     randomString,
-    nowDate,
-    localDate,
-    dateStr,
-    parseDate,
-    parseDateTime,
     newEntityId,
     toBase64,
     fromBase64,
@@ -137,9 +85,7 @@ module.exports = {
     isElectron,
     hash,
     isEmptyOrWhitespace,
-    getDateTimeForFile,
     sanitizeSql,
-    assertArguments,
     stopWatch,
     unescapeHtml,
     toObject
