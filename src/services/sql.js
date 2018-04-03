@@ -31,15 +31,15 @@ async function replace(table_name, rec) {
 }
 
 async function beginTransaction() {
-    return await wrap(async db => db.run("BEGIN"));
+    return await execute("BEGIN");
 }
 
 async function commit() {
-    return await wrap(async db => db.run("COMMIT"));
+    return await execute("COMMIT");
 }
 
 async function rollback() {
-    return await wrap(async db => db.run("ROLLBACK"));
+    return await execute("ROLLBACK");
 }
 
 async function getRow(query, params = []) {
@@ -47,7 +47,7 @@ async function getRow(query, params = []) {
 }
 
 async function getRowOrNull(query, params = []) {
-    const all = await wrap(async db => db.all(query, ...params));
+    const all = await getRows(query, params);
 
     return all.length > 0 ? all[0] : null;
 }

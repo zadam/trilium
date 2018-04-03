@@ -51,10 +51,9 @@ async function getTree() {
     });
 
     return {
-        instanceName: config.General ? config.General.instanceName : null,
+        start_note_path: await optionService.getOption('start_note_path'),
         branches: branches,
-        notes: notes,
-        start_note_path: await optionService.getOption('start_note_path')
+        notes: notes
     };
 }
 

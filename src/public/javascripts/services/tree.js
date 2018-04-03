@@ -370,7 +370,6 @@ function getNotePathFromAddress() {
 async function loadTree() {
     const resp = await server.get('tree');
     startNotePath = resp.start_note_path;
-    window.glob.instanceName = resp.instanceName;
 
     if (document.location.hash) {
         startNotePath = getNotePathFromAddress();
