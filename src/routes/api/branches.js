@@ -8,8 +8,8 @@ const notes = require('../../services/notes');
 const repository = require('../../services/repository');
 
 /**
- * Code in this file deals with moving and cloning note tree rows. Relationship between note and parent note is unique
- * for not deleted note trees. There may be multiple deleted note-parent note relationships.
+ * Code in this file deals with moving and cloning branches. Relationship between note and parent note is unique
+ * for not deleted branches. There may be multiple deleted note-parent note relationships.
  */
 
 async function moveBranchToParent(req) {
@@ -49,7 +49,7 @@ async function moveBranchBeforeNote(req) {
     }
 
     // we don't change dateModified so other changes are prioritized in case of conflict
-    // also we would have to sync all those modified note trees otherwise hash checks would fail
+    // also we would have to sync all those modified branches otherwise hash checks would fail
     await sql.execute("UPDATE branches SET notePosition = notePosition + 1 WHERE parentNoteId = ? AND notePosition >= ? AND isDeleted = 0",
         [beforeNote.parentNoteId, beforeNote.notePosition]);
 
@@ -77,7 +77,7 @@ async function moveBranchAfterNote(req) {
     }
 
     // we don't change dateModified so other changes are prioritized in case of conflict
-    // also we would have to sync all those modified note trees otherwise hash checks would fail
+    // also we would have to sync all those modified branches otherwise hash checks would fail
     await sql.execute("UPDATE branches SET notePosition = notePosition + 1 WHERE parentNoteId = ? AND notePosition > ? AND isDeleted = 0",
         [afterNote.parentNoteId, afterNote.notePosition]);
 

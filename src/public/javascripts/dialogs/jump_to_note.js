@@ -19,7 +19,7 @@ async function showDialog() {
 
     await $autoComplete.autocomplete({
         source: await utils.stopWatch("building autocomplete", autocompleteService.getAutocompleteItems),
-        minLength: 0
+        minLength: 1
     });
 }
 

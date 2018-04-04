@@ -110,17 +110,17 @@ async function importNotes(files, parentNoteId) {
             file.data = file.data.toString("UTF-8");
         }
 
-        const noteId = await noteService.createNote(parentNoteId, file.meta.title, file.data, {
+        const {note} = await noteService.createNote(parentNoteId, file.meta.title, file.data, {
             type: file.meta.type,
             mime: file.meta.mime
         });
 
         for (const label of file.meta.labels) {
-            await labelService.createLabel(noteId, label.name, label.value);
+            await labelService.createLabel(note.noteId, label.name, label.value);
         }
 
         if (file.children.length > 0) {
-            await importNotes(file.children, noteId);
+            await importNotes(file.children, note.noteId);
         }
     }
 }

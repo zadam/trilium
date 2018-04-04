@@ -105,7 +105,7 @@ async function runAllChecks() {
             LEFT JOIN notes USING(noteId) 
           WHERE 
             notes.noteId IS NULL`,
-        "Missing notes records for following note tree ID > note ID", errorList);
+        "Missing notes records for following branch ID > note ID", errorList);
 
     await runCheck(`
           SELECT 
@@ -116,7 +116,7 @@ async function runAllChecks() {
           WHERE 
             notes.isDeleted = 1 
             AND branches.isDeleted = 0`,
-        "Note tree is not deleted even though main note is deleted for following note tree IDs", errorList);
+        "Note tree is not deleted even though main note is deleted for following branch IDs", errorList);
 
     await runCheck(`
           SELECT 
@@ -128,7 +128,7 @@ async function runAllChecks() {
             AND child.parentNoteId != 'root'
             AND (SELECT COUNT(*) FROM branches AS parent WHERE parent.noteId = child.parentNoteId 
                                                                  AND parent.isDeleted = 0) = 0`,
-        "All parent note trees are deleted but child note tree is not for these child note tree IDs", errorList);
+        "All parent branches are deleted but child note tree is not for these child note tree IDs", errorList);
 
     // we do extra JOIN to eliminate orphan notes without note tree (which are reported separately)
     await runCheck(`
@@ -140,7 +140,7 @@ async function runAllChecks() {
           WHERE
             (SELECT COUNT(*) FROM branches WHERE notes.noteId = branches.noteId AND branches.isDeleted = 0) = 0
             AND notes.isDeleted = 0
-    `, 'No undeleted note trees for note IDs', errorList);
+    `, 'No undeleted branches for note IDs', errorList);
 
     await runCheck(`
           SELECT 

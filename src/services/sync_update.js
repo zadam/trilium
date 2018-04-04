@@ -37,7 +37,7 @@ async function updateBranch(entity, sourceId) {
 
             await syncTableService.addBranchSync(entity.branchId, sourceId);
 
-            log.info("Update/sync note tree " + entity.branchId);
+            log.info("Update/sync branch " + entity.branchId);
         }
     });
 }

@@ -83,7 +83,7 @@ async function createNote(parentNoteId, title, content = "", extraOptions = {}) 
         noteData.mime = "application/json";
     }
 
-    const {note} = await createNewNote(parentNoteId, noteData);
+    const {note, branch} = await createNewNote(parentNoteId, noteData);
 
     if (extraOptions.labels) {
         for (const labelName in extraOptions.labels) {
@@ -91,7 +91,7 @@ async function createNote(parentNoteId, title, content = "", extraOptions = {}) 
         }
     }
 
-    return note.noteId;
+    return {note, branch};
 }
 
 async function protectNoteRecursively(note, protect) {

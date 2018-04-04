@@ -11,6 +11,9 @@ async function createConnection() {
     return await sqlite.open(dataDir.DOCUMENT_PATH, {Promise});
 }
 
+let schemaReadyResolve = null;
+const schemaReady = new Promise((resolve, reject) => schemaReadyResolve = resolve);
+
 let dbReadyResolve = null;
 const dbReady = new Promise((resolve, reject) => {
     cls.init(async () => {
@@ -29,19 +32,20 @@ const dbReady = new Promise((resolve, reject) => {
         if (tableResults.length !== 1) {
             await createInitialDatabase();
         }
-        else {
-            if (!await isUserInitialized()) {
-                log.info("Login/password not initialized. DB not ready.");
 
-                return;
-            }
+        schemaReadyResolve();
 
-            if (!await isDbUpToDate()) {
-                return;
-            }
+        if (!await isUserInitialized()) {
+            log.info("Login/password not initialized. DB not ready.");
 
-            resolve(db);
+            return;
         }
+
+        if (!await isDbUpToDate()) {
+            return;
+        }
+
+        resolve(db);
     });
 });
 
@@ -97,6 +101,7 @@ async function isUserInitialized() {
 
 module.exports = {
     dbReady,
+    schemaReady,
     isUserInitialized,
     setDbReadyAsResolved,
     isDbUpToDate

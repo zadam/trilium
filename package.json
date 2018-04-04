@@ -66,6 +66,7 @@
     "electron-compile": "^6.4.2",
     "electron-packager": "^11.1.0",
     "electron-prebuilt-compile": "2.0.0-beta.5",
+    "lorem-ipsum": "^1.0.4",
     "tape": "^4.9.0",
     "xo": "^0.18.0"
   },

@@ -46,6 +46,10 @@ async function getAutocompleteItems(parentNoteId, notePath, titlePath) {
         }
     }
 
+    if (parentNoteId === 'root') {
+        console.log(`Generated ${autocompleteItems.length} autocomplete items`);
+    }
+
     return autocompleteItems;
 }
 
