@@ -55,7 +55,7 @@ function apiResultHandler(res, result) {
         res.status(204).send();
     }
     else {
-        res.status(200).send(result);
+        res.send(result);
     }
 }
 
