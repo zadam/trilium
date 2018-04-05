@@ -18,7 +18,7 @@ async function run(req) {
     return { executionResult: result };
 }
 
-async function getStartupBundles(req) {
+async function getStartupBundles() {
     const notes = await labelService.getNotesWithLabel("run", "frontendStartup");
 
     const bundles = [];

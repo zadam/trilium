@@ -1,5 +1,6 @@
 import treeService from './tree.js';
 import server from './server.js';
+import utils from './utils.js';
 
 function ScriptApi(startNote, currentNote) {
     const $pluginButtons = $("#plugin-buttons");
@@ -52,7 +53,8 @@ function ScriptApi(startNote, currentNote) {
         addButtonToToolbar,
         activateNote,
         getInstanceName: () => window.glob.instanceName,
-        runOnServer
+        runOnServer,
+        formatDateISO: utils.formatDateISO
     }
 }
 

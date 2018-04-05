@@ -89,4 +89,4 @@ entrypoints.registerEntrypoints();
 
 tooltip.setupTooltip();
 
-$(document).ready(bundle.executeStartupBundles);
+bundle.executeStartupBundles();
