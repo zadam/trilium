@@ -19,8 +19,8 @@ async function runNotesWithLabel(runAttrValue) {
     }
 }
 
-setTimeout(() => cls.wrap(() => runNotesWithLabel('backendStartup')), 10 * 1000);
+setTimeout(cls.wrap(() => runNotesWithLabel('backendStartup')), 10 * 1000);
 
-setInterval(() => cls.wrap(() => runNotesWithLabel('hourly')), 3600 * 1000);
+setInterval(cls.wrap(() => runNotesWithLabel('hourly')), 3600 * 1000);
 
-setInterval(() => cls.wrap(() => runNotesWithLabel('daily'), 24 * 3600 * 1000));
+setInterval(cls.wrap(() => runNotesWithLabel('daily')), 24 * 3600 * 1000);

@@ -26,8 +26,8 @@ async function uploadFile(req) {
         mime: file.mimetype
     });
 
-    await labelService.createLabel(note.noteId, "original_file_name", originalName);
-    await labelService.createLabel(note.noteId, "file_size", size);
+    await labelService.createLabel(note.noteId, "originalFileName", originalName);
+    await labelService.createLabel(note.noteId, "fileSize", size);
 
     return {
         noteId: note.noteId
@@ -48,7 +48,7 @@ async function downloadFile(req, res) {
     }
 
     const labelMap = await note.getLabelMap();
-    const fileName = labelMap.original_file_name ? labelMap.original_file_name : note.title;
+    const fileName = labelMap.originalFileName || note.title;
 
     res.setHeader('Content-Disposition', 'file; filename="' + fileName + '"');
     res.setHeader('Content-Type', note.mime);

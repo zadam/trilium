@@ -6,9 +6,9 @@ const labelService = require('./labels');
 const dateUtils = require('./date_utils');
 
 const CALENDAR_ROOT_LABEL = 'calendarRoot';
-const YEAR_LABEL = 'year_note';
-const MONTH_LABEL = 'month_note';
-const DATE_LABEL = 'date_note';
+const YEAR_LABEL = 'yearNote';
+const MONTH_LABEL = 'monthNote';
+const DATE_LABEL = 'dateNote';
 
 const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];

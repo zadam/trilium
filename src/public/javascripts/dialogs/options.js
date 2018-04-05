@@ -142,11 +142,11 @@ addTabHandler((async function () {
 
     const appInfo = await server.get('app-info');
 
-    $appVersion.html(appInfo.app_version);
+    $appVersion.html(appInfo.appVersion);
     $dbVersion.html(appInfo.dbVersion);
-    $buildDate.html(appInfo.build_date);
-    $buildRevision.html(appInfo.build_revision);
-    $buildRevision.attr('href', 'https://github.com/zadam/trilium/commit/' + appInfo.build_revision);
+    $buildDate.html(appInfo.buildDate);
+    $buildRevision.html(appInfo.buildRevision);
+    $buildRevision.attr('href', 'https://github.com/zadam/trilium/commit/' + appInfo.buildRevision);
 
     return {};
 })());

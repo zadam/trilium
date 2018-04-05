@@ -1,2 +1,2 @@
-UPDATE labels SET name = 'frontendStartup' WHERE name = 'frontend_startup';
-UPDATE labels SET name = 'backendStartup' WHERE name = 'backend_startup';
+UPDATE labels SET value = 'frontendStartup' WHERE value = 'frontend_startup';
+UPDATE labels SET value = 'backendStartup' WHERE value = 'backend_startup';

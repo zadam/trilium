@@ -54,7 +54,10 @@ async function protectBranch(req) {
 }
 
 async function setNoteTypeMime(req) {
-    const [noteId, type, mime] = req.params;
+    // can't use [] destructuring because req.params is not iterable
+    const noteId = req.params[0];
+    const type = req.params[1];
+    const mime = req.params[2];
 
     const note = await repository.getNote(noteId);
     note.type = type;
