@@ -39,7 +39,7 @@ async function getNotesWithLabel(name, value) {
 }
 
 async function getNoteWithLabel(name, value) {
-    const notes = getNotesWithLabel(name, value);
+    const notes = await getNotesWithLabel(name, value);
 
     return notes.length > 0 ? notes[0] : null;
 }

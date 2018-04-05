@@ -59,7 +59,7 @@ function ScriptApi(startNote, currentNote) {
     this.getRootCalendarNoteId = dateNoteService.getRootCalendarNoteId;
     this.getDateNoteId = dateNoteService.getDateNoteId;
 
-    this.transaction = sql.doInTransaction;
+    this.transactional = sql.doInTransaction;
 }
 
 module.exports = ScriptContext;
