@@ -54,7 +54,9 @@ function ScriptApi(startNote, currentNote) {
         activateNote,
         getInstanceName: () => window.glob.instanceName,
         runOnServer,
-        formatDateISO: utils.formatDateISO
+        formatDateISO: utils.formatDateISO,
+        showMessage: utils.showMessage,
+        showError: utils.showError
     }
 }
 
