@@ -1,20 +1,19 @@
 import server from './services/server.js';
 
-$(document).ready(() => {
-    server.get('migration').then(result => {
-        const appDbVersion = result.app_dbVersion;
-        const dbVersion = result.dbVersion;
+$(document).ready(async () => {
+    const {appDbVersion, dbVersion} = await server.get('migration');
 
-        if (appDbVersion === dbVersion) {
-            $("#up-to-date").show();
-        }
-        else {
-            $("#need-to-migrate").show();
+    console.log("HI", {appDbVersion, dbVersion});
 
-            $("#app-db-version").html(appDbVersion);
-            $("#db-version").html(dbVersion);
-        }
-    });
+    if (appDbVersion === dbVersion) {
+        $("#up-to-date").show();
+    }
+    else {
+        $("#need-to-migrate").show();
+
+        $("#app-db-version").html(appDbVersion);
+        $("#db-version").html(dbVersion);
+    }
 });
 
 $("#run-migration").click(async () => {
@@ -37,4 +36,11 @@ $("#run-migration").click(async () => {
 
         $("#migration-table").append(row);
     }
+});
+
+// copy of this shortcut to be able to debug migration problems
+$(document).bind('keydown', 'ctrl+shift+i', () => {
+    require('electron').remote.getCurrentWindow().toggleDevTools();
+
+    return false;
 });

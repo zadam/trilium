@@ -19,6 +19,7 @@ function init(app) {
 
         res.status = function(statusCode) {
             res.statusCode = statusCode;
+            return res;
         };
 
         res.send = function(obj) {

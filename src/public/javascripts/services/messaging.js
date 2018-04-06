@@ -100,7 +100,7 @@ setTimeout(() => {
             lastSyncId: lastSyncId
         }));
     }, 1000);
-}, 1000);
+}, 0);
 
 export default {
     logError,

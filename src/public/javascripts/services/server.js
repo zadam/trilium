@@ -85,19 +85,17 @@ async function ajax(url, method, data) {
     });
 }
 
-setTimeout(() => {
-    if (utils.isElectron()) {
-        const ipc = require('electron').ipcRenderer;
+if (utils.isElectron()) {
+    const ipc = require('electron').ipcRenderer;
 
-        ipc.on('server-response', (event, arg) => {
-            console.log(utils.now(), "Response #" + arg.requestId + ": " + arg.statusCode);
+    ipc.on('server-response', (event, arg) => {
+        console.log(utils.now(), "Response #" + arg.requestId + ": " + arg.statusCode);
 
-            reqResolves[arg.requestId](arg.body);
+        reqResolves[arg.requestId](arg.body);
 
-            delete reqResolves[arg.requestId];
-        });
-    }
-}, 100);
+        delete reqResolves[arg.requestId];
+    });
+}
 
 export default {
     get,
