@@ -158,6 +158,7 @@ function register(app) {
     apiRoute(GET, '/api/sync/labels/:labelId', syncApiRoute.getLabel);
     apiRoute(GET, '/api/sync/api_tokens/:apiTokenId', syncApiRoute.getApiToken);
     apiRoute(PUT, '/api/sync/notes', syncApiRoute.updateNote);
+    apiRoute(PUT, '/api/sync/branches', syncApiRoute.updateBranch);
     apiRoute(PUT, '/api/sync/note_revisions', syncApiRoute.updateNoteRevision);
     apiRoute(PUT, '/api/sync/note_reordering', syncApiRoute.updateNoteReordering);
     apiRoute(PUT, '/api/sync/options', syncApiRoute.updateOption);
