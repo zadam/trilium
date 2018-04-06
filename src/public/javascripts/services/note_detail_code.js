@@ -67,13 +67,13 @@ async function executeCurrentNote() {
         const currentNote = noteDetailService.getCurrentNote();
 
         if (currentNote.mime.endsWith("env=frontend")) {
-            const bundle = await server.get('script/bundle/' + getCurrentNoteId());
+            const bundle = await server.get('script/bundle/' + noteDetailService.getCurrentNoteId());
 
             bundleService.executeBundle(bundle);
         }
 
         if (currentNote.mime.endsWith("env=backend")) {
-            await server.post('script/run/' + getCurrentNoteId());
+            await server.post('script/run/' + noteDetailService.getCurrentNoteId());
         }
 
         infoService.showMessage("Note executed");
