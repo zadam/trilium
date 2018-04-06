@@ -8,6 +8,7 @@ import treeUtils from './tree_utils.js';
 import branchPrefixDialog from '../dialogs/branch_prefix.js';
 import infoService from "./info.js";
 import treeCache from "./tree_cache.js";
+import syncService from "./sync.js";
 
 const $tree = $("#tree");
 

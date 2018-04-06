@@ -1,4 +1,4 @@
-import utils from './utils.js';
+import server from './server.js';
 import infoService from "./info.js";
 
 async function syncNow() {
@@ -19,7 +19,7 @@ async function syncNow() {
 $("#sync-now-button").click(syncNow);
 
 async function forceNoteSync(noteId) {
-    const result = await server.post('sync/force-note-sync/' + noteId);
+    await server.post('sync/force-note-sync/' + noteId);
 
     infoService.showMessage("Note added to sync queue.");
 }
