@@ -40,15 +40,15 @@ const cls = require('../services/cls');
 const sql = require('../services/sql');
 const protectedSessionService = require('../services/protected_session');
 
-function apiResultHandler(res, result) {
+function apiResultHandler(req, res, result) {
     // if it's an array and first element is integer then we consider this to be [statusCode, response] format
     if (Array.isArray(result) && result.length > 0 && Number.isInteger(result[0])) {
         const [statusCode, response] = result;
 
         res.status(statusCode).send(response);
 
-        if (statusCode !== 200) {
-            log.info(`${method} ${path} returned ${statusCode} with response ${JSON.stringify(response)}`);
+        if (statusCode !== 200 && statusCode !== 201 && statusCode !== 204) {
+            log.info(`${req.method} ${req.originalUrl} returned ${statusCode} with response ${JSON.stringify(response)}`);
         }
     }
     else if (result === undefined) {
@@ -76,7 +76,7 @@ function route(method, path, middleware, routeHandler, resultHandler) {
             });
 
             if (resultHandler) {
-                resultHandler(res, result);
+                resultHandler(req, res, result);
             }
         }
         catch (e) {
