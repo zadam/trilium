@@ -104,7 +104,7 @@ const contextMenuOptions = {
     ],
     beforeOpen: async (event, ui) => {
         const node = $.ui.fancytree.getNode(ui.target);
-        const branch = await treeCache.getBranch(branchId);
+        const branch = await treeCache.getBranch(node.data.branchId);
         const note = await treeCache.getNote(node.data.noteId);
         const parentNote = await treeCache.getNote(branch.parentNoteId);
 

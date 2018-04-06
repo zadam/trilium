@@ -55,7 +55,7 @@ async function forceNoteSync(req) {
     syncService.sync();
 }
 
-async function getChanged() {
+async function getChanged(req) {
     const lastSyncId = parseInt(req.query.lastSyncId);
 
     return await sql.getRows("SELECT * FROM sync WHERE id > ?", [lastSyncId]);
