@@ -15,12 +15,12 @@ const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Satur
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
 async function createNote(parentNoteId, noteTitle, noteText) {
-    return await noteService.createNewNote(parentNoteId, {
+    return (await noteService.createNewNote(parentNoteId, {
         title: noteTitle,
         content: noteText,
         target: 'into',
         isProtected: false
-    });
+    })).note;
 }
 
 async function getNoteStartingWith(parentNoteId, startsWith) {
