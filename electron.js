@@ -76,12 +76,12 @@ app.on('ready', () => {
         const dateNoteService = require('./src/services/date_notes');
         const dateUtils = require('./src/services/date_utils');
 
-        const parentNoteId = await dateNoteService.getDateNote(dateUtils.nowDate());
+        const parentNote = await dateNoteService.getDateNote(dateUtils.nowDate());
 
         // window may be hidden / not in focus
         mainWindow.focus();
 
-        mainWindow.webContents.send('create-day-sub-note', parentNoteId);
+        mainWindow.webContents.send('create-day-sub-note', parentNote.noteId);
     });
 
     if (!result) {

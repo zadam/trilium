@@ -57,7 +57,8 @@ function ScriptApi(startNote, currentNote) {
         formatDateISO: utils.formatDateISO,
         parseDate: utils.parseDate,
         showMessage: utils.showMessage,
-        showError: utils.showError
+        showError: utils.showError,
+        reloadTree: treeService.reload
     }
 }
 

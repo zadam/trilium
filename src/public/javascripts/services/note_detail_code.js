@@ -1,4 +1,3 @@
-import utils from "./utils.js";
 import libraryLoader from "./library_loader.js";
 import bundleService from "./bundle.js";
 import infoService from "./info.js";
@@ -11,15 +10,15 @@ const $noteDetailCode = $('#note-detail-code');
 const $executeScriptButton = $("#execute-script-button");
 
 async function show() {
-    if (!codeEditor) {
-        await libraryLoader.requireLibrary(libraryLoader.CODE_MIRROR);
+    await libraryLoader.requireLibrary(libraryLoader.CODE_MIRROR);
 
+    if (!codeEditor) {
         CodeMirror.keyMap.default["Shift-Tab"] = "indentLess";
         CodeMirror.keyMap.default["Tab"] = "indentMore";
 
         CodeMirror.modeURL = 'libraries/codemirror/mode/%N/%N.js';
 
-        codeEditor = CodeMirror($("#note-detail-code")[0], {
+        codeEditor = CodeMirror($noteDetailCode[0], {
             value: "",
             viewportMargin: Infinity,
             indentUnit: 4,
@@ -38,7 +37,7 @@ async function show() {
 
     const currentNote = noteDetailService.getCurrentNote();
 
-    // this needs to happen after the element is shown, otherwise the editor won't be refresheds
+    // this needs to happen after the element is shown, otherwise the editor won't be refreshed
     codeEditor.setValue(currentNote.content);
 
     const info = CodeMirror.findModeByMIME(currentNote.mime);

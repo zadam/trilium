@@ -32,18 +32,19 @@ async function requireLibrary(library) {
     }
 }
 
-const dynamicallyLoadedScripts = [];
+// we save the promises in case of the same script being required concurrently multiple times
+const loadedScriptPromises = {};
 
 async function requireScript(url) {
-    if (!dynamicallyLoadedScripts.includes(url)) {
-        dynamicallyLoadedScripts.push(url);
-
-        return await $.ajax({
+    if (!loadedScriptPromises[url]) {
+        loadedScriptPromises[url] = $.ajax({
             url: url,
             dataType: "script",
             cache: true
-        })
+        });
     }
+
+    await loadedScriptPromises[url];
 }
 
 async function requireCss(url) {
