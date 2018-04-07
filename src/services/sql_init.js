@@ -58,7 +58,7 @@ async function createInitialDatabase() {
     const imagesSql = fs.readFileSync(resourceDir.DB_INIT_DIR + '/main_images.sql', 'UTF-8');
     const notesImageSql = fs.readFileSync(resourceDir.DB_INIT_DIR + '/main_note_images.sql', 'UTF-8');
 
-    await sql.doInTransaction(async () => {
+    await sql.transactional(async () => {
         await sql.executeScript(schema);
         await sql.executeScript(notesSql);
         await sql.executeScript(notesTreeSql);

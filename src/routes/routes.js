@@ -70,7 +70,7 @@ function route(method, path, middleware, routeHandler, resultHandler) {
                 cls.namespace.set('sourceId', req.headers.source_id);
                 protectedSessionService.setProtectedSessionId(req);
 
-                return await sql.doInTransaction(async () => {
+                return await sql.transactional(async () => {
                     return await routeHandler(req, res, next);
                 });
             });

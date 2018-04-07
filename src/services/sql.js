@@ -122,7 +122,7 @@ async function wrap(func) {
 let transactionActive = false;
 let transactionPromise = null;
 
-async function doInTransaction(func) {
+async function transactional(func) {
     if (cls.namespace.get('isInTransaction')) {
         return await func();
     }
@@ -181,5 +181,5 @@ module.exports = {
     getColumn,
     execute,
     executeScript,
-    doInTransaction
+    transactional
 };

@@ -27,7 +27,7 @@ async function executeBundle(bundle, startNote) {
         return await execute(ctx, script, '');
     }
     else {
-        return await sql.doInTransaction(async () => execute(ctx, script, ''));
+        return await sql.transactional(async () => execute(ctx, script, ''));
     }
 }
 

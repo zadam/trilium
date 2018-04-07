@@ -15,7 +15,7 @@ async function updateNote(entity, sourceId) {
     const origNote = await sql.getRow("SELECT * FROM notes WHERE noteId = ?", [entity.noteId]);
 
     if (!origNote || origNote.dateModified <= entity.dateModified) {
-        await sql.doInTransaction(async () => {
+        await sql.transactional(async () => {
             await sql.replace("notes", entity);
 
             await syncTableService.addNoteSync(entity.noteId, sourceId);
@@ -29,7 +29,7 @@ async function updateNote(entity, sourceId) {
 async function updateBranch(entity, sourceId) {
     const orig = await sql.getRowOrNull("SELECT * FROM branches WHERE branchId = ?", [entity.branchId]);
 
-    await sql.doInTransaction(async () => {
+    await sql.transactional(async () => {
         if (orig === null || orig.dateModified < entity.dateModified) {
             delete entity.isExpanded;
 
@@ -45,7 +45,7 @@ async function updateBranch(entity, sourceId) {
 async function updateNoteRevision(entity, sourceId) {
     const orig = await sql.getRowOrNull("SELECT * FROM note_revisions WHERE noteRevisionId = ?", [entity.noteRevisionId]);
 
-    await sql.doInTransaction(async () => {
+    await sql.transactional(async () => {
         // we update note revision even if date modified to is the same because the only thing which might have changed
         // is the protected status (and correnspondingly title and content) which doesn't affect the dateModifiedTo
         if (orig === null || orig.dateModifiedTo <= entity.dateModifiedTo) {
@@ -59,7 +59,7 @@ async function updateNoteRevision(entity, sourceId) {
 }
 
 async function updateNoteReordering(entity, sourceId) {
-    await sql.doInTransaction(async () => {
+    await sql.transactional(async () => {
         Object.keys(entity.ordering).forEach(async key => {
             await sql.execute("UPDATE branches SET notePosition = ? WHERE branchId = ?", [entity.ordering[key], key]);
         });
@@ -75,7 +75,7 @@ async function updateOptions(entity, sourceId) {
         return;
     }
 
-    await sql.doInTransaction(async () => {
+    await sql.transactional(async () => {
         if (orig === null || orig.dateModified < entity.dateModified) {
             await sql.replace('options', entity);
 
@@ -90,7 +90,7 @@ async function updateRecentNotes(entity, sourceId) {
     const orig = await sql.getRowOrNull("SELECT * FROM recent_notes WHERE branchId = ?", [entity.branchId]);
 
     if (orig === null || orig.dateAccessed < entity.dateAccessed) {
-        await sql.doInTransaction(async () => {
+        await sql.transactional(async () => {
             await sql.replace('recent_notes', entity);
 
             await syncTableService.addRecentNoteSync(entity.branchId, sourceId);
@@ -106,7 +106,7 @@ async function updateImage(entity, sourceId) {
     const origImage = await sql.getRow("SELECT * FROM images WHERE imageId = ?", [entity.imageId]);
 
     if (!origImage || origImage.dateModified <= entity.dateModified) {
-        await sql.doInTransaction(async () => {
+        await sql.transactional(async () => {
             await sql.replace("images", entity);
 
             await syncTableService.addImageSync(entity.imageId, sourceId);
@@ -120,7 +120,7 @@ async function updateNoteImage(entity, sourceId) {
     const origNoteImage = await sql.getRow("SELECT * FROM note_images WHERE noteImageId = ?", [entity.noteImageId]);
 
     if (!origNoteImage || origNoteImage.dateModified <= entity.dateModified) {
-        await sql.doInTransaction(async () => {
+        await sql.transactional(async () => {
             await sql.replace("note_images", entity);
 
             await syncTableService.addNoteImageSync(entity.noteImageId, sourceId);
@@ -134,7 +134,7 @@ async function updateLabel(entity, sourceId) {
     const origLabel = await sql.getRow("SELECT * FROM labels WHERE labelId = ?", [entity.labelId]);
 
     if (!origLabel || origLabel.dateModified <= entity.dateModified) {
-        await sql.doInTransaction(async () => {
+        await sql.transactional(async () => {
             await sql.replace("labels", entity);
 
             await syncTableService.addLabelSync(entity.labelId, sourceId);
@@ -148,7 +148,7 @@ async function updateApiToken(entity, sourceId) {
     const apiTokenId = await sql.getRow("SELECT * FROM api_tokens WHERE apiTokenId = ?", [entity.apiTokenId]);
 
     if (!apiTokenId) {
-        await sql.doInTransaction(async () => {
+        await sql.transactional(async () => {
             await sql.replace("api_tokens", entity);
 
             await syncTableService.addApiTokenSync(entity.apiTokenId, sourceId);

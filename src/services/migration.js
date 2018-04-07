@@ -45,7 +45,7 @@ async function migrate() {
             // needs to happen outside of the transaction (otherwise it's a NO-OP)
             await sql.execute("PRAGMA foreign_keys = OFF");
 
-            await sql.doInTransaction(async () => {
+            await sql.transactional(async () => {
                 if (mig.type === 'sql') {
                     const migrationSql = fs.readFileSync(resourceDir.MIGRATIONS_DIR + "/" + mig.file).toString('utf8');
 

@@ -56,10 +56,10 @@ function ScriptApi(startNote, currentNote) {
 
     this.log = message => log.info(`Script ${currentNote.noteId}: ${message}`);
 
-    this.getRootCalendarNoteId = dateNoteService.getRootCalendarNoteId;
-    this.getDateNoteId = dateNoteService.getDateNoteId;
+    this.getRootCalendarNote = dateNoteService.getRootCalendarNote;
+    this.getDateNote = dateNoteService.getDateNote;
 
-    this.transactional = sql.doInTransaction;
+    this.transactional = sql.transactional;
 }
 
 module.exports = ScriptContext;

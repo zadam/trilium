@@ -17,7 +17,7 @@ async function changePassword(currentPassword, newPassword) {
     const newPasswordVerificationKey = utils.toBase64(await myScryptService.getVerificationHash(newPassword));
     const decryptedDataKey = await passwordEncryptionService.getDataKey(currentPassword);
 
-    await sql.doInTransaction(async () => {
+    await sql.transactional(async () => {
         await passwordEncryptionService.setDataKey(newPassword, decryptedDataKey);
 
         await optionService.setOption('passwordVerificationHash', newPasswordVerificationKey);

@@ -1,6 +1,5 @@
 "use strict";
 
-const sql = require('./sql');
 const repository = require('./repository');
 const Label = require('../entities/label');
 
@@ -14,14 +13,6 @@ const BUILTIN_LABELS = [
     'disableInclusion',
     'appCss'
 ];
-
-async function getNoteIdWithLabel(name, value) {
-    return await sql.getValue(`SELECT notes.noteId FROM notes JOIN labels USING(noteId) 
-          WHERE notes.isDeleted = 0
-                AND labels.isDeleted = 0
-                AND labels.name = ? 
-                AND labels.value = ?`, [name, value]);
-}
 
 async function getNotesWithLabel(name, value) {
     let notes;
@@ -44,11 +35,6 @@ async function getNoteWithLabel(name, value) {
     return notes.length > 0 ? notes[0] : null;
 }
 
-async function getNoteIdsWithLabel(name) {
-    return await sql.getColumn(`SELECT DISTINCT notes.noteId FROM notes JOIN labels USING(noteId) 
-          WHERE notes.isDeleted = 0 AND labels.isDeleted = 0 AND labels.name = ? AND labels.isDeleted = 0`, [name]);
-}
-
 async function createLabel(noteId, name, value = "") {
     return await new Label({
         noteId: noteId,
@@ -58,10 +44,8 @@ async function createLabel(noteId, name, value = "") {
 }
 
 module.exports = {
-    getNoteIdWithLabel,
     getNotesWithLabel,
     getNoteWithLabel,
-    getNoteIdsWithLabel,
     createLabel,
     BUILTIN_LABELS
 };

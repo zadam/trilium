@@ -4,6 +4,7 @@ const sql = require('./sql');
 const noteService = require('./notes');
 const labelService = require('./labels');
 const dateUtils = require('./date_utils');
+const repository = require('./repository');
 
 const CALENDAR_ROOT_LABEL = 'calendarRoot';
 const YEAR_LABEL = 'yearNote';
@@ -14,117 +15,112 @@ const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Satur
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
 async function createNote(parentNoteId, noteTitle, noteText) {
-    const {note} = await noteService.createNewNote(parentNoteId, {
+    return await noteService.createNewNote(parentNoteId, {
         title: noteTitle,
         content: noteText,
         target: 'into',
         isProtected: false
     });
-
-    return note.noteId;
 }
 
 async function getNoteStartingWith(parentNoteId, startsWith) {
-    return await sql.getValue(`SELECT noteId FROM notes JOIN branches USING(noteId) 
+    return await repository.getEntity(`SELECT notes.* FROM notes JOIN branches USING(noteId) 
                                     WHERE parentNoteId = ? AND title LIKE '${startsWith}%'
                                     AND notes.isDeleted = 0 AND isProtected = 0 
                                     AND branches.isDeleted = 0`, [parentNoteId]);
 }
 
-async function getRootCalendarNoteId() {
-    let rootNoteId = await sql.getValue(`SELECT notes.noteId FROM notes JOIN labels USING(noteId) 
-              WHERE labels.name = '${CALENDAR_ROOT_LABEL}' AND notes.isDeleted = 0`);
+async function getRootCalendarNote() {
+    let rootNote = await labelService.getNoteWithLabel(CALENDAR_ROOT_LABEL);
 
-    if (!rootNoteId) {
-        const {rootNote} = await noteService.createNewNote('root', {
+    if (!rootNote) {
+        rootNote = (await noteService.createNewNote('root', {
             title: 'Calendar',
             target: 'into',
             isProtected: false
-        });
+        })).note;
 
-        const rootNoteId = rootNote.noteId;
-
-        await labelService.createLabel(rootNoteId, CALENDAR_ROOT_LABEL);
+        await labelService.createLabel(rootNote.noteId, CALENDAR_ROOT_LABEL);
     }
 
-    return rootNoteId;
+    return rootNote;
 }
 
-async function getYearNoteId(dateTimeStr, rootNoteId) {
+async function getYearNote(dateTimeStr, rootNote) {
     const yearStr = dateTimeStr.substr(0, 4);
 
-    let yearNoteId = await labelService.getNoteIdWithLabel(YEAR_LABEL, yearStr);
+    let yearNote = await labelService.getNoteWithLabel(YEAR_LABEL, yearStr);
 
-    if (!yearNoteId) {
-        yearNoteId = await getNoteStartingWith(rootNoteId, yearStr);
+    if (!yearNote) {
+        yearNote = await getNoteStartingWith(rootNote.noteId, yearStr);
 
-        if (!yearNoteId) {
-            yearNoteId = await createNote(rootNoteId, yearStr);
+        if (!yearNote) {
+            yearNote = await createNote(rootNote.noteId, yearStr);
         }
 
-        await labelService.createLabel(yearNoteId, YEAR_LABEL, yearStr);
+        await labelService.createLabel(yearNote.noteId, YEAR_LABEL, yearStr);
     }
 
-    return yearNoteId;
+    return yearNote;
 }
 
-async function getMonthNoteId(dateTimeStr, rootNoteId) {
+async function getMonthNote(dateTimeStr, rootNote) {
     const monthStr = dateTimeStr.substr(0, 7);
     const monthNumber = dateTimeStr.substr(5, 2);
 
-    let monthNoteId = await labelService.getNoteIdWithLabel(MONTH_LABEL, monthStr);
+    let monthNote = await labelService.getNoteWithLabel(MONTH_LABEL, monthStr);
 
-    if (!monthNoteId) {
-        const yearNoteId = await getYearNoteId(dateTimeStr, rootNoteId);
+    if (!monthNote) {
+        const yearNote = await getYearNote(dateTimeStr, rootNote);
 
-        monthNoteId = await getNoteStartingWith(yearNoteId, monthNumber);
+        monthNote = await getNoteStartingWith(yearNote.noteId, monthNumber);
 
-        if (!monthNoteId) {
+        if (!monthNote) {
             const dateObj = dateUtils.parseDate(dateTimeStr);
 
             const noteTitle = monthNumber + " - " + MONTHS[dateObj.getMonth()];
 
-            monthNoteId = await createNote(yearNoteId, noteTitle);
+            monthNote = await createNote(yearNote.noteId, noteTitle);
         }
 
-        await labelService.createLabel(monthNoteId, MONTH_LABEL, monthStr);
+        await labelService.createLabel(monthNote.noteId, MONTH_LABEL, monthStr);
     }
 
-    return monthNoteId;
+    return monthNote;
 }
 
-async function getDateNoteId(dateTimeStr, rootNoteId = null) {
-    if (!rootNoteId) {
-        rootNoteId = await getRootCalendarNoteId();
+async function getDateNote(dateTimeStr, rootNote = null) {
+    if (!rootNote) {
+        rootNote = await getRootCalendarNote();
     }
 
     const dateStr = dateTimeStr.substr(0, 10);
     const dayNumber = dateTimeStr.substr(8, 2);
 
-    let dateNoteId = await labelService.getNoteIdWithLabel(DATE_LABEL, dateStr);
+    let dateNote = await labelService.getNoteWithLabel(DATE_LABEL, dateStr);
 
-    if (!dateNoteId) {
-        const monthNoteId = await getMonthNoteId(dateTimeStr, rootNoteId);
+    if (!dateNote) {
+        const monthNote = await getMonthNote(dateTimeStr, rootNote);
 
-        dateNoteId = await getNoteStartingWith(monthNoteId, dayNumber);
+        dateNote = await getNoteStartingWith(monthNote.noteId, dayNumber);
 
-        if (!dateNoteId) {
+        if (!dateNote) {
             const dateObj = dateUtils.parseDate(dateTimeStr);
 
             const noteTitle = dayNumber + " - " + DAYS[dateObj.getDay()];
 
-            dateNoteId = await createNote(monthNoteId, noteTitle);
+            dateNote = await createNote(monthNote.noteId, noteTitle);
         }
 
-        await labelService.createLabel(dateNoteId, DATE_LABEL, dateStr);
+        await labelService.createLabel(dateNote.noteId, DATE_LABEL, dateStr);
     }
 
-    return dateNoteId;
+    return dateNote;
 }
 
 module.exports = {
-    getRootCalendarNoteId,
-    getYearNoteId,
-    getMonthNoteId,
-    getDateNoteId
+    getRootCalendarNote,
+    getYearNote,
+    getMonthNote,
+    getDateNote
 };

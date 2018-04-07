@@ -36,9 +36,9 @@ async function uploadImage(req) {
         return [400, "Unknown image type: " + file.mimetype];
     }
 
-    const parentNoteId = await dateNoteService.getDateNoteId(req.headers['x-local-date']);
+    const parentNote = await dateNoteService.getDateNote(req.headers['x-local-date']);
 
-    const {note} = await noteService.createNewNote(parentNoteId, {
+    const {note} = await noteService.createNewNote(parentNote.noteId, {
         title: "Sender image",
         content: "",
         target: 'into',
@@ -57,9 +57,9 @@ async function uploadImage(req) {
 }
 
 async function saveNote(req) {
-    const parentNoteId = await dateNoteService.getDateNoteId(req.headers['x-local-date']);
+    const parentNote = await dateNoteService.getDateNote(req.headers['x-local-date']);
 
-    await noteService.createNewNote(parentNoteId, {
+    await noteService.createNewNote(parentNote.noteId, {
         title: req.body.title,
         content: req.body.content,
         target: 'into',

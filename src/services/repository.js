@@ -50,7 +50,7 @@ async function updateEntity(entity) {
 
     delete clone.jsonContent;
 
-    await sql.doInTransaction(async () => {
+    await sql.transactional(async () => {
         await sql.replace(entity.constructor.tableName, clone);
 
         const primaryKey = entity[entity.constructor.primaryKeyName];
