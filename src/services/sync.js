@@ -10,10 +10,8 @@ const sourceIdService = require('./source_id');
 const dateUtils = require('./date_utils');
 const syncUpdateService = require('./sync_update');
 const contentHashService = require('./content_hash');
-const eventLogService = require('./event_log');
 const fs = require('fs');
 const appInfo = require('./app_info');
-const messagingService = require('./messaging');
 const syncSetup = require('./sync_setup');
 const syncMutexService = require('./sync_mutex');
 const cls = require('./cls');
@@ -183,12 +181,6 @@ async function pushSync(syncContext) {
     }
 }
 
-function serializeNoteContentBuffer(note) {
-    if (note.type === 'file') {
-        note.content = note.content.toString("binary");
-    }
-}
-
 async function checkContentHash(syncContext) {
     const resp = await syncRequest(syncContext, 'GET', '/api/sync/check');
 
@@ -207,25 +199,7 @@ async function checkContentHash(syncContext) {
         return;
     }
 
-    const hashes = await contentHashService.getHashes();
-    let allChecksPassed = true;
-
-    for (const key in hashes) {
-        if (hashes[key] !== resp.hashes[key]) {
-            allChecksPassed = false;
-
-            await eventLogService.addEvent(`Content hash check for ${key} FAILED. Local is ${hashes[key]}, remote is ${resp.hashes[key]}`);
-
-            if (key !== 'recent_notes') {
-                // let's not get alarmed about recent notes which get updated often and can cause failures in race conditions
-                await messagingService.sendMessageToAllClients({type: 'sync-hash-check-failed'});
-            }
-        }
-    }
-
-    if (allChecksPassed) {
-        log.info("Content hash checks PASSED");
-    }
+    await contentHashService.checkContentHashes(resp.hashes);
 }
 
 async function syncRequest(syncContext, method, uri, body) {
@@ -270,7 +244,7 @@ const primaryKeys = {
 
 async function getEntityRow(entityName, entityId) {
     if (entityName === 'note_reordering') {
-        return await getNoteReordering(entityId);
+        return await sql.getMap("SELECT branchId, notePosition FROM branches WHERE parentNoteId = ? AND isDeleted = 0", [entityId]);
     }
     else {
         const primaryKey = primaryKeys[entityName];
@@ -279,16 +253,16 @@ async function getEntityRow(entityName, entityId) {
             throw new Error("Unknown entity " + entityName);
         }
 
-        const entityRow = await sql.getRow(`SELECT * FROM ${entityName} WHERE ${primaryKey} = ?`, [entityId]);
+        const entity = await sql.getRow(`SELECT * FROM ${entityName} WHERE ${primaryKey} = ?`, [entityId]);
 
-        if (entityName === 'notes') {
-            serializeNoteContentBuffer(entityRow);
+        if (entityName === 'notes' && entity.type === 'file') {
+            entity.content = entity.content.toString("binary");
         }
         else if (entityName === 'images') {
-            entityRow.data = entityRow.data.toString('base64');
+            entity.data = entity.data.toString('base64');
         }
 
-        return entityRow;
+        return entity;
     }
 }
 
@@ -312,10 +286,6 @@ async function getSyncRecords(syncs) {
     }
 
     return records;
-}
-
-async function getNoteReordering(parentNoteId) {
-    return await sql.getMap("SELECT branchId, notePosition FROM branches WHERE parentNoteId = ? AND isDeleted = 0", [parentNoteId])
 }
 
 sqlInit.dbReady.then(() => {
@@ -344,7 +314,5 @@ sqlInit.dbReady.then(() => {
 
 module.exports = {
     sync,
-    serializeNoteContentBuffer,
-    getEntityRow,
     getSyncRecords
 };

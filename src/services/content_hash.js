@@ -1,6 +1,10 @@
+"use strict";
+
 const sql = require('./sql');
 const utils = require('./utils');
 const log = require('./log');
+const eventLogService = require('./event_log');
+const messagingService = require('./messaging');
 
 function getHash(rows) {
     let hash = '';
@@ -121,6 +125,29 @@ async function getHashes() {
     return hashes;
 }
 
+async function checkContentHashes(otherHashes) {
+    const hashes = await getHashes();
+    let allChecksPassed = true;
+
+    for (const key in hashes) {
+        if (hashes[key] !== otherHashes[key]) {
+            allChecksPassed = false;
+
+            await eventLogService.addEvent(`Content hash check for ${key} FAILED. Local is ${hashes[key]}, remote is ${resp.hashes[key]}`);
+
+            if (key !== 'recent_notes') {
+                // let's not get alarmed about recent notes which get updated often and can cause failures in race conditions
+                await messagingService.sendMessageToAllClients({type: 'sync-hash-check-failed'});
+            }
+        }
+    }
+
+    if (allChecksPassed) {
+        log.info("Content hash checks PASSED");
+    }
+}
+
 module.exports = {
-    getHashes
+    getHashes,
+    checkContentHashes
 };
