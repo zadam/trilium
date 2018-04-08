@@ -89,18 +89,8 @@ async function login() {
     return syncContext;
 }
 
-async function getLastSyncedPull() {
-    return parseInt(await optionService.getOption('lastSyncedPull'));
-}
-
-async function setLastSyncedPull(syncId) {
-    await optionService.setOption('lastSyncedPull', syncId);
-}
-
 async function pullSync(syncContext) {
-    const lastSyncedPull = await getLastSyncedPull();
-
-    const changesUri = '/api/sync/changed?lastSyncId=' + lastSyncedPull;
+    const changesUri = '/api/sync/changed?lastSyncId=' + await getLastSyncedPull();
 
     const rows = await syncRequest(syncContext, 'GET', changesUri);
 
@@ -109,14 +99,6 @@ async function pullSync(syncContext) {
     for (const {sync, entity} of rows) {
         if (sourceIdService.isLocalSourceId(sync.sourceId)) {
             log.info(`Skipping pull #${sync.id} ${sync.entityName} ${sync.entityId} because ${sync.sourceId} is a local source id.`);
-
-            await setLastSyncedPull(sync.id);
-
-            continue;
-        }
-
-        if (!entity) {
-            log.error(`Empty response to pull for sync #${sync.id} ${sync.entityName}, id=${sync.entityId}`);
         }
         else {
             await syncUpdateService.updateEntity(sync.entityName, entity, syncContext.sourceId);
@@ -126,14 +108,6 @@ async function pullSync(syncContext) {
     }
 
     log.info("Finished pull");
-}
-
-async function getLastSyncedPush() {
-    return parseInt(await optionService.getOption('lastSyncedPush'));
-}
-
-async function setLastSyncedPush(lastSyncedPush) {
-    await optionService.setOption('lastSyncedPush', lastSyncedPush);
 }
 
 async function pushSync(syncContext) {
@@ -159,8 +133,6 @@ async function pushSync(syncContext) {
         });
 
         if (filteredSyncs.length === 0) {
-            // nothing to sync
-
             log.info("Nothing to push");
 
             await setLastSyncedPush(lastSyncedPush);
@@ -169,6 +141,8 @@ async function pushSync(syncContext) {
         }
 
         const syncRecords = await getSyncRecords(filteredSyncs);
+
+        log.info(`Pushing ${syncRecords.length} syncs.`);
 
         await syncRequest(syncContext, 'PUT', '/api/sync/update', {
             sourceId: sourceIdService.getCurrentSourceId(),
@@ -190,11 +164,10 @@ async function checkContentHash(syncContext) {
         return;
     }
 
-    const lastSyncedPush = await getLastSyncedPush();
-    const notPushedSyncs = await sql.getValue("SELECT COUNT(*) FROM sync WHERE id > ?", [lastSyncedPush]);
+    const notPushedSyncs = await sql.getValue("SELECT COUNT(*) FROM sync WHERE id > ?", [await getLastSyncedPush()]);
 
     if (notPushedSyncs > 0) {
-        log.info("There's " + notPushedSyncs + " outstanding pushes, skipping content check.");
+        log.info(`There's ${notPushedSyncs} outstanding pushes, skipping content check.`);
 
         return;
     }
@@ -286,6 +259,22 @@ async function getSyncRecords(syncs) {
     }
 
     return records;
+}
+
+async function getLastSyncedPull() {
+    return parseInt(await optionService.getOption('lastSyncedPull'));
+}
+
+async function setLastSyncedPull(syncId) {
+    await optionService.setOption('lastSyncedPull', syncId);
+}
+
+async function getLastSyncedPush() {
+    return parseInt(await optionService.getOption('lastSyncedPush'));
+}
+
+async function setLastSyncedPush(lastSyncedPush) {
+    await optionService.setOption('lastSyncedPush', lastSyncedPush);
 }
 
 sqlInit.dbReady.then(() => {

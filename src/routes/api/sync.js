@@ -10,8 +10,8 @@ const log = require('../../services/log');
 
 async function checkSync() {
     return {
-        'hashes': await contentHashService.getHashes(),
-        'maxSyncId': await sql.getValue('SELECT MAX(id) FROM sync')
+        hashes: await contentHashService.getHashes(),
+        maxSyncId: await sql.getValue('SELECT MAX(id) FROM sync')
     };
 }
 
