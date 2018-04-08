@@ -3,6 +3,42 @@ const log = require('./log');
 const eventLogService = require('./event_log');
 const syncTableService = require('./sync_table');
 
+async function updateEntity(entityName, entity, sourceId) {
+    if (entityName === 'notes') {
+        await updateNote(entity, sourceId);
+    }
+    else if (entityName === 'branches') {
+        await updateBranch(entity, sourceId);
+    }
+    else if (entityName === 'note_revisions') {
+        await updateNoteRevision(entity, sourceId);
+    }
+    else if (entityName === 'note_reordering') {
+        await updateNoteReordering(entity, sourceId);
+    }
+    else if (entityName === 'options') {
+        await updateOptions(entity, sourceId);
+    }
+    else if (entityName === 'recent_notes') {
+        await updateRecentNotes(entity, sourceId);
+    }
+    else if (entityName === 'images') {
+        await updateImage(entity, sourceId);
+    }
+    else if (entityName === 'note_images') {
+        await updateNoteImage(entity, sourceId);
+    }
+    else if (entityName === 'labels') {
+        await updateLabel(entity, sourceId);
+    }
+    else if (entityName === 'api_tokens') {
+        await updateApiToken(entity, sourceId);
+    }
+    else {
+        throw new Error(`Unrecognized entity type ${entityName}`);
+    }
+}
+
 function deserializeNoteContentBuffer(note) {
     if (note.type === 'file') {
         note.content = new Buffer(note.content, 'binary');
@@ -159,6 +195,7 @@ async function updateApiToken(entity, sourceId) {
 }
 
 module.exports = {
+    updateEntity,
     updateNote,
     updateBranch,
     updateNoteRevision,

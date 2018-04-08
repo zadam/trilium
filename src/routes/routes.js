@@ -147,6 +147,7 @@ function register(app) {
     apiRoute(POST, '/api/sync/force-full-sync', syncApiRoute.forceFullSync);
     apiRoute(POST, '/api/sync/force-note-sync/:noteId', syncApiRoute.forceNoteSync);
     apiRoute(GET, '/api/sync/changed', syncApiRoute.getChanged);
+    apiRoute(PUT, '/api/sync/update', syncApiRoute.update);
     apiRoute(GET, '/api/sync/notes/:noteId', syncApiRoute.getNote);
     apiRoute(GET, '/api/sync/branches/:branchId', syncApiRoute.getBranch);
     apiRoute(GET, '/api/sync/note_revisions/:noteRevisionId', syncApiRoute.getNoteRevision);

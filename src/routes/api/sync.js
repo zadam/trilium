@@ -11,7 +11,7 @@ const log = require('../../services/log');
 async function checkSync() {
     return {
         'hashes': await contentHashService.getHashes(),
-        'max_sync_id': await sql.getValue('SELECT MAX(id) FROM sync')
+        'maxSyncId': await sql.getValue('SELECT MAX(id) FROM sync')
     };
 }
 
@@ -58,51 +58,17 @@ async function forceNoteSync(req) {
 async function getChanged(req) {
     const lastSyncId = parseInt(req.query.lastSyncId);
 
-    const records = [];
-    let length = 0;
+    const syncs = await sql.getRows("SELECT * FROM sync WHERE id > ? LIMIT 1000", [lastSyncId]);
 
-    for (const sync of await sql.getRows("SELECT * FROM sync WHERE id > ?", [lastSyncId])) {
-        const record = {
-            sync: sync,
-            entity: await getEntityRow(sync.entityName, sync.entityId)
-        };
-
-        records.push(record);
-
-        length += JSON.stringify(record).length;
-
-        if (length > 1000000) {
-            break;
-        }
-    }
-
-    return records;
+    return await syncService.getSyncRecords(syncs);
 }
 
-const primaryKeys = {
-    "notes": "noteId",
-    "branches": "branchId",
-    "note_revisions": "noteRevisionId",
-    "option": "name",
-    "recent_notes": "branchId",
-    "images": "imageId",
-    "note_images": "noteImageId",
-    "labels": "labelId",
-    "api_tokens": "apiTokenId"
-};
+async function update(req) {
+    const sourceId = req.body.sourceId;
+    const entities = req.body.entities;
 
-async function getEntityRow(entityName, entityId) {
-    if (entityName === 'note_reordering') {
-        return await getNoteReordering(entityId);
-    }
-    else {
-        const primaryKey = primaryKeys[entityName];
-
-        if (!primaryKey) {
-            throw new Error("Unknown entity " + entityName);
-        }
-
-        return await sql.getRow(`SELECT * FROM ${entityName} WHERE ${primaryKey} = ?`, [entityId]);
+    for (const {sync, entity} of entities) {
+        await syncUpdateService.updateEntity(sync.entityName, entity, sourceId);
     }
 }
 
@@ -139,10 +105,6 @@ async function getOption(req) {
     else {
         return opt;
     }
-}
-
-async function getNoteReordering(parentNoteId) {
-    return await sql.getMap("SELECT branchId, notePosition FROM branches WHERE parentNoteId = ? AND isDeleted = 0", [parentNoteId])
 }
 
 async function getRecentNote(req) {
@@ -231,7 +193,6 @@ module.exports = {
     getBranch,
     getImage,
     getNoteImage,
-    getNoteReordering,
     getNoteRevision,
     getRecentNote,
     getOption,
@@ -246,5 +207,6 @@ module.exports = {
     updateRecentNote,
     updateOption,
     updateLabel,
-    updateApiToken
+    updateApiToken,
+    update
 };
