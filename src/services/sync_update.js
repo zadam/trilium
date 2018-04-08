@@ -195,15 +195,5 @@ async function updateApiToken(entity, sourceId) {
 }
 
 module.exports = {
-    updateEntity,
-    updateNote,
-    updateBranch,
-    updateNoteRevision,
-    updateNoteReordering,
-    updateOptions,
-    updateRecentNotes,
-    updateImage,
-    updateNoteImage,
-    updateLabel,
-    updateApiToken
+    updateEntity
 };
