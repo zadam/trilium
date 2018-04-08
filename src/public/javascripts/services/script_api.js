@@ -1,6 +1,7 @@
 import treeService from './tree.js';
 import server from './server.js';
 import utils from './utils.js';
+import infoService from './info.js';
 
 function ScriptApi(startNote, currentNote) {
     const $pluginButtons = $("#plugin-buttons");
@@ -56,8 +57,8 @@ function ScriptApi(startNote, currentNote) {
         runOnServer,
         formatDateISO: utils.formatDateISO,
         parseDate: utils.parseDate,
-        showMessage: utils.showMessage,
-        showError: utils.showError,
+        showMessage: infoService.showMessage,
+        showError: infoService.showError,
         reloadTree: treeService.reload
     }
 }
