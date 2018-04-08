@@ -104,11 +104,11 @@ async function pullSync(syncContext) {
 
     const changesUri = '/api/sync/changed?lastSyncId=' + lastSyncedPull;
 
-    const syncRows = await syncRequest(syncContext, 'GET', changesUri);
+    const rows = await syncRequest(syncContext, 'GET', changesUri);
 
-    log.info("Pulled " + syncRows.length + " changes from " + changesUri);
+    log.info("Pulled " + rows.length + " changes from " + changesUri);
 
-    for (const sync of syncRows) {
+    for (const {sync, entity} of rows) {
         if (sourceIdService.isLocalSourceId(sync.sourceId)) {
             log.info(`Skipping pull #${sync.id} ${sync.entityName} ${sync.entityId} because ${sync.sourceId} is a local source id.`);
 
@@ -117,40 +117,38 @@ async function pullSync(syncContext) {
             continue;
         }
 
-        const resp = await syncRequest(syncContext, 'GET', "/api/sync/" + sync.entityName + "/" + encodeURIComponent(sync.entityId));
-
-        if (!resp || (sync.entityName === 'notes' && !resp.entity)) {
+        if (!entity) {
             log.error(`Empty response to pull for sync #${sync.id} ${sync.entityName}, id=${sync.entityId}`);
         }
         else if (sync.entityName === 'notes') {
-            await syncUpdateService.updateNote(resp.entity, syncContext.sourceId);
+            await syncUpdateService.updateNote(entity, syncContext.sourceId);
         }
         else if (sync.entityName === 'branches') {
-            await syncUpdateService.updateBranch(resp, syncContext.sourceId);
+            await syncUpdateService.updateBranch(entity, syncContext.sourceId);
         }
         else if (sync.entityName === 'note_revisions') {
-            await syncUpdateService.updateNoteRevision(resp, syncContext.sourceId);
+            await syncUpdateService.updateNoteRevision(entity, syncContext.sourceId);
         }
         else if (sync.entityName === 'note_reordering') {
-            await syncUpdateService.updateNoteReordering(resp, syncContext.sourceId);
+            await syncUpdateService.updateNoteReordering(entity, syncContext.sourceId);
         }
         else if (sync.entityName === 'options') {
-            await syncUpdateService.updateOptions(resp, syncContext.sourceId);
+            await syncUpdateService.updateOptions(entity, syncContext.sourceId);
         }
         else if (sync.entityName === 'recent_notes') {
-            await syncUpdateService.updateRecentNotes(resp, syncContext.sourceId);
+            await syncUpdateService.updateRecentNotes(entity, syncContext.sourceId);
         }
         else if (sync.entityName === 'images') {
-            await syncUpdateService.updateImage(resp, syncContext.sourceId);
+            await syncUpdateService.updateImage(entity, syncContext.sourceId);
         }
         else if (sync.entityName === 'note_images') {
-            await syncUpdateService.updateNoteImage(resp, syncContext.sourceId);
+            await syncUpdateService.updateNoteImage(entity, syncContext.sourceId);
         }
         else if (sync.entityName === 'labels') {
-            await syncUpdateService.updateLabel(resp, syncContext.sourceId);
+            await syncUpdateService.updateLabel(entity, syncContext.sourceId);
         }
         else if (sync.entityName === 'api_tokens') {
-            await syncUpdateService.updateApiToken(resp, syncContext.sourceId);
+            await syncUpdateService.updateApiToken(entity, syncContext.sourceId);
         }
         else {
             throw new Error(`Unrecognized entity type ${sync.entityName} in sync #${sync.id}`);

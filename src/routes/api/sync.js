@@ -58,7 +58,52 @@ async function forceNoteSync(req) {
 async function getChanged(req) {
     const lastSyncId = parseInt(req.query.lastSyncId);
 
-    return await sql.getRows("SELECT * FROM sync WHERE id > ?", [lastSyncId]);
+    const records = [];
+    let length = 0;
+
+    for (const sync of await sql.getRows("SELECT * FROM sync WHERE id > ?", [lastSyncId])) {
+        const record = {
+            sync: sync,
+            entity: await getEntityRow(sync.entityName, sync.entityId)
+        };
+
+        records.push(record);
+
+        length += JSON.stringify(record).length;
+
+        if (length > 1000000) {
+            break;
+        }
+    }
+
+    return records;
+}
+
+const primaryKeys = {
+    "notes": "noteId",
+    "branches": "branchId",
+    "note_revisions": "noteRevisionId",
+    "option": "name",
+    "recent_notes": "branchId",
+    "images": "imageId",
+    "note_images": "noteImageId",
+    "labels": "labelId",
+    "api_tokens": "apiTokenId"
+};
+
+async function getEntityRow(entityName, entityId) {
+    if (entityName === 'note_reordering') {
+        return await getNoteReordering(entityId);
+    }
+    else {
+        const primaryKey = primaryKeys[entityName];
+
+        if (!primaryKey) {
+            throw new Error("Unknown entity " + entityName);
+        }
+
+        return await sql.getRow(`SELECT * FROM ${entityName} WHERE ${primaryKey} = ?`, [entityId]);
+    }
 }
 
 async function getNote(req) {
@@ -96,13 +141,8 @@ async function getOption(req) {
     }
 }
 
-async function getNoteReordering(req) {
-    const parentNoteId = req.params.parentNoteId;
-
-    return {
-        parentNoteId: parentNoteId,
-        ordering: await sql.getMap("SELECT branchId, notePosition FROM branches WHERE parentNoteId = ? AND isDeleted = 0", [parentNoteId])
-    };
+async function getNoteReordering(parentNoteId) {
+    return await sql.getMap("SELECT branchId, notePosition FROM branches WHERE parentNoteId = ? AND isDeleted = 0", [parentNoteId])
 }
 
 async function getRecentNote(req) {
