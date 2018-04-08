@@ -1,5 +1,5 @@
 import treeService from './tree.js';
-import noteDetail from './note_detail.js';
+import noteDetailService from './note_detail.js';
 import server from './server.js';
 import infoService from "./info.js";
 
@@ -84,13 +84,13 @@ function NoteTypeModel() {
     };
 
     async function save() {
-        const note = noteDetail.getCurrentNote();
+        const note = noteDetailService.getCurrentNote();
 
         await server.put('notes/' + note.noteId
             + '/type/' + encodeURIComponent(self.type())
             + '/mime/' + encodeURIComponent(self.mime()));
 
-        await noteDetail.reload();
+        await noteDetailService.reload();
 
         // for the note icon to be updated in the tree
         await treeService.reload();

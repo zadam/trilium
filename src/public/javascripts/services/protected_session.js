@@ -1,5 +1,5 @@
 import treeService from './tree.js';
-import noteDetail from './note_detail.js';
+import noteDetailService from './note_detail.js';
 import utils from './utils.js';
 import server from './server.js';
 import protectedSessionHolder from './protected_session_holder.js';
@@ -57,7 +57,7 @@ async function setupProtectedSession() {
 
     $dialog.dialog("close");
 
-    noteDetail.reload();
+    noteDetailService.reload();
     treeService.reload();
 
     if (protectedSessionDeferred !== null) {
@@ -90,27 +90,27 @@ async function enterProtectedSession(password) {
 async function protectNoteAndSendToServer() {
     await ensureProtectedSession(true, true);
 
-    const note = noteDetail.getCurrentNote();
+    const note = noteDetailService.getCurrentNote();
     note.isProtected = true;
 
-    await noteDetail.saveNote(note);
+    await noteDetailService.saveNote(note);
 
     treeService.setProtected(note.noteId, note.isProtected);
 
-    noteDetail.setNoteBackgroundIfProtected(note);
+    noteDetailService.setNoteBackgroundIfProtected(note);
 }
 
 async function unprotectNoteAndSendToServer() {
     await ensureProtectedSession(true, true);
 
-    const note = noteDetail.getCurrentNote();
+    const note = noteDetailService.getCurrentNote();
     note.isProtected = false;
 
-    await noteDetail.saveNote(note);
+    await noteDetailService.saveNote(note);
 
     treeService.setProtected(note.noteId, note.isProtected);
 
-    noteDetail.setNoteBackgroundIfProtected(note);
+    noteDetailService.setNoteBackgroundIfProtected(note);
 }
 
 async function protectBranch(noteId, protect) {
@@ -121,7 +121,7 @@ async function protectBranch(noteId, protect) {
     infoService.showMessage("Request to un/protect sub tree has finished successfully");
 
     treeService.reload();
-    noteDetail.reload();
+    noteDetailService.reload();
 }
 
 $passwordForm.submit(() => {
