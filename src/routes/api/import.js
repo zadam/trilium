@@ -3,6 +3,7 @@
 const repository = require('../../services/repository');
 const labelService = require('../../services/labels');
 const noteService = require('../../services/notes');
+const Branch = require('../../entities/branch');
 const tar = require('tar-stream');
 const stream = require('stream');
 const path = require('path');
@@ -31,7 +32,7 @@ async function parseImportFile(file) {
     const extract = tar.extract();
 
     extract.on('entry', function(header, stream, next) {
-        let {name, key} = getFileName(header.name);
+        const {name, key} = getFileName(header.name);
 
         let file = fileMap[name];
 
@@ -97,13 +98,26 @@ async function importTar(req) {
 
     const files = await parseImportFile(file);
 
-    await importNotes(files, parentNoteId);
+    // maps from original noteId (in tar file) to newly generated noteId
+    const noteIdMap = {};
+
+    await importNotes(files, parentNoteId, noteIdMap);
 }
 
-async function importNotes(files, parentNoteId) {
+async function importNotes(files, parentNoteId, noteIdMap) {
     for (const file of files) {
         if (file.meta.version !== 1) {
             throw new Error("Can't read meta data version " + file.meta.version);
+        }
+
+        if (file.meta.clone) {
+            await new Branch({
+                parentNoteId: parentNoteId,
+                noteId: noteIdMap[file.meta.noteId],
+                prefix: file.meta.prefix
+            }).save();
+
+            return;
         }
 
         if (file.meta.type !== 'file') {
@@ -112,15 +126,18 @@ async function importNotes(files, parentNoteId) {
 
         const {note} = await noteService.createNote(parentNoteId, file.meta.title, file.data, {
             type: file.meta.type,
-            mime: file.meta.mime
+            mime: file.meta.mime,
+            prefix: file.meta.prefix
         });
+
+        noteIdMap[file.meta.noteId] = note.noteId;
 
         for (const label of file.meta.labels) {
             await labelService.createLabel(note.noteId, label.name, label.value);
         }
 
         if (file.children.length > 0) {
-            await importNotes(file.children, note.noteId);
+            await importNotes(file.children, note.noteId, noteIdMap);
         }
     }
 }

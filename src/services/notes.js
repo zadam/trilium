@@ -56,6 +56,7 @@ async function createNewNote(parentNoteId, noteData) {
         noteId: note.noteId,
         parentNoteId: parentNoteId,
         notePosition: newNotePos,
+        prefix: noteData.prefix,
         isExpanded: 0
     }).save();
 
