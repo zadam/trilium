@@ -44,6 +44,14 @@ class NoteShort {
     get toString() {
         return `Note(noteId=${this.noteId}, title=${this.title})`;
     }
+
+    get dto() {
+        const dto = Object.assign({}, this);
+        delete dto.treeCache;
+        delete dto.hideInAutocomplete;
+
+        return dto;
+    }
 }
 
 export default NoteShort;

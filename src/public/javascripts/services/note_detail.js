@@ -84,39 +84,31 @@ async function switchToNote(noteId) {
     }
 }
 
+async function saveNote() {
+    const note = getCurrentNote();
+
+    note.title = $noteTitle.val();
+    note.content = getComponent(note.type).getContent();
+
+    treeService.setNoteTitle(note.noteId, note.title);
+
+    await server.put('notes/' + note.noteId, note.dto);
+
+    isNoteChanged = false;
+
+    if (note.isProtected) {
+        protectedSessionHolder.touchProtectedSession();
+    }
+
+    infoService.showMessage("Saved!");
+}
+
 async function saveNoteIfChanged() {
     if (!isNoteChanged) {
         return;
     }
 
-    const note = getCurrentNote();
-
-    updateNoteFromInputs(note);
-
-    await saveNoteToServer(note);
-
-    if (note.isProtected) {
-        protectedSessionHolder.touchProtectedSession();
-    }
-}
-
-function updateNoteFromInputs(note) {
-    note.title = $noteTitle.val();
-    note.content = getComponent(note.type).getContent();
-
-    treeService.setNoteTitle(note.noteId, note.title);
-}
-
-async function saveNoteToServer(note) {
-    const dto = Object.assign({}, note);
-    delete dto.treeCache;
-    delete dto.hideInAutocomplete;
-
-    await server.put('notes/' + dto.noteId, dto);
-
-    isNoteChanged = false;
-
-    infoService.showMessage("Saved!");
+    await saveNote();
 }
 
 function setNoteBackgroundIfProtected(note) {
@@ -245,8 +237,6 @@ setInterval(saveNoteIfChanged, 5000);
 export default {
     reload,
     switchToNote,
-    updateNoteFromInputs,
-    saveNoteToServer,
     setNoteBackgroundIfProtected,
     loadNote,
     getCurrentNote,
@@ -255,6 +245,7 @@ export default {
     newNoteCreated,
     focus,
     loadLabelList,
+    saveNote,
     saveNoteIfChanged,
     noteChanged
 };

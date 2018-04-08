@@ -91,12 +91,9 @@ async function protectNoteAndSendToServer() {
     await ensureProtectedSession(true, true);
 
     const note = noteDetail.getCurrentNote();
-
-    noteDetail.updateNoteFromInputs(note);
-
     note.isProtected = true;
 
-    await noteDetail.saveNoteToServer(note);
+    await noteDetail.saveNote(note);
 
     treeService.setProtected(note.noteId, note.isProtected);
 
@@ -107,12 +104,9 @@ async function unprotectNoteAndSendToServer() {
     await ensureProtectedSession(true, true);
 
     const note = noteDetail.getCurrentNote();
-
-    noteDetail.updateNoteFromInputs(note);
-
     note.isProtected = false;
 
-    await noteDetail.saveNoteToServer(note);
+    await noteDetail.saveNote(note);
 
     treeService.setProtected(note.noteId, note.isProtected);
 
