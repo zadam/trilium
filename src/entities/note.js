@@ -21,6 +21,14 @@ class Note extends Entity {
         }
     }
 
+    setContent(content) {
+        this.content = content;
+
+        if (this.isJson()) {
+            this.jsonContent = JSON.parse(this.content);
+        }
+    }
+
     isJson() {
         return this.mime === "application/json";
     }

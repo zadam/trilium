@@ -198,7 +198,7 @@ async function updateNote(noteId, noteUpdates) {
     await saveNoteRevision(note);
 
     note.title = noteUpdates.title;
-    note.content = noteUpdates.content;
+    note.setContent(noteUpdates.content);
     note.isProtected = noteUpdates.isProtected;
     await note.save();
 
