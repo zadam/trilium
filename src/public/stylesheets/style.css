@@ -5,9 +5,9 @@
     display: grid;
     grid-template-areas: "header header"
                          "tree-actions title"
-                         "search note-content"
-                         "tree note-content"
-                         "parent-list note-content"
+                         "search note-detail"
+                         "tree note-detail"
+                         "parent-list note-detail"
                          "parent-list label-list";
     grid-template-columns: 2fr 5fr;
     grid-template-rows: auto
@@ -288,4 +288,21 @@ div.ui-tooltip {
 #file-table th, #file-table td {
     padding: 10px;
     font-size: large;
+}
+
+#children-overview {
+    padding-top: 20px;
+}
+
+.child-overview {
+    font-weight: bold;
+    font-size: large;
+    padding: 10px;
+    border: 1px solid black;
+    width: 150px;
+    height: 95px;
+    margin-right: 20px;
+    margin-bottom: 20px;
+    border-radius: 15px;
+    overflow: hidden;
 }
