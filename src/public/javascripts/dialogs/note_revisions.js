@@ -54,7 +54,13 @@ $list.on('change', () => {
     const revisionItem = revisionItems.find(r => r.noteRevisionId === optVal);
 
     $title.html(revisionItem.title);
-    $content.html(revisionItem.content);
+
+    if (revisionItem.type === 'text') {
+        $content.html(revisionItem.content);
+    }
+    else if (revisionItem.type === 'code') {
+        $content.html($("<pre>").text(revisionItem.content));
+    }
 });
 
 $(document).on('click', "a[action='note-revision']", event => {

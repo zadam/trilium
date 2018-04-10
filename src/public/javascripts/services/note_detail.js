@@ -1,4 +1,5 @@
 import treeService from './tree.js';
+import treeUtils from './tree_utils.js';
 import noteTypeService from './note_type.js';
 import protectedSessionService from './protected_session.js';
 import protectedSessionHolder from './protected_session_holder.js';
@@ -24,6 +25,7 @@ const $noteDetailWrapper = $("#note-detail-wrapper");
 const $noteIdDisplay = $("#note-id-display");
 const $labelList = $("#label-list");
 const $labelListInner = $("#label-list-inner");
+const $childrenOverview = $("#children-overview");
 
 let currentNote = null;
 
@@ -73,15 +75,34 @@ function noteChanged() {
 async function reload() {
     // no saving here
 
-    await loadNoteToEditor(getCurrentNoteId());
+    await loadNoteDetail(getCurrentNoteId());
 }
 
 async function switchToNote(noteId) {
     if (getCurrentNoteId() !== noteId) {
         await saveNoteIfChanged();
 
-        await loadNoteToEditor(noteId);
+        await loadNoteDetail(noteId);
     }
+}
+
+async function saveNote() {
+    const note = getCurrentNote();
+
+    note.title = $noteTitle.val();
+    note.content = getComponent(note.type).getContent();
+
+    treeService.setNoteTitle(note.noteId, note.title);
+
+    await server.put('notes/' + note.noteId, note.dto);
+
+    isNoteChanged = false;
+
+    if (note.isProtected) {
+        protectedSessionHolder.touchProtectedSession();
+    }
+
+    infoService.showMessage("Saved!");
 }
 
 async function saveNoteIfChanged() {
@@ -89,34 +110,7 @@ async function saveNoteIfChanged() {
         return;
     }
 
-    const note = getCurrentNote();
-
-    updateNoteFromInputs(note);
-
-    await saveNoteToServer(note);
-
-    if (note.isProtected) {
-        protectedSessionHolder.touchProtectedSession();
-    }
-}
-
-function updateNoteFromInputs(note) {
-    note.title = $noteTitle.val();
-    note.content = getComponent(note.type).getContent();
-
-    treeService.setNoteTitle(note.noteId, note.title);
-}
-
-async function saveNoteToServer(note) {
-    const dto = Object.assign({}, note);
-    delete dto.treeCache;
-    delete dto.hideInAutocomplete;
-
-    await server.put('notes/' + dto.noteId, dto);
-
-    isNoteChanged = false;
-
-    infoService.showMessage("Saved!");
+    await saveNote();
 }
 
 function setNoteBackgroundIfProtected(note) {
@@ -145,7 +139,7 @@ async function handleProtectedSession() {
     protectedSessionService.ensureDialogIsClosed();
 }
 
-async function loadNoteToEditor(noteId) {
+async function loadNoteDetail(noteId) {
     currentNote = await loadNote(noteId);
 
     if (isNewNoteCreated) {
@@ -183,6 +177,26 @@ async function loadNoteToEditor(noteId) {
     $noteDetailWrapper.scrollTop(0);
 
     await loadLabelList();
+
+    await showChildrenOverview();
+}
+
+async function showChildrenOverview() {
+    const note = getCurrentNote();
+
+    $childrenOverview.empty();
+
+    const notePath = treeService.getCurrentNotePath();
+
+    for (const childBranch of await note.getChildBranches()) {
+        const link = $('<a>', {
+            href: 'javascript:',
+            text: await treeUtils.getNoteTitle(childBranch.noteId, childBranch.parentNoteId)
+        }).attr('action', 'note').attr('note-path', notePath + '/' + childBranch.noteId);
+
+        const childEl = $('<div class="child-overview">').html(link);
+        $childrenOverview.append(childEl);
+    }
 }
 
 async function loadLabelList() {
@@ -245,8 +259,6 @@ setInterval(saveNoteIfChanged, 5000);
 export default {
     reload,
     switchToNote,
-    updateNoteFromInputs,
-    saveNoteToServer,
     setNoteBackgroundIfProtected,
     loadNote,
     getCurrentNote,
@@ -255,6 +267,7 @@ export default {
     newNoteCreated,
     focus,
     loadLabelList,
+    saveNote,
     saveNoteIfChanged,
     noteChanged
 };

@@ -56,6 +56,7 @@ async function createNewNote(parentNoteId, noteData) {
         noteId: note.noteId,
         parentNoteId: parentNoteId,
         notePosition: newNotePos,
+        prefix: noteData.prefix,
         isExpanded: 0
     }).save();
 
@@ -180,6 +181,8 @@ async function saveNoteRevision(note) {
             // title and text should be decrypted now
             title: note.title,
             content: note.content,
+            type: note.type,
+            mime: note.mime,
             isProtected: 0, // will be fixed in the protectNoteRevisions() call
             dateModifiedFrom: note.dateModified,
             dateModifiedTo: dateUtils.nowDate()
@@ -198,7 +201,7 @@ async function updateNote(noteId, noteUpdates) {
     await saveNoteRevision(note);
 
     note.title = noteUpdates.title;
-    note.content = noteUpdates.content;
+    note.setContent(noteUpdates.content);
     note.isProtected = noteUpdates.isProtected;
     await note.save();
 

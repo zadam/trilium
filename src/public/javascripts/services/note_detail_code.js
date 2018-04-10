@@ -16,6 +16,10 @@ async function show() {
         CodeMirror.keyMap.default["Shift-Tab"] = "indentLess";
         CodeMirror.keyMap.default["Tab"] = "indentMore";
 
+        // these conflict with backward/forward navigation shortcuts
+        delete CodeMirror.keyMap.default["Alt-Left"];
+        delete CodeMirror.keyMap.default["Alt-Right"];
+
         CodeMirror.modeURL = 'libraries/codemirror/mode/%N/%N.js';
 
         codeEditor = CodeMirror($noteDetailCode[0], {

@@ -1,5 +1,6 @@
 import treeCache from "./tree_cache.js";
 import treeUtils from "./tree_utils.js";
+import protectedSessionHolder from './protected_session_holder.js';
 
 async function getAutocompleteItems(parentNoteId, notePath, titlePath) {
     if (!parentNoteId) {
@@ -21,9 +22,6 @@ async function getAutocompleteItems(parentNoteId, notePath, titlePath) {
         titlePath = '';
     }
 
-    // https://github.com/zadam/trilium/issues/46
-    // unfortunately not easy to implement because we don't have an easy access to note's isProtected property
-
     const autocompleteItems = [];
 
     for (const childNote of childNotes) {
@@ -34,10 +32,12 @@ async function getAutocompleteItems(parentNoteId, notePath, titlePath) {
         const childNotePath = (notePath ? (notePath + '/') : '') + childNote.noteId;
         const childTitlePath = (titlePath ? (titlePath + ' / ') : '') + await treeUtils.getNoteTitle(childNote.noteId, parentNoteId);
 
-        autocompleteItems.push({
-            value: childTitlePath + ' (' + childNotePath + ')',
-            label: childTitlePath
-        });
+        if (!childNote.isProtected || protectedSessionHolder.isProtectedSessionAvailable()) {
+            autocompleteItems.push({
+                value: childTitlePath + ' (' + childNotePath + ')',
+                label: childTitlePath
+            });
+        }
 
         const childItems = await getAutocompleteItems(childNote.noteId, childNotePath, childTitlePath);
 

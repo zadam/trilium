@@ -293,7 +293,7 @@ function initFancyTree(branch) {
         keyboard: false, // we takover keyboard handling in the hotkeys plugin
         extensions: ["hotkeys", "filter", "dnd", "clones"],
         source: branch,
-        scrollParent: $("#tree"),
+        scrollParent: $tree,
         click: (event, data) => {
             const targetType = data.targetType;
             const node = data.node;

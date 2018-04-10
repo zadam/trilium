@@ -15,14 +15,22 @@ const logger = require('simple-node-logger').createRollingFileLogger({
 });
 
 function info(message) {
-    logger.info(message);
+    // info messages are logged asynchronously
+    setTimeout(() => {
+        console.log(message);
 
-    console.log(message);
+        logger.info(message);
+    }, 0);
 }
 
 function error(message) {
+    message = "ERROR: " + message;
+
     // we're using .info() instead of .error() because simple-node-logger emits weird error for showError()
-    info("ERROR: " + message);
+    // errors are logged synchronously to make sure it doesn't get lost in case of crash
+    logger.info(message);
+
+    console.trace(message);
 }
 
 const requestBlacklist = [ "/libraries", "/javascripts", "/images", "/stylesheets" ];

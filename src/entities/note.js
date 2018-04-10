@@ -12,9 +12,18 @@ class Note extends Entity {
     constructor(row) {
         super(row);
 
-        if (this.isProtected) {
+        // check if there's noteId, otherwise this is a new entity which wasn't encrypted yet
+        if (this.isProtected && this.noteId) {
             protected_session.decryptNote(this);
         }
+
+        if (this.isJson()) {
+            this.jsonContent = JSON.parse(this.content);
+        }
+    }
+
+    setContent(content) {
+        this.content = content;
 
         if (this.isJson()) {
             this.jsonContent = JSON.parse(this.content);

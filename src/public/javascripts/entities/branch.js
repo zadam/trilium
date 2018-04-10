@@ -14,6 +14,10 @@ class Branch {
         return await this.treeCache.getNote(this.noteId);
     }
 
+    isTopLevel() {
+        return this.parentNoteId === 'root';
+    }
+
     get toString() {
         return `Branch(branchId=${this.branchId})`;
     }
