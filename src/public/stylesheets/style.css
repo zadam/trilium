@@ -298,11 +298,15 @@ div.ui-tooltip {
     font-weight: bold;
     font-size: large;
     padding: 10px;
-    border: 1px solid black;
+    background: #f4f4f4;
     width: 150px;
     height: 95px;
     margin-right: 20px;
-    margin-bottom: 20px;
     border-radius: 15px;
     overflow: hidden;
+    text-align: center;
+}
+
+.child-overview a {
+    color: #444;
 }
