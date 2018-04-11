@@ -149,11 +149,13 @@ async function transactional(func) {
             resolve();
         }
         catch (e) {
-            log.error("Error executing transaction, executing rollback. Inner exception: " + e.stack + error.stack);
+            if (transactionActive) {
+                log.error("Error executing transaction, executing rollback. Inner exception: " + e.stack + error.stack);
 
-            await rollback();
+                await rollback();
 
-            transactionActive = false;
+                transactionActive = false;
+            }
 
             reject(e);
         }
