@@ -176,12 +176,18 @@ async function loadNoteDetail(noteId) {
     // after loading new note make sure editor is scrolled to the top
     $noteDetailWrapper.scrollTop(0);
 
-    await loadLabelList();
+    const labels = await loadLabelList();
 
-    await showChildrenOverview();
+    const hideChildrenOverview = labels.some(label => label.name === 'hideChildrenOverview');
+    await showChildrenOverview(hideChildrenOverview);
 }
 
-async function showChildrenOverview() {
+async function showChildrenOverview(hideChildrenOverview) {
+    if (hideChildrenOverview) {
+        $childrenOverview.hide();
+        return;
+    }
+
     const note = getCurrentNote();
 
     $childrenOverview.empty();
@@ -197,6 +203,8 @@ async function showChildrenOverview() {
         const childEl = $('<div class="child-overview">').html(link);
         $childrenOverview.append(childEl);
     }
+
+    $childrenOverview.show();
 }
 
 async function loadLabelList() {
@@ -216,6 +224,8 @@ async function loadLabelList() {
     else {
         $labelList.hide();
     }
+
+    return labels;
 }
 
 async function loadNote(noteId) {

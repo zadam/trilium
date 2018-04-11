@@ -36,7 +36,7 @@
     border: 0 !important;
     box-shadow: none !important;
     /* This is because with empty content height of editor is 0 and it's impossible to click into it */
-    min-height: 400px;
+    min-height: 200px;
     overflow: auto;
 }
 
@@ -291,7 +291,6 @@ div.ui-tooltip {
 }
 
 #children-overview {
-    padding-top: 20px;
 }
 
 .child-overview {
@@ -305,6 +304,7 @@ div.ui-tooltip {
     border-radius: 15px;
     overflow: hidden;
     text-align: center;
+    margin-top: 15px;
 }
 
 .child-overview a {

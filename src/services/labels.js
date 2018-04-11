@@ -11,7 +11,8 @@ const BUILTIN_LABELS = [
     'run',
     'manualTransactionHandling',
     'disableInclusion',
-    'appCss'
+    'appCss',
+    'hideChildrenOverview'
 ];
 
 async function getNotesWithLabel(name, value) {

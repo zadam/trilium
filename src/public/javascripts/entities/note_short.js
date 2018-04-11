@@ -24,7 +24,7 @@ class NoteShort {
     }
 
     async getChildBranches() {
-        if (!this.treeCache.children) {
+        if (!this.treeCache.children[this.noteId]) {
             return [];
         }
 
