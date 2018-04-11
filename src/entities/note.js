@@ -17,17 +17,16 @@ class Note extends Entity {
             protected_session.decryptNote(this);
         }
 
-        if (this.isJson()) {
-            this.jsonContent = JSON.parse(this.content);
-        }
+        this.setContent(this.content);
     }
 
     setContent(content) {
         this.content = content;
 
-        if (this.isJson()) {
+        try {
             this.jsonContent = JSON.parse(this.content);
         }
+        catch(e) {}
     }
 
     isJson() {
@@ -142,7 +141,7 @@ class Note extends Entity {
     beforeSaving() {
         super.beforeSaving();
 
-        if (this.isJson()) {
+        if (this.isJson() && this.jsonContent) {
             this.content = JSON.stringify(this.jsonContent, null, '\t');
         }
 

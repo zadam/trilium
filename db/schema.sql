@@ -21,28 +21,6 @@ CREATE TABLE IF NOT EXISTS "source_ids" (
   `dateCreated`	TEXT NOT NULL,
   PRIMARY KEY(`sourceId`)
 );
-CREATE TABLE IF NOT EXISTS "notes" (
-  `noteId`	TEXT NOT NULL,
-  `title`	TEXT,
-  `content`	TEXT,
-  `isProtected`	INT NOT NULL DEFAULT 0,
-  `isDeleted`	INT NOT NULL DEFAULT 0,
-  `dateCreated`	TEXT NOT NULL,
-  `dateModified`	TEXT NOT NULL,
-  type TEXT NOT NULL DEFAULT 'text',
-  mime TEXT NOT NULL DEFAULT 'text/html',
-  PRIMARY KEY(`noteId`)
-);
-CREATE INDEX `IDX_notes_isDeleted` ON `notes` (
-  `isDeleted`
-);
-CREATE TABLE IF NOT EXISTS "event_log" (
-  `id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-  `noteId`	TEXT,
-  `comment`	TEXT,
-  `dateAdded`	TEXT NOT NULL,
-  FOREIGN KEY(noteId) REFERENCES notes(noteId)
-);
 CREATE TABLE IF NOT EXISTS "note_revisions" (
   `noteRevisionId`	TEXT NOT NULL PRIMARY KEY,
   `noteId`	TEXT NOT NULL,
@@ -51,7 +29,7 @@ CREATE TABLE IF NOT EXISTS "note_revisions" (
   `isProtected`	INT NOT NULL DEFAULT 0,
   `dateModifiedFrom` TEXT NOT NULL,
   `dateModifiedTo` TEXT NOT NULL
-);
+, type TEXT DEFAULT '' NOT NULL, mime TEXT DEFAULT '' NOT NULL);
 CREATE INDEX `IDX_note_revisions_noteId` ON `note_revisions` (
   `noteId`
 );
@@ -130,3 +108,25 @@ CREATE INDEX IDX_labels_name_value
   on labels (name, value);
 CREATE INDEX IDX_labels_noteId
   on labels (noteId);
+CREATE TABLE IF NOT EXISTS "event_log"
+(
+  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+  noteId TEXT,
+  comment TEXT,
+  dateAdded TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS "notes" (
+  `noteId`	TEXT NOT NULL,
+  `title`	TEXT NOT NULL DEFAULT "unnamed",
+  `content`	TEXT NOT NULL DEFAULT "",
+  `isProtected`	INT NOT NULL DEFAULT 0,
+  `isDeleted`	INT NOT NULL DEFAULT 0,
+  `dateCreated`	TEXT NOT NULL,
+  `dateModified`	TEXT NOT NULL,
+  type TEXT NOT NULL DEFAULT 'text',
+  mime TEXT NOT NULL DEFAULT 'text/html',
+  PRIMARY KEY(`noteId`)
+);
+CREATE INDEX `IDX_notes_isDeleted` ON `notes` (
+  `isDeleted`
+);

@@ -6,8 +6,11 @@ class NoteFull extends NoteShort {
 
         this.content = row.content;
 
-        if (this.isJson()) {
-            this.jsonContent = JSON.parse(this.content);
+        if (this.content !== "" && this.isJson()) {
+            try {
+                this.jsonContent = JSON.parse(this.content);
+            }
+            catch(e) {}
         }
     }
 }

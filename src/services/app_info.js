@@ -3,7 +3,7 @@
 const build = require('./build');
 const packageJson = require('../../package');
 
-const APP_DB_VERSION = 87;
+const APP_DB_VERSION = 88;
 
 module.exports = {
     appVersion: packageJson.version,

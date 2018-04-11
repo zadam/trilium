@@ -249,7 +249,7 @@ div.ui-tooltip {
 }
 
 #note-detail-code {
-    height: 100%;
+    min-height: 200px;
 }
 
 .CodeMirror {
@@ -291,6 +291,14 @@ div.ui-tooltip {
 }
 
 #children-overview {
+    flex-grow: 1000;
+    flex-shrink: 1000;
+    flex-basis: 0px;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    height: 100px;
+    overflow: auto;
 }
 
 .child-overview {
@@ -299,12 +307,15 @@ div.ui-tooltip {
     padding: 10px;
     background: #f4f4f4;
     width: 150px;
-    height: 95px;
+    height: 90px;
+    line-height: 2em;
     margin-right: 20px;
     border-radius: 15px;
     overflow: hidden;
     text-align: center;
     margin-top: 15px;
+    text-overflow: ellipsis;
+    word-wrap: break-word;
 }
 
 .child-overview a {
