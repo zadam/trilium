@@ -203,16 +203,6 @@ async function runAllChecks() {
           FROM 
             notes
           WHERE 
-            isDeleted = 0
-            AND (title IS NULL OR content IS NULL)`,
-        "Note has null title or text", errorList);
-
-    await runCheck(`
-          SELECT 
-            noteId
-          FROM 
-            notes
-          WHERE 
             type != 'text' AND type != 'code' AND type != 'render' AND type != 'file' AND type != 'search'`,
         "Note has invalid type", errorList);
 

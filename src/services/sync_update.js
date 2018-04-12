@@ -3,7 +3,9 @@ const log = require('./log');
 const eventLogService = require('./event_log');
 const syncTableService = require('./sync_table');
 
-async function updateEntity(entityName, entity, sourceId) {
+async function updateEntity(sync, entity, sourceId) {
+    const {entityName} = sync;
+
     if (entityName === 'notes') {
         await updateNote(entity, sourceId);
     }
@@ -14,7 +16,7 @@ async function updateEntity(entityName, entity, sourceId) {
         await updateNoteRevision(entity, sourceId);
     }
     else if (entityName === 'note_reordering') {
-        await updateNoteReordering(entity, sourceId);
+        await updateNoteReordering(sync.entityId, entity, sourceId);
     }
     else if (entityName === 'options') {
         await updateOptions(entity, sourceId);
@@ -94,13 +96,13 @@ async function updateNoteRevision(entity, sourceId) {
     });
 }
 
-async function updateNoteReordering(entity, sourceId) {
+async function updateNoteReordering(entityId, entity, sourceId) {
     await sql.transactional(async () => {
         Object.keys(entity).forEach(async key => {
             await sql.execute("UPDATE branches SET notePosition = ? WHERE branchId = ?", [entity[key], key]);
         });
 
-        await syncTableService.addNoteReorderingSync(entity.parentNoteId, sourceId);
+        await syncTableService.addNoteReorderingSync(entityId, sourceId);
     });
 }
 
