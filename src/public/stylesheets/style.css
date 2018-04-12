@@ -28,6 +28,23 @@
     align-items: center;
 }
 
+#note-detail-wrapper {
+    position: relative;
+    overflow: hidden;
+    grid-area: note-detail;
+    padding-left: 10px;
+    padding-top: 10px;
+    display: flex;
+    flex-direction: column;
+}
+
+#note-detail-component-wrapper {
+    flex-grow: 1;
+    position: relative;
+    overflow: auto;
+    flex-basis: content;
+}
+
 .note-detail-component {
     display: none;
 }

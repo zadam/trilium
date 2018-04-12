@@ -31,7 +31,8 @@ async function show() {
             highlightSelectionMatches: {showToken: /\w/, annotateScrollbar: false},
             lint: true,
             gutters: ["CodeMirror-lint-markers"],
-            lineNumbers: true
+            lineNumbers: true,
+            tabindex: 2 // so that tab from title will lead to code editor focus
         });
 
         codeEditor.on('change', noteDetailService.noteChanged);
