@@ -541,9 +541,9 @@ $(window).bind('hashchange', function() {
 });
 
 utils.bindShortcut('alt+c', () => collapseTree()); // don't use shortened form since collapseTree() accepts argument
+$collapseTreeButton.click(() => collapseTree());
 
 $createTopLevelNoteButton.click(createNewTopLevelNote);
-$collapseTreeButton.click(collapseTree);
 $scrollToCurrentNoteButton.click(scrollToCurrentNote);
 
 export default {
