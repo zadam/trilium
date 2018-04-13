@@ -11,11 +11,10 @@ async function show() {
 
         textEditor = await BalloonEditor.create($noteDetailText[0], {});
 
-        textEditor.document.on('change', noteDetailService.noteChanged);
+        textEditor.model.document.on('change', noteDetailService.noteChanged);
     }
 
-    // temporary workaround for https://github.com/ckeditor/ckeditor5-enter/issues/49
-    textEditor.setData(noteDetailService.getCurrentNote().content || "<p></p>");
+    textEditor.setData(noteDetailService.getCurrentNote().content);
 
     $noteDetailText.show();
 }

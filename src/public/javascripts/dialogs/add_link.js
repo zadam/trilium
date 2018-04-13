@@ -45,8 +45,8 @@ async function showDialog() {
     $clonePrefix.val('');
     $linkTitle.val('');
 
-    function setDefaultLinkTitle(noteId) {
-        const noteTitle = treeUtils.getNoteTitle(noteId);
+    async function setDefaultLinkTitle(noteId) {
+        const noteTitle = await treeUtils.getNoteTitle(noteId);
 
         $linkTitle.val(noteTitle);
     }
@@ -54,7 +54,7 @@ async function showDialog() {
     $autoComplete.autocomplete({
         source: await autocompleteService.getAutocompleteItems(),
         minLength: 0,
-        change: () => {
+        change: async () => {
             const val = $autoComplete.val();
             const notePath = linkService.getNodePathFromLabel(val);
             if (!notePath) {
@@ -64,16 +64,16 @@ async function showDialog() {
             const noteId = treeUtils.getNoteIdFromNotePath(notePath);
 
             if (noteId) {
-                setDefaultLinkTitle(noteId);
+                await setDefaultLinkTitle(noteId);
             }
         },
         // this is called when user goes through autocomplete list with keyboard
         // at this point the item isn't selected yet so we use supplied ui.item to see WHERE the cursor is
-        focus: (event, ui) => {
+        focus: async (event, ui) => {
             const notePath = linkService.getNodePathFromLabel(ui.item.value);
             const noteId = treeUtils.getNoteIdFromNotePath(notePath);
 
-            setDefaultLinkTitle(noteId);
+            await setDefaultLinkTitle(noteId);
         }
     });
 }

@@ -76,9 +76,11 @@ function goToLink(e) {
 
 function addLinkToEditor(linkTitle, linkHref) {
     const editor = noteDetailText.getEditor();
-    const doc = editor.document;
 
-    doc.enqueueChanges(() => editor.data.insertLink(linkTitle, linkHref), doc.selection);
+    editor.model.change( writer => {
+        const insertPosition = editor.model.document.selection.getFirstPosition();
+        writer.insertText(linkTitle, { linkHref: linkHref }, insertPosition);
+    });
 }
 
 function addTextToEditor(text) {
