@@ -68,7 +68,7 @@ async function update(req) {
     const entities = req.body.entities;
 
     for (const {sync, entity} of entities) {
-        await syncUpdateService.updateEntity(sync.entityName, entity, sourceId);
+        await syncUpdateService.updateEntity(sync, entity, sourceId);
     }
 }
 
