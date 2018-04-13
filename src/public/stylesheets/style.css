@@ -4,18 +4,12 @@
 
     display: grid;
     grid-template-areas: "header header"
-                         "tree-actions title"
-                         "search note-detail"
-                         "tree note-detail"
-                         "parent-list note-detail"
-                         "parent-list label-list";
+                         "left-pane title"
+                         "left-pane note-detail";
     grid-template-columns: 2fr 5fr;
     grid-template-rows: auto
                         auto
-                        auto
-                        1fr
-                        auto
-                        auto;
+                        1fr;
 
     justify-content: center;
     grid-gap: 10px;
@@ -291,7 +285,6 @@ div.ui-tooltip {
 .cm-matchhighlight {background-color: #eeeeee}
 
 #label-list {
-    grid-area: label-list;
     color: #777777;
     border-top: 1px solid #eee;
     padding: 5px; display: none;

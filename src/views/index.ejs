@@ -38,7 +38,7 @@
         </div>
       </div>
 
-      <div class="hide-toggle" style="grid-area: tree-actions;">
+      <div style="grid-area: left-pane; display: flex; flex-direction: column;" class="hide-toggle">
         <div style="display: flex; justify-content: space-around; padding: 10px 0 10px 0; margin: 0 20px 0 20px; border: 1px solid #ccc;">
           <a id="create-top-level-note-button" title="Create new top level note" class="icon-action"
              style="background: url('/images/icons/file-plus.png')"></a>
@@ -54,28 +54,28 @@
         </div>
 
         <input type="file" id="import-upload" style="display: none" />
-      </div>
 
-      <div id="search-box" class="hide-toggle" style="grid-area: search; display: none; padding: 10px; margin-top: 10px;">
-        <div style="display: flex; align-items: center;">
-          <input name="search-text" placeholder="Search text, labels" style="flex-grow: 100; margin-left: 5px; margin-right: 5px;" autocomplete="off">
-          <button id="do-search-button" class="btn btn-primary btn-sm" title="Search">Search</button>
+        <div id="search-box" style="display: none; padding: 10px; margin-top: 10px;">
+          <div style="display: flex; align-items: center;">
+            <input name="search-text" placeholder="Search text, labels" style="flex-grow: 100; margin-left: 5px; margin-right: 5px;" autocomplete="off">
+            <button id="do-search-button" class="btn btn-primary btn-sm" title="Search">Search</button>
+          </div>
+
+          <div style="display: flex; align-items: center; justify-content: space-evenly; margin-top: 10px;">
+            <button id="reset-search-button" class="btn btn-sm" title="Reset search">Reset search</button>
+
+            <button id="save-search-button" class="btn btn-sm" title="Save search">Save search</button>
+          </div>
         </div>
 
-        <div style="display: flex; align-items: center; justify-content: space-evenly; margin-top: 10px;">
-          <button id="reset-search-button" class="btn btn-sm" title="Reset search">Reset search</button>
-
-          <button id="save-search-button" class="btn btn-sm" title="Save search">Save search</button>
+        <div id="tree" class="hide-toggle" style="overflow: auto; flex-grow: 100; flex-shrink: 100; margin-top: 10px;">
         </div>
-      </div>
 
-      <div id="tree" class="hide-toggle" style="grid-area: tree; overflow: auto;">
-      </div>
+        <div id="parent-list">
+          <p><strong>Note locations:</strong></p>
 
-      <div id="parent-list" class="hide-toggle">
-        <p><strong>Note locations:</strong></p>
-
-        <ul id="parent-list-inner"></ul>
+          <ul id="parent-list-inner"></ul>
+        </div>
       </div>
 
       <div class="hide-toggle" style="grid-area: title;">
@@ -206,12 +206,12 @@
         </div>
 
         <div id="children-overview"></div>
-      </div>
 
-      <div id="label-list">
-        <button class="btn btn-sm show-labels-button">Labels:</button>
+        <div id="label-list">
+          <button class="btn btn-sm show-labels-button">Labels:</button>
 
-        <span id="label-list-inner"></span>
+          <span id="label-list-inner"></span>
+        </div>
       </div>
     </div>
 
