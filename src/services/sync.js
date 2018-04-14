@@ -101,7 +101,7 @@ async function pullSync(syncContext) {
             log.info(`Skipping pull #${sync.id} ${sync.entityName} ${sync.entityId} because ${sync.sourceId} is a local source id.`);
         }
         else {
-            await syncUpdateService.updateEntity(sync.entityName, entity, syncContext.sourceId);
+            await syncUpdateService.updateEntity(sync, entity, syncContext.sourceId);
         }
 
         await setLastSyncedPull(sync.id);
