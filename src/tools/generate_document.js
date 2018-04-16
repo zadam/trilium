@@ -58,7 +58,7 @@ async function start() {
     }
 
     // we'll create clones for 20% of notes
-    for (let i = 0; i < (noteCount / 5); i++) {
+    for (let i = 0; i < (noteCount / 50); i++) {
         const noteIdToClone = getRandomParentNoteId();
         const parentNoteId = getRandomParentNoteId();
         const prefix = Math.random() > 0.8 ? "prefix" : null;

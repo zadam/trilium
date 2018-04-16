@@ -1,3 +1,4 @@
+INSERT INTO branches (branchId, noteId, parentNoteId, notePosition, prefix, isExpanded, isDeleted, dateModified) VALUES ('root', 'root', 'none', 0, null, 1, 0, '2018-01-01T00:00:00.000Z');
 INSERT INTO branches (branchId, noteId, parentNoteId, notePosition, prefix, isExpanded, isDeleted, dateModified) VALUES ('dLgtLUFn3GoN', '1Heh2acXfPNt', 'root', 21, null, 1, 0, '2017-12-23T00:46:39.304Z');
 INSERT INTO branches (branchId, noteId, parentNoteId, notePosition, prefix, isExpanded, isDeleted, dateModified) VALUES ('QLfS835GSfIh', '3RkyK9LI18dO', '1Heh2acXfPNt', 1, null, 1, 0, '2017-12-23T01:20:04.181Z');
 INSERT INTO branches (branchId, noteId, parentNoteId, notePosition, prefix, isExpanded, isDeleted, dateModified) VALUES ('QJAcYJ1gGUh9', 'L1Ox40M1aEyy', '3RkyK9LI18dO', 0, null, 0, 0, '2017-12-23T01:20:45.365Z');

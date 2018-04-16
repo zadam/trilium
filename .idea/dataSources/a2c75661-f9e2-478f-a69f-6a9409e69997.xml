@@ -388,10 +388,14 @@ imageId</ColNames>
     <column id="91" parent="13" name="title">
       <Position>2</Position>
       <DataType>TEXT|0s</DataType>
+      <NotNull>1</NotNull>
+      <DefaultExpression>&quot;unnamed&quot;</DefaultExpression>
     </column>
     <column id="92" parent="13" name="content">
       <Position>3</Position>
       <DataType>TEXT|0s</DataType>
+      <NotNull>1</NotNull>
+      <DefaultExpression>&quot;&quot;</DefaultExpression>
     </column>
     <column id="93" parent="13" name="isProtected">
       <Position>4</Position>

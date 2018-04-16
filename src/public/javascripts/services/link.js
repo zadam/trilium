@@ -75,7 +75,7 @@ function goToLink(e) {
 }
 
 function addLinkToEditor(linkTitle, linkHref) {
-    const editor = noteDetailText.getEditor();
+    const editor = noteDetailText.getEditor();Rum
 
     editor.model.change( writer => {
         const insertPosition = editor.model.document.selection.getFirstPosition();
