@@ -16,11 +16,16 @@ class NoteShort {
     async getBranches() {
         const branches = [];
 
-        for (const parent of this.treeCache.parents[this.noteId]) {
-            branches.push(await this.treeCache.getBranchByChildParent(this.noteId, parent.noteId));
+        for (const parentNoteId of this.treeCache.parents[this.noteId]) {
+            branches.push(await this.treeCache.getBranchByChildParent(this.noteId, parentNoteId));
         }
 
         return branches;
+    }
+
+    hasChildren() {
+        return this.treeCache.children[this.noteId]
+            && this.treeCache.children[this.noteId].length > 0;
     }
 
     async getChildBranches() {
@@ -30,19 +35,33 @@ class NoteShort {
 
         const branches = [];
 
-        for (const child of this.treeCache.children[this.noteId]) {
-            branches.push(await this.treeCache.getBranchByChildParent(child.noteId, this.noteId));
+        for (const childNoteId of this.treeCache.children[this.noteId]) {
+            branches.push(await this.treeCache.getBranchByChildParent(childNoteId, this.noteId));
         }
 
         return branches;
     }
 
+    async __getNotes(noteIds) {
+        if (!noteIds) {
+            return [];
+        }
+
+        const notes = [];
+
+        for (const noteId of noteIds) {
+            notes.push(await this.treeCache.getNote(noteId));
+        }
+
+        return notes;
+    }
+
     async getParentNotes() {
-        return this.treeCache.parents[this.noteId] || [];
+        return this.__getNotes(this.treeCache.parents[this.noteId]);
     }
 
     async getChildNotes() {
-        return this.treeCache.children[this.noteId] || [];
+        return this.__getNotes(this.treeCache.children[this.noteId]);
     }
 
     get toString() {

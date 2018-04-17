@@ -5,10 +5,10 @@ import server from "./server.js";
 import treeCache from "./tree_cache.js";
 import messagingService from "./messaging.js";
 
-async function prepareTree(noteRows, branchRows) {
-    utils.assertArguments(noteRows);
+async function prepareTree(noteRows, branchRows, parentToChildren) {
+    utils.assertArguments(noteRows, branchRows, parentToChildren);
 
-    treeCache.load(noteRows, branchRows);
+    treeCache.load(noteRows, branchRows, parentToChildren);
 
     return await prepareRealBranch(await treeCache.getNote('root'));
 }
@@ -49,9 +49,7 @@ async function prepareRealBranch(parentNote) {
             expanded: note.type !== 'search' && branch.isExpanded
         };
 
-        const hasChildren = (await note.getChildNotes()).length > 0;
-
-        if (hasChildren || note.type === 'search') {
+        if (note.hasChildren() || note.type === 'search') {
             node.folder = true;
 
             if (node.expanded && note.type !== 'search') {

@@ -285,14 +285,14 @@ async function treeInitialized() {
     }
 }
 
-function initFancyTree(branch) {
-    utils.assertArguments(branch);
+function initFancyTree(tree) {
+    utils.assertArguments(tree);
 
     $tree.fancytree({
         autoScroll: true,
         keyboard: false, // we takover keyboard handling in the hotkeys plugin
         extensions: ["hotkeys", "filter", "dnd", "clones"],
-        source: branch,
+        source: tree,
         scrollParent: $tree,
         click: (event, data) => {
             const targetType = data.targetType;
@@ -375,7 +375,7 @@ async function loadTree() {
         startNotePath = getNotePathFromAddress();
     }
 
-    return await treeBuilder.prepareTree(resp.notes, resp.branches);
+    return await treeBuilder.prepareTree(resp.notes, resp.branches, resp.parentToChildren);
 }
 
 function collapseTree(node = null) {

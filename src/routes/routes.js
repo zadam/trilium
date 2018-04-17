@@ -99,6 +99,7 @@ function register(app) {
     route(GET, '/setup', [auth.checkAppNotInitialized], setupRoute.setupPage);
 
     apiRoute(GET, '/api/tree', treeApiRoute.getTree);
+    apiRoute(POST, '/api/tree/load', treeApiRoute.load);
     apiRoute(PUT, '/api/branches/:branchId/set-prefix', branchesApiRoute.setPrefix);
 
     apiRoute(PUT, '/api/branches/:branchId/move-to/:parentNoteId', branchesApiRoute.moveBranchToParent);
