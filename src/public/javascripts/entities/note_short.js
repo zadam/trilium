@@ -36,20 +36,20 @@ class NoteShort {
         return await this.treeCache.getBranches(branchIds);
     }
 
-    async __getNotes(noteIds) {
-        if (!noteIds) {
-            return [];
-        }
-
-        return this.treeCache.getNotes(noteIds);
+    getParentNoteIds() {
+        return this.treeCache.parents[this.noteId] || [];
     }
 
     async getParentNotes() {
-        return this.__getNotes(this.treeCache.parents[this.noteId]);
+        return await this.treeCache.getNotes(this.getParentNoteIds());
+    }
+
+    getChildNoteIds() {
+        return this.treeCache.children[this.noteId] || [];
     }
 
     async getChildNotes() {
-        return this.__getNotes(this.treeCache.children[this.noteId]);
+        return await this.treeCache.getNotes(this.getChildNoteIds());
     }
 
     get toString() {

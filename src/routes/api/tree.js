@@ -19,12 +19,15 @@ async function getNotes(noteIds) {
 
 async function getRelations(noteIds) {
     const questionMarks = noteIds.map(() => "?").join(",");
+    const doubledNoteIds = noteIds.concat(noteIds);
 
     return await sql.getRows(`SELECT branchId, noteId AS 'childNoteId', parentNoteId FROM branches WHERE isDeleted = 0 
-         AND parentNoteId IN (${questionMarks})`, noteIds);
+         AND (parentNoteId IN (${questionMarks}) OR noteId IN (${questionMarks}))`, doubledNoteIds);
 }
 
 async function getTree() {
+    // we fetch all branches of notes, even if that particular branch isn't visible
+    // this allows us to e.g. detect and properly display clones
     const branches = await sql.getRows(`
         WITH RECURSIVE
             tree(branchId, noteId, isExpanded) AS (
@@ -34,7 +37,7 @@ async function getTree() {
               JOIN tree ON branches.parentNoteId = tree.noteId
               WHERE tree.isExpanded = 1 AND branches.isDeleted = 0
           )
-        SELECT branches.* FROM tree JOIN branches USING(branchId);`);
+        SELECT branches.* FROM tree JOIN branches USING(noteId)`);
 
     const noteIds = branches.map(b => b.noteId);
 

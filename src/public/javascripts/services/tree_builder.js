@@ -94,7 +94,7 @@ async function getExtraClasses(note) {
         extraClasses.push("protected");
     }
 
-    if ((await note.getParentNotes()).length > 1) {
+    if (note.getParentNoteIds().length > 1) {
         extraClasses.push("multiple-parents");
     }
 
