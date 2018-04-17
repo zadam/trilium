@@ -375,7 +375,7 @@ async function loadTree() {
         startNotePath = getNotePathFromAddress();
     }
 
-    return await treeBuilder.prepareTree(resp.notes, resp.branches, resp.parentToChildren);
+    return await treeBuilder.prepareTree(resp.notes, resp.branches, resp.relations);
 }
 
 function collapseTree(node = null) {

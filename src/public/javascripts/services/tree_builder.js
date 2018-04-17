@@ -5,10 +5,10 @@ import server from "./server.js";
 import treeCache from "./tree_cache.js";
 import messagingService from "./messaging.js";
 
-async function prepareTree(noteRows, branchRows, parentToChildren) {
-    utils.assertArguments(noteRows, branchRows, parentToChildren);
+async function prepareTree(noteRows, branchRows, relations) {
+    utils.assertArguments(noteRows, branchRows, relations);
 
-    treeCache.load(noteRows, branchRows, parentToChildren);
+    treeCache.load(noteRows, branchRows, relations);
 
     return await prepareRealBranch(await treeCache.getNote('root'));
 }

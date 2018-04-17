@@ -5,7 +5,7 @@ import infoService from "./info.js";
 import server from "./server.js";
 
 class TreeCache {
-    load(noteRows, branchRows, parentToChildren) {
+    load(noteRows, branchRows, relations) {
         this.parents = {};
         this.children = {};
         this.childParentToBranch = {};
@@ -16,10 +16,10 @@ class TreeCache {
         /** @type {Object.<string, Branch>} */
         this.branches = {};
 
-        this.addResp(noteRows, branchRows, parentToChildren);
+        this.addResp(noteRows, branchRows, relations);
     }
 
-    addResp(noteRows, branchRows, parentToChildren) {
+    addResp(noteRows, branchRows, relations) {
         for (const noteRow of noteRows) {
             const note = new NoteShort(this, noteRow);
 
@@ -32,26 +32,33 @@ class TreeCache {
             this.addBranch(branch);
         }
 
-        for (const relation of parentToChildren) {
+        for (const relation of relations) {
             this.addBranchRelationship(relation.branchId, relation.childNoteId, relation.parentNoteId);
         }
     }
 
+    async getNotes(noteIds) {
+        const missingNoteIds = noteIds.filter(noteId => this.notes[noteId] === undefined);
+
+        if (missingNoteIds.length > 0) {
+            const resp = await server.post('tree/load', { noteIds: missingNoteIds });
+
+            this.addResp(resp.notes, resp.branches, resp.relations);
+        }
+
+        return noteIds.map(noteId => {
+            if (!this.notes[noteId]) {
+                throw new Error(`Can't find note ${noteId}`);
+            }
+            else {
+                return this.notes[noteId];
+            }
+        });
+    }
+
     /** @return NoteShort */
     async getNote(noteId) {
-        if (this.notes[noteId] === undefined) {
-            const resp = await server.post('tree/load', {
-                noteIds: [noteId]
-            });
-
-            this.addResp(resp.notes, resp.branches, resp.parentToChildren);
-        }
-
-        if (!this.notes[noteId]) {
-            throw new Error(`Can't find note ${noteId}`);
-        }
-
-        return this.notes[noteId];
+        return (await this.getNotes([noteId]))[0];
     }
 
     addBranch(branch) {
@@ -61,12 +68,8 @@ class TreeCache {
     }
 
     addBranchRelationship(branchId, childNoteId, parentNoteId) {
-        this.addParentChildRelationship(parentNoteId, childNoteId);
-
         this.childParentToBranch[childNoteId + '-' + parentNoteId] = branchId;
-    }
 
-    addParentChildRelationship(parentNoteId, childNoteId) {
         this.parents[childNoteId] = this.parents[childNoteId] || [];
 
         if (!this.parents[childNoteId].includes(parentNoteId)) {
@@ -86,36 +89,46 @@ class TreeCache {
         this.addBranch(branch);
     }
 
+    async getBranches(branchIds) {
+        const missingBranchIds = branchIds.filter(branchId => this.branches[branchId] === undefined);
+
+        if (missingBranchIds.length > 0) {
+            const resp = await server.post('tree/load', { branchIds: branchIds });
+
+            this.addResp(resp.notes, resp.branches, resp.relations);
+        }
+
+        return branchIds.map(branchId => {
+            if (!this.branches[branchId]) {
+                throw new Error(`Can't find branch ${branchId}`);
+            }
+            else {
+                return this.branches[branchId];
+            }
+        });
+    }
+
     /** @return Branch */
     async getBranch(branchId) {
-        if (this.branches[branchId] === undefined) {
-            const resp = await server.post('tree/load', {
-                branchIds: [branchId]
-            });
-
-            this.addResp(resp.notes, resp.branches, resp.parentToChildren);
-        }
-
-        if (!this.branches[branchId]) {
-            throw new Error(`Can't find branch ${branchId}`);
-        }
-
-        return this.branches[branchId];
+        return (await this.getBranches([branchId]))[0];
     }
 
     /** @return Branch */
     async getBranchByChildParent(childNoteId, parentNoteId) {
-        // this will make sure the note and its relationships are loaded
-        await this.getNote(parentNoteId);
+        const branchId = this.getBranchIdByChildParent(childNoteId, parentNoteId);
 
-        const key = (childNoteId + '-' + parentNoteId);
+        return await this.getBranch(branchId);
+    }
+
+    getBranchIdByChildParent(childNoteId, parentNoteId) {
+        const key = childNoteId + '-' + parentNoteId;
         const branchId = this.childParentToBranch[key];
 
         if (!branchId) {
             infoService.throwError("Cannot find branch for child-parent=" + key);
         }
 
-        return await this.getBranch(branchId);
+        return branchId;
     }
 
     /* Move note from one parent to another. */

@@ -17,7 +17,7 @@ async function getNotes(noteIds) {
     return notes;
 }
 
-async function getParentToChildren(noteIds) {
+async function getRelations(noteIds) {
     const questionMarks = noteIds.map(() => "?").join(",");
 
     return await sql.getRows(`SELECT branchId, noteId AS 'childNoteId', parentNoteId FROM branches WHERE isDeleted = 0 
@@ -40,13 +40,13 @@ async function getTree() {
 
     const notes = await getNotes(noteIds);
 
-    const parentToChildren = await getParentToChildren(noteIds);
+    const relations = await getRelations(noteIds);
 
     return {
         startNotePath: await optionService.getOption('startNotePath'),
         branches,
         notes,
-        parentToChildren
+        relations
     };
 }
 
@@ -64,12 +64,12 @@ async function load(req) {
 
     const notes = await getNotes(noteIds);
 
-    const parentToChildren = await getParentToChildren(noteIds);
+    const relations = await getRelations(noteIds);
 
     return {
         branches,
         notes,
-        parentToChildren
+        relations
     };
 }
 

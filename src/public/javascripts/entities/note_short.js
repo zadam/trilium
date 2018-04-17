@@ -14,13 +14,10 @@ class NoteShort {
     }
 
     async getBranches() {
-        const branches = [];
+        const branchIds = this.treeCache.parents[this.noteId].map(
+            parentNoteId => this.treeCache.getBranchIdByChildParent(this.noteId, parentNoteId));
 
-        for (const parentNoteId of this.treeCache.parents[this.noteId]) {
-            branches.push(await this.treeCache.getBranchByChildParent(this.noteId, parentNoteId));
-        }
-
-        return branches;
+        return this.treeCache.getBranches(branchIds);
     }
 
     hasChildren() {
@@ -33,13 +30,10 @@ class NoteShort {
             return [];
         }
 
-        const branches = [];
+        const branchIds = this.treeCache.children[this.noteId].map(
+            childNoteId => this.treeCache.getBranchIdByChildParent(childNoteId, this.noteId));
 
-        for (const childNoteId of this.treeCache.children[this.noteId]) {
-            branches.push(await this.treeCache.getBranchByChildParent(childNoteId, this.noteId));
-        }
-
-        return branches;
+        return await this.treeCache.getBranches(branchIds);
     }
 
     async __getNotes(noteIds) {
@@ -47,13 +41,7 @@ class NoteShort {
             return [];
         }
 
-        const notes = [];
-
-        for (const noteId of noteIds) {
-            notes.push(await this.treeCache.getNote(noteId));
-        }
-
-        return notes;
+        return this.treeCache.getNotes(noteIds);
     }
 
     async getParentNotes() {
