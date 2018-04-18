@@ -6,7 +6,7 @@
     grid-template-areas: "header header"
                          "left-pane title"
                          "left-pane note-detail";
-    grid-template-columns: 2fr 5fr;
+    grid-template-columns: 29% 70%;
     grid-template-rows: auto
                         auto
                         1fr;
@@ -61,8 +61,6 @@
 }
 
 ul.fancytree-container {
-    overflow: auto;
-    position: relative;
     outline: none !important;
 }
 
@@ -161,12 +159,21 @@ div.ui-tooltip {
     width: auto;
 }
 
+#tree {
+    overflow: auto;
+    flex-grow: 100;
+    flex-shrink: 100;
+    margin-top: 10px;
+}
+
 #parent-list {
     display: none;
     margin-left: 20px;
     border-top: 2px solid #eee;
     padding-top: 10px;
     grid-area: parent-list;
+    max-height: 300px;
+    overflow: auto;
 }
 
 #parent-list ul {
