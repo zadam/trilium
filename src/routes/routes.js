@@ -8,6 +8,7 @@ const multer = require('multer')();
 const treeApiRoute = require('./api/tree');
 const notesApiRoute = require('./api/notes');
 const branchesApiRoute = require('./api/branches');
+const autocompleteApiRoute = require('./api/autocomplete');
 const cloningApiRoute = require('./api/cloning');
 const noteRevisionsApiRoute = require('./api/note_revisions');
 const recentChangesApiRoute = require('./api/recent_changes');
@@ -107,6 +108,8 @@ function register(app) {
     apiRoute(PUT, '/api/branches/:branchId/move-after/:afterBranchId', branchesApiRoute.moveBranchAfterNote);
     apiRoute(PUT, '/api/branches/:branchId/expanded/:expanded', branchesApiRoute.setExpanded);
     apiRoute(DELETE, '/api/branches/:branchId', branchesApiRoute.deleteBranch);
+
+    apiRoute(GET, '/api/autocomplete', autocompleteApiRoute.getAutocomplete);
 
     apiRoute(GET, '/api/notes/:noteId', notesApiRoute.getNote);
     apiRoute(PUT, '/api/notes/:noteId', notesApiRoute.updateNote);
