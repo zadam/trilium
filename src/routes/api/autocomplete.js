@@ -9,7 +9,7 @@ async function getAutocomplete(req) {
 
     return results.map(res => {
         return {
-            value: res.title + '(' + res.path + ')',
+            value: res.title + ' (' + res.path + ')',
             title: res.title
         }
     });

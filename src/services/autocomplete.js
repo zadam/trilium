@@ -42,30 +42,49 @@ function getResults(query) {
         }
     }
 
+    results.sort((a, b) => a.title < b.title ? -1 : 1);
+
     return results;
 }
 
 function search(noteIds, tokens, path, results) {
-    if (!noteIds) {
+    if (!noteIds || noteIds.length === 0) {
+        return;
+    }
+
+    if (tokens.length === 0) {
+        let curNoteId = noteIds[0];
+
+        while (curNoteId !== 'root') {
+            path.push(curNoteId);
+
+            const parents = childToParent[curNoteId];
+
+            if (!parents || parents.length === 0) {
+                return;
+            }
+
+            curNoteId = parents[0];
+        }
+
+        path.reverse();
+
+        const noteTitle = getNoteTitle(path);
+
+        results.push({
+            title: noteTitle,
+            path: path.join('/')
+        });
+
         return;
     }
 
     for (const noteId of noteIds) {
+        if (results.length >= 200) {
+            return;
+        }
+
         if (noteId === 'root') {
-            if (tokens.length === 0) {
-                const reversedPath = path.slice();
-                reversedPath.reverse();
-
-                const noteTitle = getNoteTitle(reversedPath);
-
-                console.log(noteTitle);
-
-                results.push({
-                    title: noteTitle,
-                    path: reversedPath.join('/')
-                });
-            }
-
             continue;
         }
 
