@@ -6,6 +6,7 @@ const repository = require('./repository');
 let noteTitles;
 let noteIds;
 const childToParent = {};
+const hideInAutocomplete = {};
 
 async function load() {
     noteTitles = await sql.getMap(`SELECT noteId, LOWER(title) FROM notes WHERE isDeleted = 0 AND isProtected = 0`);
@@ -16,6 +17,12 @@ async function load() {
     for (const rel of relations) {
         childToParent[rel.noteId] = childToParent[rel.noteId] || [];
         childToParent[rel.noteId].push(rel.parentNoteId);
+    }
+
+    const hiddenLabels = await sql.getColumn(`SELECT noteId FROM labels WHERE isDeleted = 0 AND name = 'hideInAutocomplete'`);
+
+    for (const noteId of hiddenLabels) {
+        hideInAutocomplete[noteId] = true;
     }
 }
 
@@ -28,6 +35,10 @@ function getResults(query) {
     const results = [];
 
     for (const noteId in noteTitles) {
+        if (hideInAutocomplete[noteId]) {
+            continue;
+        }
+
         const title = noteTitles[noteId];
         const foundTokens = [];
 
@@ -55,28 +66,16 @@ function search(noteIds, tokens, path, results) {
     }
 
     if (tokens.length === 0) {
-        let curNoteId = noteIds[0];
+        const retPath = getSomePath(noteIds, path);
 
-        while (curNoteId !== 'root') {
-            path.push(curNoteId);
+        if (retPath) {
+            const noteTitle = getNoteTitle(retPath);
 
-            const parents = childToParent[curNoteId];
-
-            if (!parents || parents.length === 0) {
-                return;
-            }
-
-            curNoteId = parents[0];
+            results.push({
+                title: noteTitle,
+                path: retPath.join('/')
+            });
         }
-
-        path.reverse();
-
-        const noteTitle = getNoteTitle(path);
-
-        results.push({
-            title: noteTitle,
-            path: path.join('/')
-        });
 
         return;
     }
@@ -86,7 +85,7 @@ function search(noteIds, tokens, path, results) {
             return;
         }
 
-        if (noteId === 'root') {
+        if (noteId === 'root' || hideInAutocomplete[noteId]) {
             continue;
         }
 
@@ -116,6 +115,34 @@ function getNoteTitle(path) {
     return titles.join(' / ');
 }
 
+function getSomePath(noteIds, path) {
+    for (const noteId of noteIds) {
+        if (noteId === 'root') {
+            path.reverse();
+
+            return path;
+        }
+
+        if (hideInAutocomplete[noteId]) {
+            continue;
+        }
+
+        const parents = childToParent[noteId];
+
+        if (!parents || parents.length === 0) {
+            continue;
+        }
+
+        const retPath = getSomePath(parents, path.concat([noteId]));
+
+        if (retPath) {
+            return retPath;
+        }
+    }
+
+    return false;
+}
+
 syncTableService.addListener(async (entityName, entityId) => {
     if (entityName === 'notes') {
         const note = await repository.getNote(entityId);
@@ -126,6 +153,22 @@ syncTableService.addListener(async (entityName, entityId) => {
         }
         else {
             noteTitles[note.noteId] = note.title;
+        }
+    }
+    else if (entityName === 'labels') {
+        const label = await repository.getLabel(entityId);
+
+        if (label.name === 'hideInAutocomplete') {
+            // we're not using label object directly, since there might be other non-deleted hideInAutocomplete label
+            const hideLabel = await repository.getEntity(`SELECT * FROM labels WHERE isDeleted = 0 
+                                 AND name = 'hideInAutocomplete' AND noteId = ?`, [label.noteId]);
+
+            if (hideLabel) {
+                hideInAutocomplete[label.noteId] = true;
+            }
+            else {
+                delete hideInAutocomplete[label.noteId];
+            }
         }
     }
 });
