@@ -1,5 +1,7 @@
 const sql = require('./sql');
 const sqlInit = require('./sql_init');
+const syncTableService = require('./sync_table');
+const repository = require('./repository');
 
 let noteTitles;
 let noteIds;
@@ -113,6 +115,20 @@ function getNoteTitle(path) {
 
     return titles.join(' / ');
 }
+
+syncTableService.addListener(async (entityName, entityId) => {
+    if (entityName === 'notes') {
+        const note = await repository.getNote(entityId);
+
+        if (note.isDeleted) {
+            delete noteTitles[note.noteId];
+            delete childToParent[note.noteId];
+        }
+        else {
+            noteTitles[note.noteId] = note.title;
+        }
+    }
+});
 
 sqlInit.dbReady.then(load);
 
