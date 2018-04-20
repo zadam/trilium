@@ -203,7 +203,7 @@ async function showParentList(noteId, node) {
                 item = $("<span/>").attr("title", "Current note").append(title);
             }
             else {
-                item = linkService.createNoteLink(notePath, title);
+                item = await linkService.createNoteLink(notePath, title);
             }
 
             $parentListList.append($("<li/>").append(item));

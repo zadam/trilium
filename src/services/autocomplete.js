@@ -8,9 +8,14 @@ let noteIds;
 const childToParent = {};
 const hideInAutocomplete = {};
 
+// key is 'childNoteId-parentNoteId' as a replacement for branchId which we don't use here
+let prefixes = {};
+
 async function load() {
     noteTitles = await sql.getMap(`SELECT noteId, LOWER(title) FROM notes WHERE isDeleted = 0 AND isProtected = 0`);
     noteIds = Object.keys(noteTitles);
+
+    prefixes = await sql.getMap(`SELECT noteId || '-' || parentNoteId, prefix FROM branches WHERE prefix IS NOT NULL AND prefix != ''`);
 
     const relations = await sql.getRows(`SELECT noteId, parentNoteId FROM branches WHERE isDeleted = 0`);
 
@@ -39,19 +44,27 @@ function getResults(query) {
             continue;
         }
 
-        const title = noteTitles[noteId];
-        const foundTokens = [];
-
-        for (const token of tokens) {
-            if (title.includes(token)) {
-                foundTokens.push(token);
-            }
+        const parents = childToParent[noteId];
+        if (!parents) {
+            continue;
         }
 
-        if (foundTokens.length > 0) {
-            const remainingTokens = tokens.filter(token => !foundTokens.includes(token));
+        for (const parentNoteId of parents) {
+            const prefix = prefixes[noteId + '-' + parentNoteId];
+            const title = (prefix || '') + ' ' + noteTitles[noteId];
+            const foundTokens = [];
 
-            search(childToParent[noteId], remainingTokens, [noteId], results);
+            for (const token of tokens) {
+                if (title.includes(token)) {
+                    foundTokens.push(token);
+                }
+            }
+
+            if (foundTokens.length > 0) {
+                const remainingTokens = tokens.filter(token => !foundTokens.includes(token));
+
+                search(parentNoteId, remainingTokens, [noteId], results);
+            }
         }
     }
 
@@ -60,13 +73,9 @@ function getResults(query) {
     return results;
 }
 
-function search(noteIds, tokens, path, results) {
-    if (!noteIds || noteIds.length === 0) {
-        return;
-    }
-
+function search(noteId, tokens, path, results) {
     if (tokens.length === 0) {
-        const retPath = getSomePath(noteIds, path);
+        const retPath = getSomePath(noteId, path);
 
         if (retPath) {
             const noteTitle = getNoteTitle(retPath);
@@ -80,16 +89,22 @@ function search(noteIds, tokens, path, results) {
         return;
     }
 
-    for (const noteId of noteIds) {
+    const parents = childToParent[noteId];
+    if (!parents) {
+        return;
+    }
+
+    for (const parentNoteId of parents) {
         if (results.length >= 200) {
             return;
         }
 
-        if (noteId === 'root' || hideInAutocomplete[noteId]) {
+        if (parentNoteId === 'root' || hideInAutocomplete[parentNoteId]) {
             continue;
         }
 
-        const title = noteTitles[noteId];
+        const prefix = prefixes[noteId + '-' + parentNoteId];
+        const title = (prefix || '') + ' ' + noteTitles[noteId];
         const foundTokens = [];
 
         for (const token of tokens) {
@@ -101,39 +116,44 @@ function search(noteIds, tokens, path, results) {
         if (foundTokens.length > 0) {
             const remainingTokens = tokens.filter(token => !foundTokens.includes(token));
 
-            search(childToParent[noteId], remainingTokens, path.concat([noteId]), results);
+            search(parentNoteId, remainingTokens, path.concat([noteId]), results);
         }
         else {
-            search(childToParent[noteId], tokens, path.concat([noteId]), results);
+            search(parentNoteId, tokens, path.concat([noteId]), results);
         }
     }
 }
 
 function getNoteTitle(path) {
-    const titles = path.map(noteId => noteTitles[noteId]);
+    const titles = [];
+
+    let parentNoteId = 'root';
+
+    for (const noteId of path) {
+        const prefix = prefixes[noteId + '-' + parentNoteId];
+        const title = (prefix ? (prefix + ' - ') : '') + noteTitles[noteId];
+
+        titles.push(title);
+        parentNoteId = noteId;
+    }
 
     return titles.join(' / ');
 }
 
-function getSomePath(noteIds, path) {
-    for (const noteId of noteIds) {
-        if (noteId === 'root') {
-            path.reverse();
+function getSomePath(noteId, path) {
+    if (noteId === 'root') {
+        path.reverse();
 
-            return path;
-        }
+        return path;
+    }
 
-        if (hideInAutocomplete[noteId]) {
-            continue;
-        }
+    const parents = childToParent[noteId];
+    if (!parents || parents.length === 0) {
+        return false;
+    }
 
-        const parents = childToParent[noteId];
-
-        if (!parents || parents.length === 0) {
-            continue;
-        }
-
-        const retPath = getSomePath(parents, path.concat([noteId]));
+    for (const parentNoteId of parents) {
+        const retPath = getSomePath(parentNoteId, path.concat([noteId]));
 
         if (retPath) {
             return retPath;
@@ -153,6 +173,25 @@ syncTableService.addListener(async (entityName, entityId) => {
         }
         else {
             noteTitles[note.noteId] = note.title;
+        }
+    }
+    else if (entityName === 'branches') {
+        const branch = await repository.getBranch(entityId);
+
+        if (childToParent[branch.noteId]) {
+            childToParent[branch.noteId] = childToParent[branch.noteId].filter(noteId => noteId !== branch.parentNoteId)
+        }
+
+        if (branch.isDeleted) {
+            delete prefixes[branch.noteId + '-' + branch.parentNoteId];
+        }
+        else {
+            if (branch.prefix) {
+                prefixes[branch.noteId + '-' + branch.parentNoteId] = branch.prefix;
+            }
+
+            childToParent[branch.noteId] = childToParent[branch.noteId] || [];
+            childToParent[branch.noteId].push(branch.parentNoteId);
         }
     }
     else if (entityName === 'labels') {

@@ -23,11 +23,11 @@ function getNodePathFromLabel(label) {
     return null;
 }
 
-function createNoteLink(notePath, noteTitle) {
+async function createNoteLink(notePath, noteTitle) {
     if (!noteTitle) {
         const noteId = treeUtils.getNoteIdFromNotePath(notePath);
 
-        noteTitle = treeUtils.getNoteTitle(noteId);
+        noteTitle = await treeUtils.getNoteTitle(noteId);
     }
 
     const noteLink = $("<a>", {
@@ -75,7 +75,7 @@ function goToLink(e) {
 }
 
 function addLinkToEditor(linkTitle, linkHref) {
-    const editor = noteDetailText.getEditor();Rum
+    const editor = noteDetailText.getEditor();
 
     editor.model.change( writer => {
         const insertPosition = editor.model.document.selection.getFirstPosition();

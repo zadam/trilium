@@ -22,7 +22,7 @@ async function showDialog() {
         const dateTime = utils.formatDateTime(utils.parseDate(event.dateAdded));
 
         if (event.noteId) {
-            const noteLink = linkService.createNoteLink(event.noteId).prop('outerHTML');
+            const noteLink = await linkService.createNoteLink(event.noteId).prop('outerHTML');
 
             event.comment = event.comment.replace('<note>', noteLink);
         }

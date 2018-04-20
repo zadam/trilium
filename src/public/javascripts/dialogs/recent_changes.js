@@ -40,7 +40,7 @@ async function showDialog() {
                 noteLink = change.current_title;
             }
             else {
-                noteLink = linkService.createNoteLink(change.noteId, change.title);
+                noteLink = await linkService.createNoteLink(change.noteId, change.title);
             }
 
             changesListEl.append($('<li>')

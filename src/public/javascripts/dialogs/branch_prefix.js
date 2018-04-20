@@ -25,7 +25,7 @@ async function showDialog() {
 
     $treePrefixInput.val(branch.prefix).focus();
 
-    const noteTitle = treeUtils.getNoteTitle(currentNode.data.noteId);
+    const noteTitle = await treeUtils.getNoteTitle(currentNode.data.noteId);
 
     $noteTitle.html(noteTitle);
 }
