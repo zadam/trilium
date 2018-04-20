@@ -1,9 +1,11 @@
 const sql = require('./sql');
 const sqlInit = require('./sql_init');
-const syncTableService = require('./sync_table');
+const eventService = require('./events');
 const repository = require('./repository');
+const protectedSessionService = require('./protected_session');
 
 let noteTitles;
+let protectedNoteTitles;
 let noteIds;
 const childToParent = {};
 const hideInAutocomplete = {};
@@ -15,7 +17,7 @@ async function load() {
     noteTitles = await sql.getMap(`SELECT noteId, LOWER(title) FROM notes WHERE isDeleted = 0 AND isProtected = 0`);
     noteIds = Object.keys(noteTitles);
 
-    prefixes = await sql.getMap(`SELECT noteId || '-' || parentNoteId, prefix FROM branches WHERE prefix IS NOT NULL AND prefix != ''`);
+    prefixes = await sql.getMap(`SELECT noteId || '-' || parentNoteId, LOWER(prefix) FROM branches WHERE prefix IS NOT NULL AND prefix != ''`);
 
     const relations = await sql.getRows(`SELECT noteId, parentNoteId FROM branches WHERE isDeleted = 0`);
 
@@ -39,7 +41,13 @@ function getResults(query) {
     const tokens = query.toLowerCase().split(" ");
     const results = [];
 
-    for (const noteId in noteTitles) {
+    let noteIds = Object.keys(noteTitles);
+
+    if (protectedSessionService.isProtectedSessionAvailable()) {
+        noteIds = noteIds.concat(Object.keys(protectedNoteTitles));
+    }
+
+    for (const noteId of noteIds) {
         if (hideInAutocomplete[noteId]) {
             continue;
         }
@@ -50,8 +58,7 @@ function getResults(query) {
         }
 
         for (const parentNoteId of parents) {
-            const prefix = prefixes[noteId + '-' + parentNoteId];
-            const title = (prefix || '') + ' ' + noteTitles[noteId];
+            const title = getNoteTitle(noteId, parentNoteId);
             const foundTokens = [];
 
             for (const token of tokens) {
@@ -78,7 +85,7 @@ function search(noteId, tokens, path, results) {
         const retPath = getSomePath(noteId, path);
 
         if (retPath) {
-            const noteTitle = getNoteTitle(retPath);
+            const noteTitle = getNoteTitleForPath(retPath);
 
             results.push({
                 title: noteTitle,
@@ -102,9 +109,7 @@ function search(noteId, tokens, path, results) {
         if (parentNoteId === 'root' || hideInAutocomplete[parentNoteId]) {
             continue;
         }
-
-        const prefix = prefixes[noteId + '-' + parentNoteId];
-        const title = (prefix || '') + ' ' + noteTitles[noteId];
+        const title = getNoteTitle(noteId, parentNoteId);
         const foundTokens = [];
 
         for (const token of tokens) {
@@ -124,14 +129,30 @@ function search(noteId, tokens, path, results) {
     }
 }
 
-function getNoteTitle(path) {
+function getNoteTitle(noteId, parentNoteId) {
+    const prefix = prefixes[noteId + '-' + parentNoteId];
+
+    let title = noteTitles[noteId];
+
+    if (!title) {
+        if (protectedSessionService.isProtectedSessionAvailable()) {
+            title = protectedNoteTitles[noteId];
+        }
+        else {
+            title = '[protected]';
+        }
+    }
+
+    return (prefix ? (prefix + ' - ') : '') + title;
+}
+
+function getNoteTitleForPath(path) {
     const titles = [];
 
     let parentNoteId = 'root';
 
     for (const noteId of path) {
-        const prefix = prefixes[noteId + '-' + parentNoteId];
-        const title = (prefix ? (prefix + ' - ') : '') + noteTitles[noteId];
+        const title = getNoteTitle(noteId, parentNoteId);
 
         titles.push(title);
         parentNoteId = noteId;
@@ -163,7 +184,7 @@ function getSomePath(noteId, path) {
     return false;
 }
 
-syncTableService.addListener(async (entityName, entityId) => {
+eventService.subscribe(eventService.ENTITY_CHANGED, async ({entityName, entityId}) => {
     if (entityName === 'notes') {
         const note = await repository.getNote(entityId);
 
@@ -209,6 +230,14 @@ syncTableService.addListener(async (entityName, entityId) => {
                 delete hideInAutocomplete[label.noteId];
             }
         }
+    }
+});
+
+eventService.subscribe(eventService.ENTER_PROTECTED_SESSION, async () => {
+    protectedNoteTitles = await sql.getMap(`SELECT noteId, title FROM notes WHERE isDeleted = 0 AND isProtected = 1`);
+
+    for (const noteId in protectedNoteTitles) {
+        protectedNoteTitles[noteId] = protectedSessionService.decryptNoteTitle(noteId, protectedNoteTitles[noteId]);
     }
 });
 

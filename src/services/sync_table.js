@@ -4,12 +4,7 @@ const dateUtils = require('./date_utils');
 const syncSetup = require('./sync_setup');
 const log = require('./log');
 const cls = require('./cls');
-
-const listeners = [];
-
-function addListener(listener) {
-    listeners.push(listener);
-}
+const eventService = require('./events');
 
 async function addNoteSync(noteId, sourceId) {
     await addEntitySync("notes", noteId, sourceId)
@@ -65,10 +60,10 @@ async function addEntitySync(entityName, entityId, sourceId) {
         await sql.execute("UPDATE options SET value = (SELECT MAX(id) FROM sync) WHERE name IN('lastSyncedPush', 'lastSyncedPull')");
     }
 
-    for (const listener of listeners) {
-        // not awaiting to not block the execution
-        listener(entityName, entityId);
-    }
+    eventService.emit(eventService.ENTITY_CHANGED, {
+        entityName,
+        entityId
+    });
 }
 
 async function cleanupSyncRowsForMissingEntities(entityName, entityKey) {
@@ -115,7 +110,6 @@ async function fillAllSyncRows() {
 }
 
 module.exports = {
-    addListener,
     addNoteSync,
     addBranchSync,
     addNoteReorderingSync,

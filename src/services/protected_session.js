@@ -6,7 +6,7 @@ const cls = require('./cls');
 
 const dataKeyMap = {};
 
-function setDataKey(req, decryptedDataKey) {
+function setDataKey(decryptedDataKey) {
     const protectedSessionId = utils.randomSecureToken(32);
 
     dataKeyMap[protectedSessionId] = Array.from(decryptedDataKey); // can't store buffer in session
@@ -28,10 +28,18 @@ function getDataKey() {
     return dataKeyMap[protectedSessionId];
 }
 
-function isProtectedSessionAvailable(req) {
-    const protectedSessionId = getProtectedSessionId(req);
+function isProtectedSessionAvailable() {
+    const protectedSessionId = getProtectedSessionId();
 
     return !!dataKeyMap[protectedSessionId];
+}
+
+function decryptNoteTitle(noteId, encryptedTitle) {
+    const dataKey = getDataKey();
+
+    const iv = dataEncryptionService.noteTitleIv(noteId);
+
+    return dataEncryptionService.decryptString(dataKey, iv, encryptedTitle);
 }
 
 function decryptNote(note) {
@@ -99,6 +107,7 @@ module.exports = {
     setDataKey,
     getDataKey,
     isProtectedSessionAvailable,
+    decryptNoteTitle,
     decryptNote,
     decryptNotes,
     decryptNoteRevision,

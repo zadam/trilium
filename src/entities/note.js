@@ -1,7 +1,7 @@
 "use strict";
 
 const Entity = require('./entity');
-const protected_session = require('../services/protected_session');
+const protectedSessionService = require('../services/protected_session');
 const repository = require('../services/repository');
 const dateUtils = require('../services/date_utils');
 
@@ -14,7 +14,7 @@ class Note extends Entity {
 
         // check if there's noteId, otherwise this is a new entity which wasn't encrypted yet
         if (this.isProtected && this.noteId) {
-            protected_session.decryptNote(this);
+            protectedSessionService.decryptNote(this);
         }
 
         this.setContent(this.content);
@@ -146,7 +146,7 @@ class Note extends Entity {
         }
 
         if (this.isProtected) {
-            protected_session.encryptNote(this);
+            protectedSessionService.encryptNote(this);
         }
 
         if (!this.isDeleted) {

@@ -1,8 +1,7 @@
 "use strict";
 
 const Entity = require('./entity');
-const protected_session = require('../services/protected_session');
-const utils = require('../services/utils');
+const protectedSessionService = require('../services/protected_session');
 const repository = require('../services/repository');
 
 class NoteRevision extends Entity {
@@ -13,7 +12,7 @@ class NoteRevision extends Entity {
         super(row);
 
         if (this.isProtected) {
-            protected_session.decryptNoteRevision(this);
+            protectedSessionService.decryptNoteRevision(this);
         }
     }
 
@@ -25,7 +24,7 @@ class NoteRevision extends Entity {
         super.beforeSaving();
 
         if (this.isProtected) {
-            protected_session.encryptNoteRevision(this);
+            protectedSessionService.encryptNoteRevision(this);
         }
     }
 }

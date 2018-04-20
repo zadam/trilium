@@ -7,6 +7,8 @@ const sourceIdService = require('../../services/source_id');
 const passwordEncryptionService = require('../../services/password_encryption');
 const protectedSessionService = require('../../services/protected_session');
 const appInfo = require('../../services/app_info');
+const eventService = require('../../services/events');
+const cls = require('../../services/cls');
 
 async function loginSync(req) {
     const timestampStr = req.body.timestamp;
@@ -53,7 +55,11 @@ async function loginToProtectedSession(req) {
 
     const decryptedDataKey = await passwordEncryptionService.getDataKey(password);
 
-    const protectedSessionId = protectedSessionService.setDataKey(req, decryptedDataKey);
+    const protectedSessionId = protectedSessionService.setDataKey(decryptedDataKey);
+
+    cls.namespace.set('protectedSessionId', protectedSessionId);
+
+    eventService.emit(eventService.ENTER_PROTECTED_SESSION);
 
     return {
         success: true,
