@@ -47,7 +47,7 @@ async function sortNotes(req) {
 
 async function protectBranch(req) {
     const noteId = req.params.noteId;
-    const note = repository.getNote(noteId);
+    const note = await repository.getNote(noteId);
     const protect = !!parseInt(req.params.isProtected);
 
     await noteService.protectNoteRecursively(note, protect);
