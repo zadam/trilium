@@ -31,6 +31,7 @@ async function getNoteStartingWith(parentNoteId, startsWith) {
 }
 
 async function getRootCalendarNote() {
+    // some caching here could be useful (e.g. in CLS)
     let rootNote = await labelService.getNoteWithLabel(CALENDAR_ROOT_LABEL);
 
     if (!rootNote) {
@@ -89,10 +90,8 @@ async function getMonthNote(dateTimeStr, rootNote) {
     return monthNote;
 }
 
-async function getDateNote(dateTimeStr, rootNote = null) {
-    if (!rootNote) {
-        rootNote = await getRootCalendarNote();
-    }
+async function getDateNote(dateTimeStr) {
+    const rootNote = await getRootCalendarNote();
 
     const dateStr = dateTimeStr.substr(0, 10);
     const dayNumber = dateTimeStr.substr(8, 2);
