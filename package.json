@@ -9,7 +9,7 @@
     "url": "https://github.com/zadam/trilium.git"
   },
   "scripts": {
-    "start": "node ./bin/www",
+    "start": "node ./src/www",
     "test-electron": "xo",
     "rebuild-electron": "electron-rebuild",
     "start-electron": "electron . --disable-gpu",
