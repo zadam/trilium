@@ -33,7 +33,7 @@
 }
 
 #note-detail-component-wrapper {
-    flex-grow: 1;
+    flex-grow: 100;
     position: relative;
     overflow: auto;
     flex-basis: content;
@@ -271,7 +271,6 @@ div.ui-tooltip {
 }
 
 .CodeMirror {
-    height: 100%;
     font-family: "Liberation Mono", "Lucida Console", monospace;
 }
 

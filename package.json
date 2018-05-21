@@ -22,7 +22,7 @@
   "dependencies": {
     "async-mutex": "^0.1.3",
     "axios": "^0.18",
-    "body-parser": "~1.18.2",
+    "body-parser": "^1.18.3",
     "cls-hooked": "^4.2.2",
     "cookie-parser": "~1.4.3",
     "debug": "~3.1.0",
@@ -33,8 +33,8 @@
     "electron-in-page-search": "^1.3.2",
     "express": "~4.16.3",
     "express-session": "^1.15.6",
-    "fs-extra": "^6.0.0",
-    "helmet": "^3.12.0",
+    "fs-extra": "^6.0.1",
+    "helmet": "^3.12.1",
     "html": "^1.0.0",
     "image-type": "^3.0.0",
     "imagemin": "^5.3.1",
@@ -48,7 +48,7 @@
     "open": "0.0.5",
     "rand-token": "^0.4.0",
     "rcedit": "^1.1.0",
-    "request": "^2.85.0",
+    "request": "^2.87.0",
     "request-promise": "^4.2.2",
     "rimraf": "^2.6.2",
     "sanitize-filename": "^1.6.1",
@@ -56,20 +56,20 @@
     "serve-favicon": "~2.5.0",
     "session-file-store": "^1.2.0",
     "simple-node-logger": "^0.93.37",
-    "sqlite": "^2.9.1",
-    "tar-stream": "^1.6.0",
+    "sqlite": "^2.9.2",
+    "tar-stream": "^1.6.1",
     "unescape": "^1.0.1",
-    "ws": "^5.1.1"
+    "ws": "^5.2.0"
   },
   "devDependencies": {
-    "electron": "^2.0.0",
+    "electron": "^2.0.1",
     "electron-compile": "^6.4.2",
-    "electron-packager": "^12.0.2",
+    "electron-packager": "^12.1.0",
     "electron-prebuilt-compile": "2.0.0",
     "electron-rebuild": "^1.7.3",
     "lorem-ipsum": "^1.0.4",
     "tape": "^4.9.0",
-    "xo": "^0.21.0"
+    "xo": "^0.21.1"
   },
   "config": {
     "forge": {
