@@ -1,7 +1,6 @@
 const repository = require('./repository');
 const utils = require('./utils');
 const dateUtils = require('./date_utils');
-const syncTableService = require('./sync_table');
 const appInfo = require('./app_info');
 const Option = require('../entities/option');
 
@@ -22,10 +21,6 @@ async function setOption(name, value) {
         throw new Error(`Option ${name} doesn't exist`);
     }
 
-    if (option.isSynced) {
-        await syncTableService.addOptionsSync(name);
-    }
-
     option.value = value;
 
     await option.save();
@@ -37,10 +32,6 @@ async function createOption(name, value, isSynced) {
         value: value,
         isSynced: isSynced
     }).save();
-
-    if (isSynced) {
-        await syncTableService.addOptionsSync(name);
-    }
 }
 
 async function initOptions(startNotePath) {

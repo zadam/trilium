@@ -59,7 +59,9 @@ async function updateEntity(entity) {
 
         const primaryKey = entity[entity.constructor.primaryKeyName];
 
-        await syncTableService.addEntitySync(entity.constructor.tableName, primaryKey);
+        if (entity.constructor.tableName !== 'options' || entity.isSynced) {
+            await syncTableService.addEntitySync(entity.constructor.tableName, primaryKey);
+        }
     });
 }
 
