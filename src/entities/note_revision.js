@@ -7,6 +7,7 @@ const repository = require('../services/repository');
 class NoteRevision extends Entity {
     static get tableName() { return "note_revisions"; }
     static get primaryKeyName() { return "noteRevisionId"; }
+    static get syncedProperties() { return ["noteRevisionId", "noteId", "title", "content", "dateModifiedFrom", "dateModifiedTo"]; }
 
     constructor(row) {
         super(row);

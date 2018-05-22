@@ -6,6 +6,7 @@ const dateUtils = require('../services/date_utils');
 class Image extends Entity {
     static get tableName() { return "images"; }
     static get primaryKeyName() { return "imageId"; }
+    static get syncedProperties() { return ["imageId", "format", "checksum", "name", "isDeleted", "dateModified", "dateCreated"]; }
 
     beforeSaving() {
         super.beforeSaving();

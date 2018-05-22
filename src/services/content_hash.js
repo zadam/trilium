@@ -5,117 +5,40 @@ const utils = require('./utils');
 const log = require('./log');
 const eventLogService = require('./event_log');
 const messagingService = require('./messaging');
+const ApiToken = require('../entities/api_token');
+const Branch = require('../entities/branch');
+const Image = require('../entities/image');
+const Note = require('../entities/note');
+const NoteImage = require('../entities/note_image');
+const Label = require('../entities/label');
+const NoteRevision = require('../entities/note_revision');
+const RecentNote = require('../entities/recent_note');
+const Option = require('../entities/option');
 
-function getHash(rows) {
-    let hash = '';
+async function getHash(entityConstructor, whereBranch) {
+    let contentToHash = await sql.getValue(`SELECT GROUP_CONCAT(hash) FROM ${entityConstructor.tableName} `
+                + (whereBranch ? `WHERE ${whereBranch} ` : '') + `ORDER BY ${entityConstructor.primaryKeyName}`);
 
-    for (const row of rows) {
-        hash = utils.hash(hash + JSON.stringify(row));
+    if (!contentToHash) { // might be null in case of no rows
+        contentToHash = "";
     }
 
-    return hash;
+    return utils.hash(contentToHash);
 }
 
 async function getHashes() {
     const startTime = new Date();
 
     const hashes = {
-        notes: getHash(await sql.getRows(`
-            SELECT
-              noteId,
-              title,
-              content,
-              type,
-              dateModified,
-              isProtected,
-              isDeleted
-            FROM notes
-            ORDER BY noteId`)),
-
-        branches: getHash(await sql.getRows(`
-            SELECT
-               branchId,
-               noteId,
-               parentNoteId,
-               notePosition,
-               dateModified,
-               isDeleted,
-               prefix
-             FROM branches
-             ORDER BY branchId`)),
-
-        note_revisions: getHash(await sql.getRows(`
-            SELECT
-              noteRevisionId,
-              noteId,
-              title,
-              content,
-              dateModifiedFrom,
-              dateModifiedTo
-            FROM note_revisions
-            ORDER BY noteRevisionId`)),
-
-        recent_notes: getHash(await sql.getRows(`
-           SELECT
-             branchId,
-             notePath,
-             dateAccessed,
-             isDeleted
-           FROM recent_notes
-           ORDER BY notePath`)),
-
-        options: getHash(await sql.getRows(`
-           SELECT 
-             name,
-             value 
-           FROM options 
-           WHERE isSynced = 1
-           ORDER BY name`)),
-
-        // we don't include image data on purpose because they are quite large, checksum is good enough
-        // to represent the data anyway
-        images: getHash(await sql.getRows(`
-          SELECT 
-            imageId,
-            format,
-            checksum,
-            name,
-            isDeleted,
-            dateModified,
-            dateCreated
-          FROM images  
-          ORDER BY imageId`)),
-
-        note_images: getHash(await sql.getRows(`
-          SELECT
-            noteImageId,
-            noteId,
-            imageId,
-            isDeleted,
-            dateModified,
-            dateCreated
-          FROM note_images
-          ORDER BY noteImageId`)),
-
-        labels: getHash(await sql.getRows(`
-          SELECT 
-            labelId,
-            noteId,
-            name,
-            value,
-            dateModified,
-            dateCreated
-          FROM labels  
-          ORDER BY labelId`)),
-
-        api_tokens: getHash(await sql.getRows(`
-          SELECT 
-            apiTokenId,
-            token,
-            dateCreated,
-            isDeleted
-          FROM api_tokens  
-          ORDER BY apiTokenId`))
+        notes: await getHash(Note),
+        branches: await getHash(Branch),
+        note_revisions: await getHash(NoteRevision),
+        recent_notes: await getHash(RecentNote),
+        options: await getHash(Option, "isSynced = 1"),
+        images: await getHash(Image),
+        note_images: await getHash(NoteImage),
+        labels: await getHash(Label),
+        api_tokens: await getHash(ApiToken)
     };
 
     const elapseTimeMs = new Date().getTime() - startTime.getTime();

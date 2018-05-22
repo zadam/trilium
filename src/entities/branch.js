@@ -8,6 +8,7 @@ const sql = require('../services/sql');
 class Branch extends Entity {
     static get tableName() { return "branches"; }
     static get primaryKeyName() { return "branchId"; }
+    static get syncedProperties() { return ["branchId", "noteId", "parentNoteId", "notePosition", "dateModified", "isDeleted", "prefix"]; }
 
     async getNote() {
         return await repository.getEntity("SELECT * FROM notes WHERE noteId = ?", [this.noteId]);
