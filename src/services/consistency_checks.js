@@ -3,6 +3,7 @@
 const sql = require('./sql');
 const sqlInit = require('./sql_init');
 const log = require('./log');
+const utils = require('./utils');
 const messagingService = require('./messaging');
 const syncMutexService = require('./sync_mutex');
 const cls = require('./cls');

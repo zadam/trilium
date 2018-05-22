@@ -212,7 +212,8 @@ const primaryKeys = {
     "images": "imageId",
     "note_images": "noteImageId",
     "labels": "labelId",
-    "api_tokens": "apiTokenId"
+    "api_tokens": "apiTokenId",
+    "options": "name"
 };
 
 async function getEntityRow(entityName, entityId) {

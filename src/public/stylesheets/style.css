@@ -337,3 +337,14 @@ div.ui-tooltip {
 .child-overview a {
     color: #444;
 }
+
+#sql-console-query {
+    height: 150px;
+    width: 100%;
+    border: 1px solid #ccc;
+    margin-bottom: 10px;
+}
+
+#sql-console-query .CodeMirror {
+    height: 150px;
+}
