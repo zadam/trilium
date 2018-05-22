@@ -1,41 +1,42 @@
-const sql = require('./sql');
+const repository = require('./repository');
 const utils = require('./utils');
 const dateUtils = require('./date_utils');
 const syncTableService = require('./sync_table');
 const appInfo = require('./app_info');
+const Option = require('../entities/option');
 
 async function getOption(name) {
-    const row = await await sql.getRowOrNull("SELECT value FROM options WHERE name = ?", [name]);
+    const option = await repository.getOption(name);
 
-    if (!row) {
+    if (!option) {
         throw new Error("Option " + name + " doesn't exist");
     }
 
-    return row.value;
+    return option.value;
 }
 
 async function setOption(name, value) {
-    const opt = await sql.getRow("SELECT * FROM options WHERE name = ?", [name]);
+    const option = await repository.getOption(name);
 
-    if (!opt) {
+    if (!option) {
         throw new Error(`Option ${name} doesn't exist`);
     }
 
-    if (opt.isSynced) {
+    if (option.isSynced) {
         await syncTableService.addOptionsSync(name);
     }
 
-    await sql.execute("UPDATE options SET value = ?, dateModified = ? WHERE name = ?",
-        [value, dateUtils.nowDate(), name]);
+    option.value = value;
+
+    await option.save();
 }
 
 async function createOption(name, value, isSynced) {
-    await sql.insert("options", {
+    await new Option({
         name: name,
         value: value,
-        isSynced: isSynced,
-        dateModified: dateUtils.nowDate()
-    });
+        isSynced: isSynced
+    }).save();
 
     if (isSynced) {
         await syncTableService.addOptionsSync(name);

@@ -41,6 +41,10 @@ async function getLabel(labelId) {
     return await getEntity("SELECT * FROM labels WHERE labelId = ?", [labelId]);
 }
 
+async function getOption(name) {
+    return await getEntity("SELECT * FROM options WHERE name = ?", [name]);
+}
+
 async function updateEntity(entity) {
     if (entity.beforeSaving) {
         await entity.beforeSaving();
@@ -66,6 +70,7 @@ module.exports = {
     getBranch,
     getImage,
     getLabel,
+    getOption,
     updateEntity,
     setEntityConstructor
 };

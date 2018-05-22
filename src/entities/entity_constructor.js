@@ -6,6 +6,7 @@ const Branch = require('../entities/branch');
 const Label = require('../entities/label');
 const RecentNote = require('../entities/recent_note');
 const ApiToken = require('../entities/api_token');
+const Option = require('../entities/option');
 const repository = require('../services/repository');
 
 function createEntityFromRow(row) {
@@ -34,6 +35,9 @@ function createEntityFromRow(row) {
     }
     else if (row.noteId) {
         entity = new Note(row);
+    }
+    else if (row.name) {
+        entity = new Option(row);
     }
     else {
         throw new Error('Unknown entity type for row: ' + JSON.stringify(row));
