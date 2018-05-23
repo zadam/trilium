@@ -8,7 +8,7 @@ const sql = require('../services/sql');
 class Label extends Entity {
     static get tableName() { return "labels"; }
     static get primaryKeyName() { return "labelId"; }
-    static get syncedProperties() { return ["labelId", "noteId", "name", "value", "dateModified", "dateCreated"]; }
+    static get hashedProperties() { return ["labelId", "noteId", "name", "value", "dateModified", "dateCreated"]; }
 
     async getNote() {
         return await repository.getEntity("SELECT * FROM notes WHERE noteId = ?", [this.noteId]);

@@ -6,7 +6,7 @@ const dateUtils = require('../services/date_utils');
 class ApiToken extends Entity {
     static get tableName() { return "api_tokens"; }
     static get primaryKeyName() { return "apiTokenId"; }
-    static get syncedProperties() { return ["apiTokenId", "token", "dateCreated", "isDeleted"]; }
+    static get hashedProperties() { return ["apiTokenId", "token", "dateCreated", "isDeleted"]; }
 
     beforeSaving() {
         super.beforeSaving();

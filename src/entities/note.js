@@ -8,7 +8,7 @@ const dateUtils = require('../services/date_utils');
 class Note extends Entity {
     static get tableName() { return "notes"; }
     static get primaryKeyName() { return "noteId"; }
-    static get syncedProperties() { return ["noteId", "title", "content", "type", "dateModified", "isProtected", "isDeleted"]; }
+    static get hashedProperties() { return ["noteId", "title", "content", "type", "dateModified", "isProtected", "isDeleted"]; }
 
     constructor(row) {
         super(row);

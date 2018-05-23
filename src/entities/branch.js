@@ -8,7 +8,8 @@ const sql = require('../services/sql');
 class Branch extends Entity {
     static get tableName() { return "branches"; }
     static get primaryKeyName() { return "branchId"; }
-    static get syncedProperties() { return ["branchId", "noteId", "parentNoteId", "notePosition", "dateModified", "isDeleted", "prefix"]; }
+    // notePosition is not part of hash because it would produce a lot of updates in case of reordering
+    static get hashedProperties() { return ["branchId", "noteId", "parentNoteId", "dateModified", "isDeleted", "prefix"]; }
 
     async getNote() {
         return await repository.getEntity("SELECT * FROM notes WHERE noteId = ?", [this.noteId]);

@@ -6,7 +6,7 @@ const dateUtils = require('../services/date_utils');
 class Option extends Entity {
     static get tableName() { return "options"; }
     static get primaryKeyName() { return "name"; }
-    static get syncedProperties() { return ["name", "value"]; }
+    static get hashedProperties() { return ["name", "value"]; }
 
     beforeSaving() {
         super.beforeSaving();

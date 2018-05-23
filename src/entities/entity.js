@@ -17,7 +17,7 @@ class Entity {
 
         let contentToHash = "";
 
-        for (const propertyName of this.constructor.syncedProperties) {
+        for (const propertyName of this.constructor.hashedProperties) {
             contentToHash += "|" + this[propertyName];
         }
 
