@@ -1,6 +1,8 @@
 const sql = require('./sql');
 const ScriptContext = require('./script_context');
 const repository = require('./repository');
+const cls = require('./cls');
+const sourceIdService = require('./source_id');
 
 async function executeNote(note) {
     if (!note.isJavaScript()) {
@@ -49,6 +51,9 @@ async function executeScript(script, params, startNoteId, currentNoteId) {
 }
 
 async function execute(ctx, script, paramsStr) {
+    // scripts run as "server" sourceId so clients recognize the changes as "foreign" and update themselves
+    cls.namespace.set('sourceId', sourceIdService.getCurrentSourceId());
+
     return await (function() { return eval(`const apiContext = this;\r\n(${script}\r\n)(${paramsStr})`); }.call(ctx));
 }
 

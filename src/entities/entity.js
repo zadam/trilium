@@ -21,7 +21,10 @@ class Entity {
             contentToHash += "|" + this[propertyName];
         }
 
-        this["hash"] = utils.hash(contentToHash).substr(0, 10);
+        // this IF is to ease the migration from before hashed options, can be later removed
+        if (this.constructor.tableName !== 'options' || this.isSynced) {
+            this["hash"] = utils.hash(contentToHash).substr(0, 10);
+        }
     }
 
     async save() {
