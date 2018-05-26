@@ -2,7 +2,8 @@ import cloningService from '../services/cloning.js';
 import linkService from '../services/link.js';
 import noteDetailService from '../services/note_detail.js';
 import treeUtils from '../services/tree_utils.js';
-import autocompleteService from '../services/autocomplete.js';
+import server from "../services/server.js";
+import noteDetailText from "../services/note_detail_text.js";
 
 const $dialog = $("#add-link-dialog");
 const $form = $("#add-link-form");
@@ -11,6 +12,7 @@ const $linkTitle = $("#link-title");
 const $clonePrefix = $("#clone-prefix");
 const $linkTitleFormGroup = $("#add-link-title-form-group");
 const $prefixFormGroup = $("#add-link-prefix-form-group");
+const $linkTypeDiv = $("#add-link-type-div");
 const $linkTypes = $("input[name='add-link-type']");
 const $linkTypeHtml = $linkTypes.filter('input[value="html"]');
 
@@ -52,8 +54,12 @@ async function showDialog() {
     }
 
     $autoComplete.autocomplete({
-        source: await autocompleteService.getAutocompleteItems(),
-        minLength: 0,
+        source: async function(request, response) {
+            const result = await server.get('autocomplete?query=' + encodeURIComponent(request.term));
+
+            response(result);
+        },
+        minLength: 2,
         change: async () => {
             const val = $autoComplete.val();
             const notePath = linkService.getNodePathFromLabel(val);
@@ -92,7 +98,16 @@ $form.submit(() => {
 
             $dialog.dialog("close");
 
-            linkService.addLinkToEditor(linkTitle, '#' + notePath);
+            const linkHref = '#' + notePath;
+
+            if (hasSelection()) {
+                const editor = noteDetailText.getEditor();
+
+                editor.execute('link', linkHref);
+            }
+            else {
+                linkService.addLinkToEditor(linkTitle, linkHref);
+            }
         }
         else if (linkType === 'selected-to-current') {
             const prefix = $clonePrefix.val();
@@ -113,17 +128,21 @@ $form.submit(() => {
     return false;
 });
 
+// returns true if user selected some text, false if there's no selection
+function hasSelection() {
+    const model = noteDetailText.getEditor().model;
+    const selection = model.document.selection;
+
+    return !selection.isCollapsed;
+}
+
 function linkTypeChanged() {
     const value = $linkTypes.filter(":checked").val();
 
-    if (value === 'html') {
-        $linkTitleFormGroup.show();
-        $prefixFormGroup.hide();
-    }
-    else {
-        $linkTitleFormGroup.hide();
-        $prefixFormGroup.show();
-    }
+    $linkTitleFormGroup.toggle(!hasSelection() && value === 'html');
+    $prefixFormGroup.toggle(!hasSelection() && value !== 'html');
+
+    $linkTypeDiv.toggle(!hasSelection());
 }
 
 $linkTypes.change(linkTypeChanged);
