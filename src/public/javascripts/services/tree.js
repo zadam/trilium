@@ -81,7 +81,7 @@ async function expandToNote(notePath, expandOpts) {
 
     const noteId = treeUtils.getNoteIdFromNotePath(notePath);
 
-    let parentNoteId = 'root';
+    let parentNoteId = 'none';
 
     for (const childNoteId of runPath) {
         const node = getNodesByNoteId(childNoteId).find(node => node.data.parentNoteId === parentNoteId);
@@ -115,7 +115,10 @@ async function getRunPath(notePath) {
     utils.assertArguments(notePath);
 
     const path = notePath.split("/").reverse();
-    path.push('root');
+
+    if (!path.includes("root")) {
+        path.push('root');
+    }
 
     const effectivePath = [];
     let childNoteId = null;
@@ -162,7 +165,7 @@ async function getRunPath(notePath) {
             }
         }
 
-        if (parentNoteId === 'root') {
+        if (parentNoteId === 'none') {
             break;
         }
         else {
@@ -179,10 +182,6 @@ async function showParentList(noteId, node) {
 
     const note = await treeCache.getNote(noteId);
     const parents = await note.getParentNotes();
-
-    if (!parents.length) {
-        infoService.throwError("Can't find parents for noteId=" + noteId);
-    }
 
     if (parents.length <= 1) {
         $parentList.hide();
@@ -294,6 +293,7 @@ function initFancyTree(tree) {
         extensions: ["hotkeys", "filter", "dnd", "clones"],
         source: tree,
         scrollParent: $tree,
+        minExpandLevel: 2, // root can't be collapsed
         click: (event, data) => {
             const targetType = data.targetType;
             const node = data.node;

@@ -105,6 +105,15 @@ span.fancytree-node.fancytree-active-clone:not(.fancytree-active) .fancytree-tit
     font-weight: bold;
 }
 
+span.fancytree-node.tree-root > span.fancytree-icon {
+    background: url("../images/icons/tree-root.png") 0 0;
+}
+
+/* first nesting level has lower left padding to avoid extra left padding. Other levels are not affected */
+.ui-fancytree > li > ul {
+    padding-left: 5px;
+}
+
 /* By default not focused active tree item is not easily visible, this makes it more visible */
 span.fancytree-active:not(.fancytree-focused) .fancytree-title {
     background-color: #ddd !important;

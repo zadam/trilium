@@ -58,6 +58,10 @@ class TreeCache {
 
     /** @return NoteShort */
     async getNote(noteId) {
+        if (noteId === 'none') {
+            return null;
+        }
+
         return (await this.getNotes([noteId]))[0];
     }
 
@@ -68,6 +72,10 @@ class TreeCache {
     }
 
     addBranchRelationship(branchId, childNoteId, parentNoteId) {
+        if (parentNoteId === 'none') { // applies only to root element
+            return;
+        }
+
         this.childParentToBranch[childNoteId + '-' + parentNoteId] = branchId;
 
         this.parents[childNoteId] = this.parents[childNoteId] || [];

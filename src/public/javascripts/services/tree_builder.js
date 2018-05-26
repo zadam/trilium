@@ -10,7 +10,7 @@ async function prepareTree(noteRows, branchRows, relations) {
 
     treeCache.load(noteRows, branchRows, relations);
 
-    return await prepareRealBranch(await treeCache.getNote('root'));
+    return [ await prepareNode(await treeCache.getBranch('root')) ];
 }
 
 async function prepareBranch(note) {
@@ -20,6 +20,35 @@ async function prepareBranch(note) {
     else {
         return await prepareRealBranch(note);
     }
+}
+
+async function prepareNode(branch) {
+    const note = await branch.getNote();
+    const title = (branch.prefix ? (branch.prefix + " - ") : "") + note.title;
+
+    const node = {
+        noteId: note.noteId,
+        parentNoteId: branch.parentNoteId,
+        branchId: branch.branchId,
+        isProtected: note.isProtected,
+        title: utils.escapeHtml(title),
+        extraClasses: await getExtraClasses(note),
+        refKey: note.noteId,
+        expanded: note.type !== 'search' && branch.isExpanded
+    };
+
+    if (note.hasChildren() || note.type === 'search') {
+        node.folder = true;
+
+        if (node.expanded && note.type !== 'search') {
+            node.children = await prepareRealBranch(note);
+        }
+        else {
+            node.lazy = true;
+        }
+    }
+
+    return node;
 }
 
 async function prepareRealBranch(parentNote) {
@@ -35,30 +64,7 @@ async function prepareRealBranch(parentNote) {
     const noteList = [];
 
     for (const branch of childBranches) {
-        const note = await branch.getNote();
-        const title = (branch.prefix ? (branch.prefix + " - ") : "") + note.title;
-
-        const node = {
-            noteId: note.noteId,
-            parentNoteId: branch.parentNoteId,
-            branchId: branch.branchId,
-            isProtected: note.isProtected,
-            title: utils.escapeHtml(title),
-            extraClasses: await getExtraClasses(note),
-            refKey: note.noteId,
-            expanded: note.type !== 'search' && branch.isExpanded
-        };
-
-        if (note.hasChildren() || note.type === 'search') {
-            node.folder = true;
-
-            if (node.expanded && note.type !== 'search') {
-                node.children = await prepareRealBranch(note);
-            }
-            else {
-                node.lazy = true;
-            }
-        }
+        const node = await prepareNode(branch);
 
         noteList.push(node);
     }
@@ -89,6 +95,10 @@ async function getExtraClasses(note) {
     utils.assertArguments(note);
 
     const extraClasses = [];
+
+    if (note.noteId === 'root') {
+        extraClasses.push("tree-root");
+    }
 
     if (note.isProtected) {
         extraClasses.push("protected");

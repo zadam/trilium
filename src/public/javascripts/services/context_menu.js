@@ -107,12 +107,16 @@ const contextMenuOptions = {
         const branch = await treeCache.getBranch(node.data.branchId);
         const note = await treeCache.getNote(node.data.noteId);
         const parentNote = await treeCache.getNote(branch.parentNoteId);
+        const isNotRoot = note.noteId !== 'root';
 
         // Modify menu entries depending on node status
-        $tree.contextmenu("enableEntry", "pasteAfter", clipboardIds.length > 0 && (!parentNote || parentNote.type !== 'search'));
-        $tree.contextmenu("enableEntry", "pasteInto", clipboardIds.length > 0 && note.type !== 'search');
-        $tree.contextmenu("enableEntry", "insertNoteHere", !parentNote || parentNote.type !== 'search');
+        $tree.contextmenu("enableEntry", "insertNoteHere", isNotRoot && parentNote.type !== 'search');
         $tree.contextmenu("enableEntry", "insertChildNote", note.type !== 'search');
+        $tree.contextmenu("enableEntry", "delete", isNotRoot);
+        $tree.contextmenu("enableEntry", "copy", isNotRoot);
+        $tree.contextmenu("enableEntry", "cut", isNotRoot);
+        $tree.contextmenu("enableEntry", "pasteAfter", clipboardIds.length > 0 && isNotRoot && parentNote.type !== 'search');
+        $tree.contextmenu("enableEntry", "pasteInto", clipboardIds.length > 0 && note.type !== 'search');
         $tree.contextmenu("enableEntry", "importBranch", note.type !== 'search');
         $tree.contextmenu("enableEntry", "exportBranch", note.type !== 'search');
 
