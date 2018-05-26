@@ -279,6 +279,10 @@ div.ui-tooltip {
     min-height: 200px;
 }
 
+#note-detail-render {
+    min-height: 200px;
+}
+
 .CodeMirror {
     font-family: "Liberation Mono", "Lucida Console", monospace;
     height: auto;

@@ -40,7 +40,7 @@ class Note extends Entity {
     }
 
     isHtml() {
-        return (this.type === "code" || this.type === "file") && this.mime === "text/html";
+        return (this.type === "code" || this.type === "file" || this.type === "render") && this.mime === "text/html";
     }
 
     getScriptEnv() {

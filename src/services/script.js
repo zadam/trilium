@@ -73,7 +73,7 @@ function getParams(params) {
 }
 
 async function getScriptBundle(note, root = true, scriptEnv = null, includedNoteIds = []) {
-    if (!note.isJavaScript() && !note.isHtml() && note.type !== 'render') {
+    if (!note.isJavaScript() && !note.isHtml()) {
         return;
     }
 

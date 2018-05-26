@@ -64,24 +64,27 @@ function focus() {
 }
 
 async function executeCurrentNote() {
-    if (noteDetailService.getCurrentNoteType() === 'code') {
-        // make sure note is saved so we load latest changes
-        await noteDetailService.saveNoteIfChanged();
-
-        const currentNote = noteDetailService.getCurrentNote();
-
-        if (currentNote.mime.endsWith("env=frontend")) {
-            const bundle = await server.get('script/bundle/' + noteDetailService.getCurrentNoteId());
-
-            bundleService.executeBundle(bundle);
-        }
-
-        if (currentNote.mime.endsWith("env=backend")) {
-            await server.post('script/run/' + noteDetailService.getCurrentNoteId());
-        }
-
-        infoService.showMessage("Note executed");
+    // ctrl+enter is also used elsewhere so make sure we're running only when appropriate
+    if (noteDetailService.getCurrentNoteType() !== 'code') {
+        return;
     }
+
+    // make sure note is saved so we load latest changes
+    await noteDetailService.saveNoteIfChanged();
+
+    const currentNote = noteDetailService.getCurrentNote();
+
+    if (currentNote.mime.endsWith("env=frontend")) {
+        const bundle = await server.get('script/bundle/' + noteDetailService.getCurrentNoteId());
+
+        bundleService.executeBundle(bundle);
+    }
+
+    if (currentNote.mime.endsWith("env=backend")) {
+        await server.post('script/run/' + noteDetailService.getCurrentNoteId());
+    }
+
+    infoService.showMessage("Note executed");
 }
 
 $(document).bind('keydown', "ctrl+return", executeCurrentNote);

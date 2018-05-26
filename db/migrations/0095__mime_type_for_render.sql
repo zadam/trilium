@@ -1,0 +1,1 @@
+UPDATE notes SET mime = 'text/html' WHERE type = 'render';

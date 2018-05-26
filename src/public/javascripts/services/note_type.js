@@ -4,6 +4,9 @@ import server from './server.js';
 import infoService from "./info.js";
 
 const $executeScriptButton = $("#execute-script-button");
+const $toggleEditButton = $('#toggle-edit-button');
+const $renderButton = $('#render-button');
+
 const noteTypeModel = new NoteTypeModel();
 
 function NoteTypeModel() {
@@ -107,7 +110,7 @@ function NoteTypeModel() {
 
     this.selectRender = function() {
         self.type('render');
-        self.mime('');
+        self.mime('text/html');
 
         save();
     };
@@ -128,6 +131,9 @@ function NoteTypeModel() {
 
     this.updateExecuteScriptButtonVisibility = function() {
         $executeScriptButton.toggle(self.mime().startsWith('application/javascript'));
+
+        $toggleEditButton.toggle(self.type() === 'render');
+        $renderButton.toggle(self.type() === 'render');
     }
 }
 
