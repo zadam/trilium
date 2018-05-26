@@ -3,6 +3,7 @@ const sqlInit = require('./sql_init');
 const eventService = require('./events');
 const repository = require('./repository');
 const protectedSessionService = require('./protected_session');
+const utils = require('./utils');
 
 let noteTitles;
 let protectedNoteTitles;
@@ -14,10 +15,10 @@ const hideInAutocomplete = {};
 let prefixes = {};
 
 async function load() {
-    noteTitles = await sql.getMap(`SELECT noteId, LOWER(title) FROM notes WHERE isDeleted = 0 AND isProtected = 0`);
+    noteTitles = await sql.getMap(`SELECT noteId, title FROM notes WHERE isDeleted = 0 AND isProtected = 0`);
     noteIds = Object.keys(noteTitles);
 
-    prefixes = await sql.getMap(`SELECT noteId || '-' || parentNoteId, LOWER(prefix) FROM branches WHERE prefix IS NOT NULL AND prefix != ''`);
+    prefixes = await sql.getMap(`SELECT noteId || '-' || parentNoteId, prefix FROM branches WHERE prefix IS NOT NULL AND prefix != ''`);
 
     const relations = await sql.getRows(`SELECT noteId, parentNoteId FROM branches WHERE isDeleted = 0`);
 
@@ -58,7 +59,7 @@ function getResults(query) {
         }
 
         for (const parentNoteId of parents) {
-            const title = getNoteTitle(noteId, parentNoteId);
+            const title = getNoteTitle(noteId, parentNoteId).toLowerCase();
             const foundTokens = [];
 
             for (const token of tokens) {
@@ -241,7 +242,7 @@ eventService.subscribe(eventService.ENTER_PROTECTED_SESSION, async () => {
     }
 });
 
-sqlInit.dbReady.then(load);
+sqlInit.dbReady.then(() => utils.stopWatch("Autocomplete load", load));
 
 module.exports = {
     getResults
