@@ -13,18 +13,27 @@ let codeEditorInitialized;
 async function show() {
     codeEditorInitialized = false;
 
+    // if the note is empty, it doesn't make sense to do render-only since nothing will be rendered
+    if (!noteDetailService.getCurrentNote().content.trim()) {
+        toggleEdit();
+    }
+
     $noteDetailRender.show();
 
     await render();
 }
 
-$toggleEditButton.click(() => {
+async function toggleEdit() {
     if ($noteDetailCode.is(":visible")) {
         $noteDetailCode.hide();
     }
     else {
         if (!codeEditorInitialized) {
-            noteDetailCodeService.show();
+            await noteDetailCodeService.show();
+
+            // because we can't properly scroll only the editor without scrolling the rendering
+            // we limit its height
+            $noteDetailCode.find('.CodeMirror').css('height', '300');
 
             codeEditorInitialized = true;
         }
@@ -32,7 +41,9 @@ $toggleEditButton.click(() => {
             $noteDetailCode.show();
         }
     }
-});
+}
+
+$toggleEditButton.click(toggleEdit);
 
 $renderButton.click(render);
 
