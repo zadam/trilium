@@ -59,6 +59,10 @@ function getResults(query) {
         }
 
         for (const parentNoteId of parents) {
+            if (hideInAutocomplete[parentNoteId]) {
+                continue;
+            }
+
             const title = getNoteTitle(noteId, parentNoteId).toLowerCase();
             const foundTokens = [];
 
@@ -110,6 +114,7 @@ function search(noteId, tokens, path, results) {
         if (parentNoteId === 'root' || hideInAutocomplete[parentNoteId]) {
             continue;
         }
+
         const title = getNoteTitle(noteId, parentNoteId);
         const foundTokens = [];
 
