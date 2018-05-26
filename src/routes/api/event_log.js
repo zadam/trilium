@@ -5,7 +5,7 @@ const sql = require('../../services/sql');
 async function getEventLog() {
     await deleteOld();
 
-    return await sql.getRows("SELECT * FROM event_log ORDER BY dateAdded DESC");
+    return await sql.getRows("SELECT * FROM event_log ORDER BY dateCreated DESC");
 }
 
 async function deleteOld() {

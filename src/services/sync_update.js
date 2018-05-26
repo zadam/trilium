@@ -127,7 +127,7 @@ async function updateOptions(entity, sourceId) {
 async function updateRecentNotes(entity, sourceId) {
     const orig = await sql.getRowOrNull("SELECT * FROM recent_notes WHERE branchId = ?", [entity.branchId]);
 
-    if (orig === null || orig.dateAccessed < entity.dateAccessed) {
+    if (orig === null || orig.dateCreated < entity.dateCreated) {
         await sql.transactional(async () => {
             await sql.replace('recent_notes', entity);
 

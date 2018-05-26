@@ -27,7 +27,11 @@ class Branch extends Entity {
             this.isDeleted = false;
         }
 
-        this.dateModified = dateUtils.nowDate()
+        if (!this.dateCreated) {
+            this.dateCreated = dateUtils.nowDate();
+        }
+
+        this.dateModified = dateUtils.nowDate();
     }
 }
 

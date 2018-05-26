@@ -16,7 +16,7 @@ async function getRecentNotes() {
         recent_notes.isDeleted = 0
         AND branches.isDeleted = 0
       ORDER BY 
-        dateAccessed DESC
+        dateCreated DESC
       LIMIT 200`);
 }
 
@@ -26,9 +26,7 @@ async function addRecentNote(req) {
 
     await new RecentNote({
         branchId: branchId,
-        notePath: notePath,
-        dateAccessed: dateUtils.nowDate(),
-        isDeleted: 0
+        notePath: notePath
     }).save();
 
     await optionService.setOption('startNotePath', notePath);
