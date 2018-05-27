@@ -45,6 +45,10 @@ function registerEntrypoints() {
     utils.bindShortcut('alt+o', sqlConsoleDialog.showDialog);
 
     if (utils.isElectron()) {
+        $("#history-navigation").show();
+        $("#history-back-button").click(window.history.back);
+        $("#history-forward-button").click(window.history.forward);
+
         utils.bindShortcut('alt+left', window.history.back);
         utils.bindShortcut('alt+right', window.history.forward);
     }

@@ -367,3 +367,8 @@ div.ui-tooltip {
 #sql-console-query .CodeMirror {
     height: 150px;
 }
+
+#history-navigation {
+    margin: 0 20px 0 5px;
+    display: flex;
+}
