@@ -207,13 +207,12 @@ const primaryKeys = {
     "notes": "noteId",
     "branches": "branchId",
     "note_revisions": "noteRevisionId",
-    "option": "name",
     "recent_notes": "branchId",
     "images": "imageId",
     "note_images": "noteImageId",
     "labels": "labelId",
     "api_tokens": "apiTokenId",
-    "options": "name"
+    "options": "optionId"
 };
 
 async function getEntityRow(entityName, entityId) {

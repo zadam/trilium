@@ -13,11 +13,6 @@ let codeEditorInitialized;
 async function show() {
     codeEditorInitialized = false;
 
-    // if the note is empty, it doesn't make sense to do render-only since nothing will be rendered
-    if (!noteDetailService.getCurrentNote().content.trim()) {
-        toggleEdit();
-    }
-
     $noteDetailRender.show();
 
     await render();
@@ -60,6 +55,11 @@ async function render() {
     const bundle = await server.get('script/bundle/' + noteDetailService.getCurrentNoteId());
 
     $noteDetailRender.html(bundle.html);
+
+    // if the note is empty, it doesn't make sense to do render-only since nothing will be rendered
+    if (!bundle.html.trim()) {
+        toggleEdit();
+    }
 
     await bundleService.executeBundle(bundle);
 }
