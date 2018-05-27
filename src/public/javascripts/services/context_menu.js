@@ -94,13 +94,15 @@ const contextMenuOptions = {
         {title: "Paste into <kbd>Ctrl+V</kbd>", cmd: "pasteInto", uiIcon: "ui-icon-clipboard"},
         {title: "Paste after", cmd: "pasteAfter", uiIcon: "ui-icon-clipboard"},
         {title: "----"},
-        {title: "Export branch", cmd: "exportBranch", uiIcon: " ui-icon-arrowthick-1-ne"},
+        {title: "Export branch", cmd: "exportBranch", uiIcon: " ui-icon-arrowthick-1-ne", children: [
+            {title: "Native&nbsp;Tar", cmd: "exportBranchToTar"},
+            {title: "OPML", cmd: "exportBranchToOpml"}
+        ]},
         {title: "Import into branch", cmd: "importBranch", uiIcon: "ui-icon-arrowthick-1-sw"},
         {title: "----"},
         {title: "Collapse branch <kbd>Alt+-</kbd>", cmd: "collapseBranch", uiIcon: "ui-icon-minus"},
         {title: "Force note sync", cmd: "forceNoteSync", uiIcon: "ui-icon-refresh"},
         {title: "Sort alphabetically <kbd>Alt+S</kbd>", cmd: "sortAlphabetically", uiIcon: " ui-icon-arrowthick-2-n-s"}
-
     ],
     beforeOpen: async (event, ui) => {
         const node = $.ui.fancytree.getNode(ui.target);
@@ -163,8 +165,11 @@ const contextMenuOptions = {
         else if (ui.cmd === "delete") {
             treeChangesService.deleteNodes(treeService.getSelectedNodes(true));
         }
-        else if (ui.cmd === "exportBranch") {
-            exportService.exportBranch(node.data.noteId);
+        else if (ui.cmd === "exportBranchToTar") {
+            exportService.exportBranch(node.data.noteId, 'tar');
+        }
+        else if (ui.cmd === "exportBranchToOpml") {
+            exportService.exportBranch(node.data.noteId, 'opml');
         }
         else if (ui.cmd === "importBranch") {
             exportService.importBranch(node.data.noteId);

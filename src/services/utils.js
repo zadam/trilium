@@ -75,6 +75,10 @@ function toObject(array, fn) {
     return obj;
 }
 
+function stripTags(text) {
+    return text.replace(/<(?:.|\n)*?>/gm, '');
+}
+
 module.exports = {
     randomSecureToken,
     randomString,
@@ -88,5 +92,6 @@ module.exports = {
     sanitizeSql,
     stopWatch,
     unescapeHtml,
-    toObject
+    toObject,
+    stripTags
 };

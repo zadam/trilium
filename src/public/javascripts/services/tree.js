@@ -86,6 +86,10 @@ async function expandToNote(notePath, expandOpts) {
     for (const childNoteId of runPath) {
         const node = getNodesByNoteId(childNoteId).find(node => node.data.parentNoteId === parentNoteId);
 
+        if (!node) {
+            console.log(`Can't find node for noteId=${childNoteId} with parentNoteId=${parentNoteId}`);
+        }
+
         if (childNoteId === noteId) {
             return node;
         }
@@ -154,6 +158,8 @@ async function getRunPath(notePath) {
                         for (const noteId of pathToRoot) {
                             effectivePath.push(noteId);
                         }
+
+                        effectivePath.push('root');
                     }
 
                     break;
