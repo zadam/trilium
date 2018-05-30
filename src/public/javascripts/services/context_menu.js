@@ -98,7 +98,7 @@ const contextMenuOptions = {
             {title: "Native&nbsp;Tar", cmd: "exportBranchToTar"},
             {title: "OPML", cmd: "exportBranchToOpml"}
         ]},
-        {title: "Import into branch", cmd: "importBranch", uiIcon: "ui-icon-arrowthick-1-sw"},
+        {title: "Import into branch (tar, opml)", cmd: "importBranch", uiIcon: "ui-icon-arrowthick-1-sw"},
         {title: "----"},
         {title: "Collapse branch <kbd>Alt+-</kbd>", cmd: "collapseBranch", uiIcon: "ui-icon-minus"},
         {title: "Force note sync", cmd: "forceNoteSync", uiIcon: "ui-icon-refresh"},

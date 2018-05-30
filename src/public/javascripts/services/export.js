@@ -29,7 +29,7 @@ $("#import-upload").change(async function() {
         type: 'POST',
         contentType: false, // NEEDED, DON'T OMIT THIS
         processData: false, // NEEDED, DON'T OMIT THIS
-    });
+    }).fail((xhr, status, error) => alert('Import error: ' + xhr.responseText));
 
     await treeService.reload();
 });

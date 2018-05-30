@@ -7,6 +7,75 @@ const Branch = require('../../entities/branch');
 const tar = require('tar-stream');
 const stream = require('stream');
 const path = require('path');
+const parseString = require('xml2js').parseString;
+
+async function importToBranch(req) {
+    const parentNoteId = req.params.parentNoteId;
+    const file = req.file;
+
+    const parentNote = await repository.getNote(parentNoteId);
+
+    if (!parentNote) {
+        return [404, `Note ${parentNoteId} doesn't exist.`];
+    }
+
+    const extension = path.extname(file.originalname).toLowerCase();
+
+    if (extension === '.tar') {
+        await importTar(file, parentNoteId);
+    }
+    else if (extension === '.opml') {
+        return await importOpml(file, parentNoteId);
+    }
+    else {
+        return [400, `Unrecognized extension ${extension}, must be .tar or .opml`];
+    }
+}
+
+function toHtml(text) {
+    return '<p>' + text.replace(/(?:\r\n|\r|\n)/g, '</p><p>') + '</p>';
+}
+
+async function importOutline(outline, parentNoteId) {
+    const {note} = await noteService.createNote(parentNoteId, outline.$.title, toHtml(outline.$.text));
+
+    for (const childOutline of (outline.outline || [])) {
+        await importOutline(childOutline, note.noteId);
+    }
+}
+
+async function importOpml(file, parentNoteId) {
+    const xml = await new Promise(function(resolve, reject)
+    {
+        parseString(file.buffer, function (err, result) {
+            if (err) {
+                reject(err);
+            }
+            else {
+                resolve(result);
+            }
+        });
+    });
+
+    if (xml.opml.$.version !== '1.0' && xml.opml.$.version !== '1.1') {
+        return [400, 'Unsupported OPML version ' + xml.opml.$.version + ', 1.0 or 1.1 expected instead.'];
+    }
+
+    const outlines = xml.opml.body[0].outline || [];
+
+    for (const outline of outlines) {
+        await importOutline(outline, parentNoteId);
+    }
+}
+
+async function importTar(file, parentNoteId) {
+    const files = await parseImportFile(file);
+
+    // maps from original noteId (in tar file) to newly generated noteId
+    const noteIdMap = {};
+
+    await importNotes(files, parentNoteId, noteIdMap);
+}
 
 function getFileName(name) {
     let key;
@@ -86,24 +155,6 @@ async function parseImportFile(file) {
     });
 }
 
-async function importTar(req) {
-    const parentNoteId = req.params.parentNoteId;
-    const file = req.file;
-
-    const parentNote = await repository.getNote(parentNoteId);
-
-    if (!parentNote) {
-        return [404, `Note ${parentNoteId} doesn't exist.`];
-    }
-
-    const files = await parseImportFile(file);
-
-    // maps from original noteId (in tar file) to newly generated noteId
-    const noteIdMap = {};
-
-    await importNotes(files, parentNoteId, noteIdMap);
-}
-
 async function importNotes(files, parentNoteId, noteIdMap) {
     for (const file of files) {
         if (file.meta.version !== 1) {
@@ -143,5 +194,5 @@ async function importNotes(files, parentNoteId, noteIdMap) {
 }
 
 module.exports = {
-    importTar
+    importToBranch
 };
