@@ -62,6 +62,26 @@ async function getValue(query, params = []) {
     return row[Object.keys(row)[0]];
 }
 
+const PARAM_LIMIT = 900; // actual limit is 999
+
+// this is to overcome 999 limit of number of query parameters
+async function getManyRows(query, params) {
+    let results = [];
+
+    while (params.length > 0) {
+        const curParams = params.slice(0, Math.max(params.length, PARAM_LIMIT));
+        params = params.slice(curParams.length);
+
+        let i = 1;
+        const questionMarks = curParams.map(() => "?" + i++).join(",");
+        const curQuery = query.replace(/\?\?\?/g, questionMarks);
+
+        results = results.concat(await getRows(curQuery, curParams));
+    }
+
+    return results;
+}
+
 async function getRows(query, params = []) {
     return await wrap(async db => db.all(query, ...params));
 }
@@ -179,6 +199,7 @@ module.exports = {
     getRow,
     getRowOrNull,
     getRows,
+    getManyRows,
     getMap,
     getColumn,
     execute,

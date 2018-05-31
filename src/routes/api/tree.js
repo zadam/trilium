@@ -5,11 +5,9 @@ const optionService = require('../../services/options');
 const protectedSessionService = require('../../services/protected_session');
 
 async function getNotes(noteIds) {
-    const questionMarks = noteIds.map(() => "?").join(",");
-
-    const notes = await sql.getRows(`
+    const notes = await sql.getManyRows(`
       SELECT noteId, title, isProtected, type, mime
-      FROM notes WHERE isDeleted = 0 AND noteId IN (${questionMarks})`, noteIds);
+      FROM notes WHERE isDeleted = 0 AND noteId IN (???)`, noteIds);
 
     protectedSessionService.decryptNotes(notes);
 
@@ -18,11 +16,11 @@ async function getNotes(noteIds) {
 }
 
 async function getRelations(noteIds) {
-    const questionMarks = noteIds.map(() => "?").join(",");
-    const doubledNoteIds = noteIds.concat(noteIds);
+    // we need to fetch both parentNoteId and noteId matches because we can have loaded child
+    // of which only some of the parents has been loaded.
 
-    return await sql.getRows(`SELECT branchId, noteId AS 'childNoteId', parentNoteId FROM branches WHERE isDeleted = 0 
-         AND (parentNoteId IN (${questionMarks}) OR noteId IN (${questionMarks}))`, doubledNoteIds);
+    return await sql.getManyRows(`SELECT branchId, noteId AS 'childNoteId', parentNoteId FROM branches WHERE isDeleted = 0 
+         AND (parentNoteId IN (???) OR noteId IN (???))`, noteIds);
 }
 
 async function getTree() {
@@ -58,12 +56,11 @@ async function load(req) {
     const branchIds = req.body.branchIds;
 
     if (branchIds && branchIds.length > 0) {
-        noteIds = await sql.getColumn(`SELECT noteId FROM branches WHERE isDeleted = 0 AND branchId IN(${branchIds.map(() => "?").join(",")})`, branchIds);
+        noteIds = (await sql.getColumn(`SELECT noteId FROM branches WHERE isDeleted = 0 AND branchId IN(???)`, branchIds))
+            .map(note => note.noteId);
     }
 
-    const questionMarks = noteIds.map(() => "?").join(",");
-
-    const branches = await sql.getRows(`SELECT * FROM branches WHERE isDeleted = 0 AND noteId IN (${questionMarks})`, noteIds);
+    const branches = await sql.getManyRows(`SELECT * FROM branches WHERE isDeleted = 0 AND noteId IN (???)`, noteIds);
 
     const notes = await getNotes(noteIds);
 
