@@ -56,7 +56,7 @@ async function load(req) {
     const branchIds = req.body.branchIds;
 
     if (branchIds && branchIds.length > 0) {
-        noteIds = (await sql.getColumn(`SELECT noteId FROM branches WHERE isDeleted = 0 AND branchId IN(???)`, branchIds))
+        noteIds = (await sql.getManyRows(`SELECT noteId FROM branches WHERE isDeleted = 0 AND branchId IN(???)`, branchIds))
             .map(note => note.noteId);
     }
 

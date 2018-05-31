@@ -33,6 +33,10 @@ async function importToBranch(req) {
 }
 
 function toHtml(text) {
+    if (!text) {
+        return '';
+    }
+
     return '<p>' + text.replace(/(?:\r\n|\r|\n)/g, '</p><p>') + '</p>';
 }
 
