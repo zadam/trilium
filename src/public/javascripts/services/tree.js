@@ -17,11 +17,11 @@ import Branch from '../entities/branch.js';
 import NoteShort from '../entities/note_short.js';
 
 const $tree = $("#tree");
-const $parentList = $("#parent-list");
-const $parentListList = $("#parent-list-inner");
 const $createTopLevelNoteButton = $("#create-top-level-note-button");
 const $collapseTreeButton = $("#collapse-tree-button");
 const $scrollToCurrentNoteButton = $("#scroll-to-current-note-button");
+const $notePathList = $("#note-path-list");
+const $notePathCount = $("#note-path-count");
 
 let startNotePath = null;
 
@@ -189,12 +189,13 @@ async function showParentList(noteId, node) {
     const note = await treeCache.getNote(noteId);
     const parents = await note.getParentNotes();
 
+    $notePathCount.html(parents.length + " path" + (parents.length > 0 ? "s" : ""));
+
     if (parents.length <= 1) {
-        $parentList.hide();
     }
     else {
-        $parentList.show();
-        $parentListList.empty();
+        //$notePathList.show();
+        $notePathList.empty();
 
         for (const parentNote of parents) {
             const parentNotePath = await getSomeNotePath(parentNote);
@@ -202,16 +203,13 @@ async function showParentList(noteId, node) {
             const notePath = parentNotePath ? (parentNotePath + '/' + noteId) : noteId;
             const title = await treeUtils.getNotePathTitle(notePath);
 
-            let item;
+            const item = $("<li/>").append(await linkService.createNoteLink(notePath, title));
 
             if (node.getParent().data.noteId === parentNote.noteId) {
-                item = $("<span/>").attr("title", "Current note").append(title);
-            }
-            else {
-                item = await linkService.createNoteLink(notePath, title);
+                item.addClass("current");
             }
 
-            $parentListList.append($("<li/>").append(item));
+            $notePathList.append(item);
         }
     }
 }

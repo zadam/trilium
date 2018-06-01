@@ -175,20 +175,6 @@ div.ui-tooltip {
     margin-top: 10px;
 }
 
-#parent-list {
-    display: none;
-    margin-left: 20px;
-    border-top: 2px solid #eee;
-    padding-top: 10px;
-    grid-area: parent-list;
-    max-height: 300px;
-    overflow: auto;
-}
-
-#parent-list ul {
-    padding-left: 20px;
-}
-
 /*
 * .electron-in-page-search-window is a class specified to default
 * <webview> element for search window.
@@ -249,7 +235,7 @@ div.ui-tooltip {
     filter: opacity(7%);
 }
 
-.dropdown-menu li:not(.divider) {
+#note-type .dropdown-menu li:not(.divider) {
     padding: 5px;
     width: 200px;
 }
@@ -379,4 +365,8 @@ div.ui-tooltip {
 
 .btn.active {
     background-color: #ddd;
+}
+
+#note-path-list .current a {
+    font-weight: bold;
 }
