@@ -372,3 +372,11 @@ div.ui-tooltip {
     margin: 0 20px 0 5px;
     display: flex;
 }
+
+.btn {
+    border-color: #ddd;
+}
+
+.btn.active {
+    background-color: #ddd;
+}

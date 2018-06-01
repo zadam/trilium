@@ -11,8 +11,22 @@ const $password = $("#protected-session-password");
 const $noteDetailWrapper = $("#note-detail-wrapper");
 const $protectButton = $("#protect-button");
 const $unprotectButton = $("#unprotect-button");
+const $protectedSessionOnButton = $("#protected-session-on");
+const $protectedSessionOffButton = $("#protected-session-off");
 
 let protectedSessionDeferred = null;
+
+async function enterProtectedSession() {
+    if (!protectedSessionHolder.isProtectedSessionAvailable()) {
+        await ensureProtectedSession(true, true);
+    }
+}
+
+async function leaveProtectedSession() {
+    if (protectedSessionHolder.isProtectedSessionAvailable()) {
+        utils.reloadApp();
+    }
+}
 
 function ensureProtectedSession(requireProtectedSession, modal) {
     const dfd = $.Deferred();
@@ -46,7 +60,7 @@ async function setupProtectedSession() {
     const password = $password.val();
     $password.val("");
 
-    const response = await enterProtectedSession(password);
+    const response = await enterProtectedSessionOnServer(password);
 
     if (!response.success) {
         infoService.showError("Wrong password.");
@@ -67,6 +81,9 @@ async function setupProtectedSession() {
 
         protectedSessionDeferred.resolve();
 
+        $protectedSessionOnButton.addClass('active');
+        $protectedSessionOffButton.removeClass('active');
+
         protectedSessionDeferred = null;
     }
 }
@@ -81,7 +98,7 @@ function ensureDialogIsClosed() {
     $password.val('');
 }
 
-async function enterProtectedSession(password) {
+async function enterProtectedSessionOnServer(password) {
     return await server.post('login/protected', {
         password: password
     });
@@ -138,5 +155,7 @@ export default {
     protectNoteAndSendToServer,
     unprotectNoteAndSendToServer,
     protectBranch,
-    ensureDialogIsClosed
+    ensureDialogIsClosed,
+    enterProtectedSession,
+    leaveProtectedSession
 };

@@ -23,10 +23,18 @@
              style="background: url('/images/icons/forward.png')"></a>
         </div>
 
-        <div style="flex-grow: 100;">
+        <div style="flex-grow: 100; display: flex;">
           <button class="btn btn-xs" id="jump-to-note-button" title="CTRL+J">Jump to note</button>
           <button class="btn btn-xs" id="recent-notes-button" title="CTRL+E">Recent notes</button>
           <button class="btn btn-xs" id="recent-changes-button">Recent changes</button>
+          <div>
+            <span style="font-size: smaller">Protected session:</span>
+
+            <div class="btn-group btn-group-xs">
+              <button type="button" class="btn" id="protected-session-on">On</button>
+              <button type="button" class="btn active" id="protected-session-off">Off</button>
+            </div>
+          </div>
         </div>
 
         <div id="plugin-buttons">

@@ -12,6 +12,7 @@ import recentChangesDialog from "../dialogs/recent_changes.js";
 import sqlConsoleDialog from "../dialogs/sql_console.js";
 import searchTreeService from "./search_tree.js";
 import labelsDialog from "../dialogs/labels.js";
+import protectedSessionService from "./protected_session.js";
 
 function registerEntrypoints() {
     // hot keys are active also inside inputs and content editables
@@ -30,6 +31,9 @@ function registerEntrypoints() {
     utils.bindShortcut('ctrl+u', noteSourceDialog.showDialog);
 
     $("#recent-changes-button").click(recentChangesDialog.showDialog);
+
+    $("#protected-session-on").click(protectedSessionService.enterProtectedSession);
+    $("#protected-session-off").click(protectedSessionService.leaveProtectedSession);
 
     $("#recent-notes-button").click(recentNotesDialog.showDialog);
     utils.bindShortcut('ctrl+e', recentNotesDialog.showDialog);
