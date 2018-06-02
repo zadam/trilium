@@ -94,6 +94,12 @@ async function isDbUpToDate() {
 }
 
 async function isUserInitialized() {
+    const optionsTable = await sql.getRows("SELECT name FROM sqlite_master WHERE type='table' AND name='options'");
+
+    if (optionsTable.length !== 1) {
+        return false;
+    }
+
     const username = await sql.getValue("SELECT value FROM options WHERE name = 'username'");
 
     return !!username;
