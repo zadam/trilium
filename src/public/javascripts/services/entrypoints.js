@@ -2,6 +2,7 @@ import utils from "./utils.js";
 import treeService from "./tree.js";
 import linkService from "./link.js";
 import fileService from "./file.js";
+import zoomService from "./zoom.js";
 import noteRevisionsDialog from "../dialogs/note_revisions.js";
 import optionsDialog from "../dialogs/options.js";
 import addLinkDialog from "../dialogs/add_link.js";
@@ -109,27 +110,10 @@ function registerEntrypoints() {
         $("#note-detail-text").focus();
     });
 
-    $(document).bind('keydown', 'ctrl+-', () => {
-        if (utils.isElectron()) {
-            const webFrame = require('electron').webFrame;
-
-            if (webFrame.getZoomFactor() > 0.2) {
-                webFrame.setZoomFactor(webFrame.getZoomFactor() - 0.1);
-            }
-
-            return false;
-        }
-    });
-
-    $(document).bind('keydown', 'ctrl+=', () => {
-        if (utils.isElectron()) {
-            const webFrame = require('electron').webFrame;
-
-            webFrame.setZoomFactor(webFrame.getZoomFactor() + 0.1);
-
-            return false;
-        }
-    });
+    if (utils.isElectron()) {
+        $(document).bind('keydown', 'ctrl+-', zoomService.decreaseZoomFactor);
+        $(document).bind('keydown', 'ctrl+=', zoomService.increaseZoomFactor);
+    }
 
     $("#note-title").bind('keydown', 'return', () => $("#note-detail-text").focus());
 

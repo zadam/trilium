@@ -53,6 +53,8 @@ async function initOptions(startNotePath) {
 
     await createOption('lastSyncedPull', appInfo.dbVersion, false);
     await createOption('lastSyncedPush', 0, false);
+
+    await createOption('zoomFactor', 1.0, false);
 }
 
 module.exports = {

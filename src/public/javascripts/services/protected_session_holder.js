@@ -1,13 +1,11 @@
 import utils from "./utils.js";
-import server from "./server.js";
+import optionsInitService from './options_init.js';
 
 let lastProtectedSessionOperationDate = null;
 let protectedSessionTimeout = null;
 let protectedSessionId = null;
 
-$(document).ready(() => {
-    server.get('options').then(options => protectedSessionTimeout = options.protectedSessionTimeout);
-});
+optionsInitService.optionsReady.then(options => protectedSessionTimeout = options.protectedSessionTimeout);
 
 setInterval(() => {
     if (lastProtectedSessionOperationDate !== null && new Date().getTime() - lastProtectedSessionOperationDate.getTime() > protectedSessionTimeout * 1000) {
