@@ -16,8 +16,11 @@ const RecentNote = require('../entities/recent_note');
 const Option = require('../entities/option');
 
 async function getHash(entityConstructor, whereBranch) {
-    let contentToHash = await sql.getValue(`SELECT GROUP_CONCAT(hash) FROM ${entityConstructor.tableName} `
-                + (whereBranch ? `WHERE ${whereBranch} ` : '') + `ORDER BY ${entityConstructor.primaryKeyName}`);
+    // subselect is necessary to have correct ordering in GROUP_CONCAT
+    const query = `SELECT GROUP_CONCAT(hash) FROM (SELECT hash FROM ${entityConstructor.tableName} `
+        + (whereBranch ? `WHERE ${whereBranch} ` : '') + `ORDER BY ${entityConstructor.primaryKeyName})`;
+
+    let contentToHash = await sql.getValue(query);
 
     if (!contentToHash) { // might be null in case of no rows
         contentToHash = "";
