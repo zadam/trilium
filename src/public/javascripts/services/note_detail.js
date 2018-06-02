@@ -22,6 +22,7 @@ const $noteDetailComponents = $(".note-detail-component");
 const $protectButton = $("#protect-button");
 const $unprotectButton = $("#unprotect-button");
 const $noteDetailWrapper = $("#note-detail-wrapper");
+const $noteDetailComponentWrapper = $("#note-detail-component-wrapper");
 const $noteIdDisplay = $("#note-id-display");
 const $labelList = $("#label-list");
 const $labelListInner = $("#label-list-inner");
@@ -116,9 +117,9 @@ async function saveNoteIfChanged() {
 function setNoteBackgroundIfProtected(note) {
     const isProtected = !!note.isProtected;
 
-    $noteDetailWrapper.toggleClass("protected", isProtected);
-    $protectButton.toggle(!isProtected);
-    $unprotectButton.toggle(isProtected);
+    $noteDetailComponentWrapper.toggleClass("protected", isProtected);
+    $protectButton.toggleClass("active", isProtected);
+    $unprotectButton.toggleClass("active", !isProtected);
 }
 
 let isNewNoteCreated = false;
@@ -150,6 +151,8 @@ async function loadNoteDetail(noteId) {
 
     $noteIdDisplay.html(noteId);
 
+    setNoteBackgroundIfProtected(currentNote);
+
     await handleProtectedSession();
 
     $noteDetailWrapper.show();
@@ -170,7 +173,6 @@ async function loadNoteDetail(noteId) {
         noteChangeDisabled = false;
     }
 
-    setNoteBackgroundIfProtected(currentNote);
     treeService.setBranchBackgroundBasedOnProtectedStatus(noteId);
 
     // after loading new note make sure editor is scrolled to the top

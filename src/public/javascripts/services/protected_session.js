@@ -105,6 +105,10 @@ async function enterProtectedSessionOnServer(password) {
 }
 
 async function protectNoteAndSendToServer() {
+    if (noteDetailService.getCurrentNote().isProtected) {
+        return;
+    }
+
     await ensureProtectedSession(true, true);
 
     const note = noteDetailService.getCurrentNote();
@@ -118,6 +122,10 @@ async function protectNoteAndSendToServer() {
 }
 
 async function unprotectNoteAndSendToServer() {
+    if (!noteDetailService.getCurrentNote().isProtected) {
+        return;
+    }
+
     await ensureProtectedSession(true, true);
 
     const note = noteDetailService.getCurrentNote();

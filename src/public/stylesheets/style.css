@@ -51,7 +51,7 @@
     overflow: auto;
 }
 
-#note-detail-wrapper.protected, #note-detail-wrapper.protected .CodeMirror {
+#note-detail-component-wrapper.protected, #note-detail-component-wrapper.protected .CodeMirror {
     background-color: #eee;
 }
 
@@ -136,10 +136,6 @@ span.fancytree-active:not(.fancytree-focused) .fancytree-title {
     display: block;
     height: 24px;
     width: 24px;
-}
-
-#protect-button, #unprotect-button {
-    display: none;
 }
 
 .ui-widget-content a:not(.ui-tabs-anchor) {
@@ -361,10 +357,11 @@ div.ui-tooltip {
 
 .btn {
     border-color: #ddd;
+    background-color: #eee;
 }
 
 .btn.active {
-    background-color: #ddd;
+    background-color: #ccc;
 }
 
 #note-path-list .current a {

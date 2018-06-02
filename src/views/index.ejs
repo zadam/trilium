@@ -105,15 +105,18 @@
 
           <span id="note-id-display" title="Note ID"></span>
 
-          <a title="Protect the note so that password will be required to view the note"
-             class="icon-action"
-             id="protect-button"
-             style="display: none; background: url('images/icons/lock.png')"></a>
+          <div>
+            <span style="font-size: smaller">Protected:</span>
 
-          <a title="Unprotect note so that password will not be required to access this note in the future"
-             class="icon-action"
-             id="unprotect-button"
-             style="display: none; background: url('images/icons/unlock.png')"></a>
+            <div class="btn-group btn-group-xs">
+              <button type="button" class="btn" id="protect-button" title="Protected note can be viewed and edited only after entering password">
+                <img src="images/icons/shield.png"/>
+              </button>
+              <button type="button" class="btn" id="unprotect-button" title="Not protected note can be viewed without entering password">
+                <img src="images/icons/shield-off.png"/>
+              </button>
+            </div>
+          </div>
 
           &nbsp; &nbsp;
 
