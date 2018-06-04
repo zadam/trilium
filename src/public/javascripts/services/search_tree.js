@@ -1,5 +1,6 @@
 import treeService from './tree.js';
 import server from './server.js';
+import treeUtils from "./tree_utils.js";
 
 const $tree = $("#tree");
 const $searchInput = $("input[name='search-text']");
@@ -7,6 +8,8 @@ const $resetSearchButton = $("#reset-search-button");
 const $doSearchButton = $("#do-search-button");
 const $saveSearchButton = $("#save-search-button");
 const $searchBox = $("#search-box");
+const $searchResults = $("#search-results");
+const $searchResultsInner = $("#search-results-inner");
 
 function toggleSearch() {
     if ($searchBox.is(":hidden")) {
@@ -16,14 +19,13 @@ function toggleSearch() {
     else {
         resetSearch();
 
+        $searchResults.hide();
         $searchBox.hide();
     }
 }
 
 function resetSearch() {
     $searchInput.val("");
-
-    getTree().clearFilter();
 }
 
 function getTree() {
@@ -33,14 +35,21 @@ function getTree() {
 async function doSearch() {
     const searchText = $searchInput.val();
 
-    const noteIds = await server.get('search/' + encodeURIComponent(searchText));
+    const results = await server.get('search/' + encodeURIComponent(searchText));
 
-    for (const noteId of noteIds) {
-        await treeService.expandToNote(noteId, {noAnimation: true, noEvents: true});
+    $searchResultsInner.empty();
+    $searchResults.show();
+
+    for (const result of results) {
+        const link = $('<a>', {
+            href: 'javascript:',
+            text: result.title
+        }).attr('action', 'note').attr('note-path', result.path);
+
+        const $result = $('<li>').append(link);
+
+        $searchResultsInner.append($result);
     }
-
-    // Pass a string to perform case insensitive matching
-    getTree().filterBranches(node => noteIds.includes(node.data.noteId));
 }
 
 async function saveSearch() {

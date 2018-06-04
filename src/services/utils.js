@@ -79,6 +79,32 @@ function stripTags(text) {
     return text.replace(/<(?:.|\n)*?>/gm, '');
 }
 
+function intersection(a, b) {
+    return a.filter(value => b.indexOf(value) !== -1);
+}
+
+function union(a, b) {
+    const obj = {};
+
+    for (let i = a.length-1; i >= 0; i--) {
+        obj[a[i]] = a[i];
+    }
+
+    for (let i = b.length-1; i >= 0; i--) {
+        obj[b[i]] = b[i];
+    }
+
+    const res = [];
+
+    for (const k in obj) {
+        if (obj.hasOwnProperty(k)) { // <-- optional
+            res.push(obj[k]);
+        }
+    }
+
+    return res;
+}
+
 module.exports = {
     randomSecureToken,
     randomString,
@@ -93,5 +119,7 @@ module.exports = {
     stopWatch,
     unescapeHtml,
     toObject,
-    stripTags
+    stripTags,
+    intersection,
+    union
 };

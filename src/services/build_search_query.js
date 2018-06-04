@@ -1,4 +1,4 @@
-module.exports = function(labelFilters, searchText) {
+module.exports = function(labelFilters) {
     const joins = [];
     const joinParams = [];
     let where = '1';
@@ -43,16 +43,6 @@ module.exports = function(labelFilters, searchText) {
 
     let searchCondition = '';
     const searchParams = [];
-
-    if (searchText.trim() !== '') {
-        // searching in protected notes is pointless because of encryption
-        searchCondition = ' AND (notes.isProtected = 0 AND (notes.title LIKE ? OR notes.content LIKE ?))';
-
-        searchText = '%' + searchText.trim() + '%';
-
-        searchParams.push(searchText);
-        searchParams.push(searchText); // two occurences in searchCondition
-    }
 
     const query = `SELECT DISTINCT notes.noteId FROM notes
             ${joins.join('\r\n')}

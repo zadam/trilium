@@ -63,7 +63,7 @@ function getResults(query) {
                 continue;
             }
 
-            const title = getNoteTitle(noteId, parentNoteId).toLowerCase();
+            const title = getNoteTitleForParent(noteId, parentNoteId).toLowerCase();
             const foundTokens = [];
 
             for (const token of tokens) {
@@ -93,6 +93,7 @@ function search(noteId, tokens, path, results) {
             const noteTitle = getNoteTitleForPath(retPath);
 
             results.push({
+                noteId: noteId,
                 title: noteTitle,
                 path: retPath.join('/')
             });
@@ -115,7 +116,7 @@ function search(noteId, tokens, path, results) {
             continue;
         }
 
-        const title = getNoteTitle(noteId, parentNoteId);
+        const title = getNoteTitleForParent(noteId, parentNoteId);
         const foundTokens = [];
 
         for (const token of tokens) {
@@ -135,7 +136,7 @@ function search(noteId, tokens, path, results) {
     }
 }
 
-function getNoteTitle(noteId, parentNoteId) {
+function getNoteTitleForParent(noteId, parentNoteId) {
     const prefix = prefixes[noteId + '-' + parentNoteId];
 
     let title = noteTitles[noteId];
@@ -158,7 +159,7 @@ function getNoteTitleForPath(path) {
     let parentNoteId = 'root';
 
     for (const noteId of path) {
-        const title = getNoteTitle(noteId, parentNoteId);
+        const title = getNoteTitleForParent(noteId, parentNoteId);
 
         titles.push(title);
         parentNoteId = noteId;
@@ -180,6 +181,10 @@ function getSomePath(noteId, path) {
     }
 
     for (const parentNoteId of parents) {
+        if (hideInAutocomplete[parentNoteId]) {
+            continue;
+        }
+
         const retPath = getSomePath(parentNoteId, path.concat([noteId]));
 
         if (retPath) {
@@ -188,6 +193,28 @@ function getSomePath(noteId, path) {
     }
 
     return false;
+}
+
+function getNoteTitle(noteId) {
+    if (noteId in noteTitles) {
+        return noteTitles[noteId];
+    }
+
+    return protectedNoteTitles[noteId];
+}
+
+function getResult(noteId) {
+    const retPath = getSomePath(noteId, []);
+
+    if (retPath) {
+        const noteTitle = getNoteTitleForPath(retPath);
+
+        return {
+            noteId: noteId,
+            title: noteTitle,
+            path: retPath.join('/')
+        };
+    }
 }
 
 eventService.subscribe(eventService.ENTITY_CHANGED, async ({entityName, entityId}) => {
@@ -250,5 +277,7 @@ eventService.subscribe(eventService.ENTER_PROTECTED_SESSION, async () => {
 sqlInit.dbReady.then(() => utils.stopWatch("Autocomplete load", load));
 
 module.exports = {
-    getResults
+    getResults,
+    getNoteTitle,
+    getResult
 };

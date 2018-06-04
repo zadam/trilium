@@ -80,11 +80,10 @@ async function setupProtectedSession() {
         $noteDetailWrapper.show();
 
         protectedSessionDeferred.resolve();
+        protectedSessionDeferred = null;
 
         $protectedSessionOnButton.addClass('active');
         $protectedSessionOffButton.removeClass('active');
-
-        protectedSessionDeferred = null;
     }
 }
 

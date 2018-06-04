@@ -76,17 +76,22 @@
         <div id="search-box" style="display: none; padding: 10px; margin-top: 10px;">
           <div style="display: flex; align-items: center;">
             <input name="search-text" placeholder="Search text, labels" style="flex-grow: 100; margin-left: 5px; margin-right: 5px;" autocomplete="off">
-            <button id="do-search-button" class="btn btn-primary btn-sm" title="Search">Search</button>
-          </div>
-
-          <div style="display: flex; align-items: center; justify-content: space-evenly; margin-top: 10px;">
-            <button id="reset-search-button" class="btn btn-sm" title="Reset search">Reset search</button>
-
-            <button id="save-search-button" class="btn btn-sm" title="Save search">Save search</button>
+            <button id="do-search-button" class="btn btn-sm" title="Search">Search</button>
+            <button id="save-search-button" class="btn btn-sm" title="Save search">Save</button>
           </div>
         </div>
 
-        <div id="tree"></div>
+        <div id="search-results" style="flex-shrink: 10; flex-grow: 10; margin-top: 10px; display: none; overflow: auto; border-bottom: 2px solid #ddd">
+          <strong>Search results:</strong>
+
+          <ul id="search-results-inner">
+            <li>aaa</li>
+            <li>bbb</li>
+            <li>ccc</li>
+          </ul>
+        </div>
+
+        <div id="tree" style="flex-shrink: 10; flex-grow: 10;"></div>
       </div>
 
       <div style="grid-area: title;">

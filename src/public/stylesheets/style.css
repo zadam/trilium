@@ -367,3 +367,11 @@ div.ui-tooltip {
 #note-path-list .current a {
     font-weight: bold;
 }
+
+#search-results {
+    padding: 0 5px 5px 15px;
+}
+
+#search-results ul {
+    padding: 5px 5px 5px 15px;
+}
