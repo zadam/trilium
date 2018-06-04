@@ -11,7 +11,7 @@ import jumpToNoteDialog from "../dialogs/jump_to_note.js";
 import noteSourceDialog from "../dialogs/note_source.js";
 import recentChangesDialog from "../dialogs/recent_changes.js";
 import sqlConsoleDialog from "../dialogs/sql_console.js";
-import searchTreeService from "./search_tree.js";
+import searchNotesService from "./search_notes.js";
 import labelsDialog from "../dialogs/labels.js";
 import protectedSessionService from "./protected_session.js";
 
@@ -39,8 +39,8 @@ function registerEntrypoints() {
     $("#recent-notes-button").click(recentNotesDialog.showDialog);
     utils.bindShortcut('ctrl+e', recentNotesDialog.showDialog);
 
-    $("#toggle-search-button").click(searchTreeService.toggleSearch);
-    utils.bindShortcut('ctrl+s', searchTreeService.toggleSearch);
+    $("#toggle-search-button").click(searchNotesService.toggleSearch);
+    utils.bindShortcut('ctrl+s', searchNotesService.toggleSearch);
 
     $(".show-labels-button").click(labelsDialog.showDialog);
     utils.bindShortcut('alt+l', labelsDialog.showDialog);

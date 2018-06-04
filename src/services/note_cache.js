@@ -34,7 +34,7 @@ async function load() {
     }
 }
 
-function getResults(query) {
+function findNotes(query) {
     if (!noteTitles || query.length <= 2) {
         return [];
     }
@@ -195,15 +195,7 @@ function getSomePath(noteId, path) {
     return false;
 }
 
-function getNoteTitle(noteId) {
-    if (noteId in noteTitles) {
-        return noteTitles[noteId];
-    }
-
-    return protectedNoteTitles[noteId];
-}
-
-function getResult(noteId) {
+function getNotePath(noteId) {
     const retPath = getSomePath(noteId, []);
 
     if (retPath) {
@@ -277,7 +269,6 @@ eventService.subscribe(eventService.ENTER_PROTECTED_SESSION, async () => {
 sqlInit.dbReady.then(() => utils.stopWatch("Autocomplete load", load));
 
 module.exports = {
-    getResults,
-    getNoteTitle,
-    getResult
+    findNotes,
+    getNotePath
 };

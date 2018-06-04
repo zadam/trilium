@@ -17,7 +17,7 @@ import messagingService from './messaging.js';
 import noteDetailService from './note_detail.js';
 import noteType from './note_type.js';
 import protected_session from './protected_session.js';
-import searchTreeService from './search_tree.js';
+import searchNotesService from './search_notes.js';
 import ScriptApi from './script_api.js';
 import ScriptContext from './script_context.js';
 import sync from './sync.js';

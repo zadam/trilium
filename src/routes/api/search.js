@@ -2,7 +2,7 @@
 
 const sql = require('../../services/sql');
 const noteService = require('../../services/notes');
-const autocompleteService = require('../../services/autocomplete');
+const autocompleteService = require('../../services/note_cache');
 const utils = require('../../services/utils');
 const parseFilters = require('../../services/parse_filters');
 const buildSearchQuery = require('../../services/build_search_query');
@@ -21,13 +21,13 @@ async function searchNotes(req) {
     let searchTextResults = null;
 
     if (searchText.trim().length > 0) {
-        searchTextResults = autocompleteService.getResults(searchText);
+        searchTextResults = autocompleteService.findNotes(searchText);
 
         let fullTextNoteIds = await getFullTextResults(searchText);
 
         for (const noteId of fullTextNoteIds) {
             if (!searchTextResults.some(item => item.noteId === noteId)) {
-                const result = autocompleteService.getResult(noteId);
+                const result = autocompleteService.getNotePath(noteId);
 
                 if (result) {
                     searchTextResults.push(result);
@@ -42,7 +42,7 @@ async function searchNotes(req) {
         results = labelFiltersNoteIds.filter(item => searchTextResults.includes(item.noteId));
     }
     else if (labelFiltersNoteIds) {
-        results = labelFiltersNoteIds.map(autocompleteService.getResult).filter(res => !!res);
+        results = labelFiltersNoteIds.map(autocompleteService.getNotePath).filter(res => !!res);
     }
     else {
         results = searchTextResults;
