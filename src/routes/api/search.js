@@ -2,8 +2,7 @@
 
 const sql = require('../../services/sql');
 const noteService = require('../../services/notes');
-const autocompleteService = require('../../services/note_cache');
-const utils = require('../../services/utils');
+const noteCacheService = require('../../services/note_cache');
 const parseFilters = require('../../services/parse_filters');
 const buildSearchQuery = require('../../services/build_search_query');
 
@@ -21,13 +20,13 @@ async function searchNotes(req) {
     let searchTextResults = null;
 
     if (searchText.trim().length > 0) {
-        searchTextResults = autocompleteService.findNotes(searchText);
+        searchTextResults = noteCacheService.findNotes(searchText);
 
         let fullTextNoteIds = await getFullTextResults(searchText);
 
         for (const noteId of fullTextNoteIds) {
             if (!searchTextResults.some(item => item.noteId === noteId)) {
-                const result = autocompleteService.getNotePath(noteId);
+                const result = noteCacheService.getNotePath(noteId);
 
                 if (result) {
                     searchTextResults.push(result);
@@ -42,7 +41,7 @@ async function searchNotes(req) {
         results = labelFiltersNoteIds.filter(item => searchTextResults.includes(item.noteId));
     }
     else if (labelFiltersNoteIds) {
-        results = labelFiltersNoteIds.map(autocompleteService.getNotePath).filter(res => !!res);
+        results = labelFiltersNoteIds.map(noteCacheService.getNotePath).filter(res => !!res);
     }
     else {
         results = searchTextResults;
@@ -56,7 +55,8 @@ async function getFullTextResults(searchText) {
     const tokenSql = ["1=1"];
 
     for (const token of tokens) {
-        tokenSql.push(`content LIKE '%${token}%'`);
+        // FIXME: escape token!
+        tokenSql.push(`(title LIKE '%${token}%' OR content LIKE '%${token}%')`);
     }
 
     const noteIds = await sql.getColumn(`
@@ -74,7 +74,7 @@ async function saveSearchToNote(req) {
         searchString: req.params.searchString
     };
 
-    const {note} = await noteService.createNote('root', 'Search note', noteContent, {
+    const {note} = await noteService.createNote('root', req.params.searchString, noteContent, {
         json: true,
         type: 'search',
         mime: "application/json"

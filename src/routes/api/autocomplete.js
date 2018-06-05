@@ -1,11 +1,11 @@
 "use strict";
 
-const autocompleteService = require('../../services/note_cache');
+const noteCacheService = require('../../services/note_cache');
 
 async function getAutocomplete(req) {
     const query = req.query.query;
 
-    const results = autocompleteService.findNotes(query);
+    const results = noteCacheService.findNotes(query);
 
     return results.map(res => {
         return {
