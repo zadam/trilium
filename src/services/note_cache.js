@@ -63,7 +63,7 @@ function findNotes(query) {
                 continue;
             }
 
-            const title = getNoteTitleForParent(noteId, parentNoteId).toLowerCase();
+            const title = getNoteTitle(noteId, parentNoteId).toLowerCase();
             const foundTokens = [];
 
             for (const token of tokens) {
@@ -116,7 +116,7 @@ function search(noteId, tokens, path, results) {
             continue;
         }
 
-        const title = getNoteTitleForParent(noteId, parentNoteId);
+        const title = getNoteTitle(noteId, parentNoteId);
         const foundTokens = [];
 
         for (const token of tokens) {
@@ -136,7 +136,7 @@ function search(noteId, tokens, path, results) {
     }
 }
 
-function getNoteTitleForParent(noteId, parentNoteId) {
+function getNoteTitle(noteId, parentNoteId) {
     const prefix = prefixes[noteId + '-' + parentNoteId];
 
     let title = noteTitles[noteId];
@@ -159,7 +159,7 @@ function getNoteTitleForPath(path) {
     let parentNoteId = 'root';
 
     for (const noteId of path) {
-        const title = getNoteTitleForParent(noteId, parentNoteId);
+        const title = getNoteTitle(noteId, parentNoteId);
 
         titles.push(title);
         parentNoteId = noteId;

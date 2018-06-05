@@ -166,9 +166,25 @@ div.ui-tooltip {
 
 #tree {
     overflow: auto;
-    flex-grow: 100;
-    flex-shrink: 100;
+    flex-grow: 1;
+    flex-shrink: 1;
+    flex-basis: 60%;
     margin-top: 10px;
+}
+
+#search-results {
+    padding: 0 5px 5px 15px;
+    flex-basis: 40%;
+    flex-grow: 1;
+    flex-shrink: 1;
+    margin-top: 10px;
+    display: none;
+    overflow: auto;
+    border-bottom: 2px solid #ddd;
+}
+
+#search-results ul {
+    padding: 5px 5px 5px 15px;
 }
 
 /*
@@ -366,12 +382,4 @@ div.ui-tooltip {
 
 #note-path-list .current a {
     font-weight: bold;
-}
-
-#search-results {
-    padding: 0 5px 5px 15px;
-}
-
-#search-results ul {
-    padding: 5px 5px 5px 15px;
 }
