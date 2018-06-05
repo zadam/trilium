@@ -114,13 +114,14 @@ const contextMenuOptions = {
         // Modify menu entries depending on node status
         $tree.contextmenu("enableEntry", "insertNoteHere", isNotRoot && parentNote.type !== 'search');
         $tree.contextmenu("enableEntry", "insertChildNote", note.type !== 'search');
-        $tree.contextmenu("enableEntry", "delete", isNotRoot);
+        $tree.contextmenu("enableEntry", "delete", isNotRoot && parentNote.type !== 'search');
         $tree.contextmenu("enableEntry", "copy", isNotRoot);
         $tree.contextmenu("enableEntry", "cut", isNotRoot);
         $tree.contextmenu("enableEntry", "pasteAfter", clipboardIds.length > 0 && isNotRoot && parentNote.type !== 'search');
         $tree.contextmenu("enableEntry", "pasteInto", clipboardIds.length > 0 && note.type !== 'search');
         $tree.contextmenu("enableEntry", "importBranch", note.type !== 'search');
         $tree.contextmenu("enableEntry", "exportBranch", note.type !== 'search');
+        $tree.contextmenu("enableEntry", "editBranchPrefix", parentNote.type !== 'search');
 
         // Activate node on right-click
         node.setActive();

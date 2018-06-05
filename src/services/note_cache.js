@@ -8,6 +8,7 @@ const utils = require('./utils');
 let noteTitles;
 let protectedNoteTitles;
 let noteIds;
+let childParentToBranchId = {};
 const childToParent = {};
 const hideInAutocomplete = {};
 
@@ -20,11 +21,12 @@ async function load() {
 
     prefixes = await sql.getMap(`SELECT noteId || '-' || parentNoteId, prefix FROM branches WHERE prefix IS NOT NULL AND prefix != ''`);
 
-    const relations = await sql.getRows(`SELECT noteId, parentNoteId FROM branches WHERE isDeleted = 0`);
+    const relations = await sql.getRows(`SELECT branchId, noteId, parentNoteId FROM branches WHERE isDeleted = 0`);
 
     for (const rel of relations) {
         childToParent[rel.noteId] = childToParent[rel.noteId] || [];
         childToParent[rel.noteId].push(rel.parentNoteId);
+        childParentToBranchId[`${rel.noteId}-${rel.parentNoteId}`] = rel.branchId;
     }
 
     const hiddenLabels = await sql.getColumn(`SELECT noteId FROM labels WHERE isDeleted = 0 AND name = 'hideInAutocomplete'`);
@@ -91,11 +93,15 @@ function search(noteId, tokens, path, results) {
 
         if (retPath) {
             const noteTitle = getNoteTitleForPath(retPath);
+            const thisNoteId = retPath[retPath.length - 1];
+            const thisParentNoteId = retPath[retPath.length - 2];
 
             results.push({
-                noteId: noteId,
+                noteId: thisNoteId,
+                branchId: childParentToBranchId[`${thisNoteId}-${thisParentNoteId}`],
                 title: noteTitle,
-                path: retPath.join('/')
+                path: retPath.join('/'),
+                prefix: prefixes[`${thisNoteId}-${thisParentNoteId}`]
             });
         }
 
@@ -230,6 +236,7 @@ eventService.subscribe(eventService.ENTITY_CHANGED, async ({entityName, entityId
 
         if (branch.isDeleted) {
             delete prefixes[branch.noteId + '-' + branch.parentNoteId];
+            delete childParentToBranchId[branch.noteId + '-' + branch.parentNoteId];
         }
         else {
             if (branch.prefix) {
@@ -238,6 +245,7 @@ eventService.subscribe(eventService.ENTITY_CHANGED, async ({entityName, entityId
 
             childToParent[branch.noteId] = childToParent[branch.noteId] || [];
             childToParent[branch.noteId].push(branch.parentNoteId);
+            childParentToBranchId[branch.noteId + '-' + branch.parentNoteId] = branch.branchId;
         }
     }
     else if (entityName === 'labels') {
