@@ -100,8 +100,7 @@ function search(noteId, tokens, path, results) {
                 noteId: thisNoteId,
                 branchId: childParentToBranchId[`${thisNoteId}-${thisParentNoteId}`],
                 title: noteTitle,
-                path: retPath.join('/'),
-                prefix: prefixes[`${thisNoteId}-${thisParentNoteId}`]
+                path: retPath.join('/')
             });
         }
 
@@ -206,9 +205,11 @@ function getNotePath(noteId) {
 
     if (retPath) {
         const noteTitle = getNoteTitleForPath(retPath);
+        const parentNoteId = childToParent[noteId][0];
 
         return {
             noteId: noteId,
+            branchId: childParentToBranchId[`${noteId}-${parentNoteId}`],
             title: noteTitle,
             path: retPath.join('/')
         };

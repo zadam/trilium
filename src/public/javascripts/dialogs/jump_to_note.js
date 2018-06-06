@@ -24,6 +24,12 @@ async function showDialog() {
         },
         minLength: 2
     });
+
+    $autoComplete.autocomplete("instance")._renderItem = function(ul, item) {
+        return $("<li>")
+            .append("<div>" + item.label + "</div>")
+            .appendTo(ul);
+    };
 }
 
 function getSelectedNotePath() {

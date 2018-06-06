@@ -76,12 +76,19 @@ async function prepareSearchBranch(note) {
     const fullNote = await noteDetailService.loadNote(note.noteId);
     const results = await server.get('search/' + encodeURIComponent(fullNote.jsonContent.searchString));
 
+    const noteIds = results.map(res => res.noteId);
+
+    // force to load all the notes at once instead of one by one
+    await treeCache.getNotes(noteIds);
+
     for (const result of results) {
+        const origBranch = await treeCache.getBranch(result.branchId);
+
         const branch = new Branch(treeCache, {
             branchId: "virt" + utils.randomString(10),
             noteId: result.noteId,
             parentNoteId: note.noteId,
-            prefix: result.prefix,
+            prefix: origBranch.prefix,
             virtual: true
         });
 
