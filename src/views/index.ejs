@@ -24,7 +24,7 @@
         </div>
 
         <div style="flex-grow: 100; display: flex;">
-          <button class="btn btn-xs" id="jump-to-note-button" title="CTRL+J">Jump to note</button>
+          <button class="btn btn-xs" id="jump-to-note-dialog-button" title="CTRL+J">Jump to note</button>
           <button class="btn btn-xs" id="recent-notes-button" title="CTRL+E">Recent notes</button>
           <button class="btn btn-xs" id="recent-changes-button">Recent changes</button>
           <div>
@@ -303,7 +303,11 @@
           <input id="jump-to-note-autocomplete" style="width: 100%;">
         </div>
 
-        <button name="action" value="jump" class="btn btn-sm">Jump <kbd>enter</kbd></button>
+        <div style="display: flex; justify-content: space-between;">
+          <button id="jump-to-note-button" class="btn btn-sm btn-primary">Jump <kbd>enter</kbd></button>
+
+          <button id="show-in-full-text-button" class="btn btn-sm">&lt;&lt; Show results in full text <kbd>ctrl+enter</kbd></button>
+        </div>
       </form>
     </div>
 

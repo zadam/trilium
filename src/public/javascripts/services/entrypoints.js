@@ -23,7 +23,7 @@ function registerEntrypoints() {
 
     utils.bindShortcut('ctrl+l', addLinkDialog.showDialog);
 
-    $("#jump-to-note-button").click(jumpToNoteDialog.showDialog);
+    $("#jump-to-note-dialog-button").click(jumpToNoteDialog.showDialog);
     utils.bindShortcut('ctrl+j', jumpToNoteDialog.showDialog);
 
     $("#show-note-revisions-button").click(noteRevisionsDialog.showCurrentNoteRevisions);

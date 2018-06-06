@@ -371,12 +371,12 @@ div.ui-tooltip {
     display: flex;
 }
 
-.btn {
+.btn:not(.btn-primary) {
     border-color: #ddd;
     background-color: #eee;
 }
 
-.btn.active {
+.btn.active:not(.btn-primary) {
     background-color: #ccc;
 }
 

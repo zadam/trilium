@@ -11,10 +11,14 @@ const $searchBox = $("#search-box");
 const $searchResults = $("#search-results");
 const $searchResultsInner = $("#search-results-inner");
 
+function showSearch() {
+    $searchBox.show();
+    $searchInput.focus();
+}
+
 function toggleSearch() {
     if ($searchBox.is(":hidden")) {
-        $searchBox.show();
-        $searchInput.focus();
+        showSearch();
     }
     else {
         resetSearch();
@@ -32,8 +36,13 @@ function getTree() {
     return $tree.fancytree('getTree');
 }
 
-async function doSearch() {
-    const searchText = $searchInput.val();
+async function doSearch(searchText) {
+    if (searchText) {
+        $searchInput.val(searchText);
+    }
+    else {
+        searchText = $searchInput.val();
+    }
 
     const results = await server.get('search/' + encodeURIComponent(searchText));
 
@@ -81,5 +90,8 @@ $resetSearchButton.click(resetSearch);
 $saveSearchButton.click(saveSearch);
 
 export default {
-    toggleSearch
+    toggleSearch,
+    resetSearch,
+    showSearch,
+    doSearch
 };
