@@ -10,7 +10,7 @@ let protectedNoteTitles;
 let noteIds;
 let childParentToBranchId = {};
 const childToParent = {};
-const hideInAutocomplete = {};
+const archived = {};
 
 // key is 'childNoteId-parentNoteId' as a replacement for branchId which we don't use here
 let prefixes = {};
@@ -29,10 +29,10 @@ async function load() {
         childParentToBranchId[`${rel.noteId}-${rel.parentNoteId}`] = rel.branchId;
     }
 
-    const hiddenLabels = await sql.getColumn(`SELECT noteId FROM labels WHERE isDeleted = 0 AND name = 'hideInAutocomplete'`);
+    const hiddenLabels = await sql.getColumn(`SELECT noteId FROM labels WHERE isDeleted = 0 AND name = 'archived'`);
 
     for (const noteId of hiddenLabels) {
-        hideInAutocomplete[noteId] = true;
+        archived[noteId] = true;
     }
 }
 
@@ -51,7 +51,7 @@ function findNotes(query) {
     }
 
     for (const noteId of noteIds) {
-        if (hideInAutocomplete[noteId]) {
+        if (archived[noteId]) {
             continue;
         }
 
@@ -61,7 +61,7 @@ function findNotes(query) {
         }
 
         for (const parentNoteId of parents) {
-            if (hideInAutocomplete[parentNoteId]) {
+            if (archived[parentNoteId]) {
                 continue;
             }
 
@@ -117,7 +117,7 @@ function search(noteId, tokens, path, results) {
             return;
         }
 
-        if (parentNoteId === 'root' || hideInAutocomplete[parentNoteId]) {
+        if (parentNoteId === 'root' || archived[parentNoteId]) {
             continue;
         }
 
@@ -195,7 +195,7 @@ function getSomePath(noteId, path) {
     }
 
     for (const parentNoteId of parents) {
-        if (hideInAutocomplete[parentNoteId]) {
+        if (archived[parentNoteId]) {
             continue;
         }
 
@@ -261,16 +261,16 @@ eventService.subscribe(eventService.ENTITY_CHANGED, async ({entityName, entityId
     else if (entityName === 'labels') {
         const label = await repository.getLabel(entityId);
 
-        if (label.name === 'hideInAutocomplete') {
-            // we're not using label object directly, since there might be other non-deleted hideInAutocomplete label
+        if (label.name === 'archived') {
+            // we're not using label object directly, since there might be other non-deleted archived label
             const hideLabel = await repository.getEntity(`SELECT * FROM labels WHERE isDeleted = 0 
-                                 AND name = 'hideInAutocomplete' AND noteId = ?`, [label.noteId]);
+                                 AND name = 'archived' AND noteId = ?`, [label.noteId]);
 
             if (hideLabel) {
-                hideInAutocomplete[label.noteId] = true;
+                archived[label.noteId] = true;
             }
             else {
-                delete hideInAutocomplete[label.noteId];
+                delete archived[label.noteId];
             }
         }
     }

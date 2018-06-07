@@ -6,7 +6,7 @@ const Label = require('../entities/label');
 const BUILTIN_LABELS = [
     'disableVersioning',
     'calendarRoot',
-    'hideInAutocomplete',
+    'archived',
     'excludeFromExport',
     'run',
     'manualTransactionHandling',

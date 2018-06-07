@@ -6,7 +6,7 @@ class NoteShort {
         this.isProtected = row.isProtected;
         this.type = row.type;
         this.mime = row.mime;
-        this.hideInAutocomplete = row.hideInAutocomplete;
+        this.archived = row.archived;
     }
 
     isJson() {
@@ -59,7 +59,7 @@ class NoteShort {
     get dto() {
         const dto = Object.assign({}, this);
         delete dto.treeCache;
-        delete dto.hideInAutocomplete;
+        delete dto.archived;
 
         return dto;
     }

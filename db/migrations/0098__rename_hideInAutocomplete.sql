@@ -1,0 +1,1 @@
+UPDATE labels SET name = 'archived' WHERE name = 'hideInAutocomplete'
