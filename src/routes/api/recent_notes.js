@@ -1,12 +1,12 @@
 "use strict";
 
 const repository = require('../../services/repository');
-const dateUtils = require('../../services/date_utils');
 const optionService = require('../../services/options');
 const RecentNote = require('../../entities/recent_note');
+const noteCacheService = require('../../services/note_cache');
 
 async function getRecentNotes() {
-    return await repository.getEntities(`
+    const recentNotes = await repository.getEntities(`
       SELECT 
         recent_notes.* 
       FROM 
@@ -18,6 +18,12 @@ async function getRecentNotes() {
       ORDER BY 
         dateCreated DESC
       LIMIT 200`);
+
+    for (const rn of recentNotes) {
+        rn.title = noteCacheService.getNoteTitleForPath(rn.notePath.split('/'));
+    }
+
+    return recentNotes;
 }
 
 async function addRecentNote(req) {

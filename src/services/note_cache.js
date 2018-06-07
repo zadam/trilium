@@ -161,6 +161,15 @@ function getNoteTitle(noteId, parentNoteId) {
 function getNoteTitleForPath(path) {
     const titles = [];
 
+    if (path[0] === 'root') {
+        if (path.length === 1) {
+            return getNoteTitle('root');
+        }
+        else {
+            path = path.slice(1);
+        }
+    }
+
     let parentNoteId = 'root';
 
     for (const noteId of path) {
@@ -279,5 +288,6 @@ sqlInit.dbReady.then(() => utils.stopWatch("Autocomplete load", load));
 
 module.exports = {
     findNotes,
-    getNotePath
+    getNotePath,
+    getNoteTitleForPath
 };

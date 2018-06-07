@@ -52,6 +52,15 @@ async function getNotePathTitle(notePath) {
 
     const titlePath = [];
 
+    if (notePath.startsWith('root/')) {
+        notePath = notePath.substr(5);
+    }
+
+    // special case when we want just root's title
+    if (notePath === 'root') {
+        return await getNoteTitle(notePath);
+    }
+
     let parentNoteId = 'root';
 
     for (const noteId of notePath.split('/')) {
