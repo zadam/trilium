@@ -10,10 +10,18 @@ const $saveSearchButton = $("#save-search-button");
 const $searchBox = $("#search-box");
 const $searchResults = $("#search-results");
 const $searchResultsInner = $("#search-results-inner");
+const $closeSearchButton = $("#close-search-button");
 
 function showSearch() {
     $searchBox.show();
     $searchInput.focus();
+}
+
+function hideSearch() {
+    resetSearch();
+
+    $searchResults.hide();
+    $searchBox.hide();
 }
 
 function toggleSearch() {
@@ -21,10 +29,7 @@ function toggleSearch() {
         showSearch();
     }
     else {
-        resetSearch();
-
-        $searchResults.hide();
-        $searchBox.hide();
+        hideSearch();
     }
 }
 
@@ -88,6 +93,8 @@ $doSearchButton.click(doSearch);
 $resetSearchButton.click(resetSearch);
 
 $saveSearchButton.click(saveSearch);
+
+$closeSearchButton.click(hideSearch);
 
 export default {
     toggleSearch,

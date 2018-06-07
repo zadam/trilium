@@ -76,12 +76,20 @@
         <div id="search-box" style="display: none; padding: 10px; margin-top: 10px;">
           <div style="display: flex; align-items: center;">
             <input name="search-text" placeholder="Search text, labels" style="flex-grow: 100; margin-left: 5px; margin-right: 5px;" autocomplete="off">
-            <button id="do-search-button" class="btn btn-sm" title="Search">Search</button>
+            <button id="do-search-button" class="btn btn-sm" title="Search (enter)" style="padding: 4px;">
+              <img src="/images/icons/search-20.png" alt="Search"/>
+            </button>
 
             &nbsp;
 
             <button id="save-search-button" class="btn btn-sm" title="Save search" style="padding: 4px;">
               <img src="/images/icons/save.png" alt="Save search"/>
+            </button>
+
+            &nbsp;
+
+            <button id="close-search-button" class="btn btn-sm" title="Close search" style="padding: 4px;">
+              <img src="/images/icons/x.png" alt="Close search"/>
             </button>
           </div>
         </div>
@@ -318,7 +326,7 @@
         <div style="display: flex; justify-content: space-between;">
           <button id="jump-to-note-button" class="btn btn-sm btn-primary">Jump <kbd>enter</kbd></button>
 
-          <button id="show-in-full-text-button" class="btn btn-sm">&lt;&lt; Show results in full text <kbd>ctrl+enter</kbd></button>
+          <button id="show-in-full-text-button" class="btn btn-sm">Search in full text <kbd>ctrl+enter</kbd></button>
         </div>
       </form>
     </div>
