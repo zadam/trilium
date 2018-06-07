@@ -115,32 +115,44 @@
 
           <span id="note-id-display" title="Note ID"></span>
 
-          <div>
-            <span style="font-size: smaller">Protected:</span>
+          <button class="btn btn-sm"
+                  style="display: none; margin-right: 10px; padding: 4px;"
+                  title="Toggle edit"
+                  id="toggle-edit-button">
+            <img src="/images/icons/edit.png" alt="Toggle edit"/>
+          </button>
 
-            <div class="btn-group btn-group-xs">
-              <button type="button" class="btn" id="protect-button" title="Protected note can be viewed and edited only after entering password">
+          <button class="btn btn-sm"
+                  style="display: none; margin-right: 10px; padding: 4px;"
+                  title="Render (Ctrl+Enter)"
+                  id="render-button">
+            <img src="/images/icons/play-20.png" alt="Render"/>
+          </button>
+
+          <button class="btn btn-sm"
+                  style="display: none; margin-right: 10px"
+                  id="execute-script-button">Execute <kbd>Ctrl+Enter</kbd></button>
+
+          <div>
+            <div class="btn-group btn-group-sm">
+              <button type="button"
+                      class="btn"
+                      id="protect-button"
+                      title="Protected note can be viewed and edited only after entering password"
+                      style="padding: 4px;">
                 <img src="/images/icons/shield.png"/>
               </button>
-              <button type="button" class="btn" id="unprotect-button" title="Not protected note can be viewed without entering password">
+              <button type="button"
+                      class="btn"
+                      id="unprotect-button"
+                      title="Not protected note can be viewed without entering password"
+                      style="padding: 4px;">
                 <img src="/images/icons/shield-off.png"/>
               </button>
             </div>
           </div>
 
           &nbsp; &nbsp;
-
-          <button class="btn btn-sm"
-                  style="display: none; margin-right: 10px"
-                  id="toggle-edit-button">Toggle edit</button>
-
-          <button class="btn btn-sm"
-                  style="display: none; margin-right: 10px"
-                  id="render-button">Render <kbd>Ctrl+Enter</kbd></button>
-
-          <button class="btn btn-sm"
-                  style="display: none; margin-right: 10px"
-                  id="execute-script-button">Execute <kbd>Ctrl+Enter</kbd></button>
 
           <div class="dropdown" id="note-type" data-bind="visible: type() != 'search'">
             <button data-bind="disable: isDisabled()" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-sm">
