@@ -57,7 +57,7 @@
       </div>
 
       <div style="grid-area: left-pane; display: flex; flex-direction: column;" class="hide-toggle">
-        <div style="display: flex; justify-content: space-around; padding: 10px 0 10px 0; margin: 0 20px 0 20px; border: 1px solid #ccc;">
+        <div style="display: flex; justify-content: space-around; padding: 10px 0 10px 0; margin: 0 10px 0 16px; border: 1px solid #ccc;">
           <a id="create-top-level-note-button" title="Create new top level note" class="icon-action"
              style="background: url('/images/icons/file-plus.png')"></a>
 
@@ -281,7 +281,7 @@
       <input id="recent-notes-search-input" class="form-control"/>
     </div>
 
-    <div id="add-link-dialog" title="Add link" style="display: none;">
+    <div id="add-link-dialog" title="Add note link" style="display: none;">
       <form id="add-link-form">
         <div id="add-link-type-div" class="radio">
           <label title="Add HTML link to the selected note at cursor in current note">
@@ -299,7 +299,7 @@
 
         <div class="form-group">
           <label for="note-autocomplete">Note</label>
-          <input id="note-autocomplete" style="width: 100%;">
+          <input id="note-autocomplete" placeholder="search for note by its name" style="width: 100%;">
         </div>
 
         <div class="form-group" id="add-link-title-form-group">
@@ -312,7 +312,7 @@
           <input id="clone-prefix" style="width: 100%;">
         </div>
 
-        <button class="btn btn-sm">Add link</button>
+        <button class="btn btn-sm">Add note link</button>
       </form>
     </div>
 
@@ -320,7 +320,7 @@
       <form id="jump-to-note-form">
         <div class="form-group">
           <label for="jump-to-note-autocomplete">Note</label>
-          <input id="jump-to-note-autocomplete" style="width: 100%;">
+          <input id="jump-to-note-autocomplete" placeholder="search for note by its name" style="width: 100%;">
         </div>
 
         <div style="display: flex; justify-content: space-between;">
