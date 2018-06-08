@@ -66,31 +66,31 @@ ul.fancytree-container {
 
 /* icons from https://feathericons.com */
 span.fancytree-node > span.fancytree-icon {
-    background: url("../images/icons/file.png") 0 0;
+    background: url("../images/icons/file-16.png") 0 0;
 }
 
 span.fancytree-node.fancytree-folder > span.fancytree-icon {
-    background: url("../images/icons/folder.png") 0 0;
+    background: url("../images/icons/folder-16.png") 0 0;
 }
 
 span.fancytree-node.code > span.fancytree-icon {
-    background: url("../images/icons/code.png") 0 0;
+    background: url("../images/icons/code-16.png") 0 0;
 }
 
 span.fancytree-node.fancytree-folder.code > span.fancytree-icon {
-    background: url("../images/icons/code-folder.png") 0 0;
+    background: url("../images/icons/code-folder-16.png") 0 0;
 }
 
 span.fancytree-node.file > span.fancytree-icon {
-    background: url("../images/icons/paperclip.png") 0 0;
+    background: url("../images/icons/paperclip-16.png") 0 0;
 }
 
 span.fancytree-node.render > span.fancytree-icon {
-    background: url("../images/icons/play.png") 0 0;
+    background: url("../images/icons/play-16.png") 0 0;
 }
 
 span.fancytree-node.search > span.fancytree-icon {
-    background: url("../images/icons/search-small.png") 0 0;
+    background: url("../images/icons/search-small-16.png") 0 0;
 }
 
 span.fancytree-node.protected > span.fancytree-icon {
@@ -106,7 +106,7 @@ span.fancytree-node.fancytree-active-clone:not(.fancytree-active) .fancytree-tit
 }
 
 span.fancytree-node.tree-root > span.fancytree-icon {
-    background: url("../images/icons/tree-root.png") 0 0;
+    background: url("../images/icons/tree-root-16.png") 0 0;
 }
 
 /* first nesting level has lower left padding to avoid extra left padding. Other levels are not affected */
