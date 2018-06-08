@@ -57,7 +57,15 @@ async function showDialog() {
         source: async function(request, response) {
             const result = await server.get('autocomplete?query=' + encodeURIComponent(request.term));
 
-            response(result);
+            if (result.length > 0) {
+                response(result);
+            }
+            else {
+                response([{
+                    label: "No results",
+                    value: "No results"
+                }]);
+            }
         },
         minLength: 2,
         change: async () => {
