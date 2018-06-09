@@ -183,7 +183,7 @@ async function getRunPath(notePath) {
     return effectivePath.reverse();
 }
 
-async function showParentList(noteId, node) {
+async function showPaths(noteId, node) {
     utils.assertArguments(noteId, node);
 
     const note = await treeCache.getNote(noteId);
@@ -191,26 +191,21 @@ async function showParentList(noteId, node) {
 
     $notePathCount.html(parents.length + " path" + (parents.length > 0 ? "s" : ""));
 
-    if (parents.length <= 1) {
-    }
-    else {
-        //$notePathList.show();
-        $notePathList.empty();
+    $notePathList.empty();
 
-        for (const parentNote of parents) {
-            const parentNotePath = await getSomeNotePath(parentNote);
-            // this is to avoid having root notes leading '/'
-            const notePath = parentNotePath ? (parentNotePath + '/' + noteId) : noteId;
-            const title = await treeUtils.getNotePathTitle(notePath);
+    for (const parentNote of parents) {
+        const parentNotePath = await getSomeNotePath(parentNote);
+        // this is to avoid having root notes leading '/'
+        const notePath = parentNotePath ? (parentNotePath + '/' + noteId) : noteId;
+        const title = await treeUtils.getNotePathTitle(notePath);
 
-            const item = $("<li/>").append(await linkService.createNoteLink(notePath, title));
+        const item = $("<li/>").append(await linkService.createNoteLink(notePath, title));
 
-            if (node.getParent().data.noteId === parentNote.noteId) {
-                item.addClass("current");
-            }
-
-            $notePathList.append(item);
+        if (node.getParent().data.noteId === parentNote.noteId) {
+            item.addClass("current");
         }
+
+        $notePathList.append(item);
     }
 }
 
@@ -323,7 +318,7 @@ function initFancyTree(tree) {
 
             noteDetailService.switchToNote(node.noteId);
 
-            showParentList(node.noteId, data.node);
+            showPaths(node.noteId, data.node);
         },
         expand: (event, data) => setExpandedToServer(data.node.data.branchId, true),
         collapse: (event, data) => setExpandedToServer(data.node.data.branchId, false),
