@@ -253,7 +253,7 @@ div.ui-tooltip {
 }
 
 .dropdown-menu li:not(.divider):hover, .dropdown-menu li:not(.divider) a:hover {
-    background-color: #eee !important;
+    background-color: #ccc !important;
     cursor: pointer;
 }
 
@@ -372,7 +372,7 @@ div.ui-tooltip {
 }
 
 .btn:not(.btn-primary) {
-    border-color: #ddd;
+    border-color: #bbb;
     background-color: #eee;
 }
 
