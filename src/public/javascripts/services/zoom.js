@@ -2,26 +2,15 @@ import server from "./server.js";
 import utils from "./utils.js";
 import optionsInitService from "./options_init.js";
 
-function decreaseZoomFactor() {
-    const webFrame = require('electron').webFrame;
+const MIN_ZOOM = 0.5;
+const MAX_ZOOM = 2.0;
 
-    if (webFrame.getZoomFactor() > 0.2) {
-        const webFrame = require('electron').webFrame;
-        const newZoomFactor = webFrame.getZoomFactor() - 0.1;
-
-        webFrame.setZoomFactor(newZoomFactor);
-
-        server.put('options/zoomFactor/' + newZoomFactor);
-    }
+async function decreaseZoomFactor() {
+    await setZoomFactorAndSave(getCurrentZoom() - 0.1);
 }
 
-function increaseZoomFactor() {
-    const webFrame = require('electron').webFrame;
-    const newZoomFactor = webFrame.getZoomFactor() + 0.1;
-
-    webFrame.setZoomFactor(newZoomFactor);
-
-    server.put('options/zoomFactor/' + newZoomFactor);
+async function increaseZoomFactor() {
+    await setZoomFactorAndSave(getCurrentZoom() + 0.1);
 }
 
 function setZoomFactor(zoomFactor) {
@@ -32,9 +21,22 @@ function setZoomFactor(zoomFactor) {
 }
 
 async function setZoomFactorAndSave(zoomFactor) {
-    setZoomFactor(zoomFactor);
+    if (!utils.isElectron()) {
+        return;
+    }
 
-    await server.put('options/zoomFactor/' + zoomFactor);
+    if (zoomFactor >= MIN_ZOOM && zoomFactor <= MAX_ZOOM) {
+        setZoomFactor(zoomFactor);
+
+        await server.put('options/zoomFactor/' + zoomFactor);
+    }
+    else {
+        console.log(`Zoom factor ${zoomFactor} outside of the range, ignored.`);
+    }
+}
+
+function getCurrentZoom() {
+    return require('electron').webFrame.getZoomFactor();
 }
 
 if (utils.isElectron()) {

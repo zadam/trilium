@@ -342,6 +342,8 @@
           <li><a href="#about">About Trilium</a></li>
         </ul>
         <div id="appearance">
+          <p>Settings on this options tab are saved automatically after each change.</p>
+
           <form>
             <div class="form-group">
               <label for="theme-select">Theme</label>
@@ -353,28 +355,12 @@
             </div>
 
             <div class="form-group">
-              <label for="zoom-factor-select">Zoom factor (CTRL-+ and CTRL-= work anywhere as well)</label>
-              <select class="form-control" id="zoom-factor-select">
-                <option value="0.5">0.5</option>
-                <option value="0.6">0.6</option>
-                <option value="0.7">0.7</option>
-                <option value="0.8">0.8</option>
-                <option value="0.9">0.9</option>
-                <option value="1.0">1.0</option>
-                <option value="1.1">1.1</option>
-                <option value="1.2">1.2</option>
-                <option value="1.3">1.3</option>
-                <option value="1.4">1.4</option>
-                <option value="1.5">1.5</option>
-                <option value="1.6">1.6</option>
-                <option value="1.7">1.7</option>
-                <option value="1.8">1.8</option>
-                <option value="1.9">1.9</option>
-                <option value="2.0">2.0</option>
-              </select>
+              <label for="zoom-factor-select">Zoom factor (desktop build only)</label>
+
+              <input type="number" class="form-control" id="zoom-factor-select" min="0.3" max="2.0" step="0.1"/>
             </div>
 
-            <p>Settings on this options tab are saved automatically after each change.</p>
+            <p>Zooming can be controlled with CTRL-+ and CTRL-= shortcuts as well.</p>
           </form>
         </div>
         <div id="change-password">

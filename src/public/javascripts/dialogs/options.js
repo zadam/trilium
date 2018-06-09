@@ -4,6 +4,7 @@ import protectedSessionHolder from '../services/protected_session_holder.js';
 import server from '../services/server.js';
 import infoService from "../services/info.js";
 import zoomService from "../services/zoom.js";
+import utils from "../services/utils.js";
 
 const $dialog = $("#options-dialog");
 const $tabs = $("#options-tabs");
@@ -50,8 +51,14 @@ addTabHandler((function() {
     const $html = $("html");
 
     function optionsLoaded(options) {
-        $zoomFactorSelect.val(options.zoomFactor);
         $themeSelect.val(options.theme);
+
+        if (utils.isElectron()) {
+            $zoomFactorSelect.val(options.zoomFactor);
+        }
+        else {
+            $zoomFactorSelect.prop('disabled', true);
+        }
     }
 
     $themeSelect.change(function() {

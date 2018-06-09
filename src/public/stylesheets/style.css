@@ -371,7 +371,7 @@ div.ui-tooltip {
     display: flex;
 }
 
-.btn:not(.btn-primary) {
+.btn:not(.btn-primary):not(.btn-danger) {
     border-color: #bbb;
     background-color: #eee;
 }
