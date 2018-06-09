@@ -383,3 +383,7 @@ div.ui-tooltip {
 #note-path-list .current a {
     font-weight: bold;
 }
+
+button.icon-button {
+    padding: 4px;
+}

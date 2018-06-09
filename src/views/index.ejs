@@ -76,19 +76,19 @@
         <div id="search-box" style="display: none; padding: 10px; margin-top: 10px;">
           <div style="display: flex; align-items: center;">
             <input name="search-text" placeholder="Search text, labels" style="flex-grow: 100; margin-left: 5px; margin-right: 5px;" autocomplete="off">
-            <button id="do-search-button" class="btn btn-sm" title="Search (enter)" style="padding: 4px;">
+            <button id="do-search-button" class="btn btn-sm icon-button" title="Search (enter)">
               <img src="/images/icons/search-20.png" alt="Search"/>
             </button>
 
             &nbsp;
 
-            <button id="save-search-button" class="btn btn-sm" title="Save search" style="padding: 4px;">
+            <button id="save-search-button" class="btn btn-sm icon-button" title="Save search">
               <img src="/images/icons/save-20.png" alt="Save search"/>
             </button>
 
             &nbsp;
 
-            <button id="close-search-button" class="btn btn-sm" title="Close search" style="padding: 4px;">
+            <button id="close-search-button" class="btn btn-sm icon-button" title="Close search">
               <img src="/images/icons/x-20.png" alt="Close search"/>
             </button>
           </div>
@@ -123,44 +123,39 @@
 
           <span id="note-id-display" title="Note ID"></span>
 
-          <button class="btn btn-sm"
-                  style="display: none; margin-right: 10px; padding: 4px;"
+          <button class="btn btn-sm icon-button"
+                  style="display: none; margin-right: 10px;"
                   title="Toggle edit"
                   id="toggle-edit-button">
             <img src="/images/icons/edit-20.png" alt="Toggle edit"/>
           </button>
 
-          <button class="btn btn-sm"
-                  style="display: none; margin-right: 10px; padding: 4px;"
+          <button class="btn btn-sm icon-button"
+                  style="display: none; margin-right: 10px;"
                   title="Render (Ctrl+Enter)"
                   id="render-button">
             <img src="/images/icons/play-20.png" alt="Render"/>
           </button>
 
-          <button class="btn btn-sm"
-                  style="display: none; margin-right: 10px; padding: 4px;"
+          <button class="btn btn-sm icon-button"
+                  style="display: none; margin-right: 10px;"
                   title="Execute (Ctrl+Enter)"
                   id="execute-script-button">
             <img src="/images/icons/play-20.png" alt="Render"/>
           </button>
 
           <div>
-            <div class="btn-group btn-group-sm">
-              <button type="button"
-                      class="btn"
-                      id="protect-button"
-                      title="Protected note can be viewed and edited only after entering password"
-                      style="padding: 4px;">
-                <img src="/images/icons/shield-20.png"/>
-              </button>
-              <button type="button"
-                      class="btn"
-                      id="unprotect-button"
-                      title="Not protected note can be viewed without entering password"
-                      style="padding: 4px;">
-                <img src="/images/icons/shield-off-20.png"/>
-              </button>
-            </div>
+            <button type="button"
+                    class="btn btn-sm icon-button"
+                    id="protect-button"
+                    title="Protected note can be viewed and edited only after entering password">
+              <img src="/images/icons/shield-20.png"/>
+            </button><button type="button"
+                    class="btn btn-sm icon-button"
+                    id="unprotect-button"
+                    title="Not protected note can be viewed without entering password">
+              <img src="/images/icons/shield-off-20.png"/>
+            </button>
           </div>
 
           &nbsp; &nbsp;
