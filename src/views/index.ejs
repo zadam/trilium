@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="theme-<%= theme %>">
   <head>
     <meta charset="utf-8">
     <title>Trilium Notes</title>
@@ -343,12 +343,49 @@
     <div id="options-dialog" title="Options" style="display: none;">
       <div id="options-tabs">
         <ul>
+          <li><a href="#appearance">Apperance</a></li>
           <li><a href="#change-password">Change password</a></li>
           <li><a href="#protected-session-timeout">Protected session</a></li>
           <li><a href="#note-revision-snapshot-time-interval">Note revisions</a></li>
           <li><a href="#advanced">Advanced</a></li>
           <li><a href="#about">About Trilium</a></li>
         </ul>
+        <div id="appearance">
+          <form>
+            <div class="form-group">
+              <label for="theme-select">Theme</label>
+              <select class="form-control" id="theme-select">
+                <option value="white">White</option>
+                <option value="dark">Dark</option>
+                <option value="black">Black</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="zoom-factor-select">Zoom factor (CTRL-+ and CTRL-= work anywhere as well)</label>
+              <select class="form-control" id="zoom-factor-select">
+                <option value="0.5">0.5</option>
+                <option value="0.6">0.6</option>
+                <option value="0.7">0.7</option>
+                <option value="0.8">0.8</option>
+                <option value="0.9">0.9</option>
+                <option value="1.0">1.0</option>
+                <option value="1.1">1.1</option>
+                <option value="1.2">1.2</option>
+                <option value="1.3">1.3</option>
+                <option value="1.4">1.4</option>
+                <option value="1.5">1.5</option>
+                <option value="1.6">1.6</option>
+                <option value="1.7">1.7</option>
+                <option value="1.8">1.8</option>
+                <option value="1.9">1.9</option>
+                <option value="2.0">2.0</option>
+              </select>
+            </div>
+
+            <p>Settings on this options tab are saved automatically after each change.</p>
+          </form>
+        </div>
         <div id="change-password">
           <form id="change-password-form">
             <div class="form-group">

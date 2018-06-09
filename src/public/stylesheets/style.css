@@ -387,3 +387,25 @@ div.ui-tooltip {
 button.icon-button {
     padding: 4px;
 }
+
+/* Themes */
+
+html.theme-black, html.theme-black img, html.theme-black video {
+    filter: invert(100%) hue-rotate(180deg);
+}
+
+html.theme-black body {
+    background: black;
+}
+
+html.theme-dark {
+    filter: invert(90%) hue-rotate(180deg);
+}
+
+html.theme-dark img, html.theme-dark video {
+    filter: invert(100%) hue-rotate(180deg);
+}
+
+html.theme-dark body {
+    background: #191819;
+}

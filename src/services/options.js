@@ -55,6 +55,7 @@ async function initOptions(startNotePath) {
     await createOption('lastSyncedPush', 0, false);
 
     await createOption('zoomFactor', 1.0, false);
+    await createOption('theme', 'white', false);
 }
 
 module.exports = {

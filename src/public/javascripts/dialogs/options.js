@@ -1,9 +1,9 @@
 "use strict";
 
 import protectedSessionHolder from '../services/protected_session_holder.js';
-import utils from '../services/utils.js';
 import server from '../services/server.js';
 import infoService from "../services/info.js";
+import zoomService from "../services/zoom.js";
 
 const $dialog = $("#options-dialog");
 const $tabs = $("#options-tabs");
@@ -43,6 +43,35 @@ export default {
     showDialog,
     saveOptions
 };
+
+addTabHandler((function() {
+    const $themeSelect = $("#theme-select");
+    const $zoomFactorSelect = $("#zoom-factor-select");
+    const $html = $("html");
+
+    function optionsLoaded(options) {
+        $zoomFactorSelect.val(options.zoomFactor);
+        $themeSelect.val(options.theme);
+    }
+
+    $themeSelect.change(function() {
+        const newTheme = $(this).val();
+
+        $html.attr("class", "theme-" + newTheme);
+
+        server.put('options/theme/' + newTheme);
+    });
+
+    $zoomFactorSelect.change(function() {
+        const newZoomFactor = $(this).val();
+
+        zoomService.setZoomFactorAndSave(newZoomFactor);
+    });
+
+    return {
+        optionsLoaded
+    };
+})());
 
 addTabHandler((function() {
     const $form = $("#change-password-form");

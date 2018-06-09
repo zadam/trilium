@@ -31,6 +31,12 @@ function setZoomFactor(zoomFactor) {
     webFrame.setZoomFactor(zoomFactor);
 }
 
+async function setZoomFactorAndSave(zoomFactor) {
+    setZoomFactor(zoomFactor);
+
+    await server.put('options/zoomFactor/' + zoomFactor);
+}
+
 if (utils.isElectron()) {
     optionsInitService.optionsReady.then(options => setZoomFactor(options.zoomFactor))
 }
@@ -38,5 +44,6 @@ if (utils.isElectron()) {
 export default {
     decreaseZoomFactor,
     increaseZoomFactor,
-    setZoomFactor
+    setZoomFactor,
+    setZoomFactorAndSave
 }
