@@ -385,7 +385,9 @@ div.ui-tooltip {
 }
 
 button.icon-button {
-    padding: 4px;
+    height: 28px;
+    width: 28px;
+    background: no-repeat center;
 }
 
 /* Themes */
