@@ -390,6 +390,15 @@ button.icon-button {
     background: no-repeat center;
 }
 
+#note-actions {
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+#note-actions .dropdown-menu {
+    width: 15em;
+}
+
 /* Themes */
 
 html.theme-black, html.theme-black img, html.theme-black video {
