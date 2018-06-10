@@ -2,7 +2,6 @@ const repository = require('./repository');
 const utils = require('./utils');
 const dateUtils = require('./date_utils');
 const appInfo = require('./app_info');
-const Option = require('../entities/option');
 
 async function getOption(name) {
     const option = await repository.getOption(name);
@@ -27,6 +26,9 @@ async function setOption(name, value) {
 }
 
 async function createOption(name, value, isSynced) {
+    // to avoid circular dependency, need to find better solution
+    const Option = require('../entities/option');
+
     await new Option({
         name: name,
         value: value,

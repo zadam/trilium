@@ -42,7 +42,10 @@ const dbReady = new Promise((resolve, reject) => {
         }
 
         if (!await isDbUpToDate()) {
-            return;
+            // avoiding circular dependency
+            const migrationService = require('./migration');
+
+            await migrationService.migrate();
         }
 
         resolve(db);

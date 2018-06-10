@@ -12,18 +12,6 @@ async function checkAuth(req, res, next) {
     else if (!req.session.loggedIn && !utils.isElectron()) {
         res.redirect("login");
     }
-    else if (!await sqlInit.isDbUpToDate()) {
-        res.redirect("migration");
-    }
-    else {
-        next();
-    }
-}
-
-async function checkAuthForMigrationPage(req, res, next) {
-    if (!req.session.loggedIn && !utils.isElectron()) {
-        res.redirect("login");
-    }
     else {
         next();
     }
@@ -35,27 +23,12 @@ async function checkApiAuthOrElectron(req, res, next) {
     if (!req.session.loggedIn && !utils.isElectron()) {
         res.status(401).send("Not authorized");
     }
-    else if (await sqlInit.isDbUpToDate()) {
-        next();
-    }
     else {
-        res.status(409).send("Mismatched app versions"); // need better response than that
+        next();
     }
 }
 
 async function checkApiAuth(req, res, next) {
-    if (!req.session.loggedIn) {
-        res.status(401).send("Not authorized");
-    }
-    else if (await sqlInit.isDbUpToDate()) {
-        next();
-    }
-    else {
-        res.status(409).send("Mismatched app versions"); // need better response than that
-    }
-}
-
-async function checkApiAuthForMigrationPage(req, res, next) {
     if (!req.session.loggedIn) {
         res.status(401).send("Not authorized");
     }
@@ -79,19 +52,14 @@ async function checkSenderToken(req, res, next) {
     if (await sql.getValue("SELECT COUNT(*) FROM api_tokens WHERE isDeleted = 0 AND token = ?", [token]) === 0) {
         res.status(401).send("Not authorized");
     }
-    else if (await sqlInit.isDbUpToDate()) {
-        next();
-    }
     else {
-        res.status(409).send("Mismatched app versions"); // need better response than that
+        next();
     }
 }
 
 module.exports = {
     checkAuth,
-    checkAuthForMigrationPage,
     checkApiAuth,
-    checkApiAuthForMigrationPage,
     checkAppNotInitialized,
     checkApiAuthOrElectron,
     checkSenderToken

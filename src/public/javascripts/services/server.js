@@ -5,7 +5,7 @@ import infoService from "./info.js";
 function getHeaders() {
     let protectedSessionId = null;
 
-    try { // this is because protected session might not be declared in some cases - like when it's included in migration page
+    try { // this is because protected session might not be declared in some cases
         protectedSessionId = protectedSessionHolder.getProtectedSessionId();
     }
     catch(e) {}

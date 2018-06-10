@@ -22,13 +22,6 @@ let syncServerCertificate = null;
 async function sync() {
     try {
         await syncMutexService.doExclusively(async () => {
-            if (!await sqlInit.isDbUpToDate()) {
-                return {
-                    success: false,
-                    message: "DB not up to date"
-                };
-            }
-
             const syncContext = await login();
 
             await pushSync(syncContext);

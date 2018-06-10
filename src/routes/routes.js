@@ -1,6 +1,5 @@
 const indexRoute = require('./index');
 const loginRoute = require('./login');
-const migrationRoute = require('./migration');
 const setupRoute = require('./setup');
 const multer = require('multer')();
 
@@ -14,7 +13,6 @@ const noteRevisionsApiRoute = require('./api/note_revisions');
 const recentChangesApiRoute = require('./api/recent_changes');
 const optionsApiRoute = require('./api/options');
 const passwordApiRoute = require('./api/password');
-const migrationApiRoute = require('./api/migration');
 const syncApiRoute = require('./api/sync');
 const loginApiRoute = require('./api/login');
 const eventLogRoute = require('./api/event_log');
@@ -96,7 +94,6 @@ function register(app) {
     route(GET, '/login', [], loginRoute.loginPage);
     route(POST, '/login', [], loginRoute.login);
     route(POST, '/logout', [auth.checkAuth], loginRoute.logout);
-    route(GET, '/migration', [auth.checkAuthForMigrationPage], migrationRoute.migrationPage);
     route(GET, '/setup', [auth.checkAppNotInitialized], setupRoute.setupPage);
 
     apiRoute(GET, '/api/tree', treeApiRoute.getTree);
@@ -179,9 +176,6 @@ function register(app) {
 
     apiRoute(GET, '/api/search/:searchString', searchRoute.searchNotes);
     apiRoute(POST, '/api/search/:searchString', searchRoute.saveSearchToNote);
-
-    route(GET, '/api/migration', [auth.checkApiAuthForMigrationPage], migrationApiRoute.getMigrationInfo, apiResultHandler);
-    route(POST, '/api/migration', [auth.checkApiAuthForMigrationPage], migrationApiRoute.executeMigration, apiResultHandler);
 
     route(POST, '/api/login/sync', [], loginApiRoute.loginSync, apiResultHandler);
     // this is for entering protected mode so user has to be already logged-in (that's the reason we don't require username)
