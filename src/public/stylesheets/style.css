@@ -244,7 +244,7 @@ div.ui-tooltip {
 }
 
 .suppressed {
-    filter: opacity(7%);
+    display: none;
 }
 
 #note-type .dropdown-menu li:not(.divider) {

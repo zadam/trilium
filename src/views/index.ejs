@@ -105,8 +105,8 @@
       </div>
 
       <div style="grid-area: title;">
-        <div class="hide-toggle" style="display: flex; align-items: center;">
-          <div class="dropdown">
+        <div style="display: flex; align-items: center;">
+          <div class="dropdown hide-toggle">
             <button id="note-path-list-button" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-sm dropdown-toggle">
               <span id="note-path-count">1 path</span>
 
@@ -118,67 +118,69 @@
 
           <input autocomplete="off" value="" id="note-title" style="margin-left: 15px; font-size: x-large; border: 0; flex-grow: 100;" tabindex="1">
 
-          <span id="note-id-display" title="Note ID"></span>
+          <div class="hide-toggle" style="display: flex; align-items: center;">
+            <span id="note-id-display" title="Note ID"></span>
 
-          <button class="btn btn-sm icon-button"
-                  style="display: none; margin-right: 10px; background-image: url('/images/icons/edit-20.png');"
-                  title="Toggle edit"
-                  id="toggle-edit-button"></button>
+            <button class="btn btn-sm icon-button"
+                    style="display: none; margin-right: 10px; background-image: url('/images/icons/edit-20.png');"
+                    title="Toggle edit"
+                    id="toggle-edit-button"></button>
 
-          <button class="btn btn-sm icon-button"
-                  style="display: none; margin-right: 10px; background-image: url('/images/icons/play-20.png');"
-                  title="Render (Ctrl+Enter)"
-                  id="render-button"></button>
+            <button class="btn btn-sm icon-button"
+                    style="display: none; margin-right: 10px; background-image: url('/images/icons/play-20.png');"
+                    title="Render (Ctrl+Enter)"
+                    id="render-button"></button>
 
-          <button class="btn btn-sm icon-button"
-                  style="display: none; margin-right: 10px; background-image: url('/images/icons/play-20.png');"
-                  title="Execute (Ctrl+Enter)"
-                  id="execute-script-button"></button>
+            <button class="btn btn-sm icon-button"
+                    style="display: none; margin-right: 10px; background-image: url('/images/icons/play-20.png');"
+                    title="Execute (Ctrl+Enter)"
+                    id="execute-script-button"></button>
 
-          <div>
-            <button type="button"
-                    class="btn btn-sm icon-button"
-                    id="protect-button"
-                    title="Protected note can be viewed and edited only after entering password"
-                    style="background-image: url('/images/icons/shield-20.png');">
-            </button><button type="button"
-                    class="btn btn-sm icon-button"
-                    id="unprotect-button"
-                    title="Not protected note can be viewed without entering password"
-                    style="background-image: url('/images/icons/shield-off-20.png');">
-            </button>
-          </div>
+            <div>
+              <button type="button"
+                      class="btn btn-sm icon-button"
+                      id="protect-button"
+                      title="Protected note can be viewed and edited only after entering password"
+                      style="background-image: url('/images/icons/shield-20.png');">
+              </button><button type="button"
+                      class="btn btn-sm icon-button"
+                      id="unprotect-button"
+                      title="Not protected note can be viewed without entering password"
+                      style="background-image: url('/images/icons/shield-off-20.png');">
+              </button>
+            </div>
 
-          &nbsp; &nbsp;
+            &nbsp; &nbsp;
 
-          <div class="dropdown" id="note-type" data-bind="visible: type() != 'search'">
-            <button data-bind="disable: isDisabled()" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-sm">
-              Type: <span data-bind="text: typeString()"></span>
-              <span class="caret"></span>
-            </button>
-            <ul id="note-type-dropdown" class="dropdown-menu dropdown-menu-right">
-              <li data-bind="click: selectText, css: { selected: type() == 'text' }"><span class="check">&check;</span> <strong>Text</strong></li>
-              <li role="separator" class="divider"></li>
-              <li data-bind="click: selectRender, css: { selected: type() == 'render' && mime() == '' }"><span class="check">&check;</span> <strong>Render HTML note</strong></li>
-              <li role="separator" class="divider"></li>
-              <li data-bind="click: selectCode, css: { selected: type() == 'code' && mime() == '' }"><span class="check">&check;</span> <strong>Code</strong></li>
-              <!-- ko foreach: codeMimeTypes -->
-              <li data-bind="click: $parent.selectCodeMime, css: { selected: $parent.type() == 'code' && $parent.mime() == mime }"><span class="check">&check;</span> <span data-bind="text: title"></span></li>
-              <!-- /ko -->
-            </ul>
-          </div>
+            <div class="dropdown" id="note-type" data-bind="visible: type() != 'search'">
+              <button data-bind="disable: isDisabled()" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-sm">
+                Type: <span data-bind="text: typeString()"></span>
+                <span class="caret"></span>
+              </button>
+              <ul id="note-type-dropdown" class="dropdown-menu dropdown-menu-right">
+                <li data-bind="click: selectText, css: { selected: type() == 'text' }"><span class="check">&check;</span> <strong>Text</strong></li>
+                <li role="separator" class="divider"></li>
+                <li data-bind="click: selectRender, css: { selected: type() == 'render' && mime() == '' }"><span class="check">&check;</span> <strong>Render HTML note</strong></li>
+                <li role="separator" class="divider"></li>
+                <li data-bind="click: selectCode, css: { selected: type() == 'code' && mime() == '' }"><span class="check">&check;</span> <strong>Code</strong></li>
+                <!-- ko foreach: codeMimeTypes -->
+                <li data-bind="click: $parent.selectCodeMime, css: { selected: $parent.type() == 'code' && $parent.mime() == mime }"><span class="check">&check;</span> <span data-bind="text: title"></span></li>
+                <!-- /ko -->
+              </ul>
+            </div>
 
-          <div class="dropdown" id="note-actions">
-            <button type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-sm">
-              Note actions
-              <span class="caret"></span>
-            </button>
-            <ul class="dropdown-menu dropdown-menu-right">
-              <li><a id="show-note-revisions-button">Note revisions</a></li>
-              <li><a class="show-labels-button"><kbd>Alt+L</kbd> Labels</a></li>
-              <li><a id="show-source-button"><kbd>Ctrl+U</kbd> HTML source</a></li>
-              <li><a id="upload-file-button">Upload file</a></li>
-            </ul>
+            <div class="dropdown" id="note-actions">
+              <button type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-sm">
+                Note actions
+                <span class="caret"></span>
+              </button>
+              <ul class="dropdown-menu dropdown-menu-right">
+                <li><a id="show-note-revisions-button">Note revisions</a></li>
+                <li><a class="show-labels-button"><kbd>Alt+L</kbd> Labels</a></li>
+                <li><a id="show-source-button"><kbd>Ctrl+U</kbd> HTML source</a></li>
+                <li><a id="upload-file-button">Upload file</a></li>
+              </ul>
+            </div>
           </div>
         </div>
       </div>
