@@ -11,7 +11,13 @@ async function show() {
 
         textEditor = await BalloonEditor.create($noteDetailText[0], {});
 
-        textEditor.model.document.on('change', noteDetailService.noteChanged);
+        textEditor.model.document.on('change', () => {
+                // change is triggered on just marker/selection changes which is not interesting for us
+                if (textEditor.model.document.differ.getChanges().length > 0) {
+                    noteDetailService.noteChanged();
+                }
+            }
+        );
     }
 
     textEditor.setData(noteDetailService.getCurrentNote().content);
