@@ -75,4 +75,8 @@ github-release upload \
     --name "$WINDOWS_X64_BUILD" \
     --file "dist/$WINDOWS_X64_BUILD"
 
+bin/build-docker.sh $VERSION
+
+bin/push-docker-image.sh $VERSION
+
 echo "Release finished!"
