@@ -21,10 +21,10 @@ async function loginSync(req) {
         return [400, { message: 'Auth request time is out of sync' }];
     }
 
-    const dbVersion = req.body.dbVersion;
+    const syncVersion = req.body.syncVersion;
 
-    if (dbVersion !== appInfo.dbVersion) {
-        return [400, { message: 'Non-matching db versions, local is version ' + appInfo.dbVersion }];
+    if (syncVersion !== appInfo.syncVersion) {
+        return [400, { message: 'Non-matching sync versions, local is version ' + appInfo.syncVersion }];
     }
 
     const documentSecret = await options.getOption('documentSecret');

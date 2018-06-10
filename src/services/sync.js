@@ -69,7 +69,7 @@ async function login() {
 
     const resp = await syncRequest(syncContext, 'POST', '/api/login/sync', {
         timestamp: timestamp,
-        dbVersion: appInfo.dbVersion,
+        syncVersion: appInfo.syncVersion,
         hash: hash
     });
 
