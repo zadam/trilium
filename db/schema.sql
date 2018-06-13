@@ -115,9 +115,10 @@ CREATE INDEX IDX_notes_type
 CREATE TABLE IF NOT EXISTS "recent_notes" (
   `branchId` TEXT NOT NULL PRIMARY KEY,
   `notePath` TEXT NOT NULL,
+  hash TEXT DEFAULT "" NOT NULL,
   `dateCreated` TEXT NOT NULL,
   isDeleted INT
-, hash TEXT DEFAULT "" NOT NULL);
+);
 CREATE TABLE IF NOT EXISTS "event_log" (
   `eventId`	TEXT NOT NULL PRIMARY KEY,
   `noteId`	TEXT,
@@ -126,8 +127,7 @@ CREATE TABLE IF NOT EXISTS "event_log" (
 );
 CREATE TABLE IF NOT EXISTS "options"
 (
-  optionId TEXT NOT NULL PRIMARY KEY,
-  name TEXT not null,
+  name TEXT not null PRIMARY KEY,
   value TEXT,
   dateModified INT,
   isSynced INTEGER default 0 not null,
