@@ -39,7 +39,10 @@ function ensureProtectedSession(requireProtectedSession, modal) {
         }
 
         $dialog.dialog({
-            modal: modal,
+            // modal: modal,
+            // everything is now non-modal, because modal dialog caused weird high CPU usage on opening
+            // and tearing of text input
+            modal: false,
             width: 400,
             open: () => {
                 if (!modal) {
