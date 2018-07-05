@@ -47,6 +47,7 @@ bin/package.sh
 LINUX_X64_BUILD=trilium-linux-x64-$VERSION.7z
 LINUX_IA32_BUILD=trilium-linux-ia32-$VERSION.7z
 WINDOWS_X64_BUILD=trilium-windows-x64-$VERSION.7z
+SERVER_BUILD=trilium-linux-x64-server.elf
 
 echo "Creating release in GitHub"
 
@@ -75,7 +76,20 @@ github-release upload \
     --name "$WINDOWS_X64_BUILD" \
     --file "dist/$WINDOWS_X64_BUILD"
 
+echo "Packaging server version"
+
+npm run build-pkg
+
+github-release upload \
+    --tag $TAG \
+    --name "$SERVER_BUILD" \
+    --file "dist/$SERVER_BUILD"
+
+echo "Building docker image"
+
 bin/build-docker.sh $VERSION
+
+echo "Pushing docker image to dockerhub"
 
 bin/push-docker-image.sh $VERSION
 
