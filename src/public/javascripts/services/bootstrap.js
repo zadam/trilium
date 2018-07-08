@@ -47,7 +47,12 @@ window.onerror = function (msg, url, lineNo, columnNo, error) {
 
     let message = "Uncaught error: ";
 
-    if (string.indexOf("script error") > -1){
+    if (string.includes("Cannot read property 'defaultView' of undefined")) {
+        // ignore this specific error which is very common but we don't know where it comes from
+        // and it seems to be harmless
+        return true;
+    }
+    else if (string.includes("script error")) {
         message += 'No details available';
     }
     else {
