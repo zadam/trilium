@@ -29,7 +29,6 @@ function registerEntrypoints() {
     $("#show-note-revisions-button").click(noteRevisionsDialog.showCurrentNoteRevisions);
 
     $("#show-source-button").click(noteSourceDialog.showDialog);
-    utils.bindShortcut('ctrl+u', noteSourceDialog.showDialog);
 
     $("#recent-changes-button").click(recentChangesDialog.showDialog);
 
