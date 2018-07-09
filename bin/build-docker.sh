@@ -5,4 +5,4 @@ if [[ $# -eq 0 ]] ; then
     exit 1
 fi
 
-docker build -t zadam/trilium:latest -t zadam/trilium:$1 .
+sudo docker build -t zadam/trilium:latest -t zadam/trilium:$1 .

@@ -5,5 +5,5 @@ if [[ $# -eq 0 ]] ; then
     exit 1
 fi
 
-docker push zadam/trilium:latest
-docker push zadam/trilium:$1
+sudo docker push zadam/trilium:latest
+sudo docker push zadam/trilium:$1
