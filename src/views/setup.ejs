@@ -5,31 +5,60 @@
     <title>Setup</title>
 </head>
 <body>
-<div style="width: 500px; margin: auto;">
+<div id="setup-dialog" style="width: 500px; margin: auto;">
     <h1>Trilium Notes setup</h1>
 
     <div class="alert alert-warning" id="alert" style="display: none;">
     </div>
 
-    <p>You're almost done with the setup. That last thing is to choose username and password using which you'll login to the application.
-    This password is also used for generating encryption key which encrypts protected notes.</p>
+    <div id="setup-type" data-bind="visible: step() == 'setup-type'">
+        <div class="radio">
+            <label><input type="radio" name="setup-type" value="new-document" data-bind="checked: setupNewDocument">
+                I'm a new user and I want to create new Trilium document for my notes</label>
+        </div>
+        <div class="radio">
+            <label><input type="radio" name="setup-type" value="sync-from-desktop" data-bind="checked: setupSyncFromDesktop">
+                I have server instance up and I want to setup sync with it</label>
+        </div>
+        <div class="radio">
+            <label><input type="radio" name="setup-type" value="sync-from-server" data-bind="checked: setupSyncFromServer">
+                I have desktop instance already and I want to setup sync with it</label>
+        </div>
 
-    <form id="setup-form">
+        <button type="button" data-bind="disable: !setupTypeSelected(), click: selectSetupType" class="btn btn-primary">Next</button>
+    </div>
+
+    <div data-bind="visible: step() == 'new-document'">
+        <p>You're almost done with the setup. The last thing is to choose username and password using which you'll login to the application.
+            This password is also used for generating encryption key which encrypts protected notes.</p>
+
         <div class="form-group">
             <label for="username">Username</label>
-            <input type="text" class="form-control" id="username" placeholder="Arbitrary string">
+            <input type="text" class="form-control" data-bind="value: username" placeholder="Arbitrary string">
         </div>
         <div class="form-group">
             <label for="password1">Password</label>
-            <input type="password" class="form-control" id="password1" placeholder="Password">
+            <input type="password" class="form-control" data-bind="value: password1" placeholder="Password">
         </div>
         <div class="form-group">
             <label for="password2">Repeat password</label>
-            <input type="password" class="form-control" id="password2" placeholder="Password">
+            <input type="password" class="form-control" data-bind="value: password2" placeholder="Password">
         </div>
 
-        <button type="submit" class="btn btn-default">Save</button>
-    </form>
+        <button type="button" data-bind="click: back" class="btn btn-default">Back</button>
+
+        &nbsp;
+
+        <button type="button" data-bind="click: finish" class="btn btn-primary">Finish setup</button>
+    </div>
+
+    <div data-bind="visible: step() == 'sync-from-desktop'">
+        sync from desktop
+    </div>
+
+    <div data-bind="visible: step() == 'sync-from-server'">
+        sync from server
+    </div>
 </div>
 
 <script type="text/javascript">
@@ -46,6 +75,8 @@
 
 <link href="libraries/bootstrap/css/bootstrap.css" rel="stylesheet">
 <script src="libraries/bootstrap/js/bootstrap.js"></script>
+
+<script src="/libraries/knockout.min.js"></script>
 
 <script src="javascripts/setup.js" type="module"></script>
 </body>

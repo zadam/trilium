@@ -20,8 +20,7 @@
     "start-forge": "electron-forge start",
     "package-forge": "electron-forge package",
     "make-forge": "electron-forge make",
-    "publish-forge": "electron-forge publish",
-    "build-pkg": "pkg . --targets node8-linux-x64 --output dist/trilium-linux-x64-server.elf"
+    "publish-forge": "electron-forge publish"
   },
   "dependencies": {
     "async-mutex": "^0.1.3",
@@ -119,7 +118,10 @@
     "assets": [
       "./db/**/*",
       "./src/public/**/*",
-      "./src/views/**/*"
+      "./src/views/**/*",
+      "./node_modules/mozjpeg/vendor/*",
+      "./node_modules/pngquant-bin/vendor/*",
+      "./node_modules/giflossy/vendor/*"
     ]
   }
 }

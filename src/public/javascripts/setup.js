@@ -1,36 +1,63 @@
 import server from './services/server.js';
 
-$("#setup-form").submit(() => {
-    const username = $("#username").val();
-    const password1 = $("#password1").val();
-    const password2 = $("#password2").val();
+function SetupModel() {
+    this.step = ko.observable("setup-type");
+    this.setupType = ko.observable();
 
-    if (!username) {
-        showAlert("Username can't be empty");
-        return false;
-    }
+    this.setupNewDocument = ko.observable(false);
+    this.setupSyncFromDesktop = ko.observable(false);
+    this.setupSyncFromServer = ko.observable(false);
 
-    if (!password1) {
-        showAlert("Password can't be empty");
-        return false;
-    }
+    this.username = ko.observable();
+    this.password1 = ko.observable();
+    this.password2 = ko.observable();
 
-    if (password1 !== password2) {
-        showAlert("Both password fields need be identical.");
-        return false;
-    }
+    this.setupTypeSelected = this.getSetupType = () =>
+        this.setupNewDocument()
+        || this.setupSyncFromDesktop()
+        || this.setupSyncFromServer();
 
-    server.post('setup', {
-        username: username,
-        password: password1
-    }).then(() => {
-        window.location.replace("/");
-    });
+    this.selectSetupType = () => {
+        this.step(this.getSetupType());
+        this.setupType(this.getSetupType());
+    };
 
-    return false;
-});
+    this.back = () => this.step("setup-type");
+
+    this.finish = () => {
+        if (this.setupNewDocument()) {
+            const username = this.username();
+            const password1 = this.password1();
+            const password2 = this.password2();
+
+            if (!username) {
+                showAlert("Username can't be empty");
+                return;
+            }
+
+            if (!password1) {
+                showAlert("Password can't be empty");
+                return;
+            }
+
+            if (password1 !== password2) {
+                showAlert("Both password fields need be identical.");
+                return;
+            }
+
+            server.post('setup', {
+                username: username,
+                password: password1
+            }).then(() => {
+                window.location.replace("/");
+            });
+        }
+    };
+}
 
 function showAlert(message) {
     $("#alert").html(message);
     $("#alert").show();
 }
+
+ko.applyBindings(new SetupModel(), document.getElementById('setup-dialog'));
