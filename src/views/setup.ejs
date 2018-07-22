@@ -5,7 +5,7 @@
     <title>Setup</title>
 </head>
 <body>
-<div id="setup-dialog" style="width: 500px; margin: auto;">
+<div id="setup-dialog" style="width: 500px; margin: auto; display:none;">
     <h1>Trilium Notes setup</h1>
 
     <div class="alert alert-warning" id="alert" style="display: none;">
@@ -16,19 +16,21 @@
             <label><input type="radio" name="setup-type" value="new-document" data-bind="checked: setupNewDocument">
                 I'm a new user and I want to create new Trilium document for my notes</label>
         </div>
-        <div class="radio">
+        <div class="radio" data-bind="if: instanceType == 'server'">
             <label><input type="radio" name="setup-type" value="sync-from-desktop" data-bind="checked: setupSyncFromDesktop">
-                I have server instance up and I want to setup sync with it</label>
-        </div>
-        <div class="radio">
-            <label><input type="radio" name="setup-type" value="sync-from-server" data-bind="checked: setupSyncFromServer">
                 I have desktop instance already and I want to setup sync with it</label>
+        </div>
+        <div class="radio" data-bind="if: instanceType == 'desktop'">
+            <label><input type="radio" name="setup-type" value="sync-from-server" data-bind="checked: setupSyncFromServer">
+                I have server instance up and I want to setup sync with it</label>
         </div>
 
         <button type="button" data-bind="disable: !setupTypeSelected(), click: selectSetupType" class="btn btn-primary">Next</button>
     </div>
 
     <div data-bind="visible: step() == 'new-document'">
+        <h2>New document</h2>
+
         <p>You're almost done with the setup. The last thing is to choose username and password using which you'll login to the application.
             This password is also used for generating encryption key which encrypts protected notes.</p>
 
@@ -53,11 +55,36 @@
     </div>
 
     <div data-bind="visible: step() == 'sync-from-desktop'">
-        sync from desktop
+        <h2>Sync from Desktop</h2>
+
+        <p>This setup needs to be initiated from the desktop instance, please open it, go to settings in the top right, click on sync tab and then click on Setup sync with server instance.</p>
+
+        <button type="button" data-bind="click: back" class="btn btn-default">Back</button>
     </div>
 
     <div data-bind="visible: step() == 'sync-from-server'">
-        sync from server
+        <h2>Sync from Server</h2>
+
+        <p>Please enter Trilium server address and credentials below. This will download the whole Trilium document from server and setup sync to it. Depending on the document size and your connection speed, this may take a while.</p>
+
+        <div class="form-group">
+            <label for="username">Trilium server address</label>
+            <input type="text" class="form-control" data-bind="value: serverAddress" placeholder="https://<hostname>:<port>">
+        </div>
+        <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" class="form-control" data-bind="value: username" placeholder="Username">
+        </div>
+        <div class="form-group">
+            <label for="password1">Password</label>
+            <input type="password" class="form-control" data-bind="value: password1" placeholder="Password">
+        </div>
+
+        <button type="button" data-bind="click: back" class="btn btn-default">Back</button>
+
+        &nbsp;
+
+        <button type="button" data-bind="click: finish" class="btn btn-primary">Finish setup</button>
     </div>
 </div>
 

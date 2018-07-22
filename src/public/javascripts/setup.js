@@ -1,4 +1,5 @@
 import server from './services/server.js';
+import utils from "./services/utils.js";
 
 function SetupModel() {
     this.step = ko.observable("setup-type");
@@ -12,6 +13,10 @@ function SetupModel() {
     this.password1 = ko.observable();
     this.password2 = ko.observable();
 
+    this.serverAddress = ko.observable();
+
+    this.instanceType = utils.isElectron() ? "desktop" : "server";
+
     this.setupTypeSelected = this.getSetupType = () =>
         this.setupNewDocument()
         || this.setupSyncFromDesktop()
@@ -22,7 +27,13 @@ function SetupModel() {
         this.setupType(this.getSetupType());
     };
 
-    this.back = () => this.step("setup-type");
+    this.back = () => {
+        this.step("setup-type");
+
+        this.setupNewDocument(false);
+        this.setupSyncFromServer(false);
+        this.setupSyncFromDesktop(false);
+    };
 
     this.finish = () => {
         if (this.setupNewDocument()) {
@@ -52,6 +63,28 @@ function SetupModel() {
                 window.location.replace("/");
             });
         }
+        else if (this.setupSyncFromServer()) {
+            const serverAddress = this.serverAddress();
+            const username = this.username();
+            const password = this.password1();
+
+            if (!serverAddress) {
+                showAlert("Trilium server address can't be empty");
+                return;
+            }
+
+            if (!username) {
+                showAlert("Username can't be empty");
+                return;
+            }
+
+            if (!password) {
+                showAlert("Password can't be empty");
+                return;
+            }
+
+            showAlert("All OK");
+        }
     };
 }
 
@@ -61,3 +94,5 @@ function showAlert(message) {
 }
 
 ko.applyBindings(new SetupModel(), document.getElementById('setup-dialog'));
+
+$("#setup-dialog").show();

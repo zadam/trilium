@@ -5,7 +5,6 @@ const sqlite = require('sqlite');
 const resourceDir = require('./resource_dir');
 const appInfo = require('./app_info');
 const sql = require('./sql');
-const options = require('./options');
 const cls = require('./cls');
 
 async function createConnection() {
