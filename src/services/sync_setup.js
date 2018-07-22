@@ -1,11 +1,11 @@
 "use strict";
 
 const config = require('./config');
+const optionService = require('./options');
 
 module.exports = {
-    SYNC_SERVER: config['Sync']['syncServerHost'],
-    isSyncSetup: !!config['Sync']['syncServerHost'],
-    SYNC_TIMEOUT: config['Sync']['syncServerTimeout'] || 5000,
-    SYNC_PROXY: config['Sync']['syncProxy'],
-    SYNC_CERT_PATH: config['Sync']['syncServerCertificate']
+    getSyncServer: async () => await optionService.getOption('syncServerHost'),
+    isSyncSetup: async () => !!await optionService.getOption('syncServerHost'),
+    getSyncTimeout: async () => await optionService.getOption('syncServerTimeout'),
+    getSyncProxy: async () => await optionService.getOption('syncProxy')
 };

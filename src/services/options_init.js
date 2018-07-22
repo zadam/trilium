@@ -34,6 +34,10 @@ async function initOptions(startNotePath, username, password) {
     await optionService.createOption('encryptedDataKeyIv', '');
 
     await passwordEncryptionService.setDataKey(password, utils.randomSecureToken(16));
+
+    await optionService.createOption('syncServerHost', '', false);
+    await optionService.createOption('syncServerTimeout', 5000, false);
+    await optionService.createOption('syncProxy', '', false);
 }
 
 module.exports = {

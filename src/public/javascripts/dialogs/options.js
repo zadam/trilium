@@ -34,8 +34,8 @@ async function showDialog() {
     }
 }
 
-async function saveOptions(optionName, optionValue) {
-    await server.put('options/' + encodeURIComponent(optionName) + '/' + encodeURIComponent(optionValue));
+async function saveOptions(options) {
+    await server.put('options', options);
 
     infoService.showMessage("Options change have been saved.");
 }
@@ -129,16 +129,15 @@ addTabHandler((function() {
 addTabHandler((function() {
     const $form = $("#protected-session-timeout-form");
     const $protectedSessionTimeout = $("#protected-session-timeout-in-seconds");
-    const optionName = 'protectedSessionTimeout';
 
     function optionsLoaded(options) {
-        $protectedSessionTimeout.val(options[optionName]);
+        $protectedSessionTimeout.val(options['protectedSessionTimeout']);
     }
 
     $form.submit(() => {
         const protectedSessionTimeout = $protectedSessionTimeout.val();
 
-        saveOptions(optionName, protectedSessionTimeout).then(() => {
+        saveOptions({ 'protectedSessionTimeout': protectedSessionTimeout }).then(() => {
             protectedSessionHolder.setProtectedSessionTimeout(protectedSessionTimeout);
         });
 
@@ -153,14 +152,13 @@ addTabHandler((function() {
 addTabHandler((function () {
     const $form = $("#note-revision-snapshot-time-interval-form");
     const $timeInterval = $("#note-revision-snapshot-time-interval-in-seconds");
-    const optionName = 'noteRevisionSnapshotTimeInterval';
 
     function optionsLoaded(options) {
-        $timeInterval.val(options[optionName]);
+        $timeInterval.val(options['noteRevisionSnapshotTimeInterval']);
     }
 
     $form.submit(() => {
-        saveOptions(optionName, $timeInterval.val());
+        saveOptions({ 'noteRevisionSnapshotTimeInterval': $timeInterval.val() });
 
         return false;
     });
@@ -187,6 +185,33 @@ addTabHandler((async function () {
     $buildRevision.attr('href', 'https://github.com/zadam/trilium/commit/' + appInfo.buildRevision);
 
     return {};
+})());
+
+addTabHandler((function() {
+    const $form = $("#sync-setup-form");
+    const $syncServerHost = $("#sync-server-host");
+    const $syncServerTimeout = $("#sync-server-timeout");
+    const $syncProxy = $("#sync-proxy");
+
+    function optionsLoaded(options) {
+        $syncServerHost.val(options['syncServerHost']);
+        $syncServerTimeout.val(options['syncServerTimeout']);
+        $syncProxy.val(options['syncProxy']);
+    }
+
+    $form.submit(() => {
+        saveOptions({
+            'syncServerHost': $syncServerHost.val(),
+            'syncServerTimeout': $syncServerTimeout.val(),
+            'syncProxy': $syncProxy.val()
+        });
+
+        return false;
+    });
+
+    return {
+        optionsLoaded
+    };
 })());
 
 addTabHandler((async function () {

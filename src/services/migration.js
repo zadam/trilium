@@ -85,7 +85,7 @@ async function migrate() {
         }
     }
 
-    if (sqlInit.isDbUpToDate()) {
+    if (await sqlInit.isDbUpToDate()) {
         await sqlInit.initDbConnection();
     }
 

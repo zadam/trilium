@@ -73,7 +73,7 @@ async function sendPing(client, lastSentSyncId) {
     await sendMessage(client, {
         type: 'sync',
         data: syncData,
-        changesToPushCount: syncSetup.isSyncSetup ? changesToPushCount : 0
+        changesToPushCount: await syncSetup.isSyncSetup() ? changesToPushCount : 0
     });
 }
 

@@ -31,8 +31,8 @@ async function initDbConnection() {
 
         await sql.execute("PRAGMA foreign_keys = ON");
 
-        if (isDbInitialized()) {
-            log.info("DB not found, please visit setup page to initialize Trilium.");
+        if (!await isDbInitialized()) {
+            log.info("DB not initialized, please visit setup page to initialize Trilium.");
 
             return;
         }

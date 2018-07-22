@@ -17,7 +17,6 @@ const syncMutexService = require('./sync_mutex');
 const cls = require('./cls');
 
 let proxyToggle = true;
-let syncServerCertificate = null;
 
 async function sync() {
     try {
@@ -169,7 +168,7 @@ async function checkContentHash(syncContext) {
 }
 
 async function syncRequest(syncContext, method, uri, body) {
-    const fullUri = syncSetup.SYNC_SERVER + uri;
+    const fullUri = await syncSetup.getSyncServer() + uri;
 
     try {
         const options = {
@@ -178,15 +177,13 @@ async function syncRequest(syncContext, method, uri, body) {
             jar: syncContext.cookieJar,
             json: true,
             body: body,
-            timeout: syncSetup.SYNC_TIMEOUT
+            timeout: await syncSetup.getSyncTimeout()
         };
 
-        if (syncServerCertificate) {
-            options.ca = syncServerCertificate;
-        }
+        const syncProxy = await syncSetup.getSyncProxy();
 
-        if (syncSetup.SYNC_PROXY && proxyToggle) {
-            options.proxy = syncSetup.SYNC_PROXY;
+        if (syncProxy && proxyToggle) {
+            options.proxy = syncProxy;
         }
 
         return await rp(options);
@@ -270,18 +267,14 @@ async function setLastSyncedPush(lastSyncedPush) {
     await optionService.setOption('lastSyncedPush', lastSyncedPush);
 }
 
-sqlInit.dbReady.then(() => {
-    if (syncSetup.isSyncSetup) {
-        log.info("Setting up sync to " + syncSetup.SYNC_SERVER + " with timeout " + syncSetup.SYNC_TIMEOUT);
+sqlInit.dbReady.then(async () => {
+    if (await syncSetup.isSyncSetup()) {
+        log.info("Setting up sync to " + await syncSetup.getSyncServer() + " with timeout " + await syncSetup.getSyncTimeout());
 
-        if (syncSetup.SYNC_PROXY) {
-            log.info("Sync proxy: " + syncSetup.SYNC_PROXY);
-        }
+        const syncProxy = await syncSetup.getSyncProxy();
 
-        if (syncSetup.SYNC_CERT_PATH) {
-            log.info('Sync certificate: ' + syncSetup.SYNC_CERT_PATH);
-
-            syncServerCertificate = fs.readFileSync(syncSetup.SYNC_CERT_PATH);
+        if (syncProxy) {
+            log.info("Sync proxy: " + syncProxy);
         }
 
         setInterval(cls.wrap(sync), 60000);
