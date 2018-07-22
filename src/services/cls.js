@@ -13,9 +13,14 @@ function getSourceId() {
     return namespace.get('sourceId');
 }
 
+function reset() {
+    clsHooked.reset();
+}
+
 module.exports = {
     init,
     wrap,
     namespace,
-    getSourceId
+    getSourceId,
+    reset
 };

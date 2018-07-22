@@ -1,12 +1,13 @@
 "use strict";
 
-const migrationService = require('./migration');
 const sql = require('./sql');
 const sqlInit = require('./sql_init');
 const utils = require('./utils');
+const passwordEncryptionService = require('./password_encryption');
+const optionService = require('./options');
 
 async function checkAuth(req, res, next) {
-    if (!await sqlInit.isUserInitialized()) {
+    if (!await sqlInit.isDbInitialized()) {
         res.redirect("setup");
     }
     else if (!req.session.loggedIn && !utils.isElectron()) {
@@ -38,7 +39,7 @@ async function checkApiAuth(req, res, next) {
 }
 
 async function checkAppNotInitialized(req, res, next) {
-    if (await sqlInit.isUserInitialized()) {
+    if (await sqlInit.isDbInitialized()) {
         res.status(400).send("App already initialized.");
     }
     else {
@@ -57,10 +58,27 @@ async function checkSenderToken(req, res, next) {
     }
 }
 
+async function checkBasicAuth(req, res, next) {
+    const header = req.headers.authorization || '';
+    const token = header.split(/\s+/).pop() || '';
+    const auth = new Buffer.from(token, 'base64').toString();
+    const [username, password] = auth.split(/:/);
+
+    const dbUsername = await optionService.getOption('username');
+
+    if (dbUsername !== username || !await passwordEncryptionService.verifyPassword(password)) {
+        res.status(401).send("Not authorized");
+    }
+    else {
+        next();
+    }
+}
+
 module.exports = {
     checkAuth,
     checkApiAuth,
     checkAppNotInitialized,
     checkApiAuthOrElectron,
-    checkSenderToken
+    checkSenderToken,
+    checkBasicAuth
 };

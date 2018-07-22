@@ -157,9 +157,9 @@ async function transactional(func) {
     transactionActive = true;
     transactionPromise = new Promise(async (resolve, reject) => {
         try {
-            cls.namespace.set('isInTransaction', true);
-
             await beginTransaction();
+
+            cls.namespace.set('isInTransaction', true);
 
             ret = await func();
 

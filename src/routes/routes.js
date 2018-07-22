@@ -62,16 +62,21 @@ function apiRoute(method, path, routeHandler) {
     route(method, path, [auth.checkApiAuth], routeHandler, apiResultHandler);
 }
 
-function route(method, path, middleware, routeHandler, resultHandler) {
+function route(method, path, middleware, routeHandler, resultHandler, transactional = true) {
     router[method](path, ...middleware, async (req, res, next) => {
         try {
             const result = await cls.init(async () => {
                 cls.namespace.set('sourceId', req.headers.source_id);
                 protectedSessionService.setProtectedSessionId(req);
 
-                return await sql.transactional(async () => {
+                if (transactional) {
+                    return await sql.transactional(async () => {
+                        return await routeHandler(req, res, next);
+                    });
+                }
+                else {
                     return await routeHandler(req, res, next);
-                });
+                }
             });
 
             if (resultHandler) {
@@ -149,6 +154,7 @@ function register(app) {
     apiRoute(POST, '/api/sync/force-note-sync/:noteId', syncApiRoute.forceNoteSync);
     apiRoute(GET, '/api/sync/changed', syncApiRoute.getChanged);
     apiRoute(PUT, '/api/sync/update', syncApiRoute.update);
+    route(GET, '/api/sync/document', [auth.checkBasicAuth], syncApiRoute.getDocument);
 
     apiRoute(GET, '/api/event-log', eventLogRoute.getEventLog);
 
@@ -156,7 +162,8 @@ function register(app) {
     apiRoute(PUT, '/api/recent-notes/:branchId/:notePath', recentNotesRoute.addRecentNote);
     apiRoute(GET, '/api/app-info', appInfoRoute.getAppInfo);
 
-    route(POST, '/api/setup', [auth.checkAppNotInitialized], setupApiRoute.setup, apiResultHandler);
+    route(POST, '/api/setup/new-document', [auth.checkAppNotInitialized], setupApiRoute.setupNewDocument, apiResultHandler);
+    route(POST, '/api/setup/sync-from-server', [auth.checkAppNotInitialized], setupApiRoute.setupSyncFromServer, apiResultHandler, false);
 
     apiRoute(POST, '/api/sql/execute', sqlRoute.execute);
     apiRoute(POST, '/api/anonymization/anonymize', anonymizationRoute.anonymize);

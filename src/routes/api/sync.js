@@ -7,6 +7,7 @@ const sql = require('../../services/sql');
 const optionService = require('../../services/options');
 const contentHashService = require('../../services/content_hash');
 const log = require('../../services/log');
+const DOCUMENT_PATH = require('../../services/data_dir').DOCUMENT_PATH;
 
 async function checkSync() {
     return {
@@ -72,6 +73,12 @@ async function update(req) {
     }
 }
 
+async function getDocument(req, resp) {
+    log.info("Serving document.");
+
+    resp.sendFile(DOCUMENT_PATH);
+}
+
 module.exports = {
     checkSync,
     syncNow,
@@ -79,5 +86,6 @@ module.exports = {
     forceFullSync,
     forceNoteSync,
     getChanged,
-    update
+    update,
+    getDocument
 };

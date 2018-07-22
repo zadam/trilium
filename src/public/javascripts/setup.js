@@ -1,4 +1,3 @@
-import server from './services/server.js';
 import utils from "./services/utils.js";
 
 function SetupModel() {
@@ -56,7 +55,8 @@ function SetupModel() {
                 return;
             }
 
-            server.post('setup', {
+            // not using server.js because it loads too many dependencies
+            $.post('/api/setup/new-document', {
                 username: username,
                 password: password1
             }).then(() => {
@@ -83,7 +83,17 @@ function SetupModel() {
                 return;
             }
 
-            showAlert("All OK");
+            // not using server.js because it loads too many dependencies
+            $.post('/api/setup/sync-from-server', {
+                serverAddress: serverAddress,
+                username: username,
+                password: password
+            }).then(() => {
+                window.location.replace("/");
+            }).catch((err) => {
+                alert("Error, see dev console for details.");
+                console.error(err);
+            });
         }
     };
 }

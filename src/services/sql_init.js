@@ -11,34 +11,28 @@ async function createConnection() {
     return await sqlite.open(dataDir.DOCUMENT_PATH, {Promise});
 }
 
-let schemaReadyResolve = null;
-const schemaReady = new Promise((resolve, reject) => schemaReadyResolve = resolve);
-
 let dbReadyResolve = null;
 const dbReady = new Promise((resolve, reject) => {
-    cls.init(async () => {
+    dbReadyResolve = resolve;
+
+    initDbConnection();
+});
+
+async function isDbInitialized() {
+    const tableResults = await sql.getRows("SELECT name FROM sqlite_master WHERE type='table' AND name='notes'");
+
+    return tableResults.length === 1;
+}
+
+async function initDbConnection() {
+    await cls.init(async () => {
         const db = await createConnection();
         sql.setDbConnection(db);
 
         await sql.execute("PRAGMA foreign_keys = ON");
 
-        dbReadyResolve = () => {
-            log.info("DB ready.");
-
-            resolve(db);
-        };
-
-        const tableResults = await sql.getRows("SELECT name FROM sqlite_master WHERE type='table' AND name='notes'");
-        if (tableResults.length !== 1) {
+        if (isDbInitialized()) {
             log.info("DB not found, please visit setup page to initialize Trilium.");
-
-            return;
-        }
-
-        schemaReadyResolve();
-
-        if (!await isUserInitialized()) {
-            log.info("Login/password not initialized. DB not ready.");
 
             return;
         }
@@ -50,9 +44,10 @@ const dbReady = new Promise((resolve, reject) => {
             await migrationService.migrate();
         }
 
-        resolve(db);
+        log.info("DB ready.");
+        dbReadyResolve(db);
     });
-});
+}
 
 async function createInitialDatabase(username, password) {
     log.info("Connected to db, but schema doesn't exist. Initializing schema ...");
@@ -78,11 +73,7 @@ async function createInitialDatabase(username, password) {
 
     log.info("Schema and initial content generated. Waiting for user to enter username/password to finish setup.");
 
-    setDbReadyAsResolved();
-}
-
-function setDbReadyAsResolved() {
-    dbReadyResolve();
+    await initDbConnection();
 }
 
 async function isDbUpToDate() {
@@ -97,23 +88,10 @@ async function isDbUpToDate() {
     return upToDate;
 }
 
-async function isUserInitialized() {
-    const optionsTable = await sql.getRows("SELECT name FROM sqlite_master WHERE type='table' AND name='options'");
-
-    if (optionsTable.length !== 1) {
-        return false;
-    }
-
-    const username = await sql.getValue("SELECT value FROM options WHERE name = 'username'");
-
-    return !!username;
-}
-
 module.exports = {
     dbReady,
-    schemaReady,
-    isUserInitialized,
-    setDbReadyAsResolved,
+    isDbInitialized,
+    initDbConnection,
     isDbUpToDate,
     createInitialDatabase
 };

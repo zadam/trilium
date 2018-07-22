@@ -28,7 +28,7 @@ async function setUserNamePassword() {
 
     await passwordEncryptionService.setDataKey(password, utils.randomSecureToken(16));
 
-    sqlInit.setDbReadyAsResolved();
+    await sqlInit.initDbConnection();
 }
 
 const noteCount = parseInt(process.argv[2]);
@@ -71,4 +71,4 @@ async function start() {
     process.exit(0);
 }
 
-sqlInit.schemaReady.then(cls.wrap(start));
+sqlInit.dbReady.then(cls.wrap(start));
