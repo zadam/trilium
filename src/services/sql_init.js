@@ -12,8 +12,12 @@ async function createConnection() {
 }
 
 let dbReadyResolve = null;
-const dbReady = new Promise((resolve, reject) => {
+const dbReady = new Promise(async (resolve, reject) => {
     dbReadyResolve = resolve;
+
+    // no need to create new connection now since DB stays the same all the time
+    const db = await createConnection();
+    sql.setDbConnection(db);
 
     initDbConnection();
 });
@@ -26,9 +30,6 @@ async function isDbInitialized() {
 
 async function initDbConnection() {
     await cls.init(async () => {
-        const db = await createConnection();
-        sql.setDbConnection(db);
-
         await sql.execute("PRAGMA foreign_keys = ON");
 
         if (!await isDbInitialized()) {
@@ -45,12 +46,12 @@ async function initDbConnection() {
         }
 
         log.info("DB ready.");
-        dbReadyResolve(db);
+        dbReadyResolve();
     });
 }
 
 async function createInitialDatabase(username, password) {
-    log.info("Connected to db, but schema doesn't exist. Initializing schema ...");
+    log.info("Creating initial database ...");
 
     const schema = fs.readFileSync(resourceDir.DB_INIT_DIR + '/schema.sql', 'UTF-8');
     const notesSql = fs.readFileSync(resourceDir.DB_INIT_DIR + '/main_notes.sql', 'UTF-8');
@@ -67,13 +68,32 @@ async function createInitialDatabase(username, password) {
 
         const startNoteId = await sql.getValue("SELECT noteId FROM branches WHERE parentNoteId = 'root' AND isDeleted = 0 ORDER BY notePosition");
 
-        await require('./options_init').initOptions(startNoteId, username, password);
+        const optionsInitService = require('./options_init');
+
+        await optionsInitService.initDocumentOptions();
+        await optionsInitService.initSyncedOptions(username, password);
+        await optionsInitService.initNotSyncedOptions(startNoteId);
+
         await require('./sync_table').fillAllSyncRows();
     });
 
-    log.info("Schema and initial content generated. Waiting for user to enter username/password to finish setup.");
+    log.info("Schema and initial content generated.");
 
     await initDbConnection();
+}
+
+async function createDatabaseForSync(syncServerHost) {
+    log.info("Creating database for sync with server ...");
+
+    const schema = fs.readFileSync(resourceDir.DB_INIT_DIR + '/schema.sql', 'UTF-8');
+
+    await sql.transactional(async () => {
+        await sql.executeScript(schema);
+
+        await require('./options_init').initNotSyncedOptions('', syncServerHost);
+    });
+
+    log.info("Schema and not synced options generated.");
 }
 
 async function isDbUpToDate() {
@@ -93,5 +113,6 @@ module.exports = {
     isDbInitialized,
     initDbConnection,
     isDbUpToDate,
-    createInitialDatabase
+    createInitialDatabase,
+    createDatabaseForSync
 };

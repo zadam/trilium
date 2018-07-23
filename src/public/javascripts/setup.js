@@ -34,7 +34,7 @@ function SetupModel() {
         this.setupSyncFromDesktop(false);
     };
 
-    this.finish = () => {
+    this.finish = async () => {
         if (this.setupNewDocument()) {
             const username = this.username();
             const password1 = this.password1();
@@ -84,18 +84,31 @@ function SetupModel() {
             }
 
             // not using server.js because it loads too many dependencies
-            $.post('/api/setup/sync-from-server', {
+            const resp = await $.post('/api/setup/sync-from-server', {
                 serverAddress: serverAddress,
                 username: username,
                 password: password
-            }).then(() => {
-                window.location.replace("/");
-            }).catch((err) => {
-                alert("Error, see dev console for details.");
-                console.error(err);
             });
+
+            if (resp.result === 'success') {
+                this.step('sync-in-progress');
+
+                checkOutstandingSyncs();
+
+                setInterval(checkOutstandingSyncs, 1000);
+            }
+            else {
+                showAlert('Sync setup failed: ', resp.error);
+            }
         }
     };
+}
+
+async function checkOutstandingSyncs() {
+    const stats = await $.get('/api/sync/stats');
+    const totalOutstandingSyncs = stats.outstandingPushes + stats.outstandingPulls;
+
+    $("#outstanding-syncs").html(totalOutstandingSyncs);
 }
 
 function showAlert(message) {

@@ -5,6 +5,7 @@ const repository = require('./repository');
 const protectedSessionService = require('./protected_session');
 const utils = require('./utils');
 
+let loaded = false;
 let noteTitles;
 let protectedNoteTitles;
 let noteIds;
@@ -34,6 +35,8 @@ async function load() {
     for (const noteId of hiddenLabels) {
         archived[noteId] = true;
     }
+
+    loaded = true;
 }
 
 function findNotes(query) {
@@ -226,6 +229,10 @@ function getNotePath(noteId) {
 }
 
 eventService.subscribe(eventService.ENTITY_CHANGED, async ({entityName, entityId}) => {
+    if (!loaded) {
+        return;
+    }
+
     if (entityName === 'notes') {
         const note = await repository.getNote(entityId);
 
@@ -277,6 +284,10 @@ eventService.subscribe(eventService.ENTITY_CHANGED, async ({entityName, entityId
 });
 
 eventService.subscribe(eventService.ENTER_PROTECTED_SESSION, async () => {
+    if (!loaded) {
+        return;
+    }
+
     protectedNoteTitles = await sql.getMap(`SELECT noteId, title FROM notes WHERE isDeleted = 0 AND isProtected = 1`);
 
     for (const noteId in protectedNoteTitles) {

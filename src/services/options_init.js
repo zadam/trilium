@@ -5,21 +5,14 @@ const appInfo = require('./app_info');
 const utils = require('./utils');
 const dateUtils = require('./date_utils');
 
-async function initOptions(startNotePath, username, password) {
+async function initDocumentOptions() {
     await optionService.createOption('documentId', utils.randomSecureToken(16), false);
     await optionService.createOption('documentSecret', utils.randomSecureToken(16), false);
+}
 
-    await optionService.createOption('startNotePath', startNotePath, false);
-    await optionService.createOption('protectedSessionTimeout', 600, true);
-    await optionService.createOption('noteRevisionSnapshotTimeInterval', 600, true);
-    await optionService.createOption('lastBackupDate', dateUtils.nowDate(), false);
-    await optionService.createOption('dbVersion', appInfo.dbVersion, false);
-
-    await optionService.createOption('lastSyncedPull', appInfo.dbVersion, false);
-    await optionService.createOption('lastSyncedPush', 0, false);
-
-    await optionService.createOption('zoomFactor', 1.0, false);
-    await optionService.createOption('theme', 'white', false);
+async function initSyncedOptions(username, password) {
+    await optionService.createOption('protectedSessionTimeout', 600);
+    await optionService.createOption('noteRevisionSnapshotTimeInterval', 600);
 
     await optionService.createOption('username', username);
 
@@ -34,12 +27,26 @@ async function initOptions(startNotePath, username, password) {
     await optionService.createOption('encryptedDataKeyIv', '');
 
     await passwordEncryptionService.setDataKey(password, utils.randomSecureToken(16));
+}
 
-    await optionService.createOption('syncServerHost', '', false);
+async function initNotSyncedOptions(startNotePath = '', syncServerHost = '') {
+    await optionService.createOption('startNotePath', startNotePath, false);
+    await optionService.createOption('lastBackupDate', dateUtils.nowDate(), false);
+    await optionService.createOption('dbVersion', appInfo.dbVersion, false);
+
+    await optionService.createOption('lastSyncedPull', appInfo.dbVersion, false);
+    await optionService.createOption('lastSyncedPush', 0, false);
+
+    await optionService.createOption('zoomFactor', 1.0, false);
+    await optionService.createOption('theme', 'white', false);
+
+    await optionService.createOption('syncServerHost', syncServerHost, false);
     await optionService.createOption('syncServerTimeout', 5000, false);
     await optionService.createOption('syncProxy', '', false);
 }
 
 module.exports = {
-    initOptions
+    initDocumentOptions,
+    initSyncedOptions,
+    initNotSyncedOptions
 };

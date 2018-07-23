@@ -18,6 +18,11 @@ const cls = require('./cls');
 
 let proxyToggle = true;
 
+const stats = {
+    outstandingPushes: 0,
+    outstandingPulls: 0
+};
+
 async function sync() {
     try {
         await syncMutexService.doExclusively(async () => {
@@ -82,21 +87,33 @@ async function login() {
 }
 
 async function pullSync(syncContext) {
-    const changesUri = '/api/sync/changed?lastSyncId=' + await getLastSyncedPull();
+    while (true) {
+        const lastSyncedPull = await getLastSyncedPull();
+        const changesUri = '/api/sync/changed?lastSyncId=' + lastSyncedPull;
 
-    const rows = await syncRequest(syncContext, 'GET', changesUri);
+        const resp = await syncRequest(syncContext, 'GET', changesUri);
+        stats.outstandingPulls = resp.maxSyncId - lastSyncedPull;
 
-    log.info("Pulled " + rows.length + " changes from " + changesUri);
+        const rows = resp.syncs;
 
-    for (const {sync, entity} of rows) {
-        if (sourceIdService.isLocalSourceId(sync.sourceId)) {
-            log.info(`Skipping pull #${sync.id} ${sync.entityName} ${sync.entityId} because ${sync.sourceId} is a local source id.`);
+        if (rows.length === 0) {
+            break;
         }
-        else {
-            await syncUpdateService.updateEntity(sync, entity, syncContext.sourceId);
-        }
 
-        await setLastSyncedPull(sync.id);
+        log.info("Pulled " + rows.length + " changes from " + changesUri);
+
+        for (const {sync, entity} of rows) {
+            if (sourceIdService.isLocalSourceId(sync.sourceId)) {
+                log.info(`Skipping pull #${sync.id} ${sync.entityName} ${sync.entityId} because ${sync.sourceId} is a local source id.`);
+            }
+            else {
+                await syncUpdateService.updateEntity(sync, entity, syncContext.sourceId);
+            }
+
+            stats.outstandingPulls = resp.maxSyncId - sync.id;
+
+            await setLastSyncedPull(sync.id);
+        }
     }
 
     log.info("Finished pull");
@@ -127,6 +144,8 @@ async function pushSync(syncContext) {
         if (filteredSyncs.length === 0) {
             log.info("Nothing to push");
 
+            stats.outstandingPushes = 0;
+
             await setLastSyncedPush(lastSyncedPush);
 
             break;
@@ -144,6 +163,8 @@ async function pushSync(syncContext) {
         lastSyncedPush = syncRecords[syncRecords.length - 1].sync.id;
 
         await setLastSyncedPush(lastSyncedPush);
+
+        stats.outstandingPushes = await sql.getValue(`SELECT MAX(id) FROM sync`) - lastSyncedPush;
     }
 }
 
@@ -290,5 +311,6 @@ sqlInit.dbReady.then(async () => {
 module.exports = {
     sync,
     login,
-    getSyncRecords
+    getSyncRecords,
+    stats
 };

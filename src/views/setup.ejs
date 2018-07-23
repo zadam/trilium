@@ -86,6 +86,16 @@
 
         <button type="button" data-bind="click: finish" class="btn btn-primary">Finish setup</button>
     </div>
+
+    <div data-bind="visible: step() == 'sync-in-progress'">
+        <h2>Sync in progress</h2>
+
+        <div class="alert alert-success">Sync has been correctly set up. It will take some time for the initial sync to finish. Once it's done, you'll be redirected to the login page.</div>
+
+        <div>
+            Outstanding sync items: <strong id="outstanding-syncs">N/A</strong>
+        </div>
+    </div>
 </div>
 
 <script type="text/javascript">

@@ -7,7 +7,7 @@ const sql = require('../../services/sql');
 const optionService = require('../../services/options');
 const contentHashService = require('../../services/content_hash');
 const log = require('../../services/log');
-const DOCUMENT_PATH = require('../../services/data_dir').DOCUMENT_PATH;
+const repository = require('../../services/repository');
 
 async function testSync() {
     try {
@@ -21,6 +21,10 @@ async function testSync() {
             error: e.message
         };
     }
+}
+
+async function getStats() {
+    return syncService.stats;
 }
 
 async function checkSync() {
@@ -75,7 +79,10 @@ async function getChanged(req) {
 
     const syncs = await sql.getRows("SELECT * FROM sync WHERE id > ? LIMIT 1000", [lastSyncId]);
 
-    return await syncService.getSyncRecords(syncs);
+    return {
+        syncs: await syncService.getSyncRecords(syncs),
+        maxSyncId: await sql.getValue('SELECT MAX(id) FROM sync')
+    };
 }
 
 async function update(req) {
@@ -87,10 +94,13 @@ async function update(req) {
     }
 }
 
-async function getDocument(req, resp) {
-    log.info("Serving document.");
+async function getDocument() {
+    log.info("Serving document options.");
 
-    resp.sendFile(DOCUMENT_PATH);
+    return [
+        await repository.getOption('documentId'),
+        await repository.getOption('documentSecret')
+    ];
 }
 
 module.exports = {
@@ -102,5 +112,6 @@ module.exports = {
     forceNoteSync,
     getChanged,
     update,
-    getDocument
+    getDocument,
+    getStats
 };

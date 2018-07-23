@@ -156,7 +156,8 @@ function register(app) {
     apiRoute(POST, '/api/sync/force-note-sync/:noteId', syncApiRoute.forceNoteSync);
     apiRoute(GET, '/api/sync/changed', syncApiRoute.getChanged);
     apiRoute(PUT, '/api/sync/update', syncApiRoute.update);
-    route(GET, '/api/sync/document', [auth.checkBasicAuth], syncApiRoute.getDocument);
+    route(GET, '/api/sync/document', [auth.checkBasicAuth], syncApiRoute.getDocument, apiResultHandler);
+    route(GET, '/api/sync/stats', [], syncApiRoute.getStats, apiResultHandler);
 
     apiRoute(GET, '/api/event-log', eventLogRoute.getEventLog);
 

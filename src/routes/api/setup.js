@@ -2,14 +2,10 @@
 
 const sqlInit = require('../../services/sql_init');
 const sql = require('../../services/sql');
-const cls = require('../../services/cls');
-const tmp = require('tmp-promise');
-const http = require('http');
-const fs = require('fs');
+const rp = require('request-promise');
+const Option = require('../../entities/option');
+const syncService = require('../../services/sync');
 const log = require('../../services/log');
-const DOCUMENT_PATH = require('../../services/data_dir').DOCUMENT_PATH;
-const sourceIdService = require('../../services/source_id');
-const url = require('url');
 
 async function setupNewDocument(req) {
     const { username, password } = req.body;
@@ -20,52 +16,44 @@ async function setupNewDocument(req) {
 async function setupSyncFromServer(req) {
     const { serverAddress, username, password } = req.body;
 
-    const tempFile = await tmp.file();
+    try {
+        log.info("Getting document options from sync server.");
 
-    await new Promise((resolve, reject) => {
-        const file = fs.createWriteStream(tempFile.path);
-        const parsedAddress = url.parse(serverAddress);
+        // response is expected to contain documentId and documentSecret options
+        const options = await rp.get({
+            uri: serverAddress + '/api/sync/document',
+            auth: {
+                'user': username,
+                'pass': password
+            },
+            json: true
+        });
 
-        const options = {
-            method: 'GET',
-            protocol: parsedAddress.protocol,
-            host: parsedAddress.hostname,
-            port: parsedAddress.port,
-            path: '/api/sync/document',
-            auth: username + ':' + password
+        log.info("Creating database for sync");
+
+        await sql.transactional(async () => {
+            await sqlInit.createDatabaseForSync(serverAddress);
+
+            for (const opt of options) {
+                await new Option(opt).save();
+            }
+        });
+
+        log.info("Triggering sync.");
+
+        // it's ok to not wait for it here
+        syncService.sync();
+
+        return { result: 'success' };
+    }
+    catch (e) {
+        log.error("Sync failed: " + e.message);
+
+        return {
+            result: 'failure',
+            error: e.message
         };
-
-        log.info("Getting document from: " + serverAddress);
-
-        http.request(options, function(response) {
-            response.pipe(file);
-
-            file.on('finish', function() {
-                log.info("Document download finished, closing & renaming.");
-
-                file.close(() => { // close() is async, call after close completes.
-                    fs.rename(tempFile.path, DOCUMENT_PATH, async () => {
-                        cls.reset();
-
-                        await sqlInit.initDbConnection();
-
-                        // we need to generate new source ID for this instance, otherwise it will
-                        // match the original server one
-                        await sql.transactional(async () => {
-                            await sourceIdService.generateSourceId();
-                        });
-
-                        resolve();
-                    });
-                });
-            });
-        }).on('error', function(err) { // Handle errors
-            fs.unlink(tempFile.path); // Delete the file async. (But we don't check the result)
-
-            reject(err.message);
-            log.error(err.message);
-        }).end();
-    });
+    }
 }
 
 module.exports = {

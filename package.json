@@ -61,7 +61,6 @@
     "simple-node-logger": "^0.93.37",
     "sqlite": "^2.9.2",
     "tar-stream": "^1.6.1",
-    "tmp-promise": "^1.0.5",
     "unescape": "^1.0.1",
     "ws": "^5.2.1",
     "xml2js": "^0.4.19"
