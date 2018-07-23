@@ -148,6 +148,7 @@ function register(app) {
 
     apiRoute(POST, '/api/password/change', passwordApiRoute.changePassword);
 
+    apiRoute(POST, '/api/sync/test', syncApiRoute.testSync);
     apiRoute(GET, '/api/sync/check', syncApiRoute.checkSync);
     apiRoute(POST, '/api/sync/now', syncApiRoute.syncNow);
     apiRoute(POST, '/api/sync/fill-sync-rows', syncApiRoute.fillSyncRows);

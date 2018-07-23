@@ -35,7 +35,7 @@ async function setupSyncFromServer(req) {
             auth: username + ':' + password
         };
 
-        log.info("Getting document from: " + serverAddress + JSON.stringify(options));
+        log.info("Getting document from: " + serverAddress);
 
         http.request(options, function(response) {
             response.pipe(file);

@@ -192,6 +192,7 @@ addTabHandler((function() {
     const $syncServerHost = $("#sync-server-host");
     const $syncServerTimeout = $("#sync-server-timeout");
     const $syncProxy = $("#sync-proxy");
+    const $testSyncButton = $("#test-sync-button");
 
     function optionsLoaded(options) {
         $syncServerHost.val(options['syncServerHost']);
@@ -207,6 +208,17 @@ addTabHandler((function() {
         });
 
         return false;
+    });
+
+    $testSyncButton.click(async () => {
+        const result = await server.post('sync/test');
+
+        if (result.connection === "Success") {
+            infoService.showMessage("Sync server handshake has been successful");
+        }
+        else {
+            infoService.showError("Sync server handshake failed, error: " + result.error);
+        }
     });
 
     return {

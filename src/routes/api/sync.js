@@ -9,6 +9,20 @@ const contentHashService = require('../../services/content_hash');
 const log = require('../../services/log');
 const DOCUMENT_PATH = require('../../services/data_dir').DOCUMENT_PATH;
 
+async function testSync() {
+    try {
+        await syncService.login();
+
+        return { connection: "Success" };
+    }
+    catch (e) {
+        return {
+            connection: "Failure",
+            error: e.message
+        };
+    }
+}
+
 async function checkSync() {
     return {
         hashes: await contentHashService.getHashes(),
@@ -80,6 +94,7 @@ async function getDocument(req, resp) {
 }
 
 module.exports = {
+    testSync,
     checkSync,
     syncNow,
     fillSyncRows,

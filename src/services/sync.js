@@ -289,5 +289,6 @@ sqlInit.dbReady.then(async () => {
 
 module.exports = {
     sync,
+    login,
     getSyncRecords
 };
