@@ -69,7 +69,11 @@ async function updateBranch(entity, sourceId) {
 
     await sql.transactional(async () => {
         if (orig === null || orig.dateModified < entity.dateModified) {
-            delete entity.isExpanded;
+            // isExpanded is not synced unless it's a new branch instance
+            // otherwise in case of full new sync we'll get all branches (even root) collapsed.
+            if (orig) {
+                delete entity.isExpanded;
+            }
 
             await sql.replace('branches', entity);
 
