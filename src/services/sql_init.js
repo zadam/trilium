@@ -22,10 +22,20 @@ const dbReady = new Promise(async (resolve, reject) => {
     initDbConnection();
 });
 
-async function isDbInitialized() {
-    const tableResults = await sql.getRows("SELECT name FROM sqlite_master WHERE type='table' AND name='notes'");
+async function schemaExists() {
+    const tableResults = await sql.getRows("SELECT name FROM sqlite_master WHERE type='table' AND name='options'");
 
     return tableResults.length === 1;
+}
+
+async function isDbInitialized() {
+    if (!await schemaExists()) {
+        return false;
+    }
+
+    const initialized = await sql.getValue("SELECT value FROM options WHERE name = 'initialized'");
+
+    return initialized === 'true';
 }
 
 async function initDbConnection() {
@@ -53,6 +63,10 @@ async function initDbConnection() {
 async function createInitialDatabase(username, password) {
     log.info("Creating initial database ...");
 
+    if (await isDbInitialized()) {
+        throw new Error("DB is already initialized");
+    }
+
     const schema = fs.readFileSync(resourceDir.DB_INIT_DIR + '/schema.sql', 'UTF-8');
     const notesSql = fs.readFileSync(resourceDir.DB_INIT_DIR + '/main_notes.sql', 'UTF-8');
     const notesTreeSql = fs.readFileSync(resourceDir.DB_INIT_DIR + '/main_branches.sql', 'UTF-8');
@@ -72,7 +86,7 @@ async function createInitialDatabase(username, password) {
 
         await optionsInitService.initDocumentOptions();
         await optionsInitService.initSyncedOptions(username, password);
-        await optionsInitService.initNotSyncedOptions(startNoteId);
+        await optionsInitService.initNotSyncedOptions(true, startNoteId);
 
         await require('./sync_table').fillAllSyncRows();
     });
@@ -90,7 +104,7 @@ async function createDatabaseForSync(syncServerHost) {
     await sql.transactional(async () => {
         await sql.executeScript(schema);
 
-        await require('./options_init').initNotSyncedOptions('', syncServerHost);
+        await require('./options_init').initNotSyncedOptions(false, '', syncServerHost);
     });
 
     log.info("Schema and not synced options generated.");
@@ -110,6 +124,7 @@ async function isDbUpToDate() {
 
 module.exports = {
     dbReady,
+    schemaExists,
     isDbInitialized,
     initDbConnection,
     isDbUpToDate,

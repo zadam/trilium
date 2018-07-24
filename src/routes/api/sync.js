@@ -24,7 +24,10 @@ async function testSync() {
 }
 
 async function getStats() {
-    return syncService.stats;
+    return {
+        initialized: await optionService.getOption('initialized') === 'true',
+        stats: syncService.stats
+    };
 }
 
 async function checkSync() {

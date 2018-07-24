@@ -47,7 +47,7 @@ const sessionParser = session({
     cookie: {
         //    path: "/",
         httpOnly: true,
-        maxAge:  1800000
+        maxAge:  24 * 60 * 60 * 1000 // in milliseconds
     },
     store: new FileStore({
         ttl: 30 * 24 * 3600,

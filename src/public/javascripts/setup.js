@@ -1,7 +1,11 @@
 import utils from "./services/utils.js";
 
 function SetupModel() {
-    this.step = ko.observable("setup-type");
+    if (syncInProgress) {
+        setInterval(checkOutstandingSyncs, 1000);
+    }
+
+    this.step = ko.observable(syncInProgress ? "sync-in-progress" : "setup-type");
     this.setupType = ko.observable();
 
     this.setupNewDocument = ko.observable(false);
@@ -93,8 +97,6 @@ function SetupModel() {
             if (resp.result === 'success') {
                 this.step('sync-in-progress');
 
-                checkOutstandingSyncs();
-
                 setInterval(checkOutstandingSyncs, 1000);
             }
             else {
@@ -105,7 +107,12 @@ function SetupModel() {
 }
 
 async function checkOutstandingSyncs() {
-    const stats = await $.get('/api/sync/stats');
+    const { stats, initialized } = await $.get('/api/sync/stats');
+
+    if (initialized) {
+        window.location.replace("/");
+    }
+
     const totalOutstandingSyncs = stats.outstandingPushes + stats.outstandingPulls;
 
     $("#outstanding-syncs").html(totalOutstandingSyncs);
