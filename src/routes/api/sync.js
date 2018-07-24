@@ -4,10 +4,12 @@ const syncService = require('../../services/sync');
 const syncUpdateService = require('../../services/sync_update');
 const syncTableService = require('../../services/sync_table');
 const sql = require('../../services/sql');
+const sqlInit = require('../../services/sql_init');
 const optionService = require('../../services/options');
 const contentHashService = require('../../services/content_hash');
 const log = require('../../services/log');
 const repository = require('../../services/repository');
+const rp = require('request-promise');
 
 async function testSync() {
     try {
@@ -97,13 +99,48 @@ async function update(req) {
     }
 }
 
-async function getDocument() {
-    log.info("Serving document options.");
-
+async function getDocumentOptions() {
     return [
         await repository.getOption('documentId'),
         await repository.getOption('documentSecret')
     ];
+}
+
+async function getDocument() {
+    log.info("Serving document options.");
+
+    return await getDocumentOptions();
+}
+
+async function syncToServer() {
+    log.info("Initiating sync to server");
+
+    // FIXME: add proxy support
+    const syncServerHost = await optionService.getOption('syncServerHost');
+
+    const payload = {
+        options: await getDocumentOptions()
+    };
+
+    await rp({
+        uri: syncServerHost + '/api/setup/sync-from-client',
+        method: 'POST',
+        json: true,
+        body: payload
+    });
+
+    // this is completely new sync, need to reset counters. If this would not be new sync,
+    // the previous request would have failed.
+    await optionService.setOption('lastSyncedPush', 0);
+    await optionService.setOption('lastSyncedPull', 0);
+
+    syncService.sync();
+}
+
+async function syncFinished() {
+    // after first sync finishes, the application is ready to be used
+    // this is meaningless but at the same time harmless (idempotent) for further syncs
+    await sqlInit.dbInitialized();
 }
 
 module.exports = {
@@ -116,5 +153,7 @@ module.exports = {
     getChanged,
     update,
     getDocument,
-    getStats
+    getStats,
+    syncToServer,
+    syncFinished
 };

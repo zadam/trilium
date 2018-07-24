@@ -74,10 +74,11 @@ async function cleanupSyncRowsForMissingEntities(entityName, entityKey) {
         AND sync.entityId NOT IN (SELECT ${entityKey} FROM ${entityName})`);
 }
 
-async function fillSyncRows(entityName, entityKey) {
+async function fillSyncRows(entityName, entityKey, condition = '') {
     await cleanupSyncRowsForMissingEntities(entityName, entityKey);
 
-    const entityIds = await sql.getColumn(`SELECT ${entityKey} FROM ${entityName}`);
+    const entityIds = await sql.getColumn(`SELECT ${entityKey} FROM ${entityName}`
+        + (condition ? ` WHERE ${condition}` : ''));
 
     for (const entityId of entityIds) {
         const existingRows = await sql.getValue("SELECT COUNT(id) FROM sync WHERE entityName = ? AND entityId = ?", [entityName, entityId]);
@@ -107,6 +108,7 @@ async function fillAllSyncRows() {
     await fillSyncRows("note_images", "noteImageId");
     await fillSyncRows("labels", "labelId");
     await fillSyncRows("api_tokens", "apiTokenId");
+    await fillSyncRows("options", "name", 'isSynced = 1');
 }
 
 module.exports = {

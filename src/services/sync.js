@@ -10,7 +10,6 @@ const sourceIdService = require('./source_id');
 const dateUtils = require('./date_utils');
 const syncUpdateService = require('./sync_update');
 const contentHashService = require('./content_hash');
-const fs = require('fs');
 const appInfo = require('./app_info');
 const syncSetup = require('./sync_setup');
 const syncMutexService = require('./sync_mutex');
@@ -25,7 +24,11 @@ const stats = {
 
 async function sync() {
     try {
-        await syncMutexService.doExclusively(async () => {
+        return await syncMutexService.doExclusively(async () => {
+            if (!await syncSetup.isSyncSetup()) {
+                return { success: false, message: 'Sync not configured' };
+            }
+
             const syncContext = await login();
 
             await pushSync(syncContext);
@@ -34,12 +37,14 @@ async function sync() {
 
             await pushSync(syncContext);
 
-            await checkContentHash(syncContext);
-        });
+            await syncFinished(syncContext);
 
-        return {
-            success: true
-        };
+            await checkContentHash(syncContext);
+
+            return {
+                success: true
+            };
+        });
     }
     catch (e) {
         proxyToggle = !proxyToggle;
@@ -53,7 +58,7 @@ async function sync() {
             };
         }
         else {
-            log.info("sync failed: " + e.stack);
+            log.info("sync failed: " + e.message);
 
             return {
                 success: false,
@@ -104,7 +109,8 @@ async function pullSync(syncContext) {
 
         for (const {sync, entity} of rows) {
             if (sourceIdService.isLocalSourceId(sync.sourceId)) {
-                log.info(`Skipping pull #${sync.id} ${sync.entityName} ${sync.entityId} because ${sync.sourceId} is a local source id.`);
+                // too noisy
+                //log.info(`Skipping pull #${sync.id} ${sync.entityName} ${sync.entityId} because ${sync.sourceId} is a local source id.`);
             }
             else {
                 await syncUpdateService.updateEntity(sync, entity, syncContext.sourceId);
@@ -127,7 +133,8 @@ async function pushSync(syncContext) {
 
         const filteredSyncs = syncs.filter(sync => {
             if (sync.sourceId === syncContext.sourceId) {
-                log.info(`Skipping push #${sync.id} ${sync.entityName} ${sync.entityId} because it originates from sync target`);
+                // too noisy
+                //log.info(`Skipping push #${sync.id} ${sync.entityName} ${sync.entityId} because it originates from sync target`);
 
                 // this may set lastSyncedPush beyond what's actually sent (because of size limit)
                 // so this is applied to the database only if there's no actual update
@@ -166,6 +173,10 @@ async function pushSync(syncContext) {
 
         stats.outstandingPushes = await sql.getValue(`SELECT MAX(id) FROM sync`) - lastSyncedPush;
     }
+}
+
+async function syncFinished(syncContext) {
+    await syncRequest(syncContext, 'POST', '/api/sync/finished');
 }
 
 async function checkContentHash(syncContext) {
@@ -210,7 +221,7 @@ async function syncRequest(syncContext, method, uri, body) {
         return await rp(options);
     }
     catch (e) {
-        throw new Error(`Request to ${method} ${fullUri} failed, inner exception: ${e.stack}`);
+        throw new Error(`Request to ${method} ${fullUri} failed, error: ${e.message}`);
     }
 }
 

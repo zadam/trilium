@@ -92,7 +92,7 @@
 
         <div class="alert alert-success">Sync has been correctly set up. It will take some time for the initial sync to finish. Once it's done, you'll be redirected to the login page.</div>
 
-        <div>
+        <div data-bind="if: instanceType == 'desktop'">
             Outstanding sync items: <strong id="outstanding-syncs">N/A</strong>
         </div>
     </div>

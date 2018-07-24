@@ -9,8 +9,13 @@ const protectedSessionService = require('../../services/protected_session');
 const appInfo = require('../../services/app_info');
 const eventService = require('../../services/events');
 const cls = require('../../services/cls');
+const sqlInit = require('../../services/sql_init');
 
 async function loginSync(req) {
+    if (!await sqlInit.schemaExists()) {
+        return [400, { message: "DB schema does not exist, can't sync." }];
+    }
+
     const timestampStr = req.body.timestamp;
 
     const timestamp = dateUtils.parseDateTime(timestampStr);

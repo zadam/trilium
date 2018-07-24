@@ -109,7 +109,7 @@ async function updateNoteReordering(entityId, entity, sourceId) {
 async function updateOptions(entity, sourceId) {
     const orig = await sql.getRowOrNull("SELECT * FROM options WHERE name = ?", [entity.name]);
 
-    if (!orig.isSynced) {
+    if (orig && !orig.isSynced) {
         return;
     }
 

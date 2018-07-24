@@ -6,6 +6,8 @@ const resourceDir = require('./resource_dir');
 const appInfo = require('./app_info');
 const sql = require('./sql');
 const cls = require('./cls');
+const optionService = require('./options');
+const Option = require('../entities/option');
 
 async function createConnection() {
     return await sqlite.open(dataDir.DOCUMENT_PATH, {Promise});
@@ -35,18 +37,19 @@ async function isDbInitialized() {
 
     const initialized = await sql.getValue("SELECT value FROM options WHERE name = 'initialized'");
 
-    return initialized === 'true';
+    // !initialized may be removed in the future, required only for migration
+    return !initialized || initialized === 'true';
 }
 
 async function initDbConnection() {
     await cls.init(async () => {
-        await sql.execute("PRAGMA foreign_keys = ON");
-
         if (!await isDbInitialized()) {
             log.info("DB not initialized, please visit setup page to initialize Trilium.");
 
             return;
         }
+
+        await sql.execute("PRAGMA foreign_keys = ON");
 
         if (!await isDbUpToDate()) {
             // avoiding circular dependency
@@ -96,8 +99,12 @@ async function createInitialDatabase(username, password) {
     await initDbConnection();
 }
 
-async function createDatabaseForSync(syncServerHost) {
-    log.info("Creating database for sync with server ...");
+async function createDatabaseForSync(options, syncServerHost = '') {
+    log.info("Creating database for sync");
+
+    if (await isDbInitialized()) {
+        throw new Error("DB is already initialized");
+    }
 
     const schema = fs.readFileSync(resourceDir.DB_INIT_DIR + '/schema.sql', 'UTF-8');
 
@@ -105,6 +112,11 @@ async function createDatabaseForSync(syncServerHost) {
         await sql.executeScript(schema);
 
         await require('./options_init').initNotSyncedOptions(false, '', syncServerHost);
+
+        // document options required for sync to kick off
+        for (const opt of options) {
+            await new Option(opt).save();
+        }
     });
 
     log.info("Schema and not synced options generated.");
@@ -122,6 +134,12 @@ async function isDbUpToDate() {
     return upToDate;
 }
 
+async function dbInitialized() {
+    await optionService.setOption('initialized', 'true');
+
+    await initDbConnection();
+}
+
 module.exports = {
     dbReady,
     schemaExists,
@@ -129,5 +147,6 @@ module.exports = {
     initDbConnection,
     isDbUpToDate,
     createInitialDatabase,
-    createDatabaseForSync
+    createDatabaseForSync,
+    dbInitialized
 };

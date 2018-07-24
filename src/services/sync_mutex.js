@@ -10,12 +10,11 @@ async function doExclusively(func) {
     const releaseMutex = await instance.acquire();
 
     try {
-        await func();
+        return await func();
     }
     finally {
         releaseMutex();
     }
-
 }
 
 module.exports = {

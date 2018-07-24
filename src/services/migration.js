@@ -56,28 +56,23 @@ async function migrate() {
                 else if (mig.type === 'js') {
                     console.log("Migration with JS module");
 
-                    const migrationModule = require("../" + resourceDir.MIGRATIONS_DIR + "/" + mig.file);
-                    await migrationModule(db);
+                    const migrationModule = require(resourceDir.MIGRATIONS_DIR + "/" + mig.file);
+                    await migrationModule();
                 }
                 else {
                     throw new Error("Unknown migration type " + mig.type);
                 }
 
                 await optionService.setOption("dbVersion", mig.dbVersion);
-
             });
 
             log.info("Migration to version " + mig.dbVersion + " has been successful.");
-
-            mig['success'] = true;
         }
         catch (e) {
-            mig['success'] = false;
-            mig['error'] = e.stack;
-
             log.error("error during migration to version " + mig.dbVersion + ": " + e.stack);
+            log.error("migration failed, crashing hard"); // this is not very user friendly :-/
 
-            break;
+            process.exit(1);
         }
         finally {
             // make sure foreign keys are enabled even if migration script disables them
@@ -88,8 +83,6 @@ async function migrate() {
     if (await sqlInit.isDbUpToDate()) {
         await sqlInit.initDbConnection();
     }
-
-    return migrations;
 }
 
 module.exports = {

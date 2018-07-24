@@ -96,7 +96,7 @@ const uploadMiddleware = multer.single('upload');
 
 function register(app) {
     route(GET, '/', [auth.checkAuth], indexRoute.index);
-    route(GET, '/login', [], loginRoute.loginPage);
+    route(GET, '/login', [auth.checkAppInitialized], loginRoute.loginPage);
     route(POST, '/login', [], loginRoute.login);
     route(POST, '/logout', [auth.checkAuth], loginRoute.logout);
     route(GET, '/setup', [auth.checkAppNotInitialized], setupRoute.setupPage);
@@ -158,6 +158,8 @@ function register(app) {
     apiRoute(PUT, '/api/sync/update', syncApiRoute.update);
     route(GET, '/api/sync/document', [auth.checkBasicAuth], syncApiRoute.getDocument, apiResultHandler);
     route(GET, '/api/sync/stats', [], syncApiRoute.getStats, apiResultHandler);
+    apiRoute(POST, '/api/sync/sync-to-server', syncApiRoute.syncToServer);
+    apiRoute(POST, '/api/sync/finished', syncApiRoute.syncFinished);
 
     apiRoute(GET, '/api/event-log', eventLogRoute.getEventLog);
 
@@ -167,6 +169,7 @@ function register(app) {
 
     route(POST, '/api/setup/new-document', [auth.checkAppNotInitialized], setupApiRoute.setupNewDocument, apiResultHandler);
     route(POST, '/api/setup/sync-from-server', [auth.checkAppNotInitialized], setupApiRoute.setupSyncFromServer, apiResultHandler, false);
+    route(POST, '/api/setup/sync-from-client', [auth.checkAppNotInitialized], setupApiRoute.setupSyncFromClient, apiResultHandler, false);
 
     apiRoute(POST, '/api/sql/execute', sqlRoute.execute);
     apiRoute(POST, '/api/anonymization/anonymize', anonymizationRoute.anonymize);

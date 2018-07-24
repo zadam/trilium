@@ -15,7 +15,14 @@ async function setupSyncFromServer(req) {
     return await setupService.setupSyncFromSyncServer(serverAddress, username, password);
 }
 
+async function setupSyncFromClient(req) {
+    const options = req.body.options;
+
+    await sqlInit.createDatabaseForSync(options);
+}
+
 module.exports = {
     setupNewDocument,
-    setupSyncFromServer
+    setupSyncFromServer,
+    setupSyncFromClient
 };

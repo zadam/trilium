@@ -38,6 +38,15 @@ async function checkApiAuth(req, res, next) {
     }
 }
 
+async function checkAppInitialized(req, res, next) {
+    if (!await sqlInit.isDbInitialized()) {
+        res.redirect("setup");
+    }
+    else {
+        next();
+    }
+}
+
 async function checkAppNotInitialized(req, res, next) {
     if (await sqlInit.isDbInitialized()) {
         res.status(400).send("App already initialized.");
@@ -77,6 +86,7 @@ async function checkBasicAuth(req, res, next) {
 module.exports = {
     checkAuth,
     checkApiAuth,
+    checkAppInitialized,
     checkAppNotInitialized,
     checkApiAuthOrElectron,
     checkSenderToken,

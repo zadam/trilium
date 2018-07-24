@@ -1,15 +1,16 @@
-const sqlInit = require('./sql_init');
-const sql = require('./sql');
 const rp = require('request-promise');
-const Option = require('../entities/option');
 const syncService = require('./sync');
 const log = require('./log');
-const optionService = require('./options');
+const sqlInit = require('./sql_init');
 
 function triggerSync() {
-// it's ok to not wait for it here
-    syncService.sync().then(async () => {
-        await optionService.setOption('initialized', 'true');
+    log.info("Triggering sync.");
+
+    // it's ok to not wait for it here
+    syncService.sync().then(async res => {
+        if (res.success) {
+            await sqlInit.dbInitialized();
+        }
     });
 }
 
@@ -34,17 +35,7 @@ async function setupSyncFromSyncServer(serverAddress, username, password) {
             json: true
         });
 
-        log.info("Creating database for sync");
-
-        await sql.transactional(async () => {
-            await sqlInit.createDatabaseForSync(serverAddress);
-
-            for (const opt of options) {
-                await new Option(opt).save();
-            }
-        });
-
-        log.info("Triggering sync.");
+        await sqlInit.createDatabaseForSync(options, serverAddress);
 
         triggerSync();
 

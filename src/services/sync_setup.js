@@ -1,6 +1,5 @@
 "use strict";
 
-const config = require('./config');
 const optionService = require('./options');
 
 module.exports = {
