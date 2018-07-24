@@ -151,8 +151,6 @@ async function pushSync(syncContext) {
         if (filteredSyncs.length === 0) {
             log.info("Nothing to push");
 
-            stats.outstandingPushes = 0;
-
             await setLastSyncedPush(lastSyncedPush);
 
             break;
@@ -170,8 +168,6 @@ async function pushSync(syncContext) {
         lastSyncedPush = syncRecords[syncRecords.length - 1].sync.id;
 
         await setLastSyncedPush(lastSyncedPush);
-
-        stats.outstandingPushes = await sql.getValue(`SELECT MAX(id) FROM sync`) - lastSyncedPush;
     }
 }
 
@@ -299,6 +295,12 @@ async function setLastSyncedPush(lastSyncedPush) {
     await optionService.setOption('lastSyncedPush', lastSyncedPush);
 }
 
+async function updatePushStats() {
+    const lastSyncedPush = await optionService.getOption('lastSyncedPush');
+
+    stats.outstandingPushes = await sql.getValue("SELECT COUNT(*) FROM sync WHERE id > ?", [lastSyncedPush]);
+}
+
 sqlInit.dbReady.then(async () => {
     if (await syncSetup.isSyncSetup()) {
         log.info("Setting up sync to " + await syncSetup.getSyncServer() + " with timeout " + await syncSetup.getSyncTimeout());
@@ -313,6 +315,8 @@ sqlInit.dbReady.then(async () => {
 
         // kickoff initial sync immediately
         setTimeout(cls.wrap(sync), 1000);
+
+        setInterval(cls.wrap(updatePushStats), 1000);
     }
     else {
         log.info("Sync server not configured, sync timer not running.")

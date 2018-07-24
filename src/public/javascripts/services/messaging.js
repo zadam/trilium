@@ -1,7 +1,7 @@
 import utils from './utils.js';
 import infoService from "./info.js";
 
-const $changesToPushCount = $("#changes-to-push-count");
+const $outstandingSyncsCount = $("#outstanding-syncs-count");
 
 const messageHandlers = [];
 
@@ -43,7 +43,7 @@ function handleMessage(event) {
             messageHandler(syncData);
         }
 
-        $changesToPushCount.html(message.changesToPushCount);
+        $outstandingSyncsCount.html(message.outstandingSyncs);
     }
     else if (message.type === 'sync-hash-check-failed') {
         infoService.showError("Sync check failed!", 60000);

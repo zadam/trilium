@@ -2,8 +2,6 @@ const WebSocket = require('ws');
 const utils = require('./utils');
 const log = require('./log');
 const sql = require('./sql');
-const optionService = require('./options');
-const syncSetup = require('./sync_setup');
 
 let webSocketServer;
 
@@ -65,15 +63,12 @@ async function sendMessageToAllClients(message) {
 
 async function sendPing(client, lastSentSyncId) {
     const syncData = await sql.getRows("SELECT * FROM sync WHERE id > ?", [lastSentSyncId]);
-
-    const lastSyncedPush = await optionService.getOption('lastSyncedPush');
-
-    const changesToPushCount = await sql.getValue("SELECT COUNT(*) FROM sync WHERE id > ?", [lastSyncedPush]);
+    const stats = require('./sync').stats;
 
     await sendMessage(client, {
         type: 'sync',
         data: syncData,
-        changesToPushCount: await syncSetup.isSyncSetup() ? changesToPushCount : 0
+        outstandingSyncs: stats.outstandingPushes + stats.outstandingPulls
     });
 }
 
