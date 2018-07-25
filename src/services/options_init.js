@@ -34,7 +34,7 @@ async function initNotSyncedOptions(initialized, startNotePath = '', syncServerH
     await optionService.createOption('lastBackupDate', dateUtils.nowDate(), false);
     await optionService.createOption('dbVersion', appInfo.dbVersion, false);
 
-    await optionService.createOption('lastSyncedPull', appInfo.dbVersion, false);
+    await optionService.createOption('lastSyncedPull', 0, false);
     await optionService.createOption('lastSyncedPush', 0, false);
 
     await optionService.createOption('zoomFactor', 1.0, false);
