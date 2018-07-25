@@ -57,7 +57,6 @@ async function updateNote(entity, sourceId) {
             await sql.replace("notes", entity);
 
             await syncTableService.addNoteSync(entity.noteId, sourceId);
-            await eventLogService.addNoteEvent(entity.noteId, "Synced note <note>");
         });
 
         log.info("Update/sync note " + entity.noteId);

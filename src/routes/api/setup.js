@@ -38,7 +38,12 @@ async function setupSyncToSyncServer() {
         rpOpts.proxy = syncProxy;
     }
 
-    await rp(rpOpts);
+    try {
+        await rp(rpOpts);
+    }
+    catch (e) {
+        return { success: false, error: e.message };
+    }
 
     // this is completely new sync, need to reset counters. If this would not be new sync,
     // the previous request would have failed.
@@ -46,6 +51,8 @@ async function setupSyncToSyncServer() {
     await optionService.setOption('lastSyncedPull', 0);
 
     syncService.sync();
+
+    return { success: true };
 }
 
 async function saveSyncSeed(req) {

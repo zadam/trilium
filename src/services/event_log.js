@@ -19,6 +19,5 @@ async function addNoteEvent(noteId, comment) {
 }
 
 module.exports = {
-    addEvent,
-    addNoteEvent
+    addEvent
 };

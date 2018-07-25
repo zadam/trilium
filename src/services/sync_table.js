@@ -54,12 +54,6 @@ async function addEntitySync(entityName, entityId, sourceId) {
         sourceId: sourceId || cls.getSourceId() || sourceIdService.getCurrentSourceId()
     });
 
-    if (!await syncOptions.isSyncSetup()) {
-        // this is because the "server" instances shouldn't have outstanding pushes
-        // useful when you fork the DB for new "client" instance, it won't try to sync the whole DB
-        await sql.execute("UPDATE options SET value = (SELECT MAX(id) FROM sync) WHERE name IN('lastSyncedPush', 'lastSyncedPull')");
-    }
-
     eventService.emit(eventService.ENTITY_CHANGED, {
         entityName,
         entityId

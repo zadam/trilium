@@ -105,9 +105,11 @@ function SetupModel() {
                 this.step('sync-in-progress');
 
                 setInterval(checkOutstandingSyncs, 1000);
+
+                hideAlert();
             }
             else {
-                showAlert('Sync setup failed: ', resp.error);
+                showAlert('Sync setup failed: ' + resp.error);
             }
         }
     };
@@ -128,6 +130,10 @@ async function checkOutstandingSyncs() {
 function showAlert(message) {
     $("#alert").html(message);
     $("#alert").show();
+}
+
+function hideAlert() {
+    $("#alert").hide();
 }
 
 ko.applyBindings(new SetupModel(), document.getElementById('setup-dialog'));

@@ -96,6 +96,8 @@ async function pullSync(syncContext) {
         const lastSyncedPull = await getLastSyncedPull();
         const changesUri = '/api/sync/changed?lastSyncId=' + lastSyncedPull;
 
+        const startDate = new Date();
+
         const resp = await syncRequest(syncContext, 'GET', changesUri);
         stats.outstandingPulls = resp.maxSyncId - lastSyncedPull;
 
@@ -105,21 +107,19 @@ async function pullSync(syncContext) {
             break;
         }
 
-        log.info("Pulled " + rows.length + " changes from " + changesUri);
+        log.info("Pulled " + rows.length + " changes from " + changesUri + " in "
+            + (new Date().getTime() - startDate.getTime()) + "ms");
 
         for (const {sync, entity} of rows) {
-            if (sourceIdService.isLocalSourceId(sync.sourceId)) {
-                // too noisy
-                //log.info(`Skipping pull #${sync.id} ${sync.entityName} ${sync.entityId} because ${sync.sourceId} is a local source id.`);
-            }
-            else {
+            if (!sourceIdService.isLocalSourceId(sync.sourceId)) {
                 await syncUpdateService.updateEntity(sync, entity, syncContext.sourceId);
             }
 
             stats.outstandingPulls = resp.maxSyncId - sync.id;
 
-            await setLastSyncedPull(sync.id);
         }
+
+        await setLastSyncedPull(rows[rows.length - 1].sync.id);
     }
 
     log.info("Finished pull");
@@ -163,13 +163,14 @@ async function pushSync(syncContext) {
         }
 
         const syncRecords = await getSyncRecords(filteredSyncs);
-
-        log.info(`Pushing ${syncRecords.length} syncs.`);
+        const startDate = new Date();
 
         await syncRequest(syncContext, 'PUT', '/api/sync/update', {
             sourceId: sourceIdService.getCurrentSourceId(),
             entities: syncRecords
         });
+
+        log.info(`Pushing ${syncRecords.length} syncs in ` + (new Date().getTime() - startDate.getTime()) + "ms");
 
         lastSyncedPush = syncRecords[syncRecords.length - 1].sync.id;
 

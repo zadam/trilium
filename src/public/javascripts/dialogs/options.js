@@ -223,9 +223,14 @@ addTabHandler((function() {
     });
 
     $syncToServerButton.click(async () => {
-        await server.post("setup/sync-to-server");
+        const resp = await server.post("setup/sync-to-server");
 
-        infoService.showMessage("Sync has been established to the server instance. It will take some time to finish.");
+        if (resp.success) {
+            infoService.showMessage("Sync has been established to the server instance. It will take some time to finish.");
+        }
+        else {
+            infoService.showError('Sync setup failed: ' + resp.error);
+        }
     });
 
     return {
