@@ -29,7 +29,7 @@ async function initSyncedOptions(username, password) {
     await passwordEncryptionService.setDataKey(password, utils.randomSecureToken(16));
 }
 
-async function initNotSyncedOptions(initialized, startNotePath = '', syncServerHost = '') {
+async function initNotSyncedOptions(initialized, startNotePath = '', syncServerHost = '', syncProxy = '') {
     await optionService.createOption('startNotePath', startNotePath, false);
     await optionService.createOption('lastBackupDate', dateUtils.nowDate(), false);
     await optionService.createOption('dbVersion', appInfo.dbVersion, false);
@@ -42,7 +42,7 @@ async function initNotSyncedOptions(initialized, startNotePath = '', syncServerH
 
     await optionService.createOption('syncServerHost', syncServerHost, false);
     await optionService.createOption('syncServerTimeout', 5000, false);
-    await optionService.createOption('syncProxy', '', false);
+    await optionService.createOption('syncProxy', syncProxy, false);
 
     await optionService.createOption('initialized', initialized ? 'true' : 'false', false);
 }

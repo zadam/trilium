@@ -14,7 +14,7 @@ function triggerSync() {
     });
 }
 
-async function setupSyncFromSyncServer(serverAddress, username, password) {
+async function setupSyncFromSyncServer(syncServerHost, syncProxy, username, password) {
     if (await sqlInit.isDbInitialized()) {
         return {
             result: 'failure',
@@ -27,7 +27,7 @@ async function setupSyncFromSyncServer(serverAddress, username, password) {
 
         // response is expected to contain documentId and documentSecret options
         const options = await rp.get({
-            uri: serverAddress + '/api/sync/document',
+            uri: syncServerHost + '/api/sync/document',
             auth: {
                 'user': username,
                 'pass': password
@@ -35,7 +35,11 @@ async function setupSyncFromSyncServer(serverAddress, username, password) {
             json: true
         });
 
-        await sqlInit.createDatabaseForSync(options, serverAddress);
+        if (syncProxy) {
+            options.proxy = syncProxy;
+        }
+
+        await sqlInit.createDatabaseForSync(options, syncServerHost, syncProxy);
 
         triggerSync();
 

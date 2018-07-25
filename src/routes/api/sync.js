@@ -115,19 +115,23 @@ async function getDocument() {
 async function syncToServer() {
     log.info("Initiating sync to server");
 
-    // FIXME: add proxy support
     const syncServerHost = await optionService.getOption('syncServerHost');
+    const syncProxy = await optionService.getOption('syncProxy');
 
-    const payload = {
-        options: await getDocumentOptions()
-    };
-
-    await rp({
+    const rpOpts = {
         uri: syncServerHost + '/api/setup/sync-from-client',
         method: 'POST',
         json: true,
-        body: payload
-    });
+        body: {
+            options: await getDocumentOptions()
+        }
+    };
+
+    if (syncProxy) {
+        rpOpts.proxy = syncProxy;
+    }
+
+    await rp(rpOpts);
 
     // this is completely new sync, need to reset counters. If this would not be new sync,
     // the previous request would have failed.

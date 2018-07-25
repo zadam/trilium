@@ -10,9 +10,9 @@ async function setupNewDocument(req) {
 }
 
 async function setupSyncFromServer(req) {
-    const { serverAddress, username, password } = req.body;
+    const { syncServerHost, syncProxy, username, password } = req.body;
 
-    return await setupService.setupSyncFromSyncServer(serverAddress, username, password);
+    return await setupService.setupSyncFromSyncServer(syncServerHost, syncProxy, username, password);
 }
 
 async function setupSyncFromClient(req) {

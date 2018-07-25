@@ -68,16 +68,20 @@
         <p>Please enter Trilium server address and credentials below. This will download the whole Trilium document from server and setup sync to it. Depending on the document size and your connection speed, this may take a while.</p>
 
         <div class="form-group">
-            <label for="username">Trilium server address</label>
-            <input type="text" class="form-control" data-bind="value: serverAddress" placeholder="https://<hostname>:<port>">
+            <label for="sync-server-host">Trilium server address</label>
+            <input type="text" id="syncServerHost" class="form-control" data-bind="value: syncServerHost" placeholder="https://<hostname>:<port>">
+        </div>
+        <div class="form-group">
+            <label for="sync-proxy">Proxy server (optional)</label>
+            <input type="text" id="sync-proxy" class="form-control" data-bind="value: syncProxy" placeholder="https://<hostname>:<port>">
         </div>
         <div class="form-group">
             <label for="username">Username</label>
-            <input type="text" class="form-control" data-bind="value: username" placeholder="Username">
+            <input type="text" id="username" class="form-control" data-bind="value: username" placeholder="Username">
         </div>
         <div class="form-group">
             <label for="password1">Password</label>
-            <input type="password" class="form-control" data-bind="value: password1" placeholder="Password">
+            <input type="password" id="password1" class="form-control" data-bind="value: password1" placeholder="Password">
         </div>
 
         <button type="button" data-bind="click: back" class="btn btn-default">Back</button>

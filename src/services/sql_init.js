@@ -99,7 +99,7 @@ async function createInitialDatabase(username, password) {
     await initDbConnection();
 }
 
-async function createDatabaseForSync(options, syncServerHost = '') {
+async function createDatabaseForSync(options, syncServerHost = '', syncProxy = '') {
     log.info("Creating database for sync");
 
     if (await isDbInitialized()) {
@@ -111,7 +111,7 @@ async function createDatabaseForSync(options, syncServerHost = '') {
     await sql.transactional(async () => {
         await sql.executeScript(schema);
 
-        await require('./options_init').initNotSyncedOptions(false, '', syncServerHost);
+        await require('./options_init').initNotSyncedOptions(false, '', syncServerHost, syncProxy);
 
         // document options required for sync to kick off
         for (const opt of options) {

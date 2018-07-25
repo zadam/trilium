@@ -16,7 +16,8 @@ function SetupModel() {
     this.password1 = ko.observable();
     this.password2 = ko.observable();
 
-    this.serverAddress = ko.observable();
+    this.syncServerHost = ko.observable();
+    this.syncProxy = ko.observable();
 
     this.instanceType = utils.isElectron() ? "desktop" : "server";
 
@@ -68,11 +69,12 @@ function SetupModel() {
             });
         }
         else if (this.setupSyncFromServer()) {
-            const serverAddress = this.serverAddress();
+            const syncServerHost = this.syncServerHost();
+            const syncProxy = this.syncProxy();
             const username = this.username();
             const password = this.password1();
 
-            if (!serverAddress) {
+            if (!syncServerHost) {
                 showAlert("Trilium server address can't be empty");
                 return;
             }
@@ -89,7 +91,8 @@ function SetupModel() {
 
             // not using server.js because it loads too many dependencies
             const resp = await $.post('/api/setup/sync-from-server', {
-                serverAddress: serverAddress,
+                syncServerHost: syncServerHost,
+                syncProxy: syncProxy,
                 username: username,
                 password: password
             });
