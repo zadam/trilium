@@ -5,6 +5,10 @@ function SetupModel() {
         setInterval(checkOutstandingSyncs, 1000);
     }
 
+    const serverAddress = location.protocol + '//' + location.host;
+
+    $("#current-host").html(serverAddress);
+
     this.step = ko.observable(syncInProgress ? "sync-in-progress" : "setup-type");
     this.setupType = ko.observable();
 

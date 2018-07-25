@@ -57,7 +57,16 @@
     <div data-bind="visible: step() == 'sync-from-desktop'">
         <h2>Sync from Desktop</h2>
 
-        <p>This setup needs to be initiated from the desktop instance, please open it, go to settings in the top right, click on sync tab and then click on Setup sync with server instance.</p>
+        <p>This setup needs to be initiated from the desktop instance:</p>
+
+        <ol>
+            <li>please open your desktop instance of Trilium Notes</li>
+            <li>click on Options button in the top right</li>
+            <li>click on Sync tab</li>
+            <li>configure server instance address to the: <span id="current-host"></span> and click save.</li>
+            <li>click on "Sync document to the server instance" button</li>
+            <li>once you've done all this, click <a href="/">here</a></li>
+        </ol>
 
         <button type="button" data-bind="click: back" class="btn btn-default">Back</button>
     </div>

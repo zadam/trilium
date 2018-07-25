@@ -29,7 +29,7 @@ async function initSyncedOptions(username, password) {
     await passwordEncryptionService.setDataKey(password, utils.randomSecureToken(16));
 }
 
-async function initNotSyncedOptions(initialized, startNotePath = '', syncServerHost = '', syncProxy = '') {
+async function initNotSyncedOptions(initialized, startNotePath = 'root', syncServerHost = '', syncProxy = '') {
     await optionService.createOption('startNotePath', startNotePath, false);
     await optionService.createOption('lastBackupDate', dateUtils.nowDate(), false);
     await optionService.createOption('dbVersion', appInfo.dbVersion, false);

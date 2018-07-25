@@ -131,6 +131,12 @@ async function pushSync(syncContext) {
     while (true) {
         const syncs = await sql.getRows('SELECT * FROM sync WHERE id > ? LIMIT 1000', [lastSyncedPush]);
 
+        if (syncs.length === 0) {
+            log.info("Nothing to push");
+
+            break;
+        }
+
         const filteredSyncs = syncs.filter(sync => {
             if (sync.sourceId === syncContext.sourceId) {
                 // too noisy
@@ -149,11 +155,11 @@ async function pushSync(syncContext) {
         });
 
         if (filteredSyncs.length === 0) {
-            log.info("Nothing to push");
-
+            // there still might be more syncs (because of batch limit), just all from current batch
+            // has been filtered out
             await setLastSyncedPush(lastSyncedPush);
 
-            break;
+            continue;
         }
 
         const syncRecords = await getSyncRecords(filteredSyncs);
