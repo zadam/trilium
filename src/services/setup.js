@@ -2,6 +2,7 @@ const rp = require('request-promise');
 const syncService = require('./sync');
 const log = require('./log');
 const sqlInit = require('./sql_init');
+const repository = require('./repository');
 
 function triggerSync() {
     log.info("Triggering sync.");
@@ -27,7 +28,7 @@ async function setupSyncFromSyncServer(syncServerHost, syncProxy, username, pass
 
         // response is expected to contain documentId and documentSecret options
         const options = await rp.get({
-            uri: syncServerHost + '/api/sync/document',
+            uri: syncServerHost + '/api/setup/sync-seed',
             auth: {
                 'user': username,
                 'pass': password
@@ -55,7 +56,15 @@ async function setupSyncFromSyncServer(syncServerHost, syncProxy, username, pass
     }
 }
 
+async function getSyncSeedOptions() {
+    return [
+        await repository.getOption('documentId'),
+        await repository.getOption('documentSecret')
+    ];
+}
+
 module.exports = {
     setupSyncFromSyncServer,
+    getSyncSeedOptions,
     triggerSync
 };

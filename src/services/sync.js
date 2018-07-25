@@ -11,7 +11,7 @@ const dateUtils = require('./date_utils');
 const syncUpdateService = require('./sync_update');
 const contentHashService = require('./content_hash');
 const appInfo = require('./app_info');
-const syncSetup = require('./sync_setup');
+const syncOptions = require('./sync_options');
 const syncMutexService = require('./sync_mutex');
 const cls = require('./cls');
 
@@ -25,7 +25,7 @@ const stats = {
 async function sync() {
     try {
         return await syncMutexService.doExclusively(async () => {
-            if (!await syncSetup.isSyncSetup()) {
+            if (!await syncOptions.isSyncSetup()) {
                 return { success: false, message: 'Sync not configured' };
             }
 
@@ -196,7 +196,7 @@ async function checkContentHash(syncContext) {
 }
 
 async function syncRequest(syncContext, method, uri, body) {
-    const fullUri = await syncSetup.getSyncServer() + uri;
+    const fullUri = await syncOptions.getSyncServerHost() + uri;
 
     try {
         const options = {
@@ -205,10 +205,10 @@ async function syncRequest(syncContext, method, uri, body) {
             jar: syncContext.cookieJar,
             json: true,
             body: body,
-            timeout: await syncSetup.getSyncTimeout()
+            timeout: await syncOptions.getSyncTimeout()
         };
 
-        const syncProxy = await syncSetup.getSyncProxy();
+        const syncProxy = await syncOptions.getSyncProxy();
 
         if (syncProxy && proxyToggle) {
             options.proxy = syncProxy;
@@ -302,10 +302,10 @@ async function updatePushStats() {
 }
 
 sqlInit.dbReady.then(async () => {
-    if (await syncSetup.isSyncSetup()) {
-        log.info("Setting up sync to " + await syncSetup.getSyncServer() + " with timeout " + await syncSetup.getSyncTimeout());
+    if (await syncOptions.isSyncSetup()) {
+        log.info("Setting up sync to " + await syncOptions.getSyncServerHost() + " with timeout " + await syncOptions.getSyncTimeout());
 
-        const syncProxy = await syncSetup.getSyncProxy();
+        const syncProxy = await syncOptions.getSyncProxy();
 
         if (syncProxy) {
             log.info("Sync proxy: " + syncProxy);

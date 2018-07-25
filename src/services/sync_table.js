@@ -1,7 +1,7 @@
 const sql = require('./sql');
 const sourceIdService = require('./source_id');
 const dateUtils = require('./date_utils');
-const syncSetup = require('./sync_setup');
+const syncOptions = require('./sync_options');
 const log = require('./log');
 const cls = require('./cls');
 const eventService = require('./events');
@@ -54,7 +54,7 @@ async function addEntitySync(entityName, entityId, sourceId) {
         sourceId: sourceId || cls.getSourceId() || sourceIdService.getCurrentSourceId()
     });
 
-    if (!await syncSetup.isSyncSetup()) {
+    if (!await syncOptions.isSyncSetup()) {
         // this is because the "server" instances shouldn't have outstanding pushes
         // useful when you fork the DB for new "client" instance, it won't try to sync the whole DB
         await sql.execute("UPDATE options SET value = (SELECT MAX(id) FROM sync) WHERE name IN('lastSyncedPush', 'lastSyncedPull')");
