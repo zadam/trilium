@@ -174,7 +174,6 @@ function register(app) {
     apiRoute(POST, '/api/sql/execute', sqlRoute.execute);
     apiRoute(POST, '/api/anonymization/anonymize', anonymizationRoute.anonymize);
 
-    apiRoute(POST, '/api/cleanup/cleanup-soft-deleted-items', cleanupRoute.cleanupSoftDeletedItems);
     apiRoute(POST, '/api/cleanup/cleanup-unused-images', cleanupRoute.cleanupUnusedImages);
     apiRoute(POST, '/api/cleanup/vacuum-database', cleanupRoute.vacuumDatabase);
 
