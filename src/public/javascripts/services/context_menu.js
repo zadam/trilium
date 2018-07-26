@@ -121,7 +121,7 @@ const contextMenuOptions = {
         $tree.contextmenu("enableEntry", "pasteInto", clipboardIds.length > 0 && note.type !== 'search');
         $tree.contextmenu("enableEntry", "importBranch", note.type !== 'search');
         $tree.contextmenu("enableEntry", "exportBranch", note.type !== 'search');
-        $tree.contextmenu("enableEntry", "editBranchPrefix", parentNote.type !== 'search');
+        $tree.contextmenu("enableEntry", "editBranchPrefix", isNotRoot && parentNote.type !== 'search');
 
         // Activate node on right-click
         node.setActive();
