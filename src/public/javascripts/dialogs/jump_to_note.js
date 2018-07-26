@@ -14,7 +14,8 @@ async function showDialog() {
 
     $dialog.dialog({
         modal: true,
-        width: 800
+        width: 800,
+        position: { my: "center top+100", at: "top", of: window }
     });
 
     await $autoComplete.autocomplete({

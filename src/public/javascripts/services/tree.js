@@ -8,7 +8,6 @@ import treeChangesService from './branches.js';
 import treeUtils from './tree_utils.js';
 import utils from './utils.js';
 import server from './server.js';
-import recentNotesDialog from '../dialogs/recent_notes.js';
 import treeCache from './tree_cache.js';
 import infoService from "./info.js";
 import treeBuilder from "./tree_builder.js";
@@ -239,6 +238,15 @@ async function setExpandedToServer(branchId, isExpanded) {
     await server.put('branches/' + branchId + '/expanded/' + expandedNum);
 }
 
+function addRecentNote(branchId, notePath) {
+    setTimeout(async () => {
+        // we include the note into recent list only if the user stayed on the note at least 5 seconds
+        if (notePath && notePath === getCurrentNotePath()) {
+            await server.put('recent-notes/' + branchId + '/' + encodeURIComponent(notePath));
+        }
+    }, 1500);
+}
+
 function setCurrentNotePathToHash(node) {
     utils.assertArguments(node);
 
@@ -247,7 +255,7 @@ function setCurrentNotePathToHash(node) {
 
     document.location.hash = currentNotePath;
 
-    recentNotesDialog.addRecentNote(currentBranchId, currentNotePath);
+    addRecentNote(currentBranchId, currentNotePath);
 }
 
 function getSelectedNodes(stopOnParents = false) {

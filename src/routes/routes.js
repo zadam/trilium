@@ -161,7 +161,6 @@ function register(app) {
 
     apiRoute(GET, '/api/event-log', eventLogRoute.getEventLog);
 
-    apiRoute(GET, '/api/recent-notes', recentNotesRoute.getRecentNotes);
     apiRoute(PUT, '/api/recent-notes/:branchId/:notePath', recentNotesRoute.addRecentNote);
     apiRoute(GET, '/api/app-info', appInfoRoute.getAppInfo);
 

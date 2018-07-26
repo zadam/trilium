@@ -6,7 +6,6 @@ import zoomService from "./zoom.js";
 import noteRevisionsDialog from "../dialogs/note_revisions.js";
 import optionsDialog from "../dialogs/options.js";
 import addLinkDialog from "../dialogs/add_link.js";
-import recentNotesDialog from "../dialogs/recent_notes.js";
 import jumpToNoteDialog from "../dialogs/jump_to_note.js";
 import noteSourceDialog from "../dialogs/note_source.js";
 import recentChangesDialog from "../dialogs/recent_changes.js";
@@ -34,9 +33,6 @@ function registerEntrypoints() {
 
     $("#protected-session-on").click(protectedSessionService.enterProtectedSession);
     $("#protected-session-off").click(protectedSessionService.leaveProtectedSession);
-
-    $("#recent-notes-button").click(recentNotesDialog.showDialog);
-    utils.bindShortcut('ctrl+e', recentNotesDialog.showDialog);
 
     $("#toggle-search-button").click(searchNotesService.toggleSearch);
     utils.bindShortcut('ctrl+s', searchNotesService.toggleSearch);
