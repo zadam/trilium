@@ -223,7 +223,13 @@ async function deleteNote(branch) {
 
     if (notDeletedBranches.length === 0) {
         note.isDeleted = true;
+        note.content = '';
         await note.save();
+
+        for (const noteRevision of await note.getRevisions()) {
+            noteRevision.content = '';
+            await noteRevision.save();
+        }
 
         for (const childBranch of await note.getChildBranches()) {
             await deleteNote(childBranch);
