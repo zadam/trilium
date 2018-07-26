@@ -5,8 +5,6 @@ import searchNotesService from '../services/search_notes.js';
 
 const $dialog = $("#jump-to-note-dialog");
 const $autoComplete = $("#jump-to-note-autocomplete");
-const $form = $("#jump-to-note-form");
-const $jumpToNoteButton = $("#jump-to-note-button");
 const $showInFullTextButton = $("#show-in-full-text-button");
 
 async function showDialog() {
@@ -34,25 +32,22 @@ async function showDialog() {
             }
         },
         focus: function(event, ui) {
-            return $(ui.item).val() !== 'No results';
+            event.preventDefault();
         },
-        minLength: 2
+        minLength: 0,
+        autoFocus: true,
+        select: function (event, ui) {
+            if (ui.item.value === 'No results') {
+                return false;
+            }
+
+            treeService.activateNode(ui.item.value);
+
+            $dialog.dialog('close');
+        }
     });
-}
 
-function getSelectedNotePath() {
-    const val = $autoComplete.val();
-    return linkService.getNodePathFromLabel(val);
-}
-
-function goToNote() {
-    const notePath = getSelectedNotePath();
-
-    if (notePath) {
-        treeService.activateNode(notePath);
-
-        $dialog.dialog('close');
-    }
+    $autoComplete.autocomplete("search", "");
 }
 
 function showInFullText(e) {
@@ -68,14 +63,6 @@ function showInFullText(e) {
 
     $dialog.dialog('close');
 }
-
-$form.submit(() => {
-    goToNote();
-
-    return false;
-});
-
-$jumpToNoteButton.click(goToNote);
 
 $showInFullTextButton.click(showInFullText);
 
