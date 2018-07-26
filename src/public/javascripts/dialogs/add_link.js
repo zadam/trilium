@@ -53,12 +53,17 @@ async function showDialog() {
         $linkTitle.val(noteTitle);
     }
 
-    $autoComplete.autocomplete({
+    await $autoComplete.autocomplete({
         source: async function(request, response) {
             const result = await server.get('autocomplete?query=' + encodeURIComponent(request.term));
 
             if (result.length > 0) {
-                response(result);
+                response(result.map(row => {
+                    return {
+                        label: row.label,
+                        value: row.label + ' (' + row.value + ')'
+                    }
+                }));
             }
             else {
                 response([{
@@ -67,10 +72,10 @@ async function showDialog() {
                 }]);
             }
         },
-        minLength: 2,
-        change: async () => {
-            const val = $autoComplete.val();
-            const notePath = linkService.getNodePathFromLabel(val);
+        minLength: 0,
+        change: async (event, ui) => {
+            const notePath = linkService.getNodePathFromLabel(ui.item.value);
+
             if (!notePath) {
                 return;
             }
@@ -81,6 +86,11 @@ async function showDialog() {
                 await setDefaultLinkTitle(noteId);
             }
         },
+        select: function (event, ui) {
+            if (ui.item.value === 'No results') {
+                return false;
+            }
+        },
         // this is called when user goes through autocomplete list with keyboard
         // at this point the item isn't selected yet so we use supplied ui.item to see WHERE the cursor is
         focus: async (event, ui) => {
@@ -88,8 +98,12 @@ async function showDialog() {
             const noteId = treeUtils.getNoteIdFromNotePath(notePath);
 
             await setDefaultLinkTitle(noteId);
+
+            event.preventDefault();
         }
     });
+
+    $autoComplete.autocomplete("search", "");
 }
 
 $form.submit(() => {
