@@ -571,12 +571,12 @@
               <td data-bind="text: labelId" style="width: 150px;"></td>
               <td>
                 <!-- Change to valueUpdate: blur is necessary because jQuery UI autocomplete hijacks change event -->
-                <input type="text" class="label-name" data-bind="value: name, valueUpdate: 'blur',  event: { blur: $parent.labelChanged }"/>
+                <input type="text" class="label-name form-control" data-bind="value: name, valueUpdate: 'blur',  event: { blur: $parent.labelChanged }"/>
                 <div style="color: yellowgreen" data-bind="if: $parent.isNotUnique($index())"><span class="glyphicon glyphicon-info-sign"></span> Duplicate label.</div>
                 <div style="color: red" data-bind="if: $parent.isEmptyName($index())">Label name can't be empty.</div>
               </td>
               <td>
-                <input type="text" class="label-value" data-bind="value: value, valueUpdate: 'blur', event: { blur: $parent.labelChanged }" style="width: 300px"/>
+                <input type="text" class="label-value form-control" data-bind="value: value, valueUpdate: 'blur', event: { blur: $parent.labelChanged }" style="width: 300px"/>
               </td>
               <td title="Delete" style="padding: 13px;">
                 <span class="glyphicon glyphicon-trash" data-bind="click: $parent.deleteLabel"></span>
@@ -615,12 +615,19 @@
               <td data-bind="text: relationId" style="width: 150px;"></td>
               <td>
                 <!-- Change to valueUpdate: blur is necessary because jQuery UI autocomplete hijacks change event -->
-                <input type="text" class="relation-name" data-bind="value: name, valueUpdate: 'blur',  event: { blur: $parent.relationChanged }"/>
+                <input type="text" class="relation-name form-control" data-bind="value: name, valueUpdate: 'blur',  event: { blur: $parent.relationChanged }"/>
                 <div style="color: yellowgreen" data-bind="if: $parent.isNotUnique($index())"><span class="glyphicon glyphicon-info-sign"></span> Duplicate relation.</div>
                 <div style="color: red" data-bind="if: $parent.isEmptyName($index())">Relation name can't be empty.</div>
               </td>
               <td>
-                <input type="text" class="relation-value" data-bind="value: value, valueUpdate: 'blur', event: { blur: $parent.relationChanged }" style="width: 300px"/>
+                <div class="input-group">
+                  <input id="jump-to-note-autocomplete" class="form-control relation-target-note-id"
+                         placeholder="search for note by its name"
+                         data-bind="value: targetNoteId, valueUpdate: 'blur', event: { blur: $parent.relationChanged }"
+                         style="width: 300px;">
+
+                  <span class="input-group-addon" class="relations-show-recent-notes" title="Show recent notes" style="background: url('/images/icons/clock-16.png') no-repeat center; cursor: pointer;"></span>
+                </div>
               </td>
               <td title="Delete" style="padding: 13px;">
                 <span class="glyphicon glyphicon-trash" data-bind="click: $parent.deleteRelation"></span>

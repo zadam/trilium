@@ -1,6 +1,9 @@
 import noteDetailService from '../services/note_detail.js';
 import server from '../services/server.js';
 import infoService from "../services/info.js";
+import treeService from "../services/tree.js";
+import linkService from "../services/link.js";
+import treeUtils from "../services/tree_utils.js";
 
 const $dialog = $("#relations-dialog");
 const $saveRelationsButton = $("#save-relations-button");
@@ -97,6 +100,11 @@ function RelationsModel() {
 
         infoService.showMessage("Relations have been saved.");
 
+        // FIXME FIXME FIXME FIXME FIXME
+        // FIXME FIXME FIXME FIXME FIXME
+        // FIXME FIXME FIXME FIXME FIXME
+        // FIXME FIXME FIXME FIXME FIXME
+        // FIXME FIXME FIXME FIXME FIXME
         noteDetailService.loadRelationList();
     };
 
@@ -104,11 +112,11 @@ function RelationsModel() {
         const relations = self.relations().filter(attr => attr().isDeleted === 0);
         const last = relations.length === 0 ? null : relations[relations.length - 1]();
 
-        if (!last || last.name.trim() !== "" || last.value !== "") {
+        if (!last || last.name.trim() !== "" || last.targetNoteId !== "") {
             self.relations.push(ko.observable({
                 relationId: '',
                 name: '',
-                value: '',
+                targetNoteId: '',
                 isDeleted: 0,
                 position: 0
             }));
@@ -144,7 +152,7 @@ function RelationsModel() {
     this.isEmptyName = function(index) {
         const cur = self.relations()[index]();
 
-        return cur.name.trim() === "" && (cur.relationId !== "" || cur.value !== "");
+        return cur.name.trim() === "" && (cur.relationId !== "" || cur.targetNoteId !== "");
     };
 
     this.getTargetRelation = function(target) {
@@ -176,7 +184,7 @@ $(document).on('focus', '.relation-name', function (e) {
             // because we have overriden filter() function in autocomplete.js
             source: relationNames.map(relation => {
                 return {
-                    relation: relation,
+                    label: relation,
                     value: relation
                 }
             }),
@@ -187,34 +195,44 @@ $(document).on('focus', '.relation-name', function (e) {
     $(this).autocomplete("search", $(this).val());
 });
 
-$(document).on('focus', '.relation-value', async function (e) {
+$(document).on('focus', '.relation-target-note-id', async function (e) {
     if (!$(this).hasClass("ui-autocomplete-input")) {
-        const relationName = $(this).parent().parent().find('.relation-name').val();
+        await $(this).autocomplete({
+            source: async function(request, response) {
+                const result = await server.get('autocomplete?query=' + encodeURIComponent(request.term));
 
-        if (relationName.trim() === "") {
-            return;
-        }
-
-        const relationValues = await server.get('relations/values/' + encodeURIComponent(relationName));
-
-        if (relationValues.length === 0) {
-            return;
-        }
-
-        $(this).autocomplete({
-            // shouldn't be required and autocomplete should just accept array of strings, but that fails
-            // because we have overriden filter() function in autocomplete.js
-            source: relationValues.map(relation => {
-                return {
-                    label: relation,
-                    value: relation
+                if (result.length > 0) {
+                    response(result.map(row => {
+                        return {
+                            label: row.label,
+                            value: row.label + ' (' + row.value + ')'
+                        }
+                    }));
                 }
-            }),
-            minLength: 0
+                else {
+                    response([{
+                        label: "No results",
+                        value: "No results"
+                    }]);
+                }
+            },
+            minLength: 0,
+            select: function (event, ui) {
+                if (ui.item.value === 'No results') {
+                    return false;
+                }
+            },
         });
     }
 
     $(this).autocomplete("search", $(this).val());
+});
+
+$(document).on('click', '.relations-show-recent-notes', function () {
+    alert("HI!");
+    alert($(this).parent().find('.relation-target-note-id').length);
+
+    $(this).parent().find('.relation-target-note-id').autocomplete("search", "");
 });
 
 export default {
