@@ -170,6 +170,7 @@
               <ul class="dropdown-menu dropdown-menu-right">
                 <li><a id="show-note-revisions-button">Note revisions</a></li>
                 <li><a class="show-labels-button"><kbd>Alt+L</kbd> Labels</a></li>
+                <li><a class="show-relations-button"><kbd>Alt+R</kbd> Relations</a></li>
                 <li><a id="show-source-button">HTML source</a></li>
                 <li><a id="upload-file-button">Upload file</a></li>
               </ul>
@@ -584,6 +585,50 @@
           </tbody>
         </table>
       </div>
+      </form>
+    </div>
+
+    <div id="relations-dialog" title="Note relations" style="display: none; padding: 20px;">
+      <form data-bind="submit: save">
+        <div style="text-align: center">
+          <button class="btn btn-large" style="width: 200px;" id="save-relations-button" type="submit">Save changes <kbd>enter</kbd></button>
+        </div>
+
+        <div style="height: 97%; overflow: auto">
+          <table id="relations-table" class="table">
+            <thead>
+            <tr>
+              <th></th>
+              <th>ID</th>
+              <th>Relation name</th>
+              <th>Target note</th>
+              <th></th>
+            </tr>
+            </thead>
+            <tbody data-bind="foreach: relations">
+            <tr data-bind="if: isDeleted == 0">
+              <td class="handle">
+                <span class="glyphicon glyphicon-resize-vertical"></span>
+                <input type="hidden" name="position" data-bind="value: position"/>
+              </td>
+              <!-- ID column has specific width because if it's empty its size can be deformed when dragging -->
+              <td data-bind="text: relationId" style="width: 150px;"></td>
+              <td>
+                <!-- Change to valueUpdate: blur is necessary because jQuery UI autocomplete hijacks change event -->
+                <input type="text" class="relation-name" data-bind="value: name, valueUpdate: 'blur',  event: { blur: $parent.relationChanged }"/>
+                <div style="color: yellowgreen" data-bind="if: $parent.isNotUnique($index())"><span class="glyphicon glyphicon-info-sign"></span> Duplicate relation.</div>
+                <div style="color: red" data-bind="if: $parent.isEmptyName($index())">Relation name can't be empty.</div>
+              </td>
+              <td>
+                <input type="text" class="relation-value" data-bind="value: value, valueUpdate: 'blur', event: { blur: $parent.relationChanged }" style="width: 300px"/>
+              </td>
+              <td title="Delete" style="padding: 13px;">
+                <span class="glyphicon glyphicon-trash" data-bind="click: $parent.deleteRelation"></span>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
       </form>
     </div>
 

@@ -41,6 +41,10 @@ async function getLabel(labelId) {
     return await getEntity("SELECT * FROM labels WHERE labelId = ?", [labelId]);
 }
 
+async function getRelation(relationId) {
+    return await getEntity("SELECT * FROM relations WHERE relationId = ?", [relationId]);
+}
+
 async function getOption(name) {
     return await getEntity("SELECT * FROM options WHERE name = ?", [name]);
 }
@@ -72,6 +76,7 @@ module.exports = {
     getBranch,
     getImage,
     getLabel,
+    getRelation,
     getOption,
     updateEntity,
     setEntityConstructor

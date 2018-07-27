@@ -12,6 +12,7 @@ import recentChangesDialog from "../dialogs/recent_changes.js";
 import sqlConsoleDialog from "../dialogs/sql_console.js";
 import searchNotesService from "./search_notes.js";
 import labelsDialog from "../dialogs/labels.js";
+import relationsDialog from "../dialogs/relations.js";
 import protectedSessionService from "./protected_session.js";
 
 function registerEntrypoints() {
@@ -39,6 +40,9 @@ function registerEntrypoints() {
 
     $(".show-labels-button").click(labelsDialog.showDialog);
     utils.bindShortcut('alt+l', labelsDialog.showDialog);
+
+    $(".show-relations-button").click(relationsDialog.showDialog);
+    utils.bindShortcut('alt+r', relationsDialog.showDialog);
 
     $("#options-button").click(optionsDialog.showDialog);
 

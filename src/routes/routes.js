@@ -26,6 +26,7 @@ const anonymizationRoute = require('./api/anonymization');
 const cleanupRoute = require('./api/cleanup');
 const imageRoute = require('./api/image');
 const labelsRoute = require('./api/labels');
+const relationsRoute = require('./api/relations');
 const scriptRoute = require('./api/script');
 const senderRoute = require('./api/sender');
 const filesRoute = require('./api/file_upload');
@@ -136,6 +137,10 @@ function register(app) {
     apiRoute(PUT, '/api/notes/:noteId/labels', labelsRoute.updateNoteLabels);
     apiRoute(GET, '/api/labels/names', labelsRoute.getAllLabelNames);
     apiRoute(GET, '/api/labels/values/:labelName', labelsRoute.getValuesForLabel);
+
+    apiRoute(GET, '/api/notes/:noteId/relations', relationsRoute.getNoteRelations);
+    apiRoute(PUT, '/api/notes/:noteId/relations', relationsRoute.updateNoteRelations);
+    apiRoute(GET, '/api/relations/names', relationsRoute.getAllRelationNames);
 
     route(GET, '/api/images/:imageId/:filename', [auth.checkApiAuthOrElectron], imageRoute.returnImage);
     route(POST, '/api/images', [auth.checkApiAuthOrElectron, uploadMiddleware], imageRoute.uploadImage, apiResultHandler);

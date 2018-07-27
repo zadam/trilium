@@ -42,6 +42,10 @@ async function addLabelSync(labelId, sourceId) {
     await addEntitySync("labels", labelId, sourceId);
 }
 
+async function addRelationSync(relationId, sourceId) {
+    await addEntitySync("relations", relationId, sourceId);
+}
+
 async function addApiTokenSync(apiTokenId, sourceId) {
     await addEntitySync("api_tokens", apiTokenId, sourceId);
 }
@@ -101,6 +105,7 @@ async function fillAllSyncRows() {
     await fillSyncRows("images", "imageId");
     await fillSyncRows("note_images", "noteImageId");
     await fillSyncRows("labels", "labelId");
+    await fillSyncRows("relations", "relationId");
     await fillSyncRows("api_tokens", "apiTokenId");
     await fillSyncRows("options", "name", 'isSynced = 1');
 }
@@ -115,6 +120,7 @@ module.exports = {
     addImageSync,
     addNoteImageSync,
     addLabelSync,
+    addRelationSync,
     addApiTokenSync,
     addEntitySync,
     cleanupSyncRowsForMissingEntities,

@@ -236,6 +236,7 @@ const primaryKeys = {
     "images": "imageId",
     "note_images": "noteImageId",
     "labels": "labelId",
+    "relations": "relationId",
     "api_tokens": "apiTokenId",
     "options": "name"
 };
