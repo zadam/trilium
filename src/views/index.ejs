@@ -279,27 +279,36 @@
 
         <div class="form-group">
           <label for="note-autocomplete">Note</label>
-          <input id="note-autocomplete" placeholder="search for note by its name" style="width: 100%;">
+
+            <div class="input-group">
+                <input id="note-autocomplete" class="form-control" placeholder="search for note by its name" style="width: 100%;">
+
+                <span class="input-group-addon" id="add-link-show-recent-notes" title="Show recent notes" style="background: url('/images/icons/clock-16.png') no-repeat center; cursor: pointer;"></span>
+            </div>
         </div>
 
         <div class="form-group" id="add-link-title-form-group">
           <label for="link-title">Link title</label>
-          <input id="link-title" style="width: 100%;">
+          <input id="link-title" class="form-control" style="width: 100%;">
         </div>
 
         <div class="form-group" id="add-link-prefix-form-group" title="Cloned note will be shown in note tree with given prefix">
           <label for="clone-prefix">Prefix (optional)</label>
-          <input id="clone-prefix" style="width: 100%;">
+          <input id="clone-prefix" class="form-control" style="width: 100%;">
         </div>
 
-        <button class="btn btn-sm">Add note link</button>
+        <button class="btn btn-primary">Add note link <kbd>enter</kbd></button>
       </form>
     </div>
 
     <div id="jump-to-note-dialog" title="Jump to note" style="display: none;">
       <div class="form-group">
         <label for="jump-to-note-autocomplete">Note</label>
-        <input id="jump-to-note-autocomplete" placeholder="search for note by its name" style="width: 100%;">
+        <div class="input-group">
+          <input id="jump-to-note-autocomplete" class="form-control" placeholder="search for note by its name" style="width: 100%;">
+
+          <span class="input-group-addon" id="jump-to-note-show-recent-notes" title="Show recent notes" style="background: url('/images/icons/clock-16.png') no-repeat center; cursor: pointer;"></span>
+        </div>
       </div>
 
       <button id="show-in-full-text-button" class="btn btn-sm">Search in full text <kbd>ctrl+enter</kbd></button>

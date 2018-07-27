@@ -1,11 +1,11 @@
 import treeService from '../services/tree.js';
-import linkService from '../services/link.js';
 import server from '../services/server.js';
 import searchNotesService from '../services/search_notes.js';
 
 const $dialog = $("#jump-to-note-dialog");
 const $autoComplete = $("#jump-to-note-autocomplete");
 const $showInFullTextButton = $("#show-in-full-text-button");
+const $showRecentNotesButton = $("#jump-to-note-show-recent-notes");
 
 async function showDialog() {
     glob.activeDialog = $dialog;
@@ -48,7 +48,7 @@ async function showDialog() {
         }
     });
 
-    $autoComplete.autocomplete("search", "");
+    showRecentNotes();
 }
 
 function showInFullText(e) {
@@ -65,7 +65,13 @@ function showInFullText(e) {
     $dialog.dialog('close');
 }
 
+function showRecentNotes() {
+    $autoComplete.autocomplete("search", "");
+}
+
 $showInFullTextButton.click(showInFullText);
+
+$showRecentNotesButton.click(showRecentNotes);
 
 $dialog.bind('keydown', 'ctrl+return', showInFullText);
 

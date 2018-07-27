@@ -15,6 +15,7 @@ const $prefixFormGroup = $("#add-link-prefix-form-group");
 const $linkTypeDiv = $("#add-link-type-div");
 const $linkTypes = $("input[name='add-link-type']");
 const $linkTypeHtml = $linkTypes.filter('input[value="html"]');
+const $showRecentNotesButton = $("#add-link-show-recent-notes");
 
 function setLinkType(linkType) {
     $linkTypes.each(function () {
@@ -74,6 +75,10 @@ async function showDialog() {
         },
         minLength: 0,
         change: async (event, ui) => {
+            if (!ui.item) {
+                return;
+            }
+
             const notePath = linkService.getNodePathFromLabel(ui.item.value);
 
             if (!notePath) {
@@ -103,7 +108,7 @@ async function showDialog() {
         }
     });
 
-    $autoComplete.autocomplete("search", "");
+    showRecentNotes();
 }
 
 $form.submit(() => {
@@ -167,7 +172,13 @@ function linkTypeChanged() {
     $linkTypeDiv.toggle(!hasSelection());
 }
 
+function showRecentNotes() {
+    $autoComplete.autocomplete("search", "");
+}
+
 $linkTypes.change(linkTypeChanged);
+
+$showRecentNotesButton.click(showRecentNotes);
 
 export default {
     showDialog
