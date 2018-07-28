@@ -18,7 +18,7 @@ async function updateNoteRelations(req) {
     for (const relation of relations) {
         let relationEntity;
 
-        if (relation.labelId) {
+        if (relation.relationId) {
             relationEntity = await repository.getRelation(relation.relationId);
         }
         else {

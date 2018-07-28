@@ -1,6 +1,8 @@
 import noteDetailService from '../services/note_detail.js';
 import server from '../services/server.js';
 import infoService from "../services/info.js";
+import linkService from "../services/link.js";
+import treeUtils from "../services/tree_utils.js";
 
 const $dialog = $("#relations-dialog");
 const $saveRelationsButton = $("#save-relations-button");
@@ -26,12 +28,20 @@ function RelationsModel() {
         });
     };
 
+    async function showRelations(relations) {
+        for (const relation of relations) {
+            relation.targetNoteId = await treeUtils.getNoteTitle(relation.targetNoteId) + " (" + relation.targetNoteId + ")";
+        }
+
+        self.relations(relations.map(ko.observable));
+    }
+
     this.loadRelations = async function() {
         const noteId = noteDetailService.getCurrentNoteId();
 
         const relations = await server.get('notes/' + noteId + '/relations');
 
-        self.relations(relations.map(ko.observable));
+        await showRelations(relations);
 
         addLastEmptyRow();
 
@@ -89,19 +99,18 @@ function RelationsModel() {
             .map(relation => relation())
             .filter(relation => relation.relationId !== "" || relation.name !== "");
 
+        relationsToSave.forEach(relation => relation.targetNoteId = treeUtils.getNoteIdFromNotePath(linkService.getNotePathFromLabel(relation.targetNoteId)));
+
+        console.log(relationsToSave);
+
         const relations = await server.put('notes/' + noteId + '/relations', relationsToSave);
 
-        self.relations(relations.map(ko.observable));
+        await showRelations(relations);
 
         addLastEmptyRow();
 
         infoService.showMessage("Relations have been saved.");
 
-        // FIXME FIXME FIXME FIXME FIXME
-        // FIXME FIXME FIXME FIXME FIXME
-        // FIXME FIXME FIXME FIXME FIXME
-        // FIXME FIXME FIXME FIXME FIXME
-        // FIXME FIXME FIXME FIXME FIXME
         noteDetailService.loadRelationList();
     };
 
@@ -218,7 +227,7 @@ async function initAutocomplete($el) {
                 if (ui.item.value === 'No results') {
                     return false;
                 }
-            },
+            }
         });
     }
 }

@@ -4,9 +4,13 @@ import linkService from "./link.js";
 
 function setupTooltip() {
     $(document).tooltip({
-        items: "#note-detail-text a",
+        items: "#note-detail-wrapper a",
         content: function (callback) {
-            const notePath = linkService.getNotePathFromLink($(this).attr("href"));
+            let notePath = linkService.getNotePathFromLink($(this).attr("href"));
+
+            if (!notePath) {
+                notePath = $(this).attr("note-path");
+            }
 
             if (notePath !== null) {
                 const noteId = treeUtils.getNoteIdFromNotePath(notePath);

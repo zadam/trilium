@@ -13,7 +13,7 @@ function getNotePathFromLink(url) {
     }
 }
 
-function getNodePathFromLabel(label) {
+function getNotePathFromLabel(label) {
     const notePathMatch = / \(([A-Za-z0-9/]+)\)/.exec(label);
 
     if (notePathMatch !== null) {
@@ -97,7 +97,7 @@ $(document).on('click', 'div.popover-content a, div.ui-tooltip-content a', goToL
 $(document).on('dblclick', '#note-detail-text a', goToLink);
 
 export default {
-    getNodePathFromLabel,
+    getNotePathFromLabel,
     getNotePathFromLink,
     createNoteLink,
     addLinkToEditor,

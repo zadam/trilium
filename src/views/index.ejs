@@ -254,10 +254,18 @@
 
         <div id="children-overview"></div>
 
-        <div id="label-list">
-          <button class="btn btn-sm show-labels-button">Labels:</button>
+        <div id="labels-and-relations">
+          <span id="label-list">
+            <button class="btn btn-sm show-labels-button">Labels:</button>
 
-          <span id="label-list-inner"></span>
+            <span id="label-list-inner"></span>
+          </span>
+
+          <span id="relation-list">
+            <button class="btn btn-sm show-relations-button">Relations:</button>
+
+            <span id="relation-list-inner"></span>
+          </span>
         </div>
       </div>
     </div>
@@ -578,7 +586,7 @@
               <td>
                 <input type="text" class="label-value form-control" data-bind="value: value, valueUpdate: 'blur', event: { blur: $parent.labelChanged }" style="width: 300px"/>
               </td>
-              <td title="Delete" style="padding: 13px;">
+              <td title="Delete" style="padding: 13px; cursor: pointer;">
                 <span class="glyphicon glyphicon-trash" data-bind="click: $parent.deleteLabel"></span>
               </td>
             </tr>
@@ -629,7 +637,7 @@
                   <span class="input-group-addon relations-show-recent-notes" title="Show recent notes" style="background: url('/images/icons/clock-16.png') no-repeat center; cursor: pointer;"></span>
                 </div>
               </td>
-              <td title="Delete" style="padding: 13px;">
+              <td title="Delete" style="padding: 13px; cursor: pointer;">
                 <span class="glyphicon glyphicon-trash" data-bind="click: $parent.deleteRelation"></span>
               </td>
             </tr>

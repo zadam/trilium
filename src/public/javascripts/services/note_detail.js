@@ -7,6 +7,7 @@ import utils from './utils.js';
 import server from './server.js';
 import messagingService from "./messaging.js";
 import infoService from "./info.js";
+import linkService from "./link.js";
 import treeCache from "./tree_cache.js";
 import NoteFull from "../entities/note_full.js";
 import noteDetailCode from './note_detail_code.js';
@@ -26,6 +27,8 @@ const $noteDetailComponentWrapper = $("#note-detail-component-wrapper");
 const $noteIdDisplay = $("#note-id-display");
 const $labelList = $("#label-list");
 const $labelListInner = $("#label-list-inner");
+const $relationList = $("#relation-list");
+const $relationListInner = $("#relation-list-inner");
 const $childrenOverview = $("#children-overview");
 
 let currentNote = null;
@@ -180,6 +183,8 @@ async function loadNoteDetail(noteId) {
 
     const labels = await loadLabelList();
 
+    loadRelationList(); // no need to wait
+
     const hideChildrenOverview = labels.some(label => label.name === 'hideChildrenOverview');
     await showChildrenOverview(hideChildrenOverview);
 }
@@ -228,6 +233,29 @@ async function loadLabelList() {
     }
 
     return labels;
+}
+
+async function loadRelationList() {
+    const noteId = getCurrentNoteId();
+
+    const relations = await server.get('notes/' + noteId + '/relations');
+
+    $relationListInner.html('');
+
+    if (relations.length > 0) {
+        for (const relation of relations) {
+            $relationListInner.append(relation.name + " = ");
+            $relationListInner.append(await linkService.createNoteLink(relation.targetNoteId));
+            $relationListInner.append(" ");
+        }
+
+        $relationList.show();
+    }
+    else {
+        $relationList.hide();
+    }
+
+    return relations;
 }
 
 async function loadNote(noteId) {
@@ -279,6 +307,7 @@ export default {
     newNoteCreated,
     focus,
     loadLabelList,
+    loadRelationList,
     saveNote,
     saveNoteIfChanged,
     noteChanged

@@ -79,7 +79,7 @@ async function showDialog() {
                 return;
             }
 
-            const notePath = linkService.getNodePathFromLabel(ui.item.value);
+            const notePath = linkService.getNotePathFromLabel(ui.item.value);
 
             if (!notePath) {
                 return;
@@ -99,7 +99,7 @@ async function showDialog() {
         // this is called when user goes through autocomplete list with keyboard
         // at this point the item isn't selected yet so we use supplied ui.item to see WHERE the cursor is
         focus: async (event, ui) => {
-            const notePath = linkService.getNodePathFromLabel(ui.item.value);
+            const notePath = linkService.getNotePathFromLabel(ui.item.value);
             const noteId = treeUtils.getNoteIdFromNotePath(notePath);
 
             await setDefaultLinkTitle(noteId);
@@ -114,7 +114,7 @@ async function showDialog() {
 $form.submit(() => {
     const value = $autoComplete.val();
 
-    const notePath = linkService.getNodePathFromLabel(value);
+    const notePath = linkService.getNotePathFromLabel(value);
     const noteId = treeUtils.getNoteIdFromNotePath(notePath);
 
     if (notePath) {
