@@ -232,12 +232,6 @@ async function initAutocomplete($el) {
     }
 }
 
-$dialog.on('focus', '.relation-target-note-id', async function (e) {
-    await initAutocomplete($(this));
-
-    $(this).autocomplete("search", $(this).val());
-});
-
 $dialog.on('click', '.relations-show-recent-notes', async function () {
     const $autocomplete = $(this).parent().find('.relation-target-note-id');
 
