@@ -167,9 +167,9 @@ async function showDialog() {
     });
 }
 
-ko.applyBindings(labelsModel, document.getElementById('labels-dialog'));
+ko.applyBindings(labelsModel, $dialog[0]);
 
-$(document).on('focus', '.label-name', function (e) {
+$dialog.on('focus', '.label-name', function (e) {
     if (!$(this).hasClass("ui-autocomplete-input")) {
         $(this).autocomplete({
             // shouldn't be required and autocomplete should just accept array of strings, but that fails
@@ -187,7 +187,7 @@ $(document).on('focus', '.label-name', function (e) {
     $(this).autocomplete("search", $(this).val());
 });
 
-$(document).on('focus', '.label-value', async function (e) {
+$dialog.on('focus', '.label-value', async function (e) {
     if (!$(this).hasClass("ui-autocomplete-input")) {
         const labelName = $(this).parent().parent().find('.label-name').val();
 

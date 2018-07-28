@@ -1,9 +1,6 @@
 import noteDetailService from '../services/note_detail.js';
 import server from '../services/server.js';
 import infoService from "../services/info.js";
-import treeService from "../services/tree.js";
-import linkService from "../services/link.js";
-import treeUtils from "../services/tree_utils.js";
 
 const $dialog = $("#relations-dialog");
 const $saveRelationsButton = $("#save-relations-button");
@@ -177,7 +174,7 @@ async function showDialog() {
 
 ko.applyBindings(relationsModel, document.getElementById('relations-dialog'));
 
-$(document).on('focus', '.relation-name', function (e) {
+$dialog.on('focus', '.relation-name', function (e) {
     if (!$(this).hasClass("ui-autocomplete-input")) {
         $(this).autocomplete({
             // shouldn't be required and autocomplete should just accept array of strings, but that fails
@@ -195,10 +192,10 @@ $(document).on('focus', '.relation-name', function (e) {
     $(this).autocomplete("search", $(this).val());
 });
 
-$(document).on('focus', '.relation-target-note-id', async function (e) {
-    if (!$(this).hasClass("ui-autocomplete-input")) {
-        await $(this).autocomplete({
-            source: async function(request, response) {
+async function initAutocomplete($el) {
+    if (!$el.hasClass("ui-autocomplete-input")) {
+        await $el.autocomplete({
+            source: async function (request, response) {
                 const result = await server.get('autocomplete?query=' + encodeURIComponent(request.term));
 
                 if (result.length > 0) {
@@ -224,15 +221,20 @@ $(document).on('focus', '.relation-target-note-id', async function (e) {
             },
         });
     }
+}
+
+$dialog.on('focus', '.relation-target-note-id', async function (e) {
+    await initAutocomplete($(this));
 
     $(this).autocomplete("search", $(this).val());
 });
 
-$(document).on('click', '.relations-show-recent-notes', function () {
-    alert("HI!");
-    alert($(this).parent().find('.relation-target-note-id').length);
+$dialog.on('click', '.relations-show-recent-notes', async function () {
+    const $autocomplete = $(this).parent().find('.relation-target-note-id');
 
-    $(this).parent().find('.relation-target-note-id').autocomplete("search", "");
+    await initAutocomplete($autocomplete);
+
+    $autocomplete.autocomplete("search", "");
 });
 
 export default {
