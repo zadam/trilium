@@ -4,7 +4,7 @@ const repository = require('./repository');
 const Relation = require('../entities/relation');
 
 const BUILTIN_RELATIONS = [
-    'exampleBuiltIn'
+    'runOnNoteView'
 ];
 
 async function getNotesWithRelation(name, targetNoteId) {
