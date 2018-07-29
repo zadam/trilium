@@ -23,8 +23,17 @@ async function executeStartupBundles() {
     }
 }
 
+async function executeRelationBundles(note, relationName) {
+    const bundlesToRun = await server.get("script/relation/" + note.noteId + "/" + relationName);
+
+    for (const bundle of bundlesToRun) {
+        await executeBundle(bundle, note);
+    }
+}
+
 export default {
     executeBundle,
     getAndExecuteBundle,
-    executeStartupBundles
+    executeStartupBundles,
+    executeRelationBundles
 }

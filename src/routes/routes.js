@@ -185,6 +185,7 @@ function register(app) {
     apiRoute(POST, '/api/script/run/:noteId', scriptRoute.run);
     apiRoute(GET, '/api/script/startup', scriptRoute.getStartupBundles);
     apiRoute(GET, '/api/script/bundle/:noteId', scriptRoute.getBundle);
+    apiRoute(GET, '/api/script/relation/:noteId/:relationName', scriptRoute.getRelationBundles);
 
     route(POST, '/api/sender/login', [], senderRoute.login, apiResultHandler);
     route(POST, '/api/sender/image', [auth.checkSenderToken], senderRoute.uploadImage, apiResultHandler);

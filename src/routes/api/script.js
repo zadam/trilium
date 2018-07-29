@@ -2,6 +2,7 @@
 
 const labelService = require('../../services/labels');
 const scriptService = require('../../services/script');
+const relationService = require('../../services/relations');
 const repository = require('../../services/repository');
 
 async function exec(req) {
@@ -35,14 +36,32 @@ async function getStartupBundles() {
     return bundles;
 }
 
+async function getRelationBundles(req) {
+    const noteId = req.params.noteId;
+    const relationName = req.params.relationName;
+
+    const relations = await relationService.getEffectiveRelations(noteId);
+    const filtered = relations.filter(relation => relation.name === relationName);
+    const targetNoteIds = filtered.map(relation => relation.targetNoteId);
+    const uniqueNoteIds = Array.from(new Set(targetNoteIds));
+
+    const bundles = [];
+
+    for (const noteId of uniqueNoteIds) {
+        bundles.push(await scriptService.getScriptBundleForNoteId(noteId));
+    }
+
+    return bundles;
+}
+
 async function getBundle(req) {
-    const note = await repository.getNote(req.params.noteId);
-    return await scriptService.getScriptBundle(note);
+    return await scriptService.getScriptBundleForNoteId(req.params.noteId);
 }
 
 module.exports = {
     exec,
     run,
     getStartupBundles,
+    getRelationBundles,
     getBundle
 };

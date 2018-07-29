@@ -190,12 +190,9 @@ async function loadNoteDetail(noteId) {
     const hideChildrenOverview = labels.some(label => label.name === 'hideChildrenOverview');
     await showChildrenOverview(hideChildrenOverview);
 
-    const relations = await loadRelationList();
-    const relationsToRun = relations.filter(relation => relation.name === 'runOnNoteView');
+    await loadRelationList();
 
-    for (const relationToRun of relationsToRun) {
-        await bundleService.getAndExecuteBundle(relationToRun.targetNoteId, getCurrentNote());
-    }
+    await bundleService.executeRelationBundles(getCurrentNote(), 'runOnNoteView');
 }
 
 async function showChildrenOverview(hideChildrenOverview) {

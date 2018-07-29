@@ -36,9 +36,23 @@ async function createRelation(sourceNoteId, name, targetNoteId) {
     }).save();
 }
 
+async function getEffectiveRelations(noteId) {
+    return await repository.getEntities(`
+        WITH RECURSIVE tree(noteId) AS (
+        SELECT ?
+            UNION
+            SELECT branches.parentNoteId FROM branches
+            JOIN tree ON branches.noteId = tree.noteId
+            JOIN notes ON notes.noteId = branches.parentNoteId
+            WHERE notes.isDeleted = 0 AND branches.isDeleted = 0
+        )
+        SELECT relations.* FROM relations JOIN tree ON relations.sourceNoteId = tree.noteId WHERE relations.isDeleted = 0 AND relations.name IN ('runOnNoteView')`, [noteId]);
+}
+
 module.exports = {
+    BUILTIN_RELATIONS,
     getNotesWithRelation,
     getNoteWithRelation,
     createRelation,
-    BUILTIN_RELATIONS
+    getEffectiveRelations
 };

@@ -12,7 +12,7 @@ function setupTooltip() {
                 notePath = $(this).attr("note-path");
             }
 
-            if (notePath !== null) {
+            if (notePath) {
                 const noteId = treeUtils.getNoteIdFromNotePath(notePath);
 
                 noteDetailService.loadNote(noteId).then(note => callback(note.content));
