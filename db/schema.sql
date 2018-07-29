@@ -134,3 +134,18 @@ CREATE TABLE IF NOT EXISTS "options"
   hash TEXT default "" not null,
   dateCreated TEXT default '1970-01-01T00:00:00.000Z' not null
 );
+CREATE TABLE relations
+(
+    relationId  TEXT not null primary key,
+    sourceNoteId       TEXT not null,
+    name         TEXT not null,
+    targetNoteId        TEXT not null,
+    position     INT  default 0 not null,
+    dateCreated  TEXT not null,
+    dateModified TEXT not null,
+    isDeleted    INT  not null
+  , hash TEXT DEFAULT "" NOT NULL);
+CREATE INDEX IDX_relation_sourceNoteId
+  on relations (sourceNoteId);
+CREATE INDEX IDX_relation_targetNoteId
+  on relations (targetNoteId);
