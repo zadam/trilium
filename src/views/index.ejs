@@ -612,6 +612,7 @@
               <th>ID</th>
               <th>Relation name</th>
               <th>Target note</th>
+              <th>Inheritable</th>
               <th></th>
             </tr>
             </thead>
@@ -638,6 +639,9 @@
 
                   <span class="input-group-addon relations-show-recent-notes" title="Show recent notes" style="background: url('/images/icons/clock-16.png') no-repeat center; cursor: pointer;"></span>
                 </div>
+              </td>
+              <td title="Inheritable relations are automatically inherited to the child notes">
+                <input type="checkbox" value="1" data-bind="checked: isInheritable" />
               </td>
               <td title="Delete" style="padding: 13px; cursor: pointer;">
                 <span class="glyphicon glyphicon-trash" data-bind="click: $parent.deleteRelation"></span>

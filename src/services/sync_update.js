@@ -40,7 +40,7 @@ async function updateEntity(sync, entity, sourceId) {
         await updateApiToken(entity, sourceId);
     }
     else {
-        throw new Error(`Unrecognized entity type ${sync}`);
+        throw new Error(`Unrecognized entity type ${entityName}`);
     }
 }
 

@@ -140,6 +140,7 @@ CREATE TABLE relations
     sourceNoteId       TEXT not null,
     name         TEXT not null,
     targetNoteId        TEXT not null,
+    isInheritable int DEFAULT 0 NULL,
     position     INT  default 0 not null,
     dateCreated  TEXT not null,
     dateModified TEXT not null,

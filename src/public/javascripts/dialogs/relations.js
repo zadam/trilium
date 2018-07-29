@@ -123,6 +123,7 @@ function RelationsModel() {
                 relationId: '',
                 name: '',
                 targetNoteId: '',
+                isInheritable: 0,
                 isDeleted: 0,
                 position: 0
             }));
@@ -176,7 +177,7 @@ async function showDialog() {
 
     $dialog.dialog({
         modal: true,
-        width: 800,
+        width: 900,
         height: 500
     });
 }

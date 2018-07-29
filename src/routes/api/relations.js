@@ -33,6 +33,7 @@ async function updateNoteRelations(req) {
 
         relationEntity.name = relation.name;
         relationEntity.targetNoteId = relation.targetNoteId;
+        relationEntity.isInheritable = relation.isInheritable;
         relationEntity.position = relation.position;
         relationEntity.isDeleted = relation.isDeleted;
 
