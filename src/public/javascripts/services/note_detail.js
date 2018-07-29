@@ -146,8 +146,6 @@ async function handleProtectedSession() {
 }
 
 async function loadNoteDetail(noteId) {
-    $scriptArea.html('');
-
     currentNote = await loadNote(noteId);
 
     if (isNewNoteCreated) {
@@ -191,6 +189,8 @@ async function loadNoteDetail(noteId) {
     await showChildrenOverview(hideChildrenOverview);
 
     await loadRelationList();
+
+    $scriptArea.html('');
 
     await bundleService.executeRelationBundles(getCurrentNote(), 'runOnNoteView');
 }
