@@ -15,6 +15,7 @@ import noteDetailText from './note_detail_text.js';
 import noteDetailFile from './note_detail_file.js';
 import noteDetailSearch from './note_detail_search.js';
 import noteDetailRender from './note_detail_render.js';
+import bundleService from "./bundle.js";
 
 const $noteTitle = $("#note-title");
 
@@ -30,6 +31,7 @@ const $labelListInner = $("#label-list-inner");
 const $relationList = $("#relation-list");
 const $relationListInner = $("#relation-list-inner");
 const $childrenOverview = $("#children-overview");
+const $scriptArea = $("#note-detail-script-area");
 
 let currentNote = null;
 
@@ -144,6 +146,8 @@ async function handleProtectedSession() {
 }
 
 async function loadNoteDetail(noteId) {
+    $scriptArea.html('');
+
     currentNote = await loadNote(noteId);
 
     if (isNewNoteCreated) {
@@ -183,10 +187,15 @@ async function loadNoteDetail(noteId) {
 
     const labels = await loadLabelList();
 
-    loadRelationList(); // no need to wait
-
     const hideChildrenOverview = labels.some(label => label.name === 'hideChildrenOverview');
     await showChildrenOverview(hideChildrenOverview);
+
+    const relations = await loadRelationList();
+    const relationsToRun = relations.filter(relation => relation.name === 'runOnNoteView');
+
+    for (const relationToRun of relationsToRun) {
+        await bundleService.getAndExecuteBundle(relationToRun.targetNoteId, getCurrentNote());
+    }
 }
 
 async function showChildrenOverview(hideChildrenOverview) {

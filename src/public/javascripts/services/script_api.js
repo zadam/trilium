@@ -2,8 +2,9 @@ import treeService from './tree.js';
 import server from './server.js';
 import utils from './utils.js';
 import infoService from './info.js';
+import linkService from './link.js';
 
-function ScriptApi(startNote, currentNote) {
+function ScriptApi(startNote, currentNote, targetNote = null) {
     const $pluginButtons = $("#plugin-buttons");
 
     async function activateNote(notePath) {
@@ -42,7 +43,8 @@ function ScriptApi(startNote, currentNote) {
             script: script,
             params: prepareParams(params),
             startNoteId: startNote.noteId,
-            currentNoteId: currentNote.noteId
+            currentNoteId: currentNote.noteId,
+            targetNoteId: targetNote ? targetNote.noteId : null
         });
 
         return ret.executionResult;
@@ -51,6 +53,7 @@ function ScriptApi(startNote, currentNote) {
     return {
         startNote: startNote,
         currentNote: currentNote,
+        targetNote: targetNote,
         addButtonToToolbar,
         activateNote,
         getInstanceName: () => window.glob.instanceName,
@@ -59,7 +62,8 @@ function ScriptApi(startNote, currentNote) {
         parseDate: utils.parseDate,
         showMessage: infoService.showMessage,
         showError: infoService.showError,
-        reloadTree: treeService.reload
+        reloadTree: treeService.reload,
+        createNoteLink: linkService.createNoteLink
     }
 }
 

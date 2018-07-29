@@ -14,7 +14,7 @@ async function executeNote(note) {
     await executeBundle(bundle);
 }
 
-async function executeBundle(bundle, startNote) {
+async function executeBundle(bundle, startNote, targetNote = null) {
     if (!startNote) {
         // this is the default case, the only exception is when we want to preserve frontend startNote
         startNote = bundle.note;
@@ -23,7 +23,7 @@ async function executeBundle(bundle, startNote) {
     // last \r\n is necessary if script contains line comment on its last line
     const script = "async function() {\r\n" + bundle.script + "\r\n}";
 
-    const ctx = new ScriptContext(startNote, bundle.allNotes);
+    const ctx = new ScriptContext(startNote, bundle.allNotes, targetNote);
 
     if (await bundle.note.hasLabel('manualTransactionHandling')) {
         return await execute(ctx, script, '');
@@ -37,9 +37,10 @@ async function executeBundle(bundle, startNote) {
  * This method preserves frontend startNode - that's why we start execution from currentNote and override
  * bundle's startNote.
  */
-async function executeScript(script, params, startNoteId, currentNoteId) {
+async function executeScript(script, params, startNoteId, currentNoteId, targetNoteId) {
     const startNote = await repository.getNote(startNoteId);
     const currentNote = await repository.getNote(currentNoteId);
+    const targetNote = await repository.getNote(targetNoteId);
 
     currentNote.content = `return await (${script}\r\n)(${getParams(params)})`;
     currentNote.type = 'code';
@@ -47,7 +48,7 @@ async function executeScript(script, params, startNoteId, currentNoteId) {
 
     const bundle = await getScriptBundle(currentNote);
 
-    return await executeBundle(bundle, startNote);
+    return await executeBundle(bundle, startNote, targetNote);
 }
 
 async function execute(ctx, script, paramsStr) {
