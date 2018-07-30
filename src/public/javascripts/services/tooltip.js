@@ -15,7 +15,19 @@ function setupTooltip() {
             if (notePath) {
                 const noteId = treeUtils.getNoteIdFromNotePath(notePath);
 
-                noteDetailService.loadNote(noteId).then(note => callback(note.content));
+                noteDetailService.loadNote(noteId).then(note => {
+                    if (!note.content.trim()) {
+                        return;
+                    }
+
+                    if (note.type === 'text') {
+                        callback(note.content);
+                    }
+                    else if (note.type === 'code') {console.log($("<pre>").text(note.content).html());
+                        callback($("<pre>").text(note.content).prop('outerHTML'));
+                    }
+                    // other types of notes don't have tooltip preview
+                });
             }
         },
         close: function (event, ui) {
