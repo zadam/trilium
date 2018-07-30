@@ -1,5 +1,12 @@
 #!/usr/bin/env bash
 
+if [[ $# -eq 0 ]] ; then
+    echo "Missing argument of new version"
+    exit 1
+fi
+
+VERSION=$1
+
 PKG_DIR=dist/trilium-linux-x64-server
 
 mkdir $PKG_DIR
@@ -13,4 +20,4 @@ cp node_modules/scrypt/build/Release/scrypt.node ${PKG_DIR}/
 
 cd dist
 
-7z a trilium-linux-x64-server.7z trilium-linux-x64-server
+7z a trilium-linux-x64-${VERSION}-server.7z trilium-linux-x64-server

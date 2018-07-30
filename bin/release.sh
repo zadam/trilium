@@ -78,7 +78,7 @@ github-release upload \
 
 echo "Packaging server version"
 
-npm run build-pkg
+bin/build-pkg.sh $VERSION
 
 github-release upload \
     --tag $TAG \
