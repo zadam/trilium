@@ -10,49 +10,32 @@ const syncMutexService = require('./sync_mutex');
 const cls = require('./cls');
 
 async function regularBackup() {
-    const now = new Date();
-    const lastBackupDate = dateUtils.parseDateTime(await optionService.getOption('lastBackupDate'));
+    await periodBackup('lastDailyBackupDate', 'daily', 24 * 3600);
 
-    console.log(lastBackupDate);
+    await periodBackup('lastWeeklyBackupDate', 'weekly', 7 * 24 * 3600);
 
-    if (now.getTime() - lastBackupDate.getTime() > 43200 * 1000) {
-        await backupNow();
-    }
-
-    await cleanupOldBackups();
+    await periodBackup('lastMonthlyBackupDate', 'monthly', 30 * 24 * 3600);
 }
 
-async function backupNow() {
-    // we don't want to backup DB in the middle of sync with potentially inconsistent DB state
+async function periodBackup(optionName, fileName, periodInSeconds) {
+    const now = new Date();
+    const lastDailyBackupDate = dateUtils.parseDateTime(await optionService.getOption(optionName));
 
+    if (now.getTime() - lastDailyBackupDate.getTime() > periodInSeconds * 1000) {
+        await backupNow(fileName);
+
+        await optionService.setOption(optionName, dateUtils.nowDate());
+    }
+}
+
+async function backupNow(name) {
+    // we don't want to backup DB in the middle of sync with potentially inconsistent DB state
     await syncMutexService.doExclusively(async () => {
-        const backupFile = dataDir.BACKUP_DIR + "/" + "backup-" + dateUtils.getDateTimeForFile() + ".db";
+        const backupFile = `${dataDir.BACKUP_DIR}/backup-${name}.db`;
 
         fs.copySync(dataDir.DOCUMENT_PATH, backupFile);
 
         log.info("Created backup at " + backupFile);
-
-        await optionService.setOption('lastBackupDate', dateUtils.nowDate());
-    });
-}
-
-async function cleanupOldBackups() {
-    const now = new Date();
-
-    fs.readdirSync(dataDir.BACKUP_DIR).forEach(file => {
-        const match = file.match(/backup-([0-9 -:]+)\.db/);
-
-        if (match) {
-            const date_str = match[1];
-
-            const date = Date.parse(date_str);
-
-            if (now.getTime() - date.getTime() > 30 * 24 * 3600 * 1000) {
-                log.info("Removing old backup - " + file);
-
-                fs.unlink(dataDir.BACKUP_DIR + "/" + file);
-            }
-        }
     });
 }
 

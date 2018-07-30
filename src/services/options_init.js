@@ -31,7 +31,9 @@ async function initSyncedOptions(username, password) {
 
 async function initNotSyncedOptions(initialized, startNotePath = 'root', syncServerHost = '', syncProxy = '') {
     await optionService.createOption('startNotePath', startNotePath, false);
-    await optionService.createOption('lastBackupDate', dateUtils.nowDate(), false);
+    await optionService.createOption('lastDailyBackupDate', dateUtils.nowDate(), false);
+    await optionService.createOption('lastWeeklyBackupDate', dateUtils.nowDate(), false);
+    await optionService.createOption('lastMonthlyBackupDate', dateUtils.nowDate(), false);
     await optionService.createOption('dbVersion', appInfo.dbVersion, false);
 
     await optionService.createOption('lastSyncedPull', 0, false);

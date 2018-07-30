@@ -10,7 +10,7 @@ async function migrate() {
     const migrations = [];
 
     // backup before attempting migration
-    await backupService.backupNow();
+    await backupService.backupNow("before-migration");
 
     const currentDbVersion = parseInt(await optionService.getOption('dbVersion'));
 
