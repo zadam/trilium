@@ -304,31 +304,20 @@ async function setLastSyncedPush(lastSyncedPush) {
 }
 
 async function updatePushStats() {
-    const lastSyncedPush = await optionService.getOption('lastSyncedPush');
+    if (await syncOptions.isSyncSetup()) {
+        const lastSyncedPush = await optionService.getOption('lastSyncedPush');
 
-    stats.outstandingPushes = await sql.getValue("SELECT COUNT(*) FROM sync WHERE id > ?", [lastSyncedPush]);
+        stats.outstandingPushes = await sql.getValue("SELECT COUNT(*) FROM sync WHERE id > ?", [lastSyncedPush]);
+    }
 }
 
 sqlInit.dbReady.then(async () => {
-    if (await syncOptions.isSyncSetup()) {
-        log.info("Setting up sync to " + await syncOptions.getSyncServerHost() + " with timeout " + await syncOptions.getSyncTimeout());
+    setInterval(cls.wrap(sync), 60000);
 
-        const syncProxy = await syncOptions.getSyncProxy();
+    // kickoff initial sync immediately
+    setTimeout(cls.wrap(sync), 1000);
 
-        if (syncProxy) {
-            log.info("Sync proxy: " + syncProxy);
-        }
-
-        setInterval(cls.wrap(sync), 60000);
-
-        // kickoff initial sync immediately
-        setTimeout(cls.wrap(sync), 1000);
-
-        setInterval(cls.wrap(updatePushStats), 1000);
-    }
-    else {
-        log.info("Sync server not configured, sync timer not running.")
-    }
+    setInterval(cls.wrap(updatePushStats), 1000);
 });
 
 module.exports = {
