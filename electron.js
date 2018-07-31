@@ -2,9 +2,9 @@
 
 const electron = require('electron');
 const path = require('path');
-const config = require('./src/services/config');
 const log = require('./src/services/log');
 const url = require("url");
+const port = require('./src/services/port');
 
 const app = electron.app;
 const globalShortcut = electron.globalShortcut;
@@ -23,7 +23,7 @@ function onClosed() {
     mainWindow = null;
 }
 
-function createMainWindow() {
+async function createMainWindow() {
     const win = new electron.BrowserWindow({
         width: 1200,
         height: 900,
@@ -31,10 +31,8 @@ function createMainWindow() {
         icon: path.join(__dirname, 'src/public/images/app-icons/png/256x256.png')
     });
 
-    const port = config['Network']['port'] || '3000';
-
     win.setMenu(null);
-    win.loadURL('http://localhost:' + port);
+    win.loadURL('http://localhost:' + await port);
     win.on('closed', onClosed);
 
     win.webContents.on('new-window', (e, url) => {

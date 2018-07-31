@@ -18,69 +18,52 @@ const log = require('./services/log');
 const appInfo = require('./services/app_info');
 const messagingService = require('./services/messaging');
 const utils = require('./services/utils');
-const sqlInit = require('./services/sql_init.js');
+const sqlInit = require('./services/sql_init');
+const port = require('./services/port');
 
-const port = normalizePort(config['Network']['port'] || '3000');
-app.set('port', port);
-
-/**
- * Create HTTP server.
- */
 let httpServer;
 
-if (config['Network']['https']) {
-    const options = {
-        key: fs.readFileSync(config['Network']['keyPath']),
-        cert: fs.readFileSync(config['Network']['certPath'])
-    };
+async function startTrilium() {
+    const usedPort = await port;
 
-    httpServer = https.createServer(options, app);
+    app.set('port', usedPort);
 
-    log.info("App HTTPS server starting up at port " + port);
-}
-else {
-    httpServer = http.createServer(app);
+    if (config['Network']['https']) {
+        const options = {
+            key: fs.readFileSync(config['Network']['keyPath']),
+            cert: fs.readFileSync(config['Network']['certPath'])
+        };
 
-    log.info("App HTTP server starting up at port " + port);
-}
+        httpServer = https.createServer(options, app);
 
-log.info(JSON.stringify(appInfo, null, 2));
+        log.info("App HTTPS server starting up at port " + usedPort);
+    }
+    else {
+        httpServer = http.createServer(app);
 
-/**
- * Listen on provided port, on all network interfaces.
- */
-
-httpServer.keepAliveTimeout = 120000 * 5;
-httpServer.listen(port);
-httpServer.on('error', onError);
-httpServer.on('listening', onListening);
-
-sqlInit.dbReady.then(() => messagingService.init(httpServer, sessionParser));
-
-if (utils.isElectron()) {
-    const electronRouting = require('./routes/electron');
-    electronRouting(app);
-}
-
-/**
- * Normalize a port into a number, string, or false.
- */
-
-function normalizePort(val) {
-    const port = parseInt(val, 10);
-
-    if (isNaN(port)) {
-        // named pipe
-        return val;
+        log.info("App HTTP server starting up at port " + usedPort);
     }
 
-    if (port >= 0) {
-        // port number
-        return port;
-    }
+    log.info(JSON.stringify(appInfo, null, 2));
 
-    return false;
+    /**
+     * Listen on provided port, on all network interfaces.
+     */
+
+    httpServer.keepAliveTimeout = 120000 * 5;
+    httpServer.listen(usedPort);
+    httpServer.on('error', onError);
+    httpServer.on('listening', () => debug('Listening on port' + httpServer.address().port));
+
+    sqlInit.dbReady.then(() => messagingService.init(httpServer, sessionParser));
+
+    if (utils.isElectron()) {
+        const electronRouting = require('./routes/electron');
+        electronRouting(app);
+    }
 }
+
+startTrilium();
 
 /**
  * Event listener for HTTP server "error" event.
@@ -91,36 +74,19 @@ function onError(error) {
         throw error;
     }
 
-    const bind = typeof port === 'string'
-        ? 'Pipe ' + port
-        : 'Port ' + port;
-
     // handle specific listen errors with friendly messages
     switch (error.code) {
         case 'EACCES':
-            console.error(bind + ' requires elevated privileges');
+            console.error('Port requires elevated privileges');
             process.exit(1);
         break;
 
         case 'EADDRINUSE':
-            console.error(bind + ' is already in use');
+            console.error('Port is already in use');
             process.exit(1);
         break;
 
         default:
             throw error;
     }
-}
-
-/**
- * Event listener for HTTP server "listening" event.
- */
-
-function onListening() {
-    const addr = httpServer.address();
-    const bind = typeof addr === 'string'
-        ? 'pipe ' + addr
-        : 'port ' + addr.port;
-
-    debug('Listening on ' + bind);
 }
