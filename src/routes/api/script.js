@@ -7,7 +7,7 @@ const repository = require('../../services/repository');
 
 async function exec(req) {
     const result = await scriptService.executeScript(req.body.script, req.body.params, req.body.startNoteId,
-        req.body.currentNoteId, req.body.targetNoteId);
+        req.body.currentNoteId, req.body.workNoteId);
 
     return { executionResult: result };
 }

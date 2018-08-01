@@ -14,7 +14,7 @@ async function executeNote(note, targetNote) {
     await executeBundle(bundle, note, targetNote);
 }
 
-async function executeBundle(bundle, startNote, targetNote = null) {
+async function executeBundle(bundle, startNote, workNote = null) {
     if (!startNote) {
         // this is the default case, the only exception is when we want to preserve frontend startNote
         startNote = bundle.note;
@@ -23,7 +23,7 @@ async function executeBundle(bundle, startNote, targetNote = null) {
     // last \r\n is necessary if script contains line comment on its last line
     const script = "async function() {\r\n" + bundle.script + "\r\n}";
 
-    const ctx = new ScriptContext(startNote, bundle.allNotes, targetNote);
+    const ctx = new ScriptContext(startNote, bundle.allNotes, workNote);
 
     if (await bundle.note.hasLabel('manualTransactionHandling')) {
         return await execute(ctx, script, '');

@@ -1,13 +1,13 @@
 import ScriptApi from './script_api.js';
 import utils from './utils.js';
 
-function ScriptContext(startNote, allNotes, targetNote = null) {
+function ScriptContext(startNote, allNotes, workNote = null) {
     const modules = {};
 
     return {
         modules: modules,
         notes: utils.toObject(allNotes, note => [note.noteId, note]),
-        apis: utils.toObject(allNotes, note => [note.noteId, ScriptApi(startNote, note, targetNote)]),
+        apis: utils.toObject(allNotes, note => [note.noteId, ScriptApi(startNote, note, workNote)]),
         require: moduleNoteIds => {
             return moduleName => {
                 const candidates = allNotes.filter(note => moduleNoteIds.includes(note.noteId));
