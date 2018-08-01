@@ -30,6 +30,10 @@ class Note extends Entity {
         catch(e) {}
     }
 
+    isRoot() {
+        return this.noteId === 'root';
+    }
+
     isJson() {
         return this.mime === "application/json";
     }

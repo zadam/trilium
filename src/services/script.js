@@ -4,14 +4,14 @@ const repository = require('./repository');
 const cls = require('./cls');
 const sourceIdService = require('./source_id');
 
-async function executeNote(note) {
+async function executeNote(note, targetNote) {
     if (!note.isJavaScript()) {
         return;
     }
 
     const bundle = await getScriptBundle(note);
 
-    await executeBundle(bundle);
+    await executeBundle(bundle, note, targetNote);
 }
 
 async function executeBundle(bundle, startNote, targetNote = null) {

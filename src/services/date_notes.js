@@ -42,6 +42,7 @@ async function getRootCalendarNote() {
         })).note;
 
         await labelService.createLabel(rootNote.noteId, CALENDAR_ROOT_LABEL);
+        await labelService.createLabel(rootNote.noteId, 'sorted');
     }
 
     return rootNote;
@@ -60,6 +61,7 @@ async function getYearNote(dateTimeStr, rootNote) {
         }
 
         await labelService.createLabel(yearNote.noteId, YEAR_LABEL, yearStr);
+        await labelService.createLabel(yearNote.noteId, 'sorted');
     }
 
     return yearNote;
@@ -85,6 +87,7 @@ async function getMonthNote(dateTimeStr, rootNote) {
         }
 
         await labelService.createLabel(monthNote.noteId, MONTH_LABEL, monthStr);
+        await labelService.createLabel(monthNote.noteId, 'sorted');
     }
 
     return monthNote;

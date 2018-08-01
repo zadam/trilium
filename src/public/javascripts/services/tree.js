@@ -505,7 +505,13 @@ async function showTree() {
     initFancyTree(tree);
 }
 
-messagingService.subscribeToMessages(syncData => {
+messagingService.subscribeToMessages(message => {
+   if (message.type === 'refresh-tree') {
+       reload();
+   }
+});
+
+messagingService.subscribeToSyncMessages(syncData => {
     if (syncData.some(sync => sync.entityName === 'branches')
         || syncData.some(sync => sync.entityName === 'notes')) {
 

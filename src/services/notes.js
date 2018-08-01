@@ -3,6 +3,7 @@ const optionService = require('./options');
 const dateUtils = require('./date_utils');
 const syncTableService = require('./sync_table');
 const labelService = require('./labels');
+const eventService = require('./events');
 const repository = require('./repository');
 const Note = require('../entities/note');
 const NoteImage = require('../entities/note_image');
@@ -34,6 +35,10 @@ async function getNewNotePosition(parentNoteId, noteData) {
     return newNotePos;
 }
 
+async function triggerNoteTitleChanged(note) {
+    await eventService.emit(eventService.NOTE_TITLE_CHANGED, note);
+}
+
 async function createNewNote(parentNoteId, noteData) {
     const newNotePos = await getNewNotePosition(parentNoteId, noteData);
 
@@ -59,6 +64,8 @@ async function createNewNote(parentNoteId, noteData) {
         prefix: noteData.prefix,
         isExpanded: 0
     }).save();
+
+    await triggerNoteTitleChanged(note);
 
     return {
         note,
@@ -91,6 +98,8 @@ async function createNote(parentNoteId, title, content = "", extraOptions = {}) 
             await labelService.createLabel(note.noteId, labelName, extraOptions.labels[labelName]);
         }
     }
+
+    await triggerNoteTitleChanged(note);
 
     return {note, branch};
 }
@@ -200,10 +209,16 @@ async function updateNote(noteId, noteUpdates) {
 
     await saveNoteRevision(note);
 
+    const noteTitleChanged = note.title !== noteUpdates.title;
+
     note.title = noteUpdates.title;
     note.setContent(noteUpdates.content);
     note.isProtected = noteUpdates.isProtected;
     await note.save();
+
+    if (noteTitleChanged) {
+        await triggerNoteTitleChanged(note);
+    }
 
     await saveNoteImages(note);
 

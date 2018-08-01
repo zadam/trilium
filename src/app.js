@@ -11,6 +11,7 @@ const os = require('os');
 const sessionSecret = require('./services/session_secret');
 const cls = require('./services/cls');
 require('./entities/entity_constructor');
+require('./services/handlers');
 
 const app = express();
 

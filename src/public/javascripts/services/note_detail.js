@@ -276,7 +276,7 @@ function focus() {
     getComponent(note.type).focus();
 }
 
-messagingService.subscribeToMessages(syncData => {
+messagingService.subscribeToSyncMessages(syncData => {
     if (syncData.some(sync => sync.entityName === 'notes' && sync.entityId === getCurrentNoteId())) {
         infoService.showMessage('Reloading note because of background changes');
 

@@ -4,7 +4,8 @@ const repository = require('./repository');
 const Relation = require('../entities/relation');
 
 const BUILTIN_RELATIONS = [
-    'runOnNoteView'
+    'runOnNoteView',
+    'runOnNoteTitleChange'
 ];
 
 async function getNotesWithRelation(name, targetNoteId) {
@@ -36,8 +37,8 @@ async function createRelation(sourceNoteId, name, targetNoteId) {
     }).save();
 }
 
-async function getEffectiveRelations(noteId) {
-    return await repository.getEntities(`
+async function getEffectiveRelations(noteId, relationName) {
+    const relations = await repository.getEntities(`
         WITH RECURSIVE tree(noteId) AS (
         SELECT ?
             UNION
@@ -48,6 +49,13 @@ async function getEffectiveRelations(noteId) {
         )
         SELECT relations.* FROM relations JOIN tree ON relations.sourceNoteId = tree.noteId 
         WHERE relations.isDeleted = 0 AND (relations.isInheritable = 1 OR relations.sourceNoteId = ?)`, [noteId, noteId]);
+
+    if (relationName) {
+        return relations.filter(relation => relation.name === relationName);
+    }
+    else {
+        return relations;
+    }
 }
 
 module.exports = {

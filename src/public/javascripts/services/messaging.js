@@ -3,6 +3,7 @@ import infoService from "./info.js";
 
 const $outstandingSyncsCount = $("#outstanding-syncs-count");
 
+const syncMessageHandlers = [];
 const messageHandlers = [];
 
 let ws;
@@ -25,8 +26,16 @@ function subscribeToMessages(messageHandler) {
     messageHandlers.push(messageHandler);
 }
 
+function subscribeToSyncMessages(messageHandler) {
+    syncMessageHandlers.push(messageHandler);
+}
+
 function handleMessage(event) {
     const message = JSON.parse(event.data);
+
+    for (const messageHandler of messageHandlers) {
+        messageHandler(message);
+    }
 
     if (message.type === 'sync') {
         lastPingTs = new Date().getTime();
@@ -39,8 +48,8 @@ function handleMessage(event) {
 
         const syncData = message.data.filter(sync => sync.sourceId !== glob.sourceId);
 
-        for (const messageHandler of messageHandlers) {
-            messageHandler(syncData);
+        for (const syncMessageHandler of syncMessageHandlers) {
+            syncMessageHandler(syncData);
         }
 
         $outstandingSyncsCount.html(message.outstandingSyncs);
@@ -104,5 +113,6 @@ setTimeout(() => {
 
 export default {
     logError,
-    subscribeToMessages
+    subscribeToMessages,
+    subscribeToSyncMessages
 };

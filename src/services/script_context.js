@@ -5,6 +5,7 @@ const utils = require('./utils');
 const dateUtils = require('./date_utils');
 const labelService = require('./labels');
 const dateNoteService = require('./date_notes');
+const treeService = require('./tree');
 const config = require('./config');
 const repository = require('./repository');
 const axios = require('axios');
@@ -60,6 +61,8 @@ function ScriptApi(startNote, currentNote, targetNote) {
 
     this.getRootCalendarNote = dateNoteService.getRootCalendarNote;
     this.getDateNote = dateNoteService.getDateNote;
+
+    this.sortNotesAlphabetically = treeService.sortNotesAlphabetically;
 
     this.transactional = sql.transactional;
 }
