@@ -30,6 +30,9 @@ async function updateEntity(sync, entity, sourceId) {
     else if (entityName === 'note_images') {
         await updateNoteImage(entity, sourceId);
     }
+    else if (entityName === 'attributes') {
+        await updateAttribute(entity, sourceId);
+    }
     else if (entityName === 'labels') {
         await updateLabel(entity, sourceId);
     }
@@ -171,6 +174,20 @@ async function updateNoteImage(entity, sourceId) {
         });
 
         log.info("Update/sync note image " + entity.noteImageId);
+    }
+}
+
+async function updateAttribute(entity, sourceId) {
+    const origAttribute = await sql.getRow("SELECT * FROM attributes WHERE attributeId = ?", [entity.attributeId]);
+
+    if (!origAttribute || origAttribute.dateModified <= entity.dateModified) {
+        await sql.transactional(async () => {
+            await sql.replace("attributes", entity);
+
+            await syncTableService.addAttributeSync(entity.attributeId, sourceId);
+        });
+
+        log.info("Update/sync attribute " + entity.attributeId);
     }
 }
 

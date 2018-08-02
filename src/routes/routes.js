@@ -25,6 +25,7 @@ const sqlRoute = require('./api/sql');
 const anonymizationRoute = require('./api/anonymization');
 const cleanupRoute = require('./api/cleanup');
 const imageRoute = require('./api/image');
+const attributesRoute = require('./api/attributes');
 const labelsRoute = require('./api/labels');
 const relationsRoute = require('./api/relations');
 const scriptRoute = require('./api/script');
@@ -132,6 +133,11 @@ function register(app) {
         filesRoute.uploadFile, apiResultHandler);
 
     route(GET, '/api/notes/:noteId/download', [auth.checkApiAuthOrElectron], filesRoute.downloadFile);
+
+    apiRoute(GET, '/api/notes/:noteId/attributes', attributesRoute.getNoteAttributes);
+    apiRoute(PUT, '/api/notes/:noteId/attributes', attributesRoute.updateNoteAttributes);
+    apiRoute(GET, '/api/attributes/names', attributesRoute.getAllAttributeNames);
+    apiRoute(GET, '/api/attributes/values/:attributeName', attributesRoute.getValuesForAttribute);
 
     apiRoute(GET, '/api/notes/:noteId/labels', labelsRoute.getNoteLabels);
     apiRoute(PUT, '/api/notes/:noteId/labels', labelsRoute.updateNoteLabels);

@@ -3,6 +3,7 @@ const NoteRevision = require('../entities/note_revision');
 const Image = require('../entities/image');
 const NoteImage = require('../entities/note_image');
 const Branch = require('../entities/branch');
+const Attribute = require('../entities/attribute');
 const Label = require('../entities/label');
 const Relation = require('../entities/relation');
 const RecentNote = require('../entities/recent_note');
@@ -13,7 +14,10 @@ const repository = require('../services/repository');
 function createEntityFromRow(row) {
     let entity;
 
-    if (row.labelId) {
+    if (row.attributeId) {
+        entity = new Attribute(row);
+    }
+    else if (row.labelId) {
         entity = new Label(row);
     }
     else if (row.relationId) {

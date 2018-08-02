@@ -630,109 +630,114 @@ imageId</ColNames>
       <NotNull>1</NotNull>
       <DefaultExpression>&quot;&quot;</DefaultExpression>
     </column>
-    <index id="137" parent="16" name="sqlite_autoindex_relations_1">
+    <column id="137" parent="16" name="isInheritable">
+      <Position>10</Position>
+      <DataType>int|0s</DataType>
+      <DefaultExpression>0</DefaultExpression>
+    </column>
+    <index id="138" parent="16" name="sqlite_autoindex_relations_1">
       <NameSurrogate>1</NameSurrogate>
       <ColNames>relationId</ColNames>
       <ColumnCollations></ColumnCollations>
       <Unique>1</Unique>
     </index>
-    <index id="138" parent="16" name="IDX_relation_sourceNoteId">
+    <index id="139" parent="16" name="IDX_relation_sourceNoteId">
       <ColNames>sourceNoteId</ColNames>
       <ColumnCollations></ColumnCollations>
     </index>
-    <index id="139" parent="16" name="IDX_relation_targetNoteId">
+    <index id="140" parent="16" name="IDX_relation_targetNoteId">
       <ColNames>targetNoteId</ColNames>
       <ColumnCollations></ColumnCollations>
     </index>
-    <key id="140" parent="16">
+    <key id="141" parent="16">
       <ColNames>relationId</ColNames>
       <Primary>1</Primary>
       <UnderlyingIndexName>sqlite_autoindex_relations_1</UnderlyingIndexName>
     </key>
-    <column id="141" parent="17" name="sourceId">
+    <column id="142" parent="17" name="sourceId">
       <Position>1</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
     </column>
-    <column id="142" parent="17" name="dateCreated">
+    <column id="143" parent="17" name="dateCreated">
       <Position>2</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
     </column>
-    <index id="143" parent="17" name="sqlite_autoindex_source_ids_1">
+    <index id="144" parent="17" name="sqlite_autoindex_source_ids_1">
       <NameSurrogate>1</NameSurrogate>
       <ColNames>sourceId</ColNames>
       <ColumnCollations></ColumnCollations>
       <Unique>1</Unique>
     </index>
-    <key id="144" parent="17">
+    <key id="145" parent="17">
       <ColNames>sourceId</ColNames>
       <Primary>1</Primary>
       <UnderlyingIndexName>sqlite_autoindex_source_ids_1</UnderlyingIndexName>
     </key>
-    <column id="145" parent="18" name="type">
+    <column id="146" parent="18" name="type">
       <Position>1</Position>
       <DataType>text|0s</DataType>
     </column>
-    <column id="146" parent="18" name="name">
+    <column id="147" parent="18" name="name">
       <Position>2</Position>
       <DataType>text|0s</DataType>
     </column>
-    <column id="147" parent="18" name="tbl_name">
+    <column id="148" parent="18" name="tbl_name">
       <Position>3</Position>
       <DataType>text|0s</DataType>
     </column>
-    <column id="148" parent="18" name="rootpage">
+    <column id="149" parent="18" name="rootpage">
       <Position>4</Position>
       <DataType>integer|0s</DataType>
     </column>
-    <column id="149" parent="18" name="sql">
+    <column id="150" parent="18" name="sql">
       <Position>5</Position>
       <DataType>text|0s</DataType>
     </column>
-    <column id="150" parent="19" name="name">
+    <column id="151" parent="19" name="name">
       <Position>1</Position>
     </column>
-    <column id="151" parent="19" name="seq">
+    <column id="152" parent="19" name="seq">
       <Position>2</Position>
     </column>
-    <column id="152" parent="20" name="id">
+    <column id="153" parent="20" name="id">
       <Position>1</Position>
       <DataType>INTEGER|0s</DataType>
       <NotNull>1</NotNull>
       <SequenceIdentity>1</SequenceIdentity>
     </column>
-    <column id="153" parent="20" name="entityName">
+    <column id="154" parent="20" name="entityName">
       <Position>2</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
     </column>
-    <column id="154" parent="20" name="entityId">
+    <column id="155" parent="20" name="entityId">
       <Position>3</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
     </column>
-    <column id="155" parent="20" name="sourceId">
+    <column id="156" parent="20" name="sourceId">
       <Position>4</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
     </column>
-    <column id="156" parent="20" name="syncDate">
+    <column id="157" parent="20" name="syncDate">
       <Position>5</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
     </column>
-    <index id="157" parent="20" name="IDX_sync_entityName_entityId">
+    <index id="158" parent="20" name="IDX_sync_entityName_entityId">
       <ColNames>entityName
 entityId</ColNames>
       <ColumnCollations></ColumnCollations>
       <Unique>1</Unique>
     </index>
-    <index id="158" parent="20" name="IDX_sync_syncDate">
+    <index id="159" parent="20" name="IDX_sync_syncDate">
       <ColNames>syncDate</ColNames>
       <ColumnCollations></ColumnCollations>
     </index>
-    <key id="159" parent="20">
+    <key id="160" parent="20">
       <ColNames>id</ColNames>
       <Primary>1</Primary>
     </key>
