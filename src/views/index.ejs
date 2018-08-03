@@ -169,6 +169,7 @@
               </button>
               <ul class="dropdown-menu dropdown-menu-right">
                 <li><a id="show-note-revisions-button">Note revisions</a></li>
+                <li><a class="show-attributes-button"><kbd>Alt+A</kbd> Attributes</a></li>
                 <li><a class="show-labels-button"><kbd>Alt+L</kbd> Labels</a></li>
                 <li><a class="show-relations-button"><kbd>Alt+R</kbd> Relations</a></li>
                 <li><a id="show-source-button">HTML source</a></li>
@@ -552,6 +553,53 @@
 
     <div id="note-source-dialog" title="Note source" style="display: none; padding: 20px;">
       <textarea id="note-source" readonly="readonly"></textarea>
+    </div>
+
+    <div id="attributes-dialog" title="Note attributes" style="display: none; padding: 20px;">
+      <form data-bind="submit: save">
+        <div style="text-align: center">
+          <button class="btn btn-large" style="width: 200px;" id="save-attributes-button" type="submit">Save changes <kbd>enter</kbd></button>
+        </div>
+
+        <div style="height: 97%; overflow: auto">
+          <table id="attributes-table" class="table">
+            <thead>
+            <tr>
+              <th></th>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Value</th>
+              <th></th>
+            </tr>
+            </thead>
+            <tbody data-bind="foreach: attributes">
+            <tr data-bind="if: isDeleted == 0">
+              <td class="handle">
+                <span class="glyphicon glyphicon-resize-vertical"></span>
+                <input type="hidden" name="position" data-bind="value: position"/>
+              </td>
+              <!-- ID column has specific width because if it's empty its size can be deformed when dragging -->
+              <td data-bind="text: attributeId" style="min-width: 10em; font-size: smaller;"></td>
+              <td>
+                  <select data-bind="options: $root.availableTypes, optionsText: 'text', optionsValue: 'value', value: type"></select>
+              </td>
+              <td>
+                <!-- Change to valueUpdate: blur is necessary because jQuery UI autocomplete hijacks change event -->
+                <input type="text" class="attribute-name form-control" data-bind="value: name, valueUpdate: 'blur',  event: { blur: $parent.attributeChanged }"/>
+                <div style="color: yellowgreen" data-bind="if: $parent.isNotUnique($index())"><span class="glyphicon glyphicon-info-sign"></span> Duplicate attribute.</div>
+                <div style="color: red" data-bind="if: $parent.isEmptyName($index())">Attribute name can't be empty.</div>
+              </td>
+              <td>
+                <input type="text" class="attribute-value form-control" data-bind="value: value, valueUpdate: 'blur', event: { blur: $parent.attributeChanged }" style="width: 300px"/>
+              </td>
+              <td title="Delete" style="padding: 13px; cursor: pointer;">
+                <span class="glyphicon glyphicon-trash" data-bind="click: $parent.deleteAttribute"></span>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </form>
     </div>
 
     <div id="labels-dialog" title="Note labels" style="display: none; padding: 20px;">

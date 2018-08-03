@@ -136,7 +136,7 @@ function register(app) {
 
     apiRoute(GET, '/api/notes/:noteId/attributes', attributesRoute.getNoteAttributes);
     apiRoute(PUT, '/api/notes/:noteId/attributes', attributesRoute.updateNoteAttributes);
-    apiRoute(GET, '/api/attributes/names', attributesRoute.getAllAttributeNames);
+    apiRoute(GET, '/api/attributes/names', attributesRoute.getAttributeNames);
     apiRoute(GET, '/api/attributes/values/:attributeName', attributesRoute.getValuesForAttribute);
 
     apiRoute(GET, '/api/notes/:noteId/labels', labelsRoute.getNoteLabels);

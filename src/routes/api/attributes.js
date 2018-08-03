@@ -42,18 +42,11 @@ async function updateNoteAttributes(req) {
     return await repository.getEntities("SELECT * FROM attributes WHERE isDeleted = 0 AND noteId = ? ORDER BY position, dateCreated", [noteId]);
 }
 
-async function getAllAttributeNames() {
-    const names = await sql.getColumn("SELECT DISTINCT name FROM attributes WHERE isDeleted = 0");
+async function getAttributeNames(req) {
+    const type = req.query.type;
+    const query = req.query.query;
 
-    for (const attribute of attributeService.BUILTIN_ATTRIBUTES) {
-        if (!names.includes(attribute)) {
-            names.push(attribute);
-        }
-    }
-
-    names.sort();
-
-    return names;
+    return attributeService.getAttributeNames(type, query);
 }
 
 async function getValuesForAttribute(req) {
@@ -65,6 +58,6 @@ async function getValuesForAttribute(req) {
 module.exports = {
     getNoteAttributes,
     updateNoteAttributes,
-    getAllAttributeNames,
+    getAttributeNames,
     getValuesForAttribute
 };

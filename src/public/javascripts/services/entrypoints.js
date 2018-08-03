@@ -11,6 +11,7 @@ import noteSourceDialog from "../dialogs/note_source.js";
 import recentChangesDialog from "../dialogs/recent_changes.js";
 import sqlConsoleDialog from "../dialogs/sql_console.js";
 import searchNotesService from "./search_notes.js";
+import attributesDialog from "../dialogs/attributes.js";
 import labelsDialog from "../dialogs/labels.js";
 import relationsDialog from "../dialogs/relations.js";
 import protectedSessionService from "./protected_session.js";
@@ -37,6 +38,9 @@ function registerEntrypoints() {
 
     $("#toggle-search-button").click(searchNotesService.toggleSearch);
     utils.bindShortcut('ctrl+s', searchNotesService.toggleSearch);
+
+    $(".show-attributes-button").click(attributesDialog.showDialog);
+    utils.bindShortcut('alt+a', attributesDialog.showDialog);
 
     $(".show-labels-button").click(labelsDialog.showDialog);
     utils.bindShortcut('alt+l', labelsDialog.showDialog);
