@@ -421,3 +421,7 @@ html.theme-dark img, html.theme-dark video {
 html.theme-dark body {
     background: #191819;
 }
+
+.ck.ck-block-toolbar-button {
+    transform: translateX(10px);
+}
