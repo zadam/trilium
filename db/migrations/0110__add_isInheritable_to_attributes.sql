@@ -1,0 +1,1 @@
+ALTER TABLE attributes ADD isInheritable int DEFAULT 0 NULL;

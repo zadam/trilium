@@ -567,13 +567,15 @@
             <tr>
               <th></th>
               <th>ID</th>
+              <th>Type</th>
               <th>Name</th>
               <th>Value</th>
+              <th>Inheritable</th>
               <th></th>
             </tr>
             </thead>
             <tbody data-bind="foreach: attributes">
-            <tr data-bind="if: isDeleted == 0">
+            <tr data-bind="if: isDeleted == 0" class="attribute-row">
               <td class="handle">
                 <span class="glyphicon glyphicon-resize-vertical"></span>
                 <input type="hidden" name="position" data-bind="value: position"/>
@@ -581,7 +583,7 @@
               <!-- ID column has specific width because if it's empty its size can be deformed when dragging -->
               <td data-bind="text: attributeId" style="min-width: 10em; font-size: smaller;"></td>
               <td>
-                  <select data-bind="options: $root.availableTypes, optionsText: 'text', optionsValue: 'value', value: type"></select>
+                  <select data-bind="options: $parent.availableTypes, optionsText: 'text', optionsValue: 'value', value: type, event: { change: $parent.typeChanged }"></select>
               </td>
               <td>
                 <!-- Change to valueUpdate: blur is necessary because jQuery UI autocomplete hijacks change event -->
@@ -590,7 +592,19 @@
                 <div style="color: red" data-bind="if: $parent.isEmptyName($index())">Attribute name can't be empty.</div>
               </td>
               <td>
-                <input type="text" class="attribute-value form-control" data-bind="value: value, valueUpdate: 'blur', event: { blur: $parent.attributeChanged }" style="width: 300px"/>
+                <input type="text" class="label-value form-control" data-bind="visible: type == 'label', value: labelValue, valueUpdate: 'blur', event: { blur: $parent.attributeChanged }" style="width: 300px"/>
+
+                <div class="relation-value input-group" data-bind="visible: type == 'relation'">
+                  <input class="form-control relation-target-note-id"
+                         placeholder="search for note by its name"
+                         data-bind="value: relationValue, valueUpdate: 'blur', event: { blur: $parent.attributeChanged }"
+                         style="width: 300px;">
+
+                  <span class="input-group-addon relations-show-recent-notes" title="Show recent notes" style="background: url('/images/icons/clock-16.png') no-repeat center; cursor: pointer;"></span>
+                </div>
+              </td>
+              <td title="Inheritable relations are automatically inherited to the child notes">
+                <input type="checkbox" value="1" data-bind="checked: isInheritable" />
               </td>
               <td title="Delete" style="padding: 13px; cursor: pointer;">
                 <span class="glyphicon glyphicon-trash" data-bind="click: $parent.deleteAttribute"></span>

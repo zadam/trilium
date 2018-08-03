@@ -8,7 +8,7 @@ const sql = require('../services/sql');
 class Attribute extends Entity {
     static get tableName() { return "attributes"; }
     static get primaryKeyName() { return "attributeId"; }
-    static get hashedProperties() { return ["attributeId", "noteId", "type", "name", "value", "dateModified", "dateCreated"]; }
+    static get hashedProperties() { return ["attributeId", "noteId", "type", "name", "value", "isInheritable", "dateModified", "dateCreated"]; }
 
     async getNote() {
         return await repository.getEntity("SELECT * FROM notes WHERE noteId = ?", [this.noteId]);
@@ -24,6 +24,10 @@ class Attribute extends Entity {
 
         if (this.position === undefined) {
             this.position = 1 + await sql.getValue(`SELECT COALESCE(MAX(position), 0) FROM attributes WHERE noteId = ?`, [this.noteId]);
+        }
+
+        if (!this.isInheritable) {
+            this.isInheritable = false;
         }
 
         if (!this.isDeleted) {

@@ -19,6 +19,10 @@ function AttributesModel() {
         { text: "Relation", value: "relation" }
     ];
 
+    this.typeChanged = function(data, event) {
+        self.getTargetAttribute(event.target).valueHasMutated();
+    };
+
     this.updateAttributePositions = function() {
         let position = 0;
 
@@ -35,6 +39,13 @@ function AttributesModel() {
         const noteId = noteDetailService.getCurrentNoteId();
 
         const attributes = await server.get('notes/' + noteId + '/attributes');
+
+        for (const attr of attributes) {
+            attr.labelValue = attr.type === 'label' ? attr.value : '';
+            attr.relationValue = attr.type === 'relation' ? attr.value : '';
+
+            delete attr.value;
+        }
 
         self.attributes(attributes.map(ko.observable));
 
@@ -107,12 +118,14 @@ function AttributesModel() {
         const attributes = self.attributes().filter(attr => attr().isDeleted === 0);
         const last = attributes.length === 0 ? null : attributes[attributes.length - 1]();
 
-        if (!last || last.name.trim() !== "" || last.value !== "") {
+        if (!last || last.name.trim() !== "") {
             self.attributes.push(ko.observable({
                 attributeId: '',
                 type: 'label',
                 name: '',
-                value: '',
+                labelValue: '',
+                relationValue: '',
+                isInheritable: false,
                 isDeleted: 0,
                 position: 0
             }));
@@ -148,7 +161,7 @@ function AttributesModel() {
     this.isEmptyName = function(index) {
         const cur = self.attributes()[index]();
 
-        return cur.name.trim() === "" && (cur.attributeId !== "" || cur.value !== "");
+        return cur.name.trim() === "" && (cur.attributeId !== "" || cur.labelValue !== "" || cur.relationValue);
     };
 
     this.getTargetAttribute = function(target) {
@@ -204,7 +217,7 @@ $dialog.on('focus', '.attribute-name', function (e) {
     $(this).autocomplete("search", $(this).val());
 });
 
-$dialog.on('focus', '.attribute-value', async function (e) {
+$dialog.on('focus', '.label-value', async function (e) {
     if (!$(this).hasClass("ui-autocomplete-input")) {
         const attributeName = $(this).parent().parent().find('.attribute-name').val();
 
@@ -232,6 +245,49 @@ $dialog.on('focus', '.attribute-value', async function (e) {
     }
 
     $(this).autocomplete("search", $(this).val());
+});
+
+async function initNoteAutocomplete($el) {
+    if (!$el.hasClass("ui-autocomplete-input")) {
+        await $el.autocomplete({
+            source: async function (request, response) {
+                const result = await server.get('autocomplete?query=' + encodeURIComponent(request.term));
+
+                if (result.length > 0) {
+                    response(result.map(row => {
+                        return {
+                            label: row.label,
+                            value: row.label + ' (' + row.value + ')'
+                        }
+                    }));
+                }
+                else {
+                    response([{
+                        label: "No results",
+                        value: "No results"
+                    }]);
+                }
+            },
+            minLength: 0,
+            select: function (event, ui) {
+                if (ui.item.value === 'No results') {
+                    return false;
+                }
+            }
+        });
+    }
+}
+
+$dialog.on('focus', '.relation-target-note-id', async function () {
+    await initNoteAutocomplete($(this));
+});
+
+$dialog.on('click', '.relations-show-recent-notes', async function () {
+    const $autocomplete = $(this).parent().find('.relation-target-note-id');
+
+    await initNoteAutocomplete($autocomplete);
+
+    $autocomplete.autocomplete("search", "");
 });
 
 export default {

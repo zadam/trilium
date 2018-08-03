@@ -40,7 +40,7 @@ async function load() {
 }
 
 function findNotes(query) {
-    if (!noteTitles || query.length <= 2) {
+    if (!noteTitles || !query.length) {
         return [];
     }
 
