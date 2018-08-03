@@ -19,7 +19,24 @@ function AttributesModel() {
         { text: "Relation", value: "relation" }
     ];
 
+    this.availableValueTypes = [
+        { text: "Text", value: "text" },
+        { text: "Integer", value: "integer" },
+        { text: "Decimal", value: "decimal" },
+        { text: "Boolean", value: "boolean" },
+        { text: "Date", value: "date" }
+    ];
+
+    this.multiplicityTypes = [
+        { text: "Single value", value: "singlevalue" },
+        { text: "Multi value", value: "multivalue" }
+    ];
+
     this.typeChanged = function(data, event) {
+        self.getTargetAttribute(event.target).valueHasMutated();
+    };
+
+    this.valueTypeChanged = function(data, event) {
         self.getTargetAttribute(event.target).valueHasMutated();
     };
 
@@ -43,6 +60,11 @@ function AttributesModel() {
         for (const attr of attributes) {
             attr.labelValue = attr.type === 'label' ? attr.value : '';
             attr.relationValue = attr.type === 'relation' ? attr.value : '';
+            attr.definition = {
+                valueType: "text",
+                multiplicityType: "singlevalue",
+                showInUi: "true"
+            };
 
             delete attr.value;
         }
@@ -127,7 +149,12 @@ function AttributesModel() {
                 relationValue: '',
                 isInheritable: false,
                 isDeleted: 0,
-                position: 0
+                position: 0,
+                definition: {
+                    valueType: "text",
+                    multiplicityType: "singlevalue",
+                    showInUi: "true"
+                }
             }));
         }
     }
