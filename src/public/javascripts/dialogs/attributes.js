@@ -57,12 +57,12 @@ function AttributesModel() {
         for (const attr of attributes) {
             attr.labelValue = attr.type === 'label' ? attr.value : '';
             attr.relationValue = attr.type === 'relation' ? attr.value : '';
-            attr.labelDefinition = attr.type === 'label-definition' ? JSON.parse(attr.value) : {
+            attr.labelDefinition = (attr.type === 'label-definition' && attr.value) ? JSON.parse(attr.value) : {
                 labelType: "text",
                 multiplicityType: "singlevalue",
                 isPromoted: true
             };
-            attr.relationDefinition = attr.type === 'relation-definition' ? JSON.parse(attr.value) : {
+            attr.relationDefinition = (attr.type === 'relation-definition' && attr.value) ? JSON.parse(attr.value) : {
                 multiplicityType: "singlevalue",
                 isPromoted: true
             };
@@ -180,7 +180,11 @@ function AttributesModel() {
                 isDeleted: 0,
                 position: 0,
                 labelDefinition: {
-                    valueType: "text",
+                    labelType: "text",
+                    multiplicityType: "singlevalue",
+                    isPromoted: true
+                },
+                relationDefinition: {
                     multiplicityType: "singlevalue",
                     isPromoted: true
                 }
@@ -247,7 +251,7 @@ $dialog.on('focus', '.attribute-name', function (e) {
         $(this).autocomplete({
             source: async (request, response) => {
                 const attribute = attributesModel.getTargetAttribute(this);
-                const type = attribute().type === 'relation' ? 'relation' : 'label';
+                const type = (attribute().type === 'relation' || attribute().type === 'relation-definition') ? 'relation' : 'label';
                 const names = await server.get('attributes/names/?type=' + type + '&query=' + encodeURIComponent(request.term));
                 const result = names.map(name => {
                     return {

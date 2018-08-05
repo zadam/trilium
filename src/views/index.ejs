@@ -606,6 +606,12 @@
 
                     <input type="checkbox" value="true" data-bind="checked: labelDefinition.isPromoted" /> Promoted
                   </div>
+
+                  <div data-bind="visible: type == 'relation-definition'">
+                    <select data-bind="options: $parent.multiplicityTypes, optionsText: 'text', optionsValue: 'value', value: relationDefinition.multiplicityType"></select>
+
+                    <input type="checkbox" value="true" data-bind="checked: relationDefinition.isPromoted" /> Promoted
+                  </div>
                 </td>
                 <td title="Inheritable relations are automatically inherited to the child notes">
                   <input type="checkbox" value="1" data-bind="checked: isInheritable" />

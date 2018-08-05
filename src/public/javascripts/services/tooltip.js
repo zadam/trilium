@@ -23,7 +23,7 @@ function setupTooltip() {
                     if (note.type === 'text') {
                         callback(note.content);
                     }
-                    else if (note.type === 'code') {console.log($("<pre>").text(note.content).html());
+                    else if (note.type === 'code') {
                         callback($("<pre>").text(note.content).prop('outerHTML'));
                     }
                     // other types of notes don't have tooltip preview
