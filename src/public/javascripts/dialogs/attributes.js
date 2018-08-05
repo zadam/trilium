@@ -15,11 +15,12 @@ function AttributesModel() {
 
     this.availableTypes = [
         { text: "Label", value: "label" },
-        { text: "Label definition", value: "definition" },
-        { text: "Relation", value: "relation" }
+        { text: "Label definition", value: "label-definition" },
+        { text: "Relation", value: "relation" },
+        { text: "Relation definition", value: "relation-definition" }
     ];
 
-    this.availableValueTypes = [
+    this.availableLabelTypes = [
         { text: "Text", value: "text" },
         { text: "Integer", value: "integer" },
         { text: "Decimal", value: "decimal" },
@@ -36,7 +37,7 @@ function AttributesModel() {
         self.getTargetAttribute(event.target).valueHasMutated();
     };
 
-    this.valueTypeChanged = function(data, event) {
+    this.labelTypeChanged = function(data, event) {
         self.getTargetAttribute(event.target).valueHasMutated();
     };
 
@@ -52,26 +53,32 @@ function AttributesModel() {
         });
     };
 
-    this.loadAttributes = async function() {
-        const noteId = noteDetailService.getCurrentNoteId();
-
-        const attributes = await server.get('notes/' + noteId + '/attributes');
-
+    function prepareAttributes(attributes) {
         for (const attr of attributes) {
             attr.labelValue = attr.type === 'label' ? attr.value : '';
             attr.relationValue = attr.type === 'relation' ? attr.value : '';
-            attr.definition = {
-                valueType: "text",
+            attr.labelDefinition = attr.type === 'label-definition' ? JSON.parse(attr.value) : {
+                labelType: "text",
                 multiplicityType: "singlevalue",
-                showInUi: "true"
+                isPromoted: true
             };
-
-            delete attr.value;
+            attr.relationDefinition = attr.type === 'relation-definition' ? JSON.parse(attr.value) : {
+                multiplicityType: "singlevalue",
+                isPromoted: true
+            };
         }
 
         self.attributes(attributes.map(ko.observable));
 
         addLastEmptyRow();
+    }
+
+    this.loadAttributes = async function() {
+        const noteId = noteDetailService.getCurrentNoteId();
+
+        const attributes = await server.get('notes/' + noteId + '/attributes');
+
+        prepareAttributes(attributes);
 
         // attribute might not be rendered immediatelly so could not focus
         setTimeout(() => $(".attribute-name:last").focus(), 100);
@@ -125,15 +132,37 @@ function AttributesModel() {
             .map(attribute => attribute())
             .filter(attribute => attribute.attributeId !== "" || attribute.name !== "");
 
+        for (const attr of attributesToSave) {
+            if (attr.type === 'label') {
+                attr.value = attr.labelValue;
+            }
+            else if (attr.type === 'relation') {
+                attr.value = attr.relationValue;
+            }
+            else if (attr.type === 'label-definition') {
+                attr.value = JSON.stringify(attr.labelDefinition);
+            }
+            else if (attr.type === 'relation-definition') {
+                attr.value = JSON.stringify(attr.relationDefinition);
+            }
+
+            delete attr.labelValue;
+            delete attr.relationValue;
+            delete attr.labelDefinition;
+            delete attr.relationDefinition;
+        }
+
         const attributes = await server.put('notes/' + noteId + '/attributes', attributesToSave);
 
-        self.attributes(attributes.map(ko.observable));
-
-        addLastEmptyRow();
+        prepareAttributes(attributes);
 
         infoService.showMessage("Attributes have been saved.");
 
-        noteDetailService.loadAttributeList();
+        // FIXME FIXME FIXME FIXME FIXME
+        // FIXME FIXME FIXME FIXME FIXME
+        // FIXME FIXME FIXME FIXME FIXME
+        // FIXME FIXME FIXME FIXME FIXME
+        //noteDetailService.loadAttributeList();
     };
 
     function addLastEmptyRow() {
@@ -150,10 +179,10 @@ function AttributesModel() {
                 isInheritable: false,
                 isDeleted: 0,
                 position: 0,
-                definition: {
+                labelDefinition: {
                     valueType: "text",
                     multiplicityType: "singlevalue",
-                    showInUi: "true"
+                    isPromoted: true
                 }
             }));
         }
@@ -177,7 +206,7 @@ function AttributesModel() {
         for (let attributes = self.attributes(), i = 0; i < attributes.length; i++) {
             const attribute = attributes[i]();
 
-            if (index !== i && cur.name === attribute.name) {
+            if (index !== i && cur.name === attribute.name && cur.type === attribute.type) {
                 return true;
             }
         }

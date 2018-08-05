@@ -31,9 +31,11 @@ async function updateNoteAttributes(req) {
             attributeEntity.noteId = noteId;
         }
 
+        attributeEntity.type = attribute.type;
         attributeEntity.name = attribute.name;
         attributeEntity.value = attribute.value;
         attributeEntity.position = attribute.position;
+        attributeEntity.isInheritable = attribute.isInheritable;
         attributeEntity.isDeleted = attribute.isDeleted;
 
         await attributeEntity.save();

@@ -591,21 +591,20 @@
                 <td>
                   <input type="text" class="label-value form-control" data-bind="visible: type == 'label', value: labelValue, valueUpdate: 'blur', event: { blur: $parent.attributeChanged }" style="width: 300px"/>
 
-                  <div class="relation-value input-group" data-bind="visible: type == 'relation'">
+                  <div class="relation-value input-group" data-bind="visible: type == 'relation'" style="width: 300px;">
                     <input class="form-control relation-target-note-id"
                            placeholder="search for note by its name"
-                           data-bind="value: relationValue, valueUpdate: 'blur', event: { blur: $parent.attributeChanged }"
-                           style="width: 300px;">
+                           data-bind="value: relationValue, valueUpdate: 'blur', event: { blur: $parent.attributeChanged }">
 
                     <span class="input-group-addon relations-show-recent-notes" title="Show recent notes" style="background: url('/images/icons/clock-16.png') no-repeat center; cursor: pointer;"></span>
                   </div>
 
-                  <div data-bind="visible: type == 'definition'">
-                    <select data-bind="options: $parent.availableValueTypes, optionsText: 'text', optionsValue: 'value', value: definition.valueType"></select>
+                  <div data-bind="visible: type == 'label-definition'">
+                    <select data-bind="options: $parent.availableLabelTypes, optionsText: 'text', optionsValue: 'value', value: labelDefinition.labelType"></select>
 
-                    <select data-bind="options: $parent.multiplicityTypes, optionsText: 'text', optionsValue: 'value', value: definition.multiplicityType"></select>
+                    <select data-bind="options: $parent.multiplicityTypes, optionsText: 'text', optionsValue: 'value', value: labelDefinition.multiplicityType"></select>
 
-                    <input type="checkbox" value="true" data-bind="checked: definition.showInUi" /> Show In UI
+                    <input type="checkbox" value="true" data-bind="checked: labelDefinition.isPromoted" /> Promoted
                   </div>
                 </td>
                 <td title="Inheritable relations are automatically inherited to the child notes">

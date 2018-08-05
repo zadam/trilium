@@ -37,6 +37,10 @@ async function getImage(imageId) {
     return await getEntity("SELECT * FROM images WHERE imageId = ?", [imageId]);
 }
 
+async function getAttribute(attributeId) {
+    return await getEntity("SELECT * FROM attributes WHERE attributeId = ?", [attributeId]);
+}
+
 async function getLabel(labelId) {
     return await getEntity("SELECT * FROM labels WHERE labelId = ?", [labelId]);
 }
@@ -75,6 +79,7 @@ module.exports = {
     getNote,
     getBranch,
     getImage,
+    getAttribute,
     getLabel,
     getRelation,
     getOption,
