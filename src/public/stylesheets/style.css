@@ -425,3 +425,8 @@ html.theme-dark body {
 .ck.ck-block-toolbar-button {
     transform: translateX(10px);
 }
+
+#note-detail-promoted-attributes {
+    width: 50%;
+    margin: auto;
+}

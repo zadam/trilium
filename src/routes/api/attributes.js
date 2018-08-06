@@ -54,6 +54,31 @@ async function getEffectiveNoteAttributes(req) {
     return filteredAttributes;
 }
 
+async function updateNoteAttribute(req) {
+    const noteId = req.params.noteId;
+    const body = req.body;
+
+    let attribute;
+
+    if (body.attributeId) {
+        attribute = await repository.getAttribute(body.attributeId);
+    }
+    else {
+        attribute = new Attribute();
+        attribute.noteId = noteId;
+        attribute.name = body.name;
+        attribute.type = body.type;
+    }
+
+    if (attribute.noteId !== noteId) {
+        throw new Error(`Attribute ${body.attributeId} does not belong to note ${noteId}`);
+    }
+
+    attribute.value = body.value;
+
+    await attribute.save();
+}
+
 async function updateNoteAttributes(req) {
     const noteId = req.params.noteId;
     const attributes = req.body;
@@ -104,6 +129,7 @@ async function getValuesForAttribute(req) {
 
 module.exports = {
     updateNoteAttributes,
+    updateNoteAttribute,
     getAttributeNames,
     getValuesForAttribute,
     getEffectiveNoteAttributes

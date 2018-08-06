@@ -34,7 +34,7 @@ const $relationList = $("#relation-list");
 const $relationListInner = $("#relation-list-inner");
 const $childrenOverview = $("#children-overview");
 const $scriptArea = $("#note-detail-script-area");
-const $promotedAttributes = $("#note-detail-promoted-attributes");
+const $promotedAttributesContainer = $("#note-detail-promoted-attributes");
 
 let currentNote = null;
 
@@ -226,7 +226,7 @@ async function showChildrenOverview(hideChildrenOverview) {
 }
 
 async function loadAttributes() {
-    $promotedAttributes.empty();
+    $promotedAttributesContainer.empty();
 
     const noteId = getCurrentNoteId();
 
@@ -237,20 +237,38 @@ async function loadAttributes() {
     let idx = 1;
 
     if (promoted.length > 0) {
-        for (const promotedAttr of promoted) {
-            if (promotedAttr.type === 'label-definition') {
-                const inputId = "promoted-input-" + idx;
-                const $div = $("<div>").addClass("class", "form-group");
-                const $label = $("<label>").prop("for", inputId).append(promotedAttr.name);
-                const $input = $("<input>")
-                    .prop("id", inputId)
-                    .prop("attribute-id", promotedAttr.attributeId)
-                    .addClass("form-control")
-                    .addClass("promoted-attribute-input");
+        for (const definitionAttr of promoted) {
+            const valueAttrs = attributes.filter(el => el.name === definitionAttr.name && el.type === definitionAttr.type.substr(0, definitionAttr.type.length - 11));
 
-                $div.append($label).append($input);
+            if (valueAttrs.length === 0) {
+                valueAttrs.push({
+                    attributeId: "",
+                    type: definitionAttr.type.substr(0, definitionAttr.type.length - 11),
+                    name: definitionAttr.name,
+                    value: ""
+                });
+            }
 
-                $promotedAttributes.append($div);
+            for (const valueAttr of valueAttrs) {
+                if (valueAttr.type === 'label') {
+                    const inputId = "promoted-input-" + idx;
+                    const $tr = $("<tr>");
+                    const $labelCell = $("<th>").append(valueAttr.name);
+                    const $input = $("<input>")
+                        .prop("id", inputId)
+                        .prop("attribute-id", valueAttr.attributeId)
+                        .prop("attribute-type", valueAttr.type)
+                        .prop("attribute-name", valueAttr.name)
+                        .prop("value", valueAttr.value)
+                        .addClass("form-control")
+                        .addClass("promoted-attribute-input");
+
+                    const $inputCell = $("<td>").append($input);
+
+                    $tr.append($labelCell).append($inputCell);
+
+                    $promotedAttributesContainer.append($tr);
+                }
             }
         }
     }
@@ -345,6 +363,19 @@ messagingService.subscribeToSyncMessages(syncData => {
 
         reload();
     }
+});
+
+$promotedAttributesContainer.on('change', '.promoted-attribute-input', async event => {
+    const $attr = $(event.target);
+
+    await server.put("notes/" + getCurrentNoteId() + "/attribute", {
+        attributeId: $attr.prop("attribute-id"),
+        type: $attr.prop("attribute-type"),
+        name: $attr.prop("attribute-name"),
+        value: $attr.val()
+    });
+
+    infoService.showMessage("Attribute has been saved.");
 });
 
 $(document).ready(() => {
