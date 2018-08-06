@@ -13,10 +13,13 @@ class Attribute extends Entity {
     constructor(row) {
         super(row);
 
-        try {
-            this.value = JSON.parse(this.value);
+        if (this.isDefinition()) {
+            try {
+                this.value = JSON.parse(this.value);
+            }
+            catch (e) {
+            }
         }
-        catch(e) {}
     }
 
     async getNote() {
@@ -24,7 +27,7 @@ class Attribute extends Entity {
     }
 
     isDefinition() {
-        return this.type === 'label' || this.type === 'relation';
+        return this.type === 'label-definition' || this.type === 'relation-definition';
     }
 
     async beforeSaving() {

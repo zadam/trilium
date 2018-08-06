@@ -59,7 +59,6 @@ async function updateNoteAttribute(req) {
     const body = req.body;
 
     let attribute;
-
     if (body.attributeId) {
         attribute = await repository.getAttribute(body.attributeId);
     }

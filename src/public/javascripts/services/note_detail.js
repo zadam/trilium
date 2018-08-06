@@ -238,44 +238,70 @@ async function loadAttributes() {
 
     if (promoted.length > 0) {
         for (const definitionAttr of promoted) {
-            const valueAttrs = attributes.filter(el => el.name === definitionAttr.name && el.type === definitionAttr.type.substr(0, definitionAttr.type.length - 11));
+            const definitionType = definitionAttr.type;
+            const definition = definitionAttr.value;
+            const valueType = definitionType.substr(0, definitionType.length - 11);
+
+            const valueAttrs = attributes.filter(el => el.name === definitionAttr.name && el.type === valueType);
 
             if (valueAttrs.length === 0) {
                 valueAttrs.push({
                     attributeId: "",
-                    type: definitionAttr.type.substr(0, definitionAttr.type.length - 11),
+                    type: valueType,
                     name: definitionAttr.name,
                     value: ""
                 });
             }
 
             for (const valueAttr of valueAttrs) {
+                const inputId = "promoted-input-" + idx;
+                const $tr = $("<tr>");
+                const $labelCell = $("<th>").append(valueAttr.name);
+                const $input = $("<input>")
+                    .prop("id", inputId)
+                    .prop("attribute-id", valueAttr.attributeId)
+                    .prop("attribute-type", valueAttr.type)
+                    .prop("attribute-name", valueAttr.name)
+                    .prop("value", valueAttr.value)
+                    .addClass("form-control")
+                    .addClass("promoted-attribute-input");
+
+                const $inputCell = $("<td>").append($input);
+
                 if (valueAttr.type === 'label') {
-                    const inputId = "promoted-input-" + idx;
-                    const $tr = $("<tr>");
-                    const $labelCell = $("<th>").append(valueAttr.name);
-                    const $input = $("<input>")
-                        .prop("id", inputId)
-                        .prop("attribute-id", valueAttr.attributeId)
-                        .prop("attribute-type", valueAttr.type)
-                        .prop("attribute-name", valueAttr.name)
-                        .prop("value", valueAttr.value)
-                        .addClass("form-control")
-                        .addClass("promoted-attribute-input");
+                    if (definition.labelType === 'text') {
+                        $input.prop("type", "text");
+                    }
+                    else if (definition.labelType === 'number') {
+                        $input.prop("type", "number");
+                    }
+                    else if (definition.labelType === 'boolean') {
+                        $input.prop("type", "checkbox");
 
-                    const $inputCell = $("<td>").append($input);
-
-                    $tr.append($labelCell).append($inputCell);
-
-                    $promotedAttributesContainer.append($tr);
+                        if (valueAttr.value === "true") {
+                            $input.prop("checked", "checked");
+                        }
+                    }
+                    else if (definitionAttr.labelType === 'date') {
+                        $input.prop("type", "text");
+                        $input.addClass("date");
+                    }
+                    else if (definitionAttr.labelType === 'datetime') {
+                        $input.prop("type", "text");
+                        $input.addClass("datetime");
+                    }
                 }
+
+                $tr.append($labelCell).append($inputCell);
+
+                $promotedAttributesContainer.append($tr);
             }
         }
     }
     else {
         $attributeListInner.html('');
 
-        if (attributes.length > 0) {console.log(attributes);
+        if (attributes.length > 0) {
             for (const attribute of attributes) {
                 if (attribute.type === 'label') {
                     $attributeListInner.append(utils.formatLabel(attribute) + " ");
@@ -368,11 +394,20 @@ messagingService.subscribeToSyncMessages(syncData => {
 $promotedAttributesContainer.on('change', '.promoted-attribute-input', async event => {
     const $attr = $(event.target);
 
+    let value;
+
+    if ($attr.prop("type") === "checkbox") {
+        value = $attr.is(':checked') ? "true" : "false";
+    }
+    else {
+        value = $attr.val();
+    }
+
     await server.put("notes/" + getCurrentNoteId() + "/attribute", {
         attributeId: $attr.prop("attribute-id"),
         type: $attr.prop("attribute-type"),
         name: $attr.prop("attribute-name"),
-        value: $attr.val()
+        value: value
     });
 
     infoService.showMessage("Attribute has been saved.");
