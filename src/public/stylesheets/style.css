@@ -434,3 +434,7 @@ html.theme-dark body {
 #note-detail-promoted-attributes td, note-detail-promoted-attributes th {
     padding: 5px;
 }
+
+.pointer {
+    cursor: pointer;
+}

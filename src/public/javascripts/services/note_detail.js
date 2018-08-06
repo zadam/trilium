@@ -297,7 +297,10 @@ async function loadAttributes() {
         }
 
         if (definition.multiplicityType === "multivalue") {
-            const addButton = $("<button>").addClass("btn btn-small").text("Add new").click(async () => {
+            const addButton = $("<span>")
+                .addClass("glyphicon glyphicon-plus pointer")
+                .prop("title", "Add new attribute")
+                .click(async () => {
                 const $new = await createRow(definitionAttr, {
                     attributeId: "",
                     type: valueAttr.type,
@@ -308,9 +311,10 @@ async function loadAttributes() {
                 $tr.after($new);
             });
 
-            $multiplicityCell.append(addButton);
-
-            const removeButton = $("<button>").addClass("btn btn-small").text("Delete").click(async () => {
+            const removeButton = $("<span>")
+                .addClass("glyphicon glyphicon-trash pointer")
+                .prop("title", "Remove this attribute")
+                .click(async () => {
                 if (valueAttr.attributeId) {
                     await server.remove("notes/" + noteId + "/attributes/" + valueAttr.attributeId);
                 }
@@ -318,7 +322,7 @@ async function loadAttributes() {
                 $tr.remove();
             });
 
-            $multiplicityCell.append(removeButton);
+            $multiplicityCell.append(addButton).append(" &nbsp; ").append(removeButton);
         }
         return $tr;
     }
