@@ -138,7 +138,7 @@ async function getAttributeNames(req) {
 async function getValuesForAttribute(req) {
     const attributeName = req.params.attributeName;
 
-    return await sql.getColumn("SELECT DISTINCT value FROM attributes WHERE isDeleted = 0 AND name = ? AND value != '' ORDER BY value", [attributeName]);
+    return await sql.getColumn("SELECT DISTINCT value FROM attributes WHERE isDeleted = 0 AND name = ? AND type = 'label' AND value != '' ORDER BY value", [attributeName]);
 }
 
 module.exports = {

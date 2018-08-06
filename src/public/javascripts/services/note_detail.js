@@ -265,6 +265,26 @@ async function loadAttributes() {
         if (valueAttr.type === 'label') {
             if (definition.labelType === 'text') {
                 $input.prop("type", "text");
+
+                const attributeValues = await server.get('attributes/values/' + encodeURIComponent(valueAttr.name));
+
+                if (attributeValues.length === 0) {
+                    return;
+                }
+
+                $input.autocomplete({
+                    // shouldn't be required and autocomplete should just accept array of strings, but that fails
+                    // because we have overriden filter() function in autocomplete.js
+                    source: attributeValues.map(attribute => {
+                        return {
+                            attribute: attribute,
+                            value: attribute
+                        }
+                    }),
+                    minLength: 0
+                });
+
+                $input.focus(() => $input.autocomplete("search", ""));
             }
             else if (definition.labelType === 'number') {
                 $input.prop("type", "number");
