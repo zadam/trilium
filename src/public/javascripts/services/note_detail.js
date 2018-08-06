@@ -254,7 +254,7 @@ async function loadAttributes() {
             }
 
             for (const valueAttr of valueAttrs) {
-                const inputId = "promoted-input-" + idx;
+                const inputId = "promoted-input-" + (idx++);
                 const $tr = $("<tr>");
                 const $labelCell = $("<th>").append(valueAttr.name);
                 const $input = $("<input>")
@@ -267,6 +267,10 @@ async function loadAttributes() {
                     .addClass("promoted-attribute-input");
 
                 const $inputCell = $("<td>").append($input);
+
+                $tr.append($labelCell).append($inputCell);
+
+                $promotedAttributesContainer.append($tr);
 
                 if (valueAttr.type === 'label') {
                     if (definition.labelType === 'text') {
@@ -282,19 +286,26 @@ async function loadAttributes() {
                             $input.prop("checked", "checked");
                         }
                     }
-                    else if (definitionAttr.labelType === 'date') {
+                    else if (definition.labelType === 'date') {
                         $input.prop("type", "text");
-                        $input.addClass("date");
+
+                        $input.datepicker({
+                            changeMonth: true,
+                            changeYear: true,
+                            dateFormat: "yy-mm-dd"
+                        });
+
+                        const $todayButton = $("<button>").text("Today").click(() => {
+                            $input.val(utils.formatDateISO(new Date()));
+                            $input.trigger("change");
+                        });
+
+                        $tr.append($("<tr>").append($todayButton));
                     }
-                    else if (definitionAttr.labelType === 'datetime') {
-                        $input.prop("type", "text");
-                        $input.addClass("datetime");
+                    else {
+                        messagingService.logError("Unknown labelType=" + definitionAttr.labelType);
                     }
                 }
-
-                $tr.append($labelCell).append($inputCell);
-
-                $promotedAttributesContainer.append($tr);
             }
         }
     }
