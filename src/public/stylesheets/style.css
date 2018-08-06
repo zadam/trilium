@@ -308,13 +308,13 @@ div.ui-tooltip {
 
 .cm-matchhighlight {background-color: #eeeeee}
 
-#label-list, #relation-list {
+#label-list, #relation-list, #attribute-list {
     color: #777777;
     padding: 5px;
     display: none;
 }
 
-#label-list button, #relation-list button {
+#label-list button, #relation-list button, #attribute-list button {
     padding: 2px;
     margin-right: 5px;
 }

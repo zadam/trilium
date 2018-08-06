@@ -26,6 +26,8 @@ const $unprotectButton = $("#unprotect-button");
 const $noteDetailWrapper = $("#note-detail-wrapper");
 const $noteDetailComponentWrapper = $("#note-detail-component-wrapper");
 const $noteIdDisplay = $("#note-id-display");
+const $attributeList = $("#attribute-list");
+const $attributeListInner = $("#attribute-list-inner");
 const $labelList = $("#label-list");
 const $labelListInner = $("#label-list-inner");
 const $relationList = $("#relation-list");
@@ -230,8 +232,6 @@ async function loadAttributes() {
 
     const attributes = await server.get('notes/' + noteId + '/attributes');
 
-    console.log(attributes);
-
     const promoted = attributes.filter(attr => (attr.type === 'label-definition' || attr.type === 'relation-definition') && attr.value.isPromoted);
 
     let idx = 1;
@@ -252,6 +252,33 @@ async function loadAttributes() {
 
                 $promotedAttributes.append($div);
             }
+        }
+    }
+    else {
+        $attributeListInner.html('');
+
+        if (attributes.length > 0) {console.log(attributes);
+            for (const attribute of attributes) {
+                if (attribute.type === 'label') {
+                    $attributeListInner.append(utils.formatLabel(attribute) + " ");
+                }
+                else if (attribute.type === 'relation') {
+                    $attributeListInner.append(attribute.name + " = ");
+                    $attributeListInner.append(await linkService.createNoteLink(attribute.value));
+                    $attributeListInner.append(" ");
+                }
+                else if (attribute.type === 'label-definition' || attribute.type === 'relation-definition') {
+                    $attributeListInner.append(attribute.name + " definition ");
+                }
+                else {
+                    messagingService.logError("Unknown attr type: " + attribute.type);
+                }
+            }
+
+            $attributeList.show();
+        }
+        else {
+            $attributeList.hide();
         }
     }
 }
