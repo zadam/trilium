@@ -3,6 +3,7 @@ import server from '../services/server.js';
 import infoService from "../services/info.js";
 import treeUtils from "../services/tree_utils.js";
 import linkService from "../services/link.js";
+import noteAutocompleteService from "../services/note_autocomplete.js";
 
 const $dialog = $("#attributes-dialog");
 const $saveAttributesButton = $("#save-attributes-button");
@@ -304,49 +305,6 @@ $dialog.on('focus', '.label-value', async function (e) {
     }
 
     $(this).autocomplete("search", $(this).val());
-});
-
-async function initNoteAutocomplete($el) {
-    if (!$el.hasClass("ui-autocomplete-input")) {
-        await $el.autocomplete({
-            source: async function (request, response) {
-                const result = await server.get('autocomplete?query=' + encodeURIComponent(request.term));
-
-                if (result.length > 0) {
-                    response(result.map(row => {
-                        return {
-                            label: row.label,
-                            value: row.label + ' (' + row.value + ')'
-                        }
-                    }));
-                }
-                else {
-                    response([{
-                        label: "No results",
-                        value: "No results"
-                    }]);
-                }
-            },
-            minLength: 0,
-            select: function (event, ui) {
-                if (ui.item.value === 'No results') {
-                    return false;
-                }
-            }
-        });
-    }
-}
-
-$dialog.on('focus', '.relation-target-note-id', async function () {
-    await initNoteAutocomplete($(this));
-});
-
-$dialog.on('click', '.relations-show-recent-notes', async function () {
-    const $autocomplete = $(this).parent().find('.relation-target-note-id');
-
-    await initNoteAutocomplete($autocomplete);
-
-    $autocomplete.autocomplete("search", "");
 });
 
 export default {

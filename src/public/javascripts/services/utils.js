@@ -46,7 +46,7 @@ function isElectron() {
 function assertArguments() {
     for (const i in arguments) {
         if (!arguments[i]) {
-            throw new Error(`Argument idx#${i} should not be falsy: ${arguments[i]}`);
+            console.trace(`Argument idx#${i} should not be falsy: ${arguments[i]}`);
         }
     }
 }

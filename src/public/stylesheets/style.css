@@ -438,3 +438,8 @@ html.theme-dark body {
 .pointer {
     cursor: pointer;
 }
+
+.show-recent-notes-button {
+    background: url('/images/icons/clock-16.png') no-repeat center;
+    cursor: pointer;
+}

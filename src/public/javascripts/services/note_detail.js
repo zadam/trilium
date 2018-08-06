@@ -16,6 +16,7 @@ import noteDetailFile from './note_detail_file.js';
 import noteDetailSearch from './note_detail_search.js';
 import noteDetailRender from './note_detail_render.js';
 import bundleService from "./bundle.js";
+import noteAutocompleteService from "./note_autocomplete.js";
 
 const $noteTitle = $("#note-title");
 
@@ -250,7 +251,7 @@ async function loadAttributes() {
             .addClass("form-control")
             .addClass("promoted-attribute-input");
 
-        const $inputCell = $("<td>").append($input);
+        const $inputCell = $("<td>").append($("<div>").addClass("input-group").append($input));
 
         const $actionCell = $("<td>");
         const $multiplicityCell = $("<td>");
@@ -294,6 +295,17 @@ async function loadAttributes() {
             else {
                 messagingService.logError("Unknown labelType=" + definitionAttr.labelType);
             }
+        }
+        else if (valueAttr.type === 'relation') {
+            if (valueAttr.value) {
+                $input.val((await treeUtils.getNoteTitle(valueAttr.value) + " (" + valueAttr.value + ")"));
+            }
+
+            await noteAutocompleteService.initNoteAutocomplete($input);
+        }
+        else {
+            messagingService.logError("Unknown attribute type=" + valueAttr.type);
+            return;
         }
 
         if (definition.multiplicityType === "multivalue") {
@@ -454,6 +466,11 @@ $promotedAttributesContainer.on('change', '.promoted-attribute-input', async eve
 
     if ($attr.prop("type") === "checkbox") {
         value = $attr.is(':checked') ? "true" : "false";
+    }
+    else if ($attr.prop("attribute-type") === "relation") {
+        if ($attr.val()) {
+            value = treeUtils.getNoteIdFromNotePath(linkService.getNotePathFromLabel($attr.val()));
+        }
     }
     else {
         value = $attr.val();
