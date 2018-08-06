@@ -427,6 +427,10 @@ html.theme-dark body {
 }
 
 #note-detail-promoted-attributes {
-    width: 50%;
+    max-width: 70%;
     margin: auto;
+}
+
+#note-detail-promoted-attributes td, note-detail-promoted-attributes th {
+    padding: 5px;
 }

@@ -236,13 +236,99 @@ async function loadAttributes() {
 
     let idx = 1;
 
+    async function createRow(definitionAttr, valueAttr) {
+        const definition = definitionAttr.value;
+        const inputId = "promoted-input-" + (idx++);
+        const $tr = $("<tr>");
+        const $labelCell = $("<th>").append(valueAttr.name);
+        const $input = $("<input>")
+            .prop("id", inputId)
+            .prop("attribute-id", valueAttr.attributeId)
+            .prop("attribute-type", valueAttr.type)
+            .prop("attribute-name", valueAttr.name)
+            .prop("value", valueAttr.value)
+            .addClass("form-control")
+            .addClass("promoted-attribute-input");
+
+        const $inputCell = $("<td>").append($input);
+
+        const $actionCell = $("<td>");
+        const $multiplicityCell = $("<td>");
+
+        $tr
+            .append($labelCell)
+            .append($inputCell)
+            .append($actionCell)
+            .append($multiplicityCell);
+
+        if (valueAttr.type === 'label') {
+            if (definition.labelType === 'text') {
+                $input.prop("type", "text");
+            }
+            else if (definition.labelType === 'number') {
+                $input.prop("type", "number");
+            }
+            else if (definition.labelType === 'boolean') {
+                $input.prop("type", "checkbox");
+
+                if (valueAttr.value === "true") {
+                    $input.prop("checked", "checked");
+                }
+            }
+            else if (definition.labelType === 'date') {
+                $input.prop("type", "text");
+
+                $input.datepicker({
+                    changeMonth: true,
+                    changeYear: true,
+                    dateFormat: "yy-mm-dd"
+                });
+
+                const $todayButton = $("<button>").addClass("btn btn-small").text("Today").click(() => {
+                    $input.val(utils.formatDateISO(new Date()));
+                    $input.trigger("change");
+                });
+
+                $actionCell.append($todayButton);
+            }
+            else {
+                messagingService.logError("Unknown labelType=" + definitionAttr.labelType);
+            }
+        }
+
+        if (definition.multiplicityType === "multivalue") {
+            const addButton = $("<button>").addClass("btn btn-small").text("Add new").click(async () => {
+                const $new = await createRow(definitionAttr, {
+                    attributeId: "",
+                    type: valueAttr.type,
+                    name: definitionAttr.name,
+                    value: ""
+                });
+
+                $tr.after($new);
+            });
+
+            $multiplicityCell.append(addButton);
+
+            const removeButton = $("<button>").addClass("btn btn-small").text("Delete").click(async () => {
+                if (valueAttr.attributeId) {
+                    await server.remove("notes/" + noteId + "/attributes/" + valueAttr.attributeId);
+                }
+
+                $tr.remove();
+            });
+
+            $multiplicityCell.append(removeButton);
+        }
+        return $tr;
+    }
+
     if (promoted.length > 0) {
         for (const definitionAttr of promoted) {
             const definitionType = definitionAttr.type;
-            const definition = definitionAttr.value;
             const valueType = definitionType.substr(0, definitionType.length - 11);
 
-            const valueAttrs = attributes.filter(el => el.name === definitionAttr.name && el.type === valueType);
+            let valueAttrs = attributes.filter(el => el.name === definitionAttr.name && el.type === valueType);
 
             if (valueAttrs.length === 0) {
                 valueAttrs.push({
@@ -253,59 +339,14 @@ async function loadAttributes() {
                 });
             }
 
+            if (definitionAttr.value.multiplicityType === 'singlevalue') {
+                valueAttrs = valueAttrs.slice(0, 1);
+            }
+
             for (const valueAttr of valueAttrs) {
-                const inputId = "promoted-input-" + (idx++);
-                const $tr = $("<tr>");
-                const $labelCell = $("<th>").append(valueAttr.name);
-                const $input = $("<input>")
-                    .prop("id", inputId)
-                    .prop("attribute-id", valueAttr.attributeId)
-                    .prop("attribute-type", valueAttr.type)
-                    .prop("attribute-name", valueAttr.name)
-                    .prop("value", valueAttr.value)
-                    .addClass("form-control")
-                    .addClass("promoted-attribute-input");
-
-                const $inputCell = $("<td>").append($input);
-
-                $tr.append($labelCell).append($inputCell);
+                const $tr = await createRow(definitionAttr, valueAttr);
 
                 $promotedAttributesContainer.append($tr);
-
-                if (valueAttr.type === 'label') {
-                    if (definition.labelType === 'text') {
-                        $input.prop("type", "text");
-                    }
-                    else if (definition.labelType === 'number') {
-                        $input.prop("type", "number");
-                    }
-                    else if (definition.labelType === 'boolean') {
-                        $input.prop("type", "checkbox");
-
-                        if (valueAttr.value === "true") {
-                            $input.prop("checked", "checked");
-                        }
-                    }
-                    else if (definition.labelType === 'date') {
-                        $input.prop("type", "text");
-
-                        $input.datepicker({
-                            changeMonth: true,
-                            changeYear: true,
-                            dateFormat: "yy-mm-dd"
-                        });
-
-                        const $todayButton = $("<button>").text("Today").click(() => {
-                            $input.val(utils.formatDateISO(new Date()));
-                            $input.trigger("change");
-                        });
-
-                        $tr.append($("<tr>").append($todayButton));
-                    }
-                    else {
-                        messagingService.logError("Unknown labelType=" + definitionAttr.labelType);
-                    }
-                }
             }
         }
     }
@@ -414,12 +455,14 @@ $promotedAttributesContainer.on('change', '.promoted-attribute-input', async eve
         value = $attr.val();
     }
 
-    await server.put("notes/" + getCurrentNoteId() + "/attribute", {
+    const result = await server.put("notes/" + getCurrentNoteId() + "/attribute", {
         attributeId: $attr.prop("attribute-id"),
         type: $attr.prop("attribute-type"),
         name: $attr.prop("attribute-name"),
         value: value
     });
+
+    $attr.prop("attribute-id", result.attributeId);
 
     infoService.showMessage("Attribute has been saved.");
 });

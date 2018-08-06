@@ -76,6 +76,21 @@ async function updateNoteAttribute(req) {
     attribute.value = body.value;
 
     await attribute.save();
+
+    return {
+        attributeId: attribute.attributeId
+    };
+}
+
+async function deleteNoteAttribute(req) {
+    const attributeId = req.params.attributeId;
+
+    const attribute = await repository.getAttribute(attributeId);
+
+    if (attribute) {
+        attribute.isDeleted = 1;
+        await attribute.save();
+    }
 }
 
 async function updateNoteAttributes(req) {
@@ -129,6 +144,7 @@ async function getValuesForAttribute(req) {
 module.exports = {
     updateNoteAttributes,
     updateNoteAttribute,
+    deleteNoteAttribute,
     getAttributeNames,
     getValuesForAttribute,
     getEffectiveNoteAttributes
