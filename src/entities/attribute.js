@@ -10,13 +10,24 @@ class Attribute extends Entity {
     static get primaryKeyName() { return "attributeId"; }
     static get hashedProperties() { return ["attributeId", "noteId", "type", "name", "value", "isInheritable", "dateModified", "dateCreated"]; }
 
+    constructor(row) {
+        super(row);
+
+        try {
+            this.value = JSON.parse(this.value);
+        }
+        catch(e) {}
+    }
+
     async getNote() {
         return await repository.getEntity("SELECT * FROM notes WHERE noteId = ?", [this.noteId]);
     }
 
-    async beforeSaving() {
-        super.beforeSaving();
+    isDefinition() {
+        return this.type === 'label' || this.type === 'relation';
+    }
 
+    async beforeSaving() {
         if (!this.value) {
             // null value isn't allowed
             this.value = "";
@@ -39,6 +50,8 @@ class Attribute extends Entity {
         }
 
         this.dateModified = dateUtils.nowDate();
+
+        super.beforeSaving();
     }
 }
 

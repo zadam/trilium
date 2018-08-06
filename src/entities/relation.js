@@ -19,8 +19,6 @@ class Relation extends Entity {
     }
 
     async beforeSaving() {
-        super.beforeSaving();
-
         if (this.position === undefined) {
             this.position = 1 + await sql.getValue(`SELECT COALESCE(MAX(position), 0) FROM relations WHERE sourceNoteId = ?`, [this.sourceNoteId]);
         }
@@ -38,6 +36,8 @@ class Relation extends Entity {
         }
 
         this.dateModified = dateUtils.nowDate();
+
+        super.beforeSaving();
     }
 }
 

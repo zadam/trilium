@@ -9,8 +9,6 @@ class RecentNote extends Entity {
     static get hashedProperties() { return ["branchId", "notePath", "dateCreated", "isDeleted"]; }
 
     beforeSaving() {
-        super.beforeSaving();
-
         if (!this.isDeleted) {
             this.isDeleted = false;
         }
@@ -18,6 +16,8 @@ class RecentNote extends Entity {
         if (!this.dateCreated) {
             this.dateCreated = dateUtils.nowDate();
         }
+
+        super.beforeSaving();
     }
 }
 

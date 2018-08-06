@@ -9,9 +9,9 @@ class Option extends Entity {
     static get hashedProperties() { return ["name", "value"]; }
 
     beforeSaving() {
-        super.beforeSaving();
-
         this.dateModified = dateUtils.nowDate();
+
+        super.beforeSaving();
     }
 }
 

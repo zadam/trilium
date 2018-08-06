@@ -62,6 +62,12 @@ async function updateEntity(entity) {
 
     delete clone.jsonContent;
 
+    for (const key in clone) {
+        if (clone[key] !== null && typeof clone[key] === 'object') {
+            clone[key] = JSON.stringify(clone[key]);
+        }
+    }
+
     await sql.transactional(async () => {
         await sql.replace(entity.constructor.tableName, clone);
 

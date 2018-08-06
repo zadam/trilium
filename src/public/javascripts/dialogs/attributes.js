@@ -22,10 +22,10 @@ function AttributesModel() {
 
     this.availableLabelTypes = [
         { text: "Text", value: "text" },
-        { text: "Integer", value: "integer" },
-        { text: "Decimal", value: "decimal" },
+        { text: "Number", value: "number" },
         { text: "Boolean", value: "boolean" },
-        { text: "Date", value: "date" }
+        { text: "Date", value: "date" },
+        { text: "DateTime", value: "datetime" }
     ];
 
     this.multiplicityTypes = [
@@ -57,15 +57,17 @@ function AttributesModel() {
         for (const attr of attributes) {
             attr.labelValue = attr.type === 'label' ? attr.value : '';
             attr.relationValue = attr.type === 'relation' ? attr.value : '';
-            attr.labelDefinition = (attr.type === 'label-definition' && attr.value) ? JSON.parse(attr.value) : {
+            attr.labelDefinition = (attr.type === 'label-definition' && attr.value) ? attr.value : {
                 labelType: "text",
                 multiplicityType: "singlevalue",
                 isPromoted: true
             };
-            attr.relationDefinition = (attr.type === 'relation-definition' && attr.value) ? JSON.parse(attr.value) : {
+            attr.relationDefinition = attr.type === ('relation-definition' && attr.value) ? attr.value : {
                 multiplicityType: "singlevalue",
                 isPromoted: true
             };
+
+            delete attr.value;
         }
 
         self.attributes(attributes.map(ko.observable));
@@ -140,10 +142,10 @@ function AttributesModel() {
                 attr.value = attr.relationValue;
             }
             else if (attr.type === 'label-definition') {
-                attr.value = JSON.stringify(attr.labelDefinition);
+                attr.value = attr.labelDefinition;
             }
             else if (attr.type === 'relation-definition') {
-                attr.value = JSON.stringify(attr.relationDefinition);
+                attr.value = attr.relationDefinition;
             }
 
             delete attr.labelValue;
@@ -158,11 +160,7 @@ function AttributesModel() {
 
         infoService.showMessage("Attributes have been saved.");
 
-        // FIXME FIXME FIXME FIXME FIXME
-        // FIXME FIXME FIXME FIXME FIXME
-        // FIXME FIXME FIXME FIXME FIXME
-        // FIXME FIXME FIXME FIXME FIXME
-        //noteDetailService.loadAttributeList();
+        noteDetailService.loadAttributes();
     };
 
     function addLastEmptyRow() {

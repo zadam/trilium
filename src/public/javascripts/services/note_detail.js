@@ -32,6 +32,7 @@ const $relationList = $("#relation-list");
 const $relationListInner = $("#relation-list-inner");
 const $childrenOverview = $("#children-overview");
 const $scriptArea = $("#note-detail-script-area");
+const $promotedAttributes = $("#note-detail-promoted-attributes");
 
 let currentNote = null;
 
@@ -193,6 +194,8 @@ async function loadNoteDetail(noteId) {
     $scriptArea.html('');
 
     await bundleService.executeRelationBundles(getCurrentNote(), 'runOnNoteView');
+
+    await loadAttributes();
 }
 
 async function showChildrenOverview(hideChildrenOverview) {
@@ -218,6 +221,39 @@ async function showChildrenOverview(hideChildrenOverview) {
     }
 
     $childrenOverview.show();
+}
+
+async function loadAttributes() {
+    $promotedAttributes.empty();
+
+    const noteId = getCurrentNoteId();
+
+    const attributes = await server.get('notes/' + noteId + '/attributes');
+
+    console.log(attributes);
+
+    const promoted = attributes.filter(attr => (attr.type === 'label-definition' || attr.type === 'relation-definition') && attr.value.isPromoted);
+
+    let idx = 1;
+
+    if (promoted.length > 0) {
+        for (const promotedAttr of promoted) {
+            if (promotedAttr.type === 'label-definition') {
+                const inputId = "promoted-input-" + idx;
+                const $div = $("<div>").addClass("class", "form-group");
+                const $label = $("<label>").prop("for", inputId).append(promotedAttr.name);
+                const $input = $("<input>")
+                    .prop("id", inputId)
+                    .prop("attribute-id", promotedAttr.attributeId)
+                    .addClass("form-control")
+                    .addClass("promoted-attribute-input");
+
+                $div.append($label).append($input);
+
+                $promotedAttributes.append($div);
+            }
+        }
+    }
 }
 
 async function loadLabelList() {
@@ -312,6 +348,7 @@ export default {
     getCurrentNoteId,
     newNoteCreated,
     focus,
+    loadAttributes,
     loadLabelList,
     loadRelationList,
     saveNote,

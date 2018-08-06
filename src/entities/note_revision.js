@@ -22,11 +22,11 @@ class NoteRevision extends Entity {
     }
 
     beforeSaving() {
-        super.beforeSaving();
-
         if (this.isProtected) {
             protectedSessionService.encryptNoteRevision(this);
         }
+
+        super.beforeSaving();
     }
 }
 

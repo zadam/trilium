@@ -9,8 +9,6 @@ class ApiToken extends Entity {
     static get hashedProperties() { return ["apiTokenId", "token", "dateCreated", "isDeleted"]; }
 
     beforeSaving() {
-        super.beforeSaving();
-
         if (!this.isDeleted) {
             this.isDeleted = false;
         }
@@ -18,6 +16,8 @@ class ApiToken extends Entity {
         if (!this.dateCreated) {
             this.dateCreated = dateUtils.nowDate();
         }
+
+        super.beforeSaving();
     }
 }
 

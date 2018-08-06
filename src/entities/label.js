@@ -15,8 +15,6 @@ class Label extends Entity {
     }
 
     async beforeSaving() {
-        super.beforeSaving();
-
         if (!this.value) {
             // null value isn't allowed
             this.value = "";
@@ -35,6 +33,8 @@ class Label extends Entity {
         }
 
         this.dateModified = dateUtils.nowDate();
+
+        super.beforeSaving();
     }
 }
 

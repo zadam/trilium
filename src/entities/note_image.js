@@ -18,8 +18,6 @@ class NoteImage extends Entity {
     }
 
     beforeSaving() {
-        super.beforeSaving();
-
         if (!this.isDeleted) {
             this.isDeleted = false;
         }
@@ -29,6 +27,8 @@ class NoteImage extends Entity {
         }
 
         this.dateModified = dateUtils.nowDate();
+
+        super.beforeSaving();
     }
 }
 

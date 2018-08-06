@@ -16,8 +16,6 @@ class Branch extends Entity {
     }
 
     async beforeSaving() {
-        super.beforeSaving();
-
         if (this.notePosition === undefined) {
             const maxNotePos = await sql.getValue('SELECT MAX(notePosition) FROM branches WHERE parentNoteId = ? AND isDeleted = 0', [this.parentNoteId]);
             this.notePosition = maxNotePos === null ? 0 : maxNotePos + 1;
@@ -32,6 +30,8 @@ class Branch extends Entity {
         }
 
         this.dateModified = dateUtils.nowDate();
+
+        super.beforeSaving();
     }
 }
 

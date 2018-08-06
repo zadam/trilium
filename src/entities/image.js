@@ -9,8 +9,6 @@ class Image extends Entity {
     static get hashedProperties() { return ["imageId", "format", "checksum", "name", "isDeleted", "dateModified", "dateCreated"]; }
 
     beforeSaving() {
-        super.beforeSaving();
-
         if (!this.isDeleted) {
             this.isDeleted = false;
         }
@@ -20,6 +18,8 @@ class Image extends Entity {
         }
 
         this.dateModified = dateUtils.nowDate();
+
+        super.beforeSaving();
     }
 }
 
