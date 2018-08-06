@@ -263,7 +263,7 @@ async function loadAttributes() {
                     $attributeListInner.append(utils.formatLabel(attribute) + " ");
                 }
                 else if (attribute.type === 'relation') {
-                    $attributeListInner.append(attribute.name + " = ");
+                    $attributeListInner.append(attribute.name + "=");
                     $attributeListInner.append(await linkService.createNoteLink(attribute.value));
                     $attributeListInner.append(" ");
                 }

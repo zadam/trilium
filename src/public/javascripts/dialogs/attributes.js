@@ -1,6 +1,8 @@
 import noteDetailService from '../services/note_detail.js';
 import server from '../services/server.js';
 import infoService from "../services/info.js";
+import treeUtils from "../services/tree_utils.js";
+import linkService from "../services/link.js";
 
 const $dialog = $("#attributes-dialog");
 const $saveAttributesButton = $("#save-attributes-button");
@@ -53,10 +55,10 @@ function AttributesModel() {
         });
     };
 
-    function prepareAttributes(attributes) {
+    async function showAttributes(attributes) {
         for (const attr of attributes) {
             attr.labelValue = attr.type === 'label' ? attr.value : '';
-            attr.relationValue = attr.type === 'relation' ? attr.value : '';
+            attr.relationValue = attr.type === 'relation' ? (await treeUtils.getNoteTitle(attr.value) + " (" + attr.value + ")") : '';
             attr.labelDefinition = (attr.type === 'label-definition' && attr.value) ? attr.value : {
                 labelType: "text",
                 multiplicityType: "singlevalue",
@@ -80,7 +82,7 @@ function AttributesModel() {
 
         const attributes = await server.get('notes/' + noteId + '/attributes');
 
-        prepareAttributes(attributes);
+        await showAttributes(attributes);
 
         // attribute might not be rendered immediatelly so could not focus
         setTimeout(() => $(".attribute-name:last").focus(), 100);
@@ -139,7 +141,7 @@ function AttributesModel() {
                 attr.value = attr.labelValue;
             }
             else if (attr.type === 'relation') {
-                attr.value = attr.relationValue;
+                attr.value = treeUtils.getNoteIdFromNotePath(linkService.getNotePathFromLabel(attr.relationValue));
             }
             else if (attr.type === 'label-definition') {
                 attr.value = attr.labelDefinition;
@@ -156,7 +158,7 @@ function AttributesModel() {
 
         const attributes = await server.put('notes/' + noteId + '/attributes', attributesToSave);
 
-        prepareAttributes(attributes);
+        await showAttributes(attributes);
 
         infoService.showMessage("Attributes have been saved.");
 
