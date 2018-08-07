@@ -30,7 +30,7 @@ async function load() {
         childParentToBranchId[`${rel.noteId}-${rel.parentNoteId}`] = rel.branchId;
     }
 
-    const hiddenLabels = await sql.getColumn(`SELECT noteId FROM labels WHERE isDeleted = 0 AND name = 'archived'`);
+    const hiddenLabels = await sql.getColumn(`SELECT noteId FROM attributes WHERE type = 'label' AND isDeleted = 0 AND name = 'archived'`);
 
     for (const noteId of hiddenLabels) {
         archived[noteId] = true;
@@ -265,19 +265,19 @@ eventService.subscribe(eventService.ENTITY_CHANGED, async ({entityName, entityId
             childParentToBranchId[branch.noteId + '-' + branch.parentNoteId] = branch.branchId;
         }
     }
-    else if (entityName === 'labels') {
-        const label = await repository.getLabel(entityId);
+    else if (entityName === 'attributes') {
+        const attribute = await repository.getAttribute(entityId);
 
-        if (label.name === 'archived') {
+        if (attribute.type === 'label' && attribute.name === 'archived') {
             // we're not using label object directly, since there might be other non-deleted archived label
-            const hideLabel = await repository.getEntity(`SELECT * FROM labels WHERE isDeleted = 0 
-                                 AND name = 'archived' AND noteId = ?`, [label.noteId]);
+            const hideLabel = await repository.getEntity(`SELECT * FROM attributes WHERE isDeleted = 0 AND type = 'label' 
+                                 AND name = 'archived' AND noteId = ?`, [attribute.noteId]);
 
             if (hideLabel) {
-                archived[label.noteId] = true;
+                archived[attribute.noteId] = true;
             }
             else {
-                delete archived[label.noteId];
+                delete archived[attribute.noteId];
             }
         }
     }
