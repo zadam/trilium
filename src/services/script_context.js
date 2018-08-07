@@ -3,7 +3,7 @@ const noteService = require('./notes');
 const sql = require('./sql');
 const utils = require('./utils');
 const dateUtils = require('./date_utils');
-const labelService = require('./labels');
+const attributeService = require('./attributes');
 const dateNoteService = require('./date_notes');
 const treeService = require('./tree');
 const config = require('./config');
@@ -45,15 +45,14 @@ function ScriptApi(startNote, currentNote, workNote) {
 
     this.getNote = repository.getNote;
     this.getBranch = repository.getBranch;
-    this.getLabel = repository.getLabel;
-    this.getRelation = repository.getRelation;
+    this.getAttribute = repository.getAttribute;
     this.getImage = repository.getImage;
     this.getEntity = repository.getEntity;
     this.getEntities = repository.getEntities;
 
-    this.createLabel = labelService.createLabel;
-    this.getNotesWithLabel = labelService.getNotesWithLabel;
-    this.getNoteWithLabel = labelService.getNoteWithLabel;
+    this.createAttribute = attributeService.createAttribute;
+    this.getNotesWithLabel = attributeService.getNotesWithLabel;
+    this.getNoteWithLabel = attributeService.getNoteWithLabel;
 
     this.createNote = noteService.createNote;
 

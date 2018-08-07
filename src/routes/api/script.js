@@ -2,7 +2,7 @@
 
 const labelService = require('../../services/labels');
 const scriptService = require('../../services/script');
-const relationService = require('../../services/relations');
+const attributeService = require('../../services/attributes');
 const repository = require('../../services/repository');
 
 async function exec(req) {
@@ -40,9 +40,9 @@ async function getRelationBundles(req) {
     const noteId = req.params.noteId;
     const relationName = req.params.relationName;
 
-    const relations = await relationService.getEffectiveRelations(noteId);
-    const filtered = relations.filter(relation => relation.name === relationName);
-    const targetNoteIds = filtered.map(relation => relation.targetNoteId);
+    const attributes = await attributeService.getEffectiveAttributes(noteId);
+    const filtered = attributes.filter(attr => attr.type === 'relation' && attr.name === relationName);
+    const targetNoteIds = filtered.map(relation => relation.value);
     const uniqueNoteIds = Array.from(new Set(targetNoteIds));
 
     const bundles = [];

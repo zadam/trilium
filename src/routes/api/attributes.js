@@ -6,56 +6,7 @@ const repository = require('../../services/repository');
 const Attribute = require('../../entities/attribute');
 
 async function getEffectiveNoteAttributes(req) {
-    const noteId = req.params.noteId;
-
-    const attributes = await repository.getEntities(`
-        WITH RECURSIVE tree(noteId, level) AS (
-        SELECT ?, 0
-            UNION
-            SELECT branches.parentNoteId, tree.level + 1 FROM branches
-            JOIN tree ON branches.noteId = tree.noteId
-            JOIN notes ON notes.noteId = branches.parentNoteId
-            WHERE notes.isDeleted = 0 AND branches.isDeleted = 0
-        )
-        SELECT attributes.* FROM attributes JOIN tree ON attributes.noteId = tree.noteId 
-        WHERE attributes.isDeleted = 0 AND (attributes.isInheritable = 1 OR attributes.noteId = ?)
-        ORDER BY level, noteId, position`, [noteId, noteId]);
-        // attributes are ordered so that "closest" attributes are first
-        // we order by noteId so that attributes from same note stay together. Actual noteId ordering doesn't matter.
-
-    const filteredAttributes = attributes.filter((attr, index) => {
-        if (attr.isDefinition()) {
-            const firstDefinitionIndex = attributes.findIndex(el => el.type === attr.type && el.name === attr.name);
-
-            // keep only if this element is the first definition for this type & name
-            return firstDefinitionIndex === index;
-        }
-        else {
-            const definitionAttr = attributes.find(el => el.type === attr.type + '-definition' && el.name === attr.name);
-
-            if (!definitionAttr) {
-                return true;
-            }
-
-            const definition = definitionAttr.value;
-
-            if (definition.multiplicityType === 'multivalue') {
-                return true;
-            }
-            else {
-                const firstAttrIndex = attributes.findIndex(el => el.type === attr.type && el.name === attr.name);
-
-                // in case of single-valued attribute we'll keep it only if it's first (closest)
-                return firstAttrIndex === index;
-            }
-        }
-    });
-
-    for (const attr of filteredAttributes) {
-        attr.isOwned = attr.noteId === noteId;
-    }
-
-    return filteredAttributes;
+    return await attributeService.getEffectiveAttributes(req.params.noteId);
 }
 
 async function updateNoteAttribute(req) {
@@ -136,7 +87,7 @@ async function updateNoteAttributes(req) {
         await attributeEntity.save();
     }
 
-    return await getEffectiveNoteAttributes(req);
+    return await attributeService.getEffectiveAttributes(noteId);
 }
 
 async function getAttributeNames(req) {

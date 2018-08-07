@@ -168,10 +168,8 @@
                 <span class="caret"></span>
               </button>
               <ul class="dropdown-menu dropdown-menu-right">
-                <li><a id="show-note-revisions-button">Note revisions</a></li>
+                <li><a id="show-note-revisions-button">Revisions</a></li>
                 <li><a class="show-attributes-button"><kbd>Alt+A</kbd> Attributes</a></li>
-                <li><a class="show-labels-button"><kbd>Alt+L</kbd> Labels</a></li>
-                <li><a class="show-relations-button"><kbd>Alt+R</kbd> Relations</a></li>
                 <li><a id="show-source-button">HTML source</a></li>
                 <li><a id="upload-file-button">Upload file</a></li>
               </ul>
@@ -263,20 +261,6 @@
           <button class="btn btn-sm show-attributes-button">Attributes:</button>
 
           <span id="attribute-list-inner"></span>
-        </div>
-
-        <div id="labels-and-relations" style="display: none;">
-          <span id="label-list">
-            <button class="btn btn-sm show-labels-button">Labels:</button>
-
-            <span id="label-list-inner"></span>
-          </span>
-
-          <span id="relation-list">
-            <button class="btn btn-sm show-relations-button">Relations:</button>
-
-            <span id="relation-list-inner"></span>
-          </span>
         </div>
       </div>
     </div>
@@ -663,105 +647,6 @@
               </tbody>
             </table>
           </div>
-        </div>
-      </form>
-    </div>
-
-    <div id="labels-dialog" title="Note labels" style="display: none; padding: 20px;">
-      <form data-bind="submit: save">
-      <div style="text-align: center">
-        <button class="btn btn-large" style="width: 200px;" id="save-labels-button" type="submit">Save changes <kbd>enter</kbd></button>
-      </div>
-
-      <div style="height: 97%; overflow: auto">
-        <table id="labels-table" class="table">
-          <thead>
-            <tr>
-              <th></th>
-              <th>ID</th>
-              <th>Name</th>
-              <th>Value</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody data-bind="foreach: labels">
-            <tr data-bind="if: !isDeleted">
-              <td class="handle">
-                <span class="glyphicon glyphicon-resize-vertical"></span>
-                <input type="hidden" name="position" data-bind="value: position"/>
-              </td>
-              <!-- ID column has specific width because if it's empty its size can be deformed when dragging -->
-              <td data-bind="text: labelId" style="width: 150px;"></td>
-              <td>
-                <!-- Change to valueUpdate: blur is necessary because jQuery UI autocomplete hijacks change event -->
-                <input type="text" class="label-name form-control" data-bind="value: name, valueUpdate: 'blur',  event: { blur: $parent.labelChanged }"/>
-                <div style="color: yellowgreen" data-bind="if: $parent.isNotUnique($index())"><span class="glyphicon glyphicon-info-sign"></span> Duplicate label.</div>
-                <div style="color: red" data-bind="if: $parent.isEmptyName($index())">Label name can't be empty.</div>
-              </td>
-              <td>
-                <input type="text" class="label-value form-control" data-bind="value: value, valueUpdate: 'blur', event: { blur: $parent.labelChanged }" style="width: 300px"/>
-              </td>
-              <td title="Delete" style="padding: 13px; cursor: pointer;">
-                <span class="glyphicon glyphicon-trash" data-bind="click: $parent.deleteLabel"></span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      </form>
-    </div>
-
-    <div id="relations-dialog" title="Note relations" style="display: none; padding: 20px;">
-      <form data-bind="submit: save">
-        <div style="text-align: center">
-          <button class="btn btn-large" style="width: 200px;" id="save-relations-button" type="submit">Save changes <kbd>enter</kbd></button>
-        </div>
-
-        <div style="height: 97%; overflow: auto">
-          <table id="relations-table" class="table">
-            <thead>
-            <tr>
-              <th></th>
-              <th>ID</th>
-              <th>Relation name</th>
-              <th>Target note</th>
-              <th>Inheritable</th>
-              <th></th>
-            </tr>
-            </thead>
-            <tbody data-bind="foreach: relations">
-            <tr data-bind="if: !isDeleted">
-              <td class="handle">
-                <span class="glyphicon glyphicon-resize-vertical"></span>
-                <input type="hidden" name="position" data-bind="value: position"/>
-              </td>
-              <!-- ID column has specific width because if it's empty its size can be deformed when dragging -->
-              <td data-bind="text: relationId" style="width: 150px;"></td>
-              <td>
-                <!-- Change to valueUpdate: blur is necessary because jQuery UI autocomplete hijacks change event -->
-                <input type="text" class="relation-name form-control" data-bind="value: name, valueUpdate: 'blur',  event: { blur: $parent.relationChanged }"/>
-                <div style="color: yellowgreen" data-bind="if: $parent.isNotUnique($index())"><span class="glyphicon glyphicon-info-sign"></span> Duplicate relation.</div>
-                <div style="color: red" data-bind="if: $parent.isEmptyName($index())">Relation name can't be empty.</div>
-              </td>
-              <td>
-                <div class="input-group">
-                  <input class="form-control relation-target-note-id"
-                         placeholder="search for note by its name"
-                         data-bind="value: targetNoteId, valueUpdate: 'blur', event: { blur: $parent.relationChanged }"
-                         style="width: 300px;">
-
-                  <span class="input-group-addon relations-show-recent-notes" title="Show recent notes" style="background: url('/images/icons/clock-16.png') no-repeat center; cursor: pointer;"></span>
-                </div>
-              </td>
-              <td title="Inheritable relations are automatically inherited to the child notes">
-                <input type="checkbox" value="1" data-bind="checked: isInheritable" />
-              </td>
-              <td title="Delete" style="padding: 13px; cursor: pointer;">
-                <span class="glyphicon glyphicon-trash" data-bind="click: $parent.deleteRelation"></span>
-              </td>
-            </tr>
-            </tbody>
-          </table>
         </div>
       </form>
     </div>

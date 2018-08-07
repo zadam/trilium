@@ -29,10 +29,6 @@ const $noteDetailComponentWrapper = $("#note-detail-component-wrapper");
 const $noteIdDisplay = $("#note-id-display");
 const $attributeList = $("#attribute-list");
 const $attributeListInner = $("#attribute-list-inner");
-const $labelList = $("#label-list");
-const $labelListInner = $("#label-list-inner");
-const $relationList = $("#relation-list");
-const $relationListInner = $("#relation-list-inner");
 const $childrenOverview = $("#children-overview");
 const $scriptArea = $("#note-detail-script-area");
 const $promotedAttributesContainer = $("#note-detail-promoted-attributes");
@@ -187,18 +183,14 @@ async function loadNoteDetail(noteId) {
     // after loading new note make sure editor is scrolled to the top
     $noteDetailWrapper.scrollTop(0);
 
-    const labels = await loadLabelList();
-
-    const hideChildrenOverview = labels.some(label => label.name === 'hideChildrenOverview');
-    await showChildrenOverview(hideChildrenOverview);
-
-    await loadRelationList();
-
     $scriptArea.html('');
 
     await bundleService.executeRelationBundles(getCurrentNote(), 'runOnNoteView');
 
-    await loadAttributes();
+    const attributes = await loadAttributes();
+
+    const hideChildrenOverview = attributes.some(attr => attr.type === 'label' && attr.name === 'hideChildrenOverview');
+    await showChildrenOverview(hideChildrenOverview);
 }
 
 async function showChildrenOverview(hideChildrenOverview) {
@@ -411,50 +403,8 @@ async function loadAttributes() {
             $attributeList.show();
         }
     }
-}
 
-async function loadLabelList() {
-    const noteId = getCurrentNoteId();
-
-    const labels = await server.get('notes/' + noteId + '/labels');
-
-    $labelListInner.html('');
-
-    if (labels.length > 0) {
-        for (const label of labels) {
-            $labelListInner.append(utils.formatLabel(label) + " ");
-        }
-
-        $labelList.show();
-    }
-    else {
-        $labelList.hide();
-    }
-
-    return labels;
-}
-
-async function loadRelationList() {
-    const noteId = getCurrentNoteId();
-
-    const relations = await server.get('notes/' + noteId + '/relations');
-
-    $relationListInner.html('');
-
-    if (relations.length > 0) {
-        for (const relation of relations) {
-            $relationListInner.append(relation.name + " = ");
-            $relationListInner.append(await linkService.createNoteLink(relation.targetNoteId));
-            $relationListInner.append(" ");
-        }
-
-        $relationList.show();
-    }
-    else {
-        $relationList.hide();
-    }
-
-    return relations;
+    return attributes;
 }
 
 async function loadNote(noteId) {
@@ -535,8 +485,6 @@ export default {
     newNoteCreated,
     focus,
     loadAttributes,
-    loadLabelList,
-    loadRelationList,
     saveNote,
     saveNoteIfChanged,
     noteChanged

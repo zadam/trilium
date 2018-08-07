@@ -1,6 +1,5 @@
 import addLinkDialog from '../dialogs/add_link.js';
 import jumpToNoteDialog from '../dialogs/jump_to_note.js';
-import labelsDialog from '../dialogs/labels.js';
 import attributesDialog from '../dialogs/attributes.js';
 import noteRevisionsDialog from '../dialogs/note_revisions.js';
 import noteSourceDialog from '../dialogs/note_source.js';
