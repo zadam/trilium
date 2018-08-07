@@ -33,12 +33,6 @@ async function updateEntity(sync, entity, sourceId) {
     else if (entityName === 'attributes') {
         await updateAttribute(entity, sourceId);
     }
-    else if (entityName === 'labels') {
-        await updateLabel(entity, sourceId);
-    }
-    else if (entityName === 'relations') {
-        await updateRelation(entity, sourceId);
-    }
     else if (entityName === 'api_tokens') {
         await updateApiToken(entity, sourceId);
     }
@@ -188,34 +182,6 @@ async function updateAttribute(entity, sourceId) {
         });
 
         log.info("Update/sync attribute " + entity.attributeId);
-    }
-}
-
-async function updateLabel(entity, sourceId) {
-    const origLabel = await sql.getRow("SELECT * FROM labels WHERE labelId = ?", [entity.labelId]);
-
-    if (!origLabel || origLabel.dateModified <= entity.dateModified) {
-        await sql.transactional(async () => {
-            await sql.replace("labels", entity);
-
-            await syncTableService.addLabelSync(entity.labelId, sourceId);
-        });
-
-        log.info("Update/sync label " + entity.labelId);
-    }
-}
-
-async function updateRelation(entity, sourceId) {
-    const origRelation = await sql.getRow("SELECT * FROM relations WHERE relationId = ?", [entity.relationId]);
-
-    if (!origRelation || origRelation.dateModified <= entity.dateModified) {
-        await sql.transactional(async () => {
-            await sql.replace("relations", entity);
-
-            await syncTableService.addRelationSync(entity.relationId, sourceId);
-        });
-
-        log.info("Update/sync relation " + entity.relationId);
     }
 }
 

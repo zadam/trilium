@@ -1,8 +1,7 @@
 "use strict";
 
-const sql = require('./sql');
 const noteService = require('./notes');
-const labelService = require('./labels');
+const attributeService = require('./attributes');
 const dateUtils = require('./date_utils');
 const repository = require('./repository');
 
@@ -32,7 +31,7 @@ async function getNoteStartingWith(parentNoteId, startsWith) {
 
 async function getRootCalendarNote() {
     // some caching here could be useful (e.g. in CLS)
-    let rootNote = await labelService.getNoteWithLabel(CALENDAR_ROOT_LABEL);
+    let rootNote = await attributeService.getNoteWithLabel(CALENDAR_ROOT_LABEL);
 
     if (!rootNote) {
         rootNote = (await noteService.createNewNote('root', {
@@ -41,8 +40,8 @@ async function getRootCalendarNote() {
             isProtected: false
         })).note;
 
-        await labelService.createLabel(rootNote.noteId, CALENDAR_ROOT_LABEL);
-        await labelService.createLabel(rootNote.noteId, 'sorted');
+        await attributeService.createLabel(rootNote.noteId, CALENDAR_ROOT_LABEL);
+        await attributeService.createLabel(rootNote.noteId, 'sorted');
     }
 
     return rootNote;
@@ -51,7 +50,7 @@ async function getRootCalendarNote() {
 async function getYearNote(dateTimeStr, rootNote) {
     const yearStr = dateTimeStr.substr(0, 4);
 
-    let yearNote = await labelService.getNoteWithLabel(YEAR_LABEL, yearStr);
+    let yearNote = await attributeService.getNoteWithLabel(YEAR_LABEL, yearStr);
 
     if (!yearNote) {
         yearNote = await getNoteStartingWith(rootNote.noteId, yearStr);
@@ -60,8 +59,8 @@ async function getYearNote(dateTimeStr, rootNote) {
             yearNote = await createNote(rootNote.noteId, yearStr);
         }
 
-        await labelService.createLabel(yearNote.noteId, YEAR_LABEL, yearStr);
-        await labelService.createLabel(yearNote.noteId, 'sorted');
+        await attributeService.createLabel(yearNote.noteId, YEAR_LABEL, yearStr);
+        await attributeService.createLabel(yearNote.noteId, 'sorted');
     }
 
     return yearNote;
@@ -71,7 +70,7 @@ async function getMonthNote(dateTimeStr, rootNote) {
     const monthStr = dateTimeStr.substr(0, 7);
     const monthNumber = dateTimeStr.substr(5, 2);
 
-    let monthNote = await labelService.getNoteWithLabel(MONTH_LABEL, monthStr);
+    let monthNote = await attributeService.getNoteWithLabel(MONTH_LABEL, monthStr);
 
     if (!monthNote) {
         const yearNote = await getYearNote(dateTimeStr, rootNote);
@@ -86,8 +85,8 @@ async function getMonthNote(dateTimeStr, rootNote) {
             monthNote = await createNote(yearNote.noteId, noteTitle);
         }
 
-        await labelService.createLabel(monthNote.noteId, MONTH_LABEL, monthStr);
-        await labelService.createLabel(monthNote.noteId, 'sorted');
+        await attributeService.createLabel(monthNote.noteId, MONTH_LABEL, monthStr);
+        await attributeService.createLabel(monthNote.noteId, 'sorted');
     }
 
     return monthNote;
@@ -99,7 +98,7 @@ async function getDateNote(dateTimeStr) {
     const dateStr = dateTimeStr.substr(0, 10);
     const dayNumber = dateTimeStr.substr(8, 2);
 
-    let dateNote = await labelService.getNoteWithLabel(DATE_LABEL, dateStr);
+    let dateNote = await attributeService.getNoteWithLabel(DATE_LABEL, dateStr);
 
     if (!dateNote) {
         const monthNote = await getMonthNote(dateTimeStr, rootNote);
@@ -114,7 +113,7 @@ async function getDateNote(dateTimeStr) {
             dateNote = await createNote(monthNote.noteId, noteTitle);
         }
 
-        await labelService.createLabel(dateNote.noteId, DATE_LABEL, dateStr);
+        await attributeService.createLabel(dateNote.noteId, DATE_LABEL, dateStr);
     }
 
     return dateNote;

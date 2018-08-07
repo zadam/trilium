@@ -2,7 +2,7 @@ const sql = require('./sql');
 const optionService = require('./options');
 const dateUtils = require('./date_utils');
 const syncTableService = require('./sync_table');
-const labelService = require('./labels');
+const attributeService = require('./attributes');
 const eventService = require('./events');
 const repository = require('./repository');
 const Note = require('../entities/note');
@@ -93,9 +93,10 @@ async function createNote(parentNoteId, title, content = "", extraOptions = {}) 
 
     const {note, branch} = await createNewNote(parentNoteId, noteData);
 
+    // FIXME: need to make this more generic for all kinds of attributes
     if (extraOptions.labels) {
         for (const labelName in extraOptions.labels) {
-            await labelService.createLabel(note.noteId, labelName, extraOptions.labels[labelName]);
+            await attributeService.createLabel(note.noteId, labelName, extraOptions.labels[labelName]);
         }
     }
 
@@ -168,8 +169,6 @@ async function saveNoteImages(note) {
 }
 
 async function saveNoteRevision(note) {
-    const labelsMap = await note.getLabelMap();
-
     const now = new Date();
     const noteRevisionSnapshotTimeInterval = parseInt(await optionService.getOption('noteRevisionSnapshotTimeInterval'));
 
@@ -181,7 +180,7 @@ async function saveNoteRevision(note) {
     const msSinceDateCreated = now.getTime() - dateUtils.parseDateTime(note.dateCreated).getTime();
 
     if (note.type !== 'file'
-        && labelsMap.disableVersioning !== 'true'
+        && await note.hasLabel('disableVersioning')
         && !existingnoteRevisionId
         && msSinceDateCreated >= noteRevisionSnapshotTimeInterval * 1000) {
 

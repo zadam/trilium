@@ -2,7 +2,7 @@
 
 const sourceIdService = require('../services/source_id');
 const sql = require('../services/sql');
-const labelService = require('../services/labels');
+const attributeService = require('../services/attributes');
 const config = require('../services/config');
 const optionService = require('../services/options');
 
@@ -18,7 +18,7 @@ async function index(req, res) {
 
 async function getAppCss() {
     let css = '';
-    const notes = labelService.getNotesWithLabel('appCss');
+    const notes = attributeService.getNotesWithLabel('appCss');
 
     for (const note of await notes) {
         css += `/* ${note.noteId} */

@@ -65,30 +65,70 @@ class Note extends Entity {
         return null;
     }
 
-    async getLabels() {
-        return await repository.getEntities("SELECT * FROM labels WHERE noteId = ? AND isDeleted = 0", [this.noteId]);
+    async getOwnedAttributes() {
+        return await repository.getEntities(`SELECT * FROM attributes WHERE isDeleted = 0 AND noteId = ?`, [this.noteId]);
     }
 
-    // WARNING: this doesn't take into account the possibility to have multi-valued labels!
-    async getLabelMap() {
-        const map = {};
+    async getAttributes() {
+        const attributes = await repository.getEntities(`
+        WITH RECURSIVE tree(noteId, level) AS (
+        SELECT ?, 0
+            UNION
+            SELECT branches.parentNoteId, tree.level + 1 FROM branches
+            JOIN tree ON branches.noteId = tree.noteId
+            JOIN notes ON notes.noteId = branches.parentNoteId
+            WHERE notes.isDeleted = 0 AND branches.isDeleted = 0
+        )
+        SELECT attributes.* FROM attributes JOIN tree ON attributes.noteId = tree.noteId 
+        WHERE attributes.isDeleted = 0 AND (attributes.isInheritable = 1 OR attributes.noteId = ?)
+        ORDER BY level, noteId, position`, [this.noteId, this.noteId]);
+        // attributes are ordered so that "closest" attributes are first
+        // we order by noteId so that attributes from same note stay together. Actual noteId ordering doesn't matter.
 
-        for (const label of await this.getLabels()) {
-            map[label.name] = label.value;
+        const filteredAttributes = attributes.filter((attr, index) => {
+            if (attr.isDefinition()) {
+                const firstDefinitionIndex = attributes.findIndex(el => el.type === attr.type && el.name === attr.name);
+
+                // keep only if this element is the first definition for this type & name
+                return firstDefinitionIndex === index;
+            }
+            else {
+                const definitionAttr = attributes.find(el => el.type === attr.type + '-definition' && el.name === attr.name);
+
+                if (!definitionAttr) {
+                    return true;
+                }
+
+                const definition = definitionAttr.value;
+
+                if (definition.multiplicityType === 'multivalue') {
+                    return true;
+                }
+                else {
+                    const firstAttrIndex = attributes.findIndex(el => el.type === attr.type && el.name === attr.name);
+
+                    // in case of single-valued attribute we'll keep it only if it's first (closest)
+                    return firstAttrIndex === index;
+                }
+            }
+        });
+
+        for (const attr of filteredAttributes) {
+            attr.isOwned = attr.noteId === this.noteId;
         }
 
-        return map;
+        return filteredAttributes;
     }
 
     async hasLabel(name) {
-        const map = await this.getLabelMap();
-
-        return map.hasOwnProperty(name);
+        return !!await this.getLabel(name);
     }
 
     // WARNING: this doesn't take into account the possibility to have multi-valued labels!
     async getLabel(name) {
-        return await repository.getEntity("SELECT * FROM labels WHERE noteId = ? AND name = ?", [this.noteId, name]);
+        const attributes = await this.getAttributes();
+
+        return attributes.find(attr => attr.type === 'label' && attr.name === name);
     }
 
     async getRevisions() {

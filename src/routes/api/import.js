@@ -1,7 +1,7 @@
 "use strict";
 
 const repository = require('../../services/repository');
-const labelService = require('../../services/labels');
+const attributeService = require('../../services/attributes');
 const noteService = require('../../services/notes');
 const Branch = require('../../entities/branch');
 const tar = require('tar-stream');
@@ -187,8 +187,8 @@ async function importNotes(files, parentNoteId, noteIdMap) {
 
         noteIdMap[file.meta.noteId] = note.noteId;
 
-        for (const label of file.meta.labels) {
-            await labelService.createLabel(note.noteId, label.name, label.value);
+        for (const attribute of file.meta.attributes) {
+            await attributeService.createAttribute(attribute);
         }
 
         if (file.children.length > 0) {

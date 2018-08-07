@@ -113,15 +113,18 @@ async function exportToTar(branchId, res) {
             prefix: branch.prefix,
             type: note.type,
             mime: note.mime,
-            labels: (await note.getLabels()).map(label => {
+            attributes: (await note.getOwnedAttributes()).map(attribute => {
                 return {
-                    name: label.name,
-                    value: label.value
+                    type: attribute.type,
+                    name: attribute.name,
+                    value: attribute.value,
+                    isInheritable: attribute.isInheritable,
+                    position: attribute.position
                 };
             })
         };
 
-        if (metadata.labels.find(label => label.name === 'excludeFromExport')) {
+        if (metadata.attributes.find(attributes => attributes.type === 'label' && attributes.name === 'excludeFromExport')) {
             return;
         }
 

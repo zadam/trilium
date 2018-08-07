@@ -1,7 +1,7 @@
 "use strict";
 
 const noteService = require('../../services/notes');
-const labelService = require('../../services/labels');
+const attributeService = require('../../services/attributes');
 const protectedSessionService = require('../../services/protected_session');
 const repository = require('../../services/repository');
 
@@ -26,8 +26,8 @@ async function uploadFile(req) {
         mime: file.mimetype
     });
 
-    await labelService.createLabel(note.noteId, "originalFileName", originalName);
-    await labelService.createLabel(note.noteId, "fileSize", size);
+    await attributeService.createLabel(note.noteId, "originalFileName", originalName);
+    await attributeService.createLabel(note.noteId, "fileSize", size);
 
     return {
         noteId: note.noteId
@@ -47,8 +47,8 @@ async function downloadFile(req, res) {
         return;
     }
 
-    const labelMap = await note.getLabelMap();
-    const fileName = labelMap.originalFileName || note.title;
+    const originalFileName = await note.getLabel('originalFileName');
+    const fileName = originalFileName.value || note.title;
 
     res.setHeader('Content-Disposition', 'file; filename="' + fileName + '"');
     res.setHeader('Content-Type', note.mime);

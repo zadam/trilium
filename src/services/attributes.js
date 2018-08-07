@@ -43,12 +43,17 @@ async function getNoteWithLabel(name, value) {
     return notes.length > 0 ? notes[0] : null;
 }
 
-async function createAttribute(noteId, name, value = "") {
-    return await new Attribute({
+async function createLabel(noteId, name, value = "") {
+    return await createAttribute({
         noteId: noteId,
+        type: 'label',
         name: name,
         value: value
-    }).save();
+    });
+}
+
+async function createAttribute(attribute) {
+    return await new Attribute(attribute).save();
 }
 
 async function getAttributeNames(type, nameLike) {
@@ -70,62 +75,11 @@ async function getAttributeNames(type, nameLike) {
     return names;
 }
 
-async function getEffectiveAttributes(noteId) {
-    const attributes = await repository.getEntities(`
-        WITH RECURSIVE tree(noteId, level) AS (
-        SELECT ?, 0
-            UNION
-            SELECT branches.parentNoteId, tree.level + 1 FROM branches
-            JOIN tree ON branches.noteId = tree.noteId
-            JOIN notes ON notes.noteId = branches.parentNoteId
-            WHERE notes.isDeleted = 0 AND branches.isDeleted = 0
-        )
-        SELECT attributes.* FROM attributes JOIN tree ON attributes.noteId = tree.noteId 
-        WHERE attributes.isDeleted = 0 AND (attributes.isInheritable = 1 OR attributes.noteId = ?)
-        ORDER BY level, noteId, position`, [noteId, noteId]);
-    // attributes are ordered so that "closest" attributes are first
-    // we order by noteId so that attributes from same note stay together. Actual noteId ordering doesn't matter.
-
-    const filteredAttributes = attributes.filter((attr, index) => {
-        if (attr.isDefinition()) {
-            const firstDefinitionIndex = attributes.findIndex(el => el.type === attr.type && el.name === attr.name);
-
-            // keep only if this element is the first definition for this type & name
-            return firstDefinitionIndex === index;
-        }
-        else {
-            const definitionAttr = attributes.find(el => el.type === attr.type + '-definition' && el.name === attr.name);
-
-            if (!definitionAttr) {
-                return true;
-            }
-
-            const definition = definitionAttr.value;
-
-            if (definition.multiplicityType === 'multivalue') {
-                return true;
-            }
-            else {
-                const firstAttrIndex = attributes.findIndex(el => el.type === attr.type && el.name === attr.name);
-
-                // in case of single-valued attribute we'll keep it only if it's first (closest)
-                return firstAttrIndex === index;
-            }
-        }
-    });
-
-    for (const attr of filteredAttributes) {
-        attr.isOwned = attr.noteId === noteId;
-    }
-
-    return filteredAttributes;
-}
-
 module.exports = {
     getNotesWithLabel,
     getNoteWithLabel,
+    createLabel,
     createAttribute,
     getAttributeNames,
-    getEffectiveAttributes,
     BUILTIN_ATTRIBUTES
 };

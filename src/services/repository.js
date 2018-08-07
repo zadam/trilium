@@ -41,14 +41,6 @@ async function getAttribute(attributeId) {
     return await getEntity("SELECT * FROM attributes WHERE attributeId = ?", [attributeId]);
 }
 
-async function getLabel(labelId) {
-    return await getEntity("SELECT * FROM labels WHERE labelId = ?", [labelId]);
-}
-
-async function getRelation(relationId) {
-    return await getEntity("SELECT * FROM relations WHERE relationId = ?", [relationId]);
-}
-
 async function getOption(name) {
     return await getEntity("SELECT * FROM options WHERE name = ?", [name]);
 }
@@ -61,6 +53,7 @@ async function updateEntity(entity) {
     const clone = Object.assign({}, entity);
 
     delete clone.jsonContent;
+    delete clone.isOwned;
 
     for (const key in clone) {
         if (clone[key] !== null && typeof clone[key] === 'object') {
@@ -86,8 +79,6 @@ module.exports = {
     getBranch,
     getImage,
     getAttribute,
-    getLabel,
-    getRelation,
     getOption,
     updateEntity,
     setEntityConstructor

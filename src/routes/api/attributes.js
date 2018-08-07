@@ -6,7 +6,9 @@ const repository = require('../../services/repository');
 const Attribute = require('../../entities/attribute');
 
 async function getEffectiveNoteAttributes(req) {
-    return await attributeService.getEffectiveAttributes(req.params.noteId);
+    const note = await repository.getNote(req.params.noteId);
+
+    return await note.getAttributes();
 }
 
 async function updateNoteAttribute(req) {
@@ -87,7 +89,9 @@ async function updateNoteAttributes(req) {
         await attributeEntity.save();
     }
 
-    return await attributeService.getEffectiveAttributes(noteId);
+    const note = await repository.getNote(noteId);
+
+    return await note.getAttributes();
 }
 
 async function getAttributeNames(req) {

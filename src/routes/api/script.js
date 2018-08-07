@@ -1,6 +1,5 @@
 "use strict";
 
-const labelService = require('../../services/labels');
 const scriptService = require('../../services/script');
 const attributeService = require('../../services/attributes');
 const repository = require('../../services/repository');
@@ -21,7 +20,7 @@ async function run(req) {
 }
 
 async function getStartupBundles() {
-    const notes = await labelService.getNotesWithLabel("run", "frontendStartup");
+    const notes = await attributeService.getNotesWithLabel("run", "frontendStartup");
 
     const bundles = [];
 
@@ -38,9 +37,10 @@ async function getStartupBundles() {
 
 async function getRelationBundles(req) {
     const noteId = req.params.noteId;
+    const note = await repository.getNote(noteId);
     const relationName = req.params.relationName;
 
-    const attributes = await attributeService.getEffectiveAttributes(noteId);
+    const attributes = await note.getAttributes();
     const filtered = attributes.filter(attr => attr.type === 'relation' && attr.name === relationName);
     const targetNoteIds = filtered.map(relation => relation.value);
     const uniqueNoteIds = Array.from(new Set(targetNoteIds));

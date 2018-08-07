@@ -1,7 +1,6 @@
 const sql = require('./sql');
 const sourceIdService = require('./source_id');
 const dateUtils = require('./date_utils');
-const syncOptions = require('./sync_options');
 const log = require('./log');
 const cls = require('./cls');
 const eventService = require('./events');
@@ -40,14 +39,6 @@ async function addNoteImageSync(noteImageId, sourceId) {
 
 async function addAttributeSync(attributeId, sourceId) {
     await addEntitySync("attributes", attributeId, sourceId);
-}
-
-async function addLabelSync(labelId, sourceId) {
-    await addEntitySync("labels", labelId, sourceId);
-}
-
-async function addRelationSync(relationId, sourceId) {
-    await addEntitySync("relations", relationId, sourceId);
 }
 
 async function addApiTokenSync(apiTokenId, sourceId) {
@@ -109,8 +100,6 @@ async function fillAllSyncRows() {
     await fillSyncRows("images", "imageId");
     await fillSyncRows("note_images", "noteImageId");
     await fillSyncRows("attributes", "attributeId");
-    await fillSyncRows("labels", "labelId");
-    await fillSyncRows("relations", "relationId");
     await fillSyncRows("api_tokens", "apiTokenId");
     await fillSyncRows("options", "name", 'isSynced = 1');
 }
@@ -125,8 +114,6 @@ module.exports = {
     addImageSync,
     addNoteImageSync,
     addAttributeSync,
-    addLabelSync,
-    addRelationSync,
     addApiTokenSync,
     addEntitySync,
     cleanupSyncRowsForMissingEntities,

@@ -1,13 +1,13 @@
 const eventService = require('./events');
 const scriptService = require('./script');
-const relationService = require('./relations');
 const treeService = require('./tree');
 const messagingService = require('./messaging');
 
 eventService.subscribe(eventService.NOTE_TITLE_CHANGED, async note => {
-    const relations = await relationService.getEffectiveRelations(note.noteId, 'runOnNoteTitleChange');
+    const attributes = await note.getAttributes();
+    const runRelations = attributes.filter(relation => relation.type === 'relation' && relation.name === 'runOnNoteTitleChange');
 
-    for (const relation of relations) {
+    for (const relation of runRelations) {
         const scriptNote = await relation.getTargetNote();
 
         await scriptService.executeNote(scriptNote, scriptNote, note);
