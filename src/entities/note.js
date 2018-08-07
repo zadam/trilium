@@ -13,6 +13,8 @@ class Note extends Entity {
     constructor(row) {
         super(row);
 
+        this.isProtected = !!this.isProtected;
+
         // check if there's noteId, otherwise this is a new entity which wasn't encrypted yet
         if (this.isProtected && this.noteId) {
             protectedSessionService.decryptNote(this);

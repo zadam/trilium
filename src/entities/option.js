@@ -8,6 +8,12 @@ class Option extends Entity {
     static get primaryKeyName() { return "name"; }
     static get hashedProperties() { return ["name", "value"]; }
 
+    constructor(row) {
+        super(row);
+
+        this.isSynced = !!this.isSynced;
+    }
+
     beforeSaving() {
         this.dateModified = dateUtils.nowDate();
 

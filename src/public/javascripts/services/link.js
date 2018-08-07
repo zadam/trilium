@@ -23,7 +23,7 @@ function getNotePathFromLabel(label) {
     return null;
 }
 
-async function createNoteLink(notePath, noteTitle) {
+async function createNoteLink(notePath, noteTitle = null) {
     if (!noteTitle) {
         const noteId = treeUtils.getNoteIdFromNotePath(notePath);
 
@@ -89,6 +89,18 @@ function addTextToEditor(text) {
 
     doc.enqueueChanges(() => editor.data.insertText(text), doc.selection);
 }
+
+ko.bindingHandlers.noteLink = {
+    init: async function(element, valueAccessor, allBindings, viewModel, bindingContext) {
+        const noteId = ko.unwrap(valueAccessor());
+
+        if (noteId) {
+            const link = await createNoteLink(noteId);
+
+            $(element).append(link);
+        }
+    }
+};
 
 // when click on link popup, in case of internal link, just go the the referenced note instead of default behavior
 // of opening the link in new window/tab

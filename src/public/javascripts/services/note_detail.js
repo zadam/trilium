@@ -228,6 +228,7 @@ async function showChildrenOverview(hideChildrenOverview) {
 
 async function loadAttributes() {
     $promotedAttributesContainer.empty();
+    $attributeList.hide();
 
     const noteId = getCurrentNoteId();
 
@@ -244,7 +245,7 @@ async function loadAttributes() {
         const $labelCell = $("<th>").append(valueAttr.name);
         const $input = $("<input>")
             .prop("id", inputId)
-            .prop("attribute-id", valueAttr.attributeId)
+            .prop("attribute-id", valueAttr.isOwned ? valueAttr.attributeId : '') // if not owned, we'll force creation of a new attribute instead of updating the inherited one
             .prop("attribute-type", valueAttr.type)
             .prop("attribute-name", valueAttr.name)
             .prop("value", valueAttr.value)
@@ -408,9 +409,6 @@ async function loadAttributes() {
             }
 
             $attributeList.show();
-        }
-        else {
-            $attributeList.hide();
         }
     }
 }

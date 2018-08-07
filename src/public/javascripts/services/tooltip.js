@@ -4,7 +4,7 @@ import linkService from "./link.js";
 
 function setupTooltip() {
     $(document).tooltip({
-        items: "#note-detail-wrapper a",
+        items: "body a",
         content: function (callback) {
             let notePath = linkService.getNotePathFromLink($(this).attr("href"));
 

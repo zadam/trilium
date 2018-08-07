@@ -3,18 +3,18 @@ import server from '../services/server.js';
 import infoService from "../services/info.js";
 import treeUtils from "../services/tree_utils.js";
 import linkService from "../services/link.js";
-import noteAutocompleteService from "../services/note_autocomplete.js";
 
 const $dialog = $("#attributes-dialog");
 const $saveAttributesButton = $("#save-attributes-button");
-const $attributesBody = $('#attributes-table tbody');
+const $ownedAttributesBody = $('#owned-attributes-table tbody');
 
 const attributesModel = new AttributesModel();
 
 function AttributesModel() {
     const self = this;
 
-    this.attributes = ko.observableArray();
+    this.ownedAttributes = ko.observableArray();
+    this.inheritedAttributes = ko.observableArray();
 
     this.availableTypes = [
         { text: "Label", value: "label" },
@@ -47,8 +47,8 @@ function AttributesModel() {
         let position = 0;
 
         // we need to update positions by searching in the DOM, because order of the
-        // attributes in the viewmodel (self.attributes()) stays the same
-        $attributesBody.find('input[name="position"]').each(function() {
+        // attributes in the viewmodel (self.ownedAttributes()) stays the same
+        $ownedAttributesBody.find('input[name="position"]').each(function() {
             const attribute = self.getTargetAttribute(this);
 
             attribute().position = position++;
@@ -56,7 +56,9 @@ function AttributesModel() {
     };
 
     async function showAttributes(attributes) {
-        for (const attr of attributes) {
+        const ownedAttributes = attributes.filter(attr => attr.isOwned);
+
+        for (const attr of ownedAttributes) {
             attr.labelValue = attr.type === 'label' ? attr.value : '';
             attr.relationValue = attr.type === 'relation' ? (await treeUtils.getNoteTitle(attr.value) + " (" + attr.value + ")") : '';
             attr.labelDefinition = (attr.type === 'label-definition' && attr.value) ? attr.value : {
@@ -72,9 +74,13 @@ function AttributesModel() {
             delete attr.value;
         }
 
-        self.attributes(attributes.map(ko.observable));
+        self.ownedAttributes(ownedAttributes.map(ko.observable));
 
         addLastEmptyRow();
+
+        const inheritedAttributes = attributes.filter(attr => !attr.isOwned);
+
+        self.inheritedAttributes(inheritedAttributes);
     }
 
     this.loadAttributes = async function() {
@@ -87,9 +93,9 @@ function AttributesModel() {
         // attribute might not be rendered immediatelly so could not focus
         setTimeout(() => $(".attribute-name:last").focus(), 100);
 
-        $attributesBody.sortable({
+        $ownedAttributesBody.sortable({
             handle: '.handle',
-            containment: $attributesBody,
+            containment: $ownedAttributesBody,
             update: this.updateAttributePositions
         });
     };
@@ -99,7 +105,7 @@ function AttributesModel() {
         const attributeData = attribute();
 
         if (attributeData) {
-            attributeData.isDeleted = 1;
+            attributeData.isDeleted = true;
 
             attribute(attributeData);
 
@@ -108,7 +114,7 @@ function AttributesModel() {
     };
 
     function isValid() {
-        for (let attributes = self.attributes(), i = 0; i < attributes.length; i++) {
+        for (let attributes = self.ownedAttributes(), i = 0; i < attributes.length; i++) {
             if (self.isEmptyName(i)) {
                 return false;
             }
@@ -132,7 +138,7 @@ function AttributesModel() {
 
         const noteId = noteDetailService.getCurrentNoteId();
 
-        const attributesToSave = self.attributes()
+        const attributesToSave = self.ownedAttributes()
             .map(attribute => attribute())
             .filter(attribute => attribute.attributeId !== "" || attribute.name !== "");
 
@@ -166,18 +172,18 @@ function AttributesModel() {
     };
 
     function addLastEmptyRow() {
-        const attributes = self.attributes().filter(attr => attr().isDeleted === 0);
+        const attributes = self.ownedAttributes().filter(attr => !attr().isDeleted);
         const last = attributes.length === 0 ? null : attributes[attributes.length - 1]();
 
         if (!last || last.name.trim() !== "") {
-            self.attributes.push(ko.observable({
+            self.ownedAttributes.push(ko.observable({
                 attributeId: '',
                 type: 'label',
                 name: '',
                 labelValue: '',
                 relationValue: '',
                 isInheritable: false,
-                isDeleted: 0,
+                isDeleted: false,
                 position: 0,
                 labelDefinition: {
                     labelType: "text",
@@ -201,13 +207,13 @@ function AttributesModel() {
     };
 
     this.isNotUnique = function(index) {
-        const cur = self.attributes()[index]();
+        const cur = self.ownedAttributes()[index]();
 
         if (cur.name.trim() === "") {
             return false;
         }
 
-        for (let attributes = self.attributes(), i = 0; i < attributes.length; i++) {
+        for (let attributes = self.ownedAttributes(), i = 0; i < attributes.length; i++) {
             const attribute = attributes[i]();
 
             if (index !== i && cur.name === attribute.name && cur.type === attribute.type) {
@@ -219,7 +225,7 @@ function AttributesModel() {
     };
 
     this.isEmptyName = function(index) {
-        const cur = self.attributes()[index]();
+        const cur = self.ownedAttributes()[index]();
 
         return cur.name.trim() === "" && (cur.attributeId !== "" || cur.labelValue !== "" || cur.relationValue);
     };
@@ -228,7 +234,7 @@ function AttributesModel() {
         const context = ko.contextFor(target);
         const index = context.$index();
 
-        return self.attributes()[index];
+        return self.ownedAttributes()[index];
     }
 }
 

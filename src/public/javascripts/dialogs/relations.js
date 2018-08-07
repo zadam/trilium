@@ -62,7 +62,7 @@ function RelationsModel() {
         const relationData = relation();
 
         if (relationData) {
-            relationData.isDeleted = 1;
+            relationData.isDeleted = true;
 
             relation(relationData);
 
@@ -115,7 +115,7 @@ function RelationsModel() {
     };
 
     function addLastEmptyRow() {
-        const relations = self.relations().filter(attr => attr().isDeleted === 0);
+        const relations = self.relations().filter(attr => !attr().isDeleted);
         const last = relations.length === 0 ? null : relations[relations.length - 1]();
 
         if (!last || last.name.trim() !== "" || last.targetNoteId !== "") {
@@ -123,8 +123,8 @@ function RelationsModel() {
                 relationId: '',
                 name: '',
                 targetNoteId: '',
-                isInheritable: 0,
-                isDeleted: 0,
+                isInheritable: false,
+                isDeleted: false,
                 position: 0
             }));
         }

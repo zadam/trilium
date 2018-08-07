@@ -7,6 +7,10 @@ class Entity {
         for (const key in row) {
             this[key] = row[key];
         }
+
+        if ('isDeleted' in this) {
+            this.isDeleted = !!this.isDeleted;
+        }
     }
 
     beforeSaving() {

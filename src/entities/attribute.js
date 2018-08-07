@@ -13,6 +13,8 @@ class Attribute extends Entity {
     constructor(row) {
         super(row);
 
+        this.isInheritable = !!this.isInheritable;
+
         if (this.isDefinition()) {
             try {
                 this.value = JSON.parse(this.value);

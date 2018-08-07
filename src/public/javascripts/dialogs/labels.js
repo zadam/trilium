@@ -52,7 +52,7 @@ function LabelsModel() {
         const labelData = label();
 
         if (labelData) {
-            labelData.isDeleted = 1;
+            labelData.isDeleted = true;
 
             label(labelData);
 
@@ -101,7 +101,7 @@ function LabelsModel() {
     };
 
     function addLastEmptyRow() {
-        const labels = self.labels().filter(attr => attr().isDeleted === 0);
+        const labels = self.labels().filter(attr => !attr().isDeleted);
         const last = labels.length === 0 ? null : labels[labels.length - 1]();
 
         if (!last || last.name.trim() !== "" || last.value !== "") {
@@ -109,7 +109,7 @@ function LabelsModel() {
                 labelId: '',
                 name: '',
                 value: '',
-                isDeleted: 0,
+                isDeleted: false,
                 position: 0
             }));
         }

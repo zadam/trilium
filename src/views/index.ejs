@@ -566,7 +566,7 @@
         </div>
 
         <div style="height: 97%; overflow: auto">
-          <table id="attributes-table" class="table">
+          <table id="owned-attributes-table" class="table">
             <thead>
             <tr>
               <th></th>
@@ -577,8 +577,8 @@
               <th></th>
             </tr>
             </thead>
-            <tbody data-bind="foreach: attributes">
-              <tr data-bind="if: isDeleted == 0">
+            <tbody data-bind="foreach: ownedAttributes">
+              <tr data-bind="if: !isDeleted">
                 <td class="handle">
                   <span class="glyphicon glyphicon-resize-vertical"></span>
                   <input type="hidden" name="position" data-bind="value: position"/>
@@ -624,6 +624,45 @@
               </tr>
             </tbody>
           </table>
+
+          <div data-bind="if: inheritedAttributes().length > 0">
+            <h4>Inherited attributes</h4>
+
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Type</th>
+                  <th>Name</th>
+                  <th>Value</th>
+                  <th>Owning note</th>
+                </tr>
+              </thead>
+              <tbody data-bind="foreach: inheritedAttributes">
+                <tr>
+                  <td data-bind="text: type"></td>
+                  <td data-bind="text: name"></td>
+                  <td>
+                    <span data-bind="if: type == 'label'">
+                      <span data-bind="text: value"></span>
+                    </span>
+                    <span data-bind="if: type == 'relation'">
+                      <span data-bind="noteLink: value"></span>
+                    </span>
+                    <span data-bind="if: type == 'label-definition'">
+                      <span data-bind="text: value.labelType"></span>
+                      <span data-bind="text: value.multiplicityType"></span>
+                      promoted: <span data-bind="text: value.isPromoted"></span>
+                    </span>
+                    <span data-bind="if: type == 'relation-definition'">
+                      <span data-bind="text: value.multiplicityType"></span>
+                      promoted: <span data-bind="text: value.isPromoted"></span>
+                    </span>
+                    <td data-bind="noteLink: noteId"></td>
+                  </tr>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </form>
     </div>
@@ -646,7 +685,7 @@
             </tr>
           </thead>
           <tbody data-bind="foreach: labels">
-            <tr data-bind="if: isDeleted == 0">
+            <tr data-bind="if: !isDeleted">
               <td class="handle">
                 <span class="glyphicon glyphicon-resize-vertical"></span>
                 <input type="hidden" name="position" data-bind="value: position"/>
@@ -691,7 +730,7 @@
             </tr>
             </thead>
             <tbody data-bind="foreach: relations">
-            <tr data-bind="if: isDeleted == 0">
+            <tr data-bind="if: !isDeleted">
               <td class="handle">
                 <span class="glyphicon glyphicon-resize-vertical"></span>
                 <input type="hidden" name="position" data-bind="value: position"/>

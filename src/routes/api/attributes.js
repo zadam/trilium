@@ -51,6 +51,10 @@ async function getEffectiveNoteAttributes(req) {
         }
     });
 
+    for (const attr of filteredAttributes) {
+        attr.isOwned = attr.noteId === noteId;
+    }
+
     return filteredAttributes;
 }
 
@@ -70,7 +74,7 @@ async function updateNoteAttribute(req) {
     }
 
     if (attribute.noteId !== noteId) {
-        throw new Error(`Attribute ${body.attributeId} does not belong to note ${noteId}`);
+        return [400, `Attribute ${body.attributeId} is not owned by ${noteId}`];
     }
 
     attribute.value = body.value;
@@ -83,12 +87,17 @@ async function updateNoteAttribute(req) {
 }
 
 async function deleteNoteAttribute(req) {
+    const noteId = req.params.noteId;
     const attributeId = req.params.attributeId;
 
     const attribute = await repository.getAttribute(attributeId);
 
     if (attribute) {
-        attribute.isDeleted = 1;
+        if (attribute.noteId !== noteId) {
+            return [400, `Attribute ${attributeId} is not owned by ${noteId}`];
+        }
+
+        attribute.isDeleted = true;
         await attribute.save();
     }
 }
@@ -102,6 +111,10 @@ async function updateNoteAttributes(req) {
 
         if (attribute.attributeId) {
             attributeEntity = await repository.getAttribute(attribute.attributeId);
+
+            if (attributeEntity.noteId !== noteId) {
+                return [400, `Attribute ${attributeEntity.noteId} is not owned by ${noteId}`];
+            }
         }
         else {
             // if it was "created" and then immediatelly deleted, we just don't create it at all
@@ -120,12 +133,10 @@ async function updateNoteAttributes(req) {
         attributeEntity.isInheritable = attribute.isInheritable;
         attributeEntity.isDeleted = attribute.isDeleted;
 
-        console.log("ATTR: ", attributeEntity);
-
         await attributeEntity.save();
     }
 
-    return await repository.getEntities("SELECT * FROM attributes WHERE isDeleted = 0 AND noteId = ? ORDER BY position, dateCreated", [noteId]);
+    return await getEffectiveNoteAttributes(req);
 }
 
 async function getAttributeNames(req) {

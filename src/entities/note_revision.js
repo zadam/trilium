@@ -7,10 +7,12 @@ const repository = require('../services/repository');
 class NoteRevision extends Entity {
     static get tableName() { return "note_revisions"; }
     static get primaryKeyName() { return "noteRevisionId"; }
-    static get hashedProperties() { return ["noteRevisionId", "noteId", "title", "content", "dateModifiedFrom", "dateModifiedTo"]; }
+    static get hashedProperties() { return ["noteRevisionId", "noteId", "title", "content", "isProtected", "dateModifiedFrom", "dateModifiedTo"]; }
 
     constructor(row) {
         super(row);
+
+        this.isProtected = !!this.isProtected;
 
         if (this.isProtected) {
             protectedSessionService.decryptNoteRevision(this);

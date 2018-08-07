@@ -192,7 +192,7 @@ async function saveNoteRevision(note) {
             content: note.content,
             type: note.type,
             mime: note.mime,
-            isProtected: 0, // will be fixed in the protectNoteRevisions() call
+            isProtected: false, // will be fixed in the protectNoteRevisions() call
             dateModifiedFrom: note.dateModified,
             dateModifiedTo: dateUtils.nowDate()
         }).save();
@@ -226,7 +226,7 @@ async function updateNote(noteId, noteUpdates) {
 }
 
 async function deleteNote(branch) {
-    if (!branch || branch.isDeleted === 1) {
+    if (!branch || branch.isDeleted) {
         return;
     }
 
