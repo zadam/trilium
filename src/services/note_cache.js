@@ -11,7 +11,7 @@ let protectedNoteTitles;
 let noteIds;
 let childParentToBranchId = {};
 const childToParent = {};
-const archived = {};
+let archived = {};
 
 // key is 'childNoteId-parentNoteId' as a replacement for branchId which we don't use here
 let prefixes = {};
@@ -30,11 +30,7 @@ async function load() {
         childParentToBranchId[`${rel.noteId}-${rel.parentNoteId}`] = rel.branchId;
     }
 
-    const hiddenLabels = await sql.getColumn(`SELECT noteId FROM attributes WHERE type = 'label' AND isDeleted = 0 AND name = 'archived'`);
-
-    for (const noteId of hiddenLabels) {
-        archived[noteId] = true;
-    }
+    archived = await sql.getMap(`SELECT noteId, isInheritable FROM attributes WHERE isDeleted = 0 AND type = 'label' AND name = 'archived'`);
 
     loaded = true;
 }
@@ -54,7 +50,8 @@ function findNotes(query) {
     }
 
     for (const noteId of noteIds) {
-        if (archived[noteId]) {
+        // for leaf note it doesn't matter if "archived" label inheritable or not
+        if (noteId in archived) {
             continue;
         }
 
@@ -64,7 +61,8 @@ function findNotes(query) {
         }
 
         for (const parentNoteId of parents) {
-            if (archived[parentNoteId]) {
+            // for parent note archived needs to be inheritable
+            if (archived[parentNoteId] === 1) {
                 continue;
             }
 
@@ -120,7 +118,8 @@ function search(noteId, tokens, path, results) {
             return;
         }
 
-        if (parentNoteId === 'root' || archived[parentNoteId]) {
+        // archived must be inheritable
+        if (parentNoteId === 'root' || archived[parentNoteId] === 1) {
             continue;
         }
 
@@ -198,7 +197,8 @@ function getSomePath(noteId, path) {
     }
 
     for (const parentNoteId of parents) {
-        if (archived[parentNoteId]) {
+        // archived applies here only if inheritable
+        if (archived[parentNoteId] === 1) {
             continue;
         }
 
@@ -273,8 +273,10 @@ eventService.subscribe(eventService.ENTITY_CHANGED, async ({entityName, entityId
             const hideLabel = await repository.getEntity(`SELECT * FROM attributes WHERE isDeleted = 0 AND type = 'label' 
                                  AND name = 'archived' AND noteId = ?`, [attribute.noteId]);
 
+            console.log(hideLabel);
+
             if (hideLabel) {
-                archived[attribute.noteId] = true;
+                archived[attribute.noteId] = hideLabel.isInheritable ? 1 : 0;
             }
             else {
                 delete archived[attribute.noteId];
