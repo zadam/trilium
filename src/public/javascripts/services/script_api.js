@@ -4,7 +4,7 @@ import utils from './utils.js';
 import infoService from './info.js';
 import linkService from './link.js';
 
-function ScriptApi(startNote, currentNote, workNote = null) {
+function ScriptApi(startNote, currentNote, workEntity = null) {
     const $pluginButtons = $("#plugin-buttons");
 
     async function activateNote(notePath) {
@@ -44,7 +44,8 @@ function ScriptApi(startNote, currentNote, workNote = null) {
             params: prepareParams(params),
             startNoteId: startNote.noteId,
             currentNoteId: currentNote.noteId,
-            workNoteId: workNote ? workNote.noteId : null
+            workEntityName: workEntity ? workEntity.constructor.tableName() : null
+            workEntityId: workEntity ? workEntity.noteId : null
         });
 
         return ret.executionResult;
@@ -53,7 +54,7 @@ function ScriptApi(startNote, currentNote, workNote = null) {
     return {
         startNote: startNote,
         currentNote: currentNote,
-        workNote: workNote,
+        workEntity: workEntity,
         addButtonToToolbar,
         activateNote,
         getInstanceName: () => window.glob.instanceName,

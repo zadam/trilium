@@ -9,10 +9,16 @@ async function setEntityConstructor(constructor) {
     entityConstructor = constructor;
 }
 
+async function getEntityFromName(entityName, entityId) {
+    const entityConstructor = entityConstructor.getEntityFromTableName(entityName);
+
+    return await getEntity(`SELECT * FROM ${entityConstructor.tableName()} WHERE ${entityConstructor.primaryKeyName()} = ?`, [entityId]);
+}
+
 async function getEntities(query, params = []) {
     const rows = await sql.getRows(query, params);
 
-    return rows.map(entityConstructor);
+    return rows.map(entityConstructor.createEntityFromRow);
 }
 
 async function getEntity(query, params = []) {
@@ -22,7 +28,7 @@ async function getEntity(query, params = []) {
         return null;
     }
 
-    return entityConstructor(row);
+    return entityConstructor.createEntityFromRow(row);
 }
 
 async function getNote(noteId) {
@@ -73,6 +79,7 @@ async function updateEntity(entity) {
 }
 
 module.exports = {
+    getEntityFromName,
     getEntities,
     getEntity,
     getNote,

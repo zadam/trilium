@@ -1,14 +1,14 @@
 import ScriptContext from "./script_context.js";
 import server from "./server.js";
 
-async function getAndExecuteBundle(noteId, workNote = null) {
+async function getAndExecuteBundle(noteId, workEntity = null) {
     const bundle = await server.get('script/bundle/' + noteId);
 
-    await executeBundle(bundle, workNote);
+    await executeBundle(bundle, workEntity);
 }
 
-async function executeBundle(bundle, workNote) {
-    const apiContext = ScriptContext(bundle.note, bundle.allNotes, workNote);
+async function executeBundle(bundle, workEntity) {
+    const apiContext = ScriptContext(bundle.note, bundle.allNotes, workEntity);
 
     return await (function () {
         return eval(`const apiContext = this; (async function() { ${bundle.script}\r\n})()`);

@@ -28,6 +28,18 @@ class Attribute extends Entity {
         return await repository.getEntity("SELECT * FROM notes WHERE noteId = ?", [this.noteId]);
     }
 
+    async getTargetNote() {
+        if (this.type !== 'relation') {
+            throw new Error(`Attribute ${this.attributeId} is not relation`);
+        }
+
+        if (!this.value) {
+            return null;
+        }
+
+        return await repository.getEntity("SELECT * FROM notes WHERE noteId = ?", [this.value]);
+    }
+
     isDefinition() {
         return this.type === 'label-definition' || this.type === 'relation-definition';
     }

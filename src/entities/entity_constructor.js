@@ -9,6 +9,22 @@ const ApiToken = require('../entities/api_token');
 const Option = require('../entities/option');
 const repository = require('../services/repository');
 
+const TABLE_NAME_TO_ENTITY = {
+    "attributes": Attribute.constructor,
+    "images": Image.constructor,
+    "note_images": NoteImage.constructor,
+    "branches": Branch.constructor,
+    "notes": Note.constructor,
+    "note_revisions": NoteRevision.constructor,
+    "recent_notes": RecentNote.constructor,
+    "options": Option.constructor,
+    "api_tokens": ApiToken.constructor,
+};
+
+function getEntityFromTableName(tableName) {
+    return TABLE_NAME_TO_ENTITY[tableName];
+}
+
 function createEntityFromRow(row) {
     let entity;
 
@@ -46,8 +62,9 @@ function createEntityFromRow(row) {
     return entity;
 }
 
-repository.setEntityConstructor(createEntityFromRow);
-
 module.exports = {
-    createEntityFromRow
+    createEntityFromRow,
+    getEntityFromTableName
 };
+
+repository.setEntityConstructor(module.exports);

@@ -4,17 +4,17 @@ const repository = require('./repository');
 const cls = require('./cls');
 const sourceIdService = require('./source_id');
 
-async function executeNote(note, targetNote) {
+async function executeNote(note, workEntity) {
     if (!note.isJavaScript()) {
         return;
     }
 
     const bundle = await getScriptBundle(note);
 
-    await executeBundle(bundle, note, targetNote);
+    await executeBundle(bundle, note, workEntity);
 }
 
-async function executeBundle(bundle, startNote, workNote = null) {
+async function executeBundle(bundle, startNote, workEntity = null) {
     if (!startNote) {
         // this is the default case, the only exception is when we want to preserve frontend startNote
         startNote = bundle.note;
@@ -23,7 +23,7 @@ async function executeBundle(bundle, startNote, workNote = null) {
     // last \r\n is necessary if script contains line comment on its last line
     const script = "async function() {\r\n" + bundle.script + "\r\n}";
 
-    const ctx = new ScriptContext(startNote, bundle.allNotes, workNote);
+    const ctx = new ScriptContext(startNote, bundle.allNotes, workEntity);
 
     if (await bundle.note.hasLabel('manualTransactionHandling')) {
         return await execute(ctx, script, '');
@@ -37,10 +37,10 @@ async function executeBundle(bundle, startNote, workNote = null) {
  * This method preserves frontend startNode - that's why we start execution from currentNote and override
  * bundle's startNote.
  */
-async function executeScript(script, params, startNoteId, currentNoteId, targetNoteId) {
+async function executeScript(script, params, startNoteId, currentNoteId, workEntityName, workEntityId) {
     const startNote = await repository.getNote(startNoteId);
     const currentNote = await repository.getNote(currentNoteId);
-    const targetNote = await repository.getNote(targetNoteId);
+    const workEntity = await repository.getEntityFromName(workEntityName, workEntityId);
 
     currentNote.content = `return await (${script}\r\n)(${getParams(params)})`;
     currentNote.type = 'code';
@@ -48,7 +48,7 @@ async function executeScript(script, params, startNoteId, currentNoteId, targetN
 
     const bundle = await getScriptBundle(currentNote);
 
-    return await executeBundle(bundle, startNote, targetNote);
+    return await executeBundle(bundle, startNote, workEntity);
 }
 
 async function execute(ctx, script, paramsStr) {
