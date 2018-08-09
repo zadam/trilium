@@ -14,13 +14,13 @@ const $fileOpen = $("#file-open");
 async function show() {
     const currentNote = noteDetailService.getCurrentNote();
 
-    const labels = await server.get('notes/' + currentNote.noteId + '/labels');
-    const labelMap = utils.toObject(labels, l => [l.name, l.value]);
+    const attributes = await server.get('notes/' + currentNote.noteId + '/attributes');
+    const attributeMap = utils.toObject(attributes, l => [l.name, l.value]);
 
     $noteDetailFile.show();
 
-    $fileFileName.text(labelMap.original_file_name);
-    $fileFileSize.text(labelMap.file_size + " bytes");
+    $fileFileName.text(attributeMap.original_file_name);
+    $fileFileSize.text(attributeMap.file_size + " bytes");
     $fileFileType.text(currentNote.mime);
 }
 
