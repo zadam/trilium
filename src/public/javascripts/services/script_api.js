@@ -44,7 +44,7 @@ function ScriptApi(startNote, currentNote, originEntity = null) {
             params: prepareParams(params),
             startNoteId: startNote.noteId,
             currentNoteId: currentNote.noteId,
-            originEntityName: originEntity ? originEntity.constructor.tableName() : null,
+            originEntityName: originEntity ? originEntity.constructor.tableName : null,
             originEntityId: originEntity ? originEntity.noteId : null
         });
 

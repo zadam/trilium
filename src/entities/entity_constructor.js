@@ -10,18 +10,22 @@ const Option = require('../entities/option');
 const repository = require('../services/repository');
 
 const TABLE_NAME_TO_ENTITY = {
-    "attributes": Attribute.constructor,
-    "images": Image.constructor,
-    "note_images": NoteImage.constructor,
-    "branches": Branch.constructor,
-    "notes": Note.constructor,
-    "note_revisions": NoteRevision.constructor,
-    "recent_notes": RecentNote.constructor,
-    "options": Option.constructor,
-    "api_tokens": ApiToken.constructor,
+    "attributes": Attribute,
+    "images": Image,
+    "note_images": NoteImage,
+    "branches": Branch,
+    "notes": Note,
+    "note_revisions": NoteRevision,
+    "recent_notes": RecentNote,
+    "options": Option,
+    "api_tokens": ApiToken
 };
 
 function getEntityFromTableName(tableName) {
+    if (!(tableName in TABLE_NAME_TO_ENTITY)) {
+        throw new Error(`Entity for table ${tableName} not found!`);
+    }
+
     return TABLE_NAME_TO_ENTITY[tableName];
 }
 

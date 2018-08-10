@@ -17,7 +17,7 @@ async function runNotesWithLabel(runAttrValue) {
           AND notes.isDeleted = 0`, [runAttrValue]);
 
     for (const note of notes) {
-        scriptService.executeNote(note);
+        scriptService.executeNote(note, note);
     }
 }
 

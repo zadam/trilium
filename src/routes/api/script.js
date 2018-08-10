@@ -14,7 +14,7 @@ async function exec(req) {
 async function run(req) {
     const note = await repository.getNote(req.params.noteId);
 
-    const result = await scriptService.executeNote(req, note);
+    const result = await scriptService.executeNote(note, note);
 
     return { executionResult: result };
 }

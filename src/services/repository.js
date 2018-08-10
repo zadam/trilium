@@ -10,9 +10,9 @@ async function setEntityConstructor(constructor) {
 }
 
 async function getEntityFromName(entityName, entityId) {
-    const entityConstructor = entityConstructor.getEntityFromTableName(entityName);
+    const constructor = entityConstructor.getEntityFromTableName(entityName);
 
-    return await getEntity(`SELECT * FROM ${entityConstructor.tableName()} WHERE ${entityConstructor.primaryKeyName()} = ?`, [entityId]);
+    return await getEntity(`SELECT * FROM ${constructor.tableName} WHERE ${constructor.primaryKeyName} = ?`, [entityId]);
 }
 
 async function getEntities(query, params = []) {

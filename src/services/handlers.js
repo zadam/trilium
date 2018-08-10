@@ -11,7 +11,7 @@ async function runAttachedRelations(note, relationName, originEntity) {
     for (const relation of runRelations) {
         const scriptNote = await relation.getTargetNote();
 
-        await scriptService.executeNote(scriptNote, scriptNote, originEntity);
+        await scriptService.executeNote(scriptNote, originEntity);
     }
 }
 

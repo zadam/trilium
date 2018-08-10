@@ -273,8 +273,6 @@ eventService.subscribe(eventService.ENTITY_CHANGED, async ({entityName, entityId
             const hideLabel = await repository.getEntity(`SELECT * FROM attributes WHERE isDeleted = 0 AND type = 'label' 
                                  AND name = 'archived' AND noteId = ?`, [attribute.noteId]);
 
-            console.log(hideLabel);
-
             if (hideLabel) {
                 archived[attribute.noteId] = hideLabel.isInheritable ? 1 : 0;
             }
