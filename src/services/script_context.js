@@ -10,10 +10,10 @@ const config = require('./config');
 const repository = require('./repository');
 const axios = require('axios');
 
-function ScriptContext(startNote, allNotes, workEntity = null) {
+function ScriptContext(startNote, allNotes, originEntity = null) {
     this.modules = {};
     this.notes = utils.toObject(allNotes, note => [note.noteId, note]);
-    this.apis = utils.toObject(allNotes, note => [note.noteId, new ScriptApi(startNote, note, workEntity)]);
+    this.apis = utils.toObject(allNotes, note => [note.noteId, new ScriptApi(startNote, note, originEntity)]);
     this.require = moduleNoteIds => {
         return moduleName => {
             const candidates = allNotes.filter(note => moduleNoteIds.includes(note.noteId));
@@ -28,10 +28,10 @@ function ScriptContext(startNote, allNotes, workEntity = null) {
     };
 }
 
-function ScriptApi(startNote, currentNote, workEntity) {
+function ScriptApi(startNote, currentNote, originEntity) {
     this.startNote = startNote;
     this.currentNote = currentNote;
-    this.workEntity = workEntity;
+    this.originEntity = originEntity;
 
     this.axios = axios;
 

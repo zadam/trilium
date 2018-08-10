@@ -4,14 +4,14 @@ const treeService = require('./tree');
 const messagingService = require('./messaging');
 const repository = require('./repository');
 
-async function runAttachedRelations(note, relationName, workEntity) {
+async function runAttachedRelations(note, relationName, originEntity) {
     const attributes = await note.getAttributes();
     const runRelations = attributes.filter(relation => relation.type === 'relation' && relation.name === relationName);
 
     for (const relation of runRelations) {
         const scriptNote = await relation.getTargetNote();
 
-        await scriptService.executeNote(scriptNote, scriptNote, workEntity);
+        await scriptService.executeNote(scriptNote, scriptNote, originEntity);
     }
 }
 
