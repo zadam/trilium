@@ -42,7 +42,7 @@ const keyBindings = {
     },
     "shift+up": node => {
         node.navigate($.ui.keyCode.UP, true).then(() => {
-            const currentNode = getCurrentNode();
+            const currentNode = treeService.getCurrentNode();
 
             if (currentNode.isSelected()) {
                 node.setSelected(false);
