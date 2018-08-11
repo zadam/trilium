@@ -9,6 +9,8 @@ const treeService = require('./tree');
 const config = require('./config');
 const repository = require('./repository');
 const axios = require('axios');
+const cloningService = require('./cloning');
+const messagingService = require('./messaging');
 
 function ScriptContext(startNote, allNotes, originEntity = null) {
     this.modules = {};
@@ -54,6 +56,9 @@ function ScriptApi(startNote, currentNote, originEntity) {
     this.getNotesWithLabel = attributeService.getNotesWithLabel;
     this.getNoteWithLabel = attributeService.getNoteWithLabel;
 
+    this.ensureNoteIsPresentInParent = cloningService.ensureNoteIsPresentInParent;
+    this.ensureNoteIsAbsentFromParent = cloningService.ensureNoteIsAbsentFromParent;
+
     this.createNote = noteService.createNote;
 
     this.log = message => log.info(`Script ${currentNote.noteId}: ${message}`);
@@ -64,6 +69,8 @@ function ScriptApi(startNote, currentNote, originEntity) {
     this.sortNotesAlphabetically = treeService.sortNotesAlphabetically;
 
     this.transactional = sql.transactional;
+
+    this.refreshTree = () => messagingService.sendMessageToAllClients({ type: 'refresh-tree' });
 }
 
 module.exports = ScriptContext;

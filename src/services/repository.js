@@ -62,7 +62,8 @@ async function updateEntity(entity) {
     delete clone.isOwned;
 
     for (const key in clone) {
-        if (clone[key] !== null && typeof clone[key] === 'object') {
+        // !isBuffer is for images and attachments
+        if (clone[key] !== null && typeof clone[key] === 'object' && !Buffer.isBuffer(clone[key])) {
             clone[key] = JSON.stringify(clone[key]);
         }
     }

@@ -35,6 +35,8 @@ import libraryLoader from "./library_loader.js";
 window.glob.getCurrentNode = treeService.getCurrentNode;
 window.glob.getHeaders = server.getHeaders;
 window.glob.showAddLinkDialog = addLinkDialog.showDialog;
+// this is required by CKEditor when uploading images
+window.glob.noteChanged = noteDetailService.noteChanged;
 
 // required for ESLint plugin
 window.glob.getCurrentNote = noteDetailService.getCurrentNote;
