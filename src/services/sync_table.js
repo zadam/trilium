@@ -53,7 +53,7 @@ async function addEntitySync(entityName, entityId, sourceId) {
         sourceId: sourceId || cls.getSourceId() || sourceIdService.getCurrentSourceId()
     });
 
-    eventService.emit(eventService.ENTITY_CHANGED, {
+    await eventService.syncEmit(eventService.ENTITY_CHANGED, {
         entityName,
         entityId
     });
