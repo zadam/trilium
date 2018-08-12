@@ -60,6 +60,7 @@ async function updateEntity(entity) {
 
     delete clone.jsonContent;
     delete clone.isOwned;
+    delete clone.isChanged;
 
     for (const key in clone) {
         // !isBuffer is for images and attachments
@@ -73,7 +74,7 @@ async function updateEntity(entity) {
 
         const primaryKey = entity[entity.constructor.primaryKeyName];
 
-        if (entity.constructor.tableName !== 'options' || entity.isSynced) {
+        if (entity.isChanged && (entity.constructor.tableName !== 'options' || entity.isSynced)) {
             await syncTableService.addEntitySync(entity.constructor.tableName, primaryKey);
         }
     });

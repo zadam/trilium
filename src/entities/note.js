@@ -8,7 +8,7 @@ const dateUtils = require('../services/date_utils');
 class Note extends Entity {
     static get tableName() { return "notes"; }
     static get primaryKeyName() { return "noteId"; }
-    static get hashedProperties() { return ["noteId", "title", "content", "type", "dateModified", "isProtected", "isDeleted"]; }
+    static get hashedProperties() { return ["noteId", "title", "content", "type", "isProtected", "isDeleted"]; }
 
     constructor(row) {
         super(row);
@@ -186,8 +186,6 @@ class Note extends Entity {
     }
 
     beforeSaving() {
-        super.beforeSaving();
-
         if (this.isJson() && this.jsonContent) {
             this.content = JSON.stringify(this.jsonContent, null, '\t');
         }
@@ -204,7 +202,11 @@ class Note extends Entity {
             this.dateCreated = dateUtils.nowDate();
         }
 
-        this.dateModified = dateUtils.nowDate();
+        super.beforeSaving();
+
+        if (this.isChanged) {
+            this.dateModified = dateUtils.nowDate();
+        }
     }
 }
 

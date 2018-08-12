@@ -8,7 +8,7 @@ const sql = require('../services/sql');
 class Attribute extends Entity {
     static get tableName() { return "attributes"; }
     static get primaryKeyName() { return "attributeId"; }
-    static get hashedProperties() { return ["attributeId", "noteId", "type", "name", "value", "isInheritable", "dateModified", "dateCreated"]; }
+    static get hashedProperties() { return ["attributeId", "noteId", "type", "name", "value", "isInheritable", "dateCreated"]; }
 
     constructor(row) {
         super(row);
@@ -66,9 +66,11 @@ class Attribute extends Entity {
             this.dateCreated = dateUtils.nowDate();
         }
 
-        this.dateModified = dateUtils.nowDate();
-
         super.beforeSaving();
+
+        if (this.isChanged) {
+            this.dateModified = dateUtils.nowDate();
+        }
     }
 }
 

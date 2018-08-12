@@ -18,13 +18,21 @@ class Entity {
             this[this.constructor.primaryKeyName] = utils.newEntityId();
         }
 
+        const origHash = this.hash;
+
+        this.hash = this.generateHash();
+
+        this.isChanged = origHash !== this.hash;
+    }
+
+    generateHash() {
         let contentToHash = "";
 
         for (const propertyName of this.constructor.hashedProperties) {
             contentToHash += "|" + this[propertyName];
         }
 
-        this["hash"] = utils.hash(contentToHash).substr(0, 10);
+        return utils.hash(contentToHash).substr(0, 10);
     }
 
     async save() {

@@ -9,7 +9,7 @@ class Branch extends Entity {
     static get tableName() { return "branches"; }
     static get primaryKeyName() { return "branchId"; }
     // notePosition is not part of hash because it would produce a lot of updates in case of reordering
-    static get hashedProperties() { return ["branchId", "noteId", "parentNoteId", "dateModified", "isDeleted", "prefix"]; }
+    static get hashedProperties() { return ["branchId", "noteId", "parentNoteId", "isDeleted", "prefix"]; }
 
     async getNote() {
         return await repository.getEntity("SELECT * FROM notes WHERE noteId = ?", [this.noteId]);
@@ -29,9 +29,11 @@ class Branch extends Entity {
             this.dateCreated = dateUtils.nowDate();
         }
 
-        this.dateModified = dateUtils.nowDate();
-
         super.beforeSaving();
+
+        if (this.isChanged) {
+            this.dateModified = dateUtils.nowDate();
+        }
     }
 }
 

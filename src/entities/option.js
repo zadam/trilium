@@ -15,9 +15,11 @@ class Option extends Entity {
     }
 
     beforeSaving() {
-        this.dateModified = dateUtils.nowDate();
-
         super.beforeSaving();
+
+        if (this.isChanged) {
+            this.dateModified = dateUtils.nowDate();
+        }
     }
 }
 
