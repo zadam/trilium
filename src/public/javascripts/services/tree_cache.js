@@ -51,12 +51,12 @@ class TreeCache {
             if (!this.notes[noteId]) {
                 messagingService.logError(`Can't find note ${noteId}`);
 
-                return `[unknown ${noteId}]`;
+                return null;
             }
             else {
                 return this.notes[noteId];
             }
-        });
+        }).filter(note => note !== null);
     }
 
     /** @return NoteShort */

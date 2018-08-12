@@ -35,9 +35,9 @@ async function getTree() {
               JOIN tree ON branches.parentNoteId = tree.noteId
               WHERE tree.isExpanded = 1 AND branches.isDeleted = 0
           )
-        SELECT branches.* FROM tree JOIN branches USING(noteId) ORDER BY branches.notePosition`);
+        SELECT branches.* FROM tree JOIN branches USING(noteId) WHERE branches.isDeleted = 0 ORDER BY branches.notePosition`);
 
-    const noteIds = branches.map(b => b.noteId);
+    const noteIds = Array.from(new Set(branches.map(b => b.noteId)));
 
     const notes = await getNotes(noteIds);
 

@@ -29,7 +29,7 @@ async function executeBundle(bundle, startNote, originEntity = null) {
         return await execute(ctx, script, '');
     }
     else {
-        return await sql.transactional(async () => execute(ctx, script, ''));
+        return await sql.transactional(async () => await execute(ctx, script, ''));
     }
 }
 
