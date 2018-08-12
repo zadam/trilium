@@ -65,7 +65,7 @@ async function loginToProtectedSession(req) {
     // this is set here so that event handlers have access to the protected session
     cls.namespace.set('protectedSessionId', protectedSessionId);
 
-    eventService.emit(eventService.ENTER_PROTECTED_SESSION);
+    await eventService.emit(eventService.ENTER_PROTECTED_SESSION);
 
     return {
         success: true,

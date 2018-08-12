@@ -9,18 +9,7 @@ function subscribe(eventType, listener) {
     eventListeners[eventType].push(listener);
 }
 
-function emit(eventType, data) {
-    const listeners = eventListeners[eventType];
-
-    if (listeners) {
-        for (const listener of listeners) {
-            // not awaiting for async processing
-            listener(data);
-        }
-    }
-}
-
-async function syncEmit(eventType, data) {
+async function emit(eventType, data) {
     const listeners = eventListeners[eventType];
 
     if (listeners) {
@@ -33,7 +22,6 @@ async function syncEmit(eventType, data) {
 module.exports = {
     subscribe,
     emit,
-    syncEmit,
     // event types:
     NOTE_TITLE_CHANGED,
     ENTER_PROTECTED_SESSION,
