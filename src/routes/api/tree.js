@@ -9,6 +9,26 @@ async function getNotes(noteIds) {
       SELECT noteId, title, isProtected, type, mime
       FROM notes WHERE isDeleted = 0 AND noteId IN (???)`, noteIds);
 
+    const cssClassLabels = await sql.getManyRows(`
+      SELECT noteId, value FROM attributes WHERE isDeleted = 0 AND type = 'label' 
+                                             AND name = 'cssClass' AND noteId IN (???)`, noteIds);
+
+    for (const label of cssClassLabels) {
+        // FIXME: inefficient!
+        const note = notes.find(note => note.noteId === label.noteId);
+
+        if (!note) {
+            continue;
+        }
+
+        if (note.cssClass) {
+            note.cssClass += " " + label.value;
+        }
+        else {
+            note.cssClass = label.value;
+        }
+    }
+
     protectedSessionService.decryptNotes(notes);
 
     notes.forEach(note => note.isProtected = !!note.isProtected);

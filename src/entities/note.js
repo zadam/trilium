@@ -1,6 +1,7 @@
 "use strict";
 
 const Entity = require('./entity');
+const Attribute = require('./attribute');
 const protectedSessionService = require('../services/protected_session');
 const repository = require('../services/repository');
 const dateUtils = require('../services/date_utils');
@@ -129,6 +130,37 @@ class Note extends Entity {
         const attributes = await this.getAttributes();
 
         return attributes.find(attr => attr.type === 'label' && attr.name === name);
+    }
+
+    async getLabelValue(name) {
+        const label = await this.getLabel(name);
+
+        return label ? label.value : null;
+    }
+
+    async setLabel(name, value = "") {
+        let label = await this.getLabel(name);
+
+        if (!label) {
+            label = new Attribute({
+                noteId: this.noteId,
+                type: 'label',
+                name: name
+            });
+        }
+
+        label.value = value;
+
+        await label.save();
+    }
+
+    async removeLabel(name) {
+        const label = await this.getLabel(name);
+
+        if (label) {
+            label.isDeleted = true;
+            await label.save();
+        }
     }
 
     async getRevisions() {

@@ -7,6 +7,7 @@ class NoteShort {
         this.type = row.type;
         this.mime = row.mime;
         this.archived = row.archived;
+        this.cssClass = row.cssClass;
     }
 
     isJson() {

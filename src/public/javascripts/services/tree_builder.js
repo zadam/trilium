@@ -115,6 +115,10 @@ async function getExtraClasses(note) {
         extraClasses.push("multiple-parents");
     }
 
+    if (note.cssClass) {
+        extraClasses.push(note.cssClass);
+    }
+
     extraClasses.push(note.type);
 
     return extraClasses.join(" ");

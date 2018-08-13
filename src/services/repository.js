@@ -10,6 +10,10 @@ async function setEntityConstructor(constructor) {
 }
 
 async function getEntityFromName(entityName, entityId) {
+    if (!entityName || !entityId) {
+        return null;
+    }
+
     const constructor = entityConstructor.getEntityFromTableName(entityName);
 
     return await getEntity(`SELECT * FROM ${constructor.tableName} WHERE ${constructor.primaryKeyName} = ?`, [entityId]);

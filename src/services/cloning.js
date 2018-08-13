@@ -26,10 +26,19 @@ async function cloneNoteToParent(noteId, parentNoteId, prefix) {
     return { success: true };
 }
 
-// this is identical to cloneNoteToParent except for the intention - if cloned note is already in parent,
-// then this is successful result
 async function ensureNoteIsPresentInParent(noteId, parentNoteId, prefix) {
-    await cloneNoteToParent(noteId, parentNoteId, prefix);
+    const validationResult = await treeService.validateParentChild(parentNoteId, noteId);
+
+    if (!validationResult.success) {
+        return validationResult;
+    }
+
+    await new Branch({
+        noteId: noteId,
+        parentNoteId: parentNoteId,
+        prefix: prefix,
+        isExpanded: 0
+    }).save();
 }
 
 async function ensureNoteIsAbsentFromParent(noteId, parentNoteId) {
