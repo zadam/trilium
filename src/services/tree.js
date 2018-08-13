@@ -1,6 +1,8 @@
 "use strict";
 
 const sql = require('./sql');
+const repository = require('./repository');
+const Branch = require('../entities/branch');
 const syncTableService = require('./sync_table');
 const protectedSessionService = require('./protected_session');
 
@@ -99,8 +101,32 @@ async function sortNotesAlphabetically(parentNoteId) {
     });
 }
 
+async function setNoteToParent(noteId, prefix, parentNoteId) {
+    // case where there might be more such branches is ignored. It's expected there should be just one
+    const branch = await repository.getEntity("SELECT * FROM branches WHERE isDeleted = 0 AND noteId = ? AND prefix = ?", [noteId, prefix]);
+
+    if (branch) {
+        if (!parentNoteId) {
+            branch.isDeleted = true;
+        }
+        else {
+            branch.parentNoteId = parentNoteId;
+        }
+
+        await branch.save();
+    }
+    else if (parentNoteId) {
+        await new Branch({
+            noteId: noteId,
+            parentNoteId: parentNoteId,
+            prefix: prefix
+        }).save();
+    }
+}
+
 module.exports = {
     validateParentChild,
     getBranch,
-    sortNotesAlphabetically
+    sortNotesAlphabetically,
+    setNoteToParent
 };

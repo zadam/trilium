@@ -59,6 +59,8 @@ function ScriptApi(startNote, currentNote, originEntity) {
     this.ensureNoteIsPresentInParent = cloningService.ensureNoteIsPresentInParent;
     this.ensureNoteIsAbsentFromParent = cloningService.ensureNoteIsAbsentFromParent;
 
+    this.toggleNoteInParent = cloningService.toggleNoteInParent;
+
     this.createNote = noteService.createNote;
 
     this.log = message => log.info(`Script ${currentNote.noteId}: ${message}`);
@@ -67,6 +69,8 @@ function ScriptApi(startNote, currentNote, originEntity) {
     this.getDateNote = dateNoteService.getDateNote;
 
     this.sortNotesAlphabetically = treeService.sortNotesAlphabetically;
+
+    this.setNoteToParent = treeService.setNoteToParent;
 
     this.transactional = sql.transactional;
 

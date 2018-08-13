@@ -138,28 +138,39 @@ class Note extends Entity {
         return label ? label.value : null;
     }
 
+    async toggleLabel(enabled, name, value = "") {
+        if (enabled) {
+            await this.setLabel(name, value);
+        }
+        else {
+            await this.removeLabel(name, value);
+        }
+    }
+
     async setLabel(name, value = "") {
-        let label = await this.getLabel(name);
+        const attributes = await this.getOwnedAttributes();
+        let label = attributes.find(attr => attr.type === 'label' && attr.value === value);
 
         if (!label) {
             label = new Attribute({
                 noteId: this.noteId,
                 type: 'label',
-                name: name
+                name: name,
+                value: value
             });
+
+            await label.save();
         }
-
-        label.value = value;
-
-        await label.save();
     }
 
-    async removeLabel(name) {
-        const label = await this.getLabel(name);
+    async removeLabel(name, value = "") {
+        const attributes = await this.getOwnedAttributes();
 
-        if (label) {
-            label.isDeleted = true;
-            await label.save();
+        for (const attribute of attributes) {
+            if (attribute.type === 'label' && (!value || value === attribute.value)) {
+                attribute.isDeleted = true;
+                await attribute.save();
+            }
         }
     }
 

@@ -49,6 +49,15 @@ async function ensureNoteIsAbsentFromParent(noteId, parentNoteId) {
     }
 }
 
+async function toggleNoteInParent(present, noteId, parentNoteId, prefix) {
+    if (present) {
+        await ensureNoteIsPresentInParent(noteId, parentNoteId, prefix);
+    }
+    else {
+        await ensureNoteIsAbsentFromParent(noteId, parentNoteId);
+    }
+}
+
 async function cloneNoteAfter(noteId, afterBranchId) {
     const afterNote = await treeService.getBranch(afterBranchId);
 
@@ -79,5 +88,6 @@ module.exports = {
     cloneNoteToParent,
     ensureNoteIsPresentInParent,
     ensureNoteIsAbsentFromParent,
+    toggleNoteInParent,
     cloneNoteAfter
 };
