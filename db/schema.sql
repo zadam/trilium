@@ -82,21 +82,6 @@ CREATE INDEX `IDX_branches_noteId_parentNoteId` ON `branches` (
   `noteId`,
   `parentNoteId`
 );
-CREATE TABLE labels
-(
-  labelId  TEXT not null primary key,
-  noteId       TEXT not null,
-  name         TEXT not null,
-  value        TEXT default '' not null,
-  position     INT  default 0 not null,
-  dateCreated  TEXT not null,
-  dateModified TEXT not null,
-  isDeleted    INT  not null
-, hash TEXT DEFAULT "" NOT NULL);
-CREATE INDEX IDX_labels_name_value
-  on labels (name, value);
-CREATE INDEX IDX_labels_noteId
-  on labels (noteId);
 CREATE TABLE IF NOT EXISTS "notes" (
   `noteId`	TEXT NOT NULL,
   `title`	TEXT NOT NULL DEFAULT "unnamed",
@@ -134,19 +119,15 @@ CREATE TABLE IF NOT EXISTS "options"
   hash TEXT default "" not null,
   dateCreated TEXT default '1970-01-01T00:00:00.000Z' not null
 );
-CREATE TABLE relations
+CREATE TABLE attributes
 (
-    relationId  TEXT not null primary key,
-    sourceNoteId       TEXT not null,
-    name         TEXT not null,
-    targetNoteId        TEXT not null,
-    isInheritable int DEFAULT 0 NULL,
-    position     INT  default 0 not null,
-    dateCreated  TEXT not null,
-    dateModified TEXT not null,
-    isDeleted    INT  not null
-  , hash TEXT DEFAULT "" NOT NULL);
-CREATE INDEX IDX_relation_sourceNoteId
-  on relations (sourceNoteId);
-CREATE INDEX IDX_relation_targetNoteId
-  on relations (targetNoteId);
+  attributeId      TEXT not null primary key,
+  noteId       TEXT not null,
+  type         TEXT not null,
+  name         TEXT not null,
+  value        TEXT default '' not null,
+  position     INT  default 0 not null,
+  dateCreated  TEXT not null,
+  dateModified TEXT not null,
+  isDeleted    INT  not null,
+  hash         TEXT default "" not null, isInheritable int DEFAULT 0 NULL);
