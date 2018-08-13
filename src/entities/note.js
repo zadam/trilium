@@ -72,17 +72,28 @@ class Note extends Entity {
 
     async getAttributes() {
         const attributes = await repository.getEntities(`
-        WITH RECURSIVE tree(noteId, level) AS (
-        SELECT ?, 0
-            UNION
-            SELECT branches.parentNoteId, tree.level + 1 FROM branches
-            JOIN tree ON branches.noteId = tree.noteId
-            JOIN notes ON notes.noteId = branches.parentNoteId
-            WHERE notes.isDeleted = 0 AND branches.isDeleted = 0
-        )
-        SELECT attributes.* FROM attributes JOIN tree ON attributes.noteId = tree.noteId 
-        WHERE attributes.isDeleted = 0 AND (attributes.isInheritable = 1 OR attributes.noteId = ?)
-        ORDER BY level, noteId, position`, [this.noteId, this.noteId]);
+            WITH RECURSIVE
+            tree(noteId, level) AS (
+                SELECT ?, 0
+                UNION
+                SELECT branches.parentNoteId, tree.level + 1 FROM branches
+                    JOIN tree ON branches.noteId = tree.noteId
+                    JOIN notes ON notes.noteId = branches.parentNoteId
+                WHERE notes.isDeleted = 0
+                  AND branches.isDeleted = 0
+            ),
+            treeWithAttrs(noteId, level) AS (
+                SELECT * FROM tree
+                UNION
+                SELECT attributes.value, treeWithAttrs.level + 1 FROM attributes
+                     JOIN treeWithAttrs ON treeWithAttrs.noteId = attributes.noteId
+                WHERE attributes.isDeleted = 0
+                  AND attributes.type = 'relation'
+                  AND attributes.name = 'inheritAttributes'
+                )
+            SELECT attributes.* FROM attributes JOIN treeWithAttrs ON attributes.noteId = treeWithAttrs.noteId
+            WHERE attributes.isDeleted = 0 AND (attributes.isInheritable = 1 OR attributes.noteId = ?)
+            ORDER BY level, noteId, position`, [this.noteId, this.noteId]);
         // attributes are ordered so that "closest" attributes are first
         // we order by noteId so that attributes from same note stay together. Actual noteId ordering doesn't matter.
 
