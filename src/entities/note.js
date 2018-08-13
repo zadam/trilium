@@ -71,6 +71,18 @@ class Note extends Entity {
     }
 
     async getAttributes() {
+        if (!this.__attributeCache) {
+            await this.loadAttributesToCache();
+        }
+
+        return this.__attributeCache;
+    }
+
+    invalidateAttributeCache() {
+        this.__attributeCache = null;
+    }
+
+    async loadAttributesToCache() {
         const attributes = await repository.getEntities(`
             WITH RECURSIVE
             tree(noteId, level) AS (
@@ -129,7 +141,7 @@ class Note extends Entity {
             attr.isOwned = attr.noteId === this.noteId;
         }
 
-        return filteredAttributes;
+        this.__attributeCache = filteredAttributes;
     }
 
     async hasLabel(name) {
@@ -171,6 +183,8 @@ class Note extends Entity {
             });
 
             await label.save();
+
+            this.invalidateAttributeCache();
         }
     }
 
@@ -181,6 +195,8 @@ class Note extends Entity {
             if (attribute.type === 'label' && (!value || value === attribute.value)) {
                 attribute.isDeleted = true;
                 await attribute.save();
+
+                this.invalidateAttributeCache();
             }
         }
     }
