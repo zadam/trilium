@@ -109,7 +109,7 @@ function search(noteId, tokens, path, results) {
     }
 
     const parents = childToParent[noteId];
-    if (!parents) {
+    if (!parents || noteId === 'root') {
         return;
     }
 
@@ -119,11 +119,11 @@ function search(noteId, tokens, path, results) {
         }
 
         // archived must be inheritable
-        if (parentNoteId === 'root' || archived[parentNoteId] === 1) {
+        if (archived[parentNoteId] === 1) {
             continue;
         }
 
-        const title = getNoteTitle(noteId, parentNoteId);
+        const title = getNoteTitle(noteId, parentNoteId).toLowerCase();
         const foundTokens = [];
 
         for (const token of tokens) {

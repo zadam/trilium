@@ -65,6 +65,7 @@ async function updateEntity(entity) {
     delete clone.jsonContent;
     delete clone.isOwned;
     delete clone.isChanged;
+    delete clone.__attributeCache;
 
     for (const key in clone) {
         // !isBuffer is for images and attachments
