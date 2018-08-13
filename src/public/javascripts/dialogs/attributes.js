@@ -227,7 +227,7 @@ function AttributesModel() {
     this.isEmptyName = function(index) {
         const cur = self.ownedAttributes()[index]();
 
-        return cur.name.trim() === "" && (cur.attributeId !== "" || cur.labelValue !== "" || cur.relationValue);
+        return cur.name.trim() === "" && !cur.isDeleted && (cur.attributeId !== "" || cur.labelValue !== "" || cur.relationValue);
     };
 
     this.getTargetAttribute = function(target) {
