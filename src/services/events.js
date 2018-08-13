@@ -1,3 +1,5 @@
+const log = require('./log');
+
 const NOTE_TITLE_CHANGED = "NOTE_TITLE_CHANGED";
 const ENTER_PROTECTED_SESSION = "ENTER_PROTECTED_SESSION";
 const ENTITY_CHANGED = "ENTITY_CHANGED";
@@ -14,7 +16,13 @@ async function emit(eventType, data) {
 
     if (listeners) {
         for (const listener of listeners) {
-            await listener(data);
+            try {
+                await listener(data);
+            }
+            catch (e) {
+                log.error("Listener threw error: " + e.stack);
+                // we won't stop execution because of listener
+            }
         }
     }
 }
