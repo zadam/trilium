@@ -7,7 +7,7 @@ module.exports = function(attributeFilters) {
     let i = 1;
 
     for (const filter of attributeFilters) {
-        joins.push(`LEFT JOIN attributes AS attribute${i} ON attribute${i}.noteId = notes.noteId AND attribute${i}.name = ?`);
+        joins.push(`LEFT JOIN attributes AS attribute${i} ON attribute${i}.noteId = notes.noteId AND attribute${i}.name = ? AND attribute${i}.isDeleted = 0`);
         joinParams.push(filter.name);
 
         where += " " + filter.relation + " ";
