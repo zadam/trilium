@@ -105,9 +105,13 @@ async function activateNode(notePath) {
 
     const node = await expandToNote(notePath);
 
-    await node.setActive();
+    // we use noFocus because when we reload the tree because of background changes
+    // we don't want the reload event to steal focus from whatever was focused before
+    await node.setActive(true, { noFocus: true });
 
     clearSelectedNodes();
+
+    return node;
 }
 
 /**
@@ -283,11 +287,11 @@ async function treeInitialized() {
     }
 
     if (startNotePath) {
-        await activateNode(startNotePath);
+        const node = await activateNode(startNotePath);
 
         // looks like this this doesn't work when triggered immediatelly after activating node
         // so waiting a second helps
-        setTimeout(scrollToCurrentNote, 1000);
+        setTimeout(() => node.makeVisible({scrollIntoView: true}), 1000);
     }
 }
 
