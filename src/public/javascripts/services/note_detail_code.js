@@ -32,7 +32,7 @@ async function show() {
             lint: true,
             gutters: ["CodeMirror-lint-markers"],
             lineNumbers: true,
-            tabindex: 2 // so that tab from title will lead to code editor focus
+            tabindex: 100
         });
 
         codeEditor.on('change', noteDetailService.noteChanged);

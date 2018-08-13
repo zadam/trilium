@@ -228,21 +228,24 @@ async function loadAttributes() {
 
     const promoted = attributes.filter(attr => (attr.type === 'label-definition' || attr.type === 'relation-definition') && attr.value.isPromoted);
 
-    let idx = 1;
+    let idx = 2; // because idx is also tabIndex and 1 is the title
 
     async function createRow(definitionAttr, valueAttr) {
         const definition = definitionAttr.value;
-        const inputId = "promoted-input-" + (idx++);
+        const inputId = "promoted-input-" + idx;
         const $tr = $("<tr>");
         const $labelCell = $("<th>").append(valueAttr.name);
         const $input = $("<input>")
             .prop("id", inputId)
+            .prop("tabindex", idx)
             .prop("attribute-id", valueAttr.isOwned ? valueAttr.attributeId : '') // if not owned, we'll force creation of a new attribute instead of updating the inherited one
             .prop("attribute-type", valueAttr.type)
             .prop("attribute-name", valueAttr.name)
             .prop("value", valueAttr.value)
             .addClass("form-control")
             .addClass("promoted-attribute-input");
+
+        idx++;
 
         const $inputCell = $("<td>").append($("<div>").addClass("input-group").append($input));
 
