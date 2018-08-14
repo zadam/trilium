@@ -15,7 +15,7 @@ const $prefixFormGroup = $("#add-link-prefix-form-group");
 const $linkTypeDiv = $("#add-link-type-div");
 const $linkTypes = $("input[name='add-link-type']");
 const $linkTypeHtml = $linkTypes.filter('input[value="html"]');
-const $showRecentNotesButton = $("#add-link-show-recent-notes");
+const $showRecentNotesButton = $dialog.find(".show-recent-notes-button");
 
 function setLinkType(linkType) {
     $linkTypes.each(function () {

@@ -5,7 +5,7 @@ import searchNotesService from '../services/search_notes.js';
 const $dialog = $("#jump-to-note-dialog");
 const $autoComplete = $("#jump-to-note-autocomplete");
 const $showInFullTextButton = $("#show-in-full-text-button");
-const $showRecentNotesButton = $("#jump-to-note-show-recent-notes");
+const $showRecentNotesButton = $dialog.find(".show-recent-notes-button");
 
 async function showDialog() {
     glob.activeDialog = $dialog;
