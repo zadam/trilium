@@ -3,6 +3,7 @@ const scriptService = require('./script');
 const treeService = require('./tree');
 const messagingService = require('./messaging');
 const repository = require('./repository');
+const log = require('./log');
 
 async function runAttachedRelations(note, relationName, originEntity) {
     const attributes = await note.getAttributes();
@@ -11,7 +12,12 @@ async function runAttachedRelations(note, relationName, originEntity) {
     for (const relation of runRelations) {
         const scriptNote = await relation.getTargetNote();
 
-        await scriptService.executeNote(scriptNote, originEntity);
+        if (scriptNote) {
+            await scriptService.executeNote(scriptNote, originEntity);
+        }
+        else {
+            log.error(`Target note ${relation.value} of atttribute ${relation.attributeId} has not been found.`);
+        }
     }
 }
 

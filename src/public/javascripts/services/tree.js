@@ -357,6 +357,7 @@ function initFancyTree(tree) {
         dnd: dragAndDropSetup,
         lazyLoad: function(event, data) {
             const noteId = data.node.data.noteId;
+
             data.result = treeCache.getNote(noteId).then(note => treeBuilder.prepareBranch(note));
         },
         clones: {

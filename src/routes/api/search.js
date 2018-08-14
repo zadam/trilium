@@ -38,7 +38,7 @@ async function searchNotes(req) {
     let results;
 
     if (labelFiltersNoteIds && searchTextResults) {
-        results = labelFiltersNoteIds.filter(item => searchTextResults.includes(item.noteId));
+        results = searchTextResults.filter(item => labelFiltersNoteIds.includes(item.noteId));
     }
     else if (labelFiltersNoteIds) {
         results = labelFiltersNoteIds.map(noteCacheService.getNotePath).filter(res => !!res);
@@ -64,6 +64,7 @@ async function getFullTextResults(searchText) {
       FROM notes 
       WHERE isDeleted = 0 
         AND isProtected = 0
+        AND type IN ('text', 'code')
         AND ${tokenSql.join(' AND ')}`);
 
     return noteIds;
