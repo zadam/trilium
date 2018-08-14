@@ -188,7 +188,14 @@ async function importNotes(files, parentNoteId, noteIdMap) {
         noteIdMap[file.meta.noteId] = note.noteId;
 
         for (const attribute of file.meta.attributes) {
-            await attributeService.createAttribute(attribute);
+            await attributeService.createAttribute({
+                noteId: note.noteId,
+                type: attribute.type,
+                name: attribute.name,
+                value: attribute.value,
+                isInheritable: attribute.isInheritable,
+                position: attribute.position
+            });
         }
 
         if (file.children.length > 0) {
