@@ -176,7 +176,8 @@ function register(app) {
     apiRoute(POST, '/api/anonymization/anonymize', anonymizationRoute.anonymize);
 
     apiRoute(POST, '/api/cleanup/cleanup-unused-images', cleanupRoute.cleanupUnusedImages);
-    apiRoute(POST, '/api/cleanup/vacuum-database', cleanupRoute.vacuumDatabase);
+    // VACUUM requires execution outside of transaction
+    route(POST, '/api/cleanup/vacuum-database', [auth.checkApiAuthOrElectron], cleanupRoute.vacuumDatabase, apiResultHandler, false);
 
     apiRoute(POST, '/api/script/exec', scriptRoute.exec);
     apiRoute(POST, '/api/script/run/:noteId', scriptRoute.run);
