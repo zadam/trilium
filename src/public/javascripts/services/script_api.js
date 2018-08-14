@@ -63,7 +63,8 @@ function ScriptApi(startNote, currentNote, originEntity = null) {
         parseDate: utils.parseDate,
         showMessage: infoService.showMessage,
         showError: infoService.showError,
-        reloadTree: treeService.reload,
+        reloadTree: treeService.reload, // deprecated
+        refreshTree: treeService.reload,
         createNoteLink: linkService.createNoteLink
     }
 }

@@ -93,11 +93,13 @@ async function createNote(parentNoteId, title, content = "", extraOptions = {}) 
 
     const {note, branch} = await createNewNote(parentNoteId, noteData);
 
-    // FIXME: need to make this more generic for all kinds of attributes
-    if (extraOptions.labels) {
-        for (const labelName in extraOptions.labels) {
-            await attributeService.createLabel(note.noteId, labelName, extraOptions.labels[labelName]);
-        }
+    for (const attr of extraOptions.attributes || []) {
+        await attributeService.createAttribute({
+            noteId: note.noteId,
+            type: attr.type,
+            name: attr.name,
+            value: attr.value
+        });
     }
 
     await triggerNoteTitleChanged(note);
