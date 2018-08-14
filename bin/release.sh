@@ -47,7 +47,7 @@ bin/package.sh
 LINUX_X64_BUILD=trilium-linux-x64-$VERSION.7z
 LINUX_IA32_BUILD=trilium-linux-ia32-$VERSION.7z
 WINDOWS_X64_BUILD=trilium-windows-x64-$VERSION.7z
-SERVER_BUILD=trilium-linux-x64-server.7z
+SERVER_BUILD=trilium-linux-x64-server-$VERSION.7z
 
 echo "Creating release in GitHub"
 
