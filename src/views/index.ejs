@@ -562,7 +562,6 @@
               <th>Name</th>
               <th>Value</th>
               <th>Inheritable</th>
-              <th></th>
             </tr>
             </thead>
             <tbody data-bind="foreach: ownedAttributes">
@@ -572,7 +571,7 @@
                   <input type="hidden" name="position" data-bind="value: position"/>
                 </td>
                 <td>
-                    <select data-bind="options: $parent.availableTypes, optionsText: 'text', optionsValue: 'value', value: type, event: { change: $parent.typeChanged }"></select>
+                    <select class="form-control" style="width: auto;" data-bind="options: $parent.availableTypes, optionsText: 'text', optionsValue: 'value', value: type, event: { change: $parent.typeChanged }"></select>
                 </td>
                 <td>
                   <!-- Change to valueUpdate: blur is necessary because jQuery UI autocomplete hijacks change event -->
@@ -594,20 +593,25 @@
 
                     <select data-bind="options: $parent.multiplicityTypes, optionsText: 'text', optionsValue: 'value', value: labelDefinition.multiplicityType"></select>
 
-                    <input type="checkbox" value="true" data-bind="checked: labelDefinition.isPromoted" /> Promoted
+                    <label>
+                        <input type="checkbox" value="true" data-bind="checked: labelDefinition.isPromoted" />
+                        Promoted
+                    </label>
                   </div>
 
                   <div data-bind="visible: type == 'relation-definition'">
                     <select data-bind="options: $parent.multiplicityTypes, optionsText: 'text', optionsValue: 'value', value: relationDefinition.multiplicityType"></select>
 
-                    <input type="checkbox" value="true" data-bind="checked: relationDefinition.isPromoted" /> Promoted
+                    <label>
+                      <input type="checkbox" value="true" data-bind="checked: relationDefinition.isPromoted" />
+                      Promoted
+                    </label>
                   </div>
                 </td>
                 <td title="Inheritable relations are automatically inherited to the child notes">
                   <input type="checkbox" value="1" data-bind="checked: isInheritable" />
-                </td>
-                <td title="Delete" style="padding: 13px; cursor: pointer;">
-                  <span class="glyphicon glyphicon-trash" data-bind="click: $parent.deleteAttribute"></span>
+
+                  <span title="Delete" style="padding: 13px; cursor: pointer;" class="glyphicon glyphicon-trash" data-bind="click: $parent.deleteAttribute"></span>
                 </td>
               </tr>
             </tbody>
