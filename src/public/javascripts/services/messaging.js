@@ -82,26 +82,10 @@ setTimeout(() => {
 
     lastSyncId = glob.maxSyncIdAtLoad;
     lastPingTs = new Date().getTime();
-    let connectionBrokenNotification = null;
 
     setInterval(async () => {
         if (new Date().getTime() - lastPingTs > 30000) {
-            if (!connectionBrokenNotification) {
-                connectionBrokenNotification = $.notify({
-                    // options
-                    message: "Lost connection to server"
-                },{
-                    // options
-                    type: 'danger',
-                    delay: 100000000 // keep it until we explicitly close it
-                });
-            }
-        }
-        else if (connectionBrokenNotification) {
-            await connectionBrokenNotification.close();
-            connectionBrokenNotification = null;
-
-            infoService.showMessage("Re-connected to server");
+            console.log("Lost connection to server");
         }
 
         ws.send(JSON.stringify({
