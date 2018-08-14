@@ -102,10 +102,11 @@ class Note extends Entity {
                 WHERE attributes.isDeleted = 0
                   AND attributes.type = 'relation'
                   AND attributes.name = 'inheritAttributes'
+                  AND (attributes.noteId = ? OR attributes.isInheritable = 1)
                 )
             SELECT attributes.* FROM attributes JOIN treeWithAttrs ON attributes.noteId = treeWithAttrs.noteId
             WHERE attributes.isDeleted = 0 AND (attributes.isInheritable = 1 OR attributes.noteId = ?)
-            ORDER BY level, noteId, position`, [this.noteId, this.noteId]);
+            ORDER BY level, noteId, position`, [this.noteId, this.noteId, this.noteId]);
         // attributes are ordered so that "closest" attributes are first
         // we order by noteId so that attributes from same note stay together. Actual noteId ordering doesn't matter.
 
