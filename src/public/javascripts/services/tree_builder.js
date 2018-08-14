@@ -77,14 +77,8 @@ async function prepareSearchBranch(note) {
     const results = (await server.get('search/' + encodeURIComponent(fullNote.jsonContent.searchString)))
         .filter(res => res.noteId !== note.noteId); // this is necessary because title of the search note is often the same as the search text which would match and create circle
 
-    const noteIds = results.map(res => res.noteId);
-
-    console.log("result: ", results);
-
     // force to load all the notes at once instead of one by one
-    const notes = await treeCache.getNotes(noteIds);
-
-    console.log("NOTES", notes);
+    await treeCache.getNotes(results.map(res => res.noteId));
 
     for (const result of results) {
         const origBranch = await treeCache.getBranch(result.branchId);
@@ -99,8 +93,6 @@ async function prepareSearchBranch(note) {
 
         treeCache.addBranch(branch);
     }
-
-    console.log("fullNote", fullNote);
 
     return await prepareRealBranch(fullNote);
 }

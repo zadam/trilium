@@ -36,7 +36,7 @@ async function createMainWindow() {
     win.on('closed', onClosed);
 
     win.webContents.on('new-window', (e, url) => {
-        if (url !== mainWindow.webContents.getURL()) {
+        if (url !== win.webContents.getURL()) {
             e.preventDefault();
             require('electron').shell.openExternal(url);
         }
