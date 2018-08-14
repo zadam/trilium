@@ -12,13 +12,13 @@ create table attributes
   hash         TEXT default "" not null);
 
 create index IDX_attributes_name_value
-  on labels (name, value);
+  on attributes (name, value);
 
 create index IDX_attributes_value
-  on labels (value);
+  on attributes (value);
 
 create index IDX_attributes_noteId
-  on labels (noteId);
+  on attributes (noteId);
 
 INSERT INTO attributes (attributeId, noteId, type, name, value, position, dateCreated, dateModified, isDeleted, hash)
 SELECT labelId, noteId, 'label', name, value, position, dateCreated, dateModified, isDeleted, hash FROM labels;
