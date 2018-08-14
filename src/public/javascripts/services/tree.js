@@ -100,10 +100,14 @@ async function expandToNote(notePath, expandOpts) {
     }
 }
 
-async function activateNode(notePath) {
+async function activateNode(notePath, newNote) {
     utils.assertArguments(notePath);
 
     const node = await expandToNote(notePath);
+
+    if (newNote) {
+        noteDetailService.newNoteCreated();
+    }
 
     // we use noFocus because when we reload the tree because of background changes
     // we don't want the reload event to steal focus from whatever was focused before

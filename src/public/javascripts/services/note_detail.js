@@ -228,7 +228,7 @@ async function loadAttributes() {
 
     const promoted = attributes.filter(attr => (attr.type === 'label-definition' || attr.type === 'relation-definition') && attr.value.isPromoted);
 
-    let idx = 2; // because idx is also tabIndex and 1 is the title
+    let idx = 1;
 
     async function createRow(definitionAttr, valueAttr) {
         const definition = definitionAttr.value;
@@ -237,7 +237,7 @@ async function loadAttributes() {
         const $labelCell = $("<th>").append(valueAttr.name);
         const $input = $("<input>")
             .prop("id", inputId)
-            .prop("tabindex", idx)
+            .prop("tabindex", definitionAttr.position)
             .prop("attribute-id", valueAttr.isOwned ? valueAttr.attributeId : '') // if not owned, we'll force creation of a new attribute instead of updating the inherited one
             .prop("attribute-type", valueAttr.type)
             .prop("attribute-name", valueAttr.name)
@@ -318,7 +318,8 @@ async function loadAttributes() {
                 $input.val((await treeUtils.getNoteTitle(valueAttr.value) + " (" + valueAttr.value + ")"));
             }
 
-            await noteAutocompleteService.initNoteAutocomplete($input);
+            // no need to wait for this
+            noteAutocompleteService.initNoteAutocomplete($input);
         }
         else {
             messagingService.logError("Unknown attribute type=" + valueAttr.type);
@@ -338,6 +339,8 @@ async function loadAttributes() {
                 });
 
                 $tr.after($new);
+
+                $new.find('input').focus();
             });
 
             const removeButton = $("<span>")
@@ -358,6 +361,8 @@ async function loadAttributes() {
     }
 
     if (promoted.length > 0) {
+        const $tbody = $("<tbody>");
+
         for (const definitionAttr of promoted) {
             const definitionType = definitionAttr.type;
             const valueType = definitionType.substr(0, definitionType.length - 11);
@@ -380,9 +385,13 @@ async function loadAttributes() {
             for (const valueAttr of valueAttrs) {
                 const $tr = await createRow(definitionAttr, valueAttr);
 
-                $promotedAttributesContainer.append($tr);
+                $tbody.append($tr);
             }
         }
+
+        // we replace the whole content in one step so there can't be any race conditions
+        // (previously we saw promoted attributes doubling)
+        $promotedAttributesContainer.empty().append($tbody);
     }
     else {
         $attributeListInner.html('');

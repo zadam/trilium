@@ -11,6 +11,12 @@ function ScriptApi(startNote, currentNote, originEntity = null) {
         await treeService.activateNode(notePath);
     }
 
+    async function activateNewNote(notePath) {
+        await treeService.reload();
+
+        await treeService.activateNode(notePath, true);
+    }
+
     function addButtonToToolbar(buttonId, button) {
         $("#" + buttonId).remove();
 
@@ -57,6 +63,7 @@ function ScriptApi(startNote, currentNote, originEntity = null) {
         originEntity: originEntity,
         addButtonToToolbar,
         activateNote,
+        activateNewNote,
         getInstanceName: () => window.glob.instanceName,
         runOnServer,
         formatDateISO: utils.formatDateISO,
