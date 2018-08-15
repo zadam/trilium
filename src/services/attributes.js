@@ -59,17 +59,20 @@ async function createAttribute(attribute) {
 }
 
 async function getAttributeNames(type, nameLike) {
-    const names = await sql.getColumn(
-        `SELECT DISTINCT name 
-         FROM attributes 
-         WHERE isDeleted = 0
-           AND type = ?
-           AND name LIKE '%${utils.sanitizeSql(nameLike)}%'`, [ type ]);
+    let names;
 
-    for (const attribute of BUILTIN_ATTRIBUTES) {
-        if (attribute.type === type && !names.includes(attribute.name)) {
-            names.push(attribute.name);
-        }
+    if (!nameLike) {
+        names = BUILTIN_ATTRIBUTES
+            .filter(attribute => attribute.type === type)
+            .map(attribute => attribute.name);
+    }
+    else {
+        names = await sql.getColumn(
+            `SELECT DISTINCT name 
+             FROM attributes 
+             WHERE isDeleted = 0
+               AND type = ?
+               AND name LIKE '%${utils.sanitizeSql(nameLike)}%'`, [type]);
     }
 
     names.sort();

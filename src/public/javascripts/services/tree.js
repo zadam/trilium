@@ -206,7 +206,11 @@ async function showPaths(noteId, node) {
         const notePath = parentNotePath ? (parentNotePath + '/' + noteId) : noteId;
         const title = await treeUtils.getNotePathTitle(notePath);
 
-        const item = $("<li/>").append(await linkService.createNoteLink(notePath, title));
+        const noteLink = await linkService.createNoteLink(notePath, title);
+
+        noteLink.addClass("no-tooltip-preview");
+
+        const item = $("<li/>").append(noteLink);
 
         if (node.getParent().data.noteId === parentNote.noteId) {
             item.addClass("current");

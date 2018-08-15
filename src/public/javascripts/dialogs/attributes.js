@@ -246,7 +246,7 @@ async function showDialog() {
     $dialog.dialog({
         modal: true,
         width: 950,
-        height: 500
+        height: 700
     });
 }
 

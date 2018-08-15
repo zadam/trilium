@@ -6,10 +6,16 @@ function setupTooltip() {
     $(document).tooltip({
         items: "body a",
         content: function (callback) {
-            let notePath = linkService.getNotePathFromLink($(this).attr("href"));
+            const $link = $(this);
+
+            if ($link.hasClass("no-tooltip-preview")) {
+                return;
+            }
+
+            let notePath = linkService.getNotePathFromLink($link.attr("href"));
 
             if (!notePath) {
-                notePath = $(this).attr("data-note-path");
+                notePath = $link.attr("data-note-path");
             }
 
             if (notePath) {
