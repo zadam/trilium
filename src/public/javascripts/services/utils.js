@@ -24,7 +24,10 @@ function formatTimeWithSeconds(date) {
 }
 
 function formatDate(date) {
-    return padNum(date.getDate()) + ". " + padNum(date.getMonth() + 1) + ". " + date.getFullYear();
+//    return padNum(date.getDate()) + ". " + padNum(date.getMonth() + 1) + ". " + date.getFullYear();
+    // instead of european format we'll just use ISO as that's pretty unambiguous
+
+    return formatDateISO(date);
 }
 
 function formatDateISO(date) {
