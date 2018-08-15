@@ -15,7 +15,7 @@ async function showDialog() {
 
     await $dialog.dialog({
         modal: true,
-        width: 500
+        width: 600
     });
 
     const currentNode = treeService.getCurrentNode();

@@ -63,10 +63,10 @@ $list.on('change', () => {
     }
 });
 
-$(document).on('click', "a[action='note-revision']", event => {
+$(document).on('click', "a[data-action='note-revision']", event => {
     const linkEl = $(event.target);
-    const noteId = linkEl.attr('note-path');
-    const noteRevisionId = linkEl.attr('note-revision-id');
+    const noteId = linkEl.attr('data-note-path');
+    const noteRevisionId = linkEl.attr('data-note-revision-id');
 
     showNoteRevisionsDialog(noteId, noteRevisionId);
 

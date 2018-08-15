@@ -209,7 +209,7 @@ async function showChildrenOverview(hideChildrenOverview) {
         const link = $('<a>', {
             href: 'javascript:',
             text: await treeUtils.getNoteTitle(childBranch.noteId, childBranch.parentNoteId)
-        }).attr('action', 'note').attr('note-path', notePath + '/' + childBranch.noteId);
+        }).attr('data-action', 'note').attr('data-note-path', notePath + '/' + childBranch.noteId);
 
         const childEl = $('<div class="child-overview">').html(link);
         $childrenOverview.append(childEl);

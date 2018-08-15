@@ -9,7 +9,7 @@ function setupTooltip() {
             let notePath = linkService.getNotePathFromLink($(this).attr("href"));
 
             if (!notePath) {
-                notePath = $(this).attr("note-path");
+                notePath = $(this).attr("data-note-path");
             }
 
             if (notePath) {

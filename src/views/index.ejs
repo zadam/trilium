@@ -220,7 +220,9 @@
                   <code>@abc @def some search string</code> - same combination</li>
               </ul>
 
-              <a target="_blank" href="https://github.com/zadam/trilium/wiki/Search">Documentation on search</a>
+              <button class="btn btn-sm" type="button" data-help-page="Search">
+                <i class="glyphicon glyphicon-info-sign"></i> Complete help on search
+              </button>
             </p>
           </div>
 
@@ -301,11 +303,13 @@
           <input id="clone-prefix" class="form-control" style="width: 100%;">
         </div>
 
-        <button class="btn btn-primary">Add note link <kbd>enter</kbd></button>
+        <div style="display: flex; justify-content: space-between">
+          <button class="btn btn-primary">Add note link <kbd>enter</kbd></button>
 
-        &nbsp; &nbsp; &nbsp; &nbsp;
-
-        <a target="_blank" href="https://github.com/zadam/trilium/wiki/Links">Documentation on links</a>
+          <button class="btn btn-sm" type="button" data-help-page="Links">
+            <i class="glyphicon glyphicon-info-sign"></i> Help
+          </button>
+        </div>
       </form>
     </div>
 
@@ -396,7 +400,13 @@
               <input class="form-control" id="protected-session-timeout-in-seconds" type="number">
             </div>
 
-            <button class="btn btn-sm">Save</button>
+            <div style="display: flex; justify-content: space-between;">
+              <button class="btn btn-sm">Save</button>
+
+              <button class="btn btn-sm" type="button" data-help-page="Protected-notes">
+                <i class="glyphicon glyphicon-info-sign"></i> Help
+              </button>
+            </div>
           </form>
         </div>
         <div id="note-revision-snapshot-time-interval">
@@ -408,7 +418,13 @@
               <input class="form-control" id="note-revision-snapshot-time-interval-in-seconds" type="number">
             </div>
 
-            <button class="btn btn-sm">Save</button>
+            <div style="display: flex; justify-content: space-between;">
+              <button class="btn btn-sm">Save</button>
+
+              <button class="btn btn-sm" type="button" data-help-page="Note-revisions">
+                <i class="glyphicon glyphicon-info-sign"></i> Help
+              </button>
+            </div>
           </form>
         </div>
         <div id="sync-setup">
@@ -430,7 +446,13 @@
               <input class="form-control" id="sync-proxy" placeholder="https://<host>:<port>">
             </div>
 
-            <button class="btn btn-sm">Save</button>
+            <div style="display: flex; justify-content: space-between;">
+              <button class="btn btn-sm">Save</button>
+
+              <button class="btn btn-sm" type="button" data-help-page="Synchronization">
+                <i class="glyphicon glyphicon-info-sign"></i> Help
+              </button>
+            </div>
           </form>
 
           <h4>Sync test</h4>
@@ -509,7 +531,15 @@
         </select>
 
         <div id="note-revision-content-wrapper" style="flex-grow: 1; margin-left: 20px;">
-          <h3 id="note-revision-title" style="margin: 3px;"></h3>
+          <div style="display: flex">
+            <h3 id="note-revision-title" style="margin: 3px; flex-grow: 100;"></h3>
+
+            <div>
+              <button class="btn btn-sm" type="button" data-help-page="Note-revisions">
+                <i class="glyphicon glyphicon-info-sign"></i> Help
+              </button>
+            </div>
+          </div>
 
           <div id="note-revision-content" style="height: 600px; width: 600px; overflow: auto;"></div>
         </div>
@@ -526,11 +556,17 @@
     <div id="edit-tree-prefix-dialog" title="Edit tree prefix" style="display: none; padding: 20px;">
       <form id="edit-tree-prefix-form">
         <div class="form-group">
-          <label for="tree-prefix-input">Prefix</label>
+          <label for="tree-prefix-input">Prefix: </label> &nbsp;
           <input id="tree-prefix-input" style="width: 20em;"> - <span id="tree-prefix-note-title"></span>
         </div>
 
-        <button name="action" class="btn btn-sm">Save</button>
+        <div style="display: flex; justify-content: space-between;">
+          <button class="btn btn-sm">Save</button>
+
+          <button class="btn btn-sm" type="button" data-help-page="Prefix">
+            <i class="glyphicon glyphicon-info-sign"></i> Help
+          </button>
+        </div>
       </form>
     </div>
 
@@ -553,12 +589,12 @@
 
     <div id="attributes-dialog" title="Note attributes" style="display: none; padding: 20px;">
       <form data-bind="submit: save">
-        <div style="text-align: center">
+        <div style="display: flex; justify-content: space-between;">
           <button class="btn btn-large" style="width: 200px;" id="save-attributes-button" type="submit">Save changes <kbd>enter</kbd></button>
 
-          &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-
-          <a target="_blank" href="https://github.com/zadam/trilium/wiki/Attributes">Documentation on attributes</a>
+          <button class="btn btn-sm" type="button" data-help-page="Attributes">
+            <i class="glyphicon glyphicon-info-sign"></i> Help
+          </button>
         </div>
 
         <div style="height: 97%; overflow: auto">

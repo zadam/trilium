@@ -58,7 +58,7 @@ async function doSearch(searchText) {
         const link = $('<a>', {
             href: 'javascript:',
             text: result.title
-        }).attr('action', 'note').attr('note-path', result.path);
+        }).attr('data-action', 'note').attr('data-note-path', result.path);
 
         const $result = $('<li>').append(link);
 

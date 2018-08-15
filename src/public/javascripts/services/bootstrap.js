@@ -71,6 +71,14 @@ window.onerror = function (msg, url, lineNo, columnNo, error) {
     return false;
 };
 
+const wikiBaseUrl = "https://github.com/zadam/trilium/wiki/";
+
+$(document).on("click", "button[data-help-page]", e => {
+    const $button = $(e.target);
+
+    window.open(wikiBaseUrl + $button.attr("data-help-page"), '_blank');
+});
+
 $("#logout-button").toggle(!utils.isElectron());
 
 if (utils.isElectron()) {
