@@ -19,7 +19,11 @@ const BUILTIN_ATTRIBUTES = [
 
     // relation names
     { type: 'relation', name: 'runOnNoteView' },
+    { type: 'relation', name: 'runOnNoteCreation' },
     { type: 'relation', name: 'runOnNoteTitleChange' },
+    { type: 'relation', name: 'runOnNoteChange' },
+    { type: 'relation', name: 'runOnChildNoteCreation' },
+    { type: 'relation', name: 'runOnAttributeCreation' },
     { type: 'relation', name: 'runOnAttributeChange' },
     { type: 'relation', name: 'inheritAttributes' }
 ];
@@ -59,20 +63,19 @@ async function createAttribute(attribute) {
 }
 
 async function getAttributeNames(type, nameLike) {
-    let names;
+    nameLike = nameLike.toLowerCase();
 
-    if (!nameLike) {
-        names = BUILTIN_ATTRIBUTES
-            .filter(attribute => attribute.type === type)
-            .map(attribute => attribute.name);
-    }
-    else {
-        names = await sql.getColumn(
-            `SELECT DISTINCT name 
+    const names = await sql.getColumn(
+        `SELECT DISTINCT name 
              FROM attributes 
              WHERE isDeleted = 0
                AND type = ?
                AND name LIKE '%${utils.sanitizeSql(nameLike)}%'`, [type]);
+
+    for (const attr of BUILTIN_ATTRIBUTES) {
+        if (attr.type === type && attr.name.toLowerCase().includes(nameLike) && !names.includes(attr.name)) {
+            names.push(attr.name);
+        }
     }
 
     names.sort();

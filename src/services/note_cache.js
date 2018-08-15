@@ -228,13 +228,13 @@ function getNotePath(noteId) {
     }
 }
 
-eventService.subscribe(eventService.ENTITY_CHANGED, async ({entityName, entityId}) => {
+eventService.subscribe(eventService.ENTITY_CHANGED, async ({entityName, entity}) => {
     if (!loaded) {
         return;
     }
 
     if (entityName === 'notes') {
-        const note = await repository.getNote(entityId);
+        const note = entity;
 
         if (note.isDeleted) {
             delete noteTitles[note.noteId];
@@ -245,7 +245,7 @@ eventService.subscribe(eventService.ENTITY_CHANGED, async ({entityName, entityId
         }
     }
     else if (entityName === 'branches') {
-        const branch = await repository.getBranch(entityId);
+        const branch = entity;
 
         if (childToParent[branch.noteId]) {
             childToParent[branch.noteId] = childToParent[branch.noteId].filter(noteId => noteId !== branch.parentNoteId)
@@ -266,7 +266,7 @@ eventService.subscribe(eventService.ENTITY_CHANGED, async ({entityName, entityId
         }
     }
     else if (entityName === 'attributes') {
-        const attribute = await repository.getAttribute(entityId);
+        const attribute = entity;
 
         if (attribute.type === 'label' && attribute.name === 'archived') {
             // we're not using label object directly, since there might be other non-deleted archived label

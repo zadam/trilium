@@ -2,6 +2,7 @@
 
 const sql = require('./sql');
 const syncTableService = require('../services/sync_table');
+const eventService = require('./events');
 
 let entityConstructor;
 
@@ -56,6 +57,11 @@ async function getOption(name) {
 }
 
 async function updateEntity(entity) {
+    const entityName = entity.constructor.tableName;
+    const primaryKeyName = entity.constructor.primaryKeyName;
+
+    const isNewEntity = !entity[primaryKeyName];
+
     if (entity.beforeSaving) {
         await entity.beforeSaving();
     }
@@ -75,12 +81,24 @@ async function updateEntity(entity) {
     }
 
     await sql.transactional(async () => {
-        await sql.replace(entity.constructor.tableName, clone);
+        await sql.replace(entityName, clone);
 
-        const primaryKey = entity[entity.constructor.primaryKeyName];
+        const primaryKey = entity[primaryKeyName];
 
-        if (entity.isChanged && (entity.constructor.tableName !== 'options' || entity.isSynced)) {
-            await syncTableService.addEntitySync(entity.constructor.tableName, primaryKey);
+        if (entity.isChanged && (entityName !== 'options' || entity.isSynced)) {
+            await syncTableService.addEntitySync(entityName, primaryKey);
+
+            if (isNewEntity) {
+                await eventService.emit(eventService.ENTITY_CREATED, {
+                    entityName,
+                    entity
+                });
+            }
+
+            await eventService.emit(eventService.ENTITY_CHANGED, {
+                entityName,
+                entity
+            });
         }
     });
 }

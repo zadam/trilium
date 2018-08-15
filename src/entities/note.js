@@ -6,6 +6,9 @@ const protectedSessionService = require('../services/protected_session');
 const repository = require('../services/repository');
 const dateUtils = require('../services/date_utils');
 
+const LABEL = 'label';
+const RELATION = 'relation';
+
 class Note extends Entity {
     static get tableName() { return "notes"; }
     static get primaryKeyName() { return "noteId"; }
@@ -78,6 +81,14 @@ class Note extends Entity {
         return this.__attributeCache;
     }
 
+    async getLabels() {
+        return (await this.getAttributes()).filter(attr => attr.type === LABEL);
+    }
+
+    async getRelations() {
+        return (await this.getAttributes()).filter(attr => attr.type === RELATION);
+    }
+
     invalidateAttributeCache() {
         this.__attributeCache = null;
     }
@@ -145,55 +156,55 @@ class Note extends Entity {
         this.__attributeCache = filteredAttributes;
     }
 
-    async hasLabel(name) {
-        return !!await this.getLabel(name);
+    async hasAttribute(type, name) {
+        return !!await this.getAttribute(type, name);
     }
 
     // WARNING: this doesn't take into account the possibility to have multi-valued labels!
-    async getLabel(name) {
+    async getAttribute(type, name) {
         const attributes = await this.getAttributes();
 
-        return attributes.find(attr => attr.type === 'label' && attr.name === name);
+        return attributes.find(attr => attr.type === type && attr.name === name);
     }
 
-    async getLabelValue(name) {
-        const label = await this.getLabel(name);
+    async getAttributeValue(type, name) {
+        const attr = await this.getAttribute(type, name);
 
-        return label ? label.value : null;
+        return attr ? attr.value : null;
     }
 
-    async toggleLabel(enabled, name, value = "") {
+    async toggleAttribute(type, enabled, name, value = "") {
         if (enabled) {
-            await this.setLabel(name, value);
+            await this.setAttribute(type, name, value);
         }
         else {
-            await this.removeLabel(name, value);
+            await this.removeAttribute(type, name, value);
         }
     }
 
-    async setLabel(name, value = "") {
+    async setAttribute(type, name, value = "") {
         const attributes = await this.getOwnedAttributes();
-        let label = attributes.find(attr => attr.type === 'label' && attr.value === value);
+        let attr = attributes.find(attr => attr.type === type && attr.value === value);
 
-        if (!label) {
-            label = new Attribute({
+        if (!attr) {
+            attr = new Attribute({
                 noteId: this.noteId,
-                type: 'label',
+                type: type,
                 name: name,
                 value: value
             });
 
-            await label.save();
+            await attr.save();
 
             this.invalidateAttributeCache();
         }
     }
 
-    async removeLabel(name, value = "") {
+    async removeAttribute(type, name, value = "") {
         const attributes = await this.getOwnedAttributes();
 
         for (const attribute of attributes) {
-            if (attribute.type === 'label' && (!value || value === attribute.value)) {
+            if (attribute.type === type && (!value || value === attribute.value)) {
                 attribute.isDeleted = true;
                 await attribute.save();
 
@@ -201,6 +212,24 @@ class Note extends Entity {
             }
         }
     }
+
+    async hasLabel(name) { return await this.hasAttribute(LABEL, name); }
+    async hasRelation(name) { return await this.hasAttribute(RELATION, name); }
+
+    async getLabel(name) { return await this.getAttribute(LABEL, name); }
+    async getRelation(name) { return await this.getAttribute(RELATION, name); }
+
+    async getLabelValue(name) { return await this.getAttributeValue(LABEL, name); }
+    async getRelationValue(name) { return await this.getAttributeValue(RELATION, name); }
+
+    async toggleLabel(enabled, name, value = "") { return await this.toggleAttribute(LABEL, enabled, name, value); }
+    async toggleRelation(enabled, name, value = "") { return await this.toggleAttribute(RELATION, enabled, name, value); }
+
+    async setLabel(name, value = "") { return await this.setAttribute(LABEL, name, value); }
+    async setRelation(name, value = "") { return await this.setAttribute(RELATION, name, value); }
+
+    async removeLabel(name, value = "") { return await this.removeAttribute(LABEL, name, value); }
+    async removeRelation(name, value = "") { return await this.removeAttribute(RELATION, name, value); }
 
     async getRevisions() {
         return await repository.getEntities("SELECT * FROM note_revisions WHERE noteId = ?", [this.noteId]);

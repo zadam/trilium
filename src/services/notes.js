@@ -35,6 +35,10 @@ async function getNewNotePosition(parentNoteId, noteData) {
     return newNotePos;
 }
 
+async function triggerChildNoteCreated(childNote, parentNote) {
+    await eventService.emit(eventService.CHILD_NOTE_CREATED, { childNote, parentNote });
+}
+
 async function triggerNoteTitleChanged(note) {
     await eventService.emit(eventService.NOTE_TITLE_CHANGED, note);
 }
@@ -42,12 +46,10 @@ async function triggerNoteTitleChanged(note) {
 async function createNewNote(parentNoteId, noteData) {
     const newNotePos = await getNewNotePosition(parentNoteId, noteData);
 
-    if (parentNoteId !== 'root') {
-        const parent = await repository.getNote(parentNoteId);
+    const parentNote = await repository.getNote(parentNoteId);
 
-        noteData.type = noteData.type || parent.type;
-        noteData.mime = noteData.mime || parent.mime;
-    }
+    noteData.type = noteData.type || parentNote.type;
+    noteData.mime = noteData.mime || parentNote.mime;
 
     const note = await new Note({
         title: noteData.title,
@@ -66,6 +68,7 @@ async function createNewNote(parentNoteId, noteData) {
     }).save();
 
     await triggerNoteTitleChanged(note);
+    await triggerChildNoteCreated(note, parentNote);
 
     return {
         note,

@@ -2,12 +2,10 @@ const eventService = require('./events');
 const scriptService = require('./script');
 const treeService = require('./tree');
 const messagingService = require('./messaging');
-const repository = require('./repository');
 const log = require('./log');
 
 async function runAttachedRelations(note, relationName, originEntity) {
-    const attributes = await note.getAttributes();
-    const runRelations = attributes.filter(relation => relation.type === 'relation' && relation.name === relationName);
+    const runRelations = (await note.getRelations()).filter(relation => relation.name === relationName);
 
     for (const relation of runRelations) {
         const scriptNote = await relation.getTargetNote();
@@ -37,10 +35,24 @@ eventService.subscribe(eventService.NOTE_TITLE_CHANGED, async note => {
     }
 });
 
-eventService.subscribe(eventService.ENTITY_CHANGED, async ({ entityId, entityName }) => {
+eventService.subscribe(eventService.ENTITY_CHANGED, async ({ entityName, entity }) => {
     if (entityName === 'attributes') {
-        const attribute = await repository.getEntityFromName(entityName, entityId);
-
-        await runAttachedRelations(await attribute.getNote(), 'runOnAttributeChange', attribute);
+        await runAttachedRelations(await entity.getNote(), 'runOnAttributeChange', entity);
     }
+    else if (entityName === 'notes') {
+        await runAttachedRelations(entity, 'runOnNoteChange', entity);
+    }
+});
+
+eventService.subscribe(eventService.ENTITY_CREATED, async ({ entityName, entity }) => {
+    if (entityName === 'attributes') {
+        await runAttachedRelations(await entity.getNote(), 'runOnAttributeCreation', entity);
+    }
+    else if (entityName === 'notes') {
+        await runAttachedRelations(entity, 'runOnNoteCreation', entity);
+    }
+});
+
+eventService.subscribe(eventService.CHILD_NOTE_CREATED, async ({ parentNote, childNote }) => {
+    await runAttachedRelations(parentNote, 'runOnChildNoteCreation', childNote);
 });

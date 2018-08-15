@@ -2,7 +2,9 @@ const log = require('./log');
 
 const NOTE_TITLE_CHANGED = "NOTE_TITLE_CHANGED";
 const ENTER_PROTECTED_SESSION = "ENTER_PROTECTED_SESSION";
+const ENTITY_CREATED = "ENTITY_CREATED";
 const ENTITY_CHANGED = "ENTITY_CHANGED";
+const CHILD_NOTE_CREATED = "CHILD_NOTE_CREATED";
 
 const eventListeners = {};
 
@@ -33,5 +35,7 @@ module.exports = {
     // event types:
     NOTE_TITLE_CHANGED,
     ENTER_PROTECTED_SESSION,
-    ENTITY_CHANGED
+    ENTITY_CREATED,
+    ENTITY_CHANGED,
+    CHILD_NOTE_CREATED
 };

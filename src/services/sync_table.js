@@ -3,7 +3,6 @@ const sourceIdService = require('./source_id');
 const dateUtils = require('./date_utils');
 const log = require('./log');
 const cls = require('./cls');
-const eventService = require('./events');
 
 async function addNoteSync(noteId, sourceId) {
     await addEntitySync("notes", noteId, sourceId)
@@ -51,11 +50,6 @@ async function addEntitySync(entityName, entityId, sourceId) {
         entityId: entityId,
         syncDate: dateUtils.nowDate(),
         sourceId: sourceId || cls.getSourceId() || sourceIdService.getCurrentSourceId()
-    });
-
-    await eventService.emit(eventService.ENTITY_CHANGED, {
-        entityName,
-        entityId
     });
 }
 
@@ -116,6 +110,5 @@ module.exports = {
     addAttributeSync,
     addApiTokenSync,
     addEntitySync,
-    cleanupSyncRowsForMissingEntities,
     fillAllSyncRows
 };
