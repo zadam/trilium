@@ -84,28 +84,37 @@ CodeMirror.defineMode('shell', function() {
   function tokenString(quote, style) {
     var close = quote == "(" ? ")" : quote == "{" ? "}" : quote
     return function(stream, state) {
-      var next, end = false, escaped = false;
+      var next, escaped = false;
       while ((next = stream.next()) != null) {
         if (next === close && !escaped) {
-          end = true;
+          state.tokens.shift();
           break;
-        }
-        if (next === '$' && !escaped && quote !== "'") {
+        } else if (next === '$' && !escaped && quote !== "'" && stream.peek() != close) {
           escaped = true;
           stream.backUp(1);
           state.tokens.unshift(tokenDollar);
           break;
-        }
-        if (!escaped && next === quote && quote !== close) {
+        } else if (!escaped && quote !== close && next === quote) {
           state.tokens.unshift(tokenString(quote, style))
           return tokenize(stream, state)
+        } else if (!escaped && /['"]/.test(next) && !/['"]/.test(quote)) {
+          state.tokens.unshift(tokenStringStart(next, "string"));
+          stream.backUp(1);
+          break;
         }
         escaped = !escaped && next === '\\';
       }
-      if (end) state.tokens.shift();
       return style;
     };
   };
+
+  function tokenStringStart(quote, style) {
+    return function(stream, state) {
+      state.tokens[0] = tokenString(quote, style)
+      stream.next()
+      return tokenize(stream, state)
+    }
+  }
 
   var tokenDollar = function(stream, state) {
     if (state.tokens.length > 1) stream.eat('$');

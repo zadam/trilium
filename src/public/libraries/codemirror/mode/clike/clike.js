@@ -216,15 +216,15 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
     indent: function(state, textAfter) {
       if (state.tokenize != tokenBase && state.tokenize != null || state.typeAtEndOfLine) return CodeMirror.Pass;
       var ctx = state.context, firstChar = textAfter && textAfter.charAt(0);
+      var closing = firstChar == ctx.type;
       if (ctx.type == "statement" && firstChar == "}") ctx = ctx.prev;
       if (parserConfig.dontIndentStatements)
         while (ctx.type == "statement" && parserConfig.dontIndentStatements.test(ctx.info))
           ctx = ctx.prev
       if (hooks.indent) {
-        var hook = hooks.indent(state, ctx, textAfter);
+        var hook = hooks.indent(state, ctx, textAfter, indentUnit);
         if (typeof hook == "number") return hook
       }
-      var closing = firstChar == ctx.type;
       var switchBlock = ctx.prev && ctx.prev.info == "switch";
       if (parserConfig.allmanIndentation && /[{(]/.test(firstChar)) {
         while (ctx.type != "top" && ctx.type != "}") ctx = ctx.prev
@@ -374,7 +374,7 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
     blockKeywords: words("case do else for if switch while struct"),
     defKeywords: words("struct"),
     typeFirstDefinitions: true,
-    atoms: words("null true false"),
+    atoms: words("NULL true false"),
     hooks: {"#": cppHook, "*": pointerHook},
     modeProps: {fold: ["brace", "include"]}
   });
@@ -390,7 +390,7 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
     blockKeywords: words("catch class do else finally for if struct switch try while"),
     defKeywords: words("class namespace struct enum union"),
     typeFirstDefinitions: true,
-    atoms: words("true false null"),
+    atoms: words("true false NULL"),
     dontIndentStatements: /^template$/,
     isIdentifierChar: /[\w\$_~\xa1-\uffff]/,
     hooks: {
@@ -597,34 +597,51 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
     name: "clike",
     keywords: words(
       /*keywords*/
-      "package as typealias class interface this super val " +
-      "var fun for is in This throw return " +
+      "package as typealias class interface this super val operator " +
+      "var fun for is in This throw return annotation " +
       "break continue object if else while do try when !in !is as? " +
 
       /*soft keywords*/
       "file import where by get set abstract enum open inner override private public internal " +
       "protected catch finally out final vararg reified dynamic companion constructor init " +
       "sealed field property receiver param sparam lateinit data inline noinline tailrec " +
-      "external annotation crossinline const operator infix suspend actual expect"
+      "external annotation crossinline const operator infix suspend actual expect setparam"
     ),
     types: words(
       /* package java.lang */
       "Boolean Byte Character CharSequence Class ClassLoader Cloneable Comparable " +
       "Compiler Double Exception Float Integer Long Math Number Object Package Pair Process " +
       "Runtime Runnable SecurityManager Short StackTraceElement StrictMath String " +
-      "StringBuffer System Thread ThreadGroup ThreadLocal Throwable Triple Void"
+      "StringBuffer System Thread ThreadGroup ThreadLocal Throwable Triple Void Annotation Any BooleanArray " +
+      "ByteArray Char CharArray DeprecationLevel DoubleArray Enum FloatArray Function Int IntArray Lazy " +
+      "LazyThreadSafetyMode LongArray Nothing ShortArray Unit"
     ),
     intendSwitch: false,
     indentStatements: false,
     multiLineStrings: true,
-    number: /^(?:0x[a-f\d_]+|0b[01_]+|(?:[\d_]+\.?\d*|\.\d+)(?:e[-+]?[\d_]+)?)(u|ll?|l|f)?/i,
+    number: /^(?:0x[a-f\d_]+|0b[01_]+|(?:[\d_]+(\.\d+)?|\.\d+)(?:e[-+]?[\d_]+)?)(u|ll?|l|f)?/i,
     blockKeywords: words("catch class do else finally for if where try while enum"),
     defKeywords: words("class val var object interface fun"),
     atoms: words("true false null this"),
     hooks: {
+      "@": function(stream) {
+        stream.eatWhile(/[\w\$_]/);
+        return "meta";
+      },
       '"': function(stream, state) {
         state.tokenize = tokenKotlinString(stream.match('""'));
         return state.tokenize(stream, state);
+      },
+      indent: function(state, ctx, textAfter, indentUnit) {
+        var firstChar = textAfter && textAfter.charAt(0);
+        if ((state.prevToken == "}" || state.prevToken == ")") && textAfter == "")
+          return state.indented;
+        if (state.prevToken == "operator" && textAfter != "}" ||
+          state.prevToken == "variable" && firstChar == "." ||
+          (state.prevToken == "}" || state.prevToken == ")") && firstChar == ".")
+          return indentUnit * 2 + ctx.indented;
+        if (ctx.align && ctx.type == "}")
+          return ctx.indented + (state.context.type == (textAfter || "").charAt(0) ? 0 : indentUnit);
       }
     },
     modeProps: {closeBrackets: {triples: '"'}}

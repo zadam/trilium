@@ -46,7 +46,11 @@
     comment: [
       { regex: /\}\}/, pop: true, token: "comment" },
       { regex: /./, token: "comment" }
-    ]
+    ],
+    meta: {
+      blockCommentStart: "{{--",
+      blockCommentEnd: "--}}"
+    }
   });
 
   CodeMirror.defineMode("handlebars", function(config, parserConfig) {

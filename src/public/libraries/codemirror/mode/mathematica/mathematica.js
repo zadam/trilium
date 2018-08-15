@@ -71,12 +71,12 @@ CodeMirror.defineMode('mathematica', function(_config, _parserConfig) {
     }
 
     // usage
-    if (stream.match(/([a-zA-Z\$]+(?:`?[a-zA-Z0-9\$])*::usage)/, true, false)) {
+    if (stream.match(/([a-zA-Z\$][a-zA-Z0-9\$]*(?:`[a-zA-Z0-9\$]+)*::usage)/, true, false)) {
       return 'meta';
     }
 
     // message
-    if (stream.match(/([a-zA-Z\$]+(?:`?[a-zA-Z0-9\$])*::[a-zA-Z\$][a-zA-Z0-9\$]*):?/, true, false)) {
+    if (stream.match(/([a-zA-Z\$][a-zA-Z0-9\$]*(?:`[a-zA-Z0-9\$]+)*::[a-zA-Z\$][a-zA-Z0-9\$]*):?/, true, false)) {
       return 'string-2';
     }
 

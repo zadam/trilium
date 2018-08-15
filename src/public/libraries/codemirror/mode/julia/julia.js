@@ -54,11 +54,13 @@ CodeMirror.defineMode("julia", function(config, parserConf) {
     return inGenerator(state, '[')
   }
 
-  function inGenerator(state, bracket) {
-    var curr = currentScope(state),
-        prev = currentScope(state, 1);
+  function inGenerator(state, bracket, depth) {
     if (typeof(bracket) === "undefined") { bracket = '('; }
-    if (curr === bracket || (prev === bracket && curr === "for")) {
+    if (typeof(depth)   === "undefined") { depth   = 0;   }
+    var scope = currentScope(state, depth);
+    if ((depth == 0 && scope === "if" && inGenerator(state, bracket, depth + 1)) ||
+        (scope === "for" && inGenerator(state, bracket, depth + 1)) ||
+        (scope === bracket)) {
       return true;
     }
     return false;
@@ -119,16 +121,16 @@ CodeMirror.defineMode("julia", function(config, parserConf) {
       state.scopes.push('(');
     }
 
-    var scope = currentScope(state);
-
     if (inArray(state) && ch === ']') {
-      if (scope === "for") { state.scopes.pop(); }
+      if (currentScope(state) === "if") { state.scopes.pop(); }
+      while (currentScope(state) === "for") { state.scopes.pop(); }
       state.scopes.pop();
       state.leavingExpr = true;
     }
 
     if (inGenerator(state) && ch === ')') {
-      if (scope === "for") { state.scopes.pop(); }
+      if (currentScope(state) === "if") { state.scopes.pop(); }
+      while (currentScope(state) === "for") { state.scopes.pop(); }
       state.scopes.pop();
       state.leavingExpr = true;
     }
@@ -143,12 +145,14 @@ CodeMirror.defineMode("julia", function(config, parserConf) {
     }
 
     var match;
-    if (match = stream.match(openers, false)) {
+    if (match = stream.match(openers)) {
       state.scopes.push(match[0]);
+      return "keyword";
     }
 
-    if (stream.match(closers, false)) {
+    if (stream.match(closers)) {
       state.scopes.pop();
+      return "keyword";
     }
 
     // Handle type annotations

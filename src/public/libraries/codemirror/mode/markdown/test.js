@@ -1283,6 +1283,25 @@
      "[tag&bracket <][tag div][tag&bracket >]",
      "[tag&bracket </][tag div][tag&bracket >]");
 
+  MT("xmlModeLineBreakInTags",
+     "[tag&bracket <][tag div] [attribute id]=[string \"1\"]",
+     "     [attribute class]=[string \"sth\"][tag&bracket >]xxx",
+     "[tag&bracket </][tag div][tag&bracket >]");
+
+  MT("xmlModeCommentWithBlankLine",
+     "[comment <!-- Hello]",
+     "",
+     "[comment World -->]");
+
+  MT("xmlModeCDATA",
+     "[atom <![CDATA[ Hello]",
+     "",
+     "[atom FooBar]",
+     "[atom Test ]]]]>]");
+
+  MT("xmlModePreprocessor",
+     "[meta <?php] [meta echo '1234'; ?>]");
+
   MT_noXml("xmlHighlightDisabled",
      "<div>foo</div>");
 

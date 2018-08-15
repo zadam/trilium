@@ -13,31 +13,26 @@
 
 CodeMirror.defineMode('mllike', function(_config, parserConfig) {
   var words = {
-    'let': 'keyword',
-    'rec': 'keyword',
-    'in': 'keyword',
-    'of': 'keyword',
-    'and': 'keyword',
-    'if': 'keyword',
-    'then': 'keyword',
-    'else': 'keyword',
-    'for': 'keyword',
-    'to': 'keyword',
-    'while': 'keyword',
+    'as': 'keyword',
     'do': 'keyword',
-    'done': 'keyword',
+    'else': 'keyword',
+    'end': 'keyword',
+    'exception': 'keyword',
     'fun': 'keyword',
-    'function': 'keyword',
-    'val': 'keyword',
+    'functor': 'keyword',
+    'if': 'keyword',
+    'in': 'keyword',
+    'include': 'keyword',
+    'let': 'keyword',
+    'of': 'keyword',
+    'open': 'keyword',
+    'rec': 'keyword',
+    'struct': 'keyword',
+    'then': 'keyword',
     'type': 'keyword',
-    'mutable': 'keyword',
-    'match': 'keyword',
-    'with': 'keyword',
-    'try': 'keyword',
-    'open': 'builtin',
-    'ignore': 'builtin',
-    'begin': 'keyword',
-    'end': 'keyword'
+    'val': 'keyword',
+    'while': 'keyword',
+    'with': 'keyword'
   };
 
   var extraWords = parserConfig.extraWords || {};
@@ -68,7 +63,7 @@ CodeMirror.defineMode('mllike', function(_config, parserConfig) {
         return state.tokenize(stream, state);
       }
     }
-    if (ch === '~') {
+    if (ch === '~' || ch === '?') {
       stream.eatWhile(/\w/);
       return 'variable-2';
     }
@@ -98,7 +93,7 @@ CodeMirror.defineMode('mllike', function(_config, parserConfig) {
       }
       return 'number';
     }
-    if ( /[+\-*&%=<>!?|@]/.test(ch)) {
+    if ( /[+\-*&%=<>!?|@\.~:]/.test(ch)) {
       return 'operator';
     }
     if (/[\w\xa1-\uffff]/.test(ch)) {
@@ -165,16 +160,64 @@ CodeMirror.defineMode('mllike', function(_config, parserConfig) {
 CodeMirror.defineMIME('text/x-ocaml', {
   name: 'mllike',
   extraWords: {
-    'succ': 'keyword',
+    'and': 'keyword',
+    'assert': 'keyword',
+    'begin': 'keyword',
+    'class': 'keyword',
+    'constraint': 'keyword',
+    'done': 'keyword',
+    'downto': 'keyword',
+    'external': 'keyword',
+    'function': 'keyword',
+    'initializer': 'keyword',
+    'lazy': 'keyword',
+    'match': 'keyword',
+    'method': 'keyword',
+    'module': 'keyword',
+    'mutable': 'keyword',
+    'new': 'keyword',
+    'nonrec': 'keyword',
+    'object': 'keyword',
+    'private': 'keyword',
+    'sig': 'keyword',
+    'to': 'keyword',
+    'try': 'keyword',
+    'value': 'keyword',
+    'virtual': 'keyword',
+    'when': 'keyword',
+
+    // builtins
+    'raise': 'builtin',
+    'failwith': 'builtin',
+    'true': 'builtin',
+    'false': 'builtin',
+
+    // Pervasives builtins
+    'asr': 'builtin',
+    'land': 'builtin',
+    'lor': 'builtin',
+    'lsl': 'builtin',
+    'lsr': 'builtin',
+    'lxor': 'builtin',
+    'mod': 'builtin',
+    'or': 'builtin',
+
+    // More Pervasives
+    'raise_notrace': 'builtin',
     'trace': 'builtin',
     'exit': 'builtin',
     'print_string': 'builtin',
     'print_endline': 'builtin',
-    'true': 'atom',
-    'false': 'atom',
-    'raise': 'keyword',
-    'module': 'keyword',
-    'sig': 'keyword'
+
+     'int': 'type',
+     'float': 'type',
+     'bool': 'type',
+     'char': 'type',
+     'string': 'type',
+     'unit': 'type',
+
+     // Modules
+     'List': 'builtin'
   }
 });
 
@@ -182,18 +225,21 @@ CodeMirror.defineMIME('text/x-fsharp', {
   name: 'mllike',
   extraWords: {
     'abstract': 'keyword',
-    'as': 'keyword',
     'assert': 'keyword',
     'base': 'keyword',
+    'begin': 'keyword',
     'class': 'keyword',
     'default': 'keyword',
     'delegate': 'keyword',
+    'do!': 'keyword',
+    'done': 'keyword',
     'downcast': 'keyword',
     'downto': 'keyword',
     'elif': 'keyword',
-    'exception': 'keyword',
     'extern': 'keyword',
     'finally': 'keyword',
+    'for': 'keyword',
+    'function': 'keyword',
     'global': 'keyword',
     'inherit': 'keyword',
     'inline': 'keyword',
@@ -201,38 +247,108 @@ CodeMirror.defineMIME('text/x-fsharp', {
     'internal': 'keyword',
     'lazy': 'keyword',
     'let!': 'keyword',
-    'member' : 'keyword',
+    'match': 'keyword',
+    'member': 'keyword',
     'module': 'keyword',
+    'mutable': 'keyword',
     'namespace': 'keyword',
     'new': 'keyword',
     'null': 'keyword',
     'override': 'keyword',
     'private': 'keyword',
     'public': 'keyword',
-    'return': 'keyword',
     'return!': 'keyword',
+    'return': 'keyword',
     'select': 'keyword',
     'static': 'keyword',
-    'struct': 'keyword',
+    'to': 'keyword',
+    'try': 'keyword',
     'upcast': 'keyword',
-    'use': 'keyword',
     'use!': 'keyword',
-    'val': 'keyword',
+    'use': 'keyword',
+    'void': 'keyword',
     'when': 'keyword',
-    'yield': 'keyword',
     'yield!': 'keyword',
+    'yield': 'keyword',
 
+    // Reserved words
+    'atomic': 'keyword',
+    'break': 'keyword',
+    'checked': 'keyword',
+    'component': 'keyword',
+    'const': 'keyword',
+    'constraint': 'keyword',
+    'constructor': 'keyword',
+    'continue': 'keyword',
+    'eager': 'keyword',
+    'event': 'keyword',
+    'external': 'keyword',
+    'fixed': 'keyword',
+    'method': 'keyword',
+    'mixin': 'keyword',
+    'object': 'keyword',
+    'parallel': 'keyword',
+    'process': 'keyword',
+    'protected': 'keyword',
+    'pure': 'keyword',
+    'sealed': 'keyword',
+    'tailcall': 'keyword',
+    'trait': 'keyword',
+    'virtual': 'keyword',
+    'volatile': 'keyword',
+
+    // builtins
     'List': 'builtin',
     'Seq': 'builtin',
     'Map': 'builtin',
     'Set': 'builtin',
+    'Option': 'builtin',
     'int': 'builtin',
     'string': 'builtin',
-    'raise': 'builtin',
-    'failwith': 'builtin',
     'not': 'builtin',
     'true': 'builtin',
-    'false': 'builtin'
+    'false': 'builtin',
+
+    'raise': 'builtin',
+    'failwith': 'builtin'
+  },
+  slashComments: true
+});
+
+
+CodeMirror.defineMIME('text/x-sml', {
+  name: 'mllike',
+  extraWords: {
+    'abstype': 'keyword',
+    'and': 'keyword',
+    'andalso': 'keyword',
+    'case': 'keyword',
+    'datatype': 'keyword',
+    'fn': 'keyword',
+    'handle': 'keyword',
+    'infix': 'keyword',
+    'infixr': 'keyword',
+    'local': 'keyword',
+    'nonfix': 'keyword',
+    'op': 'keyword',
+    'orelse': 'keyword',
+    'raise': 'keyword',
+    'withtype': 'keyword',
+    'eqtype': 'keyword',
+    'sharing': 'keyword',
+    'sig': 'keyword',
+    'signature': 'keyword',
+    'structure': 'keyword',
+    'where': 'keyword',
+    'true': 'keyword',
+    'false': 'keyword',
+
+    // types
+    'int': 'builtin',
+    'real': 'builtin',
+    'string': 'builtin',
+    'char': 'builtin',
+    'bool': 'builtin'
   },
   slashComments: true
 });

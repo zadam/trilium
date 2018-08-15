@@ -111,4 +111,11 @@
   MT('single-quote-strings',
      '[keyword {][string "foo"] [string \'bar\'][keyword }]',
      '');
+
+  MT('literal-comments',
+     '[keyword {literal}]/* comment */ // comment[keyword {/literal}]');
+
+  MT('highlight-command-at-eol',
+     '[keyword {msg]',
+     '    [keyword }]');
 })();

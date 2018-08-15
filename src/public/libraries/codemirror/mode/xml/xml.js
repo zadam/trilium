@@ -163,8 +163,9 @@ CodeMirror.defineMode("xml", function(editorConf, config_) {
         stream.next();
       }
       return style;
-    };
+    }
   }
+
   function doctype(depth) {
     return function(stream, state) {
       var ch;
