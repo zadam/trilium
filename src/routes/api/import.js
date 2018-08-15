@@ -77,11 +77,25 @@ async function importTar(file, parentNoteId) {
 
     // maps from original noteId (in tar file) to newly generated noteId
     const noteIdMap = {};
+    const attributes = [];
 
-    await importNotes(files, parentNoteId, noteIdMap);
+    await importNotes(files, parentNoteId, noteIdMap, attributes);
 
-    // import might contain relations targeting notes which are not in the import
-    await attributeService.removeInvalidRelations();
+    // we save attributes after importing notes because we need to have all the relation
+    // targets already existing
+    for (const attr of attributes) {
+        if (attr.type === 'relation') {
+            // map to local noteId
+            attr.value = noteIdMap[attr.value];
+
+            if (!attr.value) {
+                // relation is targeting note not present in the import
+                continue;
+            }
+        }
+
+        await attributeService.createAttribute(attr);
+    }
 }
 
 function getFileName(name) {
@@ -162,7 +176,7 @@ async function parseImportFile(file) {
     });
 }
 
-async function importNotes(files, parentNoteId, noteIdMap) {
+async function importNotes(files, parentNoteId, noteIdMap, attributes) {
     for (const file of files) {
         if (file.meta.version !== 1) {
             throw new Error("Can't read meta data version " + file.meta.version);
@@ -191,7 +205,7 @@ async function importNotes(files, parentNoteId, noteIdMap) {
         noteIdMap[file.meta.noteId] = note.noteId;
 
         for (const attribute of file.meta.attributes) {
-            await attributeService.createAttribute({
+            attributes.push({
                 noteId: note.noteId,
                 type: attribute.type,
                 name: attribute.name,
@@ -202,7 +216,7 @@ async function importNotes(files, parentNoteId, noteIdMap) {
         }
 
         if (file.children.length > 0) {
-            await importNotes(file.children, note.noteId, noteIdMap);
+            await importNotes(file.children, note.noteId, noteIdMap, attributes);
         }
     }
 }
