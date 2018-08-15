@@ -77,11 +77,31 @@ async function getAttributeNames(type, nameLike) {
     return names;
 }
 
+async function removeInvalidRelations() {
+    const relations = await repository.getEntities(`
+      SELECT attributes.* 
+      FROM attributes 
+          LEFT JOIN notes AS sourceNote ON attributes.noteId = sourceNote.noteId
+          LEFT JOIN notes AS targetNote ON attributes.value = targetNote.noteId
+      WHERE 
+          attributes.isDeleted = 0
+          AND attributes.type = 'relation'
+          AND (sourceNote.noteId IS NULL OR sourceNote.isDeleted
+               OR targetNote.noteId IS NULL OR targetNote.isDeleted)`);
+
+    for (const relation of relations) {
+        relation.isDeleted = true;
+
+        await relation.save();
+    }
+}
+
 module.exports = {
     getNotesWithLabel,
     getNoteWithLabel,
     createLabel,
     createAttribute,
     getAttributeNames,
+    removeInvalidRelations,
     BUILTIN_ATTRIBUTES
 };

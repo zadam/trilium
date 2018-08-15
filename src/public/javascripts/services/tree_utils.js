@@ -34,7 +34,12 @@ function getNotePath(node) {
 async function getNoteTitle(noteId, parentNoteId = null) {
     utils.assertArguments(noteId);
 
-    let {title} = await treeCache.getNote(noteId);
+    const note = await treeCache.getNote(noteId);
+    if (!note) {
+        return "[not found]";
+    }
+
+    let {title} = note;
 
     if (parentNoteId !== null) {
         const branch = await treeCache.getBranchByChildParent(noteId, parentNoteId);

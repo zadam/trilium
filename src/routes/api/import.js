@@ -79,6 +79,9 @@ async function importTar(file, parentNoteId) {
     const noteIdMap = {};
 
     await importNotes(files, parentNoteId, noteIdMap);
+
+    // import might contain relations targeting notes which are not in the import
+    await attributeService.removeInvalidRelations();
 }
 
 function getFileName(name) {

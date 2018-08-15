@@ -250,6 +250,11 @@ async function deleteNote(branch) {
         for (const childBranch of await note.getChildBranches()) {
             await deleteNote(childBranch);
         }
+
+        for (const attribute of await note.getOwnedAttributes()) {
+            attribute.isDeleted = true;
+            await attribute.save();
+        }
     }
 }
 
