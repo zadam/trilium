@@ -5,7 +5,7 @@ const repository = require('../services/repository');
 const dateUtils = require('../services/date_utils');
 
 class NoteImage extends Entity {
-    static get tableName() { return "note_images"; }
+    static get entityName() { return "note_images"; }
     static get primaryKeyName() { return "noteImageId"; }
     static get hashedProperties() { return ["noteImageId", "noteId", "imageId", "isDeleted", "dateCreated"]; }
 

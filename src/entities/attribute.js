@@ -6,7 +6,7 @@ const dateUtils = require('../services/date_utils');
 const sql = require('../services/sql');
 
 class Attribute extends Entity {
-    static get tableName() { return "attributes"; }
+    static get entityName() { return "attributes"; }
     static get primaryKeyName() { return "attributeId"; }
     static get hashedProperties() { return ["attributeId", "noteId", "type", "name", "value", "isInheritable", "isDeleted", "dateCreated"]; }
 

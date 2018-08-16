@@ -10,7 +10,7 @@ const LABEL = 'label';
 const RELATION = 'relation';
 
 class Note extends Entity {
-    static get tableName() { return "notes"; }
+    static get entityName() { return "notes"; }
     static get primaryKeyName() { return "noteId"; }
     static get hashedProperties() { return ["noteId", "title", "content", "type", "isProtected", "isDeleted"]; }
 

@@ -6,7 +6,17 @@ import messagingService from "./messaging.js";
 import server from "./server.js";
 
 class TreeCache {
+    constructor() {
+        this.init();
+    }
+
     load(noteRows, branchRows, relations) {
+        this.init();
+
+        this.addResp(noteRows, branchRows, relations);
+    }
+
+    init() {
         this.parents = {};
         this.children = {};
         this.childParentToBranch = {};
@@ -16,8 +26,6 @@ class TreeCache {
 
         /** @type {Object.<string, Branch>} */
         this.branches = {};
-
-        this.addResp(noteRows, branchRows, relations);
     }
 
     addResp(noteRows, branchRows, relations) {
@@ -38,7 +46,7 @@ class TreeCache {
         }
     }
 
-    async getNotes(noteIds) {
+    async getNotes(noteIds, silentNotFoundError = false) {
         const missingNoteIds = noteIds.filter(noteId => this.notes[noteId] === undefined);
 
         if (missingNoteIds.length > 0) {
@@ -48,7 +56,7 @@ class TreeCache {
         }
 
         return noteIds.map(noteId => {
-            if (!this.notes[noteId]) {
+            if (!this.notes[noteId] && !silentNotFoundError) {
                 messagingService.logError(`Can't find note ${noteId}`);
 
                 return null;

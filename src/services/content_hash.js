@@ -17,7 +17,7 @@ const Option = require('../entities/option');
 
 async function getHash(entityConstructor, whereBranch) {
     // subselect is necessary to have correct ordering in GROUP_CONCAT
-    const query = `SELECT GROUP_CONCAT(hash) FROM (SELECT hash FROM ${entityConstructor.tableName} `
+    const query = `SELECT GROUP_CONCAT(hash) FROM (SELECT hash FROM ${entityConstructor.entityName} `
         + (whereBranch ? `WHERE ${whereBranch} ` : '') + `ORDER BY ${entityConstructor.primaryKeyName})`;
 
     let contentToHash = await sql.getValue(query);

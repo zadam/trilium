@@ -3,6 +3,7 @@ import server from './server.js';
 import utils from './utils.js';
 import infoService from './info.js';
 import linkService from './link.js';
+import treeCache from './tree_cache.js';
 
 function ScriptApi(startNote, currentNote, originEntity = null) {
     const $pluginButtons = $("#plugin-buttons");
@@ -67,7 +68,7 @@ function ScriptApi(startNote, currentNote, originEntity = null) {
             params: prepareParams(params),
             startNoteId: startNote.noteId,
             currentNoteId: currentNote.noteId,
-            originEntityName: originEntity ? originEntity.constructor.tableName : null,
+            originEntityName: "notes", // currently there's no other entity on frontend which can trigger event
             originEntityId: originEntity ? originEntity.noteId : null
         });
 
@@ -78,6 +79,9 @@ function ScriptApi(startNote, currentNote, originEntity = null) {
         startNote: startNote,
         currentNote: currentNote,
         originEntity: originEntity,
+        // needs to have the longform, can't be shortened!
+        // used also to load many rows to cache before further code starts using them
+        getNotes: async (noteIds, silentNotFoundError = false) => await treeCache.getNotes(noteIds, silentNotFoundError),
         addButtonToToolbar,
         activateNote,
         activateNewNote,

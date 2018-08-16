@@ -4,7 +4,7 @@ const Entity = require('./entity');
 const dateUtils = require('../services/date_utils');
 
 class RecentNote extends Entity {
-    static get tableName() { return "recent_notes"; }
+    static get entityName() { return "recent_notes"; }
     static get primaryKeyName() { return "branchId"; }
     static get hashedProperties() { return ["branchId", "notePath", "dateCreated", "isDeleted"]; }
 

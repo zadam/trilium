@@ -4,7 +4,7 @@ const Entity = require('./entity');
 const dateUtils = require('../services/date_utils');
 
 class ApiToken extends Entity {
-    static get tableName() { return "api_tokens"; }
+    static get entityName() { return "api_tokens"; }
     static get primaryKeyName() { return "apiTokenId"; }
     static get hashedProperties() { return ["apiTokenId", "token", "dateCreated", "isDeleted"]; }
 

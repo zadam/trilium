@@ -5,7 +5,7 @@ const protectedSessionService = require('../services/protected_session');
 const repository = require('../services/repository');
 
 class NoteRevision extends Entity {
-    static get tableName() { return "note_revisions"; }
+    static get entityName() { return "note_revisions"; }
     static get primaryKeyName() { return "noteRevisionId"; }
     static get hashedProperties() { return ["noteRevisionId", "noteId", "title", "content", "isProtected", "dateModifiedFrom", "dateModifiedTo"]; }
 

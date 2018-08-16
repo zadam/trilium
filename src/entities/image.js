@@ -4,7 +4,7 @@ const Entity = require('./entity');
 const dateUtils = require('../services/date_utils');
 
 class Image extends Entity {
-    static get tableName() { return "images"; }
+    static get entityName() { return "images"; }
     static get primaryKeyName() { return "imageId"; }
     static get hashedProperties() { return ["imageId", "format", "checksum", "name", "isDeleted", "dateCreated"]; }
 

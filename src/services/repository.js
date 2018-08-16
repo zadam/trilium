@@ -15,9 +15,9 @@ async function getEntityFromName(entityName, entityId) {
         return null;
     }
 
-    const constructor = entityConstructor.getEntityFromTableName(entityName);
+    const constructor = entityConstructor.getEntityFromEntityName(entityName);
 
-    return await getEntity(`SELECT * FROM ${constructor.tableName} WHERE ${constructor.primaryKeyName} = ?`, [entityId]);
+    return await getEntity(`SELECT * FROM ${constructor.entityName} WHERE ${constructor.primaryKeyName} = ?`, [entityId]);
 }
 
 async function getEntities(query, params = []) {
@@ -57,7 +57,7 @@ async function getOption(name) {
 }
 
 async function updateEntity(entity) {
-    const entityName = entity.constructor.tableName;
+    const entityName = entity.constructor.entityName;
     const primaryKeyName = entity.constructor.primaryKeyName;
 
     const isNewEntity = !entity[primaryKeyName];

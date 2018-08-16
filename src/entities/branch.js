@@ -6,7 +6,7 @@ const repository = require('../services/repository');
 const sql = require('../services/sql');
 
 class Branch extends Entity {
-    static get tableName() { return "branches"; }
+    static get entityName() { return "branches"; }
     static get primaryKeyName() { return "branchId"; }
     // notePosition is not part of hash because it would produce a lot of updates in case of reordering
     static get hashedProperties() { return ["branchId", "noteId", "parentNoteId", "isDeleted", "prefix"]; }
