@@ -17,12 +17,29 @@ function ScriptApi(startNote, currentNote, originEntity = null) {
         await treeService.activateNode(notePath, true);
     }
 
-    function addButtonToToolbar(buttonId, button) {
+    function addButtonToToolbar(opts) {
+        const buttonId = "toolbar-button-" + opts.title.replace(/[^a-zA-Z0-9]/g, "-");
+
         $("#" + buttonId).remove();
+
+        const icon = $("<span>")
+            .addClass("ui-icon ui-icon-" + opts.icon);
+
+        const button = $('<button>')
+            .addClass("btn btn-xs")
+            .click(opts.action)
+            .append(icon)
+            .append($("<span>").text(opts.title));
 
         button.attr('id', buttonId);
 
         $pluginButtons.append(button);
+
+        if (opts.shortcut) {
+            $(document).bind('keydown', opts.shortcut, opts.action);
+
+            button.attr("title", "Shortcut " + opts.shortcut);
+        }
     }
 
     function prepareParams(params) {
