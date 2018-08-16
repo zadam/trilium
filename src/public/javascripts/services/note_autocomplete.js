@@ -1,4 +1,26 @@
 import server from "./server.js";
+import noteDetailService from "./note_detail.js";
+
+async function autocompleteSource(request, response) {
+    const result = await server.get('autocomplete'
+        + '?query=' + encodeURIComponent(request.term)
+        + '&currentNoteId=' + noteDetailService.getCurrentNoteId());
+
+    if (result.length > 0) {
+        response(result.map(row => {
+            return {
+                label: row.label,
+                value: row.label + ' (' + row.value + ')'
+            }
+        }));
+    }
+    else {
+        response([{
+            label: "No results",
+            value: "No results"
+        }]);
+    }
+}
 
 async function initNoteAutocomplete($el) {
     if (!$el.hasClass("ui-autocomplete-input")) {
@@ -12,24 +34,7 @@ async function initNoteAutocomplete($el) {
 
         await $el.autocomplete({
             appendTo: $el.parent().parent(),
-            source: async function (request, response) {
-                const result = await server.get('autocomplete?query=' + encodeURIComponent(request.term));
-
-                if (result.length > 0) {
-                    response(result.map(row => {
-                        return {
-                            label: row.label,
-                            value: row.label + ' (' + row.value + ')'
-                        }
-                    }));
-                }
-                else {
-                    response([{
-                        label: "No results",
-                        value: "No results"
-                    }]);
-                }
-            },
+            source: autocompleteSource,
             minLength: 0,
             change: function (event, ui) {
                 $el.trigger("change");
@@ -50,5 +55,6 @@ ko.bindingHandlers.noteAutocomplete = {
 };
 
 export default {
-    initNoteAutocomplete
+    initNoteAutocomplete,
+    autocompleteSource
 }

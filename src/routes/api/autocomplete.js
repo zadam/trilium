@@ -5,11 +5,12 @@ const repository = require('../../services/repository');
 
 async function getAutocomplete(req) {
     const query = req.query.query;
+    const currentNoteId = req.query.currentNoteId || 'none';
 
     let results;
 
     if (query.trim().length === 0) {
-        results = await getRecentNotes();
+        results = await getRecentNotes(currentNoteId);
     }
     else {
         results = noteCacheService.findNotes(query);
@@ -23,7 +24,7 @@ async function getAutocomplete(req) {
     });
 }
 
-async function getRecentNotes() {
+async function getRecentNotes(currentNoteId) {
     const recentNotes = await repository.getEntities(`
       SELECT 
         recent_notes.* 
@@ -33,9 +34,10 @@ async function getRecentNotes() {
       WHERE
         recent_notes.isDeleted = 0
         AND branches.isDeleted = 0
+        AND branches.noteId != ?
       ORDER BY 
         dateCreated DESC
-      LIMIT 200`);
+      LIMIT 200`, [currentNoteId]);
 
     return recentNotes.map(rn => {
         return {

@@ -1,6 +1,7 @@
 import treeService from '../services/tree.js';
-import server from '../services/server.js';
 import searchNotesService from '../services/search_notes.js';
+import noteautocompleteService from '../services/note_autocomplete.js';
+import linkService from "../services/link.js";
 
 const $dialog = $("#jump-to-note-dialog");
 const $autoComplete = $("#jump-to-note-autocomplete");
@@ -19,22 +20,8 @@ async function showDialog() {
     });
 
     await $autoComplete.autocomplete({
-        source: async function(request, response) {
-            const result = await server.get('autocomplete?query=' + encodeURIComponent(request.term));
-
-            if (result.length > 0) {
-                response(result);
-            }
-            else {
-                response([{
-                    label: "No results",
-                    value: "No results"
-                }]);
-            }
-        },
-        focus: function(event, ui) {
-            event.preventDefault();
-        },
+        source: noteautocompleteService.autocompleteSource,
+        focus: event => event.preventDefault(),
         minLength: 0,
         autoFocus: true,
         select: function (event, ui) {
@@ -42,7 +29,9 @@ async function showDialog() {
                 return false;
             }
 
-            treeService.activateNode(ui.item.value);
+            const notePath = linkService.getNotePathFromLabel(ui.item.value);
+
+            treeService.activateNode(notePath);
 
             $dialog.dialog('close');
         }

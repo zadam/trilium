@@ -2,8 +2,8 @@ import cloningService from '../services/cloning.js';
 import linkService from '../services/link.js';
 import noteDetailService from '../services/note_detail.js';
 import treeUtils from '../services/tree_utils.js';
-import server from "../services/server.js";
 import noteDetailText from "../services/note_detail_text.js";
+import noteAutocompleteService from "../services/note_autocomplete.js";
 
 const $dialog = $("#add-link-dialog");
 const $form = $("#add-link-form");
@@ -55,24 +55,7 @@ async function showDialog() {
     }
 
     await $autoComplete.autocomplete({
-        source: async function(request, response) {
-            const result = await server.get('autocomplete?query=' + encodeURIComponent(request.term));
-
-            if (result.length > 0) {
-                response(result.map(row => {
-                    return {
-                        label: row.label,
-                        value: row.label + ' (' + row.value + ')'
-                    }
-                }));
-            }
-            else {
-                response([{
-                    label: "No results",
-                    value: "No results"
-                }]);
-            }
-        },
+        source: noteAutocompleteService.autocompleteSource,
         minLength: 0,
         change: async (event, ui) => {
             if (!ui.item) {
