@@ -419,7 +419,7 @@ function scrollToCurrentNote() {
 }
 
 function setBranchBackgroundBasedOnProtectedStatus(noteId) {
-    getNodesByNoteId(noteId).map(node => node.toggleClass("protected", !!node.data.isProtected));
+    getNodesByNoteId(noteId).map(node => node.toggleClass("protected", node.data.isProtected));
 }
 
 function setProtected(noteId, isProtected) {

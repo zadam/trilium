@@ -32,6 +32,7 @@ function ensureProtectedSession(requireProtectedSession, modal) {
     const dfd = $.Deferred();
 
     if (requireProtectedSession && !protectedSessionHolder.isProtectedSessionAvailable()) {
+        // using deferred instead of promise because it allows resolving from outside
         protectedSessionDeferred = dfd;
 
         if (treeService.getCurrentNode().data.isProtected) {
@@ -39,7 +40,6 @@ function ensureProtectedSession(requireProtectedSession, modal) {
         }
 
         $dialog.dialog({
-            // modal: modal,
             // everything is now non-modal, because modal dialog caused weird high CPU usage on opening
             // and tearing of text input
             modal: false,
@@ -128,7 +128,14 @@ async function unprotectNoteAndSendToServer() {
         return;
     }
 
-    await ensureProtectedSession(true, true);
+    if (!protectedSessionHolder.isProtectedSessionAvailable()) {
+        console.log("Unprotecting notes outside of protected session is not allowed.");
+        // the reason is that it's not easy to handle even with ensureProtectedSession,
+        // because we would first have to make sure the note is loaded and only then unprotect
+        // we used to have a bug where we would overwrite the previous note with unprotected content.
+
+        return;
+    }
 
     const note = noteDetailService.getCurrentNote();
     note.isProtected = false;

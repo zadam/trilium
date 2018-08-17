@@ -119,11 +119,12 @@ async function saveNoteIfChanged() {
 }
 
 function setNoteBackgroundIfProtected(note) {
-    const isProtected = !!note.isProtected;
+    const isProtected = note.isProtected;
 
     $noteDetailWrapper.toggleClass("protected", isProtected);
     $protectButton.toggleClass("active", isProtected);
     $unprotectButton.toggleClass("active", !isProtected);
+    $unprotectButton.prop("disabled", !protectedSessionHolder.isProtectedSessionAvailable());
 }
 
 let isNewNoteCreated = false;
@@ -157,8 +158,6 @@ async function loadNoteDetail(noteId) {
 
     setNoteBackgroundIfProtected(currentNote);
 
-    await handleProtectedSession();
-
     $noteDetailWrapper.show();
 
     noteChangeDisabled = true;
@@ -170,6 +169,8 @@ async function loadNoteDetail(noteId) {
         noteTypeService.setNoteMime(currentNote.mime);
 
         $noteDetailComponents.hide();
+
+        await handleProtectedSession();
 
         await getComponent(currentNote.type).show();
     }
