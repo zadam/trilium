@@ -50,6 +50,12 @@ function findNotes(query) {
     }
 
     for (const noteId of noteIds) {
+        // autocomplete should be able to find notes by their noteIds as well (only leafs)
+        if (noteId === query) {
+            search(noteId, [], [], results);
+            continue;
+        }
+
         // for leaf note it doesn't matter if "archived" label inheritable or not
         if (noteId in archived) {
             continue;
