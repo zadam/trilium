@@ -64,7 +64,7 @@ async function getTree() {
     const relations = await getRelations(noteIds);
 
     return {
-        startNotePath: await optionService.getOption('startNotePath'),
+        startNotePath: (await optionService.getOption('startNotePath')) || 'root',
         branches,
         notes,
         relations

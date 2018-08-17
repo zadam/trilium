@@ -111,7 +111,7 @@ async function createDatabaseForSync(options, syncServerHost = '', syncProxy = '
     await sql.transactional(async () => {
         await sql.executeScript(schema);
 
-        await require('./options_init').initNotSyncedOptions(false, '', syncServerHost, syncProxy);
+        await require('./options_init').initNotSyncedOptions(false, 'root', syncServerHost, syncProxy);
 
         // document options required for sync to kick off
         for (const opt of options) {

@@ -11,22 +11,22 @@ async function initDocumentOptions() {
 }
 
 async function initSyncedOptions(username, password) {
-    await optionService.createOption('protectedSessionTimeout', 600);
-    await optionService.createOption('noteRevisionSnapshotTimeInterval', 600);
+    await optionService.createOption('protectedSessionTimeout', 600, true);
+    await optionService.createOption('noteRevisionSnapshotTimeInterval', 600, true);
 
-    await optionService.createOption('username', username);
+    await optionService.createOption('username', username, true);
 
-    await optionService.createOption('passwordVerificationSalt', utils.randomSecureToken(32));
-    await optionService.createOption('passwordDerivedKeySalt', utils.randomSecureToken(32));
+    await optionService.createOption('passwordVerificationSalt', utils.randomSecureToken(32), true);
+    await optionService.createOption('passwordDerivedKeySalt', utils.randomSecureToken(32), true);
 
-    const passwordVerificationKey = utils.toBase64(await myScryptService.getVerificationHash(password));
-    await optionService.createOption('passwordVerificationHash', passwordVerificationKey);
+    const passwordVerificationKey = utils.toBase64(await myScryptService.getVerificationHash(password), true);
+    await optionService.createOption('passwordVerificationHash', passwordVerificationKey, true);
 
     // passwordEncryptionService expects these options to already exist
-    await optionService.createOption('encryptedDataKey', '');
-    await optionService.createOption('encryptedDataKeyIv', '');
+    await optionService.createOption('encryptedDataKey', '', true);
+    await optionService.createOption('encryptedDataKeyIv', '', true);
 
-    await passwordEncryptionService.setDataKey(password, utils.randomSecureToken(16));
+    await passwordEncryptionService.setDataKey(password, utils.randomSecureToken(16), true);
 }
 
 async function initNotSyncedOptions(initialized, startNotePath = 'root', syncServerHost = '', syncProxy = '') {

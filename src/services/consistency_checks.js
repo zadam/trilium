@@ -68,8 +68,17 @@ async function runSyncRowChecks(table, key, errorList) {
           ${table} 
           LEFT JOIN sync ON sync.entityName = '${table}' AND entityId = ${key} 
         WHERE 
-          sync.id IS NULL`,
+          sync.id IS NULL AND ` + (table === 'options' ? 'isSynced = 1' : '1'),
         `Missing sync records for ${key} in table ${table}`, errorList);
+
+    console.log(`
+        SELECT 
+          ${key} 
+        FROM 
+          ${table} 
+          LEFT JOIN sync ON sync.entityName = '${table}' AND entityId = ${key} 
+        WHERE 
+          sync.id IS NULL AND ` + (table === 'options' ? 'isSynced = 1' : '1'));
 
     await runCheck(`
         SELECT 
@@ -224,6 +233,7 @@ async function runAllChecks() {
     await runSyncRowChecks("note_images", "noteImageId", errorList);
     await runSyncRowChecks("attributes", "attributeId", errorList);
     await runSyncRowChecks("api_tokens", "apiTokenId", errorList);
+    await runSyncRowChecks("options", "name", errorList);
 
     if (errorList.length === 0) {
         // we run this only if basic checks passed since this assumes basic data consistency
