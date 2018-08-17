@@ -25,7 +25,6 @@ const $noteDetailComponents = $(".note-detail-component");
 const $protectButton = $("#protect-button");
 const $unprotectButton = $("#unprotect-button");
 const $noteDetailWrapper = $("#note-detail-wrapper");
-const $noteDetailComponentWrapper = $("#note-detail-component-wrapper");
 const $noteIdDisplay = $("#note-id-display");
 const $attributeList = $("#attribute-list");
 const $attributeListInner = $("#attribute-list-inner");
@@ -122,7 +121,7 @@ async function saveNoteIfChanged() {
 function setNoteBackgroundIfProtected(note) {
     const isProtected = !!note.isProtected;
 
-    $noteDetailComponentWrapper.toggleClass("protected", isProtected);
+    $noteDetailWrapper.toggleClass("protected", isProtected);
     $protectButton.toggleClass("active", isProtected);
     $unprotectButton.toggleClass("active", !isProtected);
 }

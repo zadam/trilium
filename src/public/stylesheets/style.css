@@ -6,7 +6,7 @@
     grid-template-areas: "header header"
                          "left-pane title"
                          "left-pane note-detail";
-    grid-template-columns: 29% 70%;
+    grid-template-columns: 29% 69.5%;
     grid-template-rows: auto
                         auto
                         1fr;
@@ -52,8 +52,10 @@
     overflow: auto;
 }
 
-#note-detail-component-wrapper.protected, #note-detail-component-wrapper.protected .CodeMirror {
-    background-color: #eee;
+#note-detail-wrapper.protected {
+    background: url('/images/shield.svg') no-repeat;
+    background-size: contain;
+    background-position: center;
 }
 
 #note-detail-text p {
@@ -286,6 +288,7 @@ div.ui-tooltip {
 .CodeMirror {
     font-family: "Liberation Mono", "Lucida Console", monospace;
     height: auto;
+    background: inherit;
 }
 
 .CodeMirror-scroll {
