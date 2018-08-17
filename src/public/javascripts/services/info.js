@@ -14,6 +14,12 @@ function showMessage(message) {
     });
 }
 
+function showAndLogError(message, delay = 10000) {
+    showError(message, delay);
+
+    messagingService.logError(message);
+}
+
 function showError(message, delay = 10000) {
     console.log(utils.now(), "error: ", message);
 
@@ -36,5 +42,6 @@ function throwError(message) {
 export default {
     showMessage,
     showError,
+    showAndLogError,
     throwError
 }

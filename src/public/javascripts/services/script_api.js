@@ -72,7 +72,12 @@ function ScriptApi(startNote, currentNote, originEntity = null) {
             originEntityId: originEntity ? originEntity.noteId : null
         });
 
-        return ret.executionResult;
+        if (ret.success) {
+            return ret.executionResult;
+        }
+        else {
+            throw new Error("server error: " + ret.error);
+        }
     }
 
     return {

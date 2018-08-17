@@ -5,10 +5,15 @@ const attributeService = require('../../services/attributes');
 const repository = require('../../services/repository');
 
 async function exec(req) {
-    const result = await scriptService.executeScript(req.body.script, req.body.params, req.body.startNoteId,
-        req.body.currentNoteId, req.body.originEntityName, req.body.originEntityId);
+    try {
+        const result = await scriptService.executeScript(req.body.script, req.body.params, req.body.startNoteId,
+            req.body.currentNoteId, req.body.originEntityName, req.body.originEntityId);
 
-    return { executionResult: result };
+        return { success: true, executionResult: result };
+    }
+    catch (e) {
+        return { success: false, error: e.message };
+    }
 }
 
 async function run(req) {

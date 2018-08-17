@@ -1,5 +1,6 @@
 import ScriptContext from "./script_context.js";
 import server from "./server.js";
+import infoService from "./info.js";
 
 async function getAndExecuteBundle(noteId, originEntity = null) {
     const bundle = await server.get('script/bundle/' + noteId);
@@ -10,9 +11,14 @@ async function getAndExecuteBundle(noteId, originEntity = null) {
 async function executeBundle(bundle, originEntity) {
     const apiContext = ScriptContext(bundle.note, bundle.allNotes, originEntity);
 
-    return await (function () {
-        return eval(`const apiContext = this; (async function() { ${bundle.script}\r\n})()`);
-    }.call(apiContext));
+    try {
+        return await (function () {
+            return eval(`const apiContext = this; (async function() { ${bundle.script}\r\n})()`);
+        }.call(apiContext));
+    }
+    catch (e) {
+        infoService.showAndLogError(`Execution of script "${bundle.note.title}" (${bundle.note.noteId}) failed with error: ${e.message}`);
+    }
 }
 
 async function executeStartupBundles() {

@@ -3,6 +3,7 @@ const ScriptContext = require('./script_context');
 const repository = require('./repository');
 const cls = require('./cls');
 const sourceIdService = require('./source_id');
+const log = require('./log');
 
 async function executeNote(note, originEntity) {
     if (!note.isJavaScript()) {
@@ -25,11 +26,16 @@ async function executeBundle(bundle, startNote, originEntity = null) {
 
     const ctx = new ScriptContext(startNote, bundle.allNotes, originEntity);
 
-    if (await bundle.note.hasLabel('manualTransactionHandling')) {
-        return await execute(ctx, script, '');
+    try {
+        if (await bundle.note.hasLabel('manualTransactionHandling')) {
+            return await execute(ctx, script, '');
+        }
+        else {
+            return await sql.transactional(async () => await execute(ctx, script, ''));
+        }
     }
-    else {
-        return await sql.transactional(async () => await execute(ctx, script, ''));
+    catch (e) {
+        log.error(`Execution of script "${bundle.note.title}" (${bundle.note.noteId}) failed with error: ${e.message}`);
     }
 }
 
