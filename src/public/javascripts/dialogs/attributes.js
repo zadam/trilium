@@ -27,7 +27,8 @@ function AttributesModel() {
         { text: "Text", value: "text" },
         { text: "Number", value: "number" },
         { text: "Boolean", value: "boolean" },
-        { text: "Date", value: "date" }
+        { text: "Date", value: "date" },
+        { text: "URL", value: "url"}
     ];
 
     this.multiplicityTypes = [

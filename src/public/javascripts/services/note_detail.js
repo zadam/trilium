@@ -309,6 +309,15 @@ async function loadAttributes() {
 
                 $actionCell.append($todayButton);
             }
+            else if (definition.labelType === 'url') {
+                $input.prop("placeholder", "http://website...");
+
+                const $openButton = $("<button>").addClass("btn btn-small").text("Open").click(() => {
+                    window.open($input.val(), '_blank');
+                });
+
+                $actionCell.append($openButton);
+            }
             else {
                 messagingService.logError("Unknown labelType=" + definitionAttr.labelType);
             }
