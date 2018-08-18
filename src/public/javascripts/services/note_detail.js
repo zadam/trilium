@@ -320,6 +320,16 @@ async function loadAttributes() {
 
             // no need to wait for this
             noteAutocompleteService.initNoteAutocomplete($input);
+
+            // ideally we'd use link instead of button which would allow tooltip preview, but
+            // we can't guarantee updating the link in the a element
+            const $openButton = $("<button>").addClass("btn btn-small").text("Open").click(() => {
+                const notePath = linkService.getNotePathFromLabel($input.val());
+
+                treeService.activateNode(notePath);
+            });
+
+            $actionCell.append($openButton);
         }
         else {
             messagingService.logError("Unknown attribute type=" + valueAttr.type);
