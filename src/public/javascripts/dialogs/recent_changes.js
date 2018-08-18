@@ -15,7 +15,11 @@ async function showDialog() {
 
     const result = await server.get('recent-changes/');
 
-    $dialog.html('');
+    $dialog.empty();
+
+    if (result.length === 0) {
+        $dialog.append("No changes yet ...");
+    }
 
     const groupedByDate = groupByDate(result);
 
