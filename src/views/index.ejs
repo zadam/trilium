@@ -615,7 +615,7 @@
                   <input type="hidden" name="position" data-bind="value: position"/>
                 </td>
                 <td>
-                    <select class="form-control" style="width: auto;" data-bind="options: $parent.availableTypes, optionsText: 'text', optionsValue: 'value', value: type, event: { change: $parent.typeChanged }"></select>
+                    <select class="form-control attribute-type-select" style="width: auto;" data-bind="options: $parent.availableTypes, optionsText: 'text', optionsValue: 'value', value: type, event: { change: $parent.typeChanged }"></select>
                 </td>
                 <td>
                   <!-- Change to valueUpdate: blur is necessary because jQuery UI autocomplete hijacks change event -->

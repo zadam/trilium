@@ -91,7 +91,7 @@ function AttributesModel() {
         await showAttributes(attributes);
 
         // attribute might not be rendered immediatelly so could not focus
-        setTimeout(() => $(".attribute-name:last").focus(), 100);
+        setTimeout(() => $(".attribute-type-select:last").focus(), 100);
 
         $ownedAttributesBody.sortable({
             handle: '.handle',
