@@ -71,15 +71,6 @@ async function runSyncRowChecks(table, key, errorList) {
           sync.id IS NULL AND ` + (table === 'options' ? 'isSynced = 1' : '1'),
         `Missing sync records for ${key} in table ${table}`, errorList);
 
-    console.log(`
-        SELECT 
-          ${key} 
-        FROM 
-          ${table} 
-          LEFT JOIN sync ON sync.entityName = '${table}' AND entityId = ${key} 
-        WHERE 
-          sync.id IS NULL AND ` + (table === 'options' ? 'isSynced = 1' : '1'));
-
     await runCheck(`
         SELECT 
           entityId 

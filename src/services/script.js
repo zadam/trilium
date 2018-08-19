@@ -129,7 +129,9 @@ async function getScriptBundle(note, root = true, scriptEnv = null, includedNote
 apiContext.modules['${note.noteId}'] = {};
 ${root ? 'return ' : ''}await (async function(exports, module, require, api` + (modules.length > 0 ? ', ' : '') +
             modules.map(child => sanitizeVariableName(child.title)).join(', ') + `) {
-${note.content}
+try {${note.content};} catch (e) { throw new Error("Load of script note \\"${note.title}\\" (${note.noteId}) failed with: " + e.message); }
+if (!module.exports) module.exports = {};
+for (const exportKey in exports) module.exports[exportKey] = exports[exportKey];
 })({}, apiContext.modules['${note.noteId}'], apiContext.require(${JSON.stringify(moduleNoteIds)}), apiContext.apis['${note.noteId}']` + (modules.length > 0 ? ', ' : '') +
             modules.map(mod => `apiContext.modules['${mod.noteId}'].exports`).join(', ') + `);
 `;
