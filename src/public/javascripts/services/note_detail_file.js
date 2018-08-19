@@ -19,8 +19,8 @@ async function show() {
 
     $noteDetailFile.show();
 
-    $fileFileName.text(attributeMap.original_file_name);
-    $fileFileSize.text(attributeMap.file_size + " bytes");
+    $fileFileName.text(attributeMap.originalFileName);
+    $fileFileSize.text(attributeMap.fileSize + " bytes");
     $fileFileType.text(currentNote.mime);
 }
 
