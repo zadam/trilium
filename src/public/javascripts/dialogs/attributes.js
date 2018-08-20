@@ -67,7 +67,8 @@ function AttributesModel() {
                 multiplicityType: "singlevalue",
                 isPromoted: true
             };
-            attr.relationDefinition = attr.type === ('relation-definition' && attr.value) ? attr.value : {
+
+            attr.relationDefinition = (attr.type === 'relation-definition' && attr.value) ? attr.value : {
                 multiplicityType: "singlevalue",
                 isPromoted: true
             };
