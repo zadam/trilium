@@ -208,24 +208,6 @@ function AttributesModel() {
         attribute.valueHasMutated();
     };
 
-    this.isNotUnique = function(index) {
-        const cur = self.ownedAttributes()[index]();
-
-        if (cur.name.trim() === "") {
-            return false;
-        }
-
-        for (let attributes = self.ownedAttributes(), i = 0; i < attributes.length; i++) {
-            const attribute = attributes[i]();
-
-            if (index !== i && cur.name === attribute.name && cur.type === attribute.type) {
-                return true;
-            }
-        }
-
-        return false;
-    };
-
     this.isEmptyName = function(index) {
         const cur = self.ownedAttributes()[index]();
 
