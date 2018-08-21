@@ -25,7 +25,7 @@ const BUILTIN_ATTRIBUTES = [
     { type: 'relation', name: 'runOnChildNoteCreation' },
     { type: 'relation', name: 'runOnAttributeCreation' },
     { type: 'relation', name: 'runOnAttributeChange' },
-    { type: 'relation', name: 'inheritAttributes' }
+    { type: 'relation', name: 'template' }
 ];
 
 async function getNotesWithLabel(name, value) {

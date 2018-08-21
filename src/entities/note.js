@@ -112,7 +112,7 @@ class Note extends Entity {
                      JOIN treeWithAttrs ON treeWithAttrs.noteId = attributes.noteId
                 WHERE attributes.isDeleted = 0
                   AND attributes.type = 'relation'
-                  AND attributes.name = 'inheritAttributes'
+                  AND attributes.name = 'template'
                   AND (attributes.noteId = ? OR attributes.isInheritable = 1)
                 )
             SELECT attributes.* FROM attributes JOIN treeWithAttrs ON attributes.noteId = treeWithAttrs.noteId
