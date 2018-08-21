@@ -9,6 +9,7 @@ const Note = require('../entities/note');
 const NoteImage = require('../entities/note_image');
 const NoteRevision = require('../entities/note_revision');
 const Branch = require('../entities/branch');
+const Attribute = require('../entities/attribute');
 
 async function getNewNotePosition(parentNoteId, noteData) {
     let newNotePos = 0;
@@ -69,6 +70,19 @@ async function createNewNote(parentNoteId, noteData) {
 
     await triggerNoteTitleChanged(note);
     await triggerChildNoteCreated(note, parentNote);
+
+    for (const attr of await parentNote.getAttributes()) {
+        if (attr.name.startsWith("child:")) {
+            await new Attribute({
+               noteId: note.noteId,
+               type: attr.type,
+               name: attr.name.substr(6),
+               value: attr.value,
+               position: attr.position,
+               isInheritable: attr.isInheritable
+            }).save();
+        }
+    }
 
     return {
         note,

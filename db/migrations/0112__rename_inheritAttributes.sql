@@ -1,0 +1,1 @@
+UPDATE attributes SET name = 'template' WHERE name = 'inheritAttributes';
