@@ -299,6 +299,7 @@ async function loadAttributes() {
                 $input.datepicker({
                     changeMonth: true,
                     changeYear: true,
+                    yearRange: "c-200:c+10",
                     dateFormat: "yy-mm-dd"
                 });
 

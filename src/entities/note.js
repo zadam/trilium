@@ -231,6 +231,46 @@ class Note extends Entity {
     async removeLabel(name, value = "") { return await this.removeAttribute(LABEL, name, value); }
     async removeRelation(name, value = "") { return await this.removeAttribute(RELATION, name, value); }
 
+    async getRelationTarget(name) {
+        const relation = await this.getRelation(name);
+
+        return relation ? await repository.getNote(relation.value) : null;
+    }
+
+    async findNotesWithAttribute(type, name, value) {
+        const params = [this.noteId, name];
+        let valueCondition = "";
+
+        if (value !== undefined) {
+            params.push(value);
+            valueCondition = " AND attributes.value = ?";
+        }
+
+        const notes = await repository.getEntities(`
+            WITH RECURSIVE
+            tree(noteId) AS (
+                SELECT ?
+                UNION
+                SELECT branches.noteId FROM branches
+                    JOIN tree ON branches.parentNoteId = tree.noteId
+                    JOIN notes ON notes.noteId = branches.noteId
+                WHERE notes.isDeleted = 0
+                  AND branches.isDeleted = 0
+            )
+            SELECT notes.* FROM notes 
+            JOIN tree ON tree.noteId = notes.noteId
+            JOIN attributes ON attributes.noteId = notes.noteId
+            WHERE attributes.isDeleted = 0 
+              AND attributes.name = ?
+              ${valueCondition} 
+            ORDER BY noteId, position`, params);
+
+        return notes;
+    }
+
+    async findNotesWithLabel(name, value) { return await this.findNotesWithAttribute(LABEL, name, value); }
+    async findNotesWithRelation(name, value) { return await this.findNotesWithAttribute(RELATION, name, value); }
+
     async getRevisions() {
         return await repository.getEntities("SELECT * FROM note_revisions WHERE noteId = ?", [this.noteId]);
     }
