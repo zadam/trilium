@@ -446,3 +446,11 @@ html.theme-dark body {
     background: url('/images/icons/clock-16.png') no-repeat center;
     cursor: pointer;
 }
+
+table.promoted-attributes-in-tooltip {
+    margin: auto;
+}
+
+table.promoted-attributes-in-tooltip td, table.promoted-attributes-in-tooltip th {
+    padding: 10px;
+}
