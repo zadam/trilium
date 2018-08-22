@@ -272,6 +272,13 @@ async function deleteNote(branch) {
             attribute.isDeleted = true;
             await attribute.save();
         }
+
+        const targetAttributes = await repository.getEntities("SELECT * FROM attributes WHERE type = 'relation' AND isDeleted = 0 AND value = ?", [note.noteId]);
+
+        for (const attribute of targetAttributes) {
+            attribute.isDeleted = true;
+            await attribute.save();
+        }
     }
 }
 

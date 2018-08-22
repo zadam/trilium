@@ -13,7 +13,7 @@ let codeEditorInitialized;
 async function show() {
     codeEditorInitialized = false;
 
-    $noteDetailRender.show();
+    $noteDetailRender.empty().show();
 
     await render();
 }
