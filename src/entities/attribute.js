@@ -5,6 +5,22 @@ const repository = require('../services/repository');
 const dateUtils = require('../services/date_utils');
 const sql = require('../services/sql');
 
+/**
+ * Attribute is key value pair owned by a note.
+ *
+ * @param {string} attributeId
+ * @param {string} noteId
+ * @param {string} type
+ * @param {string} name
+ * @param {string} value
+ * @param {int} position
+ * @param {boolean} isInheritable
+ * @param {boolean} isDeleted
+ * @param {string} dateCreated
+ * @param {string} dateModified
+ *
+ * @extends Entity
+ */
 class Attribute extends Entity {
     static get entityName() { return "attributes"; }
     static get primaryKeyName() { return "attributeId"; }

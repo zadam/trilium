@@ -3,6 +3,9 @@
 const utils = require('../services/utils');
 
 class Entity {
+    /**
+     * @param {object} [row] - database row representing given entity
+     */
     constructor(row = {}) {
         for (const key in row) {
             this[key] = row[key];

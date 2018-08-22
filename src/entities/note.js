@@ -9,11 +9,29 @@ const dateUtils = require('../services/date_utils');
 const LABEL = 'label';
 const RELATION = 'relation';
 
+/**
+ * This represents a Note which is a central object in the Trilium Notes project.
+ *
+ * @property {string} noteId - primary key
+ * @property {string} type - one of "text", "code", "file" or "render"
+ * @property {string} mime - MIME type, e.g. "text/html"
+ * @property {string} title - note title
+ * @property {string} content - note content - e.g. HTML text for text notes, file payload for files
+ * @property {boolean} isProtected - true if note is protected
+ * @property {boolean} isDeleted - true if note is deleted
+ * @property {string} dateCreated
+ * @property {string} dateModified
+ *
+ * @extends Entity
+ */
 class Note extends Entity {
     static get entityName() { return "notes"; }
     static get primaryKeyName() { return "noteId"; }
     static get hashedProperties() { return ["noteId", "title", "content", "type", "isProtected", "isDeleted"]; }
 
+    /**
+     * @param row - object containing database row from "notes" table
+     */
     constructor(row) {
         super(row);
 
@@ -36,23 +54,28 @@ class Note extends Entity {
         catch(e) {}
     }
 
+    /** @returns {boolean} true if this note is the root of the note tree. Root note has "root" noteId */
     isRoot() {
         return this.noteId === 'root';
     }
 
+    /** @returns {boolean} true if this note is of application/json content type */
     isJson() {
         return this.mime === "application/json";
     }
 
+    /** @returns {boolean} true if this note is JavaScript (code or attachment) */
     isJavaScript() {
         return (this.type === "code" || this.type === "file")
             && (this.mime.startsWith("application/javascript") || this.mime === "application/x-javascript");
     }
 
+    /** @returns {boolean} true if this note is HTML */
     isHtml() {
         return (this.type === "code" || this.type === "file" || this.type === "render") && this.mime === "text/html";
     }
 
+    /** @returns {string} JS script environment - either "frontend" or "backend" */
     getScriptEnv() {
         if (this.isHtml() || (this.isJavaScript() && this.mime.endsWith('env=frontend'))) {
             return "frontend";
@@ -69,10 +92,14 @@ class Note extends Entity {
         return null;
     }
 
+    /**
+     * @returns {Promise<Array.<Attribute>>} attributes belonging to this specific note (excludes inherited attributes)
+     */
     async getOwnedAttributes() {
         return await repository.getEntities(`SELECT * FROM attributes WHERE isDeleted = 0 AND noteId = ?`, [this.noteId]);
     }
 
+    /** @returns {Promise<Array.<Attribute>>} all note's attributes, including inherited ones */
     async getAttributes() {
         if (!this.__attributeCache) {
             await this.loadAttributesToCache();
@@ -81,18 +108,25 @@ class Note extends Entity {
         return this.__attributeCache;
     }
 
+    /** @returns {Promise<Array.<Attribute>>} all note's labels (attributes with type label), including inherited ones */
     async getLabels() {
         return (await this.getAttributes()).filter(attr => attr.type === LABEL);
     }
 
+    /** @returns {Promise<Array.<Attribute>>} all note's relations (attributes with type relation), including inherited ones */
     async getRelations() {
         return (await this.getAttributes()).filter(attr => attr.type === RELATION);
     }
 
+    /**
+     * Clear note's attributes cache to force fresh reload for next attribute request.
+     * Cache is note instance scoped.
+     */
     invalidateAttributeCache() {
         this.__attributeCache = null;
     }
 
+    /** @returns {Promise<void>} */
     async loadAttributesToCache() {
         const attributes = await repository.getEntities(`
             WITH RECURSIVE
@@ -156,24 +190,47 @@ class Note extends Entity {
         this.__attributeCache = filteredAttributes;
     }
 
+    /**
+     * @param {string} type - attribute type (label, relation, etc.)
+     * @param {string} name - attribute name
+     * @returns {Promise<boolean>} true if note has an attribute with given type and name (including inherited)
+     */
     async hasAttribute(type, name) {
         return !!await this.getAttribute(type, name);
     }
 
-    // WARNING: this doesn't take into account the possibility to have multi-valued labels!
+    /**
+     * @param {string} type - attribute type (label, relation, etc.)
+     * @param {string} name - attribute name
+     * @returns {Promise<Attribute>} attribute of given type and name. If there's more such attributes, first is  returned. Returns null if there's no such attribute belonging to this note.
+     */
     async getAttribute(type, name) {
         const attributes = await this.getAttributes();
 
         return attributes.find(attr => attr.type === type && attr.name === name);
     }
 
+    /**
+     * @param {string} type - attribute type (label, relation, etc.)
+     * @param {string} name - attribute name
+     * @returns {Promise<string>} attribute value of given type and name or null if no such attribute exists.
+     */
     async getAttributeValue(type, name) {
         const attr = await this.getAttribute(type, name);
 
         return attr ? attr.value : null;
     }
 
-    async toggleAttribute(type, enabled, name, value = "") {
+    /**
+     * Based on enabled, attribute is either set or removed.
+     *
+     * @param {string} type - attribute type ('relation', 'label' etc.)
+     * @param {boolean} enabled - toggle On or Off
+     * @param {string} name - attribute name
+     * @param {string} [value] - attribute value (optional)
+     * @returns {Promise<void>}
+     */
+    async toggleAttribute(type, enabled, name, value) {
         if (enabled) {
             await this.setAttribute(type, name, value);
         }
@@ -182,16 +239,24 @@ class Note extends Entity {
         }
     }
 
-    async setAttribute(type, name, value = "") {
+    /**
+     * Creates given attribute name-value pair if it doesn't exist.
+     *
+     * @param {string} type - attribute type (label, relation, etc.)
+     * @param {string} name - attribute name
+     * @param {string} [value] - attribute value (optional)
+     * @returns {Promise<void>}
+     */
+    async setAttribute(type, name, value) {
         const attributes = await this.getOwnedAttributes();
-        let attr = attributes.find(attr => attr.type === type && attr.value === value);
+        let attr = attributes.find(attr => attr.type === type && (value === undefined || attr.value === value));
 
         if (!attr) {
             attr = new Attribute({
                 noteId: this.noteId,
                 type: type,
                 name: name,
-                value: value
+                value: value !== undefined ? value : ""
             });
 
             await attr.save();
@@ -200,11 +265,19 @@ class Note extends Entity {
         }
     }
 
-    async removeAttribute(type, name, value = "") {
+    /**
+     * Removes given attribute name-value pair if it exists.
+     *
+     * @param {string} type - attribute type (label, relation, etc.)
+     * @param {string} name - attribute name
+     * @param {string} [value] - attribute value (optional)
+     * @returns {Promise<void>}
+     */
+    async removeAttribute(type, name, value) {
         const attributes = await this.getOwnedAttributes();
 
         for (const attribute of attributes) {
-            if (attribute.type === type && (!value || value === attribute.value)) {
+            if (attribute.type === type && (value === undefined || value === attribute.value)) {
                 attribute.isDeleted = true;
                 await attribute.save();
 
@@ -213,30 +286,116 @@ class Note extends Entity {
         }
     }
 
+    /**
+     * @param {string} name - label name
+     * @returns {Promise<boolean>} true if label exists (including inherited)
+     */
     async hasLabel(name) { return await this.hasAttribute(LABEL, name); }
+
+    /**
+     * @param {string} name - relation name
+     * @returns {Promise<boolean>} true if relation exists (including inherited)
+     */
     async hasRelation(name) { return await this.hasAttribute(RELATION, name); }
 
+    /**
+     * @param {string} name - label name
+     * @returns {Promise<Attribute>} label if it exists, null otherwise
+     */
     async getLabel(name) { return await this.getAttribute(LABEL, name); }
+
+    /**
+     * @param {string} name - relation name
+     * @returns {Promise<Attribute>} relation if it exists, null otherwise
+     */
     async getRelation(name) { return await this.getAttribute(RELATION, name); }
 
+    /**
+     * @param {string} name - label name
+     * @returns {Promise<string>} label value if label exists, null otherwise
+     */
     async getLabelValue(name) { return await this.getAttributeValue(LABEL, name); }
+
+    /**
+     * @param {string} name - relation name
+     * @returns {Promise<string>} relation value if relation exists, null otherwise
+     */
     async getRelationValue(name) { return await this.getAttributeValue(RELATION, name); }
 
-    async toggleLabel(enabled, name, value = "") { return await this.toggleAttribute(LABEL, enabled, name, value); }
-    async toggleRelation(enabled, name, value = "") { return await this.toggleAttribute(RELATION, enabled, name, value); }
+    /**
+     * Based on enabled, label is either set or removed.
+     *
+     * @param {boolean} enabled - toggle On or Off
+     * @param {string} name - label name
+     * @param {string} [value] - label value (optional)
+     * @returns {Promise<void>}
+     */
+    async toggleLabel(enabled, name, value) { return await this.toggleAttribute(LABEL, enabled, name, value); }
 
-    async setLabel(name, value = "") { return await this.setAttribute(LABEL, name, value); }
-    async setRelation(name, value = "") { return await this.setAttribute(RELATION, name, value); }
+    /**
+     * Based on enabled, relation is either set or removed.
+     *
+     * @param {boolean} enabled - toggle On or Off
+     * @param {string} name - relation name
+     * @param {string} [value] - relation value (noteId)
+     * @returns {Promise<void>}
+     */
+    async toggleRelation(enabled, name, value) { return await this.toggleAttribute(RELATION, enabled, name, value); }
 
-    async removeLabel(name, value = "") { return await this.removeAttribute(LABEL, name, value); }
-    async removeRelation(name, value = "") { return await this.removeAttribute(RELATION, name, value); }
+    /**
+     * Create label name-value pair if it doesn't exist yet.
+     *
+     * @param {string} name - label name
+     * @param {string} [value] - label value
+     * @returns {Promise<void>}
+     */
+    async setLabel(name, value) { return await this.setAttribute(LABEL, name, value); }
 
+    /**
+     * Create relation name-value pair if it doesn't exist yet.
+     *
+     * @param {string} name - relation name
+     * @param {string} [value] - relation value (noteId)
+     * @returns {Promise<void>}
+     */
+    async setRelation(name, value) { return await this.setAttribute(RELATION, name, value); }
+
+    /**
+     * Remove label name-value pair, if it exists.
+     *
+     * @param {string} name - label name
+     * @param {string} [value] - label value
+     * @returns {Promise<void>}
+     */
+    async removeLabel(name, value) { return await this.removeAttribute(LABEL, name, value); }
+
+    /**
+     * Remove relation name-value pair, if it exists.
+     *
+     * @param {string} name - relation name
+     * @param {string} [value] - relation value (noteId)
+     * @returns {Promise<void>}
+     */
+    async removeRelation(name, value) { return await this.removeAttribute(RELATION, name, value); }
+
+    /**
+     * @param {string} name
+     * @returns {Promise<Note>|null} target note of the relation or null (if target is empty or note was not found)
+     */
     async getRelationTarget(name) {
         const relation = await this.getRelation(name);
 
         return relation ? await repository.getNote(relation.value) : null;
     }
 
+    /**
+     * Finds notes with given attribute name and value. Only own attributes are considered, not inherited ones
+     *
+     * @param {string} type - attribute type (label, relation, etc.)
+     * @param {string} name - attribute name
+     * @param {string} [value] - attribute value
+     * @returns {Promise<Array.<Note>>}
+     */
     async findNotesWithAttribute(type, name, value) {
         const params = [this.noteId, name];
         let valueCondition = "";
@@ -268,32 +427,50 @@ class Note extends Entity {
         return notes;
     }
 
+    /**
+     * Finds notes with given label name and value. Only own labels are considered, not inherited ones
+     *
+     * @param {string} name - label name
+     * @param {string} [value] - label value
+     * @returns {Promise<Array.<Note>>}
+     */
     async findNotesWithLabel(name, value) { return await this.findNotesWithAttribute(LABEL, name, value); }
+
+    /**
+     * Finds notes with given relation name and value. Only own relations are considered, not inherited ones
+     *
+     * @param {string} name - relation name
+     * @param {string} [value] - relation value
+     * @returns {Promise<Array.<Note>>}
+     */
     async findNotesWithRelation(name, value) { return await this.findNotesWithAttribute(RELATION, name, value); }
 
+    /**
+     * Returns note revisions of this note.
+     *
+     * @returns {Promise<Array.<NoteRevision>>}
+     */
     async getRevisions() {
         return await repository.getEntities("SELECT * FROM note_revisions WHERE noteId = ?", [this.noteId]);
     }
 
+    /**
+     * @returns {Promise<Array.<NoteImage>>}
+     */
     async getNoteImages() {
         return await repository.getEntities("SELECT * FROM note_images WHERE noteId = ? AND isDeleted = 0", [this.noteId]);
     }
 
+    /**
+     * @returns {Promise<Array.<Branch>>}
+     */
     async getBranches() {
         return await repository.getEntities("SELECT * FROM branches WHERE isDeleted = 0 AND noteId = ?", [this.noteId]);
     }
 
-    async getChildNote(name) {
-        return await repository.getEntity(`
-          SELECT notes.* 
-          FROM branches 
-            JOIN notes USING(noteId) 
-          WHERE notes.isDeleted = 0
-                AND branches.isDeleted = 0
-                AND branches.parentNoteId = ?
-                AND notes.title = ?`, [this.noteId, name]);
-    }
-
+    /**
+     * @returns {Promise<Array.<Note>>} child notes of this note
+     */
     async getChildNotes() {
         return await repository.getEntities(`
           SELECT notes.* 
@@ -305,6 +482,9 @@ class Note extends Entity {
           ORDER BY branches.notePosition`, [this.noteId]);
     }
 
+    /**
+     * @returns {Promise<Array.<Branch>>} child branches of this note
+     */
     async getChildBranches() {
         return await repository.getEntities(`
           SELECT branches.* 
@@ -314,6 +494,9 @@ class Note extends Entity {
           ORDER BY branches.notePosition`, [this.noteId]);
     }
 
+    /**
+     * @returns {Promise<Array.<Note>>} parent notes of this note (note can have multiple parents because of cloning)
+     */
     async getParentNotes() {
         return await repository.getEntities(`
           SELECT parent_notes.* 
