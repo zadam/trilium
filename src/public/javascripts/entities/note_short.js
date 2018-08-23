@@ -25,7 +25,7 @@ class NoteShort {
         return this.mime === "application/json";
     }
 
-    /** @returns {Promise<Array.<Branch>>} */
+    /** @returns {Promise<Branch[]>} */
     async getBranches() {
         const branchIds = this.treeCache.parents[this.noteId].map(
             parentNoteId => this.treeCache.getBranchIdByChildParent(this.noteId, parentNoteId));
@@ -39,7 +39,7 @@ class NoteShort {
             && this.treeCache.children[this.noteId].length > 0;
     }
 
-    /** @returns {Promise<Array.<Branch>>} */
+    /** @returns {Promise<Branch[]>} */
     async getChildBranches() {
         if (!this.treeCache.children[this.noteId]) {
             return [];
@@ -51,22 +51,22 @@ class NoteShort {
         return await this.treeCache.getBranches(branchIds);
     }
 
-    /** @returns {Array.<string>} */
+    /** @returns {string[]} */
     getParentNoteIds() {
         return this.treeCache.parents[this.noteId] || [];
     }
 
-    /** @returns {Promise<Array.<NoteShort>>} */
+    /** @returns {Promise<NoteShort[]>} */
     async getParentNotes() {
         return await this.treeCache.getNotes(this.getParentNoteIds());
     }
 
-    /** @returns {Array.<string>} */
+    /** @returns {string[]} */
     getChildNoteIds() {
         return this.treeCache.children[this.noteId] || [];
     }
 
-    /** @returns {Promise<Array.<NoteShort>>} */
+    /** @returns {Promise<NoteShort[]>} */
     async getChildNotes() {
         return await this.treeCache.getNotes(this.getChildNoteIds());
     }

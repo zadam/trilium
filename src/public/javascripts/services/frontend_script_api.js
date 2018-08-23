@@ -6,6 +6,8 @@ import linkService from './link.js';
 import treeCache from './tree_cache.js';
 
 /**
+ * This is the main frontend API interface for scripts. It's published in the local "api" object.
+ *
  * @constructor
  * @hideconstructor
  */
@@ -41,9 +43,17 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null) {
     };
 
     /**
+     * @typedef {Object} ToolbarButtonOptions
+     * @property {string} title
+     * @property {string} [icon] - name of the jQuery UI icon to be used (e.g. "clock" for "ui-icon-clock" icon)
+     * @property {function} action - callback handling the click on the button
+     * @property {string} [shortcut] - keyboard shortcut for the button, e.g. "alt+t"
+     */
+
+    /**
      * Adds new button the the plugin area.
      *
-     * @param {object} options
+     * @param {ToolbarButtonOptions} opts
      */
     this.addButtonToToolbar = opts => {
         const buttonId = "toolbar-button-" + opts.title.replace(/[^a-zA-Z0-9]/g, "-");
@@ -90,7 +100,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null) {
      * Internally this serializes the anonymous function into string and sends it to backend via AJAX.
      *
      * @param {string} script - script to be executed on the backend
-     * @param {Array.<*>} params - list of parameters to the anonymous function to be send to backend
+     * @param {Array.<?>} params - list of parameters to the anonymous function to be send to backend
      * @return {Promise<*>} return value of the executed function on the backend
      */
     this.runOnServer = async (script, params = []) => {
@@ -121,9 +131,9 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null) {
      * This is often used to bulk-fill the cache with notes which would have to be picked one by one
      * otherwise (by e.g. createNoteLink())
      *
-     * @param {Array.<string>} noteIds
+     * @param {string[]} noteIds
      * @param {boolean} [silentNotFoundError] - don't report error if the note is not found
-     * @return {Promise<Array.<NoteShort>>}
+     * @return {Promise<NoteShort[]>}
      */
     this.getNotes = async (noteIds, silentNotFoundError = false) => await treeCache.getNotes(noteIds, silentNotFoundError);
 

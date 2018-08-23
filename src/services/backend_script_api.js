@@ -13,6 +13,8 @@ const cloningService = require('./cloning');
 const messagingService = require('./messaging');
 
 /**
+ * This is the main backend API interface for scripts. It's published in the local "api" object.
+ *
  * @constructor
  * @hideconstructor
  */
@@ -73,7 +75,7 @@ function BackendScriptApi(startNote, currentNote, originEntity) {
      *
      * @method
      * @param {string} SQL query
-     * @param {Array.<*>} array of params
+     * @param {Array.<?>} array of params
      * @returns {Promise<Entity|null>}
      */
     this.getEntity = repository.getEntity;
@@ -81,8 +83,8 @@ function BackendScriptApi(startNote, currentNote, originEntity) {
     /**
      * @method
      * @param {string} SQL query
-     * @param {Array.<*>} array of params
-     * @returns {Promise<Array.<Entity>>}
+     * @param {Array.<?>} array of params
+     * @returns {Promise<Entity[]>}
      */
     this.getEntities = repository.getEntities;
 
@@ -92,7 +94,7 @@ function BackendScriptApi(startNote, currentNote, originEntity) {
      * @method
      * @param {string} name - attribute name
      * @param {string} [value] - attribute value
-     * @returns {Promise<Array.<Note>>}
+     * @returns {Promise<Note[]>}
      */
     this.getNotesWithLabel = attributeService.getNotesWithLabel;
 
@@ -140,13 +142,29 @@ function BackendScriptApi(startNote, currentNote, originEntity) {
     this.toggleNoteInParent = cloningService.toggleNoteInParent;
 
     /**
+     * @typedef {object} CreateNoteAttribute
+     * @property {string} type - attribute type - label, relation etc.
+     * @property {string} name - attribute name
+     * @property {string} [value] - attribute value
+     */
+
+    /**
+     * @typedef {object} CreateNoteExtraOptions
+     * @property {boolean} [json=false] - should the note be JSON
+     * @property {boolean} [isProtected=false] - should the note be protected
+     * @property {string} [type='text'] - note type
+     * @property {string} [mime='text/html'] - MIME type of the note
+     * @property {CreateNoteAttribute[]} [attributes=[]] - attributes to be created for this note
+     */
+
+    /**
      * @method
      *
      * @param {string} parentNoteId - create new note under this parent
      * @param {string} title
-     * @param {string} [content]
-     * @param {object} [extraOptions]
-     * @returns {Promise<Object>} object contains attributes "note" and "branch" which contain newly created entities
+     * @param {string} [content=""]
+     * @param {CreateNoteExtraOptions} [extraOptions={}]
+     * @returns {Promise<{note: Note, branch: Branch}>} object contains newly created entities note and branch
      */
     this.createNote = noteService.createNote;
 

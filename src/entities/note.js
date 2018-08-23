@@ -93,13 +93,13 @@ class Note extends Entity {
     }
 
     /**
-     * @returns {Promise<Array.<Attribute>>} attributes belonging to this specific note (excludes inherited attributes)
+     * @returns {Promise<Attribute[]>} attributes belonging to this specific note (excludes inherited attributes)
      */
     async getOwnedAttributes() {
         return await repository.getEntities(`SELECT * FROM attributes WHERE isDeleted = 0 AND noteId = ?`, [this.noteId]);
     }
 
-    /** @returns {Promise<Array.<Attribute>>} all note's attributes, including inherited ones */
+    /** @returns {Promise<Attribute[]>} all note's attributes, including inherited ones */
     async getAttributes() {
         if (!this.__attributeCache) {
             await this.loadAttributesToCache();
@@ -108,12 +108,12 @@ class Note extends Entity {
         return this.__attributeCache;
     }
 
-    /** @returns {Promise<Array.<Attribute>>} all note's labels (attributes with type label), including inherited ones */
+    /** @returns {Promise<Attribute[]>} all note's labels (attributes with type label), including inherited ones */
     async getLabels() {
         return (await this.getAttributes()).filter(attr => attr.type === LABEL);
     }
 
-    /** @returns {Promise<Array.<Attribute>>} all note's relations (attributes with type relation), including inherited ones */
+    /** @returns {Promise<Attribute[]>} all note's relations (attributes with type relation), including inherited ones */
     async getRelations() {
         return (await this.getAttributes()).filter(attr => attr.type === RELATION);
     }
@@ -394,7 +394,7 @@ class Note extends Entity {
      * @param {string} type - attribute type (label, relation, etc.)
      * @param {string} name - attribute name
      * @param {string} [value] - attribute value
-     * @returns {Promise<Array.<Note>>}
+     * @returns {Promise<Note[]>}
      */
     async findNotesWithAttribute(type, name, value) {
         const params = [this.noteId, name];
@@ -432,7 +432,7 @@ class Note extends Entity {
      *
      * @param {string} name - label name
      * @param {string} [value] - label value
-     * @returns {Promise<Array.<Note>>}
+     * @returns {Promise<Note[]>}
      */
     async findNotesWithLabel(name, value) { return await this.findNotesWithAttribute(LABEL, name, value); }
 
@@ -441,35 +441,35 @@ class Note extends Entity {
      *
      * @param {string} name - relation name
      * @param {string} [value] - relation value
-     * @returns {Promise<Array.<Note>>}
+     * @returns {Promise<Note[]>}
      */
     async findNotesWithRelation(name, value) { return await this.findNotesWithAttribute(RELATION, name, value); }
 
     /**
      * Returns note revisions of this note.
      *
-     * @returns {Promise<Array.<NoteRevision>>}
+     * @returns {Promise<NoteRevision[]>}
      */
     async getRevisions() {
         return await repository.getEntities("SELECT * FROM note_revisions WHERE noteId = ?", [this.noteId]);
     }
 
     /**
-     * @returns {Promise<Array.<NoteImage>>}
+     * @returns {Promise<NoteImage[]>}
      */
     async getNoteImages() {
         return await repository.getEntities("SELECT * FROM note_images WHERE noteId = ? AND isDeleted = 0", [this.noteId]);
     }
 
     /**
-     * @returns {Promise<Array.<Branch>>}
+     * @returns {Promise<Branch[]>}
      */
     async getBranches() {
         return await repository.getEntities("SELECT * FROM branches WHERE isDeleted = 0 AND noteId = ?", [this.noteId]);
     }
 
     /**
-     * @returns {Promise<Array.<Note>>} child notes of this note
+     * @returns {Promise<Note[]>} child notes of this note
      */
     async getChildNotes() {
         return await repository.getEntities(`
@@ -483,7 +483,7 @@ class Note extends Entity {
     }
 
     /**
-     * @returns {Promise<Array.<Branch>>} child branches of this note
+     * @returns {Promise<Branch[]>} child branches of this note
      */
     async getChildBranches() {
         return await repository.getEntities(`
@@ -495,7 +495,7 @@ class Note extends Entity {
     }
 
     /**
-     * @returns {Promise<Array.<Note>>} parent notes of this note (note can have multiple parents because of cloning)
+     * @returns {Promise<Note[]>} parent notes of this note (note can have multiple parents because of cloning)
      */
     async getParentNotes() {
         return await repository.getEntities(`
