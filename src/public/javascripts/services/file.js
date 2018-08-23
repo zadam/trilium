@@ -21,7 +21,7 @@ $("#file-upload").change(async function() {
 
     await treeService.reload();
 
-    await treeService.activateNode(resp.noteId);
+    await treeService.activateNote(resp.noteId);
 });
 
 export default {

@@ -100,7 +100,7 @@ async function expandToNote(notePath, expandOpts) {
     }
 }
 
-async function activateNode(notePath, newNote) {
+async function activateNote(notePath, newNote) {
     utils.assertArguments(notePath);
 
     const node = await expandToNote(notePath);
@@ -295,7 +295,7 @@ async function treeInitialized() {
     }
 
     if (startNotePath) {
-        const node = await activateNode(startNotePath);
+        const node = await activateNote(startNotePath);
 
         // looks like this this doesn't work when triggered immediatelly after activating node
         // so waiting a second helps
@@ -562,7 +562,7 @@ $(window).bind('hashchange', function() {
     if (getCurrentNotePath() !== notePath) {
         console.log("Switching to " + notePath + " because of hash change");
 
-        activateNode(notePath);
+        activateNote(notePath);
     }
 });
 
@@ -579,7 +579,7 @@ export default {
     setBranchBackgroundBasedOnProtectedStatus,
     setProtected,
     expandToNote,
-    activateNode,
+    activateNote,
     getCurrentNode,
     getCurrentNotePath,
     setCurrentNotePathToHash,

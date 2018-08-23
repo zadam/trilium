@@ -17,7 +17,7 @@ import noteDetailService from './note_detail.js';
 import noteType from './note_type.js';
 import protected_session from './protected_session.js';
 import searchNotesService from './search_notes.js';
-import ScriptApi from './script_api.js';
+import FrontendScriptApi from './frontend_script_api.js';
 import ScriptContext from './script_context.js';
 import sync from './sync.js';
 import treeService from './tree.js';
@@ -88,7 +88,7 @@ if (utils.isElectron()) {
             await treeService.reload();
         }
 
-        await treeService.activateNode(parentNoteId);
+        await treeService.activateNote(parentNoteId);
 
         setTimeout(() => {
             const node = treeService.getCurrentNode();

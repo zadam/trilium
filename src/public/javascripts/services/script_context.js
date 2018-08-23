@@ -1,4 +1,4 @@
-import ScriptApi from './script_api.js';
+import FrontendScriptApi from './frontend_script_api.js';
 import utils from './utils.js';
 
 function ScriptContext(startNote, allNotes, originEntity = null) {
@@ -7,7 +7,7 @@ function ScriptContext(startNote, allNotes, originEntity = null) {
     return {
         modules: modules,
         notes: utils.toObject(allNotes, note => [note.noteId, note]),
-        apis: utils.toObject(allNotes, note => [note.noteId, ScriptApi(startNote, note, originEntity)]),
+        apis: utils.toObject(allNotes, note => [note.noteId, new FrontendScriptApi(startNote, note, originEntity)]),
         require: moduleNoteIds => {
             return moduleName => {
                 const candidates = allNotes.filter(note => moduleNoteIds.includes(note.noteId));

@@ -17,11 +17,11 @@ const messagingService = require('./messaging');
  * @hideconstructor
  */
 function BackendScriptApi(startNote, currentNote, originEntity) {
-    /** @param {Note} */
+    /** @property {Note} note where script started executing */
     this.startNote = startNote;
-    /** @param {Note} */
+    /** @property {Note} note where script is currently executing */
     this.currentNote = currentNote;
-    /** @param {Entity} */
+    /** @property {Entity} entity whose event triggered this executions */
     this.originEntity = originEntity;
 
     this.axios = axios;
@@ -145,7 +145,7 @@ function BackendScriptApi(startNote, currentNote, originEntity) {
      * @param {string} parentNoteId - create new note under this parent
      * @param {string} title
      * @param {string} [content]
-     * @params {object} [extraOptions]
+     * @param {object} [extraOptions]
      * @returns {Promise<Object>} object contains attributes "note" and "branch" which contain newly created entities
      */
     this.createNote = noteService.createNote;
@@ -202,7 +202,7 @@ function BackendScriptApi(startNote, currentNote, originEntity) {
      * transactional by default.
      *
      * @method
-     * @params {function} func
+     * @param {function} func
      * @returns {Promise<?>} result of func callback
      */
     this.transactional = sql.transactional;

@@ -61,7 +61,7 @@ function goToLink(e) {
         notePath = getNotePathFromLink(address);
     }
 
-    treeService.activateNode(notePath);
+    treeService.activateNote(notePath);
 
     // this is quite ugly hack, but it seems like we can't close the tooltip otherwise
     $("[role='tooltip']").remove();

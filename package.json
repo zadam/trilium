@@ -21,7 +21,9 @@
     "package-forge": "electron-forge package",
     "make-forge": "electron-forge make",
     "publish-forge": "electron-forge publish",
-    "build-docs": "jsdoc src/entities/*.js src/services/backend_script_api.js"
+    "build-backend-docs": "jsdoc -d ./docs/backend_api src/entities/*.js src/services/backend_script_api.js",
+    "build-frontend-docs": "jsdoc -d ./docs/frontend_api src/public/javascripts/entities/*.js src/public/javascripts/services/frontend_script_api.js",
+    "build-docs": "npm run build-backend-docs && npm run build-frontend-docs"
   },
   "dependencies": {
     "async-mutex": "^0.1.3",

@@ -336,7 +336,7 @@ async function loadAttributes() {
             const $openButton = $("<button>").addClass("btn btn-small").text("Open").click(() => {
                 const notePath = linkService.getNotePathFromLabel($input.val());
 
-                treeService.activateNode(notePath);
+                treeService.activateNote(notePath);
             });
 
             $actionCell.append($openButton);

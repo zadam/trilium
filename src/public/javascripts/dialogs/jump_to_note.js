@@ -31,7 +31,7 @@ async function showDialog() {
 
             const notePath = linkService.getNotePathFromLabel(ui.item.value);
 
-            treeService.activateNode(notePath);
+            treeService.activateNote(notePath);
 
             $dialog.dialog('close');
         }

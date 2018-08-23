@@ -73,7 +73,7 @@ async function saveSearch() {
 
     await treeService.reload();
 
-    await treeService.activateNode(noteId);
+    await treeService.activateNote(noteId);
 }
 
 $searchInput.keyup(e => {
