@@ -20,7 +20,8 @@
     "start-forge": "electron-forge start",
     "package-forge": "electron-forge package",
     "make-forge": "electron-forge make",
-    "publish-forge": "electron-forge publish"
+    "publish-forge": "electron-forge publish",
+    "build-docs": "jsdoc src/entities/*.js src/services/backend_script_api.js"
   },
   "dependencies": {
     "async-mutex": "^0.1.3",

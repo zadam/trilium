@@ -29,18 +29,16 @@ const BUILTIN_ATTRIBUTES = [
 ];
 
 async function getNotesWithLabel(name, value) {
-    let notes;
+    let valueCondition = "";
+    let params = [name];
 
     if (value !== undefined) {
-        notes = await repository.getEntities(`SELECT notes.* FROM notes JOIN attributes USING(noteId) 
-          WHERE notes.isDeleted = 0 AND attributes.isDeleted = 0 AND attributes.name = ? AND attributes.value = ?`, [name, value]);
-    }
-    else {
-        notes = await repository.getEntities(`SELECT notes.* FROM notes JOIN attributes USING(noteId) 
-          WHERE notes.isDeleted = 0 AND attributes.isDeleted = 0 AND attributes.name = ?`, [name]);
+        valueCondition = " AND attributes.value = ?";
+        params.push(value);
     }
 
-    return notes;
+    return await repository.getEntities(`SELECT notes.* FROM notes JOIN attributes USING(noteId) 
+          WHERE notes.isDeleted = 0 AND attributes.isDeleted = 0 AND attributes.name = ? ${valueCondition} ORDER BY position`, params);
 }
 
 async function getNoteWithLabel(name, value) {

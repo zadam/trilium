@@ -111,6 +111,7 @@ async function setNoteToParent(noteId, prefix, parentNoteId) {
         }
         else {
             branch.parentNoteId = parentNoteId;
+            branch.prefix = prefix;
         }
 
         await branch.save();
