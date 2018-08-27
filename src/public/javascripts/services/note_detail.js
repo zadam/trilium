@@ -226,7 +226,10 @@ async function loadAttributes() {
 
     const attributes = await server.get('notes/' + noteId + '/attributes');
 
-    const promoted = attributes.filter(attr => (attr.type === 'label-definition' || attr.type === 'relation-definition') && attr.value.isPromoted);
+    const promoted = attributes.filter(attr =>
+        (attr.type === 'label-definition' || attr.type === 'relation-definition')
+        && !attr.name.startsWith("child:")
+        && attr.value.isPromoted);
 
     let idx = 1;
 

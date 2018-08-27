@@ -44,7 +44,10 @@ function setupTooltip() {
 
 async function renderTooltip(callback, note, attributes) {
     let content = '';
-    const promoted = attributes.filter(attr => (attr.type === 'label-definition' || attr.type === 'relation-definition') && attr.value.isPromoted);
+    const promoted = attributes.filter(attr =>
+        (attr.type === 'label-definition' || attr.type === 'relation-definition')
+        && !attr.name.startsWith("child:")
+        && attr.value.isPromoted);
 
     if (promoted.length > 0) {
         const $table = $("<table>").addClass("promoted-attributes-in-tooltip");
@@ -56,6 +59,10 @@ async function renderTooltip(callback, note, attributes) {
             let valueAttrs = attributes.filter(el => el.name === definitionAttr.name && el.type === valueType);
 
             for (const valueAttr of valueAttrs) {
+                if (!valueAttr.value) {
+                    continue;
+                }
+
                 let $value = "";
 
                 if (valueType === 'label') {
@@ -83,8 +90,6 @@ async function renderTooltip(callback, note, attributes) {
         content += $("<pre>").text(note.content).prop('outerHTML');
     }
     // other types of notes don't have tooltip preview
-
-    console.log(content);
 
     if (!content.trim()) {
         return;
