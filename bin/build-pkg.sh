@@ -20,4 +20,4 @@ cp node_modules/scrypt/build/Release/scrypt.node ${PKG_DIR}/
 
 cd dist
 
-7z a trilium-linux-x64-${VERSION}-server.7z trilium-linux-x64-server
+7z a trilium-linux-x64-server-${VERSION}.7z trilium-linux-x64-server
