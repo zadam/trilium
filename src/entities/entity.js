@@ -17,15 +17,19 @@ class Entity {
     }
 
     beforeSaving() {
-        if (!this[this.constructor.primaryKeyName]) {
-            this[this.constructor.primaryKeyName] = utils.newEntityId();
-        }
+        this.generateIdIfNecessary();
 
         const origHash = this.hash;
 
         this.hash = this.generateHash();
 
         this.isChanged = origHash !== this.hash;
+    }
+
+    generateIdIfNecessary() {
+        if (!this[this.constructor.primaryKeyName]) {
+            this[this.constructor.primaryKeyName] = utils.newEntityId();
+        }
     }
 
     generateHash() {

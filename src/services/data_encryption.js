@@ -85,10 +85,18 @@ function decryptString(dataKey, iv, cipherText) {
 }
 
 function noteTitleIv(iv) {
+    if (!iv) {
+        throw new Error("Empty iv!");
+    }
+
     return "0" + iv;
 }
 
 function noteContentIv(iv) {
+    if (!iv) {
+        throw new Error("Empty iv!");
+    }
+
     return "1" + iv;
 }
 

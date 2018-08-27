@@ -513,6 +513,9 @@ class Note extends Entity {
             this.content = JSON.stringify(this.jsonContent, null, '\t');
         }
 
+        // we do this here because encryption needs the note ID for the IV
+        this.generateIdIfNecessary();
+
         if (this.isProtected) {
             protectedSessionService.encryptNote(this);
         }

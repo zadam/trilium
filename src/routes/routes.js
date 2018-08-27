@@ -84,7 +84,7 @@ function route(method, path, middleware, routeHandler, resultHandler, transactio
             }
         }
         catch (e) {
-            log.info(`${method} ${path} threw exception: ` + e.stack);
+            log.error(`${method} ${path} threw exception: ` + e.stack);
 
             res.sendStatus(500);
         }
