@@ -58,8 +58,6 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null) {
     this.addButtonToToolbar = opts => {
         const buttonId = "toolbar-button-" + opts.title.replace(/[^a-zA-Z0-9]/g, "-");
 
-        $("#" + buttonId).remove();
-
         const icon = $("<span>")
             .addClass("ui-icon ui-icon-" + opts.icon);
 
@@ -71,7 +69,9 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null) {
 
         button.attr('id', buttonId);
 
-        $pluginButtons.append(button);
+        if ($("#" + buttonId).replaceWith(button).length === 0) {
+            $pluginButtons.append(button);
+        }
 
         if (opts.shortcut) {
             $(document).bind('keydown', opts.shortcut, opts.action);
