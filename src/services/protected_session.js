@@ -37,9 +37,15 @@ function isProtectedSessionAvailable() {
 function decryptNoteTitle(noteId, encryptedTitle) {
     const dataKey = getDataKey();
 
-    const iv = dataEncryptionService.noteTitleIv(noteId);
+    try {
+        const iv = dataEncryptionService.noteTitleIv(noteId);
 
-    return dataEncryptionService.decryptString(dataKey, iv, encryptedTitle);
+        return dataEncryptionService.decryptString(dataKey, iv, encryptedTitle);
+    }
+    catch (e) {
+        e.message = `Cannot decrypt note title for noteId=${noteId}: ` + e.message;
+        throw e;
+    }
 }
 
 function decryptNote(note) {
@@ -49,25 +55,29 @@ function decryptNote(note) {
         return;
     }
 
-    if (note.title) {
-        note.title = dataEncryptionService.decryptString(dataKey, dataEncryptionService.noteTitleIv(note.noteId), note.title);
+    try {
+        if (note.title) {
+            note.title = dataEncryptionService.decryptString(dataKey, dataEncryptionService.noteTitleIv(note.noteId), note.title);
+        }
+
+        if (note.content) {
+            const contentIv = dataEncryptionService.noteContentIv(note.noteId);
+
+            if (note.type === 'file') {
+                note.content = dataEncryptionService.decrypt(dataKey, contentIv, note.content);
+            }
+            else {
+                note.content = dataEncryptionService.decryptString(dataKey, contentIv, note.content);
+            }
+        }
     }
-
-    if (note.content) {
-        const contentIv = dataEncryptionService.noteContentIv(note.noteId);
-
-        if (note.type === 'file') {
-            note.content = dataEncryptionService.decrypt(dataKey, contentIv, note.content);
-        }
-        else {
-            note.content = dataEncryptionService.decryptString(dataKey, contentIv, note.content);
-        }
+    catch (e) {
+        e.message = `Cannot decrypt note for noteId=${note.noteId}: ` + e.message;
+        throw e;
     }
 }
 
 function decryptNotes(notes) {
-    const dataKey = getDataKey();
-
     for (const note of notes) {
         decryptNote(note);
     }
