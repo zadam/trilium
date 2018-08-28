@@ -13,3 +13,7 @@ select * from images;
 .mode insert note_images
 .out db/main_note_images.sql
 select * from note_images;
+
+.mode insert attributes
+.out db/main_attributes.sql
+select * from attributes;

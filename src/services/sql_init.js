@@ -75,6 +75,7 @@ async function createInitialDatabase(username, password) {
     const notesTreeSql = fs.readFileSync(resourceDir.DB_INIT_DIR + '/main_branches.sql', 'UTF-8');
     const imagesSql = fs.readFileSync(resourceDir.DB_INIT_DIR + '/main_images.sql', 'UTF-8');
     const notesImageSql = fs.readFileSync(resourceDir.DB_INIT_DIR + '/main_note_images.sql', 'UTF-8');
+    const attributesSql = fs.readFileSync(resourceDir.DB_INIT_DIR + '/main_attributes.sql', 'UTF-8');
 
     await sql.transactional(async () => {
         await sql.executeScript(schema);
@@ -82,6 +83,7 @@ async function createInitialDatabase(username, password) {
         await sql.executeScript(notesTreeSql);
         await sql.executeScript(imagesSql);
         await sql.executeScript(notesImageSql);
+        await sql.executeScript(attributesSql);
 
         const startNoteId = await sql.getValue("SELECT noteId FROM branches WHERE parentNoteId = 'root' AND isDeleted = 0 ORDER BY notePosition");
 
