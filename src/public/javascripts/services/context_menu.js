@@ -94,9 +94,9 @@ const contextMenuOptions = {
         {title: "Paste into <kbd>Ctrl+V</kbd>", cmd: "pasteInto", uiIcon: "ui-icon-clipboard"},
         {title: "Paste after", cmd: "pasteAfter", uiIcon: "ui-icon-clipboard"},
         {title: "----"},
-        {title: "Export branch", cmd: "exportBranch", uiIcon: " ui-icon-arrowthick-1-ne", children: [
-            {title: "Native&nbsp;Tar", cmd: "exportBranchToTar"},
-            {title: "OPML", cmd: "exportBranchToOpml"}
+        {title: "Export subtree", cmd: "exportSubTree", uiIcon: " ui-icon-arrowthick-1-ne", children: [
+            {title: "Native&nbsp;Tar", cmd: "exportSubTreeToTar"},
+            {title: "OPML", cmd: "exportSubTreeToOpml"}
         ]},
         {title: "Import into branch (tar, opml)", cmd: "importBranch", uiIcon: "ui-icon-arrowthick-1-sw"},
         {title: "----"},
@@ -120,7 +120,7 @@ const contextMenuOptions = {
         $tree.contextmenu("enableEntry", "pasteAfter", clipboardIds.length > 0 && isNotRoot && parentNote.type !== 'search');
         $tree.contextmenu("enableEntry", "pasteInto", clipboardIds.length > 0 && note.type !== 'search');
         $tree.contextmenu("enableEntry", "importBranch", note.type !== 'search');
-        $tree.contextmenu("enableEntry", "exportBranch", note.type !== 'search');
+        $tree.contextmenu("enableEntry", "exportSubTree", note.type !== 'search');
         $tree.contextmenu("enableEntry", "editBranchPrefix", isNotRoot && parentNote.type !== 'search');
 
         // Activate node on right-click
@@ -166,11 +166,11 @@ const contextMenuOptions = {
         else if (ui.cmd === "delete") {
             treeChangesService.deleteNodes(treeService.getSelectedNodes(true));
         }
-        else if (ui.cmd === "exportBranchToTar") {
-            exportService.exportBranch(node.data.noteId, 'tar');
+        else if (ui.cmd === "exportSubTreeToTar") {
+            exportService.exportSubTree(node.data.noteId, 'tar');
         }
-        else if (ui.cmd === "exportBranchToOpml") {
-            exportService.exportBranch(node.data.noteId, 'opml');
+        else if (ui.cmd === "exportSubTreeToOpml") {
+            exportService.exportSubTree(node.data.noteId, 'opml');
         }
         else if (ui.cmd === "importBranch") {
             exportService.importBranch(node.data.noteId);
