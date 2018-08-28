@@ -95,10 +95,13 @@ async function updateEntity(entity) {
                 });
             }
 
-            await eventService.emit(eventService.ENTITY_CHANGED, {
-                entityName,
-                entity
-            });
+            // it seems to be better to handle deletion with a separate event
+            if (!entity.isDeleted) {
+                await eventService.emit(eventService.ENTITY_CHANGED, {
+                    entityName,
+                    entity
+                });
+            }
         }
     });
 }
