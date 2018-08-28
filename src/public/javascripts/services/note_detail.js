@@ -119,11 +119,9 @@ async function saveNoteIfChanged() {
 }
 
 function setNoteBackgroundIfProtected(note) {
-    const isProtected = note.isProtected;
-
-    $noteDetailWrapper.toggleClass("protected", isProtected);
-    $protectButton.toggleClass("active", isProtected);
-    $unprotectButton.toggleClass("active", !isProtected);
+    $noteDetailWrapper.toggleClass("protected", note.isProtected);
+    $protectButton.toggleClass("active", note.isProtected);
+    $unprotectButton.toggleClass("active", !note.isProtected);
     $unprotectButton.prop("disabled", !protectedSessionHolder.isProtectedSessionAvailable());
 }
 
@@ -183,7 +181,7 @@ async function loadNoteDetail(noteId) {
     // after loading new note make sure editor is scrolled to the top
     $noteDetailWrapper.scrollTop(0);
 
-    $scriptArea.html('');
+    $scriptArea.empty();
 
     await bundleService.executeRelationBundles(getCurrentNote(), 'runOnNoteView');
 
@@ -417,7 +415,7 @@ async function loadAttributes() {
         $promotedAttributesContainer.empty().append($tbody);
     }
     else {
-        $attributeListInner.html('');
+        $attributeListInner.empty();
 
         if (attributes.length > 0) {
             for (const attribute of attributes) {

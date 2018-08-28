@@ -16,7 +16,7 @@ async function showDialog() {
 
     const result = await server.get('event-log');
 
-    $list.html('');
+    $list.empty();
 
     for (const event of result) {
         const dateTime = utils.formatDateTime(utils.parseDate(event.dateCreated));
