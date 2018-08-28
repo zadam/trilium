@@ -9,9 +9,13 @@ async function show() {
     if (!textEditor) {
         await libraryLoader.requireLibrary(libraryLoader.CKEDITOR);
 
-        textEditor = await BalloonEditor.create($noteDetailText[0], {});
+        // textEditor might have been initialized during previous await so checking again
+        // looks like double initialization can freeze CKEditor pretty badly
+        if (!textEditor) {
+            textEditor = await BalloonEditor.create($noteDetailText[0], {});
 
-        textEditor.model.document.on('change:data', noteDetailService.noteChanged);
+            textEditor.model.document.on('change:data', noteDetailService.noteChanged);
+        }
     }
 
     textEditor.setData(noteDetailService.getCurrentNote().content);

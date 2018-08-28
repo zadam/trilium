@@ -28,6 +28,7 @@ async function leaveProtectedSession() {
     }
 }
 
+/** returned promise resolves with true if new protected session was established, false if no action was necessary */
 function ensureProtectedSession(requireProtectedSession, modal) {
     const dfd = $.Deferred();
 
@@ -53,7 +54,7 @@ function ensureProtectedSession(requireProtectedSession, modal) {
         });
     }
     else {
-        dfd.resolve();
+        dfd.resolve(false);
     }
 
     return dfd.promise();
@@ -82,7 +83,7 @@ async function setupProtectedSession() {
 
         $noteDetailWrapper.show();
 
-        protectedSessionDeferred.resolve();
+        protectedSessionDeferred.resolve(true);
         protectedSessionDeferred = null;
 
         $protectedSessionOnButton.addClass('active');

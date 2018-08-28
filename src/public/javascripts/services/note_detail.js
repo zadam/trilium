@@ -132,7 +132,7 @@ function newNoteCreated() {
 }
 
 async function handleProtectedSession() {
-    await protectedSessionService.ensureProtectedSession(currentNote.isProtected, false);
+    const newSessionCreated = await protectedSessionService.ensureProtectedSession(currentNote.isProtected, false);
 
     if (currentNote.isProtected) {
         protectedSessionHolder.touchProtectedSession();
@@ -141,6 +141,8 @@ async function handleProtectedSession() {
     // this might be important if we focused on protected note when not in protected note and we got a dialog
     // to login, but we chose instead to come to another node - at that point the dialog is still visible and this will close it.
     protectedSessionService.ensureDialogIsClosed();
+
+    return newSessionCreated;
 }
 
 async function loadNoteDetail(noteId) {
@@ -168,7 +170,11 @@ async function loadNoteDetail(noteId) {
 
         $noteDetailComponents.hide();
 
-        await handleProtectedSession();
+        const newSessionCreated = await handleProtectedSession();
+        if (newSessionCreated) {
+            // in such case we're reloading note anyway so no need to continue here.
+            return;
+        }
 
         await getComponent(currentNote.type).show();
     }
