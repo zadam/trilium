@@ -170,7 +170,7 @@ function AttributesModel() {
 
         infoService.showMessage("Attributes have been saved.");
 
-        noteDetailService.loadAttributes();
+        noteDetailService.refreshAttributes();
     };
 
     function addLastEmptyRow() {

@@ -434,7 +434,7 @@ html.theme-dark body {
     margin: auto;
 }
 
-#note-detail-promoted-attributes td, note-detail-promoted-attributes th {
+#note-detail-promoted-attributes td, #note-detail-promoted-attributes th {
     padding: 5px;
 }
 
@@ -453,4 +453,9 @@ table.promoted-attributes-in-tooltip {
 
 table.promoted-attributes-in-tooltip td, table.promoted-attributes-in-tooltip th {
     padding: 10px;
+}
+
+#note-detail-render-help {
+    margin: 50px;
+    padding: 20px;
 }

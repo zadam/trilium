@@ -115,13 +115,8 @@
             <span id="note-id-display" title="Note ID"></span>
 
             <button class="btn btn-sm icon-button"
-                    style="display: none; margin-right: 10px; background-image: url('/images/icons/edit-20.png');"
-                    title="Toggle edit"
-                    id="toggle-edit-button"></button>
-
-            <button class="btn btn-sm icon-button"
                     style="display: none; margin-right: 10px; background-image: url('/images/icons/play-20.png');"
-                    title="Render (Ctrl+Enter)"
+                    title="Render"
                     id="render-button"></button>
 
             <button class="btn btn-sm icon-button"
@@ -228,7 +223,15 @@
 
           <div id="note-detail-code" class="note-detail-component"></div>
 
-          <div id="note-detail-render" class="note-detail-component"></div>
+          <div id="note-detail-render" class="note-detail-component">
+            <div id="note-detail-render-help" class="alert alert-warning">
+              <p><strong>This help note is shown because this note of type Render HTML doesn't have required relation to function properly.</strong></p>
+
+              <p>Render HTML note type is used for <a href="https://github.com/zadam/trilium/wiki/Scripts">scripting</a>. In short, you have a HTML code note (optionally with some JavaScript) and this note will render it. To make it work, you need to define a relation (in <a class="show-attributes-button">Attributes dialog</a>) called "renderNote" pointing to the HTML note to render. Once that's defined you can click on the "play" button to render.</p>
+            </div>
+
+            <div id="note-detail-render-content"></div>
+          </div>
 
           <div id="note-detail-file" class="note-detail-component">
             <table id="file-table">

@@ -38,6 +38,8 @@ let noteChangeDisabled = false;
 
 let isNoteChanged = false;
 
+let attributePromise;
+
 const components = {
     'code': noteDetailCode,
     'text': noteDetailText,
@@ -147,6 +149,7 @@ async function handleProtectedSession() {
 
 async function loadNoteDetail(noteId) {
     currentNote = await loadNote(noteId);
+    refreshAttributes(); // needs to happend after loading the note itself because it references current noteId
 
     if (isNewNoteCreated) {
         isNewNoteCreated = false;
@@ -191,13 +194,15 @@ async function loadNoteDetail(noteId) {
 
     await bundleService.executeRelationBundles(getCurrentNote(), 'runOnNoteView');
 
-    const attributes = await loadAttributes();
+    await showAttributes();
 
-    const hideChildrenOverview = attributes.some(attr => attr.type === 'label' && attr.name === 'hideChildrenOverview');
-    await showChildrenOverview(hideChildrenOverview);
+    await showChildrenOverview();
 }
 
-async function showChildrenOverview(hideChildrenOverview) {
+async function showChildrenOverview() {
+    const attributes = await attributePromise;
+    const hideChildrenOverview = attributes.some(attr => attr.type === 'label' && attr.name === 'hideChildrenOverview');
+
     if (hideChildrenOverview) {
         $childrenOverview.hide();
         return;
@@ -222,13 +227,23 @@ async function showChildrenOverview(hideChildrenOverview) {
     $childrenOverview.show();
 }
 
-async function loadAttributes() {
+async function refreshAttributes() {
+    attributePromise = server.get('notes/' + getCurrentNoteId() + '/attributes');
+
+    await showAttributes();
+}
+
+async function getAttributes() {
+    return await attributePromise;
+}
+
+async function showAttributes() {
     $promotedAttributesContainer.empty();
     $attributeList.hide();
 
     const noteId = getCurrentNoteId();
 
-    const attributes = await server.get('notes/' + noteId + '/attributes');
+    const attributes = await attributePromise;
 
     const promoted = attributes.filter(attr =>
         (attr.type === 'label-definition' || attr.type === 'relation-definition')
@@ -525,7 +540,9 @@ export default {
     getCurrentNoteId,
     newNoteCreated,
     focus,
-    loadAttributes,
+    getAttributes,
+    showAttributes,
+    refreshAttributes,
     saveNote,
     saveNoteIfChanged,
     noteChanged
