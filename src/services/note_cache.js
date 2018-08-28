@@ -6,8 +6,8 @@ const protectedSessionService = require('./protected_session');
 const utils = require('./utils');
 
 let loaded = false;
-let noteTitles;
-let protectedNoteTitles;
+let noteTitles = {};
+let protectedNoteTitles = {};
 let noteIds;
 let childParentToBranchId = {};
 const childToParent = {};
@@ -247,7 +247,14 @@ eventService.subscribe(eventService.ENTITY_CHANGED, async ({entityName, entity})
             delete childToParent[note.noteId];
         }
         else {
-            noteTitles[note.noteId] = note.title;
+            if (note.isProtected) {
+                if (protectedSessionService.isProtectedSessionAvailable()) {
+                    protectedNoteTitles[note.noteId] = protectedSessionService.decryptNoteTitle(note.noteId, note.title);
+                }
+            }
+            else {
+                noteTitles[note.noteId] = note.title;
+            }
         }
     }
     else if (entityName === 'branches') {
