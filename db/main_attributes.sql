@@ -159,7 +159,6 @@ INSERT INTO attributes VALUES('h0git26ZEGDy','rUsGgtpohm7T','relation','template
 INSERT INTO attributes VALUES('mcqG8yBYNxTo','rUsGgtpohm7T','label','dateNote','2017-12-23',1,'2018-08-29T17:31:06.444Z','2018-08-29T17:31:06.444Z',0,'BdarwYoBuQ',0);
 INSERT INTO attributes VALUES('KtkikXf0X9nc','sXti7HgialF2','relation','template','Lt8IUldw7d7H',0,'2018-08-29T17:29:43.173Z','2018-08-29T17:29:43.173Z',0,'iFuRC25cyS',0);
 INSERT INTO attributes VALUES('3LO087cn7L37','sXti7HgialF2','label','dateNote','2017-12-24',1,'2018-08-29T17:31:14.645Z','2018-08-29T17:31:14.645Z',0,'U2d5WjCqq4',0);
-INSERT INTO attributes VALUES('kNp0J9uXoC8U','tX80udgxnW5n','label','weight','75',2,'2018-08-29T17:31:58.692Z','2018-08-29T17:31:58.692Z',0,'Fi6QCUFo5i',0);
 INSERT INTO attributes VALUES('tgeFjZXxRCVr','cwPuYRAGKtUi','label','weight','75.4',2,'2018-08-29T17:32:04.330Z','2018-08-29T17:32:04.330Z',0,'1qYNDu4uln',0);
 INSERT INTO attributes VALUES('QkQATsOfaiZ2','1Fi3MpUkZkLk','label','weight','75.2',2,'2018-08-29T17:32:08.910Z','2018-08-29T17:32:08.910Z',0,'ildTmrBJED',0);
 INSERT INTO attributes VALUES('cjrMaMByU8d7','Iha4YwchR413','label','weight','76',2,'2018-08-29T17:32:13.915Z','2018-08-29T17:32:13.915Z',0,'PSxYyr9giQ',0);
@@ -213,3 +212,4 @@ INSERT INTO attributes VALUES('YngESU7G6T62','TTl2nD4CqzC9','label','taskLocatio
 INSERT INTO attributes VALUES('PEbrAcRaFOXE','ve3Ib30x9nGf','label','cssClass','todo',4,'2018-08-29T19:59:38.915Z','2018-08-29T19:59:38.915Z',0,'Xepyx9jFGP',0);
 INSERT INTO attributes VALUES('cdSIp3FJ50vX','ve3Ib30x9nGf','label','todoDate','2017-12-18',5,'2018-08-29T19:59:46.829Z','2018-08-29T20:00:18.351Z',0,'TWZfKhjpe3',0);
 INSERT INTO attributes VALUES('TZa1McDCnNHj','uP3V8BqwXC05','label','tag','shopping',7,'2018-08-29T20:01:47.691Z','2018-08-29T20:01:47.691Z',0,'kH6CGtIT/r',0);
+INSERT INTO attributes VALUES('kNp0J9uXoC8U','tX80udgxnW5n','label','weight','74.9',2,'2018-08-29T17:31:58.692Z','2018-08-29T21:30:23.669Z',0,'xagvtLz48G',0);
