@@ -12,6 +12,10 @@ function getNodeByKey(key) {
 }
 
 function getNoteIdFromNotePath(notePath) {
+    if (!notePath) {
+        return null;
+    }
+
     const path = notePath.split("/");
 
     return path[path.length - 1];

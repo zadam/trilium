@@ -85,9 +85,11 @@ function addLinkToEditor(linkTitle, linkHref) {
 
 function addTextToEditor(text) {
     const editor = noteDetailText.getEditor();
-    const doc = editor.document;
 
-    doc.enqueueChanges(() => editor.data.insertText(text), doc.selection);
+    editor.model.change(writer => {
+        const insertPosition = editor.model.document.selection.getFirstPosition();
+        writer.insertText(text, insertPosition);
+    });
 }
 
 ko.bindingHandlers.noteLink = {

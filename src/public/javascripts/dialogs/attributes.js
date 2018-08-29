@@ -149,7 +149,7 @@ function AttributesModel() {
                 attr.value = attr.labelValue;
             }
             else if (attr.type === 'relation') {
-                attr.value = treeUtils.getNoteIdFromNotePath(linkService.getNotePathFromLabel(attr.relationValue));
+                attr.value = treeUtils.getNoteIdFromNotePath(linkService.getNotePathFromLabel(attr.relationValue)) || "";
             }
             else if (attr.type === 'label-definition') {
                 attr.value = attr.labelDefinition;
