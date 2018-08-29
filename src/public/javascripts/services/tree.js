@@ -441,7 +441,7 @@ async function setNoteTitle(noteId, title) {
 }
 
 async function createNewTopLevelNote() {
-    const rootNode = $tree.fancytree("getRootNode");
+    const rootNode = getNodesByNoteId('root')[0];
 
     await createNote(rootNode, "root", "into");
 }
