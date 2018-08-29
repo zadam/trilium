@@ -265,7 +265,8 @@ async function showAttributes() {
             .prop("attribute-name", valueAttr.name)
             .prop("value", valueAttr.value)
             .addClass("form-control")
-            .addClass("promoted-attribute-input");
+            .addClass("promoted-attribute-input")
+            .change(promotedAttributeChanged);
 
         idx++;
 
@@ -463,27 +464,7 @@ async function showAttributes() {
     return attributes;
 }
 
-async function loadNote(noteId) {
-    const row = await server.get('notes/' + noteId);
-
-    return new NoteFull(treeCache, row);
-}
-
-function focus() {
-    const note = getCurrentNote();
-
-    getComponent(note.type).focus();
-}
-
-messagingService.subscribeToSyncMessages(syncData => {
-    if (syncData.some(sync => sync.entityName === 'notes' && sync.entityId === getCurrentNoteId())) {
-        infoService.showMessage('Reloading note because of background changes');
-
-        reload();
-    }
-});
-
-$promotedAttributesContainer.on('change', '.promoted-attribute-input', async event => {
+async function promotedAttributeChanged(event) {
     const $attr = $(event.target);
 
     let value;
@@ -510,6 +491,26 @@ $promotedAttributesContainer.on('change', '.promoted-attribute-input', async eve
     $attr.prop("attribute-id", result.attributeId);
 
     infoService.showMessage("Attribute has been saved.");
+}
+
+async function loadNote(noteId) {
+    const row = await server.get('notes/' + noteId);
+
+    return new NoteFull(treeCache, row);
+}
+
+function focus() {
+    const note = getCurrentNote();
+
+    getComponent(note.type).focus();
+}
+
+messagingService.subscribeToSyncMessages(syncData => {
+    if (syncData.some(sync => sync.entityName === 'notes' && sync.entityId === getCurrentNoteId())) {
+        infoService.showMessage('Reloading note because of background changes');
+
+        reload();
+    }
 });
 
 $(document).ready(() => {
