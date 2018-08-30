@@ -20,19 +20,13 @@ See other pictures in [screenshot tour](https://github.com/zadam/trilium/wiki/Sc
 * [Synchronization](https://github.com/zadam/trilium/wiki/Synchronization) with self-hosted sync server
 * Strong [note encryption](https://github.com/zadam/trilium/wiki/Protected-notes)
 * [Scripting](https://github.com/zadam/trilium/wiki/Scripts) - see [Advanced showcases](https://github.com/zadam/trilium/wiki/Advanced-showcases)
+* Scales well in both usability and performance upwards of 100 000 notes
 
 ## Builds
 
-* If you want to install Trilium on server, follow [this page](https://github.com/zadam/trilium/wiki/Server-installation)
+* If you want to install Trilium on server, follow [this page](https://github.com/zadam/trilium/wiki/Server-installation).
+  * Currently only recent Chrome and Firefox are supported (tested) browsers.
 * If you want to use Trilium on the desktop, download binary release for your platform from [latest release](https://github.com/zadam/trilium/releases/latest), unzip the package and run ```trilium``` executable.
-
-## Supported platforms
-
-Desktop (electron-based) 64-bit builds are available for Linux and Windows.
-
-Requirements for web based installation are [outlined here](https://github.com/zadam/trilium/wiki/Server-installation).
-
-Currently only recent Chrome and Firefox are supported (tested) browsers. Other modern browsers (not IE) might work as well.
 
 ## Status
 

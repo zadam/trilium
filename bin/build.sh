@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+rm -r node_modules
+
+npm install
+
 echo "Deleting existing builds"
 
 rm -r dist/*
@@ -11,7 +15,7 @@ echo "Rebuilding binaries for linux-ia32"
 
 ./node_modules/.bin/electron-packager . --out=dist --platform=win32 --arch=x64 --overwrite
 
-# we build x64 as second so that we keep X64 binaries in node_modules for local development
+# we build x64 as second so that we keep X64 binaries in node_modules for local development and server build
 echo "Rebuilding binaries for linux-x64"
 ./node_modules/.bin/electron-rebuild --arch=x64
 
