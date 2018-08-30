@@ -5,22 +5,22 @@
     <title>Setup</title>
 </head>
 <body>
-<div id="setup-dialog" style="width: 500px; margin: auto; display:none;">
+<div id="setup-dialog" style="width: 600px; margin: auto; display:none; font-size: larger;">
     <h1>Trilium Notes setup</h1>
 
     <div class="alert alert-warning" id="alert" style="display: none;">
     </div>
 
-    <div id="setup-type" data-bind="visible: step() == 'setup-type'">
-        <div class="radio">
+    <div id="setup-type" data-bind="visible: step() == 'setup-type'" style="margin-top: 20px;">
+        <div class="radio" style="margin-bottom: 15px;">
             <label><input type="radio" name="setup-type" value="new-document" data-bind="checked: setupNewDocument">
                 I'm a new user and I want to create new Trilium document for my notes</label>
         </div>
-        <div class="radio" data-bind="if: instanceType == 'server'">
+        <div class="radio" data-bind="if: instanceType == 'server'" style="margin-bottom: 15px;">
             <label><input type="radio" name="setup-type" value="sync-from-desktop" data-bind="checked: setupSyncFromDesktop">
                 I have desktop instance already and I want to setup sync with it</label>
         </div>
-        <div class="radio" data-bind="if: instanceType == 'desktop'">
+        <div class="radio" data-bind="if: instanceType == 'desktop'" style="margin-bottom: 15px;">
             <label><input type="radio" name="setup-type" value="sync-from-server" data-bind="checked: setupSyncFromServer">
                 I have server instance up and I want to setup sync with it</label>
         </div>
