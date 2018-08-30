@@ -59,6 +59,8 @@ async function moveToNode(nodesToMove, toNode) {
 }
 
 async function deleteNodes(nodes) {
+    nodes = nodes.filter(node => node.data.noteId !== 'root');
+
     if (nodes.length === 0 || !confirm('Are you sure you want to delete select note(s) and all the sub-notes?')) {
         return;
     }

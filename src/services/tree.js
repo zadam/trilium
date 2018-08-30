@@ -19,7 +19,7 @@ async function validateParentChild(parentNoteId, childNoteId, branchId = null) {
     if (!await checkTreeCycle(parentNoteId, childNoteId)) {
         return {
             success: false,
-            message: 'Moving note here would create cycle.'
+            message: 'Moving/cloning note here would create cycle.'
         };
     }
 

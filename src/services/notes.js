@@ -248,6 +248,10 @@ async function deleteNote(branch) {
         return;
     }
 
+    if (branch.branchId === 'root' || branch.noteId === 'root') {
+        throw new Error("Can't delete root branch/note");
+    }
+
     branch.isDeleted = true;
     await branch.save();
 
