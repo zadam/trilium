@@ -11,7 +11,7 @@ const config = require('./config');
  */
 
 async function get(name) {
-    return config['Sync'][name] || await optionService.getOption(name);
+    return (config['Sync'] && config['Sync'][name]) || await optionService.getOption(name);
 }
 
 module.exports = {
