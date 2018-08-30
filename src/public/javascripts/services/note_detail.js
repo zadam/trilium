@@ -99,11 +99,14 @@ async function saveNote() {
     note.title = $noteTitle.val();
     note.content = getComponent(note.type).getContent();
 
+    // it's important to set the flag back to false immediatelly after retrieving title and content
+    // otherwise we might overwrite another change (especially async code)
+    isNoteChanged = false;
+
     treeService.setNoteTitle(note.noteId, note.title);
 
     await server.put('notes/' + note.noteId, note.dto);
 
-    isNoteChanged = false;
 
     if (note.isProtected) {
         protectedSessionHolder.touchProtectedSession();
