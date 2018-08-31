@@ -86,21 +86,21 @@ const contextMenuOptions = {
         {title: "----"},
         {title: "Edit branch prefix <kbd>F2</kbd>", cmd: "editBranchPrefix", uiIcon: "ui-icon-pencil"},
         {title: "----"},
-        {title: "Protect branch", cmd: "protectBranch", uiIcon: "ui-icon-locked"},
-        {title: "Unprotect branch", cmd: "unprotectBranch", uiIcon: "ui-icon-unlocked"},
+        {title: "Protect subtree", cmd: "protectSubtree", uiIcon: "ui-icon-locked"},
+        {title: "Unprotect subtree", cmd: "unprotectSubtree", uiIcon: "ui-icon-unlocked"},
         {title: "----"},
         {title: "Copy / clone <kbd>Ctrl+C</kbd>", cmd: "copy", uiIcon: "ui-icon-copy"},
         {title: "Cut <kbd>Ctrl+X</kbd>", cmd: "cut", uiIcon: "ui-icon-scissors"},
         {title: "Paste into <kbd>Ctrl+V</kbd>", cmd: "pasteInto", uiIcon: "ui-icon-clipboard"},
         {title: "Paste after", cmd: "pasteAfter", uiIcon: "ui-icon-clipboard"},
         {title: "----"},
-        {title: "Export subtree", cmd: "exportSubTree", uiIcon: " ui-icon-arrowthick-1-ne", children: [
-            {title: "Native&nbsp;Tar", cmd: "exportSubTreeToTar"},
-            {title: "OPML", cmd: "exportSubTreeToOpml"}
+        {title: "Export subtree", cmd: "exportSubtree", uiIcon: " ui-icon-arrowthick-1-ne", children: [
+            {title: "Native&nbsp;Tar", cmd: "exportSubtreeToTar"},
+            {title: "OPML", cmd: "exportSubtreeToOpml"}
         ]},
-        {title: "Import into branch (tar, opml)", cmd: "importBranch", uiIcon: "ui-icon-arrowthick-1-sw"},
+        {title: "Import into note (tar, opml)", cmd: "importIntoNote", uiIcon: "ui-icon-arrowthick-1-sw"},
         {title: "----"},
-        {title: "Collapse branch <kbd>Alt+-</kbd>", cmd: "collapseBranch", uiIcon: "ui-icon-minus"},
+        {title: "Collapse subtree <kbd>Alt+-</kbd>", cmd: "collapseSubtree", uiIcon: "ui-icon-minus"},
         {title: "Force note sync", cmd: "forceNoteSync", uiIcon: "ui-icon-refresh"},
         {title: "Sort alphabetically <kbd>Alt+S</kbd>", cmd: "sortAlphabetically", uiIcon: " ui-icon-arrowthick-2-n-s"}
     ],
@@ -119,8 +119,8 @@ const contextMenuOptions = {
         $tree.contextmenu("enableEntry", "cut", isNotRoot);
         $tree.contextmenu("enableEntry", "pasteAfter", clipboardIds.length > 0 && isNotRoot && parentNote.type !== 'search');
         $tree.contextmenu("enableEntry", "pasteInto", clipboardIds.length > 0 && note.type !== 'search');
-        $tree.contextmenu("enableEntry", "importBranch", note.type !== 'search');
-        $tree.contextmenu("enableEntry", "exportSubTree", note.type !== 'search');
+        $tree.contextmenu("enableEntry", "importIntoNote", note.type !== 'search');
+        $tree.contextmenu("enableEntry", "exportSubtree", note.type !== 'search');
         $tree.contextmenu("enableEntry", "editBranchPrefix", isNotRoot && parentNote.type !== 'search');
 
         // Activate node on right-click
@@ -145,11 +145,11 @@ const contextMenuOptions = {
         else if (ui.cmd === "editBranchPrefix") {
             branchPrefixDialog.showDialog(node);
         }
-        else if (ui.cmd === "protectBranch") {
-            protectedSessionService.protectBranch(node.data.noteId, true);
+        else if (ui.cmd === "protectSubtree") {
+            protectedSessionService.protectSubtree(node.data.noteId, true);
         }
-        else if (ui.cmd === "unprotectBranch") {
-            protectedSessionService.protectBranch(node.data.noteId, false);
+        else if (ui.cmd === "unprotectSubtree") {
+            protectedSessionService.protectSubtree(node.data.noteId, false);
         }
         else if (ui.cmd === "copy") {
             copy(treeService.getSelectedNodes());
@@ -166,16 +166,16 @@ const contextMenuOptions = {
         else if (ui.cmd === "delete") {
             treeChangesService.deleteNodes(treeService.getSelectedNodes(true));
         }
-        else if (ui.cmd === "exportSubTreeToTar") {
-            exportService.exportSubTree(node.data.noteId, 'tar');
+        else if (ui.cmd === "exportSubtreeToTar") {
+            exportService.exportSubtree(node.data.noteId, 'tar');
         }
-        else if (ui.cmd === "exportSubTreeToOpml") {
-            exportService.exportSubTree(node.data.noteId, 'opml');
+        else if (ui.cmd === "exportSubtreeToOpml") {
+            exportService.exportSubtree(node.data.noteId, 'opml');
         }
-        else if (ui.cmd === "importBranch") {
-            exportService.importBranch(node.data.noteId);
+        else if (ui.cmd === "importIntoNote") {
+            exportService.importIntoNote(node.data.noteId);
         }
-        else if (ui.cmd === "collapseBranch") {
+        else if (ui.cmd === "collapseSubtree") {
             treeService.collapseTree(node);
         }
         else if (ui.cmd === "forceNoteSync") {

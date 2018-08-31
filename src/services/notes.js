@@ -193,14 +193,14 @@ async function saveNoteRevision(note) {
 
     const revisionCutoff = dateUtils.dateStr(new Date(now.getTime() - noteRevisionSnapshotTimeInterval * 1000));
 
-    const existingnoteRevisionId = await sql.getValue(
+    const existingNoteRevisionId = await sql.getValue(
         "SELECT noteRevisionId FROM note_revisions WHERE noteId = ? AND dateModifiedTo >= ?", [note.noteId, revisionCutoff]);
 
     const msSinceDateCreated = now.getTime() - dateUtils.parseDateTime(note.dateCreated).getTime();
 
     if (note.type !== 'file'
         && !await note.hasLabel('disableVersioning')
-        && !existingnoteRevisionId
+        && !existingNoteRevisionId
         && msSinceDateCreated >= noteRevisionSnapshotTimeInterval * 1000) {
 
         await new NoteRevision({

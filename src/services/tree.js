@@ -34,17 +34,17 @@ async function getExistingBranch(parentNoteId, childNoteId) {
  * Tree cycle can be created when cloning or when moving existing clone. This method should detect both cases.
  */
 async function checkTreeCycle(parentNoteId, childNoteId) {
-    const subTreeNoteIds = [];
+    const subtreeNoteIds = [];
 
     // we'll load the whole sub tree - because the cycle can start in one of the notes in the sub tree
-    await loadSubTreeNoteIds(childNoteId, subTreeNoteIds);
+    await loadSubtreeNoteIds(childNoteId, subtreeNoteIds);
 
     async function checkTreeCycleInner(parentNoteId) {
         if (parentNoteId === 'root') {
             return true;
         }
 
-        if (subTreeNoteIds.includes(parentNoteId)) {
+        if (subtreeNoteIds.includes(parentNoteId)) {
             // while towards the root of the tree we encountered noteId which is already present in the subtree
             // joining parentNoteId with childNoteId would then clearly create a cycle
             return false;
@@ -68,13 +68,13 @@ async function getBranch(branchId) {
     return sql.getRow("SELECT * FROM branches WHERE branchId = ?", [branchId]);
 }
 
-async function loadSubTreeNoteIds(parentNoteId, subTreeNoteIds) {
-    subTreeNoteIds.push(parentNoteId);
+async function loadSubtreeNoteIds(parentNoteId, subtreeNoteIds) {
+    subtreeNoteIds.push(parentNoteId);
 
     const children = await sql.getColumn("SELECT noteId FROM branches WHERE parentNoteId = ? AND isDeleted = 0", [parentNoteId]);
 
     for (const childNoteId of children) {
-        await loadSubTreeNoteIds(childNoteId, subTreeNoteIds);
+        await loadSubtreeNoteIds(childNoteId, subtreeNoteIds);
     }
 }
 

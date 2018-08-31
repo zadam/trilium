@@ -45,7 +45,7 @@ async function sortNotes(req) {
     await treeService.sortNotesAlphabetically(noteId);
 }
 
-async function protectBranch(req) {
+async function protectSubtree(req) {
     const noteId = req.params.noteId;
     const note = await repository.getNote(noteId);
     const protect = !!parseInt(req.params.isProtected);
@@ -70,6 +70,6 @@ module.exports = {
     updateNote,
     createNote,
     sortNotes,
-    protectBranch,
+    protectSubtree,
     setNoteTypeMime
 };

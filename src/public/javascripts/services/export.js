@@ -3,7 +3,7 @@ import protectedSessionHolder from './protected_session_holder.js';
 import utils from './utils.js';
 import server from './server.js';
 
-function exportSubTree(noteId, format) {
+function exportSubtree(noteId, format) {
     const url = utils.getHost() + "/api/notes/" + noteId + "/export/" + format +
         "?protectedSessionId=" + encodeURIComponent(protectedSessionHolder.getProtectedSessionId());
 
@@ -12,7 +12,7 @@ function exportSubTree(noteId, format) {
 
 let importNoteId;
 
-function importBranch(noteId) {
+function importIntoNote(noteId) {
     importNoteId = noteId;
 
     $("#import-upload").trigger('click');
@@ -35,6 +35,6 @@ $("#import-upload").change(async function() {
 });
 
 export default {
-    exportSubTree,
-    importBranch
+    exportSubtree,
+    importIntoNote
 };

@@ -148,7 +148,7 @@ async function unprotectNoteAndSendToServer() {
     noteDetailService.setNoteBackgroundIfProtected(note);
 }
 
-async function protectBranch(noteId, protect) {
+async function protectSubtree(noteId, protect) {
     await ensureProtectedSession(true, true);
 
     await server.put('notes/' + noteId + "/protect/" + (protect ? 1 : 0));
@@ -172,7 +172,7 @@ export default {
     ensureProtectedSession,
     protectNoteAndSendToServer,
     unprotectNoteAndSendToServer,
-    protectBranch,
+    protectSubtree,
     ensureDialogIsClosed,
     enterProtectedSession,
     leaveProtectedSession
