@@ -260,20 +260,19 @@ eventService.subscribe(eventService.ENTITY_CHANGED, async ({entityName, entity})
     else if (entityName === 'branches') {
         const branch = entity;
 
-        if (childToParent[branch.noteId]) {
-            childToParent[branch.noteId] = childToParent[branch.noteId].filter(noteId => noteId !== branch.parentNoteId)
-        }
+        // first we remove records for original placement (if they exist)
+        childToParent[branch.noteId] = childToParent[branch.noteId] || [];
+        childToParent[branch.noteId] = childToParent[branch.noteId].filter(noteId => noteId !== branch.origParentNoteId);
 
-        if (branch.isDeleted) {
-            delete prefixes[branch.noteId + '-' + branch.parentNoteId];
-            delete childParentToBranchId[branch.noteId + '-' + branch.parentNoteId];
-        }
-        else {
+        delete prefixes[branch.noteId + '-' + branch.origParentNoteId];
+        delete childParentToBranchId[branch.noteId + '-' + branch.origParentNoteId];
+
+        if (!branch.isDeleted) {
+            // ... and then we create new records
             if (branch.prefix) {
                 prefixes[branch.noteId + '-' + branch.parentNoteId] = branch.prefix;
             }
 
-            childToParent[branch.noteId] = childToParent[branch.noteId] || [];
             childToParent[branch.noteId].push(branch.parentNoteId);
             childParentToBranchId[branch.noteId + '-' + branch.parentNoteId] = branch.branchId;
         }

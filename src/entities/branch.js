@@ -27,6 +27,13 @@ class Branch extends Entity {
     // notePosition is not part of hash because it would produce a lot of updates in case of reordering
     static get hashedProperties() { return ["branchId", "noteId", "parentNoteId", "isDeleted", "prefix"]; }
 
+    constructor(row = {}) {
+        super(row);
+
+        // used to detect move in note tree
+        this.origParentNoteId = this.parentNoteId;
+    }
+
     async getNote() {
         return await repository.getEntity("SELECT * FROM notes WHERE noteId = ?", [this.noteId]);
     }

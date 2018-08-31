@@ -68,9 +68,11 @@ async function updateEntity(entity) {
 
     const clone = Object.assign({}, entity);
 
+    // transient properties not supposed to be persisted
     delete clone.jsonContent;
     delete clone.isOwned;
     delete clone.isChanged;
+    delete clone.origParentNoteId;
     delete clone.__attributeCache;
 
     for (const key in clone) {
