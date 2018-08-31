@@ -39,8 +39,14 @@ async function getRelations(noteIds) {
     // we need to fetch both parentNoteId and noteId matches because we can have loaded child
     // of which only some of the parents has been loaded.
 
-    return await sql.getManyRows(`SELECT branchId, noteId AS 'childNoteId', parentNoteId FROM branches WHERE isDeleted = 0 
+    const relations = await sql.getManyRows(`SELECT branchId, noteId AS 'childNoteId', parentNoteId, notePosition FROM branches WHERE isDeleted = 0 
          AND (parentNoteId IN (???) OR noteId IN (???))`, noteIds);
+
+    // although we're fetching relations for multiple notes, ordering will stay correct for single note as well - relations are being added into tree cache in the order they were returned
+    // cannot use ORDER BY because of usage of getManyRows which is not a single SQL query
+    relations.sort((a, b) => a.notePosition > b.notePosition ? 1 : -1);
+
+    return relations;
 }
 
 async function getTree() {
