@@ -89,7 +89,7 @@ $searchInput.keyup(e => {
     }
 }).focus();
 
-$doSearchButton.click(doSearch);
+$doSearchButton.click(() => doSearch()); // keep long form because of argument
 $resetSearchButton.click(resetSearch);
 
 $saveSearchButton.click(saveSearch);
