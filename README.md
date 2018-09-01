@@ -20,6 +20,7 @@ See other pictures in [screenshot tour](https://github.com/zadam/trilium/wiki/Sc
 * Strong [note encryption](https://github.com/zadam/trilium/wiki/Protected-notes)
 * [Scripting](https://github.com/zadam/trilium/wiki/Scripts) - see [Advanced showcases](https://github.com/zadam/trilium/wiki/Advanced-showcases)
 * Scales well in both usability and performance upwards of 100 000 notes
+* [Night theme](https://github.com/zadam/trilium/wiki/Themes)
 
 ## Builds
 
