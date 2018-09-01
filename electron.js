@@ -25,8 +25,9 @@ function onClosed() {
 
 async function createMainWindow() {
     const win = new electron.BrowserWindow({
+        // initial window width & height so it's usable on 1600 * 900 display (including some extra panels etc.)
         width: 1200,
-        height: 900,
+        height: 800,
         title: 'Trilium Notes',
         icon: path.join(__dirname, 'src/public/images/app-icons/png/256x256.png')
     });
