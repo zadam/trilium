@@ -89,6 +89,8 @@ async function setupProtectedSession() {
         $protectedSessionOnButton.addClass('active');
         $protectedSessionOffButton.removeClass('active');
     }
+
+    infoService.showMessage("Protected session has been started.");
 }
 
 function ensureDialogIsClosed() {

@@ -81,6 +81,8 @@ async function createNewNote(parentNoteId, noteData) {
                position: attr.position,
                isInheritable: attr.isInheritable
             }).save();
+
+            note.invalidateAttributeCache();
         }
     }
 

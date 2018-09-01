@@ -99,23 +99,37 @@ class Note extends Entity {
         return await repository.getEntities(`SELECT * FROM attributes WHERE isDeleted = 0 AND noteId = ?`, [this.noteId]);
     }
 
-    /** @returns {Promise<Attribute[]>} all note's attributes, including inherited ones */
-    async getAttributes() {
+    /**
+     * @param {string} [name] - attribute name to filter
+     * @returns {Promise<Attribute[]>} all note's attributes, including inherited ones
+     */
+    async getAttributes(name) {
         if (!this.__attributeCache) {
             await this.loadAttributesToCache();
         }
 
-        return this.__attributeCache;
+        if (name) {
+            return this.__attributeCache.filter(attr => attr.name === name);
+        }
+        else {
+            return this.__attributeCache;
+        }
     }
 
-    /** @returns {Promise<Attribute[]>} all note's labels (attributes with type label), including inherited ones */
-    async getLabels() {
-        return (await this.getAttributes()).filter(attr => attr.type === LABEL);
+    /**
+     * @param {string} [name] - label name to filter
+     * @returns {Promise<Attribute[]>} all note's labels (attributes with type label), including inherited ones
+     */
+    async getLabels(name) {
+        return (await this.getAttributes(name)).filter(attr => attr.type === LABEL);
     }
 
-    /** @returns {Promise<Attribute[]>} all note's relations (attributes with type relation), including inherited ones */
-    async getRelations() {
-        return (await this.getAttributes()).filter(attr => attr.type === RELATION);
+    /**
+     * @param {string} [name] - relation name to filter
+     * @returns {Promise<Attribute[]>} all note's relations (attributes with type relation), including inherited ones
+     */
+    async getRelations(name) {
+        return (await this.getAttributes(name)).filter(attr => attr.type === RELATION);
     }
 
     /**
