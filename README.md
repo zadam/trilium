@@ -11,7 +11,7 @@ See other pictures in [screenshot tour](https://github.com/zadam/trilium/wiki/Sc
 
 * Notes can be arranged into arbitrarily deep hierarchy (tree)
    * Notes can have more than 1 parents - see [cloning](https://github.com/zadam/trilium/wiki/Cloning-notes)
-* WYSIWYG (What You See Is What You Get) note editing
+* Rich WYSIWYG note editing including e.g. tables and images
 * Support for editing [notes with source code](https://raw.githubusercontent.com/wiki/zadam/trilium/images/code-note.png), including syntax highlighting
 * Fast and easy [navigation between notes](https://github.com/zadam/trilium/wiki/Note-navigation)
 * Seamless [note versioning](https://github.com/zadam/trilium/wiki/Note-revisions)
