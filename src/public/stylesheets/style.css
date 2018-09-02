@@ -58,11 +58,6 @@
     background-position: center;
 }
 
-#note-detail-text p {
-    padding: 0;
-    margin: 0;
-}
-
 ul.fancytree-container {
     outline: none !important;
 }
