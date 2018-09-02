@@ -6,6 +6,8 @@ const tar = require('tar-stream');
 const sanitize = require("sanitize-filename");
 const repository = require("../../services/repository");
 const utils = require('../../services/utils');
+const commonmark = require('commonmark');
+const TurndownService = require('turndown');
 
 async function exportNote(req, res) {
     const noteId = req.params.noteId;
@@ -18,6 +20,9 @@ async function exportNote(req, res) {
     }
     else if (format === 'opml') {
         await exportToOpml(branchId, res);
+    }
+    else if (format === 'markdown') {
+        await exportToMarkdown(branchId, res);
     }
     else {
         return [404, "Unrecognized export format " + format];
@@ -124,7 +129,7 @@ async function exportToTar(branchId, res) {
             })
         };
 
-        if (metadata.attributes.find(attributes => attributes.type === 'label' && attributes.name === 'excludeFromExport')) {
+        if (await note.hasLabel('excludeFromExport')) {
             return;
         }
 
@@ -150,6 +155,62 @@ async function exportToTar(branchId, res) {
         const metadataJson = JSON.stringify(metadata, null, '\t');
 
         pack.entry({name: childFileName + ".meta", size: metadataJson.length}, metadataJson);
+    }
+
+    pack.finalize();
+
+    res.setHeader('Content-Disposition', 'file; filename="' + name + '.tar"');
+    res.setHeader('Content-Type', 'application/tar');
+
+    pack.pipe(res);
+}
+
+async function exportToMarkdown(branchId, res) {
+    const turndownService = new TurndownService();
+    const pack = tar.pack();
+    const name = await exportNoteInner(branchId, '');
+
+    async function exportNoteInner(branchId, directory) {
+        const branch = await repository.getBranch(branchId);
+        const note = await branch.getNote();
+        const childFileName = directory + sanitize(note.title);
+
+        if (await note.hasLabel('excludeFromExport')) {
+            return;
+        }
+
+        saveDataFile(childFileName, note);
+
+        for (const child of await note.getChildBranches()) {
+            await exportNoteInner(child.branchId, childFileName + "/");
+        }
+
+        return childFileName;
+    }
+
+    function saveDataFile(childFileName, note) {
+        if (note.type !== 'text' && note.type !== 'code') {
+            return;
+        }
+
+        if (note.content.trim().length === 0) {
+            return;
+        }
+
+        let markdown;
+
+        if (note.type === 'code') {
+            markdown = '```\n' + note.content + "\n```";
+        }
+        else if (note.type === 'text') {
+            markdown = turndownService.turndown(note.content);
+        }
+        else {
+            // other note types are not supported
+            return;
+        }
+
+        pack.entry({name: childFileName + ".md", size: markdown.length}, markdown);
     }
 
     pack.finalize();

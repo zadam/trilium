@@ -96,7 +96,8 @@ const contextMenuOptions = {
         {title: "----"},
         {title: "Export subtree", cmd: "exportSubtree", uiIcon: " ui-icon-arrowthick-1-ne", children: [
             {title: "Native&nbsp;Tar", cmd: "exportSubtreeToTar"},
-            {title: "OPML", cmd: "exportSubtreeToOpml"}
+            {title: "OPML", cmd: "exportSubtreeToOpml"},
+            {title: "Markdown", cmd: "exportSubtreeToMarkdown"}
         ]},
         {title: "Import into note (tar, opml)", cmd: "importIntoNote", uiIcon: "ui-icon-arrowthick-1-sw"},
         {title: "----"},
@@ -171,6 +172,9 @@ const contextMenuOptions = {
         }
         else if (ui.cmd === "exportSubtreeToOpml") {
             exportService.exportSubtree(node.data.noteId, 'opml');
+        }
+        else if (ui.cmd === "exportSubtreeToMarkdown") {
+            exportService.exportSubtree(node.data.noteId, 'markdown');
         }
         else if (ui.cmd === "importIntoNote") {
             exportService.importIntoNote(node.data.noteId);
