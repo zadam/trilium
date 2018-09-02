@@ -8,7 +8,7 @@ import optionsDialog from '../dialogs/options.js';
 import sqlConsoleDialog from '../dialogs/sql_console.js';
 
 import cloning from './cloning.js';
-import contextMenu from './context_menu.js';
+import contextMenu from './tree_context_menu.js';
 import dragAndDropSetup from './drag_and_drop.js';
 import exportService from './export.js';
 import link from './link.js';

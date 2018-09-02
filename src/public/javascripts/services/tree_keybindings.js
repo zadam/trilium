@@ -1,7 +1,7 @@
 import noteDetailService from "./note_detail.js";
 import utils from "./utils.js";
 import treeChangesService from "./branches.js";
-import contextMenuService from "./context_menu.js";
+import contextMenuService from "./tree_context_menu.js";
 import treeService from "./tree.js";
 import editBranchPrefixDialog from "../dialogs/branch_prefix.js";
 

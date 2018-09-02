@@ -1,4 +1,4 @@
-import contextMenuService from './context_menu.js';
+import treeContextMenuService from './tree_context_menu.js';
 import dragAndDropSetup from './drag_and_drop.js';
 import linkService from './link.js';
 import messagingService from './messaging.js';
@@ -369,7 +369,7 @@ function initFancyTree(tree) {
         }
     });
 
-    $tree.contextmenu(contextMenuService.contextMenuOptions);
+    $tree.contextmenu(treeContextMenuService.contextMenuOptions);
 }
 
 function getTree() {

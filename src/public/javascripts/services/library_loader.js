@@ -20,6 +20,8 @@ const CODE_MIRROR = {
 
 const ESLINT = {js: ["libraries/eslint.js"]};
 
+const COMMONMARK = {js: ["libraries/commonmark.min.js"]};
+
 async function requireLibrary(library) {
     if (library.css) {
         library.css.map(cssUrl => requireCss(cssUrl));
@@ -61,5 +63,6 @@ export default {
     requireLibrary,
     CKEDITOR,
     CODE_MIRROR,
-    ESLINT
+    ESLINT,
+    COMMONMARK
 }
