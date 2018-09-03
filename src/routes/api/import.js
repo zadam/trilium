@@ -151,9 +151,14 @@ async function parseImportFile(file) {
         if (header.type === 'file') {
             ({name, key} = getFileName(header.name));
         }
-        else {
-            name = header.name;
+        else if (header.type === 'directory') {
+            // directory entries in tar often end with directory separator
+            name = (header.name.endsWith("/") || header.name.endsWith("\\")) ? header.name.substr(0, header.name.length - 1) : header.name;
             key = 'directory';
+        }
+        else {
+            log.error("Unrecognized tar entry: " + JSON.stringify(header));
+            return;
         }
 
         let file = fileMap[name];
