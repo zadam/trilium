@@ -92,10 +92,9 @@ async function exportToTar(branch, res) {
     const pack = tar.pack();
 
     const exportedNoteIds = [];
-    const name = await exportNoteInner(branch.branchId, '');
+    const name = await exportNoteInner(branch, '');
 
-    async function exportNoteInner(branchId, directory) {
-        const branch = await repository.getBranch(branchId);
+    async function exportNoteInner(branch, directory) {
         const note = await branch.getNote();
         const childFileName = directory + sanitize(note.title);
 
@@ -138,8 +137,14 @@ async function exportToTar(branch, res) {
 
         exportedNoteIds.push(note.noteId);
 
-        for (const child of await note.getChildBranches()) {
-            await exportNoteInner(child.branchId, childFileName + "/");
+        const childBranches = await note.getChildBranches();
+
+        if (childBranches.length > 0) {
+            saveDirectory(childFileName);
+        }
+
+        for (const childBranch of childBranches) {
+            await exportNoteInner(childBranch, childFileName + "/");
         }
 
         return childFileName;
@@ -155,6 +160,10 @@ async function exportToTar(branch, res) {
         const metadataJson = JSON.stringify(metadata, null, '\t');
 
         pack.entry({name: childFileName + ".meta", size: metadataJson.length}, metadataJson);
+    }
+
+    function saveDirectory(childFileName) {
+        pack.entry({name: childFileName, type: 'directory'});
     }
 
     pack.finalize();
@@ -187,7 +196,13 @@ async function exportToMarkdown(branch, res) {
 
         saveDataFile(childFileName, note);
 
-        for (const childNote of await note.getChildNotes()) {
+        const childNotes = await note.getChildNotes();
+
+        if (childNotes.length > 0) {
+            saveDirectory(childFileName);
+        }
+
+        for (const childNote of childNotes) {
             await exportNoteInner(childNote, childFileName + "/");
         }
 
@@ -217,6 +232,10 @@ async function exportToMarkdown(branch, res) {
         }
 
         pack.entry({name: childFileName + ".md", size: markdown.length}, markdown);
+    }
+
+    function saveDirectory(childFileName) {
+        pack.entry({name: childFileName, type: 'directory'});
     }
 
     pack.finalize();

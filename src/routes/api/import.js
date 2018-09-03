@@ -1,6 +1,7 @@
 "use strict";
 
 const repository = require('../../services/repository');
+const log = require('../../services/log');
 const attributeService = require('../../services/attributes');
 const noteService = require('../../services/notes');
 const Branch = require('../../entities/branch');
@@ -80,7 +81,12 @@ async function importTar(file, parentNoteId) {
     const noteIdMap = {};
     const attributes = [];
 
-    await importNotes(files, parentNoteId, noteIdMap, attributes);
+    const markdown = {
+        reader: new commonmark.Parser(),
+        writer: new commonmark.HtmlRenderer()
+    };
+
+    await importNotes(markdown, files, parentNoteId, noteIdMap, attributes);
 
     // we save attributes after importing notes because we need to have all the relation
     // targets already existing
@@ -106,13 +112,19 @@ function getFileName(name) {
         key = "data";
         name = name.substr(0, name.length - 4);
     }
+    else if (name.endsWith(".md")) {
+        key = "markdown";
+        name = name.substr(0, name.length - 3);
+    }
     else if (name.endsWith((".meta"))) {
         key = "meta";
         name = name.substr(0, name.length - 5);
     }
     else {
-        throw new Error("Unknown file type in import archive: " + name);
+        // this is supposed to be directory
+        key = "data";
     }
+
     return {name, key};
 }
 
@@ -129,6 +141,7 @@ async function parseImportFile(file) {
 
         if (!file) {
             file = fileMap[name] = {
+                name: path.basename(name),
                 children: []
             };
 
@@ -177,47 +190,60 @@ async function parseImportFile(file) {
     });
 }
 
-async function importNotes(files, parentNoteId, noteIdMap, attributes) {
+async function importNotes(markdown, files, parentNoteId, noteIdMap, attributes) {
     for (const file of files) {
-        if (file.meta && file.meta.version !== 1) {
-            throw new Error("Can't read meta data version " + file.meta.version);
-        }
+        let note;
 
-        if (file.meta && file.meta.clone) {
-            await new Branch({
-                parentNoteId: parentNoteId,
-                noteId: noteIdMap[file.meta.noteId],
+        if (file.markdown) {
+            const parsed = markdown.reader.parse(file.markdown.toString("UTF-8"));
+            const content = markdown.writer.render(parsed);
+
+            note = (await noteService.createNote(parentNoteId, file.name, content, {
+                type: 'text',
+                mime: 'text/html'
+            })).note;
+        }
+        else {
+            if (file.meta.version !== 1) {
+                throw new Error("Can't read meta data version " + file.meta.version);
+            }
+
+            if (file.meta.clone) {
+                await new Branch({
+                    parentNoteId: parentNoteId,
+                    noteId: noteIdMap[file.meta.noteId],
+                    prefix: file.meta.prefix
+                }).save();
+
+                return;
+            }
+
+            if (file.meta.type !== 'file') {
+                file.data = file.data.toString("UTF-8");
+            }
+
+            note = (await noteService.createNote(parentNoteId, file.meta.title, file.data, {
+                type: file.meta.type,
+                mime: file.meta.mime,
                 prefix: file.meta.prefix
-            }).save();
+            })).note;
 
-            return;
-        }
+            noteIdMap[file.meta.noteId] = note.noteId;
 
-        if (!file.meta || file.meta.type !== 'file') {
-            file.data = file.data.toString("UTF-8");
-        }
-
-        const {note} = await noteService.createNote(parentNoteId, file.meta.title, file.data, {
-            type: file.meta.type,
-            mime: file.meta.mime,
-            prefix: file.meta.prefix
-        });
-
-        noteIdMap[file.meta.noteId] = note.noteId;
-
-        for (const attribute of file.meta.attributes) {
-            attributes.push({
-                noteId: note.noteId,
-                type: attribute.type,
-                name: attribute.name,
-                value: attribute.value,
-                isInheritable: attribute.isInheritable,
-                position: attribute.position
-            });
+            for (const attribute of file.meta.attributes) {
+                attributes.push({
+                    noteId: note.noteId,
+                    type: attribute.type,
+                    name: attribute.name,
+                    value: attribute.value,
+                    isInheritable: attribute.isInheritable,
+                    position: attribute.position
+                });
+            }
         }
 
         if (file.children.length > 0) {
-            await importNotes(file.children, note.noteId, noteIdMap, attributes);
+            await importNotes(markdown, file.children, note.noteId, noteIdMap, attributes);
         }
     }
 }
