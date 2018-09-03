@@ -26,12 +26,17 @@ $("#import-upload").change(async function() {
         url: baseApiUrl + 'notes/' + importNoteId + '/import',
         headers: server.getHeaders(),
         data: formData,
+        dataType: 'json',
         type: 'POST',
         contentType: false, // NEEDED, DON'T OMIT THIS
         processData: false, // NEEDED, DON'T OMIT THIS
-    }).fail((xhr, status, error) => alert('Import error: ' + xhr.responseText));
+    })
+        .fail((xhr, status, error) => alert('Import error: ' + xhr.responseText))
+        .done(async note => {
+            await treeService.reload();
 
-    await treeService.reload();
+            await treeService.activateNote(note.noteId);
+        });
 });
 
 export default {
