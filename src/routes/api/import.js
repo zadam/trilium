@@ -15,6 +15,10 @@ async function importToBranch(req) {
     const parentNoteId = req.params.parentNoteId;
     const file = req.file;
 
+    if (file) {
+        return [400, "No file has been uploaded"];
+    }
+
     const parentNote = await repository.getNote(parentNoteId);
 
     if (!parentNote) {

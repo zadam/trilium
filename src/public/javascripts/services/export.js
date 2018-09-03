@@ -1,4 +1,5 @@
 import treeService from './tree.js';
+import infoService from './info.js';
 import protectedSessionHolder from './protected_session_holder.js';
 import utils from './utils.js';
 import server from './server.js';
@@ -8,6 +9,8 @@ function exportSubtree(noteId, format) {
         "?protectedSessionId=" + encodeURIComponent(protectedSessionHolder.getProtectedSessionId());
 
     utils.download(url);
+
+    infoService.showMessage("Export to file has been finished.");
 }
 
 let importNoteId;
