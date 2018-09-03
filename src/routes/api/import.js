@@ -77,23 +77,22 @@ async function importOpml(file, parentNoteId) {
 async function importTar(file, parentNoteId) {
     const files = await parseImportFile(file);
 
-    // maps from original noteId (in tar file) to newly generated noteId
-    const noteIdMap = {};
-    const attributes = [];
-
-    const markdown = {
+    const ctx = {
+        // maps from original noteId (in tar file) to newly generated noteId
+        noteIdMap: {},
+        attributes: [],
         reader: new commonmark.Parser(),
         writer: new commonmark.HtmlRenderer()
     };
 
-    await importNotes(markdown, files, parentNoteId, noteIdMap, attributes);
+    await importNotes(ctx, files, parentNoteId);
 
     // we save attributes after importing notes because we need to have all the relation
     // targets already existing
-    for (const attr of attributes) {
+    for (const attr of ctx.attributes) {
         if (attr.type === 'relation') {
             // map to local noteId
-            attr.value = noteIdMap[attr.value];
+            attr.value = ctx.noteIdMap[attr.value];
 
             if (!attr.value) {
                 // relation is targeting note not present in the import
@@ -121,8 +120,7 @@ function getFileName(name) {
         name = name.substr(0, name.length - 5);
     }
     else {
-        // this is supposed to be directory
-        key = "data";
+        log.error("Unknown file type in import: " + name);
     }
 
     return {name, key};
@@ -135,7 +133,15 @@ async function parseImportFile(file) {
     const extract = tar.extract();
 
     extract.on('entry', function(header, stream, next) {
-        const {name, key} = getFileName(header.name);
+        let name, key;
+
+        if (header.type === 'file') {
+            ({name, key} = getFileName(header.name));
+        }
+        else {
+            name = header.name;
+            key = 'directory';
+        }
 
         let file = fileMap[name];
 
@@ -190,13 +196,20 @@ async function parseImportFile(file) {
     });
 }
 
-async function importNotes(markdown, files, parentNoteId, noteIdMap, attributes) {
+async function importNotes(ctx, files, parentNoteId) {
     for (const file of files) {
         let note;
 
-        if (file.markdown) {
-            const parsed = markdown.reader.parse(file.markdown.toString("UTF-8"));
-            const content = markdown.writer.render(parsed);
+        if (!file.meta) {
+            let content = '';
+
+            if (file.data) {
+                content = file.data.toString("UTF-8");
+            }
+            else if (file.markdown) {
+                const parsed = ctx.reader.parse(file.markdown.toString("UTF-8"));
+                content = ctx.writer.render(parsed);
+            }
 
             note = (await noteService.createNote(parentNoteId, file.name, content, {
                 type: 'text',
@@ -211,7 +224,7 @@ async function importNotes(markdown, files, parentNoteId, noteIdMap, attributes)
             if (file.meta.clone) {
                 await new Branch({
                     parentNoteId: parentNoteId,
-                    noteId: noteIdMap[file.meta.noteId],
+                    noteId: ctx.noteIdMap[file.meta.noteId],
                     prefix: file.meta.prefix
                 }).save();
 
@@ -228,10 +241,10 @@ async function importNotes(markdown, files, parentNoteId, noteIdMap, attributes)
                 prefix: file.meta.prefix
             })).note;
 
-            noteIdMap[file.meta.noteId] = note.noteId;
+            ctx.noteIdMap[file.meta.noteId] = note.noteId;
 
             for (const attribute of file.meta.attributes) {
-                attributes.push({
+                ctx.attributes.push({
                     noteId: note.noteId,
                     type: attribute.type,
                     name: attribute.name,
@@ -243,7 +256,7 @@ async function importNotes(markdown, files, parentNoteId, noteIdMap, attributes)
         }
 
         if (file.children.length > 0) {
-            await importNotes(markdown, file.children, note.noteId, noteIdMap, attributes);
+            await importNotes(ctx, file.children, note.noteId);
         }
     }
 }
