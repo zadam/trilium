@@ -1,28 +1,29 @@
 "use strict";
 
-const sql = require('../../services/sql');
 const html = require('html');
 const tar = require('tar-stream');
 const sanitize = require("sanitize-filename");
 const repository = require("../../services/repository");
 const utils = require('../../services/utils');
-const commonmark = require('commonmark');
 const TurndownService = require('turndown');
 
 async function exportNote(req, res) {
-    const noteId = req.params.noteId;
+    // entityId maybe either noteId or branchId depending on format
+    const entityId = req.params.entityId;
     const format = req.params.format;
 
-    const branchId = await sql.getValue('SELECT branchId FROM branches WHERE noteId = ?', [noteId]);
-
     if (format === 'tar') {
-        await exportToTar(branchId, res);
+        await exportToTar(await repository.getBranch(entityId), res);
     }
     else if (format === 'opml') {
-        await exportToOpml(branchId, res);
+        await exportToOpml(await repository.getBranch(entityId), res);
     }
     else if (format === 'markdown') {
-        await exportToMarkdown(branchId, res);
+        await exportToMarkdown(await repository.getBranch(entityId), res);
+    }
+    // export single note without subtree
+    else if (format === 'markdown-single') {
+        await exportSingleMarkdown(await repository.getNote(entityId), res);
     }
     else {
         return [404, "Unrecognized export format " + format];
@@ -48,8 +49,7 @@ function prepareText(text) {
     return escaped.replace(/\n/g, '&#10;');
 }
 
-async function exportToOpml(branchId, res) {
-    const branch = await repository.getBranch(branchId);
+async function exportToOpml(branch, res) {
     const note = await branch.getNote();
     const title = (branch.prefix ? (branch.prefix + ' - ') : '') + note.title;
     const sanitizedTitle = sanitize(title);
@@ -81,18 +81,18 @@ async function exportToOpml(branchId, res) {
 </head>
 <body>`);
 
-    await exportNoteInner(branchId);
+    await exportNoteInner(branch.branchId);
 
     res.write(`</body>
 </opml>`);
     res.end();
 }
 
-async function exportToTar(branchId, res) {
+async function exportToTar(branch, res) {
     const pack = tar.pack();
 
     const exportedNoteIds = [];
-    const name = await exportNoteInner(branchId, '');
+    const name = await exportNoteInner(branch.branchId, '');
 
     async function exportNoteInner(branchId, directory) {
         const branch = await repository.getBranch(branchId);
@@ -165,14 +165,20 @@ async function exportToTar(branchId, res) {
     pack.pipe(res);
 }
 
-async function exportToMarkdown(branchId, res) {
+async function exportToMarkdown(branch, res) {
+    const note = await branch.getNote();
+
+    if (!await note.hasChildren()) {
+        await exportSingleMarkdown(note, res);
+
+        return;
+    }
+
     const turndownService = new TurndownService();
     const pack = tar.pack();
-    const name = await exportNoteInner(branchId, '');
+    const name = await exportNoteInner(note, '');
 
-    async function exportNoteInner(branchId, directory) {
-        const branch = await repository.getBranch(branchId);
-        const note = await branch.getNote();
+    async function exportNoteInner(note, directory) {
         const childFileName = directory + sanitize(note.title);
 
         if (await note.hasLabel('excludeFromExport')) {
@@ -181,8 +187,8 @@ async function exportToMarkdown(branchId, res) {
 
         saveDataFile(childFileName, note);
 
-        for (const child of await note.getChildBranches()) {
-            await exportNoteInner(child.branchId, childFileName + "/");
+        for (const childNote of await note.getChildNotes()) {
+            await exportNoteInner(childNote, childFileName + "/");
         }
 
         return childFileName;
@@ -219,6 +225,17 @@ async function exportToMarkdown(branchId, res) {
     res.setHeader('Content-Type', 'application/tar');
 
     pack.pipe(res);
+}
+
+async function exportSingleMarkdown(note, res) {
+    const turndownService = new TurndownService();
+    const markdown = turndownService.turndown(note.content);
+    const name = sanitize(note.title);
+
+    res.setHeader('Content-Disposition', 'file; filename="' + name + '.md"');
+    res.setHeader('Content-Type', 'text/markdown; charset=UTF-8');
+
+    res.send(markdown);
 }
 
 module.exports = {

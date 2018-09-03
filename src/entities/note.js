@@ -483,6 +483,13 @@ class Note extends Entity {
     }
 
     /**
+     * @returns {boolean} - true if note has children
+     */
+    async hasChildren() {
+        return (await this.getChildNotes()).length > 0;
+    }
+
+    /**
      * @returns {Promise<Note[]>} child notes of this note
      */
     async getChildNotes() {

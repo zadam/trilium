@@ -124,7 +124,7 @@ function register(app) {
     apiRoute(PUT, '/api/notes/:noteId/clone-to/:parentNoteId', cloningApiRoute.cloneNoteToParent);
     apiRoute(PUT, '/api/notes/:noteId/clone-after/:afterBranchId', cloningApiRoute.cloneNoteAfter);
 
-    route(GET, '/api/notes/:noteId/export/:format', [auth.checkApiAuthOrElectron], exportRoute.exportNote);
+    route(GET, '/api/notes/:entityId/export/:format', [auth.checkApiAuthOrElectron], exportRoute.exportNote);
     route(POST, '/api/notes/:parentNoteId/import', [auth.checkApiAuthOrElectron, uploadMiddleware], importRoute.importToBranch, apiResultHandler);
 
     route(POST, '/api/notes/:parentNoteId/upload', [auth.checkApiAuthOrElectron, uploadMiddleware],

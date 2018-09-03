@@ -168,13 +168,13 @@ const contextMenuOptions = {
             treeChangesService.deleteNodes(treeService.getSelectedNodes(true));
         }
         else if (ui.cmd === "exportSubtreeToTar") {
-            exportService.exportSubtree(node.data.noteId, 'tar');
+            exportService.exportSubtree(node.data.branchId, 'tar');
         }
         else if (ui.cmd === "exportSubtreeToOpml") {
-            exportService.exportSubtree(node.data.noteId, 'opml');
+            exportService.exportSubtree(node.data.branchId, 'opml');
         }
         else if (ui.cmd === "exportSubtreeToMarkdown") {
-            exportService.exportSubtree(node.data.noteId, 'markdown');
+            exportService.exportSubtree(node.data.branchId, 'markdown');
         }
         else if (ui.cmd === "importIntoNote") {
             exportService.importIntoNote(node.data.noteId);

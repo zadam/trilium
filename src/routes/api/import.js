@@ -8,6 +8,7 @@ const tar = require('tar-stream');
 const stream = require('stream');
 const path = require('path');
 const parseString = require('xml2js').parseString;
+const commonmark = require('commonmark');
 
 async function importToBranch(req) {
     const parentNoteId = req.params.parentNoteId;
@@ -178,11 +179,11 @@ async function parseImportFile(file) {
 
 async function importNotes(files, parentNoteId, noteIdMap, attributes) {
     for (const file of files) {
-        if (file.meta.version !== 1) {
+        if (file.meta && file.meta.version !== 1) {
             throw new Error("Can't read meta data version " + file.meta.version);
         }
 
-        if (file.meta.clone) {
+        if (file.meta && file.meta.clone) {
             await new Branch({
                 parentNoteId: parentNoteId,
                 noteId: noteIdMap[file.meta.noteId],
@@ -192,7 +193,7 @@ async function importNotes(files, parentNoteId, noteIdMap, attributes) {
             return;
         }
 
-        if (file.meta.type !== 'file') {
+        if (!file.meta || file.meta.type !== 'file') {
             file.data = file.data.toString("UTF-8");
         }
 

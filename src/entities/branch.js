@@ -34,6 +34,7 @@ class Branch extends Entity {
         this.origParentNoteId = this.parentNoteId;
     }
 
+    /** @returns {Note|null} */
     async getNote() {
         return await repository.getEntity("SELECT * FROM notes WHERE noteId = ?", [this.noteId]);
     }
