@@ -201,7 +201,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null) {
 
     /**
      * @method
-     * @param {function} func - callback called on note change
+     * @param {function} func - callback called on note change as user is typing (not necessarily tied to save event)
      */
     this.onNoteChange = noteDetailService.onNoteChange;
 }
