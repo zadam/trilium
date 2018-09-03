@@ -28,5 +28,6 @@ function show() {
 export default {
     getContent,
     show,
-    focus: () => null
+    focus: () => null,
+    onNoteChange: () => null
 }

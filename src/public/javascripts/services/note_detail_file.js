@@ -46,5 +46,6 @@ function getFileUrl() {
 export default {
     show,
     getContent: () => null,
-    focus: () => null
+    focus: () => null,
+    onNoteChange: () => null
 }

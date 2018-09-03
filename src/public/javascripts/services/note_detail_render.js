@@ -34,5 +34,6 @@ $renderButton.click(render);
 export default {
     show: render,
     getContent: () => "",
-    focus: () => null
+    focus: () => null,
+    onNoteChange: () => null
 }

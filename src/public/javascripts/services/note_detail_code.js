@@ -35,7 +35,7 @@ async function show() {
             tabindex: 100
         });
 
-        codeEditor.on('change', noteDetailService.noteChanged);
+        onNoteChange(noteDetailService.noteChanged);
     }
 
     $noteDetailCode.show();
@@ -85,6 +85,10 @@ async function executeCurrentNote() {
     infoService.showMessage("Note executed");
 }
 
+function onNoteChange(func) {
+    codeEditor.on('change', func);
+}
+
 $(document).bind('keydown', "ctrl+return", executeCurrentNote);
 
 $executeScriptButton.click(executeCurrentNote);
@@ -92,5 +96,6 @@ $executeScriptButton.click(executeCurrentNote);
 export default {
     show,
     getContent,
-    focus
+    focus,
+    onNoteChange
 }

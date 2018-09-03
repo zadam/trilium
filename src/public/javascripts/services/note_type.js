@@ -34,6 +34,7 @@ function NoteTypeModel() {
         { mime: 'application/javascript;env=backend', title: 'JavaScript backend' },
         { mime: 'application/json', title: 'JSON' },
         { mime: 'text/x-kotlin', title: 'Kotlin' },
+        { mime: 'text/x-stex', title: 'LaTex' },
         { mime: 'text/x-lua', title: 'Lua' },
         { mime: 'text/x-markdown', title: 'Markdown' },
         { mime: 'text/x-objectivec', title: 'Objective C' },

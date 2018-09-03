@@ -4,6 +4,7 @@ import utils from './utils.js';
 import infoService from './info.js';
 import linkService from './link.js';
 import treeCache from './tree_cache.js';
+import noteDetailService from './note_detail.js';
 
 /**
  * This is the main frontend API interface for scripts. It's published in the local "api" object.
@@ -191,6 +192,18 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null) {
      * @param {string} [noteTitle] - if not present we'll use note title
      */
     this.createNoteLink = linkService.createNoteLink;
+
+    /**
+     * @method
+     * @returns {string} content of currently loaded note in the editor (HTML, code etc.)
+     */
+    this.getCurrentNoteContent = noteDetailService.getCurrentNoteContent;
+
+    /**
+     * @method
+     * @param {function} func - callback called on note change
+     */
+    this.onNoteChange = noteDetailService.onNoteChange;
 }
 
 export default FrontendScriptApi;

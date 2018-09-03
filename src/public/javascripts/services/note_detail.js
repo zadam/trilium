@@ -49,6 +49,10 @@ const components = {
 };
 
 function getComponent(type) {
+    if (!type) {
+        type = getCurrentNote().type;
+    }
+
     if (components[type]) {
         return components[type];
     }
@@ -93,11 +97,19 @@ async function switchToNote(noteId) {
     }
 }
 
+function getCurrentNoteContent() {
+    return getComponent().getContent();
+}
+
+function onNoteChange(func) {
+    return getComponent().onNoteChange(func);
+}
+
 async function saveNote() {
     const note = getCurrentNote();
 
     note.title = $noteTitle.val();
-    note.content = getComponent(note.type).getContent();
+    note.content = getCurrentNoteContent(note);
 
     // it's important to set the flag back to false immediatelly after retrieving title and content
     // otherwise we might overwrite another change (especially async code)
@@ -106,7 +118,6 @@ async function saveNote() {
     treeService.setNoteTitle(note.noteId, note.title);
 
     await server.put('notes/' + note.noteId, note.dto);
-
 
     if (note.isProtected) {
         protectedSessionHolder.touchProtectedSession();
@@ -549,5 +560,7 @@ export default {
     refreshAttributes,
     saveNote,
     saveNoteIfChanged,
-    noteChanged
+    noteChanged,
+    getCurrentNoteContent,
+    onNoteChange
 };

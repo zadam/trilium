@@ -29,7 +29,7 @@ async function show() {
                 }
             });
 
-            textEditor.model.document.on('change:data', noteDetailService.noteChanged);
+            onNoteChange(noteDetailService.noteChanged);
         }
     }
 
@@ -105,6 +105,10 @@ async function sendMarkdownDialog() {
     $markdownImportTextarea.val('');
 }
 
+function onNoteChange(func) {
+    textEditor.model.document.on('change:data', func);
+}
+
 $markdownImportButton.click(sendMarkdownDialog);
 
 $markdownImportDialog.bind('keydown', 'ctrl+return', sendMarkdownDialog);
@@ -115,5 +119,6 @@ export default {
     show,
     getEditor,
     getContent,
-    focus
+    focus,
+    onNoteChange
 }
