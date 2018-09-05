@@ -1,4 +1,4 @@
-FROM node:8.11.2
+FROM node:10.9.0
 
 RUN apt-get update && apt-get install -y nasm
 
