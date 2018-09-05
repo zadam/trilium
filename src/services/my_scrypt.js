@@ -1,7 +1,7 @@
 "use strict";
 
 const optionService = require('./options');
-const scrypt = require('scrypt');
+const scrypt = require('@mlink/scrypt');
 
 async function getVerificationHash(password) {
     const salt = await optionService.getOption('passwordVerificationSalt');
@@ -17,7 +17,7 @@ async function getPasswordDerivedKey(password) {
 
 async function getScryptHash(password, salt) {
     const hashed = scrypt.hashSync(password,
-        {N: 16384, r:8, p:1},
+        {N: 14, r:8, p:1},
         32,
         salt);
 

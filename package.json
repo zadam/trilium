@@ -60,7 +60,6 @@
     "request-promise": "4.2.2",
     "rimraf": "2.6.2",
     "sanitize-filename": "1.6.1",
-    "scrypt": "6.0.3",
     "serve-favicon": "2.5.0",
     "session-file-store": "1.2.0",
     "simple-node-logger": "0.93.37",
@@ -69,7 +68,8 @@
     "turndown": "^5.0.1",
     "unescape": "1.0.1",
     "ws": "6.0.0",
-    "xml2js": "0.4.19"
+    "xml2js": "0.4.19",
+    "@mlink/scrypt": "6.1.2"
   },
   "devDependencies": {
     "electron": "2.0.7",
