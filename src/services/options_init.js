@@ -42,6 +42,9 @@ async function initNotSyncedOptions(initialized, startNotePath = 'root', syncSer
     await optionService.createOption('zoomFactor', 1.0, false);
     await optionService.createOption('theme', 'white', false);
 
+    await optionService.createOption('leftPaneMinWidth', '350', false);
+    await optionService.createOption('leftPaneWidthPercent', '20', false);
+
     await optionService.createOption('syncServerHost', syncServerHost, false);
     await optionService.createOption('syncServerTimeout', 5000, false);
     await optionService.createOption('syncProxy', syncProxy, false);
