@@ -443,10 +443,10 @@ async function setNoteTitle(noteId, title) {
 async function createNewTopLevelNote() {
     const rootNode = getNodesByNoteId('root')[0];
 
-    await createNote(rootNode, "root", "into");
+    await createNote(rootNode, "root", "into", false);
 }
 
-async function createNote(node, parentNoteId, target, isProtected) {
+async function createNote(node, parentNoteId, target, isProtected, saveSelection = false) {
     utils.assertArguments(node, parentNoteId, target);
 
     // if isProtected isn't available (user didn't enter password yet), then note is created as unencrypted
@@ -455,14 +455,32 @@ async function createNote(node, parentNoteId, target, isProtected) {
         isProtected = false;
     }
 
-    const newNoteName = "new note";
+    if (noteDetailService.getCurrentNoteType() !== 'text') {
+        saveSelection = false;
+    }
+
+    let title, content;
+
+    if (saveSelection) {
+        [title, content] = parseSelectedHtml(window.cutToNote.getSelectedHtml());
+    }
+
+    const newNoteName = title || "new note";
 
     const {note, branch} = await server.post('notes/' + parentNoteId + '/children', {
         title: newNoteName,
+        content: content,
         target: target,
         target_branchId: node.data.branchId,
         isProtected: isProtected
     });
+
+    if (saveSelection) {
+        // we remove the selection only after it was saved to server to make sure we don't lose anything
+        window.cutToNote.removeSelection();
+    }
+
+    await noteDetailService.saveNoteIfChanged();
 
     const noteEntity = new NoteShort(treeCache, note);
     const branchEntity = new Branch(treeCache, branch);
@@ -506,6 +524,22 @@ async function createNote(node, parentNoteId, target, isProtected) {
     infoService.showMessage("Created!");
 }
 
+/* If first element is heading, parse it out and use it as a new heading. */
+function parseSelectedHtml(selectedHtml) {
+    const dom = $.parseHTML(selectedHtml);
+
+    if (dom.length > 0 && dom[0].tagName && dom[0].tagName.match(/h[1-6]/i)) {
+        const title = $(dom[0]).text();
+        const domWithoutTitle = dom.slice(1);
+        const content = domWithoutTitle.map(el => $(el).html()).join("");
+
+        return [title, content];
+    }
+    else {
+        return [null, selectedHtml];
+    }
+}
+
 async function sortAlphabetically(noteId) {
     await server.put('notes/' + noteId + '/sort');
 
@@ -539,14 +573,18 @@ utils.bindShortcut('ctrl+o', () => {
     const parentNoteId = node.data.parentNoteId;
     const isProtected = treeUtils.getParentProtectedStatus(node);
 
-    createNote(node, parentNoteId, 'after', isProtected);
+    createNote(node, parentNoteId, 'after', isProtected, true);
 });
 
-utils.bindShortcut('ctrl+p', () => {
+function createNoteInto() {
     const node = getCurrentNode();
 
-    createNote(node, node.data.noteId, 'into', node.data.isProtected);
-});
+    createNote(node, node.data.noteId, 'into', node.data.isProtected, true);
+}
+
+window.glob.createNoteInto = createNoteInto;
+
+utils.bindShortcut('ctrl+p', createNoteInto);
 
 utils.bindShortcut('ctrl+del', () => {
     const node = getCurrentNode();
