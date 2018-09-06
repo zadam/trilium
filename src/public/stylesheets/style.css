@@ -23,6 +23,34 @@
     padding: 4px;
 }
 
+#left-pane {
+    grid-area: left-pane;
+    display: flex;
+    flex-direction: column;
+}
+
+#global-buttons {
+    display: flex;
+    justify-content: space-around;
+    padding: 10px 0 10px 0;
+    margin: 0 10px 0 16px;
+    border: 1px solid #ccc;
+}
+
+#search-box {
+    display: none;
+    padding: 10px;
+    margin-top: 10px;
+}
+
+#title-container {
+    grid-area: title;
+}
+
+.tdialog {
+    display: none; /* hidden by default */
+}
+
 #note-detail-wrapper {
     position: relative;
     overflow: hidden;

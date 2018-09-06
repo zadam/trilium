@@ -13,7 +13,7 @@ rm -r $PKG_DIR
 mkdir $PKG_DIR
 cd $PKG_DIR
 
-wget https://nodejs.org/dist/latest-v8.x/node-v${NODE_VERSION}-linux-x64.tar.xz
+wget https://nodejs.org/dist/latest-v10.x/node-v${NODE_VERSION}-linux-x64.tar.xz
 tar xvfJ node-v${NODE_VERSION}-linux-x64.tar.xz
 rm node-v${NODE_VERSION}-linux-x64.tar.xz
 
