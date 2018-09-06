@@ -9,10 +9,7 @@ const ALLOWED_OPTIONS = ['protectedSessionTimeout', 'noteRevisionSnapshotTimeInt
     'zoomFactor', 'theme', 'syncServerHost', 'syncServerTimeout', 'syncProxy', 'leftPaneMinWidth', 'leftPaneWidthPercent'];
 
 async function getOptions() {
-    const options = await sql.getMap("SELECT name, value FROM options WHERE name IN ("
-        + ALLOWED_OPTIONS.map(x => '?').join(",") + ")", ALLOWED_OPTIONS);
-
-    return options;
+    return await optionService.getOptionsMap(ALLOWED_OPTIONS);
 }
 
 async function updateOption(req) {

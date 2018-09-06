@@ -6,7 +6,6 @@
     grid-template-areas: "header header"
                          "left-pane title"
                          "left-pane note-detail";
-    grid-template-columns: 29% 69.5%;
     grid-template-rows: auto
                         auto
                         1fr;

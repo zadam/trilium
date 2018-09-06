@@ -7,8 +7,13 @@ const config = require('../services/config');
 const optionService = require('../services/options');
 
 async function index(req, res) {
+    const options = await optionService.getOptionsMap();
+
     res.render('index', {
-        theme: await optionService.getOption('theme'),
+        theme: options.theme,
+        leftPaneMinWidth: parseInt(options.leftPaneMinWidth),
+        leftPaneWidthPercent: parseInt(options.leftPaneWidthPercent),
+        rightPaneWidthPercent: 100 - parseInt(options.leftPaneWidthPercent),
         sourceId: await sourceIdService.generateSourceId(),
         maxSyncIdAtLoad: await sql.getValue("SELECT MAX(id) FROM sync"),
         instanceName: config.General ? config.General.instanceName : null,

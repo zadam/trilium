@@ -51,6 +51,7 @@ addTabHandler((function() {
     const $leftPaneMinWidth = $("#left-pane-min-width");
     const $leftPaneWidthPercent = $("#left-pane-width-percent");
     const $html = $("html");
+    const $container = $("#container");
 
     function optionsLoaded(options) {
         $themeSelect.val(options.theme);
@@ -80,14 +81,26 @@ addTabHandler((function() {
         zoomService.setZoomFactorAndSave(newZoomFactor);
     });
 
+    function resizeLeftPanel() {
+        const leftPanePercent = parseInt($leftPaneWidthPercent.val());
+        const rightPanePercent = 100 - leftPanePercent;
+        const leftPaneMinWidth = $leftPaneMinWidth.val();
+
+        $container.css("grid-template-columns", `minmax(${leftPaneMinWidth}px, ${leftPanePercent}fr) ${rightPanePercent}fr`);
+    }
+
     $leftPaneMinWidth.change(function() {
         const newMinWidth = $(this).val();
+
+        resizeLeftPanel();
 
         server.put('options/leftPaneMinWidth/' + newMinWidth);
     });
 
     $leftPaneWidthPercent.change(function() {
         const newWidthPercent = $(this).val();
+
+        resizeLeftPanel();
 
         server.put('options/leftPaneWidthPercent/' + newWidthPercent);
     });
