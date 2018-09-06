@@ -48,6 +48,8 @@ export default {
 addTabHandler((function() {
     const $themeSelect = $("#theme-select");
     const $zoomFactorSelect = $("#zoom-factor-select");
+    const $leftPaneMinWidth = $("#left-pane-min-width");
+    const $leftPaneWidthPercent = $("#left-pane-width-percent");
     const $html = $("html");
 
     function optionsLoaded(options) {
@@ -59,6 +61,9 @@ addTabHandler((function() {
         else {
             $zoomFactorSelect.prop('disabled', true);
         }
+
+        $leftPaneMinWidth.val(options.leftPaneMinWidth);
+        $leftPaneWidthPercent.val(options.leftPaneWidthPercent);
     }
 
     $themeSelect.change(function() {
@@ -73,6 +78,18 @@ addTabHandler((function() {
         const newZoomFactor = $(this).val();
 
         zoomService.setZoomFactorAndSave(newZoomFactor);
+    });
+
+    $leftPaneMinWidth.change(function() {
+        const newMinWidth = $(this).val();
+
+        server.put('options/leftPaneMinWidth/' + newMinWidth);
+    });
+
+    $leftPaneWidthPercent.change(function() {
+        const newWidthPercent = $(this).val();
+
+        server.put('options/leftPaneWidthPercent/' + newWidthPercent);
     });
 
     return {

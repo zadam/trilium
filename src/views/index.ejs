@@ -377,6 +377,23 @@
               </div>
 
               <p>Zooming can be controlled with CTRL-+ and CTRL-= shortcuts as well.</p>
+
+              <h3>Left pane sizing</h3>
+
+              <div class="form-group">
+                <label for="left-pane-min-width">Left pane minimum width (in pixels)</label>
+
+                <input type="number" class="form-control" id="left-pane-min-width" min="100" max="2000" step="1"/>
+              </div>
+
+              <div class="form-group">
+                <label for="left-pane-min-width">Left pane width percent of window size</label>
+
+                <input type="number" class="form-control" id="left-pane-width-percent" min="0" max="99" step="1"/>
+              </div>
+
+              <p>Left pane width is calculated from the percent of window size, if this is smaller than minimum width, then minimum width is used. If you want to have fixed width left pane, set minimum width to the desired width and set percent to 0.</p>
+
             </form>
           </div>
           <div id="change-password">

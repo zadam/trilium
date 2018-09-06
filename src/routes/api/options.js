@@ -6,7 +6,7 @@ const log = require('../../services/log');
 
 // options allowed to be updated directly in options dialog
 const ALLOWED_OPTIONS = ['protectedSessionTimeout', 'noteRevisionSnapshotTimeInterval',
-    'zoomFactor', 'theme', 'syncServerHost', 'syncServerTimeout', 'syncProxy'];
+    'zoomFactor', 'theme', 'syncServerHost', 'syncServerTimeout', 'syncProxy', 'leftPaneMinWidth', 'leftPaneWidthPercent'];
 
 async function getOptions() {
     const options = await sql.getMap("SELECT name, value FROM options WHERE name IN ("
