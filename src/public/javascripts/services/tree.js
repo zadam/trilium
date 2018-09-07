@@ -530,8 +530,8 @@ function parseSelectedHtml(selectedHtml) {
 
     if (dom.length > 0 && dom[0].tagName && dom[0].tagName.match(/h[1-6]/i)) {
         const title = $(dom[0]).text();
-        const domWithoutTitle = dom.slice(1);
-        const content = domWithoutTitle.map(el => $(el).html()).join("");
+        // remove the title from content (only first occurence)
+        const content = selectedHtml.replace(dom[0].outerHTML, "");
 
         return [title, content];
     }
