@@ -100,7 +100,7 @@ const keyBindings = {
         return false;
     },
     "return": node => {
-        noteDetailService.focus();
+        noteDetailService.focusOnTitle();
 
         return false;
     },

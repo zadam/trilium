@@ -513,10 +513,8 @@ async function loadNote(noteId) {
     return new NoteFull(treeCache, row);
 }
 
-function focus() {
-    const note = getCurrentNote();
-
-    getComponent(note.type).focus();
+function focusOnTitle() {
+    $noteTitle.focus();
 }
 
 messagingService.subscribeToSyncMessages(syncData => {
@@ -554,7 +552,7 @@ export default {
     getCurrentNoteType,
     getCurrentNoteId,
     newNoteCreated,
-    focus,
+    focusOnTitle,
     getAttributes,
     showAttributes,
     refreshAttributes,
