@@ -1,3 +1,14 @@
+/* We change h5 and h6 because by default (bootstrap) they are smaller than normal text */
+h5 {
+    font-size: 16px;
+    font-weight: 500;
+}
+
+h6 {
+    font-size: 14px;
+    font-weight: 600;
+}
+
 #container {
     margin: 0 auto; /* center */
     height: 100vh;
