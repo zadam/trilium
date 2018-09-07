@@ -27,7 +27,7 @@ See other pictures in [screenshot tour](https://github.com/zadam/trilium/wiki/Sc
 
 Trilium is provided as either desktop application ([Electron](https://electronjs.org)-based) or web application hosted on your server.
 
-* If you want to use Trilium on the desktop, download binary release for your platform from [latest release](https://github.com/zadam/trilium/releases/latest), unzip the package and run ```trilium``` executable.
+* If you want to use Trilium on the desktop, download binary release for your platform (currently Linux and Windows are supported) from [latest release](https://github.com/zadam/trilium/releases/latest), unzip the package and run ```trilium``` executable.
 * If you want to install Trilium on server, follow [this page](https://github.com/zadam/trilium/wiki/Server-installation).
   * Currently only recent Chrome and Firefox are supported (tested) browsers.
 
