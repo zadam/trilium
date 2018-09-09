@@ -7,13 +7,13 @@ fi
 
 VERSION=$1
 PKG_DIR=dist/trilium-linux-x64-server
-NODE_VERSION=10.9.0
+NODE_VERSION=10.10.0
 
 rm -r $PKG_DIR
 mkdir $PKG_DIR
 cd $PKG_DIR
 
-wget https://nodejs.org/dist/latest-v10.x/node-v${NODE_VERSION}-linux-x64.tar.xz
+wget https://nodejs.org/dist/v10.10.0/node-v${NODE_VERSION}-linux-x64.tar.xz
 tar xvfJ node-v${NODE_VERSION}-linux-x64.tar.xz
 rm node-v${NODE_VERSION}-linux-x64.tar.xz
 
