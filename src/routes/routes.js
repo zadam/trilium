@@ -166,9 +166,9 @@ function register(app) {
     apiRoute(PUT, '/api/recent-notes/:branchId/:notePath', recentNotesRoute.addRecentNote);
     apiRoute(GET, '/api/app-info', appInfoRoute.getAppInfo);
 
+    route(GET, '/api/setup/status', [], setupApiRoute.getStatus, apiResultHandler);
     route(POST, '/api/setup/new-document', [auth.checkAppNotInitialized], setupApiRoute.setupNewDocument, apiResultHandler);
     route(POST, '/api/setup/sync-from-server', [auth.checkAppNotInitialized], setupApiRoute.setupSyncFromServer, apiResultHandler, false);
-    apiRoute(POST, '/api/setup/sync-to-server', setupApiRoute.setupSyncToSyncServer);
     route(GET, '/api/setup/sync-seed', [auth.checkBasicAuth], setupApiRoute.getSyncSeed, apiResultHandler);
     route(POST, '/api/setup/sync-seed', [auth.checkAppNotInitialized], setupApiRoute.saveSyncSeed, apiResultHandler, false);
 

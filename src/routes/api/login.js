@@ -38,7 +38,7 @@ async function loginSync(req) {
     const givenHash = req.body.hash;
 
     if (expectedHash !== givenHash) {
-        return [400, { message: "Sync login hash doesn't match" }];
+        return [400, { message: "Sync login credentials are incorrect." }];
     }
 
     req.session.loggedIn = true;

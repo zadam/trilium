@@ -3,6 +3,13 @@ const syncService = require('./sync');
 const log = require('./log');
 const sqlInit = require('./sql_init');
 const repository = require('./repository');
+const optionService = require('./options');
+
+async function isSyncServerInitialized() {
+    const response = await requestToSyncServer('GET', '/api/setup/status');
+
+    return response.isInitialized;
+}
 
 function triggerSync() {
     log.info("Triggering sync.");
@@ -13,6 +20,42 @@ function triggerSync() {
             await sqlInit.dbInitialized();
         }
     });
+}
+
+async function setupSyncToSyncServer() {
+    log.info("Initiating sync to server");
+
+    await requestToSyncServer('POST', '/api/setup/sync-seed', {
+        options: await getSyncSeedOptions()
+    });
+
+    // this is completely new sync, need to reset counters. If this would not be new sync,
+    // the previous request would have failed.
+    await optionService.setOption('lastSyncedPush', 0);
+    await optionService.setOption('lastSyncedPull', 0);
+
+    syncService.sync();
+}
+
+async function requestToSyncServer(method, path, body = null) {
+    const syncServerHost = await optionService.getOption('syncServerHost');
+    const syncProxy = await optionService.getOption('syncProxy');
+
+    const rpOpts = {
+        uri: syncServerHost + path,
+        method: method,
+        json: true
+    };
+
+    if (body) {
+        rpOpts.body = body;
+    }
+
+    if (syncProxy) {
+        rpOpts.proxy = syncProxy;
+    }
+
+    return await rp(rpOpts);
 }
 
 async function setupSyncFromSyncServer(syncServerHost, syncProxy, username, password) {
@@ -64,7 +107,9 @@ async function getSyncSeedOptions() {
 }
 
 module.exports = {
+    isSyncServerInitialized,
+    triggerSync,
+    setupSyncToSyncServer,
     setupSyncFromSyncServer,
-    getSyncSeedOptions,
-    triggerSync
+    getSyncSeedOptions
 };

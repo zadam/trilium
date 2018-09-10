@@ -223,7 +223,6 @@ addTabHandler((function() {
     const $syncServerTimeout = $("#sync-server-timeout");
     const $syncProxy = $("#sync-proxy");
     const $testSyncButton = $("#test-sync-button");
-    const $syncToServerButton = $("#sync-to-server-button");
 
     function optionsLoaded(options) {
         $syncServerHost.val(options['syncServerHost']);
@@ -244,22 +243,11 @@ addTabHandler((function() {
     $testSyncButton.click(async () => {
         const result = await server.post('sync/test');
 
-        if (result.connection === "Success") {
-            infoService.showMessage("Sync server handshake has been successful");
+        if (result.success) {
+            infoService.showMessage(result.message);
         }
         else {
             infoService.showError("Sync server handshake failed, error: " + result.error);
-        }
-    });
-
-    $syncToServerButton.click(async () => {
-        const resp = await server.post("setup/sync-to-server");
-
-        if (resp.success) {
-            infoService.showMessage("Sync has been established to the server instance. It will take some time to finish.");
-        }
-        else {
-            infoService.showError('Sync setup failed: ' + resp.error);
         }
     });
 

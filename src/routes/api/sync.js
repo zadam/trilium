@@ -1,6 +1,7 @@
 "use strict";
 
 const syncService = require('../../services/sync');
+const setupService = require('../../services/setup');
 const syncUpdateService = require('../../services/sync_update');
 const syncTableService = require('../../services/sync_table');
 const sql = require('../../services/sql');
@@ -11,13 +12,20 @@ const log = require('../../services/log');
 
 async function testSync() {
     try {
-        await syncService.login();
+        if (await setupService.isSyncServerInitialized()) {
+            await syncService.login();
 
-        return { connection: "Success" };
+            return { success: true, message: "Sync server handshake has been successful" };
+        }
+        else {
+            await setupService.setupSyncToSyncServer();
+
+            return { success: true, message: "Sync has been established to the server instance. It will take some time to finish." };
+        }
     }
     catch (e) {
         return {
-            connection: "Failure",
+            success: false,
             error: e.message
         };
     }
