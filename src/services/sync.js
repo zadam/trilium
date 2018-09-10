@@ -69,6 +69,16 @@ async function sync() {
 }
 
 async function login() {
+    const setupService = require('./setup'); // circular dependency issue
+
+    if (!await setupService.isSyncServerInitialized()) {
+        await setupService.setupSyncToSyncServer();
+    }
+
+    return await doLogin();
+}
+
+async function doLogin() {
     const timestamp = dateUtils.nowDate();
 
     const documentSecret = await optionService.getOption('documentSecret');

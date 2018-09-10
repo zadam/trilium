@@ -33,8 +33,6 @@ async function setupSyncToSyncServer() {
     // the previous request would have failed.
     await optionService.setOption('lastSyncedPush', 0);
     await optionService.setOption('lastSyncedPull', 0);
-
-    syncService.sync();
 }
 
 async function requestToSyncServer(method, path, body = null) {
