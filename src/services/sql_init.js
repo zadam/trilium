@@ -44,7 +44,7 @@ async function isDbInitialized() {
 async function initDbConnection() {
     await cls.init(async () => {
         if (!await isDbInitialized()) {
-            log.info("DB not initialized, please visit setup page to initialize Trilium.");
+            log.info("DB not initialized, please visit setup page to see instructions on how to initialize Trilium.");
 
             return;
         }
