@@ -213,3 +213,4 @@ INSERT INTO attributes VALUES('0p8vtV5LoH0e','L9qettZi0csz','label','taskTodoRoo
 INSERT INTO attributes VALUES('lCyxJnXmNy5x','L9qettZi0csz','label','child:task','',1,'2018-08-28T21:11:09.138Z','2018-08-28T21:11:09.138Z',0,'EarSd1tApi',0);
 INSERT INTO attributes VALUES('ifqAReEYdFh6','L9qettZi0csz','relation','child:template','HbtlYiMvmm4V',2,'2018-08-28T21:11:09.143Z','2018-08-28T21:11:09.143Z',0,'JXcAyc3in4',0);
 INSERT INTO attributes VALUES('1hmYf4fJQmBk','L9qettZi0csz','label','child:cssClass','todo',3,'2018-09-01T11:20:29.168Z','2018-09-01T11:20:29.168Z',0,'toS3GWHG/9',0);
+INSERT INTO attributes VALUES('rZBWHIojcLGl','7YEYLSrnFpIi','label','run','frontendStartup',0,'2018-09-10T22:00:30.600Z','2018-09-10T22:00:30.600Z',0,'Z+589x5RRa',0);
