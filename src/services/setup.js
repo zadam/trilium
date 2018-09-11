@@ -6,10 +6,10 @@ const repository = require('./repository');
 const optionService = require('./options');
 const syncOptions = require('./sync_options');
 
-async function isSyncServerInitialized() {
+async function hasSyncServerSchemaAndSeed() {
     const response = await requestToSyncServer('GET', '/api/setup/status');
 
-    return response.isInitialized;
+    return response.schemaExists;
 }
 
 function triggerSync() {
@@ -23,7 +23,7 @@ function triggerSync() {
     });
 }
 
-async function setupSyncToSyncServer() {
+async function sendSeedToSyncServer() {
     log.info("Initiating sync to server");
 
     await requestToSyncServer('POST', '/api/setup/sync-seed', {
@@ -105,9 +105,9 @@ async function getSyncSeedOptions() {
 }
 
 module.exports = {
-    isSyncServerInitialized,
+    hasSyncServerSchemaAndSeed,
     triggerSync,
-    setupSyncToSyncServer,
+    sendSeedToSyncServer,
     setupSyncFromSyncServer,
     getSyncSeedOptions
 };

@@ -6,7 +6,8 @@ const log = require('../../services/log');
 
 async function getStatus() {
     return {
-        isInitialized: await sqlInit.isDbInitialized()
+        isInitialized: await sqlInit.isDbInitialized(),
+        schemaExists: await sqlInit.schemaExists()
     };
 }
 

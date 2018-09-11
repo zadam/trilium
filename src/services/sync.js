@@ -71,8 +71,8 @@ async function sync() {
 async function login() {
     const setupService = require('./setup'); // circular dependency issue
 
-    if (!await setupService.isSyncServerInitialized()) {
-        await setupService.setupSyncToSyncServer();
+    if (!await setupService.hasSyncServerSchemaAndSeed()) {
+        await setupService.sendSeedToSyncServer();
     }
 
     return await doLogin();
