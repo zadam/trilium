@@ -4,6 +4,7 @@ const log = require('./log');
 const sqlInit = require('./sql_init');
 const repository = require('./repository');
 const optionService = require('./options');
+const syncOptions = require('./sync_options');
 
 async function isSyncServerInitialized() {
     const response = await requestToSyncServer('GET', '/api/setup/status');
@@ -36,11 +37,8 @@ async function setupSyncToSyncServer() {
 }
 
 async function requestToSyncServer(method, path, body = null) {
-    const syncServerHost = await optionService.getOption('syncServerHost');
-    const syncProxy = await optionService.getOption('syncProxy');
-
     const rpOpts = {
-        uri: syncServerHost + path,
+        uri: await syncOptions.getSyncServerHost() + path,
         method: method,
         json: true
     };
@@ -48,6 +46,8 @@ async function requestToSyncServer(method, path, body = null) {
     if (body) {
         rpOpts.body = body;
     }
+
+    const syncProxy = await syncOptions.getSyncProxy();
 
     if (syncProxy) {
         rpOpts.proxy = syncProxy;
