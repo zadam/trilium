@@ -8,9 +8,14 @@ const sqlInit = require('../../services/sql_init');
 const optionService = require('../../services/options');
 const contentHashService = require('../../services/content_hash');
 const log = require('../../services/log');
+const syncOptions = require('../../services/sync_options');
 
 async function testSync() {
     try {
+        if (!await syncOptions.isSyncSetup()) {
+            return { success: false, message: "Sync server host is not configured. Please configure sync first." };
+        }
+
         await syncService.login();
 
         // login was successful so we'll kick off sync now
@@ -22,7 +27,7 @@ async function testSync() {
     catch (e) {
         return {
             success: false,
-            error: e.message
+            message: e.message
         };
     }
 }

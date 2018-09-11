@@ -247,7 +247,7 @@ addTabHandler((function() {
             infoService.showMessage(result.message);
         }
         else {
-            infoService.showError("Sync server handshake failed, error: " + result.error);
+            infoService.showError("Sync server handshake failed, error: " + result.message);
         }
     });
 
