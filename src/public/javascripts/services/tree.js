@@ -586,12 +586,6 @@ window.glob.createNoteInto = createNoteInto;
 
 utils.bindShortcut('ctrl+p', createNoteInto);
 
-utils.bindShortcut('ctrl+del', () => {
-    const node = getCurrentNode();
-
-    treeChangesService.deleteNodes([node]);
-});
-
 utils.bindShortcut('ctrl+.', scrollToCurrentNote);
 
 $(window).bind('hashchange', function() {
