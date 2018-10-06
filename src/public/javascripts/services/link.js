@@ -3,7 +3,7 @@ import noteDetailText from './note_detail_text.js';
 import treeUtils from './tree_utils.js';
 
 function getNotePathFromLink(url) {
-    const notePathMatch = /#root([A-Za-z0-9/]*)$/.exec(url);
+    const notePathMatch = /#(root[A-Za-z0-9/]*)$/.exec(url);
 
     if (notePathMatch === null) {
         return null;
@@ -14,7 +14,7 @@ function getNotePathFromLink(url) {
 }
 
 function getNotePathFromLabel(label) {
-    const notePathMatch = / \(([#A-Za-z0-9/]+)\)/.exec(label);
+    const notePathMatch = / \(([A-Za-z0-9/]+)\)/.exec(label);
 
     if (notePathMatch !== null) {
         return notePathMatch[1];

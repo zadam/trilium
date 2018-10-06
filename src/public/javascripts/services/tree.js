@@ -86,7 +86,7 @@ async function expandToNote(notePath, expandOpts) {
         const node = getNodesByNoteId(childNoteId).find(node => node.data.parentNoteId === parentNoteId);
 
         if (!node) {
-            console.log(`Can't find node for noteId=${childNoteId} with parentNoteId=${parentNoteId}`);
+            console.error(`Can't find node for noteId=${childNoteId} with parentNoteId=${parentNoteId}`);
         }
 
         if (childNoteId === noteId) {

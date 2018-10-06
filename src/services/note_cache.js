@@ -192,6 +192,7 @@ function getNoteTitleForPath(path) {
 
 function getSomePath(noteId, path) {
     if (noteId === 'root') {
+        path.push(noteId);
         path.reverse();
 
         return path;
