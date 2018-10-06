@@ -13,7 +13,12 @@ function setupTooltip() {
                 return;
             }
 
-            let notePath = linkService.getNotePathFromLink($link.attr("href"));
+            // this is to avoid showing tooltip from inside CKEditor link editor dialog
+            if ($link.closest(".ck-link-actions").length) {
+                return;
+            }
+
+            let notePath = linkService.getNotePathFromUrl($link.attr("href"));
 
             if (!notePath) {
                 notePath = $link.attr("data-note-path");
