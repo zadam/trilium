@@ -2,7 +2,7 @@ import treeService from './tree.js';
 import noteDetailText from './note_detail_text.js';
 import treeUtils from './tree_utils.js';
 
-function getNotePathFromLink(url) {
+function getNotePathFromUrl(url) {
     const notePathMatch = /#(root[A-Za-z0-9/]*)$/.exec(url);
 
     if (notePathMatch === null) {
@@ -14,7 +14,7 @@ function getNotePathFromLink(url) {
 }
 
 function getNotePathFromLabel(label) {
-    const notePathMatch = / \(([A-Za-z0-9/]+)\)/.exec(label);
+    const notePathMatch = / \((root[A-Za-z0-9/]*)\)/.exec(label);
 
     if (notePathMatch !== null) {
         return notePathMatch[1];
@@ -39,28 +39,19 @@ async function createNoteLink(notePath, noteTitle = null) {
     return noteLink;
 }
 
-function goToLink(e) {
-    e.preventDefault();
+function getNotePathFromLink($link) {
+    const notePathAttr = $link.attr("data-note-path");
 
-    const $link = $(e.target);
-    let notePath = $link.attr("data-note-path");
-
-    if (!notePath) {
-        const address = $link.attr("data-note-path") ? $link.attr("data-note-path") : $link.attr('href');
-
-        if (!address) {
-            return;
-        }
-
-        if (address.startsWith('http')) {
-            window.open(address, '_blank');
-
-            return;
-        }
-
-        notePath = getNotePathFromLink(address);
+    if (notePathAttr) {
+        return notePathAttr;
     }
 
+    const url = $link.attr('href');
+
+    return url ? getNotePathFromUrl(url) : null;
+}
+
+function openNotePath(notePath) {
     treeService.activateNote(notePath);
 
     // this is quite ugly hack, but it seems like we can't close the tooltip otherwise
@@ -69,8 +60,27 @@ function goToLink(e) {
     if (glob.activeDialog) {
         try {
             glob.activeDialog.dialog('close');
+        } catch (e) {
         }
-        catch (e) {}
+    }
+}
+
+function goToLink(e) {
+    e.preventDefault();
+
+    const $link = $(e.target);
+
+    const notePath = getNotePathFromLink($link);
+
+    if (notePath) {
+        openNotePath(notePath);
+    }
+    else {
+        const address = $link.attr('href');
+
+        if (address && address.startsWith('http')) {
+            window.open(address, '_blank');
+        }
     }
 }
 
@@ -109,10 +119,23 @@ ko.bindingHandlers.noteLink = {
 $(document).on('click', "a[data-action='note']", goToLink);
 $(document).on('click', 'div.popover-content a, div.ui-tooltip-content a', goToLink);
 $(document).on('dblclick', '#note-detail-text a', goToLink);
+$(document).on('click', 'span.ck-button__label', e => {
+    // this is a link preview dialog from CKEditor link editing
+    // for some reason clicked element is span
+
+    const url = $(e.target).text();
+    const notePath = getNotePathFromUrl(url);
+
+    if (notePath) {
+        openNotePath(notePath);
+
+        e.preventDefault();
+    }
+});
 
 export default {
     getNotePathFromLabel,
-    getNotePathFromLink,
+    getNotePathFromUrl,
     createNoteLink,
     addLinkToEditor,
     addTextToEditor
