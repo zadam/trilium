@@ -8,7 +8,14 @@
  * Common Styles for Fancytree Skins.
  *
  * This section is automatically generated from the `skin-common.less` template.
- ******************************************************************************/
+ *
+ * Copyright (c) 2008-2018, Martin Wendt (http://wwWendt.de)
+ * Released under the MIT license
+ * https://github.com/mar10/fancytree/wiki/LicenseInfo
+ *
+ * @version 2.30.0
+ * @date 2018-09-02T15:42:49Z
+******************************************************************************/
 /*------------------------------------------------------------------------------
  * Helpers
  *----------------------------------------------------------------------------*/
@@ -473,10 +480,28 @@ ul.fancytree-container.fancytree-rtl.fancytree-no-connector > li {
  *----------------------------------------------------------------------------*/
 table.fancytree-ext-table {
   border-collapse: collapse;
+  /* ext-ariagrid */
 }
 table.fancytree-ext-table span.fancytree-node {
   display: inline-block;
   box-sizing: border-box;
+}
+table.fancytree-ext-table td.fancytree-status-merged {
+  text-align: center;
+  font-style: italic;
+  color: #c0c0c0;
+}
+table.fancytree-ext-table tr.fancytree-statusnode-error td.fancytree-status-merged {
+  color: red;
+}
+table.fancytree-ext-table.fancytree-ext-ariagrid.fancytree-cell-mode > tbody > tr.fancytree-active > td {
+  background-color: #eee;
+}
+table.fancytree-ext-table.fancytree-ext-ariagrid.fancytree-cell-mode > tbody > tr > td.fancytree-active-cell {
+  background-color: #cbe8f6;
+}
+table.fancytree-ext-table.fancytree-ext-ariagrid.fancytree-cell-mode.fancytree-cell-nav-mode > tbody > tr > td.fancytree-active-cell {
+  background-color: #3875d7;
 }
 /*------------------------------------------------------------------------------
  * 'columnview' extension
@@ -562,7 +587,9 @@ table.fancytree-ext-columnview .fancytree-has-children span.fancytree-cv-right:h
   visibility: visible;
 }
 .fancytree-ext-childcounter span.fancytree-icon,
-.fancytree-ext-filter span.fancytree-icon {
+.fancytree-ext-filter span.fancytree-icon,
+.fancytree-ext-childcounter span.fancytree-custom-icon,
+.fancytree-ext-filter span.fancytree-custom-icon {
   position: relative;
 }
 .fancytree-ext-childcounter span.fancytree-childcounter,
