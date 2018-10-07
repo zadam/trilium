@@ -5,6 +5,7 @@ import infoService from './info.js';
 import linkService from './link.js';
 import treeCache from './tree_cache.js';
 import noteDetailService from './note_detail.js';
+import noteTypeService from './note_type.js';
 
 /**
  * This is the main frontend API interface for scripts. It's published in the local "api" object.
@@ -204,6 +205,24 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null) {
      * @param {function} func - callback called on note change as user is typing (not necessarily tied to save event)
      */
     this.onNoteChange = noteDetailService.onNoteChange;
+
+    /**
+     * @method
+     * @returns {array} list of default code mime types
+     */
+    this.getDefaultCodeMimeTypes = noteTypeService.getDefaultCodeMimeTypes;
+
+    /**
+     * @method
+     * @returns {array} list of currently used code mime types
+     */
+    this.getCodeMimeTypes = noteTypeService.getCodeMimeTypes;
+
+    /**
+     * @method
+     * @param {array} types - list of mime types to be used
+     */
+    this.setCodeMimeTypes = noteTypeService.setCodeMimeTypes;
 }
 
 export default FrontendScriptApi;
