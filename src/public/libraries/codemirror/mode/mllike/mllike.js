@@ -1,5 +1,5 @@
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
-// Distributed under an MIT license: http://codemirror.net/LICENSE
+// Distributed under an MIT license: https://codemirror.net/LICENSE
 
 (function(mod) {
   if (typeof exports == "object" && typeof module == "object") // CommonJS
@@ -41,6 +41,9 @@ CodeMirror.defineMode('mllike', function(_config, parserConfig) {
       words[prop] = parserConfig.extraWords[prop];
     }
   }
+  var hintWords = [];
+  for (var k in words) { hintWords.push(k); }
+  CodeMirror.registerHelper("hintWords", "mllike", hintWords);
 
   function tokenBase(stream, state) {
     var ch = stream.next();

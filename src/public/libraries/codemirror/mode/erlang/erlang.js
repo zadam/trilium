@@ -1,5 +1,5 @@
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
-// Distributed under an MIT license: http://codemirror.net/LICENSE
+// Distributed under an MIT license: https://codemirror.net/LICENSE
 
 /*jshint unused:true, eqnull:true, curly:true, bitwise:true */
 /*jshint undef:true, latedef:true, trailing:true */

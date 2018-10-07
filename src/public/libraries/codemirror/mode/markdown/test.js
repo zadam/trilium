@@ -1,5 +1,5 @@
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
-// Distributed under an MIT license: http://codemirror.net/LICENSE
+// Distributed under an MIT license: https://codemirror.net/LICENSE
 
 (function() {
   var config = {tabSize: 4, indentUnit: 2}
@@ -45,6 +45,8 @@
       "formatting" : "override-formatting"
   }});
   function FormatTokenTypeOverrideTest(name) { test.mode(name, modeFormattingOverride, Array.prototype.slice.call(arguments, 1)); }
+  var modeET = CodeMirror.getMode(config, {name: "markdown", emoji: true});
+  function ET(name) { test.mode(name, modeET, Array.prototype.slice.call(arguments, 1)); }
 
 
   FT("formatting_emAsterisk",
@@ -1305,4 +1307,11 @@
   MT_noXml("xmlHighlightDisabled",
      "<div>foo</div>");
 
+  // Tests Emojis
+
+  ET("emojiDefault",
+    "[builtin :foobar:]");
+
+  ET("emojiTable",
+    " :--:");
 })();

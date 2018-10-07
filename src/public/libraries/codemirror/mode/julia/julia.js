@@ -1,5 +1,5 @@
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
-// Distributed under an MIT license: http://codemirror.net/LICENSE
+// Distributed under an MIT license: https://codemirror.net/LICENSE
 
 (function(mod) {
   if (typeof exports == "object" && typeof module == "object") // CommonJS
@@ -34,17 +34,28 @@ CodeMirror.defineMode("julia", function(config, parserConf) {
       /^[_A-Za-z\u00A1-\u2217\u2219-\uFFFF][\w\u00A1-\u2217\u2219-\uFFFF]*!*/;
 
   var chars = wordRegexp([octChar, hexChar, sChar, uChar], "'");
-  var openers = wordRegexp(["begin", "function", "type", "struct", "immutable",
+
+  var commonOpeners = ["begin", "function", "type", "struct", "immutable",
       "let", "macro", "for", "while", "quote", "if", "else", "elseif", "try",
-      "finally", "catch", "do"]);
-  var closers = wordRegexp(["end", "else", "elseif", "catch", "finally"]);
-  var keywords = wordRegexp(["if", "else", "elseif", "while", "for", "begin",
-      "let", "end", "do", "try", "catch", "finally", "return", "break",
-      "continue", "global", "local", "const", "export", "import", "importall",
-      "using", "function", "where", "macro", "module", "baremodule", "struct",
-      "type", "mutable", "immutable", "quote", "typealias", "abstract",
-      "primitive", "bitstype"]);
-  var builtins = wordRegexp(["true", "false", "nothing", "NaN", "Inf"]);
+                       "finally", "catch", "do"];
+
+  var commonClosers = ["end", "else", "elseif", "catch", "finally"];
+
+  var commonKeywords = ["if", "else", "elseif", "while", "for", "begin",
+                        "let", "end", "do", "try", "catch", "finally", "return", "break",
+                        "continue", "global", "local", "const", "export", "import", "importall",
+                        "using", "function", "where", "macro", "module", "baremodule", "struct",
+                        "type", "mutable", "immutable", "quote", "typealias", "abstract",
+                        "primitive", "bitstype"];
+
+  var commonBuiltins = ["true", "false", "nothing", "NaN", "Inf"];
+
+  CodeMirror.registerHelper("hintWords", "julia", commonKeywords.concat(commonBuiltins));
+
+  var openers = wordRegexp(commonOpeners);
+  var closers = wordRegexp(commonClosers);
+  var keywords = wordRegexp(commonKeywords);
+  var builtins = wordRegexp(commonBuiltins);
 
   var macro = /^@[_A-Za-z][\w]*/;
   var symbol = /^:[_A-Za-z\u00A1-\uFFFF][\w\u00A1-\uFFFF]*!*/;

@@ -1,5 +1,5 @@
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
-// Distributed under an MIT license: http://codemirror.net/LICENSE
+// Distributed under an MIT license: https://codemirror.net/LICENSE
 
 (function(mod) {
   if (typeof exports == "object" && typeof module == "object") // CommonJS
@@ -14,15 +14,22 @@
 CodeMirror.registerHelper("wordChars", "r", /[\w.]/);
 
 CodeMirror.defineMode("r", function(config) {
-  function wordObj(str) {
-    var words = str.split(" "), res = {};
+  function wordObj(words) {
+    var res = {};
     for (var i = 0; i < words.length; ++i) res[words[i]] = true;
     return res;
   }
-  var atoms = wordObj("NULL NA Inf NaN NA_integer_ NA_real_ NA_complex_ NA_character_");
-  var builtins = wordObj("list quote bquote eval return call parse deparse");
-  var keywords = wordObj("if else repeat while function for in next break");
-  var blockkeywords = wordObj("if else repeat while function for");
+  var commonAtoms = ["NULL", "NA", "Inf", "NaN", "NA_integer_", "NA_real_", "NA_complex_", "NA_character_"];
+  var commonBuiltins = ["list", "quote", "bquote", "eval", "return", "call", "parse", "deparse"];
+  var commonKeywords = ["if", "else", "repeat", "while", "function", "for", "in", "next", "break"];
+  var commonBlockKeywords = ["if", "else", "repeat", "while", "function", "for"];
+
+  CodeMirror.registerHelper("hintWords", "r", commonAtoms.concat(commonBuiltins, commonKeywords));
+
+  var atoms = wordObj(commonAtoms);
+  var builtins = wordObj(commonBuiltins);
+  var keywords = wordObj(commonKeywords);
+  var blockkeywords = wordObj(commonBlockKeywords);
   var opChars = /[+\-*\/^<>=!&|~$:]/;
   var curPunc;
 
