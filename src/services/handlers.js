@@ -30,6 +30,7 @@ eventService.subscribe(eventService.NOTE_TITLE_CHANGED, async note => {
                 await treeService.sortNotesAlphabetically(parent.noteId);
 
                 messagingService.sendMessageToAllClients({ type: 'refresh-tree' });
+                break; // sending the message once is enough
             }
         }
     }

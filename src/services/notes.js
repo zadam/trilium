@@ -68,9 +68,6 @@ async function createNewNote(parentNoteId, noteData) {
         isExpanded: 0
     }).save();
 
-    await triggerNoteTitleChanged(note);
-    await triggerChildNoteCreated(note, parentNote);
-
     for (const attr of await parentNote.getAttributes()) {
         if (attr.name.startsWith("child:")) {
             await new Attribute({
@@ -85,6 +82,9 @@ async function createNewNote(parentNoteId, noteData) {
             note.invalidateAttributeCache();
         }
     }
+
+    await triggerNoteTitleChanged(note);
+    await triggerChildNoteCreated(note, parentNote);
 
     return {
         note,
