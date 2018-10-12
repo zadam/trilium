@@ -27,7 +27,7 @@ WIN_RES_DIR=./dist/trilium-win32-x64/resources/app
 
 cp -r bin/deps/sqlite/* $WIN_RES_DIR/node_modules/sqlite3/lib/binding/
 cp bin/deps/image/cjpeg.exe $WIN_RES_DIR/node_modules/mozjpeg/vendor/
-cp bin/deps/image/pngquant.exe $WIN_RES_DIR/node_modules/imagemin-pngquant/node_modules/pngquant-bin/vendor/
+cp bin/deps/image/pngquant.exe $WIN_RES_DIR/node_modules/pngquant-bin/vendor/
 cp bin/deps/image/gifsicle.exe $WIN_RES_DIR/node_modules/giflossy/vendor/
 cp bin/deps/scrypt.node $WIN_RES_DIR/node_modules/@mlink/scrypt/build/Release/
 
