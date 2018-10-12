@@ -9,6 +9,12 @@ h6 {
     font-weight: 600;
 }
 
+body {
+    /* Fix for CKEditor block gutter icon "stretching" body and causing scrollbar to appear after pressing enter
+       on the last line of the editor. */
+    position: fixed;
+}
+
 #container {
     margin: 0 auto; /* center */
     height: 100vh;
