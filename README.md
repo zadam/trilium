@@ -12,10 +12,10 @@ See other pictures in [screenshot tour](https://github.com/zadam/trilium/wiki/Sc
 * Notes can be arranged into arbitrarily deep hierarchy (tree)
    * Notes can have more than 1 parents - see [cloning](https://github.com/zadam/trilium/wiki/Cloning-notes)
 * Rich WYSIWYG note editing including e.g. tables and images with markdown [autoformat](https://github.com/zadam/trilium/wiki/Text-editor#autoformat)
-* Support for editing [notes with source code](https://raw.githubusercontent.com/wiki/zadam/trilium/images/code-note.png), including syntax highlighting
+* Support for editing [notes with source code](https://github.com/zadam/trilium/wiki/Code-notes), including syntax highlighting
 * Fast and easy [navigation between notes](https://github.com/zadam/trilium/wiki/Note-navigation)
 * Seamless [note versioning](https://github.com/zadam/trilium/wiki/Note-revisions)
-* Note [attributes](https://github.com/zadam/trilium/wiki/Attributes) can be used for note organization, querying and advanced [[scripting|scripts]]
+* Note [attributes](https://github.com/zadam/trilium/wiki/Attributes) can be used for note organization, querying and advanced [scripting](https://github.com/zadam/trilium/wiki/Scripts)
 * [Synchronization](https://github.com/zadam/trilium/wiki/Synchronization) with self-hosted sync server
 * Strong [note encryption](https://github.com/zadam/trilium/wiki/Protected-notes)
 * [Scripting](https://github.com/zadam/trilium/wiki/Scripts) - see [Advanced showcases](https://github.com/zadam/trilium/wiki/Advanced-showcases)
