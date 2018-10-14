@@ -72,7 +72,7 @@
     "xml2js": "0.4.19"
   },
   "devDependencies": {
-    "electron": "2.0.11",
+    "electron": "4.0.0-beta.3",
     "electron-compile": "6.4.3",
     "electron-packager": "12.2.0",
     "electron-rebuild": "1.8.2",
