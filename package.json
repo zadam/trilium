@@ -26,7 +26,6 @@
     "build-docs": "npm run build-backend-docs && npm run build-frontend-docs"
   },
   "dependencies": {
-    "@mlink/scrypt": "6.1.2",
     "async-mutex": "0.1.3",
     "axios": "0.18",
     "body-parser": "1.18.3",
