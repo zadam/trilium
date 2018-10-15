@@ -90,10 +90,13 @@ if (utils.isElectron()) {
 
         await treeService.activateNote(parentNoteId);
 
-        setTimeout(() => {
-            const node = treeService.getCurrentNode();
+        setTimeout(async () => {
+            const parentNode = treeService.getCurrentNode();
 
-            treeService.createNote(node, node.data.noteId, 'into', node.data.isProtected);
+            const {note} = await treeService.createNote(parentNode, parentNode.data.noteId, 'into', parentNode.data.isProtected);
+
+            await treeService.activateNote(note.noteId);
+
         }, 500);
     });
 }

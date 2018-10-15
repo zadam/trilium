@@ -522,6 +522,8 @@ async function createNote(node, parentNoteId, target, isProtected, saveSelection
     clearSelectedNodes(); // to unmark previously active node
 
     infoService.showMessage("Created!");
+
+    return {note, branch};
 }
 
 /* If first element is heading, parse it out and use it as a new heading. */

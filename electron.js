@@ -3,6 +3,7 @@
 const electron = require('electron');
 const path = require('path');
 const log = require('./src/services/log');
+const cls = require('./src/services/cls');
 const url = require("url");
 const port = require('./src/services/port');
 
@@ -68,10 +69,10 @@ app.on('activate', () => {
     }
 });
 
-app.on('ready', () => {
-    mainWindow = createMainWindow();
+app.on('ready', async () => {
+    mainWindow = await createMainWindow();
 
-    const result = globalShortcut.register('CommandOrControl+Alt+P', async () => {
+    const result = globalShortcut.register('CommandOrControl+Alt+P', cls.wrap(async () => {
         const dateNoteService = require('./src/services/date_notes');
         const dateUtils = require('./src/services/date_utils');
 
@@ -81,7 +82,7 @@ app.on('ready', () => {
         mainWindow.focus();
 
         mainWindow.webContents.send('create-day-sub-note', parentNote.noteId);
-    });
+    }));
 
     if (!result) {
         log.error("Could not register global shortcut CTRL+ALT+P");
