@@ -148,6 +148,8 @@
               <ul id="note-type-dropdown" class="dropdown-menu dropdown-menu-right">
                 <li data-bind="click: selectText, css: { selected: type() == 'text' }"><span class="check">&check;</span> <strong>Text</strong></li>
                 <li role="separator" class="divider"></li>
+                <li data-bind="click: selectRelationMap, css: { selected: type() == 'relation-map' && mime() == '' }"><span class="check">&check;</span> <strong>Relation Map</strong></li>
+                <li role="separator" class="divider"></li>
                 <li data-bind="click: selectRender, css: { selected: type() == 'render' && mime() == '' }"><span class="check">&check;</span> <strong>Render HTML note</strong></li>
                 <li role="separator" class="divider"></li>
                 <li data-bind="click: selectCode, css: { selected: type() == 'code' && mime() == '' }"><span class="check">&check;</span> <strong>Code</strong></li>
@@ -259,6 +261,10 @@
           </div>
 
           <input type="file" id="file-upload" style="display: none" />
+
+          <div id="note-detail-relation-map" class="note-detail-component">
+            relation map
+          </div>
         </div>
 
         <div id="children-overview"></div>

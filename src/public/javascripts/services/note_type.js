@@ -77,6 +77,9 @@ function NoteTypeModel() {
         else if (type === 'file') {
             return 'File';
         }
+        else if (type === 'relation-map') {
+            return 'Relation Map';
+        }
         else if (type === 'search') {
             // ignore and do nothing, "type" will be hidden since it's not possible to switch to and from search
         }
@@ -114,6 +117,13 @@ function NoteTypeModel() {
     this.selectRender = function() {
         self.type('render');
         self.mime('text/html');
+
+        save();
+    };
+
+    this.selectRelationMap = function() {
+        self.type('relation-map');
+        self.mime('application/json');
 
         save();
     };

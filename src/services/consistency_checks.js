@@ -203,7 +203,7 @@ async function runAllChecks() {
           FROM 
             notes
           WHERE 
-            type != 'text' AND type != 'code' AND type != 'render' AND type != 'file' AND type != 'search'`,
+            type != 'text' AND type != 'code' AND type != 'render' AND type != 'file' AND type != 'search' AND type != 'relation-map'`,
         "Note has invalid type", errorList);
 
     await runCheck(`

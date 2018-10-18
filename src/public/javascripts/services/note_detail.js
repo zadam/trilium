@@ -15,6 +15,7 @@ import noteDetailText from './note_detail_text.js';
 import noteDetailFile from './note_detail_file.js';
 import noteDetailSearch from './note_detail_search.js';
 import noteDetailRender from './note_detail_render.js';
+import noteDetailRelationMap from './note_detail_relation_map.js';
 import bundleService from "./bundle.js";
 import noteAutocompleteService from "./note_autocomplete.js";
 
@@ -45,7 +46,8 @@ const components = {
     'text': noteDetailText,
     'file': noteDetailFile,
     'search': noteDetailSearch,
-    'render': noteDetailRender
+    'render': noteDetailRender,
+    'relation-map': noteDetailRelationMap
 };
 
 function getComponent(type) {
