@@ -1,0 +1,82 @@
+#canvas {
+    border: 1px dotted black;
+    height: 700px;
+}
+
+.note-box {
+    padding: 16px;
+    position: absolute !important;
+    z-index: 4;
+    border: 1px solid #2e6f9a;
+    box-shadow: 2px 2px 19px #e0e0e0;
+    border-radius: 8px;
+    opacity: 0.8;
+    background-color: white;
+    font-size: 11px;
+    transition: background-color 0.25s ease-in;
+}
+
+.note-box:hover {
+    background-color: #5c96bc;
+    color: white;
+}
+
+.aLabel {
+    transition: background-color 0.25s ease-in;
+}
+
+.aLabel.jtk-hover, .jtk-source-hover, .jtk-target-hover {
+    background-color: #1e8151;
+    color: white;
+}
+
+.aLabel {
+    background-color: white;
+    opacity: 0.8;
+    padding: 0.3em;
+    border-radius: 0.5em;
+    border: 1px solid #346789;
+    cursor: pointer;
+}
+
+.endpoint {
+    position: absolute;
+    bottom: 37%;
+    right: 5px;
+    width: 1em;
+    height: 1em;
+    background-color: orange;
+    cursor: pointer;
+    box-shadow: 0 0 2px black;
+    transition: box-shadow 0.25s ease-in;
+}
+
+.endpoint:hover {
+    box-shadow: 0 0 6px black;
+}
+
+.statemachine-demo .jtk-endpoint {
+    z-index: 3;
+}
+
+.dragHover {
+    border: 2px solid orange;
+}
+
+path, .jtk-endpoint { cursor:pointer; }
+
+.handle {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 15px;
+    height: 100%;
+    background-color: #aaa;
+    float: left;
+    cursor: move;
+    border-radius: 8px;
+}
+
+.ui-contextmenu {
+    z-index: 100;
+}

@@ -22,6 +22,16 @@ const ESLINT = {js: ["libraries/eslint.js"]};
 
 const COMMONMARK = {js: ["libraries/commonmark.min.js"]};
 
+const RELATION_MAP = {
+    js: [
+        "libraries/jsplumb.js",
+        "libraries/panzoom.js"
+    ],
+    css: [
+        "stylesheets/relation-map.css"
+    ]
+};
+
 async function requireLibrary(library) {
     if (library.css) {
         library.css.map(cssUrl => requireCss(cssUrl));
@@ -64,5 +74,6 @@ export default {
     CKEDITOR,
     CODE_MIRROR,
     ESLINT,
-    COMMONMARK
+    COMMONMARK,
+    RELATION_MAP
 }
