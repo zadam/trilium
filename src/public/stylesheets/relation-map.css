@@ -1,6 +1,5 @@
-#canvas {
-    border: 1px dotted black;
-    height: 700px;
+#relation-map-canvas {
+    height: 100vh;
 }
 
 .note-box {
