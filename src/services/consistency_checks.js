@@ -37,6 +37,11 @@ async function checkTreeCycles(errorList) {
             return;
         }
 
+        if (!childToParents[noteId] || childToParents[noteId].length === 0) {
+            errorList.push(`No parents found for noteId=${noteId}`);
+            return;
+        }
+
         for (const parentNoteId of childToParents[noteId]) {
             if (path.includes(parentNoteId)) {
                 errorList.push(`Tree cycle detected at parent-child relationship: ${parentNoteId} - ${noteId}, whole path: ${path}`);

@@ -14,6 +14,10 @@ const dragAndDropSetup = {
     preventVoidMoves: true, // Prevent dropping nodes 'before self', etc.
 
     dragStart: (node, data) => {
+        if (node.data.noteId === 'root') {
+            return false;
+        }
+
         // This function MUST be defined to enable dragging for the tree.
         // Return false to cancel dragging of node.
         return true;

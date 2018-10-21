@@ -105,7 +105,7 @@ const keyBindings = {
         return false;
     },
     "backspace": node => {
-        if (!utils.isTopLevelNode(node)) {
+        if (!utils.isRootNode(node)) {
             node.getParent().setActive().then(treeService.clearSelectedNodes);
         }
     },
