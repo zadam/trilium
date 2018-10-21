@@ -4,7 +4,7 @@ import treeCache from "./tree_cache.js";
 const $tree = $("#tree");
 
 function getParentProtectedStatus(node) {
-    return utils.isTopLevelNode(node) ? 0 : node.getParent().data.isProtected;
+    return utils.isRootNode(node) ? 0 : node.getParent().data.isProtected;
 }
 
 function getNodeByKey(key) {
@@ -31,6 +31,8 @@ function getNotePath(node) {
 
         node = node.getParent();
     }
+
+    path.push('root');
 
     return path.reverse().join("/");
 }
