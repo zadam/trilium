@@ -20,6 +20,31 @@ async function getNote(req) {
     return note;
 }
 
+async function getChildren(req) {
+    const parentNoteId = req.params.parentNoteId;
+    const parentNote = await repository.getNote(parentNoteId);
+
+    if (!parentNote) {
+        return [404, `Note ${parentNoteId} has not been found.`];
+    }
+
+    const ret = [];
+
+    for (const childNote of await parentNote.getChildNotes()) {
+        ret.push({
+            noteId: childNote.noteId,
+            title: childNote.title,
+            relations: (await childNote.getRelations()).map(relation => { return {
+                attributeId: relation.attributeId,
+                name: relation.name,
+                targetNoteId: relation.value
+            }; })
+        });
+    }
+
+    return ret;
+}
+
 async function createNote(req) {
     const parentNoteId = req.params.parentNoteId;
     const newNote = req.body;
@@ -73,5 +98,6 @@ module.exports = {
     createNote,
     sortNotes,
     protectSubtree,
-    setNoteTypeMime
+    setNoteTypeMime,
+    getChildren
 };

@@ -41,7 +41,7 @@ function handleMessage(event) {
         lastPingTs = new Date().getTime();
 
         if (message.data.length > 0) {
-            console.log(utils.now(), "Sync data: ", message.data);
+            console.debug(utils.now(), "Sync data: ", message.data);
 
             lastSyncId = message.data[message.data.length - 1].id;
         }
@@ -67,7 +67,7 @@ function connectWebSocket() {
 
     // use wss for secure messaging
     const ws = new WebSocket(protocol + "://" + location.host);
-    ws.onopen = event => console.log(utils.now(), "Connected to server with WebSocket");
+    ws.onopen = event => console.debug(utils.now(), "Connected to server with WebSocket");
     ws.onmessage = handleMessage;
     ws.onclose = function(){
         // Try to reconnect in 5 seconds
