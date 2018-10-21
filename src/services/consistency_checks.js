@@ -28,10 +28,7 @@ async function checkTreeCycles(errorList) {
         const childNoteId = row.noteId;
         const parentNoteId = row.parentNoteId;
 
-        if (!childToParents[childNoteId]) {
-            childToParents[childNoteId] = [];
-        }
-
+        childToParents[childNoteId] = childToParents[childNoteId] || [];
         childToParents[childNoteId].push(parentNoteId);
     }
 
@@ -57,6 +54,10 @@ async function checkTreeCycles(errorList) {
 
     for (const noteId of noteIds) {
         checkTreeCycle(noteId, [], errorList);
+    }
+
+    if (childToParents['root'].length !== 1 || childToParents['root'][0] !== 'none') {
+        errorList.push('Incorrect root parent: ' + JSON.stringify(childToParents['root']));
     }
 }
 
