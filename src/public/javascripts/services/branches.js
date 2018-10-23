@@ -5,6 +5,13 @@ import infoService from "./info.js";
 import treeCache from "./tree_cache.js";
 
 async function moveBeforeNode(nodesToMove, beforeNode) {
+    nodesToMove = filterRootNote(nodesToMove);
+
+    if (beforeNode.data.noteId === 'root') {
+        alert('Cannot move notes before root note.');
+        return;
+    }
+
     for (const nodeToMove of nodesToMove) {
         const resp = await server.put('branches/' + nodeToMove.data.branchId + '/move-before/' + beforeNode.data.branchId);
 
@@ -18,6 +25,13 @@ async function moveBeforeNode(nodesToMove, beforeNode) {
 }
 
 async function moveAfterNode(nodesToMove, afterNode) {
+    nodesToMove = filterRootNote(nodesToMove);
+
+    if (afterNode.data.noteId === 'root') {
+        alert('Cannot move notes after root note.');
+        return;
+    }
+
     nodesToMove.reverse(); // need to reverse to keep the note order
 
     for (const nodeToMove of nodesToMove) {
@@ -33,6 +47,8 @@ async function moveAfterNode(nodesToMove, afterNode) {
 }
 
 async function moveToNode(nodesToMove, toNode) {
+    nodesToMove = filterRootNote(nodesToMove);
+
     for (const nodeToMove of nodesToMove) {
         const resp = await server.put('branches/' + nodeToMove.data.branchId + '/move-to/' + toNode.data.noteId);
 
@@ -58,8 +74,13 @@ async function moveToNode(nodesToMove, toNode) {
     }
 }
 
+function filterRootNote(nodes) {
+    // some operations are not possible on root notes
+    return nodes.filter(node => node.data.noteId !== 'root');
+}
+
 async function deleteNodes(nodes) {
-    nodes = nodes.filter(node => node.data.noteId !== 'root');
+    nodes = filterRootNote(nodes);
 
     if (nodes.length === 0 || !confirm('Are you sure you want to delete select note(s) and all the sub-notes?')) {
         return;
@@ -94,7 +115,7 @@ async function deleteNodes(nodes) {
 }
 
 async function moveNodeUpInHierarchy(node) {
-    if (utils.isTopLevelNode(node)) {
+    if (utils.isRootNode(node) || utils.isTopLevelNode(node)) {
         return;
     }
 

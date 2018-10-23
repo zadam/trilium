@@ -7,6 +7,15 @@ const syncTableService = require('./sync_table');
 const protectedSessionService = require('./protected_session');
 
 async function validateParentChild(parentNoteId, childNoteId, branchId = null) {
+    if (childNoteId === 'root') {
+        return { success: false, message: 'Cannot move root note.'};
+    }
+
+    if (parentNoteId === 'none') {
+        // this shouldn't happen
+        return { success: false, message: 'Cannot move anything into root parent.' };
+    }
+
     const existing = await getExistingBranch(parentNoteId, childNoteId);
 
     if (existing && (branchId === null || existing.branchId !== branchId)) {

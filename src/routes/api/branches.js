@@ -21,7 +21,7 @@ async function moveBranchToParent(req) {
     const validationResult = await tree.validateParentChild(parentNoteId, noteToMove.noteId, branchId);
 
     if (!validationResult.success) {
-        return [400, validationResult];
+        return [200, validationResult];
     }
 
     const maxNotePos = await sql.getValue('SELECT MAX(notePosition) FROM branches WHERE parentNoteId = ? AND isDeleted = 0', [parentNoteId]);
@@ -45,7 +45,7 @@ async function moveBranchBeforeNote(req) {
     const validationResult = await tree.validateParentChild(beforeNote.parentNoteId, noteToMove.noteId, branchId);
 
     if (!validationResult.success) {
-        return [400, validationResult];
+        return [200, validationResult];
     }
 
     // we don't change dateModified so other changes are prioritized in case of conflict
@@ -73,7 +73,7 @@ async function moveBranchAfterNote(req) {
     const validationResult = await tree.validateParentChild(afterNote.parentNoteId, noteToMove.noteId, branchId);
 
     if (!validationResult.success) {
-        return [400, validationResult];
+        return [200, validationResult];
     }
 
     // we don't change dateModified so other changes are prioritized in case of conflict

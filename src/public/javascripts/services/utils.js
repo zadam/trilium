@@ -59,7 +59,7 @@ function isTopLevelNode(node) {
 }
 
 function isRootNode(node) {
-    return node.key === "root_1";
+    return node.data.noteId === "root";
 }
 
 function escapeHtml(str) {
