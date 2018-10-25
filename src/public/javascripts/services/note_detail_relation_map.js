@@ -243,7 +243,8 @@ async function show() {
 
         const pz = panzoom($relationMapCanvas[0], {
             maxZoom: 2,
-            minZoom: 0.1
+            minZoom: 0.1,
+            smoothScroll: false
         });
 
         if (mapData.transform) {

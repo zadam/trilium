@@ -1,5 +1,6 @@
 #note-detail-relation-map {
-    height: 500px;
+    height: 100%;
+    overflow: hidden;
 }
 
 #relation-map-canvas {

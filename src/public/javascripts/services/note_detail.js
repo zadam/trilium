@@ -216,15 +216,14 @@ async function loadNoteDetail(noteId) {
 }
 
 async function showChildrenOverview() {
+    const note = getCurrentNote();
     const attributes = await attributePromise;
-    const hideChildrenOverview = attributes.some(attr => attr.type === 'label' && attr.name === 'hideChildrenOverview');
+    const hideChildrenOverview = attributes.some(attr => attr.type === 'label' && attr.name === 'hideChildrenOverview') || note.type === 'relation-map';
 
     if (hideChildrenOverview) {
         $childrenOverview.hide();
         return;
     }
-
-    const note = getCurrentNote();
 
     $childrenOverview.empty();
 
