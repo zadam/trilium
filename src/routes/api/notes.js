@@ -105,11 +105,11 @@ async function getRelationMap(req) {
 
     const questionMarks = noteIds.map(noteId => '?').join(',');
 
-    (await repository.getEntities(`SELECT * FROM notes WHERE noteId IN (${questionMarks})`, noteIds))
+    (await repository.getEntities(`SELECT * FROM notes WHERE isDeleted = 0 AND noteId IN (${questionMarks})`, noteIds))
         .forEach(note => resp.noteTitles[note.noteId] = note.title);
 
     // FIXME: this actually doesn't take into account inherited relations! But maybe it is better this way?
-    resp.relations = (await repository.getEntities(`SELECT * FROM attributes WHERE type = 'relation' AND noteId IN (${questionMarks})`, noteIds))
+    resp.relations = (await repository.getEntities(`SELECT * FROM attributes WHERE isDeleted = 0 AND type = 'relation' AND noteId IN (${questionMarks})`, noteIds))
         .map(relation => { return {
             sourceNoteId: relation.noteId,
             targetNoteId: relation.value,

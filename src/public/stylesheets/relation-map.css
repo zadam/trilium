@@ -17,6 +17,12 @@
     background-color: white;
     font-size: 11px;
     transition: background-color 0.25s ease-in;
+    width: auto;
+    height: auto;
+    max-width: 200px;
+    min-width: 150px;
+    max-height: 200px;
+    overflow: hidden;
 }
 
 .note-box:hover {

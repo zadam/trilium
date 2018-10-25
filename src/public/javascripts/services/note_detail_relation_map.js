@@ -31,7 +31,7 @@ async function show() {
     }
 
     jsPlumb.ready(async function () {
-        const uniDirectionalConnection = [
+        const uniDirectionalOverlays = [
             [ "Arrow", {
                 location: 1,
                 id: "arrow",
@@ -41,7 +41,7 @@ async function show() {
             [ "Label", { label: "", id: "label", cssClass: "aLabel" }]
         ];
 
-        const biDirectionalConnection = [
+        const biDirectionalOverlays = [
             [ "Arrow", {
                 location: 1,
                 id: "arrow",
@@ -66,9 +66,9 @@ async function show() {
         });
 
 
-        instance.registerConnectionType("uniDirectional", { anchor:"Continuous", connector:"StateMachine", overlays: uniDirectionalConnection });
+        instance.registerConnectionType("uniDirectional", { anchor:"Continuous", connector:"StateMachine", overlays: uniDirectionalOverlays });
 
-        instance.registerConnectionType("biDirectional", { anchor:"Continuous", connector:"StateMachine", overlays: biDirectionalConnection });
+        instance.registerConnectionType("biDirectional", { anchor:"Continuous", connector:"StateMachine", overlays: biDirectionalOverlays });
 
         // instance.bind("connection", function (info) {
         //     const connection = info.connection;
@@ -91,7 +91,7 @@ async function show() {
         // });
 
         jsPlumb.on($relationMapCanvas[0], "dblclick", function(e) {
-            newNode(jsPlumbUtil.uuid(),"new", e.offsetX, e.offsetY, "auto", "auto");
+            newNode(jsPlumbUtil.uuid(),"new", e.offsetX, e.offsetY);
         });
 
         $relationMapCanvas.contextmenu({
@@ -174,8 +174,27 @@ async function show() {
             $relationMapCanvas.contextmenuRelation("open", e, { connection: c });
         });
 
-        const noteIds = mapData.notes.map(note => note.noteId);
+        const noteIds = mapData.notes.map(note => note.id);
         const data = await server.post("notes/relation-map", { noteIds });
+
+        const relations = [];
+
+        for (const relation of data.relations) {
+            const match = relations.find(rel =>
+                rel.name === relation.name
+                && ((rel.sourceNoteId === relation.sourceNoteId && rel.targetNoteId === relation.targetNoteId)
+                    || (rel.sourceNoteId === relation.targetNoteId && rel.targetNoteId === relation.sourceNoteId)));
+
+            if (match) {
+                match.type = 'biDirectional';
+            }
+            else {
+                relation.type = 'uniDirectional';
+                relations.push(relation);
+            }
+        }
+
+        mapData.notes = mapData.notes.filter(note => note.id in data.noteTitles);
 
         instance.batch(function () {
             const maxY = mapData.notes.filter(note => !!note.y).map(note => note.y).reduce((a, b) => Math.max(a, b), 0);
@@ -183,14 +202,13 @@ async function show() {
             let curY = maxY + 200;
 
             for (const note of mapData.notes) {
+                const title = data.noteTitles[note.id];
+
                 if (note.x && note.y) {
-                    newNode(note.id, note.title, note.x, note.y, note.width + "px", note.height + "px");
+                    newNode(note.id, title, note.x, note.y);
                 }
                 else {
-                    note.width = "auto";
-                    note.height = "auto";
-
-                    newNode(note.id, note.title, curX, curY, note.width, note.height);
+                    newNode(note.id, title, curX, curY);
 
                     if (curX > 1000) {
                         curX = 100;
@@ -202,19 +220,17 @@ async function show() {
                 }
             }
 
-            for (const relation of mapData.relations) {
+            for (const relation of relations) {
                 if (relation.name === 'isChildOf') {
                     continue;
                 }
 
-                const connection = instance.connect({ id: relation.id, source: relation.source, target: relation.target, type: "uniDirectional" });
+                const connection = instance.connect({ id: `${relation.sourceNoteId}${relation.targetNoteId}`, source: relation.sourceNoteId, target: relation.targetNoteId, type: relation.type });
 
                 relation.connectionId = connection.id;
 
                 connection.getOverlay("label").setLabel(relation.name);
                 connection.canvas.setAttribute("data-connection-id", connection.id);
-
-                //instance.recalculateOffsets(connection);
             }
 
             initDone = true;
@@ -280,26 +296,9 @@ function initNode(el) {
     // version of this demo to find out about new nodes being added.
     //
     instance.fire("jsPlumbDemoNodeAdded", el);
-
-    $(el).resizable({
-        resize: function(event, ui) {
-//                instance.repaint(ui.helper.prop("id"));
-
-            instance.repaintEverything();
-        },
-        stop: function(event, ui) {
-            const note = mapData.notes.find(note => note.id === ui.helper.prop("id"));
-
-            note.width = ui.helper.width();
-            note.height = ui.helper.height();
-
-            saveData();
-        },
-        handles: "all"
-    });
 }
 
-function newNode(id, title, x, y, width, height) {
+function newNode(id, title, x, y) {
     const $noteBox = $("<div>")
         .addClass("note-box")
         .prop("id", id)
@@ -307,9 +306,7 @@ function newNode(id, title, x, y, width, height) {
         .append($("<span>").addClass("title").text(title))
         .append($("<div>").addClass("endpoint"))
         .css("left", x + "px")
-        .css("top", y + "px")
-        .css("width", width)
-        .css("height", height);
+        .css("top", y + "px");
 
     instance.getContainer().appendChild($noteBox[0]);
 
@@ -329,15 +326,11 @@ $addChildNotesButton.click(async () => {
             continue;
         }
 
-        const note = {
-            id: child.noteId,
-            width: "auto",
-            height: "auto"
-        };
+        const note = { id: child.noteId };
 
         mapData.notes.push(note);
 
-        newNode(note.id, note.title, curX, curY, note.width, note.height);
+        newNode(note.id, note.title, curX, curY);
 
         if (curX > 1000) {
             curX = 100;
