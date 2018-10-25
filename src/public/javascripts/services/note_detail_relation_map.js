@@ -241,12 +241,30 @@ async function show() {
 
         jsPlumb.fire("jsPlumbDemoLoaded", instance);
 
-        panzoom($relationMapCanvas[0]);
+        const pz = panzoom($relationMapCanvas[0], {
+            maxZoom: 2,
+            minZoom: 0.1
+        });
+
+        if (mapData.transform) {
+            pz.moveTo(mapData.transform.x, mapData.transform.y);
+            pz.zoomTo(0, 0, mapData.transform.scale);
+        }
+
+        $relationMapCanvas[0].addEventListener('zoom', function(e) {
+            mapData.transform = pz.getTransform();
+            saveData();
+        });
+
+        $relationMapCanvas[0].addEventListener('panend', function(e) {
+            mapData.transform = pz.getTransform();
+            saveData();
+        }, true);
     });
 }
 
 function saveData() {
-    noteDetailService.saveNote();
+    noteDetailService.noteChanged();
 }
 
 function initNode(el) {
