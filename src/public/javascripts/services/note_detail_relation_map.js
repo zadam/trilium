@@ -30,24 +30,45 @@ async function show() {
         }
     }
 
-    jsPlumb.ready(function () {
+    jsPlumb.ready(async function () {
+        const uniDirectionalConnection = [
+            [ "Arrow", {
+                location: 1,
+                id: "arrow",
+                length: 14,
+                foldback: 0.8
+            } ],
+            [ "Label", { label: "", id: "label", cssClass: "aLabel" }]
+        ];
+
+        const biDirectionalConnection = [
+            [ "Arrow", {
+                location: 1,
+                id: "arrow",
+                length: 14,
+                foldback: 0.8
+            } ],
+            [ "Label", { label: "", id: "label", cssClass: "aLabel" }],
+            [ "Arrow", {
+                location: 0,
+                id: "arrow2",
+                length: 14,
+                direction: -1,
+                foldback: 0.8
+            } ]
+        ];
+
         instance = jsPlumb.getInstance({
             Endpoint: ["Dot", {radius: 2}],
             Connector: "StateMachine",
             HoverPaintStyle: {stroke: "#1e8151", strokeWidth: 2 },
-            ConnectionOverlays: [
-                [ "Arrow", {
-                    location: 1,
-                    id: "arrow",
-                    length: 14,
-                    foldback: 0.8
-                } ],
-                [ "Label", { label: "", id: "label", cssClass: "aLabel" }]
-            ],
             Container: "relation-map-canvas"
         });
 
-        instance.registerConnectionType("basic", { anchor:"Continuous", connector:"StateMachine" });
+
+        instance.registerConnectionType("uniDirectional", { anchor:"Continuous", connector:"StateMachine", overlays: uniDirectionalConnection });
+
+        instance.registerConnectionType("biDirectional", { anchor:"Continuous", connector:"StateMachine", overlays: biDirectionalConnection });
 
         // instance.bind("connection", function (info) {
         //     const connection = info.connection;
@@ -153,6 +174,9 @@ async function show() {
             $relationMapCanvas.contextmenuRelation("open", e, { connection: c });
         });
 
+        const noteIds = mapData.notes.map(note => note.noteId);
+        const data = await server.post("notes/relation-map", { noteIds });
+
         instance.batch(function () {
             const maxY = mapData.notes.filter(note => !!note.y).map(note => note.y).reduce((a, b) => Math.max(a, b), 0);
             let curX = 100;
@@ -179,12 +203,18 @@ async function show() {
             }
 
             for (const relation of mapData.relations) {
-                const connection = instance.connect({ id: relation.id, source: relation.source, target: relation.target, type: "basic" });
+                if (relation.name === 'isChildOf') {
+                    continue;
+                }
+
+                const connection = instance.connect({ id: relation.id, source: relation.source, target: relation.target, type: "uniDirectional" });
 
                 relation.connectionId = connection.id;
 
                 connection.getOverlay("label").setLabel(relation.name);
                 connection.canvas.setAttribute("data-connection-id", connection.id);
+
+                //instance.recalculateOffsets(connection);
             }
 
             initDone = true;
@@ -200,8 +230,6 @@ async function show() {
 }
 
 function saveData() {
-    const currentNote = noteDetailService.getCurrentNote();
-
     noteDetailService.saveNote();
 }
 
@@ -296,9 +324,13 @@ $addChildNotesButton.click(async () => {
     let curY = maxY + 200;
 
     for (const child of children) {
+        if (mapData.notes.some(note => note.id === child.noteId)) {
+            // note already exists
+            continue;
+        }
+
         const note = {
             id: child.noteId,
-            title: child.title,
             width: "auto",
             height: "auto"
         };

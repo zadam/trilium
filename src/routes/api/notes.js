@@ -92,6 +92,35 @@ async function setNoteTypeMime(req) {
     await note.save();
 }
 
+async function getRelationMap(req) {
+    const noteIds = req.body.noteIds;
+    const resp = {
+        noteTitles: {},
+        relations: []
+    };
+
+    if (noteIds.length === 0) {
+        return resp;
+    }
+
+    const questionMarks = noteIds.map(noteId => '?').join(',');
+
+    (await repository.getEntities(`SELECT * FROM notes WHERE noteId IN (${questionMarks})`, noteIds))
+        .forEach(note => resp.noteTitles[note.noteId] = note.title);
+
+    // FIXME: this actually doesn't take into account inherited relations! But maybe it is better this way?
+    resp.relations = (await repository.getEntities(`SELECT * FROM attributes WHERE type = 'relation' AND noteId IN (${questionMarks})`, noteIds))
+        .map(relation => { return {
+            sourceNoteId: relation.noteId,
+            targetNoteId: relation.value,
+            name: relation.name
+        }; })
+        // both sourceNoteId and targetNoteId has to be in the included notes, but source was already checked in the SQL query
+        .filter(relation => noteIds.includes(relation.targetNoteId));
+
+    return resp;
+}
+
 module.exports = {
     getNote,
     updateNote,
@@ -99,5 +128,6 @@ module.exports = {
     sortNotes,
     protectSubtree,
     setNoteTypeMime,
-    getChildren
+    getChildren,
+    getRelationMap
 };

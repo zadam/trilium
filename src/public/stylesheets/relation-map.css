@@ -1,5 +1,9 @@
-#relation-map-canvas {
+#note-detail-relation-map {
     height: 500px;
+}
+
+#relation-map-canvas {
+    position: absolute; /* needs to be absolute otherwise connections will be misplaced */
 }
 
 .note-box {
