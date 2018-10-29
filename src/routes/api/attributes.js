@@ -107,11 +107,30 @@ async function getValuesForAttribute(req) {
     return await sql.getColumn("SELECT DISTINCT value FROM attributes WHERE isDeleted = 0 AND name = ? AND type = 'label' AND value != '' ORDER BY value", [attributeName]);
 }
 
+async function createRelation(req) {
+    const sourceNoteId = req.params.noteId;
+    const targetNoteId = req.params.targetNoteId;
+    const name = req.params.name;
+
+    let attribute = await repository.getEntity(`SELECT * FROM attributes WHERE isDeleted = 0 AND noteId = ? AND type = 'relation' AND name = ? AND value = ?`, [sourceNoteId, name, targetNoteId]);
+
+    if (!attribute) {
+        attribute = new Attribute();
+        attribute.noteId = sourceNoteId;
+        attribute.name = name;
+        attribute.type = 'relation';
+        attribute.value = targetNoteId;
+
+        await attribute.save();
+    }
+}
+
 module.exports = {
     updateNoteAttributes,
     updateNoteAttribute,
     deleteNoteAttribute,
     getAttributeNames,
     getValuesForAttribute,
-    getEffectiveNoteAttributes
+    getEffectiveNoteAttributes,
+    createRelation
 };

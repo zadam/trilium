@@ -8,7 +8,8 @@ const $addChildNotesButton = $("#relation-map-add-child-notes");
 
 let mapData;
 let instance;
-let initDone = false;
+// outside of mapData because they are not persisted in the note content
+let relations;
 
 const uniDirectionalOverlays = [
     [ "Arrow", {
@@ -67,7 +68,7 @@ async function loadNotesAndRelations() {
     const noteIds = mapData.notes.map(note => note.id);
     const data = await server.post("notes/relation-map", {noteIds});
 
-    const relations = [];
+    relations = [];
 
     for (const relation of data.relations) {
         const match = relations.find(rel =>
@@ -124,8 +125,6 @@ async function loadNotesAndRelations() {
             connection.getOverlay("label").setLabel(relation.name);
             connection.canvas.setAttribute("data-connection-id", connection.id);
         }
-
-        initDone = true;
     });
 }
 
@@ -165,28 +164,40 @@ async function initJsPlumb () {
 
     instance.registerConnectionType("biDirectional", { anchor:"Continuous", connector:"StateMachine", overlays: biDirectionalOverlays });
 
-    // instance.bind("connection", function (info) {
-    //     const connection = info.connection;
-    //     let name = "none";
-    //
-    //     if (initDone) {
-    //         name = prompt("Specify new connection label:");
-    //
-    //         mapData.relations.push({
-    //             connectionId: connection.id,
-    //             source: connection.sourceId,
-    //             target: connection.targetId,
-    //             name: name
-    //         });
-    //
-    //         saveData();
-    //     }
-    //
-    //     connection.getOverlay("label").setLabel(name);
-    // });
+    instance.bind("connection", async function (info, originalEvent) {
+        // if there's no event, then this has been triggered programatically
+        if (!originalEvent) {
+            return;
+        }
 
-    jsPlumb.on($relationMapCanvas[0], "dblclick", function(e) {
-        newNode(jsPlumbUtil.uuid(),"new", e.offsetX, e.offsetY);
+        const name = prompt("Specify new relation name:");
+
+        if (!name || !name.trim()) {
+            return;
+        }
+
+        const connection = info.connection;
+
+        const targetNoteId = connection.target.id;
+        const sourceNoteId = connection.source.id;
+
+        const existing = relations.some(rel =>
+            rel.targetNoteId === targetNoteId
+            && rel.sourceNoteId === sourceNoteId
+            && rel.name === name);
+
+        if (existing) {
+            alert("Connection '" + name + "' between these notes already exists.");
+
+            return;
+        }
+
+        await server.put(`notes/${sourceNoteId}/relations/${name}/to/${targetNoteId}`);
+
+        relations.push({ targetNoteId, sourceNoteId, name });
+
+        connection.setType("uniDirectional");
+        connection.getOverlay("label").setLabel(name);
     });
 
     $relationMapCanvas.contextmenu({
