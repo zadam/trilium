@@ -17,10 +17,6 @@
     "rebuild-electron": "electron-rebuild",
     "start-electron": "electron . --disable-gpu",
     "build-electron": "electron-packager . --out=dist --asar --overwrite --platform=win32,linux --arch=ia32,x64 --app-version=",
-    "start-forge": "electron-forge start",
-    "package-forge": "electron-forge package",
-    "make-forge": "electron-forge make",
-    "publish-forge": "electron-forge publish",
     "build-backend-docs": "jsdoc -d ./docs/backend_api src/entities/*.js src/services/backend_script_api.js",
     "build-frontend-docs": "jsdoc -d ./docs/frontend_api src/public/javascripts/entities/*.js src/public/javascripts/services/frontend_script_api.js",
     "build-docs": "npm run build-backend-docs && npm run build-frontend-docs"
@@ -78,38 +74,6 @@
     "lorem-ipsum": "1.0.6",
     "tape": "4.9.1",
     "xo": "0.23.0"
-  },
-  "config": {
-    "forge": {
-      "make_targets": {
-        "win32": [
-          "squirrel"
-        ],
-        "darwin": [
-          "zip"
-        ],
-        "linux": [
-          "deb",
-          "rpm"
-        ]
-      },
-      "electronPackagerConfig": {
-        "packageManager": "npm"
-      },
-      "electronWinstallerConfig": {
-        "name": "trilium"
-      },
-      "electronInstallerDebian": {},
-      "electronInstallerRedhat": {},
-      "github_repository": {
-        "owner": "",
-        "name": ""
-      },
-      "windowsStoreConfig": {
-        "packageName": "",
-        "name": "trilium"
-      }
-    }
   },
   "xo": {
     "envs": [
