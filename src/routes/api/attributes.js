@@ -134,19 +134,11 @@ async function deleteRelation(req) {
 
     let attribute = await repository.getEntity(`SELECT * FROM attributes WHERE isDeleted = 0 AND noteId = ? AND type = 'relation' AND name = ? AND value = ?`, [sourceNoteId, name, targetNoteId]);
 
-    if (!attribute) {
-        attribute = new Attribute();
-        attribute.noteId = sourceNoteId;
-        attribute.name = name;
-        attribute.type = 'relation';
-        attribute.value = targetNoteId;
-
+    if (attribute) {
+        attribute.isDeleted = true;
         await attribute.save();
     }
-
-    return attribute;
 }
-
 
 module.exports = {
     updateNoteAttributes,

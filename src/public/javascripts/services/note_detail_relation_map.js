@@ -95,9 +95,9 @@ async function loadNotesAndRelations() {
             const title = data.noteTitles[note.id];
 
             if (note.x && note.y) {
-                await newNode(note.id, title, note.x, note.y);
+                await createNoteBox(note.id, title, note.x, note.y);
             } else {
-                await newNode(note.id, title, curX, curY);
+                await createNoteBox(note.id, title, curX, curY);
 
                 if (curX > 1000) {
                     curX = 100;
@@ -114,14 +114,12 @@ async function loadNotesAndRelations() {
             }
 
             const connection = instance.connect({
-                id: relation.attributeIds,
                 source: relation.sourceNoteId,
                 target: relation.targetNoteId,
                 type: relation.type
             });
 
-            relation.connectionId = connection.id;
-
+            connection.id = relation.attributeId;
             connection.getOverlay("label").setLabel(relation.name);
             connection.canvas.setAttribute("data-connection-id", connection.id);
         }
@@ -154,8 +152,9 @@ function initPanZoom() {
 async function initJsPlumb () {
     instance = jsPlumb.getInstance({
         Endpoint: ["Dot", {radius: 2}],
-        Connector: "Straight",
-        HoverPaintStyle: {stroke: "#777", strokeWidth: 1 },
+        Connector: "StateMachine",
+        ConnectionOverlays: uniDirectionalOverlays,
+        HoverPaintStyle: { stroke: "#777", strokeWidth: 1 },
         Container: "relation-map-canvas"
     });
 
@@ -237,7 +236,7 @@ async function connectionCreatedHandler(info, originalEvent) {
 
     relations.push({ attributeId: attribute.attributeId , targetNoteId, sourceNoteId, name });
 
-    connection.setType("uniDirectional");
+    connection.id = attribute.attributeId;
     connection.getOverlay("label").setLabel(name);
 }
 
@@ -296,14 +295,20 @@ function saveData() {
     noteDetailService.noteChanged();
 }
 
-function initNode(el) {
-    instance.draggable(el, {
-        handle: ".handle",
-        start:function(params) {
-        },
-        drag:function(params) {
+async function createNoteBox(id, title, x, y) {
+    const $noteBox = $("<div>")
+        .addClass("note-box")
+        .prop("id", id)
+        .append($("<span>").addClass("title").html(await linkService.createNoteLink(id, title)))
+        .append($("<div>").addClass("endpoint"))
+        .css("left", x + "px")
+        .css("top", y + "px");
 
-        },
+    instance.getContainer().appendChild($noteBox[0]);
+
+    instance.draggable($noteBox[0], {
+        start:function(params) {},
+        drag:function(params) {},
         stop:function(params) {
             const note = mapData.notes.find(note => note.id === params.el.id);
 
@@ -318,7 +323,7 @@ function initNode(el) {
         }
     });
 
-    instance.makeSource(el, {
+    instance.makeSource($noteBox[0], {
         filter: ".endpoint",
         anchor: "Continuous",
         connectorStyle: { stroke: "#000", strokeWidth: 1 },
@@ -328,31 +333,11 @@ function initNode(el) {
         }
     });
 
-    instance.makeTarget(el, {
+    instance.makeTarget($noteBox[0], {
         dropOptions: { hoverClass: "dragHover" },
         anchor: "Continuous",
         allowLoopback: true
     });
-
-    // this is not part of the core demo functionality; it is a means for the Toolkit edition's wrapped
-    // version of this demo to find out about new nodes being added.
-    //
-    instance.fire("jsPlumbDemoNodeAdded", el);
-}
-
-async function newNode(id, title, x, y) {
-    const $noteBox = $("<div>")
-        .addClass("note-box")
-        .prop("id", id)
-        .append($("<div>").addClass("handle"))
-        .append($("<span>").addClass("title").html(await linkService.createNoteLink(id, title)))
-        .append($("<div>").addClass("endpoint"))
-        .css("left", x + "px")
-        .css("top", y + "px");
-
-    instance.getContainer().appendChild($noteBox[0]);
-
-    initNode($noteBox[0]);
 }
 
 $addChildNotesButton.click(async () => {
@@ -372,7 +357,7 @@ $addChildNotesButton.click(async () => {
 
         mapData.notes.push(note);
 
-        await newNode(note.id, note.title, curX, curY);
+        await createNoteBox(note.id, note.title, curX, curY);
 
         if (curX > 1000) {
             curX = 100;
@@ -395,8 +380,6 @@ $addChildNotesButton.click(async () => {
             if (!connection) {
                 continue;
             }
-
-            relation.connectionId = connection.id;
 
             connection.getOverlay("label").setLabel(relation.name);
             connection.canvas.setAttribute("data-connection-id", connection.id);

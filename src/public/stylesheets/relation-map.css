@@ -77,18 +77,6 @@
 
 path, .jtk-endpoint { cursor:pointer; }
 
-.handle {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 15px;
-    height: 100%;
-    background-color: #aaa;
-    float: left;
-    cursor: move;
-    border-radius: 8px;
-}
-
 .ui-contextmenu {
     z-index: 100;
 }
