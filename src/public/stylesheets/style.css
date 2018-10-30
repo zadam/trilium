@@ -127,6 +127,10 @@ span.fancytree-node.file > span.fancytree-icon {
     background: url("../images/icons/paperclip-16.png") 0 0;
 }
 
+span.fancytree-node.relation-map > span.fancytree-icon {
+    background: url("../images/icons/relation-map-16.png") 0 0;
+}
+
 span.fancytree-node.render > span.fancytree-icon {
     background: url("../images/icons/play-16.png") 0 0;
 }
