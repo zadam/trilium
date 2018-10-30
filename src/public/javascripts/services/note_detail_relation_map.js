@@ -2,6 +2,7 @@ import server from "./server.js";
 import noteDetailService from "./note_detail.js";
 import linkService from "./link.js";
 import libraryLoader from "./library_loader.js";
+import treeService from "./tree.js";
 
 const $noteDetailRelationMap = $("#note-detail-relation-map");
 const $relationMapCanvas = $("#relation-map-canvas");
@@ -267,18 +268,18 @@ async function noteContextMenuHandler(event, ui) {
         saveData();
     }
     else if (ui.cmd === "edit-title") {
-        const title = prompt("Enter new note title:");
+        const $title = $noteBox.find(".title a");
+        const title = prompt("Enter new note title:", $title.text());
 
         if (!title) {
             return;
         }
 
-        const note = mapData.notes.find(note => note.id === noteId);
-        note.title = title;
+        await server.put(`notes/${noteId}/change-title`, { title });
 
-        $noteBox.find(".title").text(note.title);
+        treeService.setNoteTitle(noteId, title);
 
-        saveData();
+        $title.text(title);
     }
 }
 

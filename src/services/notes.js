@@ -222,6 +222,10 @@ async function saveNoteRevision(note) {
 async function updateNote(noteId, noteUpdates) {
     const note = await repository.getNote(noteId);
 
+    if (!note.isContentAvailable) {
+        throw new Error(`Note ${noteId} is not available for change!`);
+    }
+
     if (note.type === 'file') {
         // for update file, newNote doesn't contain file payloads
         noteUpdates.content = note.content;

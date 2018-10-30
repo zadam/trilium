@@ -78,6 +78,7 @@ async function updateEntity(entity) {
     delete clone.isOwned;
     delete clone.isChanged;
     delete clone.origParentNoteId;
+    delete clone.isContentAvailable;
     delete clone.__attributeCache;
 
     for (const key in clone) {

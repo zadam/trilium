@@ -36,9 +36,14 @@ class Note extends Entity {
         super(row);
 
         this.isProtected = !!this.isProtected;
+        /* true if content (meaning any kind of potentially encrypted content) is either not encrypted
+         * or encrypted, but with available protected session (so effectively decrypted) */
+        this.isContentAvailable = true;
 
         // check if there's noteId, otherwise this is a new entity which wasn't encrypted yet
         if (this.isProtected && this.noteId) {
+            this.isContentAvailable = protectedSessionService.isProtectedSessionAvailable();
+
             protectedSessionService.decryptNote(this);
         }
 

@@ -122,6 +122,7 @@ function register(app) {
     apiRoute(PUT, /\/api\/notes\/(.*)\/type\/(.*)\/mime\/(.*)/, notesApiRoute.setNoteTypeMime);
     apiRoute(GET, '/api/notes/:noteId/revisions', noteRevisionsApiRoute.getNoteRevisions);
     apiRoute(POST, '/api/notes/relation-map', notesApiRoute.getRelationMap);
+    apiRoute(PUT, '/api/notes/:noteId/change-title', notesApiRoute.changeTitle);
 
     apiRoute(PUT, '/api/notes/:noteId/clone-to/:parentNoteId', cloningApiRoute.cloneNoteToParent);
     apiRoute(PUT, '/api/notes/:noteId/clone-after/:afterBranchId', cloningApiRoute.cloneNoteAfter);

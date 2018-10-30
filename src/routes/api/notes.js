@@ -122,6 +122,25 @@ async function getRelationMap(req) {
     return resp;
 }
 
+async function changeTitle(req) {
+    const noteId = req.params.noteId;
+    const title = req.body.title;
+
+    const note = await repository.getNote(noteId);
+
+    if (!note) {
+        return [404, `Note ${noteId} has not been found`];
+    }
+
+    if (!note.isContentAvailable) {
+        return [400, `Note ${noteId} is not available for change`];
+    }
+
+    note.title = title;
+
+    await note.save();
+}
+
 module.exports = {
     getNote,
     updateNote,
@@ -130,5 +149,6 @@ module.exports = {
     protectSubtree,
     setNoteTypeMime,
     getChildren,
-    getRelationMap
+    getRelationMap,
+    changeTitle
 };
