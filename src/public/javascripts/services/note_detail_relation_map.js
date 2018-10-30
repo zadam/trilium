@@ -42,8 +42,7 @@ const biDirectionalOverlays = [
 function loadMapData() {
     const currentNote = noteDetailService.getCurrentNote();
     mapData = {
-        notes: [],
-        relations: []
+        notes: []
     };
 
     if (currentNote.content) {
@@ -115,7 +114,7 @@ async function loadNotesAndRelations() {
             }
 
             const connection = instance.connect({
-                id: `${relation.sourceNoteId}${relation.targetNoteId}`,
+                id: relation.attributeIds,
                 source: relation.sourceNoteId,
                 target: relation.targetNoteId,
                 type: relation.type
@@ -155,8 +154,8 @@ function initPanZoom() {
 async function initJsPlumb () {
     instance = jsPlumb.getInstance({
         Endpoint: ["Dot", {radius: 2}],
-        Connector: "StateMachine",
-        HoverPaintStyle: {stroke: "#1e8151", strokeWidth: 2 },
+        Connector: "Straight",
+        HoverPaintStyle: {stroke: "#777", strokeWidth: 1 },
         Container: "relation-map-canvas"
     });
 
@@ -181,8 +180,7 @@ async function initJsPlumb () {
         delegate: ".connection-label,.jtk-connector",
         autoTrigger: false, // it doesn't open automatically, needs to be triggered explicitly by .open() call
         menu: [
-            {title: "Remove relation", cmd: "remove", uiIcon: "ui-icon-trash"},
-            {title: "Edit relation name", cmd: "edit-name", uiIcon: "ui-icon-pencil"},
+            {title: "Remove relation", cmd: "remove", uiIcon: "ui-icon-trash"}
         ],
         select: relationContextMenuHandler
     });
@@ -222,12 +220,12 @@ async function connectionCreatedHandler(info, originalEvent) {
     const targetNoteId = connection.target.id;
     const sourceNoteId = connection.source.id;
 
-    const existing = relations.some(rel =>
+    const relationExists = relations.some(rel =>
         rel.targetNoteId === targetNoteId
         && rel.sourceNoteId === sourceNoteId
         && rel.name === name);
 
-    if (existing) {
+    if (relationExists) {
         alert("Connection '" + name + "' between these notes already exists.");
 
         instance.deleteConnection(connection);
@@ -235,15 +233,15 @@ async function connectionCreatedHandler(info, originalEvent) {
         return;
     }
 
-    await server.put(`notes/${sourceNoteId}/relations/${name}/to/${targetNoteId}`);
+    const attribute = await server.put(`notes/${sourceNoteId}/relations/${name}/to/${targetNoteId}`);
 
-    relations.push({ targetNoteId, sourceNoteId, name });
+    relations.push({ attributeId: attribute.attributeId , targetNoteId, sourceNoteId, name });
 
     connection.setType("uniDirectional");
     connection.getOverlay("label").setLabel(name);
 }
 
-function relationContextMenuHandler(event, ui) {
+async function relationContextMenuHandler(event, ui) {
     const {connection} = ui.extraData;
 
     if (ui.cmd === 'remove') {
@@ -251,36 +249,30 @@ function relationContextMenuHandler(event, ui) {
             return;
         }
 
+        const relation = relations.find(rel => rel.attributeId === connection.id);
+
+        await server.remove(`notes/${relation.sourceNoteId}/relations/${relation.name}/to/${relation.targetNoteId}`);
+
         instance.deleteConnection(connection);
 
-        mapData.relations = mapData.relations.filter(relation => relation.connectionId !== connection.id);
-        saveData();
-    }
-    else if (ui.cmd === 'edit-name') {
-        const relationName = prompt("Specify new relation name:");
-
-        connection.getOverlay("label").setLabel(relationName);
-
-        const relation = mapData.relations.find(relation => relation.connectionId === connection.id);
-        relation.name = relationName;
-
-        saveData();
+        relations = relations.filter(relation => relation.attributeId !== connection.id);
     }
 }
 
-function noteContextMenuHandler(event, ui) {
+async function noteContextMenuHandler(event, ui) {
     const $noteBox = ui.target.closest(".note-box");
     const noteId = $noteBox.prop("id");
 
     if (ui.cmd === "remove") {
-        if (!confirm("Are you sure you want to remove the note?")) {
+        if (!confirm("Are you sure you want to remove the note from this diagram?")) {
             return;
         }
 
         instance.remove(noteId);
 
         mapData.notes = mapData.notes.filter(note => note.id !== noteId);
-        mapData.relations = mapData.relations.filter(relation => relation.source !== noteId && relation.target !== noteId);
+
+        relations = relations.filter(relation => relation.sourceNoteId !== noteId && relation.targetNoteId !== noteId);
 
         saveData();
     }
@@ -329,12 +321,7 @@ function initNode(el) {
     instance.makeSource(el, {
         filter: ".endpoint",
         anchor: "Continuous",
-        connectorStyle: {
-            stroke: "#5c96bc",
-            strokeWidth: 2,
-            outlineStroke: "transparent",
-            outlineWidth: 4
-        },
+        connectorStyle: { stroke: "#000", strokeWidth: 1 },
         connectionType: "basic",
         extract:{
             "action": "the-action"
@@ -408,12 +395,6 @@ $addChildNotesButton.click(async () => {
             if (!connection) {
                 continue;
             }
-
-            mapData.relations.push({
-                source: child.noteId,
-                target: relation.targetNoteId,
-                name: relation.name
-            });
 
             relation.connectionId = connection.id;
 

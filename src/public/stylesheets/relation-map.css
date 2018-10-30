@@ -16,13 +16,12 @@
     padding: 16px;
     position: absolute !important;
     z-index: 4;
-    border: 1px solid #2e6f9a;
-    box-shadow: 2px 2px 19px #e0e0e0;
+    border: 1px solid #666;
+    box-shadow: 2px 2px 19px #999;
     border-radius: 8px;
     opacity: 0.8;
     background-color: white;
     font-size: 11px;
-    transition: background-color 0.25s ease-in;
     width: auto;
     height: auto;
     max-width: 200px;
@@ -32,8 +31,7 @@
 }
 
 .note-box:hover {
-    background-color: #5c96bc;
-    color: white;
+    background-color: #ddd;
 }
 
 .note-box .title {
@@ -41,13 +39,8 @@
     font-weight: 600;
 }
 
-.connection-label {
-    transition: background-color 0.25s ease-in;
-}
-
 .connection-label.jtk-hover, .jtk-source-hover, .jtk-target-hover {
-    background-color: #1e8151;
-    color: white;
+    background-color: #ddd;
 }
 
 .connection-label {
@@ -55,7 +48,7 @@
     opacity: 0.8;
     padding: 0.3em;
     border-radius: 0.5em;
-    border: 1px solid #346789;
+    border: 1px solid #666;
     cursor: pointer;
 }
 
@@ -65,10 +58,9 @@
     right: 5px;
     width: 1em;
     height: 1em;
-    background-color: orange;
+    background-color: #333;
     cursor: pointer;
     box-shadow: 0 0 2px black;
-    transition: box-shadow 0.25s ease-in;
 }
 
 .endpoint:hover {

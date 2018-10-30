@@ -111,6 +111,7 @@ async function getRelationMap(req) {
     // FIXME: this actually doesn't take into account inherited relations! But maybe it is better this way?
     resp.relations = (await repository.getEntities(`SELECT * FROM attributes WHERE isDeleted = 0 AND type = 'relation' AND noteId IN (${questionMarks})`, noteIds))
         .map(relation => { return {
+            attributeId: relation.attributeId,
             sourceNoteId: relation.noteId,
             targetNoteId: relation.value,
             name: relation.name

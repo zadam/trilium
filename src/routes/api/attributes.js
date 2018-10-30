@@ -123,7 +123,30 @@ async function createRelation(req) {
 
         await attribute.save();
     }
+
+    return attribute;
 }
+
+async function deleteRelation(req) {
+    const sourceNoteId = req.params.noteId;
+    const targetNoteId = req.params.targetNoteId;
+    const name = req.params.name;
+
+    let attribute = await repository.getEntity(`SELECT * FROM attributes WHERE isDeleted = 0 AND noteId = ? AND type = 'relation' AND name = ? AND value = ?`, [sourceNoteId, name, targetNoteId]);
+
+    if (!attribute) {
+        attribute = new Attribute();
+        attribute.noteId = sourceNoteId;
+        attribute.name = name;
+        attribute.type = 'relation';
+        attribute.value = targetNoteId;
+
+        await attribute.save();
+    }
+
+    return attribute;
+}
+
 
 module.exports = {
     updateNoteAttributes,
@@ -132,5 +155,6 @@ module.exports = {
     getAttributeNames,
     getValuesForAttribute,
     getEffectiveNoteAttributes,
-    createRelation
+    createRelation,
+    deleteRelation
 };
