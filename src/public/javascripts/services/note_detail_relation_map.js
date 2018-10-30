@@ -6,6 +6,8 @@ import libraryLoader from "./library_loader.js";
 const $noteDetailRelationMap = $("#note-detail-relation-map");
 const $relationMapCanvas = $("#relation-map-canvas");
 const $addChildNotesButton = $("#relation-map-add-child-notes");
+const $zoomInButton = $("#relation-map-zoom-in");
+const $zoomOutButton = $("#relation-map-zoom-out");
 
 let mapData;
 let instance;
@@ -87,25 +89,10 @@ async function loadNotesAndRelations() {
     mapData.notes = mapData.notes.filter(note => note.id in data.noteTitles);
 
     instance.batch(async function () {
-        const maxY = mapData.notes.filter(note => !!note.y).map(note => note.y).reduce((a, b) => Math.max(a, b), 0);
-        let curX = 100;
-        let curY = maxY + 200;
-
         for (const note of mapData.notes) {
             const title = data.noteTitles[note.id];
 
-            if (note.x && note.y) {
-                await createNoteBox(note.id, title, note.x, note.y);
-            } else {
-                await createNoteBox(note.id, title, curX, curY);
-
-                if (curX > 1000) {
-                    curX = 100;
-                    curY += 200;
-                } else {
-                    curX += 200;
-                }
-            }
+            await createNoteBox(note.id, title, note.x, note.y);
         }
 
         for (const relation of relations) {
@@ -134,19 +121,37 @@ function initPanZoom() {
     });
 
     if (mapData.transform) {
+        console.log(mapData.transform);
+
         pz.moveTo(mapData.transform.x, mapData.transform.y);
         pz.zoomTo(0, 0, mapData.transform.scale);
     }
 
-    $relationMapCanvas[0].addEventListener('zoom', function (e) {
+    pz.on('zoom', function (e) {
         mapData.transform = pz.getTransform();
+
+        console.log(mapData.transform);
+
         saveData();
     });
 
-    $relationMapCanvas[0].addEventListener('panend', function (e) {
+    pz.on('panend', function (e) {
         mapData.transform = pz.getTransform();
+
         saveData();
     }, true);
+
+    $zoomInButton.click(() => {
+        const transform = pz.getTransform();
+
+        pz.zoomTo(0, 0, 1.2);
+    });
+
+    $zoomOutButton.click(() => {
+        const transform = pz.getTransform();
+
+        pz.zoomTo(0, 0, 0.8);
+    });
 }
 
 async function initJsPlumb () {
@@ -206,6 +211,7 @@ async function connectionCreatedHandler(info, originalEvent) {
         return;
     }
 
+    const connection = info.connection;
     const name = prompt("Specify new relation name:");
 
     if (!name || !name.trim()) {
@@ -213,8 +219,6 @@ async function connectionCreatedHandler(info, originalEvent) {
 
         return;
     }
-
-    const connection = info.connection;
 
     const targetNoteId = connection.target.id;
     const sourceNoteId = connection.source.id;
@@ -300,7 +304,7 @@ async function createNoteBox(id, title, x, y) {
         .addClass("note-box")
         .prop("id", id)
         .append($("<span>").addClass("title").html(await linkService.createNoteLink(id, title)))
-        .append($("<div>").addClass("endpoint"))
+        .append($("<div>").addClass("endpoint").attr("title", "Start dragging relations from here and drop them on another note."))
         .css("left", x + "px")
         .css("top", y + "px");
 
@@ -340,12 +344,16 @@ async function createNoteBox(id, title, x, y) {
     });
 }
 
+function getFreePosition() {
+    const maxY = mapData.notes.filter(note => !!note.y).map(note => note.y).reduce((a, b) => Math.max(a, b), 0);
+
+    return [100, maxY + 200];
+}
+
 $addChildNotesButton.click(async () => {
     const children = await server.get("notes/" + noteDetailService.getCurrentNoteId() + "/children");
 
-    const maxY = mapData.notes.filter(note => !!note.y).map(note => note.y).reduce((a, b) => Math.max(a, b), 0);
-    let curX = 100;
-    let curY = maxY + 200;
+    let [curX, curY] = getFreePosition();
 
     for (const child of children) {
         if (mapData.notes.some(note => note.id === child.noteId)) {
@@ -353,11 +361,11 @@ $addChildNotesButton.click(async () => {
             continue;
         }
 
-        const note = { id: child.noteId };
-
-        mapData.notes.push(note);
-
-        await createNoteBox(note.id, note.title, curX, curY);
+        mapData.notes.push({
+            id: child.noteId,
+            x: curX,
+            y: curY
+        });
 
         if (curX > 1000) {
             curX = 100;
@@ -368,25 +376,12 @@ $addChildNotesButton.click(async () => {
         }
     }
 
-    for (const child of children) {
-        for (const relation of child.relations) {
-            const connection = instance.connect({
-                id: relation.attributeId,
-                source: child.noteId,
-                target: relation.targetNoteId,
-                type: "basic"
-            });
-
-            if (!connection) {
-                continue;
-            }
-
-            connection.getOverlay("label").setLabel(relation.name);
-            connection.canvas.setAttribute("data-connection-id", connection.id);
-        }
-    }
-
     saveData();
+
+    // delete all endpoints and connections
+    instance.deleteEveryEndpoint();
+
+    await loadNotesAndRelations();
 });
 
 export default {
