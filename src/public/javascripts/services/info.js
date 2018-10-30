@@ -2,7 +2,7 @@ import messagingService from "./messaging.js";
 import utils from "./utils.js";
 
 function showMessage(message) {
-    console.log(utils.now(), "message: ", message);
+    console.debug(utils.now(), "message: ", message);
 
     $.notify({
         // options

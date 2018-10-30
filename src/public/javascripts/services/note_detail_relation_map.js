@@ -1,5 +1,6 @@
 import server from "./server.js";
 import noteDetailService from "./note_detail.js";
+import linkService from "./link.js";
 import libraryLoader from "./library_loader.js";
 
 const $noteDetailRelationMap = $("#note-detail-relation-map");
@@ -18,7 +19,7 @@ const uniDirectionalOverlays = [
         length: 14,
         foldback: 0.8
     } ],
-    [ "Label", { label: "", id: "label", cssClass: "aLabel" }]
+    [ "Label", { label: "", id: "label", cssClass: "connection-label" }]
 ];
 
 const biDirectionalOverlays = [
@@ -28,7 +29,7 @@ const biDirectionalOverlays = [
         length: 14,
         foldback: 0.8
     } ],
-    [ "Label", { label: "", id: "label", cssClass: "aLabel" }],
+    [ "Label", { label: "", id: "label", cssClass: "connection-label" }],
     [ "Arrow", {
         location: 0,
         id: "arrow2",
@@ -86,7 +87,7 @@ async function loadNotesAndRelations() {
 
     mapData.notes = mapData.notes.filter(note => note.id in data.noteTitles);
 
-    instance.batch(function () {
+    instance.batch(async function () {
         const maxY = mapData.notes.filter(note => !!note.y).map(note => note.y).reduce((a, b) => Math.max(a, b), 0);
         let curX = 100;
         let curY = maxY + 200;
@@ -95,9 +96,9 @@ async function loadNotesAndRelations() {
             const title = data.noteTitles[note.id];
 
             if (note.x && note.y) {
-                newNode(note.id, title, note.x, note.y);
+                await newNode(note.id, title, note.x, note.y);
             } else {
-                newNode(note.id, title, curX, curY);
+                await newNode(note.id, title, curX, curY);
 
                 if (curX > 1000) {
                     curX = 100;
@@ -159,46 +160,11 @@ async function initJsPlumb () {
         Container: "relation-map-canvas"
     });
 
-
     instance.registerConnectionType("uniDirectional", { anchor:"Continuous", connector:"StateMachine", overlays: uniDirectionalOverlays });
 
     instance.registerConnectionType("biDirectional", { anchor:"Continuous", connector:"StateMachine", overlays: biDirectionalOverlays });
 
-    instance.bind("connection", async function (info, originalEvent) {
-        // if there's no event, then this has been triggered programatically
-        if (!originalEvent) {
-            return;
-        }
-
-        const name = prompt("Specify new relation name:");
-
-        if (!name || !name.trim()) {
-            return;
-        }
-
-        const connection = info.connection;
-
-        const targetNoteId = connection.target.id;
-        const sourceNoteId = connection.source.id;
-
-        const existing = relations.some(rel =>
-            rel.targetNoteId === targetNoteId
-            && rel.sourceNoteId === sourceNoteId
-            && rel.name === name);
-
-        if (existing) {
-            alert("Connection '" + name + "' between these notes already exists.");
-
-            return;
-        }
-
-        await server.put(`notes/${sourceNoteId}/relations/${name}/to/${targetNoteId}`);
-
-        relations.push({ targetNoteId, sourceNoteId, name });
-
-        connection.setType("uniDirectional");
-        connection.getOverlay("label").setLabel(name);
-    });
+    instance.bind("connection", connectionCreatedHandler);
 
     $relationMapCanvas.contextmenu({
         delegate: ".note-box",
@@ -212,7 +178,7 @@ async function initJsPlumb () {
     $.widget("moogle.contextmenuRelation", $.moogle.contextmenu, {});
 
     $relationMapCanvas.contextmenuRelation({
-        delegate: ".aLabel,.jtk-connector",
+        delegate: ".connection-label,.jtk-connector",
         autoTrigger: false, // it doesn't open automatically, needs to be triggered explicitly by .open() call
         menu: [
             {title: "Remove relation", cmd: "remove", uiIcon: "ui-icon-trash"},
@@ -230,11 +196,51 @@ async function initJsPlumb () {
     await loadNotesAndRelations();
 
     // so that canvas is not panned when clicking/dragging note box
-    $relationMapCanvas.on('mousedown touchstart', '.note-box, .aLabel', e => e.stopPropagation());
+    $relationMapCanvas.on('mousedown touchstart', '.note-box, .connection-label', e => e.stopPropagation());
 
     jsPlumb.fire("jsPlumbDemoLoaded", instance);
 
     initPanZoom();
+}
+
+async function connectionCreatedHandler(info, originalEvent) {
+    // if there's no event, then this has been triggered programatically
+    if (!originalEvent) {
+        return;
+    }
+
+    const name = prompt("Specify new relation name:");
+
+    if (!name || !name.trim()) {
+        instance.deleteConnection(connection);
+
+        return;
+    }
+
+    const connection = info.connection;
+
+    const targetNoteId = connection.target.id;
+    const sourceNoteId = connection.source.id;
+
+    const existing = relations.some(rel =>
+        rel.targetNoteId === targetNoteId
+        && rel.sourceNoteId === sourceNoteId
+        && rel.name === name);
+
+    if (existing) {
+        alert("Connection '" + name + "' between these notes already exists.");
+
+        instance.deleteConnection(connection);
+
+        return;
+    }
+
+    await server.put(`notes/${sourceNoteId}/relations/${name}/to/${targetNoteId}`);
+
+    relations.push({ targetNoteId, sourceNoteId, name });
+
+    connection.setType("uniDirectional");
+    connection.getOverlay("label").setLabel(name);
 }
 
 function relationContextMenuHandler(event, ui) {
@@ -347,12 +353,12 @@ function initNode(el) {
     instance.fire("jsPlumbDemoNodeAdded", el);
 }
 
-function newNode(id, title, x, y) {
+async function newNode(id, title, x, y) {
     const $noteBox = $("<div>")
         .addClass("note-box")
         .prop("id", id)
         .append($("<div>").addClass("handle"))
-        .append($("<span>").addClass("title").text(title))
+        .append($("<span>").addClass("title").html(await linkService.createNoteLink(id, title)))
         .append($("<div>").addClass("endpoint"))
         .css("left", x + "px")
         .css("top", y + "px");
@@ -379,7 +385,7 @@ $addChildNotesButton.click(async () => {
 
         mapData.notes.push(note);
 
-        newNode(note.id, note.title, curX, curY);
+        await newNode(note.id, note.title, curX, curY);
 
         if (curX > 1000) {
             curX = 100;
