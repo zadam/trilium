@@ -121,16 +121,12 @@ function initPanZoom() {
     });
 
     if (mapData.transform) {
-        console.log(mapData.transform);
-
-        pz.moveTo(mapData.transform.x, mapData.transform.y);
         pz.zoomTo(0, 0, mapData.transform.scale);
+        pz.moveTo(mapData.transform.x, mapData.transform.y);
     }
 
     pz.on('zoom', function (e) {
         mapData.transform = pz.getTransform();
-
-        console.log(mapData.transform);
 
         saveData();
     });
@@ -141,17 +137,8 @@ function initPanZoom() {
         saveData();
     }, true);
 
-    $zoomInButton.click(() => {
-        const transform = pz.getTransform();
-
-        pz.zoomTo(0, 0, 1.2);
-    });
-
-    $zoomOutButton.click(() => {
-        const transform = pz.getTransform();
-
-        pz.zoomTo(0, 0, 0.8);
-    });
+    $zoomInButton.click(() => pz.zoomTo(0, 0, 1.2));
+    $zoomOutButton.click(() => pz.zoomTo(0, 0, 0.8));
 }
 
 async function initJsPlumb () {
