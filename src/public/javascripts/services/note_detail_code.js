@@ -97,5 +97,10 @@ export default {
     show,
     getContent,
     focus,
-    onNoteChange
+    onNoteChange,
+    cleanup: () => {
+        if (codeEditor) {
+            codeEditor.setValue('');
+        }
+    }
 }

@@ -49,6 +49,18 @@ async function createNewNote(parentNoteId, noteData) {
 
     const parentNote = await repository.getNote(parentNoteId);
 
+    if (!noteData.type) {
+        if (parentNote.type === 'text' || parentNote.type === 'code') {
+            noteData.type = parentNote.type;
+            noteData.mime = parentNote.mime;
+        }
+        else {
+            // inheriting note type makes sense only for text and code
+            noteData.type = 'text';
+            noteData.mime = 'text/html';
+        }
+    }
+
     noteData.type = noteData.type || parentNote.type;
     noteData.mime = noteData.mime || parentNote.mime;
 

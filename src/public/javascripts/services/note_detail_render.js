@@ -35,5 +35,6 @@ export default {
     show: render,
     getContent: () => "",
     focus: () => null,
-    onNoteChange: () => null
+    onNoteChange: () => null,
+    cleanup: () => $noteDetailRenderContent.empty()
 }

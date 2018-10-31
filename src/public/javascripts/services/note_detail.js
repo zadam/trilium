@@ -187,6 +187,12 @@ async function loadNoteDetail(noteId) {
         noteTypeService.setNoteType(currentNote.type);
         noteTypeService.setNoteMime(currentNote.mime);
 
+        for (const componentType in components) {
+            if (componentType !== currentNote.type) {
+                components[componentType].cleanup();
+            }
+        }
+
         $noteDetailComponents.hide();
 
         const newSessionCreated = await handleProtectedSession();

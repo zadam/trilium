@@ -7,6 +7,7 @@ import treeService from "./tree.js";
 const $noteDetailRelationMap = $("#note-detail-relation-map");
 const $relationMapCanvas = $("#relation-map-canvas");
 const $addChildNotesButton = $("#relation-map-add-child-notes");
+const $createChildNote = $("#relation-map-create-child-note");
 const $zoomInButton = $("#relation-map-zoom-in");
 const $zoomOutButton = $("#relation-map-zoom-out");
 
@@ -64,7 +65,12 @@ async function show() {
 
     loadMapData();
 
-    jsPlumb.ready(initJsPlumb);
+    jsPlumb.ready(() => {
+        initJsPlumbInstance();
+
+        loadNotesAndRelations();
+    });
+
 }
 
 async function loadNotesAndRelations() {
@@ -142,7 +148,23 @@ function initPanZoom() {
     $zoomOutButton.click(() => pz.zoomTo(0, 0, 0.8));
 }
 
-async function initJsPlumb () {
+function cleanup() {
+    if (instance) {
+        // delete all endpoints and connections
+        instance.deleteEveryEndpoint();
+
+        // without this we still end up with note boxes remaining in the canvas
+        $relationMapCanvas.empty();
+    }
+}
+
+function initJsPlumbInstance () {
+    if (instance) {
+        cleanup();
+
+        return;
+    }
+
     instance = jsPlumb.getInstance({
         Endpoint: ["Dot", {radius: 2}],
         Connector: "StateMachine",
@@ -183,12 +205,8 @@ async function initJsPlumb () {
         $relationMapCanvas.contextmenuRelation("open", e, { connection: c });
     });
 
-    await loadNotesAndRelations();
-
     // so that canvas is not panned when clicking/dragging note box
     $relationMapCanvas.on('mousedown touchstart', '.note-box, .connection-label', e => e.stopPropagation());
-
-    jsPlumb.fire("jsPlumbDemoLoaded", instance);
 
     initPanZoom();
 }
@@ -372,9 +390,29 @@ $addChildNotesButton.click(async () => {
     await loadNotesAndRelations();
 });
 
+$createChildNote.click(async () => {
+    const title = prompt("Enter title of new note", "new note");
+
+    if (!title.trim()) {
+        return;
+    }
+
+    const {note} = await server.post(`notes/${noteDetailService.getCurrentNoteId()}/children`, {
+        title,
+        target: 'into'
+    });
+
+    const [x, y] = getFreePosition();
+
+    mapData.notes.push({ id: note.noteId, x, y });
+
+    await createNoteBox(id, title, x, y);
+});
+
 export default {
     show,
     getContent: () => JSON.stringify(mapData),
     focus: () => null,
-    onNoteChange: () => null
+    onNoteChange: () => null,
+    cleanup
 }

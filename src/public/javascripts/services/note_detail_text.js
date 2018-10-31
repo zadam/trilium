@@ -111,5 +111,10 @@ export default {
     getEditor,
     getContent,
     focus,
-    onNoteChange
+    onNoteChange,
+    cleanup: () => {
+        if (textEditor) {
+            textEditor.setData('');
+        }
+    }
 }

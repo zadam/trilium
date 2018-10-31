@@ -47,5 +47,6 @@ export default {
     show,
     getContent: () => null,
     focus: () => null,
-    onNoteChange: () => null
+    onNoteChange: () => null,
+    cleanup: () => null
 }
