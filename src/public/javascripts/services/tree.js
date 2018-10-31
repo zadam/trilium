@@ -24,6 +24,14 @@ const $notePathCount = $("#note-path-count");
 
 let startNotePath = null;
 
+// focused & not active node can happen during multiselection where the node is selected but not activated
+// (its content is not displayed in the detail)
+function getFocusedNode() {
+    const tree = $tree.fancytree("getTree");
+
+    return tree.getFocusNode();
+}
+
 // note that if you want to access data like noteId or isProtected, you need to go into "data" property
 function getCurrentNode() {
     return $tree.fancytree("getActiveNode");
@@ -615,6 +623,7 @@ export default {
     setProtected,
     expandToNote,
     activateNote,
+    getFocusedNode,
     getCurrentNode,
     getCurrentNotePath,
     setCurrentNotePathToHash,

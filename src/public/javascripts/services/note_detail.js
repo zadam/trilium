@@ -175,9 +175,11 @@ async function loadNoteDetail(noteId) {
         return;
     }
 
+    // only now that we're in sync with tree active node we will switch currentNote
     currentNote = loadedNote;
 
-    refreshAttributes(); // needs to happend after loading the note itself because it references current noteId
+    // needs to happend after loading the note itself because it references current noteId
+    refreshAttributes();
 
     if (isNewNoteCreated) {
         isNewNoteCreated = false;

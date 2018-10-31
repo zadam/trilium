@@ -12,9 +12,10 @@ const $zoomInButton = $("#relation-map-zoom-in");
 const $zoomOutButton = $("#relation-map-zoom-out");
 
 let mapData;
-let instance;
+let jsPlumbInstance;
 // outside of mapData because they are not persisted in the note content
 let relations;
+let pzInstance;
 
 const uniDirectionalOverlays = [
     [ "Arrow", {
@@ -95,7 +96,7 @@ async function loadNotesAndRelations() {
 
     mapData.notes = mapData.notes.filter(note => note.id in data.noteTitles);
 
-    instance.batch(async function () {
+    jsPlumbInstance.batch(async function () {
         for (const note of mapData.notes) {
             const title = data.noteTitles[note.id];
 
@@ -107,7 +108,7 @@ async function loadNotesAndRelations() {
                 continue;
             }
 
-            const connection = instance.connect({
+            const connection = jsPlumbInstance.connect({
                 source: relation.sourceNoteId,
                 target: relation.targetNoteId,
                 type: relation.type
@@ -121,37 +122,37 @@ async function loadNotesAndRelations() {
 }
 
 function initPanZoom() {
-    const pz = panzoom($relationMapCanvas[0], {
+    pzInstance = panzoom($relationMapCanvas[0], {
         maxZoom: 2,
         minZoom: 0.1,
         smoothScroll: false
     });
 
     if (mapData.transform) {
-        pz.zoomTo(0, 0, mapData.transform.scale);
-        pz.moveTo(mapData.transform.x, mapData.transform.y);
+        pzInstance.zoomTo(0, 0, mapData.transform.scale);
+        pzInstance.moveTo(mapData.transform.x, mapData.transform.y);
     }
 
-    pz.on('zoom', function (e) {
-        mapData.transform = pz.getTransform();
+    pzInstance.on('zoom', function (e) {
+        mapData.transform = pzInstance.getTransform();
 
         saveData();
     });
 
-    pz.on('panend', function (e) {
-        mapData.transform = pz.getTransform();
+    pzInstance.on('panend', function (e) {
+        mapData.transform = pzInstance.getTransform();
 
         saveData();
     }, true);
 
-    $zoomInButton.click(() => pz.zoomTo(0, 0, 1.2));
-    $zoomOutButton.click(() => pz.zoomTo(0, 0, 0.8));
+    $zoomInButton.click(() => pzInstance.zoomTo(0, 0, 1.2));
+    $zoomOutButton.click(() => pzInstance.zoomTo(0, 0, 0.8));
 }
 
 function cleanup() {
-    if (instance) {
+    if (jsPlumbInstance) {
         // delete all endpoints and connections
-        instance.deleteEveryEndpoint();
+        jsPlumbInstance.deleteEveryEndpoint();
 
         // without this we still end up with note boxes remaining in the canvas
         $relationMapCanvas.empty();
@@ -159,13 +160,13 @@ function cleanup() {
 }
 
 function initJsPlumbInstance () {
-    if (instance) {
+    if (jsPlumbInstance) {
         cleanup();
 
         return;
     }
 
-    instance = jsPlumb.getInstance({
+    jsPlumbInstance = jsPlumb.getInstance({
         Endpoint: ["Dot", {radius: 2}],
         Connector: "StateMachine",
         ConnectionOverlays: uniDirectionalOverlays,
@@ -173,11 +174,11 @@ function initJsPlumbInstance () {
         Container: "relation-map-canvas"
     });
 
-    instance.registerConnectionType("uniDirectional", { anchor:"Continuous", connector:"StateMachine", overlays: uniDirectionalOverlays });
+    jsPlumbInstance.registerConnectionType("uniDirectional", { anchor:"Continuous", connector:"StateMachine", overlays: uniDirectionalOverlays });
 
-    instance.registerConnectionType("biDirectional", { anchor:"Continuous", connector:"StateMachine", overlays: biDirectionalOverlays });
+    jsPlumbInstance.registerConnectionType("biDirectional", { anchor:"Continuous", connector:"StateMachine", overlays: biDirectionalOverlays });
 
-    instance.bind("connection", connectionCreatedHandler);
+    jsPlumbInstance.bind("connection", connectionCreatedHandler);
 
     $relationMapCanvas.contextmenu({
         delegate: ".note-box",
@@ -199,7 +200,7 @@ function initJsPlumbInstance () {
         select: relationContextMenuHandler
     });
 
-    instance.bind("contextmenu", function (c, e) {
+    jsPlumbInstance.bind("contextmenu", function (c, e) {
         e.preventDefault();
 
         $relationMapCanvas.contextmenuRelation("open", e, { connection: c });
@@ -221,7 +222,7 @@ async function connectionCreatedHandler(info, originalEvent) {
     const name = prompt("Specify new relation name:");
 
     if (!name || !name.trim()) {
-        instance.deleteConnection(connection);
+        jsPlumbInstance.deleteConnection(connection);
 
         return;
     }
@@ -237,7 +238,7 @@ async function connectionCreatedHandler(info, originalEvent) {
     if (relationExists) {
         alert("Connection '" + name + "' between these notes already exists.");
 
-        instance.deleteConnection(connection);
+        jsPlumbInstance.deleteConnection(connection);
 
         return;
     }
@@ -262,7 +263,7 @@ async function relationContextMenuHandler(event, ui) {
 
         await server.remove(`notes/${relation.sourceNoteId}/relations/${relation.name}/to/${relation.targetNoteId}`);
 
-        instance.deleteConnection(connection);
+        jsPlumbInstance.deleteConnection(connection);
 
         relations = relations.filter(relation => relation.attributeId !== connection.id);
     }
@@ -277,7 +278,7 @@ async function noteContextMenuHandler(event, ui) {
             return;
         }
 
-        instance.remove(noteId);
+        jsPlumbInstance.remove(noteId);
 
         mapData.notes = mapData.notes.filter(note => note.id !== noteId);
 
@@ -314,9 +315,9 @@ async function createNoteBox(id, title, x, y) {
         .css("left", x + "px")
         .css("top", y + "px");
 
-    instance.getContainer().appendChild($noteBox[0]);
+    jsPlumbInstance.getContainer().appendChild($noteBox[0]);
 
-    instance.draggable($noteBox[0], {
+    jsPlumbInstance.draggable($noteBox[0], {
         start:function(params) {},
         drag:function(params) {},
         stop:function(params) {
@@ -333,7 +334,7 @@ async function createNoteBox(id, title, x, y) {
         }
     });
 
-    instance.makeSource($noteBox[0], {
+    jsPlumbInstance.makeSource($noteBox[0], {
         filter: ".endpoint",
         anchor: "Continuous",
         connectorStyle: { stroke: "#000", strokeWidth: 1 },
@@ -343,7 +344,7 @@ async function createNoteBox(id, title, x, y) {
         }
     });
 
-    instance.makeTarget($noteBox[0], {
+    jsPlumbInstance.makeTarget($noteBox[0], {
         dropOptions: { hoverClass: "dragHover" },
         anchor: "Continuous",
         allowLoopback: true
@@ -385,10 +386,12 @@ $addChildNotesButton.click(async () => {
     saveData();
 
     // delete all endpoints and connections
-    instance.deleteEveryEndpoint();
+    jsPlumbInstance.deleteEveryEndpoint();
 
     await loadNotesAndRelations();
 });
+
+let clipboard = null;
 
 $createChildNote.click(async () => {
     const title = prompt("Enter title of new note", "new note");
@@ -410,8 +413,12 @@ $createChildNote.click(async () => {
 
     mapData.notes.push({ id: note.noteId, x, y });
 
-    await createNoteBox(note.noteId, title, x, y);
+    clipboard = { id: note.noteId, title };
+
+//    await createNoteBox(note.noteId, title, x, y);
 });
+
+
 
 export default {
     show,
