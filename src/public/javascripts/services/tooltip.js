@@ -96,7 +96,7 @@ async function renderTooltip(callback, note, attributes) {
     }
     // other types of notes don't have tooltip preview
 
-    if (!content.trim()) {
+    if (!$(content).text().trim()) {
         return;
     }
 
