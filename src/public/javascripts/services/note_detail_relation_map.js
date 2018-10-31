@@ -402,11 +402,15 @@ $createChildNote.click(async () => {
         target: 'into'
     });
 
+    // reloading tree so that the new note appears there
+    // no need to wait for it to finish
+    treeService.reload();
+
     const [x, y] = getFreePosition();
 
     mapData.notes.push({ id: note.noteId, x, y });
 
-    await createNoteBox(id, title, x, y);
+    await createNoteBox(note.noteId, title, x, y);
 });
 
 export default {

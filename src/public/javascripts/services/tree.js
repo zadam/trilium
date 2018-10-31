@@ -482,12 +482,12 @@ async function createNote(node, parentNoteId, target, isProtected, saveSelection
 
     await noteDetailService.saveNoteIfChanged();
 
+    noteDetailService.newNoteCreated();
+
     const noteEntity = new NoteShort(treeCache, note);
     const branchEntity = new Branch(treeCache, branch);
 
     treeCache.add(noteEntity, branchEntity);
-
-    noteDetailService.newNoteCreated();
 
     const newNode = {
         title: newNoteName,
