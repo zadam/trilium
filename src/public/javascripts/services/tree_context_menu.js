@@ -126,6 +126,13 @@ const contextMenuOptions = {
 
         // Activate node on right-click
         node.setActive();
+
+        // right click resets selection to just this node
+        // this is important when e.g. you right click on a note while having different note active
+        // and then click on delete - obviously you want to delete only that one right-clicked
+        node.setSelected(true);
+        treeService.clearSelectedNodes();
+
         // Disable tree keyboard handling
         ui.menu.prevKeyboard = node.tree.options.keyboard;
         node.tree.options.keyboard = false;
