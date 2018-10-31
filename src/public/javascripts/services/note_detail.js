@@ -164,7 +164,19 @@ async function handleProtectedSession() {
 }
 
 async function loadNoteDetail(noteId) {
-    currentNote = await loadNote(noteId);
+    const loadedNote = await loadNote(noteId);
+
+    // we will try to render the new note only if it's still the active one in the tree
+    // this is useful when user quickly switches notes (by e.g. holding down arrow) so that we don't
+    // try to render all those loaded notes one after each other. This only guarantees that correct note
+    // will be displayed independent of timing
+    const currentTreeNode = treeService.getCurrentNode();
+    if (currentTreeNode && currentTreeNode.data.noteId !== loadedNote.noteId) {
+        return;
+    }
+
+    currentNote = loadedNote;
+
     refreshAttributes(); // needs to happend after loading the note itself because it references current noteId
 
     if (isNewNoteCreated) {

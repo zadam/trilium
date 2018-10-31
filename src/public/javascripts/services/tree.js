@@ -332,13 +332,14 @@ function initFancyTree(tree) {
             }
         },
         activate: (event, data) => {
-            const node = data.node.data;
+            const node = data.node;
+            const noteId = node.data.noteId;
 
-            setCurrentNotePathToHash(data.node);
+            setCurrentNotePathToHash(node);
 
-            noteDetailService.switchToNote(node.noteId);
+            noteDetailService.switchToNote(noteId);
 
-            showPaths(node.noteId, data.node);
+            showPaths(noteId, node);
         },
         expand: (event, data) => setExpandedToServer(data.node.data.branchId, true),
         collapse: (event, data) => setExpandedToServer(data.node.data.branchId, false),
