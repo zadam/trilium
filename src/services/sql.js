@@ -117,7 +117,16 @@ async function getColumn(query, params = []) {
 }
 
 async function execute(query, params = []) {
-    return await wrap(async db => db.run(query, ...params));
+    const startTimestamp = Date.now();
+
+    const result = await wrap(async db => db.run(query, ...params));
+
+    const milliseconds = Date.now() - startTimestamp;
+    if (milliseconds >= 200) {
+        log.info(`Slow query took ${milliseconds}ms: ${query}, params=${params}`);
+    }
+
+    return result;
 }
 
 async function executeScript(query) {
