@@ -278,11 +278,11 @@ async function deleteNote(branch) {
 
     if (notDeletedBranches.length === 0) {
         note.isDeleted = true;
-        note.content = '';
+        // we don't reset content here, that's postponed and done later to give the user
+        // a chance to correct a mistake
         await note.save();
 
         for (const noteRevision of await note.getRevisions()) {
-            noteRevision.content = '';
             await noteRevision.save();
         }
 
@@ -295,14 +295,35 @@ async function deleteNote(branch) {
             await attribute.save();
         }
 
-        const targetAttributes = await repository.getEntities("SELECT * FROM attributes WHERE type = 'relation' AND isDeleted = 0 AND value = ?", [note.noteId]);
-
-        for (const attribute of targetAttributes) {
+        for (const attribute of await note.getTargetRelations()) {
             attribute.isDeleted = true;
             await attribute.save();
         }
     }
 }
+
+async function cleanupDeletedNotes() {
+    const cutoffDate = new Date(new Date().getTime() - 48 * 3600 * 1000);
+
+    const notesForCleanup = await repository.getEntities("SELECT * FROM notes WHERE isDeleted = 1 AND content != '' AND dateModified <= ?", [dateUtils.dateStr(cutoffDate)]);
+
+    for (const note of notesForCleanup) {
+        note.content = '';
+        await note.save();
+    }
+
+    const notesRevisionsForCleanup = await repository.getEntities("SELECT note_revisions.* FROM notes JOIN note_revisions USING(noteId) WHERE notes.isDeleted = 1 AND note_revisions.content != '' AND notes.dateModified <= ?", [dateUtils.dateStr(cutoffDate)]);
+
+    for (const noteRevision of notesRevisionsForCleanup) {
+        noteRevision.content = '';
+        await noteRevision.save();
+    }
+}
+
+// first cleanup kickoff 5 minutes after startup
+setTimeout(cleanupDeletedNotes, 5 * 60 * 1000);
+
+setInterval(cleanupDeletedNotes, 4 * 3600 * 1000);
 
 module.exports = {
     createNewNote,

@@ -105,6 +105,13 @@ class Note extends Entity {
     }
 
     /**
+     * @returns {Promise<Attribute[]>} relations targetting this specific note
+     */
+    async getTargetRelations() {
+        return await repository.getEntities("SELECT * FROM attributes WHERE type = 'relation' AND isDeleted = 0 AND value = ?", [this.noteId]);
+    }
+
+    /**
      * @param {string} [name] - attribute name to filter
      * @returns {Promise<Attribute[]>} all note's attributes, including inherited ones
      */
