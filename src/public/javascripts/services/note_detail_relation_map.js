@@ -69,6 +69,8 @@ async function show() {
     jsPlumb.ready(() => {
         initJsPlumbInstance();
 
+        initPanZoom();
+
         loadNotesAndRelations();
     });
 
@@ -121,11 +123,45 @@ async function loadNotesAndRelations() {
     });
 }
 
+function getMousePos(canvas, evt) {
+    var rect = canvas.getBoundingClientRect();
+
+    console.log(rect);
+    console.log(canvas);
+
+
+    console.log(`(${evt.clientX} - ${rect.left}) / (${rect.right} - ${rect.left}) * ${canvas.width}`);
+
+    return {
+        x: (evt.clientX - rect.left) / (rect.right - rect.left) * canvas.width,
+        y: (evt.clientY - rect.top) / (rect.bottom - rect.top) * canvas.height
+    };
+}
+
 function initPanZoom() {
+    if (pzInstance) {
+        return;
+    }
+
     pzInstance = panzoom($relationMapCanvas[0], {
         maxZoom: 2,
         minZoom: 0.1,
-        smoothScroll: false
+        smoothScroll: false,
+        onMouseDown: function(event) {
+            if (clipboard) {
+                const {x, y} = getMousePos($relationMapCanvas[0].getContext("2d"), event);
+
+                console.log(x, y);
+
+                createNoteBox(clipboard.id, clipboard.title, x, y);
+
+                mapData.notes.push({ id: clipboard.id, x, y });
+
+                clipboard = null;
+            }
+
+            return true;
+        }
     });
 
     if (mapData.transform) {
@@ -156,6 +192,11 @@ function cleanup() {
 
         // without this we still end up with note boxes remaining in the canvas
         $relationMapCanvas.empty();
+    }
+
+    if (pzInstance) {
+        pzInstance.dispose();
+        pzInstance = null;
     }
 }
 
@@ -208,8 +249,6 @@ function initJsPlumbInstance () {
 
     // so that canvas is not panned when clicking/dragging note box
     $relationMapCanvas.on('mousedown touchstart', '.note-box, .connection-label', e => e.stopPropagation());
-
-    initPanZoom();
 }
 
 async function connectionCreatedHandler(info, originalEvent) {
@@ -409,16 +448,8 @@ $createChildNote.click(async () => {
     // no need to wait for it to finish
     treeService.reload();
 
-    const [x, y] = getFreePosition();
-
-    mapData.notes.push({ id: note.noteId, x, y });
-
     clipboard = { id: note.noteId, title };
-
-//    await createNoteBox(note.noteId, title, x, y);
 });
-
-
 
 export default {
     show,
