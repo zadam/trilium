@@ -2,6 +2,7 @@
 
 const noteCacheService = require('../../services/note_cache');
 const repository = require('../../services/repository');
+const log = require('../../services/log');
 
 async function getAutocomplete(req) {
     const query = req.query.query;
@@ -9,11 +10,19 @@ async function getAutocomplete(req) {
 
     let results;
 
+    const timestampStarted = Date.now();
+
     if (query.trim().length === 0) {
         results = await getRecentNotes(currentNoteId);
     }
     else {
         results = noteCacheService.findNotes(query);
+    }
+
+    const msTaken = Date.now() - timestampStarted;
+
+    if (msTaken >= 100) {
+        log.info(`Slow autocomplete took ${msTaken}ms`);
     }
 
     return results.map(res => {
