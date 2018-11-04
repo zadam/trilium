@@ -2,6 +2,7 @@
 
 const repository = require('../../services/repository');
 const log = require('../../services/log');
+const enex = require('../../services/enex');
 const attributeService = require('../../services/attributes');
 const noteService = require('../../services/notes');
 const Branch = require('../../entities/branch');
@@ -28,13 +29,16 @@ async function importToBranch(req) {
     const extension = path.extname(file.originalname).toLowerCase();
 
     if (extension === '.tar') {
-        return await importTar(file, parentNoteId);
+        return await importTar(file, parentNote);
     }
     else if (extension === '.opml') {
-        return await importOpml(file, parentNoteId);
+        return await importOpml(file, parentNote);
     }
     else if (extension === '.md') {
-        return await importMarkdown(file, parentNoteId);
+        return await importMarkdown(file, parentNote);
+    }
+    else if (extension === '.enex') {
+        return await enex.importEnex(file, parentNote);
     }
     else {
         return [400, `Unrecognized extension ${extension}, must be .tar or .opml`];
@@ -59,7 +63,7 @@ async function importOutline(outline, parentNoteId) {
     return note;
 }
 
-async function importOpml(file, parentNoteId) {
+async function importOpml(file, parentNote) {
     const xml = await new Promise(function(resolve, reject)
     {
         parseString(file.buffer, function (err, result) {
@@ -80,7 +84,7 @@ async function importOpml(file, parentNoteId) {
     let returnNote = null;
 
     for (const outline of outlines) {
-        const note = await importOutline(outline, parentNoteId);
+        const note = await importOutline(outline, parentNote.noteId);
 
         // first created note will be activated after import
         returnNote = returnNote || note;
@@ -89,7 +93,7 @@ async function importOpml(file, parentNoteId) {
     return returnNote;
 }
 
-async function importTar(file, parentNoteId) {
+async function importTar(file, parentNote) {
     const files = await parseImportFile(file);
 
     const ctx = {
@@ -100,7 +104,7 @@ async function importTar(file, parentNoteId) {
         writer: new commonmark.HtmlRenderer()
     };
 
-    const note = await importNotes(ctx, files, parentNoteId);
+    const note = await importNotes(ctx, files, parentNote.noteId);
 
     // we save attributes after importing notes because we need to have all the relation
     // targets already existing
@@ -290,7 +294,7 @@ async function importNotes(ctx, files, parentNoteId) {
     return returnNote;
 }
 
-async function importMarkdown(file, parentNoteId) {
+async function importMarkdown(file, parentNote) {
     const markdownContent = file.buffer.toString("UTF-8");
 
     const reader = new commonmark.Parser();
@@ -301,7 +305,7 @@ async function importMarkdown(file, parentNoteId) {
 
     const title = file.originalname.substr(0, file.originalname.length - 3); // strip .md extension
 
-    const {note} = await noteService.createNote(parentNoteId, title, htmlContent, {
+    const {note} = await noteService.createNote(parentNote.noteId, title, htmlContent, {
         type: 'text',
         mime: 'text/html'
     });

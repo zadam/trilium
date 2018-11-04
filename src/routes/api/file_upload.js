@@ -48,7 +48,7 @@ async function downloadFile(req, res) {
     }
 
     const originalFileName = await note.getLabel('originalFileName');
-    const fileName = originalFileName.value || note.title;
+    const fileName = originalFileName ? originalFileName.value : note.title;
 
     res.setHeader('Content-Disposition', 'file; filename="' + fileName + '"');
     res.setHeader('Content-Type', note.mime);

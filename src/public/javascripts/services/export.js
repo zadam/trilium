@@ -38,7 +38,11 @@ $("#import-upload").change(async function() {
         .done(async note => {
             await treeService.reload();
 
-            await treeService.activateNote(note.noteId);
+            if (note) {
+                const node = await treeService.activateNote(note.noteId);
+
+                node.setExpanded(true);
+            }
         });
 });
 

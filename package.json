@@ -56,6 +56,7 @@
     "request-promise": "4.2.2",
     "rimraf": "2.6.2",
     "sanitize-filename": "1.6.1",
+    "sax": "^1.2.4",
     "serve-favicon": "2.5.0",
     "session-file-store": "1.2.0",
     "simple-node-logger": "0.93.40",

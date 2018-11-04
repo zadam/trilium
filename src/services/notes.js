@@ -114,7 +114,8 @@ async function createNote(parentNoteId, title, content = "", extraOptions = {}) 
         target: 'into',
         isProtected: !!extraOptions.isProtected,
         type: extraOptions.type,
-        mime: extraOptions.mime
+        mime: extraOptions.mime,
+        dateCreated: extraOptions.dateCreated
     };
 
     if (extraOptions.json && !noteData.type) {

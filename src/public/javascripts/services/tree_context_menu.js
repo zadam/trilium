@@ -99,7 +99,7 @@ const contextMenuOptions = {
             {title: "OPML", cmd: "exportSubtreeToOpml"},
             {title: "Markdown", cmd: "exportSubtreeToMarkdown"}
         ]},
-        {title: "Import into note (tar, opml, md)", cmd: "importIntoNote", uiIcon: "ui-icon-arrowthick-1-sw"},
+        {title: "Import into note (tar, opml, md, enex)", cmd: "importIntoNote", uiIcon: "ui-icon-arrowthick-1-sw"},
         {title: "----"},
         {title: "Collapse subtree <kbd>Alt+-</kbd>", cmd: "collapseSubtree", uiIcon: "ui-icon-minus"},
         {title: "Force note sync", cmd: "forceNoteSync", uiIcon: "ui-icon-refresh"},
