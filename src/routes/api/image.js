@@ -1,6 +1,6 @@
 "use strict";
 
-const image = require('../../services/image');
+const imageService = require('../../services/image');
 const repository = require('../../services/repository');
 const RESOURCE_DIR = require('../../services/resource_dir').RESOURCE_DIR;
 const fs = require('fs');
@@ -35,11 +35,11 @@ async function uploadImage(req) {
         return [400, "Unknown image type: " + file.mimetype];
     }
 
-    const {fileName, imageId} = await image.saveImage(file, noteId);
+    const {url} = await imageService.saveImage(file.buffer, file.originalname, noteId);
 
     return {
         uploaded: true,
-        url: `/api/images/${imageId}/${fileName}`
+        url
     };
 }
 

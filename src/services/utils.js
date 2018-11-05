@@ -3,6 +3,7 @@
 const crypto = require('crypto');
 const randtoken = require('rand-token').generator({source: 'crypto'});
 const unescape = require('unescape');
+const escape = require('escape-html');
 
 function newEntityId() {
     return randomString(12);
@@ -14,6 +15,10 @@ function randomString(length) {
 
 function randomSecureToken(bytes = 32) {
     return crypto.randomBytes(bytes).toString('base64');
+}
+
+function md5(content) {
+    return crypto.createHash('md5').update(content).digest('hex');
 }
 
 function toBase64(plainText) {
@@ -57,6 +62,10 @@ async function stopWatch(what, func) {
     console.log(`${what} took ${tookMs}ms`);
 
     return ret;
+}
+
+function escapeHtml(str) {
+    return escape(str);
 }
 
 function unescapeHtml(str) {
@@ -108,6 +117,7 @@ function union(a, b) {
 module.exports = {
     randomSecureToken,
     randomString,
+    md5,
     newEntityId,
     toBase64,
     fromBase64,
@@ -117,6 +127,7 @@ module.exports = {
     isEmptyOrWhitespace,
     sanitizeSql,
     stopWatch,
+    escapeHtml,
     unescapeHtml,
     toObject,
     stripTags,

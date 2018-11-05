@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE en-export SYSTEM "http://xml.evernote.com/pub/evernote-export2.dtd">
-<en-export export-date="20181101T194259Z" application="Evernote/Windows" version="6.x">
+<en-export export-date="20181105T095144Z" application="Evernote/Windows" version="6.x">
 <note><title>Formatted text</title><content><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">
 
@@ -5485,4 +5485,10 @@ OTg3NjMyOSwyNzkxMTA0MTYwLDEwNTc1NjM5NDksMzI1NTM2MzIzMSwzMDc1MzY3MjE4LDM0NjM5
 NjMyMjcsMTQ2OTA0Njc1NSw5ODU4ODc0NjJdLEU9WzEzMzI4OTk5NDQsMTcwMDg4NDAzNCwxNzAx
 MzQzMDg0LDE2ODQzNzAwMDMsMTY2ODQ0NjUzMiwKMTg2OTk2Mzg5Ml07ay5lbmNvZGVCYXNlNjQ9
 eDtrLmRlY29kZUJhc2U2ND1CO3JldHVybiBrfSk7Cg==
-</data><mime>application/octet-stream</mime><resource-attributes><source-url>file://Z:\home\adam\Downloads\bcrypt.min.js</source-url><file-name>bcrypt.min.js</file-name><attachment>true</attachment></resource-attributes></resource></note></en-export>
+</data><mime>application/octet-stream</mime><resource-attributes><source-url>file://Z:\home\adam\Downloads\bcrypt.min.js</source-url><file-name>bcrypt.min.js</file-name><attachment>true</attachment></resource-attributes></resource></note><note><title>Internal link to another note</title><content><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">
+
+<en-note><div>Link to another note:&nbsp;<a href="evernote:///view/2223880/s20/76fc5a06-19de-4f03-ad53-1816f307eb5c/76fc5a06-19de-4f03-ad53-1816f307eb5c/" style="color: #69aa35;">Formatted text</a></div></en-note>]]></content><created>20181105T094707Z</created><updated>20181105T095117Z</updated><note-attributes><author>Adam Zivner</author><source>desktop.win</source><source-application>evernote.win32</source-application></note-attributes></note><note><title>Table</title><content><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">
+
+<en-note><div><div><br/></div><table style="border-collapse: collapse; min-width: 100%;"><colgroup><col style="width: 130px;"/><col style="width: 130px;"/><col style="width: 130px;"/></colgroup><tbody><tr><td style="width: 130px; padding: 8px; border: 1px solid rgb(204, 204, 204);"><div><b>header1</b></div></td><td style="width: 130px; padding: 8px; border: 1px solid rgb(204, 204, 204);"><div><b>header2</b></div></td><td style="width: 130px; padding: 8px; border: 1px solid rgb(204, 204, 204);"><div><b>header3</b></div></td></tr><tr><td style="width: 130px; padding: 8px; border: 1px solid rgb(204, 204, 204);"><div>abc</div></td><td style="width: 130px; padding: 8px; border: 1px solid rgb(204, 204, 204);"><div>def</div></td><td style="width: 130px; padding: 8px; border: 1px solid rgb(204, 204, 204);"><div>ghi</div></td></tr><tr><td style="width: 130px; padding: 8px; border: 1px solid rgb(204, 204, 204);"><div>123</div></td><td style="width: 130px; padding: 8px; border: 1px solid rgb(204, 204, 204);"><div>456</div></td><td style="width: 130px; padding: 8px; border: 1px solid rgb(204, 204, 204);"><div>789</div></td></tr></tbody></table><div><br/></div></div><div><br/></div></en-note>]]></content><created>20181105T094826Z</created><updated>20181105T094949Z</updated><note-attributes><author>Adam Zivner</author><source>desktop.win</source><source-application>evernote.win32</source-application></note-attributes></note></en-export>

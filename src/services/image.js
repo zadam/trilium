@@ -11,14 +11,14 @@ const jimp = require('jimp');
 const imageType = require('image-type');
 const sanitizeFilename = require('sanitize-filename');
 
-async function saveImage(file, noteId) {
-    const resizedImage = await resize(file.buffer);
+async function saveImage(buffer, originalName, noteId) {
+    const resizedImage = await resize(buffer);
     const optimizedImage = await optimize(resizedImage);
 
     const imageFormat = imageType(optimizedImage);
 
-    const fileNameWithouExtension = file.originalname.replace(/\.[^/.]+$/, "");
-    const fileName = sanitizeFilename(fileNameWithouExtension + "." + imageFormat.ext);
+    const fileNameWithoutExtension = originalName.replace(/\.[^/.]+$/, "");
+    const fileName = sanitizeFilename(fileNameWithoutExtension + "." + imageFormat.ext);
 
     const image = await new Image({
         format: imageFormat.ext,
@@ -32,7 +32,11 @@ async function saveImage(file, noteId) {
         imageId: image.imageId
     }).save();
 
-    return {fileName, imageId: image.imageId};
+    return {
+        fileName,
+        imageId: image.imageId,
+        url: `/api/images/${image.imageId}/${fileName}`
+    };
 }
 
 const MAX_SIZE = 1000;

@@ -4,6 +4,7 @@ const xml2js = require('xml2js');
 const log = require("./log");
 const utils = require("./utils");
 const noteService = require("./notes");
+const imageService = require("./image");
 
 // date format is e.g. 20181121T193703Z
 function parseDate(text) {
@@ -205,20 +206,50 @@ async function importEnex(file, parentNote) {
         // following is workaround for this issue: https://github.com/Leonidas-from-XIV/node-xml2js/issues/484
         content = extractContent(xmlObject['en-note']);
 
-        const resp = await noteService.createNote(rootNote.noteId, title, content, {
+        const noteEntity = (await noteService.createNote(rootNote.noteId, title, content, {
             attributes,
             dateCreated,
             type: 'text',
             mime: 'text/html'
-        });
+        })).note;
 
         for (const resource of resources) {
-            await noteService.createNote(resp.note.noteId, resource.title, resource.content, {
-                attributes: resource.attributes,
-                type: 'file',
-                mime: resource.mime
-            });
+            const hash = utils.md5(resource.content);
+
+            const mediaRegex = new RegExp(`<en-media hash="${hash}"[^>]*>`, 'g');
+
+            if (resource.mime.startsWith("image/")) {
+                const originalName = "image." + resource.mime.substr(6);
+
+                const { url } = await imageService.saveImage(resource.content, originalName, noteEntity.noteId);
+
+                const imageLink = `<img src="${url}">`;
+
+                noteEntity.content = noteEntity.content.replace(mediaRegex, imageLink);
+
+                if (!note.content.includes(imageLink)) {
+                    // if there wasn't any match for the reference, we'll add the image anyway
+                    // otherwise image would be removed since no note would include it
+                    note.content += imageLink;
+                }
+            }
+            else {
+                const resourceNote = (await noteService.createNote(noteEntity.noteId, resource.title, resource.content, {
+                    attributes: resource.attributes,
+                    type: 'file',
+                    mime: resource.mime
+                })).note;
+
+                const resourceLink = `<a href="#root/${resourceNote.noteId}">${utils.escapeHtml(resource.title)}</a>`;
+
+                noteEntity.content = noteEntity.content.replace(mediaRegex, resourceLink);
+            }
         }
+
+        // save updated content with links to files/images
+        await noteEntity.save();
+
+        console.log(noteEntity.content);
     }
 
     saxStream.on("closetag", async tag => {
