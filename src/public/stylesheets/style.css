@@ -39,6 +39,11 @@ body {
     padding: 4px;
 }
 
+#header button {
+    padding: 1px 5px 1px 5px;
+    font-size: small;
+}
+
 #left-pane {
     grid-area: left-pane;
     display: flex;
@@ -194,7 +199,7 @@ span.fancytree-active:not(.fancytree-focused) .fancytree-title {
     font-weight: bold;
 }
 
-#header .btn-xs {
+#header .btn-sm {
     margin-bottom: 2px;
     margin-right: 8px;
 }
@@ -303,7 +308,7 @@ div.ui-tooltip {
     cursor: pointer;
 }
 
-.dropdown-menu li:not(.selected) .check {
+.dropdown-menu a:not(.selected) .check {
     visibility: hidden;
 }
 

@@ -41,7 +41,7 @@ async function showDialog() {
 
     $dialog.dialog({
         modal: true,
-        width: 700
+        width: 800
     });
 
     $autoComplete.val('').focus();

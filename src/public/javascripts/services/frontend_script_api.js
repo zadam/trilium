@@ -64,7 +64,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null) {
             .addClass("ui-icon ui-icon-" + opts.icon);
 
         const button = $('<button>')
-            .addClass("btn btn-xs")
+            .addClass("btn btn-sm")
             .click(opts.action)
             .append(icon)
             .append($("<span>").text(opts.title));

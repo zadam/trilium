@@ -22,7 +22,7 @@ async function showDialog() {
 
     $dialog.dialog({
         modal: true,
-        width: 900
+        width: 1000
     });
 
     $tabs.tabs();

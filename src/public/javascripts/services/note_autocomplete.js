@@ -24,9 +24,10 @@ async function autocompleteSource(request, response) {
 
 async function initNoteAutocomplete($el) {
     if (!$el.hasClass("ui-autocomplete-input")) {
-        const $showRecentNotesButton = $("<span>")
-            .addClass("input-group-addon show-recent-notes-button")
-            .prop("title", "Show recent notes");
+        const $showRecentNotesButton = $("<div>").addClass("input-group-append").append(
+            $("<span>")
+                .addClass("input-group-text show-recent-notes-button")
+                .prop("title", "Show recent notes"));
 
         $el.after($showRecentNotesButton);
 

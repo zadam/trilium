@@ -18,8 +18,8 @@
         </div>
 
         <div style="flex-grow: 100; display: flex;">
-          <button class="btn btn-xs" id="jump-to-note-dialog-button" title="CTRL+J">Jump to note</button>
-          <button class="btn btn-xs" id="recent-changes-button">Recent changes</button>
+          <button class="btn btn-sm" id="jump-to-note-dialog-button" title="CTRL+J">Jump to note</button>
+          <button class="btn btn-sm" id="recent-changes-button">Recent changes</button>
           <div>
             <span style="font-size: smaller">Protected session:</span>
 
@@ -34,17 +34,17 @@
         </div>
 
         <div>
-          <button class="btn btn-xs" id="sync-now-button" title="Number of outstanding changes to be pushed to server">
+          <button class="btn btn-sm" id="sync-now-button" title="Number of outstanding changes to be pushed to server">
             <span class="ui-icon ui-icon-refresh"></span>
 
             Sync now (<span id="outstanding-syncs-count">0</span>)
           </button>
 
-          <button class="btn btn-xs" id="options-button">
+          <button class="btn btn-sm" id="options-button">
             <span class="ui-icon ui-icon-gear"></span> Options</button>
 
           <form action="logout" id="logout-button" method="POST" style="display: inline;">
-            <input type="submit" class="btn btn-xs" value="Logout">
+              <button type="submit" class="btn btn-sm">Logout</button>
           </form>
         </div>
       </div>
@@ -141,36 +141,36 @@
             &nbsp; &nbsp;
 
             <div class="dropdown" id="note-type" data-bind="visible: type() != 'search'">
-              <button data-bind="disable: isDisabled()" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-sm">
+              <button data-bind="disable: isDisabled()" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-sm dropdown-toggle">
                 Type: <span data-bind="text: typeString()"></span>
                 <span class="caret"></span>
               </button>
-              <ul id="note-type-dropdown" class="dropdown-menu dropdown-menu-right">
-                <li data-bind="click: selectText, css: { selected: type() == 'text' }"><span class="check">&check;</span> <strong>Text</strong></li>
-                <li role="separator" class="divider"></li>
-                <li data-bind="click: selectRelationMap, css: { selected: type() == 'relation-map' && mime() == '' }"><span class="check">&check;</span> <strong>Relation Map</strong></li>
-                <li role="separator" class="divider"></li>
-                <li data-bind="click: selectRender, css: { selected: type() == 'render' && mime() == '' }"><span class="check">&check;</span> <strong>Render HTML note</strong></li>
-                <li role="separator" class="divider"></li>
-                <li data-bind="click: selectCode, css: { selected: type() == 'code' && mime() == '' }"><span class="check">&check;</span> <strong>Code</strong></li>
+              <div id="note-type-dropdown" class="dropdown-menu dropdown-menu-right">
+                <a class="dropdown-item" data-bind="click: selectText, css: { selected: type() == 'text' }"><span class="check">&check;</span> <strong>Text</strong></a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" data-bind="click: selectRelationMap, css: { selected: type() == 'relation-map' && mime() == '' }"><span class="check">&check;</span> <strong>Relation Map</strong></a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" data-bind="click: selectRender, css: { selected: type() == 'render' && mime() == '' }"><span class="check">&check;</span> <strong>Render HTML note</strong></a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" data-bind="click: selectCode, css: { selected: type() == 'code' && mime() == '' }"><span class="check">&check;</span> <strong>Code</strong></a>
                 <!-- ko foreach: codeMimeTypes -->
-                <li data-bind="click: $parent.selectCodeMime, css: { selected: $parent.type() == 'code' && $parent.mime() == mime }"><span class="check">&check;</span> <span data-bind="text: title"></span></li>
+                <a class="dropdown-item" data-bind="click: $parent.selectCodeMime, css: { selected: $parent.type() == 'code' && $parent.mime() == mime }"><span class="check">&check;</span> <span data-bind="text: title"></span></a>
                 <!-- /ko -->
-              </ul>
+              </div>
             </div>
 
             <div class="dropdown" id="note-actions">
-              <button type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-sm">
+              <button type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-sm dropdown-toggle">
                 Note actions
                 <span class="caret"></span>
               </button>
-              <ul class="dropdown-menu dropdown-menu-right">
-                <li><a id="show-note-revisions-button">Revisions</a></li>
-                <li><a class="show-attributes-button"><kbd>Alt+A</kbd> Attributes</a></li>
-                <li><a id="show-source-button">HTML source</a></li>
-                <li><a id="upload-file-button">Upload file</a></li>
-                <li><a id="export-note-to-markdown-button">Export as markdown</a></li>
-              </ul>
+              <div class="dropdown-menu dropdown-menu-right">
+                <a class="dropdown-item" id="show-note-revisions-button">Revisions</a>
+                <a class="dropdown-item show-attributes-button"><kbd>Alt+A</kbd> Attributes</a>
+                <a class="dropdown-item" id="show-source-button">HTML source</a>
+                <a class="dropdown-item" id="upload-file-button">Upload file</a>
+                <a class="dropdown-item" id="export-note-to-markdown-button">Export as markdown</a>
+              </div>
             </div>
           </div>
         </div>
@@ -318,9 +318,11 @@
             <label for="note-autocomplete">Note</label>
 
             <div class="input-group">
-              <input id="note-autocomplete" class="form-control" placeholder="search for note by its name" style="width: 100%;">
+              <input id="note-autocomplete" class="form-control" placeholder="search for note by its name">
 
-              <span class="input-group-addon show-recent-notes-button" title="Show recent notes"></span>
+              <div class="input-group-append">
+                <span class="input-group-text show-recent-notes-button" title="Show recent notes"></span>
+              </div>
             </div>
           </div>
 
@@ -348,9 +350,11 @@
         <div class="form-group">
           <label for="jump-to-note-autocomplete">Note</label>
           <div class="input-group">
-            <input id="jump-to-note-autocomplete" class="form-control" placeholder="search for note by its name" style="width: 100%;">
+            <input id="jump-to-note-autocomplete" class="form-control" placeholder="search for note by its name">
 
-            <span class="input-group-addon show-recent-notes-button" title="Show recent notes"></span>
+            <div class="input-group-append">
+              <span class="input-group-text show-recent-notes-button" title="Show recent notes"></span>
+            </div>
           </div>
         </div>
 
@@ -777,8 +781,8 @@
     <script src="/libraries/jquery.min.js"></script>
 
     <!-- bootstrap needs to be included before jQuery UI, otherwise close icon in the dialog will be missing -->
-    <link href="/libraries/bootstrap/css/bootstrap.css" rel="stylesheet">
-    <script src="/libraries/bootstrap/js/bootstrap.js"></script>
+    <link href="/libraries/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <script src="/libraries/bootstrap/js/bootstrap.bundle.min.js"></script>
 
     <link href="/libraries/jqueryui/jquery-ui.min.css" rel="stylesheet">
     <script src="/libraries/jqueryui/jquery-ui.min.js"></script>

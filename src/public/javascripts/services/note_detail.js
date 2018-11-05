@@ -361,7 +361,7 @@ async function showAttributes() {
                     dateFormat: "yy-mm-dd"
                 });
 
-                const $todayButton = $("<button>").addClass("btn btn-small").text("Today").click(() => {
+                const $todayButton = $("<button>").addClass("btn btn-sm").text("Today").click(() => {
                     $input.val(utils.formatDateISO(new Date()));
                     $input.trigger("change");
                 });
@@ -371,7 +371,7 @@ async function showAttributes() {
             else if (definition.labelType === 'url') {
                 $input.prop("placeholder", "http://website...");
 
-                const $openButton = $("<button>").addClass("btn btn-small").text("Open").click(() => {
+                const $openButton = $("<button>").addClass("btn btn-sm").text("Open").click(() => {
                     window.open($input.val(), '_blank');
                 });
 
@@ -391,7 +391,7 @@ async function showAttributes() {
 
             // ideally we'd use link instead of button which would allow tooltip preview, but
             // we can't guarantee updating the link in the a element
-            const $openButton = $("<button>").addClass("btn btn-small").text("Open").click(() => {
+            const $openButton = $("<button>").addClass("btn btn-sm").text("Open").click(() => {
                 const notePath = linkService.getNotePathFromLabel($input.val());
 
                 treeService.activateNote(notePath);

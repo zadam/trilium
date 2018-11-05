@@ -248,8 +248,6 @@ async function importEnex(file, parentNote) {
 
         // save updated content with links to files/images
         await noteEntity.save();
-
-        console.log(noteEntity.content);
     }
 
     saxStream.on("closetag", async tag => {
