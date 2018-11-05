@@ -317,7 +317,7 @@ function initFancyTree(tree) {
     $tree.fancytree({
         autoScroll: true,
         keyboard: false, // we takover keyboard handling in the hotkeys plugin
-        extensions: ["hotkeys", "filter", "dnd", "clones"],
+        extensions: ["hotkeys", "filter", "dnd5", "clones"],
         source: tree,
         scrollParent: $tree,
         minExpandLevel: 2, // root can't be collapsed
@@ -367,7 +367,7 @@ function initFancyTree(tree) {
             nodata: true,      // Display a 'no data' status node if result is empty
             mode: "hide"       // Grayout unmatched nodes (pass "hide" to remove unmatched node instead)
         },
-        dnd: dragAndDropSetup,
+        dnd5: dragAndDropSetup,
         lazyLoad: function(event, data) {
             const noteId = data.node.data.noteId;
 
