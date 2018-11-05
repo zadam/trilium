@@ -352,14 +352,7 @@ async function showAttributes() {
                 }
             }
             else if (definition.labelType === 'date') {
-                $input.prop("type", "text");
-
-                $input.datepicker({
-                    changeMonth: true,
-                    changeYear: true,
-                    yearRange: "c-200:c+10",
-                    dateFormat: "yy-mm-dd"
-                });
+                $input.prop("type", "date");
 
                 const $todayButton = $("<button>").addClass("btn btn-sm").text("Today").click(() => {
                     $input.val(utils.formatDateISO(new Date()));
