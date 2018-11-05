@@ -22,6 +22,16 @@ async function importEnex(file, parentNote) {
     const xmlBuilder = new xml2js.Builder({ headless: true });
     const parser = new xml2js.Parser({ explicitArray: true });
 
+    const rootNoteTitle = file.originalname.toLowerCase().endsWith(".enex")
+        ? file.originalname.substr(0, file.originalname.length - 5)
+        : file.originalname;
+
+    // root note is new note into all ENEX/notebook's notes will be imported
+    const rootNote = (await noteService.createNote(parentNote.noteId, rootNoteTitle, "", {
+        type: 'text',
+        mime: 'text/html'
+    })).note;
+
     // we're persisting notes as we parse the document, but these are run asynchronously and may not be finished
     // when we finish parsing. We use this to be sure that all saving has been finished before returning successfully.
     const saveNotePromises = [];
@@ -195,7 +205,7 @@ async function importEnex(file, parentNote) {
         // following is workaround for this issue: https://github.com/Leonidas-from-XIV/node-xml2js/issues/484
         content = extractContent(xmlObject['en-note']);
 
-        const resp = await noteService.createNote(parentNote.noteId, title, content, {
+        const resp = await noteService.createNote(rootNote.noteId, title, content, {
             attributes,
             dateCreated,
             type: 'text',
@@ -234,8 +244,7 @@ async function importEnex(file, parentNote) {
     return new Promise((resolve, reject) =>
     {
         // resolve only when we parse the whole document AND saving of all notes have been finished
-        // we resolve to parentNote because there's no single note to pick
-        saxStream.on("end", () => { Promise.all(saveNotePromises).then(() => resolve(parentNote)) });
+        saxStream.on("end", () => { Promise.all(saveNotePromises).then(() => resolve(rootNote)) });
 
         const bufferStream = new stream.PassThrough();
         bufferStream.end(file.buffer);

@@ -21,7 +21,7 @@ See other pictures in [screenshot tour](https://github.com/zadam/trilium/wiki/Sc
 * [Scripting](https://github.com/zadam/trilium/wiki/Scripts) - see [Advanced showcases](https://github.com/zadam/trilium/wiki/Advanced-showcases)
 * Scales well in both usability and performance upwards of 100 000 notes
 * [Night theme](https://github.com/zadam/trilium/wiki/Themes)
-* [Markdown import & export](https://github.com/zadam/trilium/wiki/Markdown)
+* [Evernote](https://github.com/zadam/trilium/wiki/Evernote-import) and [Markdown import & export](https://github.com/zadam/trilium/wiki/Markdown)
 
 ## Builds
 
