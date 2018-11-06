@@ -141,7 +141,8 @@ async function getContextMenuItems(event) {
 }
 
 function selectContextMenuItem(event, cmd) {
-    const node = $.ui.fancytree.getNode(event);
+    // context menu is always triggered on current node
+    const node = treeService.getCurrentNode();
 
     if (cmd === "insertNoteHere") {
         const parentNoteId = node.data.parentNoteId;
