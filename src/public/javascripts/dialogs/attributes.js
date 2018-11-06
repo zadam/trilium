@@ -227,11 +227,7 @@ async function showDialog() {
 
     await attributesModel.loadAttributes();
 
-    $dialog.dialog({
-        modal: true,
-        width: 950,
-        height: 700
-    });
+    $dialog.modal();
 }
 
 ko.applyBindings(attributesModel, $dialog[0]);

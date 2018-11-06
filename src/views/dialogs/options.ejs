@@ -1,198 +1,198 @@
 <div id="options-dialog" class="tdialog" title="Options">
-    <div id="options-tabs">
-        <ul>
-            <li><a href="#appearance">Appearance</a></li>
-            <li><a href="#change-password">Change password</a></li>
-            <li><a href="#protected-session-timeout">Protected session</a></li>
-            <li><a href="#note-revision-snapshot-time-interval">Note revisions</a></li>
-            <li><a href="#sync-setup">Sync</a></li>
-            <li><a href="#advanced">Advanced</a></li>
-            <li><a href="#about">About Trilium</a></li>
-        </ul>
-        <div id="appearance">
-            <p>Settings on this options tab are saved automatically after each change.</p>
+  <div id="options-tabs">
+    <ul>
+      <li><a href="#appearance">Appearance</a></li>
+      <li><a href="#change-password">Change password</a></li>
+      <li><a href="#protected-session-timeout">Protected session</a></li>
+      <li><a href="#note-revision-snapshot-time-interval">Note revisions</a></li>
+      <li><a href="#sync-setup">Sync</a></li>
+      <li><a href="#advanced">Advanced</a></li>
+      <li><a href="#about">About Trilium</a></li>
+    </ul>
+    <div id="appearance">
+      <p>Settings on this options tab are saved automatically after each change.</p>
 
-            <form>
-                <div class="form-group">
-                    <label for="theme-select">Theme</label>
-                    <select class="form-control" id="theme-select">
-                        <option value="white">White</option>
-                        <option value="dark">Dark</option>
-                        <option value="black">Black</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="zoom-factor-select">Zoom factor (desktop build only)</label>
-
-                    <input type="number" class="form-control" id="zoom-factor-select" min="0.3" max="2.0" step="0.1"/>
-                </div>
-
-                <p>Zooming can be controlled with CTRL-+ and CTRL-= shortcuts as well.</p>
-
-                <h3>Left pane sizing</h3>
-
-                <div class="form-group">
-                    <label for="left-pane-min-width">Left pane minimum width (in pixels)</label>
-
-                    <input type="number" class="form-control" id="left-pane-min-width" min="100" max="2000" step="1"/>
-                </div>
-
-                <div class="form-group">
-                    <label for="left-pane-min-width">Left pane width percent of window size</label>
-
-                    <input type="number" class="form-control" id="left-pane-width-percent" min="0" max="99" step="1"/>
-                </div>
-
-                <p>Left pane width is calculated from the percent of window size, if this is smaller than minimum width, then minimum width is used. If you want to have fixed width left pane, set minimum width to the desired width and set percent to 0.</p>
-
-            </form>
+      <form>
+        <div class="form-group">
+          <label for="theme-select">Theme</label>
+          <select class="form-control" id="theme-select">
+            <option value="white">White</option>
+            <option value="dark">Dark</option>
+            <option value="black">Black</option>
+          </select>
         </div>
-        <div id="change-password">
-            <form id="change-password-form">
-                <div class="form-group">
-                    <label for="old-password">Old password</label>
-                    <input class="form-control" id="old-password" type="password">
-                </div>
 
-                <div class="form-group">
-                    <label for="new-password1">New password</label>
-                    <input class="form-control" id="new-password1" type="password">
-                </div>
+        <div class="form-group">
+          <label for="zoom-factor-select">Zoom factor (desktop build only)</label>
 
-                <div class="form-group">
-                    <label for="new-password2">New password once more</label>
-                    <input class="form-control" id="new-password2" type="password">
-                </div>
-
-                <button class="btn btn-sm">Change password</button>
-            </form>
+          <input type="number" class="form-control" id="zoom-factor-select" min="0.3" max="2.0" step="0.1"/>
         </div>
-        <div id="protected-session-timeout">
-            <p>Protected session timeout is a time period after which the protected session is wiped out from
-                browser's memory. This is measured from the last interaction with protected notes.</p>
 
-            <form id="protected-session-timeout-form">
-                <div class="form-group">
-                    <label for="protected-session-timeout-in-seconds">Protected session timeout (in seconds)</label>
-                    <input class="form-control" id="protected-session-timeout-in-seconds" type="number">
-                </div>
+        <p>Zooming can be controlled with CTRL-+ and CTRL-= shortcuts as well.</p>
 
-                <div style="display: flex; justify-content: space-between;">
-                    <button class="btn btn-sm">Save</button>
+        <h3>Left pane sizing</h3>
 
-                    <button class="btn btn-sm" type="button" data-help-page="Protected-notes">
-                        <i class="glyphicon glyphicon-info-sign"></i> Help
-                    </button>
-                </div>
-            </form>
+        <div class="form-group">
+          <label for="left-pane-min-width">Left pane minimum width (in pixels)</label>
+
+          <input type="number" class="form-control" id="left-pane-min-width" min="100" max="2000" step="1"/>
         </div>
-        <div id="note-revision-snapshot-time-interval">
-            <p>Note revision snapshot time interval is time in seconds after which new note revision will be created for the note.</p>
 
-            <form id="note-revision-snapshot-time-interval-form">
-                <div class="form-group">
-                    <label for="note-revision-snapshot-time-interval-in-seconds">Note revision snapshot time interval (in seconds)</label>
-                    <input class="form-control" id="note-revision-snapshot-time-interval-in-seconds" type="number">
-                </div>
+        <div class="form-group">
+          <label for="left-pane-min-width">Left pane width percent of window size</label>
 
-                <div style="display: flex; justify-content: space-between;">
-                    <button class="btn btn-sm">Save</button>
-
-                    <button class="btn btn-sm" type="button" data-help-page="Note-revisions">
-                        <i class="glyphicon glyphicon-info-sign"></i> Help
-                    </button>
-                </div>
-            </form>
+          <input type="number" class="form-control" id="left-pane-width-percent" min="0" max="99" step="1"/>
         </div>
-        <div id="sync-setup">
-            <h4 style="margin-top: 0px;">Sync configuration</h4>
 
-            <form id="sync-setup-form">
-                <div class="form-group">
-                    <label for="sync-server-host">Server instance address</label>
-                    <input class="form-control" id="sync-server-host" placeholder="https://<host>:<port>">
-                </div>
+        <p>Left pane width is calculated from the percent of window size, if this is smaller than minimum width, then minimum width is used. If you want to have fixed width left pane, set minimum width to the desired width and set percent to 0.</p>
 
-                <div class="form-group">
-                    <label for="sync-server-timeout">Sync timeout (milliseconds)</label>
-                    <input class="form-control" id="sync-server-timeout" min="1" max="10000000" type="number">
-                </div>
-
-                <div class="form-group">
-                    <label for="sync-proxy">Sync proxy server (optional)</label>
-                    <input class="form-control" id="sync-proxy" placeholder="https://<host>:<port>">
-                </div>
-
-                <div style="display: flex; justify-content: space-between;">
-                    <button class="btn btn-sm">Save</button>
-
-                    <button class="btn btn-sm" type="button" data-help-page="Synchronization">
-                        <i class="glyphicon glyphicon-info-sign"></i> Help
-                    </button>
-                </div>
-            </form>
-
-            <h4>Sync test</h4>
-
-            <p>This will test connection and handshake to the sync server. If sync server isn't initialized, this will set it up to sync with local document.</p>
-
-            <button id="test-sync-button" class="btn btn-sm">Test sync</button>
-        </div>
-        <div id="advanced">
-            <h4 style="margin-top: 0px;">Sync</h4>
-            <button id="force-full-sync-button" class="btn btn-sm">Force full sync</button>
-
-            <br/>
-            <br/>
-
-            <button id="fill-sync-rows-button" class="btn btn-sm">Fill sync rows</button>
-
-            <h4>Debugging</h4>
-
-            <button id="anonymize-button" class="btn btn-sm">Save anonymized database</button><br/><br/>
-
-            <p>This action will create a new copy of the database and anonymise it (remove all note content and leave only structure and metadata)
-                for sharing online for debugging purposes without fear of leaking your personal data.</p>
-
-            <h4>Image cleanup</h4>
-
-            <p>This will remove all image data of images not used in any current version of note from the database (metadata will remain).
-
-                This means that some images can disappear from note revisions.</p>
-
-            <button id="cleanup-unused-images-button" class="btn btn-sm">Permanently cleanup unused images</button>
-
-            <h4>Vacuum database</h4>
-
-            <p>This will rebuild database which will typically result in smaller database file. No data will be actually changed.</p>
-
-            <button id="vacuum-database-button" class="btn btn-sm">Vacuum database</button>
-        </div>
-        <div id="about">
-            <table class="table">
-                <tr>
-                    <th>App version:</th>
-                    <td id="app-version"></td>
-                </tr>
-                <tr>
-                    <th>DB version:</th>
-                    <td id="db-version"></td>
-                </tr>
-                <tr>
-                    <th>Sync version:</th>
-                    <td id="sync-version"></td>
-                </tr>
-                <tr>
-                    <th>Build date:</th>
-                    <td id="build-date"></td>
-                </tr>
-
-                <tr>
-                    <th>Build revision:</th>
-                    <td><a href="" target="_blank" id="build-revision"></a></td>
-                </tr>
-            </table>
-        </div>
+      </form>
     </div>
+    <div id="change-password">
+      <form id="change-password-form">
+        <div class="form-group">
+          <label for="old-password">Old password</label>
+          <input class="form-control" id="old-password" type="password">
+        </div>
+
+        <div class="form-group">
+          <label for="new-password1">New password</label>
+          <input class="form-control" id="new-password1" type="password">
+        </div>
+
+        <div class="form-group">
+          <label for="new-password2">New password once more</label>
+          <input class="form-control" id="new-password2" type="password">
+        </div>
+
+        <button class="btn btn-sm">Change password</button>
+      </form>
+    </div>
+    <div id="protected-session-timeout">
+      <p>Protected session timeout is a time period after which the protected session is wiped out from
+        browser's memory. This is measured from the last interaction with protected notes.</p>
+
+      <form id="protected-session-timeout-form">
+        <div class="form-group">
+          <label for="protected-session-timeout-in-seconds">Protected session timeout (in seconds)</label>
+          <input class="form-control" id="protected-session-timeout-in-seconds" type="number">
+        </div>
+
+        <div style="display: flex; justify-content: space-between;">
+          <button class="btn btn-sm">Save</button>
+
+          <button class="btn btn-sm" type="button" data-help-page="Protected-notes">
+            <i class="glyphicon glyphicon-info-sign"></i> Help
+          </button>
+        </div>
+      </form>
+    </div>
+    <div id="note-revision-snapshot-time-interval">
+      <p>Note revision snapshot time interval is time in seconds after which new note revision will be created for the note.</p>
+
+      <form id="note-revision-snapshot-time-interval-form">
+        <div class="form-group">
+          <label for="note-revision-snapshot-time-interval-in-seconds">Note revision snapshot time interval (in seconds)</label>
+          <input class="form-control" id="note-revision-snapshot-time-interval-in-seconds" type="number">
+        </div>
+
+        <div style="display: flex; justify-content: space-between;">
+          <button class="btn btn-sm">Save</button>
+
+          <button class="btn btn-sm" type="button" data-help-page="Note-revisions">
+            <i class="glyphicon glyphicon-info-sign"></i> Help
+          </button>
+        </div>
+      </form>
+    </div>
+    <div id="sync-setup">
+      <h4 style="margin-top: 0px;">Sync configuration</h4>
+
+      <form id="sync-setup-form">
+        <div class="form-group">
+          <label for="sync-server-host">Server instance address</label>
+          <input class="form-control" id="sync-server-host" placeholder="https://<host>:<port>">
+        </div>
+
+        <div class="form-group">
+          <label for="sync-server-timeout">Sync timeout (milliseconds)</label>
+          <input class="form-control" id="sync-server-timeout" min="1" max="10000000" type="number">
+        </div>
+
+        <div class="form-group">
+          <label for="sync-proxy">Sync proxy server (optional)</label>
+          <input class="form-control" id="sync-proxy" placeholder="https://<host>:<port>">
+        </div>
+
+        <div style="display: flex; justify-content: space-between;">
+          <button class="btn btn-sm">Save</button>
+
+          <button class="btn btn-sm" type="button" data-help-page="Synchronization">
+            <i class="glyphicon glyphicon-info-sign"></i> Help
+          </button>
+        </div>
+      </form>
+
+      <h4>Sync test</h4>
+
+      <p>This will test connection and handshake to the sync server. If sync server isn't initialized, this will set it up to sync with local document.</p>
+
+      <button id="test-sync-button" class="btn btn-sm">Test sync</button>
+    </div>
+    <div id="advanced">
+      <h4 style="margin-top: 0px;">Sync</h4>
+      <button id="force-full-sync-button" class="btn btn-sm">Force full sync</button>
+
+      <br/>
+      <br/>
+
+      <button id="fill-sync-rows-button" class="btn btn-sm">Fill sync rows</button>
+
+      <h4>Debugging</h4>
+
+      <button id="anonymize-button" class="btn btn-sm">Save anonymized database</button><br/><br/>
+
+      <p>This action will create a new copy of the database and anonymise it (remove all note content and leave only structure and metadata)
+        for sharing online for debugging purposes without fear of leaking your personal data.</p>
+
+      <h4>Image cleanup</h4>
+
+      <p>This will remove all image data of images not used in any current version of note from the database (metadata will remain).
+
+        This means that some images can disappear from note revisions.</p>
+
+      <button id="cleanup-unused-images-button" class="btn btn-sm">Permanently cleanup unused images</button>
+
+      <h4>Vacuum database</h4>
+
+      <p>This will rebuild database which will typically result in smaller database file. No data will be actually changed.</p>
+
+      <button id="vacuum-database-button" class="btn btn-sm">Vacuum database</button>
+    </div>
+    <div id="about">
+      <table class="table">
+        <tr>
+          <th>App version:</th>
+          <td id="app-version"></td>
+        </tr>
+        <tr>
+          <th>DB version:</th>
+          <td id="db-version"></td>
+        </tr>
+        <tr>
+          <th>Sync version:</th>
+          <td id="sync-version"></td>
+        </tr>
+        <tr>
+          <th>Build date:</th>
+          <td id="build-date"></td>
+        </tr>
+
+        <tr>
+          <th>Build revision:</th>
+          <td><a href="" target="_blank" id="build-revision"></a></td>
+        </tr>
+      </table>
+    </div>
+  </div>
 </div>

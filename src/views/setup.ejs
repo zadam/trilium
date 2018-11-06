@@ -1,122 +1,122 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8">
-    <title>Setup</title>
+  <meta charset="utf-8">
+  <title>Setup</title>
 </head>
 <body>
 <div id="setup-dialog" style="width: 600px; margin: auto; display:none; font-size: larger;">
-    <h1>Trilium Notes setup</h1>
+  <h1>Trilium Notes setup</h1>
 
-    <div class="alert alert-warning" id="alert" style="display: none;">
+  <div class="alert alert-warning" id="alert" style="display: none;">
+  </div>
+
+  <div id="setup-type" data-bind="visible: step() == 'setup-type'" style="margin-top: 20px;">
+    <div class="radio" style="margin-bottom: 15px;">
+      <label><input type="radio" name="setup-type" value="new-document" data-bind="checked: setupNewDocument">
+        I'm a new user and I want to create new Trilium document for my notes</label>
+    </div>
+    <div class="radio" data-bind="if: instanceType == 'server'" style="margin-bottom: 15px;">
+      <label><input type="radio" name="setup-type" value="sync-from-desktop" data-bind="checked: setupSyncFromDesktop">
+        I have desktop instance already and I want to setup sync with it</label>
+    </div>
+    <div class="radio" data-bind="if: instanceType == 'desktop'" style="margin-bottom: 15px;">
+      <label><input type="radio" name="setup-type" value="sync-from-server" data-bind="checked: setupSyncFromServer">
+        I have server instance up and I want to setup sync with it</label>
     </div>
 
-    <div id="setup-type" data-bind="visible: step() == 'setup-type'" style="margin-top: 20px;">
-        <div class="radio" style="margin-bottom: 15px;">
-            <label><input type="radio" name="setup-type" value="new-document" data-bind="checked: setupNewDocument">
-                I'm a new user and I want to create new Trilium document for my notes</label>
-        </div>
-        <div class="radio" data-bind="if: instanceType == 'server'" style="margin-bottom: 15px;">
-            <label><input type="radio" name="setup-type" value="sync-from-desktop" data-bind="checked: setupSyncFromDesktop">
-                I have desktop instance already and I want to setup sync with it</label>
-        </div>
-        <div class="radio" data-bind="if: instanceType == 'desktop'" style="margin-bottom: 15px;">
-            <label><input type="radio" name="setup-type" value="sync-from-server" data-bind="checked: setupSyncFromServer">
-                I have server instance up and I want to setup sync with it</label>
-        </div>
+    <button type="button" data-bind="disable: !setupTypeSelected(), click: selectSetupType" class="btn btn-primary">Next</button>
+  </div>
 
-        <button type="button" data-bind="disable: !setupTypeSelected(), click: selectSetupType" class="btn btn-primary">Next</button>
+  <div data-bind="visible: step() == 'new-document'">
+    <h2>New document</h2>
+
+    <p>You're almost done with the setup. The last thing is to choose username and password using which you'll login to the application.
+      This password is also used for generating encryption key which encrypts protected notes.</p>
+
+    <div class="form-group">
+      <label for="username">Username</label>
+      <input type="text" class="form-control" data-bind="value: username" placeholder="Choose alphanumeric username">
+    </div>
+    <div class="form-group">
+      <label for="password1">Password</label>
+      <input type="password" class="form-control" data-bind="value: password1" placeholder="Password">
+    </div>
+    <div class="form-group">
+      <label for="password2">Repeat password</label>
+      <input type="password" class="form-control" data-bind="value: password2" placeholder="Password">
     </div>
 
-    <div data-bind="visible: step() == 'new-document'">
-        <h2>New document</h2>
+    <button type="button" data-bind="click: back" class="btn btn-default">Back</button>
 
-        <p>You're almost done with the setup. The last thing is to choose username and password using which you'll login to the application.
-            This password is also used for generating encryption key which encrypts protected notes.</p>
+    &nbsp;
 
-        <div class="form-group">
-            <label for="username">Username</label>
-            <input type="text" class="form-control" data-bind="value: username" placeholder="Choose alphanumeric username">
-        </div>
-        <div class="form-group">
-            <label for="password1">Password</label>
-            <input type="password" class="form-control" data-bind="value: password1" placeholder="Password">
-        </div>
-        <div class="form-group">
-            <label for="password2">Repeat password</label>
-            <input type="password" class="form-control" data-bind="value: password2" placeholder="Password">
-        </div>
+    <button type="button" data-bind="click: finish" class="btn btn-primary">Finish setup</button>
+  </div>
 
-        <button type="button" data-bind="click: back" class="btn btn-default">Back</button>
+  <div data-bind="visible: step() == 'sync-from-desktop'">
+    <h2>Sync from Desktop</h2>
 
-        &nbsp;
+    <p>This setup needs to be initiated from the desktop instance:</p>
 
-        <button type="button" data-bind="click: finish" class="btn btn-primary">Finish setup</button>
+    <ol>
+      <li>please open your desktop instance of Trilium Notes</li>
+      <li>click on Options button in the top right</li>
+      <li>click on Sync tab</li>
+      <li>configure server instance address to the: <span id="current-host"></span> and click save.</li>
+      <li>click on "Sync document to the server instance" button</li>
+      <li>once you've done all this, click <a href="/">here</a></li>
+    </ol>
+
+    <button type="button" data-bind="click: back" class="btn btn-default">Back</button>
+  </div>
+
+  <div data-bind="visible: step() == 'sync-from-server'">
+    <h2>Sync from Server</h2>
+
+    <p>Please enter Trilium server address and credentials below. This will download the whole Trilium document from server and setup sync to it. Depending on the document size and your connection speed, this may take a while.</p>
+
+    <div class="form-group">
+      <label for="sync-server-host">Trilium server address</label>
+      <input type="text" id="syncServerHost" class="form-control" data-bind="value: syncServerHost" placeholder="https://<hostname>:<port>">
+    </div>
+    <div class="form-group">
+      <label for="sync-proxy">Proxy server (optional)</label>
+      <input type="text" id="sync-proxy" class="form-control" data-bind="value: syncProxy" placeholder="https://<hostname>:<port>">
+    </div>
+    <div class="form-group">
+      <label for="username">Username</label>
+      <input type="text" id="username" class="form-control" data-bind="value: username" placeholder="Username">
+    </div>
+    <div class="form-group">
+      <label for="password1">Password</label>
+      <input type="password" id="password1" class="form-control" data-bind="value: password1" placeholder="Password">
     </div>
 
-    <div data-bind="visible: step() == 'sync-from-desktop'">
-        <h2>Sync from Desktop</h2>
+    <button type="button" data-bind="click: back" class="btn btn-default">Back</button>
 
-        <p>This setup needs to be initiated from the desktop instance:</p>
+    &nbsp;
 
-        <ol>
-            <li>please open your desktop instance of Trilium Notes</li>
-            <li>click on Options button in the top right</li>
-            <li>click on Sync tab</li>
-            <li>configure server instance address to the: <span id="current-host"></span> and click save.</li>
-            <li>click on "Sync document to the server instance" button</li>
-            <li>once you've done all this, click <a href="/">here</a></li>
-        </ol>
+    <button type="button" data-bind="click: finish" class="btn btn-primary">Finish setup</button>
+  </div>
 
-        <button type="button" data-bind="click: back" class="btn btn-default">Back</button>
+  <div data-bind="visible: step() == 'sync-in-progress'">
+    <h2>Sync in progress</h2>
+
+    <div class="alert alert-success">Sync has been correctly set up. It will take some time for the initial sync to finish. Once it's done, you'll be redirected to the login page.</div>
+
+    <div data-bind="if: instanceType == 'desktop'">
+      Outstanding sync items: <strong id="outstanding-syncs">N/A</strong>
     </div>
-
-    <div data-bind="visible: step() == 'sync-from-server'">
-        <h2>Sync from Server</h2>
-
-        <p>Please enter Trilium server address and credentials below. This will download the whole Trilium document from server and setup sync to it. Depending on the document size and your connection speed, this may take a while.</p>
-
-        <div class="form-group">
-            <label for="sync-server-host">Trilium server address</label>
-            <input type="text" id="syncServerHost" class="form-control" data-bind="value: syncServerHost" placeholder="https://<hostname>:<port>">
-        </div>
-        <div class="form-group">
-            <label for="sync-proxy">Proxy server (optional)</label>
-            <input type="text" id="sync-proxy" class="form-control" data-bind="value: syncProxy" placeholder="https://<hostname>:<port>">
-        </div>
-        <div class="form-group">
-            <label for="username">Username</label>
-            <input type="text" id="username" class="form-control" data-bind="value: username" placeholder="Username">
-        </div>
-        <div class="form-group">
-            <label for="password1">Password</label>
-            <input type="password" id="password1" class="form-control" data-bind="value: password1" placeholder="Password">
-        </div>
-
-        <button type="button" data-bind="click: back" class="btn btn-default">Back</button>
-
-        &nbsp;
-
-        <button type="button" data-bind="click: finish" class="btn btn-primary">Finish setup</button>
-    </div>
-
-    <div data-bind="visible: step() == 'sync-in-progress'">
-        <h2>Sync in progress</h2>
-
-        <div class="alert alert-success">Sync has been correctly set up. It will take some time for the initial sync to finish. Once it's done, you'll be redirected to the login page.</div>
-
-        <div data-bind="if: instanceType == 'desktop'">
-            Outstanding sync items: <strong id="outstanding-syncs">N/A</strong>
-        </div>
-    </div>
+  </div>
 </div>
 
 <script type="text/javascript">
-    const baseApiUrl = 'api/';
-    const glob = {
-        sourceId: ''
-    };
-    const syncInProgress = <%= syncInProgress ? 'true' : 'false' %>;
+  const baseApiUrl = 'api/';
+  const glob = {
+    sourceId: ''
+  };
+  const syncInProgress = <%= syncInProgress ? 'true' : 'false' %>;
 </script>
 
 <!-- Required for correct loading of scripts in Electron -->
