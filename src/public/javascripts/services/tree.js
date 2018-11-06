@@ -406,10 +406,25 @@ function initFancyTree(tree) {
             }
         }
 
+        // code below tries to detect when dropdown would overflow from page
+        // in such case we'll position it above click coordinates so it will fit into client
+        const clickPosition = e.pageY;
+        const clientHeight = document.documentElement.clientHeight;
+        const contextMenuHeight = $treeContextMenu.height();
+
+        let top;
+
+        if (clickPosition + contextMenuHeight > clientHeight) {
+            top = clientHeight - contextMenuHeight - 10;
+        }
+        else {
+            top = e.pageY - 10;
+        }
+
         $treeContextMenu.css({
             display: "block",
-            top: e.pageY - 10,
-            left: e.pageX - 40
+            top: top,
+            left: e.pageX - 20
         }).addClass("show");
     }
 
