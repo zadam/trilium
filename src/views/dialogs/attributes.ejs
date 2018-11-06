@@ -1,5 +1,5 @@
-<div id="jump-to-note-dialog" class="modal mx-auto" tabindex="-1" role="dialog">
-  <div class="modal-dialog modal-lg" role="document">
+<div id="attributes-dialog" class="modal fade mx-auto" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg" style="max-width: 1000px" role="document">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">Note attributes</h5>
@@ -9,15 +9,6 @@
       </div>
       <div class="modal-body">
         <form data-bind="submit: save">
-          <div style="display: flex; justify-content: space-between;">
-            <button class="btn btn-large" style="width: 200px;" id="save-attributes-button" type="submit">
-              Save changes <kbd>enter</kbd></button>
-
-            <button class="btn btn-sm" type="button" data-help-page="Attributes">
-              <i class="glyphicon glyphicon-info-sign"></i> Help
-            </button>
-          </div>
-
           <div style="height: 97%; overflow: auto">
             <table id="owned-attributes-table" class="table">
               <thead>
@@ -132,6 +123,14 @@
             </div>
           </div>
         </form>
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: space-between;">
+        <button class="btn btn-primary btn-large" style="width: 200px;" id="save-attributes-button" type="submit">
+          Save changes <kbd>enter</kbd></button>
+
+        <button class="btn btn-sm" type="button" data-help-page="Attributes">
+          <i class="glyphicon glyphicon-info-sign"></i> Help
+        </button>
       </div>
     </div>
   </div>

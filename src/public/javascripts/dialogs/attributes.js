@@ -223,14 +223,17 @@ function AttributesModel() {
 }
 
 async function showDialog() {
+    // lazily apply bindings on first use
+    if (!ko.dataFor($dialog[0])) {
+        ko.applyBindings(attributesModel, $dialog[0]);
+    }
+
     glob.activeDialog = $dialog;
 
     await attributesModel.loadAttributes();
 
     $dialog.modal();
 }
-
-ko.applyBindings(attributesModel, $dialog[0]);
 
 $dialog.on('focus', '.attribute-name', function (e) {
     if (!$(this).hasClass("ui-autocomplete-input")) {

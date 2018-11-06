@@ -59,7 +59,7 @@ function openNotePath(notePath) {
 
     if (glob.activeDialog) {
         try {
-            glob.activeDialog.dialog('close');
+            glob.activeDialog.modal('hide');
         } catch (e) {
         }
     }

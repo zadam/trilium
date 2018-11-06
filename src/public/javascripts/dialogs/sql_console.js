@@ -11,17 +11,12 @@ const $resultBody = $('#sql-console-results tbody');
 
 let codeEditor;
 
+$dialog.on("shown.bs.modal", e => initEditor());
+
 function showDialog() {
     glob.activeDialog = $dialog;
 
-    $dialog.dialog({
-        modal: true,
-        width: $(window).width(),
-        height: $(window).height(),
-        open: function() {
-            initEditor();
-        }
-    });
+    $dialog.modal();
 }
 
 async function initEditor() {

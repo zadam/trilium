@@ -16,11 +16,7 @@ async function showCurrentNoteRevisions() {
 async function showNoteRevisionsDialog(noteId, noteRevisionId) {
     glob.activeDialog = $dialog;
 
-    $dialog.dialog({
-        modal: true,
-        width: 800,
-        height: 700
-    });
+    $dialog.modal();
 
     $list.empty();
     $content.empty();

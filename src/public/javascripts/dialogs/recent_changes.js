@@ -3,22 +3,19 @@ import utils from '../services/utils.js';
 import server from '../services/server.js';
 
 const $dialog = $("#recent-changes-dialog");
+const $content = $("#recent-changes-content");
 
 async function showDialog() {
     glob.activeDialog = $dialog;
 
-    $dialog.dialog({
-        modal: true,
-        width: 800,
-        height: 700
-    });
+    $dialog.modal();
 
-    const result = await server.get('recent-changes/');
+    const result = await server.get('recent-changes');
 
-    $dialog.empty();
+    $content.empty();
 
     if (result.length === 0) {
-        $dialog.append("No changes yet ...");
+        $content.append("No changes yet ...");
     }
 
     const groupedByDate = groupByDate(result);
@@ -31,13 +28,6 @@ async function showDialog() {
         for (const change of dayChanges) {
             const formattedTime = utils.formatTime(utils.parseDate(change.dateModifiedTo));
 
-            const revLink = $("<a>", {
-                href: 'javascript:',
-                text: 'rev'
-            }).attr('data-action', 'note-revision')
-                .attr('data-note-path', change.noteId)
-                .attr('data-note-revision-id', change.noteRevisionId);
-
             let noteLink;
 
             if (change.current_isDeleted) {
@@ -49,11 +39,10 @@ async function showDialog() {
 
             changesListEl.append($('<li>')
                 .append(formattedTime + ' - ')
-                .append(noteLink)
-                .append(' (').append(revLink).append(')'));
+                .append(noteLink));
         }
 
-        $dialog.append(dayEl);
+        $content.append(dayEl);
     }
 }
 

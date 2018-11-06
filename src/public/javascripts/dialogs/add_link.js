@@ -39,10 +39,7 @@ async function showDialog() {
         setLinkType('selected-to-current');
     }
 
-    $dialog.dialog({
-        modal: true,
-        width: 800
-    });
+    $dialog.modal();
 
     $autoComplete.val('').focus();
     $clonePrefix.val('');
@@ -106,7 +103,7 @@ $form.submit(() => {
         if (linkType === 'html') {
             const linkTitle = $linkTitle.val();
 
-            $dialog.dialog("close");
+            $dialog.modal('hide');
 
             const linkHref = '#' + notePath;
 
@@ -124,14 +121,14 @@ $form.submit(() => {
 
             cloningService.cloneNoteTo(noteId, noteDetailService.getCurrentNoteId(), prefix);
 
-            $dialog.dialog("close");
+            $dialog.modal('hide');
         }
         else if (linkType === 'current-to-selected') {
             const prefix = $clonePrefix.val();
 
             cloningService.cloneNoteTo(noteDetailService.getCurrentNoteId(), noteId, prefix);
 
-            $dialog.dialog("close");
+            $dialog.modal('hide');
         }
     }
 

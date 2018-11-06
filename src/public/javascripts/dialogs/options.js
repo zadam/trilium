@@ -20,10 +20,7 @@ async function showDialog() {
 
     const options = await server.get('options');
 
-    $dialog.dialog({
-        modal: true,
-        width: 1000
-    });
+    $dialog.modal();
 
     $tabs.tabs();
 

@@ -8,11 +8,7 @@ const $list = $("#event-log-list");
 async function showDialog() {
     glob.activeDialog = $dialog;
 
-    $dialog.dialog({
-        modal: true,
-        width: 800,
-        height: 700
-    });
+    $dialog.modal();
 
     const result = await server.get('event-log');
 

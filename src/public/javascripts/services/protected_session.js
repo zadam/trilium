@@ -40,18 +40,7 @@ function ensureProtectedSession(requireProtectedSession, modal) {
             $noteDetailWrapper.hide();
         }
 
-        $dialog.dialog({
-            // everything is now non-modal, because modal dialog caused weird high CPU usage on opening
-            // and tearing of text input
-            modal: false,
-            width: 400,
-            open: () => {
-                if (!modal) {
-                    // dialog steals focus for itself, which is not what we want for non-modal (viewing)
-                    treeService.getCurrentNode().setFocus();
-                }
-            }
-        });
+        $dialog.modal();
     }
     else {
         dfd.resolve(false);
@@ -73,7 +62,7 @@ async function setupProtectedSession() {
 
     protectedSessionHolder.setProtectedSessionId(response.protectedSessionId);
 
-    $dialog.dialog("close");
+    $dialog.modal("hide");
 
     noteDetailService.reload();
     treeService.reload();
@@ -96,7 +85,7 @@ async function setupProtectedSession() {
 function ensureDialogIsClosed() {
     // this may fal if the dialog has not been previously opened
     try {
-        $dialog.dialog('close');
+        $dialog.modal('hide');
     }
     catch (e) {}
 
@@ -166,6 +155,8 @@ $passwordForm.submit(() => {
 
     return false;
 });
+
+$dialog.on("shown.bs.modal", e => $password.focus());
 
 $protectButton.click(protectNoteAndSendToServer);
 $unprotectButton.click(unprotectNoteAndSendToServer);

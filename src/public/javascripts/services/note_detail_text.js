@@ -78,18 +78,14 @@ async function importMarkdownInline() {
 
         glob.activeDialog = $markdownImportDialog;
 
-        $markdownImportDialog.dialog({
-            modal: true,
-            width: 700,
-            height: 500
-        });
+        $markdownImportDialog.modal();
     }
 }
 
 async function sendMarkdownDialog() {
     const text = $markdownImportTextarea.val();
 
-    $markdownImportDialog.dialog('close');
+    $markdownImportDialog.modal('hide');
 
     await convertMarkdownToHtml(text);
 

@@ -520,3 +520,9 @@ table.promoted-attributes-in-tooltip td, table.promoted-attributes-in-tooltip th
 .context-menu .dropdown-item {
     padding: 2px 10px 2px 10px;
 }
+
+/* if modal height overflows, then only modal body scrolls */
+.modal-body {
+    max-height: calc(100vh - 120px);
+    overflow-y: auto;
+}

@@ -29,7 +29,7 @@ async function showDialog() {
 
             treeService.activateNote(notePath);
 
-            $dialog.dialog('close');
+            $dialog.modal('hide');
         }
     });
 
@@ -47,7 +47,7 @@ function showInFullText(e) {
     searchNotesService.showSearch();
     searchNotesService.doSearch(searchText);
 
-    $dialog.dialog('close');
+    $dialog.modal('hide');
 }
 
 function showRecentNotes() {

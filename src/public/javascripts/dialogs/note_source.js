@@ -6,11 +6,7 @@ const $noteSource = $("#note-source");
 function showDialog() {
     glob.activeDialog = $dialog;
 
-    $dialog.dialog({
-        modal: true,
-        width: 800,
-        height: 500
-    });
+    $dialog.modal();
 
     const noteText = noteDetailService.getCurrentNote().content;
 
