@@ -5,6 +5,7 @@ const syncTableService = require('./sync_table');
 const attributeService = require('./attributes');
 const eventService = require('./events');
 const repository = require('./repository');
+const cls = require('../services/cls');
 const Note = require('../entities/note');
 const NoteImage = require('../entities/note_image');
 const NoteRevision = require('../entities/note_revision');
@@ -322,9 +323,9 @@ async function cleanupDeletedNotes() {
 }
 
 // first cleanup kickoff 5 minutes after startup
-setTimeout(cleanupDeletedNotes, 5 * 60 * 1000);
+setTimeout(cls.wrap(cleanupDeletedNotes), 5 * 60 * 1000);
 
-setInterval(cleanupDeletedNotes, 4 * 3600 * 1000);
+setInterval(cls.wrap(cleanupDeletedNotes), 4 * 3600 * 1000);
 
 module.exports = {
     createNewNote,
