@@ -298,13 +298,8 @@ div.ui-tooltip {
     display: none;
 }
 
-#note-type .dropdown-menu li:not(.divider) {
-    padding: 5px;
-    width: 200px;
-}
-
-.dropdown-menu li:not(.divider):hover, .dropdown-menu li:not(.divider) a:hover {
-    background-color: #ccc !important;
+.dropdown-menu a:hover:not(.disabled) {
+    background-color: #eee !important;
     cursor: pointer;
 }
 
@@ -322,6 +317,10 @@ div.ui-tooltip {
 
 .dropdown-menu kbd {
     float: right;
+}
+
+.dropdown-item.disabled, .dropdown-item.disabled kbd {
+    color: #aaa !important;
 }
 
 #note-detail-code {
@@ -512,4 +511,12 @@ table.promoted-attributes-in-tooltip td, table.promoted-attributes-in-tooltip th
 #note-detail-render-help {
     margin: 50px;
     padding: 20px;
+}
+
+.context-menu {
+    font-size: small;
+}
+
+.context-menu .dropdown-item {
+    padding: 2px 10px 2px 10px;
 }

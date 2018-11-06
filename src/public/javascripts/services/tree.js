@@ -4,7 +4,6 @@ import linkService from './link.js';
 import messagingService from './messaging.js';
 import noteDetailService from './note_detail.js';
 import protectedSessionHolder from './protected_session_holder.js';
-import treeChangesService from './branches.js';
 import treeUtils from './tree_utils.js';
 import utils from './utils.js';
 import server from './server.js';
@@ -16,6 +15,7 @@ import Branch from '../entities/branch.js';
 import NoteShort from '../entities/note_short.js';
 
 const $tree = $("#tree");
+const $treeContextMenu = $("#tree-context-menu");
 const $createTopLevelNoteButton = $("#create-top-level-note-button");
 const $collapseTreeButton = $("#collapse-tree-button");
 const $scrollToCurrentNoteButton = $("#scroll-to-current-note-button");
@@ -378,7 +378,48 @@ function initFancyTree(tree) {
         }
     });
 
-    $tree.contextmenu(treeContextMenuService.contextMenuOptions);
+    $treeContextMenu.on('click', '.dropdown-item', function(e) {
+        const cmd = $(e.target).prop("data-cmd");
+
+        treeContextMenuService.selectContextMenuItem(e, cmd);
+    });
+
+    async function openContextMenu(e) {
+        $treeContextMenu.empty();
+
+        const contextMenuItems = await treeContextMenuService.getContextMenuItems(e);
+
+        for (const item of contextMenuItems) {
+            if (item.title === '----') {
+                $treeContextMenu.append($("<div>").addClass("dropdown-divider"));
+            } else {
+                const $item = $("<a>")
+                    .addClass("dropdown-item")
+                    .prop("data-cmd", item.cmd)
+                    .append(item.title);
+
+                if (item.enabled !== undefined && !item.enabled) {
+                    $item.addClass("disabled");
+                }
+
+                $treeContextMenu.append($item);
+            }
+        }
+
+        $treeContextMenu.css({
+            display: "block",
+            top: e.pageY - 10,
+            left: e.pageX - 40
+        }).addClass("show");
+    }
+
+    $(document).click(() => $(".context-menu").hide());
+
+    $tree.on('contextmenu', '.fancytree-node', function(e) {
+        openContextMenu(e);
+
+        return false; // blocks default browser right click menu
+    });
 }
 
 function getTree() {
