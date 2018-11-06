@@ -4,50 +4,57 @@ import linkService from "./link.js";
 import server from "./server.js";
 
 function setupTooltip() {
-    $(document).tooltip({
-        items: "body a",
-        content: function (callback) {
-            const $link = $(this);
+    $(document).on("mouseenter", "a", async function() {
+        const $link = $(this);
 
-            if ($link.hasClass("no-tooltip-preview")) {
-                return;
-            }
-
-            // this is to avoid showing tooltip from inside CKEditor link editor dialog
-            if ($link.closest(".ck-link-actions").length) {
-                return;
-            }
-
-            let notePath = linkService.getNotePathFromUrl($link.attr("href"));
-
-            if (!notePath) {
-                notePath = $link.attr("data-note-path");
-            }
-
-            if (notePath) {
-                const noteId = treeUtils.getNoteIdFromNotePath(notePath);
-
-                const notePromise = noteDetailService.loadNote(noteId);
-                const attributePromise = server.get('notes/' + noteId + '/attributes');
-
-                Promise.all([notePromise, attributePromise])
-                    .then(([note, attributes]) => renderTooltip(callback, note, attributes));
-            }
-        },
-        close: function (event, ui) {
-            ui.tooltip.hover(function () {
-                    $(this).stop(true).fadeTo(400, 1);
-                },
-                function () {
-                    $(this).fadeOut('400', function () {
-                        $(this).remove();
-                    });
-                });
+        if ($link.hasClass("no-tooltip-preview")) {
+            return;
         }
+
+        // this is to avoid showing tooltip from inside CKEditor link editor dialog
+        if ($link.closest(".ck-link-actions").length) {
+            return;
+        }
+
+        let notePath = linkService.getNotePathFromUrl($link.attr("href"));
+
+        if (!notePath) {
+            notePath = $link.attr("data-note-path");
+        }
+
+        if (!notePath) {
+            return;
+        }
+
+        const noteId = treeUtils.getNoteIdFromNotePath(notePath);
+
+        const notePromise = noteDetailService.loadNote(noteId);
+        const attributePromise = server.get('notes/' + noteId + '/attributes');
+
+        const [note, attributes] = await Promise.all([notePromise, attributePromise]);
+
+        const html = await renderTooltip(note, attributes);
+
+        // we need to check if we're still hovering over the element
+        // since the operation to get tooltip content was async, it is possible that
+        // we now create tooltip which won't close because it won't receive mouseleave event
+        if ($(this).is(":hover")) {
+            $(this).tooltip({
+                delay: {"show": 300, "hide": 100},
+                title: html,
+                html: true
+            });
+
+            $(this).tooltip('show');
+        }
+    });
+
+    $(document).on("mouseleave", "a", async function() {
+        $(this).tooltip('hide');
     });
 }
 
-async function renderTooltip(callback, note, attributes) {
+async function renderTooltip(note, attributes) {
     let content = '';
     const promoted = attributes.filter(attr =>
         (attr.type === 'label-definition' || attr.type === 'relation-definition')
@@ -97,10 +104,10 @@ async function renderTooltip(callback, note, attributes) {
     // other types of notes don't have tooltip preview
 
     if (!$(content).text().trim()) {
-        return;
+        return "";
     }
 
-    callback(content);
+    return content;
 }
 
 export default {

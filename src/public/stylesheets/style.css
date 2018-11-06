@@ -526,3 +526,17 @@ table.promoted-attributes-in-tooltip td, table.promoted-attributes-in-tooltip th
     max-height: calc(100vh - 120px);
     overflow-y: auto;
 }
+
+.tooltip-inner {
+    background-color: white !important;
+    max-width: 600px;
+    max-height: 500px;
+    overflow: hidden;
+    color: black;
+    border: 1px solid #777;
+    text-align: left;
+}
+
+.tooltip.show {
+    opacity: 1;
+}
