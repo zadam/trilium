@@ -1,13 +1,13 @@
 import server from "./server.js";
 import noteDetailService from "./note_detail.js";
 
-async function autocompleteSource(request, response) {
+async function autocompleteSource(term, cb) {
     const result = await server.get('autocomplete'
-        + '?query=' + encodeURIComponent(request.term)
+        + '?query=' + encodeURIComponent(term)
         + '&currentNoteId=' + noteDetailService.getCurrentNoteId());
 
     if (result.length > 0) {
-        response(result.map(row => {
+        cb(result.map(row => {
             return {
                 label: row.label,
                 value: row.label + ' (' + row.value + ')'
@@ -15,7 +15,7 @@ async function autocompleteSource(request, response) {
         }));
     }
     else {
-        response([{
+        cb([{
             label: "No results",
             value: "No results"
         }]);

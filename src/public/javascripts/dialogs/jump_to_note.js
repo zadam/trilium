@@ -8,6 +8,8 @@ const $autoComplete = $("#jump-to-note-autocomplete");
 const $showInFullTextButton = $("#show-in-full-text-button");
 const $showRecentNotesButton = $dialog.find(".show-recent-notes-button");
 
+$dialog.on("shown.bs.modal", e => $autoComplete.focus());
+
 async function showDialog() {
     glob.activeDialog = $dialog;
 
@@ -15,25 +17,55 @@ async function showDialog() {
 
     $dialog.modal();
 
-    await $autoComplete.autocomplete({
-        source: noteautocompleteService.autocompleteSource,
-        focus: event => event.preventDefault(),
-        minLength: 0,
-        autoFocus: true,
-        select: function (event, ui) {
-            if (ui.item.value === 'No results') {
-                return false;
+    $autoComplete.autocomplete({
+        appendTo: document.querySelector('body'),
+        hint: false,
+        autoselect: true,
+        openOnFocus: true
+    }, [
+        {
+            source: noteautocompleteService.autocompleteSource,
+            displayKey: 'label',
+            templates: {
+                suggestion: function(suggestion) {
+                    return suggestion.label;
+                }
             }
-
-            const notePath = linkService.getNotePathFromLabel(ui.item.value);
-
-            treeService.activateNote(notePath);
-
-            $dialog.modal('hide');
         }
+    ]).on('autocomplete:selected', function(event, suggestion, dataset) {
+        console.log("selected: ", event, suggestion, dataset);
+        return;
+
+        if (ui.item.value === 'No results') {
+            return false;
+        }
+
+        const notePath = linkService.getNotePathFromLabel(ui.item.value);
+
+        treeService.activateNote(notePath);
+
+        $dialog.modal('hide');
     });
 
-    showRecentNotes();
+    // await $autoComplete.autocomplete({
+    //     source: noteautocompleteService.autocompleteSource,
+    //     focus: event => event.preventDefault(),
+    //     minLength: 0,
+    //     autoFocus: true,
+    //     select: function (event, ui) {
+    //         if (ui.item.value === 'No results') {
+    //             return false;
+    //         }
+    //
+    //         const notePath = linkService.getNotePathFromLabel(ui.item.value);
+    //
+    //         treeService.activateNote(notePath);
+    //
+    //         $dialog.modal('hide');
+    //     }
+    // });
+
+    //showRecentNotes();
 }
 
 function showInFullText(e) {
