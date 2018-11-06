@@ -13,11 +13,7 @@ async function showDialog() {
 
     $autoComplete.val('');
 
-    $dialog.dialog({
-        modal: true,
-        width: 800,
-        position: { my: "center top+100", at: "top", of: window }
-    });
+    $dialog.modal();
 
     await $autoComplete.autocomplete({
         source: noteautocompleteService.autocompleteSource,
