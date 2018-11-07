@@ -43,11 +43,15 @@ function highlightResults(results, allTokens) {
     // sort by the longest so we first highlight longest matches
     allTokens.sort((a, b) => a.length > b.length ? -1 : 1);
 
+    for (const result of results) {
+        result.highlighted = result.title;
+    }
+
     for (const token of allTokens) {
         const tokenRegex = new RegExp("(" + utils.escapeRegExp(token) + ")", "gi");
 
         for (const result of results) {
-            result.title = result.title.replace(tokenRegex, "<b>$1</b>");
+            result.highlighted = result.highlighted.replace(tokenRegex, "<b>$1</b>");
         }
     }
 }
@@ -58,7 +62,8 @@ function findNotes(query) {
     }
 
     // trim is necessary because even with .split() trailing spaces are tokens which causes havoc
-    const allTokens = query.trim().toLowerCase().split(" ");
+    // filtering '/' because it's used as separator
+    const allTokens = query.trim().toLowerCase().split(" ").filter(token => token !== '/');
     const tokens = allTokens.slice();
     const results = [];
 

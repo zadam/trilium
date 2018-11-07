@@ -44,9 +44,12 @@ async function getRecentNotes(currentNoteId) {
       LIMIT 200`, [currentNoteId]);
 
     return recentNotes.map(rn => {
+        const title = noteCacheService.getNoteTitleForPath(rn.notePath.split('/'));
+
         return {
             path: rn.notePath,
-            title: noteCacheService.getNoteTitleForPath(rn.notePath.split('/'))
+            title: title,
+            highlighted: title
         };
     });
 }

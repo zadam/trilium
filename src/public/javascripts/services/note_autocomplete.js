@@ -44,11 +44,17 @@ function initNoteAutocomplete($el) {
                 displayKey: 'title',
                 templates: {
                     suggestion: function(suggestion) {
-                        return suggestion.title;
+                        return suggestion.highlighted;
                     }
                 }
             }
         ]);
+
+        $el.on('autocomplete:selected', function(event, suggestion, dataset) {
+            $el.prop("data-selected-path", suggestion.path);
+        });
+
+        $el.getSelectedPath = () => $el.prop("data-selected-path");
     }
 
     return $el;
