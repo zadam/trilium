@@ -6,20 +6,14 @@ async function autocompleteSource(term, cb) {
         + '?query=' + encodeURIComponent(term)
         + '&currentNoteId=' + noteDetailService.getCurrentNoteId());
 
-    if (result.length > 0) {
-        cb(result.map(row => {
-            return {
-                label: row.label,
-                value: row.label + ' (' + row.value + ')'
-            }
-        }));
+    if (result.length === 0) {
+        result.push({
+            title: "No results",
+            path: ""
+        });
     }
-    else {
-        cb([{
-            label: "No results",
-            value: "No results"
-        }]);
-    }
+
+    cb(result);
 }
 
 async function initNoteAutocomplete($el) {

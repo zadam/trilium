@@ -21,51 +21,29 @@ async function showDialog() {
         appendTo: document.querySelector('body'),
         hint: false,
         autoselect: true,
-        openOnFocus: true
+        openOnFocus: true,
+        minLength: 0
     }, [
         {
             source: noteautocompleteService.autocompleteSource,
-            displayKey: 'label',
+            displayKey: 'title',
             templates: {
                 suggestion: function(suggestion) {
-                    return suggestion.label;
+                    return suggestion.title;
                 }
             }
         }
     ]).on('autocomplete:selected', function(event, suggestion, dataset) {
-        console.log("selected: ", event, suggestion, dataset);
-        return;
-
-        if (ui.item.value === 'No results') {
+        if (!suggestion.path) {
             return false;
         }
 
-        const notePath = linkService.getNotePathFromLabel(ui.item.value);
-
-        treeService.activateNote(notePath);
+        treeService.activateNote(suggestion.path);
 
         $dialog.modal('hide');
     });
 
-    // await $autoComplete.autocomplete({
-    //     source: noteautocompleteService.autocompleteSource,
-    //     focus: event => event.preventDefault(),
-    //     minLength: 0,
-    //     autoFocus: true,
-    //     select: function (event, ui) {
-    //         if (ui.item.value === 'No results') {
-    //             return false;
-    //         }
-    //
-    //         const notePath = linkService.getNotePathFromLabel(ui.item.value);
-    //
-    //         treeService.activateNote(notePath);
-    //
-    //         $dialog.modal('hide');
-    //     }
-    // });
-
-    //showRecentNotes();
+    showRecentNotes();
 }
 
 function showInFullText(e) {
@@ -83,7 +61,8 @@ function showInFullText(e) {
 }
 
 function showRecentNotes() {
-    $autoComplete.autocomplete("search", "");
+    $autoComplete.autocomplete("val", "");
+    $autoComplete.autocomplete("open");
 }
 
 $showInFullTextButton.click(showInFullText);

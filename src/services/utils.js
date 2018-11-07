@@ -114,6 +114,10 @@ function union(a, b) {
     return res;
 }
 
+function escapeRegExp(str) {
+    return str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
+}
+
 module.exports = {
     randomSecureToken,
     randomString,
@@ -132,5 +136,6 @@ module.exports = {
     toObject,
     stripTags,
     intersection,
-    union
+    union,
+    escapeRegExp
 };

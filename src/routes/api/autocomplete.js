@@ -25,12 +25,7 @@ async function getAutocomplete(req) {
         log.info(`Slow autocomplete took ${msTaken}ms`);
     }
 
-    return results.map(res => {
-        return {
-            value: res.path,
-            label: res.title
-        }
-    });
+    return results;
 }
 
 async function getRecentNotes(currentNoteId) {

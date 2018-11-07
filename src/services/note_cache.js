@@ -35,12 +35,31 @@ async function load() {
     loaded = true;
 }
 
+function highlightResults(results, allTokens) {
+    // we remove < signs because they can cause trouble in matching and overwriting existing highlighted chunks
+    // which would make the resulting HTML string invalid.
+    allTokens = allTokens.map(token => token.replace('/</g', ''));
+
+    // sort by the longest so we first highlight longest matches
+    allTokens.sort((a, b) => a.length > b.length ? -1 : 1);
+
+    for (const token of allTokens) {
+        const tokenRegex = new RegExp("(" + utils.escapeRegExp(token) + ")", "gi");
+
+        for (const result of results) {
+            result.title = result.title.replace(tokenRegex, "<b>$1</b>");
+        }
+    }
+}
+
 function findNotes(query) {
     if (!noteTitles || !query.length) {
         return [];
     }
 
-    const tokens = query.toLowerCase().split(" ");
+    // trim is necessary because even with .split() trailing spaces are tokens which causes havoc
+    const allTokens = query.trim().toLowerCase().split(" ");
+    const tokens = allTokens.slice();
     const results = [];
 
     let noteIds = Object.keys(noteTitles);
@@ -90,6 +109,8 @@ function findNotes(query) {
     }
 
     results.sort((a, b) => a.title < b.title ? -1 : 1);
+
+    highlightResults(results, allTokens);
 
     return results;
 }
