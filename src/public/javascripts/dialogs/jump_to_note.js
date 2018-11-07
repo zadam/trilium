@@ -1,7 +1,6 @@
 import treeService from '../services/tree.js';
 import searchNotesService from '../services/search_notes.js';
-import noteautocompleteService from '../services/note_autocomplete.js';
-import linkService from "../services/link.js";
+import noteAutocompleteService from '../services/note_autocomplete.js';
 
 const $dialog = $("#jump-to-note-dialog");
 const $autoComplete = $("#jump-to-note-autocomplete");
@@ -17,33 +16,18 @@ async function showDialog() {
 
     $dialog.modal();
 
-    $autoComplete.autocomplete({
-        appendTo: document.querySelector('body'),
-        hint: false,
-        autoselect: true,
-        openOnFocus: true,
-        minLength: 0
-    }, [
-        {
-            source: noteautocompleteService.autocompleteSource,
-            displayKey: 'title',
-            templates: {
-                suggestion: function(suggestion) {
-                    return suggestion.title;
-                }
+    noteAutocompleteService.initNoteAutocomplete($autoComplete)
+        .on('autocomplete:selected', function(event, suggestion, dataset) {
+            if (!suggestion.path) {
+                return false;
             }
-        }
-    ]).on('autocomplete:selected', function(event, suggestion, dataset) {
-        if (!suggestion.path) {
-            return false;
-        }
 
-        treeService.activateNote(suggestion.path);
+            treeService.activateNote(suggestion.path);
 
-        $dialog.modal('hide');
-    });
+            $dialog.modal('hide');
+        });
 
-    showRecentNotes();
+    noteAutocompleteService.showRecentNotes($autoComplete);
 }
 
 function showInFullText(e) {
@@ -60,14 +44,11 @@ function showInFullText(e) {
     $dialog.modal('hide');
 }
 
-function showRecentNotes() {
-    $autoComplete.autocomplete("val", "");
-    $autoComplete.autocomplete("open");
-}
+
 
 $showInFullTextButton.click(showInFullText);
 
-$showRecentNotesButton.click(showRecentNotes);
+$showRecentNotesButton.click(noteAutocompleteService.showRecentNotes);
 
 $dialog.bind('keydown', 'ctrl+return', showInFullText);
 

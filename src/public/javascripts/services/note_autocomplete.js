@@ -16,8 +16,13 @@ async function autocompleteSource(term, cb) {
     cb(result);
 }
 
-async function initNoteAutocomplete($el) {
-    if (!$el.hasClass("ui-autocomplete-input")) {
+function showRecentNotes($el) {
+    $el.autocomplete("val", "");
+    $el.autocomplete("open");
+}
+
+function initNoteAutocomplete($el) {
+    if (!$el.hasClass("aa-input")) {
         const $showRecentNotesButton = $("<div>").addClass("input-group-append").append(
             $("<span>")
                 .addClass("input-group-text show-recent-notes-button")
@@ -25,22 +30,28 @@ async function initNoteAutocomplete($el) {
 
         $el.after($showRecentNotesButton);
 
-        $showRecentNotesButton.click(() => $el.autocomplete("search", ""));
+        $showRecentNotesButton.click(() => showRecentNotes($el));
 
-        await $el.autocomplete({
-            appendTo: $el.parent().parent(),
-            source: autocompleteSource,
-            minLength: 0,
-            change: function (event, ui) {
-                $el.trigger("change");
-            },
-            select: function (event, ui) {
-                if (ui.item.value === 'No results') {
-                    return false;
+        $el.autocomplete({
+            appendTo: document.querySelector('body'),
+            hint: false,
+            autoselect: true,
+            openOnFocus: true,
+            minLength: 0
+        }, [
+            {
+                source: autocompleteSource,
+                displayKey: 'title',
+                templates: {
+                    suggestion: function(suggestion) {
+                        return suggestion.title;
+                    }
                 }
             }
-        });
+        ]);
     }
+
+    return $el;
 }
 
 ko.bindingHandlers.noteAutocomplete = {
@@ -51,5 +62,6 @@ ko.bindingHandlers.noteAutocomplete = {
 
 export default {
     initNoteAutocomplete,
-    autocompleteSource
+    autocompleteSource,
+    showRecentNotes
 }
