@@ -7,13 +7,12 @@
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
-      <div class="modal-body">
-        <form data-bind="submit: save">
+      <form data-bind="submit: save">
+        <div class="modal-body">
           <div style="height: 97%; overflow: auto">
             <table id="owned-attributes-table" class="table">
               <thead>
               <tr>
-                <th></th>
                 <th>Type</th>
                 <th>Name</th>
                 <th>Value</th>
@@ -22,10 +21,6 @@
               </thead>
               <tbody data-bind="foreach: ownedAttributes">
               <tr data-bind="if: !isDeleted">
-                <td class="handle">
-                  <span class="glyphicon glyphicon-resize-vertical"></span>
-                  <input type="hidden" name="position" data-bind="value: position"/>
-                </td>
                 <td>
                   <select class="form-control attribute-type-select" style="width: auto;"
                       data-bind="options: $parent.availableTypes, optionsText: 'text', optionsValue: 'value', value: type, event: { change: $parent.typeChanged }"></select>
@@ -122,16 +117,16 @@
               </table>
             </div>
           </div>
-        </form>
-      </div>
-      <div class="modal-footer" style="display: flex; justify-content: space-between;">
-        <button class="btn btn-primary btn-large" style="width: 200px;" id="save-attributes-button" type="submit">
-          Save changes <kbd>enter</kbd></button>
+        </div>
+        <div class="modal-footer" style="display: flex; justify-content: space-between;">
+          <button class="btn btn-primary btn-large" style="width: 200px;" id="save-attributes-button" type="submit">
+            Save changes <kbd>enter</kbd></button>
 
-        <button class="btn btn-sm" type="button" data-help-page="Attributes">
-          <i class="glyphicon glyphicon-info-sign"></i> Help
-        </button>
-      </div>
+          <button class="btn btn-sm" type="button" data-help-page="Attributes">
+            <i class="glyphicon glyphicon-info-sign"></i> Help
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 </div>

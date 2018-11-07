@@ -326,19 +326,24 @@ async function showAttributes() {
                         return;
                     }
 
-                    $input.autocomplete({
-                        // shouldn't be required and autocomplete should just accept array of strings, but that fails
-                        // because we have overriden filter() function in autocomplete.js
-                        source: attributeValues.map(attribute => {
-                            return {
-                                attribute: attribute,
-                                value: attribute
-                            }
-                        }),
-                        minLength: 0
-                    });
+                    attributeValues = attributeValues.map(attribute => { return { value: attribute }; });
 
-                    $input.focus(() => $input.autocomplete("search", ""));
+                    $input.autocomplete({
+                        appendTo: document.querySelector('body'),
+                        hint: false,
+                        autoselect: true,
+                        openOnFocus: true,
+                        minLength: 0
+                    }, [{
+                        displayKey: 'value',
+                        source: function (term, cb) {
+                            term = term.toLowerCase();
+
+                            const filtered = attributeValues.filter(attr => attr.value.toLowerCase().includes(term));
+
+                            cb(filtered);
+                        }
+                    }]);
                 });
             }
             else if (definition.labelType === 'number') {
@@ -376,16 +381,22 @@ async function showAttributes() {
         }
         else if (valueAttr.type === 'relation') {
             if (valueAttr.value) {
-                $input.val((await treeUtils.getNoteTitle(valueAttr.value) + " (" + valueAttr.value + ")"));
+                $input.val(await treeUtils.getNoteTitle(valueAttr.value));
             }
 
             // no need to wait for this
             noteAutocompleteService.initNoteAutocomplete($input);
 
+            $input.on('autocomplete:selected', function(event, suggestion, dataset) {
+                promotedAttributeChanged(event);
+            });
+
+            $input.prop("data-selected-path", valueAttr.value);
+
             // ideally we'd use link instead of button which would allow tooltip preview, but
             // we can't guarantee updating the link in the a element
             const $openButton = $("<button>").addClass("btn btn-sm").text("Open").click(() => {
-                const notePath = linkService.getNotePathFromLabel($input.val());
+                const notePath = $input.prop("data-selected-path");
 
                 treeService.activateNote(notePath);
             });
@@ -473,9 +484,14 @@ async function showAttributes() {
                     $attributeListInner.append(utils.formatLabel(attribute) + " ");
                 }
                 else if (attribute.type === 'relation') {
-                    $attributeListInner.append('@' + attribute.name + "=");
-                    $attributeListInner.append(await linkService.createNoteLink(attribute.value));
-                    $attributeListInner.append(" ");
+                    if (attribute.value) {
+                        $attributeListInner.append('@' + attribute.name + "=");
+                        $attributeListInner.append(await linkService.createNoteLink(attribute.value));
+                        $attributeListInner.append(" ");
+                    }
+                    else {
+                        messagingService.logError(`Relation ${attribute.attributeId} has empty target`);
+                    }
                 }
                 else if (attribute.type === 'label-definition' || attribute.type === 'relation-definition') {
                     $attributeListInner.append(attribute.name + " definition ");
@@ -501,8 +517,10 @@ async function promotedAttributeChanged(event) {
         value = $attr.is(':checked') ? "true" : "false";
     }
     else if ($attr.prop("attribute-type") === "relation") {
-        if ($attr.val()) {
-            value = treeUtils.getNoteIdFromNotePath(linkService.getNotePathFromLabel($attr.val()));
+        const selectedPath = $attr.prop("data-selected-path");
+
+        if (selectedPath) {
+            value = treeUtils.getNoteIdFromNotePath(selectedPath);
         }
     }
     else {

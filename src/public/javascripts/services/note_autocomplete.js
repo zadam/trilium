@@ -63,6 +63,10 @@ function initNoteAutocomplete($el) {
 ko.bindingHandlers.noteAutocomplete = {
     init: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
         initNoteAutocomplete($(element));
+
+        $(element).on('autocomplete:selected', function(event, suggestion, dataset) {
+            bindingContext.$data.selectedPath = suggestion.path;
+        });
     }
 };
 

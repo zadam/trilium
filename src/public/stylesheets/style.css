@@ -523,7 +523,7 @@ table.promoted-attributes-in-tooltip td, table.promoted-attributes-in-tooltip th
 
 /* if modal height overflows, then only modal body scrolls */
 .modal-body {
-    max-height: calc(100vh - 120px);
+    max-height: calc(100vh - 200px);
     overflow-y: auto;
 }
 

@@ -61,7 +61,8 @@ function AttributesModel() {
 
         for (const attr of ownedAttributes) {
             attr.labelValue = attr.type === 'label' ? attr.value : '';
-            attr.relationValue = attr.type === 'relation' ? (await treeUtils.getNoteTitle(attr.value) + " (" + attr.value + ")") : '';
+            attr.relationValue = attr.type === 'relation' ? (await treeUtils.getNoteTitle(attr.value)) : '';
+            attr.selectedPath = attr.type === 'relation' ? attr.value : '';
             attr.labelDefinition = (attr.type === 'label-definition' && attr.value) ? attr.value : {
                 labelType: "text",
                 multiplicityType: "singlevalue",
@@ -94,12 +95,6 @@ function AttributesModel() {
 
         // attribute might not be rendered immediatelly so could not focus
         setTimeout(() => $(".attribute-type-select:last").focus(), 100);
-
-        $ownedAttributesBody.sortable({
-            handle: '.handle',
-            containment: $ownedAttributesBody,
-            update: this.updateAttributePositions
-        });
     };
 
     this.deleteAttribute = function(data, event) {
@@ -149,7 +144,7 @@ function AttributesModel() {
                 attr.value = attr.labelValue;
             }
             else if (attr.type === 'relation') {
-                attr.value = treeUtils.getNoteIdFromNotePath(linkService.getNotePathFromLabel(attr.relationValue)) || "";
+                attr.value = treeUtils.getNoteIdFromNotePath(attr.selectedPath);
             }
             else if (attr.type === 'label-definition') {
                 attr.value = attr.labelDefinition;
@@ -236,64 +231,69 @@ async function showDialog() {
 }
 
 $dialog.on('focus', '.attribute-name', function (e) {
-    if (!$(this).hasClass("ui-autocomplete-input")) {
+    if (!$(this).hasClass("aa-input")) {
         $(this).autocomplete({
-            source: async (request, response) => {
+            appendTo: document.querySelector('body'),
+            hint: false,
+            autoselect: true,
+            openOnFocus: true,
+            minLength: 0
+        }, [{
+            displayKey: 'name',
+            source: async (term, cb) => {
                 const attribute = attributesModel.getTargetAttribute(this);
                 const type = (attribute().type === 'relation' || attribute().type === 'relation-definition') ? 'relation' : 'label';
-                const names = await server.get('attributes/names/?type=' + type + '&query=' + encodeURIComponent(request.term));
+                const names = await server.get('attributes/names/?type=' + type + '&query=' + encodeURIComponent(term));
                 const result = names.map(name => {
-                    return {
-                        label: name,
-                        value: name
-                    }
+                    return {name};
                 });
 
-                if (result.length > 0) {
-                    response(result);
+                if (result.length === 0) {
+                    result.push({name: "No results"})
                 }
-                else {
-                    response([{
-                        label: "No results",
-                        value: "No results"
-                    }]);
-                }
-            },
-            minLength: 0
-        });
+
+                cb(result);
+            }
+            }]);
     }
 
-    $(this).autocomplete("search", $(this).val());
+    $(this).autocomplete("open");
 });
 
 $dialog.on('focus', '.label-value', async function (e) {
-    if (!$(this).hasClass("ui-autocomplete-input")) {
+    if (!$(this).hasClass("aa-input")) {
         const attributeName = $(this).parent().parent().find('.attribute-name').val();
 
         if (attributeName.trim() === "") {
             return;
         }
 
-        const attributeValues = await server.get('attributes/values/' + encodeURIComponent(attributeName));
+        const attributeValues = (await server.get('attributes/values/' + encodeURIComponent(attributeName)))
+            .map(attribute => { return { value: attribute }; });
 
         if (attributeValues.length === 0) {
             return;
         }
 
         $(this).autocomplete({
-            // shouldn't be required and autocomplete should just accept array of strings, but that fails
-            // because we have overriden filter() function in autocomplete.js
-            source: attributeValues.map(attribute => {
-                return {
-                    attribute: attribute,
-                    value: attribute
-                }
-            }),
+            appendTo: document.querySelector('body'),
+            hint: false,
+            autoselect: true,
+            openOnFocus: true,
             minLength: 0
-        });
+        }, [{
+            displayKey: 'value',
+            source: function (term, cb) {
+                term = term.toLowerCase();
+
+                const filtered = attributeValues.filter(attr => attr.value.toLowerCase().includes(term));
+
+                cb(filtered);
+            }
+        }]);
     }
 
-    $(this).autocomplete("search", $(this).val());
+    $(this).autocomplete("open");
 });
 
 export default {
