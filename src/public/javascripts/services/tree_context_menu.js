@@ -6,6 +6,7 @@ import protectedSessionService from './protected_session.js';
 import treeChangesService from './branches.js';
 import treeUtils from './tree_utils.js';
 import branchPrefixDialog from '../dialogs/branch_prefix.js';
+import exportSubtreeDialog from '../dialogs/export_subtree.js';
 import infoService from "./info.js";
 import treeCache from "./tree_cache.js";
 import syncService from "./sync.js";
@@ -177,14 +178,8 @@ function selectContextMenuItem(event, cmd) {
     else if (cmd === "delete") {
         treeChangesService.deleteNodes(treeService.getSelectedNodes(true));
     }
-    else if (cmd === "exportSubtreeToTar") {
-        exportService.exportSubtree(node.data.branchId, 'tar');
-    }
-    else if (cmd === "exportSubtreeToOpml") {
-        exportService.exportSubtree(node.data.branchId, 'opml');
-    }
-    else if (cmd === "exportSubtreeToMarkdown") {
-        exportService.exportSubtree(node.data.branchId, 'markdown');
+    else if (cmd === "exportSubtree") {
+        exportSubtreeDialog.showDialog();
     }
     else if (cmd === "importIntoNote") {
         exportService.importIntoNote(node.data.noteId);
