@@ -3,7 +3,7 @@ import noteDetailService from './note_detail.js';
 import utils from "./utils.js";
 import infoService from "./info.js";
 
-const $noteDetailText = $('#note-detail-text');
+const $component = $('#note-detail-text');
 
 const $markdownImportDialog = $('#markdown-import-dialog');
 const $markdownImportTextarea = $('#markdown-import-textarea');
@@ -18,7 +18,7 @@ async function show() {
         // textEditor might have been initialized during previous await so checking again
         // looks like double initialization can freeze CKEditor pretty badly
         if (!textEditor) {
-            textEditor = await BalloonEditor.create($noteDetailText[0]);
+            textEditor = await BalloonEditor.create($component[0]);
 
             onNoteChange(noteDetailService.noteChanged);
         }
@@ -26,7 +26,7 @@ async function show() {
 
     textEditor.setData(noteDetailService.getCurrentNote().content);
 
-    $noteDetailText.show();
+    $component.show();
 }
 
 function getContent() {
@@ -42,7 +42,7 @@ function getContent() {
 }
 
 function focus() {
-    $noteDetailText.focus();
+    $component.focus();
 }
 
 function getEditor() {

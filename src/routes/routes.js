@@ -144,7 +144,7 @@ function register(app) {
     apiRoute(GET, '/api/attributes/names', attributesRoute.getAttributeNames);
     apiRoute(GET, '/api/attributes/values/:attributeName', attributesRoute.getValuesForAttribute);
 
-    route(GET, '/api/images/:imageId/:filename', [auth.checkApiAuthOrElectron], imageRoute.returnImage);
+    route(GET, '/api/images/:noteId/:filename', [auth.checkApiAuthOrElectron], imageRoute.returnImage);
     route(POST, '/api/images', [auth.checkApiAuthOrElectron, uploadMiddleware], imageRoute.uploadImage, apiResultHandler);
 
     apiRoute(GET, '/api/recent-changes', recentChangesApiRoute.getRecentChanges);

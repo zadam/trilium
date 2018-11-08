@@ -6,19 +6,22 @@ const RESOURCE_DIR = require('../../services/resource_dir').RESOURCE_DIR;
 const fs = require('fs');
 
 async function returnImage(req, res) {
-    const image = await repository.getImage(req.params.imageId);
+    const image = await repository.getNote(req.params.noteId);
 
     if (!image) {
         return res.sendStatus(404);
+    }
+    else if (image.type !== 'image') {
+        return res.sendStatus(400);
     }
     else if (image.data === null) {
         res.set('Content-Type', 'image/png');
         return res.send(fs.readFileSync(RESOURCE_DIR + '/db/image-deleted.png'));
     }
 
-    res.set('Content-Type', 'image/' + image.format);
+    res.set('Content-Type', image.mime);
 
-    res.send(image.data);
+    res.send(image.content);
 }
 
 async function uploadImage(req) {

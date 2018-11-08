@@ -184,27 +184,6 @@ async function runAllChecks() {
 
     await runCheck(`
           SELECT 
-            images.imageId
-          FROM 
-            images
-            LEFT JOIN note_images ON note_images.imageId = images.imageId
-          WHERE 
-            note_images.noteImageId IS NULL`,
-        "Image with no note relation", errorList);
-
-    await runCheck(`
-          SELECT 
-            note_images.noteImageId
-          FROM 
-            note_images
-            JOIN images USING(imageId)
-          WHERE 
-            note_images.isDeleted = 0
-            AND images.isDeleted = 1`,
-        "Note image is not deleted while image is deleted for noteImageId", errorList);
-
-    await runCheck(`
-          SELECT 
             noteId
           FROM 
             notes
@@ -232,8 +211,6 @@ async function runAllChecks() {
     await runSyncRowChecks("note_revisions", "noteRevisionId", errorList);
     await runSyncRowChecks("branches", "branchId", errorList);
     await runSyncRowChecks("recent_notes", "branchId", errorList);
-    await runSyncRowChecks("images", "imageId", errorList);
-    await runSyncRowChecks("note_images", "noteImageId", errorList);
     await runSyncRowChecks("attributes", "attributeId", errorList);
     await runSyncRowChecks("api_tokens", "apiTokenId", errorList);
     await runSyncRowChecks("options", "name", errorList);

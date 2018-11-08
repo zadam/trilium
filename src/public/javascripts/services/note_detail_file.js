@@ -3,7 +3,7 @@ import server from "./server.js";
 import protectedSessionHolder from "./protected_session_holder.js";
 import noteDetailService from "./note_detail.js";
 
-const $noteDetailFile = $('#note-detail-file');
+const $component = $('#note-detail-file');
 
 const $fileFileName = $("#file-filename");
 const $fileFileType = $("#file-filetype");
@@ -17,7 +17,7 @@ async function show() {
     const attributes = await server.get('notes/' + currentNote.noteId + '/attributes');
     const attributeMap = utils.toObject(attributes, l => [l.name, l.value]);
 
-    $noteDetailFile.show();
+    $component.show();
 
     $fileFileName.text(attributeMap.originalFileName);
     $fileFileSize.text(attributeMap.fileSize + " bytes");

@@ -3,39 +3,20 @@ import server from "./server.js";
 import protectedSessionHolder from "./protected_session_holder.js";
 import noteDetailService from "./note_detail.js";
 
-const $noteDetailFile = $('#note-detail-file');
+const $component = $('#note-detail-image');
+const $imageView = $('#note-detail-image-view');
 
-const $fileFileName = $("#file-filename");
-const $fileFileType = $("#file-filetype");
-const $fileFileSize = $("#file-filesize");
-const $fileDownload = $("#file-download");
-const $fileOpen = $("#file-open");
+const $imageDownload = $("#image-download");
 
 async function show() {
     const currentNote = noteDetailService.getCurrentNote();
 
-    const attributes = await server.get('notes/' + currentNote.noteId + '/attributes');
-    const attributeMap = utils.toObject(attributes, l => [l.name, l.value]);
+    $component.show();
 
-    $noteDetailFile.show();
-
-    $fileFileName.text(attributeMap.originalFileName);
-    $fileFileSize.text(attributeMap.fileSize + " bytes");
-    $fileFileType.text(currentNote.mime);
+    $imageView.prop("src", `/api/images/${currentNote.noteId}/${currentNote.title}`);
 }
 
-$fileDownload.click(() => utils.download(getFileUrl()));
-
-$fileOpen.click(() => {
-    if (utils.isElectron()) {
-        const open = require("open");
-
-        open(getFileUrl());
-    }
-    else {
-        window.location.href = getFileUrl();
-    }
-});
+$imageDownload.click(() => utils.download(getFileUrl()));
 
 function getFileUrl() {
     // electron needs absolute URL so we extract current host, port, protocol

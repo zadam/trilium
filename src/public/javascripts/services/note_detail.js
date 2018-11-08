@@ -13,6 +13,7 @@ import NoteFull from "../entities/note_full.js";
 import noteDetailCode from './note_detail_code.js';
 import noteDetailText from './note_detail_text.js';
 import noteDetailFile from './note_detail_file.js';
+import noteDetailImage from './note_detail_image.js';
 import noteDetailSearch from './note_detail_search.js';
 import noteDetailRender from './note_detail_render.js';
 import noteDetailRelationMap from './note_detail_relation_map.js';
@@ -45,6 +46,7 @@ const components = {
     'code': noteDetailCode,
     'text': noteDetailText,
     'file': noteDetailFile,
+    'image': noteDetailImage,
     'search': noteDetailSearch,
     'render': noteDetailRender,
     'relation-map': noteDetailRelationMap

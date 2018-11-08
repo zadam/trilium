@@ -1,7 +1,7 @@
 import noteDetailService from "./note_detail.js";
 
 const $searchString = $("#search-string");
-const $noteDetailSearch = $('#note-detail-search');
+const $component = $('#note-detail-search');
 
 function getContent() {
     JSON.stringify({
@@ -10,7 +10,7 @@ function getContent() {
 }
 
 function show() {
-    $noteDetailSearch.show();
+    $component.show();
 
     try {
         const json = JSON.parse(noteDetailService.getCurrentNote().content);

@@ -4,7 +4,7 @@ import linkService from "./link.js";
 import libraryLoader from "./library_loader.js";
 import treeService from "./tree.js";
 
-const $noteDetailRelationMap = $("#note-detail-relation-map");
+const $component = $("#note-detail-relation-map");
 const $relationMapCanvas = $("#relation-map-canvas");
 const $addChildNotesButton = $("#relation-map-add-child-notes");
 const $createChildNote = $("#relation-map-create-child-note");
@@ -60,7 +60,7 @@ function loadMapData() {
 }
 
 async function show() {
-    $noteDetailRelationMap.show();
+    $component.show();
 
     await libraryLoader.requireLibrary(libraryLoader.RELATION_MAP);
 

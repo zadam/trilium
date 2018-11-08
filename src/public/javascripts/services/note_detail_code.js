@@ -6,7 +6,7 @@ import noteDetailService from "./note_detail.js";
 
 let codeEditor = null;
 
-const $noteDetailCode = $('#note-detail-code');
+const $component = $('#note-detail-code');
 const $executeScriptButton = $("#execute-script-button");
 
 async function show() {
@@ -22,7 +22,7 @@ async function show() {
 
         CodeMirror.modeURL = 'libraries/codemirror/mode/%N/%N.js';
 
-        codeEditor = CodeMirror($noteDetailCode[0], {
+        codeEditor = CodeMirror($component[0], {
             value: "",
             viewportMargin: Infinity,
             indentUnit: 4,
@@ -38,7 +38,7 @@ async function show() {
         onNoteChange(noteDetailService.noteChanged);
     }
 
-    $noteDetailCode.show();
+    $component.show();
 
     const currentNote = noteDetailService.getCurrentNote();
 
