@@ -6,6 +6,7 @@ import noteSourceDialog from '../dialogs/note_source.js';
 import recentChangesDialog from '../dialogs/recent_changes.js';
 import optionsDialog from '../dialogs/options.js';
 import sqlConsoleDialog from '../dialogs/sql_console.js';
+import markdownImportDialog from '../dialogs/markdown_import.js';
 
 import cloning from './cloning.js';
 import contextMenu from './tree_context_menu.js';

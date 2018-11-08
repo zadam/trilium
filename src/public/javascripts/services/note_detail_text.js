@@ -1,13 +1,7 @@
 import libraryLoader from "./library_loader.js";
 import noteDetailService from './note_detail.js';
-import utils from "./utils.js";
-import infoService from "./info.js";
 
 const $component = $('#note-detail-text');
-
-const $markdownImportDialog = $('#markdown-import-dialog');
-const $markdownImportTextarea = $('#markdown-import-textarea');
-const $markdownImportButton = $('#markdown-import-button');
 
 let textEditor = null;
 
@@ -49,58 +43,9 @@ function getEditor() {
     return textEditor;
 }
 
-async function convertMarkdownToHtml(text) {
-    await libraryLoader.requireLibrary(libraryLoader.COMMONMARK);
-
-    const reader = new commonmark.Parser();
-    const writer = new commonmark.HtmlRenderer();
-    const parsed = reader.parse(text);
-
-    const result = writer.render(parsed);
-
-    const viewFragment = textEditor.data.processor.toView(result);
-    const modelFragment = textEditor.data.toModel(viewFragment);
-
-    textEditor.model.insertContent(modelFragment, textEditor.model.document.selection);
-
-    infoService.showMessage("Markdown content has been imported into the document.");
-}
-
-async function importMarkdownInline() {
-    if (utils.isElectron()) {
-        const {clipboard} = require('electron');
-        const text = clipboard.readText();
-
-        convertMarkdownToHtml(text);
-    }
-    else {
-        $("input[name='search-text']").focus();
-
-        glob.activeDialog = $markdownImportDialog;
-
-        $markdownImportDialog.modal();
-    }
-}
-
-async function sendMarkdownDialog() {
-    const text = $markdownImportTextarea.val();
-
-    $markdownImportDialog.modal('hide');
-
-    await convertMarkdownToHtml(text);
-
-    $markdownImportTextarea.val('');
-}
-
 function onNoteChange(func) {
     textEditor.model.document.on('change:data', func);
 }
-
-$markdownImportButton.click(sendMarkdownDialog);
-
-$markdownImportDialog.bind('keydown', 'ctrl+return', sendMarkdownDialog);
-
-window.glob.importMarkdownInline = importMarkdownInline;
 
 export default {
     show,
