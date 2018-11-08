@@ -2,7 +2,7 @@ import noteDetailService from '../services/note_detail.js';
 import server from '../services/server.js';
 import infoService from "../services/info.js";
 import treeUtils from "../services/tree_utils.js";
-import linkService from "../services/link.js";
+import attributeService from "../services/attributes.js";
 
 const $dialog = $("#attributes-dialog");
 const $saveAttributesButton = $("#save-attributes-button");
@@ -165,7 +165,7 @@ function AttributesModel() {
 
         infoService.showMessage("Attributes have been saved.");
 
-        noteDetailService.refreshAttributes();
+        attributeService.refreshAttributes();
     };
 
     function addLastEmptyRow() {
