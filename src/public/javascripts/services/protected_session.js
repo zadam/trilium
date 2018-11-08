@@ -40,6 +40,7 @@ function ensureProtectedSession(requireProtectedSession, modal) {
             $noteDetailWrapper.hide();
         }
 
+        $dialog.toggleClass("modalless", !modal);
         $dialog.modal();
     }
     else {
@@ -156,7 +157,16 @@ $passwordForm.submit(() => {
     return false;
 });
 
-$dialog.on("shown.bs.modal", e => $password.focus());
+// this doesn't work, event is not triggered :/
+$dialog.on("show.bs.modal", e => function() {
+    if ($(this).hasClass("modalless")) {
+        // return "stolen" focus to tree
+        treeService.getCurrentNode().setFocus();
+    }
+    else {
+        $password.focus();
+    }
+});
 
 $protectButton.click(protectNoteAndSendToServer);
 $unprotectButton.click(unprotectNoteAndSendToServer);

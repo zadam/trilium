@@ -584,3 +584,11 @@ table.promoted-attributes-in-tooltip td, table.promoted-attributes-in-tooltip th
     border: 0;
     cursor: pointer;
 }
+
+.modalless {
+    top:10%;
+    left:50%;
+    bottom:auto;
+    right:auto;
+    margin-left:-300px;
+}
