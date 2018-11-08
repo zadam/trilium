@@ -47,9 +47,7 @@ async function uploadImage(req) {
         mime: 'text/html'
     });
 
-    const {fileName, imageId} = await imageService.saveImage(file, null, note.noteId);
-
-    const url = `/api/images/${imageId}/${fileName}`;
+    const {url} = await imageService.saveImage(file, null, note.noteId);
 
     const content = `<img src="${url}"/>`;
 

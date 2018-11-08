@@ -7,7 +7,7 @@ const eventService = require('./events');
 const repository = require('./repository');
 const cls = require('../services/cls');
 const Note = require('../entities/note');
-const NoteImage = require('../entities/note_image');
+const Link = require('../entities/link');
 const NoteRevision = require('../entities/note_revision');
 const Branch = require('../entities/branch');
 const Attribute = require('../entities/attribute');
@@ -45,6 +45,9 @@ async function triggerNoteTitleChanged(note) {
     await eventService.emit(eventService.NOTE_TITLE_CHANGED, note);
 }
 
+/**
+ * FIXME: noteData has mandatory property "target", it might be better to add it as parameter to reflect this
+ */
 async function createNewNote(parentNoteId, noteData) {
     const newNotePos = await getNewNotePosition(parentNoteId, noteData);
 
@@ -67,7 +70,7 @@ async function createNewNote(parentNoteId, noteData) {
 
     const note = await new Note({
         title: noteData.title,
-        content: noteData.content || '',
+        content: noteData.content,
         isProtected: noteData.isProtected,
         type: noteData.type || 'text',
         mime: noteData.mime || 'text/html'
@@ -135,8 +138,6 @@ async function createNote(parentNoteId, title, content = "", extraOptions = {}) 
         });
     }
 
-    await triggerNoteTitleChanged(note);
-
     return {note, branch};
 }
 
@@ -168,38 +169,42 @@ async function protectNoteRevisions(note) {
     }
 }
 
-async function saveNoteImages(note) {
+async function saveLinks(note) {
     if (note.type !== 'text') {
         return;
     }
 
-    const existingNoteImages = await note.getNoteImages();
-    const foundImageIds = [];
+    const existingLinks = await note.getLinks();
+    const foundNoteIds = [];
     const re = /src="\/api\/images\/([a-zA-Z0-9]+)\//g;
     let match;
 
     while (match = re.exec(note.content)) {
-        const imageId = match[1];
-        const existingNoteImage = existingNoteImages.find(ni => ni.imageId === imageId);
+        const targetNoteId = match[1];
+        const existingLink = existingLinks.find(link => link.targetNoteId === targetNoteId && link.type === 'image');
 
-        if (!existingNoteImage) {
-            await new NoteImage({
+        if (!existingLink) {
+            await new Link({
                 noteId: note.noteId,
-                imageId: imageId
+                targetNoteId,
+                type: 'image'
             }).save();
         }
-        // else we don't need to do anything
+        else if (existingLink.isDeleted) {
+            existingLink.isDeleted = false;
+            await existingLink.save();
+        }
+        // else the link exists so we don't need to do anything
 
-        foundImageIds.push(imageId);
+        foundNoteIds.push(targetNoteId);
     }
 
-    // marking note images as deleted if they are not present on the page anymore
-    const unusedNoteImages = existingNoteImages.filter(ni => !foundImageIds.includes(ni.imageId));
+    // marking links as deleted if they are not present on the page anymore
+    const unusedLinks = existingLinks.filter(link => !foundNoteIds.includes(link.noteId));
 
-    for (const unusedNoteImage of unusedNoteImages) {
-        unusedNoteImage.isDeleted = true;
-
-        await unusedNoteImage.save();
+    for (const unusedLink of unusedLinks) {
+        unusedLink.isDeleted = true;
+        await unusedLink.save();
     }
 }
 
@@ -258,7 +263,7 @@ async function updateNote(noteId, noteUpdates) {
         await triggerNoteTitleChanged(note);
     }
 
-    await saveNoteImages(note);
+    await saveLinks(note);
 
     await protectNoteRevisions(note);
 }

@@ -25,6 +25,7 @@ CREATE TABLE "links" (
   `noteId`	TEXT NOT NULL,
   `targetNoteId`	TEXT NOT NULL,
   `type` TEXT NOT NULL,
+  `hash` TEXT DEFAULT "" NOT NULL,
   `isDeleted`	INTEGER NOT NULL DEFAULT 0,
   `dateCreated`	TEXT NOT NULL,
   `dateModified`	TEXT NOT NULL,

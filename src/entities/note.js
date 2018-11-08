@@ -481,17 +481,19 @@ class Note extends Entity {
     }
 
     /**
-     * @returns {Promise<NoteImage[]>}
-     */
-    async getNoteImages() {
-        return await repository.getEntities("SELECT * FROM note_images WHERE noteId = ? AND isDeleted = 0", [this.noteId]);
-    }
-
-    /**
      * @returns {Promise<Link[]>}
      */
     async getLinks() {
         return await repository.getEntities("SELECT * FROM links WHERE noteId = ? AND isDeleted = 0", [this.noteId]);
+    }
+
+    /**
+     * Return all links from this note, including deleted ones.
+     *
+     * @returns {Promise<Link[]>}
+     */
+    async getLinksWithDeleted() {
+        return await repository.getEntities("SELECT * FROM links WHERE noteId = ?", [this.noteId]);
     }
 
     /**

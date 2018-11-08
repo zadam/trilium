@@ -37,6 +37,7 @@ window.glob.getHeaders = server.getHeaders;
 window.glob.showAddLinkDialog = addLinkDialog.showDialog;
 // this is required by CKEditor when uploading images
 window.glob.noteChanged = noteDetailService.noteChanged;
+window.glob.refreshTree = treeService.reload;
 
 // required for ESLint plugin
 window.glob.getCurrentNote = noteDetailService.getCurrentNote;

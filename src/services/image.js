@@ -1,8 +1,7 @@
 "use strict";
 
 const utils = require('./utils');
-const Image = require('../entities/image');
-const NoteImage = require('../entities/note_image');
+const noteService = require('./notes');
 const imagemin = require('imagemin');
 const imageminMozJpeg = require('imagemin-mozjpeg');
 const imageminPngQuant = require('imagemin-pngquant');
@@ -20,22 +19,18 @@ async function saveImage(buffer, originalName, noteId) {
     const fileNameWithoutExtension = originalName.replace(/\.[^/.]+$/, "");
     const fileName = sanitizeFilename(fileNameWithoutExtension + "." + imageFormat.ext);
 
-    const image = await new Image({
-        format: imageFormat.ext,
-        name: fileName,
-        checksum: utils.hash(optimizedImage),
-        data: optimizedImage
-    }).save();
-
-    await new NoteImage({
-        noteId: noteId,
-        imageId: image.imageId
-    }).save();
+    const {note} = await noteService.createNewNote(noteId, {
+        target: 'into',
+        title: fileName,
+        content: optimizedImage,
+        type: 'image',
+        mime: 'image/' + imageFormat.ext
+    });
 
     return {
         fileName,
-        imageId: image.imageId,
-        url: `/api/images/${image.imageId}/${fileName}`
+        noteId: note.noteId,
+        url: `/api/images/${note.noteId}/${fileName}`
     };
 }
 
