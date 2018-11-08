@@ -238,7 +238,10 @@ async function loadNoteDetail(noteId) {
 async function showChildrenOverview() {
     const note = getCurrentNote();
     const attributes = await attributePromise;
-    const hideChildrenOverview = attributes.some(attr => attr.type === 'label' && attr.name === 'hideChildrenOverview') || note.type === 'relation-map';
+    const hideChildrenOverview = attributes.some(attr => attr.type === 'label' && attr.name === 'hideChildrenOverview')
+        || note.type === 'relation-map'
+        || note.type === 'image'
+        || note.type === 'file';
 
     if (hideChildrenOverview) {
         $childrenOverview.hide();

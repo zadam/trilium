@@ -95,6 +95,8 @@
         </div>
 
         <div id="tree"></div>
+
+        <div class="dropdown-menu dropdown-menu-sm context-menu" id="tree-context-menu"></div>
       </div>
 
       <div id="title-container">
@@ -140,7 +142,7 @@
 
             &nbsp; &nbsp;
 
-            <div class="dropdown" id="note-type" data-bind="visible: type() != 'search'">
+            <div class="dropdown" id="note-type">
               <button data-bind="disable: isDisabled()" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-sm dropdown-toggle">
                 Type: <span data-bind="text: typeString()"></span>
                 <span class="caret"></span>
@@ -176,133 +178,7 @@
         </div>
       </div>
 
-      <div id="note-detail-wrapper">
-        <div id="note-detail-script-area"></div>
-
-        <table id="note-detail-promoted-attributes"></table>
-
-        <div id="note-detail-component-wrapper">
-          <div id="note-detail-text" class="note-detail-component" tabindex="10000"></div>
-
-          <div id="note-detail-search" class="note-detail-component">
-            <div style="display: flex; align-items: center;">
-              <strong>Search string: &nbsp; &nbsp;</strong>
-              <textarea rows="4" cols="50" id="search-string"></textarea>
-            </div>
-
-            <br />
-
-            <h4>Help</h4>
-            <p>
-              <ul>
-                <li>
-                  <code>@abc</code> - matches notes with label abc</li>
-                <li>
-                  <code>@!abc</code> - matches notes without abc label (maybe not the best syntax)</li>
-                <li>
-                  <code>@abc=true</code> - matches notes with label abc having value true</li>
-                <li><code>@abc!=true</code></li>
-                <li>
-                  <code>@"weird label"="weird value"</code> - works also with whitespace inside names values</li>
-                <li>
-                  <code>@abc and @def</code> - matches notes with both abc and def</li>
-                <li>
-                  <code>@abc @def</code> - AND relation is implicit when specifying multiple labels</li>
-                <li>
-                  <code>@abc or @def</code> - OR relation</li>
-                <li>
-                  <code>@abc&lt;=5</code> - numerical comparison (also &gt;, &gt;=, &lt;).</li>
-                <li>
-                  <code>some search string @abc @def</code> - combination of fulltext and label search - both of them need to match (OR not supported)</li>
-                <li>
-                  <code>@abc @def some search string</code> - same combination</li>
-              </ul>
-
-              <button class="btn btn-sm" type="button" data-help-page="Search">
-                <i class="glyphicon glyphicon-info-sign"></i> Complete help on search
-              </button>
-            </p>
-          </div>
-
-          <div id="note-detail-code" class="note-detail-component"></div>
-
-          <div id="note-detail-render" class="note-detail-component">
-            <div id="note-detail-render-help" class="alert alert-warning">
-              <p><strong>This help note is shown because this note of type Render HTML doesn't have required relation to function properly.</strong></p>
-
-              <p>Render HTML note type is used for <a href="https://github.com/zadam/trilium/wiki/Scripts">scripting</a>. In short, you have a HTML code note (optionally with some JavaScript) and this note will render it. To make it work, you need to define a relation (in <a class="show-attributes-button">Attributes dialog</a>) called "renderNote" pointing to the HTML note to render. Once that's defined you can click on the "play" button to render.</p>
-            </div>
-
-            <div id="note-detail-render-content"></div>
-          </div>
-
-          <div id="note-detail-file" class="note-detail-component">
-            <table id="file-table">
-              <tr>
-                <th>File name:</th>
-                <td id="file-filename"></td>
-              </tr>
-              <tr>
-                <th>File type:</th>
-                <td id="file-filetype"></td>
-              </tr>
-              <tr>
-                <th>File size:</th>
-                <td id="file-filesize"></td>
-              </tr>
-              <tr>
-                <td>
-                  <button id="file-download" class="btn btn-primary" type="button">Download</button>
-                  &nbsp;
-                  <button id="file-open" class="btn btn-primary" type="button">Open</button>
-                </td>
-              </tr>
-            </table>
-          </div>
-
-          <input type="file" id="file-upload" style="display: none" />
-
-          <div id="note-detail-relation-map" class="note-detail-component">
-            <button id="relation-map-add-child-notes" class="btn" type="button"
-              title="Add all child notes of this relation map note">Add child notes</button>
-
-            &nbsp;
-
-            <button id="relation-map-create-child-note" class="btn" type="button"
-              title="Create new child note and add it into this relation map">Create child note</button>
-
-            <div class="btn-group" style="float: right; padding-right: 20px;">
-              <button type="button"
-                      class="btn icon-button24"
-                      title="Zoom In"
-                      id="relation-map-zoom-in"
-                      style="background-image: url('/images/icons/zoom-in-24.png');"/>
-
-              <button type="button"
-                      class="btn icon-button24"
-                      title="Zoom Out"
-                      id="relation-map-zoom-out"
-                      style="background-image: url('/images/icons/zoom-out-24.png');"/>
-            </div>
-
-            <div id="relation-map-canvas"></div>
-          </div>
-        </div>
-
-        <div id="children-overview"></div>
-
-        <div id="attribute-list">
-          <button class="btn btn-sm show-attributes-button">Attributes:</button>
-
-          <span id="attribute-list-inner"></span>
-        </div>
-      </div>
-
-      <div class="dropdown-menu dropdown-menu-sm context-menu" id="tree-context-menu">
-        <a class="dropdown-item" href="#">Action</a>
-        <a class="dropdown-item" href="#">Another action</a>
-        <a class="dropdown-item" href="#">Something else here</a>
-      </div>
+      <% include details/detail.ejs %>
 
       <% include dialogs/add_link.ejs %>
       <% include dialogs/attributes.ejs %>

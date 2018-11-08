@@ -31,8 +31,8 @@ $("#import-upload").change(async function() {
         data: formData,
         dataType: 'json',
         type: 'POST',
-        contentType: false, // NEEDED, DON'T OMIT THIS
-        processData: false, // NEEDED, DON'T OMIT THIS
+        contentType: false, // NEEDED, DON'T REMOVE THIS
+        processData: false, // NEEDED, DON'T REMOVE THIS
     })
         .fail((xhr, status, error) => alert('Import error: ' + xhr.responseText))
         .done(async note => {

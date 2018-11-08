@@ -81,7 +81,10 @@ function NoteTypeModel() {
             return 'Relation Map';
         }
         else if (type === 'search') {
-            // ignore and do nothing, "type" will be hidden since it's not possible to switch to and from search
+            return 'Search note'
+        }
+        else if (type === 'image') {
+            return 'Image'
         }
         else {
             infoService.throwError('Unrecognized type: ' + type);
@@ -89,7 +92,7 @@ function NoteTypeModel() {
     };
 
     this.isDisabled = function() {
-        return self.type() === "file";
+        return ["file", "image", "search"].includes(self.type());
     };
 
     async function save() {

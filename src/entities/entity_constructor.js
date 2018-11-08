@@ -2,6 +2,7 @@ const Note = require('../entities/note');
 const NoteRevision = require('../entities/note_revision');
 const Image = require('../entities/image');
 const NoteImage = require('../entities/note_image');
+const Link = require('../entities/link');
 const Branch = require('../entities/branch');
 const Attribute = require('../entities/attribute');
 const RecentNote = require('../entities/recent_note');
@@ -37,6 +38,9 @@ function createEntityFromRow(row) {
     }
     else if (row.noteRevisionId) {
         entity = new NoteRevision(row);
+    }
+    else if (row.linkId) {
+        entity = new Link(row);
     }
     else if (row.noteImageId) {
         entity = new NoteImage(row);

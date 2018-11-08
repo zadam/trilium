@@ -12,8 +12,8 @@ async function getNote(req) {
         return [404, "Note " + noteId + " has not been found."];
     }
 
-    if (note.type === 'file') {
-        // no need to transfer (potentially large) file payload for this request
+    if (note.type === 'file' || note.type === 'image') {
+        // no need to transfer (potentially large) file/image payload for this request
         note.content = null;
     }
 

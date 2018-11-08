@@ -1,0 +1,39 @@
+<div id="note-detail-search" class="note-detail-component">
+    <div style="display: flex; align-items: center;">
+        <strong>Search string: &nbsp; &nbsp;</strong>
+        <textarea rows="4" cols="50" id="search-string"></textarea>
+    </div>
+
+    <br />
+
+    <h4>Help</h4>
+    <p>
+    <ul>
+        <li>
+            <code>@abc</code> - matches notes with label abc</li>
+        <li>
+            <code>@!abc</code> - matches notes without abc label (maybe not the best syntax)</li>
+        <li>
+            <code>@abc=true</code> - matches notes with label abc having value true</li>
+        <li><code>@abc!=true</code></li>
+        <li>
+            <code>@"weird label"="weird value"</code> - works also with whitespace inside names values</li>
+        <li>
+            <code>@abc and @def</code> - matches notes with both abc and def</li>
+        <li>
+            <code>@abc @def</code> - AND relation is implicit when specifying multiple labels</li>
+        <li>
+            <code>@abc or @def</code> - OR relation</li>
+        <li>
+            <code>@abc&lt;=5</code> - numerical comparison (also &gt;, &gt;=, &lt;).</li>
+        <li>
+            <code>some search string @abc @def</code> - combination of fulltext and label search - both of them need to match (OR not supported)</li>
+        <li>
+            <code>@abc @def some search string</code> - same combination</li>
+    </ul>
+
+    <button class="btn btn-sm" type="button" data-help-page="Search">
+        <i class="glyphicon glyphicon-info-sign"></i> Complete help on search
+    </button>
+    </p>
+</div>

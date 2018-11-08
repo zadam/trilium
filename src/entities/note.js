@@ -488,6 +488,13 @@ class Note extends Entity {
     }
 
     /**
+     * @returns {Promise<Link[]>}
+     */
+    async getLinks() {
+        return await repository.getEntities("SELECT * FROM links WHERE noteId = ? AND isDeleted = 0", [this.noteId]);
+    }
+
+    /**
      * @returns {Promise<Branch[]>}
      */
     async getBranches() {
