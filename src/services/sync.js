@@ -243,8 +243,6 @@ const primaryKeys = {
     "branches": "branchId",
     "note_revisions": "noteRevisionId",
     "recent_notes": "branchId",
-    "images": "imageId",
-    "note_images": "noteImageId",
     "api_tokens": "apiTokenId",
     "options": "name",
     "attributes": "attributeId",

@@ -32,14 +32,6 @@ async function addLinkSync(linkId, sourceId) {
     await addEntitySync("links", linkId, sourceId);
 }
 
-async function addImageSync(imageId, sourceId) {
-    await addEntitySync("images", imageId, sourceId);
-}
-
-async function addNoteImageSync(noteImageId, sourceId) {
-    await addEntitySync("note_images", noteImageId, sourceId);
-}
-
 async function addAttributeSync(attributeId, sourceId) {
     await addEntitySync("attributes", attributeId, sourceId);
 }
@@ -108,10 +100,9 @@ module.exports = {
     addNoteRevisionSync,
     addOptionsSync,
     addRecentNoteSync,
-    addImageSync,
-    addNoteImageSync,
     addAttributeSync,
     addApiTokenSync,
+    addLinkSync,
     addEntitySync,
     fillAllSyncRows
 };

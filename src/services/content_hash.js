@@ -7,10 +7,8 @@ const eventLogService = require('./event_log');
 const messagingService = require('./messaging');
 const ApiToken = require('../entities/api_token');
 const Branch = require('../entities/branch');
-const Image = require('../entities/image');
 const Note = require('../entities/note');
 const Attribute = require('../entities/attribute');
-const NoteImage = require('../entities/note_image');
 const NoteRevision = require('../entities/note_revision');
 const RecentNote = require('../entities/recent_note');
 const Option = require('../entities/option');
@@ -38,8 +36,6 @@ async function getHashes() {
         note_revisions: await getHash(NoteRevision),
         recent_notes: await getHash(RecentNote),
         options: await getHash(Option, "isSynced = 1"),
-        images: await getHash(Image),
-        note_images: await getHash(NoteImage),
         attributes: await getHash(Attribute),
         api_tokens: await getHash(ApiToken)
     };
