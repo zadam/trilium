@@ -575,3 +575,12 @@ table.promoted-attributes-in-tooltip td, table.promoted-attributes-in-tooltip th
 .algolia-autocomplete .aa-dropdown-menu .aa-suggestion.aa-cursor {
     background-color: #B2D7FF;
 }
+
+.help-button {
+    float: right;
+    background: none;
+    font-weight: 900;
+    color: orange;
+    border: 0;
+    cursor: pointer;
+}

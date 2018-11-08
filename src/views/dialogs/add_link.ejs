@@ -2,8 +2,11 @@
   <div class="modal-dialog modal-lg" style="max-width: 1000px" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Add note link</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <h5 class="modal-title mr-auto">Add note link</h5>
+
+        <button type="button" class="help-button" title="Help on links" data-help-page="Links">?</button>
+
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-left: 0 !important;">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
@@ -43,10 +46,6 @@
         </div>
         <div class="modal-footer" style="display: flex; justify-content: space-between;">
           <button type="submit" class="btn btn-primary">Add note link <kbd>enter</kbd></button>
-
-          <button class="btn btn-sm" type="button" data-help-page="Links">
-            <i class="glyphicon glyphicon-info-sign"></i> Help
-          </button>
         </div>
       </form>
     </div>

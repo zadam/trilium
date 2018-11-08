@@ -2,8 +2,11 @@
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Note revisions</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <h5 class="modal-title mr-auto">Note revisions</h5>
+
+        <button class="help-button" type="button" data-help-page="Note-revisions" title="Help on Note revisions">?</button>
+
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-left: 0 !important;">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
@@ -14,12 +17,6 @@
         <div id="note-revision-content-wrapper" style="flex-grow: 1; margin-left: 20px;">
           <div style="display: flex">
             <h3 id="note-revision-title" style="margin: 3px; flex-grow: 100;"></h3>
-
-            <div>
-              <button class="btn btn-sm" type="button" data-help-page="Note-revisions">
-                <i class="glyphicon glyphicon-info-sign"></i> Help
-              </button>
-            </div>
           </div>
 
           <div id="note-revision-content" style="height: 600px; width: 600px; overflow: auto;"></div>

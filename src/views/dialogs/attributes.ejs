@@ -2,8 +2,11 @@
   <div class="modal-dialog modal-lg" style="max-width: 1000px" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Note attributes</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <h5 class="modal-title mr-auto">Note attributes</h5>
+
+        <button class="help-button" type="button" data-help-page="Attributes" title="Help on Attributes">?</button>
+
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-left: 0;">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
@@ -70,8 +73,9 @@
                 <td title="Inheritable relations are automatically inherited to the child notes">
                   <input type="checkbox" value="1" data-bind="checked: isInheritable"/>
 
-                  <span title="Delete" style="padding: 13px; cursor: pointer;"
-                      class="glyphicon glyphicon-trash"
+                  &nbsp;
+
+                  <span title="Delete" style="padding: 13px; cursor: pointer; background: url('/images/icons/trash-16.png') center no-repeat;"
                       data-bind="click: $parent.deleteAttribute"></span>
                 </td>
               </tr>
@@ -118,13 +122,9 @@
             </div>
           </div>
         </div>
-        <div class="modal-footer" style="display: flex; justify-content: space-between;">
+        <div class="modal-footer">
           <button class="btn btn-primary btn-large" style="width: 200px;" id="save-attributes-button" type="submit">
             Save changes <kbd>enter</kbd></button>
-
-          <button class="btn btn-sm" type="button" data-help-page="Attributes">
-            <i class="glyphicon glyphicon-info-sign"></i> Help
-          </button>
         </div>
       </form>
     </div>
