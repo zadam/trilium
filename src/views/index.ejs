@@ -87,11 +87,7 @@
         <div id="search-results">
           <strong>Search results:</strong>
 
-          <ul id="search-results-inner">
-            <li>aaa</li>
-            <li>bbb</li>
-            <li>ccc</li>
-          </ul>
+          <ul id="search-results-inner"></ul>
         </div>
 
         <div id="tree"></div>
@@ -142,36 +138,38 @@
 
             &nbsp; &nbsp;
 
-            <div class="dropdown" id="note-type">
-              <button data-bind="disable: isDisabled()" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-sm dropdown-toggle">
-                Type: <span data-bind="text: typeString()"></span>
-                <span class="caret"></span>
-              </button>
-              <div id="note-type-dropdown" class="dropdown-menu dropdown-menu-right">
-                <a class="dropdown-item" data-bind="click: selectText, css: { selected: type() == 'text' }"><span class="check">&check;</span> <strong>Text</strong></a>
-                <div class="dropdown-divider"></div>
-                <a class="dropdown-item" data-bind="click: selectRelationMap, css: { selected: type() == 'relation-map' && mime() == '' }"><span class="check">&check;</span> <strong>Relation Map</strong></a>
-                <div class="dropdown-divider"></div>
-                <a class="dropdown-item" data-bind="click: selectRender, css: { selected: type() == 'render' && mime() == '' }"><span class="check">&check;</span> <strong>Render HTML note</strong></a>
-                <div class="dropdown-divider"></div>
-                <a class="dropdown-item" data-bind="click: selectCode, css: { selected: type() == 'code' && mime() == '' }"><span class="check">&check;</span> <strong>Code</strong></a>
-                <!-- ko foreach: codeMimeTypes -->
-                <a class="dropdown-item" data-bind="click: $parent.selectCodeMime, css: { selected: $parent.type() == 'code' && $parent.mime() == mime }"><span class="check">&check;</span> <span data-bind="text: title"></span></a>
-                <!-- /ko -->
+            <div id="note-type-wrapper" style="display: flex;">
+              <div class="dropdown" id="note-type">
+                <button data-bind="disable: isDisabled()" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-sm dropdown-toggle">
+                  Type: <span data-bind="text: typeString()"></span>
+                  <span class="caret"></span>
+                </button>
+                <div id="note-type-dropdown" class="dropdown-menu dropdown-menu-right">
+                  <a class="dropdown-item" data-bind="click: selectText, css: { selected: type() == 'text' }"><span class="check">&check;</span> <strong>Text</strong></a>
+                  <div class="dropdown-divider"></div>
+                  <a class="dropdown-item" data-bind="click: selectRelationMap, css: { selected: type() == 'relation-map' && mime() == '' }"><span class="check">&check;</span> <strong>Relation Map</strong></a>
+                  <div class="dropdown-divider"></div>
+                  <a class="dropdown-item" data-bind="click: selectRender, css: { selected: type() == 'render' && mime() == '' }"><span class="check">&check;</span> <strong>Render HTML note</strong></a>
+                  <div class="dropdown-divider"></div>
+                  <a class="dropdown-item" data-bind="click: selectCode, css: { selected: type() == 'code' && mime() == '' }"><span class="check">&check;</span> <strong>Code</strong></a>
+                  <!-- ko foreach: codeMimeTypes -->
+                  <a class="dropdown-item" data-bind="click: $parent.selectCodeMime, css: { selected: $parent.type() == 'code' && $parent.mime() == mime }"><span class="check">&check;</span> <span data-bind="text: title"></span></a>
+                  <!-- /ko -->
+                </div>
               </div>
-            </div>
 
-            <div class="dropdown" id="note-actions">
-              <button type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-sm dropdown-toggle">
-                Note actions
-                <span class="caret"></span>
-              </button>
-              <div class="dropdown-menu dropdown-menu-right">
-                <a class="dropdown-item" id="show-note-revisions-button">Revisions</a>
-                <a class="dropdown-item show-attributes-button"><kbd>Alt+A</kbd> Attributes</a>
-                <a class="dropdown-item" id="show-source-button">HTML source</a>
-                <a class="dropdown-item" id="upload-file-button">Upload file</a>
-                <a class="dropdown-item" id="export-note-to-markdown-button">Export as markdown</a>
+              <div class="dropdown" id="note-actions">
+                <button type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-sm dropdown-toggle">
+                  Note actions
+                  <span class="caret"></span>
+                </button>
+                <div class="dropdown-menu dropdown-menu-right">
+                  <a class="dropdown-item" id="show-note-revisions-button" data-bind="css: { disabled: type() == 'file' || type() == 'image' }">Revisions</a>
+                  <a class="dropdown-item show-attributes-button"><kbd>Alt+A</kbd> Attributes</a>
+                  <a class="dropdown-item" id="show-source-button" data-bind="css: { disabled: type() != 'text' }">HTML source</a>
+                  <a class="dropdown-item" id="upload-file-button">Upload file</a>
+                  <a class="dropdown-item" id="export-note-to-markdown-button" data-bind="css: { disabled: type() != 'text' }">Export as markdown</a>
+                </div>
               </div>
             </div>
           </div>

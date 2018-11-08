@@ -153,7 +153,7 @@ function NoteTypeModel() {
     }
 }
 
-ko.applyBindings(noteTypeModel, document.getElementById('note-type'));
+ko.applyBindings(noteTypeModel, document.getElementById('note-type-wrapper'));
 
 export default {
     getNoteType: () => noteTypeModel.type(),
