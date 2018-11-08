@@ -169,25 +169,55 @@ async function protectNoteRevisions(note) {
     }
 }
 
+function findImageLinks(content, foundLinks) {
+    const re = /src="\/api\/images\/([a-zA-Z0-9]+)\//g;
+    let match;
+
+    while (match = re.exec(content)) {
+        foundLinks.push({
+            type: 'image',
+            targetNoteId: match[1]
+        });
+    }
+    return match;
+}
+
+function findHyperLinks(content, foundLinks) {
+    const re = /href="#root[a-zA-Z0-9\/]*\/([a-zA-Z0-9]+)\//g;
+    let match;
+
+    while (match = re.exec(content)) {
+        foundLinks.push({
+            type: 'hyper',
+            targetNoteId: match[1]
+        });
+    }
+
+    return match;
+}
+
 async function saveLinks(note) {
     if (note.type !== 'text') {
         return;
     }
 
-    const existingLinks = await note.getLinks();
-    const foundNoteIds = [];
-    const re = /src="\/api\/images\/([a-zA-Z0-9]+)\//g;
-    let match;
+    const foundLinks = [];
 
-    while (match = re.exec(note.content)) {
-        const targetNoteId = match[1];
-        const existingLink = existingLinks.find(link => link.targetNoteId === targetNoteId && link.type === 'image');
+    findImageLinks(note.content, foundLinks);
+    findHyperLinks(note.content, foundLinks);
+
+    const existingLinks = await note.getLinks();
+
+    for (const foundLink of foundLinks) {
+        const existingLink = existingLinks.find(existingLink =>
+            existingLink.targetNoteId === foundLink.targetNoteId
+            && existingLink.type === foundLink.type);
 
         if (!existingLink) {
             await new Link({
                 noteId: note.noteId,
-                targetNoteId,
-                type: 'image'
+                targetNoteId: foundLink.targetNoteId,
+                type: foundLink.type
             }).save();
         }
         else if (existingLink.isDeleted) {
@@ -195,12 +225,12 @@ async function saveLinks(note) {
             await existingLink.save();
         }
         // else the link exists so we don't need to do anything
-
-        foundNoteIds.push(targetNoteId);
     }
 
     // marking links as deleted if they are not present on the page anymore
-    const unusedLinks = existingLinks.filter(link => !foundNoteIds.includes(link.noteId));
+    const unusedLinks = existingLinks.filter(existingLink => !foundLinks.some(foundLink =>
+                                    existingLink.targetNoteId === foundLink.targetNoteId
+                                    && existingLink.type === foundLink.type));
 
     for (const unusedLink of unusedLinks) {
         unusedLink.isDeleted = true;
