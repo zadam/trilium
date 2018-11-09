@@ -88,7 +88,7 @@ const contextMenuItems = [
     {title: "Protect subtree", cmd: "protectSubtree", uiIcon: "shield-check"},
     {title: "Unprotect subtree", cmd: "unprotectSubtree", uiIcon: "shield-close"},
     {title: "----"},
-    {title: "Copy / clone <kbd>Ctrl+C</kbd>", cmd: "copy", uiIcon: "save"},
+    {title: "Copy / clone <kbd>Ctrl+C</kbd>", cmd: "copy", uiIcon: "files"},
     {title: "Cut <kbd>Ctrl+X</kbd>", cmd: "cut", uiIcon: "scissors"},
     {title: "Paste into <kbd>Ctrl+V</kbd>", cmd: "pasteInto", uiIcon: "clipboard"},
     {title: "Paste after", cmd: "pasteAfter", uiIcon: "clipboard"},

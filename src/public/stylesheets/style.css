@@ -400,12 +400,6 @@ button.icon-button {
     padding: 2px;
 }
 
-button.icon-button24 {
-    height: 32px;
-    width: 32px;
-    background: no-repeat center;
-}
-
 #note-actions {
     margin-left: 10px;
     margin-right: 10px;
