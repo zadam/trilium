@@ -47,7 +47,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null) {
     /**
      * @typedef {Object} ToolbarButtonOptions
      * @property {string} title
-     * @property {string} [icon] - name of the jQuery UI icon to be used (e.g. "clock" for "ui-icon-clock" icon)
+     * @property {string} [icon] - name of the JAM icon to be used (e.g. "clock" for "jam-clock" icon)
      * @property {function} action - callback handling the click on the button
      * @property {string} [shortcut] - keyboard shortcut for the button, e.g. "alt+t"
      */
@@ -60,14 +60,16 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null) {
     this.addButtonToToolbar = opts => {
         const buttonId = "toolbar-button-" + opts.title.replace(/[^a-zA-Z0-9]/g, "-");
 
-        const icon = $("<span>")
-            .addClass("ui-icon ui-icon-" + opts.icon);
-
         const button = $('<button>')
             .addClass("btn btn-sm")
-            .click(opts.action)
-            .append(icon)
-            .append($("<span>").text(opts.title));
+            .click(opts.action);
+
+        if (opts.icon) {
+            button.append($("<span>").addClass("jam jam-" + opts.icon))
+                  .append("&nbsp;");
+        }
+
+        button.append($("<span>").text(opts.title));
 
         button.attr('id', buttonId);
 

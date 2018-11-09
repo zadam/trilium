@@ -22,7 +22,7 @@ body {
 
 #header {
     grid-area: header;
-    background-color: #f1f1f1;
+    background-color: #f8f8f8;
     display: flex;
     align-items: center;
     padding: 4px;
