@@ -2607,40 +2607,52 @@
 
 }).call(typeof window !== 'undefined' ? window : this);
 
-;(function() {
 
-    "use strict";
+(function() {
 
     var root = this;
-    var exports = root.jsPlumbUtil = {};
+    root.jsPlumbUtil = root.jsPlumbUtil || {};
+    var jsPlumbUtil = root.jsPlumbUtil;
+
+    if (typeof exports !=='undefined') { exports.jsPlumbUtil = jsPlumbUtil;}
+
 
     function isArray(a) {
         return Object.prototype.toString.call(a) === "[object Array]";
     }
+    jsPlumbUtil.isArray = isArray;
     function isNumber(n) {
         return Object.prototype.toString.call(n) === "[object Number]";
     }
+    jsPlumbUtil.isNumber = isNumber;
     function isString(s) {
         return typeof s === "string";
     }
+    jsPlumbUtil.isString = isString;
     function isBoolean(s) {
         return typeof s === "boolean";
     }
+    jsPlumbUtil.isBoolean = isBoolean;
     function isNull(s) {
         return s == null;
     }
+    jsPlumbUtil.isNull = isNull;
     function isObject(o) {
         return o == null ? false : Object.prototype.toString.call(o) === "[object Object]";
     }
+    jsPlumbUtil.isObject = isObject;
     function isDate(o) {
         return Object.prototype.toString.call(o) === "[object Date]";
     }
+    jsPlumbUtil.isDate = isDate;
     function isFunction(o) {
         return Object.prototype.toString.call(o) === "[object Function]";
     }
+    jsPlumbUtil.isFunction = isFunction;
     function isNamedFunction(o) {
         return isFunction(o) && o.name != null && o.name.length > 0;
     }
+    jsPlumbUtil.isNamedFunction = isNamedFunction;
     function isEmpty(o) {
         for (var i in o) {
             if (o.hasOwnProperty(i)) {
@@ -2649,6 +2661,7 @@
         }
         return true;
     }
+    jsPlumbUtil.isEmpty = isEmpty;
     function clone(a) {
         if (isString(a)) {
             return "" + a;
@@ -2680,16 +2693,21 @@
             return a;
         }
     }
-    function merge(a, b, collations) {
+    jsPlumbUtil.clone = clone;
+    function merge(a, b, collations, overwrites) {
         // first change the collations array - if present - into a lookup table, because its faster.
-        var cMap = {}, ar, i;
+        var cMap = {}, ar, i, oMap = {};
         collations = collations || [];
+        overwrites = overwrites || [];
         for (i = 0; i < collations.length; i++) {
             cMap[collations[i]] = true;
         }
+        for (i = 0; i < overwrites.length; i++) {
+            oMap[overwrites[i]] = true;
+        }
         var c = clone(a);
         for (i in b) {
-            if (c[i] == null) {
+            if (c[i] == null || oMap[i]) {
                 c[i] = b[i];
             }
             else if (isString(b[i]) || isBoolean(b[i])) {
@@ -2727,6 +2745,7 @@
         }
         return c;
     }
+    jsPlumbUtil.merge = merge;
     function replace(inObj, path, value) {
         if (inObj == null) {
             return;
@@ -2768,6 +2787,7 @@
         });
         return inObj;
     }
+    jsPlumbUtil.replace = replace;
     //
     // chain a list of functions, supplied by [ object, method name, args ], and return on the first
     // one that returns the failValue. if none return the failValue, return the successValue.
@@ -2781,6 +2801,7 @@
         }
         return successValue;
     }
+    jsPlumbUtil.functionChain = functionChain;
     /**
      *
      * Take the given model and expand out any parameters. 'functionPrefix' is optional, and if present, helps jsplumb figure out what to do if a value is a Function.
@@ -2838,6 +2859,7 @@
         };
         return _one(model);
     }
+    jsPlumbUtil.populate = populate;
     function findWithFunction(a, f) {
         if (a) {
             for (var i = 0; i < a.length; i++) {
@@ -2848,6 +2870,7 @@
         }
         return -1;
     }
+    jsPlumbUtil.findWithFunction = findWithFunction;
     function removeWithFunction(a, f) {
         var idx = findWithFunction(a, f);
         if (idx > -1) {
@@ -2855,6 +2878,7 @@
         }
         return idx !== -1;
     }
+    jsPlumbUtil.removeWithFunction = removeWithFunction;
     function remove(l, v) {
         var idx = l.indexOf(v);
         if (idx > -1) {
@@ -2862,11 +2886,13 @@
         }
         return idx !== -1;
     }
+    jsPlumbUtil.remove = remove;
     function addWithFunction(list, item, hashFunction) {
         if (findWithFunction(list, hashFunction) === -1) {
             list.push(item);
         }
     }
+    jsPlumbUtil.addWithFunction = addWithFunction;
     function addToList(map, key, value, insertAtStart) {
         var l = map[key];
         if (l == null) {
@@ -2876,6 +2902,7 @@
         l[insertAtStart ? "unshift" : "push"](value);
         return l;
     }
+    jsPlumbUtil.addToList = addToList;
     function suggest(list, item, insertAtHead) {
         if (list.indexOf(item) === -1) {
             if (insertAtHead) {
@@ -2888,6 +2915,7 @@
         }
         return false;
     }
+    jsPlumbUtil.suggest = suggest;
     //
     // extends the given obj (which can be an array) with the given constructor function, prototype functions, and
     // class members, any of which may be null.
@@ -2941,26 +2969,31 @@
         }
         return child;
     }
+    jsPlumbUtil.extend = extend;
     function uuid() {
         return ('xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
             var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
             return v.toString(16);
         }));
     }
+    jsPlumbUtil.uuid = uuid;
     function fastTrim(s) {
         if (s == null) {
             return null;
         }
         var str = s.replace(/^\s\s*/, ''), ws = /\s/, i = str.length;
-        while (ws.test(str.charAt(--i))) { }
+        while (ws.test(str.charAt(--i))) {
+        }
         return str.slice(0, i + 1);
     }
+    jsPlumbUtil.fastTrim = fastTrim;
     function each(obj, fn) {
         obj = obj.length == null || typeof obj === "string" ? [obj] : obj;
         for (var i = 0; i < obj.length; i++) {
             fn(obj[i]);
         }
     }
+    jsPlumbUtil.each = each;
     function map(obj, fn) {
         var o = [];
         for (var i = 0; i < obj.length; i++) {
@@ -2968,6 +3001,7 @@
         }
         return o;
     }
+    jsPlumbUtil.map = map;
     function mergeWithParents(type, map, parentAttribute) {
         parentAttribute = parentAttribute || "parent";
         var _def = function (id) {
@@ -3014,13 +3048,14 @@
             return {};
         }
     }
-    var logEnabled = true;
+    jsPlumbUtil.mergeWithParents = mergeWithParents;
+    jsPlumbUtil.logEnabled = true;
     function log() {
         var args = [];
         for (var _i = 0; _i < arguments.length; _i++) {
             args[_i] = arguments[_i];
         }
-        if (logEnabled && typeof console !== "undefined") {
+        if (jsPlumbUtil.logEnabled && typeof console !== "undefined") {
             try {
                 var msg = arguments[arguments.length - 1];
                 console.log(msg);
@@ -3029,6 +3064,7 @@
             }
         }
     }
+    jsPlumbUtil.log = log;
     /**
      * Wraps one function with another, creating a placeholder for the
      * wrapped function if it was null. this is used to wrap the various
@@ -3064,6 +3100,7 @@
             return r;
         };
     }
+    jsPlumbUtil.wrap = wrap;
     var EventGenerator = /** @class */ (function () {
         function EventGenerator() {
             var _this = this;
@@ -3178,42 +3215,9 @@
         }
         return EventGenerator;
     }());
-
-    exports.isArray = isArray;
-    exports.isNumber = isNumber;
-    exports.isString = isString;
-    exports.isBoolean = isBoolean;
-    exports.isNull = isNull;
-    exports.isObject = isObject;
-    exports.isDate = isDate;
-    exports.isFunction = isFunction;
-    exports.isNamedFunction = isNamedFunction;
-    exports.isEmpty = isEmpty;
-    exports.clone = clone;
-    exports.merge = merge;
-    exports.replace = replace;
-    exports.functionChain = functionChain;
-    exports.populate = populate;
-    exports.findWithFunction = findWithFunction;
-    exports.removeWithFunction = removeWithFunction;
-    exports.remove = remove;
-    exports.addWithFunction = addWithFunction;
-    exports.addToList = addToList;
-    exports.suggest = suggest;
-    exports.extend = extend;
-    exports.uuid = uuid;
-    exports.fastTrim = fastTrim;
-    exports.each = each;
-    exports.map = map;
-    exports.mergeWithParents = mergeWithParents;
-    exports.logEnabled = logEnabled;
-    exports.log = log;
-    exports.wrap = wrap;
-    exports.EventGenerator = EventGenerator;
-
+    jsPlumbUtil.EventGenerator = EventGenerator;
 
 }).call(typeof window !== 'undefined' ? window : this);
-
 /*
  * This file contains utility functions that run in browsers only.
  *
@@ -3362,7 +3366,7 @@
                     if (tid !== "__default") {
                         var _t = component._jsPlumb.instance.getType(tid, td);
                         if (_t != null) {
-                            o = _ju.merge(o, _t, [ "cssClass" ]);
+                            o = _ju.merge(o, _t, [ "cssClass" ], [ "connector" ]);
                             _mapType(map, _t, tid);
                         }
                     }
@@ -3745,7 +3749,7 @@
 
     var jsPlumbInstance = root.jsPlumbInstance = function (_defaults) {
 
-        this.version = "2.8.3";
+        this.version = "2.8.4";
 
         this.Defaults = {
             Anchor: "Bottom",
@@ -11986,9 +11990,9 @@
             if (this._jsPlumb.div == null) {
                 var div = this._jsPlumb.div = _jp.getElement(this._jsPlumb.create(this._jsPlumb.component));
                 div.style.position = "absolute";
-                div.className = this._jsPlumb.instance.overlayClass + " " +
+                jsPlumb.addClass(div, this._jsPlumb.instance.overlayClass + " " +
                     (this.cssClass ? this.cssClass :
-                        params.cssClass ? params.cssClass : "");
+                        params.cssClass ? params.cssClass : ""));
                 this._jsPlumb.instance.appendElement(div);
                 this._jsPlumb.instance.getId(div);
                 this.canvas = div;

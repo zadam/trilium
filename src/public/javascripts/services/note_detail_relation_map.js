@@ -3,6 +3,7 @@ import noteDetailService from "./note_detail.js";
 import linkService from "./link.js";
 import libraryLoader from "./library_loader.js";
 import treeService from "./tree.js";
+import contextMenuWidget from "./context_menu.js";
 
 const $component = $("#note-detail-relation-map");
 const $relationMapCanvas = $("#relation-map-canvas");
@@ -221,41 +222,43 @@ function initJsPlumbInstance () {
 
     jsPlumbInstance.bind("connection", connectionCreatedHandler);
 
-    $relationMapCanvas.contextmenu({
-        delegate: ".note-box",
-        menu: [
-            {title: "Remove note", cmd: "remove", uiIcon: "trash"},
-            {title: "Edit title", cmd: "edit-title", uiIcon: "pencil"},
-        ],
-        select: noteContextMenuHandler
-    });
-
-    $relationMapCanvas.contextmenuRelation({
-        delegate: ".connection-label,.jtk-connector",
-        autoTrigger: false, // it doesn't open automatically, needs to be triggered explicitly by .open() call
-        menu: [
-            {title: "Remove relation", cmd: "remove", uiIcon: "trash"}
-        ],
-        select: relationContextMenuHandler
-    });
-
-    jsPlumbInstance.bind("contextmenu", function (c, e) {
-        e.preventDefault();
-
-        $relationMapCanvas.contextmenuRelation("open", e, { connection: c });
-    });
-
     // so that canvas is not panned when clicking/dragging note box
     $relationMapCanvas.on('mousedown touchstart', '.note-box, .connection-label', e => e.stopPropagation());
 }
 
+function connectionContextMenuHandler(connection, event) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const contextMenuItems = [ {title: "Remove relation", cmd: "remove", uiIcon: "trash"} ];
+
+    contextMenuWidget.initContextMenu(event, contextMenuItems, async (event, cmd) => {
+        if (cmd === 'remove') {
+            if (!confirm("Are you sure you want to remove the relation?")) {
+                return;
+            }
+
+            const relation = relations.find(rel => rel.attributeId === connection.id);
+
+            await server.remove(`notes/${relation.sourceNoteId}/relations/${relation.name}/to/${relation.targetNoteId}`);
+
+            jsPlumbInstance.deleteConnection(connection);
+
+            relations = relations.filter(relation => relation.attributeId !== connection.id);
+        }
+    });
+}
+
 async function connectionCreatedHandler(info, originalEvent) {
+    const connection = info.connection;
+
+    connection.bind("contextmenu", (obj, event) => connectionContextMenuHandler(connection, event));
+
     // if there's no event, then this has been triggered programatically
     if (!originalEvent) {
         return;
     }
 
-    const connection = info.connection;
     const name = prompt("Specify new relation name:");
 
     if (!name || !name.trim()) {
@@ -288,29 +291,22 @@ async function connectionCreatedHandler(info, originalEvent) {
     connection.getOverlay("label").setLabel(name);
 }
 
-async function relationContextMenuHandler(event, ui) {
-    const {connection} = ui.extraData;
+$relationMapCanvas.on("contextmenu", ".note-box", e => {
+    const contextMenuItems = [
+        {title: "Remove note", cmd: "remove", uiIcon: "trash"},
+        {title: "Edit title", cmd: "edit-title", uiIcon: "pencil"},
+    ];
 
-    if (ui.cmd === 'remove') {
-        if (!confirm("Are you sure you want to remove the relation?")) {
-            return;
-        }
+    contextMenuWidget.initContextMenu(e, contextMenuItems, noteContextMenuHandler);
 
-        const relation = relations.find(rel => rel.attributeId === connection.id);
+    return false;
+});
 
-        await server.remove(`notes/${relation.sourceNoteId}/relations/${relation.name}/to/${relation.targetNoteId}`);
-
-        jsPlumbInstance.deleteConnection(connection);
-
-        relations = relations.filter(relation => relation.attributeId !== connection.id);
-    }
-}
-
-async function noteContextMenuHandler(event, ui) {
-    const $noteBox = ui.target.closest(".note-box");
+async function noteContextMenuHandler(event, cmd) {
+    const $noteBox = $(event.originalTarget).closest(".note-box");
     const noteId = $noteBox.prop("id");
 
-    if (ui.cmd === "remove") {
+    if (cmd === "remove") {
         if (!confirm("Are you sure you want to remove the note from this diagram?")) {
             return;
         }
@@ -323,7 +319,7 @@ async function noteContextMenuHandler(event, ui) {
 
         saveData();
     }
-    else if (ui.cmd === "edit-title") {
+    else if (cmd === "edit-title") {
         const $title = $noteBox.find(".title a");
         const title = prompt("Enter new note title:", $title.text());
 

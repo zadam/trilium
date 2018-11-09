@@ -30,6 +30,8 @@ function initContextMenu(event, contextMenuItems, selectContextMenuItem) {
             $item.click(async function (e) {
                 const cmd = $(e.target).prop("data-cmd");
 
+                e.originalTarget = event.target;
+
                 await selectContextMenuItem(e, cmd);
             });
 
