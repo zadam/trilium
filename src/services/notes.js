@@ -345,14 +345,14 @@ async function cleanupDeletedNotes() {
     const notesForCleanup = await repository.getEntities("SELECT * FROM notes WHERE isDeleted = 1 AND content != '' AND dateModified <= ?", [dateUtils.dateStr(cutoffDate)]);
 
     for (const note of notesForCleanup) {
-        note.content = '';
+        note.content = null;
         await note.save();
     }
 
     const notesRevisionsForCleanup = await repository.getEntities("SELECT note_revisions.* FROM notes JOIN note_revisions USING(noteId) WHERE notes.isDeleted = 1 AND note_revisions.content != '' AND notes.dateModified <= ?", [dateUtils.dateStr(cutoffDate)]);
 
     for (const noteRevision of notesRevisionsForCleanup) {
-        noteRevision.content = '';
+        noteRevision.content = null;
         await noteRevision.save();
     }
 }
