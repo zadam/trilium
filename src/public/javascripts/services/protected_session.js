@@ -65,7 +65,8 @@ async function setupProtectedSession() {
 
     $dialog.modal("hide");
 
-    noteDetailService.reload();
+    await noteDetailService.reload();
+
     treeService.reload();
 
     if (protectedSessionDeferred !== null) {
@@ -113,11 +114,15 @@ async function protectNoteAndSendToServer() {
 
     treeService.setProtected(note.noteId, note.isProtected);
 
-    noteDetailService.setNoteBackgroundIfProtected(note);
+    noteDetailService.setNoteBackgroundIfProtected(note);console.log(note);
 }
 
 async function unprotectNoteAndSendToServer() {
-    if (!noteDetailService.getCurrentNote().isProtected) {
+    const currentNote = noteDetailService.getCurrentNote();
+
+    if (!currentNote.isProtected) {
+        infoService.showAndLogError(`Note ${currentNote.noteId} is not protected`);
+
         return;
     }
 
@@ -130,14 +135,13 @@ async function unprotectNoteAndSendToServer() {
         return;
     }
 
-    const note = noteDetailService.getCurrentNote();
-    note.isProtected = false;
+    currentNote.isProtected = false;
 
-    await noteDetailService.saveNote(note);
+    await noteDetailService.saveNote(currentNote);
 
-    treeService.setProtected(note.noteId, note.isProtected);
+    treeService.setProtected(currentNote.noteId, currentNote.isProtected);
 
-    noteDetailService.setNoteBackgroundIfProtected(note);
+    noteDetailService.setNoteBackgroundIfProtected(currentNote);
 }
 
 async function protectSubtree(noteId, protect) {
@@ -173,8 +177,6 @@ $unprotectButton.click(unprotectNoteAndSendToServer);
 
 export default {
     ensureProtectedSession,
-    protectNoteAndSendToServer,
-    unprotectNoteAndSendToServer,
     protectSubtree,
     ensureDialogIsClosed,
     enterProtectedSession,
