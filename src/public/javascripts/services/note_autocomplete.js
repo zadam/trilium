@@ -25,7 +25,7 @@ function initNoteAutocomplete($el) {
     if (!$el.hasClass("aa-input")) {
         const $showRecentNotesButton = $("<div>").addClass("input-group-append").append(
             $("<span>")
-                .addClass("input-group-text show-recent-notes-button")
+                .addClass("input-group-text show-recent-notes-button jam jam-clock")
                 .prop("title", "Show recent notes"));
 
         $el.after($showRecentNotesButton);

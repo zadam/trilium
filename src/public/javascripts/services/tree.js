@@ -393,10 +393,23 @@ function initFancyTree(tree) {
             if (item.title === '----') {
                 $treeContextMenu.append($("<div>").addClass("dropdown-divider"));
             } else {
+                const $icon = $("<span>");
+
+                if (item.uiIcon) {
+                    $icon.addClass("jam jam-" + item.uiIcon);
+                }
+                else {
+                    $icon.append("&nbsp;");
+                }
+
                 const $item = $("<a>")
+                    .append($icon)
+                    .append(" &nbsp; ") // some space between icon and text
                     .addClass("dropdown-item")
                     .prop("data-cmd", item.cmd)
                     .append(item.title);
+
+
 
                 if (item.enabled !== undefined && !item.enabled) {
                     $item.addClass("disabled");

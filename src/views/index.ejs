@@ -8,13 +8,11 @@
     <div id="container" style="display:none; grid-template-columns: minmax(<%= leftPaneMinWidth %>px, <%= leftPaneWidthPercent %>fr) <%= rightPaneWidthPercent %>fr">
       <div id="header" class="hide-toggle">
         <div id="history-navigation" style="display: none;">
-          <a id="history-back-button" title="Go to previous note." class="icon-action"
-             style="background: url('/images/icons/back-24.png')"></a>
+          <a id="history-back-button" title="Go to previous note." class="icon-action jam jam-backward"></a>
 
           &nbsp; &nbsp;
 
-          <a id="history-forward-button" title="Go to next note." class="icon-action"
-             style="background: url('/images/icons/forward-24.png')"></a>
+          <a id="history-forward-button" title="Go to next note." class="icon-action jam jam-forward"></a>
         </div>
 
         <div style="flex-grow: 100; display: flex;">
@@ -35,13 +33,13 @@
 
         <div>
           <button class="btn btn-sm" id="sync-now-button" title="Number of outstanding changes to be pushed to server">
-            <span class="ui-icon ui-icon-refresh"></span>
+            <span class="jam jam-refresh"></span>
 
             Sync now (<span id="outstanding-syncs-count">0</span>)
           </button>
 
           <button class="btn btn-sm" id="options-button">
-            <span class="ui-icon ui-icon-gear"></span> Options</button>
+            <span class="jam jam-settings-alt"></span> Options</button>
 
           <form action="logout" id="logout-button" method="POST" style="display: inline;">
               <button type="submit" class="btn btn-sm">Logout</button>
@@ -51,17 +49,13 @@
 
       <div id="left-pane" class="hide-toggle">
         <div id="global-buttons">
-          <a id="create-top-level-note-button" title="Create new top level note" class="icon-action"
-             data-feather="file-plus"></a>
+          <a id="create-top-level-note-button" title="Create new top level note" class="icon-action jam jam-plus-circle"></a>
 
-          <a id="collapse-tree-button" title="Collapse note tree. Shortcut ALT+C" class="icon-action"
-             style="background: url('/images/icons/list-24.png')"></a>
+          <a id="collapse-tree-button" title="Collapse note tree. Shortcut ALT+C" class="icon-action jam jam-align-justify"></a>
 
-          <a id="scroll-to-current-note-button" title="Scroll to current note. Shortcut CTRL+." class="icon-action"
-             style="background: url('/images/icons/crosshair-24.png')"></a>
+          <a id="scroll-to-current-note-button" title="Scroll to current note. Shortcut CTRL+." class="icon-action jam jam-target"></a>
 
-          <a id="toggle-search-button" title="Search in notes. Shortcut CTRL+S" class="icon-action"
-             style="background: url('/images/icons/search-24.png')"></a>
+          <a id="toggle-search-button" title="Search in notes. Shortcut CTRL+S" class="icon-action jam jam-search"></a>
         </div>
 
         <input type="file" id="import-upload" style="display: none" />
@@ -69,18 +63,15 @@
         <div id="search-box">
           <div style="display: flex; align-items: center;">
             <input name="search-text" placeholder="Search text, labels" style="flex-grow: 100; margin-left: 5px; margin-right: 5px;" autocomplete="off">
-            <button id="do-search-button" class="btn btn-sm icon-button" title="Search (enter)"
-                    style="background-image: url('/images/icons/search-20.png');"></button>
+            <button id="do-search-button" class="btn btn-sm icon-button jam jam-search" title="Search (enter)"></button>
 
             &nbsp;
 
-            <button id="save-search-button" class="btn btn-sm icon-button" title="Save search"
-                    style="background-image: url('/images/icons/save-20.png');"></button>
+            <button id="save-search-button" class="btn btn-sm icon-button jam jam-save" title="Save search"></button>
 
             &nbsp;
 
-            <button id="close-search-button" class="btn btn-sm icon-button" title="Close search"
-                    style="background-image: url('/images/icons/x-20.png');"></button>
+            <button id="close-search-button" class="btn btn-sm icon-button jam jam-close" title="Close search"></button>
           </div>
         </div>
 
@@ -112,27 +103,27 @@
           <div class="hide-toggle" style="display: flex; align-items: center;">
             <span id="note-id-display" title="Note ID"></span>
 
-            <button class="btn btn-sm icon-button"
-                    style="display: none; margin-right: 10px; background-image: url('/images/icons/play-20.png');"
+            <button class="btn btn-sm icon-button jam jam-play"
+                    style="display: none; margin-right: 10px;"
                     title="Render"
                     id="render-button"></button>
 
-            <button class="btn btn-sm icon-button"
-                    style="display: none; margin-right: 10px; background-image: url('/images/icons/play-20.png');"
+            <button class="btn btn-sm icon-button jam jam-play"
+                    style="display: none; margin-right: 10px;"
                     title="Execute (Ctrl+Enter)"
                     id="execute-script-button"></button>
 
-            <div>
+            <div class="btn-group btn-group-xs">
               <button type="button"
-                      class="btn btn-sm icon-button"
+                      class="btn btn-sm icon-button jam jam-shield-check"
                       id="protect-button"
-                      title="Protected note can be viewed and edited only after entering password"
-                      style="background-image: url('/images/icons/shield-20.png');">
-              </button><button type="button"
-                      class="btn btn-sm icon-button"
+                      title="Protected note can be viewed and edited only after entering password">
+              </button>
+
+              <button type="button"
+                      class="btn btn-sm icon-button jam jam-shield-close"
                       id="unprotect-button"
-                      title="Not protected note can be viewed without entering password"
-                      style="background-image: url('/images/icons/shield-off-20.png');">
+                      title="Not protected note can be viewed without entering password">
               </button>
             </div>
 
@@ -227,6 +218,12 @@
     <link href="/stylesheets/style.css" rel="stylesheet">
 
     <script src="/javascripts/services/bootstrap.js" type="module"></script>
+
+    <link rel="stylesheet" href="/libraries/fork-awesome/css/fork-awesome.min.css">
+
+    <link rel="stylesheet" href="/libraries/line-awesome/css/line-awesome.min.css">
+
+    <link rel="stylesheet" type="text/css" href="/libraries/jam/css/jam.min.css">
 
     <script type="text/javascript">
       // we hide container initally because otherwise it is rendered first without CSS and then flickers into

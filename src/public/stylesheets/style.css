@@ -102,50 +102,12 @@ body {
 }
 
 #note-detail-wrapper.protected {
-    background: url('/images/shield.svg') no-repeat;
     background-size: contain;
-    background-position: center;
+    background: url('/images/shield.svg') no-repeat center;
 }
 
 ul.fancytree-container {
     outline: none !important;
-}
-
-/* icons from https://feathericons.com */
-span.fancytree-node > span.fancytree-icon {
-    background: url("../images/icons/file-16.png") 0 0;
-}
-
-span.fancytree-node.fancytree-folder > span.fancytree-icon {
-    background: url("../images/icons/folder-16.png") 0 0;
-}
-
-span.fancytree-node.code > span.fancytree-icon {
-    background: url("../images/icons/code-16.png") 0 0;
-}
-
-span.fancytree-node.fancytree-folder.code > span.fancytree-icon {
-    background: url("../images/icons/code-folder-16.png") 0 0;
-}
-
-span.fancytree-node.file > span.fancytree-icon {
-    background: url("../images/icons/paperclip-16.png") 0 0;
-}
-
-span.fancytree-node.relation-map > span.fancytree-icon {
-    background: url("../images/icons/relation-map-16.png") 0 0;
-}
-
-span.fancytree-node.image > span.fancytree-icon {
-    background: url("../images/icons/image-16.png") 0 0;
-}
-
-span.fancytree-node.render > span.fancytree-icon {
-    background: url("../images/icons/play-16.png") 0 0;
-}
-
-span.fancytree-node.search > span.fancytree-icon {
-    background: url("../images/icons/search-small-16.png") 0 0;
 }
 
 span.fancytree-node.protected > span.fancytree-icon {
@@ -158,10 +120,6 @@ span.fancytree-node.multiple-parents .fancytree-title {
 
 span.fancytree-node.fancytree-active-clone:not(.fancytree-active) .fancytree-title {
     font-weight: bold;
-}
-
-span.fancytree-node.tree-root > span.fancytree-icon {
-    background: url("../images/icons/tree-root-16.png") 0 0;
 }
 
 /* first nesting level has lower left padding to avoid extra left padding. Other levels are not affected */
@@ -188,9 +146,7 @@ span.fancytree-active:not(.fancytree-focused) .fancytree-title {
 
 .icon-action {
     cursor: pointer;
-    display: block;
-    height: 24px;
-    width: 24px;
+    font-size: 1.5em;
 }
 
 .ui-widget-content a:not(.ui-tabs-anchor) {
@@ -440,9 +396,8 @@ div.ui-tooltip {
 }
 
 button.icon-button {
-    height: 28px;
-    width: 28px;
-    background: no-repeat center;
+    font-size: 1.5em;
+    padding: 2px;
 }
 
 button.icon-button24 {
@@ -500,8 +455,8 @@ html.theme-dark body {
 }
 
 .show-recent-notes-button {
-    background: url('/images/icons/clock-16.png') no-repeat center;
     cursor: pointer;
+    font-size: 1.3em;
 }
 
 table.promoted-attributes-in-tooltip {
@@ -591,4 +546,8 @@ table.promoted-attributes-in-tooltip td, table.promoted-attributes-in-tooltip th
     bottom:auto;
     right:auto;
     margin-left:-300px;
+}
+
+.fancytree-custom-icon {
+    font-size: 1.3em;
 }

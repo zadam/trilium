@@ -22,6 +22,38 @@ async function prepareBranch(note) {
     }
 }
 
+function getIcon(note) {
+    if (note.noteId === 'root') {
+        return "jam jam-chevrons-right";
+    }
+    else if (note.type === 'text') {
+        if (note.hasChildren()) {
+            return "jam jam-folder";
+        }
+        else {
+            return "jam jam-file";
+        }
+    }
+    else if (note.type === 'file') {
+        return "jam jam-attachment"
+    }
+    else if (note.type === 'image') {
+        return "jam jam-picture"
+    }
+    else if (note.type === 'code') {
+        return "jam jam-terminal"
+    }
+    else if (note.type === 'render') {
+        return "jam jam-play"
+    }
+    else if (note.type === 'search') {
+        return "jam jam-search-folder"
+    }
+    else if (note.type === 'relation-map') {
+        return "jam jam-map"
+    }
+}
+
 async function prepareNode(branch) {
     const note = await branch.getNote();
     const title = (branch.prefix ? (branch.prefix + " - ") : "") + note.title;
@@ -33,6 +65,7 @@ async function prepareNode(branch) {
         isProtected: note.isProtected,
         title: utils.escapeHtml(title),
         extraClasses: await getExtraClasses(note),
+        icon: getIcon(note),
         refKey: note.noteId,
         expanded: note.type !== 'search' && branch.isExpanded
     };
