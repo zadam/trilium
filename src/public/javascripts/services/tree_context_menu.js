@@ -10,6 +10,7 @@ import exportSubtreeDialog from '../dialogs/export_subtree.js';
 import infoService from "./info.js";
 import treeCache from "./tree_cache.js";
 import syncService from "./sync.js";
+import contextMenuService from "./context_menu.js";
 
 const $tree = $("#tree");
 

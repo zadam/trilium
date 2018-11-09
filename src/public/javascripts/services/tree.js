@@ -1,3 +1,4 @@
+import contextMenuWidget from './context_menu.js';
 import treeContextMenuService from './tree_context_menu.js';
 import dragAndDropSetup from './drag_and_drop.js';
 import linkService from './link.js';
@@ -15,7 +16,6 @@ import Branch from '../entities/branch.js';
 import NoteShort from '../entities/note_short.js';
 
 const $tree = $("#tree");
-const $treeContextMenu = $("#tree-context-menu");
 const $createTopLevelNoteButton = $("#create-top-level-note-button");
 const $collapseTreeButton = $("#collapse-tree-button");
 const $scrollToCurrentNoteButton = $("#scroll-to-current-note-button");
@@ -378,73 +378,10 @@ function initFancyTree(tree) {
         }
     });
 
-    $treeContextMenu.on('click', '.dropdown-item', function(e) {
-        const cmd = $(e.target).prop("data-cmd");
-
-        treeContextMenuService.selectContextMenuItem(e, cmd);
-    });
-
-    async function openContextMenu(e) {
-        $treeContextMenu.empty();
-
-        const contextMenuItems = await treeContextMenuService.getContextMenuItems(e);
-
-        for (const item of contextMenuItems) {
-            if (item.title === '----') {
-                $treeContextMenu.append($("<div>").addClass("dropdown-divider"));
-            } else {
-                const $icon = $("<span>");
-
-                if (item.uiIcon) {
-                    $icon.addClass("jam jam-" + item.uiIcon);
-                }
-                else {
-                    $icon.append("&nbsp;");
-                }
-
-                const $item = $("<a>")
-                    .append($icon)
-                    .append(" &nbsp; ") // some space between icon and text
-                    .addClass("dropdown-item")
-                    .prop("data-cmd", item.cmd)
-                    .append(item.title);
-
-
-
-                if (item.enabled !== undefined && !item.enabled) {
-                    $item.addClass("disabled");
-                }
-
-                $treeContextMenu.append($item);
-            }
-        }
-
-        // code below tries to detect when dropdown would overflow from page
-        // in such case we'll position it above click coordinates so it will fit into client
-        const clickPosition = e.pageY;
-        const clientHeight = document.documentElement.clientHeight;
-        const contextMenuHeight = $treeContextMenu.height();
-
-        let top;
-
-        if (clickPosition + contextMenuHeight > clientHeight) {
-            top = clientHeight - contextMenuHeight - 10;
-        }
-        else {
-            top = e.pageY - 10;
-        }
-
-        $treeContextMenu.css({
-            display: "block",
-            top: top,
-            left: e.pageX - 20
-        }).addClass("show");
-    }
-
-    $(document).click(() => $(".context-menu").hide());
-
     $tree.on('contextmenu', '.fancytree-node', function(e) {
-        openContextMenu(e);
+        treeContextMenuService.getContextMenuItems(e).then(contextMenuItems => {
+            contextMenuWidget.initContextMenu(e, contextMenuItems, treeContextMenuService.selectContextMenuItem);
+        });
 
         return false; // blocks default browser right click menu
     });

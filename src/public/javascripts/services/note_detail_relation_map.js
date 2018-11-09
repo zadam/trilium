@@ -224,19 +224,17 @@ function initJsPlumbInstance () {
     $relationMapCanvas.contextmenu({
         delegate: ".note-box",
         menu: [
-            {title: "Remove note", cmd: "remove", uiIcon: "ui-icon-trash"},
-            {title: "Edit title", cmd: "edit-title", uiIcon: "ui-icon-pencil"},
+            {title: "Remove note", cmd: "remove", uiIcon: "trash"},
+            {title: "Edit title", cmd: "edit-title", uiIcon: "pencil"},
         ],
         select: noteContextMenuHandler
     });
-
-    $.widget("moogle.contextmenuRelation", $.moogle.contextmenu, {});
 
     $relationMapCanvas.contextmenuRelation({
         delegate: ".connection-label,.jtk-connector",
         autoTrigger: false, // it doesn't open automatically, needs to be triggered explicitly by .open() call
         menu: [
-            {title: "Remove relation", cmd: "remove", uiIcon: "ui-icon-trash"}
+            {title: "Remove relation", cmd: "remove", uiIcon: "trash"}
         ],
         select: relationContextMenuHandler
     });
