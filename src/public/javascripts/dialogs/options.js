@@ -7,7 +7,6 @@ import zoomService from "../services/zoom.js";
 import utils from "../services/utils.js";
 
 const $dialog = $("#options-dialog");
-const $tabs = $("#options-tabs");
 
 const tabHandlers = [];
 
@@ -21,8 +20,6 @@ async function showDialog() {
     const options = await server.get('options');
 
     $dialog.modal();
-
-    $tabs.tabs();
 
     for (const handler of tabHandlers) {
         if (handler.optionsLoaded) {
