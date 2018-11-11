@@ -4,9 +4,10 @@ import linkService from "./link.js";
 import libraryLoader from "./library_loader.js";
 import treeService from "./tree.js";
 import contextMenuWidget from "./context_menu.js";
+import infoService from "./info.js";
 
 const $component = $("#note-detail-relation-map");
-const $relationMapCanvas = $("#relation-map-canvas");
+const $relationMapContainer = $("#relation-map-container");
 const $addChildNotesButton = $("#relation-map-add-child-notes");
 const $createChildNote = $("#relation-map-create-child-note");
 const $zoomInButton = $("#relation-map-zoom-in");
@@ -124,33 +125,18 @@ async function loadNotesAndRelations() {
     });
 }
 
-function getMousePos(canvas, evt) {
-    var rect = canvas.getBoundingClientRect();
-
-    console.log(rect);
-    console.log(canvas);
-
-
-    console.log(`(${evt.clientX} - ${rect.left}) / (${rect.right} - ${rect.left}) * ${canvas.width}`);
-
-    return {
-        x: (evt.clientX - rect.left) / (rect.right - rect.left) * canvas.width,
-        y: (evt.clientY - rect.top) / (rect.bottom - rect.top) * canvas.height
-    };
-}
-
 function initPanZoom() {
     if (pzInstance) {
         return;
     }
 
-    pzInstance = panzoom($relationMapCanvas[0], {
+    pzInstance = panzoom($relationMapContainer[0], {
         maxZoom: 2,
         minZoom: 0.1,
         smoothScroll: false,
         onMouseDown: function(event) {
             if (clipboard) {
-                const {x, y} = getMousePos($relationMapCanvas[0].getContext("2d"), event);
+                const {x, y} = getMousePos(event);
 
                 console.log(x, y);
 
@@ -165,22 +151,27 @@ function initPanZoom() {
         }
     });
 
+    pzInstance.on('transform', () => {
+        jsPlumbInstance.setZoom(getZoom());
+
+        updateTransform();
+    });
+
     if (mapData.transform) {
         pzInstance.zoomTo(0, 0, mapData.transform.scale);
+
         pzInstance.moveTo(mapData.transform.x, mapData.transform.y);
     }
 
-    pzInstance.on('zoom', function (e) {
-        mapData.transform = pzInstance.getTransform();
+    function updateTransform() {
+        const newTransform = pzInstance.getTransform();
 
-        saveData();
-    });
+        if (JSON.stringify(newTransform) !== JSON.stringify(mapData.transform)) {
+            mapData.transform = newTransform;
 
-    pzInstance.on('panend', function (e) {
-        mapData.transform = pzInstance.getTransform();
-
-        saveData();
-    }, true);
+            saveData();
+        }
+    }
 
     $zoomInButton.click(() => pzInstance.zoomTo(0, 0, 1.2));
     $zoomOutButton.click(() => pzInstance.zoomTo(0, 0, 0.8));
@@ -192,7 +183,7 @@ function cleanup() {
         jsPlumbInstance.deleteEveryEndpoint();
 
         // without this we still end up with note boxes remaining in the canvas
-        $relationMapCanvas.empty();
+        $relationMapContainer.empty();
     }
 
     if (pzInstance) {
@@ -213,7 +204,7 @@ function initJsPlumbInstance () {
         Connector: "StateMachine",
         ConnectionOverlays: uniDirectionalOverlays,
         HoverPaintStyle: { stroke: "#777", strokeWidth: 1 },
-        Container: "relation-map-canvas"
+        Container: "relation-map-container"
     });
 
     jsPlumbInstance.registerConnectionType("uniDirectional", { anchor:"Continuous", connector:"StateMachine", overlays: uniDirectionalOverlays });
@@ -223,7 +214,7 @@ function initJsPlumbInstance () {
     jsPlumbInstance.bind("connection", connectionCreatedHandler);
 
     // so that canvas is not panned when clicking/dragging note box
-    $relationMapCanvas.on('mousedown touchstart', '.note-box, .connection-label', e => e.stopPropagation());
+    $relationMapContainer.on('mousedown touchstart', '.note-box, .connection-label', e => e.stopPropagation());
 }
 
 function connectionContextMenuHandler(connection, event) {
@@ -291,7 +282,7 @@ async function connectionCreatedHandler(info, originalEvent) {
     connection.getOverlay("label").setLabel(name);
 }
 
-$relationMapCanvas.on("contextmenu", ".note-box", e => {
+$relationMapContainer.on("contextmenu", ".note-box", e => {
     const contextMenuItems = [
         {title: "Remove note", cmd: "remove", uiIcon: "trash"},
         {title: "Edit title", cmd: "edit-title", uiIcon: "pencil"},
@@ -427,7 +418,7 @@ $addChildNotesButton.click(async () => {
 let clipboard = null;
 
 $createChildNote.click(async () => {
-    const title = prompt("Enter title of new note", "new note");
+    const title = "new note" || prompt("Enter title of new note", "new note");
 
     if (!title.trim()) {
         return;
@@ -438,12 +429,70 @@ $createChildNote.click(async () => {
         target: 'into'
     });
 
+    infoService.showMessage("Click on canvas to place new note");
+
     // reloading tree so that the new note appears there
     // no need to wait for it to finish
     treeService.reload();
 
     clipboard = { id: note.noteId, title };
 });
+
+function getZoom() {
+    const matrixRegex = /matrix\((-?\d*\.?\d+),\s*0,\s*0,\s*-?\d*\.?\d+,\s*-?\d*\.?\d+,\s*-?\d*\.?\d+\)/;
+
+    const matches = $relationMapContainer.css('transform').match(matrixRegex);
+
+    return matches[1];
+}
+
+
+function dragover_handler(ev) {
+    ev.preventDefault();
+    // Set the dropEffect to move
+    //ev.dataTransfer.dropEffect = "move";
+
+    console.log("DRAGOVER");
+}
+function drop_handler(ev) {
+    ev.preventDefault();
+
+    console.log("DROP!", ev);
+}
+
+function getMousePos(evt) {
+    const rect = $relationMapContainer[0].getBoundingClientRect();
+
+    const zoom = getZoom();
+
+    return {
+        x: (evt.clientX - rect.left) / zoom,
+        y: (evt.clientY - rect.top) / zoom
+    };
+}
+
+$relationMapContainer.click(function(event) {
+    console.log("HEY!");
+
+    console.log(event.clientX, event.clientY);
+
+    if (clipboard) {
+        const {x, y} = getMousePos(event);
+
+        console.log(x, y);
+
+        createNoteBox(clipboard.id, clipboard.title, x, y);
+
+        //mapData.notes.push({ id: clipboard.id, x, y });
+
+        clipboard = null;
+    }
+
+    return true;
+});
+
+$component.on("drop", drop_handler);
+$component.on("dragover", dragover_handler);
 
 export default {
     show,

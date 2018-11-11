@@ -1,6 +1,5 @@
 #note-detail-relation-map {
     height: 100%;
-    overflow: hidden;
 }
 
 /* this is removing dotted border around focused/active relation map */
@@ -8,8 +7,10 @@
     outline: none;
 }
 
-#relation-map-canvas {
-    position: absolute; /* needs to be absolute otherwise connections will be misplaced */
+#relation-map-wrapper {
+    position: relative;
+    overflow: hidden !important;
+    height: 800px;
 }
 
 .note-box {
