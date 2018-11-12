@@ -136,9 +136,11 @@ function initPanZoom() {
         smoothScroll: false,
         onMouseDown: function(event) {
             if (clipboard) {
-                const {x, y} = getMousePos(event);
+                let {x, y} = getMousePosition(event);
 
-                console.log(x, y);
+                // modifying position so that cursor is on the top-center of the box
+                x -= 80;
+                y -= 15;
 
                 createNoteBox(clipboard.id, clipboard.title, x, y);
 
@@ -151,10 +153,10 @@ function initPanZoom() {
         }
     });
 
-    pzInstance.on('transform', () => {
+    pzInstance.on('transform', () => { // gets triggered on any transform change
         jsPlumbInstance.setZoom(getZoom());
 
-        updateTransform();
+        saveCurrentTransform();
     });
 
     if (mapData.transform) {
@@ -163,18 +165,18 @@ function initPanZoom() {
         pzInstance.moveTo(mapData.transform.x, mapData.transform.y);
     }
 
-    function updateTransform() {
-        const newTransform = pzInstance.getTransform();
-
-        if (JSON.stringify(newTransform) !== JSON.stringify(mapData.transform)) {
-            mapData.transform = newTransform;
-
-            saveData();
-        }
-    }
-
     $zoomInButton.click(() => pzInstance.zoomTo(0, 0, 1.2));
     $zoomOutButton.click(() => pzInstance.zoomTo(0, 0, 0.8));
+}
+
+function saveCurrentTransform() {
+    const newTransform = pzInstance.getTransform();
+
+    if (JSON.stringify(newTransform) !== JSON.stringify(mapData.transform)) {
+        mapData.transform = newTransform;
+
+        saveData();
+    }
 }
 
 function cleanup() {
@@ -342,9 +344,9 @@ async function createNoteBox(id, title, x, y) {
     jsPlumbInstance.getContainer().appendChild($noteBox[0]);
 
     jsPlumbInstance.draggable($noteBox[0], {
-        start:function(params) {},
-        drag:function(params) {},
-        stop:function(params) {
+        start: params => {},
+        drag: params => {},
+        stop: params => {
             const note = mapData.notes.find(note => note.id === params.el.id);
 
             if (!note) {
@@ -418,7 +420,7 @@ $addChildNotesButton.click(async () => {
 let clipboard = null;
 
 $createChildNote.click(async () => {
-    const title = "new note" || prompt("Enter title of new note", "new note");
+    const title = prompt("Enter title of new note", "new note");
 
     if (!title.trim()) {
         return;
@@ -460,7 +462,7 @@ function drop_handler(ev) {
     console.log("DROP!", ev);
 }
 
-function getMousePos(evt) {
+function getMousePosition(evt) {
     const rect = $relationMapContainer[0].getBoundingClientRect();
 
     const zoom = getZoom();
@@ -470,26 +472,6 @@ function getMousePos(evt) {
         y: (evt.clientY - rect.top) / zoom
     };
 }
-
-$relationMapContainer.click(function(event) {
-    console.log("HEY!");
-
-    console.log(event.clientX, event.clientY);
-
-    if (clipboard) {
-        const {x, y} = getMousePos(event);
-
-        console.log(x, y);
-
-        createNoteBox(clipboard.id, clipboard.title, x, y);
-
-        //mapData.notes.push({ id: clipboard.id, x, y });
-
-        clipboard = null;
-    }
-
-    return true;
-});
 
 $component.on("drop", drop_handler);
 $component.on("dragover", dragover_handler);

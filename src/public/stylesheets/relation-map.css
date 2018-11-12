@@ -1,16 +1,13 @@
 #note-detail-relation-map {
     height: 100%;
-}
-
-/* this is removing dotted border around focused/active relation map */
-#note-detail-relation-map, #note-detail-relation-map:active, #note-detail-relation-map:focus {
-    outline: none;
+    overflow: hidden !important;
 }
 
 #relation-map-wrapper {
     position: relative;
     overflow: hidden !important;
-    height: 800px;
+    height: 4000px; /* we need to set fixed height. This number is probably enough to cover any screen */
+    outline: none; /* remove dotted outline on click */
 }
 
 .note-box {
