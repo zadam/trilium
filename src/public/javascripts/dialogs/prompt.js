@@ -13,9 +13,7 @@ function ask(message, defaultValue = '') {
 
     $dialog.modal();
 
-    return new Promise((res, rej) => {
-        resolve = res;
-    });
+    return new Promise((res, rej) => { resolve = res; });
 }
 
 $dialog.on('shown.bs.modal', () => $answer.focus().select());

@@ -11,9 +11,7 @@ function info(message) {
 
     $dialog.modal();
 
-    return new Promise((res, rej) => {
-        resolve = res;
-    });
+    return new Promise((res, rej) => { resolve = res; });
 }
 
 $dialog.on('shown.bs.modal', () => $okButton.trigger("focus"));

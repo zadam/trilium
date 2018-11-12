@@ -6,6 +6,7 @@ import treeService from "./tree.js";
 import contextMenuWidget from "./context_menu.js";
 import infoService from "./info.js";
 import promptDialog from "../dialogs/prompt.js";
+import infoDialog from "../dialogs/info.js";
 
 const $component = $("#note-detail-relation-map");
 const $relationMapContainer = $("#relation-map-container");
@@ -62,10 +63,6 @@ function loadMapData() {
 }
 
 async function show() {
-    const result = await promptDialog.ask("Enter name of new note:", "new note");
-
-    alert(result);
-
     $component.show();
 
     await libraryLoader.requireLibrary(libraryLoader.RELATION_MAP);
@@ -95,14 +92,21 @@ async function loadNotesAndRelations() {
             || (rel.sourceNoteId === relation.targetNoteId && rel.targetNoteId === relation.sourceNoteId)));
 
         if (match) {
-            match.type = 'biDirectional';
+            match.type = relation.type = 'biDirectional';
+            relation.render = false; // don't render second relation
         } else {
             relation.type = 'uniDirectional';
-            relations.push(relation);
+            relation.render = true;
         }
+
+        relations.push(relation);
     }
 
     mapData.notes = mapData.notes.filter(note => note.id in data.noteTitles);
+
+    // delete all endpoints and connections
+    // this is done at this point (after async operations) to reduce flicker to the minimum
+    jsPlumbInstance.deleteEveryEndpoint();
 
     jsPlumbInstance.batch(async function () {
         for (const note of mapData.notes) {
@@ -112,7 +116,7 @@ async function loadNotesAndRelations() {
         }
 
         for (const relation of relations) {
-            if (relation.name === 'isChildOf') {
+            if (!relation.render) {
                 continue;
             }
 
@@ -256,7 +260,7 @@ async function connectionCreatedHandler(info, originalEvent) {
         return;
     }
 
-    const name = prompt("Specify new relation name:");
+    const name = await promptDialog.ask("Specify new relation name:");
 
     if (!name || !name.trim()) {
         jsPlumbInstance.deleteConnection(connection);
@@ -273,7 +277,7 @@ async function connectionCreatedHandler(info, originalEvent) {
         && rel.name === name);
 
     if (relationExists) {
-        alert("Connection '" + name + "' between these notes already exists.");
+        await infoDialog.info("Connection '" + name + "' between these notes already exists.");
 
         jsPlumbInstance.deleteConnection(connection);
 
@@ -284,8 +288,7 @@ async function connectionCreatedHandler(info, originalEvent) {
 
     relations.push({ attributeId: attribute.attributeId , targetNoteId, sourceNoteId, name });
 
-    connection.id = attribute.attributeId;
-    connection.getOverlay("label").setLabel(name);
+    await refresh();
 }
 
 $relationMapContainer.on("contextmenu", ".note-box", e => {
@@ -318,7 +321,7 @@ async function noteContextMenuHandler(event, cmd) {
     }
     else if (cmd === "edit-title") {
         const $title = $noteBox.find(".title a");
-        const title = prompt("Enter new note title:", $title.text());
+        const title = await promptDialog.ask("Enter new note title:", $title.text());
 
         if (!title) {
             return;
@@ -382,16 +385,13 @@ async function createNoteBox(id, title, x, y) {
 }
 
 async function refresh() {
-    // delete all endpoints and connections
-    jsPlumbInstance.deleteEveryEndpoint();
-
     await loadNotesAndRelations();
 }
 
 let clipboard = null;
 
 $createChildNote.click(async () => {
-    const title = prompt("Enter title of new note", "new note");
+    const title = await promptDialog.ask("Enter title of new note", "new note");
 
     if (!title.trim()) {
         return;
@@ -443,7 +443,8 @@ async function dropNoteOntoRelationMapHandler(ev) {
         const exists = mapData.notes.some(n => n.noteId === note.noteId);
 
         if (exists) {
-            alert(`Note "${note.title}" is already placed into the diagram`);
+            await infoDialog.info(`Note "${note.title}" is already placed into the diagram`);
+
             continue;
         }
 
