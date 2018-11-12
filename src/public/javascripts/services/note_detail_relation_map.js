@@ -5,10 +5,10 @@ import libraryLoader from "./library_loader.js";
 import treeService from "./tree.js";
 import contextMenuWidget from "./context_menu.js";
 import infoService from "./info.js";
+import promptDialog from "../dialogs/prompt.js";
 
 const $component = $("#note-detail-relation-map");
 const $relationMapContainer = $("#relation-map-container");
-const $addChildNotesButton = $("#relation-map-add-child-notes");
 const $createChildNote = $("#relation-map-create-child-note");
 const $zoomInButton = $("#relation-map-zoom-in");
 const $zoomOutButton = $("#relation-map-zoom-out");
@@ -62,6 +62,10 @@ function loadMapData() {
 }
 
 async function show() {
+    const result = await promptDialog.ask("Enter name of new note:", "new note");
+
+    alert(result);
+
     $component.show();
 
     await libraryLoader.requireLibrary(libraryLoader.RELATION_MAP);
@@ -377,49 +381,12 @@ async function createNoteBox(id, title, x, y) {
     });
 }
 
-function getFreePosition() {
-    const maxY = mapData.notes.filter(note => !!note.y).map(note => note.y).reduce((a, b) => Math.max(a, b), 0);
-
-    return [100, maxY + 200];
-}
-
 async function refresh() {
     // delete all endpoints and connections
     jsPlumbInstance.deleteEveryEndpoint();
 
     await loadNotesAndRelations();
 }
-
-$addChildNotesButton.click(async () => {
-    const children = await server.get("notes/" + noteDetailService.getCurrentNoteId() + "/children");
-
-    let [curX, curY] = getFreePosition();
-
-    for (const child of children) {
-        if (mapData.notes.some(note => note.id === child.noteId)) {
-            // note already exists
-            continue;
-        }
-
-        mapData.notes.push({
-            id: child.noteId,
-            x: curX,
-            y: curY
-        });
-
-        if (curX > 1000) {
-            curX = 100;
-            curY += 200;
-        }
-        else {
-            curX += 200;
-        }
-    }
-
-    saveData();
-
-    await refresh();
-});
 
 let clipboard = null;
 
