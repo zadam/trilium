@@ -456,10 +456,19 @@ function dragover_handler(ev) {
 
     console.log("DRAGOVER");
 }
+
 function drop_handler(ev) {
     ev.preventDefault();
 
-    console.log("DROP!", ev);
+    const note = JSON.parse(ev.originalEvent.dataTransfer.getData("text"));
+
+    let {x, y} = getMousePosition(ev);
+
+    // modifying position so that cursor is on the top-center of the box
+    x -= 80;
+    y -= 15;
+
+    createNoteBox(note.noteId, note.title, x, y);
 }
 
 function getMousePosition(evt) {
