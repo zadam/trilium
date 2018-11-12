@@ -71,6 +71,7 @@ function AttributesModel() {
 
             attr.relationDefinition = (attr.type === 'relation-definition' && attr.value) ? attr.value : {
                 multiplicityType: "singlevalue",
+                mirrorRelation: "",
                 isPromoted: true
             };
 
@@ -189,6 +190,7 @@ function AttributesModel() {
                 },
                 relationDefinition: {
                     multiplicityType: "singlevalue",
+                    mirrorRelation: "",
                     isPromoted: true
                 }
             }));

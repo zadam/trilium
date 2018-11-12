@@ -57,7 +57,7 @@ class TreeCache {
 
         return noteIds.map(noteId => {
             if (!this.notes[noteId] && !silentNotFoundError) {
-                messagingService.logError(`Can't find note ${noteId}`);
+                messagingService.logError(`Can't find note "${noteId}"`);
 
                 return null;
             }

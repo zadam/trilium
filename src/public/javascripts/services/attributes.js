@@ -60,7 +60,7 @@ async function showAttributes() {
         const $inputCell = $("<td>").append($("<div>").addClass("input-group").append($input));
 
         const $actionCell = $("<td>");
-        const $multiplicityCell = $("<td>");
+        const $multiplicityCell = $("<td>").addClass("multiplicity");
 
         $tr
             .append($labelCell)
@@ -148,9 +148,14 @@ async function showAttributes() {
             // ideally we'd use link instead of button which would allow tooltip preview, but
             // we can't guarantee updating the link in the a element
             const $openButton = $("<button>").addClass("btn btn-sm").text("Open").click(() => {
-                const notePath = $input.prop("data-selected-path");
+                const notePath = $input.getSelectedPath();
 
-                treeService.activateNote(notePath);
+                if (notePath) {
+                    treeService.activateNote(notePath);
+                }
+                else {
+                    console.log("Empty note path, nothing to open.");
+                }
             });
 
             $actionCell.append($openButton);
@@ -162,7 +167,7 @@ async function showAttributes() {
 
         if (definition.multiplicityType === "multivalue") {
             const addButton = $("<span>")
-                .addClass("glyphicon glyphicon-plus pointer")
+                .addClass("jam jam-plus pointer")
                 .prop("title", "Add new attribute")
                 .click(async () => {
                     const $new = await createRow(definitionAttr, {
@@ -178,7 +183,7 @@ async function showAttributes() {
                 });
 
             const removeButton = $("<span>")
-                .addClass("glyphicon glyphicon-trash pointer")
+                .addClass("jam jam-trash pointer")
                 .prop("title", "Remove this attribute")
                 .click(async () => {
                     if (valueAttr.attributeId) {
@@ -269,11 +274,9 @@ async function promotedAttributeChanged(event) {
         value = $attr.is(':checked') ? "true" : "false";
     }
     else if ($attr.prop("attribute-type") === "relation") {
-        const selectedPath = $attr.prop("data-selected-path");
+        const selectedPath = $attr.getSelectedPath();
 
-        if (selectedPath) {
-            value = treeUtils.getNoteIdFromNotePath(selectedPath);
-        }
+        value = selectedPath ? treeUtils.getNoteIdFromNotePath(selectedPath) : "";
     }
     else {
         value = $attr.val();

@@ -20,6 +20,10 @@ async function updateNoteAttribute(req) {
         attribute = await repository.getAttribute(body.attributeId);
     }
     else {
+        if (body.type === 'relation' && !body.value.trim()) {
+            return {};
+        }
+
         attribute = new Attribute();
         attribute.noteId = noteId;
         attribute.name = body.name;
@@ -30,7 +34,13 @@ async function updateNoteAttribute(req) {
         return [400, `Attribute ${body.attributeId} is not owned by ${noteId}`];
     }
 
-    attribute.value = body.value;
+    if (body.value.trim()) {
+        attribute.value = body.value;
+    }
+    else {
+        // relations should never have empty target
+        attribute.isDeleted = true;
+    }
 
     await attribute.save();
 
@@ -81,10 +91,17 @@ async function updateNoteAttributes(req) {
 
         attributeEntity.type = attribute.type;
         attributeEntity.name = attribute.name;
-        attributeEntity.value = attribute.value;
         attributeEntity.position = attribute.position;
         attributeEntity.isInheritable = attribute.isInheritable;
         attributeEntity.isDeleted = attribute.isDeleted;
+
+        if (attributeEntity.type === 'relation' && !attributeEntity.value.trim()) {
+            // relation should never have empty target
+            attributeEntity.isDeleted = true;
+        }
+        else {
+            attributeEntity.value = attribute.value;
+        }
 
         await attributeEntity.save();
     }

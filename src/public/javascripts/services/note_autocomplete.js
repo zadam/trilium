@@ -54,24 +54,34 @@ function initNoteAutocomplete($el) {
             $el.prop("data-selected-path", suggestion.path);
         });
 
-        $el.getSelectedPath = () => $el.prop("data-selected-path");
+        $el.on('autocomplete:closed', () => {
+            $el.prop("data-selected-path", "");
+        });
     }
 
     return $el;
 }
+
+$.fn.getSelectedPath = function() {
+    if (!$(this).val().trim()) {
+        return "";
+    }
+    else {
+        return $(this).prop("data-selected-path");
+    }
+};
 
 ko.bindingHandlers.noteAutocomplete = {
     init: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
         initNoteAutocomplete($(element));
 
         $(element).on('autocomplete:selected', function(event, suggestion, dataset) {
-            bindingContext.$data.selectedPath = suggestion.path;
+            bindingContext.$data.selectedPath = $(element).val().trim() ? suggestion.path : '';
         });
     }
 };
 
 export default {
     initNoteAutocomplete,
-    autocompleteSource,
     showRecentNotes
 }

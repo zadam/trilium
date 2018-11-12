@@ -5,6 +5,7 @@ const sqlInit = require('./sql_init');
 const log = require('./log');
 const messagingService = require('./messaging');
 const syncMutexService = require('./sync_mutex');
+const repository = require('./repository.js');
 const cls = require('./cls');
 
 async function runCheck(query, errorText, errorList) {
@@ -87,6 +88,17 @@ async function runSyncRowChecks(table, key, errorList) {
           sync.entityName = '${table}' 
           AND ${key} IS NULL`,
         `Missing ${table} records for existing sync rows`, errorList);
+}
+
+async function fixEmptyRelationTargets(errorList) {
+    const emptyRelations = await repository.getEntities("SELECT * FROM attributes WHERE isDeleted = 0 AND type = 'relation' AND value = ''");
+
+    for (const relation of emptyRelations) {
+        relation.isDeleted = true;
+        await relation.save();
+
+        errorList.push(`Relation ${relation.attributeId} of name "${relation.name} has empty target. Autofixed.`);
+    }
 }
 
 async function runAllChecks() {
@@ -220,6 +232,8 @@ async function runAllChecks() {
 
         await checkTreeCycles(errorList);
     }
+
+    await fixEmptyRelationTargets(errorList);
 
     return errorList;
 }

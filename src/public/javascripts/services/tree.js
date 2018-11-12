@@ -152,6 +152,11 @@ async function getRunPath(notePath) {
 
         if (childNoteId !== null) {
             const child = await treeCache.getNote(childNoteId);
+
+            if (!child) {
+                console.log("Can't find " + childNoteId);
+            }
+
             const parents = await child.getParentNotes();
 
             if (!parents) {
@@ -609,7 +614,7 @@ $(window).bind('hashchange', function() {
     const notePath = getNotePathFromAddress();
 
     if (getCurrentNotePath() !== notePath) {
-        console.log("Switching to " + notePath + " because of hash change");
+        console.debug("Switching to " + notePath + " because of hash change");
 
         activateNote(notePath);
     }

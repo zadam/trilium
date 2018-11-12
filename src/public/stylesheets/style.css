@@ -521,6 +521,11 @@ table.promoted-attributes-in-tooltip td, table.promoted-attributes-in-tooltip th
     margin: 0;
 }
 
+.algolia-autocomplete .aa-dropdown-menu .aa-suggestion p {
+    padding: 0;
+    margin: 0;
+}
+
 .algolia-autocomplete .aa-dropdown-menu .aa-suggestion.aa-cursor {
     background-color: #B2D7FF;
 }
@@ -544,4 +549,8 @@ table.promoted-attributes-in-tooltip td, table.promoted-attributes-in-tooltip th
 
 .fancytree-custom-icon {
     font-size: 1.3em;
+}
+
+.multiplicity {
+    font-size: larger;
 }

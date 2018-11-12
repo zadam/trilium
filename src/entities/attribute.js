@@ -40,10 +40,20 @@ class Attribute extends Entity {
         }
     }
 
+    /**
+     * @returns {Promise<Note|null>}
+     */
     async getNote() {
-        return await repository.getEntity("SELECT * FROM notes WHERE noteId = ?", [this.noteId]);
+        if (!this.__note) {
+            this.__note = await repository.getEntity("SELECT * FROM notes WHERE noteId = ?", [this.noteId]);
+        }
+
+        return this.__note;
     }
 
+    /**
+     * @returns {Promise<Note|null>}
+     */
     async getTargetNote() {
         if (this.type !== 'relation') {
             throw new Error(`Attribute ${this.attributeId} is not relation`);
@@ -53,9 +63,16 @@ class Attribute extends Entity {
             return null;
         }
 
-        return await repository.getEntity("SELECT * FROM notes WHERE noteId = ?", [this.value]);
+        if (!this.__targetNote) {
+            this.__targetNote = await repository.getEntity("SELECT * FROM notes WHERE noteId = ?", [this.value]);
+        }
+
+        return this.__targetNote;
     }
 
+    /**
+     * @return {boolean}
+     */
     isDefinition() {
         return this.type === 'label-definition' || this.type === 'relation-definition';
     }

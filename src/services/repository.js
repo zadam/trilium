@@ -96,20 +96,17 @@ async function updateEntity(entity) {
         if (entity.isChanged && (entityName !== 'options' || entity.isSynced)) {
             await syncTableService.addEntitySync(entityName, primaryKey);
 
-            if (isNewEntity) {
-                await eventService.emit(eventService.ENTITY_CREATED, {
-                    entityName,
-                    entity
-                });
+            const eventPayload = {
+                entityName,
+                entity
+            };
+
+            if (isNewEntity && !entity.isDeleted) {
+                await eventService.emit(eventService.ENTITY_CREATED, eventPayload);
             }
 
-            // it seems to be better to handle deletion with a separate event
-            if (!entity.isDeleted) {
-                await eventService.emit(eventService.ENTITY_CHANGED, {
-                    entityName,
-                    entity
-                });
-            }
+            // it seems to be better to handle deletion and update separately
+            await eventService.emit(entity.isDeleted ? eventService.ENTITY_DELETED : eventService.ENTITY_CHANGED, eventPayload);
         }
     });
 }
