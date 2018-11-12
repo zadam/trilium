@@ -8,11 +8,17 @@ const dragAndDropSetup = {
             return false;
         }
 
+        node.setSelected(true);
+
+        const selectedNodes = treeService.getSelectedNodes().map(node => {
+            return {
+                noteId: node.data.noteId,
+                title: node.data.title
+            }
+        });
+
         // this is for dragging notes into relation map
-        data.dataTransfer.setData("text", JSON.stringify({
-            noteId: node.data.noteId,
-            title: node.data.title
-        }));
+        data.dataTransfer.setData("text", JSON.stringify(selectedNodes));
 
         // This function MUST be defined to enable dragging for the tree.
         // Return false to cancel dragging of node.
@@ -26,9 +32,6 @@ const dragAndDropSetup = {
     dragDrop: (node, data) => {
         // This function MUST be defined to enable dropping of items on the tree.
         // data.hitMode is 'before', 'after', or 'over'.
-
-        const nodeToMove = data.otherNode;
-        nodeToMove.setSelected(true);
 
         const selectedNodes = treeService.getSelectedNodes();
 

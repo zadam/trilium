@@ -383,6 +383,13 @@ function getFreePosition() {
     return [100, maxY + 200];
 }
 
+async function refresh() {
+    // delete all endpoints and connections
+    jsPlumbInstance.deleteEveryEndpoint();
+
+    await loadNotesAndRelations();
+}
+
 $addChildNotesButton.click(async () => {
     const children = await server.get("notes/" + noteDetailService.getCurrentNoteId() + "/children");
 
@@ -411,10 +418,7 @@ $addChildNotesButton.click(async () => {
 
     saveData();
 
-    // delete all endpoints and connections
-    jsPlumbInstance.deleteEveryEndpoint();
-
-    await loadNotesAndRelations();
+    await refresh();
 });
 
 let clipboard = null;
@@ -448,27 +452,46 @@ function getZoom() {
     return matches[1];
 }
 
-
-function dragover_handler(ev) {
-    ev.preventDefault();
-    // Set the dropEffect to move
-    //ev.dataTransfer.dropEffect = "move";
-
-    console.log("DRAGOVER");
-}
-
-function drop_handler(ev) {
+async function dropNoteOntoRelationMapHandler(ev) {
     ev.preventDefault();
 
-    const note = JSON.parse(ev.originalEvent.dataTransfer.getData("text"));
+    const notes = JSON.parse(ev.originalEvent.dataTransfer.getData("text"));
 
     let {x, y} = getMousePosition(ev);
 
     // modifying position so that cursor is on the top-center of the box
-    x -= 80;
+    const startX = x -= 80;
     y -= 15;
 
-    createNoteBox(note.noteId, note.title, x, y);
+    const currentNoteId = treeService.getCurrentNode().data.noteId;
+
+    for (const note of notes) {
+        if (note.noteId === currentNoteId) {
+            // we don't allow placing current (relation map) into itself
+            // the reason is that when dragging notes from the tree, the relation map is always selected
+            // since it's focused.
+            continue;
+        }
+
+        const exists = mapData.notes.some(n => n.noteId === note.noteId);
+
+        if (exists) {
+            alert(`Note "${note.title}" is already placed into the diagram`);
+            continue;
+        }
+
+        mapData.notes.push({id: note.noteId, x, y});
+
+        if (x - startX > 1000) {
+            x = startX;
+            y += 200;
+        }
+        else {
+            x += 200;
+        }
+    }
+
+    await refresh();
 }
 
 function getMousePosition(evt) {
@@ -482,8 +505,8 @@ function getMousePosition(evt) {
     };
 }
 
-$component.on("drop", drop_handler);
-$component.on("dragover", dragover_handler);
+$component.on("drop", dropNoteOntoRelationMapHandler);
+$component.on("dragover", ev => ev.preventDefault());
 
 export default {
     show,
