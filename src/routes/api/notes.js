@@ -95,8 +95,11 @@ async function setNoteTypeMime(req) {
 async function getRelationMap(req) {
     const noteIds = req.body.noteIds;
     const resp = {
+        // noteId => title
         noteTitles: {},
-        relations: []
+        relations: [],
+        // relation name => mirror relation name
+        mirrorRelations: {}
     };
 
     if (noteIds.length === 0) {
@@ -105,19 +108,26 @@ async function getRelationMap(req) {
 
     const questionMarks = noteIds.map(noteId => '?').join(',');
 
-    (await repository.getEntities(`SELECT * FROM notes WHERE isDeleted = 0 AND noteId IN (${questionMarks})`, noteIds))
-        .forEach(note => resp.noteTitles[note.noteId] = note.title);
+    const notes = await repository.getEntities(`SELECT * FROM notes WHERE isDeleted = 0 AND noteId IN (${questionMarks})`, noteIds);
 
-    // FIXME: this actually doesn't take into account inherited relations! But maybe it is better this way?
-    resp.relations = (await repository.getEntities(`SELECT * FROM attributes WHERE isDeleted = 0 AND type = 'relation' AND noteId IN (${questionMarks})`, noteIds))
-        .map(relation => { return {
-            attributeId: relation.attributeId,
-            sourceNoteId: relation.noteId,
-            targetNoteId: relation.value,
-            name: relation.name
-        }; })
-        // both sourceNoteId and targetNoteId has to be in the included notes, but source was already checked in the SQL query
-        .filter(relation => noteIds.includes(relation.targetNoteId));
+    for (const note of notes) {
+        resp.noteTitles[note.noteId] = note.title;
+
+        resp.relations = resp.relations.concat((await note.getRelations())
+            .filter(relation => noteIds.includes(relation.value))
+            .map(relation => { return {
+                attributeId: relation.attributeId,
+                sourceNoteId: relation.noteId,
+                targetNoteId: relation.value,
+                name: relation.name
+            }; }));
+
+        for (const relationDefinition of await note.getRelationDefinitions()) {
+            if (relationDefinition.value.mirrorRelation) {
+                resp.mirrorRelations[relationDefinition.name] = relationDefinition.value.mirrorRelation;
+            }
+        }
+    }
 
     return resp;
 }

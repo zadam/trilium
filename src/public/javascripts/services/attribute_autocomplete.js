@@ -24,7 +24,7 @@ function initAttributeNameAutocomplete({ $el, attributeType, open }) {
                 });
 
                 if (result.length === 0) {
-                    result.push({name: "No results"})
+                    result.push({name: "No results"});
                 }
 
                 cb(result);

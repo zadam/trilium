@@ -48,6 +48,25 @@ const biDirectionalOverlays = [
     } ]
 ];
 
+const mirrorOverlays = [
+    [ "Arrow", {
+        location: 1,
+        id: "arrow",
+        length: 14,
+        foldback: 0.8
+    } ],
+    [ "Label", { label: "", location: 0.2, id: "label-source", cssClass: "connection-label" }],
+    [ "Label", { label: "", location: 0.8, id: "label-target", cssClass: "connection-label" }],
+    [ "Arrow", {
+        location: 0,
+        id: "arrow2",
+        length: 14,
+        direction: -1,
+        foldback: 0.8
+    } ]
+];
+
+
 function loadMapData() {
     const currentNote = noteDetailService.getCurrentNote();
     mapData = {
@@ -88,12 +107,12 @@ async function loadNotesAndRelations() {
 
     for (const relation of data.relations) {
         const match = relations.find(rel =>
-            rel.name === relation.name
+            rel.name === data.mirrorRelations[relation.name]
             && ((rel.sourceNoteId === relation.sourceNoteId && rel.targetNoteId === relation.targetNoteId)
             || (rel.sourceNoteId === relation.targetNoteId && rel.targetNoteId === relation.sourceNoteId)));
 
         if (match) {
-            match.type = relation.type = 'biDirectional';
+            match.type = relation.type = relation.name === data.mirrorRelations[relation.name] ? 'biDirectional' : 'mirror';
             relation.render = false; // don't render second relation
         } else {
             relation.type = 'uniDirectional';
@@ -128,7 +147,15 @@ async function loadNotesAndRelations() {
             });
 
             connection.id = relation.attributeId;
-            connection.getOverlay("label").setLabel(relation.name);
+
+            if (relation.type === 'mirror') {
+                connection.getOverlay("label-source").setLabel(relation.name);
+                connection.getOverlay("label-target").setLabel(data.mirrorRelations[relation.name]);
+            }
+            else {
+                connection.getOverlay("label").setLabel(relation.name);
+            }
+
             connection.canvas.setAttribute("data-connection-id", connection.id);
         }
     });
@@ -221,6 +248,8 @@ function initJsPlumbInstance () {
     jsPlumbInstance.registerConnectionType("uniDirectional", { anchor:"Continuous", connector:"StateMachine", overlays: uniDirectionalOverlays });
 
     jsPlumbInstance.registerConnectionType("biDirectional", { anchor:"Continuous", connector:"StateMachine", overlays: biDirectionalOverlays });
+
+    jsPlumbInstance.registerConnectionType("mirror", { anchor:"Continuous", connector:"StateMachine", overlays: mirrorOverlays });
 
     jsPlumbInstance.bind("connection", connectionCreatedHandler);
 
@@ -330,7 +359,7 @@ async function noteContextMenuHandler(event, cmd) {
     }
     else if (cmd === "edit-title") {
         const $title = $noteBox.find(".title a");
-        const title = await promptDialog.ask("Enter new note title:", $title.text());
+        const title = await promptDialog.ask({ message: "Enter new note title:", defaultValue: $title.text() });
 
         if (!title) {
             return;

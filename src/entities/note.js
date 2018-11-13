@@ -7,7 +7,9 @@ const repository = require('../services/repository');
 const dateUtils = require('../services/date_utils');
 
 const LABEL = 'label';
+const LABEL_DEFINITION = 'label-definition';
 const RELATION = 'relation';
+const RELATION_DEFINITION = 'relation-definition';
 
 /**
  * This represents a Note which is a central object in the Trilium Notes project.
@@ -137,11 +139,27 @@ class Note extends Entity {
     }
 
     /**
+     * @param {string} [name] - label name to filter
+     * @returns {Promise<Attribute[]>} all note's label definitions, including inherited ones
+     */
+    async getLabelDefinitions(name) {
+        return (await this.getAttributes(name)).filter(attr => attr.type === LABEL_DEFINITION);
+    }
+
+    /**
      * @param {string} [name] - relation name to filter
      * @returns {Promise<Attribute[]>} all note's relations (attributes with type relation), including inherited ones
      */
     async getRelations(name) {
         return (await this.getAttributes(name)).filter(attr => attr.type === RELATION);
+    }
+
+    /**
+     * @param {string} [name] - relation name to filter
+     * @returns {Promise<Attribute[]>} all note's relation definitions including inherited ones
+     */
+    async getRelationDefinitions(name) {
+        return (await this.getAttributes(name)).filter(attr => attr.type === RELATION_DEFINITION);
     }
 
     /**
