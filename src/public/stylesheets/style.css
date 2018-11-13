@@ -554,3 +554,8 @@ table.promoted-attributes-in-tooltip td, table.promoted-attributes-in-tooltip th
 .multiplicity {
     font-size: larger;
 }
+
+/* this is because bootstrap (?) sets code color to red for some reason */
+code {
+    color: inherit !important;
+}
