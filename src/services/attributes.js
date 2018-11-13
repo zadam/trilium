@@ -16,6 +16,7 @@ const BUILTIN_ATTRIBUTES = [
     { type: 'label', name: 'disableInclusion' },
     { type: 'label', name: 'appCss' },
     { type: 'label', name: 'hideChildrenOverview' },
+    { type: 'label', name: 'hidePromotedAttributes' },
 
     // relation names
     { type: 'relation', name: 'runOnNoteView' },

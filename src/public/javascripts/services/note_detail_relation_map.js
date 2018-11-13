@@ -528,9 +528,7 @@ $centerButton.click(() => {
     let averageX = totalX / mapData.notes.length;
     let averageY = totalY / mapData.notes.length;
 
-    console.log(averageX, averageY);
-
-    //pzInstance.moveTo(averageX, averageY);
+    pzInstance.moveTo(averageX, averageY);
 });
 
 $component.on("drop", dropNoteOntoRelationMapHandler);

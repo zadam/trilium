@@ -26,7 +26,8 @@ async function getAttributes() {
 
 async function showAttributes() {
     $promotedAttributesContainer.empty();
-    $attributeList.hide().empty();
+    $attributeList.hide();
+    $attributeListInner.empty();
 
     const note = noteDetailService.getCurrentNote();
 
@@ -37,7 +38,9 @@ async function showAttributes() {
         && !attr.name.startsWith("child:")
         && attr.value.isPromoted);
 
-    if (promoted.length > 0) {
+    const hidePromotedAttributes = attributes.some(attr => attr.type === 'label' && attr.name === 'hidePromotedAttributes');
+
+    if (promoted.length > 0 && !hidePromotedAttributes) {
         const $tbody = $("<tbody>");
 
         for (const definitionAttr of promoted) {
