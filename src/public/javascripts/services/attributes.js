@@ -204,7 +204,7 @@ async function createPromotedAttributeRow(definitionAttr, valueAttr) {
             promotedAttributeChanged(event);
         });
 
-        $input.prop("data-selected-path", valueAttr.value);
+        $input.setSelectedPath(valueAttr.value);
 
         // ideally we'd use link instead of button which would allow tooltip preview, but
         // we can't guarantee updating the link in the a element

@@ -1,6 +1,8 @@
 import server from "./server.js";
 import noteDetailService from "./note_detail.js";
 
+const SELECTED_PATH_KEY = "selected-path";
+
 async function autocompleteSource(term, cb) {
     const result = await server.get('autocomplete'
         + '?query=' + encodeURIComponent(term)
@@ -17,7 +19,7 @@ async function autocompleteSource(term, cb) {
 }
 
 function clearText($el) {
-    $el.val('').change();
+    $el.autocomplete("val", "").change();
 }
 
 function showRecentNotes($el) {
@@ -62,12 +64,11 @@ function initNoteAutocomplete($el) {
             }
         ]);
 
-        $el.on('autocomplete:selected', function(event, suggestion, dataset) {
-            $el.prop("data-selected-path", suggestion.path);
-        });
-
+        $el.on('autocomplete:selected', (event, suggestion) => $el.setSelectedPath(suggestion.path));
         $el.on('autocomplete:closed', () => {
-            $el.prop("data-selected-path", "");
+            if (!$el.val().trim()) {
+                $el.setSelectedPath("");
+            }
         });
     }
 
@@ -79,8 +80,12 @@ $.fn.getSelectedPath = function() {
         return "";
     }
     else {
-        return $(this).prop("data-selected-path");
+        return $(this).data(SELECTED_PATH_KEY);
     }
+};
+
+$.fn.setSelectedPath = function(path) {
+    $(this).data(SELECTED_PATH_KEY, path);
 };
 
 ko.bindingHandlers.noteAutocomplete = {
