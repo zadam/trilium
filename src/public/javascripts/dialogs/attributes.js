@@ -3,6 +3,7 @@ import server from '../services/server.js';
 import infoService from "../services/info.js";
 import treeUtils from "../services/tree_utils.js";
 import attributeService from "../services/attributes.js";
+import attributeAutocompleteService from "../services/attribute_autocomplete.js";
 
 const $dialog = $("#attributes-dialog");
 const $saveAttributesButton = $("#save-attributes-button");
@@ -233,69 +234,21 @@ async function showDialog() {
 }
 
 $dialog.on('focus', '.attribute-name', function (e) {
-    if (!$(this).hasClass("aa-input")) {
-        $(this).autocomplete({
-            appendTo: document.querySelector('body'),
-            hint: false,
-            autoselect: true,
-            openOnFocus: true,
-            minLength: 0
-        }, [{
-            displayKey: 'name',
-            source: async (term, cb) => {
-                const attribute = attributesModel.getTargetAttribute(this);
-                const type = (attribute().type === 'relation' || attribute().type === 'relation-definition') ? 'relation' : 'label';
-                const names = await server.get('attributes/names/?type=' + type + '&query=' + encodeURIComponent(term));
-                const result = names.map(name => {
-                    return {name};
-                });
-
-                if (result.length === 0) {
-                    result.push({name: "No results"})
-                }
-
-                cb(result);
-            }
-            }]);
-    }
-
-    $(this).autocomplete("open");
+    attributeAutocompleteService.initAttributeNameAutocomplete({
+        $el: $(this),
+        attrTypeFunc: () => {
+            const attribute = attributesModel.getTargetAttribute(this);
+            return (attribute().type === 'relation' || attribute().type === 'relation-definition') ? 'relation' : 'label';
+        },
+        open: true
+    });
 });
 
-$dialog.on('focus', '.label-value', async function (e) {
-    if (!$(this).hasClass("aa-input")) {
-        const attributeName = $(this).parent().parent().find('.attribute-name').val();
-
-        if (attributeName.trim() === "") {
-            return;
-        }
-
-        const attributeValues = (await server.get('attributes/values/' + encodeURIComponent(attributeName)))
-            .map(attribute => { return { value: attribute }; });
-
-        if (attributeValues.length === 0) {
-            return;
-        }
-
-        $(this).autocomplete({
-            appendTo: document.querySelector('body'),
-            hint: false,
-            autoselect: true,
-            openOnFocus: true,
-            minLength: 0
-        }, [{
-            displayKey: 'value',
-            source: function (term, cb) {
-                term = term.toLowerCase();
-
-                const filtered = attributeValues.filter(attr => attr.value.toLowerCase().includes(term));
-
-                cb(filtered);
-            }
-        }]);
-    }
-
-    $(this).autocomplete("open");
+$dialog.on('focus', '.label-value', function (e) {
+    attributeAutocompleteService.initLabelValueAutocomplete({
+        $el: $(this),
+        open: true
+    })
 });
 
 export default {
