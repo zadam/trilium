@@ -16,6 +16,10 @@ async function autocompleteSource(term, cb) {
     cb(result);
 }
 
+function clearText($el) {
+    $el.val('').change();
+}
+
 function showRecentNotes($el) {
     $el.autocomplete("val", "");
     $el.autocomplete("open");
@@ -23,12 +27,20 @@ function showRecentNotes($el) {
 
 function initNoteAutocomplete($el) {
     if (!$el.hasClass("aa-input")) {
-        const $showRecentNotesButton = $("<div>").addClass("input-group-append").append(
-            $("<span>")
-                .addClass("input-group-text show-recent-notes-button jam jam-clock")
-                .prop("title", "Show recent notes"));
+        const $clearTextButton = $("<span>")
+                .addClass("input-group-text input-clearer-button jam jam-close")
+                .prop("title", "Clear text field");
 
-        $el.after($showRecentNotesButton);
+        const $showRecentNotesButton = $("<span>")
+                .addClass("input-group-text show-recent-notes-button jam jam-clock")
+                .prop("title", "Show recent notes");
+
+        $el.after($("<div>")
+            .addClass("input-group-append")
+            .append($clearTextButton)
+            .append($showRecentNotesButton));
+
+        $clearTextButton.click(() => clearText($el));
 
         $showRecentNotesButton.click(() => showRecentNotes($el));
 
