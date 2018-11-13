@@ -78,3 +78,8 @@ path, .jtk-endpoint { cursor:pointer; }
 .ui-contextmenu {
     z-index: 100;
 }
+
+.floating-button {
+    position: absolute !important;
+    z-index: 100;
+}

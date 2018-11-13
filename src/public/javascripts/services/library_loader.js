@@ -28,7 +28,7 @@ const RELATION_MAP = {
         "libraries/panzoom.js"
     ],
     css: [
-        "stylesheets/relation-map.css"
+        "stylesheets/relation_map.css"
     ]
 };
 
