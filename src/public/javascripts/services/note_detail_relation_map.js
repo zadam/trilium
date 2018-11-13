@@ -14,6 +14,7 @@ const $relationMapContainer = $("#relation-map-container");
 const $createChildNote = $("#relation-map-create-child-note");
 const $zoomInButton = $("#relation-map-zoom-in");
 const $zoomOutButton = $("#relation-map-zoom-out");
+const $centerButton = $("#relation-map-center");
 
 let mapData;
 let jsPlumbInstance;
@@ -168,7 +169,7 @@ function initPanZoom() {
 
     pzInstance = panzoom($relationMapContainer[0], {
         maxZoom: 2,
-        minZoom: 0.1,
+        minZoom: 0.3,
         smoothScroll: false,
         onMouseDown: function(event) {
             if (clipboard) {
@@ -511,6 +512,26 @@ function getMousePosition(evt) {
         y: (evt.clientY - rect.top) / zoom
     };
 }
+
+$centerButton.click(() => {
+    if (mapData.notes.length === 0) {
+        return; // nothing to recenter on
+    }
+
+    let totalX = 0, totalY = 0;
+
+    for (const note of mapData.notes) {
+        totalX += note.x;
+        totalY += note.y;
+    }
+
+    let averageX = totalX / mapData.notes.length;
+    let averageY = totalY / mapData.notes.length;
+
+    console.log(averageX, averageY);
+
+    //pzInstance.moveTo(averageX, averageY);
+});
 
 $component.on("drop", dropNoteOntoRelationMapHandler);
 $component.on("dragover", ev => ev.preventDefault());
