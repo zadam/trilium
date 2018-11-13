@@ -209,7 +209,8 @@ function saveCurrentTransform() {
     const newTransform = pzInstance.getTransform();
 
     if (JSON.stringify(newTransform) !== JSON.stringify(mapData.transform)) {
-        mapData.transform = newTransform;
+        // clone transform object
+        mapData.transform = JSON.parse(JSON.stringify(newTransform));
 
         saveData();
     }
