@@ -236,7 +236,7 @@ async function showDialog() {
 $dialog.on('focus', '.attribute-name', function (e) {
     attributeAutocompleteService.initAttributeNameAutocomplete({
         $el: $(this),
-        attrTypeFunc: () => {
+        attributeType: () => {
             const attribute = attributesModel.getTargetAttribute(this);
             return (attribute().type === 'relation' || attribute().type === 'relation-definition') ? 'relation' : 'label';
         },

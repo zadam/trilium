@@ -2,10 +2,10 @@ import server from "./server.js";
 
 /**
  * @param $el - element on which to init autocomplete
- * @param attrTypeFunc - callback providing "relation" or "label" as a type of autocompleted attributes
+ * @param attributeType - "relation" or "label" or callback providing one of those values as a type of autocompleted attributes
  * @param open - should the autocomplete be opened after init?
  */
-function initAttributeNameAutocomplete({ $el, attrTypeFunc, open }) {
+function initAttributeNameAutocomplete({ $el, attributeType, open }) {
     if (!$el.hasClass("aa-input")) {
         $el.autocomplete({
             appendTo: document.querySelector('body'),
@@ -16,7 +16,9 @@ function initAttributeNameAutocomplete({ $el, attrTypeFunc, open }) {
         }, [{
             displayKey: 'name',
             source: async (term, cb) => {
-                const names = await server.get('attributes/names/?type=' + attrTypeFunc() + '&query=' + encodeURIComponent(term));
+                const type = typeof attributeType === "function" ? attributeType() : attributeType;
+
+                const names = await server.get(`attributes/names/?type=${type}&query=${encodeURIComponent(term)}`);
                 const result = names.map(name => {
                     return {name};
                 });

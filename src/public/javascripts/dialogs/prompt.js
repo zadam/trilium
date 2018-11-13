@@ -4,19 +4,28 @@ const $answer = $("#prompt-dialog-answer");
 const $form = $("#prompt-dialog-form");
 
 let resolve;
+let shownCb;
 
-function ask(message, defaultValue = '') {
+function ask({ message, defaultValue, shown }) {
     glob.activeDialog = $dialog;
 
+    shownCb = shown;
+
     $question.text(message);
-    $answer.val(defaultValue);
+    $answer.val(defaultValue || "");
 
     $dialog.modal();
 
     return new Promise((res, rej) => { resolve = res; });
 }
 
-$dialog.on('shown.bs.modal', () => $answer.focus().select());
+$dialog.on('shown.bs.modal', () => {
+    if (shownCb) {
+        shownCb({ $dialog, $question, $answer, $form });
+    }
+
+    $answer.focus().select();
+});
 
 $dialog.on("hidden.bs.modal", () => {
     if (resolve) {

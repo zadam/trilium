@@ -5,6 +5,7 @@ import libraryLoader from "./library_loader.js";
 import treeService from "./tree.js";
 import contextMenuWidget from "./context_menu.js";
 import infoService from "./info.js";
+import attributeAutocompleteService from "./attribute_autocomplete.js";
 import promptDialog from "../dialogs/prompt.js";
 import infoDialog from "../dialogs/info.js";
 
@@ -260,7 +261,15 @@ async function connectionCreatedHandler(info, originalEvent) {
         return;
     }
 
-    const name = await promptDialog.ask("Specify new relation name:");
+    const name = await promptDialog.ask({
+        message: "Specify new relation name:",
+        shown: ({ $answer }) =>
+            attributeAutocompleteService.initAttributeNameAutocomplete({
+                $el: $answer,
+                attributeType: "relation",
+                open: true
+            })
+    });
 
     if (!name || !name.trim()) {
         jsPlumbInstance.deleteConnection(connection);
