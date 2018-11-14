@@ -159,5 +159,6 @@ async function getExtraClasses(note) {
 export default {
     prepareTree,
     prepareBranch,
-    getExtraClasses
+    getExtraClasses,
+    getIcon
 }
