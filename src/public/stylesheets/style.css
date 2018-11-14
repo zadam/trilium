@@ -110,7 +110,7 @@ ul.fancytree-container {
     outline: none !important;
 }
 
-span.fancytree-node.protected > span.fancytree-icon {
+span.fancytree-node.protected > span.fancytree-custom-icon {
     filter: drop-shadow(2px 2px 2px black);
 }
 

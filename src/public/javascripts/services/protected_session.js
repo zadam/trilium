@@ -85,7 +85,7 @@ async function setupProtectedSession() {
 }
 
 function ensureDialogIsClosed() {
-    // this may fal if the dialog has not been previously opened
+    // this may fal if the dialog has not been previously opened (not sure if still true with Bootstrap modal)
     try {
         $dialog.modal('hide');
     }
@@ -174,6 +174,8 @@ $dialog.on("show.bs.modal", e => function() {
 
 $protectButton.click(protectNoteAndSendToServer);
 $unprotectButton.click(unprotectNoteAndSendToServer);
+
+$dialog.on("shown.bs.modal", e => $password.focus());
 
 export default {
     ensureProtectedSession,
