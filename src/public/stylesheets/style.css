@@ -455,8 +455,8 @@ html.theme-dark body {
 .show-recent-notes-button {
     cursor: pointer;
     font-size: 1.3em;
-    padding-left: 7px;
-    padding-right: 7px;
+    padding-left: 5px;
+    padding-right: 5px;
 }
 
 .input-clearer-button {
@@ -464,10 +464,23 @@ html.theme-dark body {
     font-size: 1.3em;
     background: inherit !important;
     padding-left: 5px;
-    padding-right: 7px;
+    padding-right: 5px;
 }
 
-.promoted-attribute-input.aa-input {
+.go-to-selected-note-button {
+    cursor: pointer;
+    font-size: 1.3em;
+    padding-left: 4px;
+    padding-right: 3px;
+}
+
+.go-to-selected-note-button.disabled {
+    cursor: inherit;
+    color: #ccc;
+}
+
+.note-autocomplete-input {
+    /* this is for seamless integration of "input clearer" button */
     border-right: 0;
 }
 

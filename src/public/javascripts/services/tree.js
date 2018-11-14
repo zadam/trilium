@@ -111,6 +111,10 @@ async function expandToNote(notePath, expandOpts) {
 async function activateNote(notePath, newNote) {
     utils.assertArguments(notePath);
 
+    if (glob.activeDialog) {
+        glob.activeDialog.modal('hide');
+    }
+
     const node = await expandToNote(notePath);
 
     if (newNote) {
@@ -165,10 +169,10 @@ async function getRunPath(notePath) {
             }
 
             if (!parents.some(p => p.noteId === parentNoteId)) {
-                console.log(utils.now(), "Did not find parent " + parentNoteId + " for child " + childNoteId);
+                console.debug(utils.now(), "Did not find parent " + parentNoteId + " for child " + childNoteId);
 
                 if (parents.length > 0) {
-                    console.log(utils.now(), "Available parents:", parents);
+                    console.debug(utils.now(), "Available parents:", parents);
 
                     const someNotePath = await getSomeNotePath(parents[0]);
 

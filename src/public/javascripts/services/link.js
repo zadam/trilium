@@ -51,20 +51,6 @@ function getNotePathFromLink($link) {
     return url ? getNotePathFromUrl(url) : null;
 }
 
-function openNotePath(notePath) {
-    treeService.activateNote(notePath);
-
-    // this is quite ugly hack, but it seems like we can't close the tooltip otherwise
-    $("[role='tooltip']").remove();
-
-    if (glob.activeDialog) {
-        try {
-            glob.activeDialog.modal('hide');
-        } catch (e) {
-        }
-    }
-}
-
 function goToLink(e) {
     e.preventDefault();
 
@@ -73,7 +59,7 @@ function goToLink(e) {
     const notePath = getNotePathFromLink($link);
 
     if (notePath) {
-        openNotePath(notePath);
+        treeService.activateNote(notePath);
     }
     else {
         const address = $link.attr('href');
@@ -127,7 +113,7 @@ $(document).on('click', 'span.ck-button__label', e => {
     const notePath = getNotePathFromUrl(url);
 
     if (notePath) {
-        openNotePath(notePath);
+        treeService.activateNote(notePath);
 
         e.preventDefault();
     }

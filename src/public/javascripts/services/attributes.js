@@ -205,21 +205,6 @@ async function createPromotedAttributeRow(definitionAttr, valueAttr) {
         });
 
         $input.setSelectedPath(valueAttr.value);
-
-        // ideally we'd use link instead of button which would allow tooltip preview, but
-        // we can't guarantee updating the link in the a element
-        const $openButton = $("<button>").addClass("btn btn-sm").text("Open").click(() => {
-            const notePath = $input.getSelectedPath();
-
-            if (notePath) {
-                treeService.activateNote(notePath);
-            }
-            else {
-                console.log("Empty note path, nothing to open.");
-            }
-        });
-
-        $actionCell.append($openButton);
     }
     else {
         messagingService.logError("Unknown attribute type=" + valueAttr.type);
