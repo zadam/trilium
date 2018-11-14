@@ -483,9 +483,9 @@ html.theme-dark body {
     padding-right: 3px;
 }
 
-.go-to-selected-note-button.disabled {
+.go-to-selected-note-button.disabled, .go-to-selected-note-button.disabled:hover {
     cursor: inherit;
-    color: #ccc;
+    color: #ccc !important;
 }
 
 .note-autocomplete-input {

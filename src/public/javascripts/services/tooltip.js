@@ -7,7 +7,7 @@ function setupTooltip() {
     $(document).on("mouseenter", "a", async function() {
         const $link = $(this);
 
-        if ($link.hasClass("no-tooltip-preview")) {
+        if ($link.hasClass("no-tooltip-preview") || $link.hasClass("disabled")) {
             return;
         }
 
@@ -54,7 +54,7 @@ function setupTooltip() {
     });
 
     // close any tooltip after click, this fixes the problem that sometimes tooltips remained on the screen
-    $(document).on("click", () => $('[rel=tooltip]').tooltip("hide"));
+    $(document).on("click", () => $('.tooltip').remove());
 }
 
 async function renderTooltip(note, attributes) {

@@ -2,7 +2,8 @@ import server from "./server.js";
 import noteDetailService from "./note_detail.js";
 import treeService from './tree.js';
 
-const SELECTED_PATH_KEY = "selected-path";
+// this key needs to have this value so it's hit by the tooltip
+const SELECTED_PATH_KEY = "data-note-path";
 
 async function autocompleteSource(term, cb) {
     const result = await server.get('autocomplete'
@@ -36,17 +37,16 @@ function initNoteAutocomplete($el, options) {
 
         $el.addClass("note-autocomplete-input");
 
-        const $clearTextButton = $("<span>")
+        const $clearTextButton = $("<a>")
                 .addClass("input-group-text input-clearer-button jam jam-close")
                 .prop("title", "Clear text field");
 
-        const $showRecentNotesButton = $("<span>")
+        const $showRecentNotesButton = $("<a>")
                 .addClass("input-group-text show-recent-notes-button jam jam-clock")
                 .prop("title", "Show recent notes");
 
-        const $goToSelectedNoteButton = $("<span>")
-            .addClass("input-group-text go-to-selected-note-button jam jam-arrow-right")
-            .prop("title", "Go to selected note");
+        const $goToSelectedNoteButton = $("<a>")
+            .addClass("input-group-text go-to-selected-note-button jam jam-arrow-right");
 
         const $sideButtons = $("<div>")
             .addClass("input-group-append")
@@ -105,19 +105,20 @@ $.fn.getSelectedPath = function() {
         return "";
     }
     else {
-        return $(this).data(SELECTED_PATH_KEY);
+        return $(this).attr(SELECTED_PATH_KEY);
     }
 };
 
 $.fn.setSelectedPath = function(path) {
     path = path || "";
 
-    $(this).data(SELECTED_PATH_KEY, path);
+    $(this).attr(SELECTED_PATH_KEY, path);
 
     $(this)
         .closest(".input-group")
         .find(".go-to-selected-note-button")
-        .toggleClass("disabled", !path.trim());
+        .toggleClass("disabled", !path.trim())
+        .attr(SELECTED_PATH_KEY, path); // we also set attr here so tooltip can be displayed
 };
 
 ko.bindingHandlers.noteAutocomplete = {
