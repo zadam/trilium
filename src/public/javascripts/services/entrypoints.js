@@ -56,9 +56,10 @@ function registerEntrypoints() {
     utils.bindShortcut('alt+m', e => {
         $(".hide-toggle").toggle();
 
+        const $container = $("#container");
         // when hiding switch display to block, otherwise grid still tries to display columns which shows
         // left empty column
-        $("#container").css("display", $("#container").css("display") === "grid" ? "block" : "grid");
+        $container.css("display", $container.css("display") === "grid" ? "block" : "grid");
     });
 
     // hide (toggle) everything except for the note content for distraction free writing
