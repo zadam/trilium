@@ -117,7 +117,7 @@ async function show() {
 }
 
 async function loadNotesAndRelations() {
-    const noteIds = mapData.notes.map(note => note.noteId);console.log(noteIds);
+    const noteIds = mapData.notes.map(note => note.noteId);
     const data = await server.post("notes/relation-map", {noteIds});
 
     relations = [];

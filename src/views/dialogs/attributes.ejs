@@ -25,6 +25,8 @@
               <tbody data-bind="foreach: ownedAttributes">
               <tr data-bind="if: !isDeleted">
                 <td>
+                  <input type="hidden" name="position" data-bind="value: position"/>
+
                   <select class="form-control attribute-type-select" style="width: auto;"
                       data-bind="options: $parent.availableTypes, optionsText: 'text', optionsValue: 'value', value: type, event: { change: $parent.typeChanged }"></select>
                 </td>
