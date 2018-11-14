@@ -433,14 +433,14 @@ class Note extends Entity {
     }
 
     /**
-     * Finds notes with given attribute name and value. Only own attributes are considered, not inherited ones
+     * Finds child notes with given attribute name and value. Only own attributes are considered, not inherited ones
      *
      * @param {string} type - attribute type (label, relation, etc.)
      * @param {string} name - attribute name
      * @param {string} [value] - attribute value
      * @returns {Promise<Note[]>}
      */
-    async findNotesWithAttribute(type, name, value) {
+    async findChildNotesWithAttribute(type, name, value) {
         const params = [this.noteId, name];
         let valueCondition = "";
 
@@ -478,7 +478,7 @@ class Note extends Entity {
      * @param {string} [value] - label value
      * @returns {Promise<Note[]>}
      */
-    async findNotesWithLabel(name, value) { return await this.findNotesWithAttribute(LABEL, name, value); }
+    async findChildNotesWithLabel(name, value) { return await this.findChildNotesWithAttribute(LABEL, name, value); }
 
     /**
      * Finds notes with given relation name and value. Only own relations are considered, not inherited ones
@@ -487,7 +487,7 @@ class Note extends Entity {
      * @param {string} [value] - relation value
      * @returns {Promise<Note[]>}
      */
-    async findNotesWithRelation(name, value) { return await this.findNotesWithAttribute(RELATION, name, value); }
+    async findChildNotesWithRelation(name, value) { return await this.findChildNotesWithAttribute(RELATION, name, value); }
 
     /**
      * Returns note revisions of this note.

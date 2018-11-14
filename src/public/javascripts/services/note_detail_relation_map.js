@@ -420,7 +420,7 @@ async function createNoteBox(noteId, title, x, y) {
     const $noteBox = $("<div>")
         .addClass("note-box")
         .prop("id", noteIdToId(noteId))
-        .append($("<span>").addClass("title").html(await linkService.createNoteLink(noteId, title)).append(`[${Math.floor(x)}, ${Math.floor(y)}]`))
+        .append($("<span>").addClass("title").html(await linkService.createNoteLink(noteId, title)))
         .append($("<div>").addClass("endpoint").attr("title", "Start dragging relations from here and drop them on another note."))
         .css("left", x + "px")
         .css("top", y + "px");
