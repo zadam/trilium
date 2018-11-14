@@ -171,22 +171,18 @@ async function createPromotedAttributeRow(definitionAttr, valueAttr) {
         }
         else if (definition.labelType === 'date') {
             $input.prop("type", "date");
-
-            const $todayButton = $("<button>").addClass("btn btn-sm").text("Today").click(() => {
-                $input.val(utils.formatDateISO(new Date()));
-                $input.trigger("change");
-            });
-
-            $actionCell.append($todayButton);
         }
         else if (definition.labelType === 'url') {
             $input.prop("placeholder", "http://website...");
 
-            const $openButton = $("<button>").addClass("btn btn-sm").text("Open").click(() => {
-                window.open($input.val(), '_blank');
-            });
+            const $openButton = $("<span>")
+                .addClass("input-group-text open-external-link-button jam jam-arrow-up-right")
+                .prop("title", "Open external link")
+                .click(() => window.open($input.val(), '_blank'));
 
-            $actionCell.append($openButton);
+            $input.after($("<div>")
+                .addClass("input-group-append")
+                .append($openButton));
         }
         else {
             messagingService.logError("Unknown labelType=" + definitionAttr.labelType);
@@ -229,7 +225,7 @@ async function createPromotedAttributeRow(definitionAttr, valueAttr) {
             });
 
         const removeButton = $("<span>")
-            .addClass("jam jam-trash pointer")
+            .addClass("jam jam-trash-alt pointer")
             .prop("title", "Remove this attribute")
             .click(async () => {
                 if (valueAttr.attributeId) {
@@ -239,7 +235,7 @@ async function createPromotedAttributeRow(definitionAttr, valueAttr) {
                 $tr.remove();
             });
 
-        $multiplicityCell.append(addButton).append(" &nbsp; ").append(removeButton);
+        $multiplicityCell.append(addButton).append(" &nbsp;").append(removeButton);
     }
 
     return $tr;

@@ -467,6 +467,13 @@ html.theme-dark body {
     padding-right: 5px;
 }
 
+.open-external-link-button {
+    cursor: pointer;
+    font-size: 1.3em;
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
 .go-to-selected-note-button {
     cursor: pointer;
     font-size: 1.3em;
@@ -585,7 +592,7 @@ table.promoted-attributes-in-tooltip td, table.promoted-attributes-in-tooltip th
 }
 
 .multiplicity {
-    font-size: larger;
+    font-size: 1.3em;
 }
 
 /* this is because bootstrap (?) sets code color to red for some reason */
