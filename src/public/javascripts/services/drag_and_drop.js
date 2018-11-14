@@ -13,7 +13,7 @@ const dragAndDropSetup = {
         const selectedNodes = treeService.getSelectedNodes().map(node => {
             return {
                 noteId: node.data.noteId,
-                title: node.data.title
+                title: node.title
             }
         });
 

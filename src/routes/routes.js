@@ -115,6 +115,7 @@ function register(app) {
 
     apiRoute(GET, '/api/notes/:noteId', notesApiRoute.getNote);
     apiRoute(PUT, '/api/notes/:noteId', notesApiRoute.updateNote);
+    apiRoute(DELETE, '/api/notes/:noteId', notesApiRoute.deleteNote);
     apiRoute(POST, '/api/notes/:parentNoteId/children', notesApiRoute.createNote);
     apiRoute(GET, '/api/notes/:parentNoteId/children', notesApiRoute.getChildren);
     apiRoute(PUT, '/api/notes/:noteId/sort', notesApiRoute.sortNotes);

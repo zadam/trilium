@@ -66,6 +66,16 @@ async function updateNote(req) {
     await noteService.updateNote(noteId, note);
 }
 
+async function deleteNote(req) {
+    const noteId = req.params.noteId;
+
+    const note = await repository.getNote(noteId);
+
+    for (const branch of await note.getBranches()) {
+        await noteService.deleteNote(branch);
+    }
+}
+
 async function sortNotes(req) {
     const noteId = req.params.noteId;
 
@@ -165,6 +175,7 @@ async function changeTitle(req) {
 module.exports = {
     getNote,
     updateNote,
+    deleteNote,
     createNote,
     sortNotes,
     protectSubtree,

@@ -382,14 +382,22 @@ $relationMapContainer.on("contextmenu", ".note-box", e => {
 
 async function noteContextMenuHandler(event, cmd) {
     const $noteBox = $(event.originalTarget).closest(".note-box");
+    const $title = $noteBox.find(".title a");
     const noteId = idToNoteId($noteBox.prop("id"));
 
     if (cmd === "remove") {
-        if (!await confirmDialog.confirm("Are you sure you want to remove the note from this diagram?")) {
+        if (!await confirmDialog.confirmDeleteNoteBoxWithNote($title.text())) {
             return;
         }
 
         jsPlumbInstance.remove(noteIdToId(noteId));
+
+        if (confirmDialog.isDeleteNoteChecked()) {
+            await server.remove("notes/" + noteId);
+
+            // to force it to disappear from the tree
+            treeService.reload();
+        }
 
         mapData.notes = mapData.notes.filter(note => note.noteId !== noteId);
 
@@ -398,8 +406,10 @@ async function noteContextMenuHandler(event, cmd) {
         saveData();
     }
     else if (cmd === "edit-title") {
-        const $title = $noteBox.find(".title a");
-        const title = await promptDialog.ask({ message: "Enter new note title:", defaultValue: $title.text() });
+        const title = await promptDialog.ask({
+            message: "Enter new note title:",
+            defaultValue: $title.text()
+        });
 
         if (!title) {
             return;
@@ -471,7 +481,7 @@ async function refresh() {
 let clipboard = null;
 
 $createChildNote.click(async () => {
-    const title = await promptDialog.ask("Enter title of new note", "new note");
+    const title = await promptDialog.ask({ message: "Enter title of new note",  defaultValue: "new note" });
 
     if (!title.trim()) {
         return;
@@ -528,7 +538,7 @@ async function dropNoteOntoRelationMapHandler(ev) {
             continue;
         }
 
-        mapData.notes.push({id: note.noteId, x, y});
+        mapData.notes.push({noteId: note.noteId, x, y});
 
         if (x - startX > 1000) {
             x = startX;
