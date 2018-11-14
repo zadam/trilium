@@ -99,7 +99,9 @@ body {
     overflow: auto;
 }
 
-#note-detail-wrapper.protected {
+/** we disable shield background when in distraction free mode because I couldn't get it to stay static
+    (it kept growing with content) */
+#container:not(.distraction-free-mode) #note-detail-wrapper.protected {
     /* DON'T COLLAPSE THE RULES INTO SINGLE ONE, BACKGROUND WON'T DISPLAY */
     background: url('/images/shield.svg') no-repeat;
     background-size: contain;
