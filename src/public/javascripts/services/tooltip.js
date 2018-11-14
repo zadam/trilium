@@ -49,9 +49,12 @@ function setupTooltip() {
         }
     });
 
-    $(document).on("mouseleave", "a", async function() {
+    $(document).on("mouseleave", "a", function() {
         $(this).tooltip('hide');
     });
+
+    // close any tooltip after click, this fixes the problem that sometimes tooltips remained on the screen
+    $(document).on("click", () => $('[rel=tooltip]').tooltip("hide"));
 }
 
 async function renderTooltip(note, attributes) {

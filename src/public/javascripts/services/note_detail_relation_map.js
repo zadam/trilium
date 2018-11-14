@@ -91,6 +91,14 @@ function loadMapData() {
     }
 }
 
+function noteIdToId(noteId) {
+    return "note-" + noteId;
+}
+
+function idToNoteId(id) {
+    return id.substr(5);
+}
+
 async function show() {
     $component.show();
 
@@ -109,7 +117,7 @@ async function show() {
 }
 
 async function loadNotesAndRelations() {
-    const noteIds = mapData.notes.map(note => note.id);
+    const noteIds = mapData.notes.map(note => note.noteId);console.log(noteIds);
     const data = await server.post("notes/relation-map", {noteIds});
 
     relations = [];
@@ -131,7 +139,7 @@ async function loadNotesAndRelations() {
         relations.push(relation);
     }
 
-    mapData.notes = mapData.notes.filter(note => note.id in data.noteTitles);
+    mapData.notes = mapData.notes.filter(note => note.noteId in data.noteTitles);
 
     // delete all endpoints and connections
     // this is done at this point (after async operations) to reduce flicker to the minimum
@@ -139,9 +147,9 @@ async function loadNotesAndRelations() {
 
     jsPlumbInstance.batch(async function () {
         for (const note of mapData.notes) {
-            const title = data.noteTitles[note.id];
+            const title = data.noteTitles[note.noteId];
 
-            await createNoteBox(note.id, title, note.x, note.y);
+            await createNoteBox(note.noteId, title, note.x, note.y);
         }
 
         for (const relation of relations) {
@@ -150,8 +158,8 @@ async function loadNotesAndRelations() {
             }
 
             const connection = jsPlumbInstance.connect({
-                source: relation.sourceNoteId,
-                target: relation.targetNoteId,
+                source: noteIdToId(relation.sourceNoteId),
+                target: noteIdToId(relation.targetNoteId),
                 type: relation.type
             });
 
@@ -170,8 +178,8 @@ async function loadNotesAndRelations() {
 
         for (const link of data.links) {
             jsPlumbInstance.connect({
-                source: link.sourceNoteId,
-                target: link.targetNoteId,
+                source: noteIdToId(link.sourceNoteId),
+                target: noteIdToId(link.targetNoteId),
                 type: 'link'
             });
         }
@@ -195,9 +203,9 @@ function initPanZoom() {
                 x -= 80;
                 y -= 15;
 
-                createNoteBox(clipboard.id, clipboard.title, x, y);
+                createNoteBox(clipboard.noteId, clipboard.title, x, y);
 
-                mapData.notes.push({ id: clipboard.id, x, y });
+                mapData.notes.push({ noteId: clipboard.noteId, x, y });
 
                 clipboard = null;
             }
@@ -337,8 +345,8 @@ async function connectionCreatedHandler(info, originalEvent) {
         return;
     }
 
-    const targetNoteId = connection.target.id;
-    const sourceNoteId = connection.source.id;
+    const targetNoteId = idToNoteId(connection.target.id);
+    const sourceNoteId = idToNoteId(connection.source.id);
 
     const relationExists = relations.some(rel =>
         rel.targetNoteId === targetNoteId
@@ -382,7 +390,7 @@ async function noteContextMenuHandler(event, cmd) {
 
         jsPlumbInstance.remove(noteId);
 
-        mapData.notes = mapData.notes.filter(note => note.id !== noteId);
+        mapData.notes = mapData.notes.filter(note => note.noteId !== noteId);
 
         relations = relations.filter(relation => relation.sourceNoteId !== noteId && relation.targetNoteId !== noteId);
 
@@ -408,11 +416,11 @@ function saveData() {
     noteDetailService.noteChanged();
 }
 
-async function createNoteBox(id, title, x, y) {
+async function createNoteBox(noteId, title, x, y) {
     const $noteBox = $("<div>")
         .addClass("note-box")
-        .prop("id", id)
-        .append($("<span>").addClass("title").html(await linkService.createNoteLink(id, title)))
+        .prop("id", noteIdToId(noteId))
+        .append($("<span>").addClass("title").html(await linkService.createNoteLink(noteId, title)).append(`[${Math.floor(x)}, ${Math.floor(y)}]`))
         .append($("<div>").addClass("endpoint").attr("title", "Start dragging relations from here and drop them on another note."))
         .css("left", x + "px")
         .css("top", y + "px");
@@ -423,10 +431,12 @@ async function createNoteBox(id, title, x, y) {
         start: params => {},
         drag: params => {},
         stop: params => {
-            const note = mapData.notes.find(note => note.id === params.el.id);
+            const noteId = idToNoteId(params.el.id);
+
+            const note = mapData.notes.find(note => note.noteId === noteId);
 
             if (!note) {
-                console.error(`Note ${params.el.id} not found!`);
+                console.error(`Note ${noteId} not found!`);
                 return;
             }
 
@@ -477,7 +487,7 @@ $createChildNote.click(async () => {
     // no need to wait for it to finish
     treeService.reload();
 
-    clipboard = { id: note.noteId, title };
+    clipboard = { noteId: note.noteId, title };
 });
 
 function getZoom() {
@@ -557,7 +567,11 @@ $centerButton.click(() => {
     let averageX = totalX / mapData.notes.length;
     let averageY = totalY / mapData.notes.length;
 
-    pzInstance.moveTo(averageX, averageY);
+    const $noteBox = $("#C1I7GPA8ORO4");
+
+    console.log($noteBox);
+
+    pzInstance.centerOn($noteBox[0], $relationMapContainer[0]);
 });
 
 $component.on("drop", dropNoteOntoRelationMapHandler);

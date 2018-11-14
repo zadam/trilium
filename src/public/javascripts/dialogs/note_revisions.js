@@ -8,6 +8,7 @@ const $content = $("#note-revision-content");
 const $title = $("#note-revision-title");
 
 let revisionItems = [];
+let note;
 
 async function showCurrentNoteRevisions() {
     await showNoteRevisionsDialog(noteDetailService.getCurrentNoteId());
@@ -21,6 +22,7 @@ async function showNoteRevisionsDialog(noteId, noteRevisionId) {
     $list.empty();
     $content.empty();
 
+    note = noteDetailService.getCurrentNote();
     revisionItems = await server.get('notes/' + noteId + '/revisions');
 
     for (const item of revisionItems) {
@@ -51,11 +53,14 @@ $list.on('change', () => {
 
     $title.html(revisionItem.title);
 
-    if (revisionItem.type === 'text') {
+    if (note.type === 'text') {
         $content.html(revisionItem.content);
     }
-    else if (revisionItem.type === 'code') {
+    else if (note.type === 'code') {
         $content.html($("<pre>").text(revisionItem.content));
+    }
+    else {
+        $content.text("Preview isn't available for this note type.");
     }
 });
 
