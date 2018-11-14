@@ -15,15 +15,13 @@ async function showDialog() {
 
     $dialog.modal();
 
-    noteAutocompleteService.initNoteAutocomplete($autoComplete)
+    noteAutocompleteService.initNoteAutocomplete($autoComplete, { hideGoToSelectedNoteButton: true })
         .on('autocomplete:selected', function(event, suggestion, dataset) {
             if (!suggestion.path) {
                 return false;
             }
 
             treeService.activateNote(suggestion.path);
-
-            $dialog.modal('hide');
         });
 
     noteAutocompleteService.showRecentNotes($autoComplete);

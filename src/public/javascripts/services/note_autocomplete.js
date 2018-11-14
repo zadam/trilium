@@ -30,8 +30,10 @@ function showRecentNotes($el) {
     $el.autocomplete("open");
 }
 
-function initNoteAutocomplete($el) {
+function initNoteAutocomplete($el, options) {
     if (!$el.hasClass("note-autocomplete-input")) {
+        options = options || {};
+
         $el.addClass("note-autocomplete-input");
 
         const $clearTextButton = $("<span>")
@@ -46,11 +48,16 @@ function initNoteAutocomplete($el) {
             .addClass("input-group-text go-to-selected-note-button jam jam-arrow-right")
             .prop("title", "Go to selected note");
 
-        $el.after($("<div>")
+        const $sideButtons = $("<div>")
             .addClass("input-group-append")
             .append($clearTextButton)
-            .append($showRecentNotesButton)
-            .append($goToSelectedNoteButton));
+            .append($showRecentNotesButton);
+
+        if (!options.hideGoToSelectedNoteButton) {
+            $sideButtons.append($goToSelectedNoteButton);
+        }
+
+        $el.after($sideButtons);
 
         $clearTextButton.click(() => clearText($el));
 
