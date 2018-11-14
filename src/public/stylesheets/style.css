@@ -417,6 +417,11 @@ button.icon-button {
 
 /* Themes */
 
+html {
+    /* this fixes FF filter vs. position fixed bug: https://github.com/zadam/trilium/issues/233 */
+    height: 100%;
+}
+
 html.theme-black, html.theme-black img, html.theme-black video {
     filter: invert(100%) hue-rotate(180deg);
 }

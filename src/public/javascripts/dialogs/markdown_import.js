@@ -3,9 +3,9 @@ import infoService from "../services/info.js";
 import utils from "../services/utils.js";
 import noteDetailTextService from "../services/note_detail_text.js";
 
-const $markdownImportDialog = $('#markdown-import-dialog');
-const $markdownImportTextarea = $('#markdown-import-textarea');
-const $markdownImportButton = $('#markdown-import-button');
+const $dialog = $('#markdown-import-dialog');
+const $importTextarea = $('#markdown-import-textarea');
+const $importButton = $('#markdown-import-button');
 
 async function convertMarkdownToHtml(text) {
     await libraryLoader.requireLibrary(libraryLoader.COMMONMARK);
@@ -35,25 +35,25 @@ async function importMarkdownInline() {
     else {
         $("input[name='search-text']").focus();
 
-        glob.activeDialog = $markdownImportDialog;
+        glob.activeDialog = $dialog;
 
-        $markdownImportDialog.modal();
+        $dialog.modal();
     }
 }
 
 async function sendForm() {
-    const text = $markdownImportTextarea.val();
+    const text = $importTextarea.val();
 
-    $markdownImportDialog.modal('hide');
+    $dialog.modal('hide');
 
     await convertMarkdownToHtml(text);
 
-    $markdownImportTextarea.val('');
+    $importTextarea.val('');
 }
 
-$markdownImportButton.click(sendForm);
+$importButton.click(sendForm);
 
-$markdownImportDialog.bind('keydown', 'ctrl+return', sendForm);
+$dialog.bind('keydown', 'ctrl+return', sendForm);
 
 // for CKEditor integration (button on block toolbar)
 window.glob.importMarkdownInline = importMarkdownInline;
