@@ -106,7 +106,6 @@ async function renderTooltip(note, attributes) {
     else if (note.type === 'image') {
         content += $("<img>")
             .prop("src", `/api/images/${note.noteId}/${note.title}`)
-            .prop("style", "max-width: 300px; max-height: 300px;")
             .prop('outerHTML');
     }
     // other types of notes don't have tooltip preview

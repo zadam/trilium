@@ -500,12 +500,18 @@ table.promoted-attributes-in-tooltip td, table.promoted-attributes-in-tooltip th
 
 .tooltip-inner {
     background-color: #fbfbfb !important;
-    max-width: 600px;
-    max-height: 500px;
+    max-width: 400px;
+    /* height needs to stay small because tooltip has problem when it can't fit to either top or bottom of the cursor */
+    max-height: 300px;
     overflow: hidden;
     color: black;
     border: 1px solid #aaa;
     text-align: left;
+}
+
+.tooltip-inner img {
+    max-width: 250px;
+    max-height: 250px;
 }
 
 .tooltip.show {
