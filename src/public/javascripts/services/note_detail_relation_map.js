@@ -8,6 +8,7 @@ import infoService from "./info.js";
 import attributeAutocompleteService from "./attribute_autocomplete.js";
 import promptDialog from "../dialogs/prompt.js";
 import infoDialog from "../dialogs/info.js";
+import confirmDialog from "../dialogs/confirm.js";
 
 const $component = $("#note-detail-relation-map");
 const $relationMapContainer = $("#relation-map-container");
@@ -293,7 +294,7 @@ function connectionContextMenuHandler(connection, event) {
 
     contextMenuWidget.initContextMenu(event, contextMenuItems, async (event, cmd) => {
         if (cmd === 'remove') {
-            if (!confirm("Are you sure you want to remove the relation?")) {
+            if (!await confirmDialog.confirm("Are you sure you want to remove the relation?")) {
                 return;
             }
 
@@ -381,14 +382,14 @@ $relationMapContainer.on("contextmenu", ".note-box", e => {
 
 async function noteContextMenuHandler(event, cmd) {
     const $noteBox = $(event.originalTarget).closest(".note-box");
-    const noteId = $noteBox.prop("id");
+    const noteId = idToNoteId($noteBox.prop("id"));
 
     if (cmd === "remove") {
-        if (!confirm("Are you sure you want to remove the note from this diagram?")) {
+        if (!await confirmDialog.confirm("Are you sure you want to remove the note from this diagram?")) {
             return;
         }
 
-        jsPlumbInstance.remove(noteId);
+        jsPlumbInstance.remove(noteIdToId(noteId));
 
         mapData.notes = mapData.notes.filter(note => note.noteId !== noteId);
 
