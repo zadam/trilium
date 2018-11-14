@@ -92,11 +92,11 @@ function loadMapData() {
 }
 
 function noteIdToId(noteId) {
-    return "note-" + noteId;
+    return "rel-map-note-" + noteId;
 }
 
 function idToNoteId(id) {
-    return id.substr(5);
+    return id.substr(13);
 }
 
 async function show() {
@@ -567,11 +567,25 @@ $centerButton.click(() => {
     let averageX = totalX / mapData.notes.length;
     let averageY = totalY / mapData.notes.length;
 
-    const $noteBox = $("#C1I7GPA8ORO4");
+    // find note with smallest X, Y difference from the average (most central note)
+    const {noteId} = mapData.notes.map(note => {
+        return {
+            noteId: note.noteId,
+            diff: Math.abs(note.x - averageX) + Math.abs(note.y - averageY)
+        }
+    }).reduce((min, val) => min.diff <= val.min ? min : val, { diff: 9999999999 });
 
-    console.log($noteBox);
+    const $noteBox = $("#" + noteIdToId(noteId));
 
-    pzInstance.centerOn($noteBox[0], $relationMapContainer[0]);
+    const clientRect = $noteBox[0].getBoundingClientRect();
+    const cx = clientRect.left + clientRect.width / 2;
+    const cy = clientRect.top + clientRect.height / 2;
+
+    const container = $component[0].getBoundingClientRect();
+    const dx = container.width / 2 - cx;
+    const dy = container.height / 2 - cy;
+
+    pzInstance.moveBy(dx, dy, true);
 });
 
 $component.on("drop", dropNoteOntoRelationMapHandler);
