@@ -99,11 +99,21 @@ async function renderTooltip(note, attributes) {
         content += note.content;
     }
     else if (note.type === 'code') {
-        content += $("<pre>").text(note.content).prop('outerHTML');
+        content += $("<pre>")
+            .text(note.content)
+            .prop('outerHTML');
+    }
+    else if (note.type === 'image') {
+        content += $("<img>")
+            .prop("src", `/api/images/${note.noteId}/${note.title}`)
+            .prop("style", "max-width: 300px; max-height: 300px;")
+            .prop('outerHTML');
+
+        console.log(content);
     }
     // other types of notes don't have tooltip preview
 
-    if (!$(content).text().trim()) {
+    if (!$(content).text().trim() && note.type !== 'image') {
         return "";
     }
 
