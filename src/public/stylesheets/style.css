@@ -110,6 +110,10 @@ ul.fancytree-container {
     outline: none !important;
 }
 
+.fancytree-custom-icon {
+    font-size: 1.3em;
+}
+
 span.fancytree-node.protected > span.fancytree-custom-icon {
     filter: drop-shadow(2px 2px 2px black);
 }
@@ -495,12 +499,12 @@ table.promoted-attributes-in-tooltip td, table.promoted-attributes-in-tooltip th
 }
 
 .tooltip-inner {
-    background-color: white !important;
+    background-color: #fbfbfb !important;
     max-width: 600px;
     max-height: 500px;
     overflow: hidden;
     color: black;
-    border: 1px solid #777;
+    border: 1px solid #aaa;
     text-align: left;
 }
 
@@ -559,10 +563,6 @@ table.promoted-attributes-in-tooltip td, table.promoted-attributes-in-tooltip th
     bottom:auto;
     right:auto;
     margin-left:-300px;
-}
-
-.fancytree-custom-icon {
-    font-size: 1.3em;
 }
 
 .multiplicity {
