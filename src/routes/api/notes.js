@@ -99,7 +99,8 @@ async function getRelationMap(req) {
         noteTitles: {},
         relations: [],
         // relation name => mirror relation name
-        mirrorRelations: {}
+        mirrorRelations: {},
+        links: []
     };
 
     if (noteIds.length === 0) {
@@ -128,6 +129,16 @@ async function getRelationMap(req) {
             }
         }
     }
+
+    resp.links = (await repository.getEntities(`SELECT * FROM links WHERE isDeleted = 0 AND noteId IN (${questionMarks})`, noteIds))
+        .filter(link => noteIds.includes(link.targetNoteId))
+        .map(link => {
+            return {
+                linkId: link.linkId,
+                sourceNoteId: link.noteId,
+                targetNoteId: link.targetNoteId
+            }
+        });
 
     return resp;
 }

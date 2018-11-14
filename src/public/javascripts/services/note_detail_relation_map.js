@@ -67,6 +67,14 @@ const mirrorOverlays = [
     } ]
 ];
 
+const linkOverlays = [
+    [ "Arrow", {
+        location: 1,
+        id: "arrow",
+        length: 14,
+        foldback: 0.8
+    } ]
+];
 
 function loadMapData() {
     const currentNote = noteDetailService.getCurrentNote();
@@ -158,6 +166,14 @@ async function loadNotesAndRelations() {
             }
 
             connection.canvas.setAttribute("data-connection-id", connection.id);
+        }
+
+        for (const link of data.links) {
+            jsPlumbInstance.connect({
+                source: link.sourceNoteId,
+                target: link.targetNoteId,
+                type: 'link'
+            });
         }
     });
 }
@@ -253,6 +269,8 @@ function initJsPlumbInstance () {
 
     jsPlumbInstance.registerConnectionType("mirror", { anchor:"Continuous", connector:"StateMachine", overlays: mirrorOverlays });
 
+    jsPlumbInstance.registerConnectionType("link", { anchor:"Continuous", connector:"StateMachine", overlays: linkOverlays });
+
     jsPlumbInstance.bind("connection", connectionCreatedHandler);
 
     // so that canvas is not panned when clicking/dragging note box
@@ -285,7 +303,18 @@ function connectionContextMenuHandler(connection, event) {
 async function connectionCreatedHandler(info, originalEvent) {
     const connection = info.connection;
 
-    connection.bind("contextmenu", (obj, event) => connectionContextMenuHandler(connection, event));
+    const isRelation = relations.some(rel => rel.attributeId === connection.id);
+
+    connection.bind("contextmenu", (obj, event) => {
+        if (connection.getType().includes("link")) {
+            // don't create context menu if it's a link since there's nothing to do with link from relation map
+            // (don't open browser menu either)
+            event.preventDefault();
+        }
+        else {
+            connectionContextMenuHandler(connection, event);
+        }
+    });
 
     // if there's no event, then this has been triggered programatically
     if (!originalEvent) {

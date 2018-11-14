@@ -108,8 +108,6 @@ async function renderTooltip(note, attributes) {
             .prop("src", `/api/images/${note.noteId}/${note.title}`)
             .prop("style", "max-width: 300px; max-height: 300px;")
             .prop('outerHTML');
-
-        console.log(content);
     }
     // other types of notes don't have tooltip preview
 

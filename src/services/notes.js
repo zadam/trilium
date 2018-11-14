@@ -183,7 +183,7 @@ function findImageLinks(content, foundLinks) {
 }
 
 function findHyperLinks(content, foundLinks) {
-    const re = /href="#root[a-zA-Z0-9\/]*\/([a-zA-Z0-9]+)\//g;
+    const re = /href="#root[a-zA-Z0-9\/]*\/([a-zA-Z0-9]+)\/?"/g;
     let match;
 
     while (match = re.exec(content)) {
