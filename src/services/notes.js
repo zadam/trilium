@@ -332,9 +332,19 @@ async function deleteNote(branch) {
             await attribute.save();
         }
 
-        for (const attribute of await note.getTargetRelations()) {
-            attribute.isDeleted = true;
-            await attribute.save();
+        for (const relation of await note.getTargetRelations()) {
+            relation.isDeleted = true;
+            await relation.save();
+        }
+
+        for (const link of await note.getLinks()) {
+            link.isDeleted = true;
+            await link.save();
+        }
+
+        for (const link of await note.getTargetLinks()) {
+            link.isDeleted = true;
+            await link.save();
         }
     }
 }

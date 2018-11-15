@@ -219,6 +219,65 @@ async function runAllChecks() {
             type == 'search'`,
         "Search note has children", errorList);
 
+    await fixEmptyRelationTargets(errorList);
+
+    await runCheck(`
+          SELECT 
+            attributeId
+          FROM 
+            attributes
+          WHERE 
+            type != 'label' 
+            AND type != 'label-definition' 
+            AND type != 'relation'
+            AND type != 'relation-definition'`,
+        "Attribute has invalid type", errorList);
+
+    await runCheck(`
+          SELECT 
+            attributeId
+          FROM 
+            attributes
+            LEFT JOIN notes ON attributes.noteId = notes.noteId AND notes.isDeleted = 0
+          WHERE
+            attributes.isDeleted = 0
+            AND notes.noteId IS NULL`,
+        "Attribute reference to the owning note is broken", errorList);
+
+    await runCheck(`
+          SELECT
+            attributeId
+          FROM
+            attributes
+            LEFT JOIN notes AS targetNote ON attributes.value = targetNote.noteId AND targetNote.isDeleted = 0
+          WHERE
+            attributes.type = 'relation'
+            AND attributes.isDeleted = 0
+            AND targetNote.noteId IS NULL`,
+        "Relation reference to the target note is broken", errorList);
+
+    await runCheck(`
+          SELECT 
+            linkId
+          FROM 
+            links
+          WHERE 
+            type != 'image'
+            AND type != 'hyper'`,
+        "Link type is invalid", errorList);
+
+    await runCheck(`
+          SELECT 
+            linkId
+          FROM 
+            links
+            LEFT JOIN notes AS sourceNote ON sourceNote.noteId = links.noteId AND sourceNote.isDeleted = 0
+            LEFT JOIN notes AS targetNote ON targetNote.noteId = links.noteId AND targetNote.isDeleted = 0
+          WHERE 
+            sourceNote.noteId IS NULL
+            OR targetNote.noteId IS NULL`,
+        "Link to source/target note link is broken", errorList);
+
     await runSyncRowChecks("notes", "noteId", errorList);
     await runSyncRowChecks("note_revisions", "noteRevisionId", errorList);
     await runSyncRowChecks("branches", "branchId", errorList);
@@ -232,8 +291,6 @@ async function runAllChecks() {
 
         await checkTreeCycles(errorList);
     }
-
-    await fixEmptyRelationTargets(errorList);
 
     return errorList;
 }
