@@ -275,8 +275,8 @@ async function updateNote(noteId, noteUpdates) {
         throw new Error(`Note ${noteId} is not available for change!`);
     }
 
-    if (note.type === 'file') {
-        // for update file, newNote doesn't contain file payloads
+    if (note.type === 'file' || note.type === 'image') {
+        // files and images are immutable, they can't be updated
         noteUpdates.content = note.content;
     }
 

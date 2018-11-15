@@ -21,8 +21,8 @@ async function show() {
 
     $component.show();
 
-    $fileName.text(attributeMap.originalFileName);
-    $fileSize.text(attributeMap.fileSize + " bytes");
+    $fileName.text(attributeMap.originalFileName || "?");
+    $fileSize.text((attributeMap.fileSize || "?") + " bytes");
     $fileType.text(currentNote.mime);
 
     $imageView.prop("src", `/api/images/${currentNote.noteId}/${currentNote.title}`);
