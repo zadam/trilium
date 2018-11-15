@@ -33,25 +33,37 @@ CREATE TABLE "links" (
 );
 
 INSERT INTO links (linkId, noteId, targetNoteId, type, isDeleted, dateCreated, dateModified)
-  SELECT 'L' || SUBSTR(noteImageId, 1), noteId, imageId, 'image', isDeleted, dateCreated, dateModified FROM note_images;
+  SELECT 'L' || SUBSTR(noteImageId, 2), noteId, imageId, 'image', isDeleted, dateCreated, dateModified FROM note_images;
 
 INSERT INTO branches (branchId, noteId, parentNoteId, notePosition, prefix, isExpanded, isDeleted, dateModified, hash, dateCreated)
-  SELECT 'B' || SUBSTR(noteImageId, 1), imageId, noteId, 100, '', 0, isDeleted, dateModified, hash, dateCreated FROM note_images;
+  SELECT 'B' || SUBSTR(noteImageId, 2), imageId, noteId, 100, '', 0, isDeleted, dateModified, hash, dateCreated FROM note_images;
 
 DROP TABLE note_images;
 
 INSERT INTO notes (noteId, title, content, isProtected, isDeleted, dateCreated, dateModified, type, mime, hash)
   SELECT imageId, name, data, 0, isDeleted, dateCreated, dateModified, 'image', 'image/' || format, hash FROM images;
 
+INSERT INTO attributes (attributeId, noteId, type, name, value, position, dateCreated, dateModified, isDeleted, hash, isInheritable)
+  SELECT 'O' || SUBSTR(imageId, 2), imageId, 'label', 'originalFileName', name, 0, dateCreated, dateModified, isDeleted, '', 0 FROM images;
+
+INSERT INTO attributes (attributeId, noteId, type, name, value, position, dateCreated, dateModified, isDeleted, hash, isInheritable)
+SELECT 'F' || SUBSTR(imageId, 2), imageId, 'label', 'fileSize', LENGTH(data), 0, dateCreated, dateModified, isDeleted, '', 0 FROM images;
+
 DROP TABLE images;
+
+INSERT INTO sync (entityName, entityId, sourceId, syncDate)
+SELECT 'attributes', 'O' || SUBSTR(entityId, 2), sourceId, syncDate FROM sync WHERE entityName = 'images';
+
+INSERT INTO sync (entityName, entityId, sourceId, syncDate)
+SELECT 'attributes', 'F' || SUBSTR(entityId, 2), sourceId, syncDate FROM sync WHERE entityName = 'images';
 
 UPDATE sync SET entityName = 'notes' WHERE entityName = 'images';
 
 INSERT INTO sync (entityName, entityId, sourceId, syncDate)
-SELECT 'links', 'L' || SUBSTR(entityId, 1), sourceId, syncDate FROM sync WHERE entityName = 'note_images';
+SELECT 'links', 'L' || SUBSTR(entityId, 2), sourceId, syncDate FROM sync WHERE entityName = 'note_images';
 
 INSERT INTO sync (entityName, entityId, sourceId, syncDate)
-  SELECT 'branches', 'B' || SUBSTR(entityId, 1), sourceId, syncDate FROM sync WHERE entityName = 'note_images';
+  SELECT 'branches', 'B' || SUBSTR(entityId, 2), sourceId, syncDate FROM sync WHERE entityName = 'note_images';
 
 DELETE FROM sync WHERE entityName = 'note_images';
 DELETE FROM sync WHERE entityName = 'images';
