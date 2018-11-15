@@ -1,5 +1,6 @@
 import libraryLoader from "./library_loader.js";
 import noteDetailService from './note_detail.js';
+import treeService from './tree.js';
 
 const $component = $('#note-detail-text');
 
@@ -46,6 +47,22 @@ function getEditor() {
 function onNoteChange(func) {
     textEditor.model.document.on('change:data', func);
 }
+
+$component.on("dblclick", "img", e => {
+    const $img = $(e.target);
+    const src = $img.prop("src");
+
+    const match = src.match(/\/api\/images\/([A-Za-z0-9]+)\//);
+
+    if (match) {
+        const noteId = match[1];
+
+        treeService.activateNote(noteId);
+    }
+    else {
+        window.open(src, '_blank');
+    }
+});
 
 export default {
     show,
