@@ -2,22 +2,33 @@ import utils from "./utils.js";
 import protectedSessionHolder from "./protected_session_holder.js";
 import noteDetailService from "./note_detail.js";
 import infoService from "./info.js";
+import server from "./server.js";
 
 const $component = $('#note-detail-image');
 const $imageView = $('#note-detail-image-view');
 
-const $imageDownload = $("#image-download");
-const $copyToClipboardDownload = $("#image-copy-to-clipboard");
+const $imageDownloadButton = $("#image-download");
+const $copyToClipboardButton = $("#image-copy-to-clipboard");
+const $fileName = $("#image-filename");
+const $fileType = $("#image-filetype");
+const $fileSize = $("#image-filesize");
 
 async function show() {
     const currentNote = noteDetailService.getCurrentNote();
 
+    const attributes = await server.get('notes/' + currentNote.noteId + '/attributes');
+    const attributeMap = utils.toObject(attributes, l => [l.name, l.value]);
+
     $component.show();
+
+    $fileName.text(attributeMap.originalFileName);
+    $fileSize.text(attributeMap.fileSize + " bytes");
+    $fileType.text(currentNote.mime);
 
     $imageView.prop("src", `/api/images/${currentNote.noteId}/${currentNote.title}`);
 }
 
-$imageDownload.click(() => utils.download(getFileUrl()));
+$imageDownloadButton.click(() => utils.download(getFileUrl()));
 
 function selectImage(element) {
     const selection = window.getSelection();
@@ -27,7 +38,7 @@ function selectImage(element) {
     selection.addRange(range);
 }
 
-$copyToClipboardDownload.click(() => {
+$copyToClipboardButton.click(() => {
     $component.attr('contenteditable','true');
 
     try {

@@ -1,6 +1,7 @@
 "use strict";
 
-const utils = require('./utils');
+const repository = require('./repository');
+const protectedSessionService = require('./protected_session');
 const noteService = require('./notes');
 const imagemin = require('imagemin');
 const imageminMozJpeg = require('imagemin-mozjpeg');
@@ -10,21 +11,26 @@ const jimp = require('jimp');
 const imageType = require('image-type');
 const sanitizeFilename = require('sanitize-filename');
 
-async function saveImage(buffer, originalName, noteId) {
+async function saveImage(buffer, originalName, parentNoteId) {
     const resizedImage = await resize(buffer);
     const optimizedImage = await optimize(resizedImage);
 
     const imageFormat = imageType(optimizedImage);
 
+    const parentNote = await repository.getNote(parentNoteId);
+
     const fileNameWithoutExtension = originalName.replace(/\.[^/.]+$/, "");
     const fileName = sanitizeFilename(fileNameWithoutExtension + "." + imageFormat.ext);
 
-    const {note} = await noteService.createNewNote(noteId, {
+    const {note} = await noteService.createNote(parentNoteId, fileName, optimizedImage, {
         target: 'into',
-        title: fileName,
-        content: optimizedImage,
         type: 'image',
-        mime: 'image/' + imageFormat.ext
+        isProtected: parentNote.isProtected && protectedSessionService.isProtectedSessionAvailable(),
+        mime: 'image/' + imageFormat.ext.toLowerCase(),
+        attributes: [
+            { type: 'label', name: 'originalFileName', value: originalName },
+            { type: 'label', name: 'fileSize', value: optimizedImage.byteLength }
+        ]
     });
 
     return {

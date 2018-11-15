@@ -1,7 +1,6 @@
 "use strict";
 
 const noteService = require('../../services/notes');
-const attributeService = require('../../services/attributes');
 const protectedSessionService = require('../../services/protected_session');
 const repository = require('../../services/repository');
 
@@ -10,6 +9,7 @@ async function uploadFile(req) {
     const file = req.file;
     const originalName = file.originalname;
     const size = file.size;
+    const mime = file.mimetype.toLowerCase();
 
     const parentNote = await repository.getNote(parentNoteId);
 
@@ -17,17 +17,16 @@ async function uploadFile(req) {
         return [404, `Note ${parentNoteId} doesn't exist.`];
     }
 
-    const {note} = await noteService.createNewNote(parentNoteId, {
-        title: originalName,
-        content: file.buffer,
+    const {note} = await noteService.createNote(parentNoteId, originalName, file.buffer, {
         target: 'into',
-        isProtected: false,
-        type: 'file',
-        mime: file.mimetype
+        isProtected: parentNote.isProtected && protectedSessionService.isProtectedSessionAvailable(),
+        type: mime.startsWith("image/") ? 'image' : 'file',
+        mime: file.mimetype,
+        attributes: [
+            { type: "label", name: "originalFileName", value: originalName },
+            { type: "label", name: "fileSize", value: size }
+        ]
     });
-
-    await attributeService.createLabel(note.noteId, "originalFileName", originalName);
-    await attributeService.createLabel(note.noteId, "fileSize", size);
 
     return {
         noteId: note.noteId

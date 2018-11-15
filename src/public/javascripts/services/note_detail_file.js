@@ -5,11 +5,11 @@ import noteDetailService from "./note_detail.js";
 
 const $component = $('#note-detail-file');
 
-const $fileFileName = $("#file-filename");
-const $fileFileType = $("#file-filetype");
-const $fileFileSize = $("#file-filesize");
-const $fileDownload = $("#file-download");
-const $fileOpen = $("#file-open");
+const $fileName = $("#file-filename");
+const $fileType = $("#file-filetype");
+const $fileSize = $("#file-filesize");
+const $downloadButton = $("#file-download");
+const $openButton = $("#file-open");
 
 async function show() {
     const currentNote = noteDetailService.getCurrentNote();
@@ -19,14 +19,14 @@ async function show() {
 
     $component.show();
 
-    $fileFileName.text(attributeMap.originalFileName);
-    $fileFileSize.text(attributeMap.fileSize + " bytes");
-    $fileFileType.text(currentNote.mime);
+    $fileName.text(attributeMap.originalFileName);
+    $fileSize.text(attributeMap.fileSize + " bytes");
+    $fileType.text(currentNote.mime);
 }
 
-$fileDownload.click(() => utils.download(getFileUrl()));
+$downloadButton.click(() => utils.download(getFileUrl()));
 
-$fileOpen.click(() => {
+$openButton.click(() => {
     if (utils.isElectron()) {
         const open = require("open");
 
