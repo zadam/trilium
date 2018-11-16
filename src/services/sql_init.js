@@ -71,17 +71,32 @@ async function createInitialDatabase(username, password) {
     }
 
     const schema = fs.readFileSync(resourceDir.DB_INIT_DIR + '/schema.sql', 'UTF-8');
-    const notesSql = fs.readFileSync(resourceDir.DB_INIT_DIR + '/main_notes.sql', 'UTF-8');
-    const notesTreeSql = fs.readFileSync(resourceDir.DB_INIT_DIR + '/main_branches.sql', 'UTF-8');
-    const attributesSql = fs.readFileSync(resourceDir.DB_INIT_DIR + '/main_attributes.sql', 'UTF-8');
+    const demoFile = fs.readFileSync(resourceDir.DB_INIT_DIR + '/demo.tar');
 
     await sql.transactional(async () => {
         await sql.executeScript(schema);
-        await sql.executeScript(notesSql);
-        await sql.executeScript(notesTreeSql);
-        await sql.executeScript(imagesSql);
-        await sql.executeScript(notesImageSql);
-        await sql.executeScript(attributesSql);
+
+        const Note = require("../entities/note");
+        const Branch = require("../entities/branch");
+
+        const rootNote = await new Note({
+            noteId: 'root',
+            title: 'root',
+            content: '',
+            type: 'text',
+            mime: 'text/html'
+        }).save();
+
+        await new Branch({
+            branchId: 'root',
+            noteId: 'root',
+            parentNoteId: 'none',
+            isExpanded: true,
+            notePosition: 0
+        }).save();
+
+        const tarImportService = require("./import/tar");
+        await tarImportService.importTar(demoFile, rootNote);
 
         const startNoteId = await sql.getValue("SELECT noteId FROM branches WHERE parentNoteId = 'root' AND isDeleted = 0 ORDER BY notePosition");
 

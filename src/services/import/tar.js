@@ -11,12 +11,8 @@ const stream = require('stream');
 const path = require('path');
 const commonmark = require('commonmark');
 
-/**
- * Complication of this export is the need to balance two needs:
- * -
- */
-async function importTar(file, parentNote) {
-    const files = await parseImportFile(file);
+async function importTar(fileBuffer, parentNote) {
+    const files = await parseImportFile(fileBuffer);
 
     const ctx = {
         // maps from original noteId (in tar file) to newly generated noteId
@@ -96,7 +92,7 @@ function getFileName(name) {
     return {name, key};
 }
 
-async function parseImportFile(file) {
+async function parseImportFile(fileBuffer) {
     const fileMap = {};
     const files = [];
 
@@ -165,7 +161,7 @@ async function parseImportFile(file) {
         });
 
         const bufferStream = new stream.PassThrough();
-        bufferStream.end(file.buffer);
+        bufferStream.end(fileBuffer);
 
         bufferStream.pipe(extract);
     });
@@ -224,7 +220,8 @@ async function importNotes(ctx, files, parentNoteId) {
                 noteId: ctx.getNewNoteId(file.meta.noteId),
                 type: file.meta.type,
                 mime: file.meta.mime,
-                prefix: file.meta.prefix
+                prefix: file.meta.prefix,
+                isExpanded: !!file.meta.isExpanded
             })).note;
 
             ctx.createdNoteIds.push(note.noteId);

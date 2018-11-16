@@ -3,10 +3,10 @@
 const noteService = require('../../services/notes');
 const parseString = require('xml2js').parseString;
 
-async function importOpml(file, parentNote) {
+async function importOpml(fileBuffer, parentNote) {
     const xml = await new Promise(function(resolve, reject)
     {
-        parseString(file.buffer, function (err, result) {
+        parseString(fileBuffer, function (err, result) {
             if (err) {
                 reject(err);
             }

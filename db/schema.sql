@@ -34,29 +34,6 @@ CREATE INDEX `IDX_note_revisions_dateModifiedFrom` ON `note_revisions` (
 CREATE INDEX `IDX_note_revisions_dateModifiedTo` ON `note_revisions` (
   `dateModifiedTo`
 );
-CREATE TABLE IF NOT EXISTS "images"
-(
-  imageId TEXT PRIMARY KEY NOT NULL,
-  format TEXT NOT NULL,
-  checksum TEXT NOT NULL,
-  name TEXT NOT NULL,
-  data BLOB,
-  isDeleted INT NOT NULL DEFAULT 0,
-  dateModified TEXT NOT NULL,
-  dateCreated TEXT NOT NULL
-, hash TEXT DEFAULT "" NOT NULL);
-CREATE TABLE note_images
-(
-  noteImageId TEXT PRIMARY KEY NOT NULL,
-  noteId TEXT NOT NULL,
-  imageId TEXT NOT NULL,
-  isDeleted INT NOT NULL DEFAULT 0,
-  dateModified TEXT NOT NULL,
-  dateCreated TEXT NOT NULL
-, hash TEXT DEFAULT "" NOT NULL);
-CREATE INDEX IDX_note_images_noteId ON note_images (noteId);
-CREATE INDEX IDX_note_images_imageId ON note_images (imageId);
-CREATE INDEX IDX_note_images_noteId_imageId ON note_images (noteId, imageId);
 CREATE TABLE IF NOT EXISTS "api_tokens"
 (
   apiTokenId TEXT PRIMARY KEY NOT NULL,
@@ -82,21 +59,7 @@ CREATE INDEX `IDX_branches_noteId_parentNoteId` ON `branches` (
   `noteId`,
   `parentNoteId`
 );
-CREATE TABLE IF NOT EXISTS "notes" (
-  `noteId`	TEXT NOT NULL,
-  `title`	TEXT NOT NULL DEFAULT "unnamed",
-  `content`	TEXT NOT NULL DEFAULT "",
-  `isProtected`	INT NOT NULL DEFAULT 0,
-  `isDeleted`	INT NOT NULL DEFAULT 0,
-  `dateCreated`	TEXT NOT NULL,
-  `dateModified`	TEXT NOT NULL,
-  type TEXT NOT NULL DEFAULT 'text',
-  mime TEXT NOT NULL DEFAULT 'text/html', hash TEXT DEFAULT "" NOT NULL,
-  PRIMARY KEY(`noteId`)
-);
 CREATE INDEX IDX_branches_parentNoteId ON branches (parentNoteId);
-CREATE INDEX IDX_notes_type
-  on notes (type);
 CREATE TABLE IF NOT EXISTS "recent_notes" (
   `branchId` TEXT NOT NULL PRIMARY KEY,
   `notePath` TEXT NOT NULL,
@@ -131,3 +94,39 @@ CREATE TABLE attributes
   dateModified TEXT not null,
   isDeleted    INT  not null,
   hash         TEXT default "" not null, isInheritable int DEFAULT 0 NULL);
+CREATE INDEX IDX_attributes_name_value
+  on attributes (name, value);
+CREATE TABLE IF NOT EXISTS "notes" (
+  `noteId`	TEXT NOT NULL,
+  `title`	TEXT NOT NULL DEFAULT "note",
+  `content`	TEXT NULL DEFAULT NULL,
+  `isProtected`	INT NOT NULL DEFAULT 0,
+  `type` TEXT NOT NULL DEFAULT 'text',
+  `mime` TEXT NOT NULL DEFAULT 'text/html',
+  `hash` TEXT DEFAULT "" NOT NULL,
+  `isDeleted`	INT NOT NULL DEFAULT 0,
+  `dateCreated`	TEXT NOT NULL,
+  `dateModified`	TEXT NOT NULL,
+  PRIMARY KEY(`noteId`)
+);
+CREATE TABLE IF NOT EXISTS "links" (
+  `linkId`	TEXT NOT NULL,
+  `noteId`	TEXT NOT NULL,
+  `targetNoteId`	TEXT NOT NULL,
+  `type` TEXT NOT NULL,
+  `hash` TEXT DEFAULT "" NOT NULL,
+  `isDeleted`	INTEGER NOT NULL DEFAULT 0,
+  `dateCreated`	TEXT NOT NULL,
+  `dateModified`	TEXT NOT NULL,
+  PRIMARY KEY(`linkId`)
+);
+CREATE INDEX IDX_links_noteId_index
+  on links (noteId);
+CREATE INDEX IDX_links_targetNoteId_index
+  on links (targetNoteId);
+CREATE INDEX IDX_attributes_name_index
+  on attributes (name);
+CREATE INDEX IDX_attributes_noteId_index
+  on attributes (noteId);
+CREATE INDEX IDX_attributes_value_index
+  on attributes (value);

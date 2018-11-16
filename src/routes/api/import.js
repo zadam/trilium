@@ -24,10 +24,10 @@ async function importToBranch(req) {
     const extension = path.extname(file.originalname).toLowerCase();
 
     if (extension === '.tar') {
-        return await tarImportService.importTar(file, parentNote);
+        return await tarImportService.importTar(file.buffer, parentNote);
     }
     else if (extension === '.opml') {
-        return await opmlImportService.importOpml(file, parentNote);
+        return await opmlImportService.importOpml(file.buffer, parentNote);
     }
     else if (extension === '.md') {
         return await markdownImportService.importMarkdown(file, parentNote);

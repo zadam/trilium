@@ -82,7 +82,7 @@ async function createNewNote(parentNoteId, noteData) {
         parentNoteId: parentNoteId,
         notePosition: newNotePos,
         prefix: noteData.prefix,
-        isExpanded: 0
+        isExpanded: !!noteData.isExpanded
     }).save();
 
     for (const attr of await parentNote.getAttributes()) {
@@ -121,7 +121,8 @@ async function createNote(parentNoteId, title, content = "", extraOptions = {}) 
         isProtected: !!extraOptions.isProtected,
         type: extraOptions.type,
         mime: extraOptions.mime,
-        dateCreated: extraOptions.dateCreated
+        dateCreated: extraOptions.dateCreated,
+        isExpanded: extraOptions.isExpanded
     };
 
     if (extraOptions.json && !noteData.type) {
