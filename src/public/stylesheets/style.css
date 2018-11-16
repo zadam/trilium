@@ -463,6 +463,14 @@ html.theme-dark body {
     max-width: 100%;
 }
 
+#file-preview-content {
+    background-color: #f6f6f6;
+    padding: 15px;
+    max-width: 600px;
+    max-height: 300px;
+    overflow: auto;
+}
+
 .pointer {
     cursor: pointer;
 }

@@ -13,8 +13,17 @@ async function getNote(req) {
     }
 
     if (note.type === 'file' || note.type === 'image') {
-        // no need to transfer (potentially large) file/image payload for this request
-        note.content = null;
+        if (note.type === 'file' && note.mime.startsWith('text/')) {
+            note.content = note.content.toString("UTF-8");
+
+            if (note.content.length > 10000) {
+                note.content = note.content.substr(0, 10000) + "...";
+            }
+        }
+        else {
+            // no need to transfer (potentially large) file/image payload for this request
+            note.content = null;
+        }
     }
 
     return note;

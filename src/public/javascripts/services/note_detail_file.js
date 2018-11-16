@@ -8,6 +8,8 @@ const $component = $('#note-detail-file');
 const $fileName = $("#file-filename");
 const $fileType = $("#file-filetype");
 const $fileSize = $("#file-filesize");
+const $previewRow = $("#file-preview-row");
+const $previewContent = $("#file-preview-content");
 const $downloadButton = $("#file-download");
 const $openButton = $("#file-open");
 
@@ -22,6 +24,9 @@ async function show() {
     $fileName.text(attributeMap.originalFileName || "?");
     $fileSize.text((attributeMap.fileSize || "?") + " bytes");
     $fileType.text(currentNote.mime);
+
+    $previewRow.toggle(!!currentNote.content);
+    $previewContent.text(currentNote.content);
 }
 
 $downloadButton.click(() => utils.download(getFileUrl()));
