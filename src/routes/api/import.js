@@ -1,9 +1,11 @@
 "use strict";
 
+const Attribute = require('../../entities/attribute');
+const Link = require('../../entities/link');
 const repository = require('../../services/repository');
 const log = require('../../services/log');
-const enex = require('../../services/enex');
-const attributeService = require('../../services/attributes');
+const utils = require('../../services/utils');
+const enex = require('../../services/import/enex');
 const noteService = require('../../services/notes');
 const Branch = require('../../entities/branch');
 const tar = require('tar-stream');
@@ -93,33 +95,64 @@ async function importOpml(file, parentNote) {
     return returnNote;
 }
 
+/**
+ * Complication of this export is the need to balance two needs:
+ * -
+ */
 async function importTar(file, parentNote) {
     const files = await parseImportFile(file);
 
     const ctx = {
         // maps from original noteId (in tar file) to newly generated noteId
         noteIdMap: {},
+        // new noteIds of notes which were actually created (not just referenced)
+        createdNoteIds: [],
         attributes: [],
+        links: [],
         reader: new commonmark.Parser(),
         writer: new commonmark.HtmlRenderer()
     };
 
+    ctx.getNewNoteId = function(origNoteId) {
+        // in case the original noteId is empty. This probably shouldn't happen, but still good to have this precaution
+        if (!origNoteId.trim()) {
+            return "";
+        }
+
+        if (!ctx.noteIdMap[origNoteId]) {
+            ctx.noteIdMap[origNoteId] = utils.newEntityId();
+        }
+
+        return ctx.noteIdMap[origNoteId];
+    };
+
     const note = await importNotes(ctx, files, parentNote.noteId);
 
-    // we save attributes after importing notes because we need to have all the relation
-    // targets already existing
+    // we save attributes and links after importing notes because we need to check that target noteIds
+    // have been really created (relation/links with targets outside of the export are not created)
+
     for (const attr of ctx.attributes) {
         if (attr.type === 'relation') {
-            // map to local noteId
-            attr.value = ctx.noteIdMap[attr.value];
+            attr.value = ctx.getNewNoteId(attr.value);
 
-            if (!attr.value) {
-                // relation is targeting note not present in the import
+            if (!ctx.createdNoteIds.includes(attr.value)) {
+                // relation targets note outside of the export
                 continue;
             }
         }
 
-        await attributeService.createAttribute(attr);
+        await new Attribute(attr).save();
+    }
+
+    for (const link of ctx.links) {
+        link.targetNoteId = ctx.getNewNoteId(link.targetNoteId);
+
+        if (!ctx.createdNoteIds.includes(link.targetNoteId)) {
+            // link targets note outside of the export
+            continue;
+        }
+
+        await new Link(link).save();
     }
 
     return note;
@@ -252,26 +285,35 @@ async function importNotes(ctx, files, parentNoteId) {
             if (file.meta.clone) {
                 await new Branch({
                     parentNoteId: parentNoteId,
-                    noteId: ctx.noteIdMap[file.meta.noteId],
-                    prefix: file.meta.prefix
+                    noteId: ctx.getNewNoteId(file.meta.noteId),
+                    prefix: file.meta.prefix,
+                    isExpanded: !!file.meta.isExpanded
                 }).save();
 
                 return;
             }
 
-            if (file.meta.type !== 'file') {
+            if (file.meta.type !== 'file' && file.meta.type !== 'image') {
                 file.data = file.data.toString("UTF-8");
+
+                // this will replace all internal links (<a> and <img>) inside the body
+                // links pointing outside the export will be broken and changed (ctx.getNewNoteId() will still assign new noteId)
+                for (const link of file.meta.links || []) {
+                    // no need to escape the regexp find string since it's a noteId which doesn't contain any special characters
+                    file.data = file.data.replace(new RegExp(link.targetNoteId, "g"), ctx.getNewNoteId(link.targetNoteId));
+                }
             }
 
             note = (await noteService.createNote(parentNoteId, file.meta.title, file.data, {
+                noteId: ctx.getNewNoteId(file.meta.noteId),
                 type: file.meta.type,
                 mime: file.meta.mime,
                 prefix: file.meta.prefix
             })).note;
 
-            ctx.noteIdMap[file.meta.noteId] = note.noteId;
+            ctx.createdNoteIds.push(note.noteId);
 
-            for (const attribute of file.meta.attributes) {
+            for (const attribute of file.meta.attributes || []) {
                 ctx.attributes.push({
                     noteId: note.noteId,
                     type: attribute.type,
@@ -279,6 +321,14 @@ async function importNotes(ctx, files, parentNoteId) {
                     value: attribute.value,
                     isInheritable: attribute.isInheritable,
                     position: attribute.position
+                });
+            }
+
+            for (const link of file.meta.links || []) {
+                ctx.links.push({
+                    noteId: note.noteId,
+                    type: link.type,
+                    targetNoteId: link.targetNoteId
                 });
             }
         }

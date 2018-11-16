@@ -69,6 +69,7 @@ async function createNewNote(parentNoteId, noteData) {
     noteData.mime = noteData.mime || parentNote.mime;
 
     const note = await new Note({
+        noteId: noteData.noteId, // optionally can force specific noteId
         title: noteData.title,
         content: noteData.content,
         isProtected: noteData.isProtected,
@@ -116,6 +117,7 @@ async function createNote(parentNoteId, title, content = "", extraOptions = {}) 
         title: title,
         content: extraOptions.json ? JSON.stringify(content, null, '\t') : content,
         target: 'into',
+        noteId: extraOptions.noteId,
         isProtected: !!extraOptions.isProtected,
         type: extraOptions.type,
         mime: extraOptions.mime,

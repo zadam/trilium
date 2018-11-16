@@ -1,10 +1,10 @@
 const sax = require("sax");
 const stream = require('stream');
 const xml2js = require('xml2js');
-const log = require("./log");
-const utils = require("./utils");
-const noteService = require("./notes");
-const imageService = require("./image");
+const log = require("../log");
+const utils = require("../utils");
+const noteService = require("../notes");
+const imageService = require("../image");
 
 // date format is e.g. 20181121T193703Z
 function parseDate(text) {

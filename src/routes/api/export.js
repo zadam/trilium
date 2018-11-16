@@ -115,8 +115,10 @@ async function exportToTar(branch, res) {
             noteId: note.noteId,
             title: note.title,
             prefix: branch.prefix,
+            isExpanded: branch.isExpanded,
             type: note.type,
             mime: note.mime,
+            // we don't export dateCreated and dateModified of any entity since that would be a bit misleading
             attributes: (await note.getOwnedAttributes()).map(attribute => {
                 return {
                     type: attribute.type,
@@ -125,6 +127,12 @@ async function exportToTar(branch, res) {
                     isInheritable: attribute.isInheritable,
                     position: attribute.position
                 };
+            }),
+            links: (await note.getLinks()).map(link => {
+                return {
+                    type: link.type,
+                    targetNoteId: link.targetNoteId
+                }
             })
         };
 
