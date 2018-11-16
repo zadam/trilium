@@ -6,7 +6,6 @@ import exportService from "../services/export.js";
 const $dialog = $("#export-subtree-dialog");
 const $form = $("#export-subtree-form");
 const $noteTitle = $dialog.find(".note-title");
-const $exportFormat = $dialog.find("input[name='export-format']:checked");
 
 async function showDialog() {
     glob.activeDialog = $dialog;
@@ -20,7 +19,7 @@ async function showDialog() {
 }
 
 $form.submit(() => {
-    const exportFormat = $exportFormat.val();
+    const exportFormat = $dialog.find("input[name='export-format']:checked").val();
 
     const currentNode = treeService.getCurrentNode();
 
