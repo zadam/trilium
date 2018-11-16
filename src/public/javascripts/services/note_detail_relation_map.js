@@ -549,6 +549,8 @@ async function dropNoteOntoRelationMapHandler(ev) {
         }
     }
 
+    saveData();
+
     await refresh();
 }
 

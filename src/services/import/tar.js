@@ -202,7 +202,7 @@ async function importNotes(ctx, files, parentNoteId) {
                     isExpanded: !!file.meta.isExpanded
                 }).save();
 
-                return;
+                continue;
             }
 
             if (file.meta.type !== 'file' && file.meta.type !== 'image') {

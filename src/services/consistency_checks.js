@@ -263,7 +263,8 @@ async function runAllChecks() {
             links
           WHERE 
             type != 'image'
-            AND type != 'hyper'`,
+            AND type != 'hyper'
+            AND type != 'relation-map'`,
         "Link type is invalid", errorList);
 
     await runCheck(`

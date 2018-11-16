@@ -199,15 +199,34 @@ function findHyperLinks(content, foundLinks) {
     return match;
 }
 
+function findRelationMapLinks(content, foundLinks) {
+    const obj = JSON.parse(content);
+
+    for (const note of obj.notes) {
+        foundLinks.push({
+            type: 'relation-map',
+            targetNoteId: note.noteId
+        })
+    }
+}
+
 async function saveLinks(note) {
-    if (note.type !== 'text') {
+    if (note.type !== 'text' && note.type !== 'relation-map') {
         return;
     }
 
     const foundLinks = [];
 
-    findImageLinks(note.content, foundLinks);
-    findHyperLinks(note.content, foundLinks);
+    if (note.type === 'text') {
+        findImageLinks(note.content, foundLinks);
+        findHyperLinks(note.content, foundLinks);
+    }
+    else if (note.type === 'relation-map') {
+        findRelationMapLinks(note.content, foundLinks);
+    }
+    else {
+        throw new Error("Unrecognized type " + note.type);
+    }
 
     const existingLinks = await note.getLinks();
 
