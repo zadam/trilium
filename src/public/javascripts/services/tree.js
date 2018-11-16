@@ -207,33 +207,51 @@ async function getRunPath(notePath) {
     return effectivePath.reverse();
 }
 
+async function addPath(notePath, isCurrent) {
+    const title = await treeUtils.getNotePathTitle(notePath);
+
+    const noteLink = await linkService.createNoteLink(notePath, title);
+
+    noteLink
+        .addClass("no-tooltip-preview")
+        .addClass("dropdown-item");
+
+    if (isCurrent) {
+        noteLink.addClass("current");
+    }
+
+    $notePathList.append(noteLink);
+}
+
 async function showPaths(noteId, node) {
     utils.assertArguments(noteId, node);
 
     const note = await treeCache.getNote(noteId);
-    const parents = await note.getParentNotes();
 
-    $notePathCount.html(parents.length + " path" + (parents.length > 0 ? "s" : ""));
+    if (note.noteId === 'root') {
+        // root doesn't have any parent, but it's still technically 1 path
 
-    $notePathList.empty();
+        $notePathCount.html("1 path");
 
-    for (const parentNote of parents) {
-        const parentNotePath = await getSomeNotePath(parentNote);
-        // this is to avoid having root notes leading '/'
-        const notePath = parentNotePath ? (parentNotePath + '/' + noteId) : noteId;
-        const title = await treeUtils.getNotePathTitle(notePath);
+        $notePathList.empty();
 
-        const noteLink = await linkService.createNoteLink(notePath, title);
+        await addPath('root', true);
+    }
+    else {
+        const parents = await note.getParentNotes();
 
-        noteLink.addClass("no-tooltip-preview");
+        $notePathCount.html(parents.length + " path" + (parents.length > 1 ? "s" : ""));
 
-        const item = $("<li/>").append(noteLink);
+        $notePathList.empty();
 
-        if (node.getParent().data.noteId === parentNote.noteId) {
-            item.addClass("current");
+        for (const parentNote of parents) {
+            const parentNotePath = await getSomeNotePath(parentNote);
+            // this is to avoid having root notes leading '/'
+            const notePath = parentNotePath ? (parentNotePath + '/' + noteId) : noteId;
+            const isCurrent = node.getParent().data.noteId === parentNote.noteId;
+
+            await addPath(notePath, isCurrent);
         }
-
-        $notePathList.append(item);
     }
 }
 

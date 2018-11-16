@@ -397,7 +397,7 @@ div.ui-tooltip {
     background-color: #ccc;
 }
 
-#note-path-list .current a {
+#note-path-list a.current {
     font-weight: bold;
 }
 
