@@ -79,7 +79,11 @@ async function processMirrorRelations(entityName, entity, handler) {
 eventService.subscribe(eventService.ENTITY_CHANGED, async ({ entityName, entity }) => {
     await processMirrorRelations(entityName, entity, async (definition, note, targetNote) => {
         // we need to make sure that also target's mirror attribute exists and if note, then create it
-        if (!await targetNote.hasRelation(definition.mirrorRelation)) {
+        // mirror attribute has to target our note as well
+        const hasMirrorAttribute = (await targetNote.getRelations(definition.mirrorRelation))
+            .some(attr => attr.value === note.noteId);
+
+        if (!hasMirrorAttribute) {
             await new Attribute({
                 noteId: targetNote.noteId,
                 type: 'relation',
@@ -97,13 +101,18 @@ eventService.subscribe(eventService.ENTITY_DELETED, async ({ entityName, entity 
     await processMirrorRelations(entityName, entity, async (definition, note, targetNote) => {
         // if one mirror attribute is deleted then the other should be deleted as well
         const relations = await targetNote.getRelations(definition.mirrorRelation);
+        let deletedSomething = false;
 
         for (const relation of relations) {
-            relation.isDeleted = true;
-            await relation.save();
+            if (relation.value === note.noteId) {
+                relation.isDeleted = true;
+                await relation.save();
+
+                deletedSomething = true;
+            }
         }
 
-        if (relations.length > 0) {
+        if (deletedSomething) {
             targetNote.invalidateAttributeCache();
         }
     });
