@@ -118,6 +118,15 @@ function escapeRegExp(str) {
     return str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
 }
 
+function crash() {
+    if (isElectron()) {
+        require('electron').app.exit(1);
+    }
+    else {
+        process.exit(1);
+    }
+}
+
 module.exports = {
     randomSecureToken,
     randomString,
@@ -137,5 +146,6 @@ module.exports = {
     stripTags,
     intersection,
     union,
-    escapeRegExp
+    escapeRegExp,
+    crash
 };

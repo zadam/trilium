@@ -4,6 +4,7 @@ const sqlInit = require('./sql_init');
 const optionService = require('./options');
 const fs = require('fs-extra');
 const log = require('./log');
+const utils = require('./utils');
 const resourceDir = require('./resource_dir');
 
 async function migrate() {
@@ -72,7 +73,7 @@ async function migrate() {
             log.error("error during migration to version " + mig.dbVersion + ": " + e.stack);
             log.error("migration failed, crashing hard"); // this is not very user friendly :-/
 
-            process.exit(1);
+            utils.crash();
         }
         finally {
             // make sure foreign keys are enabled even if migration script disables them
