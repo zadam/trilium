@@ -117,6 +117,15 @@ async function show() {
 
 }
 
+function clearMap() {
+    // delete all endpoints and connections
+    // this is done at this point (after async operations) to reduce flicker to the minimum
+    jsPlumbInstance.deleteEveryEndpoint();
+
+    // without this we still end up with note boxes remaining in the canvas
+    $relationMapContainer.empty();
+}
+
 async function loadNotesAndRelations() {
     const noteIds = mapData.notes.map(note => note.noteId);
     const data = await server.post("notes/relation-map", {noteIds});
@@ -142,11 +151,9 @@ async function loadNotesAndRelations() {
 
     mapData.notes = mapData.notes.filter(note => note.noteId in data.noteTitles);
 
-    // delete all endpoints and connections
-    // this is done at this point (after async operations) to reduce flicker to the minimum
-    jsPlumbInstance.deleteEveryEndpoint();
-
     jsPlumbInstance.batch(async function () {
+        clearMap();
+
         for (const note of mapData.notes) {
             const title = data.noteTitles[note.noteId];
 
@@ -244,11 +251,7 @@ function saveCurrentTransform() {
 
 function cleanup() {
     if (jsPlumbInstance) {
-        // delete all endpoints and connections
-        jsPlumbInstance.deleteEveryEndpoint();
-
-        // without this we still end up with note boxes remaining in the canvas
-        $relationMapContainer.empty();
+        clearMap();
     }
 
     if (pzInstance) {
