@@ -41,6 +41,10 @@ function setupTooltip() {
         if ($(this).is(":hover")) {
             $(this).tooltip({
                 delay: {"show": 300, "hide": 100},
+                container: 'body',
+                placement: 'auto',
+                trigger: 'manual',
+                boundariesElement: 'window',
                 title: html,
                 html: true
             });
@@ -50,7 +54,7 @@ function setupTooltip() {
     });
 
     $(document).on("mouseleave", "a", function() {
-        $(this).tooltip('hide');
+        $(this).tooltip('dispose');
     });
 
     // close any tooltip after click, this fixes the problem that sometimes tooltips remained on the screen
