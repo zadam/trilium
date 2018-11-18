@@ -95,7 +95,7 @@ async function updateNoteAttributes(req) {
         attributeEntity.isInheritable = attribute.isInheritable;
         attributeEntity.isDeleted = attribute.isDeleted;
 
-        if (attributeEntity.type === 'relation' && !attributeEntity.value.trim()) {
+        if (attributeEntity.type === 'relation' && !attribute.value.trim()) {
             // relation should never have empty target
             attributeEntity.isDeleted = true;
         }
