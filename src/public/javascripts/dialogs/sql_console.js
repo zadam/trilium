@@ -50,7 +50,12 @@ async function execute(e) {
     e.preventDefault();
     e.stopPropagation();
 
-    const sqlQuery = codeEditor.getValue();
+    // execute the selected text or the whole content if there's no selection
+    let sqlQuery = codeEditor.getSelection();
+
+    if (!sqlQuery) {
+        sqlQuery = codeEditor.getValue();
+    }
 
     const result = await server.post("sql/execute", {
         query: sqlQuery
