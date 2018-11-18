@@ -215,10 +215,17 @@ function initPanZoom() {
 
                 mapData.notes.push({ noteId: clipboard.noteId, x, y });
 
+                saveData();
+
                 clipboard = null;
             }
 
             return true;
+        },
+        filterKey: function(e, dx, dy, dz) {
+            // if ALT is pressed then panzoom should bubble the event up
+            // this is to preserve ALT-LEFT, ALT-RIGHT navigation working
+            return e.altKey;
         }
     });
 
@@ -315,8 +322,6 @@ function connectionContextMenuHandler(connection, event) {
 async function connectionCreatedHandler(info, originalEvent) {
     const connection = info.connection;
 
-    const isRelation = relations.some(rel => rel.attributeId === connection.id);
-
     connection.bind("contextmenu", (obj, event) => {
         if (connection.getType().includes("link")) {
             // don't create context menu if it's a link since there's nothing to do with link from relation map
@@ -365,9 +370,7 @@ async function connectionCreatedHandler(info, originalEvent) {
         return;
     }
 
-    const attribute = await server.put(`notes/${sourceNoteId}/relations/${name}/to/${targetNoteId}`);
-
-    relations.push({ attributeId: attribute.attributeId , targetNoteId, sourceNoteId, name });
+    await server.put(`notes/${sourceNoteId}/relations/${name}/to/${targetNoteId}`);
 
     await refresh();
 }
