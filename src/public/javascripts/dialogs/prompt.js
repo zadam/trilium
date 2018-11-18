@@ -1,6 +1,9 @@
 const $dialog = $("#prompt-dialog");
-const $question = $("#prompt-dialog-question");
-const $answer = $("#prompt-dialog-answer");
+const $dialogBody = $dialog.find(".modal-body");
+
+let $question;
+let $answer;
+
 const $form = $("#prompt-dialog-form");
 
 let resolve;
@@ -11,8 +14,21 @@ function ask({ message, defaultValue, shown }) {
 
     shownCb = shown;
 
-    $question.text(message);
-    $answer.val(defaultValue || "");
+    $question = $("<label>")
+        .prop("for", "prompt-dialog-answer")
+        .text(message);
+
+    $answer = $("<input>")
+        .prop("type", "text")
+        .prop("id", "prompt-dialog-answer")
+        .addClass("form-control")
+        .val(defaultValue || "");
+
+    $dialogBody.empty().append(
+        $("<div>")
+            .addClass("form-group")
+            .append($question)
+            .append($answer));
 
     $dialog.modal();
 
