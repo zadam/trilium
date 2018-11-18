@@ -5,9 +5,7 @@
 
 #relation-map-wrapper {
     position: relative;
-    overflow: hidden !important;
-    height: 4000px; /* we need to set fixed dimentions. This number is probably enough to cover any screen */
-    width: 4000px;
+    height: 100%;
     outline: none; /* remove dotted outline on click */
 }
 

@@ -76,6 +76,7 @@ body {
     position: relative;
     overflow: auto;
     flex-basis: content;
+    height: 100%;
 }
 
 .note-detail-component {
