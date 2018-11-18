@@ -1,3 +1,9 @@
+-- first fix deleted status of existing images
+UPDATE note_images SET isDeleted = 1 WHERE noteId IN (SELECT noteId FROM notes WHERE isDeleted = 1);
+
+-- we don't need set data to null because table is going to be dropped anyway and we want image size into attribute
+UPDATE images SET isDeleted = 1 WHERE imageId NOT IN (SELECT imageId FROM note_images WHERE isDeleted = 0);
+
 -- allow null for note content (for deleted notes)
 CREATE TABLE IF NOT EXISTS "notes_mig" (
   `noteId`	TEXT NOT NULL,

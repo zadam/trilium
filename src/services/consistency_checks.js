@@ -275,8 +275,9 @@ async function runAllChecks() {
             LEFT JOIN notes AS sourceNote ON sourceNote.noteId = links.noteId AND sourceNote.isDeleted = 0
             LEFT JOIN notes AS targetNote ON targetNote.noteId = links.noteId AND targetNote.isDeleted = 0
           WHERE 
-            sourceNote.noteId IS NULL
-            OR targetNote.noteId IS NULL`,
+            links.isDeleted = 0
+            AND (sourceNote.noteId IS NULL
+                 OR targetNote.noteId IS NULL)`,
         "Link to source/target note link is broken", errorList);
 
     await runSyncRowChecks("notes", "noteId", errorList);

@@ -1,0 +1,1 @@
+UPDATE attributes SET isDeleted = 1 WHERE type = 'relation' AND value NOT IN (SELECT noteId FROM notes WHERE notes.isDeleted = 0);
