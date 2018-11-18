@@ -374,19 +374,12 @@ async function deleteNote(branch) {
 async function cleanupDeletedNotes() {
     const cutoffDate = new Date(new Date().getTime() - 48 * 3600 * 1000);
 
-    const notesForCleanup = await repository.getEntities("SELECT * FROM notes WHERE isDeleted = 1 AND content != '' AND dateModified <= ?", [dateUtils.dateStr(cutoffDate)]);
+    // it's better to not use repository for this because it will complain about saving protected notes
+    // out of protected session
 
-    for (const note of notesForCleanup) {
-        note.content = null;
-        await note.save();
-    }
+    await sql.execute("UPDATE notes SET content = NULL WHERE isDeleted = 1 AND content IS NOT NULL AND dateModified <= ?", [dateUtils.dateStr(cutoffDate)]);
 
-    const notesRevisionsForCleanup = await repository.getEntities("SELECT note_revisions.* FROM notes JOIN note_revisions USING(noteId) WHERE notes.isDeleted = 1 AND note_revisions.content != '' AND notes.dateModified <= ?", [dateUtils.dateStr(cutoffDate)]);
-
-    for (const noteRevision of notesRevisionsForCleanup) {
-        noteRevision.content = null;
-        await noteRevision.save();
-    }
+    await sql.execute("UPDATE note_revisions SET content = NULL WHERE note_revisions.content IS NOT NULL AND noteId IN (SELECT noteId FROM notes WHERE isDeleted = 1 AND notes.dateModified <= ?)", [dateUtils.dateStr(cutoffDate)]);
 }
 
 // first cleanup kickoff 5 minutes after startup
