@@ -10,15 +10,13 @@ const dragAndDropSetup = {
 
         node.setSelected(true);
 
-        const selectedNodes = treeService.getSelectedNodes().map(node => {
-            return {
-                noteId: node.data.noteId,
-                title: node.title
-            }
-        });
-
         // this is for dragging notes into relation map
-        data.dataTransfer.setData("text", JSON.stringify(selectedNodes));
+        // we allow to drag only one note at a time because it multi-drag conflicts with multiple single drags
+        // in UX and single drag is probably more useful
+        data.dataTransfer.setData("text", JSON.stringify({
+            noteId: node.data.noteId,
+            title: node.title
+        }));
 
         // This function MUST be defined to enable dragging for the tree.
         // Return false to cancel dragging of node.

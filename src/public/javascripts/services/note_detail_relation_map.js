@@ -522,42 +522,19 @@ function getZoom() {
 async function dropNoteOntoRelationMapHandler(ev) {
     ev.preventDefault();
 
-    const notes = JSON.parse(ev.originalEvent.dataTransfer.getData("text"));
+    const note = JSON.parse(ev.originalEvent.dataTransfer.getData("text"));
 
     let {x, y} = getMousePosition(ev);
 
-    // modifying position so that cursor is on the top-center of the box
-    const startX = x -= 80;
-    y -= 15;
+    const exists = mapData.notes.some(n => n.noteId === note.noteId);
 
-    const currentNoteId = treeService.getCurrentNode().data.noteId;
+    if (exists) {
+        await infoDialog.info(`Note "${note.title}" is already placed into the diagram`);
 
-    for (const note of notes) {
-        if (note.noteId === currentNoteId) {
-            // we don't allow placing current (relation map) into itself
-            // the reason is that when dragging notes from the tree, the relation map is always selected
-            // since it's focused.
-            continue;
-        }
-
-        const exists = mapData.notes.some(n => n.noteId === note.noteId);
-
-        if (exists) {
-            await infoDialog.info(`Note "${note.title}" is already placed into the diagram`);
-
-            continue;
-        }
-
-        mapData.notes.push({noteId: note.noteId, x, y});
-
-        if (x - startX > 1000) {
-            x = startX;
-            y += 200;
-        }
-        else {
-            x += 200;
-        }
+        return;
     }
+
+    mapData.notes.push({noteId: note.noteId, x, y});
 
     saveData();
 
