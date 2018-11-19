@@ -1,5 +1,6 @@
 {
   "name": "trilium",
+  "productName": "Trilium Notes",
   "description": "Trilium Notes",
   "version": "0.24.1-beta",
   "license": "AGPL-3.0-only",
@@ -13,10 +14,7 @@
   },
   "scripts": {
     "start": "node ./src/www",
-    "test-electron": "xo",
-    "rebuild-electron": "electron-rebuild",
     "start-electron": "electron . --disable-gpu",
-    "build-electron": "electron-packager . --out=dist --asar --overwrite --platform=win32,linux --arch=ia32,x64 --app-version= --icon=src/public/app-icons/win/icon.ico",
     "build-backend-docs": "jsdoc -d ./docs/backend_api src/entities/*.js src/services/backend_script_api.js",
     "build-frontend-docs": "jsdoc -d ./docs/frontend_api src/public/javascripts/entities/*.js src/public/javascripts/services/frontend_script_api.js",
     "build-docs": "npm run build-backend-docs && npm run build-frontend-docs"

@@ -11,15 +11,21 @@ rm -r dist/*
 echo "Rebuilding binaries for linux-ia32"
 ./node_modules/.bin/electron-rebuild --arch=ia32
 
-./node_modules/.bin/electron-packager . --out=dist --platform=linux --arch=ia32 --overwrite
+./node_modules/.bin/electron-packager . --out=dist --executable-name=trilium --platform=linux --arch=ia32 --overwrite
 
-./node_modules/.bin/electron-packager . --out=dist --platform=win32 --arch=x64 --overwrite
+mv "./dist/Trilium Notes-linux-ia32" ./dist/trilium-linux-ia32
+
+./node_modules/.bin/electron-packager . --out=dist --executable-name=trilium --platform=win32  --arch=x64 --overwrite --icon=src/public/images/app-icons/win/icon.ico
+
+mv "./dist/Trilium Notes-win32-x64" ./dist/trilium-win32-x64
 
 # we build x64 as second so that we keep X64 binaries in node_modules for local development and server build
 echo "Rebuilding binaries for linux-x64"
 ./node_modules/.bin/electron-rebuild --arch=x64
 
-./node_modules/.bin/electron-packager . --out=dist --platform=linux --arch=x64 --overwrite
+./node_modules/.bin/electron-packager . --out=dist --executable-name=trilium --platform=linux --arch=x64 --overwrite
+
+mv "./dist/Trilium Notes-linux-x64" ./dist/trilium-linux-x64
 
 echo "Copying required windows binaries"
 

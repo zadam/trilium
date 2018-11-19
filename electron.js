@@ -70,6 +70,8 @@ app.on('activate', () => {
 });
 
 app.on('ready', async () => {
+    app.setAppUserModelId('com.github.zadam.trilium');
+
     mainWindow = await createMainWindow();
 
     const result = globalShortcut.register('CommandOrControl+Alt+P', cls.wrap(async () => {
