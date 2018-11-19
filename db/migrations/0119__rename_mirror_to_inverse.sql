@@ -1,0 +1,1 @@
+UPDATE attributes SET value = replace(value, 'mirrorRelation', 'inverseRelation') WHERE type = 'relation-definition';

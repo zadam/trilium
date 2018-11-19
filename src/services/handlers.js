@@ -59,7 +59,7 @@ eventService.subscribe(eventService.CHILD_NOTE_CREATED, async ({ parentNote, chi
     await runAttachedRelations(parentNote, 'runOnChildNoteCreation', childNote);
 });
 
-async function processMirrorRelations(entityName, entity, handler) {
+async function processInverseRelations(entityName, entity, handler) {
     if (entityName === 'attributes' && entity.type === 'relation') {
         const note = await entity.getNote();
         const attributes = (await note.getAttributes(entity.name)).filter(relation => relation.type === 'relation-definition');
@@ -67,7 +67,7 @@ async function processMirrorRelations(entityName, entity, handler) {
         for (const attribute of attributes) {
             const definition = attribute.value;
 
-            if (definition.mirrorRelation && definition.mirrorRelation.trim()) {
+            if (definition.inverseRelation && definition.inverseRelation.trim()) {
                 const targetNote = await entity.getTargetNote();
 
                 await handler(definition, note, targetNote);
@@ -77,17 +77,17 @@ async function processMirrorRelations(entityName, entity, handler) {
 }
 
 eventService.subscribe(eventService.ENTITY_CHANGED, async ({ entityName, entity }) => {
-    await processMirrorRelations(entityName, entity, async (definition, note, targetNote) => {
-        // we need to make sure that also target's mirror attribute exists and if note, then create it
-        // mirror attribute has to target our note as well
-        const hasMirrorAttribute = (await targetNote.getRelations(definition.mirrorRelation))
+    await processInverseRelations(entityName, entity, async (definition, note, targetNote) => {
+        // we need to make sure that also target's inverse attribute exists and if note, then create it
+        // inverse attribute has to target our note as well
+        const hasInverseAttribute = (await targetNote.getRelations(definition.inverseRelation))
             .some(attr => attr.value === note.noteId);
 
-        if (!hasMirrorAttribute) {
+        if (!hasInverseAttribute) {
             await new Attribute({
                 noteId: targetNote.noteId,
                 type: 'relation',
-                name: definition.mirrorRelation,
+                name: definition.inverseRelation,
                 value: note.noteId,
                 isInheritable: entity.isInheritable
             }).save();
@@ -98,9 +98,9 @@ eventService.subscribe(eventService.ENTITY_CHANGED, async ({ entityName, entity 
 });
 
 eventService.subscribe(eventService.ENTITY_DELETED, async ({ entityName, entity }) => {
-    await processMirrorRelations(entityName, entity, async (definition, note, targetNote) => {
-        // if one mirror attribute is deleted then the other should be deleted as well
-        const relations = await targetNote.getRelations(definition.mirrorRelation);
+    await processInverseRelations(entityName, entity, async (definition, note, targetNote) => {
+        // if one inverse attribute is deleted then the other should be deleted as well
+        const relations = await targetNote.getRelations(definition.inverseRelation);
         let deletedSomething = false;
 
         for (const relation of relations) {

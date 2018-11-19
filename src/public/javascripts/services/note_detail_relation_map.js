@@ -50,7 +50,7 @@ const biDirectionalOverlays = [
     } ]
 ];
 
-const mirrorOverlays = [
+const inverseRelationsOverlays = [
     [ "Arrow", {
         location: 1,
         id: "arrow",
@@ -134,12 +134,12 @@ async function loadNotesAndRelations() {
 
     for (const relation of data.relations) {
         const match = relations.find(rel =>
-            rel.name === data.mirrorRelations[relation.name]
+            rel.name === data.inverseRelations[relation.name]
             && ((rel.sourceNoteId === relation.sourceNoteId && rel.targetNoteId === relation.targetNoteId)
             || (rel.sourceNoteId === relation.targetNoteId && rel.targetNoteId === relation.sourceNoteId)));
 
         if (match) {
-            match.type = relation.type = relation.name === data.mirrorRelations[relation.name] ? 'biDirectional' : 'mirror';
+            match.type = relation.type = relation.name === data.inverseRelations[relation.name] ? 'biDirectional' : 'inverse';
             relation.render = false; // don't render second relation
         } else {
             relation.type = 'uniDirectional';
@@ -173,9 +173,9 @@ async function loadNotesAndRelations() {
 
             connection.id = relation.attributeId;
 
-            if (relation.type === 'mirror') {
+            if (relation.type === 'inverse') {
                 connection.getOverlay("label-source").setLabel(relation.name);
-                connection.getOverlay("label-target").setLabel(data.mirrorRelations[relation.name]);
+                connection.getOverlay("label-target").setLabel(data.inverseRelations[relation.name]);
             }
             else {
                 connection.getOverlay("label").setLabel(relation.name);
@@ -290,7 +290,7 @@ function initJsPlumbInstance () {
 
     jsPlumbInstance.registerConnectionType("biDirectional", { anchor:"Continuous", connector:"StateMachine", overlays: biDirectionalOverlays });
 
-    jsPlumbInstance.registerConnectionType("mirror", { anchor:"Continuous", connector:"StateMachine", overlays: mirrorOverlays });
+    jsPlumbInstance.registerConnectionType("inverse", { anchor:"Continuous", connector:"StateMachine", overlays: inverseRelationsOverlays });
 
     jsPlumbInstance.registerConnectionType("link", { anchor:"Continuous", connector:"StateMachine", overlays: linkOverlays });
 

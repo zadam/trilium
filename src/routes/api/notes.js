@@ -117,8 +117,8 @@ async function getRelationMap(req) {
         // noteId => title
         noteTitles: {},
         relations: [],
-        // relation name => mirror relation name
-        mirrorRelations: {},
+        // relation name => inverse relation name
+        inverseRelations: {},
         links: []
     };
 
@@ -143,8 +143,8 @@ async function getRelationMap(req) {
             }; }));
 
         for (const relationDefinition of await note.getRelationDefinitions()) {
-            if (relationDefinition.value.mirrorRelation) {
-                resp.mirrorRelations[relationDefinition.name] = relationDefinition.value.mirrorRelation;
+            if (relationDefinition.value.inverseRelation) {
+                resp.inverseRelations[relationDefinition.name] = relationDefinition.value.inverseRelation;
             }
         }
     }
