@@ -12,6 +12,11 @@ async function exportToOpml(branch, res) {
     async function exportNoteInner(branchId) {
         const branch = await repository.getBranch(branchId);
         const note = await branch.getNote();
+
+        if (await note.hasLabel('excludeFromExport')) {
+            return;
+        }
+
         const title = (branch.prefix ? (branch.prefix + ' - ') : '') + note.title;
 
         const preparedTitle = prepareText(title);
