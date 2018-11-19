@@ -92,7 +92,7 @@ function initNoteAutocomplete($el, options) {
         $el.on('autocomplete:selected', (event, suggestion) => $el.setSelectedPath(suggestion.path));
         $el.on('autocomplete:closed', () => {
             if (!$el.val().trim()) {
-                $el.setSelectedPath("");
+                clearText($el);
             }
         });
     }

@@ -48,6 +48,10 @@
                     <input class="form-control relation-target-note-id"
                          placeholder="search for note by its name"
                          data-bind="noteAutocomplete, value: relationValue, valueUpdate: 'blur', event: { blur: $parent.attributeChanged }">
+
+                    <div style="color: red" data-bind="if: $parent.isEmptyRelationTarget($index())">Relation target note
+                      can't be empty.
+                    </div>
                   </div>
 
                   <div data-bind="visible: type == 'label-definition'">

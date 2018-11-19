@@ -114,7 +114,7 @@ function AttributesModel() {
 
     function isValid() {
         for (let attributes = self.ownedAttributes(), i = 0; i < attributes.length; i++) {
-            if (self.isEmptyName(i)) {
+            if (self.isEmptyName(i) || self.isEmptyRelationTarget(i)) {
                 return false;
             }
         }
@@ -210,6 +210,12 @@ function AttributesModel() {
         const cur = self.ownedAttributes()[index]();
 
         return cur.name.trim() === "" && !cur.isDeleted && (cur.attributeId !== "" || cur.labelValue !== "" || cur.relationValue);
+    };
+
+    this.isEmptyRelationTarget = function(index) {
+        const cur = self.ownedAttributes()[index]();
+
+        return cur.type === "relation" && !cur.isDeleted && cur.name && !cur.relationValue;
     };
 
     this.getTargetAttribute = function(target) {
