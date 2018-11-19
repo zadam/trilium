@@ -5,6 +5,7 @@ import infoService from "./info.js";
 import server from "./server.js";
 
 const $component = $('#note-detail-image');
+const $imageWrapper = $('#note-detail-image-wrapper');
 const $imageView = $('#note-detail-image-view');
 
 const $imageDownloadButton = $("#image-download");
@@ -39,10 +40,10 @@ function selectImage(element) {
 }
 
 $copyToClipboardButton.click(() => {
-    $component.attr('contenteditable','true');
+    $imageWrapper.attr('contenteditable','true');
 
     try {
-        selectImage($component.get(0));
+        selectImage($imageWrapper.get(0));
 
         const success = document.execCommand('copy');
 
@@ -55,7 +56,7 @@ $copyToClipboardButton.click(() => {
     }
     finally {
         window.getSelection().removeAllRanges();
-        $component.removeAttr('contenteditable');
+        $imageWrapper.removeAttr('contenteditable');
     }
 });
 
