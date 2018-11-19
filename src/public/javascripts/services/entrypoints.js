@@ -25,9 +25,21 @@ function registerEntrypoints() {
     $("#jump-to-note-dialog-button").click(jumpToNoteDialog.showDialog);
     utils.bindShortcut('ctrl+j', jumpToNoteDialog.showDialog);
 
-    $("#show-note-revisions-button").click(noteRevisionsDialog.showCurrentNoteRevisions);
+    $("#show-note-revisions-button").click(function() {
+        if ($(this).hasClass("disabled")) {
+            return;
+        }
 
-    $("#show-source-button").click(noteSourceDialog.showDialog);
+        noteRevisionsDialog.showCurrentNoteRevisions();
+    });
+
+    $("#show-source-button").click(function() {
+        if ($(this).hasClass("disabled")) {
+            return;
+        }
+
+        noteSourceDialog.showDialog();
+    });
 
     $("#recent-changes-button").click(recentChangesDialog.showDialog);
 

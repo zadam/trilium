@@ -103,7 +103,13 @@ if (utils.isElectron()) {
     });
 }
 
-$("#export-note-to-markdown-button").click(() => exportService.exportSubtree(noteDetailService.getCurrentNoteId(), 'markdown-single'));
+$("#export-note-to-markdown-button").click(function () {
+    if ($(this).hasClass("disabled")) {
+        return;
+    }
+
+    exportService.exportSubtree(noteDetailService.getCurrentNoteId(), 'markdown-single')
+});
 
 treeService.showTree();
 
