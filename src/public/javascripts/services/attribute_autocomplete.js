@@ -15,6 +15,8 @@ function initAttributeNameAutocomplete({ $el, attributeType, open }) {
             minLength: 0
         }, [{
             displayKey: 'name',
+            // disabling cache is important here because otherwise cache can stay intact when switching between attribute type which will lead to autocomplete displaying attribute names for incorrect attribute type
+            cache: false,
             source: async (term, cb) => {
                 const type = typeof attributeType === "function" ? attributeType() : attributeType;
 
