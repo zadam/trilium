@@ -558,6 +558,10 @@ table.promoted-attributes-in-tooltip td, table.promoted-attributes-in-tooltip th
     max-height: 250px;
 }
 
+.tooltip-inner figure.image-style-side {
+    float: right;
+}
+
 .tooltip.show {
     opacity: 1;
 }
