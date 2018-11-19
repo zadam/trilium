@@ -15,7 +15,7 @@ const $relationMapContainer = $("#relation-map-container");
 const $createChildNote = $("#relation-map-create-child-note");
 const $zoomInButton = $("#relation-map-zoom-in");
 const $zoomOutButton = $("#relation-map-zoom-out");
-const $centerButton = $("#relation-map-center");
+const $resetPanZoomButton = $("#relation-map-reset-pan-zoom");
 
 let mapData;
 let jsPlumbInstance;
@@ -239,6 +239,10 @@ function initPanZoom() {
         pzInstance.zoomTo(0, 0, mapData.transform.scale);
 
         pzInstance.moveTo(mapData.transform.x, mapData.transform.y);
+    }
+    else {
+        // set to initial coordinates
+        pzInstance.moveTo(0, 0);
     }
 
     $zoomInButton.click(() => pzInstance.zoomTo(0, 0, 1.2));
@@ -571,40 +575,10 @@ function getMousePosition(evt) {
     };
 }
 
-$centerButton.click(() => {
-    if (mapData.notes.length === 0) {
-        return; // nothing to recenter on
-    }
-
-    let totalX = 0, totalY = 0;
-
-    for (const note of mapData.notes) {
-        totalX += note.x;
-        totalY += note.y;
-    }
-
-    let averageX = totalX / mapData.notes.length;
-    let averageY = totalY / mapData.notes.length;
-
-    // find note with smallest X, Y difference from the average (most central note)
-    const {noteId} = mapData.notes.map(note => {
-        return {
-            noteId: note.noteId,
-            diff: Math.abs(note.x - averageX) + Math.abs(note.y - averageY)
-        }
-    }).reduce((min, val) => min.diff <= val.min ? min : val, { diff: 9999999999 });
-
-    const $noteBox = $("#" + noteIdToId(noteId));
-
-    const clientRect = $noteBox[0].getBoundingClientRect();
-    const cx = clientRect.left + clientRect.width / 2;
-    const cy = clientRect.top + clientRect.height / 2;
-
-    const container = $component[0].getBoundingClientRect();
-    const dx = container.width / 2 - cx;
-    const dy = container.height / 2 - cy;
-
-    pzInstance.moveBy(dx, dy, true);
+$resetPanZoomButton.click(() => {
+    // reset to initial pan & zoom state
+    pzInstance.zoomTo(0, 0, 1 / getZoom());
+    pzInstance.moveTo(0, 0);
 });
 
 $component.on("drop", dropNoteOntoRelationMapHandler);
