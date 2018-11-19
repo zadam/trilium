@@ -210,6 +210,16 @@ async function runAllChecks() {
         "Note has invalid type", errorList);
 
     await runCheck(`
+          SELECT
+            noteId
+          FROM
+            notes
+          WHERE
+            isDeleted = 0
+            AND content IS NULL`,
+        "Note content is null even though it is not deleted", errorList);
+
+    await runCheck(`
           SELECT 
             parentNoteId
           FROM 

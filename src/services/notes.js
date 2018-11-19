@@ -219,7 +219,7 @@ function findRelationMapLinks(content, foundLinks) {
 
 async function saveLinks(note, content) {
     if (note.type !== 'text' && note.type !== 'relation-map') {
-        return;
+        return content;
     }
 
     const foundLinks = [];
