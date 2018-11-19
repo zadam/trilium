@@ -209,7 +209,29 @@ function AttributesModel() {
     this.isEmptyName = function(index) {
         const cur = self.ownedAttributes()[index]();
 
-        return cur.name.trim() === "" && !cur.isDeleted && (cur.attributeId !== "" || cur.labelValue !== "" || cur.relationValue);
+        if (cur.name.trim() || cur.isDeleted) {
+            return false;
+        }
+
+        if (cur.attributeId) {
+            // name is empty and attribute already exists so this is NO-GO
+            return true;
+        }
+
+        if (cur.type === 'relation-definition' || cur.type === 'label-definition') {
+            // for definitions there's no possible empty value so we always require name
+            return true;
+        }
+
+        if (cur.type === 'label' && cur.labelValue) {
+            return true;
+        }
+
+        if (cur.type === 'relation' && cur.relationValue) {
+            return true;
+        }
+
+        return false;
     };
 
     this.isEmptyRelationTarget = function(index) {
