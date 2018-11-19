@@ -177,7 +177,7 @@ async function protectNoteRevisions(note) {
 }
 
 function findImageLinks(content, foundLinks) {
-    const re = /src="\/api\/images\/([a-zA-Z0-9]+)\//g;
+    const re = /src="[^"]*\/api\/images\/([a-zA-Z0-9]+)\//g;
     let match;
 
     while (match = re.exec(content)) {
@@ -186,11 +186,13 @@ function findImageLinks(content, foundLinks) {
             targetNoteId: match[1]
         });
     }
-    return match;
+
+    // removing absolute references to server to keep it working between instances
+    return content.replace(/src="[^"]*\/api\/images\//g, 'src="/api/images/');
 }
 
 function findHyperLinks(content, foundLinks) {
-    const re = /href="#root[a-zA-Z0-9\/]*\/([a-zA-Z0-9]+)\/?"/g;
+    const re = /href="[^"]*#root[a-zA-Z0-9\/]*\/([a-zA-Z0-9]+)\/?"/g;
     let match;
 
     while (match = re.exec(content)) {
@@ -200,7 +202,8 @@ function findHyperLinks(content, foundLinks) {
         });
     }
 
-    return match;
+    // removing absolute references to server to keep it working between instances
+    return content.replace(/href="[^"]*#root/g, 'href="#root');
 }
 
 function findRelationMapLinks(content, foundLinks) {
@@ -214,7 +217,7 @@ function findRelationMapLinks(content, foundLinks) {
     }
 }
 
-async function saveLinks(note) {
+async function saveLinks(note, content) {
     if (note.type !== 'text' && note.type !== 'relation-map') {
         return;
     }
@@ -222,11 +225,11 @@ async function saveLinks(note) {
     const foundLinks = [];
 
     if (note.type === 'text') {
-        findImageLinks(note.content, foundLinks);
-        findHyperLinks(note.content, foundLinks);
+        content = findImageLinks(content, foundLinks);
+        content = findHyperLinks(content, foundLinks);
     }
     else if (note.type === 'relation-map') {
-        findRelationMapLinks(note.content, foundLinks);
+        findRelationMapLinks(content, foundLinks);
     }
     else {
         throw new Error("Unrecognized type " + note.type);
@@ -262,6 +265,8 @@ async function saveLinks(note) {
         unusedLink.isDeleted = true;
         await unusedLink.save();
     }
+
+    return content;
 }
 
 async function saveNoteRevision(note) {
@@ -310,6 +315,8 @@ async function updateNote(noteId, noteUpdates) {
 
     const noteTitleChanged = note.title !== noteUpdates.title;
 
+    noteUpdates.content = await saveLinks(note, noteUpdates.content);
+
     note.title = noteUpdates.title;
     note.setContent(noteUpdates.content);
     note.isProtected = noteUpdates.isProtected;
@@ -318,8 +325,6 @@ async function updateNote(noteId, noteUpdates) {
     if (noteTitleChanged) {
         await triggerNoteTitleChanged(note);
     }
-
-    await saveLinks(note);
 
     await protectNoteRevisions(note);
 }
