@@ -25,7 +25,7 @@ async function exportToMarkdown(branch, res) {
             return;
         }
 
-        saveDataFile(childFileName, note);
+        saveNote(childFileName, note);
 
         const childNotes = await note.getChildNotes();
 
@@ -40,11 +40,7 @@ async function exportToMarkdown(branch, res) {
         return childFileName;
     }
 
-    function saveDataFile(childFileName, note) {
-        if (note.type !== 'text' && note.type !== 'code') {
-            return;
-        }
-
+    function saveTextNote(childFileName, note) {
         if (note.content.trim().length === 0) {
             return;
         }
@@ -63,6 +59,19 @@ async function exportToMarkdown(branch, res) {
         }
 
         pack.entry({name: childFileName + ".md", size: markdown.length}, markdown);
+    }
+
+    function saveFileNote(childFileName, note) {
+        pack.entry({name: childFileName, size: note.content.length}, note.content);
+    }
+
+    function saveNote(childFileName, note) {
+        if (note.type === 'text' || note.type === 'code') {
+            saveTextNote(childFileName, note);
+        }
+        else if (note.type === 'image' || note.type === 'file') {
+            saveFileNote(childFileName, note);
+        }
     }
 
     function saveDirectory(childFileName) {
