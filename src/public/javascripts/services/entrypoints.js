@@ -97,12 +97,14 @@ function registerEntrypoints() {
 
     $(document).bind('keydown', 'ctrl+f', () => {
         if (utils.isElectron()) {
-            const searchInPage = require('electron-in-page-search').default;
-            const remote = require('electron').remote;
+            alert("In page search doesn't work in this beta");
 
-            const inPageSearch = searchInPage(remote.getCurrentWebContents());
-
-            inPageSearch.openSearchWindow();
+            // const searchInPage = require('electron-in-page-search').default;
+            // const remote = require('electron').remote;
+            //
+            // const inPageSearch = searchInPage(remote.getCurrentWebContents());
+            //
+            // inPageSearch.openSearchWindow();
 
             return false;
         }

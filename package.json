@@ -62,7 +62,7 @@
     "tar-stream": "1.6.2",
     "turndown": "5.0.1",
     "unescape": "1.0.1",
-    "ws": "6.1.0",
+    "ws": "6.1.2",
     "xml2js": "0.4.19"
   },
   "devDependencies": {
