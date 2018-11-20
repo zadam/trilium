@@ -35,6 +35,28 @@ async function load() {
     loaded = true;
 }
 
+/*
+ * The idea behind scoring results is to find shallowest matches first as they are assumed to be more important.
+ * To become a result each note has to contain each token. Result's score is a sum of depth of first occurences
+ * of each token in the note path.
+ */
+function scoreResults(results, allTokens) {
+    for (const res of results) {
+        res.depthScore = 0;
+
+        for (const token of allTokens) {
+            for (let i = 0; i < res.titleArray.length; i++) {
+                if (res.titleArray[i].toLowerCase().includes(token)) {
+                    res.depthScore += i;
+
+                    // we count only first occurence
+                    break;
+                }
+            }
+        }
+    }
+}
+
 function highlightResults(results, allTokens) {
     // we remove < signs because they can cause trouble in matching and overwriting existing highlighted chunks
     // which would make the resulting HTML string invalid.
@@ -80,7 +102,7 @@ function findNotes(query) {
             continue;
         }
 
-        // for leaf note it doesn't matter if "archived" label inheritable or not
+        // for leaf note it doesn't matter if "archived" label is inheritable or not
         if (noteId in archived) {
             continue;
         }
@@ -113,11 +135,28 @@ function findNotes(query) {
         }
     }
 
-    results.sort((a, b) => a.title < b.title ? -1 : 1);
+    scoreResults(results, allTokens);
 
-    highlightResults(results, allTokens);
+    results.sort((a, b) => {
+        if (a.depthScore === b.depthScore) {
+            return a.title < b.title ? -1 : 1;
+        }
 
-    return results;
+        return a.depthScore < b.depthScore ? -1 : 1;
+    });
+
+    const apiResults = results.slice(0, 200).map(res => {
+        return {
+            noteId: res.noteId,
+            branchId: res.branchId,
+            path: res.pathArray.join('/'),
+            title: res.titleArray.join(' / ')
+        };
+    });
+
+    highlightResults(apiResults, allTokens);
+
+    return apiResults;
 }
 
 function search(noteId, tokens, path, results) {
@@ -125,15 +164,14 @@ function search(noteId, tokens, path, results) {
         const retPath = getSomePath(noteId, path);
 
         if (retPath) {
-            const noteTitle = getNoteTitleForPath(retPath);
             const thisNoteId = retPath[retPath.length - 1];
             const thisParentNoteId = retPath[retPath.length - 2];
 
             results.push({
                 noteId: thisNoteId,
                 branchId: childParentToBranchId[`${thisNoteId}-${thisParentNoteId}`],
-                title: noteTitle,
-                path: retPath.join('/')
+                pathArray: retPath,
+                titleArray: getNoteTitleArrayForPath(retPath)
             });
         }
 
@@ -146,10 +184,6 @@ function search(noteId, tokens, path, results) {
     }
 
     for (const parentNoteId of parents) {
-        if (results.length >= 200) {
-            return;
-        }
-
         // archived must be inheritable
         if (archived[parentNoteId] === 1) {
             continue;
@@ -192,12 +226,12 @@ function getNoteTitle(noteId, parentNoteId) {
     return (prefix ? (prefix + ' - ') : '') + title;
 }
 
-function getNoteTitleForPath(path) {
+function getNoteTitleArrayForPath(path) {
     const titles = [];
 
     if (path[0] === 'root') {
         if (path.length === 1) {
-            return getNoteTitle('root');
+            return [ getNoteTitle('root') ];
         }
         else {
             path = path.slice(1);
@@ -212,6 +246,12 @@ function getNoteTitleForPath(path) {
         titles.push(title);
         parentNoteId = noteId;
     }
+
+    return titles;
+}
+
+function getNoteTitleForPath(path) {
+    const titles = getNoteTitleArrayForPath(path);
 
     return titles.join(' / ');
 }
