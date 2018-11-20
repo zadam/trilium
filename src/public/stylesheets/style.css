@@ -531,12 +531,12 @@ table.promoted-attributes-in-tooltip td, table.promoted-attributes-in-tooltip th
     padding: 20px;
 }
 
-.context-menu {
+.context-menu-container {
     font-size: small;
 }
 
-.context-menu .dropdown-item {
-    padding: 2px 10px 2px 10px;
+#context-menu-container .dropdown-item {
+    padding: 0 7px 0 10px;
 }
 
 /* if modal height overflows, then only modal body scrolls */
