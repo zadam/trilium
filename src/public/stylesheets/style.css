@@ -77,9 +77,12 @@ body {
     overflow: auto;
     flex-basis: content;
     height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
 .note-detail-component {
+    flex-grow: 100;
     display: none;
 }
 
@@ -344,11 +347,11 @@ div.ui-tooltip {
 #children-overview {
     flex-grow: 1000;
     flex-shrink: 1000;
-    flex-basis: 0px;
+    flex-basis: 0;
     display: flex;
     flex-wrap: wrap;
     align-content: flex-start;
-    height: 100px;
+    height: 110px;
     overflow: auto;
 }
 
