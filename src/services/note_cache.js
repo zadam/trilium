@@ -35,28 +35,6 @@ async function load() {
     loaded = true;
 }
 
-/*
- * The idea behind scoring results is to find shallowest matches first as they are assumed to be more important.
- * To become a result each note has to contain each token. Result's score is a sum of depth of first occurences
- * of each token in the note path.
- */
-function scoreResults(results, allTokens) {
-    for (const res of results) {
-        res.depthScore = 0;
-
-        for (const token of allTokens) {
-            for (let i = 0; i < res.titleArray.length; i++) {
-                if (res.titleArray[i].toLowerCase().includes(token)) {
-                    res.depthScore += i;
-
-                    // we count only first occurence
-                    break;
-                }
-            }
-        }
-    }
-}
-
 function highlightResults(results, allTokens) {
     // we remove < signs because they can cause trouble in matching and overwriting existing highlighted chunks
     // which would make the resulting HTML string invalid.
@@ -135,14 +113,14 @@ function findNotes(query) {
         }
     }
 
-    scoreResults(results, allTokens);
-
+    // sort results by depth of the note. This is based on the assumption that more important results
+    // are closer to the note root.
     results.sort((a, b) => {
-        if (a.depthScore === b.depthScore) {
+        if (a.pathArray.length === b.pathArray.length) {
             return a.title < b.title ? -1 : 1;
         }
 
-        return a.depthScore < b.depthScore ? -1 : 1;
+        return a.pathArray.length < b.pathArray.length ? -1 : 1;
     });
 
     const apiResults = results.slice(0, 200).map(res => {
