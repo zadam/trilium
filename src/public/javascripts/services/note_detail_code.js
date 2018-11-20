@@ -32,7 +32,10 @@ async function show() {
             lint: true,
             gutters: ["CodeMirror-lint-markers"],
             lineNumbers: true,
-            tabindex: 100
+            tabindex: 100,
+            // we linewrap partly also because without it horizontal scrollbar displays only when you scroll
+            // all the way to the bottom of the note. With line wrap there's no horizontal scrollbar so no problem
+            lineWrapping: true
         });
 
         onNoteChange(noteDetailService.noteChanged);
@@ -43,7 +46,9 @@ async function show() {
     const currentNote = noteDetailService.getCurrentNote();
 
     // this needs to happen after the element is shown, otherwise the editor won't be refreshed
-    codeEditor.setValue(currentNote.content);
+    // CodeMirror breaks pretty badly on null so even though it shouldn't happen (guarded by consistency check)
+    // we provide fallback
+    codeEditor.setValue(currentNote.content || "");
 
     const info = CodeMirror.findModeByMIME(currentNote.mime);
 
