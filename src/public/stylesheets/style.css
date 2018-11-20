@@ -545,6 +545,11 @@ table.promoted-attributes-in-tooltip td, table.promoted-attributes-in-tooltip th
     overflow-y: auto;
 }
 
+/* this should help with tooltip flickering */
+.tooltip {
+    pointer-events: none;
+}
+
 .tooltip-inner {
     background-color: #fbfbfb !important;
     max-width: 400px;

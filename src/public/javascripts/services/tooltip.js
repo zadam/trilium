@@ -44,7 +44,7 @@ function setupTooltip() {
                 container: 'body',
                 placement: 'auto',
                 trigger: 'manual',
-                boundariesElement: 'window',
+                boundary: 'window',
                 title: html,
                 html: true
             });
