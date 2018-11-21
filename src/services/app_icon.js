@@ -6,6 +6,7 @@ const log = require("./log");
 const os = require('os');
 const fs = require('fs');
 const config = require('./config');
+const utils = require('./utils');
 
 const template = `[Desktop Entry]
 Type=Application
@@ -21,7 +22,9 @@ Terminal=false
  * We overwrite this file during every run as it might have been updated.
  */
 function installLocalAppIcon() {
-    if (["win32", "darwin"].includes(os.platform()) || (config.General && config.General.noDesktopIcon)) {
+    if (!utils.isElectron()
+        || ["win32", "darwin"].includes(os.platform())
+        || (config.General && config.General.noDesktopIcon)) {
         return;
     }
 
