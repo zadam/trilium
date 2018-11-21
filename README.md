@@ -18,6 +18,7 @@ See other pictures in [screenshot tour](https://github.com/zadam/trilium/wiki/Sc
 * Note [attributes](https://github.com/zadam/trilium/wiki/Attributes) can be used for note organization, querying and advanced [scripting](https://github.com/zadam/trilium/wiki/Scripts)
 * [Synchronization](https://github.com/zadam/trilium/wiki/Synchronization) with self-hosted sync server
 * Strong [note encryption](https://github.com/zadam/trilium/wiki/Protected-notes)
+* [Relation maps](https://github.com/zadam/trilium/wiki/Relation-map) for visualizing notes and their relations
 * [Scripting](https://github.com/zadam/trilium/wiki/Scripts) - see [Advanced showcases](https://github.com/zadam/trilium/wiki/Advanced-showcases)
 * Scales well in both usability and performance upwards of 100 000 notes
 * [Night theme](https://github.com/zadam/trilium/wiki/Themes)
@@ -30,10 +31,6 @@ Trilium is provided as either desktop application ([Electron](https://electronjs
 * If you want to use Trilium on the desktop, download binary release for your platform (currently Linux and Windows are supported) from [latest release](https://github.com/zadam/trilium/releases/latest), unzip the package and run ```trilium``` executable.
 * If you want to install Trilium on server, follow [this page](https://github.com/zadam/trilium/wiki/Server-installation).
   * Currently only recent Chrome and Firefox are supported (tested) browsers.
-
-## Status
-
-Trilium is beta quality software. While it is reasonably feature complete and is tested by its author, it lacks proper testing by more users. It's not yet recommended for daily use, but testing and experimentation is encouraged.
 
 ## Documentation
 
