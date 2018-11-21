@@ -214,12 +214,12 @@ div.ui-tooltip {
 */
 .electron-in-page-search-window {
     position: fixed;
-    top: 50px;
-    right: 0;
-    border: solid grey 1px;
-    background-color: white;
-    width: 300px;
-    height: 36px;
+    top: 45px;
+    right: 10px;
+    width: 360px;
+    height: 55px;
+    display: none;
+    z-index: 1001;
 }
 
 /*

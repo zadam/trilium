@@ -97,14 +97,19 @@ function registerEntrypoints() {
 
     $(document).bind('keydown', 'ctrl+f', () => {
         if (utils.isElectron()) {
-            alert("In page search doesn't work in this beta");
+            const $searchWindowWebview = $(".electron-in-page-search-window");
+            $searchWindowWebview.show();
 
-            // const searchInPage = require('electron-in-page-search').default;
-            // const remote = require('electron').remote;
-            //
-            // const inPageSearch = searchInPage(remote.getCurrentWebContents());
-            //
-            // inPageSearch.openSearchWindow();
+            const searchInPage = require('electron-in-page-search').default;
+            const {remote} = require('electron');
+
+            const inPageSearch = searchInPage(remote.getCurrentWebContents(), {
+                searchWindowWebview: $searchWindowWebview[0],
+                //openDevToolsOfSearchWindow: true,
+                customCssPath: '/libraries/electron-in-page-search/default-style.css'
+            });
+
+            inPageSearch.openSearchWindow();
 
             return false;
         }
