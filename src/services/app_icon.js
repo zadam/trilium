@@ -1,10 +1,11 @@
 "use strict";
 
 const path = require('path');
-const {APP_PNG_ICON_DIR} = require("./resource_dir");
+const {APP_PNG_ICON_DIR, ELECTRON_APP_ROOT_DIR} = require("./resource_dir");
 const log = require("./log");
 const os = require('os');
 const fs = require('fs');
+const config = require('./config');
 
 const template = `[Desktop Entry]
 Type=Application
@@ -19,8 +20,8 @@ Terminal=false
  * Installs .desktop icon into standard ~/.local/share/applications directory.
  * We overwrite this file during every run as it might have been updated.
  */
-async function installLocalAppIcon() {
-    if (["win32", "darwin"].includes(os.platform())) {
+function installLocalAppIcon() {
+    if (["win32", "darwin"].includes(os.platform()) || (config.General && config.General.noDesktopIcon)) {
         return;
     }
 
@@ -55,9 +56,7 @@ function escapePath(path) {
 }
 
 function getExePath() {
-    const appPath = require('electron').app.getAppPath();
-
-    return path.resolve(appPath, 'trilium');
+     return path.resolve(ELECTRON_APP_ROOT_DIR, 'trilium');
 }
 
 module.exports = {
