@@ -28,6 +28,7 @@ const $noteDetailWrapper = $("#note-detail-wrapper");
 const $noteIdDisplay = $("#note-id-display");
 const $childrenOverview = $("#children-overview");
 const $scriptArea = $("#note-detail-script-area");
+const $savedIndicator = $("#saved-indicator");
 
 let currentNote = null;
 
@@ -78,6 +79,8 @@ function noteChanged() {
     }
 
     isNoteChanged = true;
+
+    $savedIndicator.fadeOut();
 }
 
 async function reload() {
@@ -120,15 +123,16 @@ async function saveNote() {
         protectedSessionHolder.touchProtectedSession();
     }
 
-    infoService.showMessage("Saved!");
+    $savedIndicator.fadeIn();
 }
 
 async function saveNoteIfChanged() {
-    if (!isNoteChanged) {
-        return;
+    if (isNoteChanged) {
+        await saveNote();
     }
 
-    await saveNote();
+    // make sure indicator is visible in a case there was some race condition.
+    $savedIndicator.fadeIn();
 }
 
 function setNoteBackgroundIfProtected(note) {
@@ -294,7 +298,7 @@ $(document).ready(() => {
 // this sends the request asynchronously and doesn't wait for result
 $(window).on('beforeunload', () => { saveNoteIfChanged(); }); // don't convert to short form, handler doesn't like returned promise
 
-setInterval(saveNoteIfChanged, 5000);
+setInterval(saveNoteIfChanged, 3000);
 
 export default {
     reload,

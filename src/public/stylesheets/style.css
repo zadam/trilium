@@ -676,3 +676,12 @@ code {
 div[data-notify="container"] {
     text-align: center;
 }
+
+#saved-indicator {
+    position: absolute;
+    right: 10px;
+    top: 11px;
+    font-size: x-large;
+    color: #777;
+    z-index: 100;
+}
