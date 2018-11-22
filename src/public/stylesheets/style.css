@@ -620,11 +620,11 @@ table.promoted-attributes-in-tooltip td, table.promoted-attributes-in-tooltip th
 }
 
 .modalless {
-    top:10%;
-    left:50%;
-    bottom:auto;
-    right:auto;
-    margin-left:-300px;
+    top: 15%;
+    left: 40%;
+    bottom: auto;
+    right: auto;
+    margin-left: -300px;
 }
 
 .multiplicity {
