@@ -28,11 +28,9 @@ function showError(message, delay = 10000) {
 
 function getNotifySettings(type, delay) {
     return {
-        element: (glob.activeDialog && glob.activeDialog.hasClass("show"))
-            ? glob.activeDialog.find('.modal-header')[0]
-            : 'body',
+        element: 'body',
         type: type,
-        z_index: 1031,
+        z_index: 90000,
         placement: {
             from: "top",
             align: "center"

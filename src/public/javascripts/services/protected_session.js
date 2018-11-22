@@ -57,7 +57,7 @@ async function setupProtectedSession() {
     const response = await enterProtectedSessionOnServer(password);
 
     if (!response.success) {
-        infoService.showError("Wrong password.");
+        infoService.showError("Wrong password.", 3000);
         return;
     }
 
