@@ -1,7 +1,7 @@
 "use strict";
 
 const html = require('html');
-const native_tar = require('tar-stream');
+const tar = require('tar-stream');
 const sanitize = require("sanitize-filename");
 const mimeTypes = require('mime-types');
 const TurndownService = require('turndown');
@@ -12,7 +12,7 @@ const TurndownService = require('turndown');
 async function exportToTar(branch, format, res) {
     const turndownService = new TurndownService();
 
-    const pack = native_tar.pack();
+    const pack = tar.pack();
 
     const exportedNoteIds = [];
     const name = await exportNoteInner(branch, '');
@@ -79,7 +79,7 @@ async function exportToTar(branch, format, res) {
         }
 
         for (const childBranch of childBranches) {
-            await exportNoteInner(childBranch, childFileName + "/");
+            await exportNoteInner(await childBranch.getNote(), childBranch, childFileName + "/");
         }
 
         return childFileName;

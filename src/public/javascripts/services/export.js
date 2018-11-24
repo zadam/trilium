@@ -1,16 +1,14 @@
 import treeService from './tree.js';
-import infoService from './info.js';
 import protectedSessionHolder from './protected_session_holder.js';
 import utils from './utils.js';
 import server from './server.js';
 
-function exportNote(noteId, format) {
-    const url = utils.getHost() + "/api/notes/" + noteId + "/export/" + format +
-        "?protectedSessionId=" + encodeURIComponent(protectedSessionHolder.getProtectedSessionId());
+function exportBranch(branchId, type, format) {
+    const url = utils.getHost() + `/api/notes/${branchId}/export/${type}/${format}?protectedSessionId=` + encodeURIComponent(protectedSessionHolder.getProtectedSessionId());
+
+    console.log(url);
 
     utils.download(url);
-
-    infoService.showMessage("Export to file has been finished.");
 }
 
 let importNoteId;
@@ -47,6 +45,6 @@ $("#import-upload").change(async function() {
 });
 
 export default {
-    exportNote,
+    exportBranch,
     importIntoNote
 };

@@ -34,9 +34,19 @@ async function showDialog(defaultType) {
 $form.submit(() => {
     const exportType = $dialog.find("input[name='export-type']:checked").val();
 
+    if (!exportType) {
+        // this shouldn't happen as we always choose default export type
+        alert("Choose export type first please");
+        return;
+    }
+
+    const exportFormat = exportType === 'subtree'
+        ? $("input[name=export-subtree-format]:checked").val()
+        : $("input[name=export-single-format]:checked").val();
+
     const currentNode = treeService.getCurrentNode();
 
-    exportService.exportNote(currentNode.data.branchId, exportType);
+    exportService.exportBranch(currentNode.data.branchId, exportType, exportFormat);
 
     $dialog.modal('hide');
 
