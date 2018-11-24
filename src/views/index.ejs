@@ -157,9 +157,9 @@
                 <div class="dropdown-menu dropdown-menu-right">
                   <a class="dropdown-item" id="show-note-revisions-button" data-bind="css: { disabled: type() == 'file' || type() == 'image' }">Revisions</a>
                   <a class="dropdown-item show-attributes-button"><kbd>Alt+A</kbd> Attributes</a>
-                  <a class="dropdown-item" id="show-source-button" data-bind="css: { disabled: type() != 'text' }">HTML source</a>
+                  <a class="dropdown-item" id="show-source-button" data-bind="css: { disabled: type() != 'text' && type() != 'code' && type() != 'relation-map' && type() != 'search' }">Note source</a>
                   <a class="dropdown-item" id="upload-file-button">Upload file</a>
-                  <a class="dropdown-item" id="export-note-to-markdown-button" data-bind="css: { disabled: type() != 'text' && type() != 'code' }">Export as markdown</a>
+                  <a class="dropdown-item" id="export-note-button" data-bind="css: { disabled: type() != 'text' }">Export note</a>
                 </div>
               </div>
             </div>
@@ -173,7 +173,7 @@
       <% include dialogs/attributes.ejs %>
       <% include dialogs/branch_prefix.ejs %>
       <% include dialogs/event_log.ejs %>
-      <% include dialogs/export_subtree.ejs %>
+      <% include dialogs/export.ejs %>
       <% include dialogs/jump_to_note.ejs %>
       <% include dialogs/markdown_import.ejs %>
       <% include dialogs/note_revisions.ejs %>

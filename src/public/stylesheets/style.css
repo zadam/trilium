@@ -685,3 +685,13 @@ div[data-notify="container"] {
     color: #777;
     z-index: 100;
 }
+
+#export-form .form-check {
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+#export-form .format-choice {
+    padding-left: 40px;
+    display: none;
+}

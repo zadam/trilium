@@ -7,6 +7,7 @@ import recentChangesDialog from '../dialogs/recent_changes.js';
 import optionsDialog from '../dialogs/options.js';
 import sqlConsoleDialog from '../dialogs/sql_console.js';
 import markdownImportDialog from '../dialogs/markdown_import.js';
+import exportDialog from '../dialogs/export.js';
 
 import cloning from './cloning.js';
 import contextMenu from './tree_context_menu.js';
@@ -103,12 +104,12 @@ if (utils.isElectron()) {
     });
 }
 
-$("#export-note-to-markdown-button").click(function () {
+$("#export-note-button").click(function () {
     if ($(this).hasClass("disabled")) {
         return;
     }
 
-    exportService.exportSubtree(noteDetailService.getCurrentNoteId(), 'markdown-single')
+    exportDialog.showDialog('single');
 });
 
 treeService.showTree();

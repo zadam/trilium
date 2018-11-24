@@ -564,8 +564,6 @@ async function createNote(node, parentNoteId, target, isProtected, saveSelection
 
     clearSelectedNodes(); // to unmark previously active node
 
-    infoService.showMessage("Created!");
-
     return {note, branch};
 }
 

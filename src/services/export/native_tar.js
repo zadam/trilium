@@ -3,8 +3,15 @@
 const html = require('html');
 const native_tar = require('tar-stream');
 const sanitize = require("sanitize-filename");
+const mimeTypes = require('mime-types');
+const TurndownService = require('turndown');
 
-async function exportToTar(branch, res) {
+/**
+ * @param format - 'html' or 'markdown'
+ */
+async function exportToTar(branch, format, res) {
+    const turndownService = new TurndownService();
+
     const pack = native_tar.pack();
 
     const exportedNoteIds = [];
@@ -52,6 +59,10 @@ async function exportToTar(branch, res) {
             })
         };
 
+        if (note.type === 'text') {
+            metadata.format = format;
+        }
+
         if (await note.hasLabel('excludeFromExport')) {
             return;
         }
@@ -75,9 +86,35 @@ async function exportToTar(branch, res) {
     }
 
     function saveDataFile(childFileName, note) {
-        const content = note.type === 'text' ? html.prettyPrint(note.content, {indent_size: 2}) : note.content;
+        let content = note.content;
 
-        pack.entry({name: childFileName + ".dat", size: content.length}, content);
+        if (note.type === 'text') {
+            if (format === 'html') {
+                content = html.prettyPrint(note.content, {indent_size: 2});
+            }
+            else if (format === 'markdown') {
+                content = turndownService.turndown(note.content);
+            }
+            else {
+                throw new Error("Unknown format: " + format);
+            }
+        }
+
+        const extension = mimeTypes.extension(note.mime)
+            || getExceptionalExtension(note.mime)
+            || "dat";
+
+        if (!childFileName.toLowerCase().endsWith(extension)) {
+            childFileName += "." + extension;
+        }
+
+        pack.entry({name: childFileName, size: content.length}, content);
+    }
+
+    function getExceptionalExtension(mime) {
+        if (mime === 'application/x-javascript') {
+            return 'js';
+        }
     }
 
     function saveMetadataFile(childFileName, metadata) {

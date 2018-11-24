@@ -6,7 +6,7 @@ import protectedSessionService from './protected_session.js';
 import treeChangesService from './branches.js';
 import treeUtils from './tree_utils.js';
 import branchPrefixDialog from '../dialogs/branch_prefix.js';
-import exportSubtreeDialog from '../dialogs/export_subtree.js';
+import exportDialog from '../dialogs/export.js';
 import infoService from "./info.js";
 import treeCache from "./tree_cache.js";
 import syncService from "./sync.js";
@@ -93,7 +93,7 @@ const contextMenuItems = [
     {title: "Paste into <kbd>Ctrl+V</kbd>", cmd: "pasteInto", uiIcon: "clipboard"},
     {title: "Paste after", cmd: "pasteAfter", uiIcon: "clipboard"},
     {title: "----"},
-    {title: "Export subtree", cmd: "exportSubtree", uiIcon: "arrow-up-right"},
+    {title: "Export", cmd: "export", uiIcon: "arrow-up-right"},
     {title: "Import into note (tar, opml, md, enex)", cmd: "importIntoNote", uiIcon: "arrow-down-left"},
     {title: "----"},
     {title: "Collapse subtree <kbd>Alt+-</kbd>", cmd: "collapseSubtree", uiIcon: "align-justify"},
@@ -127,7 +127,7 @@ async function getContextMenuItems(event) {
     enableItem("pasteAfter", clipboardIds.length > 0 && isNotRoot && parentNote.type !== 'search');
     enableItem("pasteInto", clipboardIds.length > 0 && note.type !== 'search');
     enableItem("importIntoNote", note.type !== 'search');
-    enableItem("exportSubtree", note.type !== 'search');
+    enableItem("export", note.type !== 'search');
     enableItem("editBranchPrefix", isNotRoot && parentNote.type !== 'search');
 
     // Activate node on right-click
@@ -179,8 +179,8 @@ function selectContextMenuItem(event, cmd) {
     else if (cmd === "delete") {
         treeChangesService.deleteNodes(treeService.getSelectedNodes(true));
     }
-    else if (cmd === "exportSubtree") {
-        exportSubtreeDialog.showDialog();
+    else if (cmd === "export") {
+        exportDialog.showDialog("subtree");
     }
     else if (cmd === "importIntoNote") {
         exportService.importIntoNote(node.data.noteId);
