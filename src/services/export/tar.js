@@ -2,6 +2,7 @@
 
 const html = require('html');
 const tar = require('tar-stream');
+const path = require('path');
 const sanitize = require("sanitize-filename");
 const mimeTypes = require('mime-types');
 const TurndownService = require('turndown');
@@ -21,12 +22,31 @@ async function exportToTar(branch, format, res) {
     const name = await exportNoteInner(branch, '');
 
     function getUniqueFilename(fileName) {
+        const lcFileName = fileName.toLowerCase();
 
+        if (lcFileName in existingPaths) {
+            let index;
+            let newName;
+
+            do {
+                index = existingPaths[lcFileName]++;
+
+                newName = lcFileName + "_" + index;
+            }
+            while (newName in existingPaths);
+
+            return fileName + "_" + index;
+        }
+        else {
+            existingPaths[lcFileName] = 1;
+
+            return fileName;
+        }
     }
 
     async function exportNoteInner(branch, directory, existingNames) {
         const note = await branch.getNote();
-        const baseFileName = directory + sanitize(note.title);
+        const baseFileName = getUniqueFilename(directory + sanitize(note.title));
 
         if (exportedNoteIds.includes(note.noteId)) {
             saveMetadataFile(baseFileName, {
@@ -74,8 +94,9 @@ async function exportToTar(branch, format, res) {
             return;
         }
 
+        metadata.dataFilename = saveDataFile(baseFileName, note);
+
         saveMetadataFile(baseFileName, metadata);
-        saveDataFile(baseFileName, note);
 
         exportedNoteIds.push(note.noteId);
 
@@ -92,7 +113,7 @@ async function exportToTar(branch, format, res) {
         return baseFileName;
     }
 
-    function saveDataFile(childFileName, note) {
+    function saveDataFile(baseFilename, note) {
         let content = note.content;
         let extension;
 
@@ -115,11 +136,17 @@ async function exportToTar(branch, format, res) {
                 || "dat";
         }
 
-        if (!childFileName.toLowerCase().endsWith(extension)) {
-            childFileName += "." + extension;
+        let filename = baseFilename;
+
+        if (!filename.toLowerCase().endsWith(extension)) {
+            filename += "." + extension;
         }
 
-        pack.entry({name: childFileName, size: content.length}, content);
+        filename = getUniqueFilename(filename);
+
+        pack.entry({name: filename, size: content.length}, content);
+
+        return path.basename(filename);
     }
 
     function getExceptionalExtension(mime) {
@@ -131,7 +158,9 @@ async function exportToTar(branch, format, res) {
     function saveMetadataFile(baseFileName, metadata) {
         const metadataJson = JSON.stringify(metadata, null, '\t');
 
-        pack.entry({name: getUniqueFilename(baseFileName + ".meta"), size: metadataJson.length}, metadataJson);
+        const fileName = getUniqueFilename(baseFileName + ".meta");
+
+        pack.entry({name: fileName, size: metadataJson.length}, metadataJson);
     }
 
     function saveDirectory(baseFileName) {
