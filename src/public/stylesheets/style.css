@@ -695,3 +695,7 @@ div[data-notify="container"] {
     padding-left: 40px;
     display: none;
 }
+
+#export-form .form-check-label {
+    padding: 2px;
+}

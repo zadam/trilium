@@ -12,17 +12,24 @@ const TurndownService = require('turndown');
 async function exportToTar(branch, format, res) {
     const turndownService = new TurndownService();
 
+    // path -> number of occurences
+    const existingPaths = {};
+
     const pack = tar.pack();
 
     const exportedNoteIds = [];
     const name = await exportNoteInner(branch, '');
 
-    async function exportNoteInner(branch, directory) {
+    function getUniqueFilename(fileName) {
+
+    }
+
+    async function exportNoteInner(branch, directory, existingNames) {
         const note = await branch.getNote();
-        const childFileName = directory + sanitize(note.title);
+        const baseFileName = directory + sanitize(note.title);
 
         if (exportedNoteIds.includes(note.noteId)) {
-            saveMetadataFile(childFileName, {
+            saveMetadataFile(baseFileName, {
                 version: 1,
                 clone: true,
                 noteId: note.noteId,
@@ -67,26 +74,27 @@ async function exportToTar(branch, format, res) {
             return;
         }
 
-        saveMetadataFile(childFileName, metadata);
-        saveDataFile(childFileName, note);
+        saveMetadataFile(baseFileName, metadata);
+        saveDataFile(baseFileName, note);
 
         exportedNoteIds.push(note.noteId);
 
         const childBranches = await note.getChildBranches();
 
         if (childBranches.length > 0) {
-            saveDirectory(childFileName);
+            saveDirectory(baseFileName);
         }
 
         for (const childBranch of childBranches) {
-            await exportNoteInner(await childBranch.getNote(), childBranch, childFileName + "/");
+            await exportNoteInner(childBranch, baseFileName + "/");
         }
 
-        return childFileName;
+        return baseFileName;
     }
 
     function saveDataFile(childFileName, note) {
         let content = note.content;
+        let extension;
 
         if (note.type === 'text') {
             if (format === 'html') {
@@ -94,15 +102,18 @@ async function exportToTar(branch, format, res) {
             }
             else if (format === 'markdown') {
                 content = turndownService.turndown(note.content);
+                extension = 'md';
             }
             else {
                 throw new Error("Unknown format: " + format);
             }
         }
 
-        const extension = mimeTypes.extension(note.mime)
-            || getExceptionalExtension(note.mime)
-            || "dat";
+        if (!extension) {
+            extension = mimeTypes.extension(note.mime)
+                || getExceptionalExtension(note.mime)
+                || "dat";
+        }
 
         if (!childFileName.toLowerCase().endsWith(extension)) {
             childFileName += "." + extension;
@@ -117,14 +128,14 @@ async function exportToTar(branch, format, res) {
         }
     }
 
-    function saveMetadataFile(childFileName, metadata) {
+    function saveMetadataFile(baseFileName, metadata) {
         const metadataJson = JSON.stringify(metadata, null, '\t');
 
-        pack.entry({name: childFileName + ".meta", size: metadataJson.length}, metadataJson);
+        pack.entry({name: getUniqueFilename(baseFileName + ".meta"), size: metadataJson.length}, metadataJson);
     }
 
-    function saveDirectory(childFileName) {
-        pack.entry({name: childFileName, type: 'directory'});
+    function saveDirectory(baseFileName) {
+        pack.entry({name: baseFileName, type: 'directory'});
     }
 
     pack.finalize();

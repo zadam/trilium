@@ -1,0 +1,1 @@
+UPDATE attributes SET name = 'archived' where name = 'hideInAutocomplete';
