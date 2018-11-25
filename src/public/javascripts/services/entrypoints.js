@@ -43,8 +43,8 @@ function registerEntrypoints() {
 
     $("#recent-changes-button").click(recentChangesDialog.showDialog);
 
-    $("#protected-session-on").click(protectedSessionService.enterProtectedSession);
-    $("#protected-session-off").click(protectedSessionService.leaveProtectedSession);
+    $("#enter-protected-session-button").click(protectedSessionService.enterProtectedSession);
+    $("#leave-protected-session-button").click(protectedSessionService.leaveProtectedSession);
 
     $("#toggle-search-button").click(searchNotesService.toggleSearch);
     utils.bindShortcut('ctrl+s', searchNotesService.toggleSearch);

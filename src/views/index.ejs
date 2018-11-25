@@ -27,14 +27,17 @@
             Recent changes
           </button>
 
-          <div>
-            <span style="font-size: smaller">Protected session:</span>
+          <button class="btn btn-sm" id="enter-protected-session-button" title="Enter protected session to be able to find and view protected notes">
+            <span class="jam jam-door"></span>
 
-            <div class="btn-group btn-group-xs">
-              <button type="button" class="btn" id="protected-session-on">On</button>
-              <button type="button" class="btn active" id="protected-session-off">Off</button>
-            </div>
-          </div>
+            Enter protected session
+          </button>
+
+          <button class="btn btn-sm" id="leave-protected-session-button" title="Leave protected session so that protected notes are not accessible any more." style="display: none;">
+            <span class="jam jam-log-out"></span>
+
+            Leave protected session
+          </button>
         </div>
 
         <div id="plugin-buttons">

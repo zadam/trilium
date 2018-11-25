@@ -11,8 +11,8 @@ const $password = $("#protected-session-password");
 const $noteDetailWrapper = $("#note-detail-wrapper");
 const $protectButton = $("#protect-button");
 const $unprotectButton = $("#unprotect-button");
-const $protectedSessionOnButton = $("#protected-session-on");
-const $protectedSessionOffButton = $("#protected-session-off");
+const $enterProtectedSessionButton = $("#enter-protected-session-button");
+const $leaveProtectedSessionButton = $("#leave-protected-session-button");
 
 let protectedSessionDeferred = null;
 
@@ -77,8 +77,8 @@ async function setupProtectedSession() {
         protectedSessionDeferred.resolve(true);
         protectedSessionDeferred = null;
 
-        $protectedSessionOnButton.addClass('active');
-        $protectedSessionOffButton.removeClass('active');
+        $enterProtectedSessionButton.hide();
+        $leaveProtectedSessionButton.show();
     }
 
     infoService.showMessage("Protected session has been started.");
