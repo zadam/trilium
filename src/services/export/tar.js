@@ -16,7 +16,7 @@ async function exportToTar(branch, format, res) {
 
     const pack = tar.pack();
 
-    const exportedNoteIds = [];
+    const noteIdToMeta = {};
 
     function getUniqueFilename(existingFileNames, fileName) {
         const lcFileName = fileName.toLowerCase();
@@ -72,7 +72,7 @@ async function exportToTar(branch, format, res) {
 
         const baseFileName = branch.prefix ? (branch.prefix + ' - ' + note.title) : note.title;
 
-        if (exportedNoteIds.includes(note.noteId)) {
+        if (note.noteId in noteIdToMeta) {
             const sanitizedFileName = sanitize(baseFileName + ".clone");
             const fileName = getUniqueFilename(existingFileNames, sanitizedFileName);
 
@@ -114,7 +114,7 @@ async function exportToTar(branch, format, res) {
             meta.format = format;
         }
 
-        exportedNoteIds.push(note.noteId);
+        noteIdToMeta[note.noteId] = meta;
 
         const childBranches = await note.getChildBranches();
 
@@ -192,6 +192,12 @@ async function exportToTar(branch, format, res) {
             await getNote(branch, [])
         ]
     };
+
+    for (const noteMeta of Object.values(noteIdToMeta)) {
+        // filter out relations and links which are not inside this export
+        noteMeta.attributes = noteMeta.attributes.filter(attr => attr.type !== 'relation' || attr.value in noteIdToMeta);
+        noteMeta.links = noteMeta.links.filter(link => link.targetNoteId in noteIdToMeta);
+    }
 
     if (!metaFile.files[0]) { // corner case of disabled export for exported note
         res.sendStatus(400);
