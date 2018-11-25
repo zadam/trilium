@@ -1,6 +1,7 @@
 "use strict";
 
 const html = require('html');
+const repository = require('../repository');
 const tar = require('tar-stream');
 const path = require('path');
 const sanitize = require("sanitize-filename");
@@ -11,56 +12,79 @@ const TurndownService = require('turndown');
  * @param format - 'html' or 'markdown'
  */
 async function exportToTar(branch, format, res) {
-    const turndownService = new TurndownService();
-
-    // path -> number of occurences
-    const existingPaths = {};
+    let turndownService = format === 'markdown' ? new TurndownService() : null;
 
     const pack = tar.pack();
 
     const exportedNoteIds = [];
-    const name = await exportNoteInner(branch, '');
 
-    function getUniqueFilename(fileName) {
+    function getUniqueFilename(existingFileNames, fileName) {
         const lcFileName = fileName.toLowerCase();
 
-        if (lcFileName in existingPaths) {
+        if (lcFileName in existingFileNames) {
             let index;
             let newName;
 
             do {
-                index = existingPaths[lcFileName]++;
+                index = existingFileNames[lcFileName]++;
 
                 newName = lcFileName + "_" + index;
             }
-            while (newName in existingPaths);
+            while (newName in existingFileNames);
 
             return fileName + "_" + index;
         }
         else {
-            existingPaths[lcFileName] = 1;
+            existingFileNames[lcFileName] = 1;
 
             return fileName;
         }
     }
 
-    async function exportNoteInner(branch, directory, existingNames) {
+    function getDataFileName(note, baseFileName, existingFileNames) {
+        let extension;
+
+        if (note.type === 'text' && format === 'markdown') {
+            extension = 'md';
+        }
+        else if (note.mime === 'application/x-javascript') {
+            extension = 'js';
+        }
+        else {
+            extension = mimeTypes.extension(note.mime) || "dat";
+        }
+
+        let fileName = baseFileName;
+
+        if (!fileName.toLowerCase().endsWith(extension)) {
+            fileName += "." + extension;
+        }
+
+        return getUniqueFilename(existingFileNames, fileName);
+    }
+
+    async function getNote(branch, existingFileNames) {
         const note = await branch.getNote();
-        const baseFileName = getUniqueFilename(directory + sanitize(note.title));
 
-        if (exportedNoteIds.includes(note.noteId)) {
-            saveMetadataFile(baseFileName, {
-                version: 1,
-                clone: true,
-                noteId: note.noteId,
-                prefix: branch.prefix
-            });
-
+        if (await note.hasLabel('excludeFromExport')) {
             return;
         }
 
-        const metadata = {
-            version: 1,
+        const baseFileName = branch.prefix ? (branch.prefix + ' - ' + note.title) : note.title;
+
+        if (exportedNoteIds.includes(note.noteId)) {
+            const sanitizedFileName = sanitize(baseFileName + ".clone");
+            const fileName = getUniqueFilename(existingFileNames, sanitizedFileName);
+
+            return {
+                clone: true,
+                noteId: note.noteId,
+                prefix: branch.prefix,
+                dataFileName: fileName
+            };
+        }
+
+        const meta = {
             clone: false,
             noteId: note.noteId,
             title: note.title,
@@ -87,89 +111,105 @@ async function exportToTar(branch, format, res) {
         };
 
         if (note.type === 'text') {
-            metadata.format = format;
+            meta.format = format;
         }
-
-        if (await note.hasLabel('excludeFromExport')) {
-            return;
-        }
-
-        metadata.dataFilename = saveDataFile(baseFileName, note);
-
-        saveMetadataFile(baseFileName, metadata);
 
         exportedNoteIds.push(note.noteId);
 
         const childBranches = await note.getChildBranches();
 
+        // if it's a leaf then we'll export it even if it's empty
+        if (note.content.length > 0 || childBranches.length === 0) {
+            meta.dataFileName = getDataFileName(note, baseFileName, existingFileNames);
+        }
+
         if (childBranches.length > 0) {
-            saveDirectory(baseFileName);
-        }
+            meta.dirFileName = getUniqueFilename(existingFileNames, baseFileName);
+            meta.children = [];
 
-        for (const childBranch of childBranches) {
-            await exportNoteInner(childBranch, baseFileName + "/");
-        }
+            const childExistingNames = {};
 
-        return baseFileName;
-    }
+            for (const childBranch of childBranches) {
+                const note = await getNote(childBranch, existingFileNames);
 
-    function saveDataFile(baseFilename, note) {
-        let content = note.content;
-        let extension;
-
-        if (note.type === 'text') {
-            if (format === 'html') {
-                content = html.prettyPrint(note.content, {indent_size: 2});
-            }
-            else if (format === 'markdown') {
-                content = turndownService.turndown(note.content);
-                extension = 'md';
-            }
-            else {
-                throw new Error("Unknown format: " + format);
+                // can be undefined if export is disabled for this note
+                if (note) {
+                    meta.children.push(note);
+                }
             }
         }
 
-        if (!extension) {
-            extension = mimeTypes.extension(note.mime)
-                || getExceptionalExtension(note.mime)
-                || "dat";
-        }
-
-        let filename = baseFilename;
-
-        if (!filename.toLowerCase().endsWith(extension)) {
-            filename += "." + extension;
-        }
-
-        filename = getUniqueFilename(filename);
-
-        pack.entry({name: filename, size: content.length}, content);
-
-        return path.basename(filename);
+        return meta;
     }
 
-    function getExceptionalExtension(mime) {
-        if (mime === 'application/x-javascript') {
-            return 'js';
+    function prepareContent(note, format) {
+        if (format === 'html') {
+            return html.prettyPrint(note.content, {indent_size: 2});
+        }
+        else if (format === 'markdown') {
+            return turndownService.turndown(note.content);
+        }
+        else {
+            return note.content;
         }
     }
 
-    function saveMetadataFile(baseFileName, metadata) {
-        const metadataJson = JSON.stringify(metadata, null, '\t');
+    // noteId => file path
+    const notePaths = {};
 
-        const fileName = getUniqueFilename(baseFileName + ".meta");
+    async function saveNote(noteMeta, path) {
+        if (noteMeta.clone) {
+            const content = "Note is present at " + notePaths[noteMeta.noteId];
 
-        pack.entry({name: fileName, size: metadataJson.length}, metadataJson);
+            pack.entry({name: path + '/' + noteMeta.dataFileName, size: content.length}, content);
+            return;
+        }
+
+        const note = await repository.getNote(noteMeta.noteId);
+
+        notePaths[note.noteId] = path + '/' + (noteMeta.dataFileName || noteMeta.dirFileName);
+
+        if (noteMeta.dataFileName) {
+            const content = prepareContent(note, noteMeta.format);
+
+            pack.entry({name: path + '/' + noteMeta.dataFileName, size: content.length}, content);
+        }
+
+        if (noteMeta.children && noteMeta.children.length > 0) {
+            const directoryPath = path + '/' + noteMeta.dirFileName;
+
+            pack.entry({name: directoryPath, type: 'directory'});
+
+            for (const childMeta of noteMeta.children) {
+                await saveNote(childMeta, directoryPath);
+            }
+        }
     }
 
-    function saveDirectory(baseFileName) {
-        pack.entry({name: baseFileName, type: 'directory'});
+    const metaFile = {
+        version: 1,
+        files: [
+            await getNote(branch, [])
+        ]
+    };
+
+    if (!metaFile.files[0]) { // corner case of disabled export for exported note
+        res.sendStatus(400);
+        return;
     }
+
+    const metaFileJson = JSON.stringify(metaFile, null, '\t');
+
+    pack.entry({name: "!!!meta.json", size: metaFileJson.length}, metaFileJson);
+
+    await saveNote(metaFile.files[0], '');
 
     pack.finalize();
 
-    res.setHeader('Content-Disposition', 'file; filename="' + name + '.tar"');
+    const note = await branch.getNote();
+    const tarFileName = sanitize((branch.prefix ? (branch.prefix + " - ") : "") + note.title);
+
+    res.setHeader('Content-Disposition', `file; filename="${tarFileName}.tar"`);
     res.setHeader('Content-Type', 'application/tar');
 
     pack.pipe(res);

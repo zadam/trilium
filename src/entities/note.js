@@ -4,6 +4,7 @@ const Entity = require('./entity');
 const Attribute = require('./attribute');
 const protectedSessionService = require('../services/protected_session');
 const repository = require('../services/repository');
+const sql = require('../services/sql');
 const dateUtils = require('../services/date_utils');
 
 const LABEL = 'label';
@@ -433,14 +434,32 @@ class Note extends Entity {
     }
 
     /**
-     * Finds child notes with given attribute name and value. Only own attributes are considered, not inherited ones
+     * @return {Promise<string[]>} return list of all descendant noteIds of this note. Returning just noteIds because number of notes can be huge. Includes also this note's noteId
+     */
+    async getDescendantNoteIds() {
+        return await sql.getColumn(`
+            WITH RECURSIVE
+            tree(noteId) AS (
+                SELECT ?
+                UNION
+                SELECT branches.noteId FROM branches
+                    JOIN tree ON branches.parentNoteId = tree.noteId
+                    JOIN notes ON notes.noteId = branches.noteId
+                WHERE notes.isDeleted = 0
+                  AND branches.isDeleted = 0
+            )
+            SELECT noteId FROM tree`, [this.noteId]);
+    }
+
+    /**
+     * Finds descendant notes with given attribute name and value. Only own attributes are considered, not inherited ones
      *
      * @param {string} type - attribute type (label, relation, etc.)
      * @param {string} name - attribute name
      * @param {string} [value] - attribute value
      * @returns {Promise<Note[]>}
      */
-    async findChildNotesWithAttribute(type, name, value) {
+    async getDescendantNotesWithAttribute(type, name, value) {
         const params = [this.noteId, name];
         let valueCondition = "";
 
@@ -472,22 +491,22 @@ class Note extends Entity {
     }
 
     /**
-     * Finds notes with given label name and value. Only own labels are considered, not inherited ones
+     * Finds descendant notes with given label name and value. Only own labels are considered, not inherited ones
      *
      * @param {string} name - label name
      * @param {string} [value] - label value
      * @returns {Promise<Note[]>}
      */
-    async findChildNotesWithLabel(name, value) { return await this.findChildNotesWithAttribute(LABEL, name, value); }
+    async getDescendantNotesWithLabel(name, value) { return await this.getDescendantNotesWithAttribute(LABEL, name, value); }
 
     /**
-     * Finds notes with given relation name and value. Only own relations are considered, not inherited ones
+     * Finds descendant notes with given relation name and value. Only own relations are considered, not inherited ones
      *
      * @param {string} name - relation name
      * @param {string} [value] - relation value
      * @returns {Promise<Note[]>}
      */
-    async findChildNotesWithRelation(name, value) { return await this.findChildNotesWithAttribute(RELATION, name, value); }
+    async getDescendantNotesWithRelation(name, value) { return await this.getDescendantNotesWithAttribute(RELATION, name, value); }
 
     /**
      * Returns note revisions of this note.
