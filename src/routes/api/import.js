@@ -4,7 +4,7 @@ const repository = require('../../services/repository');
 const enexImportService = require('../../services/import/enex');
 const opmlImportService = require('../../services/import/opml');
 const tarImportService = require('../../services/import/tar');
-const markdownImportService = require('../../services/import/markdown');
+const singleImportService = require('../../services/import/single');
 const cls = require('../../services/cls');
 const path = require('path');
 
@@ -35,7 +35,10 @@ async function importToBranch(req) {
         return await opmlImportService.importOpml(file.buffer, parentNote);
     }
     else if (extension === '.md') {
-        return await markdownImportService.importMarkdown(file, parentNote);
+        return await singleImportService.importMarkdown(file, parentNote);
+    }
+    else if (extension === '.html' || extension === '.htm') {
+        return await singleImportService.importHtml(file, parentNote);
     }
     else if (extension === '.enex') {
         return await enexImportService.importEnex(file, parentNote);
