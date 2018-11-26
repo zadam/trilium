@@ -94,24 +94,23 @@ async function updateEntity(entity) {
 
         const primaryKey = entity[primaryKeyName];
 
-        if (!cls.isEntityEventsDisabled()
-            && entity.isChanged
-            && (entityName !== 'options' || entity.isSynced)) {
+        if (entity.isChanged && (entityName !== 'options' || entity.isSynced)) {
 
             await syncTableService.addEntitySync(entityName, primaryKey);
 
-            const eventPayload = {
-                entityName,
-                entity
-            };
+            if (!cls.isEntityEventsDisabled()) {
+                const eventPayload = {
+                    entityName,
+                    entity
+                };
 
-            if (isNewEntity && !entity.isDeleted) {
-                await eventService.emit(eventService.ENTITY_CREATED, eventPayload);
+                if (isNewEntity && !entity.isDeleted) {
+                    await eventService.emit(eventService.ENTITY_CREATED, eventPayload);
+                }
+
+                // it seems to be better to handle deletion and update separately
+                await eventService.emit(entity.isDeleted ? eventService.ENTITY_DELETED : eventService.ENTITY_CHANGED, eventPayload);
             }
-
-            // it seems to be better to handle deletion and update separately
-            await eventService.emit(entity.isDeleted ? eventService.ENTITY_DELETED : eventService.ENTITY_CHANGED, eventPayload);
-
         }
     });
 }
