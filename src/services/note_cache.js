@@ -38,7 +38,8 @@ async function load() {
 function highlightResults(results, allTokens) {
     // we remove < signs because they can cause trouble in matching and overwriting existing highlighted chunks
     // which would make the resulting HTML string invalid.
-    allTokens = allTokens.map(token => token.replace('/</g', ''));
+    // { and } are used for marking <b> and </b> tag (to avoid matches on single 'b' character)
+    allTokens = allTokens.map(token => token.replace('/[<\{\}]/g', ''));
 
     // sort by the longest so we first highlight longest matches
     allTokens.sort((a, b) => a.length > b.length ? -1 : 1);
@@ -51,8 +52,14 @@ function highlightResults(results, allTokens) {
         const tokenRegex = new RegExp("(" + utils.escapeRegExp(token) + ")", "gi");
 
         for (const result of results) {
-            result.highlighted = result.highlighted.replace(tokenRegex, "<b>$1</b>");
+            result.highlighted = result.highlighted.replace(tokenRegex, "{$1}");
         }
+    }
+
+    for (const result of results) {
+        result.highlighted = result.highlighted
+            .replace(/{/g, "<b>")
+            .replace(/}/g, "</b>");
     }
 }
 
