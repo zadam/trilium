@@ -49,7 +49,14 @@ async function triggerNoteTitleChanged(note) {
  * FIXME: noteData has mandatory property "target", it might be better to add it as parameter to reflect this
  */
 async function createNewNote(parentNoteId, noteData) {
-    const newNotePos = await getNewNotePosition(parentNoteId, noteData);
+    let newNotePos;
+
+    if (noteData.notePosition !== undefined) {
+        newNotePos = noteData.notePosition;
+    }
+    else {
+        newNotePos = await getNewNotePosition(parentNoteId, noteData);
+    }
 
     const parentNote = await repository.getNote(parentNoteId);
 
@@ -130,7 +137,8 @@ async function createNote(parentNoteId, title, content = "", extraOptions = {}) 
         type: extraOptions.type,
         mime: extraOptions.mime,
         dateCreated: extraOptions.dateCreated,
-        isExpanded: extraOptions.isExpanded
+        isExpanded: extraOptions.isExpanded,
+        notePosition: extraOptions.notePosition
     };
 
     if (extraOptions.json && !noteData.type) {

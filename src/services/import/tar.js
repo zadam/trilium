@@ -47,7 +47,7 @@ async function importTar(fileBuffer, importRootNote) {
     
     function getMeta(filePath) {
         if (!metaFile) {
-            return;
+            return {};
         }
 
         const pathSegments = filePath.split(/[\/\\]/g);
@@ -83,11 +83,14 @@ async function importTar(fileBuffer, importRootNote) {
         else {
             const parentPath = path.dirname(filePath);
 
-            if (parentPath in createdPaths) {
+            if (parentPath === '.') {
+                parentNoteId = importRootNote.noteId;
+            }
+            else if (parentPath in createdPaths) {
                 parentNoteId = createdPaths[parentPath];
             }
             else {
-                throw new Error(`Could not find existing path ${parentPath}.`);
+                throw new Error(`Could not find existing path ${parentPath} for ${filePath}.`);
             }
         }
 
@@ -212,7 +215,8 @@ async function importTar(fileBuffer, importRootNote) {
                 noteId,
                 parentNoteId,
                 isExpanded: noteMeta.isExpanded,
-                prefix: noteMeta.prefix
+                prefix: noteMeta.prefix,
+                notePosition: noteMeta.notePosition
             }).save();
 
             return;
@@ -252,10 +256,27 @@ async function importTar(fileBuffer, importRootNote) {
                 type,
                 mime,
                 prefix: noteMeta ? noteMeta.prefix : '',
-                isExpanded: noteMeta ? noteMeta.isExpanded : false
+                isExpanded: noteMeta ? noteMeta.isExpanded : false,
+                notePosition: noteMeta ? noteMeta.notePosition : false
             }));
 
             await saveAttributesAndLinks(note, noteMeta);
+
+            if (!noteMeta && (type === 'file' || type === 'image')) {
+                attributes.push({
+                    noteId,
+                    type: 'label',
+                    name: 'originalFileName',
+                    value: path.basename(filePath)
+                });
+
+                attributes.push({
+                    noteId,
+                    type: 'label',
+                    name: 'fileSize',
+                    value: content.byteLength
+                });
+            }
 
             if (!firstNote) {
                 firstNote = note;

@@ -87,6 +87,7 @@ async function exportToTar(branch, format, res) {
             isClone: false,
             noteId: note.noteId,
             title: note.title,
+            notePosition: branch.notePosition,
             prefix: branch.prefix,
             isExpanded: branch.isExpanded,
             type: note.type,
