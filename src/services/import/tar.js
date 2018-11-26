@@ -220,8 +220,17 @@ async function importTar(fileBuffer, importRootNote) {
 
         const {type, mime} = noteMeta ? noteMeta : detectFileTypeAndMime(filePath);
 
-        if (type === 'text') {
+        if (type !== 'file' && type !== 'image') {
             content = content.toString("UTF-8");
+
+            if (noteMeta) {
+                // this will replace all internal links (<a> and <img>) inside the body
+                // links pointing outside the export will be broken and changed (ctx.getNewNoteId() will still assign new noteId)
+                for (const link of noteMeta.links || []) {
+                    // no need to escape the regexp find string since it's a noteId which doesn't contain any special characters
+                    content = content.replace(new RegExp(link.targetNoteId, "g"), getNewNoteId(link.targetNoteId));
+                }
+            }
         }
 
         if ((noteMeta && noteMeta.format === 'markdown') || (!noteMeta && mime === 'text/markdown')) {
@@ -321,14 +330,20 @@ async function importTar(fileBuffer, importRootNote) {
             // we're saving attributes and links only now so that all relation and link target notes
             // are already in the database (we don't want to have "broken" relations, not even transitionally)
             for (const attr of attributes) {
-                if (attr.value in createdNoteIds) {
+                if (attr.type !== 'relation' || attr.value in createdNoteIds) {
                     await new Attribute(attr).save();
+                }
+                else {
+                    log.info("Relation not imported since target note doesn't exist: " + JSON.stringify(attr));
                 }
             }
 
             for (const link of links) {
                 if (link.targetNoteId in createdNoteIds) {
                     await new Link(link).save();
+                }
+                else {
+                    log.info("Link not imported since target note doesn't exist: " + JSON.stringify(link));
                 }
             }
 
