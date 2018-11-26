@@ -53,6 +53,10 @@ async function createNewNote(parentNoteId, noteData) {
 
     const parentNote = await repository.getNote(parentNoteId);
 
+    if (!parentNote) {
+        throw new Error(`Parent note ${parentNoteId} not found.`);
+    }
+
     if (!noteData.type) {
         if (parentNote.type === 'text' || parentNote.type === 'code') {
             noteData.type = parentNote.type;

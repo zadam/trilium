@@ -49,7 +49,11 @@ async function importTar(fileBuffer, importRootNote) {
 
         const pathSegments = filePath.split(/[\/\\]/g);
 
-        let cursor = { children: metaFile.files };
+        let cursor = {
+            isImportRoot: true,
+            children: metaFile.files
+        };
+
         let parent;
 
         for (const segment of pathSegments) {
@@ -67,16 +71,11 @@ async function importTar(fileBuffer, importRootNote) {
         };
     }
 
-    function getParentNoteId(filePath, parentNoteMeta, noteMeta) {
+    function getParentNoteId(filePath, parentNoteMeta) {
         let parentNoteId;
 
-        if (noteMeta) {
-            if (parentNoteMeta) {
-                parentNoteId = getNewNoteId(parentNoteMeta.noteId);
-            }
-            else {
-                parentNoteId = importRootNote.noteId;
-            }
+        if (parentNoteMeta) {
+            parentNoteId = parentNoteMeta.isImportRoot ? importRootNote.noteId : getNewNoteId(parentNoteMeta.noteId);
         }
         else {
             const parentPath = path.dirname(filePath);
@@ -141,6 +140,8 @@ async function importTar(fileBuffer, importRootNote) {
         }
 
         for (const attr of noteMeta.attributes) {
+            attr.noteId = note.noteId;
+
             if (attr.type === 'relation') {
                 attr.value = getNewNoteId(attr.value);
             }
@@ -149,6 +150,7 @@ async function importTar(fileBuffer, importRootNote) {
         }
 
         for (const link of noteMeta.links) {
+            link.noteId = note.noteId;
             link.targetNoteId = getNewNoteId(link.targetNoteId);
 
             await new Link(link).save();
@@ -156,28 +158,33 @@ async function importTar(fileBuffer, importRootNote) {
     }
 
     async function saveDirectory(filePath) {
-        // directory entries in tar often end with directory separator
-        filePath = (filePath.endsWith("/") || filePath.endsWith("\\")) ? filePath.substr(0, filePath.length - 1) : filePath;
-
         const { parentNoteMeta, noteMeta } = getMeta(filePath);
 
         const noteId = getNoteId(noteMeta, filePath);
         const noteTitle = getNoteTitle(filePath, noteMeta);
-        const parentNoteId = getParentNoteId(filePath, parentNoteMeta, noteMeta);
+        const parentNoteId = getParentNoteId(filePath, parentNoteMeta);
 
-        const {note} = await noteService.createNote(parentNoteId, noteTitle, '', {
+        let note = await repository.getNote(noteId);
+
+        if (note) {
+            return;
+        }
+
+        ({note} = await noteService.createNote(parentNoteId, noteTitle, '', {
             noteId,
             type: noteMeta ? noteMeta.type : 'text',
             mime: noteMeta ? noteMeta.mime : 'text/html',
             prefix: noteMeta ? noteMeta.prefix : '',
             isExpanded: noteMeta ? noteMeta.isExpanded : false
-        });
+        }));
 
         await saveAttributes(note, noteMeta);
 
         if (!firstNote) {
             firstNote = note;
         }
+
+        console.log(filePath);
 
         createdPaths[filePath] = noteId;
     }
@@ -197,9 +204,11 @@ async function importTar(fileBuffer, importRootNote) {
         const {parentNoteMeta, noteMeta} = getMeta(filePath);
 
         const noteId = getNoteId(noteMeta, filePath);
-        const parentNoteId = getParentNoteId(filePath, parentNoteMeta, noteMeta);
+        const parentNoteId = getParentNoteId(filePath, parentNoteMeta);
 
         if (noteMeta && noteMeta.isClone) {
+            console.log(`Creating branch for ${noteId} in ${parentNoteId}`);
+
             await new Branch({
                 noteId,
                 parentNoteId,
@@ -223,7 +232,11 @@ async function importTar(fileBuffer, importRootNote) {
 
         let note = await repository.getNote(noteId);
 
-        if (!note) {
+        if (note) {
+            note.content = content;
+            await note.save();
+        }
+        else {
             const noteTitle = getNoteTitle(filePath, noteMeta);
 
             ({note} = await noteService.createNote(parentNoteId, noteTitle, content, {
@@ -244,12 +257,23 @@ async function importTar(fileBuffer, importRootNote) {
                 filePath = getTextFileWithoutExtension(filePath);
             }
 
+            console.log(filePath);
             createdPaths[filePath] = noteId;
         }
-        else {
-            note.content = content;
-            await note.save();
+    }
+
+    /** @return path without leading or trailing slash and backslashes converted to forward ones*/
+    function normalizeFilePath(filePath) {
+        filePath = filePath.replace(/\\/g, "/");
+
+        if (filePath.startsWith("/")) {
+            filePath = filePath.substr(1);
         }
+
+        if (filePath.endsWith("/")) {
+            filePath = filePath.substr(0, filePath.length - 1);
+        }
+        return filePath;
     }
 
     extract.on('entry', function(header, stream, next) {
@@ -264,7 +288,8 @@ async function importTar(fileBuffer, importRootNote) {
         // call next when you are done with this entry
 
         stream.on('end', async function() {
-            const filePath = header.name;
+            let filePath = normalizeFilePath(header.name);
+
             const content = Buffer.concat(chunks);
 
             if (filePath === '!!!meta.json') {
