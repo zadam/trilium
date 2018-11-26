@@ -5,6 +5,7 @@ const enexImportService = require('../../services/import/enex');
 const opmlImportService = require('../../services/import/opml');
 const tarImportService = require('../../services/import/tar');
 const markdownImportService = require('../../services/import/markdown');
+const cls = require('../../services/cls');
 const path = require('path');
 
 async function importToBranch(req) {
@@ -22,6 +23,10 @@ async function importToBranch(req) {
     }
 
     const extension = path.extname(file.originalname).toLowerCase();
+
+    // running all the event handlers on imported notes (and attributes) is slow
+    // and may produce unintended consequences
+    cls.disableEntityEvents();
 
     if (extension === '.tar') {
         return await tarImportService.importTar(file.buffer, parentNote);

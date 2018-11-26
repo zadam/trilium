@@ -13,6 +13,14 @@ function getSourceId() {
     return namespace.get('sourceId');
 }
 
+function disableEntityEvents() {
+    namespace.set('disableEntityEvents', true);
+}
+
+function isEntityEventsDisabled() {
+    return !!namespace.get('disableEntityEvents');
+}
+
 function reset() {
     clsHooked.reset();
 }
@@ -22,5 +30,7 @@ module.exports = {
     wrap,
     namespace,
     getSourceId,
+    disableEntityEvents,
+    isEntityEventsDisabled,
     reset
 };

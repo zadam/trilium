@@ -3,6 +3,7 @@
 const sql = require('./sql');
 const syncTableService = require('../services/sync_table');
 const eventService = require('./events');
+const cls = require('./cls');
 
 let entityConstructor;
 
@@ -93,7 +94,10 @@ async function updateEntity(entity) {
 
         const primaryKey = entity[primaryKeyName];
 
-        if (entity.isChanged && (entityName !== 'options' || entity.isSynced)) {
+        if (!cls.isEntityEventsDisabled()
+            && entity.isChanged
+            && (entityName !== 'options' || entity.isSynced)) {
+
             await syncTableService.addEntitySync(entityName, primaryKey);
 
             const eventPayload = {
