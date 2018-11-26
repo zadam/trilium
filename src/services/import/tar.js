@@ -2,30 +2,29 @@
 
 const Attribute = require('../../entities/attribute');
 const Link = require('../../entities/link');
-const log = require('../../services/log');
 const utils = require('../../services/utils');
+const repository = require('../../services/repository');
 const noteService = require('../../services/notes');
 const Branch = require('../../entities/branch');
 const tar = require('tar-stream');
 const stream = require('stream');
 const path = require('path');
 const commonmark = require('commonmark');
+const mimeTypes = require('mime-types');
 
-async function importTar(fileBuffer, parentNote) {
-    const files = await parseImportFile(fileBuffer);
+async function importTar(fileBuffer, importRootNote) {
+    // maps from original noteId (in tar file) to newly generated noteId
+    const noteIdMap = {};
+    // path => noteId
+    const createdPaths = { '/': importRootNote.noteId, '\\': importRootNote.noteId };
+    const mdReader = new commonmark.Parser();
+    const mdWriter = new commonmark.HtmlRenderer();
+    let metaFile = null;
+    let firstNote = null;
 
-    const ctx = {
-        // maps from original noteId (in tar file) to newly generated noteId
-        noteIdMap: {},
-        // new noteIds of notes which were actually created (not just referenced)
-        createdNoteIds: [],
-        attributes: [],
-        links: [],
-        reader: new commonmark.Parser(),
-        writer: new commonmark.HtmlRenderer()
-    };
+    const extract = tar.extract();
 
-    ctx.getNewNoteId = function(origNoteId) {
+    function getNewNoteId(origNoteId) {
         // in case the original noteId is empty. This probably shouldn't happen, but still good to have this precaution
         if (!origNoteId.trim()) {
             return "";
@@ -36,107 +35,224 @@ async function importTar(fileBuffer, parentNote) {
             return origNoteId;
         }
 
-        if (!ctx.noteIdMap[origNoteId]) {
-            ctx.noteIdMap[origNoteId] = utils.newEntityId();
+        if (!noteIdMap[origNoteId]) {
+            noteIdMap[origNoteId] = utils.newEntityId();
         }
 
-        return ctx.noteIdMap[origNoteId];
-    };
-
-    const note = await importNotes(ctx, files, parentNote.noteId);
-
-    // we save attributes and links after importing notes because we need to check that target noteIds
-    // have been really created (relation/links with targets outside of the export are not created)
-
-    for (const attr of ctx.attributes) {
-        if (attr.type === 'relation') {
-            attr.value = ctx.getNewNoteId(attr.value);
-
-            if (!ctx.createdNoteIds.includes(attr.value)) {
-                // relation targets note outside of the export
-                continue;
-            }
-        }
-
-        await new Attribute(attr).save();
+        return noteIdMap[origNoteId];
     }
-
-    for (const link of ctx.links) {
-        link.targetNoteId = ctx.getNewNoteId(link.targetNoteId);
-
-        if (!ctx.createdNoteIds.includes(link.targetNoteId)) {
-            // link targets note outside of the export
-            continue;
-        }
-
-        await new Link(link).save();
-    }
-
-    return note;
-}
-
-function getFileName(name) {
-    let key;
-
-    if (name.endsWith(".dat")) {
-        key = "data";
-        name = name.substr(0, name.length - 4);
-    }
-    else if (name.endsWith(".md")) {
-        key = "markdown";
-        name = name.substr(0, name.length - 3);
-    }
-    else if (name.endsWith((".meta"))) {
-        key = "meta";
-        name = name.substr(0, name.length - 5);
-    }
-    else {
-        log.error("Unknown file type in import: " + name);
-    }
-
-    return {name, key};
-}
-
-async function parseImportFile(fileBuffer) {
-    const fileMap = {};
-    const files = [];
-
-    const extract = tar.extract();
-
-    extract.on('entry', function(header, stream, next) {
-        let name, key;
-
-        if (header.type === 'file') {
-            ({name, key} = getFileName(header.name));
-        }
-        else if (header.type === 'directory') {
-            // directory entries in tar often end with directory separator
-            name = (header.name.endsWith("/") || header.name.endsWith("\\")) ? header.name.substr(0, header.name.length - 1) : header.name;
-            key = 'directory';
-        }
-        else {
-            log.error("Unrecognized tar entry: " + JSON.stringify(header));
+    
+    function getMeta(filePath) {
+        if (!metaFile) {
             return;
         }
 
-        let file = fileMap[name];
+        const pathSegments = filePath.split(/[\/\\]/g);
 
-        if (!file) {
-            file = fileMap[name] = {
-                name: path.basename(name),
-                children: []
-            };
+        let cursor = { children: metaFile.files };
+        let parent;
 
-            let parentFileName = path.dirname(header.name);
+        for (const segment of pathSegments) {
+            if (!cursor || !cursor.children || cursor.children.length === 0) {
+                return {};
+            }
 
-            if (parentFileName && parentFileName !== '.') {
-                fileMap[parentFileName].children.push(file);
+            parent = cursor;
+            cursor = cursor.children.find(file => file.dataFileName === segment || file.dirFileName === segment);
+        }
+
+        return {
+            parentNoteMeta: parent,
+            noteMeta: cursor
+        };
+    }
+
+    function getParentNoteId(filePath, parentNoteMeta, noteMeta) {
+        let parentNoteId;
+
+        if (noteMeta) {
+            if (parentNoteMeta) {
+                parentNoteId = getNewNoteId(parentNoteMeta.noteId);
             }
             else {
-                files.push(file);
+                parentNoteId = importRootNote.noteId;
+            }
+        }
+        else {
+            const parentPath = path.dirname(filePath);
+
+            if (parentPath in createdPaths) {
+                parentNoteId = createdPaths[parentPath];
+            }
+            else {
+                throw new Error(`Could not find existing path ${parentPath}.`);
             }
         }
 
+        return parentNoteId;
+    }
+
+    function getNoteTitle(filePath, noteMeta) {
+        if (noteMeta) {
+            return noteMeta.title;
+        }
+        else {
+            const basename = path.basename(filePath);
+
+            return getTextFileWithoutExtension(basename);
+        }
+    }
+
+    function getNoteId(noteMeta, filePath) {
+        if (noteMeta) {
+            return getNewNoteId(noteMeta.noteId);
+        }
+        else {
+            const filePathNoExt = getTextFileWithoutExtension(filePath);
+
+            if (filePathNoExt in createdPaths) {
+                return createdPaths[filePathNoExt];
+            }
+            else {
+                return utils.newEntityId();
+            }
+        }
+    }
+
+    function detectFileTypeAndMime(filePath) {
+        const mime = mimeTypes.lookup(filePath);
+        let type = 'file';
+
+        if (mime) {
+            if (mime === 'text/html' || mime === 'text/markdown') {
+                type = 'text';
+            }
+            else if (mime.startsWith('image/')) {
+                type = 'image';
+            }
+        }
+
+        return { type, mime };
+    }
+
+    async function saveAttributes(note, noteMeta) {
+        if (!noteMeta) {
+            return;
+        }
+
+        for (const attr of noteMeta.attributes) {
+            if (attr.type === 'relation') {
+                attr.value = getNewNoteId(attr.value);
+            }
+
+            await new Attribute(attr).save();
+        }
+
+        for (const link of noteMeta.links) {
+            link.targetNoteId = getNewNoteId(link.targetNoteId);
+
+            await new Link(link).save();
+        }
+    }
+
+    async function saveDirectory(filePath) {
+        // directory entries in tar often end with directory separator
+        filePath = (filePath.endsWith("/") || filePath.endsWith("\\")) ? filePath.substr(0, filePath.length - 1) : filePath;
+
+        const { parentNoteMeta, noteMeta } = getMeta(filePath);
+
+        const noteId = getNoteId(noteMeta, filePath);
+        const noteTitle = getNoteTitle(filePath, noteMeta);
+        const parentNoteId = getParentNoteId(filePath, parentNoteMeta, noteMeta);
+
+        const {note} = await noteService.createNote(parentNoteId, noteTitle, '', {
+            noteId,
+            type: noteMeta ? noteMeta.type : 'text',
+            mime: noteMeta ? noteMeta.mime : 'text/html',
+            prefix: noteMeta ? noteMeta.prefix : '',
+            isExpanded: noteMeta ? noteMeta.isExpanded : false
+        });
+
+        await saveAttributes(note, noteMeta);
+
+        if (!firstNote) {
+            firstNote = note;
+        }
+
+        createdPaths[filePath] = noteId;
+    }
+
+    function getTextFileWithoutExtension(filePath) {
+        const extension = path.extname(filePath).toLowerCase();
+
+        if (extension === '.md' || extension === '.html') {
+            return filePath.substr(0, filePath.length - extension.length);
+        }
+        else {
+            return filePath;
+        }
+    }
+
+    async function saveNote(filePath, content) {
+        const {parentNoteMeta, noteMeta} = getMeta(filePath);
+
+        const noteId = getNoteId(noteMeta, filePath);
+        const parentNoteId = getParentNoteId(filePath, parentNoteMeta, noteMeta);
+
+        if (noteMeta && noteMeta.isClone) {
+            await new Branch({
+                noteId,
+                parentNoteId,
+                isExpanded: noteMeta.isExpanded,
+                prefix: noteMeta.prefix
+            }).save();
+
+            return;
+        }
+
+        const {type, mime} = noteMeta ? noteMeta : detectFileTypeAndMime(filePath);
+
+        if (type === 'text') {
+            content = content.toString("UTF-8");
+        }
+
+        if ((noteMeta && noteMeta.format === 'markdown') || (!noteMeta && mime === 'text/markdown')) {
+            const parsed = mdReader.parse(content);
+            content = mdWriter.render(parsed);
+        }
+
+        let note = await repository.getNote(noteId);
+
+        if (!note) {
+            const noteTitle = getNoteTitle(filePath, noteMeta);
+
+            ({note} = await noteService.createNote(parentNoteId, noteTitle, content, {
+                noteId,
+                type,
+                mime,
+                prefix: noteMeta ? noteMeta.prefix : '',
+                isExpanded: noteMeta ? noteMeta.isExpanded : false
+            }));
+
+            await saveAttributes(note, noteMeta);
+
+            if (!firstNote) {
+                firstNote = note;
+            }
+
+            if (type === 'text') {
+                filePath = getTextFileWithoutExtension(filePath);
+            }
+
+            createdPaths[filePath] = noteId;
+        }
+        else {
+            note.content = content;
+            await note.save();
+        }
+    }
+
+    extract.on('entry', function(header, stream, next) {
         const chunks = [];
 
         stream.on("data", function (chunk) {
@@ -147,11 +263,18 @@ async function parseImportFile(fileBuffer) {
         // stream is the content body (might be an empty stream)
         // call next when you are done with this entry
 
-        stream.on('end', function() {
-            file[key] = Buffer.concat(chunks);
+        stream.on('end', async function() {
+            const filePath = header.name;
+            const content = Buffer.concat(chunks);
 
-            if (key === "meta") {
-                file[key] = JSON.parse(file[key].toString("UTF-8"));
+            if (filePath === '!!!meta.json') {
+                metaFile = JSON.parse(content.toString("UTF-8"));
+            }
+            else if (header.type === 'directory') {
+                await saveDirectory(filePath);
+            }
+            else {
+                await saveNote(filePath, content);
             }
 
             next(); // ready for next entry
@@ -162,7 +285,7 @@ async function parseImportFile(fileBuffer) {
 
     return new Promise(resolve => {
         extract.on('finish', function() {
-            resolve(files);
+            resolve(firstNote);
         });
 
         const bufferStream = new stream.PassThrough();
@@ -170,96 +293,6 @@ async function parseImportFile(fileBuffer) {
 
         bufferStream.pipe(extract);
     });
-}
-
-async function importNotes(ctx, files, parentNoteId) {
-    let returnNote = null;
-
-    for (const file of files) {
-        let note;
-
-        if (!file.meta) {
-            let content = '';
-
-            if (file.data) {
-                content = file.data.toString("UTF-8");
-            }
-            else if (file.markdown) {
-                const parsed = ctx.reader.parse(file.markdown.toString("UTF-8"));
-                content = ctx.writer.render(parsed);
-            }
-
-            note = (await noteService.createNote(parentNoteId, file.name, content, {
-                type: 'text',
-                mime: 'text/html'
-            })).note;
-        }
-        else {
-            if (file.meta.version !== 1) {
-                throw new Error("Can't read meta data version " + file.meta.version);
-            }
-
-            if (file.meta.clone) {
-                await new Branch({
-                    parentNoteId: parentNoteId,
-                    noteId: ctx.getNewNoteId(file.meta.noteId),
-                    prefix: file.meta.prefix,
-                    isExpanded: !!file.meta.isExpanded
-                }).save();
-
-                continue;
-            }
-
-            if (file.meta.type !== 'file' && file.meta.type !== 'image') {
-                file.data = file.data.toString("UTF-8");
-
-                // this will replace all internal links (<a> and <img>) inside the body
-                // links pointing outside the export will be broken and changed (ctx.getNewNoteId() will still assign new noteId)
-                for (const link of file.meta.links || []) {
-                    // no need to escape the regexp find string since it's a noteId which doesn't contain any special characters
-                    file.data = file.data.replace(new RegExp(link.targetNoteId, "g"), ctx.getNewNoteId(link.targetNoteId));
-                }
-            }
-
-            note = (await noteService.createNote(parentNoteId, file.meta.title, file.data, {
-                noteId: ctx.getNewNoteId(file.meta.noteId),
-                type: file.meta.type,
-                mime: file.meta.mime,
-                prefix: file.meta.prefix,
-                isExpanded: !!file.meta.isExpanded
-            })).note;
-
-            ctx.createdNoteIds.push(note.noteId);
-
-            for (const attribute of file.meta.attributes || []) {
-                ctx.attributes.push({
-                    noteId: note.noteId,
-                    type: attribute.type,
-                    name: attribute.name,
-                    value: attribute.value,
-                    isInheritable: attribute.isInheritable,
-                    position: attribute.position
-                });
-            }
-
-            for (const link of file.meta.links || []) {
-                ctx.links.push({
-                    noteId: note.noteId,
-                    type: link.type,
-                    targetNoteId: link.targetNoteId
-                });
-            }
-        }
-
-        // first created note will be activated after import
-        returnNote = returnNote || note;
-
-        if (file.children.length > 0) {
-            await importNotes(ctx, file.children, note.noteId);
-        }
-    }
-
-    return returnNote;
 }
 
 module.exports = {

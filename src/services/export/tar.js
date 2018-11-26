@@ -3,7 +3,6 @@
 const html = require('html');
 const repository = require('../repository');
 const tar = require('tar-stream');
-const path = require('path');
 const sanitize = require("sanitize-filename");
 const mimeTypes = require('mime-types');
 const TurndownService = require('turndown');
@@ -77,7 +76,7 @@ async function exportToTar(branch, format, res) {
             const fileName = getUniqueFilename(existingFileNames, sanitizedFileName);
 
             return {
-                clone: true,
+                isClone: true,
                 noteId: note.noteId,
                 prefix: branch.prefix,
                 dataFileName: fileName
@@ -85,7 +84,7 @@ async function exportToTar(branch, format, res) {
         }
 
         const meta = {
-            clone: false,
+            isClone: false,
             noteId: note.noteId,
             title: note.title,
             prefix: branch.prefix,
@@ -158,7 +157,7 @@ async function exportToTar(branch, format, res) {
     const notePaths = {};
 
     async function saveNote(noteMeta, path) {
-        if (noteMeta.clone) {
+        if (noteMeta.isClone) {
             const content = "Note is present at " + notePaths[noteMeta.noteId];
 
             pack.entry({name: path + '/' + noteMeta.dataFileName, size: content.length}, content);
