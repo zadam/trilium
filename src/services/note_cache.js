@@ -327,11 +327,11 @@ eventService.subscribe(eventService.ENTITY_CHANGED, async ({entityName, entity})
 
         if (attribute.type === 'label' && attribute.name === 'archived') {
             // we're not using label object directly, since there might be other non-deleted archived label
-            const hideLabel = await repository.getEntity(`SELECT * FROM attributes WHERE isDeleted = 0 AND type = 'label' 
+            const archivedLabel = await repository.getEntity(`SELECT * FROM attributes WHERE isDeleted = 0 AND type = 'label' 
                                  AND name = 'archived' AND noteId = ?`, [attribute.noteId]);
 
-            if (hideLabel) {
-                archived[attribute.noteId] = hideLabel.isInheritable ? 1 : 0;
+            if (archivedLabel) {
+                archived[attribute.noteId] = archivedLabel.isInheritable ? 1 : 0;
             }
             else {
                 delete archived[attribute.noteId];

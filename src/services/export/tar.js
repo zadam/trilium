@@ -126,10 +126,11 @@ async function exportToTar(branch, format, res) {
             meta.dirFileName = getUniqueFilename(existingFileNames, baseFileName);
             meta.children = [];
 
+            // namespace is shared by children in the same note
             const childExistingNames = {};
 
             for (const childBranch of childBranches) {
-                const note = await getNote(childBranch, existingFileNames);
+                const note = await getNote(childBranch, childExistingNames);
 
                 // can be undefined if export is disabled for this note
                 if (note) {
@@ -160,27 +161,27 @@ async function exportToTar(branch, format, res) {
         if (noteMeta.isClone) {
             const content = "Note is present at " + notePaths[noteMeta.noteId];
 
-            pack.entry({name: path + '/' + noteMeta.dataFileName, size: content.length}, content);
+            pack.entry({name: path + noteMeta.dataFileName, size: content.length}, content);
             return;
         }
 
         const note = await repository.getNote(noteMeta.noteId);
 
-        notePaths[note.noteId] = path + '/' + (noteMeta.dataFileName || noteMeta.dirFileName);
+        notePaths[note.noteId] = path + (noteMeta.dataFileName || noteMeta.dirFileName);
 
         if (noteMeta.dataFileName) {
             const content = prepareContent(note, noteMeta.format);
 
-            pack.entry({name: path + '/' + noteMeta.dataFileName, size: content.length}, content);
+            pack.entry({name: path + noteMeta.dataFileName, size: content.length}, content);
         }
 
         if (noteMeta.children && noteMeta.children.length > 0) {
-            const directoryPath = path + '/' + noteMeta.dirFileName;
+            const directoryPath = path + noteMeta.dirFileName;
 
             pack.entry({name: directoryPath, type: 'directory'});
 
             for (const childMeta of noteMeta.children) {
-                await saveNote(childMeta, directoryPath);
+                await saveNote(childMeta, directoryPath + '/');
             }
         }
     }

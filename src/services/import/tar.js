@@ -3,6 +3,7 @@
 const Attribute = require('../../entities/attribute');
 const Link = require('../../entities/link');
 const utils = require('../../services/utils');
+const log = require('../../services/log');
 const repository = require('../../services/repository');
 const noteService = require('../../services/notes');
 const Branch = require('../../entities/branch');
@@ -15,6 +16,8 @@ const mimeTypes = require('mime-types');
 async function importTar(fileBuffer, importRootNote) {
     // maps from original noteId (in tar file) to newly generated noteId
     const noteIdMap = {};
+    const attributes = [];
+    const links = [];
     // path => noteId
     const createdPaths = { '/': importRootNote.noteId, '\\': importRootNote.noteId };
     const mdReader = new commonmark.Parser();
@@ -134,7 +137,7 @@ async function importTar(fileBuffer, importRootNote) {
         return { type, mime };
     }
 
-    async function saveAttributes(note, noteMeta) {
+    async function saveAttributesAndLinks(note, noteMeta) {
         if (!noteMeta) {
             return;
         }
@@ -146,14 +149,14 @@ async function importTar(fileBuffer, importRootNote) {
                 attr.value = getNewNoteId(attr.value);
             }
 
-            await new Attribute(attr).save();
+            attributes.push(attr);
         }
 
         for (const link of noteMeta.links) {
             link.noteId = note.noteId;
             link.targetNoteId = getNewNoteId(link.targetNoteId);
 
-            await new Link(link).save();
+            links.push(link);
         }
     }
 
@@ -178,13 +181,11 @@ async function importTar(fileBuffer, importRootNote) {
             isExpanded: noteMeta ? noteMeta.isExpanded : false
         }));
 
-        await saveAttributes(note, noteMeta);
+        await saveAttributesAndLinks(note, noteMeta);
 
         if (!firstNote) {
             firstNote = note;
         }
-
-        console.log(filePath);
 
         createdPaths[filePath] = noteId;
     }
@@ -207,8 +208,6 @@ async function importTar(fileBuffer, importRootNote) {
         const parentNoteId = getParentNoteId(filePath, parentNoteMeta);
 
         if (noteMeta && noteMeta.isClone) {
-            console.log(`Creating branch for ${noteId} in ${parentNoteId}`);
-
             await new Branch({
                 noteId,
                 parentNoteId,
@@ -247,7 +246,7 @@ async function importTar(fileBuffer, importRootNote) {
                 isExpanded: noteMeta ? noteMeta.isExpanded : false
             }));
 
-            await saveAttributes(note, noteMeta);
+            await saveAttributesAndLinks(note, noteMeta);
 
             if (!firstNote) {
                 firstNote = note;
@@ -257,7 +256,6 @@ async function importTar(fileBuffer, importRootNote) {
                 filePath = getTextFileWithoutExtension(filePath);
             }
 
-            console.log(filePath);
             createdPaths[filePath] = noteId;
         }
     }
@@ -273,6 +271,7 @@ async function importTar(fileBuffer, importRootNote) {
         if (filePath.endsWith("/")) {
             filePath = filePath.substr(0, filePath.length - 1);
         }
+
         return filePath;
     }
 
@@ -298,8 +297,11 @@ async function importTar(fileBuffer, importRootNote) {
             else if (header.type === 'directory') {
                 await saveDirectory(filePath);
             }
-            else {
+            else if (header.type === 'file') {
                 await saveNote(filePath, content);
+            }
+            else {
+                log.info("Ignoring tar import entry with type " + header.type);
             }
 
             next(); // ready for next entry
@@ -309,7 +311,27 @@ async function importTar(fileBuffer, importRootNote) {
     });
 
     return new Promise(resolve => {
-        extract.on('finish', function() {
+        extract.on('finish', async function() {
+            const createdNoteIds = {};
+
+            for (const path in createdPaths) {
+                createdNoteIds[createdPaths[path]] = true;
+            }
+
+            // we're saving attributes and links only now so that all relation and link target notes
+            // are already in the database (we don't want to have "broken" relations, not even transitionally)
+            for (const attr of attributes) {
+                if (attr.value in createdNoteIds) {
+                    await new Attribute(attr).save();
+                }
+            }
+
+            for (const link of links) {
+                if (link.targetNoteId in createdNoteIds) {
+                    await new Link(link).save();
+                }
+            }
+
             resolve(firstNote);
         });
 
