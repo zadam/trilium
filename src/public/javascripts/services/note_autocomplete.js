@@ -76,7 +76,8 @@ function initNoteAutocomplete($el, options) {
             hint: false,
             autoselect: true,
             openOnFocus: true,
-            minLength: 0
+            minLength: 0,
+            tabAutocomplete: false
         }, [
             {
                 source: autocompleteSource,

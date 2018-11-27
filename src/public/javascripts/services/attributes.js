@@ -146,7 +146,8 @@ async function createPromotedAttributeRow(definitionAttr, valueAttr) {
                     hint: false,
                     autoselect: true,
                     openOnFocus: true,
-                    minLength: 0
+                    minLength: 0,
+                    tabAutocomplete: false
                 }, [{
                     displayKey: 'value',
                     source: function (term, cb) {

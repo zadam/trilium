@@ -12,7 +12,8 @@ function initAttributeNameAutocomplete({ $el, attributeType, open }) {
             hint: false,
             autoselect: true,
             openOnFocus: true,
-            minLength: 0
+            minLength: 0,
+            tabAutocomplete: false
         }, [{
             displayKey: 'name',
             // disabling cache is important here because otherwise cache can stay intact when switching between attribute type which will lead to autocomplete displaying attribute names for incorrect attribute type
@@ -59,7 +60,8 @@ async function initLabelValueAutocomplete({ $el, open }) {
             hint: false,
             autoselect: true,
             openOnFocus: true,
-            minLength: 0
+            minLength: 0,
+            tabAutocomplete: false
         }, [{
             displayKey: 'value',
             source: function (term, cb) {
