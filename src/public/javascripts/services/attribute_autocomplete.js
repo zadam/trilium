@@ -10,7 +10,6 @@ function initAttributeNameAutocomplete({ $el, attributeType, open }) {
         $el.autocomplete({
             appendTo: document.querySelector('body'),
             hint: false,
-            autoselect: true,
             openOnFocus: true,
             minLength: 0,
             tabAutocomplete: false
@@ -58,7 +57,6 @@ async function initLabelValueAutocomplete({ $el, open }) {
         $el.autocomplete({
             appendTo: document.querySelector('body'),
             hint: false,
-            autoselect: true,
             openOnFocus: true,
             minLength: 0,
             tabAutocomplete: false
