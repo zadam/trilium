@@ -6,6 +6,7 @@ const tar = require('tar-stream');
 const sanitize = require("sanitize-filename");
 const mimeTypes = require('mime-types');
 const TurndownService = require('turndown');
+const packageInfo = require('../../../package.json');
 
 /**
  * @param format - 'html' or 'markdown'
@@ -188,7 +189,8 @@ async function exportToTar(branch, format, res) {
     }
 
     const metaFile = {
-        version: 1,
+        formatVersion: 1,
+        appVersion: packageInfo.version,
         files: [
             await getNote(branch, [])
         ]
