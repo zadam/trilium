@@ -32,3 +32,5 @@ Trilium is provided as either desktop application (Linux, Windows) or web applic
 ## Documentation
 
 [See wiki for complete list of documentation pages.](https://github.com/zadam/trilium/wiki/)
+
+You can also read [Patterns of personal knowledge base](https://github.com/zadam/trilium/wiki/Patterns-of-personal-knowledge-base) to get some inspiration on how you might use Trilium.
