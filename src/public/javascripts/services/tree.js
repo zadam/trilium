@@ -500,6 +500,12 @@ async function createNote(node, parentNoteId, target, isProtected, saveSelection
     if (noteDetailService.getCurrentNoteType() !== 'text') {
         saveSelection = false;
     }
+    else {
+        // just disable this feature altogether - there's a problem that note containing image or table at the beginning
+        // of the content will be auto-selected by CKEditor and then CTRL-P with no user interaction will automatically save
+        // the selection - see https://github.com/ckeditor/ckeditor5/issues/1384
+        saveSelection = false;
+    }
 
     let title, content;
 
