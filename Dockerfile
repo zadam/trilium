@@ -1,21 +1,27 @@
-FROM node:10.13.0
-
-RUN apt-get update && apt-get install -y nasm
+FROM node:10.13.0-alpine
 
 # Create app directory
 WORKDIR /usr/src/app
 
-# Install app dependencies
-# A wildcard is used to ensure both package.json AND package-lock.json are copied
+# Copy both package.json and package-lock.json
 # where available (npm@5+)
-COPY package*.json ./
+COPY package.json package-lock.json ./
 
-RUN npm install --production
-# If you are building your code for production
-# RUN npm install --only=production
+# Install app dependencies
+RUN set -x \
+    && apk add --no-cache --virtual .build-dependencies \
+        autoconf \
+        automake \
+        g++ \
+        gcc \
+        libtool \
+        make \
+        nasm \
+    && npm install --production \
+    && apk del .build-dependencies
 
 # Bundle app source
 COPY . .
 
 EXPOSE 8080
-CMD [ "node", "src/www" ]
+CMD [ "node", "./src/www" ]
