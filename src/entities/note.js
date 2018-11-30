@@ -75,7 +75,9 @@ class Note extends Entity {
     /** @returns {boolean} true if this note is JavaScript (code or attachment) */
     isJavaScript() {
         return (this.type === "code" || this.type === "file")
-            && (this.mime.startsWith("application/javascript") || this.mime === "application/x-javascript");
+            && (this.mime.startsWith("application/javascript")
+                || this.mime === "application/x-javascript"
+                || this.mime === "text/javascript");
     }
 
     /** @returns {boolean} true if this note is HTML */

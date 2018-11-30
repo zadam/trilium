@@ -225,6 +225,8 @@ function BackendScriptApi(startNote, currentNote, originEntity) {
      */
     this.transactional = sql.transactional;
 
+    this.sql = sql;
+
     /**
      * Trigger tree refresh in all connected clients. This is required when some tree change happens in
      * the backend.
