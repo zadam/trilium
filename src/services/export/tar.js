@@ -3,6 +3,7 @@
 const html = require('html');
 const repository = require('../repository');
 const tar = require('tar-stream');
+const path = require('path');
 const sanitize = require("sanitize-filename");
 const mimeTypes = require('mime-types');
 const TurndownService = require('turndown');
@@ -47,7 +48,7 @@ async function exportToTar(branch, format, res) {
         if (note.type === 'text' && format === 'markdown') {
             extension = 'md';
         }
-        else if (note.mime === 'application/x-javascript') {
+        else if (note.mime === 'application/x-javascript' || note.mime === 'text/javascript') {
             extension = 'js';
         }
         else {
@@ -55,8 +56,10 @@ async function exportToTar(branch, format, res) {
         }
 
         let fileName = baseFileName;
+        const existingExtension = path.extname(fileName).toLowerCase();
 
-        if (!fileName.toLowerCase().endsWith(extension)) {
+        // if the note is already named with extension (e.g. "jquery.js"), then it's silly to append exact same extension again
+        if (existingExtension !== extension) {
             fileName += "." + extension;
         }
 
