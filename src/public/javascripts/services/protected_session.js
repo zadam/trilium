@@ -65,9 +65,11 @@ async function setupProtectedSession() {
 
     $dialog.modal("hide");
 
-    await noteDetailService.reload();
+    await treeService.reload();
 
-    treeService.reload();
+    // it's important that tree has been already reloaded at this point
+    // since detail also uses tree cache (for children overview)
+    await noteDetailService.reload();
 
     if (protectedSessionDeferred !== null) {
         ensureDialogIsClosed($dialog, $password);
