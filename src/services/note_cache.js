@@ -299,14 +299,7 @@ eventService.subscribe(eventService.ENTITY_CHANGED, async ({entityName, entity})
             delete childToParent[note.noteId];
         }
         else {
-            if (note.isProtected) {
-                if (protectedSessionService.isProtectedSessionAvailable()) {
-                    protectedNoteTitles[note.noteId] = protectedSessionService.decryptNoteTitle(note.noteId, note.title);
-                }
-            }
-            else {
-                noteTitles[note.noteId] = note.title;
-            }
+            noteTitles[note.noteId] = note.title;
         }
     }
     else if (entityName === 'branches') {
