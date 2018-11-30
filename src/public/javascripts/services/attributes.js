@@ -11,6 +11,7 @@ import noteDetailService from "./note_detail.js";
 const $attributeList = $("#attribute-list");
 const $attributeListInner = $("#attribute-list-inner");
 const $promotedAttributesContainer = $("#note-detail-promoted-attributes");
+const $savedIndicator = $("#saved-indicator");
 
 let attributePromise;
 
@@ -268,7 +269,12 @@ async function promotedAttributeChanged(event) {
 
     $attr.prop("attribute-id", result.attributeId);
 
-    infoService.showMessage("Attribute has been saved.");
+    // animate only if it's not being animated already, this is important especially for e.g. number inputs
+    // which can be changed many times in a second by clicking on higher/lower buttons.
+    if ($savedIndicator.queue().length === 0) {
+        $savedIndicator.fadeOut();
+        $savedIndicator.fadeIn();
+    }
 }
 
 export default {
