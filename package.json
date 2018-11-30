@@ -27,7 +27,6 @@
     "commonmark": "0.28.1",
     "cookie-parser": "1.4.3",
     "debug": "4.1.0",
-    "devtron": "1.4.0",
     "ejs": "2.6.1",
     "electron-debug": "2.0.0",
     "electron-dl": "1.12.0",
@@ -67,6 +66,7 @@
     "xml2js": "0.4.19"
   },
   "devDependencies": {
+    "devtron": "1.4.0",
     "electron": "4.0.0-beta.7",
     "electron-compile": "6.4.3",
     "electron-packager": "12.2.0",
