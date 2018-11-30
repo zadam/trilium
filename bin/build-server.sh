@@ -7,7 +7,7 @@ fi
 
 VERSION=$1
 PKG_DIR=dist/trilium-linux-x64-server
-NODE_VERSION=10.13.0
+NODE_VERSION=10.14.1
 
 rm -r $PKG_DIR
 mkdir $PKG_DIR
