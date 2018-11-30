@@ -15,7 +15,7 @@ function setDataKey(decryptedDataKey) {
 }
 
 function setProtectedSessionId(req) {
-    cls.namespace.set('protectedSessionId', req.headers.protected_session_id);
+    cls.namespace.set('protectedSessionId', req.headers['trilium-protected-session-id']);
 }
 
 function getProtectedSessionId() {

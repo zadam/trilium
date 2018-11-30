@@ -12,9 +12,10 @@ function getHeaders() {
 
     // headers need to be lowercase because node.js automatically converts them to lower case
     // so hypothetical protectedSessionId becomes protectedsessionid on the backend
+    // also avoiding using underscores instead of dashes since nginx filters them out by default
     return {
-        protected_session_id: protectedSessionId,
-        source_id: glob.sourceId
+        'trilium-protected-session-id': protectedSessionId,
+        'trilium-source-id': glob.sourceId
     };
 }
 

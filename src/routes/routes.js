@@ -66,7 +66,7 @@ function route(method, path, middleware, routeHandler, resultHandler, transactio
     router[method](path, ...middleware, async (req, res, next) => {
         try {
             const result = await cls.init(async () => {
-                cls.namespace.set('sourceId', req.headers.source_id);
+                cls.namespace.set('sourceId', req.headers['trilium-source-id']);
                 protectedSessionService.setProtectedSessionId(req);
 
                 if (transactional) {
