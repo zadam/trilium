@@ -1,4 +1,7 @@
-node_modules
-npm-debug.log
-dist
+.git
 .idea
+/bin
+/dist
+/docs
+/npm-debug.log
+node_modules
