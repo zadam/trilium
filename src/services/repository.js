@@ -74,13 +74,13 @@ async function updateEntity(entity) {
 
     const clone = Object.assign({}, entity);
 
-    // transient properties not supposed to be persisted
-    delete clone.jsonContent;
-    delete clone.isOwned;
+    // this check requires that updatePojo is not static
+    if (entity.updatePojo) {
+        await entity.updatePojo(clone);
+    }
+
+    // indicates whether entity actually changed
     delete clone.isChanged;
-    delete clone.origParentNoteId;
-    delete clone.isContentAvailable;
-    delete clone.__attributeCache;
 
     for (const key in clone) {
         // !isBuffer is for images and attachments

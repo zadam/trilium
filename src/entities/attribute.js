@@ -105,6 +105,11 @@ class Attribute extends Entity {
             this.dateModified = dateUtils.nowDate();
         }
     }
+
+    // cannot be static!
+    updatePojo(pojo) {
+        delete pojo.isOwned;
+    }
 }
 
 module.exports = Attribute;

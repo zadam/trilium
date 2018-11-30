@@ -606,10 +606,6 @@ class Note extends Entity {
         // we do this here because encryption needs the note ID for the IV
         this.generateIdIfNecessary();
 
-        if (this.isProtected) {
-            protectedSessionService.encryptNote(this);
-        }
-
         if (!this.isDeleted) {
             this.isDeleted = false;
         }
@@ -623,6 +619,17 @@ class Note extends Entity {
         if (this.isChanged) {
             this.dateModified = dateUtils.nowDate();
         }
+    }
+
+    // cannot be static!
+    updatePojo(pojo) {
+        if (pojo.isProtected) {
+            protectedSessionService.encryptNote(pojo);
+        }
+
+        delete pojo.jsonContent;
+        delete pojo.isContentAvailable;
+        delete pojo.__attributeCache;
     }
 }
 

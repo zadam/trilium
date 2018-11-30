@@ -59,6 +59,11 @@ class Branch extends Entity {
             this.dateModified = dateUtils.nowDate();
         }
     }
+
+    // cannot be static!
+    updatePojo(pojo) {
+        delete pojo.origParentNoteId;
+    }
 }
 
 module.exports = Branch;
