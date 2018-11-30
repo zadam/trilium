@@ -3,9 +3,7 @@ import utils from "./utils.js";
 import messagingService from "./messaging.js";
 import treeUtils from "./tree_utils.js";
 import noteAutocompleteService from "./note_autocomplete.js";
-import treeService from "./tree.js";
 import linkService from "./link.js";
-import infoService from "./info.js";
 import noteDetailService from "./note_detail.js";
 
 const $attributeList = $("#attribute-list");
@@ -163,6 +161,14 @@ async function createPromotedAttributeRow(definitionAttr, valueAttr) {
         }
         else if (definition.labelType === 'number') {
             $input.prop("type", "number");
+
+            let step = 1;
+
+            for (let i = 0; i < (definition.numberPrecision || 0) && i < 10; i++) {
+                step /= 10;
+            }
+
+            $input.prop("step", step);
         }
         else if (definition.labelType === 'boolean') {
             $input.prop("type", "checkbox");

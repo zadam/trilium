@@ -67,7 +67,8 @@ function AttributesModel() {
             attr.labelDefinition = (attr.type === 'label-definition' && attr.value) ? attr.value : {
                 labelType: "text",
                 multiplicityType: "singlevalue",
-                isPromoted: true
+                isPromoted: true,
+                numberPrecision: 0
             };
 
             attr.relationDefinition = (attr.type === 'relation-definition' && attr.value) ? attr.value : {
@@ -187,7 +188,8 @@ function AttributesModel() {
                 labelDefinition: {
                     labelType: "text",
                     multiplicityType: "singlevalue",
-                    isPromoted: true
+                    isPromoted: true,
+                    numberPrecision: 0
                 },
                 relationDefinition: {
                     multiplicityType: "singlevalue",

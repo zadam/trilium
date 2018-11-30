@@ -64,6 +64,11 @@
                            data-bind="checked: labelDefinition.isPromoted"/>
                       Promoted
                     </label>
+
+                    <div data-bind="visible: labelDefinition.labelType === 'number'"
+                        title="Precision of floating point numbers - 0 means effectively integer, 2 allows entering e.g. 1.23">
+                      Number precision: <input type="number" min="0" max="9" data-bind="value: labelDefinition.numberPrecision" style="width: 50px;"/>
+                    </div>
                   </div>
 
                   <div data-bind="visible: type == 'relation-definition'">
