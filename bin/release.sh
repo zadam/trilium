@@ -42,18 +42,23 @@ git push origin $TAG
 
 bin/build.sh
 
-bin/package.sh
-
 LINUX_X64_BUILD=trilium-linux-x64-$VERSION.7z
 LINUX_IA32_BUILD=trilium-linux-ia32-$VERSION.7z
 WINDOWS_X64_BUILD=trilium-windows-x64-$VERSION.7z
+MAC_X64_BUILD=trilium-mac-x64-$VERSION.7z
 SERVER_BUILD=trilium-linux-x64-server-$VERSION.7z
 
 echo "Creating release in GitHub"
 
+EXTRA=
+
+if [[ $TAG == *"beta"* ]]; then
+  EXTRA=--pre-release
+fi
+
 github-release release \
     --tag $TAG \
-    --name "$TAG release"
+    --name "$TAG release" $EXTRA
 
 echo "Uploading linux x64 build"
 
@@ -75,6 +80,13 @@ github-release upload \
     --tag $TAG \
     --name "$WINDOWS_X64_BUILD" \
     --file "dist/$WINDOWS_X64_BUILD"
+
+echo "Uploading mac x64 build"
+
+github-release upload \
+    --tag $TAG \
+    --name "$MAC_X64_BUILD" \
+    --file "dist/$MAC_X64_BUILD"
 
 echo "Packaging server version"
 

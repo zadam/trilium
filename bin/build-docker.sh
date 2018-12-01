@@ -1,8 +1,5 @@
 #!/usr/bin/env bash
 
-if [[ $# -eq 0 ]] ; then
-    echo "Missing argument of new version"
-    exit 1
-fi
+VERSION=`jq -r ".version" package.json`
 
-sudo docker build -t zadam/trilium:latest -t zadam/trilium:$1 .
+sudo docker build -t zadam/trilium:latest -t zadam/trilium:$VERSION .
