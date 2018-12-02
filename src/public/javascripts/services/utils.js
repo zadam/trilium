@@ -46,6 +46,10 @@ function isElectron() {
     return window && window.process && window.process.type;
 }
 
+function isMac() {
+    return navigator.platform.indexOf('Mac') > -1;
+}
+
 function assertArguments() {
     for (const i in arguments) {
         if (!arguments[i]) {
@@ -150,6 +154,7 @@ export default {
     formatDateTime,
     now,
     isElectron,
+    isMac,
     assertArguments,
     isTopLevelNode,
     isRootNode,

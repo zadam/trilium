@@ -104,6 +104,21 @@ if (utils.isElectron()) {
     });
 }
 
+function exec(cmd) {
+    document.execCommand(cmd);
+
+    return false;
+}
+
+if (utils.isElectron() && utils.isMac()) {
+    utils.bindShortcut('ctrl+c', () => exec("copy"));
+    utils.bindShortcut('ctrl+v', () => exec('paste'));
+    utils.bindShortcut('ctrl+x', () => exec('cut'));
+    utils.bindShortcut('ctrl+a', () => exec('selectAll'));
+    utils.bindShortcut('ctrl+z', () => exec('undo'));
+    utils.bindShortcut('ctrl+y', () => exec('redo'));
+}
+
 $("#export-note-button").click(function () {
     if ($(this).hasClass("disabled")) {
         return;
