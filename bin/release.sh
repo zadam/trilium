@@ -88,9 +88,7 @@ github-release upload \
     --name "$MAC_X64_BUILD" \
     --file "dist/$MAC_X64_BUILD"
 
-echo "Packaging server version"
-
-bin/build-server.sh $VERSION
+echo "Uploading linux x64 server build"
 
 github-release upload \
     --tag $TAG \
