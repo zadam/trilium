@@ -23,9 +23,9 @@ Trilium Notes is a hierarchical note taking application with focus on building l
 
 ## Builds
 
-Trilium is provided as either desktop application (Linux, Windows) or web application hosted on your server (Linux). Mac is planned but not available at the moment.
+Trilium is provided as either desktop application (Linux, Windows, Mac) or web application hosted on your server (Linux).
 
-* If you want to use Trilium on the desktop, download binary release for your platform (currently Linux and Windows are supported) from [latest release](https://github.com/zadam/trilium/releases/latest), unzip the package and run ```trilium``` executable.
+* If you want to use Trilium on the desktop, download binary release for your platform from [latest release](https://github.com/zadam/trilium/releases/latest), unzip the package and run ```trilium``` executable.
 * If you want to install Trilium on server, follow [this page](https://github.com/zadam/trilium/wiki/Server-installation).
   * Currently only recent Chrome and Firefox are supported (tested) browsers.
 
