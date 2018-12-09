@@ -4,6 +4,7 @@ import treeChangesService from './branches.js';
 const dragAndDropSetup = {
     autoExpandMS: 600,
     dragStart: (node, data) => {
+        // don't allow dragging root node
         if (node.data.noteId === 'root') {
             return false;
         }
@@ -22,11 +23,7 @@ const dragAndDropSetup = {
         // Return false to cancel dragging of node.
         return true;
     },
-    dragEnter: (node, data) => {
-        // we don't allow moving root to any other location in the tree
-        // we allow it to be placed on the relation map though, that's handled in a different drop handler
-        return node.data.noteId === 'root';
-    }, // allow drop on any node
+    dragEnter: (node, data) => true, // allow drop on any node
     dragDrop: (node, data) => {
         // This function MUST be defined to enable dropping of items on the tree.
         // data.hitMode is 'before', 'after', or 'over'.
