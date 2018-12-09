@@ -169,7 +169,9 @@ function register(app) {
 
     apiRoute(GET, '/api/event-log', eventLogRoute.getEventLog);
 
-    apiRoute(PUT, '/api/recent-notes/:branchId/:notePath', recentNotesRoute.addRecentNote);
+    // * at the end means this will match params containing slash as well
+    // this is a problem with nginx (and possibly other proxies) which translate escaped slash back to the literal slash character
+    apiRoute(PUT, '/api/recent-notes/:branchId/:notePath*', recentNotesRoute.addRecentNote);
     apiRoute(GET, '/api/app-info', appInfoRoute.getAppInfo);
 
     route(GET, '/api/setup/status', [], setupApiRoute.getStatus, apiResultHandler);
