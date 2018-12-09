@@ -14,10 +14,10 @@ MAC_RES_DIR=$BUILD_DIR/Trilium\ Notes.app/Contents/Resources/app
 
 rm -r "$MAC_RES_DIR/node_modules/sqlite3/lib/binding/*"
 
-cp -r bin/deps/mac/sqlite/* "$MAC_RES_DIR/node_modules/sqlite3/lib/binding/"
-cp bin/deps/mac/image/cjpeg "$MAC_RES_DIR/node_modules/mozjpeg/vendor/"
-cp bin/deps/mac/image/pngquant "$MAC_RES_DIR/node_modules/pngquant-bin/vendor/"
-cp bin/deps/mac/image/gifsicle "$MAC_RES_DIR/node_modules/giflossy/vendor/"
+cp -r bin/deps/mac-x64/sqlite/* "$MAC_RES_DIR/node_modules/sqlite3/lib/binding/"
+cp bin/deps/mac-x64/image/cjpeg "$MAC_RES_DIR/node_modules/mozjpeg/vendor/"
+cp bin/deps/mac-x64/image/pngquant "$MAC_RES_DIR/node_modules/pngquant-bin/vendor/"
+cp bin/deps/mac-x64/image/gifsicle "$MAC_RES_DIR/node_modules/giflossy/vendor/"
 
 rm -r "$MAC_RES_DIR/bin/deps"
 

@@ -8,8 +8,6 @@ echo "Deleting existing builds"
 
 rm -r dist/*
 
-bin/build-linux-ia32.sh
-
 bin/build-win-x64.sh
 
 bin/build-mac-x64.sh

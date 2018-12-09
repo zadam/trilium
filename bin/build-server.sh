@@ -24,10 +24,14 @@ cp -r ../../config-sample.ini ./
 
 rm -r ./node_modules/electron*
 
+rm -r ./node_modules/sqlite3/lib/binding/*
+
+cp -r ../../bin/deps/linux-x64/sqlite/node* ./node_modules/sqlite3/lib/binding/
+
 printf "#/bin/sh\n./node/bin/node src/www" > trilium.sh
 chmod 755 trilium.sh
 
 cd ..
 
-VERSION=`jq -r ".version" package.json`
+VERSION=`jq -r ".version" ../../package.json`
 7z a trilium-linux-x64-server-${VERSION}.7z trilium-linux-x64-server

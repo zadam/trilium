@@ -11,10 +11,10 @@ echo "Copying required windows binaries"
 
 WIN_RES_DIR=$BUILD_DIR/resources/app
 
-cp -r bin/deps/win/sqlite/* $WIN_RES_DIR/node_modules/sqlite3/lib/binding/
-cp bin/deps/win/image/cjpeg.exe $WIN_RES_DIR/node_modules/mozjpeg/vendor/
-cp bin/deps/win/image/pngquant.exe $WIN_RES_DIR/node_modules/pngquant-bin/vendor/
-cp bin/deps/win/image/gifsicle.exe $WIN_RES_DIR/node_modules/giflossy/vendor/
+cp -r bin/deps/win-x64/sqlite/* $WIN_RES_DIR/node_modules/sqlite3/lib/binding/
+cp bin/deps/win-x64/image/cjpeg.exe $WIN_RES_DIR/node_modules/mozjpeg/vendor/
+cp bin/deps/win-x64/image/pngquant.exe $WIN_RES_DIR/node_modules/pngquant-bin/vendor/
+cp bin/deps/win-x64/image/gifsicle.exe $WIN_RES_DIR/node_modules/giflossy/vendor/
 
 rm -r $WIN_RES_DIR/bin/deps
 # removing software WebGL binaries because they are pretty huge and not necessary

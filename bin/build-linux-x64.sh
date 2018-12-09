@@ -11,6 +11,10 @@ echo "Rebuilding binaries for linux-x64"
 
 mv "./dist/Trilium Notes-linux-x64" $BUILD_DIR
 
+rm -r "$BUILD_DIR/resources/app/node_modules/sqlite3/lib/binding/*"
+
+cp -r bin/deps/linux-x64/sqlite/electron* "$BUILD_DIR/resources/app/node_modules/sqlite3/lib/binding/"
+
 rm -r $BUILD_DIR/resources/app/bin/deps
 # removing software WebGL binaries because they are pretty huge and not necessary
 rm -r $BUILD_DIR/swiftshader
