@@ -43,7 +43,6 @@ git push origin $TAG
 bin/build.sh
 
 LINUX_X64_BUILD=trilium-linux-x64-$VERSION.7z
-LINUX_IA32_BUILD=trilium-linux-ia32-$VERSION.7z
 WINDOWS_X64_BUILD=trilium-windows-x64-$VERSION.7z
 MAC_X64_BUILD=trilium-mac-x64-$VERSION.7z
 SERVER_BUILD=trilium-linux-x64-server-$VERSION.7z
@@ -66,13 +65,6 @@ github-release upload \
     --tag $TAG \
     --name "$LINUX_X64_BUILD" \
     --file "dist/$LINUX_X64_BUILD"
-
-echo "Uploading linux ia32 build"
-
-github-release upload \
-    --tag $TAG \
-    --name "$LINUX_IA32_BUILD" \
-    --file "dist/$LINUX_IA32_BUILD"
 
 echo "Uploading windows x64 build"
 
