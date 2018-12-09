@@ -107,7 +107,7 @@ body {
     (it kept growing with content) */
 #container:not(.distraction-free-mode) #note-detail-wrapper.protected {
     /* DON'T COLLAPSE THE RULES INTO SINGLE ONE, BACKGROUND WON'T DISPLAY */
-    background: url('/images/shield.svg') no-repeat;
+    background: url('../images/shield.svg') no-repeat;
     background-size: contain;
     background-position: center;
 }
