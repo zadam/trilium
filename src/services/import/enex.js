@@ -54,7 +54,11 @@ async function importEnex(file, parentNote) {
     function extractContent(enNote) {
         // [] thing is workaround for https://github.com/Leonidas-from-XIV/node-xml2js/issues/484
         let content = xmlBuilder.buildObject([enNote]);
-        content = content.substr(3, content.length - 7).trim();
+
+        const endOfFirstTagIndex = content.indexOf('>');
+
+        // strip the <0> and </0> tags
+        content = content.substr(endOfFirstTagIndex + 1, content.length - endOfFirstTagIndex - 5).trim();
 
         // workaround for https://github.com/ckeditor/ckeditor5-list/issues/116
         content = content.replace(/<li>\s+<div>/g, "<li>");
