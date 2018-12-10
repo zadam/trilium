@@ -95,7 +95,7 @@ function registerEntrypoints() {
         }
     });
 
-    $(document).bind('keydown', 'ctrl+f', () => {
+    function openInPageSearch() {
         if (utils.isElectron()) {
             const $searchWindowWebview = $(".electron-in-page-search-window");
             $searchWindowWebview.show();
@@ -113,7 +113,13 @@ function registerEntrypoints() {
 
             return false;
         }
-    });
+    }
+
+    utils.bindShortcut('ctrl+f', openInPageSearch);
+
+    if (utils.isMac()) {
+        utils.bindShortcut('meta+f', openInPageSearch);
+    }
 
     // FIXME: do we really need these at this point?
     utils.bindShortcut("ctrl+shift+up", () => {

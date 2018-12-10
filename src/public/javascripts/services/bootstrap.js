@@ -117,6 +117,13 @@ if (utils.isElectron() && utils.isMac()) {
     utils.bindShortcut('ctrl+a', () => exec('selectAll'));
     utils.bindShortcut('ctrl+z', () => exec('undo'));
     utils.bindShortcut('ctrl+y', () => exec('redo'));
+
+    utils.bindShortcut('meta+c', () => exec("copy"));
+    utils.bindShortcut('meta+v', () => exec('paste'));
+    utils.bindShortcut('meta+x', () => exec('cut'));
+    utils.bindShortcut('meta+a', () => exec('selectAll'));
+    utils.bindShortcut('meta+z', () => exec('undo'));
+    utils.bindShortcut('meta+y', () => exec('redo'));
 }
 
 $("#export-note-button").click(function () {
