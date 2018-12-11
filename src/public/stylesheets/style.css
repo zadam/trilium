@@ -531,8 +531,8 @@ table.promoted-attributes-in-tooltip td, table.promoted-attributes-in-tooltip th
     padding: 20px;
 }
 
-.context-menu-container {
-    font-size: small;
+#context-menu-container {
+    padding: 3px 0 0;
 }
 
 #context-menu-container .dropdown-item {
