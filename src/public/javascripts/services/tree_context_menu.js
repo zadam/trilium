@@ -10,7 +10,7 @@ import exportDialog from '../dialogs/export.js';
 import infoService from "./info.js";
 import treeCache from "./tree_cache.js";
 import syncService from "./sync.js";
-import contextMenuService from "./context_menu.js";
+import hoistedNoteService from './hoisted_note.js';
 
 const $tree = $("#tree");
 
@@ -83,6 +83,8 @@ const contextMenuItems = [
     {title: "Insert child note <kbd>Ctrl+P</kbd>", cmd: "insertChildNote", uiIcon: "plus"},
     {title: "Delete", cmd: "delete", uiIcon: "trash"},
     {title: "----"},
+    {title: "Hoist note", cmd: "hoist", uiIcon: "arrow-up"},
+    {title: "Unhoist note", cmd: "unhoist", uiIcon: "arrow-up"},
     {title: "Edit branch prefix <kbd>F2</kbd>", cmd: "editBranchPrefix", uiIcon: "pencil"},
     {title: "----"},
     {title: "Protect subtree", cmd: "protectSubtree", uiIcon: "shield-check"},
@@ -100,6 +102,16 @@ const contextMenuItems = [
     {title: "Force note sync", cmd: "forceNoteSync", uiIcon: "refresh"},
     {title: "Sort alphabetically <kbd>Alt+S</kbd>", cmd: "sortAlphabetically", uiIcon: "arrows-v"}
 ];
+
+function hideItem(cmd, hidden) {
+    const item = contextMenuItems.find(item => item.cmd === cmd);
+
+    if (!item) {
+        throw new Error(`Command ${cmd} has not been found!`);
+    }
+
+    item.hidden = hidden;
+}
 
 function enableItem(cmd, enabled) {
     const item = contextMenuItems.find(item => item.cmd === cmd);
@@ -129,6 +141,11 @@ async function getContextMenuItems(event) {
     enableItem("importIntoNote", note.type !== 'search');
     enableItem("export", note.type !== 'search');
     enableItem("editBranchPrefix", isNotRoot && parentNote.type !== 'search');
+
+    const hoistedNoteId = await hoistedNoteService.getHoistedNoteId();
+
+    hideItem("hoist", note.noteId === hoistedNoteId);
+    hideItem("unhoist", note.noteId !== hoistedNoteId || !isNotRoot);
 
     // Activate node on right-click
     node.setActive();
@@ -193,6 +210,12 @@ function selectContextMenuItem(event, cmd) {
     }
     else if (cmd === "sortAlphabetically") {
         treeService.sortAlphabetically(node.data.noteId);
+    }
+    else if (cmd === "hoist") {
+        hoistedNoteService.setHoistedNoteId(node.data.noteId);
+    }
+    else if (cmd === "unhoist") {
+        hoistedNoteService.setHoistedNoteId('root');
     }
     else {
         messagingService.logError("Unknown command: " + cmd);

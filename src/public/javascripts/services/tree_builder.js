@@ -4,13 +4,18 @@ import Branch from "../entities/branch.js";
 import server from "./server.js";
 import treeCache from "./tree_cache.js";
 import messagingService from "./messaging.js";
+import hoistedNoteService from "./hoisted_note.js";
 
 async function prepareTree(noteRows, branchRows, relations) {
     utils.assertArguments(noteRows, branchRows, relations);
 
     treeCache.load(noteRows, branchRows, relations);
 
-    return [ await prepareNode(await treeCache.getBranch('root')) ];
+    const hoistedNoteId = await hoistedNoteService.getHoistedNoteId();
+    const hoistedNote = await treeCache.getNote(hoistedNoteId);
+    const hoistedBranch = (await hoistedNote.getBranches())[0];
+
+    return [ await prepareNode(hoistedBranch) ];
 }
 
 async function prepareBranch(note) {
