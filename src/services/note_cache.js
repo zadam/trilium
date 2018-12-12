@@ -4,6 +4,7 @@ const eventService = require('./events');
 const repository = require('./repository');
 const protectedSessionService = require('./protected_session');
 const utils = require('./utils');
+const options = require('./options');
 
 let loaded = false;
 let noteTitles = {};
@@ -63,7 +64,7 @@ function highlightResults(results, allTokens) {
     }
 }
 
-function findNotes(query) {
+async function findNotes(query) {
     if (!noteTitles || !query.length) {
         return [];
     }
@@ -72,7 +73,7 @@ function findNotes(query) {
     // filtering '/' because it's used as separator
     const allTokens = query.trim().toLowerCase().split(" ").filter(token => token !== '/');
     const tokens = allTokens.slice();
-    const results = [];
+    let results = [];
 
     let noteIds = Object.keys(noteTitles);
 
@@ -118,6 +119,12 @@ function findNotes(query) {
                 search(parentNoteId, remainingTokens, [noteId], results);
             }
         }
+    }
+
+    const hoistedNoteId = await options.getOption('hoistedNoteId');
+
+    if (hoistedNoteId !== 'root') {
+        results = results.filter(res => res.pathArray.includes(hoistedNoteId));
     }
 
     // sort results by depth of the note. This is based on the assumption that more important results

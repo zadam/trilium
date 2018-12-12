@@ -20,7 +20,7 @@ async function searchNotes(req) {
     let searchTextResults = null;
 
     if (searchText.trim().length > 0) {
-        searchTextResults = noteCacheService.findNotes(searchText);
+        searchTextResults = await noteCacheService.findNotes(searchText);
 
         let fullTextNoteIds = await getFullTextResults(searchText);
 

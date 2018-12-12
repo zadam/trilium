@@ -3,6 +3,8 @@
 const noteCacheService = require('../../services/note_cache');
 const repository = require('../../services/repository');
 const log = require('../../services/log');
+const utils = require('../../services/utils');
+const optionService = require('../../services/options');
 
 async function getAutocomplete(req) {
     const query = req.query.query;
@@ -16,7 +18,7 @@ async function getAutocomplete(req) {
         results = await getRecentNotes(currentNoteId);
     }
     else {
-        results = noteCacheService.findNotes(query);
+        results = await noteCacheService.findNotes(query);
     }
 
     const msTaken = Date.now() - timestampStarted;
@@ -29,6 +31,13 @@ async function getAutocomplete(req) {
 }
 
 async function getRecentNotes(currentNoteId) {
+    let extraCondition = '';
+
+    const hoistedNoteId = await optionService.getOption('hoistedNoteId');
+    if (hoistedNoteId !== 'root') {
+        extraCondition = `AND recent_notes.notePath LIKE '%${utils.sanitizeSql(hoistedNoteId)}%'`;
+    }
+
     const recentNotes = await repository.getEntities(`
       SELECT 
         recent_notes.* 
@@ -39,6 +48,7 @@ async function getRecentNotes(currentNoteId) {
         recent_notes.isDeleted = 0
         AND branches.isDeleted = 0
         AND branches.noteId != ?
+        ${extraCondition}
       ORDER BY 
         dateCreated DESC
       LIMIT 200`, [currentNoteId]);
