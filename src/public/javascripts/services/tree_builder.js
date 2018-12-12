@@ -35,9 +35,14 @@ async function prepareBranch(note) {
     }
 }
 
-function getIcon(note) {
+async function getIcon(note) {
+    const hoistedNoteId = await hoistedNoteService.getHoistedNoteId();
+
     if (note.noteId === 'root') {
         return "jam jam-chevrons-right";
+    }
+    else if (note.noteId === hoistedNoteId) {
+        return "jam jam-arrow-up";
     }
     else if (note.type === 'text') {
         if (note.hasChildren()) {
@@ -70,6 +75,7 @@ function getIcon(note) {
 async function prepareNode(branch) {
     const note = await branch.getNote();
     const title = (branch.prefix ? (branch.prefix + " - ") : "") + note.title;
+    const hoistedNoteId = await hoistedNoteService.getHoistedNoteId();
 
     const node = {
         noteId: note.noteId,
@@ -78,9 +84,9 @@ async function prepareNode(branch) {
         isProtected: note.isProtected,
         title: utils.escapeHtml(title),
         extraClasses: await getExtraClasses(note),
-        icon: getIcon(note),
+        icon: await getIcon(note),
         refKey: note.noteId,
-        expanded: note.type !== 'search' && branch.isExpanded
+        expanded: (note.type !== 'search' && branch.isExpanded) || hoistedNoteId === note.noteId
     };
 
     if (note.hasChildren() || note.type === 'search') {
@@ -147,10 +153,6 @@ async function getExtraClasses(note) {
     utils.assertArguments(note);
 
     const extraClasses = [];
-
-    if (note.noteId === 'root') {
-        extraClasses.push("tree-root");
-    }
 
     if (note.isProtected) {
         extraClasses.push("protected");

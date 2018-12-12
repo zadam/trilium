@@ -548,7 +548,7 @@ async function createNote(node, parentNoteId, target, isProtected, saveSelection
         branchId: branchEntity.branchId,
         isProtected: isProtected,
         extraClasses: await treeBuilder.getExtraClasses(noteEntity),
-        icon: treeBuilder.getIcon(noteEntity)
+        icon: await treeBuilder.getIcon(noteEntity)
     };
 
     if (target === 'after') {

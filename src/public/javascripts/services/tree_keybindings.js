@@ -4,6 +4,7 @@ import treeChangesService from "./branches.js";
 import contextMenuService from "./tree_context_menu.js";
 import treeService from "./tree.js";
 import editBranchPrefixDialog from "../dialogs/branch_prefix.js";
+import hoistedNoteService from "./hoisted_note.js";
 
 const keyBindings = {
     "del": node => {
@@ -112,6 +113,18 @@ const keyBindings = {
         if (!utils.isRootNode(node)) {
             node.getParent().setActive().then(treeService.clearSelectedNodes);
         }
+    },
+    "ctrl+h": node => {
+        hoistedNoteService.getHoistedNoteId().then(hoistedNoteId => {
+            if (node.data.noteId === hoistedNoteId) {
+                hoistedNoteService.setHoistedNoteId('root');
+            }
+            else {
+                hoistedNoteService.setHoistedNoteId(node.data.noteId);
+            }
+        });
+
+        return false;
     },
     // code below shouldn't be necessary normally, however there's some problem with interaction with context menu plugin
     // after opening context menu, standard shortcuts don't work, but they are detected here
