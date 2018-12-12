@@ -14,6 +14,7 @@ import treeBuilder from "./tree_builder.js";
 import treeKeyBindings from "./tree_keybindings.js";
 import Branch from '../entities/branch.js';
 import NoteShort from '../entities/note_short.js';
+import hoistedNoteService from '../services/hoisted_note.js';
 
 const $tree = $("#tree");
 const $createTopLevelNoteButton = $("#create-top-level-note-button");
@@ -88,10 +89,11 @@ async function expandToNote(notePath, expandOpts) {
 
     const noteId = treeUtils.getNoteIdFromNotePath(notePath);
 
-    let parentNoteId = 'none';
+    let parentNoteId = null;
 
     for (const childNoteId of runPath) {
-        const node = getNodesByNoteId(childNoteId).find(node => node.data.parentNoteId === parentNoteId);
+        // for first node (!parentNoteId) it doesn't matter which node is found
+        const node = getNodesByNoteId(childNoteId).find(node => !parentNoteId || node.data.parentNoteId === parentNoteId);
 
         if (!node) {
             console.error(`Can't find node for noteId=${childNoteId} with parentNoteId=${parentNoteId}`);
@@ -142,6 +144,8 @@ async function getRunPath(notePath) {
     if (!path.includes("root")) {
         path.push('root');
     }
+
+    const hoistedNoteId = await hoistedNoteService.getHoistedNoteId();
 
     const effectivePath = [];
     let childNoteId = null;
@@ -195,12 +199,11 @@ async function getRunPath(notePath) {
             }
         }
 
-        if (parentNoteId === 'none') {
+        effectivePath.push(parentNoteId);
+        childNoteId = parentNoteId;
+
+        if (parentNoteId === hoistedNoteId) {
             break;
-        }
-        else {
-            effectivePath.push(parentNoteId);
-            childNoteId = parentNoteId;
         }
     }
 

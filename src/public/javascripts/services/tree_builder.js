@@ -12,8 +12,16 @@ async function prepareTree(noteRows, branchRows, relations) {
     treeCache.load(noteRows, branchRows, relations);
 
     const hoistedNoteId = await hoistedNoteService.getHoistedNoteId();
-    const hoistedNote = await treeCache.getNote(hoistedNoteId);
-    const hoistedBranch = (await hoistedNote.getBranches())[0];
+
+    let hoistedBranch;
+
+    if (hoistedNoteId === 'root') {
+        hoistedBranch = await treeCache.getBranch('root');
+    }
+    else {
+        const hoistedNote = await treeCache.getNote(hoistedNoteId);
+        hoistedBranch = (await hoistedNote.getBranches())[0];
+    }
 
     return [ await prepareNode(hoistedBranch) ];
 }

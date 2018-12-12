@@ -1,5 +1,6 @@
 import optionsInit from './options_init.js';
 import server from "./server.js";
+import tree from "./tree.js";
 
 let hoistedNoteId;
 
@@ -17,6 +18,8 @@ async function setHoistedNoteId(noteId) {
     hoistedNoteId = noteId;
 
     await server.put('options/hoistedNoteId/' + noteId);
+
+    await tree.reload();
 }
 
 export default {
