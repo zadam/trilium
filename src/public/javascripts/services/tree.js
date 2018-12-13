@@ -15,6 +15,7 @@ import treeKeyBindings from "./tree_keybindings.js";
 import Branch from '../entities/branch.js';
 import NoteShort from '../entities/note_short.js';
 import hoistedNoteService from '../services/hoisted_note.js';
+import confirmDialog from "../dialogs/confirm.js";
 
 const $tree = $("#tree");
 const $createTopLevelNoteButton = $("#create-top-level-note-button");
@@ -112,6 +113,17 @@ async function expandToNote(notePath, expandOpts) {
 
 async function activateNote(notePath, newNote) {
     utils.assertArguments(notePath);
+
+    const hoistedNoteId = await hoistedNoteService.getHoistedNoteId();
+
+    if (!notePath.includes(hoistedNoteId)) {
+        if (!await confirmDialog.confirm("Requested note is outside of hoisted note subtree. Do you want to unhoist?")) {
+            return;
+        }
+
+        // unhoist so we can activate the note
+        await hoistedNoteService.setHoistedNoteId('root');
+    }
 
     if (glob.activeDialog) {
         glob.activeDialog.modal('hide');

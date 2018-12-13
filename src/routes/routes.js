@@ -151,7 +151,7 @@ function register(app) {
     apiRoute(GET, '/api/recent-changes', recentChangesApiRoute.getRecentChanges);
 
     apiRoute(GET, '/api/options', optionsApiRoute.getOptions);
-    apiRoute(PUT, '/api/options/:name/:value', optionsApiRoute.updateOption);
+    apiRoute(PUT, '/api/options/:name/:value*', optionsApiRoute.updateOption);
     apiRoute(PUT, '/api/options', optionsApiRoute.updateOptions);
 
     apiRoute(POST, '/api/password/change', passwordApiRoute.changePassword);
