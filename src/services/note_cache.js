@@ -219,13 +219,8 @@ function getNoteTitle(noteId, parentNoteId) {
 function getNoteTitleArrayForPath(path) {
     const titles = [];
 
-    if (path[0] === hoistedNoteService.getHoistedNoteId()) {
-        if (path.length === 1) {
-            return [ getNoteTitle(hoistedNoteService.getHoistedNoteId()) ];
-        }
-        else {
-            path = path.slice(1);
-        }
+    if (path[0] === hoistedNoteService.getHoistedNoteId() && path.length === 1) {
+        return [ getNoteTitle(hoistedNoteService.getHoistedNoteId()) ];
     }
 
     let parentNoteId = 'root';
@@ -257,12 +252,12 @@ function getNoteTitleForPath(path) {
 
 function getSomePath(noteId, path) {
     if (noteId === 'root') {
+        path.push(noteId);
+        path.reverse();
+
         if (!path.includes(hoistedNoteService.getHoistedNoteId())) {
             return false;
         }
-
-        path.push(noteId);
-        path.reverse();
 
         return path;
     }
