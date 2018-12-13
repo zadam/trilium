@@ -4,7 +4,7 @@ const eventService = require('./events');
 const repository = require('./repository');
 const protectedSessionService = require('./protected_session');
 const utils = require('./utils');
-const options = require('./options');
+const hoistedNoteService = require('./hoisted_note');
 
 let loaded = false;
 let noteTitles = {};
@@ -121,10 +121,8 @@ async function findNotes(query) {
         }
     }
 
-    const hoistedNoteId = await options.getOption('hoistedNoteId');
-
-    if (hoistedNoteId !== 'root') {
-        results = results.filter(res => res.pathArray.includes(hoistedNoteId));
+    if (hoistedNoteService.getHoistedNoteId() !== 'root') {
+        results = results.filter(res => res.pathArray.includes(hoistedNoteService.getHoistedNoteId()));
     }
 
     // sort results by depth of the note. This is based on the assumption that more important results
@@ -221,9 +219,9 @@ function getNoteTitle(noteId, parentNoteId) {
 function getNoteTitleArrayForPath(path) {
     const titles = [];
 
-    if (path[0] === 'root') {
+    if (path[0] === hoistedNoteService.getHoistedNoteId()) {
         if (path.length === 1) {
-            return [ getNoteTitle('root') ];
+            return [ getNoteTitle(hoistedNoteService.getHoistedNoteId()) ];
         }
         else {
             path = path.slice(1);
@@ -231,11 +229,20 @@ function getNoteTitleArrayForPath(path) {
     }
 
     let parentNoteId = 'root';
+    let hoistedNotePassed = false;
 
     for (const noteId of path) {
-        const title = getNoteTitle(noteId, parentNoteId);
+        // start collecting path segment titles only after hoisted note
+        if (hoistedNotePassed) {
+            const title = getNoteTitle(noteId, parentNoteId);
 
-        titles.push(title);
+            titles.push(title);
+        }
+
+        if (noteId === hoistedNoteService.getHoistedNoteId()) {
+            hoistedNotePassed = true;
+        }
+
         parentNoteId = noteId;
     }
 
@@ -250,6 +257,10 @@ function getNoteTitleForPath(path) {
 
 function getSomePath(noteId, path) {
     if (noteId === 'root') {
+        if (!path.includes(hoistedNoteService.getHoistedNoteId())) {
+            return false;
+        }
+
         path.push(noteId);
         path.reverse();
 
