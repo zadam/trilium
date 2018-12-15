@@ -32,6 +32,7 @@ import tooltip from './tooltip.js';
 import bundle from "./bundle.js";
 import treeCache from "./tree_cache.js";
 import libraryLoader from "./library_loader.js";
+import hoistedNoteService from './hoisted_note.js';
 
 // required for CKEditor image upload plugin
 window.glob.getCurrentNode = treeService.getCurrentNode;
@@ -83,6 +84,8 @@ $(document).on("click", "button[data-help-page]", e => {
 });
 
 $("#logout-button").toggle(!utils.isElectron());
+
+$("#tree").on("click", ".unhoist-button", hoistedNoteService.unhoist);
 
 if (utils.isElectron()) {
     require('electron').ipcRenderer.on('create-day-sub-note', async function(event, parentNoteId) {

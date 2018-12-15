@@ -22,7 +22,12 @@ async function setHoistedNoteId(noteId) {
     await tree.reload();
 }
 
+async function unhoist() {
+    await setHoistedNoteId('root');
+}
+
 export default {
     getHoistedNoteId,
-    setHoistedNoteId
+    setHoistedNoteId,
+    unhoist
 }

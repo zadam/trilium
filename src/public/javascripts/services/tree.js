@@ -122,7 +122,7 @@ async function activateNote(notePath, newNote) {
         }
 
         // unhoist so we can activate the note
-        await hoistedNoteService.setHoistedNoteId('root');
+        await hoistedNoteService.unhoist();
     }
 
     if (glob.activeDialog) {
@@ -417,6 +417,15 @@ function initFancyTree(tree) {
         },
         clones: {
             highlightActiveClones: true
+        },
+        renderNode: async function (event, data) {
+            const node = data.node;
+
+            if (node.data.noteId !== 'root' && node.data.noteId === await hoistedNoteService.getHoistedNoteId()) {
+                const unhoistButton = $('<span>&nbsp; (<a class="unhoist-button">unhoist</a>)</span>');
+
+                $(node.span).append(unhoistButton);
+            }
         }
     });
 

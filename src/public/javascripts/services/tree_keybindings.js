@@ -117,7 +117,7 @@ const keyBindings = {
     "ctrl+h": node => {
         hoistedNoteService.getHoistedNoteId().then(hoistedNoteId => {
             if (node.data.noteId === hoistedNoteId) {
-                hoistedNoteService.setHoistedNoteId('root');
+                hoistedNoteService.unhoist();
             }
             else {
                 hoistedNoteService.setHoistedNoteId(node.data.noteId);

@@ -215,7 +215,7 @@ function selectContextMenuItem(event, cmd) {
         hoistedNoteService.setHoistedNoteId(node.data.noteId);
     }
     else if (cmd === "unhoist") {
-        hoistedNoteService.setHoistedNoteId('root');
+        hoistedNoteService.unhoist();
     }
     else {
         messagingService.logError("Unknown command: " + cmd);

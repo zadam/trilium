@@ -699,3 +699,9 @@ div[data-notify="container"] {
 #export-form .form-check-label {
     padding: 2px;
 }
+
+.unhoist-button {
+    text-decoration: underline !important;
+    color: blue !important;
+    cursor: pointer !important;
+}
