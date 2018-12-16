@@ -84,7 +84,7 @@ async function doLogin() {
     const documentSecret = await optionService.getOption('documentSecret');
     const hash = utils.hmac(documentSecret, timestamp);
 
-    const syncContext = { cookieJar: rp.jar() };
+    const syncContext = { cookieJar: {} };
 
     const resp = await syncRequest(syncContext, 'POST', '/api/login/sync', {
         timestamp: timestamp,
@@ -110,6 +110,10 @@ async function pullSync(syncContext) {
 
         const resp = await syncRequest(syncContext, 'GET', changesUri);
         stats.outstandingPulls = resp.maxSyncId - lastSyncedPull;
+
+        if (stats.outstandingPulls < 0) {
+            stats.outstandingPulls = 0;
+        }
 
         const rows = resp.syncs;
 
@@ -215,26 +219,62 @@ async function checkContentHash(syncContext) {
 async function syncRequest(syncContext, method, uri, body) {
     const fullUri = await syncOptions.getSyncServerHost() + uri;
 
-    try {
-        const options = {
-            method: method,
-            uri: fullUri,
-            jar: syncContext.cookieJar,
-            json: true,
-            body: body,
-            timeout: await syncOptions.getSyncTimeout()
-        };
+    if (utils.isElectron()) {
+        return new Promise((resolve, reject) => {
+            try {
+                const { net } = require('electron');
 
-        const syncProxy = await syncOptions.getSyncProxy();
+                const request = net.request({
+                    method,
+                    url: fullUri,
+                    headers: {
+                        Cookie: syncContext.cookieJar.header || "",
+                        'Content-Type': 'application/json'
+                    }
+                });
 
-        if (syncProxy && proxyToggle) {
-            options.proxy = syncProxy;
-        }
+                request.on('response', response => {
+                    if (response.headers['set-cookie']) {
+                        syncContext.cookieJar.header = response.headers['set-cookie'];
+                    }
 
-        return await rp(options);
+                    let data = '';
+
+                    response.on('data', chunk => data += chunk);
+
+                    response.on('end', () => resolve(data.trim() ? JSON.parse(data) : null));
+                });
+
+                request.end(JSON.stringify(body));
+            }
+            catch (e) {
+                console.log(e);
+
+                reject(e.message);
+            }
+        });
     }
-    catch (e) {
-        throw new Error(`Request to ${method} ${fullUri} failed, error: ${e.message}`);
+    else {
+        try {
+            const options = {
+                method: method,
+                uri: fullUri,
+                jar: syncContext.cookieJar,
+                json: true,
+                body: body,
+                timeout: await syncOptions.getSyncTimeout()
+            };
+
+            const syncProxy = await syncOptions.getSyncProxy();
+
+            if (syncProxy && proxyToggle) {
+                options.proxy = syncProxy;
+            }
+
+            return await rp(options);
+        } catch (e) {
+            throw new Error(`Request to ${method} ${fullUri} failed, error: ${e.message}`);
+        }
     }
 }
 

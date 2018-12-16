@@ -29,7 +29,7 @@ async function loginSync(req) {
     const syncVersion = req.body.syncVersion;
 
     if (syncVersion !== appInfo.syncVersion) {
-        return [400, { message: 'Non-matching sync versions, local is version ' + appInfo.syncVersion }];
+        return [400, { message: `Non-matching sync versions, local is version ${appInfo.syncVersion}, remote is ${syncVersion}` }];
     }
 
     const documentSecret = await options.getOption('documentSecret');
