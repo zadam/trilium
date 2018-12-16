@@ -1,7 +1,7 @@
 "use strict";
 
+const url = require('url');
 const log = require('./log');
-const rp = require('request-promise');
 const sql = require('./sql');
 const sqlInit = require('./sql_init');
 const optionService = require('./options');
@@ -49,7 +49,7 @@ async function sync() {
     catch (e) {
         proxyToggle = !proxyToggle;
 
-        if (e.message.indexOf('ECONNREFUSED') !== -1) {
+        if (e.message && e.message.indexOf('ECONNREFUSED') !== -1) {
             log.info("No connection to sync server.");
 
             return {
@@ -216,66 +216,81 @@ async function checkContentHash(syncContext) {
     await contentHashService.checkContentHashes(resp.hashes);
 }
 
-async function syncRequest(syncContext, method, uri, body) {
-    const fullUri = await syncOptions.getSyncServerHost() + uri;
-
+async function getClient() {
     if (utils.isElectron()) {
-        return new Promise((resolve, reject) => {
-            try {
-                const { net } = require('electron');
-
-                const request = net.request({
-                    method,
-                    url: fullUri,
-                    headers: {
-                        Cookie: syncContext.cookieJar.header || "",
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                request.on('response', response => {
-                    if (response.headers['set-cookie']) {
-                        syncContext.cookieJar.header = response.headers['set-cookie'];
-                    }
-
-                    let data = '';
-
-                    response.on('data', chunk => data += chunk);
-
-                    response.on('end', () => resolve(data.trim() ? JSON.parse(data) : null));
-                });
-
-                request.end(JSON.stringify(body));
-            }
-            catch (e) {
-                console.log(e);
-
-                reject(e.message);
-            }
-        });
+        return require('electron').net;
     }
     else {
-        try {
-            const options = {
-                method: method,
-                uri: fullUri,
-                jar: syncContext.cookieJar,
-                json: true,
-                body: body,
-                timeout: await syncOptions.getSyncTimeout()
-            };
+        const {protocol} = url.parse(await syncOptions.getSyncServerHost());
 
-            const syncProxy = await syncOptions.getSyncProxy();
-
-            if (syncProxy && proxyToggle) {
-                options.proxy = syncProxy;
-            }
-
-            return await rp(options);
-        } catch (e) {
-            throw new Error(`Request to ${method} ${fullUri} failed, error: ${e.message}`);
+        if (protocol === 'http:' || protocol === 'https:') {
+            return require(protocol.substr(0, protocol.length - 1));
+        }
+        else {
+            throw new Error(`Unrecognized protocol "${protocol}"`);
         }
     }
+}
+
+async function syncRequest(syncContext, method, requestPath, body) {
+    const client = await getClient();
+    const syncServerHost = await syncOptions.getSyncServerHost();
+
+    function generateError(e) {
+        return new Error(`Request to ${method} ${syncServerHost}${requestPath} failed, error: ${e.message}`);
+    }
+
+    const parsedUrl = url.parse(syncServerHost);
+
+    // TODO: add proxy support - see https://stackoverflow.com/questions/3862813/how-can-i-use-an-http-proxy-with-node-js-http-client
+
+    return new Promise(async (resolve, reject) => {
+        try {
+            const request = client.request({
+                method,
+                // url is used by electron net module
+                url: syncServerHost + requestPath,
+                // 4 fields below are used by http and https node modules
+                protocol: parsedUrl.protocol,
+                host: parsedUrl.hostname,
+                port: parsedUrl.port,
+                path: requestPath,
+                timeout: await syncOptions.getSyncTimeout(),
+                headers: {
+                    Cookie: syncContext.cookieJar.header || "",
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            request.on('response', response => {
+                if (response.headers['set-cookie']) {
+                    syncContext.cookieJar.header = response.headers['set-cookie'];
+                }
+
+                let responseStr = '';
+
+                response.on('data', chunk => responseStr += chunk);
+
+                response.on('end', () => {
+                    try {
+                        const jsonObj = responseStr.trim() ? JSON.parse(responseStr) : null;
+
+                        resolve(jsonObj);
+                    }
+                    catch (e) {
+                        log.error("Failed to deserialize sync response: " + responseStr);
+
+                        reject(generateError(e));
+                    }
+                });
+            });
+
+            request.end(JSON.stringify(body));
+        }
+        catch (e) {
+            reject(generateError(e));
+        }
+    });
 }
 
 const primaryKeys = {

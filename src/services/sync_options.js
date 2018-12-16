@@ -17,6 +17,6 @@ async function get(name) {
 module.exports = {
     getSyncServerHost: async () => await get('syncServerHost'),
     isSyncSetup: async () => !!await get('syncServerHost'),
-    getSyncTimeout: async () => await get('syncServerTimeout'),
+    getSyncTimeout: async () => parseInt(await get('syncServerTimeout')),
     getSyncProxy: async () => await get('syncProxy')
 };
