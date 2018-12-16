@@ -116,7 +116,7 @@ async function activateNote(notePath, newNote) {
 
     const hoistedNoteId = await hoistedNoteService.getHoistedNoteId();
 
-    if (!notePath.includes(hoistedNoteId)) {
+    if (hoistedNoteId !== 'root' && !notePath.includes(hoistedNoteId)) {
         if (!await confirmDialog.confirm("Requested note is outside of hoisted note subtree. Do you want to unhoist?")) {
             return;
         }
