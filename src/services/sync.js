@@ -223,7 +223,8 @@ async function syncRequest(syncContext, method, requestPath, body) {
         url: await syncOptions.getSyncServerHost() + requestPath,
         cookieJar: syncContext.cookieJar,
         timeout: await syncOptions.getSyncTimeout(),
-        body
+        body,
+        proxy: proxyToggle ? await syncOptions.getSyncProxy() : null
     });
 }
 
