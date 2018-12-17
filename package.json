@@ -50,8 +50,6 @@
     "open": "0.0.5",
     "rand-token": "0.4.0",
     "rcedit": "1.1.1",
-    "request": "2.88.0",
-    "request-promise": "4.2.2",
     "rimraf": "2.6.2",
     "sanitize-filename": "1.6.1",
     "sax": "^1.2.4",

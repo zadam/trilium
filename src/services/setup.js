@@ -1,10 +1,10 @@
-const rp = require('request-promise');
 const syncService = require('./sync');
 const log = require('./log');
 const sqlInit = require('./sql_init');
 const repository = require('./repository');
 const optionService = require('./options');
 const syncOptions = require('./sync_options');
+const request = require('./request');
 
 async function hasSyncServerSchemaAndSeed() {
     const response = await requestToSyncServer('GET', '/api/setup/status');
@@ -37,23 +37,13 @@ async function sendSeedToSyncServer() {
 }
 
 async function requestToSyncServer(method, path, body = null) {
-    const rpOpts = {
-        uri: await syncOptions.getSyncServerHost() + path,
-        method: method,
-        json: true
-    };
-
-    if (body) {
-        rpOpts.body = body;
-    }
-
-    const syncProxy = await syncOptions.getSyncProxy();
-
-    if (syncProxy) {
-        rpOpts.proxy = syncProxy;
-    }
-
-    return await rp(rpOpts);
+    return await request.exec({
+        method,
+        url: await syncOptions.getSyncServerHost() + path,
+        body,
+        proxy: await syncOptions.getSyncProxy(),
+        timeout: await syncOptions.getSyncTimeout()
+    });
 }
 
 async function setupSyncFromSyncServer(syncServerHost, syncProxy, username, password) {
@@ -68,18 +58,15 @@ async function setupSyncFromSyncServer(syncServerHost, syncProxy, username, pass
         log.info("Getting document options from sync server.");
 
         // response is expected to contain documentId and documentSecret options
-        const options = await rp.get({
-            uri: syncServerHost + '/api/setup/sync-seed',
+        const options = await request.exec({
+            method: 'get',
+            url: syncServerHost + '/api/setup/sync-seed',
             auth: {
                 'user': username,
                 'pass': password
             },
-            json: true
+            proxy: syncProxy
         });
-
-        if (syncProxy) {
-            options.proxy = syncProxy;
-        }
 
         await sqlInit.createDatabaseForSync(options, syncServerHost, syncProxy);
 
