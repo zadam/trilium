@@ -14,6 +14,7 @@ const appInfo = require('./app_info');
 const syncOptions = require('./sync_options');
 const syncMutexService = require('./sync_mutex');
 const cls = require('./cls');
+const request = require('./request');
 
 let proxyToggle = true;
 
@@ -216,80 +217,13 @@ async function checkContentHash(syncContext) {
     await contentHashService.checkContentHashes(resp.hashes);
 }
 
-async function getClient() {
-    if (utils.isElectron()) {
-        return require('electron').net;
-    }
-    else {
-        const {protocol} = url.parse(await syncOptions.getSyncServerHost());
-
-        if (protocol === 'http:' || protocol === 'https:') {
-            return require(protocol.substr(0, protocol.length - 1));
-        }
-        else {
-            throw new Error(`Unrecognized protocol "${protocol}"`);
-        }
-    }
-}
-
 async function syncRequest(syncContext, method, requestPath, body) {
-    const client = await getClient();
-    const syncServerHost = await syncOptions.getSyncServerHost();
-
-    function generateError(e) {
-        return new Error(`Request to ${method} ${syncServerHost}${requestPath} failed, error: ${e.message}`);
-    }
-
-    const parsedUrl = url.parse(syncServerHost);
-
-    // TODO: add proxy support - see https://stackoverflow.com/questions/3862813/how-can-i-use-an-http-proxy-with-node-js-http-client
-
-    return new Promise(async (resolve, reject) => {
-        try {
-            const request = client.request({
-                method,
-                // url is used by electron net module
-                url: syncServerHost + requestPath,
-                // 4 fields below are used by http and https node modules
-                protocol: parsedUrl.protocol,
-                host: parsedUrl.hostname,
-                port: parsedUrl.port,
-                path: requestPath,
-                timeout: await syncOptions.getSyncTimeout(),
-                headers: {
-                    Cookie: syncContext.cookieJar.header || "",
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            request.on('response', response => {
-                if (response.headers['set-cookie']) {
-                    syncContext.cookieJar.header = response.headers['set-cookie'];
-                }
-
-                let responseStr = '';
-
-                response.on('data', chunk => responseStr += chunk);
-
-                response.on('end', () => {
-                    try {
-                        const jsonObj = responseStr.trim() ? JSON.parse(responseStr) : null;
-
-                        resolve(jsonObj);
-                    }
-                    catch (e) {
-                        log.error("Failed to deserialize sync response: " + responseStr);
-
-                        reject(generateError(e));
-                    }
-                });
-            });
-
-            request.end(JSON.stringify(body));
-        }
-        catch (e) {
-            reject(generateError(e));
-        }
+    return await request.exec({
+        method,
+        url: await syncOptions.getSyncServerHost() + requestPath,
+        cookieJar: syncContext.cookieJar,
+        timeout: await syncOptions.getSyncTimeout(),
+        body
     });
 }
 
