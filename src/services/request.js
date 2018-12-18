@@ -38,8 +38,6 @@ function exec(opts) {
                 port = parsedProxyUrl.port;
                 path = opts.url;
 
-                console.log("Using proxy " + opts.proxy);
-
                 headers['Host'] = parsedTargetUrl.host; // host also includes port
             }
 
@@ -57,6 +55,10 @@ function exec(opts) {
             });
 
             request.on('response', response => {
+                if (![200, 201, 204].includes(response.statusCode)) {
+                    reject(generateError(opts, response.statusCode + ' ' + response.statusMessage));
+                }
+
                 if (opts.cookieJar && response.headers['set-cookie']) {
                     opts.cookieJar.header = response.headers['set-cookie'];
                 }
@@ -74,7 +76,7 @@ function exec(opts) {
                     catch (e) {
                         log.error("Failed to deserialize sync response: " + responseStr);
 
-                        reject(generateError(e, opts));
+                        reject(generateError(opts, e.message));
                     }
                 });
             });
@@ -82,7 +84,7 @@ function exec(opts) {
             request.end(opts.body ? JSON.stringify(opts.body) : undefined);
         }
         catch (e) {
-            reject(generateError(e, opts));
+            reject(generateError(opts, e.message));
         }
     })
 }
@@ -107,8 +109,8 @@ function getClient(opts) {
     }
 }
 
-function generateError(e, opts) {
-    return new Error(`Request to ${opts.method} ${opts.url} failed, error: ${e.message}`);
+function generateError(opts, message) {
+    return new Error(`Request to ${opts.method} ${opts.url} failed, error: ${message}`);
 }
 
 module.exports = {
