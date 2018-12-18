@@ -1,6 +1,7 @@
 "use strict";
 
 const utils = require('./utils');
+const log = require('./log');
 const url = require('url');
 
 // this service provides abstraction over node's HTTP/HTTPS and electron net.client APIs
