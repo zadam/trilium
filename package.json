@@ -2,7 +2,7 @@
   "name": "trilium",
   "productName": "Trilium Notes",
   "description": "Trilium Notes",
-  "version": "0.25.2",
+  "version": "0.26.0-beta",
   "license": "AGPL-3.0-only",
   "main": "electron.js",
   "bin": {
