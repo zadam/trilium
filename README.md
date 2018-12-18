@@ -10,7 +10,7 @@ Trilium Notes is a hierarchical note taking application with focus on building l
 * Notes can be arranged into arbitrarily deep tree. Single note can be placed into multiple places in the tree (see [cloning](https://github.com/zadam/trilium/wiki/Cloning-notes))
 * Rich WYSIWYG note editing including e.g. tables and images with markdown [autoformat](https://github.com/zadam/trilium/wiki/Text-editor#autoformat)
 * Support for editing [notes with source code](https://github.com/zadam/trilium/wiki/Code-notes), including syntax highlighting
-* Fast and easy [navigation between notes](https://github.com/zadam/trilium/wiki/Note-navigation)
+* Fast and easy [navigation between notes](https://github.com/zadam/trilium/wiki/Note-navigation), full text search and [note hoisting](https://github.com/zadam/trilium/wiki/Note-hoisting)
 * Seamless [note versioning](https://github.com/zadam/trilium/wiki/Note-revisions)
 * Note [attributes](https://github.com/zadam/trilium/wiki/Attributes) can be used for note organization, querying and advanced [scripting](https://github.com/zadam/trilium/wiki/Scripts)
 * [Synchronization](https://github.com/zadam/trilium/wiki/Synchronization) with self-hosted sync server
