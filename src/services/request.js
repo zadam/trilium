@@ -54,6 +54,8 @@ function exec(opts) {
                 headers
             });
 
+            request.on('error', err => reject(generateError(opts, err)));
+
             request.on('response', response => {
                 if (![200, 201, 204].includes(response.statusCode)) {
                     reject(generateError(opts, response.statusCode + ' ' + response.statusMessage));

@@ -65,7 +65,7 @@
   },
   "devDependencies": {
     "devtron": "1.4.0",
-    "electron": "4.0.0-beta.9",
+    "electron": "4.0.0-beta.11",
     "electron-compile": "6.4.3",
     "electron-packager": "13.0.1",
     "electron-rebuild": "1.8.2",
