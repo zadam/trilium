@@ -16,7 +16,13 @@ async function get(name) {
 
 module.exports = {
     getSyncServerHost: async () => await get('syncServerHost'),
-    isSyncSetup: async () => !!await get('syncServerHost'),
+    isSyncSetup: async () => {
+        const syncServerHost = await get('syncServerHost');
+
+        // special value "disabled" is here to support use case where document is configured with sync server
+        // and we need to override it with config from config.ini
+        return !!syncServerHost && syncServerHost !== 'disabled';
+    },
     getSyncTimeout: async () => parseInt(await get('syncServerTimeout')),
     getSyncProxy: async () => await get('syncProxy')
 };

@@ -252,7 +252,10 @@ async function getEntityRow(entityName, entityId) {
 
         const entity = await sql.getRow(`SELECT * FROM ${entityName} WHERE ${primaryKey} = ?`, [entityId]);
 
-        if (entityName === 'notes' && (entity.type === 'file' || entity.type === 'image')) {
+        if (entityName === 'notes'
+            && entity.content !== null
+            && (entity.type === 'file' || entity.type === 'image')) {
+
             entity.content = entity.content.toString("binary");
         }
 
