@@ -28,7 +28,7 @@ import treeUtils from './tree_utils.js';
 import utils from './utils.js';
 import server from './server.js';
 import entrypoints from './entrypoints.js';
-import tooltip from './tooltip.js';
+import noteTooltipService from './note_tooltip.js';
 import bundle from "./bundle.js";
 import treeCache from "./tree_cache.js";
 import libraryLoader from "./library_loader.js";
@@ -141,6 +141,6 @@ treeService.showTree();
 
 entrypoints.registerEntrypoints();
 
-tooltip.setupTooltip();
+noteTooltipService.setupGlobalTooltip();
 
 bundle.executeStartupBundles();
