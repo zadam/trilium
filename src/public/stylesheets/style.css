@@ -624,7 +624,7 @@ table.promoted-attributes-in-tooltip td, table.promoted-attributes-in-tooltip th
     left: 40%;
     bottom: auto;
     right: auto;
-    margin-left: -300px;
+    margin-left: -300px !important;
 }
 
 .multiplicity {
