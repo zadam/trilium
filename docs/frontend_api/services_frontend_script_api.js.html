@@ -34,6 +34,7 @@ import linkService from './link.js';
 import treeCache from './tree_cache.js';
 import noteDetailService from './note_detail.js';
 import noteTypeService from './note_type.js';
+import noteTooltipService from './note_tooltip.js';
 
 /**
  * This is the main frontend API interface for scripts. It's published in the local "api" object.
@@ -253,6 +254,12 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null) {
      * @param {array} types - list of mime types to be used
      */
     this.setCodeMimeTypes = noteTypeService.setCodeMimeTypes;
+
+    /**
+     * @method
+     * @param {object} $el - jquery object on which to setup the tooltip
+     */
+    this.setupElementTooltip = noteTooltipService.setupElementTooltip
 }
 
 export default FrontendScriptApi;</code></pre>

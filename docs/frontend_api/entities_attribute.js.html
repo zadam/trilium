@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: entities/branch.js</title>
+    <title>JSDoc: Source: entities/attribute.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: entities/branch.js</h1>
+    <h1 class="page-title">Source: entities/attribute.js</h1>
 
     
 
@@ -26,23 +26,29 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>/** Represents mapping between note and parent note */
-class Branch {
+            <pre class="prettyprint source linenums"><code>class Attribute {
     constructor(treeCache, row) {
         this.treeCache = treeCache;
-        /** @param {string} primary key */
-        this.branchId = row.branchId;
-        /** @param {string} */
+        /** @param {string} attributeId */
+        this.attributeId = row.attributeId;
+        /** @param {string} noteId */
         this.noteId = row.noteId;
-        this.note = null;
-        /** @param {string} */
-        this.parentNoteId = row.parentNoteId;
-        /** @param {int} */
-        this.notePosition = row.notePosition;
-        /** @param {string} */
-        this.prefix = row.prefix;
-        /** @param {boolean} */
-        this.isExpanded = !!row.isExpanded;
+        /** @param {string} type */
+        this.type = row.type;
+        /** @param {string} name */
+        this.name = row.name;
+        /** @param {string} value */
+        this.value = row.value;
+        /** @param {int} position */
+        this.position = row.position;
+        /** @param {boolean} isInheritable */
+        this.isInheritable = row.isInheritable;
+        /** @param {boolean} isDeleted */
+        this.isDeleted = row.isDeleted;
+        /** @param {string} dateCreated */
+        this.dateCreated = row.dateCreated;
+        /** @param {string} dateModified */
+        this.dateModified = row.dateModified;
     }
 
     /** @returns {NoteShort} */
@@ -50,17 +56,10 @@ class Branch {
         return await this.treeCache.getNote(this.noteId);
     }
 
-    /** @returns {boolean} true if it's top level, meaning its parent is root note */
-    isTopLevel() {
-        return this.parentNoteId === 'root';
-    }
-
     get toString() {
-        return `Branch(branchId=${this.branchId})`;
+        return `Attribute(attributeId=${this.attributeId}, type=${this.type}, name=${this.name})`;
     }
-}
-
-export default Branch;</code></pre>
+}</code></pre>
         </article>
     </section>
 
