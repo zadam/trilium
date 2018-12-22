@@ -370,6 +370,16 @@ class Note extends Entity {
     async getRelationValue(name) { return await this.getAttributeValue(RELATION, name); }
 
     /**
+     * @param {string} name
+     * @returns {Promise<Note>|null} target note of the relation or null (if target is empty or note was not found)
+     */
+    async getRelationTarget(name) {
+        const relation = await this.getRelation(name);
+
+        return relation ? await repository.getNote(relation.value) : null;
+    }
+
+    /**
      * Based on enabled, label is either set or removed.
      *
      * @param {boolean} enabled - toggle On or Off
@@ -424,16 +434,6 @@ class Note extends Entity {
      * @returns {Promise<void>}
      */
     async removeRelation(name, value) { return await this.removeAttribute(RELATION, name, value); }
-
-    /**
-     * @param {string} name
-     * @returns {Promise<Note>|null} target note of the relation or null (if target is empty or note was not found)
-     */
-    async getRelationTarget(name) {
-        const relation = await this.getRelation(name);
-
-        return relation ? await repository.getNote(relation.value) : null;
-    }
 
     /**
      * @return {Promise<string[]>} return list of all descendant noteIds of this note. Returning just noteIds because number of notes can be huge. Includes also this note's noteId
