@@ -1,6 +1,7 @@
-const indexRoute = require('./index');
-const loginRoute = require('./login');
 const setupRoute = require('./setup');
+const loginRoute = require('./login');
+const indexRoute = require('./index');
+const mobileRoute = require('./mobile');
 const multer = require('multer')();
 
 // API routes
@@ -96,6 +97,8 @@ const uploadMiddleware = multer.single('upload');
 
 function register(app) {
     route(GET, '/', [auth.checkAuth], indexRoute.index);
+    route(GET, '/mobile', [auth.checkAuth], mobileRoute.index);
+
     route(GET, '/login', [auth.checkAppInitialized], loginRoute.loginPage);
     route(POST, '/login', [], loginRoute.login);
     route(POST, '/logout', [auth.checkAuth], loginRoute.logout);

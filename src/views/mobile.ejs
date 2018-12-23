@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Trilium Notes</title>
+</head>
+<body>
+
+<div id="tree"></div>
+
+<script type="text/javascript">
+    window.baseApiUrl = 'api/';
+    window.glob = {
+        activeDialog: null,
+        sourceId: '<%= sourceId %>',
+        maxSyncIdAtLoad: <%= maxSyncIdAtLoad %>,
+        instanceName: '<%= instanceName %>'
+    };
+</script>
+
+<script src="libraries/jquery.min.js"></script>
+
+<link href="libraries/fancytree/skin-win8/ui.fancytree.css" rel="stylesheet">
+<script src="libraries/fancytree/jquery.fancytree-all-deps.min.js"></script>
+
+<link href="libraries/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+<script src="javascripts/services/mobile.js" crossorigin type="module"></script>
+
+<script src="libraries/jquery.hotkeys.js"></script>
+<script src="libraries/jquery.fancytree.hotkeys.js"></script>
+
+<script src="libraries/knockout.min.js"></script>
+
+<link href="stylesheets/style.css" rel="stylesheet">
+<link href="stylesheets/mobile.css" rel="stylesheet">
+
+<link rel="stylesheet" type="text/css" href="libraries/jam/css/jam.min.css">
+</body>
+</html>
