@@ -1,149 +1,149 @@
 <div id="attributes-dialog" class="modal fade mx-auto" tabindex="-1" role="dialog">
-  <div class="modal-dialog modal-lg" style="max-width: 1000px" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title mr-auto">Note attributes</h5>
+    <div class="modal-dialog modal-lg" style="max-width: 1000px" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title mr-auto">Note attributes</h5>
 
-        <button class="help-button" type="button" data-help-page="Attributes" title="Help on Attributes">?</button>
+                <button class="help-button" type="button" data-help-page="Attributes" title="Help on Attributes">?</button>
 
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-left: 0;">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <form data-bind="submit: save">
-        <div class="modal-body">
-          <div style="height: 97%; overflow: auto">
-            <table id="owned-attributes-table" class="table">
-              <thead>
-              <tr>
-                <th>Type</th>
-                <th>Name</th>
-                <th>Value</th>
-                <th>Inheritable</th>
-              </tr>
-              </thead>
-              <tbody data-bind="foreach: ownedAttributes">
-              <tr data-bind="if: !isDeleted">
-                <td>
-                  <input type="hidden" name="position" data-bind="value: position"/>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-left: 0;">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form data-bind="submit: save">
+                <div class="modal-body">
+                    <div style="height: 97%; overflow: auto">
+                        <table id="owned-attributes-table" class="table">
+                            <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Name</th>
+                                <th>Value</th>
+                                <th>Inheritable</th>
+                            </tr>
+                            </thead>
+                            <tbody data-bind="foreach: ownedAttributes">
+                            <tr data-bind="if: !isDeleted">
+                                <td>
+                                    <input type="hidden" name="position" data-bind="value: position"/>
 
-                  <select class="form-control attribute-type-select" style="width: auto;"
-                      data-bind="options: $parent.availableTypes, optionsText: 'text', optionsValue: 'value', value: type, event: { change: $parent.typeChanged }"></select>
-                </td>
-                <td>
-                  <!-- Change to valueUpdate: blur is necessary because jQuery UI autocomplete hijacks change event -->
-                  <input type="text" class="attribute-name form-control"
-                       data-bind="value: name, valueUpdate: 'blur',  event: { blur: $parent.attributeChanged }"/>
-                  <div style="color: red" data-bind="if: $parent.isEmptyName($index())">Attribute name
-                    can't be empty.
-                  </div>
-                </td>
-                <td>
-                  <input type="text" class="label-value form-control"
-                       data-bind="visible: type == 'label', value: labelValue, valueUpdate: 'blur', event: { blur: $parent.attributeChanged }"
-                       style="width: 300px"/>
+                                    <select class="form-control attribute-type-select" style="width: auto;"
+                                            data-bind="options: $parent.availableTypes, optionsText: 'text', optionsValue: 'value', value: type, event: { change: $parent.typeChanged }"></select>
+                                </td>
+                                <td>
+                                    <!-- Change to valueUpdate: blur is necessary because jQuery UI autocomplete hijacks change event -->
+                                    <input type="text" class="attribute-name form-control"
+                                           data-bind="value: name, valueUpdate: 'blur',  event: { blur: $parent.attributeChanged }"/>
+                                    <div style="color: red" data-bind="if: $parent.isEmptyName($index())">Attribute name
+                                        can't be empty.
+                                    </div>
+                                </td>
+                                <td>
+                                    <input type="text" class="label-value form-control"
+                                           data-bind="visible: type == 'label', value: labelValue, valueUpdate: 'blur', event: { blur: $parent.attributeChanged }"
+                                           style="width: 300px"/>
 
-                  <div class="relation-value input-group" data-bind="visible: type == 'relation'"
-                     style="width: 300px;">
-                    <input class="form-control relation-target-note-id"
-                         placeholder="search for note by its name"
-                         data-bind="noteAutocomplete, value: relationValue, valueUpdate: 'blur', event: { blur: $parent.attributeChanged }">
+                                    <div class="relation-value input-group" data-bind="visible: type == 'relation'"
+                                         style="width: 300px;">
+                                        <input class="form-control relation-target-note-id"
+                                               placeholder="search for note by its name"
+                                               data-bind="noteAutocomplete, value: relationValue, valueUpdate: 'blur', event: { blur: $parent.attributeChanged }">
 
-                    <div style="color: red" data-bind="if: $parent.isEmptyRelationTarget($index())">Relation target note
-                      can't be empty.
-                    </div>
-                  </div>
+                                        <div style="color: red" data-bind="if: $parent.isEmptyRelationTarget($index())">Relation target note
+                                            can't be empty.
+                                        </div>
+                                    </div>
 
-                  <div data-bind="visible: type == 'label-definition'">
-                    <select data-bind="options: $parent.availableLabelTypes, optionsText: 'text', optionsValue: 'value', value: labelDefinition.labelType"></select>
+                                    <div data-bind="visible: type == 'label-definition'">
+                                        <select data-bind="options: $parent.availableLabelTypes, optionsText: 'text', optionsValue: 'value', value: labelDefinition.labelType"></select>
 
-                    <select data-bind="options: $parent.multiplicityTypes, optionsText: 'text', optionsValue: 'value', value: labelDefinition.multiplicityType"></select>
+                                        <select data-bind="options: $parent.multiplicityTypes, optionsText: 'text', optionsValue: 'value', value: labelDefinition.multiplicityType"></select>
 
-                    <label>
-                      <input type="checkbox" value="true"
-                           data-bind="checked: labelDefinition.isPromoted"/>
-                      Promoted
-                    </label>
+                                        <label>
+                                            <input type="checkbox" value="true"
+                                                   data-bind="checked: labelDefinition.isPromoted"/>
+                                            Promoted
+                                        </label>
 
-                    <div data-bind="visible: labelDefinition.labelType === 'number'"
-                        title="Precision of floating point numbers - 0 means effectively integer, 2 allows entering e.g. 1.23">
-                      Number precision: <input type="number" min="0" max="9" data-bind="value: labelDefinition.numberPrecision" style="width: 50px;"/>
-                    </div>
-                  </div>
+                                        <div data-bind="visible: labelDefinition.labelType === 'number'"
+                                             title="Precision of floating point numbers - 0 means effectively integer, 2 allows entering e.g. 1.23">
+                                            Number precision: <input type="number" min="0" max="9" data-bind="value: labelDefinition.numberPrecision" style="width: 50px;"/>
+                                        </div>
+                                    </div>
 
-                  <div data-bind="visible: type == 'relation-definition'">
-                    <select data-bind="options: $parent.multiplicityTypes, optionsText: 'text', optionsValue: 'value', value: relationDefinition.multiplicityType"></select>
+                                    <div data-bind="visible: type == 'relation-definition'">
+                                        <select data-bind="options: $parent.multiplicityTypes, optionsText: 'text', optionsValue: 'value', value: relationDefinition.multiplicityType"></select>
 
-                    <label>
-                      <input type="checkbox" value="true"
-                           data-bind="checked: relationDefinition.isPromoted"/>
-                      Promoted
-                    </label>
-                    <br/>
-                    <label>
-                      Inverse relation:
+                                        <label>
+                                            <input type="checkbox" value="true"
+                                                   data-bind="checked: relationDefinition.isPromoted"/>
+                                            Promoted
+                                        </label>
+                                        <br/>
+                                        <label>
+                                            Inverse relation:
 
-                      <input type="text" value="true" class="attribute-name" data-bind="value: relationDefinition.inverseRelation"/>
-                    </label>
-                  </div>
-                </td>
-                <td title="Inheritable relations are automatically inherited to the child notes">
-                  <input type="checkbox" value="1" data-bind="checked: isInheritable"/>
+                                            <input type="text" value="true" class="attribute-name" data-bind="value: relationDefinition.inverseRelation"/>
+                                        </label>
+                                    </div>
+                                </td>
+                                <td title="Inheritable relations are automatically inherited to the child notes">
+                                    <input type="checkbox" value="1" data-bind="checked: isInheritable"/>
 
-                  &nbsp;
+                                    &nbsp;
 
-                  <span title="Delete" style="padding: 13px; cursor: pointer;" class="jam jam-trash"
-                      data-bind="click: $parent.deleteAttribute"></span>
-                </td>
-              </tr>
-              </tbody>
-            </table>
+                                    <span title="Delete" style="padding: 13px; cursor: pointer;" class="jam jam-trash"
+                                          data-bind="click: $parent.deleteAttribute"></span>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
 
-            <div data-bind="if: inheritedAttributes().length > 0">
-              <h4>Inherited attributes</h4>
+                        <div data-bind="if: inheritedAttributes().length > 0">
+                            <h4>Inherited attributes</h4>
 
-              <table class="table">
-                <thead>
-                <tr>
-                  <th>Type</th>
-                  <th>Name</th>
-                  <th>Value</th>
-                  <th>Owning note</th>
-                </tr>
-                </thead>
-                <tbody data-bind="foreach: inheritedAttributes">
-                <tr>
-                  <td data-bind="text: type"></td>
-                  <td data-bind="text: name"></td>
-                  <td>
+                            <table class="table">
+                                <thead>
+                                <tr>
+                                    <th>Type</th>
+                                    <th>Name</th>
+                                    <th>Value</th>
+                                    <th>Owning note</th>
+                                </tr>
+                                </thead>
+                                <tbody data-bind="foreach: inheritedAttributes">
+                                <tr>
+                                    <td data-bind="text: type"></td>
+                                    <td data-bind="text: name"></td>
+                                    <td>
                     <span data-bind="if: type == 'label'">
                       <span data-bind="text: value"></span>
                     </span>
-                    <span data-bind="if: type == 'relation'">
+                                        <span data-bind="if: type == 'relation'">
                       <span data-bind="noteLink: value"></span>
                     </span>
-                    <span data-bind="if: type == 'label-definition'">
+                                        <span data-bind="if: type == 'label-definition'">
                       <span data-bind="text: value.labelType"></span>
                       <span data-bind="text: value.multiplicityType"></span>
                       promoted: <span data-bind="text: value.isPromoted"></span>
                     </span>
-                    <span data-bind="if: type == 'relation-definition'">
+                                        <span data-bind="if: type == 'relation-definition'">
                       <span data-bind="text: value.multiplicityType"></span>
                       promoted: <span data-bind="text: value.isPromoted"></span>
                     </span>
-                  </td>
-                  <td data-bind="noteLink: noteId"></td>
-                </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
+                                    </td>
+                                    <td data-bind="noteLink: noteId"></td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary btn-large" style="width: 200px;" id="save-attributes-button" type="submit">
+                        Save changes <kbd>enter</kbd></button>
+                </div>
+            </form>
         </div>
-        <div class="modal-footer">
-          <button class="btn btn-primary btn-large" style="width: 200px;" id="save-attributes-button" type="submit">
-            Save changes <kbd>enter</kbd></button>
-        </div>
-      </form>
     </div>
-  </div>
 </div>
