@@ -23,6 +23,8 @@ async function showTree() {
             treeService.setCurrentNotePathToHash(node);
 
             noteDetailService.switchToNote(noteId, true);
+
+            $("#detail").modal();
         },
         expand: (event, data) => treeService.setExpandedToServer(data.node.data.branchId, true),
         collapse: (event, data) => treeService.setExpandedToServer(data.node.data.branchId, false),

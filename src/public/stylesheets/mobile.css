@@ -12,6 +12,23 @@ html, body {
     overflow: auto;
 }
 
+.modal-full {
+    min-width: 100%;
+    margin: 0;
+}
+
+.modal-backdrop {
+    background-color: transparent;
+}
+
+.modal-full .modal-content {
+    min-height: 100vh;
+}
+
+#detail {
+
+}
+
 .fancytree-custom-icon {
     font-size: 2em;
 }

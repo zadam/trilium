@@ -8,6 +8,35 @@
 
 <div id="tree"></div>
 
+<div id="detail" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-full" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <input autocomplete="off" value="" id="note-title" class="form-control" tabindex="1">
+
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="note-detail-text" class="note-detail-component" tabindex="10000"></div>
+
+                <div id="note-detail-code" class="note-detail-component"></div>
+
+                <% include details/search.ejs %>
+
+                <% include details/render.ejs %>
+
+                <% include details/file.ejs %>
+
+                <% include details/image.ejs %>
+
+                <% include details/relation_map.ejs %>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script type="text/javascript">
     window.baseApiUrl = 'api/';
     window.device = "mobile";
@@ -25,6 +54,8 @@
 <script src="libraries/fancytree/jquery.fancytree-all-deps.min.js"></script>
 
 <link href="libraries/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+<script src="libraries/bootstrap/js/bootstrap.bundle.min.js"></script>
+
 <script src="javascripts/services/mobile.js" crossorigin type="module"></script>
 
 <link href="stylesheets/style.css" rel="stylesheet">
