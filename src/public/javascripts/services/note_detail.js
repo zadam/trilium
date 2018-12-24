@@ -223,7 +223,7 @@ async function loadNoteDetail(noteId) {
     treeService.setBranchBackgroundBasedOnProtectedStatus(noteId);
 
     // after loading new note make sure editor is scrolled to the top
-    $noteDetailWrapper.scrollTop(0);
+    getComponent(currentNote.type).scrollToTop();
 
     $scriptArea.empty();
 

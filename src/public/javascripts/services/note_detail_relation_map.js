@@ -566,5 +566,6 @@ export default {
     getContent: () => JSON.stringify(mapData),
     focus: () => null,
     onNoteChange: () => null,
-    cleanup
+    cleanup,
+    scrollToTop: () => null
 }

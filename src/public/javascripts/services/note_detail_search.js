@@ -30,5 +30,6 @@ export default {
     show,
     focus: () => null,
     onNoteChange: () => null,
-    cleanup: () => null
+    cleanup: () => null,
+    scrollToTop: () => null
 }

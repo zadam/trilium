@@ -71,5 +71,6 @@ export default {
     getContent: () => null,
     focus: () => null,
     onNoteChange: () => null,
-    cleanup: () => null
+    cleanup: () => null,
+    scrollToTop: () => $component.scrollTop(0)
 }

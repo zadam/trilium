@@ -37,5 +37,6 @@ export default {
     getContent: () => "",
     focus: () => null,
     onNoteChange: () => null,
-    cleanup: () => $noteDetailRenderContent.empty()
+    cleanup: () => $noteDetailRenderContent.empty(),
+    scrollToTop: () => $component.scrollTop(0)
 }

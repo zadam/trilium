@@ -74,5 +74,6 @@ export default {
         if (textEditor) {
             textEditor.setData('');
         }
-    }
+    },
+    scrollToTop: () => $component.scrollTop(0)
 }

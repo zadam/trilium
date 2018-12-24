@@ -107,5 +107,6 @@ export default {
         if (codeEditor) {
             codeEditor.setValue('');
         }
-    }
+    },
+    scrollToTop: () => $component.scrollTop(0)
 }
