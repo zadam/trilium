@@ -13,13 +13,25 @@ const $savedIndicator = $("#saved-indicator");
 
 let attributePromise;
 
-async function refreshAttributes() {
+function invalidateAttributes() {
+    attributePromise = null;
+}
+
+function reloadAttributes() {
     attributePromise = server.get('notes/' + noteDetailService.getCurrentNoteId() + '/attributes');
+}
+
+async function refreshAttributes() {
+    reloadAttributes();
 
     await showAttributes();
 }
 
 async function getAttributes() {
+    if (!attributePromise) {
+        reloadAttributes();
+    }
+
     return await attributePromise;
 }
 
@@ -286,5 +298,6 @@ async function promotedAttributeChanged(event) {
 export default {
     getAttributes,
     showAttributes,
-    refreshAttributes
+    refreshAttributes,
+    invalidateAttributes
 }

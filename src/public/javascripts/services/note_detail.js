@@ -182,6 +182,10 @@ async function loadNoteDetail(noteId) {
         // needs to happen after loading the note itself because it references current noteId
         attributeService.refreshAttributes();
     }
+    else {
+        // mobile usually doesn't need attributes so we just invalidate
+        attributeService.invalidateAttributes();
+    }
 
     if (isNewNoteCreated) {
         isNewNoteCreated = false;
