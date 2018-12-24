@@ -6,10 +6,16 @@ import treeBuilder from "./tree_builder.js";
 
 const $tree = $("#tree");
 const $detail = $("#detail");
+const $closeDetailButton = $("#close-detail-button");
 
-$detail.on('hide.bs.modal', e => {
-   $tree.show();
-});
+function togglePanes() {
+    if (!$tree.is(":visible") || !$detail.is(":visible")) {
+        $detail.toggleClass("d-none");
+        $tree.toggleClass("d-none");
+    }
+}
+
+$closeDetailButton.click(togglePanes);
 
 async function showTree() {
     const tree = await treeService.loadTree();
@@ -25,12 +31,9 @@ async function showTree() {
             const noteId = node.data.noteId;
 
             treeService.setCurrentNotePathToHash(node);
+            togglePanes();
 
             noteDetailService.switchToNote(noteId, true);
-
-            $tree.hide();
-
-            $detail.modal();
         },
         expand: (event, data) => treeService.setExpandedToServer(data.node.data.branchId, true),
         collapse: (event, data) => treeService.setExpandedToServer(data.node.data.branchId, false),
