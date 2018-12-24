@@ -136,11 +136,13 @@ function randomString(len) {
 }
 
 function bindShortcut(keyboardShortcut, handler) {
-    $(document).bind('keydown', keyboardShortcut, e => {
-        handler();
+    if (isDesktop()) {
+        $(document).bind('keydown', keyboardShortcut, e => {
+            handler();
 
-        e.preventDefault();
-    });
+            e.preventDefault();
+        });
+    }
 }
 
 function isMobile() {

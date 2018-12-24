@@ -5,13 +5,17 @@ import treeCache from "./tree_cache.js";
 import treeBuilder from "./tree_builder.js";
 
 const $tree = $("#tree");
+const $detail = $("#detail");
+
+$detail.on('hide.bs.modal', e => {
+   $tree.show();
+});
 
 async function showTree() {
     const tree = await treeService.loadTree();
 
     $tree.fancytree({
         autoScroll: true,
-        keyboard: false, // we takover keyboard handling in the hotkeys plugin
         extensions: ["dnd5", "clones"],
         source: tree,
         scrollParent: $tree,
@@ -24,7 +28,9 @@ async function showTree() {
 
             noteDetailService.switchToNote(noteId, true);
 
-            $("#detail").modal();
+            $tree.hide();
+
+            $detail.modal();
         },
         expand: (event, data) => treeService.setExpandedToServer(data.node.data.branchId, true),
         collapse: (event, data) => treeService.setExpandedToServer(data.node.data.branchId, false),
