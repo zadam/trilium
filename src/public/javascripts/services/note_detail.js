@@ -17,6 +17,7 @@ import noteDetailRender from './note_detail_render.js';
 import noteDetailRelationMap from './note_detail_relation_map.js';
 import bundleService from "./bundle.js";
 import attributeService from "./attributes.js";
+import utils from "./utils.js";
 
 const $noteTitle = $("#note-title");
 
@@ -89,11 +90,11 @@ async function reload() {
     await loadNoteDetail(getCurrentNoteId());
 }
 
-async function switchToNote(noteId) {
+async function switchToNote(noteId, mobile) {
     if (getCurrentNoteId() !== noteId) {
         await saveNoteIfChanged();
 
-        await loadNoteDetail(noteId);
+        await loadNoteDetail(noteId, mobile);
     }
 }
 
@@ -177,8 +178,10 @@ async function loadNoteDetail(noteId) {
     // only now that we're in sync with tree active node we will switch currentNote
     currentNote = loadedNote;
 
-    // needs to happend after loading the note itself because it references current noteId
-    attributeService.refreshAttributes();
+    if (utils.isDesktop()) {
+        // needs to happen after loading the note itself because it references current noteId
+        attributeService.refreshAttributes();
+    }
 
     if (isNewNoteCreated) {
         isNewNoteCreated = false;
@@ -197,8 +200,10 @@ async function loadNoteDetail(noteId) {
     try {
         $noteTitle.val(currentNote.title);
 
-        noteTypeService.setNoteType(currentNote.type);
-        noteTypeService.setNoteMime(currentNote.mime);
+        if (utils.isDesktop()) {
+            noteTypeService.setNoteType(currentNote.type);
+            noteTypeService.setNoteMime(currentNote.mime);
+        }
 
         for (const componentType in components) {
             if (componentType !== currentNote.type) {
@@ -225,13 +230,15 @@ async function loadNoteDetail(noteId) {
     // after loading new note make sure editor is scrolled to the top
     getComponent(currentNote.type).scrollToTop();
 
-    $scriptArea.empty();
+    if (utils.isDesktop()) {
+        $scriptArea.empty();
 
-    await bundleService.executeRelationBundles(getCurrentNote(), 'runOnNoteView');
+        await bundleService.executeRelationBundles(getCurrentNote(), 'runOnNoteView');
 
-    await attributeService.showAttributes();
+        await attributeService.showAttributes();
 
-    await showChildrenOverview();
+        await showChildrenOverview();
+    }
 }
 
 async function showChildrenOverview() {

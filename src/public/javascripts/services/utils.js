@@ -143,6 +143,14 @@ function bindShortcut(keyboardShortcut, handler) {
     });
 }
 
+function isMobile() {
+    return window.device === "mobile";
+}
+
+function isDesktop() {
+    return window.device === "desktop";
+}
+
 export default {
     reloadApp,
     parseDate,
@@ -166,5 +174,7 @@ export default {
     download,
     toObject,
     randomString,
-    bindShortcut
+    bindShortcut,
+    isMobile,
+    isDesktop
 };

@@ -359,7 +359,7 @@ function initFancyTree(tree) {
     $tree.fancytree({
         autoScroll: true,
         keyboard: false, // we takover keyboard handling in the hotkeys plugin
-        extensions: ["hotkeys", "filter", "dnd5", "clones"],
+        extensions: ["hotkeys", "dnd5", "clones"],
         source: tree,
         scrollParent: $tree,
         minExpandLevel: 2, // root can't be collapsed
@@ -396,18 +396,6 @@ function initFancyTree(tree) {
         init: (event, data) => treeInitialized(), // don't collapse to short form
         hotkeys: {
             keydown: treeKeyBindings
-        },
-        filter: {
-            autoApply: true,   // Re-apply last filter if lazy data is loaded
-            autoExpand: true, // Expand all branches that contain matches while filtered
-            counter: false,     // Show a badge with number of matching child nodes near parent icons
-            fuzzy: false,      // Match single characters in order, e.g. 'fb' will match 'FooBar'
-            hideExpandedCounter: true,  // Hide counter badge if parent is expanded
-            hideExpanders: false,       // Hide expanders if all child nodes are hidden by filter
-            highlight: true,   // Highlight matches by wrapping inside <mark> tags
-            leavesOnly: false, // Match end nodes only
-            nodata: true,      // Display a 'no data' status node if result is empty
-            mode: "hide"       // Grayout unmatched nodes (pass "hide" to remove unmatched node instead)
         },
         dnd5: dragAndDropSetup,
         lazyLoad: function(event, data) {
@@ -696,5 +684,8 @@ export default {
     getSelectedNodes,
     clearSelectedNodes,
     sortAlphabetically,
-    showTree
+    showTree,
+    loadTree,
+    treeInitialized,
+    setExpandedToServer
 };

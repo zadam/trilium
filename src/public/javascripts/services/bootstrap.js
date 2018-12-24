@@ -33,6 +33,9 @@ import bundle from "./bundle.js";
 import treeCache from "./tree_cache.js";
 import libraryLoader from "./library_loader.js";
 import hoistedNoteService from './hoisted_note.js';
+import noteTypeService from './note_type.js';
+import linkService from './link.js';
+import noteAutocompleteService from './note_autocomplete.js';
 
 // required for CKEditor image upload plugin
 window.glob.getCurrentNode = treeService.getCurrentNode;
@@ -144,3 +147,9 @@ entrypoints.registerEntrypoints();
 noteTooltipService.setupGlobalTooltip();
 
 bundle.executeStartupBundles();
+
+noteTypeService.init();
+
+linkService.init();
+
+noteAutocompleteService.init();

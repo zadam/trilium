@@ -44,7 +44,7 @@ const DEFAULT_MIME_TYPES = [
     { mime: 'text/x-yaml', title: 'YAML' }
 ];
 
-const noteTypeModel = new NoteTypeModel();
+let noteTypeModel;
 
 function NoteTypeModel() {
     const self = this;
@@ -153,7 +153,11 @@ function NoteTypeModel() {
     }
 }
 
-ko.applyBindings(noteTypeModel, document.getElementById('note-type-wrapper'));
+function init() {
+    noteTypeModel = new NoteTypeModel();
+
+    ko.applyBindings(noteTypeModel, document.getElementById('note-type-wrapper'));
+}
 
 export default {
     getNoteType: () => noteTypeModel.type(),
@@ -168,5 +172,6 @@ export default {
 
     getDefaultCodeMimeTypes: () => DEFAULT_MIME_TYPES.slice(),
     getCodeMimeTypes: () => noteTypeModel.codeMimeTypes(),
-    setCodeMimeTypes: types => noteTypeModel.codeMimeTypes(types)
+    setCodeMimeTypes: types => noteTypeModel.codeMimeTypes(types),
+    init
 };

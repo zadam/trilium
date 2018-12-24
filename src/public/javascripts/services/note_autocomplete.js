@@ -101,40 +101,42 @@ function initNoteAutocomplete($el, options) {
     return $el;
 }
 
-$.fn.getSelectedPath = function() {
-    if (!$(this).val().trim()) {
-        return "";
-    }
-    else {
-        return $(this).attr(SELECTED_PATH_KEY);
-    }
-};
+function init() {
+    $.fn.getSelectedPath = function () {
+        if (!$(this).val().trim()) {
+            return "";
+        } else {
+            return $(this).attr(SELECTED_PATH_KEY);
+        }
+    };
 
-$.fn.setSelectedPath = function(path) {
-    path = path || "";
+    $.fn.setSelectedPath = function (path) {
+        path = path || "";
 
-    $(this).attr(SELECTED_PATH_KEY, path);
+        $(this).attr(SELECTED_PATH_KEY, path);
 
-    $(this)
-        .closest(".input-group")
-        .find(".go-to-selected-note-button")
-        .toggleClass("disabled", !path.trim())
-        .attr(SELECTED_PATH_KEY, path); // we also set attr here so tooltip can be displayed
-};
+        $(this)
+            .closest(".input-group")
+            .find(".go-to-selected-note-button")
+            .toggleClass("disabled", !path.trim())
+            .attr(SELECTED_PATH_KEY, path); // we also set attr here so tooltip can be displayed
+    };
 
-ko.bindingHandlers.noteAutocomplete = {
-    init: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
-        initNoteAutocomplete($(element));
+    ko.bindingHandlers.noteAutocomplete = {
+        init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+            initNoteAutocomplete($(element));
 
-        $(element).setSelectedPath(bindingContext.$data.selectedPath);
+            $(element).setSelectedPath(bindingContext.$data.selectedPath);
 
-        $(element).on('autocomplete:selected', function(event, suggestion, dataset) {
-            bindingContext.$data.selectedPath = $(element).val().trim() ? suggestion.path : '';
-        });
-    }
-};
+            $(element).on('autocomplete:selected', function (event, suggestion, dataset) {
+                bindingContext.$data.selectedPath = $(element).val().trim() ? suggestion.path : '';
+            });
+        }
+    };
+}
 
 export default {
     initNoteAutocomplete,
-    showRecentNotes
+    showRecentNotes,
+    init
 }

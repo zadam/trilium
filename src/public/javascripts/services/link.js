@@ -88,17 +88,19 @@ function addTextToEditor(text) {
     });
 }
 
-ko.bindingHandlers.noteLink = {
-    init: async function(element, valueAccessor, allBindings, viewModel, bindingContext) {
-        const noteId = ko.unwrap(valueAccessor());
+function init() {
+    ko.bindingHandlers.noteLink = {
+        init: async function(element, valueAccessor, allBindings, viewModel, bindingContext) {
+            const noteId = ko.unwrap(valueAccessor());
 
-        if (noteId) {
-            const link = await createNoteLink(noteId);
+            if (noteId) {
+                const link = await createNoteLink(noteId);
 
-            $(element).append(link);
+                $(element).append(link);
+            }
         }
-    }
-};
+    };
+}
 
 // when click on link popup, in case of internal link, just go the the referenced note instead of default behavior
 // of opening the link in new window/tab
@@ -124,5 +126,6 @@ export default {
     getNotePathFromUrl,
     createNoteLink,
     addLinkToEditor,
-    addTextToEditor
+    addTextToEditor,
+    init
 };
