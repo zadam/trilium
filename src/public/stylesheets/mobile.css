@@ -1,8 +1,12 @@
 html, body {
-    height:100vh;
-    width:100vw;
+    height: 100%;
+    width: 100%;
     margin: 0;
     padding: 0;
+}
+
+#container-row {
+    height: 100%;
 }
 
 #tree {
@@ -13,12 +17,30 @@ html, body {
 }
 
 #detail {
-    padding: 10px 20px 10px 35px;
+    padding: 20px 20px 10px 35px;
+    height: 100%;
+    flex-direction: column;
 }
 
-#close-detail-button {
-    padding-left: 1em;
-    padding-right: 1em;
+#detail-content {
+    position: relative;
+    overflow: auto;
+    flex-direction: column;
+    height: 100%;
+}
+
+#note-title-row {
+    display: flex;
+    padding-right: 10px;
+}
+
+.action-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.5em;
+    padding-left: 0.5em;
+    padding-right: 0.5em;
 }
 
 .fancytree-custom-icon {

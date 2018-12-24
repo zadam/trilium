@@ -5,19 +5,21 @@
     <title>Trilium Notes</title>
 </head>
 <body>
-<div class="row">
+<div class="row" id="container-row">
     <div id="tree" class="d-sm-block d-md-block d-lg-block d-xl-block col-12 col-sm-4 col-md-4 col-lg-4 col-xl-4"></div>
 
-    <div id="detail" class="d-none d-sm-block d-md-block d-lg-block d-xl-block col-12 col-sm-8 col-md-8 col-lg-8">
-        <div style="display: flex; padding-left: 10px;">
+    <div id="detail" class="d-none d-sm-flex d-md-flex d-lg-flex d-xl-flex col-12 col-sm-8 col-md-8 col-lg-8">
+        <div id="note-title-row">
+            <button type="button" id="note-menu-button" class="action-button jam jam-align-justify"></button>
+
             <input autocomplete="off" value="" id="note-title" class="form-control" tabindex="1">
 
-            <button type="button" id="close-detail-button" class="close d-sm-none d-md-none d-lg-none d-xl-none" aria-label="Close">
+            <button type="button" id="close-detail-button" class="action-button d-sm-none d-md-none d-lg-none d-xl-none" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
             </button>
         </div>
 
-        <div style="position: relative;">
+        <div id="detail-content">
             <span id="saved-indicator" title="All changes have been saved" class="jam jam-check"></span>
 
             <div id="note-detail-text" class="note-detail-component" tabindex="10000"></div>
