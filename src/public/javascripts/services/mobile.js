@@ -46,6 +46,24 @@ async function showTree() {
         },
         clones: {
             highlightActiveClones: true
+        },
+        renderNode: function (event, data) {
+            const node = data.node;
+            const $nodeSpan = $(node.span);
+
+            // check if span of node already rendered
+            if (!$nodeSpan.data('rendered')) {
+                const addNoteButton = $('<button class="action-button" title="Add new sub-note" type="button" class="btn">+</button>');
+
+                addNoteButton.click(() => {
+                    alert("Add new note");
+                });
+
+                $nodeSpan.append(addNoteButton);
+
+                // span rendered
+                $nodeSpan.data('rendered', true);
+            }
         }
     });
 

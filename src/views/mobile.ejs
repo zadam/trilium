@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <title>Trilium Notes</title>
 </head>
-<body>
+<body class="mobile">
 <div class="row" id="container-row">
     <div id="tree" class="d-sm-block d-md-block d-lg-block d-xl-block col-12 col-sm-4 col-md-4 col-lg-4 col-xl-4"></div>
 
@@ -37,6 +37,8 @@
             <% include details/relation_map.ejs %>
         </div>
     </div>
+
+    <% include dialogs/protected_session_password.ejs %>
 </div>
 
 <script type="text/javascript">

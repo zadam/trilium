@@ -619,13 +619,12 @@ table.promoted-attributes-in-tooltip td, table.promoted-attributes-in-tooltip th
     cursor: pointer;
 }
 
-.modalless {
-    top: 15%;
-    left: 40%;
-    bottom: auto;
-    right: auto;
-    margin-left: -300px !important;
-}
+/*.modalless {*/
+    /*top: 15%;*/
+    /*left: 40%;*/
+    /*bottom: auto;*/
+    /*right: auto;*/
+/*}*/
 
 .multiplicity {
     font-size: 1.3em;
