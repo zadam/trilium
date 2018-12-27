@@ -619,13 +619,6 @@ table.promoted-attributes-in-tooltip td, table.promoted-attributes-in-tooltip th
     cursor: pointer;
 }
 
-/*.modalless {*/
-    /*top: 15%;*/
-    /*left: 40%;*/
-    /*bottom: auto;*/
-    /*right: auto;*/
-/*}*/
-
 .multiplicity {
     font-size: 1.3em;
 }
@@ -703,4 +696,10 @@ div[data-notify="container"] {
     text-decoration: underline !important;
     color: blue !important;
     cursor: pointer !important;
+}
+
+#protected-session-password-component {
+    max-width: 450px;
+    margin: auto;
+    padding-top: 50px;
 }

@@ -24,7 +24,7 @@ async function showDialog() {
 
     const noteTitle = await treeUtils.getNoteTitle(currentNode.data.noteId);
 
-    $noteTitle.html(noteTitle);
+    $noteTitle.text(" - " + noteTitle);
 }
 
 async function savePrefix() {
