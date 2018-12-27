@@ -109,6 +109,10 @@ function onNoteChange(func) {
 async function saveNote() {
     const note = getCurrentNote();
 
+    if (note.isProtected && !protectedSessionHolder.isProtectedSessionAvailable()) {
+        return;
+    }
+
     note.title = $noteTitle.val();
     note.content = getCurrentNoteContent(note);
 
@@ -222,6 +226,8 @@ async function loadNoteDetail(noteId) {
             // in such case we're reloading note anyway so no need to continue here.
             return;
         }
+
+        $noteTitle.removeAttr("readonly"); // this can be set by protected session service
 
         await getComponent(currentNote.type).show();
     }

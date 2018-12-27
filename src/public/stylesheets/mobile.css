@@ -84,3 +84,7 @@ html, body {
 .fancytree-node.fancytree-expanded .fancytree-expander:before {
     content: "\e9ba";
 }
+
+kbd {
+    display: none;
+}

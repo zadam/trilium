@@ -57,6 +57,18 @@ body {
     grid-area: title;
 }
 
+#note-title {
+    margin-left: 15px;
+    font-size: x-large;
+    border: 0;
+    width: 5em;
+    flex-grow: 100;
+}
+
+#note-title[readonly] {
+    background: inherit;
+}
+
 .tdialog {
     display: none;
 }

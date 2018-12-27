@@ -15,6 +15,7 @@ const $protectButton = $("#protect-button");
 const $unprotectButton = $("#unprotect-button");
 const $enterProtectedSessionButton = $("#enter-protected-session-button");
 const $leaveProtectedSessionButton = $("#leave-protected-session-button");
+const $noteTitle = $("#note-title");
 
 let protectedSessionDeferred = null;
 
@@ -37,6 +38,9 @@ function ensureProtectedSession(requireProtectedSession, modal) {
     if (requireProtectedSession && !protectedSessionHolder.isProtectedSessionAvailable()) {
         // using deferred instead of promise because it allows resolving from outside
         protectedSessionDeferred = dfd;
+
+        // user shouldn't be able to edit note title
+        $noteTitle.prop("readonly", true);
 
         if (modal) {
             if (treeService.getCurrentNode().data.isProtected) {
