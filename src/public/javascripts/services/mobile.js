@@ -30,6 +30,8 @@ async function showTree() {
             const node = data.node;
             const noteId = node.data.noteId;
 
+            treeService.clearSelectedNodes();
+
             treeService.setCurrentNotePathToHash(node);
             togglePanes();
 
