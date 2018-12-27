@@ -62,33 +62,8 @@ html, body {
     padding: 5px;
 }
 
-.fancytree-node .fancytree-expander {
-    background: none;
-    width: auto;
-    height: auto;
-}
-
 .fancytree-node .fancytree-expander:before {
-    font-family: 'jam-icons' !important;
-    speak: none;
-    font-style: normal;
-    font-weight: normal;
-    font-variant: normal;
-    text-transform: none;
-    line-height: 1;
     font-size: 2em;
-    padding-left: 5px;
-    padding-right: 5px;
-    content: "\e9bc";
-}
-
-/* this is done to preserve correct indentation. Better solution would be preferable */
-.fancytree-node:not(.fancytree-folder) .fancytree-expander:before {
-    color: white;
-}
-
-.fancytree-node.fancytree-expanded .fancytree-expander:before {
-    content: "\e9ba";
 }
 
 kbd {
