@@ -5,9 +5,9 @@
     <title>Trilium Notes</title>
 </head>
 <body class="mobile">
-<div class="row" id="container-row">
+<div class="row" id="container-row" style="display: none;">
 
-    <div id="left-pane" class="d-sm-block d-md-block d-lg-block d-xl-block col-12 col-sm-5 col-md-4 col-lg-4 col-xl-4">
+    <div id="left-pane" class="d-sm-flex d-md-flex d-lg-flex d-xl-flex col-12 col-sm-5 col-md-4 col-lg-4 col-xl-4">
         <div id="global-buttons">
             <a id="create-top-level-note-button" title="Create new top level note" class="icon-action jam jam-plus-circle"></a>
 
@@ -81,5 +81,11 @@
 <script src="libraries/bootstrap-notify.min.js"></script>
 
 <link rel="stylesheet" type="text/css" href="libraries/jam/css/jam.min.css">
+
+<script type="text/javascript">
+    // we hide container initally because otherwise it is rendered first without CSS and then flickers into
+    // final form which is pretty ugly.
+    $("#container-row").show();
+</script>
 </body>
 </html>
