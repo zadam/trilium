@@ -3,6 +3,12 @@ import noteDetailService from "./note_detail.js";
 import dragAndDropSetup from "./drag_and_drop.js";
 import treeCache from "./tree_cache.js";
 import treeBuilder from "./tree_builder.js";
+import contextMenuWidget from "./context_menu.js";
+import confirmDialog from "../dialogs/confirm.js";
+import server from "./server.js";
+import promptDialog from "../dialogs/prompt.js";
+import ContextMenuItemsContainer from "./context_menu_items_container.js";
+import treeChangesService from "./branches.js";
 
 const $leftPane = $("#left-pane");
 const $tree = $("#tree");
@@ -69,7 +75,36 @@ async function showTree() {
             }
         }
     });
+}
 
+$("#note-menu-button").click(async e => {
+    const node = treeService.getCurrentNode();
+    const branch = await treeCache.getBranch(node.data.branchId);
+    const note = await treeCache.getNote(node.data.noteId);
+    const parentNote = await treeCache.getNote(branch.parentNoteId);
+    const isNotRoot = note.noteId !== 'root';
+
+    const itemsContainer = new ContextMenuItemsContainer([
+        {title: "Delete note", cmd: "delete", uiIcon: "trash"}
+    ]);
+
+    itemsContainer.enableItem("delete", isNotRoot && parentNote.type !== 'search');
+
+    contextMenuWidget.initContextMenu(e, itemsContainer, noteContextMenuHandler);
+});
+
+async function noteContextMenuHandler(event, cmd) {
+    const node = treeService.getCurrentNode();
+
+    if (cmd === "delete") {
+        treeChangesService.deleteNodes([node]);
+
+        // move to the tree
+        togglePanes();
+    }
+    else {
+        throw new Error("Unrecognized command " + cmd);
+    }
 }
 
 showTree();

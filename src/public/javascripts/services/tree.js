@@ -418,8 +418,8 @@ function initFancyTree(tree) {
     });
 
     $tree.on('contextmenu', '.fancytree-node', function(e) {
-        treeContextMenuService.getContextMenuItems(e).then(contextMenuItems => {
-            contextMenuWidget.initContextMenu(e, contextMenuItems, treeContextMenuService.selectContextMenuItem);
+        treeContextMenuService.getContextMenuItems(e).then(contextMenuItemContainer => {
+            contextMenuWidget.initContextMenu(e, contextMenuItemContainer, treeContextMenuService.selectContextMenuItem);
         });
 
         return false; // blocks default browser right click menu

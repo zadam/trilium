@@ -32,3 +32,5 @@ class Attribute {
         return `Attribute(attributeId=${this.attributeId}, type=${this.type}, name=${this.name})`;
     }
 }
+
+export default Attribute;

@@ -81,3 +81,7 @@ html, body {
 kbd {
     display: none;
 }
+
+.dropdown-menu {
+    font-size: larger;
+}
