@@ -90,21 +90,36 @@ $("#note-menu-button").click(async e => {
 
     itemsContainer.enableItem("delete", isNotRoot && parentNote.type !== 'search');
 
-    contextMenuWidget.initContextMenu(e, itemsContainer, noteContextMenuHandler);
+    contextMenuWidget.initContextMenu(e, itemsContainer, (event, cmd) => {
+        if (cmd === "delete") {
+            treeChangesService.deleteNodes([node]);
+
+            // move to the tree
+            togglePanes();
+        }
+        else {
+            throw new Error("Unrecognized command " + cmd);
+        }
+    });
 });
 
-async function noteContextMenuHandler(event, cmd) {
-    const node = treeService.getCurrentNode();
+$("#global-actions-button").click(async e => {
+    const itemsContainer = new ContextMenuItemsContainer([
+        {title: "Switch to desktop version", cmd: "switch-to-desktop", uiIcon: "computer"},
+        {title: "Logout", cmd: "log-out", uiIcon: "log-out"}
+    ]);
 
-    if (cmd === "delete") {
-        treeChangesService.deleteNodes([node]);
-
-        // move to the tree
-        togglePanes();
-    }
-    else {
-        throw new Error("Unrecognized command " + cmd);
-    }
-}
+    contextMenuWidget.initContextMenu(e, itemsContainer, (event, cmd) => {
+        if (cmd === "switch-to-desktop") {
+            alert("switch to desktop");
+        }
+        else if (cmd === 'log-out') {
+            $("#logout-form").submit();
+        }
+        else {
+            throw new Error("Unrecognized command " + cmd);
+        }
+    });
+});
 
 showTree();
