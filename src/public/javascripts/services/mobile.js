@@ -4,14 +4,15 @@ import dragAndDropSetup from "./drag_and_drop.js";
 import treeCache from "./tree_cache.js";
 import treeBuilder from "./tree_builder.js";
 
+const $leftPane = $("#left-pane");
 const $tree = $("#tree");
 const $detail = $("#detail");
 const $closeDetailButton = $("#close-detail-button");
 
 function togglePanes() {
-    if (!$tree.is(":visible") || !$detail.is(":visible")) {
+    if (!$leftPane.is(":visible") || !$detail.is(":visible")) {
         $detail.toggleClass("d-none");
-        $tree.toggleClass("d-none");
+        $leftPane.toggleClass("d-none");
     }
 }
 
