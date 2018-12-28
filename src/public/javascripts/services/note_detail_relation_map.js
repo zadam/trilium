@@ -80,7 +80,16 @@ const linkOverlays = [
 function loadMapData() {
     const currentNote = noteDetailService.getCurrentNote();
     mapData = {
-        notes: []
+        notes: [],
+        // it is important to have this exact value here so that initial transform is same as this
+        // which will guarantee note won't be saved on first conversion to relation map note type
+        // this keeps the principle that note type change doesn't destroy note content unless user
+        // does some actual change
+        transform: {
+            x: 0,
+            y: 0,
+            scale: 1
+        }
     };
 
     if (currentNote.content) {
