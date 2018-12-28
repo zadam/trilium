@@ -9,7 +9,9 @@ const optionService = require('../services/options');
 async function index(req, res) {
     const options = await optionService.getOptionsMap();
 
-    res.render('index', {
+    const view = req.cookies['trilium-device'] === 'mobile' ? 'mobile' : 'desktop';
+
+    res.render(view, {
         theme: options.theme,
         leftPaneMinWidth: parseInt(options.leftPaneMinWidth),
         leftPaneWidthPercent: parseInt(options.leftPaneWidthPercent),

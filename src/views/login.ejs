@@ -42,8 +42,26 @@
     </div>
 </div>
 
-<!-- Required for correct loading of scripts in Electron -->
-<script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
+<script>
+    // Required for correct loading of scripts in Electron
+    if (typeof module === 'object') {window.module = module; module = undefined;}
+
+    let device = "desktop";
+
+    // mobile device detection based on https://stackoverflow.com/a/24600597/944162
+    if (/Mobi/.test(navigator.userAgent) || window.location.search === '?mobile') {
+        device = "mobile";
+    }
+
+    setCookie("trilium-device", device);
+
+    function setCookie(name, value) {
+        const date = new Date(Date.now() + 10 * 365 * 24 * 60 * 60 * 1000);
+        const expires = "; expires=" + date.toUTCString();
+
+        document.cookie = name + "=" + (value || "")  + expires + "; path=/";
+    }
+</script>
 
 <link href="libraries/bootstrap/css/bootstrap.min.css" rel="stylesheet">
 </body>
