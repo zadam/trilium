@@ -9,6 +9,7 @@ import server from "./server.js";
 import promptDialog from "../dialogs/prompt.js";
 import ContextMenuItemsContainer from "./context_menu_items_container.js";
 import treeChangesService from "./branches.js";
+import utils from "./utils.js";
 
 const $leftPane = $("#left-pane");
 const $tree = $("#tree");
@@ -111,7 +112,9 @@ $("#global-actions-button").click(async e => {
 
     contextMenuWidget.initContextMenu(e, itemsContainer, (event, cmd) => {
         if (cmd === "switch-to-desktop") {
-            alert("switch to desktop");
+            utils.setCookie('trilium-device', 'desktop');
+
+            utils.reloadApp();
         }
         else if (cmd === 'log-out') {
             $("#logout-form").submit();

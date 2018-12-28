@@ -153,6 +153,13 @@ function isDesktop() {
     return window.device === "desktop";
 }
 
+function setCookie(name, value) {
+    const date = new Date(Date.now() + 10 * 365 * 24 * 60 * 60 * 1000);
+    const expires = "; expires=" + date.toUTCString();
+
+    document.cookie = name + "=" + (value || "")  + expires + "; path=/";
+}
+
 export default {
     reloadApp,
     parseDate,
@@ -178,5 +185,6 @@ export default {
     randomString,
     bindShortcut,
     isMobile,
-    isDesktop
+    isDesktop,
+    setCookie
 };
