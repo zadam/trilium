@@ -35,7 +35,7 @@ html, body {
 }
 
 #detail {
-    padding: 20px 20px 10px 35px;
+    padding: 5px 20px 10px 0px;
     height: 100%;
     flex-direction: column;
 }
@@ -45,6 +45,7 @@ html, body {
     overflow: auto;
     flex-direction: column;
     height: 100%;
+    padding-left: 10px;
 }
 
 #note-title-row {

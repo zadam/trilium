@@ -90,7 +90,7 @@ $("#note-menu-button").click(async e => {
     ]);
 
     itemsContainer.enableItem("delete", isNotRoot && parentNote.type !== 'search');
-
+    alert("A");
     contextMenuWidget.initContextMenu(e, itemsContainer, (event, cmd) => {
         if (cmd === "delete") {
             treeChangesService.deleteNodes([node]);
@@ -104,25 +104,14 @@ $("#note-menu-button").click(async e => {
     });
 });
 
-$("#global-actions-button").click(async e => {
-    const itemsContainer = new ContextMenuItemsContainer([
-        {title: "Switch to desktop version", cmd: "switch-to-desktop", uiIcon: "computer"},
-        {title: "Logout", cmd: "log-out", uiIcon: "log-out"}
-    ]);
+$("#switch-to-desktop-button").click(() => {
+    utils.setCookie('trilium-device', 'desktop');
 
-    contextMenuWidget.initContextMenu(e, itemsContainer, (event, cmd) => {
-        if (cmd === "switch-to-desktop") {
-            utils.setCookie('trilium-device', 'desktop');
+    utils.reloadApp();
+});
 
-            utils.reloadApp();
-        }
-        else if (cmd === 'log-out') {
-            $("#logout-form").submit();
-        }
-        else {
-            throw new Error("Unrecognized command " + cmd);
-        }
-    });
+$("#log-out-button").click(() => {
+    $("#logout-form").submit();
 });
 
 showTree();

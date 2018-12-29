@@ -15,7 +15,14 @@
 
             <a id="scroll-to-current-note-button" title="Scroll to current note. Shortcut CTRL+." class="icon-action jam jam-download"></a>
 
-            <a id="global-actions-button" title="Global actions" class="icon-action jam jam-cogs"></a>
+            <div class="dropdown">
+                <a id="global-actions-button" title="Global actions" class="icon-action jam jam-cogs dropdown-toggle" data-toggle="dropdown"></a>
+
+                <div class="dropdown-menu dropdown-menu-right">
+                    <a class="dropdown-item" id="switch-to-desktop-button"><span class="jam jam-computer"></span> Switch to desktop version</a>
+                    <a class="dropdown-item" id="log-out-button"><span class="jam jam-log-out"></span> Logout</a>
+                </div>
+            </div>
         </div>
 
         <div id="tree"></div>
@@ -32,24 +39,26 @@
             </button>
         </div>
 
-        <div id="detail-content">
+        <div style="position: relative; height: 100%;"> <!-- This div here is for saved indicator to have suitable parent -->
             <span id="saved-indicator" title="All changes have been saved" class="jam jam-check"></span>
 
-            <div id="note-detail-text" class="note-detail-component" tabindex="10000"></div>
+            <div id="detail-content">
+                <div id="note-detail-text" class="note-detail-component" tabindex="10000"></div>
 
-            <div id="note-detail-code" class="note-detail-component"></div>
+                <div id="note-detail-code" class="note-detail-component"></div>
 
-            <% include details/search.ejs %>
+                <% include details/search.ejs %>
 
-            <% include details/render.ejs %>
+                <% include details/render.ejs %>
 
-            <% include details/file.ejs %>
+                <% include details/file.ejs %>
 
-            <% include details/image.ejs %>
+                <% include details/image.ejs %>
 
-            <% include details/relation_map.ejs %>
+                <% include details/relation_map.ejs %>
 
-            <% include details/protected_session_password.ejs %>
+                <% include details/protected_session_password.ejs %>
+            </div>
         </div>
     </div>
 

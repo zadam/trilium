@@ -46,11 +46,17 @@
     // Required for correct loading of scripts in Electron
     if (typeof module === 'object') {window.module = module; module = undefined;}
 
-    let device = "desktop";
+    let device;
 
-    // mobile device detection based on https://stackoverflow.com/a/24600597/944162
-    if (/Mobi/.test(navigator.userAgent) || window.location.search === '?mobile') {
+    if (window.location.search === '?desktop') {
+        device = "desktop";
+    }
+    else if (window.location.search === '?mobile') {
         device = "mobile";
+    }
+    else {
+        // mobile device detection based on https://stackoverflow.com/a/24600597/944162
+        device = /Mobi/.test(navigator.userAgent) ? "mobile" : "desktop";
     }
 
     setCookie("trilium-device", device);
