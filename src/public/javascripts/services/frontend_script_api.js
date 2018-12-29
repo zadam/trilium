@@ -204,6 +204,19 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null) {
     this.getCurrentNoteContent = noteDetailService.getCurrentNoteContent;
 
     /**
+     * This method checks whether user navigated away from the note from which the scripts has been started.
+     * This is necessary because script execution is async and by the time it is finished, the user might have
+     * already navigated away from this page - the end result would be that script might return data for the wrong
+     * note.
+     *
+     * @method
+     * @return {boolean} returns true if the original note is still loaded, false if user switched to another
+     */
+    this.isNoteStillLoaded = () => {
+        return this.originEntity.noteId === noteDetailService.getCurrentNoteId();
+    };
+
+    /**
      * @method
      * @param {function} func - callback called on note change as user is typing (not necessarily tied to save event)
      */
