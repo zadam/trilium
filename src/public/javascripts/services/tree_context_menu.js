@@ -80,7 +80,7 @@ function cut(nodes) {
 }
 
 const contextMenuItems = [
-    {title: "Insert note here <kbd>Ctrl+O</kbd>", cmd: "insertNoteHere", uiIcon: "plus"},
+    {title: "Insert note after <kbd>Ctrl+O</kbd>", cmd: "insertNoteAfter", uiIcon: "plus"},
     {title: "Insert child note <kbd>Ctrl+P</kbd>", cmd: "insertChildNote", uiIcon: "plus"},
     {title: "Delete <kbd>Delete</kbd>", cmd: "delete", uiIcon: "trash"},
     {title: "----"},
@@ -114,7 +114,7 @@ async function getContextMenuItems(event) {
     const itemsContainer = new ContextMenuItemsContainer(contextMenuItems);
 
     // Modify menu entries depending on node status
-    itemsContainer.enableItem("insertNoteHere", isNotRoot && parentNote.type !== 'search');
+    itemsContainer.enableItem("insertNoteAfter", isNotRoot && parentNote.type !== 'search');
     itemsContainer.enableItem("insertChildNote", note.type !== 'search');
     itemsContainer.enableItem("delete", isNotRoot && parentNote.type !== 'search');
     itemsContainer.enableItem("copy", isNotRoot);
@@ -146,7 +146,7 @@ function selectContextMenuItem(event, cmd) {
     // context menu is always triggered on current node
     const node = treeService.getCurrentNode();
 
-    if (cmd === "insertNoteHere") {
+    if (cmd === "insertNoteAfter") {
         const parentNoteId = node.data.parentNoteId;
         const isProtected = treeUtils.getParentProtectedStatus(node);
 

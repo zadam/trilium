@@ -1,15 +1,13 @@
-import treeService from "./tree.js";
-import noteDetailService from "./note_detail.js";
-import dragAndDropSetup from "./drag_and_drop.js";
-import treeCache from "./tree_cache.js";
-import treeBuilder from "./tree_builder.js";
-import contextMenuWidget from "./context_menu.js";
-import confirmDialog from "../dialogs/confirm.js";
-import server from "./server.js";
-import promptDialog from "../dialogs/prompt.js";
-import ContextMenuItemsContainer from "./context_menu_items_container.js";
-import treeChangesService from "./branches.js";
-import utils from "./utils.js";
+import treeService from "./services/tree.js";
+import noteDetailService from "./services/note_detail.js";
+import dragAndDropSetup from "./services/drag_and_drop.js";
+import treeCache from "./services/tree_cache.js";
+import treeBuilder from "./services/tree_builder.js";
+import contextMenuWidget from "./services/context_menu.js";
+import ContextMenuItemsContainer from "./services/context_menu_items_container.js";
+import treeChangesService from "./services/branches.js";
+import utils from "./services/utils.js";
+import treeUtils from "./services/tree_utils.js";
 
 const $leftPane = $("#left-pane");
 const $tree = $("#tree");
@@ -56,24 +54,6 @@ async function showTree() {
         },
         clones: {
             highlightActiveClones: true
-        },
-        renderNode: function (event, data) {
-            const node = data.node;
-            const $nodeSpan = $(node.span);
-
-            // check if span of node already rendered
-            if (!$nodeSpan.data('rendered')) {
-                const addNoteButton = $('<button class="action-button" title="Add new sub-note" type="button" class="btn">+</button>');
-
-                addNoteButton.click(() => {
-                    alert("Add new note");
-                });
-
-                $nodeSpan.append(addNoteButton);
-
-                // span rendered
-                $nodeSpan.data('rendered', true);
-            }
         }
     });
 }
@@ -86,13 +66,26 @@ $("#note-menu-button").click(async e => {
     const isNotRoot = note.noteId !== 'root';
 
     const itemsContainer = new ContextMenuItemsContainer([
-        {title: "Delete note", cmd: "delete", uiIcon: "trash"}
+        {title: "Insert note after", cmd: "insertNoteAfter", uiIcon: "plus"},
+        {title: "Insert child note", cmd: "insertChildNote", uiIcon: "plus"},
+        {title: "Delete this note", cmd: "delete", uiIcon: "trash"}
     ]);
 
+    itemsContainer.enableItem("insertNoteAfter", isNotRoot && parentNote.type !== 'search');
+    itemsContainer.enableItem("insertChildNote", note.type !== 'search');
     itemsContainer.enableItem("delete", isNotRoot && parentNote.type !== 'search');
-    alert("A");
+
     contextMenuWidget.initContextMenu(e, itemsContainer, (event, cmd) => {
-        if (cmd === "delete") {
+        if (cmd === "insertNoteAfter") {
+            const parentNoteId = node.data.parentNoteId;
+            const isProtected = treeUtils.getParentProtectedStatus(node);
+
+            treeService.createNote(node, parentNoteId, 'after', isProtected);
+        }
+        else if (cmd === "insertChildNote") {
+            treeService.createNote(node, node.data.noteId, 'into');
+        }
+        else if (cmd === "delete") {
             treeChangesService.deleteNodes([node]);
 
             // move to the tree

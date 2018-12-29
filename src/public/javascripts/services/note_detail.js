@@ -90,11 +90,11 @@ async function reload() {
     await loadNoteDetail(getCurrentNoteId());
 }
 
-async function switchToNote(noteId, mobile) {
+async function switchToNote(noteId) {
     if (getCurrentNoteId() !== noteId) {
         await saveNoteIfChanged();
 
-        await loadNoteDetail(noteId, mobile);
+        await loadNoteDetail(noteId);
     }
 }
 

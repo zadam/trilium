@@ -3,6 +3,7 @@ import bundleService from "./bundle.js";
 import infoService from "./info.js";
 import server from "./server.js";
 import noteDetailService from "./note_detail.js";
+import utils from "./utils.js";
 
 let codeEditor = null;
 
@@ -94,7 +95,7 @@ function onNoteChange(func) {
     codeEditor.on('change', func);
 }
 
-$(document).bind('keydown', "ctrl+return", executeCurrentNote);
+utils.bindShortcut("ctrl+return", executeCurrentNote);
 
 $executeScriptButton.click(executeCurrentNote);
 

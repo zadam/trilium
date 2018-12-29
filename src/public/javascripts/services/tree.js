@@ -681,6 +681,7 @@ export default {
     setPrefix,
     createNewTopLevelNote,
     createNote,
+    createNoteInto,
     getSelectedNodes,
     clearSelectedNodes,
     sortAlphabetically,
