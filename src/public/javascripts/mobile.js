@@ -23,6 +23,8 @@ function togglePanes() {
 
 $closeDetailButton.click(togglePanes);
 
+let firstLoad = true;
+
 async function showTree() {
     const tree = await treeService.loadTree();
 
@@ -39,7 +41,13 @@ async function showTree() {
             treeService.clearSelectedNodes();
 
             treeService.setCurrentNotePathToHash(node);
-            togglePanes();
+
+            if (!firstLoad) {
+                togglePanes();
+            }
+            else {
+                firstLoad = false;
+            }
 
             noteDetailService.switchToNote(noteId, true);
         },
