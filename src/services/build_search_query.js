@@ -23,9 +23,15 @@ module.exports = function(attributeFilters) {
             whereParams.push(filter.value);
         }
         else if ([">", ">=", "<", "<="].includes(filter.operator)) {
-            const floatParam = parseFloat(filter.value);
+            let floatParam;
 
-            if (isNaN(floatParam)) {
+            // from https://stackoverflow.com/questions/12643009/regular-expression-for-floating-point-numbers
+            if (/^[+-]?([0-9]*[.])?[0-9]+$/.test(filter.value)) {
+                floatParam = parseFloat(filter.value);
+            }
+
+            if (floatParam === undefined || isNaN(floatParam)) {
+                // if the value can't be parsed as float then we assume that string comparison should be used instead of numeric
                 where += `attribute${i}.value ${filter.operator} ?`;
                 whereParams.push(filter.value);
             }
