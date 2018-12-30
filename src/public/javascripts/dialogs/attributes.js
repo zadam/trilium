@@ -169,6 +169,8 @@ function AttributesModel() {
         infoService.showMessage("Attributes have been saved.");
 
         attributeService.refreshAttributes();
+
+        noteDetailService.reload();
     };
 
     function addLastEmptyRow() {
