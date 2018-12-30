@@ -337,6 +337,10 @@ function clearSelectedNodes() {
 }
 
 async function treeInitialized() {
+    if (startNotePath === '-') {
+        return;
+    }
+
     const noteId = treeUtils.getNoteIdFromNotePath(startNotePath);
 
     if (!await treeCache.getNote(noteId)) {
@@ -344,6 +348,7 @@ async function treeInitialized() {
         startNotePath = null;
     }
 
+    // - is used in mobile to indicate that we don't want to activate any note after load
     if (startNotePath) {
         const node = await activateNote(startNotePath);
 
@@ -652,7 +657,7 @@ utils.bindShortcut('ctrl+.', scrollToCurrentNote);
 $(window).bind('hashchange', function() {
     const notePath = getNotePathFromAddress();
 
-    if (getCurrentNotePath() !== notePath) {
+    if (notePath !== '-' && getCurrentNotePath() !== notePath) {
         console.debug("Switching to " + notePath + " because of hash change");
 
         activateNote(notePath);

@@ -21,9 +21,19 @@ function togglePanes() {
     }
 }
 
-$closeDetailButton.click(togglePanes);
+function showDetailPane() {
+    if (!$detail.is(":visible")) {
+        $detail.removeClass("d-none");
+        $leftPane.addClass("d-none");
+    }
+}
 
-let firstLoad = true;
+$closeDetailButton.click(() => {
+    // no page is opened
+    document.location.hash = '-';
+
+    togglePanes();
+});
 
 async function showTree() {
     const tree = await treeService.loadTree();
@@ -42,12 +52,7 @@ async function showTree() {
 
             treeService.setCurrentNotePathToHash(node);
 
-            if (!firstLoad) {
-                togglePanes();
-            }
-            else {
-                firstLoad = false;
-            }
+            showDetailPane();
 
             noteDetailService.switchToNote(noteId, true);
         },
@@ -114,5 +119,10 @@ $("#switch-to-desktop-button").click(() => {
 $("#log-out-button").click(() => {
     $("#logout-form").submit();
 });
+
+// this is done so that startNotePath is not used
+if (!document.location.hash) {
+    document.location.hash = '-';
+}
 
 showTree();
