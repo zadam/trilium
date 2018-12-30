@@ -17,6 +17,7 @@ html, body {
 
 #global-buttons {
     display: flex;
+    flex-shrink: 0;
     justify-content: space-around;
     padding: 10px 0 10px 0;
     margin: 0 10px 0 16px;

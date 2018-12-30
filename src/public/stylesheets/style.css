@@ -678,3 +678,13 @@ div[data-notify="container"] {
     margin: auto;
     padding-top: 50px;
 }
+
+.ck-editor__is-empty.ck-content.ck-editor__editable::before {
+    content: 'You can start writing note here ...';
+    position: absolute;
+    display: block;
+
+    margin: var(--ck-spacing-large) 0;
+
+    color: #aaa;
+}
