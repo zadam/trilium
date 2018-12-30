@@ -89,3 +89,17 @@ kbd {
 .dropdown-menu {
     font-size: larger;
 }
+
+.fancytree-loading span.fancytree-expander {
+    width: 32px;
+    height: 32px;
+    margin-left: 4px;
+}
+
+.fancytree-loading  span.fancytree-expander:after {
+    width: 20px;
+    height: 20px;
+    margin: 4px;
+    border-width: 2px;
+    border-style: solid;
+}

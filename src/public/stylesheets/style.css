@@ -16,13 +16,13 @@ body {
     flex-grow: 100;
 }
 
-.fancytree-node .fancytree-expander {
+.fancytree-node:not(.fancytree-loading) .fancytree-expander {
     background: none;
     width: auto;
     height: auto;
 }
 
-.fancytree-node .fancytree-expander:before {
+.fancytree-node:not(.fancytree-loading) .fancytree-expander:before {
     font-family: 'jam-icons' !important;
     speak: none;
     font-style: normal;
@@ -687,4 +687,26 @@ div[data-notify="container"] {
     margin: var(--ck-spacing-large) 0;
 
     color: #aaa;
+}
+
+.fancytree-loading span.fancytree-expander {
+    background-image: none !important;
+    display: inline-block;
+}
+
+.fancytree-loading  span.fancytree-expander:after {
+    content: " ";
+    display: block;
+    border-radius: 50%;
+    border-color: #000 transparent #000 transparent;
+    animation: lds-dual-ring 1.2s linear infinite;
+}
+
+@keyframes lds-dual-ring {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
 }
