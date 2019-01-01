@@ -135,7 +135,9 @@ async function createPromotedAttributeRow(definitionAttr, valueAttr) {
     const $inputCell = $("<td>").append($("<div>").addClass("input-group").append($input));
 
     const $actionCell = $("<td>");
-    const $multiplicityCell = $("<td>").addClass("multiplicity");
+    const $multiplicityCell = $("<td>")
+        .addClass("multiplicity")
+        .attr("nowrap", true);
 
     $tr
         .append($labelCell)

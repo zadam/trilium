@@ -70,6 +70,7 @@ body {
     height: 100%;
     display: flex;
     flex-direction: column;
+    min-height: 200px;
 }
 
 .note-detail-component {
@@ -311,6 +312,12 @@ div.ui-tooltip {
 
 .cm-matchhighlight {background-color: #eeeeee}
 
+#attribute-list {
+    overflow: auto;
+    /* limiting the size since actual note content is more important */
+    max-height: 30%;
+}
+
 #label-list, #relation-list, #attribute-list {
     color: #777777;
     padding: 5px;
@@ -434,8 +441,13 @@ html.theme-dark body {
 }
 
 #note-detail-promoted-attributes {
-    max-width: 70%;
     margin: auto;
+    /* setting the display to block since "table" doesn't support scrolling */
+    display: block;
+    flex-basis: content;
+    flex-shrink: 1;
+    flex-grow: 100;
+    overflow: auto;
 }
 
 #note-detail-promoted-attributes td, #note-detail-promoted-attributes th {
