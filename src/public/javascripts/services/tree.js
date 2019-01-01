@@ -83,6 +83,10 @@ async function setNodeTitleWithPrefix(node) {
     node.setTitle(utils.escapeHtml(title));
 }
 
+function getNode(childNoteId, parentNoteId) {
+    return getNodesByNoteId(childNoteId).find(node => !parentNoteId || node.data.parentNoteId === parentNoteId);
+}
+
 async function expandToNote(notePath, expandOpts) {
     utils.assertArguments(notePath);
 
@@ -94,7 +98,18 @@ async function expandToNote(notePath, expandOpts) {
 
     for (const childNoteId of runPath) {
         // for first node (!parentNoteId) it doesn't matter which node is found
-        const node = getNodesByNoteId(childNoteId).find(node => !parentNoteId || node.data.parentNoteId === parentNoteId);
+        let node = getNode(childNoteId, parentNoteId);
+
+        if (!node && parentNoteId) {
+            const parents = getNodesByNoteId(parentNoteId);
+
+            for (const parent of parents) {
+                // force load parents. This is useful when fancytree doesn't contain recently created notes yet.
+                await parent.load(true);
+            }
+
+            node = getNode(childNoteId, parentNoteId);
+        }
 
         if (!node) {
             console.error(`Can't find node for noteId=${childNoteId} with parentNoteId=${parentNoteId}`);
