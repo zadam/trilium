@@ -153,7 +153,8 @@ async function createNote(parentNoteId, title, content = "", extraOptions = {}) 
             noteId: note.noteId,
             type: attr.type,
             name: attr.name,
-            value: attr.value
+            value: attr.value,
+            isInheritable: !!attr.isInheritable
         });
     }
 

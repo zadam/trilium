@@ -184,5 +184,6 @@ export default {
     protectSubtree,
     ensureDialogIsClosed,
     enterProtectedSession,
-    leaveProtectedSession
+    leaveProtectedSession,
+    protectNoteAndSendToServer
 };

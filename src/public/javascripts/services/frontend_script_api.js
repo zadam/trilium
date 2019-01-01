@@ -7,6 +7,7 @@ import treeCache from './tree_cache.js';
 import noteDetailService from './note_detail.js';
 import noteTypeService from './note_type.js';
 import noteTooltipService from './note_tooltip.js';
+import protectedSessionService from'./protected_session.js';
 
 /**
  * This is the main frontend API interface for scripts. It's published in the local "api" object.
@@ -244,7 +245,12 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null) {
      * @method
      * @param {object} $el - jquery object on which to setup the tooltip
      */
-    this.setupElementTooltip = noteTooltipService.setupElementTooltip
+    this.setupElementTooltip = noteTooltipService.setupElementTooltip;
+
+    /**
+     * @method
+     */
+    this.protectCurrentNote = protectedSessionService.protectNoteAndSendToServer;
 }
 
 export default FrontendScriptApi;
