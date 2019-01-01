@@ -37,6 +37,8 @@ let noteChangeDisabled = false;
 
 let isNoteChanged = false;
 
+let detailLoadedListeners = [];
+
 const components = {
     'code': noteDetailCode,
     'text': noteDetailText,
@@ -147,12 +149,6 @@ function setNoteBackgroundIfProtected(note) {
     $unprotectButton.prop("disabled", !protectedSessionHolder.isProtectedSessionAvailable());
 }
 
-let isNewNoteCreated = false;
-
-function newNoteCreated() {
-    isNewNoteCreated = true;
-}
-
 async function handleProtectedSession() {
     const newSessionCreated = await protectedSessionService.ensureProtectedSession(currentNote.isProtected, false);
 
@@ -189,12 +185,6 @@ async function loadNoteDetail(noteId) {
     else {
         // mobile usually doesn't need attributes so we just invalidate
         attributeService.invalidateAttributes();
-    }
-
-    if (isNewNoteCreated) {
-        isNewNoteCreated = false;
-
-        $noteTitle.focus().select();
     }
 
     $noteIdDisplay.html(noteId);
@@ -240,11 +230,13 @@ async function loadNoteDetail(noteId) {
     // after loading new note make sure editor is scrolled to the top
     getComponent(currentNote.type).scrollToTop();
 
+    fireDetailLoaded();
+
+    $scriptArea.empty();
+
+    await bundleService.executeRelationBundles(getCurrentNote(), 'runOnNoteView');
+
     if (utils.isDesktop()) {
-        $scriptArea.empty();
-
-        await bundleService.executeRelationBundles(getCurrentNote(), 'runOnNoteView');
-
         await attributeService.showAttributes();
 
         await showChildrenOverview();
@@ -291,6 +283,30 @@ function focusOnTitle() {
     $noteTitle.focus();
 }
 
+/**
+ * Since detail loading may take some time and user might just browse through the notes using UP-DOWN keys,
+ * we intentionally decouple activation of the note in the tree and full load of the note so just avaiting on
+ * fancytree's activate() won't wait for the full load.
+ *
+ * This causes an issue where in some cases you want to do some action after detail is loaded. For this reason
+ * we provide the listeners here which will be triggered after the detail is loaded and if the loaded note
+ * is the one registered in the listener.
+ */
+function addDetailLoadedListener(noteId, callback) {
+    detailLoadedListeners.push({ noteId, callback });
+}
+
+function fireDetailLoaded() {
+    for (const {noteId, callback} of detailLoadedListeners) {
+        if (noteId === currentNote.noteId) {
+            callback();
+        }
+    }
+
+    // all the listeners are one time only
+    detailLoadedListeners = [];
+}
+
 messagingService.subscribeToSyncMessages(syncData => {
     if (syncData.some(sync => sync.entityName === 'notes' && sync.entityId === getCurrentNoteId())) {
         infoService.showMessage('Reloading note because of background changes');
@@ -325,11 +341,11 @@ export default {
     getCurrentNote,
     getCurrentNoteType,
     getCurrentNoteId,
-    newNoteCreated,
     focusOnTitle,
     saveNote,
     saveNoteIfChanged,
     noteChanged,
     getCurrentNoteContent,
-    onNoteChange
+    onNoteChange,
+    addDetailLoadedListener
 };

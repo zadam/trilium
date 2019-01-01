@@ -126,7 +126,7 @@ async function expandToNote(notePath, expandOpts) {
     }
 }
 
-async function activateNote(notePath, newNote) {
+async function activateNote(notePath, noteLoadedListener) {
     utils.assertArguments(notePath);
 
     const hoistedNoteId = await hoistedNoteService.getHoistedNoteId();
@@ -146,8 +146,8 @@ async function activateNote(notePath, newNote) {
 
     const node = await expandToNote(notePath);
 
-    if (newNote) {
-        noteDetailService.newNoteCreated();
+    if (noteLoadedListener) {
+        noteDetailService.addDetailLoadedListener(node.data.noteId, noteLoadedListener);
     }
 
     // we use noFocus because when we reload the tree because of background changes
@@ -562,7 +562,7 @@ async function createNote(node, parentNoteId, target, isProtected, saveSelection
 
     await noteDetailService.saveNoteIfChanged();
 
-    noteDetailService.newNoteCreated();
+    noteDetailService.addDetailLoadedListener(note.noteId, noteDetailService.focusOnTitle);
 
     const noteEntity = new NoteShort(treeCache, note);
     const branchEntity = new Branch(treeCache, branch);
