@@ -358,10 +358,12 @@ async function deleteNote(branch) {
     const notDeletedBranches = await note.getBranches();
 
     if (notDeletedBranches.length === 0) {
-        note.isDeleted = true;
-        // we don't reset content here, that's postponed and done later to give the user
-        // a chance to correct a mistake
-        await note.save();
+        // maybe a bit counter-intuitively, protected notes can be deleted also outside of protected session
+        // this is because protected notes offer only confidentiality which makes some things simpler - e.g. deletion UI
+        // to allow this, we just set the isDeleted flag, otherwise saving would fail because of attempt to encrypt
+        // content with non-existent protected session key
+        // we don't reset content here, that's postponed and done later to give the user a chance to correct a mistake
+        await sql.execute("UPDATE notes SET isDeleted = 1 WHERE noteId = ?", [note.noteId]);
 
         for (const noteRevision of await note.getRevisions()) {
             await noteRevision.save();
