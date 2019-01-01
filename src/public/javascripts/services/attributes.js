@@ -85,8 +85,11 @@ async function showAttributes() {
         $promotedAttributesContainer.empty().append($tbody);
     }
     else if (note.type !== 'relation-map') {
-        if (attributes.length > 0) {
-            for (const attribute of attributes) {
+        // display only "own" notes
+        const ownedAttributes = attributes.filter(attr => attr.noteId === note.noteId);
+
+        if (ownedAttributes.length > 0) {
+            for (const attribute of ownedAttributes) {
                 if (attribute.type === 'label') {
                     $attributeListInner.append(utils.formatLabel(attribute) + " ");
                 }
