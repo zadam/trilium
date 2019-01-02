@@ -13,8 +13,6 @@ import syncService from "./sync.js";
 import hoistedNoteService from './hoisted_note.js';
 import ContextMenuItemsContainer from './context_menu_items_container.js';
 
-const $tree = $("#tree");
-
 let clipboardIds = [];
 let clipboardMode = null;
 
@@ -110,11 +108,12 @@ async function getContextMenuItems(event) {
     const note = await treeCache.getNote(node.data.noteId);
     const parentNote = await treeCache.getNote(branch.parentNoteId);
     const isNotRoot = note.noteId !== 'root';
+    const isHoisted = note.noteId === await hoistedNoteService.getHoistedNoteId();
 
     const itemsContainer = new ContextMenuItemsContainer(contextMenuItems);
 
     // Modify menu entries depending on node status
-    itemsContainer.enableItem("insertNoteAfter", isNotRoot && parentNote.type !== 'search');
+    itemsContainer.enableItem("insertNoteAfter", isNotRoot && !isHoisted && parentNote.type !== 'search');
     itemsContainer.enableItem("insertChildNote", note.type !== 'search');
     itemsContainer.enableItem("delete", isNotRoot && parentNote.type !== 'search');
     itemsContainer.enableItem("copy", isNotRoot);
@@ -125,10 +124,8 @@ async function getContextMenuItems(event) {
     itemsContainer.enableItem("export", note.type !== 'search');
     itemsContainer.enableItem("editBranchPrefix", isNotRoot && parentNote.type !== 'search');
 
-    const hoistedNoteId = await hoistedNoteService.getHoistedNoteId();
-
-    itemsContainer.hideItem("hoist", note.noteId === hoistedNoteId);
-    itemsContainer.hideItem("unhoist", note.noteId !== hoistedNoteId || !isNotRoot);
+    itemsContainer.hideItem("hoist", isHoisted);
+    itemsContainer.hideItem("unhoist", !isHoisted || !isNotRoot);
 
     // Activate node on right-click
     node.setActive();

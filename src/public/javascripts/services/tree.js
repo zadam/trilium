@@ -649,10 +649,14 @@ messagingService.subscribeToSyncMessages(syncData => {
     }
 });
 
-utils.bindShortcut('ctrl+o', () => {
+utils.bindShortcut('ctrl+o', async () => {
     const node = getCurrentNode();
     const parentNoteId = node.data.parentNoteId;
     const isProtected = treeUtils.getParentProtectedStatus(node);
+
+    if (node.data.noteId === 'root' || node.data.noteId === await hoistedNoteService.getHoistedNoteId()) {
+        return;
+    }
 
     createNote(node, parentNoteId, 'after', isProtected, true);
 });
