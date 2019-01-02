@@ -446,7 +446,7 @@ html.theme-dark body {
     display: block;
     flex-basis: content;
     flex-shrink: 1;
-    flex-grow: 100;
+    flex-grow: 0;
     overflow: auto;
 }
 
