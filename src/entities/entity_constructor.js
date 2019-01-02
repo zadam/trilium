@@ -15,7 +15,8 @@ const ENTITY_NAME_TO_ENTITY = {
     "note_revisions": NoteRevision,
     "recent_notes": RecentNote,
     "options": Option,
-    "api_tokens": ApiToken
+    "api_tokens": ApiToken,
+    "links": Link
 };
 
 function getEntityFromEntityName(entityName) {

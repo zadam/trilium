@@ -52,13 +52,15 @@ async function sendMessage(client, message) {
 async function sendMessageToAllClients(message) {
     const jsonStr = JSON.stringify(message);
 
-    log.info("Sending message to all clients: " + jsonStr);
+    if (webSocketServer) {
+        log.info("Sending message to all clients: " + jsonStr);
 
-    webSocketServer.clients.forEach(function each(client) {
-        if (client.readyState === WebSocket.OPEN) {
-            client.send(jsonStr);
-        }
-    });
+        webSocketServer.clients.forEach(function each(client) {
+            if (client.readyState === WebSocket.OPEN) {
+                client.send(jsonStr);
+            }
+        });
+    }
 }
 
 async function sendPing(client, lastSentSyncId) {
