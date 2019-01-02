@@ -198,15 +198,17 @@ addTabHandler((async function () {
     const $syncVersion = $("#sync-version");
     const $buildDate = $("#build-date");
     const $buildRevision = $("#build-revision");
+    const $dataDirectory = $("#data-directory");
 
     const appInfo = await server.get('app-info');
 
-    $appVersion.html(appInfo.appVersion);
-    $dbVersion.html(appInfo.dbVersion);
-    $syncVersion.html(appInfo.syncVersion);
-    $buildDate.html(appInfo.buildDate);
-    $buildRevision.html(appInfo.buildRevision);
+    $appVersion.text(appInfo.appVersion);
+    $dbVersion.text(appInfo.dbVersion);
+    $syncVersion.text(appInfo.syncVersion);
+    $buildDate.text(appInfo.buildDate);
+    $buildRevision.text(appInfo.buildRevision);
     $buildRevision.attr('href', 'https://github.com/zadam/trilium/commit/' + appInfo.buildRevision);
+    $dataDirectory.text(appInfo.dataDirectory);
 
     return {};
 })());
