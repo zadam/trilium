@@ -81,6 +81,9 @@ async function setNodeTitleWithPrefix(node) {
     const title = (prefix ? (prefix + " - ") : "") + noteTitle;
 
     node.setTitle(utils.escapeHtml(title));
+
+    // workaround for this: https://github.com/mar10/fancytree/issues/927
+    node.render(true, false);
 }
 
 function getNode(childNoteId, parentNoteId) {
