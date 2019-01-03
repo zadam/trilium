@@ -12,6 +12,7 @@ const Attribute = require('../entities/attribute');
 const NoteRevision = require('../entities/note_revision');
 const RecentNote = require('../entities/recent_note');
 const Option = require('../entities/option');
+const Link = require('../entities/link');
 
 async function getHash(entityConstructor, whereBranch) {
     // subselect is necessary to have correct ordering in GROUP_CONCAT
@@ -37,7 +38,8 @@ async function getHashes() {
         recent_notes: await getHash(RecentNote),
         options: await getHash(Option, "isSynced = 1"),
         attributes: await getHash(Attribute),
-        api_tokens: await getHash(ApiToken)
+        api_tokens: await getHash(ApiToken),
+        links: await getHash(Link)
     };
 
     const elapseTimeMs = new Date().getTime() - startTime.getTime();

@@ -5,13 +5,24 @@ const ENTER_PROTECTED_SESSION = "ENTER_PROTECTED_SESSION";
 const ENTITY_CREATED = "ENTITY_CREATED";
 const ENTITY_CHANGED = "ENTITY_CHANGED";
 const ENTITY_DELETED = "ENTITY_DELETED";
+const ENTITY_SYNCED = "ENTITY_SYNCED";
 const CHILD_NOTE_CREATED = "CHILD_NOTE_CREATED";
 
 const eventListeners = {};
 
-function subscribe(eventType, listener) {
-    eventListeners[eventType] = eventListeners[eventType] || [];
-    eventListeners[eventType].push(listener);
+/**
+ * @param eventTypes - can be either single event or an array of events
+ * @param listener
+ */
+function subscribe(eventTypes, listener) {
+    if (!Array.isArray(eventTypes)) {
+        eventTypes = [ eventTypes ];
+    }
+
+    for (const eventType of eventTypes) {
+        eventListeners[eventType] = eventListeners[eventType] || [];
+        eventListeners[eventType].push(listener);
+    }
 }
 
 async function emit(eventType, data) {
@@ -39,5 +50,6 @@ module.exports = {
     ENTITY_CREATED,
     ENTITY_CHANGED,
     ENTITY_DELETED,
+    ENTITY_SYNCED,
     CHILD_NOTE_CREATED
 };

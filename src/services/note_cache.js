@@ -299,7 +299,9 @@ function getNotePath(noteId) {
     }
 }
 
-eventService.subscribe(eventService.ENTITY_CHANGED, async ({entityName, entity}) => {
+eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED, eventService.ENTITY_SYNCED], async ({entityName, entity}) => {
+    // note that entity can also be just POJO without methods if coming from sync
+
     if (!loaded) {
         return;
     }
