@@ -55,10 +55,6 @@ function getTriliumDataDir() {
 }
 
 const TRILIUM_DATA_DIR =  getTriliumDataDir();
-
-// not necessary to log this since if we have logs we already know where data dir is.
-console.log("Using data dir:", TRILIUM_DATA_DIR);
-
 const DOCUMENT_PATH = TRILIUM_DATA_DIR + "/document.db";
 const BACKUP_DIR = TRILIUM_DATA_DIR + "/backup";
 const LOG_DIR = TRILIUM_DATA_DIR + "/log";

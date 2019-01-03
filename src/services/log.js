@@ -45,8 +45,6 @@ function request(req) {
     logger.info(req.method + " " + req.url);
 }
 
-info("Using data dir: " + dataDir.TRILIUM_DATA_DIR);
-
 module.exports = {
     info,
     error,
