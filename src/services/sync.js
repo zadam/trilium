@@ -256,7 +256,7 @@ async function getEntityRow(entityName, entityId) {
             && entity.content !== null
             && (entity.type === 'file' || entity.type === 'image')) {
 
-            entity.content = entity.content.toString("binary");
+            entity.content = entity.content.toString("base64");
         }
 
         return entity;

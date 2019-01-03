@@ -40,7 +40,7 @@ async function updateEntity(sync, entity, sourceId) {
 
 function deserializeNoteContentBuffer(note) {
     if (note.content !== null && (note.type === 'file' || note.type === 'image')) {
-        note.content = new Buffer(note.content, 'binary');
+        note.content = Buffer.from(note.content, 'base64');
     }
 }
 
