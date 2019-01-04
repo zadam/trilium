@@ -364,6 +364,8 @@ async function deleteNote(branch) {
         // content with non-existent protected session key
         // we don't reset content here, that's postponed and done later to give the user a chance to correct a mistake
         await sql.execute("UPDATE notes SET isDeleted = 1 WHERE noteId = ?", [note.noteId]);
+        // need to manually trigger sync since it's not taken care of by note save
+        await syncTableService.addNoteSync(note.noteId);
 
         for (const noteRevision of await note.getRevisions()) {
             await noteRevision.save();
