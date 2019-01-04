@@ -81,9 +81,6 @@ async function setNodeTitleWithPrefix(node) {
     const title = (prefix ? (prefix + " - ") : "") + noteTitle;
 
     node.setTitle(utils.escapeHtml(title));
-
-    // workaround for this: https://github.com/mar10/fancytree/issues/927
-    node.render(true, false);
 }
 
 function getNode(childNoteId, parentNoteId) {
@@ -429,13 +426,17 @@ function initFancyTree(tree) {
         clones: {
             highlightActiveClones: true
         },
-        renderNode: async function (event, data) {
+        enhanceTitle: async function (event, data) {
             const node = data.node;
+            const $span = $(node.span);
 
-            if (node.data.noteId !== 'root' && node.data.noteId === await hoistedNoteService.getHoistedNoteId()) {
+            if (node.data.noteId !== 'root'
+                && node.data.noteId === await hoistedNoteService.getHoistedNoteId()
+                && $span.find('.unhoist-button').length === 0) {
+
                 const unhoistButton = $('<span>&nbsp; (<a class="unhoist-button">unhoist</a>)</span>');
 
-                $(node.span).append(unhoistButton);
+                $span.append(unhoistButton);
             }
         }
     });
