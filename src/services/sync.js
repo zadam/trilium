@@ -1,6 +1,5 @@
 "use strict";
 
-const url = require('url');
 const log = require('./log');
 const sql = require('./sql');
 const sqlInit = require('./sql_init');
@@ -98,6 +97,16 @@ async function doLogin() {
     }
 
     syncContext.sourceId = resp.sourceId;
+
+    const lastSyncedPull = await getLastSyncedPull();
+
+    // this is important in a scenario where we setup the sync by manually copying the document
+    // lastSyncedPull then could be pretty off for the newly cloned client
+    if (lastSyncedPull > resp.maxSyncId) {
+        log.info(`Lowering last synced pull from ${lastSyncedPull} to ${resp.maxSyncId}`);
+
+        await setLastSyncedPull(resp.maxSyncId);
+    }
 
     return syncContext;
 }

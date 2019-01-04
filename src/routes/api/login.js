@@ -10,6 +10,7 @@ const appInfo = require('../../services/app_info');
 const eventService = require('../../services/events');
 const cls = require('../../services/cls');
 const sqlInit = require('../../services/sql_init');
+const sql = require('../../services/sql');
 
 async function loginSync(req) {
     if (!await sqlInit.schemaExists()) {
@@ -44,7 +45,8 @@ async function loginSync(req) {
     req.session.loggedIn = true;
 
     return {
-        sourceId: sourceIdService.getCurrentSourceId()
+        sourceId: sourceIdService.getCurrentSourceId(),
+        maxSyncId: await sql.getValue("SELECT MAX(id) FROM sync")
     };
 }
 
