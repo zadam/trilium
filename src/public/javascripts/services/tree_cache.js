@@ -158,7 +158,11 @@ class TreeCache {
             return;
         }
 
-        treeCache.childParentToBranch[childNoteId + '-' + newParentNoteId] = treeCache.childParentToBranch[childNoteId + '-' + oldParentNoteId];
+        const branchId = treeCache.childParentToBranch[childNoteId + '-' + oldParentNoteId];
+        const branch = await this.getBranch(branchId);
+        branch.parentNoteId = newParentNoteId;
+
+        treeCache.childParentToBranch[childNoteId + '-' + newParentNoteId] = branchId;
         delete treeCache.childParentToBranch[childNoteId + '-' + oldParentNoteId]; // this is correct because we know that oldParentId isn't same as newParentId
 
         // remove old associations
