@@ -18,6 +18,7 @@ Trilium Notes is a hierarchical note taking application with focus on building l
 * [Relation maps](https://github.com/zadam/trilium/wiki/Relation-map) for visualizing notes and their relations
 * [Scripting](https://github.com/zadam/trilium/wiki/Scripts) - see [Advanced showcases](https://github.com/zadam/trilium/wiki/Advanced-showcases)
 * Scales well in both usability and performance upwards of 100 000 notes
+* Touch optimized [mobile frontend](https://github.com/zadam/trilium/wiki/Mobile-frontend) for smartphones and tablets
 * [Night theme](https://github.com/zadam/trilium/wiki/Themes)
 * [Evernote](https://github.com/zadam/trilium/wiki/Evernote-import) and [Markdown import & export](https://github.com/zadam/trilium/wiki/Markdown)
 
