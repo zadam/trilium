@@ -367,7 +367,7 @@ div.ui-tooltip {
 }
 
 .btn:not(.btn-primary):not(.btn-danger) {
-    border-color: #bbb;
+    border-color: #ddd;
     background-color: #eee;
 }
 
@@ -528,7 +528,8 @@ table.promoted-attributes-in-tooltip td, table.promoted-attributes-in-tooltip th
     max-height: 300px;
     overflow: hidden;
     color: black;
-    border: 1px solid #aaa;
+    border: 1px solid #ccc;
+    border-radius: 5px;
     text-align: left;
 }
 
