@@ -1,4 +1,5 @@
 const sql = require('./sql');
+const sqlInit = require('./sql_init');
 const optionService = require('./options');
 const dateUtils = require('./date_utils');
 const syncTableService = require('./sync_table');
@@ -408,10 +409,12 @@ async function cleanupDeletedNotes() {
     await sql.execute("UPDATE note_revisions SET content = NULL WHERE note_revisions.content IS NOT NULL AND noteId IN (SELECT noteId FROM notes WHERE isDeleted = 1 AND notes.dateModified <= ?)", [dateUtils.dateStr(cutoffDate)]);
 }
 
-// first cleanup kickoff 5 minutes after startup
-setTimeout(cls.wrap(cleanupDeletedNotes), 5 * 60 * 1000);
+sqlInit.dbReady.then(() => {
+    // first cleanup kickoff 5 minutes after startup
+    setTimeout(cls.wrap(cleanupDeletedNotes), 5 * 60 * 1000);
 
-setInterval(cls.wrap(cleanupDeletedNotes), 4 * 3600 * 1000);
+    setInterval(cls.wrap(cleanupDeletedNotes), 4 * 3600 * 1000);
+});
 
 module.exports = {
     createNewNote,

@@ -7,7 +7,7 @@
 </head>
 <body>
 <div class="container">
-    <div class="col-md-5 offset-md-3" style="padding-top: 25px;">
+    <div class="col-xs-12 col-sm-10 col-md-6 col-lg-4 col-xl-4 mx-auto" style="padding-top: 25px;">
         <h1>Trilium login</h1>
 
         <% if (failedAuth) { %>
@@ -59,6 +59,8 @@
         // mobile device detection based on https://stackoverflow.com/a/24600597/944162
         device = /Mobi/.test(navigator.userAgent) ? "mobile" : "desktop";
     }
+
+    console.log("Setting device cookie to:", device);
 
     setCookie("trilium-device", device);
 
