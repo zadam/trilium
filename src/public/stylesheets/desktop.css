@@ -45,13 +45,22 @@
 #header button {
     padding: 1px 5px 1px 5px;
     font-size: small;
+    margin-bottom: 2px;
+    margin-top: 2px;
+    margin-right: 8px;
+}
+
+#history-navigation {
+    margin: 0 15px 0 5px;
+    position: relative;
+    top: 3px;
 }
 
 #global-buttons {
     display: flex;
     justify-content: space-around;
     padding: 10px 0 10px 0;
-    margin: 0 10px 0 16px;
+    margin: 0 10px 0 10px;
     border: 1px solid #ccc;
     border-radius: 5px;
 }
