@@ -131,8 +131,21 @@ span.fancytree-node.fancytree-active-clone:not(.fancytree-active) .fancytree-tit
 
 /* By default not focused active tree item is not easily visible, this makes it more visible */
 span.fancytree-active:not(.fancytree-focused) .fancytree-title {
+    background-color: #eee !important;
+    border-color: #ddd !important;
+    border-radius: 3px;
+}
+
+span.fancytree-active.fancytree-focused .fancytree-title {
     background-color: #ddd !important;
-    border-color: #555 !important;
+    border-color: #bbb !important;
+    border-radius: 3px;
+}
+
+.fancytree-plain span.fancytree-node:hover span.fancytree-title {
+    background-color: #eee !important;
+    border-color: #bbb !important;
+    border-radius: 3px;
 }
 
 .ui-autocomplete {
