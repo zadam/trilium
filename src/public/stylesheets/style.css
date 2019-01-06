@@ -16,6 +16,16 @@ body {
     flex-grow: 100;
 }
 
+ul.fancytree-container {
+    /* override specific size from fancytree.css */
+    font-family: inherit !important;
+    font-size: inherit !important;
+}
+
+.fancytree-title {
+    margin-left: 7px !important;
+}
+
 .fancytree-node:not(.fancytree-loading) .fancytree-expander {
     background: none;
     width: auto;
