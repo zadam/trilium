@@ -17,6 +17,7 @@ RUN set -x \
         libtool \
         make \
         nasm \
+        libpng-dev \
     && npm install --production \
     && apk del .build-dependencies
 
