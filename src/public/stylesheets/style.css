@@ -2,6 +2,7 @@ body {
     /* Fix for CKEditor block gutter icon "stretching" body and causing scrollbar to appear after pressing enter
        on the last line of the editor. */
     position: fixed;
+    width: 100%;
 }
 
 #title-container {
