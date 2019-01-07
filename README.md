@@ -1,7 +1,7 @@
 # Trilium Notes
 
 [![Join the chat at https://gitter.im/trilium-notes/Lobby](https://badges.gitter.im/trilium-notes/Lobby.svg)](https://gitter.im/trilium-notes/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-Trilium Notes is a hierarchical note taking application with focus on building large personal knowledge bases. See [screenshots](https://github.com/zadam/trilium/wiki/Screenshot-tour) for quick overview: 
+Trilium Notes is a hierarchical note taking application with focus on building large personal knowledge bases. See [screenshots](https://github.com/zadam/trilium/wiki/Screenshot-tour) for quick overview:
 
 ![](https://raw.githubusercontent.com/wiki/zadam/trilium/images/screenshot.png)
 
@@ -35,3 +35,15 @@ Trilium is provided as either desktop application (Linux, Windows, Mac) or web a
 [See wiki for complete list of documentation pages.](https://github.com/zadam/trilium/wiki/)
 
 You can also read [Patterns of personal knowledge base](https://github.com/zadam/trilium/wiki/Patterns-of-personal-knowledge-base) to get some inspiration on how you might use Trilium.
+
+## Contribute
+
+Use a browser based dev environment
+
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/zadam/trilium)
+
+Or clone locally and run
+```
+npm install
+npm run start
+```

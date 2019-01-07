@@ -1,0 +1,7 @@
+tasks:
+    - before: nvm install 10 && nvm use 10
+      init: npm install
+      command: npm run start
+ports:
+    - port: 8080
+      onOpen: open-preview
