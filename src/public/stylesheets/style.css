@@ -390,7 +390,7 @@ div.ui-tooltip {
     height: 150px;
 }
 
-.btn:not(.btn-primary):not(.btn-danger) {
+.btn:not(.btn-primary):not(.btn-secondary):not(.btn-danger) {
     border-color: #ddd;
     background-color: #eee;
 }
