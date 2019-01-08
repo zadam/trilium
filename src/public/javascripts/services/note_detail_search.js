@@ -4,7 +4,7 @@ const $searchString = $("#search-string");
 const $component = $('#note-detail-search');
 
 function getContent() {
-    JSON.stringify({
+    return JSON.stringify({
         searchString: $searchString.val()
     });
 }
