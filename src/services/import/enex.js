@@ -144,7 +144,7 @@ async function importEnex(file, parentNote) {
                 });
             }
             else if (currentTag === 'mime') {
-                resource.mime = text;
+                resource.mime = text.toLowerCase();
 
                 if (text.startsWith("image/")) {
                     resource.title = "image";
@@ -222,7 +222,7 @@ async function importEnex(file, parentNote) {
 
             const mediaRegex = new RegExp(`<en-media hash="${hash}"[^>]*>`, 'g');
 
-            if (resource.mime.startsWith("image/")) {
+            if (["image/jpeg", "image/png", "image/gif"].includes(resource.mime)) {
                 const originalName = "image." + resource.mime.substr(6);
 
                 const { url } = await imageService.saveImage(resource.content, originalName, noteEntity.noteId);
