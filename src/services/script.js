@@ -6,7 +6,7 @@ const sourceIdService = require('./source_id');
 const log = require('./log');
 
 async function executeNote(note, originEntity) {
-    if (!note.isJavaScript()) {
+    if (!note.isJavaScript() || !note.isContentAvailable) {
         return;
     }
 
@@ -80,6 +80,10 @@ function getParams(params) {
 }
 
 async function getScriptBundle(note, root = true, scriptEnv = null, includedNoteIds = []) {
+    if (!note.isContentAvailable) {
+        return;
+    }
+
     if (!note.isJavaScript() && !note.isHtml()) {
         return;
     }
