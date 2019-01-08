@@ -7,6 +7,7 @@ const tarImportService = require('../../services/import/tar');
 const singleImportService = require('../../services/import/single');
 const cls = require('../../services/cls');
 const path = require('path');
+const noteCacheService = require('../../services/note_cache');
 
 async function importToBranch(req) {
     const parentNoteId = req.params.parentNoteId;
@@ -28,24 +29,32 @@ async function importToBranch(req) {
     // and may produce unintended consequences
     cls.disableEntityEvents();
 
+    let note; // typically root of the import - client can show it after finishing the import
+
     if (extension === '.tar') {
-        return await tarImportService.importTar(file.buffer, parentNote);
+        note = await tarImportService.importTar(file.buffer, parentNote);
     }
     else if (extension === '.opml') {
-        return await opmlImportService.importOpml(file.buffer, parentNote);
+        note = await opmlImportService.importOpml(file.buffer, parentNote);
     }
     else if (extension === '.md') {
-        return await singleImportService.importMarkdown(file, parentNote);
+        note = await singleImportService.importMarkdown(file, parentNote);
     }
     else if (extension === '.html' || extension === '.htm') {
-        return await singleImportService.importHtml(file, parentNote);
+        note = await singleImportService.importHtml(file, parentNote);
     }
     else if (extension === '.enex') {
-        return await enexImportService.importEnex(file, parentNote);
+        note = await enexImportService.importEnex(file, parentNote);
     }
     else {
         return [400, `Unrecognized extension ${extension}, must be .tar or .opml`];
     }
+
+    // import has deactivated note events so note cache is not updated
+    // instead we force it to reload (can be async)
+    noteCacheService.load();
+
+    return note;
 }
 
 module.exports = {

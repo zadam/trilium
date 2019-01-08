@@ -33,7 +33,19 @@ async function load() {
 
     archived = await sql.getMap(`SELECT noteId, isInheritable FROM attributes WHERE isDeleted = 0 AND type = 'label' AND name = 'archived'`);
 
+    if (protectedSessionService.isProtectedSessionAvailable()) {
+        await loadProtectedNotes();
+    }
+
     loaded = true;
+}
+
+async function loadProtectedNotes() {
+    protectedNoteTitles = await sql.getMap(`SELECT noteId, title FROM notes WHERE isDeleted = 0 AND isProtected = 1`);
+
+    for (const noteId in protectedNoteTitles) {
+        protectedNoteTitles[noteId] = protectedSessionService.decryptNoteTitle(noteId, protectedNoteTitles[noteId]);
+    }
 }
 
 function highlightResults(results, allTokens) {
@@ -314,7 +326,16 @@ eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED
             delete childToParent[note.noteId];
         }
         else {
-            noteTitles[note.noteId] = note.title;
+            if (note.isProtected) {
+                // we can assume we have protected session since we managed to update
+                // removing from the maps is important when switching between protected & unprotected
+                protectedNoteTitles[note.noteId] = note.title;
+                delete noteTitles[note.noteId];
+            }
+            else {
+                noteTitles[note.noteId] = note.title;
+                delete protectedNoteTitles[note.noteId];
+            }
         }
     }
     else if (entityName === 'branches') {
@@ -355,15 +376,9 @@ eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED
     }
 });
 
-eventService.subscribe(eventService.ENTER_PROTECTED_SESSION, async () => {
-    if (!loaded) {
-        return;
-    }
-
-    protectedNoteTitles = await sql.getMap(`SELECT noteId, title FROM notes WHERE isDeleted = 0 AND isProtected = 1`);
-
-    for (const noteId in protectedNoteTitles) {
-        protectedNoteTitles[noteId] = protectedSessionService.decryptNoteTitle(noteId, protectedNoteTitles[noteId]);
+eventService.subscribe(eventService.ENTER_PROTECTED_SESSION, () => {
+    if (loaded) {
+        loadProtectedNotes();
     }
 });
 
@@ -372,5 +387,6 @@ sqlInit.dbReady.then(() => utils.stopWatch("Autocomplete load", load));
 module.exports = {
     findNotes,
     getNotePath,
-    getNoteTitleForPath
+    getNoteTitleForPath,
+    load
 };
