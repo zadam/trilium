@@ -352,6 +352,7 @@ function clearSelectedNodes() {
 }
 
 async function treeInitialized() {
+    // - is used in mobile to indicate that we don't want to activate any note after load
     if (startNotePath === '-') {
         return;
     }
@@ -363,7 +364,6 @@ async function treeInitialized() {
         startNotePath = null;
     }
 
-    // - is used in mobile to indicate that we don't want to activate any note after load
     if (startNotePath) {
         const node = await activateNote(startNotePath);
 
@@ -438,6 +438,16 @@ function initFancyTree(tree) {
 
                 $span.append(unhoistButton);
             }
+        },
+        // this is done to automatically lazy load all expanded search notes after tree load
+        loadChildren: function(event, data) {
+            data.node.visit(function(subNode){
+                // Load all lazy/unloaded child nodes
+                // (which will trigger `loadChildren` recursively)
+                if( subNode.isUndefined() && subNode.isExpanded() ) {
+                    subNode.load();
+                }
+            });
         }
     });
 

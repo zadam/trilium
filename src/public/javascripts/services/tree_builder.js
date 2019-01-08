@@ -86,7 +86,7 @@ async function prepareNode(branch) {
         extraClasses: await getExtraClasses(note),
         icon: await getIcon(note),
         refKey: note.noteId,
-        expanded: (note.type !== 'search' && branch.isExpanded) || hoistedNoteId === note.noteId
+        expanded: branch.isExpanded || hoistedNoteId === note.noteId
     };
 
     if (note.hasChildren() || note.type === 'search') {
