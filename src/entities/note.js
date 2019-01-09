@@ -56,6 +56,9 @@ class Note extends Entity {
     setContent(content) {
         this.content = content;
 
+        // if parsing below is not successful then there's no jsonContent as opposed to still having the old unupdated ones
+        delete this.jsonContent;
+
         try {
             this.jsonContent = JSON.parse(this.content);
         }
