@@ -36,6 +36,7 @@ import hoistedNoteService from './services/hoisted_note.js';
 import noteTypeService from './services/note_type.js';
 import linkService from './services/link.js';
 import noteAutocompleteService from './services/note_autocomplete.js';
+import macInit from './services/mac_init.js';
 
 // required for CKEditor image upload plugin
 window.glob.getCurrentNode = treeService.getCurrentNode;
@@ -110,21 +111,6 @@ if (utils.isElectron()) {
     });
 }
 
-function exec(cmd) {
-    document.execCommand(cmd);
-
-    return false;
-}
-
-if (utils.isElectron() && utils.isMac()) {
-    utils.bindShortcut('meta+c', () => exec("copy"));
-    utils.bindShortcut('meta+v', () => exec('paste'));
-    utils.bindShortcut('meta+x', () => exec('cut'));
-    utils.bindShortcut('meta+a', () => exec('selectAll'));
-    utils.bindShortcut('meta+z', () => exec('undo'));
-    utils.bindShortcut('meta+y', () => exec('redo'));
-}
-
 $("#export-note-button").click(function () {
     if ($(this).hasClass("disabled")) {
         return;
@@ -132,6 +118,8 @@ $("#export-note-button").click(function () {
 
     exportDialog.showDialog('single');
 });
+
+macInit.init();
 
 treeService.showTree();
 
