@@ -1,6 +1,7 @@
 "use strict";
 
 const repository = require('./repository');
+const log = require('./log');
 const protectedSessionService = require('./protected_session');
 const noteService = require('./notes');
 const imagemin = require('imagemin');
@@ -13,7 +14,13 @@ const sanitizeFilename = require('sanitize-filename');
 
 async function saveImage(buffer, originalName, parentNoteId) {
     const resizedImage = await resize(buffer);
-    const optimizedImage = await optimize(resizedImage);
+    let optimizedImage;
+    try {
+      optimizedImage = await optimize(resizedImage);
+    } catch (e) {
+      log.error(e);
+      optimizedImage = resizedImage;
+    }
 
     const imageFormat = imageType(optimizedImage);
 
