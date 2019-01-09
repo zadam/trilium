@@ -1,5 +1,6 @@
 import noteDetailService from "./note_detail.js";
 import treeService from "./tree.js";
+import infoService from './info.js';
 
 const $searchString = $("#search-string");
 const $component = $('#note-detail-search');
@@ -27,7 +28,13 @@ function show() {
     $searchString.on('input', noteDetailService.noteChanged);
 }
 
-$refreshButton.click(() => treeService.reload());
+$refreshButton.click(async () => {
+    await noteDetailService.saveNoteIfChanged();
+
+    treeService.reload();
+
+    infoService.showMessage('Tree has been refreshed.');
+});
 
 export default {
     getContent,
