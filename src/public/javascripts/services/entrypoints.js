@@ -117,10 +117,6 @@ function registerEntrypoints() {
 
     utils.bindShortcut('ctrl+f', openInPageSearch);
 
-    if (utils.isMac()) {
-        utils.bindShortcut('meta+f', openInPageSearch);
-    }
-
     // FIXME: do we really need these at this point?
     utils.bindShortcut("ctrl+shift+up", () => {
         const node = treeService.getCurrentNode();

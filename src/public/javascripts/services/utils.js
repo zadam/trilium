@@ -137,6 +137,11 @@ function randomString(len) {
 
 function bindShortcut(keyboardShortcut, handler) {
     if (isDesktop()) {
+        if (isMac()) {
+            // use CMD (meta) instead of CTRL for all shortcuts
+            keyboardShortcut = keyboardShortcut.replace("ctrl", "meta");
+        }
+
         $(document).bind('keydown', keyboardShortcut, e => {
             handler();
 
