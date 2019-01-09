@@ -19,7 +19,6 @@ async function anonymize() {
     await db.run("UPDATE notes SET title = 'title', content = 'text'");
     await db.run("UPDATE note_revisions SET title = 'title', content = 'text'");
     await db.run("UPDATE branches SET prefix = 'prefix' WHERE prefix IS NOT NULL");
-    await db.run("UPDATE images SET data = NULL");
     await db.run(`UPDATE options SET value = 'anonymized' WHERE name IN 
                     ('documentSecret', 'encryptedDataKey', 'passwordVerificationHash', 
                      'passwordVerificationSalt', 'passwordDerivedKeySalt')`);
