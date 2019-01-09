@@ -1,4 +1,5 @@
 const sax = require("sax");
+const fileType = require('file-type');
 const stream = require('stream');
 const xml2js = require('xml2js');
 const log = require("../log");
@@ -222,7 +223,26 @@ async function importEnex(file, parentNote) {
 
             const mediaRegex = new RegExp(`<en-media hash="${hash}"[^>]*>`, 'g');
 
+            const fileTypeFromBuffer = fileType(resource.content);
+            if (fileTypeFromBuffer) {
+              // If fileType returns something for buffer, then set the mime given
+              resource.mime = fileTypeFromBuffer.mime;
+            }
+
+            const createResourceNote = async () => {
+              const resourceNote = (await noteService.createNote(noteEntity.noteId, resource.title, resource.content, {
+                attributes: resource.attributes,
+                type: 'file',
+                mime: resource.mime
+              })).note;
+
+              const resourceLink = `<a href="#root/${resourceNote.noteId}">${utils.escapeHtml(resource.title)}</a>`;
+
+              noteEntity.content = noteEntity.content.replace(mediaRegex, resourceLink);
+            }
+
             if (["image/jpeg", "image/png", "image/gif"].includes(resource.mime)) {
+              try {
                 const originalName = "image." + resource.mime.substr(6);
 
                 const { url } = await imageService.saveImage(resource.content, originalName, noteEntity.noteId);
@@ -236,17 +256,13 @@ async function importEnex(file, parentNote) {
                     // otherwise image would be removed since no note would include it
                     note.content += imageLink;
                 }
+              } catch (e) {
+                log.error("error when saving image from ENEX file: " + e);
+                await createResourceNote();
+              }
             }
             else {
-                const resourceNote = (await noteService.createNote(noteEntity.noteId, resource.title, resource.content, {
-                    attributes: resource.attributes,
-                    type: 'file',
-                    mime: resource.mime
-                })).note;
-
-                const resourceLink = `<a href="#root/${resourceNote.noteId}">${utils.escapeHtml(resource.title)}</a>`;
-
-                noteEntity.content = noteEntity.content.replace(mediaRegex, resourceLink);
+              await createResourceNote();
             }
         }
 
