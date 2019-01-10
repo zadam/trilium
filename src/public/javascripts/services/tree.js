@@ -94,32 +94,41 @@ async function expandToNote(notePath, expandOpts) {
 
     const noteId = treeUtils.getNoteIdFromNotePath(notePath);
 
+    const hoistedNoteId = await hoistedNoteService.getHoistedNoteId();
+    let hoistedNoteFound = false;
+
     let parentNoteId = null;
 
     for (const childNoteId of runPath) {
-        // for first node (!parentNoteId) it doesn't matter which node is found
-        let node = getNode(childNoteId, parentNoteId);
+        if (childNoteId === hoistedNoteId) {
+            hoistedNoteFound = true;
+        }
 
-        if (!node && parentNoteId) {
-            const parents = getNodesByNoteId(parentNoteId);
+        // we expand only after hoisted note since before then nodes are not actually present in the tree
+        if (hoistedNoteFound) {
+            // for first node (!parentNoteId) it doesn't matter which node is found
+            let node = getNode(childNoteId, parentNoteId);
 
-            for (const parent of parents) {
-                // force load parents. This is useful when fancytree doesn't contain recently created notes yet.
-                await parent.load(true);
+            if (!node && parentNoteId) {
+                const parents = getNodesByNoteId(parentNoteId);
+
+                for (const parent of parents) {
+                    // force load parents. This is useful when fancytree doesn't contain recently created notes yet.
+                    await parent.load(true);
+                }
+
+                node = getNode(childNoteId, parentNoteId);
             }
 
-            node = getNode(childNoteId, parentNoteId);
-        }
+            if (!node) {
+                console.error(`Can't find node for noteId=${childNoteId} with parentNoteId=${parentNoteId}`);
+            }
 
-        if (!node) {
-            console.error(`Can't find node for noteId=${childNoteId} with parentNoteId=${parentNoteId}`);
-        }
-
-        if (childNoteId === noteId) {
-            return node;
-        }
-        else {
-            await node.setExpanded(true, expandOpts);
+            if (childNoteId === noteId) {
+                return node;
+            } else {
+                await node.setExpanded(true, expandOpts);
+            }
         }
 
         parentNoteId = childNoteId;
@@ -129,9 +138,12 @@ async function expandToNote(notePath, expandOpts) {
 async function activateNote(notePath, noteLoadedListener) {
     utils.assertArguments(notePath);
 
+    // notePath argument can contain only noteId which is not good when hoisted since
+    // then we need to check the whole note path
+    const runNotePath = await getRunPath(notePath);
     const hoistedNoteId = await hoistedNoteService.getHoistedNoteId();
 
-    if (hoistedNoteId !== 'root' && !notePath.includes(hoistedNoteId)) {
+    if (hoistedNoteId !== 'root' && !runNotePath.includes(hoistedNoteId)) {
         if (!await confirmDialog.confirm("Requested note is outside of hoisted note subtree. Do you want to unhoist?")) {
             return;
         }
