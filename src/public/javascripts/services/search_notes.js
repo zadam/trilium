@@ -87,7 +87,7 @@ $searchInput.keyup(e => {
     if (e && e.which === $.ui.keyCode.ENTER) {
         doSearch();
     }
-}).focus();
+});
 
 $doSearchButton.click(() => doSearch()); // keep long form because of argument
 $resetSearchButton.click(resetSearch);

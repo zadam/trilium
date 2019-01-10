@@ -28,7 +28,7 @@ function clearText($el) {
 function showRecentNotes($el) {
     $el.setSelectedPath("");
     $el.autocomplete("val", "");
-    $el.autocomplete("open");
+    $el.focus();
 }
 
 function initNoteAutocomplete($el, options) {
@@ -61,7 +61,13 @@ function initNoteAutocomplete($el, options) {
 
         $clearTextButton.click(() => clearText($el));
 
-        $showRecentNotesButton.click(() => showRecentNotes($el));
+        $showRecentNotesButton.click(e => {
+            showRecentNotes($el);
+
+            // this will cause the click not give focus to the "show recent notes" button
+            // this is important because otherwise input will lose focus immediatelly and not show the results
+            return false;
+        });
 
         $goToSelectedNoteButton.click(() => {
             if ($el.hasClass("disabled")) {

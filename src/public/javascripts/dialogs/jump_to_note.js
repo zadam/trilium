@@ -6,8 +6,6 @@ const $dialog = $("#jump-to-note-dialog");
 const $autoComplete = $("#jump-to-note-autocomplete");
 const $showInFullTextButton = $("#show-in-full-text-button");
 
-$dialog.on("shown.bs.modal", e => $autoComplete.focus());
-
 async function showDialog() {
     glob.activeDialog = $dialog;
 
