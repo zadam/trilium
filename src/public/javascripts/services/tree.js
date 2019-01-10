@@ -588,7 +588,7 @@ async function createNote(node, parentNoteId, target, isProtected, saveSelection
 
     await noteDetailService.saveNoteIfChanged();
 
-    noteDetailService.addDetailLoadedListener(note.noteId, noteDetailService.focusOnTitle);
+    noteDetailService.addDetailLoadedListener(note.noteId, noteDetailService.focusAndSelectTitle);
 
     const noteEntity = new NoteShort(treeCache, note);
     const branchEntity = new Branch(treeCache, branch);

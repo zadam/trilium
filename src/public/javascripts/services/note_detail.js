@@ -283,6 +283,10 @@ function focusOnTitle() {
     $noteTitle.focus();
 }
 
+function focusAndSelectTitle() {
+    $noteTitle.focus().select();
+}
+
 /**
  * Since detail loading may take some time and user might just browse through the notes using UP-DOWN keys,
  * we intentionally decouple activation of the note in the tree and full load of the note so just avaiting on
@@ -342,6 +346,7 @@ export default {
     getCurrentNoteType,
     getCurrentNoteId,
     focusOnTitle,
+    focusAndSelectTitle,
     saveNote,
     saveNoteIfChanged,
     noteChanged,

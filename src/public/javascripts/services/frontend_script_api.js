@@ -43,7 +43,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null) {
     this.activateNewNote = async notePath => {
         await treeService.reload();
 
-        await treeService.activateNote(notePath, noteDetailService.focusOnTitle);
+        await treeService.activateNote(notePath, noteDetailService.focusAndSelectTitle);
     };
 
     /**
