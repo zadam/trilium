@@ -37,7 +37,7 @@ eventService.subscribe(eventService.NOTE_TITLE_CHANGED, async note => {
     }
 });
 
-eventService.subscribe(eventService.ENTITY_CHANGED, async ({ entityName, entity }) => {
+eventService.subscribe([ eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED ], async ({ entityName, entity }) => {
     if (entityName === 'attributes') {
         await runAttachedRelations(await entity.getNote(), 'runOnAttributeChange', entity);
     }
