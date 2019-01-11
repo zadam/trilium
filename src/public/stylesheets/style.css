@@ -396,7 +396,7 @@ div.ui-tooltip {
 }
 
 .btn.active:not(.btn-primary) {
-    background-color: #ccc;
+    background-color: #ccc !important;
 }
 
 #note-path-list a.current {

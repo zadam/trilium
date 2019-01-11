@@ -145,8 +145,9 @@ async function saveNoteIfChanged() {
 function setNoteBackgroundIfProtected(note) {
     $noteDetailWrapper.toggleClass("protected", note.isProtected);
     $protectButton.toggleClass("active", note.isProtected);
+    $protectButton.prop("disabled", note.isProtected);
     $unprotectButton.toggleClass("active", !note.isProtected);
-    $unprotectButton.prop("disabled", !protectedSessionHolder.isProtectedSessionAvailable());
+    $unprotectButton.prop("disabled", !note.isProtected || !protectedSessionHolder.isProtectedSessionAvailable());
 }
 
 async function handleProtectedSession() {
