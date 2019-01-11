@@ -24,7 +24,6 @@ async function initSyncedOptions(username, password) {
 
     // passwordEncryptionService expects these options to already exist
     await optionService.createOption('encryptedDataKey', '', true);
-    await optionService.createOption('encryptedDataKeyIv', '', true);
 
     await passwordEncryptionService.setDataKey(password, utils.randomSecureToken(16), true);
 }

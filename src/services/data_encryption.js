@@ -18,25 +18,29 @@ function shaArray(content) {
 }
 
 function pad(data) {
-    let padded = Array.from(data);
+    if (data.length > 16) {
+        data = data.slice(0, 16);
+    }
+    else if (data.length < 16) {
+        const zeros = Array(16 - data.length).fill(0);
 
-    if (data.length >= 16) {
-        padded = padded.slice(0, 16);
+        data = Buffer.concat([data, Buffer.from(zeros)]);
     }
     else {
-        padded = padded.concat(Array(16 - padded.length).fill(0));
+        data = Buffer.from(data);
     }
 
-    return Buffer.from(padded);
+    return data;
 }
 
-function encrypt(key, iv, plainText) {
+function encrypt(key, plainText, ivLength = 13) {
     if (!key) {
         throw new Error("No data key!");
     }
 
     const plainTextBuffer = Buffer.from(plainText);
 
+    const iv = crypto.randomBytes(ivLength);
     const cipher = crypto.createCipheriv('aes-128-cbc', pad(key), pad(iv));
 
     const digest = shaArray(plainTextBuffer).slice(0, 4);
@@ -45,17 +49,23 @@ function encrypt(key, iv, plainText) {
 
     const encryptedData = Buffer.concat([cipher.update(digestWithPayload), cipher.final()]);
 
-    return encryptedData.toString('base64');
+    const encryptedDataWithIv = Buffer.concat([iv, encryptedData]);
+
+    return encryptedDataWithIv.toString('base64');
 }
 
-function decrypt(key, iv, cipherText) {
+function decrypt(key, cipherText, ivLength = 13) {
     if (!key) {
         return "[protected]";
     }
 
+    const cipherTextBufferWithIv = Buffer.from(cipherText, 'base64');
+    const iv = cipherTextBufferWithIv.slice(0, ivLength);
+
+    const cipherTextBuffer = cipherTextBufferWithIv.slice(ivLength);
+
     const decipher = crypto.createDecipheriv('aes-128-cbc', pad(key), pad(iv));
 
-    const cipherTextBuffer = Buffer.from(cipherText, 'base64');
     const decryptedBytes = Buffer.concat([decipher.update(cipherTextBuffer), decipher.final()]);
 
     const digest = decryptedBytes.slice(0, 4);
@@ -70,8 +80,8 @@ function decrypt(key, iv, cipherText) {
     return payload;
 }
 
-function decryptString(dataKey, iv, cipherText) {
-    const buffer = decrypt(dataKey, iv, cipherText);
+function decryptString(dataKey, cipherText) {
+    const buffer = decrypt(dataKey, cipherText);
 
     const str = buffer.toString('utf-8');
 
@@ -84,26 +94,8 @@ function decryptString(dataKey, iv, cipherText) {
     return str;
 }
 
-function noteTitleIv(iv) {
-    if (!iv) {
-        throw new Error("Empty iv!");
-    }
-
-    return "0" + iv;
-}
-
-function noteContentIv(iv) {
-    if (!iv) {
-        throw new Error("Empty iv!");
-    }
-
-    return "1" + iv;
-}
-
 module.exports = {
     encrypt,
     decrypt,
-    decryptString,
-    noteTitleIv,
-    noteContentIv
+    decryptString
 };

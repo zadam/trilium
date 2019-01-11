@@ -14,13 +14,7 @@ async function verifyPassword(password) {
 async function setDataKey(password, plainTextDataKey) {
     const passwordDerivedKey = await myScryptService.getPasswordDerivedKey(password);
 
-    const encryptedDataKeyIv = utils.randomString(16);
-
-    await optionService.setOption('encryptedDataKeyIv', encryptedDataKeyIv);
-
-    const buffer = Buffer.from(plainTextDataKey);
-
-    const newEncryptedDataKey = dataEncryptionService.encrypt(passwordDerivedKey, encryptedDataKeyIv, buffer);
+    const newEncryptedDataKey = dataEncryptionService.encrypt(passwordDerivedKey, Buffer.from(plainTextDataKey));
 
     await optionService.setOption('encryptedDataKey', newEncryptedDataKey);
 }
@@ -28,10 +22,9 @@ async function setDataKey(password, plainTextDataKey) {
 async function getDataKey(password) {
     const passwordDerivedKey = await myScryptService.getPasswordDerivedKey(password);
 
-    const encryptedDataKeyIv = await optionService.getOption('encryptedDataKeyIv');
     const encryptedDataKey = await optionService.getOption('encryptedDataKey');
 
-    const decryptedDataKey = dataEncryptionService.decrypt(passwordDerivedKey, encryptedDataKeyIv, encryptedDataKey);
+    const decryptedDataKey = dataEncryptionService.decrypt(passwordDerivedKey, encryptedDataKey, 16);
 
     return decryptedDataKey;
 }

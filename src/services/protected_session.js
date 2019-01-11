@@ -38,9 +38,7 @@ function decryptNoteTitle(noteId, encryptedTitle) {
     const dataKey = getDataKey();
 
     try {
-        const iv = dataEncryptionService.noteTitleIv(noteId);
-
-        return dataEncryptionService.decryptString(dataKey, iv, encryptedTitle);
+        return dataEncryptionService.decryptString(dataKey, encryptedTitle);
     }
     catch (e) {
         e.message = `Cannot decrypt note title for noteId=${noteId}: ` + e.message;
@@ -57,17 +55,15 @@ function decryptNote(note) {
 
     try {
         if (note.title) {
-            note.title = dataEncryptionService.decryptString(dataKey, dataEncryptionService.noteTitleIv(note.noteId), note.title);
+            note.title = dataEncryptionService.decryptString(dataKey, note.title);
         }
 
         if (note.content) {
-            const contentIv = dataEncryptionService.noteContentIv(note.noteId);
-
-            if (note.type === 'file') {
-                note.content = dataEncryptionService.decrypt(dataKey, contentIv, note.content);
+            if (note.type === 'file' || note.type === 'image') {
+                note.content = dataEncryptionService.decrypt(dataKey, note.content);
             }
             else {
-                note.content = dataEncryptionService.decryptString(dataKey, contentIv, note.content);
+                note.content = dataEncryptionService.decryptString(dataKey, note.content);
             }
         }
     }
@@ -91,26 +87,26 @@ function decryptNoteRevision(hist) {
     }
 
     if (hist.title) {
-        hist.title = dataEncryptionService.decryptString(dataKey, dataEncryptionService.noteTitleIv(hist.noteRevisionId), hist.title);
+        hist.title = dataEncryptionService.decryptString(dataKey, hist.title);
     }
 
     if (hist.content) {
-        hist.content = dataEncryptionService.decryptString(dataKey, dataEncryptionService.noteContentIv(hist.noteRevisionId), hist.content);
+        hist.content = dataEncryptionService.decryptString(dataKey, hist.content);
     }
 }
 
 function encryptNote(note) {
     const dataKey = getDataKey();
 
-    note.title = dataEncryptionService.encrypt(dataKey, dataEncryptionService.noteTitleIv(note.noteId), note.title);
-    note.content = dataEncryptionService.encrypt(dataKey, dataEncryptionService.noteContentIv(note.noteId), note.content);
+    note.title = dataEncryptionService.encrypt(dataKey, note.title);
+    note.content = dataEncryptionService.encrypt(dataKey, note.content);
 }
 
 function encryptNoteRevision(revision) {
     const dataKey = getDataKey();
 
-    revision.title = dataEncryptionService.encrypt(dataKey, dataEncryptionService.noteTitleIv(revision.noteRevisionId), revision.title);
-    revision.content = dataEncryptionService.encrypt(dataKey, dataEncryptionService.noteContentIv(revision.noteRevisionId), revision.content);
+    revision.title = dataEncryptionService.encrypt(dataKey, revision.title);
+    revision.content = dataEncryptionService.encrypt(dataKey, revision.content);
 }
 
 module.exports = {
