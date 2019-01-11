@@ -17,7 +17,8 @@
     "start-electron": "electron . --disable-gpu",
     "build-backend-docs": "jsdoc -c jsdoc-conf.json -d ./docs/backend_api src/entities/*.js src/services/backend_script_api.js",
     "build-frontend-docs": "jsdoc -c jsdoc-conf.json -d ./docs/frontend_api src/public/javascripts/entities/*.js src/public/javascripts/services/frontend_script_api.js",
-    "build-docs": "npm run build-backend-docs && npm run build-frontend-docs"
+    "build-docs": "npm run build-backend-docs && npm run build-frontend-docs",
+    "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {
     "async-mutex": "0.1.3",
@@ -68,6 +69,7 @@
   "devDependencies": {
     "devtron": "1.4.0",
     "electron": "4.0.1",
+    "electron-builder": "20.38.4",
     "electron-compile": "6.4.3",
     "electron-packager": "13.0.1",
     "electron-rebuild": "1.8.2",
