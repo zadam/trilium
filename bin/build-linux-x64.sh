@@ -7,7 +7,7 @@ rm -rf $BUILD_DIR
 echo "Rebuilding binaries for linux-x64"
 ./node_modules/.bin/electron-rebuild --arch=x64
 
-./node_modules/.bin/electron-packager . --out=dist --executable-name=trilium --platform=linux --arch=x64 --overwrite
+./node_modules/.bin/electron-packager . --asar --out=dist --executable-name=trilium --platform=linux --arch=x64 --overwrite
 
 mv "./dist/Trilium Notes-linux-x64" $BUILD_DIR
 

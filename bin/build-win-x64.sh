@@ -3,7 +3,7 @@
 BUILD_DIR=./dist/trilium-windows-x64
 rm -rf $BUILD_DIR
 
-./node_modules/.bin/electron-packager . --out=dist --executable-name=trilium --platform=win32  --arch=x64 --overwrite --icon=src/public/images/app-icons/win/icon.ico
+./node_modules/.bin/electron-packager . --asar --out=dist --executable-name=trilium --platform=win32  --arch=x64 --overwrite --icon=src/public/images/app-icons/win/icon.ico
 
 mv "./dist/Trilium Notes-win32-x64" $BUILD_DIR
 

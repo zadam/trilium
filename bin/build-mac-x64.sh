@@ -3,7 +3,7 @@
 BUILD_DIR=./dist/trilium-mac-x64
 rm -rf $BUILD_DIR
 
-./node_modules/.bin/electron-packager . --out=dist --executable-name=trilium --platform=darwin  --arch=x64 --overwrite --icon=src/public/images/app-icons/mac/icon.icns
+./node_modules/.bin/electron-packager . --asar --out=dist --executable-name=trilium --platform=darwin  --arch=x64 --overwrite --icon=src/public/images/app-icons/mac/icon.icns
 
 # Mac build has by default useless directory level
 mv "./dist/Trilium Notes-darwin-x64" $BUILD_DIR
