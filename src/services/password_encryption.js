@@ -14,7 +14,7 @@ async function verifyPassword(password) {
 async function setDataKey(password, plainTextDataKey) {
     const passwordDerivedKey = await myScryptService.getPasswordDerivedKey(password);
 
-    const newEncryptedDataKey = dataEncryptionService.encrypt(passwordDerivedKey, Buffer.from(plainTextDataKey));
+    const newEncryptedDataKey = dataEncryptionService.encrypt(passwordDerivedKey, plainTextDataKey, 16);
 
     await optionService.setOption('encryptedDataKey', newEncryptedDataKey);
 }

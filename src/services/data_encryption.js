@@ -26,11 +26,8 @@ function pad(data) {
 
         data = Buffer.concat([data, Buffer.from(zeros)]);
     }
-    else {
-        data = Buffer.from(data);
-    }
 
-    return data;
+    return Buffer.from(data);
 }
 
 function encrypt(key, plainText, ivLength = 13) {

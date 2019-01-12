@@ -47,7 +47,18 @@ class Note extends Entity {
         if (this.isProtected && this.noteId) {
             this.isContentAvailable = protectedSessionService.isProtectedSessionAvailable();
 
-            protectedSessionService.decryptNote(this);
+            if (this.isContentAvailable) {
+                protectedSessionService.decryptNote(this);
+            }
+            else {
+                // saving ciphertexts in case we do want to update protected note outside of protected session
+                // (which is allowed)
+                this.titleCipherText = this.title;
+                this.contentCipherText = this.content;
+
+                this.title = "[protected]";
+                this.content = "";
+            }
         }
 
         this.setContent(this.content);
@@ -629,12 +640,21 @@ class Note extends Entity {
     // cannot be static!
     updatePojo(pojo) {
         if (pojo.isProtected) {
-            protectedSessionService.encryptNote(pojo);
+            if (this.isContentAvailable) {
+                protectedSessionService.encryptNote(pojo);
+            }
+            else {
+                // updating protected note outside of protected session means we will keep original ciphertexts
+                pojo.title = pojo.titleCipherText;
+                pojo.content = pojo.contentCipherText;
+            }
         }
 
         delete pojo.jsonContent;
         delete pojo.isContentAvailable;
         delete pojo.__attributeCache;
+        delete pojo.titleCipherText;
+        delete pojo.contentCipherText;
     }
 }
 
