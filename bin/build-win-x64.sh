@@ -3,23 +3,30 @@
 BUILD_DIR=./dist/trilium-windows-x64
 rm -rf $BUILD_DIR
 
+echo "Copying required windows binaries"
+
+rm -r node_modules/sqlite3/lib/binding/*
+rm -r node_modules/mozjpeg/vendor/*
+rm -r node_modules/pngquant-bin/vendor/*
+rm -r node_modules/giflossy/vendor/*
+
+cp -r bin/deps/win-x64/sqlite/* node_modules/sqlite3/lib/binding/
+cp bin/deps/win-x64/image/cjpeg.exe node_modules/mozjpeg/vendor/
+cp bin/deps/win-x64/image/pngquant.exe node_modules/pngquant-bin/vendor/
+cp bin/deps/win-x64/image/gifsicle.exe node_modules/giflossy/vendor/
+
 ./node_modules/.bin/electron-packager . --asar --out=dist --executable-name=trilium --platform=win32  --arch=x64 --overwrite --icon=src/public/images/app-icons/win/icon.ico
 
 mv "./dist/Trilium Notes-win32-x64" $BUILD_DIR
 
-echo "Copying required windows binaries"
-
-WIN_RES_DIR=$BUILD_DIR/resources/app
-
-cp -r bin/deps/win-x64/sqlite/* $WIN_RES_DIR/node_modules/sqlite3/lib/binding/
-cp bin/deps/win-x64/image/cjpeg.exe $WIN_RES_DIR/node_modules/mozjpeg/vendor/
-cp bin/deps/win-x64/image/pngquant.exe $WIN_RES_DIR/node_modules/pngquant-bin/vendor/
-cp bin/deps/win-x64/image/gifsicle.exe $WIN_RES_DIR/node_modules/giflossy/vendor/
-
-rm -r $WIN_RES_DIR/bin/deps
 # removing software WebGL binaries because they are pretty huge and not necessary
 rm -r $BUILD_DIR/swiftshader
 
-echo "Packaging windows x64 electron distribution..."
+./reset-local.sh
+
+echo "Zipping windows x64 electron distribution..."
 VERSION=`jq -r ".version" package.json`
-7z a $BUILD_DIR-${VERSION}.7z $BUILD_DIR
+
+cd dist
+
+zip -r9 trilium-windows-x64-${VERSION}.zip trilium-windows-x64

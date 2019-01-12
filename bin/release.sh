@@ -42,10 +42,10 @@ git push origin $TAG
 
 bin/build.sh
 
-LINUX_X64_BUILD=trilium-linux-x64-$VERSION.7z
-WINDOWS_X64_BUILD=trilium-windows-x64-$VERSION.7z
-MAC_X64_BUILD=trilium-mac-x64-$VERSION.7z
-SERVER_BUILD=trilium-linux-x64-server-$VERSION.7z
+LINUX_X64_BUILD=trilium-linux-x64-$VERSION.tar.gz
+WINDOWS_X64_BUILD=trilium-windows-x64-$VERSION.zip
+MAC_X64_BUILD=trilium-mac-x64-$VERSION.zip
+SERVER_BUILD=trilium-linux-x64-server-$VERSION.tar.gz
 
 echo "Creating release in GitHub"
 
