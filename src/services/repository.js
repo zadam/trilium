@@ -47,11 +47,6 @@ async function getBranch(branchId) {
     return await getEntity("SELECT * FROM branches WHERE branchId = ?", [branchId]);
 }
 
-/** @returns {Image|null} */
-async function getImage(imageId) {
-    return await getEntity("SELECT * FROM images WHERE imageId = ?", [imageId]);
-}
-
 /** @returns {Attribute|null} */
 async function getAttribute(attributeId) {
     return await getEntity("SELECT * FROM attributes WHERE attributeId = ?", [attributeId]);

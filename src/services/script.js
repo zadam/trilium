@@ -153,14 +153,8 @@ function sanitizeVariableName(str) {
     return str.replace(/[^a-z0-9_]/gim, "");
 }
 
-async function getScriptBundleForNoteId(noteId) {
-    const note = await repository.getNote(noteId);
-    return await getScriptBundle(note);
-}
-
 module.exports = {
     executeNote,
     executeScript,
-    getScriptBundle,
-    getScriptBundleForNoteId
+    getScriptBundle
 };

@@ -53,14 +53,21 @@ async function getRelationBundles(req) {
     const bundles = [];
 
     for (const noteId of uniqueNoteIds) {
-        bundles.push(await scriptService.getScriptBundleForNoteId(noteId));
+        const note = await repository.getNote(noteId);
+        const bundle = await scriptService.getScriptBundle(note);
+
+        if (bundle) {
+            bundles.push(bundle);
+        }
     }
 
     return bundles;
 }
 
 async function getBundle(req) {
-    return await scriptService.getScriptBundleForNoteId(req.params.noteId);
+    const note = await repository.getNote(req.params.noteId);
+
+    return await scriptService.getScriptBundle(note);
 }
 
 module.exports = {
