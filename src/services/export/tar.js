@@ -8,6 +8,7 @@ const mimeTypes = require('mime-types');
 const TurndownService = require('turndown');
 const packageInfo = require('../../../package.json');
 const utils = require('../utils');
+const sanitize = require("sanitize-filename");
 
 /**
  * @param format - 'html' or 'markdown'
