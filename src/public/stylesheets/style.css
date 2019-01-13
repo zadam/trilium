@@ -11,7 +11,7 @@
     --button-background-color: #eee;
     --button-border-color: #ddd;
     --button-text-color: black;
-    --button-border-radius: 3px;
+    --button-border-radius: 5px;
     --muted-text-color: #444;
     --input-text-color: black;
     --input-background-color: white;
@@ -33,7 +33,7 @@ body.theme-black {
     --button-background-color: #333;
     --button-border-color: #444;
     --button-text-color: white;
-    --button-border-radius: 3px;
+    --button-border-radius: 5px;
     --muted-text-color: #ccc;
     --input-text-color: white;
     --input-background-color: black;
@@ -48,6 +48,32 @@ body.theme-black {
 
 body.theme-black .CodeMirror {
     filter: invert(100%) hue-rotate(180deg);
+}
+
+body.theme-dark {
+    --main-background-color: #333;
+    --main-text-color: white;
+    --accented-background-color: #555;
+    --more-accented-background-color: #777;
+    --header-background-color: #333;
+    --button-background-color: #555;
+    --button-border-color: #444;
+    --button-text-color: white;
+    --button-border-radius: 5px;
+    --muted-text-color: #ccc;
+    --input-text-color: white;
+    --input-background-color: #333;
+    --modal-background-color: #555;
+    --hover-item-text-color: black;
+    --hover-item-background-color: #aaa;
+    --active-item-text-color: black;
+    --active-item-background-color: #ccc;
+    --menu-text-color: white;
+    --menu-background-color: #222;
+}
+
+body.theme-dark .CodeMirror {
+    filter: invert(90%) hue-rotate(180deg);
 }
 
 html {
@@ -619,12 +645,12 @@ table.promoted-attributes-in-tooltip td, table.promoted-attributes-in-tooltip th
 }
 
 .tooltip-inner {
-    background-color: #fbfbfb !important;
+    background-color: var(--accented-background-color) !important;
     max-width: 400px;
     /* height needs to stay small because tooltip has problem when it can't fit to either top or bottom of the cursor */
     max-height: 300px;
     overflow: hidden;
-    color: black;
+    color: var(--main-text-color);
     border: 1px solid #ccc;
     border-radius: 5px;
     text-align: left;
