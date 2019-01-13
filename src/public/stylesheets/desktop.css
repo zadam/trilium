@@ -1,3 +1,7 @@
+body {
+    font-size: var(--main-font-size);
+}
+
 #container {
     margin: 0 auto; /* center */
     height: 100vh;
@@ -26,6 +30,7 @@
     flex-shrink: 1;
     flex-basis: 60%;
     margin-top: 10px;
+    font-size: var(--tree-font-size);
 }
 
 #left-pane {
@@ -85,4 +90,8 @@
     margin-top: 2px;
     border-width: 1px;
     border-style: solid;
+}
+
+#note-detail-wrapper {
+    font-size: var(--detail-font-size);
 }

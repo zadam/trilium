@@ -1,4 +1,8 @@
 :root {
+    --main-font-size: normal;
+    --tree-font-size: normal;
+    --detail-font-size: normal;
+
     --main-background-color: white;
     --main-text-color: black;
     --accented-background-color: #eee;
@@ -20,7 +24,7 @@
     --menu-background-color: white;
 }
 
-html.theme-black {
+body.theme-black {
     --main-background-color: black;
     --main-text-color: white;
     --accented-background-color: #222;
@@ -42,7 +46,7 @@ html.theme-black {
     --menu-background-color: #222;
 }
 
-html.theme-black .CodeMirror {
+body.theme-black .CodeMirror {
     filter: invert(100%) hue-rotate(180deg);
 }
 
@@ -166,8 +170,6 @@ ul.fancytree-container {
     flex-grow: 100;
     display: none;
 }
-
-#note-detail-text { font-size: 1.1em; }
 
 #note-detail-text h1 { font-size: 2.0em; }
 #note-detail-text h2 { font-size: 1.8em; }
