@@ -802,3 +802,8 @@ div[data-notify="container"] {
         transform: rotate(360deg);
     }
 }
+
+.ck-content .image > figcaption {
+    color: var(--main-text-color);
+    background-color: var(--accented-background-color);
+}
