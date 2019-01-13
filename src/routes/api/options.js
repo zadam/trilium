@@ -6,7 +6,7 @@ const log = require('../../services/log');
 
 // options allowed to be updated directly in options dialog
 const ALLOWED_OPTIONS = ['protectedSessionTimeout', 'noteRevisionSnapshotTimeInterval',
-    'zoomFactor', 'theme', 'syncServerHost', 'syncServerTimeout', 'syncProxy', 'leftPaneMinWidth', 'leftPaneWidthPercent', 'hoistedNoteId'];
+    'zoomFactor', 'theme', 'syncServerHost', 'syncServerTimeout', 'syncProxy', 'leftPaneMinWidth', 'leftPaneWidthPercent', 'hoistedNoteId', 'mainFontSize', 'treeFontSize', 'detailFontSize'];
 
 async function getOptions() {
     return await optionService.getOptionsMap(ALLOWED_OPTIONS);

@@ -70,7 +70,8 @@ input, select {
 }
 
 .input-group-text {
-    background-color: inherit !important;
+    background-color: var(--accented-background-color) !important;
+    color: var(--muted-text-color) !important;
 }
 
 button.close {
@@ -808,4 +809,8 @@ div[data-notify="container"] {
 .ck-content .image > figcaption {
     color: var(--main-text-color);
     background-color: var(--accented-background-color);
+}
+
+#options-dialog input[type=number] {
+    text-align: right;
 }

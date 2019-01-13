@@ -44,7 +44,10 @@ addTabHandler((function() {
     const $zoomFactorSelect = $("#zoom-factor-select");
     const $leftPaneMinWidth = $("#left-pane-min-width");
     const $leftPaneWidthPercent = $("#left-pane-width-percent");
-    const $html = $("html");
+    const $mainFontSize = $("#main-font-size");
+    const $treeFontSize = $("#tree-font-size");
+    const $detailFontSize = $("#detail-font-size");
+    const $body = $("body");
     const $container = $("#container");
 
     function optionsLoaded(options) {
@@ -59,21 +62,27 @@ addTabHandler((function() {
 
         $leftPaneMinWidth.val(options.leftPaneMinWidth);
         $leftPaneWidthPercent.val(options.leftPaneWidthPercent);
+
+        $mainFontSize.val(options.mainFontSize);
+        $treeFontSize.val(options.treeFontSize);
+        $detailFontSize.val(options.detailFontSize);
     }
 
     $themeSelect.change(function() {
         const newTheme = $(this).val();
 
-        $html.attr("class", "theme-" + newTheme);
+        for (const clazz of $body[0].classList) {
+            if (clazz.startsWith("theme-")) {
+                $body.removeClass(clazz);
+            }
+        }
+
+        $body.addClass("theme-" + newTheme);
 
         server.put('options/theme/' + newTheme);
     });
 
-    $zoomFactorSelect.change(function() {
-        const newZoomFactor = $(this).val();
-
-        zoomService.setZoomFactorAndSave(newZoomFactor);
-    });
+    $zoomFactorSelect.change(function() { zoomService.setZoomFactorAndSave($(this).val()); });
 
     function resizeLeftPanel() {
         const leftPanePercent = parseInt($leftPaneWidthPercent.val());
@@ -83,20 +92,42 @@ addTabHandler((function() {
         $container.css("grid-template-columns", `minmax(${leftPaneMinWidth}px, ${leftPanePercent}fr) ${rightPanePercent}fr`);
     }
 
-    $leftPaneMinWidth.change(function() {
-        const newMinWidth = $(this).val();
+    $leftPaneMinWidth.change(async function() {
+        await server.put('options/leftPaneMinWidth/' + $(this).val());
 
         resizeLeftPanel();
-
-        server.put('options/leftPaneMinWidth/' + newMinWidth);
     });
 
-    $leftPaneWidthPercent.change(function() {
-        const newWidthPercent = $(this).val();
+    $leftPaneWidthPercent.change(async function() {
+        await server.put('options/leftPaneWidthPercent/' + $(this).val());
 
         resizeLeftPanel();
+    });
 
-        server.put('options/leftPaneWidthPercent/' + newWidthPercent);
+    function applyFontSizes() {
+        console.log($mainFontSize.val() + "% !important");
+
+        $body.get(0).style.setProperty("--main-font-size", $mainFontSize.val() + "%");
+        $body.get(0).style.setProperty("--tree-font-size", $treeFontSize.val() + "%");
+        $body.get(0).style.setProperty("--detail-font-size", $detailFontSize.val() + "%");
+    }
+
+    $mainFontSize.change(async function() {
+        await server.put('options/mainFontSize/' + $(this).val());
+
+        applyFontSizes();
+    });
+
+    $treeFontSize.change(async function() {
+        await server.put('options/treeFontSize/' + $(this).val());
+
+        applyFontSizes();
+    });
+
+    $detailFontSize.change(async function() {
+        await server.put('options/detailFontSize/' + $(this).val());
+
+        applyFontSizes();
     });
 
     return {
