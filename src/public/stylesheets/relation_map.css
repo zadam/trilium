@@ -12,12 +12,13 @@
 .note-box {
     padding: 16px;
     position: absolute !important;
+    background-color: var(--accented-background-color);
+    color: var(--main-text-color);
     z-index: 4;
     border: 1px solid #666;
     box-shadow: 2px 2px 19px #999;
     border-radius: 8px;
     opacity: 0.8;
-    background-color: white;
     font-size: 11px;
     width: auto;
     height: auto;
@@ -28,7 +29,7 @@
 }
 
 .note-box:hover {
-    background-color: #ddd;
+    background-color: var(--more-accented-background-color);
 }
 
 .note-box .title {
@@ -37,11 +38,12 @@
 }
 
 .connection-label.jtk-hover, .jtk-source-hover, .jtk-target-hover {
-    background-color: #ddd;
+    background-color: var(--more-accented-background-color);
 }
 
 .connection-label {
-    background-color: white;
+    background-color: var(--accented-background-color);
+    color: var(--main-text-color);
     opacity: 0.8;
     padding: 0.3em;
     border-radius: 0.5em;
@@ -62,10 +64,6 @@
 
 .endpoint:hover {
     box-shadow: 0 0 6px black;
-}
-
-.statemachine-demo .jtk-endpoint {
-    z-index: 3;
 }
 
 .dragHover {
