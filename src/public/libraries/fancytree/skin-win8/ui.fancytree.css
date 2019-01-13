@@ -9,12 +9,12 @@
  *
  * This section is automatically generated from the `skin-common.less` template.
  *
- * Copyright (c) 2008-2018, Martin Wendt (http://wwWendt.de)
+ * Copyright (c) 2008-2019, Martin Wendt (http://wwWendt.de)
  * Released under the MIT license
  * https://github.com/mar10/fancytree/wiki/LicenseInfo
  *
- * @version 2.30.0
- * @date 2018-09-02T15:42:49Z
+ * @version 2.30.2
+ * @date 2019-01-13T08:17:01Z
 ******************************************************************************/
 /*------------------------------------------------------------------------------
  * Helpers
@@ -336,7 +336,8 @@ span.fancytree-icon {
 .fancytree-loading span.fancytree-expander,
 .fancytree-loading span.fancytree-expander:hover,
 .fancytree-statusnode-loading span.fancytree-icon,
-.fancytree-statusnode-loading span.fancytree-icon:hover {
+.fancytree-statusnode-loading span.fancytree-icon:hover,
+span.fancytree-icon.fancytree-icon-loading {
   background-image: url("../skin-win8/loading.gif");
   background-position: 0px 0px;
 }
@@ -479,6 +480,8 @@ ul.fancytree-container.fancytree-rtl.fancytree-no-connector > li {
  * 'table' extension
  *----------------------------------------------------------------------------*/
 table.fancytree-ext-table {
+  font-family: tahoma, arial, helvetica;
+  font-size: 10pt;
   border-collapse: collapse;
   /* ext-ariagrid */
 }
@@ -536,6 +539,9 @@ table.fancytree-ext-columnview span.fancytree-node {
   display: inline-block;
 }
 table.fancytree-ext-columnview span.fancytree-node.fancytree-expanded {
+  background-color: #e0e0e0;
+}
+table.fancytree-ext-columnview span.fancytree-node.fancytree-active {
   background-color: #CBE8F6;
 }
 table.fancytree-ext-columnview .fancytree-has-children span.fancytree-cv-right {
