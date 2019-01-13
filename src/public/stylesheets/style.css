@@ -89,7 +89,7 @@ button.close {
 #note-title {
     margin-left: 15px;
     margin-right: 10px;
-    font-size: x-large;
+    font-size: 150%;
     border: 0;
     width: 5em;
     flex-grow: 100;
@@ -436,7 +436,7 @@ div.ui-tooltip {
 
 #file-table th, #file-table td {
     padding: 10px;
-    font-size: large;
+    font-size: larger;
 }
 
 #children-overview {
@@ -452,7 +452,7 @@ div.ui-tooltip {
 
 .child-overview {
     font-weight: bold;
-    font-size: large;
+    font-size: larger;
     padding: 10px;
     background: var(--accented-background-color);
     width: 150px;
@@ -740,7 +740,7 @@ div[data-notify="container"] {
     position: absolute;
     right: 10px;
     top: 11px;
-    font-size: x-large;
+    font-size: 150%;
     color: #777;
     z-index: 100;
 }
