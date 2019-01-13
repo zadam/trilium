@@ -87,7 +87,7 @@ function registerEntrypoints() {
 
     utils.bindShortcut('ctrl+r', utils.reloadApp);
 
-    $(document).bind('keydown', 'ctrl+shift+i', () => {
+    utils.bindShortcut('ctrl+shift+i', () => {
         if (utils.isElectron()) {
             require('electron').remote.getCurrentWindow().toggleDevTools();
 
@@ -135,8 +135,8 @@ function registerEntrypoints() {
     });
 
     if (utils.isElectron()) {
-        $(document).bind('keydown', 'ctrl+-', zoomService.decreaseZoomFactor);
-        $(document).bind('keydown', 'ctrl+=', zoomService.increaseZoomFactor);
+        utils.bindShortcut('ctrl+-', zoomService.decreaseZoomFactor);
+        utils.bindShortcut('ctrl+=', zoomService.increaseZoomFactor);
     }
 
     $("#note-title").bind('keydown', 'return', () => $("#note-detail-text").focus());

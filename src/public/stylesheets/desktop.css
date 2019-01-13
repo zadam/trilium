@@ -36,7 +36,7 @@
 
 #header {
     grid-area: header;
-    background-color: #f8f8f8;
+    background-color: var(--header-background-color);
     display: flex;
     align-items: center;
     padding: 4px;

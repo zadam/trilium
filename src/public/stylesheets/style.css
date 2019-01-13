@@ -1,8 +1,81 @@
+:root {
+    --main-background-color: white;
+    --main-text-color: black;
+    --accented-background-color: #eee;
+    --more-accented-background-color: #ccc;
+    --header-background-color: #f8f8f8;
+    --button-background-color: #eee;
+    --button-border-color: #ddd;
+    --button-text-color: black;
+    --button-border-radius: 3px;
+    --muted-text-color: #444;
+    --input-text-color: black;
+    --input-background-color: white;
+    --modal-background-color: white;
+    --hover-item-text-color: black;
+    --hover-item-background-color: #eee;
+    --active-item-text-color: black;
+    --active-item-background-color: #ccc;
+    --menu-text-color: black;
+    --menu-background-color: white;
+}
+
+body.theme-black {
+    --main-background-color: black;
+    --main-text-color: white;
+    --accented-background-color: #222; /*#eee;*/
+    --more-accented-background-color: #444; /*#eee;*/
+    --header-background-color: black; /*#f8f8f8;*/
+    --button-background-color: #333; /*#eee;*/
+    --button-border-color: #444; /*#ddd;*/
+    --button-text-color: white;
+    --button-border-radius: 3px;
+    --muted-text-color: #ccc;
+    --input-text-color: white;
+    --input-background-color: black;
+    --modal-background-color: #222;
+    --hover-item-text-color: black;
+    --hover-item-background-color: #aaa;
+    --active-item-text-color: black;
+    --active-item-background-color: #ccc;
+    --menu-text-color: white;
+    --menu-background-color: #222;
+}
+
+html {
+    /* this fixes FF filter vs. position fixed bug: https://github.com/zadam/trilium/issues/233 */
+    height: 100%;
+}
+
 body {
     /* Fix for CKEditor block gutter icon "stretching" body and causing scrollbar to appear after pressing enter
        on the last line of the editor. */
     position: fixed;
     width: 100%;
+    background-color: var(--main-background-color);
+    color: var(--main-text-color);
+}
+
+input, select {
+    color: var(--input-text-color) !important;
+    background: var(--input-background-color) !important;
+}
+
+.input-group-text {
+    background-color: inherit !important;
+}
+
+button.close {
+    color: var(--main-text-color);
+}
+
+.modal-content {
+    background-color: var(--modal-background-color) !important;
+}
+
+.nav-link.active {
+    background-color: var(--more-accented-background-color) !important;
+    color: var(--main-text-color) !important;
 }
 
 #title-container {
@@ -11,6 +84,7 @@ body {
 
 #note-title {
     margin-left: 15px;
+    margin-right: 10px;
     font-size: x-large;
     border: 0;
     width: 5em;
@@ -117,10 +191,16 @@ ul.fancytree-container {
 
 ul.fancytree-container {
     outline: none !important;
+    background-color: inherit !important;
 }
 
 .fancytree-custom-icon {
     font-size: 1.3em;
+}
+
+span.fancytree-title {
+    color: inherit !important;
+    background: inherit !important;
 }
 
 span.fancytree-node.protected > span.fancytree-custom-icon {
@@ -140,22 +220,24 @@ span.fancytree-node.fancytree-active-clone:not(.fancytree-active) .fancytree-tit
     padding-left: 5px;
 }
 
-/* By default not focused active tree item is not easily visible, this makes it more visible */
-span.fancytree-active:not(.fancytree-focused) .fancytree-title {
-    background-color: #eee !important;
+span.fancytree-active.fancytree-focused .fancytree-title {
+    color: var(--active-item-text-color) !important;
+    background-color: var(--active-item-background-color) !important;
     border-color: #ddd !important;
     border-radius: 3px;
 }
 
-span.fancytree-active.fancytree-focused .fancytree-title {
-    background-color: #ddd !important;
-    border-color: #bbb !important;
+span.fancytree-active:not(.fancytree-focused) .fancytree-title {
+    color: var(--hover-item-text-color) !important;
+    background-color: var(--hover-item-background-color) !important;
+    border-color: #ddd !important;
     border-radius: 3px;
 }
 
-.fancytree-plain span.fancytree-node:hover span.fancytree-title {
-    background-color: #eee !important;
-    border-color: #bbb !important;
+span.fancytree-node:not(.fancytree-active):hover span.fancytree-title {
+    color: var(--hover-item-text-color) !important;
+    background-color: var(--hover-item-background-color) !important;
+    border-color: #ddd !important;
     border-radius: 3px;
 }
 
@@ -244,7 +326,7 @@ div.ui-tooltip {
 
 /* Allow to use <kbd> elements inside the title to define shortcut hints. */
 .ui-menu kbd, button kbd {
-    color: black;
+    color: var(--muted-text-color);
     border: none;
     background-color: transparent;
     box-shadow: none;
@@ -265,8 +347,14 @@ div.ui-tooltip {
     display: none;
 }
 
+.dropdown-menu {
+    color: var(--menu-text-color) !important;
+    background-color: var(--menu-background-color) !important;
+}
+
 .dropdown-menu a:hover:not(.disabled) {
-    background-color: #eee !important;
+    color: var(--hover-item-text-color) !important;
+    background-color: var(--hover-item-background-color) !important;
     cursor: pointer;
 }
 
@@ -276,7 +364,7 @@ div.ui-tooltip {
 
 .dropdown-menu kbd
 {
-    color: black;
+    color: var(--muted-text-color);
     border: none;
     background-color: transparent;
     box-shadow: none;
@@ -362,7 +450,7 @@ div.ui-tooltip {
     font-weight: bold;
     font-size: large;
     padding: 10px;
-    background: #f4f4f4;
+    background: var(--accented-background-color);
     width: 150px;
     height: 90px;
     line-height: 2em;
@@ -376,7 +464,7 @@ div.ui-tooltip {
 }
 
 .child-overview a {
-    color: #444;
+    color: var(--muted-text-color);
 }
 
 #sql-console-query {
@@ -390,9 +478,14 @@ div.ui-tooltip {
     height: 150px;
 }
 
+.btn {
+    border-radius: var(--button-border-radius);
+}
+
 .btn:not(.btn-primary):not(.btn-secondary):not(.btn-danger) {
-    border-color: #ddd;
-    background-color: #eee;
+    border-color: var(--button-border-color);
+    background-color: var(--button-background-color);
+    color: var(--button-text-color);
 }
 
 .btn.active:not(.btn-primary) {
@@ -415,33 +508,6 @@ button.icon-button {
 
 #note-actions .dropdown-menu {
     width: 15em;
-}
-
-/* Themes */
-
-html {
-    /* this fixes FF filter vs. position fixed bug: https://github.com/zadam/trilium/issues/233 */
-    height: 100%;
-}
-
-html.theme-black, html.theme-black img, html.theme-black video {
-    filter: invert(100%) hue-rotate(180deg);
-}
-
-html.theme-black body {
-    background: black;
-}
-
-html.theme-dark {
-    filter: invert(90%) hue-rotate(180deg);
-}
-
-html.theme-dark img, html.theme-dark video {
-    filter: invert(100%) hue-rotate(180deg);
-}
-
-html.theme-dark body {
-    background: #191819;
 }
 
 .ck.ck-block-toolbar-button {
@@ -581,7 +647,7 @@ table.promoted-attributes-in-tooltip td, table.promoted-attributes-in-tooltip th
 
 .algolia-autocomplete .aa-dropdown-menu {
     width: 100%;
-    background-color: #fff;
+    background-color: var(--main-background-color);
     border: 1px solid #999;
     border-top: none;
     z-index: 2000 !important;
@@ -603,7 +669,8 @@ table.promoted-attributes-in-tooltip td, table.promoted-attributes-in-tooltip th
 }
 
 .algolia-autocomplete .aa-dropdown-menu .aa-suggestion.aa-cursor {
-    background-color: #B2D7FF;
+    color: var(--hover-item-text-color);
+    background-color: var(--hover-item-background-color);
 }
 
 .help-button {
