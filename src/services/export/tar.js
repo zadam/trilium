@@ -4,10 +4,10 @@ const html = require('html');
 const repository = require('../repository');
 const tar = require('tar-stream');
 const path = require('path');
-const sanitize = require("sanitize-filename");
 const mimeTypes = require('mime-types');
 const TurndownService = require('turndown');
 const packageInfo = require('../../../package.json');
+const utils = require('../utils');
 
 /**
  * @param format - 'html' or 'markdown'
@@ -219,9 +219,9 @@ async function exportToTar(branch, format, res) {
     pack.finalize();
 
     const note = await branch.getNote();
-    const tarFileName = sanitize((branch.prefix ? (branch.prefix + " - ") : "") + note.title);
+    const tarFileName = (branch.prefix ? (branch.prefix + " - ") : "") + note.title + ".tar";
 
-    res.setHeader('Content-Disposition', `file; filename="${tarFileName}.tar"`);
+    res.setHeader('Content-Disposition', utils.getContentDisposition(tarFileName));
     res.setHeader('Content-Type', 'application/tar');
 
     pack.pipe(res);

@@ -4,6 +4,7 @@ const crypto = require('crypto');
 const randtoken = require('rand-token').generator({source: 'crypto'});
 const unescape = require('unescape');
 const escape = require('escape-html');
+const sanitize = require("sanitize-filename");
 
 function newEntityId() {
     return randomString(12);
@@ -127,6 +128,22 @@ function crash() {
     }
 }
 
+function sanitizeFilenameForHeader(filename) {
+    let sanitizedFilename = sanitize(filename);
+
+    if (sanitizedFilename.trim().length === 0) {
+        sanitizedFilename = "file";
+    }
+
+    return encodeURIComponent(sanitizedFilename)
+}
+
+function getContentDisposition(filename) {
+    const sanitizedFilename = sanitizeFilenameForHeader(filename);
+
+    return `file; filename="${sanitizedFilename}"; filename*=UTF-8''${sanitizedFilename}`;
+}
+
 module.exports = {
     randomSecureToken,
     randomString,
@@ -147,5 +164,7 @@ module.exports = {
     intersection,
     union,
     escapeRegExp,
-    crash
+    crash,
+    sanitizeFilenameForHeader,
+    getContentDisposition
 };

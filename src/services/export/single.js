@@ -1,9 +1,9 @@
 "use strict";
 
-const sanitize = require("sanitize-filename");
 const TurndownService = require('turndown');
 const mimeTypes = require('mime-types');
 const html = require('html');
+const utils = require('../utils');
 
 async function exportSingleNote(branch, format, res) {
     const note = await branch.getNote();
@@ -42,11 +42,9 @@ async function exportSingleNote(branch, format, res) {
         mime = 'application/json';
     }
 
-    const name = sanitize(note.title);
+    const filename = note.title + "." + extension;
 
-    console.log(name, extension, mime);
-
-    res.setHeader('Content-Disposition', `file; filename="${name}.${extension}"`);
+    res.setHeader('Content-Disposition', utils.getContentDisposition(filename));
     res.setHeader('Content-Type', mime + '; charset=UTF-8');
 
     res.send(payload);

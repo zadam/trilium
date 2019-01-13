@@ -3,6 +3,7 @@
 const noteService = require('../../services/notes');
 const protectedSessionService = require('../../services/protected_session');
 const repository = require('../../services/repository');
+const utils = require('../../services/utils');
 
 async function uploadFile(req) {
     const parentNoteId = req.params.parentNoteId;
@@ -49,7 +50,7 @@ async function downloadFile(req, res) {
     const originalFileName = await note.getLabel('originalFileName');
     const fileName = originalFileName ? originalFileName.value : note.title;
 
-    res.setHeader('Content-Disposition', 'file; filename="' + fileName + '"');
+    res.setHeader('Content-Disposition', utils.getContentDisposition(fileName));
     res.setHeader('Content-Type', note.mime);
 
     res.send(note.content);

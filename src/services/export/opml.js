@@ -1,13 +1,10 @@
 "use strict";
 
-const sanitize = require("sanitize-filename");
-const repository = require("../../services/repository");
-const utils = require('../../services/utils');
+const repository = require("../repository");
+const utils = require('../utils');
 
 async function exportToOpml(branch, res) {
     const note = await branch.getNote();
-    const title = (branch.prefix ? (branch.prefix + ' - ') : '') + note.title;
-    const sanitizedTitle = sanitize(title);
 
     async function exportNoteInner(branchId) {
         const branch = await repository.getBranch(branchId);
@@ -31,7 +28,9 @@ async function exportToOpml(branch, res) {
         res.write('</outline>');
     }
 
-    res.setHeader('Content-Disposition', 'file; filename="' + sanitizedTitle + '.opml"');
+    const filename = (branch.prefix ? (branch.prefix + ' - ') : '') + note.title + ".opml";
+
+    res.setHeader('Content-Disposition', utils.getContentDisposition(filename));
     res.setHeader('Content-Type', 'text/x-opml');
 
     res.write(`<?xml version="1.0" encoding="UTF-8"?>
