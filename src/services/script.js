@@ -79,6 +79,19 @@ function getParams(params) {
     }).join(",");
 }
 
+async function getScriptBundleForFrontend(note) {
+    const bundle = await getScriptBundle(note);
+
+    // for frontend we return just noteIds because frontend needs to use its own entity instances
+    bundle.noteId = bundle.note.noteId;
+    delete bundle.note;
+
+    bundle.allNoteIds = bundle.allNotes.map(note => note.noteId);
+    delete bundle.allNotes;
+
+    return bundle;
+}
+
 async function getScriptBundle(note, root = true, scriptEnv = null, includedNoteIds = []) {
     if (!note.isContentAvailable) {
         return;
@@ -156,5 +169,5 @@ function sanitizeVariableName(str) {
 module.exports = {
     executeNote,
     executeScript,
-    getScriptBundle
+    getScriptBundleForFrontend
 };

@@ -30,7 +30,7 @@ async function getStartupBundles() {
     const bundles = [];
 
     for (const note of notes) {
-        const bundle = await scriptService.getScriptBundle(note);
+        const bundle = await scriptService.getScriptBundleForFrontend(note);
 
         if (bundle) {
             bundles.push(bundle);
@@ -54,7 +54,7 @@ async function getRelationBundles(req) {
 
     for (const noteId of uniqueNoteIds) {
         const note = await repository.getNote(noteId);
-        const bundle = await scriptService.getScriptBundle(note);
+        const bundle = await scriptService.getScriptBundleForFrontend(note);
 
         if (bundle) {
             bundles.push(bundle);
@@ -67,7 +67,7 @@ async function getRelationBundles(req) {
 async function getBundle(req) {
     const note = await repository.getNote(req.params.noteId);
 
-    return await scriptService.getScriptBundle(note);
+    return await scriptService.getScriptBundleForFrontend(note);
 }
 
 module.exports = {

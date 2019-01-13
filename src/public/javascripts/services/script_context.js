@@ -1,8 +1,12 @@
 import FrontendScriptApi from './frontend_script_api.js';
 import utils from './utils.js';
+import treeCache from './tree_cache.js';
 
-function ScriptContext(startNote, allNotes, originEntity = null) {
+async function ScriptContext(startNoteId, allNoteIds, originEntity = null) {
     const modules = {};
+
+    const startNote = await treeCache.getNote(startNoteId);
+    const allNotes = await treeCache.getNotes(allNoteIds);
 
     return {
         modules: modules,
