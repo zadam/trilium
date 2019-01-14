@@ -151,11 +151,15 @@ function bindShortcut(keyboardShortcut, handler) {
 }
 
 function isMobile() {
-    return window.device === "mobile";
+    return window.device === "mobile"
+        // window.device is not available in setup
+        || (!window.device && /Mobi/.test(navigator.userAgent));
 }
 
 function isDesktop() {
-    return window.device === "desktop";
+    return window.device === "desktop"
+        // window.device is not available in setup
+        || (!window.device && !/Mobi/.test(navigator.userAgent));
 }
 
 function setCookie(name, value) {
