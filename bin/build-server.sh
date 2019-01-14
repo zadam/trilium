@@ -35,4 +35,4 @@ cd ..
 
 VERSION=`jq -r ".version" ../package.json`
 
-tar cJf trilium-linux-x64-server-${VERSION}.tar.gz trilium-linux-x64-server
+tar cJf trilium-linux-x64-server-${VERSION}.tar.xz trilium-linux-x64-server
