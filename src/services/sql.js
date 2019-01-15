@@ -123,7 +123,7 @@ async function execute(query, params = []) {
 
     const milliseconds = Date.now() - startTimestamp;
     if (milliseconds >= 200) {
-        log.info(`Slow query took ${milliseconds}ms: ${query}, params=${params}`);
+        log.info(`Slow query took ${milliseconds}ms: ${query}`);
     }
 
     return result;
