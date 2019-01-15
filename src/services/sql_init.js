@@ -8,6 +8,7 @@ const sql = require('./sql');
 const cls = require('./cls');
 const optionService = require('./options');
 const Option = require('../entities/option');
+const utils = require('../services/utils');
 
 async function createConnection() {
     return await sqlite.open(dataDir.DOCUMENT_PATH, {Promise});
@@ -154,6 +155,10 @@ async function dbInitialized() {
 
     await initDbConnection();
 }
+
+dbReady.then(async () => {
+    log.info("DB size: " + await sql.getValue("SELECT page_count * page_size / 1000 as size FROM pragma_page_count(), pragma_page_size()") + " KB");
+});
 
 module.exports = {
     dbReady,
