@@ -2,6 +2,16 @@ function nowDate() {
     return dateStr(new Date());
 }
 
+function nowLocalDate() {
+    const date = new Date();
+
+    return date.getFullYear() + "-" + pad(date.getMonth() + 1) + "-" + pad(date.getDate());
+}
+
+function pad(num) {
+    return num <= 9 ? `0${num}` : `${num}`;
+}
+
 function dateStr(date) {
     return date.toISOString();
 }
@@ -25,14 +35,23 @@ function parseDate(str) {
     return parseDateTime(datePart + "T12:00:00.000Z");
 }
 
+function parseLocalDate(str) {
+    const datePart = str.substr(0, 10);
+
+    // not specifying the timezone and specifying the time means Date.parse() will use the local timezone
+    return parseDateTime(datePart + " 12:00:00.000");
+}
+
 function getDateTimeForFile() {
     return new Date().toISOString().substr(0, 19).replace(/:/g, '');
 }
 
 module.exports = {
     nowDate,
+    nowLocalDate,
     dateStr,
     parseDate,
     parseDateTime,
+    parseLocalDate,
     getDateTimeForFile
 };

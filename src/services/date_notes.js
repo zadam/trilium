@@ -47,8 +47,8 @@ async function getRootCalendarNote() {
     return rootNote;
 }
 
-async function getYearNote(dateTimeStr, rootNote) {
-    const yearStr = dateTimeStr.substr(0, 4);
+async function getYearNote(dateStr, rootNote) {
+    const yearStr = dateStr.substr(0, 4);
 
     let yearNote = await attributeService.getNoteWithLabel(YEAR_LABEL, yearStr);
 
@@ -66,19 +66,19 @@ async function getYearNote(dateTimeStr, rootNote) {
     return yearNote;
 }
 
-async function getMonthNote(dateTimeStr, rootNote) {
-    const monthStr = dateTimeStr.substr(0, 7);
-    const monthNumber = dateTimeStr.substr(5, 2);
+async function getMonthNote(dateStr, rootNote) {
+    const monthStr = dateStr.substr(0, 7);
+    const monthNumber = dateStr.substr(5, 2);
 
     let monthNote = await attributeService.getNoteWithLabel(MONTH_LABEL, monthStr);
 
     if (!monthNote) {
-        const yearNote = await getYearNote(dateTimeStr, rootNote);
+        const yearNote = await getYearNote(dateStr, rootNote);
 
         monthNote = await getNoteStartingWith(yearNote.noteId, monthNumber);
 
         if (!monthNote) {
-            const dateObj = dateUtils.parseDate(dateTimeStr);
+            const dateObj = dateUtils.parseLocalDate(dateStr);
 
             const noteTitle = monthNumber + " - " + MONTHS[dateObj.getMonth()];
 
@@ -92,21 +92,20 @@ async function getMonthNote(dateTimeStr, rootNote) {
     return monthNote;
 }
 
-async function getDateNote(dateTimeStr) {
+async function getDateNote(dateStr) {
     const rootNote = await getRootCalendarNote();
 
-    const dateStr = dateTimeStr.substr(0, 10);
-    const dayNumber = dateTimeStr.substr(8, 2);
+    const dayNumber = dateStr.substr(8, 2);
 
     let dateNote = await attributeService.getNoteWithLabel(DATE_LABEL, dateStr);
 
     if (!dateNote) {
-        const monthNote = await getMonthNote(dateTimeStr, rootNote);
+        const monthNote = await getMonthNote(dateStr, rootNote);
 
         dateNote = await getNoteStartingWith(monthNote.noteId, dayNumber);
 
         if (!dateNote) {
-            const dateObj = dateUtils.parseDate(dateTimeStr);
+            const dateObj = dateUtils.parseLocalDate(dateStr);
 
             const noteTitle = dayNumber + " - " + DAYS[dateObj.getDay()];
 
