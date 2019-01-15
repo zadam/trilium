@@ -498,9 +498,11 @@ async function loadTree() {
     return await treeBuilder.prepareTree(resp.notes, resp.branches, resp.relations);
 }
 
-function collapseTree(node = null) {
+async function collapseTree(node = null) {
     if (!node) {
-        node = $tree.fancytree("getRootNode");
+        const hoistedNoteId = await hoistedNoteService.getHoistedNoteId();
+
+        node = getNodesByNoteId(hoistedNoteId)[0];
     }
 
     node.setExpanded(false);
@@ -541,9 +543,11 @@ async function setNoteTitle(noteId, title) {
 }
 
 async function createNewTopLevelNote() {
-    const rootNode = getNodesByNoteId('root')[0];
+    const hoistedNoteId = await hoistedNoteService.getHoistedNoteId();
 
-    await createNote(rootNode, "root", "into", false);
+    const rootNode = getNodesByNoteId(hoistedNoteId)[0];
+
+    await createNote(rootNode, hoistedNoteId, "into", false);
 }
 
 async function createNote(node, parentNoteId, target, isProtected, saveSelection = false) {

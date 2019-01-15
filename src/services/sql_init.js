@@ -8,7 +8,6 @@ const sql = require('./sql');
 const cls = require('./cls');
 const optionService = require('./options');
 const Option = require('../entities/option');
-const utils = require('../services/utils');
 
 async function createConnection() {
     return await sqlite.open(dataDir.DOCUMENT_PATH, {Promise});
