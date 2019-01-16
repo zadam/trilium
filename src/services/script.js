@@ -6,7 +6,7 @@ const sourceIdService = require('./source_id');
 const log = require('./log');
 
 async function executeNote(note, originEntity) {
-    if (!note.isJavaScript() || !note.isContentAvailable) {
+    if (!note.isJavaScript() || note.getScriptEnv() !== 'backend' || !note.isContentAvailable) {
         return;
     }
 

@@ -131,6 +131,9 @@ async function saveNote() {
     }
 
     $savedIndicator.fadeIn();
+
+    // run async
+    bundleService.executeRelationBundles(getCurrentNote(), 'runOnNoteChange');
 }
 
 async function saveNoteIfChanged() {

@@ -54,6 +54,11 @@ async function getRelationBundles(req) {
 
     for (const noteId of uniqueNoteIds) {
         const note = await repository.getNote(noteId);
+
+        if (!note.isJavaScript() || note.getScriptEnv() !== 'frontend') {
+            continue;
+        }
+
         const bundle = await scriptService.getScriptBundleForFrontend(note);
 
         if (bundle) {

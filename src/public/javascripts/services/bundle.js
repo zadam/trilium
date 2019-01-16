@@ -30,9 +30,13 @@ async function executeStartupBundles() {
 }
 
 async function executeRelationBundles(note, relationName) {
-    const bundlesToRun = await server.get("script/relation/" + note.noteId + "/" + relationName);
+    note.bundleCache = note.bundleCache || {};
 
-    for (const bundle of bundlesToRun) {
+    if (!note.bundleCache[relationName]) {
+        note.bundleCache[relationName] = await server.get("script/relation/" + note.noteId + "/" + relationName);
+    }
+
+    for (const bundle of note.bundleCache[relationName]) {
         await executeBundle(bundle, note);
     }
 }
