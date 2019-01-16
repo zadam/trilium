@@ -23,6 +23,7 @@ function formatTimeWithSeconds(date) {
     return padNum(date.getHours()) + ":" + padNum(date.getMinutes()) + ":" + padNum(date.getSeconds());
 }
 
+// this is producing local time!
 function formatDate(date) {
 //    return padNum(date.getDate()) + ". " + padNum(date.getMonth() + 1) + ". " + date.getFullYear();
     // instead of european format we'll just use ISO as that's pretty unambiguous
@@ -30,6 +31,7 @@ function formatDate(date) {
     return formatDateISO(date);
 }
 
+// this is producing local time!
 function formatDateISO(date) {
     return date.getFullYear() + "-" + padNum(date.getMonth() + 1) + "-" + padNum(date.getDate());
 }
@@ -143,6 +145,7 @@ function bindShortcut(keyboardShortcut, handler) {
         }
 
         $(document).bind('keydown', keyboardShortcut, e => {
+            console.log(e);
             handler();
 
             e.preventDefault();
