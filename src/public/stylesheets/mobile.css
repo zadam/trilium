@@ -24,7 +24,6 @@ html, body {
 }
 
 #tree {
-    font-size: larger;
     width: 100%;
     overflow: auto;
 }

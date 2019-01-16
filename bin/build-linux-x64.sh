@@ -17,4 +17,6 @@ rm -r $BUILD_DIR/swiftshader
 echo "Packaging linux x64 electron distribution..."
 VERSION=`jq -r ".version" package.json`
 
-tar cJf $BUILD_DIR-${VERSION}.tar.xz $BUILD_DIR
+cd dist
+
+tar cJf trilium-linux-x64-${VERSION}.tar.xz trilium-linux-x64
