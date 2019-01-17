@@ -44,7 +44,8 @@ html, body {
     position: relative;
     overflow: auto;
     flex-direction: column;
-    height: 100%;
+    /* for some reason detail overflows a little bit so we subtract few pixels */
+    height: calc(100% - 25px);
     /* large left padding is necessary for ckeditor gutter in detail-only (smartphone) layout */
     padding-left: 35px;
 }
