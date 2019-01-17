@@ -8,6 +8,10 @@ const repository = require('./repository');
 const Branch = require('../entities/branch');
 
 async function cloneNoteToParent(noteId, parentNoteId, prefix) {
+    if (await isNoteDeleted(noteId) || await isNoteDeleted(parentNoteId)) {
+        return { success: false, message: 'Note is deleted.' };
+    }
+
     const validationResult = await treeService.validateParentChild(parentNoteId, noteId);
 
     if (!validationResult.success) {
@@ -27,6 +31,10 @@ async function cloneNoteToParent(noteId, parentNoteId, prefix) {
 }
 
 async function ensureNoteIsPresentInParent(noteId, parentNoteId, prefix) {
+    if (await isNoteDeleted(noteId) || await isNoteDeleted(parentNoteId)) {
+        return { success: false, message: 'Note is deleted.' };
+    }
+
     const validationResult = await treeService.validateParentChild(parentNoteId, noteId);
 
     if (!validationResult.success) {
@@ -61,6 +69,10 @@ async function toggleNoteInParent(present, noteId, parentNoteId, prefix) {
 async function cloneNoteAfter(noteId, afterBranchId) {
     const afterNote = await treeService.getBranch(afterBranchId);
 
+    if (await isNoteDeleted(noteId) || await isNoteDeleted(afterNote.parentNoteId)) {
+        return { success: false, message: 'Note is deleted.' };
+    }
+
     const validationResult = await treeService.validateParentChild(afterNote.parentNoteId, noteId);
 
     if (!validationResult.result) {
@@ -82,6 +94,12 @@ async function cloneNoteAfter(noteId, afterBranchId) {
     }).save();
 
     return { success: true };
+}
+
+async function isNoteDeleted(noteId) {
+    const note = await repository.getNote(noteId);
+
+    return note.isDeleted;
 }
 
 module.exports = {
