@@ -11,6 +11,7 @@ const repository = require('./repository');
 const axios = require('axios');
 const cloningService = require('./cloning');
 const messagingService = require('./messaging');
+const appInfo = require('./app_info');
 
 /**
  * This is the main backend API interface for scripts. It's published in the local "api" object.
@@ -234,6 +235,11 @@ function BackendScriptApi(startNote, currentNote, originEntity) {
      * @returns {Promise<void>}
      */
     this.refreshTree = () => messagingService.sendMessageToAllClients({ type: 'refresh-tree' });
+
+    /**
+     * @return {{syncVersion, appVersion, buildRevision, dbVersion, dataDirectory, buildDate}|*} - object representing basic info about running Trilium version
+     */
+    this.getAppInfo = () => appInfo
 }
 
 module.exports = BackendScriptApi;
