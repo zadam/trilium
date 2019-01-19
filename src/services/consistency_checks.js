@@ -198,6 +198,36 @@ async function checkAllNotesShouldHaveUndeletedBranch() {
     }
 }
 
+async function checkDuplicateParentChildBranches() {
+    const records = await runCheck(true, `
+          SELECT 
+            branches.parentNoteId || ' > ' || branches.noteId AS value, noteId, parentNoteId
+          FROM 
+            branches 
+          WHERE 
+            branches.isDeleted = 0
+          GROUP BY 
+            branches.parentNoteId,
+            branches.noteId
+          HAVING 
+            COUNT(*) > 1`,
+        "Duplicate undeleted parent note <-> note relationship - parent note ID > note ID");
+
+    for (const {noteId, parentNoteId} of records) {
+        const branches = await repository.getEntities(`SELECT * FROM branches WHERE noteId = ? and parentNoteId = ? and isDeleted = 1`, [noteId, parentNoteId]);
+
+        if (branches.length <= 1) {
+            log.error("Inconsistent detection of duplicate parent note <-> relationships.");
+        }
+
+        // delete all but the first branch
+        for (const branch of branches.slice(1)) {
+            branch.isDeleted = true;
+            await branch.save();
+        }
+    }
+}
+
 async function runAllChecks() {
     outstandingConsistencyErrors = false;
 
@@ -206,6 +236,17 @@ async function runAllChecks() {
     await checkMissingNotes();
 
     await checkAllDeletedNotesBranchesAreDeleted();
+
+    await runCheck(false, `
+          SELECT 
+            child.parentNoteId || ' > ' || child.noteId AS value
+          FROM branches 
+            AS child 
+            LEFT JOIN branches AS parent ON parent.noteId = child.parentNoteId 
+          WHERE 
+            parent.noteId IS NULL 
+            AND child.parentNoteId != 'none'`,
+        "Not existing parent in the following parent > child relations");
 
     // FIXME - does this make sense? Specifically branch - branch comparison seems strange
     await runCheck(false, `
@@ -224,17 +265,6 @@ async function runAllChecks() {
 
     await runCheck(false, `
           SELECT 
-            child.parentNoteId || ' > ' || child.noteId AS value
-          FROM branches 
-            AS child 
-            LEFT JOIN branches AS parent ON parent.noteId = child.parentNoteId 
-          WHERE 
-            parent.noteId IS NULL 
-            AND child.parentNoteId != 'none'`,
-        "Not existing parent in the following parent > child relations");
-
-    await runCheck(false, `
-          SELECT 
             noteRevisionId || ' > ' || note_revisions.noteId AS value
           FROM 
             note_revisions LEFT JOIN notes USING(noteId) 
@@ -242,19 +272,7 @@ async function runAllChecks() {
             notes.noteId IS NULL`,
         "Missing notes records for following note revision ID > note ID");
 
-    await runCheck(false, `
-          SELECT 
-            branches.parentNoteId || ' > ' || branches.noteId AS value
-          FROM 
-            branches 
-          WHERE 
-            branches.isDeleted = 0
-          GROUP BY 
-            branches.parentNoteId,
-            branches.noteId
-          HAVING 
-            COUNT(*) > 1`,
-        "Duplicate undeleted parent note <-> note relationship - parent note ID > note ID");
+    await checkDuplicateParentChildBranches();
 
     await runCheck(false, `
           SELECT 
