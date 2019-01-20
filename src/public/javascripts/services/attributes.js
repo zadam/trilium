@@ -160,7 +160,7 @@ async function createPromotedAttributeRow(definitionAttr, valueAttr) {
                 $input.autocomplete({
                     appendTo: document.querySelector('body'),
                     hint: false,
-                    autoselect: true,
+                    autoselect: false,
                     openOnFocus: true,
                     minLength: 0,
                     tabAutocomplete: false
