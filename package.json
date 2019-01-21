@@ -40,7 +40,7 @@
     "helmet": "3.15.0",
     "html": "1.0.0",
     "image-type": "3.0.0",
-    "imagemin": "6.0.0",
+    "imagemin": "^6.1.0",
     "imagemin-giflossy": "5.1.10",
     "imagemin-mozjpeg": "8.0.0",
     "imagemin-pngquant": "6.0.0",
@@ -53,7 +53,7 @@
     "open": "0.0.5",
     "rand-token": "0.4.0",
     "rcedit": "1.1.1",
-    "rimraf": "2.6.2",
+    "rimraf": "^2.6.3",
     "sanitize-filename": "1.6.1",
     "sax": "^1.2.4",
     "serve-favicon": "2.5.0",
@@ -69,13 +69,13 @@
   "devDependencies": {
     "devtron": "1.4.0",
     "electron": "4.0.1",
-    "electron-builder": "20.38.4",
-    "electron-compile": "6.4.3",
+    "electron-builder": "^20.38.5",
+    "electron-compile": "^6.4.4",
     "electron-packager": "13.0.1",
     "electron-rebuild": "1.8.2",
     "lorem-ipsum": "1.0.6",
-    "tape": "4.9.1",
-    "xo": "0.23.0"
+    "tape": "^4.9.2",
+    "xo": "^0.24.0"
   },
   "xo": {
     "envs": [
