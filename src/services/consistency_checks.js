@@ -5,29 +5,23 @@ const sqlInit = require('./sql_init');
 const log = require('./log');
 const messagingService = require('./messaging');
 const syncMutexService = require('./sync_mutex');
-const repository = require('./repository');
+const repository = require('./repository.js');
 const cls = require('./cls');
-const Branch = require('../entities/branch');
 
-let outstandingConsistencyErrors = false;
+async function runCheck(query, errorText, errorList) {
+    const result = await sql.getColumn(query);
 
-async function runCheck(recoverable, query, errorText) {
-    const results = await sql.getRows(query);
+    if (result.length > 0) {
+        const resultText = result.map(val => "'" + val + "'").join(', ');
 
-    if (results.length > 0) {
-        const resultText = results.map(row => "'" + row.value + "'").join(', ');
+        const err = errorText + ": " + resultText;
+        errorList.push(err);
 
-        log.error(errorText + ": " + resultText);
-
-        if (!recoverable) {
-            outstandingConsistencyErrors = true;
-        }
+        log.error(err);
     }
-
-    return results;
 }
 
-async function checkTreeCycles() {
+async function checkTreeCycles(errorList) {
     const childToParents = {};
     const rows = await sql.getRows("SELECT noteId, parentNoteId FROM branches WHERE isDeleted = 0");
 
@@ -39,7 +33,7 @@ async function checkTreeCycles() {
         childToParents[childNoteId].push(parentNoteId);
     }
 
-    function checkTreeCycle(noteId, path) {
+    function checkTreeCycle(noteId, path, errorList) {
         if (noteId === 'root') {
             return;
         }
@@ -51,15 +45,13 @@ async function checkTreeCycles() {
 
         for (const parentNoteId of childToParents[noteId]) {
             if (path.includes(parentNoteId)) {
-                log.error(`Tree cycle detected at parent-child relationship: ${parentNoteId} - ${noteId}, whole path: ${path}`);
-                
-                outstandingConsistencyErrors = true;
+                errorList.push(`Tree cycle detected at parent-child relationship: ${parentNoteId} - ${noteId}, whole path: ${path}`);
             }
             else {
                 const newPath = path.slice();
                 newPath.push(noteId);
 
-                checkTreeCycle(parentNoteId, newPath);
+                checkTreeCycle(parentNoteId, newPath, errorList);
             }
         }
     }
@@ -67,141 +59,130 @@ async function checkTreeCycles() {
     const noteIds = Object.keys(childToParents);
 
     for (const noteId of noteIds) {
-        checkTreeCycle(noteId, []);
+        checkTreeCycle(noteId, [], errorList);
     }
 
     if (childToParents['root'].length !== 1 || childToParents['root'][0] !== 'none') {
-        log.error('Incorrect root parent: ' + JSON.stringify(childToParents['root']));
-        outstandingConsistencyErrors = true;
+        errorList.push('Incorrect root parent: ' + JSON.stringify(childToParents['root']));
     }
 }
 
-async function runSyncRowChecks(table, key) {
-    await runCheck(false, `
+async function runSyncRowChecks(table, key, errorList) {
+    await runCheck(`
         SELECT 
-          ${key} AS value
+          ${key} 
         FROM 
           ${table} 
           LEFT JOIN sync ON sync.entityName = '${table}' AND entityId = ${key} 
         WHERE 
           sync.id IS NULL AND ` + (table === 'options' ? 'isSynced = 1' : '1'),
-        `Missing sync records for ${key} in table ${table}`);
+        `Missing sync records for ${key} in table ${table}`, errorList);
 
-    await runCheck(false, `
+    await runCheck(`
         SELECT 
-          entityId AS value
+          entityId 
         FROM 
           sync 
           LEFT JOIN ${table} ON entityId = ${key} 
         WHERE 
           sync.entityName = '${table}' 
           AND ${key} IS NULL`,
-        `Missing ${table} records for existing sync rows`);
+        `Missing ${table} records for existing sync rows`, errorList);
 }
 
-async function fixEmptyRelationTargets() {
+async function fixEmptyRelationTargets(errorList) {
     const emptyRelations = await repository.getEntities("SELECT * FROM attributes WHERE isDeleted = 0 AND type = 'relation' AND value = ''");
 
     for (const relation of emptyRelations) {
         relation.isDeleted = true;
         await relation.save();
 
-        log.error(`Relation ${relation.attributeId} of name "${relation.name} has empty target. Autofixed.`);
+        errorList.push(`Relation ${relation.attributeId} of name "${relation.name} has empty target. Autofixed.`);
     }
 }
 
-async function checkMissingBranches() {
-    const notes = await runCheck(true, `
+async function runAllChecks() {
+    const errorList = [];
+
+    await runCheck(`
           SELECT 
-            noteId AS value
+            noteId 
           FROM 
             notes 
             LEFT JOIN branches USING(noteId) 
           WHERE 
             noteId != 'root' 
             AND branches.branchId IS NULL`,
-        "Missing branches for following note IDs");
+        "Missing branches records for following note IDs", errorList);
 
-    for (const {value: noteId} of notes) {
-        const branch = await new Branch({
-            parentNoteId: 'root',
-            noteId: noteId,
-            prefix: 'recovered'
-        }).save();
-
-        log.info(`Created missing branch ${branch.branchId} for note ${noteId}`);
-    }
-}
-
-async function checkMissingNotes() {
-    const records = await runCheck(true, `
+    await runCheck(`
           SELECT 
-            branchId || ' > ' || branches.noteId AS value, branchId, branches.noteId
+            branchId || ' > ' || branches.noteId 
           FROM 
             branches 
             LEFT JOIN notes USING(noteId) 
           WHERE 
             notes.noteId IS NULL`,
-        "Missing notes records for following branch ID > note ID");
+        "Missing notes records for following branch ID > note ID", errorList);
 
-    for (const {branchId, noteId} of records) {
-        const branch = await repository.getBranch(branchId);
-        branch.isDeleted = true;
-        await branch.save();
-
-        log.info(`Removed ${branchId} because it pointed to the missing ${noteId}`);
-    }
-}
-
-async function checkAllDeletedNotesBranchesAreDeleted() {
-    const branches = await runCheck(true, `
+    await runCheck(`
           SELECT 
-            branchId AS value, branchId, noteId
+            branchId 
           FROM 
             branches 
             JOIN notes USING(noteId) 
           WHERE 
             notes.isDeleted = 1 
             AND branches.isDeleted = 0`,
-        "Branch is not deleted even though main note is deleted for following branch IDs");
+        "Branch is not deleted even though main note is deleted for following branch IDs", errorList);
 
-    for (const {branchId, noteId} of branches) {
-        const branch = await repository.getBranch(branchId);
-        branch.isDeleted = true;
-        await branch.save();
+    await runCheck(`
+          SELECT 
+            child.branchId
+          FROM 
+            branches AS child
+          WHERE 
+            child.isDeleted = 0
+            AND child.parentNoteId != 'none'
+            AND (SELECT COUNT(*) FROM branches AS parent WHERE parent.noteId = child.parentNoteId 
+                                                                 AND parent.isDeleted = 0) = 0`,
+        "All parent branches are deleted but child branch is not for these child branch IDs", errorList);
 
-        log.info(`Branch ${branchId} has been deleted since associated note ${noteId} is deleted.`);
-    }
-}
-
-async function checkAllNotesShouldHaveUndeletedBranch() {
     // we do extra JOIN to eliminate orphan notes without branches (which are reported separately)
-    const notes = await runCheck(true, `
+    await runCheck(`
           SELECT
-            DISTINCT noteId AS value
+            DISTINCT noteId
           FROM
             notes
             JOIN branches USING(noteId)
           WHERE
             (SELECT COUNT(*) FROM branches WHERE notes.noteId = branches.noteId AND branches.isDeleted = 0) = 0
             AND notes.isDeleted = 0
-    `, 'No undeleted branches for note IDs');
+    `, 'No undeleted branches for note IDs', errorList);
 
-    for (const {value: noteId} of notes) {
-        const branch = await new Branch({
-            parentNoteId: 'root',
-            noteId: noteId,
-            prefix: 'recovered'
-        }).save();
-
-        log.info(`Created missing branch ${branch.branchId} for note ${noteId}`);
-    }
-}
-
-async function checkDuplicateParentChildBranches() {
-    const records = await runCheck(true, `
+    await runCheck(`
           SELECT 
-            branches.parentNoteId || ' > ' || branches.noteId AS value, noteId, parentNoteId
+            child.parentNoteId || ' > ' || child.noteId 
+          FROM branches 
+            AS child 
+            LEFT JOIN branches AS parent ON parent.noteId = child.parentNoteId 
+          WHERE 
+            parent.noteId IS NULL 
+            AND child.parentNoteId != 'none'`,
+        "Not existing parent in the following parent > child relations", errorList);
+
+    await runCheck(`
+          SELECT 
+            noteRevisionId || ' > ' || note_revisions.noteId 
+          FROM 
+            note_revisions LEFT JOIN notes USING(noteId) 
+          WHERE 
+            notes.noteId IS NULL`,
+        "Missing notes records for following note revision ID > note ID", errorList);
+
+    await runCheck(`
+          SELECT 
+            branches.parentNoteId || ' > ' || branches.noteId 
           FROM 
             branches 
           WHERE 
@@ -211,72 +192,11 @@ async function checkDuplicateParentChildBranches() {
             branches.noteId
           HAVING 
             COUNT(*) > 1`,
-        "Duplicate undeleted parent note <-> note relationship - parent note ID > note ID");
+        "Duplicate undeleted parent note <-> note relationship - parent note ID > note ID", errorList);
 
-    for (const {noteId, parentNoteId} of records) {
-        const branches = await repository.getEntities(`SELECT * FROM branches WHERE noteId = ? and parentNoteId = ? and isDeleted = 1`, [noteId, parentNoteId]);
-
-        if (branches.length <= 1) {
-            log.error("Inconsistent detection of duplicate parent note <-> relationships.");
-        }
-
-        // delete all but the first branch
-        for (const branch of branches.slice(1)) {
-            branch.isDeleted = true;
-            await branch.save();
-        }
-    }
-}
-
-async function runAllChecks() {
-    outstandingConsistencyErrors = false;
-
-    await checkMissingBranches();
-
-    await checkMissingNotes();
-
-    await checkAllDeletedNotesBranchesAreDeleted();
-
-    await runCheck(false, `
+    await runCheck(`
           SELECT 
-            child.parentNoteId || ' > ' || child.noteId AS value
-          FROM branches 
-            AS child 
-            LEFT JOIN branches AS parent ON parent.noteId = child.parentNoteId 
-          WHERE 
-            parent.noteId IS NULL 
-            AND child.parentNoteId != 'none'`,
-        "Not existing parent in the following parent > child relations");
-
-    // FIXME - does this make sense? Specifically branch - branch comparison seems strange
-    await runCheck(false, `
-          SELECT 
-            child.branchId AS value
-          FROM 
-            branches AS child
-          WHERE 
-            child.isDeleted = 0
-            AND child.parentNoteId != 'none'
-            AND (SELECT COUNT(*) FROM branches AS parent WHERE parent.noteId = child.parentNoteId 
-                                                                 AND parent.isDeleted = 0) = 0`,
-        "All parent branches are deleted but child branch is not for these child branch IDs");
-
-    await checkAllNotesShouldHaveUndeletedBranch();
-
-    await runCheck(false, `
-          SELECT 
-            noteRevisionId || ' > ' || note_revisions.noteId AS value
-          FROM 
-            note_revisions LEFT JOIN notes USING(noteId) 
-          WHERE 
-            notes.noteId IS NULL`,
-        "Missing notes records for following note revision ID > note ID");
-
-    await checkDuplicateParentChildBranches();
-
-    await runCheck(false, `
-          SELECT 
-            noteId AS value
+            noteId
           FROM 
             notes
           WHERE 
@@ -287,33 +207,33 @@ async function runAllChecks() {
             AND type != 'image' 
             AND type != 'search' 
             AND type != 'relation-map'`,
-        "Note has invalid type");
+        "Note has invalid type", errorList);
 
-    await runCheck(false, `
+    await runCheck(`
           SELECT
-            noteId AS value
+            noteId
           FROM
             notes
           WHERE
             isDeleted = 0
             AND content IS NULL`,
-        "Note content is null even though it is not deleted");
+        "Note content is null even though it is not deleted", errorList);
 
-    await runCheck(false, `
+    await runCheck(`
           SELECT 
-            parentNoteId AS value
+            parentNoteId
           FROM 
             branches
             JOIN notes ON notes.noteId = branches.parentNoteId
           WHERE 
             type == 'search'`,
-        "Search note has children");
+        "Search note has children", errorList);
 
-    await fixEmptyRelationTargets();
+    await fixEmptyRelationTargets(errorList);
 
-    await runCheck(false, `
+    await runCheck(`
           SELECT 
-            attributeId AS value
+            attributeId
           FROM 
             attributes
           WHERE 
@@ -321,22 +241,22 @@ async function runAllChecks() {
             AND type != 'label-definition' 
             AND type != 'relation'
             AND type != 'relation-definition'`,
-        "Attribute has invalid type");
+        "Attribute has invalid type", errorList);
 
-    await runCheck(false,`
+    await runCheck(`
           SELECT 
-            attributeId AS value
+            attributeId
           FROM 
             attributes
             LEFT JOIN notes ON attributes.noteId = notes.noteId AND notes.isDeleted = 0
           WHERE
             attributes.isDeleted = 0
             AND notes.noteId IS NULL`,
-        "Attribute reference to the owning note is broken");
+        "Attribute reference to the owning note is broken", errorList);
 
-    await runCheck(false, `
+    await runCheck(`
           SELECT
-            attributeId AS value
+            attributeId
           FROM
             attributes
             LEFT JOIN notes AS targetNote ON attributes.value = targetNote.noteId AND targetNote.isDeleted = 0
@@ -344,22 +264,22 @@ async function runAllChecks() {
             attributes.type = 'relation'
             AND attributes.isDeleted = 0
             AND targetNote.noteId IS NULL`,
-        "Relation reference to the target note is broken");
+        "Relation reference to the target note is broken", errorList);
 
-    await runCheck(false, `
+    await runCheck(`
           SELECT 
-            linkId AS value
+            linkId
           FROM 
             links
           WHERE 
             type != 'image'
             AND type != 'hyper'
             AND type != 'relation-map'`,
-        "Link type is invalid");
+        "Link type is invalid", errorList);
 
-    await runCheck(false, `
+    await runCheck(`
           SELECT 
-            linkId AS value
+            linkId
           FROM 
             links
             LEFT JOIN notes AS sourceNote ON sourceNote.noteId = links.noteId AND sourceNote.isDeleted = 0
@@ -368,39 +288,39 @@ async function runAllChecks() {
             links.isDeleted = 0
             AND (sourceNote.noteId IS NULL
                  OR targetNote.noteId IS NULL)`,
-        "Link to source/target note link is broken");
+        "Link to source/target note link is broken", errorList);
 
-    await runSyncRowChecks("notes", "noteId");
-    await runSyncRowChecks("note_revisions", "noteRevisionId");
-    await runSyncRowChecks("branches", "branchId");
-    await runSyncRowChecks("recent_notes", "branchId");
-    await runSyncRowChecks("attributes", "attributeId");
-    await runSyncRowChecks("api_tokens", "apiTokenId");
-    await runSyncRowChecks("options", "name");
+    await runSyncRowChecks("notes", "noteId", errorList);
+    await runSyncRowChecks("note_revisions", "noteRevisionId", errorList);
+    await runSyncRowChecks("branches", "branchId", errorList);
+    await runSyncRowChecks("recent_notes", "branchId", errorList);
+    await runSyncRowChecks("attributes", "attributeId", errorList);
+    await runSyncRowChecks("api_tokens", "apiTokenId", errorList);
+    await runSyncRowChecks("options", "name", errorList);
 
-    if (outstandingConsistencyErrors) {
+    if (errorList.length === 0) {
         // we run this only if basic checks passed since this assumes basic data consistency
 
-        await checkTreeCycles();
+        await checkTreeCycles(errorList);
     }
 
-    return !outstandingConsistencyErrors;
+    return errorList;
 }
 
 async function runChecks() {
+    let errorList;
     let elapsedTimeMs;
-    let dbConsistent;
 
     await syncMutexService.doExclusively(async () => {
         const startTime = new Date();
 
-        dbConsistent = await runAllChecks();
+        errorList = await runAllChecks();
 
         elapsedTimeMs = new Date().getTime() - startTime.getTime();
     });
 
-    if (!dbConsistent) {
-        log.info(`Consistency checks failed (took ${elapsedTimeMs}ms)`);
+    if (errorList.length > 0) {
+        log.info(`Consistency checks failed (took ${elapsedTimeMs}ms) with these errors: ` + JSON.stringify(errorList));
 
         messagingService.sendMessageToAllClients({type: 'consistency-checks-failed'});
     }
