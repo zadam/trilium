@@ -250,8 +250,11 @@ body.theme-darkRainbow span.fancytree-active:not(.fancytree-focused) .fancytree-
   background-clip: text !important;
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   font-weight: 400;
+  width: 11em;
+  overflow: hidden;
+  text-overflow: clip;
 }
 
 
