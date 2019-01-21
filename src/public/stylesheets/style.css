@@ -197,6 +197,21 @@ body.theme-darkRainbow .cm-s-default .cm-number {
 body.theme-darkRainbow .cm-atom {
   color: #c8c1ff;
 }
+body.theme-darkRainbow span.cm-keyword {
+  color: #ffffffed !important;
+}
+body.theme-darkRainbow span.cm-builtin {
+  color: #ff8de6 !important;
+}
+body.theme-darkRainbow span.cm-tag {
+  color: #ff7a9e !important;
+}
+body.theme-darkRainbow span.cm-variable-2 {
+  color: #ffdcfae6 !important;
+}
+body.theme-darkRainbow span.cm-variable-3 {
+  color: #49e040 !important;
+}
 body.theme-darkRainbow #note-detail-text {
   color: #fffdfdde !important;
 }
@@ -217,11 +232,15 @@ body.theme-darkRainbow div#note-detail-text p {
   margin-top: 5px;
   text-indent: 0.9rem;
 }
-body.theme-darkRainbow .child-overview {
+body.theme-darkRainbow .child-overview { /* Makes them pop on the dark background */
   font-size: 1.1rem;
   background: #c8d4c91f;
   box-shadow: 0 2px 6px 0 hsla(0, 0%, 0%, 0.2);
 }
+body.theme-darkRainbow #children-overview { /* Fixes the child note previews being to far to the left */
+  padding-left: 1rem;
+}
+
 
 html {
     /* this fixes FF filter vs. position fixed bug: https://github.com/zadam/trilium/issues/233 */
