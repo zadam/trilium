@@ -132,6 +132,12 @@ async function setNoteToParent(noteId, prefix, parentNoteId) {
         await branch.save();
     }
     else if (parentNoteId) {
+        const note = await repository.getNote(noteId);
+
+        if (note.isDeleted) {
+            throw new Error(`Cannot create a branch for ${noteId} which is deleted.`);
+        }
+
         await new Branch({
             noteId: noteId,
             parentNoteId: parentNoteId,
