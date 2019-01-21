@@ -1,3 +1,6 @@
+/* Adding in Custom Font Options - Abourass */
+@import url('https://fonts.googleapis.com/css?family=Lato|Montserrat|Raleway');
+
 :root {
     --main-font-size: normal;
     --tree-font-size: normal;
@@ -74,6 +77,136 @@ body.theme-dark {
 
 body.theme-dark .CodeMirror {
     filter: invert(90%) hue-rotate(180deg);
+}
+
+/* New theme @Abourass */
+
+body.theme-darkRainbow {
+  --main-background-color: #191927;
+  --main-text-color: rgba(244, 246, 255, 1);
+  --accented-background-color: #555;
+  --more-accented-background-color: #777;
+  --header-background-color: #333;
+  --button-background-color: #222230;
+  --button-border-color: #444;
+  --button-text-color: rgb(244, 246, 255);
+  --button-border-radius: 4px;
+  --muted-text-color: #ccc;
+  --input-text-color: white;
+  --input-background-color: #333;
+  --modal-background-color: #555;
+  --hover-item-text-color: black;
+  --hover-item-background-color: #aaa;
+  --active-item-text-color: black;
+  --active-item-background-color: #ccc;
+  --menu-text-color: white;
+  --menu-background-color: #222;
+}
+body.theme-darkRainbow #header {
+  background-color: #434167;
+}
+body.theme-darkRainbow .btn:not(.btn-primary):not(.btn-secondary):not(.btn-danger) {
+  border-color: transparent !important;
+  background-color: #eeeeee59 !important;
+  box-shadow: 0px 6px 6px 0px hsla(0, 0%, 0%, 0.05) !important;
+}
+body.theme-darkRainbow #global-buttons {
+  border-radius: 4px !important;
+  border: 0 !important;
+  box-shadow: 0px 2px 5px -1px hsla(0, 1%, 16%, 0.2) !important;
+  background-color: #222230 !important;
+  color: rgb(244, 246, 255) !important;
+  border-top: 3px solid #e7bbec !important;
+}
+body.theme-darkRainbow .ui-fancytree {
+  background-color: #222230 !important;
+  border: 0 !important;
+  border-radius: 4px !important;
+}
+body.theme-darkRainbow ul.fancytree-container {
+  margin-left: 10px;
+  margin-right: 20px;
+}
+body.theme-darkRainbow ul.fancytree-container li {
+  color: #bb0707 !important;
+}
+body.theme-darkRainbow ul.fancytree-container li:nth-child(2n) {
+  color: #ce4c19 !important;
+}
+body.theme-darkRainbow ul.fancytree-container li:nth-child(3n) {
+  color: #e2cd2b !important;
+}
+body.theme-darkRainbow ul.fancytree-container li:nth-child(4n) {
+  color: #2bb343 !important;
+}
+body.theme-darkRainbow ul.fancytree-container li:nth-child(5n) {
+  color: #2bacb3 !important;
+}
+body.theme-darkRainbow ul.fancytree-container li:nth-child(6n) {
+  color: #4f67bf !important;
+}
+body.theme-darkRainbow ul.fancytree-container li:nth-child(7n) {
+  color: #7b4fbf !important;
+}
+body.theme-darkRainbow .dropdown.hide-toggle {
+  padding-left: 10px;
+}
+body.theme-darkRainbow span.fancytree-title {
+  color: rgb(244, 246, 255) !important;
+}
+body.theme-darkRainbow span.fancytree-active:not(.fancytree-focused) .fancytree-title {
+  background-color: #eee0 !important;
+}
+body.theme-darkRainbow p {
+  font-size: 17.3px !important;
+  color: hsl(0, 1%, 2%) !important;
+}
+body.theme-darkRainbow #title-container {
+  background-color: #35353e7d;
+  margin-right: 0.7rem;
+  margin-top: 0rem;
+  border-radius: 0.4rem;
+  padding-top: 3px;
+  padding-bottom: 4px;
+  border-top: 3px solid #54caefd6
+}
+body.theme-darkRainbow #note-title {
+  background-color: #9c94bb3b !important;
+  color: rgb(244, 246, 255) !important;
+  margin-left: 1rem !important;
+  margin-right: 1rem !important;
+  -webkit-border-radius: 0.4rem !important;
+  -moz-border-radius: 0.4rem !important;
+  border-radius: 0.4rem !important;
+  padding-left: 0.50rem !important;
+}
+body.theme-darkRainbow #note-detail-component-wrapper {
+  background-color: #8786a03d !important;
+  color: white !important;
+}
+body.theme-darkRainbow .CodeMirror-lines {
+  font-family: Lato;
+  color: #ced246eb;
+}
+body.theme-darkRainbow #note-detail-text {
+  color: #fffdfdde !important;
+}
+body.theme-darkRainbow #note-detail-text p {
+  color: #fffdfdde !important;
+}
+body.theme-darkRainbow #note-detail-wrapper {
+  padding-left: 0px !important;
+  padding-top: 0px !important;
+  background-color: #00000070 !important;
+  color: whitesmoke !important;
+}
+body.theme-darkRainbow figure {
+  background-color: grey;
+}
+body.theme-darkRainbow div#note-detail-text p {
+  margin-bottom: 5px;
+  margin-top: 5px;
+  text-indent: 0.9rem;
 }
 
 html {
