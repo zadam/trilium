@@ -101,6 +101,26 @@ async function fixEmptyRelationTargets(errorList) {
     }
 }
 
+async function fixUndeletedBranches() {
+    const undeletedBranches = await sql.getRows(`
+          SELECT 
+            branchId, noteId 
+          FROM 
+            branches 
+            JOIN notes USING(noteId) 
+          WHERE 
+            notes.isDeleted = 1 
+            AND branches.isDeleted = 0`);
+
+    for (const {branchId, noteId} of undeletedBranches) {
+        const branch = await repository.getBranch(branchId);
+        branch.isDeleted = true;
+        await branch.save();
+
+        log.info(`Branch ${branchId} has been deleted since associated note ${noteId} is deleted.`);
+    }
+}
+
 async function runAllChecks() {
     const errorList = [];
 
@@ -125,16 +145,7 @@ async function runAllChecks() {
             notes.noteId IS NULL`,
         "Missing notes records for following branch ID > note ID", errorList);
 
-    await runCheck(`
-          SELECT 
-            branchId 
-          FROM 
-            branches 
-            JOIN notes USING(noteId) 
-          WHERE 
-            notes.isDeleted = 1 
-            AND branches.isDeleted = 0`,
-        "Branch is not deleted even though main note is deleted for following branch IDs", errorList);
+    await fixUndeletedBranches();
 
     await runCheck(`
           SELECT 
