@@ -1,5 +1,5 @@
 /* Adding in Custom Font Options - Abourass */
-@import url('https://fonts.googleapis.com/css?family=Lato|Montserrat|Raleway');
+@import url('https://fonts.googleapis.com/css?family=Raleway');
 
 :root {
     --main-font-size: normal;
@@ -79,8 +79,7 @@ body.theme-dark .CodeMirror {
     filter: invert(90%) hue-rotate(180deg);
 }
 
-/* New theme @Abourass */
-
+/* New themes Rainbows in the Dark & Modern @Abourass */
 body.theme-darkRainbow {
   --main-background-color: #191927;
   --main-text-color: rgba(244, 246, 255, 1);
@@ -185,8 +184,18 @@ body.theme-darkRainbow #note-detail-component-wrapper {
   color: white !important;
 }
 body.theme-darkRainbow .CodeMirror-lines {
-  font-family: Lato;
+  font-family: Raleway;
+  font-size: 0.9rem;
   color: #ced246eb;
+}
+body.theme-darkRainbow .cm-s-default .cm-qualifier {
+  color: #07f2ff;
+}
+body.theme-darkRainbow .cm-s-default .cm-number {
+  color: #23d08b;
+}
+body.theme-darkRainbow .cm-atom {
+  color: #c8c1ff;
 }
 body.theme-darkRainbow #note-detail-text {
   color: #fffdfdde !important;
@@ -207,6 +216,11 @@ body.theme-darkRainbow div#note-detail-text p {
   margin-bottom: 5px;
   margin-top: 5px;
   text-indent: 0.9rem;
+}
+body.theme-darkRainbow .child-overview {
+  font-size: 1.1rem;
+  background: #c8d4c91f;
+  box-shadow: 0 2px 6px 0 hsla(0, 0%, 0%, 0.2);
 }
 
 html {
