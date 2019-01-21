@@ -154,7 +154,7 @@ body.theme-darkRainbow span.fancytree-title {
   color: rgb(244, 246, 255) !important;
 }
 body.theme-darkRainbow span.fancytree-active:not(.fancytree-focused) .fancytree-title {
-  background-color: #eee0 !important;
+  background-color: #42424278 !important;
 }
 body.theme-darkRainbow p {
   font-size: 17.3px !important;
@@ -239,6 +239,19 @@ body.theme-darkRainbow .child-overview { /* Makes them pop on the dark backgroun
 }
 body.theme-darkRainbow #children-overview { /* Fixes the child note previews being to far to the left */
   padding-left: 1rem;
+}
+body.theme-darkRainbow span.fancytree-active:not(.fancytree-focused) .fancytree-title {
+  border-color: #ddd !important;
+  border-radius: 3.2px;
+  background: -webkit-linear-gradient(left, red, orange , yellow, green, cyan, #0072ff, violet) !important;
+  background: -o-linear-gradient(right, red, orange, yellow, green, cyan, #0072ff, violet) !important;
+  background: -moz-linear-gradient(right, red, orange, yellow, green, cyan, #0072ff, violet) !important;
+  background: linear-gradient(to right, red, orange , yellow, green, cyan, #0072ff, violet) !important;
+  background-clip: text !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  font-size: 1.2rem;
+  font-weight: 400;
 }
 
 
