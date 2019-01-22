@@ -623,7 +623,10 @@ async function createNote(node, parentNoteId, target, isProtected, saveSelection
 
         await node.getLastChild().setActive(true);
 
+        const parentNoteEntity = await treeCache.getNote(node.data.noteId);
+
         node.folder = true;
+        node.icon = await treeBuilder.getIcon(parentNoteEntity); // icon might change into folder
         node.renderTitle();
     }
     else {
