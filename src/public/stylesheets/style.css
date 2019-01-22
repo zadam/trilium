@@ -260,7 +260,7 @@ span.fancytree-active.fancytree-focused .fancytree-title {
     border-radius: 3px;
 }
 
-span.fancytree-active:not(.fancytree-focused) .fancytree-title {
+span.fancytree-active:not(.fancytree-focused) .fancytree-title, span.fancytree-selected .fancytree-title {
     color: var(--hover-item-text-color) !important;
     background-color: var(--hover-item-background-color) !important;
     border-color: #ddd !important;
