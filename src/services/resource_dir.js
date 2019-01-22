@@ -7,7 +7,6 @@ const RESOURCE_DIR = path.resolve(__dirname, "../..");
 // where "trilium" executable is
 const ELECTRON_APP_ROOT_DIR = path.resolve(RESOURCE_DIR, "../..");
 const DB_INIT_DIR = path.resolve(RESOURCE_DIR, "db");
-const APP_PNG_ICON_DIR = path.resolve(RESOURCE_DIR, "src/public/images/app-icons/png");
 
 if (!fs.existsSync(DB_INIT_DIR)) {
     log.error("Could not find DB initialization directory: " + DB_INIT_DIR);
@@ -25,6 +24,5 @@ module.exports = {
     RESOURCE_DIR,
     MIGRATIONS_DIR,
     DB_INIT_DIR,
-    ELECTRON_APP_ROOT_DIR,
-    APP_PNG_ICON_DIR
+    ELECTRON_APP_ROOT_DIR
 };

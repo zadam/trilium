@@ -1,7 +1,7 @@
 "use strict";
 
 const path = require('path');
-const {APP_PNG_ICON_DIR, ELECTRON_APP_ROOT_DIR} = require("./resource_dir");
+const {ELECTRON_APP_ROOT_DIR} = require("./resource_dir");
 const log = require("./log");
 const os = require('os');
 const fs = require('fs');
@@ -11,7 +11,7 @@ const utils = require('./utils');
 const template = `[Desktop Entry]
 Type=Application
 Name=Trilium Notes
-Icon=#APP_PNG_ICON_DIR#/128x128.png
+Icon=#APP_ROOT_DIR#/icon.png
 Exec=#EXE_PATH#
 Categories=Office
 Terminal=false
@@ -50,7 +50,7 @@ function installLocalAppIcon() {
 
 function getDesktopFileContent() {
     return template
-        .replace("#APP_PNG_ICON_DIR#", escapePath(APP_PNG_ICON_DIR))
+        .replace("#APP_ROOT_DIR#", escapePath(ELECTRON_APP_ROOT_DIR))
         .replace("#EXE_PATH#", escapePath(getExePath()));
 }
 
