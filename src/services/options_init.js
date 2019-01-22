@@ -49,6 +49,10 @@ async function initNotSyncedOptions(initialized, startNotePath = 'root', syncSer
     await optionService.createOption('syncServerTimeout', 5000, false);
     await optionService.createOption('syncProxy', syncProxy, false);
 
+    await optionService.createOption('mainFontSize', '100', false);
+    await optionService.createOption('treeFontSize', '100', false);
+    await optionService.createOption('detailFontSize', '110', false);
+
     await optionService.createOption('initialized', initialized ? 'true' : 'false', false);
 }
 
