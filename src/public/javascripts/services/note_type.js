@@ -110,35 +110,49 @@ function NoteTypeModel() {
         self.updateExecuteScriptButtonVisibility();
     }
 
-    this.selectText = function() {
+    function confirmChangeIfContent() {
+        if (noteDetailService.getCurrentNote().content && !confirm(
+            "It is not recommended to change note type when note content is not empty. Do you want to continue?")
+        ) {
+        return false;
+        }
+        return true;
+    }
+
+    this.selectText = async function() {
+        if (!(await confirmChangeIfContent())) { return; }
         self.type('text');
         self.mime('');
 
         save();
     };
 
-    this.selectRender = function() {
+    this.selectRender = async function() {
+        if (!(await confirmChangeIfContent())) { return; }
         self.type('render');
         self.mime('text/html');
 
         save();
     };
 
-    this.selectRelationMap = function() {
+    this.selectRelationMap = async function() {
+        if (!(await confirmChangeIfContent())) { return; }
         self.type('relation-map');
         self.mime('application/json');
 
         save();
     };
 
-    this.selectCode = function() {
+    this.selectCode = async function() {
+        if (!(await confirmChangeIfContent())) { return; }
         self.type('code');
         self.mime('');
 
         save();
     };
 
-    this.selectCodeMime = function(el) {
+    this.selectCodeMime = async function(el) {
+        if (!(await confirmChangeIfContent())) { return; }
         self.type('code');
         self.mime(el.mime);
 
