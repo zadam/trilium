@@ -61,8 +61,15 @@ function registerEntrypoints() {
         $("#history-back-button").click(window.history.back);
         $("#history-forward-button").click(window.history.forward);
 
-        utils.bindShortcut('alt+left', window.history.back);
-        utils.bindShortcut('alt+right', window.history.forward);
+        if (utils.isMac()) {
+            // Mac has a different history navigation shortcuts - https://github.com/zadam/trilium/issues/376
+            utils.bindShortcut('meta+left', window.history.back);
+            utils.bindShortcut('meta+right', window.history.forward);
+        }
+        else {
+            utils.bindShortcut('alt+left', window.history.back);
+            utils.bindShortcut('alt+right', window.history.forward);
+        }
     }
 
     utils.bindShortcut('alt+m', e => {
