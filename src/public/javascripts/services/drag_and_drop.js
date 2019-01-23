@@ -9,6 +9,14 @@ const dragAndDropSetup = {
             return false;
         }
 
+        if (!data.originalEvent.ctrlKey) {
+            // keep existing selection only if CTRL key is pressed
+            for (const selectedNode of treeService.getSelectedNodes()) {
+                selectedNode.setSelected(false);
+                selectedNode.renderTitle();
+            }
+        }
+
         node.setSelected(true);
 
         // this is for dragging notes into relation map

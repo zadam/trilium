@@ -258,13 +258,23 @@ span.fancytree-active.fancytree-focused .fancytree-title {
     background-color: var(--active-item-background-color) !important;
     border-color: #ddd !important;
     border-radius: 3px;
+    font-weight: bold;
 }
 
-span.fancytree-active:not(.fancytree-focused) .fancytree-title, span.fancytree-selected .fancytree-title {
+span.fancytree-active:not(.fancytree-focused) .fancytree-title {
     color: var(--hover-item-text-color) !important;
     background-color: var(--hover-item-background-color) !important;
     border-color: #ddd !important;
     border-radius: 3px;
+    font-weight: bold;
+}
+
+span.fancytree-selected:not(.fancytree-active) .fancytree-title {
+    color: var(--hover-item-text-color) !important;
+    background-color: var(--hover-item-background-color) !important;
+    border-color: #ddd !important;
+    border-radius: 3px;
+    font-style: italic;
 }
 
 span.fancytree-node:not(.fancytree-active):hover span.fancytree-title {
