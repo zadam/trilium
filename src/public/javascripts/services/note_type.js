@@ -2,6 +2,7 @@ import treeService from './tree.js';
 import noteDetailService from './note_detail.js';
 import server from './server.js';
 import infoService from "./info.js";
+import confirmDialog from "../dialogs/confirm.js";
 
 const $executeScriptButton = $("#execute-script-button");
 const $toggleEditButton = $('#toggle-edit-button');
@@ -111,16 +112,18 @@ function NoteTypeModel() {
     }
 
     function confirmChangeIfContent() {
-        if (noteDetailService.getCurrentNote().content && !confirm(
-            "It is not recommended to change note type when note content is not empty. Do you want to continue?")
-        ) {
-        return false;
+        if (!noteDetailService.getCurrentNoteContent()) {
+            return true;
         }
-        return true;
+
+        return confirmDialog.confirm("It is not recommended to change note type when note content is not empty. Do you want to continue anyway?");
     }
 
     this.selectText = async function() {
-        if (!(await confirmChangeIfContent())) { return; }
+        if (!await confirmChangeIfContent()) {
+            return;
+        }
+
         self.type('text');
         self.mime('');
 
@@ -128,7 +131,10 @@ function NoteTypeModel() {
     };
 
     this.selectRender = async function() {
-        if (!(await confirmChangeIfContent())) { return; }
+        if (!await confirmChangeIfContent()) {
+            return;
+        }
+
         self.type('render');
         self.mime('text/html');
 
@@ -136,7 +142,10 @@ function NoteTypeModel() {
     };
 
     this.selectRelationMap = async function() {
-        if (!(await confirmChangeIfContent())) { return; }
+        if (!await confirmChangeIfContent()) {
+            return;
+        }
+
         self.type('relation-map');
         self.mime('application/json');
 
@@ -144,7 +153,10 @@ function NoteTypeModel() {
     };
 
     this.selectCode = async function() {
-        if (!(await confirmChangeIfContent())) { return; }
+        if (!await confirmChangeIfContent()) {
+            return;
+        }
+
         self.type('code');
         self.mime('');
 
@@ -152,7 +164,10 @@ function NoteTypeModel() {
     };
 
     this.selectCodeMime = async function(el) {
-        if (!(await confirmChangeIfContent())) { return; }
+        if (!await confirmChangeIfContent()) {
+            return;
+        }
+
         self.type('code');
         self.mime(el.mime);
 
