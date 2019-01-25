@@ -74,11 +74,10 @@ async function exportToTar(branch, format, res) {
             return;
         }
 
-        const baseFileName = branch.prefix ? (branch.prefix + ' - ' + note.title) : note.title;
+        const baseFileName = sanitize(branch.prefix ? (branch.prefix + ' - ' + note.title) : note.title);
 
         if (note.noteId in noteIdToMeta) {
-            const sanitizedFileName = sanitize(baseFileName + ".clone");
-            const fileName = getUniqueFilename(existingFileNames, sanitizedFileName);
+            const fileName = getUniqueFilename(existingFileNames, baseFileName + ".clone");
 
             return {
                 isClone: true,
@@ -150,6 +149,10 @@ async function exportToTar(branch, format, res) {
 
     function prepareContent(note, format) {
         if (format === 'html') {
+            if (!note.content.toLowerCase().includes("<html")) {
+                note.content = '<html><head><meta charset="utf-8"></head><body>' + note.content + '</body></html>';
+            }
+
             return html.prettyPrint(note.content, {indent_size: 2});
         }
         else if (format === 'markdown') {

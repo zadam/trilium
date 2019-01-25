@@ -20,6 +20,10 @@ async function exportSingleNote(branch, format, res) {
 
     if (note.type === 'text') {
         if (format === 'html') {
+            if (!note.content.toLowerCase().includes("<html")) {
+                note.content = '<html><head><meta charset="utf-8"></head><body>' + note.content + '</body></html>';
+            }
+
             payload = html.prettyPrint(note.content, {indent_size: 2});
             extension = 'html';
             mime = 'text/html';
