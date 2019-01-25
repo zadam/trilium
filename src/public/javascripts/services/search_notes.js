@@ -76,6 +76,15 @@ async function saveSearch() {
     await treeService.activateNote(noteId);
 }
 
+function init() {
+    const hashValue = treeService.getHashValueFromAddress();
+
+    if (hashValue.startsWith("search=")) {
+        showSearch();
+        doSearch(hashValue.substr(7));
+    }
+}
+
 $searchInput.keyup(e => {
     const searchText = $searchInput.val();
 
@@ -100,5 +109,6 @@ export default {
     toggleSearch,
     resetSearch,
     showSearch,
-    doSearch
+    doSearch,
+    init
 };

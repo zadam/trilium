@@ -483,16 +483,20 @@ async function reload() {
     await getTree().reload(notes);
 }
 
-function getNotePathFromAddress() {
-    return document.location.hash.substr(1); // strip initial #
+function isNotePathInAddress() {
+    return getHashValueFromAddress().startsWith("root");
+}
+
+function getHashValueFromAddress() {
+    return document.location.hash ? document.location.hash.substr(1) : ""; // strip initial #
 }
 
 async function loadTree() {
     const resp = await server.get('tree');
     startNotePath = resp.startNotePath;
 
-    if (document.location.hash) {
-        startNotePath = getNotePathFromAddress();
+    if (isNotePathInAddress()) {
+        startNotePath = getHashValueFromAddress();
     }
 
     return await treeBuilder.prepareTree(resp.notes, resp.branches, resp.relations);
@@ -707,12 +711,14 @@ utils.bindShortcut('ctrl+p', createNoteInto);
 utils.bindShortcut('ctrl+.', scrollToCurrentNote);
 
 $(window).bind('hashchange', function() {
-    const notePath = getNotePathFromAddress();
+    if (isNotePathInAddress()) {
+        const notePath = getHashValueFromAddress();
 
-    if (notePath !== '-' && getCurrentNotePath() !== notePath) {
-        console.debug("Switching to " + notePath + " because of hash change");
+        if (notePath !== '-' && getCurrentNotePath() !== notePath) {
+            console.debug("Switching to " + notePath + " because of hash change");
 
-        activateNote(notePath);
+            activateNote(notePath);
+        }
     }
 });
 
@@ -745,5 +751,6 @@ export default {
     showTree,
     loadTree,
     treeInitialized,
-    setExpandedToServer
+    setExpandedToServer,
+    getHashValueFromAddress
 };
