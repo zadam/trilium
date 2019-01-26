@@ -20,6 +20,12 @@ const messagingService = require('./services/messaging');
 const utils = require('./services/utils');
 const sqlInit = require('./services/sql_init');
 const port = require('./services/port');
+const semver = require('semver');
+
+if (!semver.satisfies(process.version, ">=10.5.0")) {
+    console.error("Trilium only supports node.js 10.5 and later");
+    process.exit(1);
+}
 
 let httpServer;
 
