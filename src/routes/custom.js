@@ -12,32 +12,39 @@ function register(router) {
 
         for (const attr of attrs) {
             const regex = new RegExp(attr.value);
+            let match;
 
             try {
-                const m = path.match(regex);
-
-                if (m) {
-                    if (attr.name === 'customRequestHandler') {
-                        const note = await attr.getNote();
-
-                        log.info(`Handling custom request "${path}" with note ${note.noteId}`);
-
-                        await scriptService.executeNote(note, {
-                            pathParams: m.slice(1),
-                            req,
-                            res
-                        });
-                    }
-                    else if (attr.name === 'customResourceProvider') {
-                        await fileUploadService.downloadNoteFile(attr.noteId, res);
-                    }
-
-                    return;
-                }
+                match = path.match(regex);
             }
             catch (e) {
                 log.error(`Testing path for label ${attr.attributeId}, regex=${attr.value} failed with error ` + e.stack);
+                continue;
             }
+
+            if (!match) {
+                continue;
+            }
+
+            if (attr.name === 'customRequestHandler') {
+                const note = await attr.getNote();
+
+                log.info(`Handling custom request "${path}" with note ${note.noteId}`);
+
+                await scriptService.executeNote(note, {
+                    pathParams: match.slice(1),
+                    req,
+                    res
+                });
+            }
+            else if (attr.name === 'customResourceProvider') {
+                await fileUploadService.downloadNoteFile(attr.noteId, res);
+            }
+            else {
+                throw new Error("Unrecognized attribute name " + attr.name);
+            }
+
+            return; // only first handler is executed
         }
 
         const message = `No handler matched for custom ${path} request.`;
