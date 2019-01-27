@@ -5,6 +5,7 @@ import noteDetailService from "./note_detail.js";
 
 const $component = $('#note-detail-file');
 
+const $fileNoteId = $("#file-note-id");
 const $fileName = $("#file-filename");
 const $fileType = $("#file-filetype");
 const $fileSize = $("#file-filesize");
@@ -21,6 +22,7 @@ async function show() {
 
     $component.show();
 
+    $fileNoteId.text(currentNote.noteId);
     $fileName.text(attributeMap.originalFileName || "?");
     $fileSize.text((attributeMap.fileSize || "?") + " bytes");
     $fileType.text(currentNote.mime);
