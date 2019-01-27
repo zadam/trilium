@@ -157,7 +157,7 @@ ul.fancytree-container {
 
 /* this is done to preserve correct indentation. Better solution would be preferable */
 .fancytree-node:not(.fancytree-folder) .fancytree-expander:before {
-    color: white;
+    color: var(--main-background-color); /* setting to background color makes this invisible */
 }
 
 .fancytree-node.fancytree-expanded .fancytree-expander:before {
