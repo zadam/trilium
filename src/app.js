@@ -63,6 +63,8 @@ app.use(favicon(__dirname + '/public/images/app-icons/win/icon.ico'));
 
 require('./routes/routes').register(app);
 
+require('./routes/custom').register(app);
+
 // catch 404 and forward to error handler
 app.use((req, res, next) => {
     const err = new Error('Router not found for request ' + req.url);

@@ -5,33 +5,33 @@ const cls = require('./cls');
 const sourceIdService = require('./source_id');
 const log = require('./log');
 
-async function executeNote(note, originEntity) {
+async function executeNote(note, apiParams) {
     if (!note.isJavaScript() || note.getScriptEnv() !== 'backend' || !note.isContentAvailable) {
         return;
     }
 
     const bundle = await getScriptBundle(note);
 
-    await executeBundle(bundle, note, originEntity);
+    await executeBundle(bundle, apiParams);
 }
 
-async function executeBundle(bundle, startNote, originEntity = null) {
-    if (!startNote) {
+async function executeBundle(bundle, apiParams = {}) {
+    if (!apiParams.startNote) {
         // this is the default case, the only exception is when we want to preserve frontend startNote
-        startNote = bundle.note;
+        apiParams.startNote = bundle.note;
     }
 
     // last \r\n is necessary if script contains line comment on its last line
     const script = "async function() {\r\n" + bundle.script + "\r\n}";
 
-    const ctx = new ScriptContext(startNote, bundle.allNotes, originEntity);
+    const ctx = new ScriptContext(bundle.allNotes, apiParams);
 
     try {
         if (await bundle.note.hasLabel('manualTransactionHandling')) {
-            return await execute(ctx, script, '');
+            return await execute(ctx, script);
         }
         else {
-            return await sql.transactional(async () => await execute(ctx, script, ''));
+            return await sql.transactional(async () => await execute(ctx, script));
         }
     }
     catch (e) {
@@ -57,11 +57,11 @@ async function executeScript(script, params, startNoteId, currentNoteId, originE
     return await executeBundle(bundle, startNote, originEntity);
 }
 
-async function execute(ctx, script, paramsStr) {
+async function execute(ctx, script, params = []) {
     // scripts run as "server" sourceId so clients recognize the changes as "foreign" and update themselves
     cls.namespace.set('sourceId', sourceIdService.getCurrentSourceId());
 
-    return await (function() { return eval(`const apiContext = this;\r\n(${script}\r\n)(${paramsStr})`); }.call(ctx));
+    return await (function() { return eval(`const apiContext = this;\r\n(${script}\r\n)()`); }.call(ctx));
 }
 
 function getParams(params) {

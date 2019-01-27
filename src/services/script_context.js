@@ -1,10 +1,10 @@
 const utils = require('./utils');
 const BackendScriptApi = require('./backend_script_api');
 
-function ScriptContext(startNote, allNotes, originEntity = null) {
+function ScriptContext(allNotes, apiParams = {}) {
     this.modules = {};
     this.notes = utils.toObject(allNotes, note => [note.noteId, note]);
-    this.apis = utils.toObject(allNotes, note => [note.noteId, new BackendScriptApi(startNote, note, originEntity)]);
+    this.apis = utils.toObject(allNotes, note => [note.noteId, new BackendScriptApi(note, apiParams)]);
     this.require = moduleNoteIds => {
         return moduleName => {
             const candidates = allNotes.filter(note => moduleNoteIds.includes(note.noteId));

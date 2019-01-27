@@ -19,7 +19,7 @@ async function exec(req) {
 async function run(req) {
     const note = await repository.getNote(req.params.noteId);
 
-    const result = await scriptService.executeNote(note, note);
+    const result = await scriptService.executeNote(note, { originEntity: note });
 
     return { executionResult: result };
 }

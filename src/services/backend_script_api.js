@@ -19,13 +19,17 @@ const appInfo = require('./app_info');
  * @constructor
  * @hideconstructor
  */
-function BackendScriptApi(startNote, currentNote, originEntity) {
+function BackendScriptApi(currentNote, apiParams) {
     /** @property {Note} note where script started executing */
-    this.startNote = startNote;
+    this.startNote = apiParams.startNote;
     /** @property {Note} note where script is currently executing */
     this.currentNote = currentNote;
     /** @property {Entity} entity whose event triggered this executions */
-    this.originEntity = originEntity;
+    this.originEntity = apiParams.originEntity;
+
+    for (const key in apiParams) {
+        this[key] = apiParams[key];
+    }
 
     this.axios = axios;
 

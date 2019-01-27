@@ -12,7 +12,7 @@ async function runAttachedRelations(note, relationName, originEntity) {
         const scriptNote = await relation.getTargetNote();
 
         if (scriptNote) {
-            await scriptService.executeNote(scriptNote, originEntity);
+            await scriptService.executeNote(scriptNote, { originEntity });
         }
         else {
             log.error(`Target note ${relation.value} of atttribute ${relation.attributeId} has not been found.`);
