@@ -22,22 +22,13 @@ async function index(req, res) {
         sourceId: await sourceIdService.generateSourceId(),
         maxSyncIdAtLoad: await sql.getValue("SELECT MAX(id) FROM sync"),
         instanceName: config.General ? config.General.instanceName : null,
-        appCss: await getAppCss()
+        appCssNoteIds: await getAppCssNoteIds()
     });
 }
 
-async function getAppCss() {
-    let css = '';
-    const notes = attributeService.getNotesWithLabel('appCss');
-
-    for (const note of await notes) {
-        css += `/* ${note.noteId} */
-${note.content}
-
-`;
-    }
-
-    return css;
+async function getAppCssNoteIds() {
+    return (await attributeService.getNotesWithLabels(['appCss', 'appTheme']))
+        .map(note => note.noteId);
 }
 
 module.exports = {

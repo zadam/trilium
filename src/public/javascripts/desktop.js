@@ -37,6 +37,7 @@ import noteTypeService from './services/note_type.js';
 import linkService from './services/link.js';
 import noteAutocompleteService from './services/note_autocomplete.js';
 import macInit from './services/mac_init.js';
+import cssLoader from './services/css_loader.js';
 
 // required for CKEditor image upload plugin
 window.glob.getCurrentNode = treeService.getCurrentNode;
@@ -78,6 +79,10 @@ window.onerror = function (msg, url, lineNo, columnNo, error) {
 
     return false;
 };
+
+for (const appCssNoteId of window.appCssNoteIds) {
+    cssLoader.requireCss(`/api/notes/${appCssNoteId}/download`);
+}
 
 const wikiBaseUrl = "https://github.com/zadam/trilium/wiki/";
 

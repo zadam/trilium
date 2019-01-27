@@ -1,3 +1,5 @@
+import cssLoader from './css_loader.js';
+
 const CKEDITOR = {"js": ["libraries/ckeditor/ckeditor.js"]};
 
 const CODE_MIRROR = {
@@ -34,7 +36,7 @@ const RELATION_MAP = {
 
 async function requireLibrary(library) {
     if (library.css) {
-        library.css.map(cssUrl => requireCss(cssUrl));
+        library.css.map(cssUrl => cssLoader.requireCss(cssUrl));
     }
 
     if (library.js) {
@@ -57,16 +59,6 @@ async function requireScript(url) {
     }
 
     await loadedScriptPromises[url];
-}
-
-async function requireCss(url) {
-    const css = Array
-        .from(document.querySelectorAll('link'))
-        .map(scr => scr.href);
-
-    if (!css.includes(url)) {
-        $('head').append($('<link rel="stylesheet" type="text/css" />').attr('href', url));
-    }
 }
 
 export default {

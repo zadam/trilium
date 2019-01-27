@@ -212,6 +212,7 @@
         maxSyncIdAtLoad: <%= maxSyncIdAtLoad %>,
         instanceName: '<%= instanceName %>'
     };
+    window.appCssNoteIds = <%- JSON.stringify(appCssNoteIds) %>;
 </script>
 
 <!-- Required for correct loading of scripts in Electron -->
@@ -247,9 +248,5 @@
     // final form which is pretty ugly.
     $("#container").show();
 </script>
-
-<style type="text/css">
-    <%= appCss %>
-</style>
 </body>
 </html>

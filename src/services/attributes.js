@@ -44,6 +44,13 @@ async function getNotesWithLabel(name, value) {
           WHERE notes.isDeleted = 0 AND attributes.isDeleted = 0 AND attributes.name = ? ${valueCondition} ORDER BY position`, params);
 }
 
+async function getNotesWithLabels(names) {
+    const questionMarks = names.map(() => "?").join(", ");
+
+    return await repository.getEntities(`SELECT notes.* FROM notes JOIN attributes USING(noteId) 
+          WHERE notes.isDeleted = 0 AND attributes.isDeleted = 0 AND attributes.name IN (${questionMarks}) ORDER BY position`, names);
+}
+
 async function getNoteWithLabel(name, value) {
     const notes = await getNotesWithLabel(name, value);
 
@@ -86,6 +93,7 @@ async function getAttributeNames(type, nameLike) {
 
 module.exports = {
     getNotesWithLabel,
+    getNotesWithLabels,
     getNoteWithLabel,
     createLabel,
     createAttribute,
