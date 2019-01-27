@@ -81,7 +81,7 @@ window.onerror = function (msg, url, lineNo, columnNo, error) {
 };
 
 for (const appCssNoteId of window.appCssNoteIds) {
-    cssLoader.requireCss(`/api/notes/${appCssNoteId}/download`);
+    cssLoader.requireCss(`/api/notes/download/${appCssNoteId}`);
 }
 
 const wikiBaseUrl = "https://github.com/zadam/trilium/wiki/";

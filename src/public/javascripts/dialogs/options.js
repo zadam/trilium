@@ -98,7 +98,7 @@ addTabHandler((function() {
         if (noteId) {
             // make sure the CSS is loaded
             // if the CSS has been loaded and then updated then the changes won't take effect though
-            cssLoader.requireCss(`/api/notes/${noteId}/download`);
+            cssLoader.requireCss(`/api/notes/download/${noteId}`);
         }
 
         $body.addClass("theme-" + newTheme);
