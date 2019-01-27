@@ -1,6 +1,7 @@
 import libraryLoader from "./library_loader.js";
 import noteDetailService from './note_detail.js';
 import treeService from './tree.js';
+import attributeService from "./attributes.js";
 
 const $component = $('#note-detail-text');
 
@@ -19,6 +20,8 @@ async function show() {
         }
     }
 
+    textEditor.isReadOnly = await isReadOnly();
+
     textEditor.setData(noteDetailService.getCurrentNote().content);
 
     $component.show();
@@ -34,6 +37,12 @@ function getContent() {
     }
 
     return content;
+}
+
+async function isReadOnly() {
+    const attributes = await attributeService.getAttributes();
+
+    return attributes.some(attr => attr.type === 'label' && attr.name === 'readOnly');
 }
 
 function focus() {
