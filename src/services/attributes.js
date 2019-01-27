@@ -15,6 +15,7 @@ const BUILTIN_ATTRIBUTES = [
     { type: 'label', name: 'manualTransactionHandling' },
     { type: 'label', name: 'disableInclusion' },
     { type: 'label', name: 'appCss' },
+    { type: 'label', name: 'appTheme' },
     { type: 'label', name: 'hideChildrenOverview' },
     { type: 'label', name: 'hidePromotedAttributes' },
     { type: 'label', name: 'readOnly' },

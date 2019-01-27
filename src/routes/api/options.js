@@ -1,8 +1,8 @@
 "use strict";
 
-const sql = require('../../services/sql');
 const optionService = require('../../services/options');
 const log = require('../../services/log');
+const attributes = require('../../services/attributes');
 
 // options allowed to be updated directly in options dialog
 const ALLOWED_OPTIONS = ['protectedSessionTimeout', 'noteRevisionSnapshotTimeInterval',
@@ -42,8 +42,20 @@ async function update(name, value) {
     return true;
 }
 
+async function getUserThemes() {
+    return (await attributes.getNotesWithLabel('appTheme'))
+        .map(note => {
+            return {
+                val: note.title,
+                title: note.title,
+                noteId: note.noteId
+            };
+        });
+}
+
 module.exports = {
     getOptions,
     updateOption,
-    updateOptions
+    updateOptions,
+    getUserThemes
 };

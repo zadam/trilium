@@ -5,6 +5,7 @@ import server from '../services/server.js';
 import infoService from "../services/info.js";
 import zoomService from "../services/zoom.js";
 import utils from "../services/utils.js";
+import cssLoader from "../services/css_loader.js";
 
 const $dialog = $("#options-dialog");
 
@@ -50,7 +51,22 @@ addTabHandler((function() {
     const $body = $("body");
     const $container = $("#container");
 
-    function optionsLoaded(options) {
+    async function optionsLoaded(options) {
+        const themes = [
+            { val: 'white', title: 'White' },
+            { val: 'dark', title: 'Dark' },
+            { val: 'black', title: 'Black' }
+        ].concat(await server.get('options/user-themes'));
+
+        $themeSelect.empty();
+
+        for (const theme of themes) {
+            $themeSelect.append($("<option>")
+                .attr("value", theme.val)
+                .attr("data-note-id", theme.noteId)
+                .html(theme.title));
+        }
+
         $themeSelect.val(options.theme);
 
         if (utils.isElectron()) {
@@ -75,6 +91,14 @@ addTabHandler((function() {
             if (clazz.startsWith("theme-")) {
                 $body.removeClass(clazz);
             }
+        }
+
+        const noteId = $(this).find(":selected").attr("data-note-id");
+
+        if (noteId) {
+            // make sure the CSS is loaded
+            // if the CSS has been loaded and then updated then the changes won't take effect though
+            cssLoader.requireCss(`/api/notes/${noteId}/download`);
         }
 
         $body.addClass("theme-" + newTheme);

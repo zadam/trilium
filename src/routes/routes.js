@@ -153,6 +153,7 @@ function register(app) {
     apiRoute(GET, '/api/options', optionsApiRoute.getOptions);
     apiRoute(PUT, '/api/options/:name/:value*', optionsApiRoute.updateOption);
     apiRoute(PUT, '/api/options', optionsApiRoute.updateOptions);
+    apiRoute(GET, '/api/options/user-themes', optionsApiRoute.getUserThemes);
 
     apiRoute(POST, '/api/password/change', passwordApiRoute.changePassword);
 
