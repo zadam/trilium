@@ -489,9 +489,8 @@ div.ui-tooltip {
     overflow: auto;
 }
 
-.child-overview {
+.child-overview-item {
     font-weight: bold;
-    font-size: larger;
     padding: 10px;
     background: var(--accented-background-color);
     width: 150px;
@@ -506,7 +505,7 @@ div.ui-tooltip {
     word-wrap: break-word;
 }
 
-.child-overview a {
+.child-overview-item a {
     color: var(--muted-text-color);
 }
 

@@ -270,7 +270,7 @@ async function showChildrenOverview() {
             text: await treeUtils.getNoteTitle(childBranch.noteId, childBranch.parentNoteId)
         }).attr('data-action', 'note').attr('data-note-path', notePath + '/' + childBranch.noteId);
 
-        const childEl = $('<div class="child-overview">').html(link);
+        const childEl = $('<div class="child-overview-item">').html(link);
         $childrenOverview.append(childEl);
     }
 
