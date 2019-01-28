@@ -172,6 +172,21 @@ function setCookie(name, value) {
     document.cookie = name + "=" + (value || "")  + expires + "; path=/";
 }
 
+function getNoteTypeClass(type) {
+    return "type-" + type;
+}
+
+function getMimeTypeClass(mime) {
+    const semicolonIdx = mime.indexOf(';');
+
+    if (semicolonIdx !== -1) {
+        // stripping everything following the semicolon
+        mime = mime.substr(0, semicolonIdx);
+    }
+
+    return 'mime-' + mime.toLowerCase().replace(/[\W_]+/g,"-");
+}
+
 export default {
     reloadApp,
     parseDate,
@@ -198,5 +213,7 @@ export default {
     bindShortcut,
     isMobile,
     isDesktop,
-    setCookie
+    setCookie,
+    getNoteTypeClass,
+    getMimeTypeClass
 };

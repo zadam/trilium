@@ -87,7 +87,7 @@ addTabHandler((function() {
     $themeSelect.change(function() {
         const newTheme = $(this).val();
 
-        for (const clazz of $body[0].classList) {
+        for (const clazz of Array.from($body[0].classList)) { // create copy to safely iterate over while removing classes
             if (clazz.startsWith("theme-")) {
                 $body.removeClass(clazz);
             }

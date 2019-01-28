@@ -125,7 +125,7 @@ async function protectNoteAndSendToServer() {
 
     treeService.setProtected(note.noteId, note.isProtected);
 
-    noteDetailService.setNoteBackgroundIfProtected(note);
+    noteDetailService.updateNoteView();
 }
 
 async function unprotectNoteAndSendToServer() {
@@ -152,7 +152,7 @@ async function unprotectNoteAndSendToServer() {
 
     treeService.setProtected(currentNote.noteId, currentNote.isProtected);
 
-    noteDetailService.setNoteBackgroundIfProtected(currentNote);
+    noteDetailService.updateNoteView();
 }
 
 async function protectSubtree(noteId, protect) {

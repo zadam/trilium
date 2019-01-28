@@ -166,24 +166,13 @@ async function getExtraClasses(note) {
         extraClasses.push(note.cssClass);
     }
 
-    extraClasses.push(note.type);
+    extraClasses.push(utils.getNoteTypeClass(note.type));
 
     if (note.mime) { // some notes should not have mime type (e.g. render)
-        extraClasses.push(getMimeTypeClass(note.mime));
+        extraClasses.push(utils.getMimeTypeClass(note.mime));
     }
 
     return extraClasses.join(" ");
-}
-
-function getMimeTypeClass(mime) {
-    const semicolonIdx = mime.indexOf(';');
-
-    if (semicolonIdx !== -1) {
-        // stripping everything following the semicolon
-        mime = mime.substr(0, semicolonIdx);
-    }
-
-    return 'mime-' + mime.toLowerCase().replace(/[\W_]+/g,"-");
 }
 
 export default {

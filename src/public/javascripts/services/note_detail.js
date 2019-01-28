@@ -30,6 +30,7 @@ const $noteIdDisplay = $("#note-id-display");
 const $childrenOverview = $("#children-overview");
 const $scriptArea = $("#note-detail-script-area");
 const $savedIndicator = $("#saved-indicator");
+const $body = $("body");
 
 let currentNote = null;
 
@@ -145,12 +146,21 @@ async function saveNoteIfChanged() {
     $savedIndicator.fadeIn();
 }
 
-function setNoteBackgroundIfProtected(note) {
-    $noteDetailWrapper.toggleClass("protected", note.isProtected);
-    $protectButton.toggleClass("active", note.isProtected);
-    $protectButton.prop("disabled", note.isProtected);
-    $unprotectButton.toggleClass("active", !note.isProtected);
-    $unprotectButton.prop("disabled", !note.isProtected || !protectedSessionHolder.isProtectedSessionAvailable());
+function updateNoteView() {
+    $noteDetailWrapper.toggleClass("protected", currentNote.isProtected);
+    $protectButton.toggleClass("active", currentNote.isProtected);
+    $protectButton.prop("disabled", currentNote.isProtected);
+    $unprotectButton.toggleClass("active", !currentNote.isProtected);
+    $unprotectButton.prop("disabled", !currentNote.isProtected || !protectedSessionHolder.isProtectedSessionAvailable());
+
+    for (const clazz of Array.from($body[0].classList)) { // create copy to safely iterate over while removing classes
+        if (clazz.startsWith("type-") || clazz.startsWith("mime-")) {
+            $body.removeClass(clazz);
+        }
+    }
+
+    $body.addClass(utils.getNoteTypeClass(currentNote.type));
+    $body.addClass(utils.getMimeTypeClass(currentNote.mime));
 }
 
 async function handleProtectedSession() {
@@ -193,7 +203,7 @@ async function loadNoteDetail(noteId) {
 
     $noteIdDisplay.html(noteId);
 
-    setNoteBackgroundIfProtected(currentNote);
+    updateNoteView();
 
     $noteDetailWrapper.show();
 
@@ -344,7 +354,7 @@ setInterval(saveNoteIfChanged, 3000);
 export default {
     reload,
     switchToNote,
-    setNoteBackgroundIfProtected,
+    updateNoteView,
     loadNote,
     getCurrentNote,
     getCurrentNoteType,

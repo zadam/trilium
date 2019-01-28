@@ -125,7 +125,7 @@ function NoteTypeModel() {
         }
 
         self.type('text');
-        self.mime('');
+        self.mime('text/html');
 
         save();
     };
@@ -158,7 +158,7 @@ function NoteTypeModel() {
         }
 
         self.type('code');
-        self.mime('');
+        self.mime('text/plain');
 
         save();
     };
