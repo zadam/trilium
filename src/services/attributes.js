@@ -19,6 +19,8 @@ const BUILTIN_ATTRIBUTES = [
     { type: 'label', name: 'hideChildrenOverview' },
     { type: 'label', name: 'hidePromotedAttributes' },
     { type: 'label', name: 'readOnly' },
+    { type: 'label', name: 'customRequestHandler' },
+    { type: 'label', name: 'customResourceProvider' },
 
     // relation names
     { type: 'relation', name: 'runOnNoteView' },
