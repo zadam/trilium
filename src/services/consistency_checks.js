@@ -17,7 +17,7 @@ async function findIssues(query, errorCb) {
     const results = await sql.getRows(query);
 
     for (const res of results) {
-        logError("Consistency error: " + errorCb(res));
+        logError(errorCb(res));
 
         outstandingConsistencyErrors = true;
     }
@@ -120,56 +120,72 @@ async function runSyncRowChecks(entityName, key) {
     });
 }
 
-async function fixEmptyRelationTargets() {
-    const emptyRelations = await repository.getEntities("SELECT * FROM attributes WHERE isDeleted = 0 AND type = 'relation' AND value = ''");
+async function findBrokenReferenceIssues() {
+    await findIssues(`
+          SELECT branchId, branches.noteId
+          FROM branches LEFT JOIN notes USING(noteId)
+          WHERE notes.noteId IS NULL`,
+        ({branchId, noteId}) => `Branch ${branchId} references missing note ${noteId}`);
 
-    for (const relation of emptyRelations) {
-        relation.isDeleted = true;
-        await relation.save();
+    await findIssues(`
+          SELECT branchId, branches.noteId AS parentNoteId
+          FROM branches LEFT JOIN notes ON notes.noteId = branches.parentNoteId
+          WHERE branches.branchId != 'root' AND notes.noteId IS NULL`,
+        ({branchId, noteId}) => `Branch ${branchId} references missing parent note ${noteId}`);
 
-        logFix(`Removed relation ${relation.attributeId} of name "${relation.name} with empty target.`);
-        fixedIssues = true;
-    }
+    await findIssues(`
+          SELECT attributeId, attributes.noteId
+          FROM attributes LEFT JOIN notes USING(noteId)
+          WHERE notes.noteId IS NULL`,
+        ({attributeId, noteId}) => `Attribute ${attributeId} references missing source note ${noteId}`);
+
+    // empty targetNoteId for relations is a special fixable case so not covered here
+    await findIssues(`
+          SELECT attributeId, attributes.noteId
+          FROM attributes LEFT JOIN notes ON notes.noteId = attributes.value
+          WHERE attributes.type = 'relation' AND attributes.value != '' AND notes.noteId IS NULL`,
+        ({attributeId, noteId}) => `Relation ${attributeId} references missing note ${noteId}`);
+
+    await findIssues(`
+          SELECT linkId, links.noteId
+          FROM links LEFT JOIN notes USING(noteId)
+          WHERE notes.noteId IS NULL`,
+        ({linkId, noteId}) => `Link ${linkId} references missing source note ${noteId}`);
+
+    await findIssues(`
+          SELECT linkId, links.noteId
+          FROM links LEFT JOIN notes ON notes.noteId = links.targetNoteId
+          WHERE notes.noteId IS NULL`,
+        ({linkId, noteId}) => `Link ${linkId} references missing target note ${noteId}`);
+
+    await findIssues(`
+          SELECT noteRevisionId, note_revisions.noteId
+          FROM note_revisions LEFT JOIN notes USING(noteId)
+          WHERE notes.noteId IS NULL`,
+        ({noteRevisionId, noteId}) => `Note revision ${noteRevisionId} references missing note ${noteId}`);
 }
 
-async function runAllChecks() {
-    outstandingConsistencyErrors = false;
+async function findAndFixExistencyIssues() {
+    // principle for fixing inconsistencies is that if the note itself is deleted (isDeleted=true) then all related entities should be also deleted (branches, links, attributes)
+    // but if note is not deleted, then at least one branch should exist.
 
     await findAndFixIssues(`
-          SELECT
-            noteId
-          FROM
-            notes
-            LEFT JOIN branches USING(noteId)
-          WHERE
-            noteId != 'root'
-            AND branches.branchId IS NULL`,
-        async ({noteId}) => {
-            const branch = await new Branch({
-                parentNoteId: 'root',
-                noteId: noteId,
-                prefix: 'recovered'
-            }).save();
+      SELECT
+        DISTINCT noteId
+      FROM
+        notes
+      WHERE
+          (SELECT COUNT(*) FROM branches WHERE notes.noteId = branches.noteId AND branches.isDeleted = 0) = 0
+        AND notes.isDeleted = 0
+    `, async ({noteId}) => {
+        const branch = await new Branch({
+            parentNoteId: 'root',
+            noteId: noteId,
+            prefix: 'recovered'
+        }).save();
 
-            logFix(`Created missing branch ${branch.branchId} for note ${noteId}`);
-        });
-
-    await findAndFixIssues(`
-          SELECT
-            branchId,
-            branches.noteId
-          FROM
-            branches
-            LEFT JOIN notes USING(noteId)
-          WHERE
-            notes.noteId IS NULL`,
-        async ({branchId, noteId}) => {
-            const branch = await repository.getBranch(branchId);
-            branch.isDeleted = true;
-            await branch.save();
-
-            logFix(`Removed branch ${branchId} because it pointed to the missing note ${noteId}`);
-        });
+        logFix(`Created missing branch ${branch.branchId} for note ${noteId}`);
+    });
 
     await findAndFixIssues(`
           SELECT
@@ -188,36 +204,7 @@ async function runAllChecks() {
             logFix(`Branch ${branchId} has been deleted since associated note ${noteId} is deleted.`);
         });
 
-    // we do extra JOIN to eliminate orphan notes without branches (which are reported separately)
-    await findAndFixIssues(`
-      SELECT
-        DISTINCT noteId
-      FROM
-        notes
-        JOIN branches USING(noteId)
-      WHERE
-          (SELECT COUNT(*) FROM branches WHERE notes.noteId = branches.noteId AND branches.isDeleted = 0) = 0
-        AND notes.isDeleted = 0
-    `, async ({noteId}) => {
-        const branch = await new Branch({
-            parentNoteId: 'root',
-            noteId: noteId,
-            prefix: 'recovered'
-        }).save();
-
-        logFix(`Created missing branch ${branch.branchId} for note ${noteId}`);
-    });
-
-    await findIssues(`
-          SELECT 
-            note_revisions.noteId,
-            noteRevisionId
-          FROM 
-            note_revisions LEFT JOIN notes USING(noteId) 
-          WHERE 
-            notes.noteId IS NULL`,
-        ({noteId, noteRevisionId}) => `Missing note ${noteId} for note revision ${noteRevisionId}`);
-
+    // there should be a unique relationship between note and its parent
     await findAndFixIssues(`
           SELECT
             noteId, parentNoteId
@@ -244,36 +231,31 @@ async function runAllChecks() {
                 logFix(`Removing branch ${branch.branchId} since it's parent-child duplicate of branch ${origBranch.branchId}`);
             }
         });
+}
+
+async function runAllChecks() {
+    outstandingConsistencyErrors = false;
+
+    await findBrokenReferenceIssues();
+
+    await findAndFixExistencyIssues();
 
     await findIssues( `
-          SELECT 
-            noteId,
-            type
-          FROM 
-            notes
-          WHERE 
-            type != 'text' 
-            AND type != 'code' 
-            AND type != 'render' 
-            AND type != 'file' 
-            AND type != 'image' 
-            AND type != 'search' 
-            AND type != 'relation-map'`,
+          SELECT noteId, type 
+          FROM notes 
+          WHERE type NOT IN ('text', 'code', 'render', 'file', 'image', 'search', 'relation-map')`,
         ({noteId, type}) => `Note ${noteId} has invalid type=${type}`);
 
     await findIssues(`
-          SELECT
-            noteId
-          FROM
-            notes
+          SELECT noteId
+          FROM notes
           WHERE
             isDeleted = 0
             AND content IS NULL`,
         ({noteId}) => `Note ${noteId} content is null even though it is not deleted`);
 
     await findIssues(`
-          SELECT 
-            parentNoteId
+          SELECT parentNoteId
           FROM 
             branches
             JOIN notes ON notes.noteId = branches.parentNoteId
@@ -281,14 +263,26 @@ async function runAllChecks() {
             type == 'search'`,
         ({parentNoteId}) => `Search note ${parentNoteId} has children`);
 
-    await fixEmptyRelationTargets();
+    await findAndFixIssues(`
+          SELECT attributeId 
+          FROM attributes 
+          WHERE 
+            isDeleted = 0 
+            AND type = 'relation' 
+            AND value = ''`,
+            async ({attributeId}) => {
+                const relation = await repository.getAttribute(attributeId);
+                relation.isDeleted = true;
+                await relation.save();
+
+                logFix(`Removed relation ${relation.attributeId} of name "${relation.name} with empty target.`);
+            });
 
     await findIssues(`
           SELECT 
             attributeId,
             type
-          FROM 
-            attributes
+          FROM attributes
           WHERE 
             type != 'label' 
             AND type != 'label-definition' 
@@ -326,52 +320,66 @@ async function runAllChecks() {
             logFix(`Removed attribute ${attributeId} because owning note ${noteId} is also deleted.`);
         });
 
-    await findIssues(`
+    await findAndFixIssues(`
           SELECT
             attributeId,
-            value as targetNoteId
+            attributes.value AS targetNoteId
           FROM
             attributes
-            LEFT JOIN notes AS targetNote ON attributes.value = targetNote.noteId AND targetNote.isDeleted = 0
+            JOIN notes ON attributes.value = notes.noteId
           WHERE
             attributes.type = 'relation'
-            AND targetNote.noteId IS NULL`,
-        ({attributeId, targetNoteId}) => `Relation ${attributeId} reference to the target note ${targetNoteId} is broken`);
+            AND attributes.isDeleted = 0
+            AND notes.isDeleted = 1`,
+        async ({attributeId, targetNoteId}) => {
+            const attribute = await repository.getAttribute(attributeId);
+            attribute.isDeleted = true;
+            await attribute.save();
+
+            logFix(`Removed attribute ${attributeId} because target note ${targetNoteId} is also deleted.`);
+        });
 
     await findIssues(`
-          SELECT 
-            linkId
-          FROM 
-            links
-          WHERE 
-            type != 'image'
-            AND type != 'hyper'
-            AND type != 'relation-map'`,
+          SELECT linkId
+          FROM links
+          WHERE type NOT IN ('image', 'hyper', 'relation-map')`,
         ({linkId, type}) => `Link ${linkId} has invalid type '${type}'`);
 
     await findIssues(`
+          SELECT
+            linkId,
+            links.noteId AS sourceNoteId
+          FROM
+            links
+              JOIN notes AS sourceNote ON sourceNote.noteId = links.noteId
+          WHERE
+            links.isDeleted = 0
+            AND sourceNote.isDeleted = 1`,
+        async ({linkId, sourceNoteId}) => {
+            const link = await repository.getLink(linkId);
+            link.isDeleted = true;
+            await link.save();
+
+            logFix(`Removed link ${linkId} because source note ${sourceNoteId} is also deleted.`);
+        });
+
+    await findAndFixIssues(`
           SELECT 
             linkId,
             links.targetNoteId
           FROM 
             links
-            LEFT JOIN notes AS targetNote ON targetNote.noteId = links.targetNoteId AND targetNote.isDeleted = 0
-          WHERE 
+            JOIN notes AS targetNote ON targetNote.noteId = links.targetNoteId
+          WHERE
             links.isDeleted = 0
-            AND targetNote.noteId IS NULL`,
-        ({linkId, targetNoteId}) => `Link ${linkId} to target note ${targetNoteId} is broken`);
+            AND targetNote.isDeleted = 1`,
+        async ({linkId, targetNoteId}) => {
+        const link = await repository.getLink(linkId);
+        link.isDeleted = true;
+        await link.save();
 
-    await findIssues(`
-          SELECT 
-            linkId,
-            links.noteId AS sourceNoteId
-          FROM 
-            links
-            LEFT JOIN notes AS sourceNote ON sourceNote.noteId = links.noteId AND sourceNote.isDeleted = 0
-          WHERE 
-            links.isDeleted = 0
-            AND sourceNote.noteId IS NULL`,
-        ({linkId, sourceNoteId}) => `Link ${linkId} to source note ${sourceNoteId} is broken`);
+        logFix(`Removed link ${linkId} because target note ${targetNoteId} is also deleted.`);
+    });
 
     await runSyncRowChecks("notes", "noteId");
     await runSyncRowChecks("note_revisions", "noteRevisionId");
