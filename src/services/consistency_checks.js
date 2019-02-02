@@ -457,7 +457,7 @@ sqlInit.dbReady.then(() => {
     setInterval(cls.wrap(runChecks), 60 * 60 * 1000);
 
     // kickoff checks soon after startup (to not block the initial load)
-    setTimeout(cls.wrap(runChecks), 0);
+    setTimeout(cls.wrap(runChecks), 10 * 1000);
 });
 
 module.exports = {};

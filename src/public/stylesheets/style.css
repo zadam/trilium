@@ -477,10 +477,12 @@ div.ui-tooltip {
     overflow: auto;
     /* limiting the size since actual note content is more important */
     max-height: 30%;
+    flex-shrink: 0;
+    flex-basis: 2em;
 }
 
 #label-list, #relation-list, #attribute-list {
-    color: #777777;
+    color: var(--muted-text-color);
     padding: 5px;
     display: none;
 }
@@ -595,8 +597,12 @@ button.icon-button {
     max-width: 100%;
 }
 
+pre {
+    color: var(--main-text-color) !important;
+}
+
 #file-preview-content {
-    background-color: #f6f6f6;
+    background-color: var(--accented-background-color);
     padding: 15px;
     max-width: 600px;
     max-height: 300px;
@@ -796,7 +802,7 @@ div[data-notify="container"] {
     right: 10px;
     top: -7px;
     font-size: 150%;
-    color: #777;
+    color: var(--main-text-color);
     z-index: 100;
 }
 
@@ -833,7 +839,7 @@ div[data-notify="container"] {
 
     margin: var(--ck-spacing-large) 0;
 
-    color: #aaa;
+    color: var(--muted-text-color);
 }
 
 .fancytree-loading span.fancytree-expander {
