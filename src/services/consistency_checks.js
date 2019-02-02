@@ -88,38 +88,6 @@ async function checkTreeCycles() {
     }
 }
 
-async function runSyncRowChecks(entityName, key) {
-    await findAndFixIssues(`
-        SELECT 
-          ${key} as entityId
-        FROM 
-          ${entityName} 
-          LEFT JOIN sync ON sync.entityName = '${entityName}' AND entityId = ${key} 
-        WHERE 
-          sync.id IS NULL AND ` + (entityName === 'options' ? 'isSynced = 1' : '1'),
-        async ({entityId}) => {
-            await syncTableService.addEntitySync(entityName, entityId);
-
-            logFix(`Created missing sync record entityName=${entityName}, entityId=${entityId}`);
-        });
-
-    await findAndFixIssues(`
-        SELECT 
-          id, entityId
-        FROM 
-          sync 
-          LEFT JOIN ${entityName} ON entityId = ${key} 
-        WHERE 
-          sync.entityName = '${entityName}' 
-          AND ${key} IS NULL`,
-        async ({id, entityId}) => {
-
-        await sql.execute("DELETE FROM sync WHERE entityName = ? AND entityId = ?", [entityName, entityId]);
-
-        logFix(`Deleted extra sync record id=${id}, entityName=${entityName}, entityId=${entityId}`);
-    });
-}
-
 async function findBrokenReferenceIssues() {
     await findIssues(`
           SELECT branchId, branches.noteId
@@ -165,7 +133,7 @@ async function findBrokenReferenceIssues() {
         ({noteRevisionId, noteId}) => `Note revision ${noteRevisionId} references missing note ${noteId}`);
 }
 
-async function findAndFixExistencyIssues() {
+async function findExistencyIssues() {
     // principle for fixing inconsistencies is that if the note itself is deleted (isDeleted=true) then all related entities should be also deleted (branches, links, attributes)
     // but if note is not deleted, then at least one branch should exist.
 
@@ -233,13 +201,7 @@ async function findAndFixExistencyIssues() {
         });
 }
 
-async function runAllChecks() {
-    outstandingConsistencyErrors = false;
-
-    await findBrokenReferenceIssues();
-
-    await findAndFixExistencyIssues();
-
+async function findLogicIssues() {
     await findIssues( `
           SELECT noteId, type 
           FROM notes 
@@ -270,13 +232,13 @@ async function runAllChecks() {
             isDeleted = 0 
             AND type = 'relation' 
             AND value = ''`,
-            async ({attributeId}) => {
-                const relation = await repository.getAttribute(attributeId);
-                relation.isDeleted = true;
-                await relation.save();
+        async ({attributeId}) => {
+            const relation = await repository.getAttribute(attributeId);
+            relation.isDeleted = true;
+            await relation.save();
 
-                logFix(`Removed relation ${relation.attributeId} of name "${relation.name} with empty target.`);
-            });
+            logFix(`Removed relation ${relation.attributeId} of name "${relation.name} with empty target.`);
+        });
 
     await findIssues(`
           SELECT 
@@ -374,13 +336,47 @@ async function runAllChecks() {
             links.isDeleted = 0
             AND targetNote.isDeleted = 1`,
         async ({linkId, targetNoteId}) => {
-        const link = await repository.getLink(linkId);
-        link.isDeleted = true;
-        await link.save();
+            const link = await repository.getLink(linkId);
+            link.isDeleted = true;
+            await link.save();
 
-        logFix(`Removed link ${linkId} because target note ${targetNoteId} is also deleted.`);
-    });
+            logFix(`Removed link ${linkId} because target note ${targetNoteId} is also deleted.`);
+        });
+}
 
+async function runSyncRowChecks(entityName, key) {
+    await findAndFixIssues(`
+        SELECT 
+          ${key} as entityId
+        FROM 
+          ${entityName} 
+          LEFT JOIN sync ON sync.entityName = '${entityName}' AND entityId = ${key} 
+        WHERE 
+          sync.id IS NULL AND ` + (entityName === 'options' ? 'isSynced = 1' : '1'),
+        async ({entityId}) => {
+            await syncTableService.addEntitySync(entityName, entityId);
+
+            logFix(`Created missing sync record entityName=${entityName}, entityId=${entityId}`);
+        });
+
+    await findAndFixIssues(`
+        SELECT 
+          id, entityId
+        FROM 
+          sync 
+          LEFT JOIN ${entityName} ON entityId = ${key} 
+        WHERE 
+          sync.entityName = '${entityName}' 
+          AND ${key} IS NULL`,
+        async ({id, entityId}) => {
+
+            await sql.execute("DELETE FROM sync WHERE entityName = ? AND entityId = ?", [entityName, entityId]);
+
+            logFix(`Deleted extra sync record id=${id}, entityName=${entityName}, entityId=${entityId}`);
+        });
+}
+
+async function findSyncRowsIssues() {
     await runSyncRowChecks("notes", "noteId");
     await runSyncRowChecks("note_revisions", "noteRevisionId");
     await runSyncRowChecks("branches", "branchId");
@@ -388,6 +384,18 @@ async function runAllChecks() {
     await runSyncRowChecks("attributes", "attributeId");
     await runSyncRowChecks("api_tokens", "apiTokenId");
     await runSyncRowChecks("options", "name");
+}
+
+async function runAllChecks() {
+    outstandingConsistencyErrors = false;
+
+    await findBrokenReferenceIssues();
+
+    await findExistencyIssues();
+
+    await findLogicIssues();
+
+    await findSyncRowsIssues();
 
     if (outstandingConsistencyErrors) {
         // we run this only if basic checks passed since this assumes basic data consistency
