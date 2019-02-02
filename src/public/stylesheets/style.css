@@ -1,7 +1,11 @@
 :root {
+    --main-font-family: inherit;
     --main-font-size: normal;
+    --tree-font-family: inherit;
     --tree-font-size: normal;
+    --detail-font-family: inherit;
     --detail-font-size: normal;
+    --detail-text-font-family: inherit;
 
     --main-background-color: white;
     --main-text-color: black;
@@ -88,6 +92,7 @@ body {
     width: 100%;
     background-color: var(--main-background-color);
     color: var(--main-text-color);
+    font-family: var(--main-font-family);
 }
 
 input, select {
@@ -180,6 +185,7 @@ ul.fancytree-container {
     padding-top: 10px;
     display: flex;
     flex-direction: column;
+    font-family: var(--detail-font-family);
 }
 
 #note-detail-component-wrapper {
@@ -211,6 +217,11 @@ ul.fancytree-container {
     /* This is because with empty content height of editor is 0 and it's impossible to click into it */
     min-height: 200px;
     overflow: auto;
+    font-family: var(--detail-text-font-family);
+}
+
+#note-detail-text p:first-child {
+    margin-top: 0;
 }
 
 /** we disable shield background when in distraction free mode because I couldn't get it to stay static
@@ -777,7 +788,7 @@ div[data-notify="container"] {
 #saved-indicator {
     position: absolute;
     right: 10px;
-    top: 11px;
+    top: -7px;
     font-size: 150%;
     color: #777;
     z-index: 100;

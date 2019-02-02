@@ -30,6 +30,7 @@ body {
     flex-shrink: 1;
     flex-basis: 60%;
     margin-top: 10px;
+    font-family: var(--tree-font-family);
     font-size: var(--tree-font-size);
 }
 
