@@ -13,6 +13,7 @@
     --more-accented-background-color: #ccc;
     --header-background-color: #f8f8f8;
     --button-background-color: #eee;
+    --button-disabled-background-color: #ccc;
     --button-border-color: #ddd;
     --button-text-color: black;
     --button-border-radius: 5px;
@@ -220,7 +221,7 @@ ul.fancytree-container {
     font-family: var(--detail-text-font-family);
 }
 
-#note-detail-text p:first-child {
+#note-detail-text p:first-child, #note-detail-text::before {
     margin-top: 0;
 }
 
@@ -451,6 +452,11 @@ div.ui-tooltip {
     min-height: 200px;
 }
 
+.CodeMirror-gutters {
+    background-color: inherit !important;
+    border-right: none;
+}
+
 #note-id-display {
     position: absolute;
     right: 10px;
@@ -542,7 +548,7 @@ div.ui-tooltip {
 }
 
 .btn.active:not(.btn-primary) {
-    background-color: #ccc !important;
+    background-color: var(--button-disabled-background-color) !important;
 }
 
 #note-path-list a.current {
@@ -632,7 +638,7 @@ button.icon-button {
 
 .go-to-selected-note-button.disabled, .go-to-selected-note-button.disabled:hover {
     cursor: inherit;
-    color: #ccc !important;
+    color: var(--button-disabled-background-color) !important;
 }
 
 .note-autocomplete-input {
