@@ -597,7 +597,7 @@ button.icon-button {
     max-width: 100%;
 }
 
-pre {
+pre:not(.CodeMirror-line) {
     color: var(--main-text-color) !important;
 }
 

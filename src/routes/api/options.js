@@ -43,14 +43,27 @@ async function update(name, value) {
 }
 
 async function getUserThemes() {
-    return (await attributes.getNotesWithLabel('appTheme'))
-        .map(note => {
-            return {
-                val: note.title,
-                title: note.title,
-                noteId: note.noteId
-            };
+    const notes = await attributes.getNotesWithLabel('appTheme');
+
+    const ret = [];
+
+    for (const note of notes) {
+        let value;
+
+        if (await note.hasLabel('appThemeClass')) {
+            value = await note.getLabelValue('appThemeClass');
+        } else {
+            value = note.title.toLowerCase().replace(/[^a-z0-9]/gi, '-');
+        }
+
+        ret.push({
+            val: value,
+            title: note.title,
+            noteId: note.noteId
         });
+    }
+
+    return ret;
 }
 
 module.exports = {
