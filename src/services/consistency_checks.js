@@ -92,38 +92,39 @@ async function findBrokenReferenceIssues() {
     await findIssues(`
           SELECT branchId, branches.noteId
           FROM branches LEFT JOIN notes USING(noteId)
-          WHERE notes.noteId IS NULL`,
+          WHERE branches.isDeleted = 0 AND notes.noteId IS NULL`,
         ({branchId, noteId}) => `Branch ${branchId} references missing note ${noteId}`);
 
     await findIssues(`
           SELECT branchId, branches.noteId AS parentNoteId
           FROM branches LEFT JOIN notes ON notes.noteId = branches.parentNoteId
-          WHERE branches.branchId != 'root' AND notes.noteId IS NULL`,
+          WHERE branches.isDeleted = 0 AND branches.branchId != 'root' AND notes.noteId IS NULL`,
         ({branchId, noteId}) => `Branch ${branchId} references missing parent note ${noteId}`);
 
     await findIssues(`
           SELECT attributeId, attributes.noteId
           FROM attributes LEFT JOIN notes USING(noteId)
-          WHERE notes.noteId IS NULL`,
+          WHERE attributes.isDeleted = 0 AND notes.noteId IS NULL`,
         ({attributeId, noteId}) => `Attribute ${attributeId} references missing source note ${noteId}`);
 
     // empty targetNoteId for relations is a special fixable case so not covered here
     await findIssues(`
           SELECT attributeId, attributes.value AS noteId
           FROM attributes LEFT JOIN notes ON notes.noteId = attributes.value
-          WHERE attributes.type = 'relation' AND attributes.value != '' AND notes.noteId IS NULL`,
+          WHERE attributes.isDeleted = 0 AND attributes.type = 'relation' 
+            AND attributes.value != '' AND notes.noteId IS NULL`,
         ({attributeId, noteId}) => `Relation ${attributeId} references missing note ${noteId}`);
 
     await findIssues(`
           SELECT linkId, links.noteId
           FROM links LEFT JOIN notes USING(noteId)
-          WHERE notes.noteId IS NULL`,
+          WHERE links.isDeleted = 0 AND notes.noteId IS NULL`,
         ({linkId, noteId}) => `Link ${linkId} references missing source note ${noteId}`);
 
     await findIssues(`
           SELECT linkId, links.noteId
           FROM links LEFT JOIN notes ON notes.noteId = links.targetNoteId
-          WHERE notes.noteId IS NULL`,
+          WHERE links.isDeleted = 0 AND notes.noteId IS NULL`,
         ({linkId, noteId}) => `Link ${linkId} references missing target note ${noteId}`);
 
     await findIssues(`
