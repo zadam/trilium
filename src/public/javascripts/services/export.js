@@ -23,6 +23,10 @@ $("#import-upload").change(async function() {
     const formData = new FormData();
     formData.append('upload', this.files[0]);
 
+    // this is done to reset the field otherwise triggering import same file again would not work
+    // https://github.com/zadam/trilium/issues/388
+    $("#import-upload").val('');
+
     await $.ajax({
         url: baseApiUrl + 'notes/' + importNoteId + '/import',
         headers: server.getHeaders(),
