@@ -48,11 +48,9 @@ async function getUserThemes() {
     const ret = [];
 
     for (const note of notes) {
-        let value;
+        let value = note.getLabelValue('appTheme');
 
-        if (await note.hasLabel('appThemeClass')) {
-            value = await note.getLabelValue('appThemeClass');
-        } else {
+        if (!value) {
             value = note.title.toLowerCase().replace(/[^a-z0-9]/gi, '-');
         }
 
