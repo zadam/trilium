@@ -96,3 +96,12 @@ body {
 #note-detail-wrapper {
     font-size: var(--detail-font-size);
 }
+
+::-webkit-scrollbar {
+    width: 12px;
+}
+
+::-webkit-scrollbar-thumb {
+    border-radius: 5px;
+    -webkit-box-shadow: inset 0 0 3px var(--main-border-color);
+}
