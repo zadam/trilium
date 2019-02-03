@@ -109,7 +109,7 @@ async function findBrokenReferenceIssues() {
 
     // empty targetNoteId for relations is a special fixable case so not covered here
     await findIssues(`
-          SELECT attributeId, attributes.noteId
+          SELECT attributeId, attributes.value AS noteId
           FROM attributes LEFT JOIN notes ON notes.noteId = attributes.value
           WHERE attributes.type = 'relation' AND attributes.value != '' AND notes.noteId IS NULL`,
         ({attributeId, noteId}) => `Relation ${attributeId} references missing note ${noteId}`);
