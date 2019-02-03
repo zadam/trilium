@@ -31,11 +31,18 @@ function register(router) {
 
                 log.info(`Handling custom request "${path}" with note ${note.noteId}`);
 
-                await scriptService.executeNote(note, {
-                    pathParams: match.slice(1),
-                    req,
-                    res
-                });
+                try {
+                    await scriptService.executeNote(note, {
+                        pathParams: match.slice(1),
+                        req,
+                        res
+                    });
+                }
+                catch (e) {
+                    log.error(`Custom handler ${note.noteId} failed with ${e.message}`);
+
+                    res.status(500).send(e.message);
+                }
             }
             else if (attr.name === 'customResourceProvider') {
                 await fileUploadService.downloadNoteFile(attr.noteId, res);

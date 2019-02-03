@@ -15,6 +15,15 @@ async function executeNote(note, apiParams) {
     await executeBundle(bundle, apiParams);
 }
 
+async function executeNoteNoException(note, apiParams) {
+    try {
+        await executeNote(note, apiParams);
+    }
+    catch (e) {
+        // just swallow, exception is logged already in executeNote
+    }
+}
+
 async function executeBundle(bundle, apiParams = {}) {
     if (!apiParams.startNote) {
         // this is the default case, the only exception is when we want to preserve frontend startNote
@@ -36,6 +45,8 @@ async function executeBundle(bundle, apiParams = {}) {
     }
     catch (e) {
         log.error(`Execution of script "${bundle.note.title}" (${bundle.note.noteId}) failed with error: ${e.message}`);
+
+        throw e;
     }
 }
 
@@ -168,6 +179,7 @@ function sanitizeVariableName(str) {
 
 module.exports = {
     executeNote,
+    executeNoteNoException,
     executeScript,
     getScriptBundleForFrontend
 };

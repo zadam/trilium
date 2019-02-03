@@ -174,6 +174,23 @@ function BackendScriptApi(currentNote, apiParams) {
     this.createNote = noteService.createNote;
 
     /**
+     * Creates new note according to given params and force all connected clients to refresh their tree.
+     *
+     * @method
+     *
+     * @param {string} parentNoteId - create new note under this parent
+     * @param {string} title
+     * @param {string} [content=""]
+     * @param {CreateNoteExtraOptions} [extraOptions={}]
+     * @returns {Promise<{note: Note, branch: Branch}>} object contains newly created entities note and branch
+     */
+    this.createNoteAndRefresh = async function(parentNoteId, title, content, extraOptions) {
+        await noteService.createNote(parentNoteId, title, content, extraOptions);
+
+        messagingService.refreshTree();
+    };
+
+    /**
      * Log given message to trilium logs.
      *
      * @param message
@@ -238,7 +255,7 @@ function BackendScriptApi(currentNote, apiParams) {
      *
      * @returns {Promise<void>}
      */
-    this.refreshTree = () => messagingService.sendMessageToAllClients({ type: 'refresh-tree' });
+    this.refreshTree = messagingService.refreshTree;
 
     /**
      * @return {{syncVersion, appVersion, buildRevision, dbVersion, dataDirectory, buildDate}|*} - object representing basic info about running Trilium version

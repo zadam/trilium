@@ -17,7 +17,7 @@ async function runNotesWithLabel(runAttrValue) {
           AND notes.isDeleted = 0`, [runAttrValue]);
 
     for (const note of notes) {
-        scriptService.executeNote(note, { originEntity: note });
+        scriptService.executeNoteNoException(note, { originEntity: note });
     }
 }
 

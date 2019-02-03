@@ -49,6 +49,10 @@ async function sendMessage(client, message) {
     }
 }
 
+async function refreshTree() {
+    await sendMessageToAllClients({ type: 'refresh-tree' });
+}
+
 async function sendMessageToAllClients(message) {
     const jsonStr = JSON.stringify(message);
 
@@ -76,5 +80,6 @@ async function sendPing(client, lastSentSyncId) {
 
 module.exports = {
     init,
+    refreshTree,
     sendMessageToAllClients
 };

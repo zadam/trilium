@@ -102,6 +102,6 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-    border-radius: 5px;
-    -webkit-box-shadow: inset 0 0 3px var(--main-border-color);
+    border-radius: 3px;
+    border: 1px solid var(--main-border-color);
 }

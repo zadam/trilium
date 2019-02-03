@@ -9,7 +9,7 @@
 
     --main-background-color: white;
     --main-text-color: black;
-    --main-border-color: #ddd;
+    --main-border-color: #ccc;
     --accented-background-color: #eee;
     --more-accented-background-color: #ccc;
     --header-background-color: #f8f8f8;
@@ -343,6 +343,10 @@ div.ui-tooltip {
 
 #search-results ul {
     padding: 5px 5px 5px 15px;
+}
+
+#search-text {
+    border: 1px solid var(--main-border-color);
 }
 
 /*

@@ -432,7 +432,7 @@ async function runChecks() {
     });
 
     if (fixedIssues) {
-        messagingService.sendMessageToAllClients({ type: 'refresh-tree' });
+        messagingService.refreshTree();
     }
 
     if (unrecoverableConsistencyErrors) {
