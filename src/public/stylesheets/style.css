@@ -9,6 +9,7 @@
 
     --main-background-color: white;
     --main-text-color: black;
+    --main-border-color: #ddd;
     --accented-background-color: #eee;
     --more-accented-background-color: #ccc;
     --header-background-color: #f8f8f8;
@@ -32,6 +33,7 @@
 body.theme-black {
     --main-background-color: black;
     --main-text-color: white;
+    --main-border-color: #ddd;
     --accented-background-color: #222;
     --more-accented-background-color: #444;
     --header-background-color: black;
@@ -58,6 +60,7 @@ body.theme-black .CodeMirror {
 body.theme-dark {
     --main-background-color: #333;
     --main-text-color: white;
+    --main-border-color: #ddd;
     --accented-background-color: #555;
     --more-accented-background-color: #777;
     --header-background-color: #333;
@@ -268,7 +271,7 @@ span.fancytree-node.fancytree-active-clone:not(.fancytree-active) .fancytree-tit
 span.fancytree-active.fancytree-focused .fancytree-title {
     color: var(--active-item-text-color) !important;
     background-color: var(--active-item-background-color) !important;
-    border-color: #ddd !important;
+    border-color: var(--main-border-color) !important;
     border-radius: 3px;
     font-weight: bold;
 }
@@ -276,7 +279,7 @@ span.fancytree-active.fancytree-focused .fancytree-title {
 span.fancytree-active:not(.fancytree-focused) .fancytree-title {
     color: var(--hover-item-text-color) !important;
     background-color: var(--hover-item-background-color) !important;
-    border-color: #ddd !important;
+    border-color: var(--main-border-color) !important;
     border-radius: 3px;
     font-weight: bold;
 }
@@ -284,7 +287,7 @@ span.fancytree-active:not(.fancytree-focused) .fancytree-title {
 span.fancytree-selected:not(.fancytree-active) .fancytree-title {
     color: var(--hover-item-text-color) !important;
     background-color: var(--hover-item-background-color) !important;
-    border-color: #ddd !important;
+    border-color: var(--main-border-color) !important;
     border-radius: 3px;
     font-style: italic;
 }
@@ -292,7 +295,7 @@ span.fancytree-selected:not(.fancytree-active) .fancytree-title {
 span.fancytree-node:not(.fancytree-active):hover span.fancytree-title {
     color: var(--hover-item-text-color) !important;
     background-color: var(--hover-item-background-color) !important;
-    border-color: #ddd !important;
+    border-color: var(--main-border-color) !important;
     border-radius: 3px;
 }
 
@@ -335,7 +338,7 @@ div.ui-tooltip {
     margin-top: 10px;
     display: none;
     overflow: auto;
-    border-bottom: 2px solid #ddd;
+    border-bottom: 2px solid var(--main-border-color);
 }
 
 #search-results ul {
@@ -683,7 +686,7 @@ table.promoted-attributes-in-tooltip td, table.promoted-attributes-in-tooltip th
     max-height: 300px;
     overflow: hidden;
     color: var(--main-text-color);
-    border: 1px solid #ccc;
+    border: 1px solid var(--main-border-color);
     border-radius: 5px;
     text-align: left;
 }
@@ -713,7 +716,7 @@ table.promoted-attributes-in-tooltip td, table.promoted-attributes-in-tooltip th
 .algolia-autocomplete .aa-dropdown-menu {
     width: 100%;
     background-color: var(--main-background-color);
-    border: 1px solid #999;
+    border: 1px solid var(--main-border-color);
     border-top: none;
     z-index: 2000 !important;
     max-height: 500px;
