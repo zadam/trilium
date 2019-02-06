@@ -12,18 +12,10 @@ async function getNote(req) {
         return [404, "Note " + noteId + " has not been found."];
     }
 
-    if (note.type === 'file' || note.type === 'image') {
-        if (note.type === 'file' && note.mime.startsWith('text/')) {
-            note.content = note.content.toString("UTF-8");
+    if (note.mime.startsWith('text/')) {
+        const noteContent = await note.getNoteContent();
 
-            if (note.content.length > 10000) {
-                note.content = note.content.substr(0, 10000) + "...";
-            }
-        }
-        else {
-            // no need to transfer (potentially large) file/image payload for this request
-            note.content = null;
-        }
+        noteContent.content = noteContent.content.toString("UTF-8");
     }
 
     return note;

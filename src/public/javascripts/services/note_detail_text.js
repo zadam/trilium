@@ -22,7 +22,7 @@ async function show() {
 
     textEditor.isReadOnly = await isReadOnly();
 
-    textEditor.setData(noteDetailService.getCurrentNote().content);
+    textEditor.setData(noteDetailService.getCurrentNote().noteContent.content);
 
     $component.show();
 }

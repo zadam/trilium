@@ -234,6 +234,7 @@ async function findLogicIssues() {
     await findIssues(`
           SELECT noteId
           FROM notes
+          JOIN note_contents USING(noteId)
           WHERE
             isDeleted = 0
             AND content IS NULL`,

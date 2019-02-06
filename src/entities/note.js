@@ -19,7 +19,6 @@ const RELATION_DEFINITION = 'relation-definition';
  * @property {string} type - one of "text", "code", "file" or "render"
  * @property {string} mime - MIME type, e.g. "text/html"
  * @property {string} title - note title
- * @property {string} content - note content - e.g. HTML text for text notes, file payload for files
  * @property {boolean} isProtected - true if note is protected
  * @property {boolean} isDeleted - true if note is deleted
  * @property {string} dateCreated
@@ -30,7 +29,7 @@ const RELATION_DEFINITION = 'relation-definition';
 class Note extends Entity {
     static get entityName() { return "notes"; }
     static get primaryKeyName() { return "noteId"; }
-    static get hashedProperties() { return ["noteId", "title", "content", "type", "isProtected", "isDeleted"]; }
+    static get hashedProperties() { return ["noteId", "title", "type", "isProtected", "isDeleted"]; }
 
     /**
      * @param row - object containing database row from "notes" table
@@ -54,26 +53,18 @@ class Note extends Entity {
                 // saving ciphertexts in case we do want to update protected note outside of protected session
                 // (which is allowed)
                 this.titleCipherText = this.title;
-                this.contentCipherText = this.content;
-
                 this.title = "[protected]";
-                this.content = "";
             }
         }
-
-        this.setContent(this.content);
     }
 
-    setContent(content) {
-        this.content = content;
-
-        // if parsing below is not successful then there's no jsonContent as opposed to still having the old unupdated ones
-        delete this.jsonContent;
-
-        try {
-            this.jsonContent = JSON.parse(this.content);
+    /** @returns {Promise<NoteContent>} */
+    async getNoteContent() {
+        if (!this.noteContent) {
+            this.noteContent = await repository.getEntity(`SELECT * FROM note_contents WHERE noteId = ?`, [this.noteId]);
         }
-        catch(e) {}
+
+        return this.noteContent;
     }
 
     /** @returns {boolean} true if this note is the root of the note tree. Root note has "root" noteId */

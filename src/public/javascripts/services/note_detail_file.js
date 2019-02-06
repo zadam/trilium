@@ -27,8 +27,8 @@ async function show() {
     $fileSize.text((attributeMap.fileSize || "?") + " bytes");
     $fileType.text(currentNote.mime);
 
-    $previewRow.toggle(!!currentNote.content);
-    $previewContent.text(currentNote.content);
+    $previewRow.toggle(!!currentNote.noteContent.content);
+    $previewContent.text(currentNote.noteContent.content);
 }
 
 $downloadButton.click(() => utils.download(getFileUrl()));

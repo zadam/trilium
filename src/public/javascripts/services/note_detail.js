@@ -357,6 +357,7 @@ export default {
     updateNoteView,
     loadNote,
     getCurrentNote,
+    getCurrentNoteContent,
     getCurrentNoteType,
     getCurrentNoteId,
     focusOnTitle,
@@ -364,7 +365,6 @@ export default {
     saveNote,
     saveNoteIfChanged,
     noteChanged,
-    getCurrentNoteContent,
     onNoteChange,
     addDetailLoadedListener
 };

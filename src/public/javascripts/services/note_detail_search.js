@@ -16,7 +16,7 @@ function show() {
     $component.show();
 
     try {
-        const json = JSON.parse(noteDetailService.getCurrentNote().content);
+        const json = JSON.parse(noteDetailService.getCurrentNote().noteContent.content);
 
         $searchString.val(json.searchString);
     }
