@@ -21,7 +21,7 @@ async function returnImage(req, res) {
 
     res.set('Content-Type', image.mime);
 
-    res.send(image.content);
+    res.send((await note.getNoteContent()).content);
 }
 
 async function uploadImage(req) {

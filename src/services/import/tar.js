@@ -245,8 +245,10 @@ async function importTar(fileBuffer, importRootNote) {
         let note = await repository.getNote(noteId);
 
         if (note) {
-            note.content = content;
-            await note.save();
+            const noteContent = await note.getNoteContent();
+
+            noteContent.content = content;
+            await noteContent.save();
         }
         else {
             const noteTitle = getNoteTitle(filePath, noteMeta);

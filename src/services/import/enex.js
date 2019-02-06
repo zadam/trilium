@@ -218,6 +218,8 @@ async function importEnex(file, parentNote) {
             mime: 'text/html'
         })).note;
 
+        const noteContent = await noteEntity.getNoteContent();
+
         for (const resource of resources) {
             const hash = utils.md5(resource.content);
 
@@ -238,8 +240,8 @@ async function importEnex(file, parentNote) {
 
               const resourceLink = `<a href="#root/${resourceNote.noteId}">${utils.escapeHtml(resource.title)}</a>`;
 
-              noteEntity.content = noteEntity.content.replace(mediaRegex, resourceLink);
-            }
+              noteContent.content = noteContent.content.replace(mediaRegex, resourceLink);
+            };
 
             if (["image/jpeg", "image/png", "image/gif"].includes(resource.mime)) {
               try {
@@ -249,12 +251,12 @@ async function importEnex(file, parentNote) {
 
                 const imageLink = `<img src="${url}">`;
 
-                noteEntity.content = noteEntity.content.replace(mediaRegex, imageLink);
+                noteContent.content = noteContent.content.replace(mediaRegex, imageLink);
 
-                if (!note.content.includes(imageLink)) {
+                if (!noteContent.content.includes(imageLink)) {
                     // if there wasn't any match for the reference, we'll add the image anyway
                     // otherwise image would be removed since no note would include it
-                    note.content += imageLink;
+                    noteContent.content += imageLink;
                 }
               } catch (e) {
                 log.error("error when saving image from ENEX file: " + e);
@@ -267,7 +269,7 @@ async function importEnex(file, parentNote) {
         }
 
         // save updated content with links to files/images
-        await noteEntity.save();
+        await noteContent.save();
     }
 
     saxStream.on("closetag", async tag => {

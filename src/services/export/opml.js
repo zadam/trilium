@@ -17,7 +17,7 @@ async function exportToOpml(branch, res) {
         const title = (branch.prefix ? (branch.prefix + ' - ') : '') + note.title;
 
         const preparedTitle = prepareText(title);
-        const preparedContent = prepareText(note.content);
+        const preparedContent = prepareText(await note.getContent());
 
         res.write(`<outline title="${preparedTitle}" text="${preparedContent}">\n`);
 

@@ -56,10 +56,10 @@ async function executeBundle(bundle, apiParams = {}) {
  */
 async function executeScript(script, params, startNoteId, currentNoteId, originEntityName, originEntityId) {
     const startNote = await repository.getNote(startNoteId);
-    const currentNote = await repository.getNote(currentNoteId);
+    const currentNote = await repository.getNoteWithContent(currentNoteId);
     const originEntity = await repository.getEntityFromName(originEntityName, originEntityId);
 
-    currentNote.content = `return await (${script}\r\n)(${getParams(params)})`;
+    currentNote.noteContent.content = `return await (${script}\r\n)(${getParams(params)})`;
     currentNote.type = 'code';
     currentNote.mime = 'application/javascript;env=backend';
 
@@ -158,7 +158,7 @@ apiContext.modules['${note.noteId}'] = {};
 ${root ? 'return ' : ''}await ((async function(exports, module, require, api` + (modules.length > 0 ? ', ' : '') +
             modules.map(child => sanitizeVariableName(child.title)).join(', ') + `) {
 try {
-${note.content};
+${await note.getContent()};
 } catch (e) { throw new Error("Load of script note \\"${note.title}\\" (${note.noteId}) failed with: " + e.message); }
 if (!module.exports) module.exports = {};
 for (const exportKey in exports) module.exports[exportKey] = exports[exportKey];
@@ -167,7 +167,7 @@ for (const exportKey in exports) module.exports[exportKey] = exports[exportKey];
 `;
     }
     else if (note.isHtml()) {
-        bundle.html += note.content;
+        bundle.html += await note.getContent();
     }
 
     return bundle;

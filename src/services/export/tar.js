@@ -123,7 +123,7 @@ async function exportToTar(branch, format, res) {
         const childBranches = await note.getChildBranches();
 
         // if it's a leaf then we'll export it even if it's empty
-        if (note.content.length > 0 || childBranches.length === 0) {
+        if ((await note.getContent()).length > 0 || childBranches.length === 0) {
             meta.dataFileName = getDataFileName(note, baseFileName, existingFileNames);
         }
 
@@ -147,19 +147,21 @@ async function exportToTar(branch, format, res) {
         return meta;
     }
 
-    function prepareContent(note, format) {
+    async function prepareContent(note, format) {
+        const content = await note.getContent();
+
         if (format === 'html') {
-            if (!note.content.toLowerCase().includes("<html")) {
-                note.content = '<html><head><meta charset="utf-8"></head><body>' + note.content + '</body></html>';
+            if (!content.toLowerCase().includes("<html")) {
+                note.content = '<html><head><meta charset="utf-8"></head><body>' + content + '</body></html>';
             }
 
-            return html.prettyPrint(note.content, {indent_size: 2});
+            return html.prettyPrint(content, {indent_size: 2});
         }
         else if (format === 'markdown') {
-            return turndownService.turndown(note.content);
+            return turndownService.turndown(content);
         }
         else {
-            return note.content;
+            return content;
         }
     }
 
@@ -179,7 +181,7 @@ async function exportToTar(branch, format, res) {
         notePaths[note.noteId] = path + (noteMeta.dataFileName || noteMeta.dirFileName);
 
         if (noteMeta.dataFileName) {
-            const content = prepareContent(note, noteMeta.format);
+            const content = await prepareContent(note, noteMeta.format);
 
             pack.entry({name: path + noteMeta.dataFileName, size: content.length}, content);
         }

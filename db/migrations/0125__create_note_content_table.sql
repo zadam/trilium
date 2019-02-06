@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS "note_contents" (
   `noteId`	TEXT NOT NULL,
   `isProtected`	INT NOT NULL DEFAULT 0,
   `content`	TEXT NULL DEFAULT NULL,
+  `hash` TEXT DEFAULT "" NOT NULL,
   PRIMARY KEY(`noteContentId`)
 );
 

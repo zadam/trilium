@@ -67,6 +67,13 @@ class Note extends Entity {
         return this.noteContent;
     }
 
+    /** @returns {Promise<*>} */
+    async getContent() {
+        const noteContent = await this.getNoteContent();
+
+        return noteContent.content;
+    }
+
     /** @returns {boolean} true if this note is the root of the note tree. Root note has "root" noteId */
     isRoot() {
         return this.noteId === 'root';
@@ -606,10 +613,6 @@ class Note extends Entity {
     }
 
     beforeSaving() {
-        if (this.isJson() && this.jsonContent) {
-            this.content = JSON.stringify(this.jsonContent, null, '\t');
-        }
-
         // we do this here because encryption needs the note ID for the IV
         this.generateIdIfNecessary();
 
@@ -637,7 +640,6 @@ class Note extends Entity {
             else {
                 // updating protected note outside of protected session means we will keep original ciphertexts
                 pojo.title = pojo.titleCipherText;
-                pojo.content = pojo.contentCipherText;
             }
         }
 
@@ -645,7 +647,6 @@ class Note extends Entity {
         delete pojo.isContentAvailable;
         delete pojo.__attributeCache;
         delete pojo.titleCipherText;
-        delete pojo.contentCipherText;
     }
 }
 

@@ -8,6 +8,7 @@ const eventService = require('./events');
 const repository = require('./repository');
 const cls = require('../services/cls');
 const Note = require('../entities/note');
+const NoteContent = require('../entities/note_content');
 const Link = require('../entities/link');
 const NoteRevision = require('../entities/note_revision');
 const Branch = require('../entities/branch');
@@ -87,11 +88,15 @@ async function createNewNote(parentNoteId, noteData) {
     const note = await new Note({
         noteId: noteData.noteId, // optionally can force specific noteId
         title: noteData.title,
-        content: noteData.content,
         isProtected: noteData.isProtected,
         type: noteData.type || 'text',
         mime: noteData.mime || 'text/html'
     }).save();
+
+    note.noteContent = await new NoteContent({
+        noteId: note.noteId,
+        content: noteData.content
+    });
 
     const branch = await new Branch({
         noteId: note.noteId,
@@ -284,6 +289,12 @@ async function saveLinks(note, content) {
 }
 
 async function saveNoteRevision(note) {
+    // files and images are immutable, they can't be updated
+    // but we don't even version titles which is probably not correct
+    if (note.type !== 'file' || note.type !== 'image' || await note.hasLabel('disableVersioning')) {
+        return;
+    }
+
     const now = new Date();
     const noteRevisionSnapshotTimeInterval = parseInt(await optionService.getOption('noteRevisionSnapshotTimeInterval'));
 
@@ -294,16 +305,12 @@ async function saveNoteRevision(note) {
 
     const msSinceDateCreated = now.getTime() - dateUtils.parseDateTime(note.dateCreated).getTime();
 
-    if (note.type !== 'file'
-        && !await note.hasLabel('disableVersioning')
-        && !existingNoteRevisionId
-        && msSinceDateCreated >= noteRevisionSnapshotTimeInterval * 1000) {
-
+    if (!existingNoteRevisionId && msSinceDateCreated >= noteRevisionSnapshotTimeInterval * 1000) {
         await new NoteRevision({
             noteId: note.noteId,
             // title and text should be decrypted now
             title: note.title,
-            content: note.content,
+            content: note.noteContent.content,
             type: note.type,
             mime: note.mime,
             isProtected: false, // will be fixed in the protectNoteRevisions() call
@@ -320,21 +327,22 @@ async function updateNote(noteId, noteUpdates) {
         throw new Error(`Note ${noteId} is not available for change!`);
     }
 
-    if (note.type === 'file' || note.type === 'image') {
-        // files and images are immutable, they can't be updated
-        noteUpdates.content = note.content;
-    }
-
     await saveNoteRevision(note);
 
     const noteTitleChanged = note.title !== noteUpdates.title;
 
-    noteUpdates.content = await saveLinks(note, noteUpdates.content);
+    noteUpdates.noteContent.content = await saveLinks(note, noteUpdates.noteContent.content);
 
     note.title = noteUpdates.title;
-    note.setContent(noteUpdates.content);
     note.isProtected = noteUpdates.isProtected;
     await note.save();
+
+    if (note.type !== 'file' && note.type !== 'image') {
+        const noteContent = await note.getNoteContent();
+        noteContent.content = noteUpdates.noteContent.content;
+        noteContent.isProtected = noteUpdates.isProtected;
+        await noteContent.save();
+    }
 
     if (noteTitleChanged) {
         await triggerNoteTitleChanged(note);
@@ -394,7 +402,7 @@ async function cleanupDeletedNotes() {
     // it's better to not use repository for this because it will complain about saving protected notes
     // out of protected session
 
-    await sql.execute("UPDATE notes SET content = NULL WHERE isDeleted = 1 AND content IS NOT NULL AND dateModified <= ?", [dateUtils.dateStr(cutoffDate)]);
+    await sql.execute("UPDATE note_contents SET content = NULL WHERE content IS NOT NULL AND noteId IN (SELECT noteId FROM notes WHERE isDeleted = 1 AND notes.dateModified <= ?)", [dateUtils.dateStr(cutoffDate)]);
 
     await sql.execute("UPDATE note_revisions SET content = NULL WHERE note_revisions.content IS NOT NULL AND noteId IN (SELECT noteId FROM notes WHERE isDeleted = 1 AND notes.dateModified <= ?)", [dateUtils.dateStr(cutoffDate)]);
 }
