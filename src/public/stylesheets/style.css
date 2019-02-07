@@ -99,7 +99,7 @@ body {
     font-family: var(--main-font-family);
 }
 
-input, select {
+input, select, textarea {
     color: var(--input-text-color) !important;
     background: var(--input-background-color) !important;
 }

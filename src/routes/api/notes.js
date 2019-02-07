@@ -12,10 +12,14 @@ async function getNote(req) {
         return [404, "Note " + noteId + " has not been found."];
     }
 
-    if (note.mime.startsWith('text/')) {
+    if (["text", "code", "relation-map"].includes(note.type) || note.mime.startsWith('text/')) {
         const noteContent = await note.getNoteContent();
 
         noteContent.content = noteContent.content.toString("UTF-8");
+
+        if (note.type === 'file') {
+            noteContent.content = noteContent.content.substr(0, 10000);
+        }
     }
 
     return note;

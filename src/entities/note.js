@@ -74,6 +74,13 @@ class Note extends Entity {
         return noteContent.content;
     }
 
+    /** @returns {Promise<*>} */
+    async getJsonContent() {
+        const content = await this.getContent();
+
+        return JSON.parse(content);
+    }
+
     /** @returns {boolean} true if this note is the root of the note tree. Root note has "root" noteId */
     isRoot() {
         return this.noteId === 'root';

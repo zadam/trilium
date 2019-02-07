@@ -52,7 +52,7 @@ function decryptNote(note) {
     }
 
     if (note.title) {
-        note.title = decryptNoteTitle(note.noteId)
+        note.title = decryptNoteTitle(note.noteId, note.title);
     }
 }
 
