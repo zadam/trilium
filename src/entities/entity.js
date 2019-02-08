@@ -8,7 +8,10 @@ class Entity {
      */
     constructor(row = {}) {
         for (const key in row) {
-            this[key] = row[key];
+            // ! is used when joint-fetching notes and note_contents objects for performance
+            if (!key.startsWith('!')) {
+                this[key] = row[key];
+            }
         }
 
         if ('isDeleted' in this) {

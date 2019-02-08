@@ -100,6 +100,5 @@ module.exports = {
     getNoteWithLabel,
     createLabel,
     createAttribute,
-    getAttributeNames,
-    BUILTIN_ATTRIBUTES
+    getAttributeNames
 };

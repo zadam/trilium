@@ -2,6 +2,7 @@
 
 const Entity = require('./entity');
 const Attribute = require('./attribute');
+const NoteContent = require('./note_content');
 const protectedSessionService = require('../services/protected_session');
 const repository = require('../services/repository');
 const sql = require('../services/sql');
@@ -62,6 +63,10 @@ class Note extends Entity {
     async getNoteContent() {
         if (!this.noteContent) {
             this.noteContent = await repository.getEntity(`SELECT * FROM note_contents WHERE noteId = ?`, [this.noteId]);
+
+            if (!this.noteContent) {
+                throw new Error("Note content not found for noteId=" + this.noteId);
+            }
         }
 
         return this.noteContent;
@@ -79,6 +84,23 @@ class Note extends Entity {
         const content = await this.getContent();
 
         return JSON.parse(content);
+    }
+
+    /** @returns {Promise} */
+    async setContent(content) {
+        if (!this.noteContent) {
+            // make sure it is loaded
+            await this.getNoteContent();
+        }
+
+        this.noteContent.content = content;
+
+        await this.noteContent.save();
+    }
+
+    /** @returns {Promise} */
+    async setJsonContent(content) {
+        await this.setContent(JSON.stringify(content));
     }
 
     /** @returns {boolean} true if this note is the root of the note tree. Root note has "root" noteId */
@@ -620,9 +642,6 @@ class Note extends Entity {
     }
 
     beforeSaving() {
-        // we do this here because encryption needs the note ID for the IV
-        this.generateIdIfNecessary();
-
         if (!this.isDeleted) {
             this.isDeleted = false;
         }

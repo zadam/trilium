@@ -31,5 +31,3 @@ SELECT noteId, title, isProtected, isDeleted, dateCreated, dateModified, type, m
 DROP TABLE notes;
 
 ALTER TABLE notes_mig RENAME TO notes;
-
-CREATE INDEX `IDX_notes_isDeleted` ON `notes` (`isDeleted`);
