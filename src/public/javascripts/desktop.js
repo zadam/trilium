@@ -94,6 +94,13 @@ $(document).on("click", "button[data-help-page]", e => {
 
 $("#logout-button").toggle(!utils.isElectron());
 
+$("#logout-button").click(() => {
+    const $logoutForm = $('<form action="logout" method="POST">');
+
+    $("body").append($logoutForm);
+    $logoutForm.submit();
+});
+
 $("#tree").on("click", ".unhoist-button", hoistedNoteService.unhoist);
 
 if (utils.isElectron()) {
