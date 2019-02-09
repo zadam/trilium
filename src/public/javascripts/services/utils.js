@@ -45,7 +45,7 @@ function now() {
 }
 
 function isElectron() {
-    return window && window.process && window.process.type;
+    return !!(window && window.process && window.process.type);
 }
 
 function isMac() {

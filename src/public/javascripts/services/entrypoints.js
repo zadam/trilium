@@ -94,13 +94,18 @@ function registerEntrypoints() {
 
     utils.bindShortcut('ctrl+r', utils.reloadApp);
 
-    utils.bindShortcut('ctrl+shift+i', () => {
-        if (utils.isElectron()) {
+    $("#open-dev-tools-button").toggle(utils.isElectron());
+
+    if (utils.isElectron()) {
+        const openDevTools = () => {
             require('electron').remote.getCurrentWindow().toggleDevTools();
 
             return false;
-        }
-    });
+        };
+
+        utils.bindShortcut('ctrl+shift+i', openDevTools);
+        $("#open-dev-tools-button").click(openDevTools);
+    }
 
     function openInPageSearch() {
         if (utils.isElectron()) {
