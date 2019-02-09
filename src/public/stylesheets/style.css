@@ -118,7 +118,7 @@ button.close {
 }
 
 .nav-link.active {
-    background-color: var(--more-accented-background-color) !important;
+    background-color: inherit;
     color: var(--main-text-color) !important;
 }
 
@@ -576,6 +576,10 @@ button.icon-button {
 
 #note-actions .dropdown-menu {
     width: 15em;
+}
+
+#global-menu .dropdown-menu {
+    width: 20em;
 }
 
 .ck.ck-block-toolbar-button {
