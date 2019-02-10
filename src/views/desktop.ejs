@@ -99,8 +99,6 @@
             <a id="toggle-search-button" title="Search in notes. Shortcut CTRL+S" class="icon-action jam jam-search"></a>
         </div>
 
-        <input type="file" id="import-upload" style="display: none" />
-
         <div id="search-box">
             <div style="display: flex; align-items: center; flex-wrap: wrap;">
                 <input name="search-text" id="search-text" placeholder="Search text, labels" style="flex-grow: 100; margin-left: 5px; margin-right: 5px; flex-basis: 5em; min-width: 0;" autocomplete="off">
@@ -215,6 +213,7 @@
     <% include dialogs/branch_prefix.ejs %>
     <% include dialogs/event_log.ejs %>
     <% include dialogs/export.ejs %>
+    <% include dialogs/import.ejs %>
     <% include dialogs/jump_to_note.ejs %>
     <% include dialogs/markdown_import.ejs %>
     <% include dialogs/note_revisions.ejs %>

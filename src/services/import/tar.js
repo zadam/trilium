@@ -33,11 +33,6 @@ async function importTar(fileBuffer, importRootNote) {
             return "";
         }
 
-        // we allow references to root and they don't need translation
-        if (origNoteId === 'root') {
-            return origNoteId;
-        }
-
         if (!noteIdMap[origNoteId]) {
             noteIdMap[origNoteId] = utils.newEntityId();
         }

@@ -3,29 +3,21 @@ import protectedSessionHolder from './protected_session_holder.js';
 import utils from './utils.js';
 import server from './server.js';
 
+const $fileUploadInput = $("#import-file-upload-input");
+
 function exportBranch(branchId, type, format) {
     const url = utils.getHost() + `/api/notes/${branchId}/export/${type}/${format}?protectedSessionId=` + encodeURIComponent(protectedSessionHolder.getProtectedSessionId());
-
-    console.log(url);
 
     utils.download(url);
 }
 
-let importNoteId;
-
-function importIntoNote(noteId) {
-    importNoteId = noteId;
-
-    $("#import-upload").trigger('click');
-}
-
-$("#import-upload").change(async function() {
+async function importIntoNote(importNoteId) {
     const formData = new FormData();
-    formData.append('upload', this.files[0]);
+    formData.append('upload', $fileUploadInput[0].files[0]);
 
     // this is done to reset the field otherwise triggering import same file again would not work
     // https://github.com/zadam/trilium/issues/388
-    $("#import-upload").val('');
+    $fileUploadInput.val('');
 
     await $.ajax({
         url: baseApiUrl + 'notes/' + importNoteId + '/import',
@@ -46,7 +38,7 @@ $("#import-upload").change(async function() {
                 node.setExpanded(true);
             }
         });
-});
+}
 
 export default {
     exportBranch,
