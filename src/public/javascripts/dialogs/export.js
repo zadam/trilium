@@ -1,6 +1,7 @@
 import treeService from '../services/tree.js';
 import treeUtils from "../services/tree_utils.js";
-import exportService from "../services/export.js";
+import utils from "../services/utils.js";
+import protectedSessionHolder from "../services/protected_session_holder.js";
 
 const $dialog = $("#export-dialog");
 const $form = $("#export-form");
@@ -46,12 +47,18 @@ $form.submit(() => {
 
     const currentNode = treeService.getCurrentNode();
 
-    exportService.exportBranch(currentNode.data.branchId, exportType, exportFormat);
+    exportBranch(currentNode.data.branchId, exportType, exportFormat);
 
     $dialog.modal('hide');
 
     return false;
 });
+
+function exportBranch(branchId, type, format) {
+    const url = utils.getHost() + `/api/notes/${branchId}/export/${type}/${format}?protectedSessionId=` + encodeURIComponent(protectedSessionHolder.getProtectedSessionId());
+
+    utils.download(url);
+}
 
 $('input[name=export-type]').change(function () {
     if (this.value === 'subtree') {
