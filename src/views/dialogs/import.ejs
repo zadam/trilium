@@ -9,6 +9,10 @@
             </div>
             <form id="import-form">
                 <div class="modal-body">
+                    <div id="import-progress-count-wrapper" class="alert alert-primary" style="padding: 15px;">
+                        <strong>Note import progress count:</strong> <span id="import-progress-count"></span>
+                    </div>
+
                     <div class="form-group">
                         <label for="import-file-upload-input"><strong>Choose import file</strong></label>
 
@@ -26,10 +30,6 @@
                             <br/>
                             Trilium <code>.tar</code> export files can contain executable scripts which may contain harmful behavior. Safe import will deactivate automatic execution of all imported scripts. Uncheck "Safe import" only if the imported tar archive is supposed to contain executable scripts and you completely trust the contents of the import file.
                         </div>
-                    </div>
-
-                    <div id="import-progress-count-wrapper">
-                        <strong>Note import progress count:</strong> <span id="import-progress-count"></span>
                     </div>
                 </div>
                 <div class="modal-footer">

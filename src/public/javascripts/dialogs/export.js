@@ -12,8 +12,8 @@ const $subtreeFormats = $("#export-subtree-formats");
 const $singleFormats = $("#export-single-formats");
 const $subtreeType = $("#export-type-subtree");
 const $singleType = $("#export-type-single");
-const $exportNoteCountWrapper = $("#export-progress-count-wrapper");
-const $exportNoteCount = $("#export-progress-count");
+const $exportProgressWrapper = $("#export-progress-count-wrapper");
+const $exportProgressCount = $("#export-progress-count");
 const $exportButton = $("#export-button");
 
 let exportId = '';
@@ -22,8 +22,8 @@ async function showDialog(defaultType) {
     // each opening of the dialog resets the exportId so we don't associate it with previous exports anymore
     exportId = '';
     $exportButton.removeAttr("disabled");
-    $exportNoteCountWrapper.hide();
-    $exportNoteCount.text('0');
+    $exportProgressWrapper.hide();
+    $exportProgressCount.text('0');
 
     if (defaultType === 'subtree') {
         $subtreeType.prop("checked", true).change();
@@ -108,9 +108,9 @@ messagingService.subscribeToMessages(async message => {
     }
 
     if (message.type === 'export-progress-count') {
-        $exportNoteCountWrapper.show();
+        $exportProgressWrapper.slideDown();
 
-        $exportNoteCount.text(message.progressCount);
+        $exportProgressCount.text(message.progressCount);
     }
     else if (message.type === 'export-finished') {
         $dialog.modal('hide');

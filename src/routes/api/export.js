@@ -20,7 +20,7 @@ class ExportContext {
     async increaseProgressCount() {
         this.progressCount++;
 
-        if (Date.now() - this.lastSentCountTs >= 200) {
+        if (Date.now() - this.lastSentCountTs >= 500) {
             this.lastSentCountTs = Date.now();
 
             await messagingService.sendMessageToAllClients({

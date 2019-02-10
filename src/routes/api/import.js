@@ -17,20 +17,20 @@ class ImportContext {
         // to have multiple imports going at the same time
         this.importId = importId;
         // // count is mean to represent count of exported notes where practical, otherwise it's just some measure of progress
-        this.count = 0;
+        this.progressCount = 0;
         this.lastSentCountTs = Date.now();
     }
 
     async increaseProgressCount() {
-        this.count++;
+        this.progressCount++;
 
-        if (Date.now() - this.lastSentCountTs >= 200) {
+        if (Date.now() - this.lastSentCountTs >= 500) {
             this.lastSentCountTs = Date.now();
 
             await messagingService.sendMessageToAllClients({
                 importId: this.importId,
                 type: 'import-progress-count',
-                count: this.count
+                progressCount: this.progressCount
             });
         }
     }

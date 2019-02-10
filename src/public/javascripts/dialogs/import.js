@@ -9,8 +9,8 @@ const $dialog = $("#import-dialog");
 const $form = $("#import-form");
 const $noteTitle = $dialog.find(".note-title");
 const $fileUploadInput = $("#import-file-upload-input");
-const $importNoteCountWrapper = $("#import-progress-count-wrapper");
-const $importNoteCount = $("#import-progress-count");
+const $importProgressCountWrapper = $("#import-progress-count-wrapper");
+const $importProgressCount = $("#import-progress-count");
 const $importButton = $("#import-button");
 
 let importId;
@@ -18,8 +18,8 @@ let importId;
 async function showDialog() {
     // each opening of the dialog resets the importId so we don't associate it with previous imports anymore
     importId = '';
-    $importNoteCountWrapper.hide();
-    $importNoteCount.text('0');
+    $importProgressCountWrapper.hide();
+    $importProgressCount.text('0');
     $fileUploadInput.val('').change(); // to trigger Import button disabling listener below
 
     glob.activeDialog = $dialog;
@@ -75,9 +75,9 @@ messagingService.subscribeToMessages(async message => {
     }
 
     if (message.type === 'import-progress-count') {
-        $importNoteCountWrapper.show();
+        $importProgressCountWrapper.slideDown();
 
-        $importNoteCount.text(message.progressCount);
+        $importProgressCount.text(message.progressCount);
     }
     else if (message.type === 'import-finished') {
         $dialog.modal('hide');
