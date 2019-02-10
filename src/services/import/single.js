@@ -20,7 +20,7 @@ async function importMarkdown(importContext, file, parentNote) {
         mime: 'text/html'
     });
 
-    importContext.increaseCount();
+    importContext.increaseProgressCount();
     importContext.importFinished(note.noteId);
 
     return note;
@@ -35,7 +35,7 @@ async function importHtml(importContext, file, parentNote) {
         mime: 'text/html'
     });
 
-    importContext.increaseCount();
+    importContext.increaseProgressCount();
     importContext.importFinished(note.noteId);
 
     return note;

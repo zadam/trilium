@@ -218,7 +218,7 @@ async function importEnex(importContext, file, parentNote) {
             mime: 'text/html'
         })).note;
 
-        importContext.increaseCount();
+        importContext.increaseProgressCount();
 
         const noteContent = await noteEntity.getNoteContent();
 
@@ -240,7 +240,7 @@ async function importEnex(importContext, file, parentNote) {
                     mime: resource.mime
                 })).note;
 
-                importContext.increaseCount();
+                importContext.increaseProgressCount();
 
                 const resourceLink = `<a href="#root/${resourceNote.noteId}">${utils.escapeHtml(resource.title)}</a>`;
 

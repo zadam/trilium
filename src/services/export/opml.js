@@ -3,7 +3,7 @@
 const repository = require("../repository");
 const utils = require('../utils');
 
-async function exportToOpml(branch, res) {
+async function exportToOpml(exportContext, branch, res) {
     const note = await branch.getNote();
 
     async function exportNoteInner(branchId) {
@@ -20,6 +20,8 @@ async function exportToOpml(branch, res) {
         const preparedContent = prepareText(await note.getContent());
 
         res.write(`<outline title="${preparedTitle}" text="${preparedContent}">\n`);
+
+        exportContext.increaseProgressCount();
 
         for (const child of await note.getChildBranches()) {
             await exportNoteInner(child.branchId);
@@ -45,6 +47,8 @@ async function exportToOpml(branch, res) {
     res.write(`</body>
 </opml>`);
     res.end();
+
+    exportContext.exportFinished();
 }
 
 function prepareText(text) {

@@ -11,9 +11,11 @@ const utils = require('../utils');
 const sanitize = require("sanitize-filename");
 
 /**
- * @param format - 'html' or 'markdown'
+ * @param {ExportContext} exportContext
+ * @param {Branch} branch
+ * @param {string} format - 'html' or 'markdown'
  */
-async function exportToTar(branch, format, res) {
+async function exportToTar(exportContext, branch, format, res) {
     let turndownService = format === 'markdown' ? new TurndownService() : null;
 
     const pack = tar.pack();
@@ -114,6 +116,8 @@ async function exportToTar(branch, format, res) {
             })
         };
 
+        exportContext.increaseProgressCount();
+
         if (note.type === 'text') {
             meta.format = format;
         }
@@ -186,6 +190,8 @@ async function exportToTar(branch, format, res) {
             pack.entry({name: path + noteMeta.dataFileName, size: content.length}, content);
         }
 
+        exportContext.increaseProgressCount();
+
         if (noteMeta.children && noteMeta.children.length > 0) {
             const directoryPath = path + noteMeta.dirFileName;
 
@@ -231,6 +237,8 @@ async function exportToTar(branch, format, res) {
     res.setHeader('Content-Type', 'application/tar');
 
     pack.pipe(res);
+
+    exportContext.exportFinished();
 }
 
 module.exports = {

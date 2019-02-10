@@ -50,7 +50,7 @@ function toHtml(text) {
 async function importOutline(importContext, outline, parentNoteId) {
     const {note} = await noteService.createNote(parentNoteId, outline.$.title, toHtml(outline.$.text));
 
-    importContext.increaseCount();
+    importContext.increaseProgressCount();
 
     for (const childOutline of (outline.outline || [])) {
         await importOutline(childOutline, note.noteId);

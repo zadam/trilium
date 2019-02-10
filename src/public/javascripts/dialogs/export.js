@@ -2,6 +2,8 @@ import treeService from '../services/tree.js';
 import treeUtils from "../services/tree_utils.js";
 import utils from "../services/utils.js";
 import protectedSessionHolder from "../services/protected_session_holder.js";
+import messagingService from "../services/messaging.js";
+import infoService from "../services/info.js";
 
 const $dialog = $("#export-dialog");
 const $form = $("#export-form");
@@ -10,8 +12,18 @@ const $subtreeFormats = $("#export-subtree-formats");
 const $singleFormats = $("#export-single-formats");
 const $subtreeType = $("#export-type-subtree");
 const $singleType = $("#export-type-single");
+const $exportNoteCountWrapper = $("#export-progress-count-wrapper");
+const $exportNoteCount = $("#export-progress-count");
+const $exportButton = $("#export-button");
+
+let exportId = '';
 
 async function showDialog(defaultType) {
+    // each opening of the dialog resets the exportId so we don't associate it with previous exports anymore
+    exportId = '';
+    $exportNoteCountWrapper.hide();
+    $exportNoteCount.text('0');
+
     if (defaultType === 'subtree') {
         $subtreeType.prop("checked", true).change();
     }
@@ -33,6 +45,8 @@ async function showDialog(defaultType) {
 }
 
 $form.submit(() => {
+    $exportButton.attr("disabled", "disabled");
+
     const exportType = $dialog.find("input[name='export-type']:checked").val();
 
     if (!exportType) {
@@ -49,13 +63,13 @@ $form.submit(() => {
 
     exportBranch(currentNode.data.branchId, exportType, exportFormat);
 
-    $dialog.modal('hide');
-
     return false;
 });
 
 function exportBranch(branchId, type, format) {
-    const url = utils.getHost() + `/api/notes/${branchId}/export/${type}/${format}?protectedSessionId=` + encodeURIComponent(protectedSessionHolder.getProtectedSessionId());
+    exportId = utils.randomString(10);
+
+    const url = utils.getHost() + `/api/notes/${branchId}/export/${type}/${format}/${exportId}?protectedSessionId=` + encodeURIComponent(protectedSessionHolder.getProtectedSessionId());
 
     utils.download(url);
 }
@@ -76,6 +90,30 @@ $('input[name=export-type]').change(function () {
 
         $subtreeFormats.slideUp();
         $singleFormats.slideDown();
+    }
+});
+
+messagingService.subscribeToMessages(async message => {
+    if (message.type === 'export-error') {
+        infoService.showError(message.message);
+        $dialog.modal('hide');
+        return;
+    }
+
+    if (!message.exportId || message.exportId !== exportId) {
+        // incoming messages must correspond to this export instance
+        return;
+    }
+
+    if (message.type === 'export-progress-count') {
+        $exportNoteCountWrapper.show();
+
+        $exportNoteCount.text(message.progressCount);
+    }
+    else if (message.type === 'export-finished') {
+        $dialog.modal('hide');
+
+        infoService.showMessage("Export finished successfully.");
     }
 });
 

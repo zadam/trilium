@@ -342,7 +342,7 @@ async function importTar(importContext, fileBuffer, importRootNote) {
                 log.info("Ignoring tar import entry with type " + header.type);
             }
 
-            importContext.increaseCount();
+            importContext.increaseProgressCount();
 
             next(); // ready for next entry
         });

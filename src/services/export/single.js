@@ -5,7 +5,7 @@ const mimeTypes = require('mime-types');
 const html = require('html');
 const utils = require('../utils');
 
-async function exportSingleNote(branch, format, res) {
+async function exportSingleNote(exportContext, branch, format, res) {
     const note = await branch.getNote();
 
     if (note.type === 'image' || note.type === 'file') {
@@ -54,6 +54,9 @@ async function exportSingleNote(branch, format, res) {
     res.setHeader('Content-Type', mime + '; charset=UTF-8');
 
     res.send(payload);
+
+    exportContext.increaseProgressCount();
+    exportContext.exportFinished();
 }
 
 module.exports = {

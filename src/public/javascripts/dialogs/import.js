@@ -9,8 +9,8 @@ const $dialog = $("#import-dialog");
 const $form = $("#import-form");
 const $noteTitle = $dialog.find(".note-title");
 const $fileUploadInput = $("#import-file-upload-input");
-const $importNoteCountWrapper = $("#import-note-count-wrapper");
-const $importNoteCount = $("#import-note-count");
+const $importNoteCountWrapper = $("#import-progress-count-wrapper");
+const $importNoteCount = $("#import-progress-count");
 const $importButton = $("#import-button");
 
 let importId;
@@ -74,10 +74,10 @@ messagingService.subscribeToMessages(async message => {
         return;
     }
 
-    if (message.type === 'import-note-count') {
+    if (message.type === 'import-progress-count') {
         $importNoteCountWrapper.show();
 
-        $importNoteCount.text(message.count);
+        $importNoteCount.text(message.progressCount);
     }
     else if (message.type === 'import-finished') {
         $dialog.modal('hide');
