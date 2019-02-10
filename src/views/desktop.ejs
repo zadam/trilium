@@ -73,6 +73,12 @@
                         <kbd>CTRL+SHIFT+I</kbd>
                     </a>
 
+                    <a class="dropdown-item" id="open-sql-console-button">
+                        <span class="jam jam-database"></span>
+                        Open SQL Console
+                        <kbd>ALT+O</kbd>
+                    </a>
+
                     <a class="dropdown-item" id="logout-button">
                         <span class="jam jam-log-out"></span>
                         Logout
@@ -220,6 +226,7 @@
     <% include dialogs/info.ejs %>
     <% include dialogs/prompt.ejs %>
     <% include dialogs/confirm.ejs %>
+    <% include dialogs/help.ejs %>
 </div>
 
 <webview class="electron-in-page-search-window" nodeintegration disablewebsecurity src="libraries/electron-in-page-search/search-window.html"></webview>

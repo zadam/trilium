@@ -12,6 +12,7 @@ import recentChangesDialog from "../dialogs/recent_changes.js";
 import sqlConsoleDialog from "../dialogs/sql_console.js";
 import searchNotesService from "./search_notes.js";
 import attributesDialog from "../dialogs/attributes.js";
+import helpDialog from "../dialogs/help.js";
 import protectedSessionService from "./protected_session.js";
 
 function registerEntrypoints() {
@@ -54,6 +55,10 @@ function registerEntrypoints() {
 
     $("#options-button").click(optionsDialog.showDialog);
 
+    $("#show-help-button").click(helpDialog.showDialog);
+    utils.bindShortcut('alt+h', helpDialog.showDialog);
+
+    $("#open-sql-console-button").click(sqlConsoleDialog.showDialog);
     utils.bindShortcut('alt+o', sqlConsoleDialog.showDialog);
 
     if (utils.isElectron()) {

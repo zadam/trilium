@@ -183,6 +183,7 @@ function register(app) {
     route(GET, '/api/setup/sync-seed', [auth.checkBasicAuth], setupApiRoute.getSyncSeed, apiResultHandler);
     route(POST, '/api/setup/sync-seed', [auth.checkAppNotInitialized], setupApiRoute.saveSyncSeed, apiResultHandler, false);
 
+    apiRoute(GET, '/api/sql/schema', sqlRoute.getSchema);
     apiRoute(POST, '/api/sql/execute', sqlRoute.execute);
     apiRoute(POST, '/api/anonymization/anonymize', anonymizationRoute.anonymize);
 
