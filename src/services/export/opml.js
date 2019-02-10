@@ -10,7 +10,7 @@ async function exportToOpml(exportContext, branch, res) {
         const branch = await repository.getBranch(branchId);
         const note = await branch.getNote();
 
-        if (await note.hasLabel('excludeFromExport')) {
+        if (!note.isStringNote() || await note.hasLabel('excludeFromExport')) {
             return;
         }
 

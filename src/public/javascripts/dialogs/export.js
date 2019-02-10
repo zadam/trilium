@@ -21,6 +21,7 @@ let exportId = '';
 async function showDialog(defaultType) {
     // each opening of the dialog resets the exportId so we don't associate it with previous exports anymore
     exportId = '';
+    $exportButton.removeAttr("disabled");
     $exportNoteCountWrapper.hide();
     $exportNoteCount.text('0');
 
@@ -45,6 +46,7 @@ async function showDialog(defaultType) {
 }
 
 $form.submit(() => {
+    // disabling so export can't be triggered again
     $exportButton.attr("disabled", "disabled");
 
     const exportType = $dialog.find("input[name='export-type']:checked").val();
