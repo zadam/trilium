@@ -10,11 +10,12 @@ const $noteTitle = $dialog.find(".note-title");
 const $fileUploadInput = $("#import-file-upload-input");
 const $importNoteCountWrapper = $("#import-note-count-wrapper");
 const $importNoteCount = $("#import-note-count");
+const $importButton = $("#import-button");
 
 async function showDialog() {
     $importNoteCountWrapper.hide();
     $importNoteCount.text('0');
-    $fileUploadInput.val('');
+    $fileUploadInput.val('').change(); // to trigger Import button disabling listener below
 
     glob.activeDialog = $dialog;
 
@@ -26,6 +27,9 @@ async function showDialog() {
 
 $form.submit(() => {
     const currentNode = treeService.getCurrentNode();
+
+    // disabling so that import is not triggered again.
+    $importButton.attr("disabled", "disabled");
 
     importIntoNote(currentNode.data.noteId);
 
@@ -45,27 +49,37 @@ function importIntoNote(importNoteId) {
         contentType: false, // NEEDED, DON'T REMOVE THIS
         processData: false, // NEEDED, DON'T REMOVE THIS
     })
-        .fail((xhr, status, error) => alert('Import error: ' + xhr.responseText))
-        .done(async note => {
-            $dialog.modal('hide');
-
-            infoService.showMessage("Import finished successfully.");
-
-            await treeService.reload();
-
-            if (note) {
-                const node = await treeService.activateNote(note.noteId);
-
-                node.setExpanded(true);
-            }
-        });
+        // we actually ignore the error since it can be caused by HTTP timeout and use WS messages instead.
+        .fail((xhr, status, error) => {});
 }
 
-messagingService.subscribeToMessages(message => {
-    if (message.type === 'importNoteCount') {
+messagingService.subscribeToMessages(async message => {
+    if (message.type === 'import-note-count') {
         $importNoteCountWrapper.show();
 
         $importNoteCount.text(message.count);
+    }
+    else if (message.type === 'import-finished') {
+        $dialog.modal('hide');
+
+        infoService.showMessage("Import finished successfully.");
+
+        await treeService.reload();
+
+        if (message.noteId) {
+            const node = await treeService.activateNote(message.noteId);
+
+            node.setExpanded(true);
+        }
+    }
+});
+
+$fileUploadInput.change(() => {
+    if ($fileUploadInput.val()) {
+        $importButton.removeAttr("disabled");
+    }
+    else {
+        $importButton.attr("disabled", "disabled");
     }
 });
 

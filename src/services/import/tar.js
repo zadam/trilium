@@ -342,7 +342,7 @@ async function importTar(fileBuffer, importRootNote) {
             if (Date.now() - lastSentCountTs >= 1000) {
                 lastSentCountTs = Date.now();
 
-                messagingService.sendMessageToAllClients({ type: 'importNoteCount', count: importNoteCount });
+                messagingService.importNoteCount(importNoteCount);
             }
 
             next(); // ready for next entry
@@ -378,6 +378,8 @@ async function importTar(fileBuffer, importRootNote) {
                     log.info("Link not imported since target note doesn't exist: " + JSON.stringify(link));
                 }
             }
+
+            messagingService.importFinished(firstNote);
 
             resolve(firstNote);
         });

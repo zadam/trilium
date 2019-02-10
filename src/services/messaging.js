@@ -49,10 +49,6 @@ async function sendMessage(client, message) {
     }
 }
 
-async function refreshTree() {
-    await sendMessageToAllClients({ type: 'refresh-tree' });
-}
-
 async function sendMessageToAllClients(message) {
     const jsonStr = JSON.stringify(message);
 
@@ -78,8 +74,22 @@ async function sendPing(client, lastSentSyncId) {
     });
 }
 
+async function refreshTree() {
+    await sendMessageToAllClients({ type: 'refresh-tree' });
+}
+
+async function importNoteCount(count) {
+    await sendMessageToAllClients({ type: 'import-note-count', count: count });
+}
+
+async function importFinished(firstNote) {
+    await sendMessageToAllClients({ type: 'import-finished', noteId: firstNote.noteId });
+}
+
 module.exports = {
     init,
+    sendMessageToAllClients,
     refreshTree,
-    sendMessageToAllClients
+    importNoteCount,
+    importFinished
 };
