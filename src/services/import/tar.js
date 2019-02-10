@@ -24,7 +24,7 @@ let lastSentCountTs = Date.now();
  */
 async function importTar(importContext, fileBuffer, importRootNote) {
     importNoteCount = 0;
-
+    throw new Error("Hello");
     // maps from original noteId (in tar file) to newly generated noteId
     const noteIdMap = {};
     const attributes = [];

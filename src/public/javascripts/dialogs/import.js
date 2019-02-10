@@ -63,6 +63,12 @@ function importIntoNote(importNoteId) {
 }
 
 messagingService.subscribeToMessages(async message => {
+    if (message.type === 'import-error') {
+        infoService.showError(message.message);
+        $dialog.modal('hide');
+        return;
+    }
+
     if (!message.importId || message.importId !== importId) {
         // incoming messages must correspond to this import instance
         return;
