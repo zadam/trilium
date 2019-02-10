@@ -6,6 +6,7 @@ const utils = require('../../services/utils');
 const log = require('../../services/log');
 const repository = require('../../services/repository');
 const noteService = require('../../services/notes');
+const messagingService = require('../../services/messaging');
 const Branch = require('../../entities/branch');
 const tar = require('tar-stream');
 const stream = require('stream');
@@ -13,7 +14,12 @@ const path = require('path');
 const commonmark = require('commonmark');
 const mimeTypes = require('mime-types');
 
+let importNoteCount;
+let lastSentCountTs = Date.now();
+
 async function importTar(fileBuffer, importRootNote) {
+    importNoteCount = 0;
+
     // maps from original noteId (in tar file) to newly generated noteId
     const noteIdMap = {};
     const attributes = [];
@@ -287,7 +293,7 @@ async function importTar(fileBuffer, importRootNote) {
         }
     }
 
-    /** @return path without leading or trailing slash and backslashes converted to forward ones*/
+    /** @return {string} path without leading or trailing slash and backslashes converted to forward ones*/
     function normalizeFilePath(filePath) {
         filePath = filePath.replace(/\\/g, "/");
 
@@ -314,7 +320,7 @@ async function importTar(fileBuffer, importRootNote) {
         // call next when you are done with this entry
 
         stream.on('end', async function() {
-            let filePath = normalizeFilePath(header.name);
+            const filePath = normalizeFilePath(header.name);
 
             const content = Buffer.concat(chunks);
 
@@ -329,6 +335,14 @@ async function importTar(fileBuffer, importRootNote) {
             }
             else {
                 log.info("Ignoring tar import entry with type " + header.type);
+            }
+
+            importNoteCount++;
+
+            if (Date.now() - lastSentCountTs >= 1000) {
+                lastSentCountTs = Date.now();
+
+                messagingService.sendMessageToAllClients({ type: 'importNoteCount', count: importNoteCount });
             }
 
             next(); // ready for next entry

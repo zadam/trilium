@@ -132,7 +132,7 @@ async function pullSync(syncContext) {
         }
 
         log.info("Pulled " + rows.length + " changes from " + changesUri + " in "
-            + (new Date().getTime() - startDate.getTime()) + "ms");
+            + (Date.now() - startDate.getTime()) + "ms");
 
         for (const {sync, entity} of rows) {
             if (!sourceIdService.isLocalSourceId(sync.sourceId)) {
@@ -194,7 +194,7 @@ async function pushSync(syncContext) {
             entities: syncRecords
         });
 
-        log.info(`Pushing ${syncRecords.length} syncs in ` + (new Date().getTime() - startDate.getTime()) + "ms");
+        log.info(`Pushing ${syncRecords.length} syncs in ` + (Date.now() - startDate.getTime()) + "ms");
 
         lastSyncedPush = syncRecords[syncRecords.length - 1].sync.id;
 

@@ -38,7 +38,7 @@ function handleMessage(event) {
     }
 
     if (message.type === 'sync') {
-        lastPingTs = new Date().getTime();
+        lastPingTs = Date.now();
 
         if (message.data.length > 0) {
             console.debug(utils.now(), "Sync data: ", message.data);
@@ -81,10 +81,10 @@ setTimeout(() => {
     ws = connectWebSocket();
 
     lastSyncId = glob.maxSyncIdAtLoad;
-    lastPingTs = new Date().getTime();
+    lastPingTs = Date.now();
 
     setInterval(async () => {
-        if (new Date().getTime() - lastPingTs > 30000) {
+        if (Date.now() - lastPingTs > 30000) {
             console.log("Lost connection to server");
         }
 

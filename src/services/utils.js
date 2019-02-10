@@ -58,7 +58,7 @@ async function stopWatch(what, func) {
 
     const ret = await func();
 
-    const tookMs = new Date().getTime() - start.getTime();
+    const tookMs = Date.now() - start.getTime();
 
     console.log(`${what} took ${tookMs}ms`);
 

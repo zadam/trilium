@@ -397,7 +397,7 @@ async function deleteNote(branch) {
 }
 
 async function cleanupDeletedNotes() {
-    const cutoffDate = new Date(new Date().getTime() - 48 * 3600 * 1000);
+    const cutoffDate = new Date(Date.now() - 48 * 3600 * 1000);
 
     // it's better to not use repository for this because it will complain about saving protected notes
     // out of protected session

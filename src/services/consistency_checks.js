@@ -430,7 +430,7 @@ async function runChecks() {
 
         await runAllChecks();
 
-        elapsedTimeMs = new Date().getTime() - startTime.getTime();
+        elapsedTimeMs = Date.now() - startTime.getTime();
     });
 
     if (fixedIssues) {

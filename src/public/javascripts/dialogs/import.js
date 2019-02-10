@@ -2,13 +2,20 @@ import treeService from '../services/tree.js';
 import treeUtils from "../services/tree_utils.js";
 import server from "../services/server.js";
 import infoService from "../services/info.js";
+import messagingService from "../services/messaging.js";
 
 const $dialog = $("#import-dialog");
 const $form = $("#import-form");
 const $noteTitle = $dialog.find(".note-title");
 const $fileUploadInput = $("#import-file-upload-input");
+const $importNoteCountWrapper = $("#import-note-count-wrapper");
+const $importNoteCount = $("#import-note-count");
 
 async function showDialog() {
+    $importNoteCountWrapper.hide();
+    $importNoteCount.text('0');
+    $fileUploadInput.val('');
+
     glob.activeDialog = $dialog;
 
     const currentNode = treeService.getCurrentNode();
@@ -29,10 +36,6 @@ function importIntoNote(importNoteId) {
     const formData = new FormData();
     formData.append('upload', $fileUploadInput[0].files[0]);
 
-    // this is done to reset the field otherwise triggering import same file again would not work
-    // https://github.com/zadam/trilium/issues/388
-    $fileUploadInput.val('');
-
     $.ajax({
         url: baseApiUrl + 'notes/' + importNoteId + '/import',
         headers: server.getHeaders(),
@@ -46,7 +49,7 @@ function importIntoNote(importNoteId) {
         .done(async note => {
             $dialog.modal('hide');
 
-            infoService.showMessage("Import finished successfully.")
+            infoService.showMessage("Import finished successfully.");
 
             await treeService.reload();
 
@@ -57,6 +60,14 @@ function importIntoNote(importNoteId) {
             }
         });
 }
+
+messagingService.subscribeToMessages(message => {
+    if (message.type === 'importNoteCount') {
+        $importNoteCountWrapper.show();
+
+        $importNoteCount.text(message.count);
+    }
+});
 
 export default {
     showDialog
