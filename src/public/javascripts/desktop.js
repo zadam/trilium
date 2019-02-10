@@ -103,6 +103,10 @@ $("#logout-button").click(() => {
 
 $("#tree").on("click", ".unhoist-button", hoistedNoteService.unhoist);
 
+$("body").on("click", "a.external", function () {
+    window.open($(this).attr("href"), '_blank');
+});
+
 if (utils.isElectron()) {
     require('electron').ipcRenderer.on('create-day-sub-note', async function(event, parentNoteId) {
         // this might occur when day note had to be created

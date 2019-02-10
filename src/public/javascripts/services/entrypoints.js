@@ -56,7 +56,7 @@ function registerEntrypoints() {
     $("#options-button").click(optionsDialog.showDialog);
 
     $("#show-help-button").click(helpDialog.showDialog);
-    utils.bindShortcut('alt+h', helpDialog.showDialog);
+    utils.bindShortcut('f1', helpDialog.showDialog);
 
     $("#open-sql-console-button").click(sqlConsoleDialog.showDialog);
     utils.bindShortcut('alt+o', sqlConsoleDialog.showDialog);
