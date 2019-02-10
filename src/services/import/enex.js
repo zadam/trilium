@@ -19,7 +19,7 @@ function parseDate(text) {
 let note = {};
 let resource;
 
-async function importEnex(file, parentNote) {
+async function importEnex(importContext, file, parentNote) {
     const saxStream = sax.createStream(true);
     const xmlBuilder = new xml2js.Builder({ headless: true });
     const parser = new xml2js.Parser({ explicitArray: true });
@@ -218,6 +218,8 @@ async function importEnex(file, parentNote) {
             mime: 'text/html'
         })).note;
 
+        importContext.increaseCount();
+
         const noteContent = await noteEntity.getNoteContent();
 
         for (const resource of resources) {
@@ -232,39 +234,40 @@ async function importEnex(file, parentNote) {
             }
 
             const createResourceNote = async () => {
-              const resourceNote = (await noteService.createNote(noteEntity.noteId, resource.title, resource.content, {
-                attributes: resource.attributes,
-                type: 'file',
-                mime: resource.mime
-              })).note;
+                const resourceNote = (await noteService.createNote(noteEntity.noteId, resource.title, resource.content, {
+                    attributes: resource.attributes,
+                    type: 'file',
+                    mime: resource.mime
+                })).note;
 
-              const resourceLink = `<a href="#root/${resourceNote.noteId}">${utils.escapeHtml(resource.title)}</a>`;
+                importContext.increaseCount();
 
-              noteContent.content = noteContent.content.replace(mediaRegex, resourceLink);
+                const resourceLink = `<a href="#root/${resourceNote.noteId}">${utils.escapeHtml(resource.title)}</a>`;
+
+                noteContent.content = noteContent.content.replace(mediaRegex, resourceLink);
             };
 
             if (["image/jpeg", "image/png", "image/gif"].includes(resource.mime)) {
-              try {
-                const originalName = "image." + resource.mime.substr(6);
+                try {
+                    const originalName = "image." + resource.mime.substr(6);
 
-                const { url } = await imageService.saveImage(resource.content, originalName, noteEntity.noteId);
+                    const {url} = await imageService.saveImage(resource.content, originalName, noteEntity.noteId);
 
-                const imageLink = `<img src="${url}">`;
+                    const imageLink = `<img src="${url}">`;
 
-                noteContent.content = noteContent.content.replace(mediaRegex, imageLink);
+                    noteContent.content = noteContent.content.replace(mediaRegex, imageLink);
 
-                if (!noteContent.content.includes(imageLink)) {
-                    // if there wasn't any match for the reference, we'll add the image anyway
-                    // otherwise image would be removed since no note would include it
-                    noteContent.content += imageLink;
+                    if (!noteContent.content.includes(imageLink)) {
+                        // if there wasn't any match for the reference, we'll add the image anyway
+                        // otherwise image would be removed since no note would include it
+                        noteContent.content += imageLink;
+                    }
+                } catch (e) {
+                    log.error("error when saving image from ENEX file: " + e);
+                    await createResourceNote();
                 }
-              } catch (e) {
-                log.error("error when saving image from ENEX file: " + e);
+            } else {
                 await createResourceNote();
-              }
-            }
-            else {
-              await createResourceNote();
             }
         }
 
@@ -295,7 +298,12 @@ async function importEnex(file, parentNote) {
     return new Promise((resolve, reject) =>
     {
         // resolve only when we parse the whole document AND saving of all notes have been finished
-        saxStream.on("end", () => { Promise.all(saveNotePromises).then(() => resolve(rootNote)) });
+        saxStream.on("end", () => { Promise.all(saveNotePromises).then(() => {
+                importContext.importFinished(rootNote.noteId);
+
+                resolve(rootNote);
+            });
+        });
 
         const bufferStream = new stream.PassThrough();
         bufferStream.end(file.buffer);

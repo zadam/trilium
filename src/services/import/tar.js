@@ -6,7 +6,6 @@ const utils = require('../../services/utils');
 const log = require('../../services/log');
 const repository = require('../../services/repository');
 const noteService = require('../../services/notes');
-const messagingService = require('../../services/messaging');
 const Branch = require('../../entities/branch');
 const tar = require('tar-stream');
 const stream = require('stream');
@@ -17,7 +16,13 @@ const mimeTypes = require('mime-types');
 let importNoteCount;
 let lastSentCountTs = Date.now();
 
-async function importTar(fileBuffer, importRootNote) {
+/**
+ * @param {ImportContext} importContext
+ * @param {Buffer} fileBuffer
+ * @param {Note} importRootNote
+ * @return {Promise<*>}
+ */
+async function importTar(importContext, fileBuffer, importRootNote) {
     importNoteCount = 0;
 
     // maps from original noteId (in tar file) to newly generated noteId
@@ -337,13 +342,7 @@ async function importTar(fileBuffer, importRootNote) {
                 log.info("Ignoring tar import entry with type " + header.type);
             }
 
-            importNoteCount++;
-
-            if (Date.now() - lastSentCountTs >= 1000) {
-                lastSentCountTs = Date.now();
-
-                messagingService.importNoteCount(importNoteCount);
-            }
+            importContext.increaseCount();
 
             next(); // ready for next entry
         });
@@ -379,7 +378,7 @@ async function importTar(fileBuffer, importRootNote) {
                 }
             }
 
-            messagingService.importFinished(firstNote);
+            importContext.importFinished();
 
             resolve(firstNote);
         });

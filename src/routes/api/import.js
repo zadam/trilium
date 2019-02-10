@@ -5,12 +5,45 @@ const enexImportService = require('../../services/import/enex');
 const opmlImportService = require('../../services/import/opml');
 const tarImportService = require('../../services/import/tar');
 const singleImportService = require('../../services/import/single');
+const messagingService = require('../../services/messaging');
 const cls = require('../../services/cls');
 const path = require('path');
 const noteCacheService = require('../../services/note_cache');
 
+class ImportContext {
+    constructor(importId) {
+        // importId is to distinguish between different import events - it is possible (though not recommended)
+        // to have multiple imports going at the same time
+        this.importId = importId;
+        this.count = 0;
+        this.lastSentCountTs = Date.now();
+    }
+
+    async increaseCount() {
+        this.count++;
+
+        if (Date.now() - this.lastSentCountTs >= 1000) {
+            this.lastSentCountTs = Date.now();
+
+            await messagingService.sendMessageToAllClients({
+                importId: this.importId,
+                type: 'import-note-count',
+                count: this.count
+            });
+        }
+    }
+
+    async importFinished(noteId) {
+        await messagingService.sendMessageToAllClients({
+            importId: this.importId,
+            type: 'import-finished',
+            noteId: noteId
+        });
+    }
+}
+
 async function importToBranch(req) {
-    const parentNoteId = req.params.parentNoteId;
+    const {parentNoteId, importId} = req.params;
     const file = req.file;
 
     if (!file) {
@@ -31,20 +64,22 @@ async function importToBranch(req) {
 
     let note; // typically root of the import - client can show it after finishing the import
 
+    const importContext = new ImportContext(importId);
+
     if (extension === '.tar') {
-        note = await tarImportService.importTar(file.buffer, parentNote);
+        note = await tarImportService.importTar(importContext, file.buffer, parentNote);
     }
     else if (extension === '.opml') {
-        note = await opmlImportService.importOpml(file.buffer, parentNote);
+        note = await opmlImportService.importOpml(importContext, file.buffer, parentNote);
     }
     else if (extension === '.md') {
-        note = await singleImportService.importMarkdown(file, parentNote);
+        note = await singleImportService.importMarkdown(importContext, file, parentNote);
     }
     else if (extension === '.html' || extension === '.htm') {
-        note = await singleImportService.importHtml(file, parentNote);
+        note = await singleImportService.importHtml(importContext, file, parentNote);
     }
     else if (extension === '.enex') {
-        note = await enexImportService.importEnex(file, parentNote);
+        note = await enexImportService.importEnex(importContext, file, parentNote);
     }
     else {
         return [400, `Unrecognized extension ${extension}, must be .tar or .opml`];

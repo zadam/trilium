@@ -1,4 +1,5 @@
 import treeService from '../services/tree.js';
+import utils from '../services/utils.js';
 import treeUtils from "../services/tree_utils.js";
 import server from "../services/server.js";
 import infoService from "../services/info.js";
@@ -12,7 +13,11 @@ const $importNoteCountWrapper = $("#import-note-count-wrapper");
 const $importNoteCount = $("#import-note-count");
 const $importButton = $("#import-button");
 
+let importId;
+
 async function showDialog() {
+    // each opening of the dialog resets the importId so we don't associate it with previous imports anymore
+    importId = '';
     $importNoteCountWrapper.hide();
     $importNoteCount.text('0');
     $fileUploadInput.val('').change(); // to trigger Import button disabling listener below
@@ -40,8 +45,12 @@ function importIntoNote(importNoteId) {
     const formData = new FormData();
     formData.append('upload', $fileUploadInput[0].files[0]);
 
+    // we generate it here (and not on opening) for the case when you try to import multiple times from the same
+    // dialog (which shouldn't happen, but still ...)
+    importId = utils.randomString(10);
+
     $.ajax({
-        url: baseApiUrl + 'notes/' + importNoteId + '/import',
+        url: baseApiUrl + 'notes/' + importNoteId + '/import/' + importId,
         headers: server.getHeaders(),
         data: formData,
         dataType: 'json',
@@ -54,6 +63,11 @@ function importIntoNote(importNoteId) {
 }
 
 messagingService.subscribeToMessages(async message => {
+    if (!message.importId || message.importId !== importId) {
+        // incoming messages must correspond to this import instance
+        return;
+    }
+
     if (message.type === 'import-note-count') {
         $importNoteCountWrapper.show();
 
