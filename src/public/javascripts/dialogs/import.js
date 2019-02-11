@@ -12,6 +12,7 @@ const $fileUploadInput = $("#import-file-upload-input");
 const $importProgressCountWrapper = $("#import-progress-count-wrapper");
 const $importProgressCount = $("#import-progress-count");
 const $importButton = $("#import-button");
+const $safeImport = $("#safe-import");
 
 let importId;
 
@@ -21,6 +22,7 @@ async function showDialog() {
     $importProgressCountWrapper.hide();
     $importProgressCount.text('0');
     $fileUploadInput.val('').change(); // to trigger Import button disabling listener below
+    $safeImport.attr("checked", "checked");
 
     glob.activeDialog = $dialog;
 
@@ -49,8 +51,10 @@ function importIntoNote(importNoteId) {
     // dialog (which shouldn't happen, but still ...)
     importId = utils.randomString(10);
 
+    const safeImport = $safeImport.is(":checked") ? 1 : 0;
+
     $.ajax({
-        url: baseApiUrl + 'notes/' + importNoteId + '/import/' + importId,
+        url: baseApiUrl + 'notes/' + importNoteId + '/import/' + importId + '/safe/' + safeImport,
         headers: server.getHeaders(),
         data: formData,
         dataType: 'json',

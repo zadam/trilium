@@ -5,13 +5,14 @@ const sql = require('./sql');
 const utils = require('./utils');
 const Attribute = require('../entities/attribute');
 
+const ATTRIBUTE_TYPES = [ 'label', 'label-definition', 'relation', 'relation-definition' ];
+
 const BUILTIN_ATTRIBUTES = [
     // label names
     { type: 'label', name: 'disableVersioning' },
     { type: 'label', name: 'calendarRoot' },
     { type: 'label', name: 'archived' },
     { type: 'label', name: 'excludeFromExport' },
-    { type: 'label', name: 'run' },
     { type: 'label', name: 'manualTransactionHandling' },
     { type: 'label', name: 'disableInclusion' },
     { type: 'label', name: 'appCss' },
@@ -19,19 +20,20 @@ const BUILTIN_ATTRIBUTES = [
     { type: 'label', name: 'hideChildrenOverview' },
     { type: 'label', name: 'hidePromotedAttributes' },
     { type: 'label', name: 'readOnly' },
-    { type: 'label', name: 'customRequestHandler' },
-    { type: 'label', name: 'customResourceProvider' },
+    { type: 'label', name: 'run', isDangerous: true },
+    { type: 'label', name: 'customRequestHandler', isDangerous: true },
+    { type: 'label', name: 'customResourceProvider', isDangerous: true },
 
     // relation names
-    { type: 'relation', name: 'runOnNoteView' },
-    { type: 'relation', name: 'runOnNoteCreation' },
-    { type: 'relation', name: 'runOnNoteTitleChange' },
-    { type: 'relation', name: 'runOnNoteChange' },
-    { type: 'relation', name: 'runOnChildNoteCreation' },
-    { type: 'relation', name: 'runOnAttributeCreation' },
-    { type: 'relation', name: 'runOnAttributeChange' },
+    { type: 'relation', name: 'runOnNoteView', isDangerous: true },
+    { type: 'relation', name: 'runOnNoteCreation', isDangerous: true },
+    { type: 'relation', name: 'runOnNoteTitleChange', isDangerous: true },
+    { type: 'relation', name: 'runOnNoteChange', isDangerous: true },
+    { type: 'relation', name: 'runOnChildNoteCreation', isDangerous: true },
+    { type: 'relation', name: 'runOnAttributeCreation', isDangerous: true },
+    { type: 'relation', name: 'runOnAttributeChange', isDangerous: true },
     { type: 'relation', name: 'template' },
-    { type: 'relation', name: 'renderNote' }
+    { type: 'relation', name: 'renderNote', isDangerous: true }
 ];
 
 async function getNotesWithLabel(name, value) {
@@ -94,11 +96,25 @@ async function getAttributeNames(type, nameLike) {
     return names;
 }
 
+function isAttributeType(type) {
+    return ATTRIBUTE_TYPES.includes(type);
+}
+
+function isAttributeDangerous(type, name) {
+    return BUILTIN_ATTRIBUTES.some(attr => 
+        attr.type === attr.type && 
+        attr.name.toLowerCase() === name.trim().toLowerCase() &&
+        attr.isDangerous
+    );
+}
+
 module.exports = {
     getNotesWithLabel,
     getNotesWithLabels,
     getNoteWithLabel,
     createLabel,
     createAttribute,
-    getAttributeNames
+    getAttributeNames,
+    isAttributeType,
+    isAttributeDangerous
 };

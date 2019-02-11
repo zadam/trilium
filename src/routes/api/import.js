@@ -12,10 +12,13 @@ const noteCacheService = require('../../services/note_cache');
 const log = require('../../services/log');
 
 class ImportContext {
-    constructor(importId) {
+    constructor(importId, safeImport) {
         // importId is to distinguish between different import events - it is possible (though not recommended)
         // to have multiple imports going at the same time
         this.importId = importId;
+
+        this.safeImport = safeImport;
+
         // // count is mean to represent count of exported notes where practical, otherwise it's just some measure of progress
         this.progressCount = 0;
         this.lastSentCountTs = Date.now();
@@ -53,7 +56,10 @@ class ImportContext {
 }
 
 async function importToBranch(req) {
-    const {parentNoteId, importId} = req.params;
+    let {parentNoteId, importId, safeImport} = req.params;
+
+    safeImport = safeImport !== '0';
+
     const file = req.file;
 
     if (!file) {
@@ -74,7 +80,7 @@ async function importToBranch(req) {
 
     let note; // typically root of the import - client can show it after finishing the import
 
-    const importContext = new ImportContext(importId);
+    const importContext = new ImportContext(importId, safeImport);
 
     try {
         if (extension === '.tar') {

@@ -6,6 +6,7 @@ const utils = require('../../services/utils');
 const log = require('../../services/log');
 const repository = require('../../services/repository');
 const noteService = require('../../services/notes');
+const attributeService = require('../../services/attributes');
 const Branch = require('../../entities/branch');
 const tar = require('tar-stream');
 const stream = require('stream');
@@ -153,8 +154,17 @@ async function importTar(importContext, fileBuffer, importRootNote) {
         for (const attr of noteMeta.attributes) {
             attr.noteId = note.noteId;
 
+            if (!attributeService.isAttributeType(attr.type)) {
+                log.error("Unrecognized attribute type " + attr.type);
+                continue;
+            }
+
             if (attr.type === 'relation') {
                 attr.value = getNewNoteId(attr.value);
+            }
+
+            if (importContext.safeImport && attributeService.isAttributeDangerous(attr.type, attr.name)) {
+                attr.name = 'disabled-' + attr.name;
             }
 
             attributes.push(attr);
