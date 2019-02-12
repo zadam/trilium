@@ -49,7 +49,7 @@ async function show() {
     // this needs to happen after the element is shown, otherwise the editor won't be refreshed
     // CodeMirror breaks pretty badly on null so even though it shouldn't happen (guarded by consistency check)
     // we provide fallback
-    codeEditor.setValue(currentNote.content || "");
+    codeEditor.setValue(currentNote.noteContent.content || "");
 
     const info = CodeMirror.findModeByMIME(currentNote.mime);
 

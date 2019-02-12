@@ -3,7 +3,13 @@
 const noteService = require('../../services/notes');
 const parseString = require('xml2js').parseString;
 
-async function importOpml(fileBuffer, parentNote) {
+/**
+ * @param {ImportContext} importContext
+ * @param {Buffer} fileBuffer
+ * @param {Note} parentNote
+ * @return {Promise<*[]|*>}
+ */
+async function importOpml(importContext, fileBuffer, parentNote) {
     const xml = await new Promise(function(resolve, reject)
     {
         parseString(fileBuffer, function (err, result) {
@@ -24,7 +30,7 @@ async function importOpml(fileBuffer, parentNote) {
     let returnNote = null;
 
     for (const outline of outlines) {
-        const note = await importOutline(outline, parentNote.noteId);
+        const note = await importOutline(importContext, outline, parentNote.noteId);
 
         // first created note will be activated after import
         returnNote = returnNote || note;
@@ -41,8 +47,10 @@ function toHtml(text) {
     return '<p>' + text.replace(/(?:\r\n|\r|\n)/g, '</p><p>') + '</p>';
 }
 
-async function importOutline(outline, parentNoteId) {
+async function importOutline(importContext, outline, parentNoteId) {
     const {note} = await noteService.createNote(parentNoteId, outline.$.title, toHtml(outline.$.text));
+
+    importContext.increaseProgressCount();
 
     for (const childOutline of (outline.outline || [])) {
         await importOutline(childOutline, note.noteId);

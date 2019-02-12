@@ -234,6 +234,7 @@ async function findLogicIssues() {
     await findIssues(`
           SELECT noteId
           FROM notes
+          JOIN note_contents USING(noteId)
           WHERE
             isDeleted = 0
             AND content IS NULL`,
@@ -429,7 +430,7 @@ async function runChecks() {
 
         await runAllChecks();
 
-        elapsedTimeMs = new Date().getTime() - startTime.getTime();
+        elapsedTimeMs = Date.now() - startTime.getTime();
     });
 
     if (fixedIssues) {

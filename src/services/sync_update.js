@@ -48,14 +48,16 @@ async function updateEntity(sync, entity, sourceId) {
     }
 }
 
-function deserializeNoteContentBuffer(note) {
-    if (note.content !== null && (note.type === 'file' || note.type === 'image')) {
-        note.content = Buffer.from(note.content, 'base64');
+async function deserializeNoteContentBuffer(note) {
+    const noteContent = await note.getNoteContent();
+
+    if (noteContent.content !== null && (note.type === 'file' || note.type === 'image')) {
+        noteContent.content = Buffer.from(noteContent.content, 'base64');
     }
 }
 
 async function updateNote(entity, sourceId) {
-    deserializeNoteContentBuffer(entity);
+    await deserializeNoteContentBuffer(entity);
 
     const origNote = await sql.getRow("SELECT * FROM notes WHERE noteId = ?", [entity.noteId]);
 

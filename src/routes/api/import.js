@@ -5,12 +5,61 @@ const enexImportService = require('../../services/import/enex');
 const opmlImportService = require('../../services/import/opml');
 const tarImportService = require('../../services/import/tar');
 const singleImportService = require('../../services/import/single');
+const messagingService = require('../../services/messaging');
 const cls = require('../../services/cls');
 const path = require('path');
 const noteCacheService = require('../../services/note_cache');
+const log = require('../../services/log');
+
+class ImportContext {
+    constructor(importId, safeImport) {
+        // importId is to distinguish between different import events - it is possible (though not recommended)
+        // to have multiple imports going at the same time
+        this.importId = importId;
+
+        this.safeImport = safeImport;
+
+        // // count is mean to represent count of exported notes where practical, otherwise it's just some measure of progress
+        this.progressCount = 0;
+        this.lastSentCountTs = Date.now();
+    }
+
+    async increaseProgressCount() {
+        this.progressCount++;
+
+        if (Date.now() - this.lastSentCountTs >= 500) {
+            this.lastSentCountTs = Date.now();
+
+            await messagingService.sendMessageToAllClients({
+                importId: this.importId,
+                type: 'import-progress-count',
+                progressCount: this.progressCount
+            });
+        }
+    }
+
+    async importFinished(noteId) {
+        await messagingService.sendMessageToAllClients({
+            importId: this.importId,
+            type: 'import-finished',
+            noteId: noteId
+        });
+    }
+
+    // must remaing static
+    async reportError(message) {
+        await messagingService.sendMessageToAllClients({
+            type: 'import-error',
+            message: message
+        });
+    }
+}
 
 async function importToBranch(req) {
-    const parentNoteId = req.params.parentNoteId;
+    let {parentNoteId, importId, safeImport} = req.params;
+
+    safeImport = safeImport !== '0';
+
     const file = req.file;
 
     if (!file) {
@@ -31,23 +80,30 @@ async function importToBranch(req) {
 
     let note; // typically root of the import - client can show it after finishing the import
 
-    if (extension === '.tar') {
-        note = await tarImportService.importTar(file.buffer, parentNote);
+    const importContext = new ImportContext(importId, safeImport);
+
+    try {
+        if (extension === '.tar') {
+            note = await tarImportService.importTar(importContext, file.buffer, parentNote);
+        } else if (extension === '.opml') {
+            note = await opmlImportService.importOpml(importContext, file.buffer, parentNote);
+        } else if (extension === '.md') {
+            note = await singleImportService.importMarkdown(importContext, file, parentNote);
+        } else if (extension === '.html' || extension === '.htm') {
+            note = await singleImportService.importHtml(importContext, file, parentNote);
+        } else if (extension === '.enex') {
+            note = await enexImportService.importEnex(importContext, file, parentNote);
+        } else {
+            return [400, `Unrecognized extension ${extension}, must be .tar or .opml`];
+        }
     }
-    else if (extension === '.opml') {
-        note = await opmlImportService.importOpml(file.buffer, parentNote);
-    }
-    else if (extension === '.md') {
-        note = await singleImportService.importMarkdown(file, parentNote);
-    }
-    else if (extension === '.html' || extension === '.htm') {
-        note = await singleImportService.importHtml(file, parentNote);
-    }
-    else if (extension === '.enex') {
-        note = await enexImportService.importEnex(file, parentNote);
-    }
-    else {
-        return [400, `Unrecognized extension ${extension}, must be .tar or .opml`];
+    catch (e) {
+        const message = "Import failed with following error: '" + e.message + "'. More details might be in the logs.";
+        importContext.reportError(message);
+
+        log.error(message + e.stack);
+
+        return [500, message];
     }
 
     // import has deactivated note events so note cache is not updated

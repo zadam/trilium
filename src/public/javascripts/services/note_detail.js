@@ -117,7 +117,7 @@ async function saveNote() {
     }
 
     note.title = $noteTitle.val();
-    note.content = getCurrentNoteContent(note);
+    note.noteContent.content = getCurrentNoteContent(note);
 
     // it's important to set the flag back to false immediatelly after retrieving title and content
     // otherwise we might overwrite another change (especially async code)
@@ -357,6 +357,7 @@ export default {
     updateNoteView,
     loadNote,
     getCurrentNote,
+    getCurrentNoteContent,
     getCurrentNoteType,
     getCurrentNoteId,
     focusOnTitle,
@@ -364,7 +365,6 @@ export default {
     saveNote,
     saveNoteIfChanged,
     noteChanged,
-    getCurrentNoteContent,
     onNoteChange,
     addDetailLoadedListener
 };

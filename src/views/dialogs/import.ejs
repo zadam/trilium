@@ -1,0 +1,41 @@
+<div id="import-dialog" class="modal fade mx-auto" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Import into note</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="import-form">
+                <div class="modal-body">
+                    <div id="import-progress-count-wrapper" class="alert alert-primary" style="padding: 15px;">
+                        <strong>Note import progress count:</strong> <span id="import-progress-count"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="import-file-upload-input"><strong>Choose import file</strong></label>
+
+                        <input type="file" id="import-file-upload-input" class="form-control-file" />
+
+                        <p>Content of the file will be imported as child note(s) into <strong class="note-title"></strong>. Import file must be of supported type and have correct extension - one of <code>.html</code>, <code>.md</code>, <code>.tar</code>, <code>.enex</code>.</p>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="checkbox">
+                            <label>
+                                <input id="safe-import" value="1" type="checkbox" checked> <strong>Safe import</strong>
+                            </label>
+
+                            <br/>
+                            Trilium <code>.tar</code> export files can contain executable scripts which may contain harmful behavior. Safe import will deactivate automatic execution of all imported scripts. Uncheck "Safe import" only if the imported tar archive is supposed to contain executable scripts and you completely trust the contents of the import file.
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" id="import-button">Import</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

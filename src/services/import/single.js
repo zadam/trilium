@@ -4,7 +4,7 @@ const noteService = require('../../services/notes');
 const commonmark = require('commonmark');
 const path = require('path');
 
-async function importMarkdown(file, parentNote) {
+async function importMarkdown(importContext, file, parentNote) {
     const markdownContent = file.buffer.toString("UTF-8");
 
     const reader = new commonmark.Parser();
@@ -20,10 +20,13 @@ async function importMarkdown(file, parentNote) {
         mime: 'text/html'
     });
 
+    importContext.increaseProgressCount();
+    importContext.importFinished(note.noteId);
+
     return note;
 }
 
-async function importHtml(file, parentNote) {
+async function importHtml(importContext, file, parentNote) {
     const title = getFileNameWithoutExtension(file.originalname);
     const content = file.buffer.toString("UTF-8");
 
@@ -31,6 +34,9 @@ async function importHtml(file, parentNote) {
         type: 'text',
         mime: 'text/html'
     });
+
+    importContext.increaseProgressCount();
+    importContext.importFinished(note.noteId);
 
     return note;
 }

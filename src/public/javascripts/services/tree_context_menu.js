@@ -1,12 +1,12 @@
 import treeService from './tree.js';
 import cloningService from './cloning.js';
-import exportService from './export.js';
 import messagingService from './messaging.js';
 import protectedSessionService from './protected_session.js';
 import treeChangesService from './branches.js';
 import treeUtils from './tree_utils.js';
 import branchPrefixDialog from '../dialogs/branch_prefix.js';
 import exportDialog from '../dialogs/export.js';
+import importDialog from '../dialogs/import.js';
 import infoService from "./info.js";
 import treeCache from "./tree_cache.js";
 import syncService from "./sync.js";
@@ -95,7 +95,7 @@ const contextMenuItems = [
     {title: "Paste after", cmd: "pasteAfter", uiIcon: "clipboard"},
     {title: "----"},
     {title: "Export", cmd: "export", uiIcon: "arrow-up-right"},
-    {title: "Import into note (tar, opml, md, enex)", cmd: "importIntoNote", uiIcon: "arrow-down-left"},
+    {title: "Import into note", cmd: "importIntoNote", uiIcon: "arrow-down-left"},
     {title: "----"},
     {title: "Collapse subtree <kbd>Alt+-</kbd>", cmd: "collapseSubtree", uiIcon: "align-justify"},
     {title: "Force note sync", cmd: "forceNoteSync", uiIcon: "refresh"},
@@ -180,7 +180,7 @@ function selectContextMenuItem(event, cmd) {
         exportDialog.showDialog("subtree");
     }
     else if (cmd === "importIntoNote") {
-        exportService.importIntoNote(node.data.noteId);
+        importDialog.showDialog();
     }
     else if (cmd === "collapseSubtree") {
         treeService.collapseTree(node);

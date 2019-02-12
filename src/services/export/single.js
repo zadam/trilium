@@ -5,7 +5,7 @@ const mimeTypes = require('mime-types');
 const html = require('html');
 const utils = require('../utils');
 
-async function exportSingleNote(branch, format, res) {
+async function exportSingleNote(exportContext, branch, format, res) {
     const note = await branch.getNote();
 
     if (note.type === 'image' || note.type === 'file') {
@@ -18,30 +18,32 @@ async function exportSingleNote(branch, format, res) {
 
     let payload, extension, mime;
 
+    const noteContent = await note.getNoteContent();
+
     if (note.type === 'text') {
         if (format === 'html') {
-            if (!note.content.toLowerCase().includes("<html")) {
-                note.content = '<html><head><meta charset="utf-8"></head><body>' + note.content + '</body></html>';
+            if (!noteContent.content.toLowerCase().includes("<html")) {
+                noteContent.content = '<html><head><meta charset="utf-8"></head><body>' + noteContent.content + '</body></html>';
             }
 
-            payload = html.prettyPrint(note.content, {indent_size: 2});
+            payload = html.prettyPrint(noteContent.content, {indent_size: 2});
             extension = 'html';
             mime = 'text/html';
         }
         else if (format === 'markdown') {
             const turndownService = new TurndownService();
-            payload = turndownService.turndown(note.content);
+            payload = turndownService.turndown(noteContent.content);
             extension = 'md';
             mime = 'text/markdown'
         }
     }
     else if (note.type === 'code') {
-        payload = note.content;
+        payload = noteContent.content;
         extension = mimeTypes.extension(note.mime) || 'code';
         mime = note.mime;
     }
     else if (note.type === 'relation-map' || note.type === 'search') {
-        payload = note.content;
+        payload = noteContent.content;
         extension = 'json';
         mime = 'application/json';
     }
@@ -52,6 +54,9 @@ async function exportSingleNote(branch, format, res) {
     res.setHeader('Content-Type', mime + '; charset=UTF-8');
 
     res.send(payload);
+
+    exportContext.increaseProgressCount();
+    exportContext.exportFinished();
 }
 
 module.exports = {

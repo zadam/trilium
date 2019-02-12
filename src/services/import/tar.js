@@ -6,6 +6,7 @@ const utils = require('../../services/utils');
 const log = require('../../services/log');
 const repository = require('../../services/repository');
 const noteService = require('../../services/notes');
+const attributeService = require('../../services/attributes');
 const Branch = require('../../entities/branch');
 const tar = require('tar-stream');
 const stream = require('stream');
@@ -13,7 +14,17 @@ const path = require('path');
 const commonmark = require('commonmark');
 const mimeTypes = require('mime-types');
 
-async function importTar(fileBuffer, importRootNote) {
+let importNoteCount;
+let lastSentCountTs = Date.now();
+
+/**
+ * @param {ImportContext} importContext
+ * @param {Buffer} fileBuffer
+ * @param {Note} importRootNote
+ * @return {Promise<*>}
+ */
+async function importTar(importContext, fileBuffer, importRootNote) {
+    importNoteCount = 0;
     // maps from original noteId (in tar file) to newly generated noteId
     const noteIdMap = {};
     const attributes = [];
@@ -31,11 +42,6 @@ async function importTar(fileBuffer, importRootNote) {
         // in case the original noteId is empty. This probably shouldn't happen, but still good to have this precaution
         if (!origNoteId.trim()) {
             return "";
-        }
-
-        // we allow references to root and they don't need translation
-        if (origNoteId === 'root') {
-            return origNoteId;
         }
 
         if (!noteIdMap[origNoteId]) {
@@ -148,8 +154,17 @@ async function importTar(fileBuffer, importRootNote) {
         for (const attr of noteMeta.attributes) {
             attr.noteId = note.noteId;
 
+            if (!attributeService.isAttributeType(attr.type)) {
+                log.error("Unrecognized attribute type " + attr.type);
+                continue;
+            }
+
             if (attr.type === 'relation') {
                 attr.value = getNewNoteId(attr.value);
+            }
+
+            if (importContext.safeImport && attributeService.isAttributeDangerous(attr.type, attr.name)) {
+                attr.name = 'disabled-' + attr.name;
             }
 
             attributes.push(attr);
@@ -245,8 +260,10 @@ async function importTar(fileBuffer, importRootNote) {
         let note = await repository.getNote(noteId);
 
         if (note) {
-            note.content = content;
-            await note.save();
+            const noteContent = await note.getNoteContent();
+
+            noteContent.content = content;
+            await noteContent.save();
         }
         else {
             const noteTitle = getNoteTitle(filePath, noteMeta);
@@ -290,7 +307,7 @@ async function importTar(fileBuffer, importRootNote) {
         }
     }
 
-    /** @return path without leading or trailing slash and backslashes converted to forward ones*/
+    /** @return {string} path without leading or trailing slash and backslashes converted to forward ones*/
     function normalizeFilePath(filePath) {
         filePath = filePath.replace(/\\/g, "/");
 
@@ -317,7 +334,7 @@ async function importTar(fileBuffer, importRootNote) {
         // call next when you are done with this entry
 
         stream.on('end', async function() {
-            let filePath = normalizeFilePath(header.name);
+            const filePath = normalizeFilePath(header.name);
 
             const content = Buffer.concat(chunks);
 
@@ -333,6 +350,8 @@ async function importTar(fileBuffer, importRootNote) {
             else {
                 log.info("Ignoring tar import entry with type " + header.type);
             }
+
+            importContext.increaseProgressCount();
 
             next(); // ready for next entry
         });
@@ -367,6 +386,8 @@ async function importTar(fileBuffer, importRootNote) {
                     log.info("Link not imported since target note doesn't exist: " + JSON.stringify(link));
                 }
             }
+
+            importContext.importFinished();
 
             resolve(firstNote);
         });

@@ -12,7 +12,6 @@ import exportDialog from './dialogs/export.js';
 import cloning from './services/cloning.js';
 import contextMenu from './services/tree_context_menu.js';
 import dragAndDropSetup from './services/drag_and_drop.js';
-import exportService from './services/export.js';
 import link from './services/link.js';
 import messagingService from './services/messaging.js';
 import noteDetailService from './services/note_detail.js';
@@ -94,7 +93,18 @@ $(document).on("click", "button[data-help-page]", e => {
 
 $("#logout-button").toggle(!utils.isElectron());
 
+$("#logout-button").click(() => {
+    const $logoutForm = $('<form action="logout" method="POST">');
+
+    $("body").append($logoutForm);
+    $logoutForm.submit();
+});
+
 $("#tree").on("click", ".unhoist-button", hoistedNoteService.unhoist);
+
+$("body").on("click", "a.external", function () {
+    window.open($(this).attr("href"), '_blank');
+});
 
 if (utils.isElectron()) {
     require('electron').ipcRenderer.on('create-day-sub-note', async function(event, parentNoteId) {

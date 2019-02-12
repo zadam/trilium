@@ -37,27 +37,40 @@ async function getEntity(query, params = []) {
     return entityConstructor.createEntityFromRow(row);
 }
 
-/** @returns {Note|null} */
+/** @returns {Promise<Note|null>} */
 async function getNote(noteId) {
     return await getEntity("SELECT * FROM notes WHERE noteId = ?", [noteId]);
 }
 
-/** @returns {Branch|null} */
+/** @returns {Promise<Note|null>} */
+async function getNoteWithContent(noteId) {
+    const note = await getEntity("SELECT * FROM notes WHERE noteId = ?", [noteId]);
+    await note.getNoteContent();
+
+    return note;
+}
+
+/** @returns {Promise<NoteContent|null>} */
+async function getNoteContent(noteContentId) {
+    return await getEntity("SELECT * FROM note_contents WHERE noteContentId = ?", [noteContentId]);
+}
+
+/** @returns {Promise<Branch|null>} */
 async function getBranch(branchId) {
     return await getEntity("SELECT * FROM branches WHERE branchId = ?", [branchId]);
 }
 
-/** @returns {Attribute|null} */
+/** @returns {Promise<Attribute|null>} */
 async function getAttribute(attributeId) {
     return await getEntity("SELECT * FROM attributes WHERE attributeId = ?", [attributeId]);
 }
 
-/** @returns {Option|null} */
+/** @returns {Promise<Option|null>} */
 async function getOption(name) {
     return await getEntity("SELECT * FROM options WHERE name = ?", [name]);
 }
 
-/** @returns {Link|null} */
+/** @returns {Promise<Link|null>} */
 async function getLink(linkId) {
     return await getEntity("SELECT * FROM links WHERE linkId = ?", [linkId]);
 }
@@ -121,6 +134,8 @@ module.exports = {
     getEntities,
     getEntity,
     getNote,
+    getNoteWithContent,
+    getNoteContent,
     getBranch,
     getAttribute,
     getOption,

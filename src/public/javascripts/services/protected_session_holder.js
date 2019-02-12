@@ -8,7 +8,7 @@ let protectedSessionId = null;
 optionsInitService.optionsReady.then(options => protectedSessionTimeout = options.protectedSessionTimeout);
 
 setInterval(() => {
-    if (lastProtectedSessionOperationDate !== null && new Date().getTime() - lastProtectedSessionOperationDate.getTime() > protectedSessionTimeout * 1000) {
+    if (lastProtectedSessionOperationDate !== null && Date.now() - lastProtectedSessionOperationDate.getTime() > protectedSessionTimeout * 1000) {
         resetProtectedSession();
     }
 }, 5000);

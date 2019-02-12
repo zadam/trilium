@@ -44,20 +44,47 @@
         </div>
 
         <div>
-            <button class="btn btn-sm" id="sync-now-button" title="Trigger sync">
-                <span class="jam jam-refresh"></span>
-                Sync (<span id="outstanding-syncs-count">0</span>)
-            </button>
-
-            <button class="btn btn-sm" id="options-button">
-                <span class="jam jam-settings-alt"></span> Options</button>
-
-            <form action="logout" id="logout-button" method="POST" style="display: inline;">
-                <button type="submit" class="btn btn-sm">
-                    <span class="jam jam-log-out"></span>
-                    Logout
+            <div class="dropdown" id="global-menu">
+                <button type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-sm dropdown-toggle">
+                    <span class="jam jam-align-justify"></span>
+                    Menu
+                    <span class="caret"></span>
                 </button>
-            </form>
+                <div class="dropdown-menu dropdown-menu-right">
+                    <a class="dropdown-item" id="options-button">
+                        <span class="jam jam-settings-alt"></span>
+                        Options
+                    </a>
+
+                    <a class="dropdown-item" id="sync-now-button" title="Trigger sync">
+                        <span class="jam jam-refresh"></span>
+                        Sync (<span id="outstanding-syncs-count">0</span>)
+                    </a>
+
+                    <a class="dropdown-item" id="show-help-button">
+                        <span class="jam jam-help"></span>
+                        Show Help
+                        <kbd>F1</kbd>
+                    </a>
+
+                    <a class="dropdown-item" id="open-dev-tools-button">
+                        <span class="jam jam-terminal"></span>
+                        Open Dev Tools
+                        <kbd>CTRL+SHIFT+I</kbd>
+                    </a>
+
+                    <a class="dropdown-item" id="open-sql-console-button">
+                        <span class="jam jam-database"></span>
+                        Open SQL Console
+                        <kbd>ALT+O</kbd>
+                    </a>
+
+                    <a class="dropdown-item" id="logout-button">
+                        <span class="jam jam-log-out"></span>
+                        Logout
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -71,8 +98,6 @@
 
             <a id="toggle-search-button" title="Search in notes. Shortcut CTRL+S" class="icon-action jam jam-search"></a>
         </div>
-
-        <input type="file" id="import-upload" style="display: none" />
 
         <div id="search-box">
             <div style="display: flex; align-items: center; flex-wrap: wrap;">
@@ -188,6 +213,7 @@
     <% include dialogs/branch_prefix.ejs %>
     <% include dialogs/event_log.ejs %>
     <% include dialogs/export.ejs %>
+    <% include dialogs/import.ejs %>
     <% include dialogs/jump_to_note.ejs %>
     <% include dialogs/markdown_import.ejs %>
     <% include dialogs/note_revisions.ejs %>
@@ -199,6 +225,7 @@
     <% include dialogs/info.ejs %>
     <% include dialogs/prompt.ejs %>
     <% include dialogs/confirm.ejs %>
+    <% include dialogs/help.ejs %>
 </div>
 
 <webview class="electron-in-page-search-window" nodeintegration disablewebsecurity src="libraries/electron-in-page-search/search-window.html"></webview>

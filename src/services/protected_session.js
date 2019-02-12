@@ -47,28 +47,25 @@ function decryptNoteTitle(noteId, encryptedTitle) {
 }
 
 function decryptNote(note) {
-    const dataKey = getDataKey();
-
     if (!note.isProtected) {
         return;
     }
 
-    try {
-        if (note.title) {
-            note.title = dataEncryptionService.decryptString(dataKey, note.title);
-        }
+    if (note.title) {
+        note.title = decryptNoteTitle(note.noteId, note.title);
+    }
+}
 
-        if (note.content) {
-            if (note.type === 'file' || note.type === 'image') {
-                note.content = dataEncryptionService.decrypt(dataKey, note.content);
-            }
-            else {
-                note.content = dataEncryptionService.decryptString(dataKey, note.content);
-            }
-        }
+function decryptNoteContent(noteContent) {
+    if (!noteContent.isProtected) {
+        return;
+    }
+
+    try {
+        noteContent.content = dataEncryptionService.decrypt(getDataKey(), noteContent.content);
     }
     catch (e) {
-        e.message = `Cannot decrypt note for noteId=${note.noteId}: ` + e.message;
+        e.message = `Cannot decrypt note content for noteContentId=${noteContent.noteContentId}: ` + e.message;
         throw e;
     }
 }
@@ -96,10 +93,11 @@ function decryptNoteRevision(hist) {
 }
 
 function encryptNote(note) {
-    const dataKey = getDataKey();
+    note.title = dataEncryptionService.encrypt(getDataKey(), note.title);
+}
 
-    note.title = dataEncryptionService.encrypt(dataKey, note.title);
-    note.content = dataEncryptionService.encrypt(dataKey, note.content);
+function encryptNoteContent(noteContent) {
+    noteContent.content = dataEncryptionService.encrypt(getDataKey(), noteContent.content);
 }
 
 function encryptNoteRevision(revision) {
@@ -115,9 +113,11 @@ module.exports = {
     isProtectedSessionAvailable,
     decryptNoteTitle,
     decryptNote,
+    decryptNoteContent,
     decryptNotes,
     decryptNoteRevision,
     encryptNote,
+    encryptNoteContent,
     encryptNoteRevision,
     setProtectedSessionId
 };

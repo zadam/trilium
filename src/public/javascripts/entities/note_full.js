@@ -8,15 +8,15 @@ class NoteFull extends NoteShort {
         super(treeCache, row);
 
         /** @param {string} */
-        this.content = row.content;
+        this.noteContent = row.noteContent;
 
-        if (this.content !== "" && this.isJson()) {
-            try {
-                /** @param {object} */
-                this.jsonContent = JSON.parse(this.content);
-            }
-            catch(e) {}
-        }
+        // if (this.content !== "" && this.isJson()) {
+        //     try {
+        //         /** @param {object} */
+        //         this.jsonContent = JSON.parse(this.content);
+        //     }
+        //     catch(e) {}
+        // }
     }
 }
 

@@ -2,6 +2,7 @@
 
 const Entity = require('./entity');
 const Attribute = require('./attribute');
+const NoteContent = require('./note_content');
 const protectedSessionService = require('../services/protected_session');
 const repository = require('../services/repository');
 const sql = require('../services/sql');
@@ -19,7 +20,6 @@ const RELATION_DEFINITION = 'relation-definition';
  * @property {string} type - one of "text", "code", "file" or "render"
  * @property {string} mime - MIME type, e.g. "text/html"
  * @property {string} title - note title
- * @property {string} content - note content - e.g. HTML text for text notes, file payload for files
  * @property {boolean} isProtected - true if note is protected
  * @property {boolean} isDeleted - true if note is deleted
  * @property {string} dateCreated
@@ -30,7 +30,7 @@ const RELATION_DEFINITION = 'relation-definition';
 class Note extends Entity {
     static get entityName() { return "notes"; }
     static get primaryKeyName() { return "noteId"; }
-    static get hashedProperties() { return ["noteId", "title", "content", "type", "isProtected", "isDeleted"]; }
+    static get hashedProperties() { return ["noteId", "title", "type", "isProtected", "isDeleted"]; }
 
     /**
      * @param row - object containing database row from "notes" table
@@ -54,26 +54,57 @@ class Note extends Entity {
                 // saving ciphertexts in case we do want to update protected note outside of protected session
                 // (which is allowed)
                 this.titleCipherText = this.title;
-                this.contentCipherText = this.content;
-
                 this.title = "[protected]";
-                this.content = "";
+            }
+        }
+    }
+
+    /** @returns {Promise<NoteContent>} */
+    async getNoteContent() {
+        if (!this.noteContent) {
+            this.noteContent = await repository.getEntity(`SELECT * FROM note_contents WHERE noteId = ?`, [this.noteId]);
+
+            if (!this.noteContent) {
+                throw new Error("Note content not found for noteId=" + this.noteId);
+            }
+
+            if (this.isStringNote()) {
+                this.noteContent.content = this.noteContent.content.toString("UTF-8");
             }
         }
 
-        this.setContent(this.content);
+        return this.noteContent;
     }
 
-    setContent(content) {
-        this.content = content;
+    /** @returns {Promise<*>} */
+    async getContent() {
+        const noteContent = await this.getNoteContent();
 
-        // if parsing below is not successful then there's no jsonContent as opposed to still having the old unupdated ones
-        delete this.jsonContent;
+        return noteContent.content;
+    }
 
-        try {
-            this.jsonContent = JSON.parse(this.content);
+    /** @returns {Promise<*>} */
+    async getJsonContent() {
+        const content = await this.getContent();
+
+        return JSON.parse(content);
+    }
+
+    /** @returns {Promise} */
+    async setContent(content) {
+        if (!this.noteContent) {
+            // make sure it is loaded
+            await this.getNoteContent();
         }
-        catch(e) {}
+
+        this.noteContent.content = content;
+
+        await this.noteContent.save();
+    }
+
+    /** @returns {Promise} */
+    async setJsonContent(content) {
+        await this.setContent(JSON.stringify(content));
     }
 
     /** @returns {boolean} true if this note is the root of the note tree. Root note has "root" noteId */
@@ -97,6 +128,11 @@ class Note extends Entity {
     /** @returns {boolean} true if this note is HTML */
     isHtml() {
         return (this.type === "code" || this.type === "file" || this.type === "render") && this.mime === "text/html";
+    }
+
+    /** @returns {boolean} true if the note has string content (not binary) */
+    isStringNote() {
+        return ["text", "code", "relation-map"].includes(this.type) || this.mime.startsWith('text/');
     }
 
     /** @returns {string} JS script environment - either "frontend" or "backend" */
@@ -615,13 +651,6 @@ class Note extends Entity {
     }
 
     beforeSaving() {
-        if (this.isJson() && this.jsonContent) {
-            this.content = JSON.stringify(this.jsonContent, null, '\t');
-        }
-
-        // we do this here because encryption needs the note ID for the IV
-        this.generateIdIfNecessary();
-
         if (!this.isDeleted) {
             this.isDeleted = false;
         }
@@ -646,7 +675,6 @@ class Note extends Entity {
             else {
                 // updating protected note outside of protected session means we will keep original ciphertexts
                 pojo.title = pojo.titleCipherText;
-                pojo.content = pojo.contentCipherText;
             }
         }
 
@@ -654,7 +682,6 @@ class Note extends Entity {
         delete pojo.isContentAvailable;
         delete pojo.__attributeCache;
         delete pojo.titleCipherText;
-        delete pojo.contentCipherText;
     }
 }
 

@@ -128,8 +128,8 @@ function register(app) {
     apiRoute(PUT, '/api/notes/:noteId/clone-to/:parentNoteId', cloningApiRoute.cloneNoteToParent);
     apiRoute(PUT, '/api/notes/:noteId/clone-after/:afterBranchId', cloningApiRoute.cloneNoteAfter);
 
-    route(GET, '/api/notes/:branchId/export/:type/:format', [auth.checkApiAuthOrElectron], exportRoute.exportBranch);
-    route(POST, '/api/notes/:parentNoteId/import', [auth.checkApiAuthOrElectron, uploadMiddleware], importRoute.importToBranch, apiResultHandler);
+    route(GET, '/api/notes/:branchId/export/:type/:format/:exportId', [auth.checkApiAuthOrElectron], exportRoute.exportBranch);
+    route(POST, '/api/notes/:parentNoteId/import/:importId/safe/:safeImport', [auth.checkApiAuthOrElectron, uploadMiddleware], importRoute.importToBranch, apiResultHandler);
 
     route(POST, '/api/notes/:parentNoteId/upload', [auth.checkApiAuthOrElectron, uploadMiddleware],
         filesRoute.uploadFile, apiResultHandler);
@@ -183,6 +183,7 @@ function register(app) {
     route(GET, '/api/setup/sync-seed', [auth.checkBasicAuth], setupApiRoute.getSyncSeed, apiResultHandler);
     route(POST, '/api/setup/sync-seed', [auth.checkAppNotInitialized], setupApiRoute.saveSyncSeed, apiResultHandler, false);
 
+    apiRoute(GET, '/api/sql/schema', sqlRoute.getSchema);
     apiRoute(POST, '/api/sql/execute', sqlRoute.execute);
     apiRoute(POST, '/api/anonymization/anonymize', anonymizationRoute.anonymize);
 

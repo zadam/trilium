@@ -42,7 +42,7 @@ async function getHashes() {
         links: await getHash(Link)
     };
 
-    const elapseTimeMs = new Date().getTime() - startTime.getTime();
+    const elapseTimeMs = Date.now() - startTime.getTime();
 
     log.info(`Content hash computation took ${elapseTimeMs}ms`);
 

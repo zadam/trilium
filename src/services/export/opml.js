@@ -3,23 +3,25 @@
 const repository = require("../repository");
 const utils = require('../utils');
 
-async function exportToOpml(branch, res) {
+async function exportToOpml(exportContext, branch, res) {
     const note = await branch.getNote();
 
     async function exportNoteInner(branchId) {
         const branch = await repository.getBranch(branchId);
         const note = await branch.getNote();
 
-        if (await note.hasLabel('excludeFromExport')) {
+        if (!note.isStringNote() || await note.hasLabel('excludeFromExport')) {
             return;
         }
 
         const title = (branch.prefix ? (branch.prefix + ' - ') : '') + note.title;
 
         const preparedTitle = prepareText(title);
-        const preparedContent = prepareText(note.content);
+        const preparedContent = prepareText(await note.getContent());
 
         res.write(`<outline title="${preparedTitle}" text="${preparedContent}">\n`);
+
+        exportContext.increaseProgressCount();
 
         for (const child of await note.getChildBranches()) {
             await exportNoteInner(child.branchId);
@@ -45,6 +47,8 @@ async function exportToOpml(branch, res) {
     res.write(`</body>
 </opml>`);
     res.end();
+
+    exportContext.exportFinished();
 }
 
 function prepareText(text) {
