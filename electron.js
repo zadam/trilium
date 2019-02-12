@@ -7,6 +7,7 @@ const cls = require('./src/services/cls');
 const url = require("url");
 const port = require('./src/services/port');
 const appIconService = require('./src/services/app_icon');
+const windowStateKeeper = require('electron-window-state');
 
 const app = electron.app;
 const globalShortcut = electron.globalShortcut;
@@ -28,13 +29,22 @@ function onClosed() {
 }
 
 async function createMainWindow() {
+    let mainWindowState = windowStateKeeper({
+        // default window width & height so it's usable on 1600 * 900 display (including some extra panels etc.)
+        defaultWidth: 1200,
+        defaultHeight: 800
+    });
+
     const win = new electron.BrowserWindow({
-        // initial window width & height so it's usable on 1600 * 900 display (including some extra panels etc.)
-        width: 1200,
-        height: 800,
+        x: mainWindowState.x,
+        y: mainWindowState.y,
+        width: mainWindowState.width,
+        height: mainWindowState.height,
         title: 'Trilium Notes',
         icon: path.join(__dirname, 'src/public/images/app-icons/png/256x256.png')
     });
+
+    mainWindowState.manage(win);
 
     win.setMenu(null);
     win.loadURL('http://localhost:' + await port);
