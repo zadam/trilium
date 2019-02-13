@@ -13,38 +13,15 @@ let codeEditor;
 
 $dialog.on("shown.bs.modal", e => initEditor());
 
-function showDialog() {
+async function showDialog() {
     glob.activeDialog = $dialog;
+
+    await showTables();
 
     $dialog.modal();
 }
 
 async function initEditor() {
-    server.get('sql/schema').then(tables => {
-        $tables.empty();
-
-        for (const table of tables) {
-            const $tableLink = $('<a href="javascript:">').text(table.name);
-
-            const $columns = $("<table>");
-
-            for (const column of table.columns) {
-                $columns.append(
-                    $("<tr>")
-                        .append($("<td>").text(column.name))
-                        .append($("<td>").text(column.type))
-                );
-            }
-
-            $tableLink
-                .attr("title", $columns.html())
-                .tooltip({ html: true })
-                .click(() => codeEditor.setValue("SELECT * FROM " + table.name + " LIMIT 100"));
-
-            $tables.append($tableLink).append(" ");
-        }
-    });
-
     if (!codeEditor) {
         await libraryLoader.requireLibrary(libraryLoader.CODE_MIRROR);
 
@@ -118,6 +95,32 @@ async function execute(e) {
         }
 
         $resultBody.append(rowEl);
+    }
+}
+
+async function showTables() {
+    const tables = await server.get('sql/schema');
+
+    $tables.empty();
+
+    for (const table of tables) {
+        const $tableLink = $('<button class="btn">').text(table.name);
+
+        const $columns = $("<table>");
+
+        for (const column of table.columns) {
+            $columns.append(
+                $("<tr>")
+                    .append($("<td>").text(column.name))
+                    .append($("<td>").text(column.type))
+            );
+        }
+
+        $tables.append($tableLink).append(" ");
+
+        $tableLink
+            .tooltip({html: true, title: $columns.html()})
+            .click(() => codeEditor.setValue("SELECT * FROM " + table.name + " LIMIT 100"));
     }
 }
 
