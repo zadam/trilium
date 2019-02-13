@@ -883,3 +883,14 @@ div[data-notify="container"] {
 #options-dialog input[type=number] {
     text-align: right;
 }
+
+.help-cards ul {
+    padding-left: 20px;
+}
+
+.help-cards kbd {
+    color: var(--main-text-color);
+    background-color: var(--accented-background-color);
+    border: 1px solid var(--main-border-color);
+    padding: 2px;
+}
