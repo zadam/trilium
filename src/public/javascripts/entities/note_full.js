@@ -10,13 +10,11 @@ class NoteFull extends NoteShort {
         /** @param {string} */
         this.noteContent = row.noteContent;
 
-        // if (this.content !== "" && this.isJson()) {
-        //     try {
-        //         /** @param {object} */
-        //         this.jsonContent = JSON.parse(this.content);
-        //     }
-        //     catch(e) {}
-        // }
+        /** @param {string} */
+        this.dateCreated = row.dateCreated;
+
+        /** @param {string} */
+        this.dateModified = row.dateModified;
     }
 }
 

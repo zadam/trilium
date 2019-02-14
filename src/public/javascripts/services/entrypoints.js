@@ -13,6 +13,7 @@ import sqlConsoleDialog from "../dialogs/sql_console.js";
 import searchNotesService from "./search_notes.js";
 import attributesDialog from "../dialogs/attributes.js";
 import helpDialog from "../dialogs/help.js";
+import noteInfoDialog from "../dialogs/note_info.js";
 import protectedSessionService from "./protected_session.js";
 
 function registerEntrypoints() {
@@ -60,6 +61,8 @@ function registerEntrypoints() {
 
     $("#open-sql-console-button").click(sqlConsoleDialog.showDialog);
     utils.bindShortcut('alt+o', sqlConsoleDialog.showDialog);
+
+    $("#show-note-info-button").click(noteInfoDialog.showDialog);
 
     if (utils.isElectron()) {
         $("#history-navigation").show();
