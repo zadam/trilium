@@ -26,7 +26,6 @@ const $noteDetailComponents = $(".note-detail-component");
 const $protectButton = $("#protect-button");
 const $unprotectButton = $("#unprotect-button");
 const $noteDetailWrapper = $("#note-detail-wrapper");
-const $noteIdDisplay = $("#note-id-display");
 const $childrenOverview = $("#children-overview");
 const $scriptArea = $("#note-detail-script-area");
 const $savedIndicator = $("#saved-indicator");
@@ -200,8 +199,6 @@ async function loadNoteDetail(noteId) {
         // mobile usually doesn't need attributes so we just invalidate
         attributeService.invalidateAttributes();
     }
-
-    $noteIdDisplay.html(noteId);
 
     updateNoteView();
 

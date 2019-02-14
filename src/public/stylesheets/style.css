@@ -464,14 +464,6 @@ div.ui-tooltip {
     border-right: none;
 }
 
-#note-id-display {
-    position: absolute;
-    right: 10px;
-    bottom: 8px;
-    z-index: 1000;
-    color: lightgrey;
-}
-
 #note-type-dropdown {
     max-height: 500px;
     overflow-y: auto;
