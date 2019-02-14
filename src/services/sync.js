@@ -239,6 +239,7 @@ async function syncRequest(syncContext, method, requestPath, body) {
 
 const primaryKeys = {
     "notes": "noteId",
+    "note_contents": "noteContentId",
     "branches": "branchId",
     "note_revisions": "noteRevisionId",
     "recent_notes": "branchId",
@@ -261,9 +262,10 @@ async function getEntityRow(entityName, entityId) {
 
         const entity = await sql.getRow(`SELECT * FROM ${entityName} WHERE ${primaryKey} = ?`, [entityId]);
 
-        if (entityName === 'notes'
-            && entity.content !== null
-            && (entity.type === 'file' || entity.type === 'image')) {
+        if (['note_contents', 'note_revisions'].includes(entityName) && entity.content !== null) {
+            if (typeof entity.content === 'string') {
+                entity.content = Buffer.from(entity.content, 'UTF-8');
+            }
 
             entity.content = entity.content.toString("base64");
         }

@@ -10,6 +10,9 @@ async function updateEntity(sync, entity, sourceId) {
     if (entityName === 'notes') {
         await updateNote(entity, sourceId);
     }
+    else if (entityName === 'note_contents') {
+        await updateNoteContent(entity, sourceId);
+    }
     else if (entityName === 'branches') {
         await updateBranch(entity, sourceId);
     }
@@ -48,17 +51,7 @@ async function updateEntity(sync, entity, sourceId) {
     }
 }
 
-async function deserializeNoteContentBuffer(note) {
-    const noteContent = await note.getNoteContent();
-
-    if (noteContent.content !== null && (note.type === 'file' || note.type === 'image')) {
-        noteContent.content = Buffer.from(noteContent.content, 'base64');
-    }
-}
-
 async function updateNote(entity, sourceId) {
-    await deserializeNoteContentBuffer(entity);
-
     const origNote = await sql.getRow("SELECT * FROM notes WHERE noteId = ?", [entity.noteId]);
 
     if (!origNote || origNote.dateModified <= entity.dateModified) {
@@ -69,6 +62,22 @@ async function updateNote(entity, sourceId) {
         });
 
         log.info("Update/sync note " + entity.noteId);
+    }
+}
+
+async function updateNoteContent(entity, sourceId) {
+    const origNoteContent = await sql.getRow("SELECT * FROM note_contents WHERE noteId = ?", [entity.noteId]);
+
+    if (!origNoteContent || origNoteContent.dateModified <= entity.dateModified) {
+        entity.content = entity.content === null ? null : Buffer.from(entity.content, 'base64');
+
+        await sql.transactional(async () => {
+            await sql.replace("note_contents", entity);
+
+            await syncTableService.addNoteContentSync(entity.noteContentId, sourceId);
+        });
+
+        log.info("Update/sync note content " + entity.noteContentId);
     }
 }
 
@@ -99,6 +108,8 @@ async function updateNoteRevision(entity, sourceId) {
         // we update note revision even if date modified to is the same because the only thing which might have changed
         // is the protected status (and correnspondingly title and content) which doesn't affect the dateModifiedTo
         if (orig === null || orig.dateModifiedTo <= entity.dateModifiedTo) {
+            entity.content = entity.content === null ? null : Buffer.from(entity.content, 'base64');
+
             await sql.replace('note_revisions', entity);
 
             await syncTableService.addNoteRevisionSync(entity.noteRevisionId, sourceId);

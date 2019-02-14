@@ -4,6 +4,8 @@ CREATE TABLE IF NOT EXISTS "note_contents" (
   `isProtected`	INT NOT NULL DEFAULT 0,
   `content`	TEXT NULL DEFAULT NULL,
   `hash` TEXT DEFAULT "" NOT NULL,
+  `dateCreated`	TEXT NOT NULL,
+  `dateModified` TEXT NOT NULL,
   PRIMARY KEY(`noteContentId`)
 );
 

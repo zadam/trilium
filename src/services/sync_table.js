@@ -8,6 +8,10 @@ async function addNoteSync(noteId, sourceId) {
     await addEntitySync("notes", noteId, sourceId)
 }
 
+async function addNoteContentSync(noteContentId, sourceId) {
+    await addEntitySync("note_contents", noteContentId, sourceId)
+}
+
 async function addBranchSync(branchId, sourceId) {
     await addEntitySync("branches", branchId, sourceId)
 }
@@ -84,6 +88,7 @@ async function fillAllSyncRows() {
     await sql.execute("DELETE FROM sync");
 
     await fillSyncRows("notes", "noteId");
+    await fillSyncRows("note_contents", "noteContentId");
     await fillSyncRows("branches", "branchId");
     await fillSyncRows("note_revisions", "noteRevisionId");
     await fillSyncRows("recent_notes", "branchId");
@@ -95,6 +100,7 @@ async function fillAllSyncRows() {
 
 module.exports = {
     addNoteSync,
+    addNoteContentSync,
     addBranchSync,
     addNoteReorderingSync,
     addNoteRevisionSync,

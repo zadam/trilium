@@ -3,6 +3,7 @@
 const Entity = require('./entity');
 const protectedSessionService = require('../services/protected_session');
 const repository = require('../services/repository');
+const dateUtils = require('../services/date_utils');
 
 /**
  * This represents a Note which is a central object in the Trilium Notes project.
@@ -11,6 +12,8 @@ const repository = require('../services/repository');
  * @property {string} noteId - reference to owning note
  * @property {boolean} isProtected - true if note content is protected
  * @property {blob} content - note content - e.g. HTML text for text notes, file payload for files
+ * @property {string} dateCreated
+ * @property {string} dateModified
  *
  * @extends Entity
  */
@@ -61,6 +64,18 @@ class NoteContent extends Entity {
         return await repository.getNote(this.noteId);
     }
 
+    beforeSaving() {
+        if (!this.dateCreated) {
+            this.dateCreated = dateUtils.nowDate();
+        }
+
+        super.beforeSaving();
+
+        if (this.isChanged) {
+            this.dateModified = dateUtils.nowDate();
+        }
+    }
+
     // cannot be static!
     updatePojo(pojo) {
         if (pojo.isProtected) {
@@ -73,7 +88,6 @@ class NoteContent extends Entity {
             }
         }
 
-        delete pojo.jsonContent;
         delete pojo.isContentAvailable;
         delete pojo.contentCipherText;
     }

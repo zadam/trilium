@@ -678,7 +678,6 @@ class Note extends Entity {
             }
         }
 
-        delete pojo.jsonContent;
         delete pojo.isContentAvailable;
         delete pojo.__attributeCache;
         delete pojo.titleCipherText;

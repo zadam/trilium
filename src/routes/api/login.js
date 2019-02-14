@@ -31,7 +31,7 @@ async function loginSync(req) {
     const syncVersion = req.body.syncVersion;
 
     if (syncVersion !== appInfo.syncVersion) {
-        return [400, { message: `Non-matching sync versions, local is version ${appInfo.syncVersion}, remote is ${syncVersion}` }];
+        return [400, { message: `Non-matching sync versions, local is version ${appInfo.syncVersion}, remote is ${syncVersion}. It is recommended to run same version of Trilium on both sides of sync.` }];
     }
 
     const documentSecret = await options.getOption('documentSecret');
