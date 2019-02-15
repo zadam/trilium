@@ -1,6 +1,7 @@
 "use strict";
 
 const sql = require('../../services/sql');
+const utils = require('../../services/utils');
 const noteService = require('../../services/notes');
 const noteCacheService = require('../../services/note_cache');
 const parseFilters = require('../../services/parse_filters');
@@ -55,15 +56,18 @@ async function getFullTextResults(searchText) {
     const tokenSql = ["1=1"];
 
     for (const token of tokens) {
-        // FIXME: escape token!
-        tokenSql.push(`(title LIKE '%${token}%' OR content LIKE '%${token}%')`);
+        const safeToken = utils.sanitizeSql(token);
+
+        tokenSql.push(`(title LIKE '%${safeToken}%' OR content LIKE '%${safeToken}%')`);
     }
 
     const noteIds = await sql.getColumn(`
       SELECT DISTINCT noteId 
-      FROM notes 
+      FROM 
+        notes
+        JOIN note_contents USING(noteId)
       WHERE isDeleted = 0 
-        AND isProtected = 0
+        AND notes.isProtected = 0
         AND type IN ('text', 'code')
         AND ${tokenSql.join(' AND ')}`);
 

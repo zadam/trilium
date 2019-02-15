@@ -6,14 +6,10 @@ const $searchString = $("#search-string");
 const $component = $('#note-detail-search');
 const $refreshButton = $('#note-detail-search-refresh-results-button');
 
-function getContent() {
-    return JSON.stringify({
-        searchString: $searchString.val()
-    });
-}
-
 function show() {
     $component.show();
+
+    console.log(noteDetailService.getCurrentNote());
 
     try {
         const json = JSON.parse(noteDetailService.getCurrentNote().noteContent.content);
@@ -26,6 +22,12 @@ function show() {
     }
 
     $searchString.on('input', noteDetailService.noteChanged);
+}
+
+function getContent() {
+    return JSON.stringify({
+        searchString: $searchString.val()
+    });
 }
 
 $refreshButton.click(async () => {

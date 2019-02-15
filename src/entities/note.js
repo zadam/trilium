@@ -132,7 +132,7 @@ class Note extends Entity {
 
     /** @returns {boolean} true if the note has string content (not binary) */
     isStringNote() {
-        return ["text", "code", "relation-map"].includes(this.type) || this.mime.startsWith('text/');
+        return ["text", "code", "relation-map", "search"].includes(this.type) || this.mime.startsWith('text/');
     }
 
     /** @returns {string} JS script environment - either "frontend" or "backend" */
