@@ -11,8 +11,8 @@ CREATE TABLE IF NOT EXISTS "note_contents" (
 
 CREATE UNIQUE INDEX `IDX_note_contents_noteId` ON `note_contents` (`noteId`);
 
-INSERT INTO note_contents (noteContentId, noteId, isProtected, content)
-  SELECT 'C' || SUBSTR(noteId, 2), noteId, isProtected, content FROM notes;
+INSERT INTO note_contents (noteContentId, noteId, isProtected, content, dateCreated, dateModified)
+  SELECT 'C' || SUBSTR(noteId, 2), noteId, isProtected, content, dateCreated, dateModified FROM notes;
 
 CREATE TABLE IF NOT EXISTS "notes_mig" (
   `noteId`	TEXT NOT NULL,
