@@ -668,12 +668,6 @@ table.promoted-attributes-in-tooltip td, table.promoted-attributes-in-tooltip th
     padding: 20px;
 }
 
-/* if modal height overflows, then only modal body scrolls */
-.modal-body {
-    max-height: calc(100vh - 200px);
-    overflow-y: auto;
-}
-
 /* this should help with tooltip flickering */
 .tooltip {
     pointer-events: none;
