@@ -813,6 +813,11 @@ div[data-notify="container"] {
     display: none;
 }
 
+#export-form #opml-versions {
+    padding-left: 60px;
+    display: none;
+}
+
 #export-form .form-check-label {
     padding: 2px;
 }

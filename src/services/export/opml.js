@@ -3,7 +3,9 @@
 const repository = require("../repository");
 const utils = require('../utils');
 
-async function exportToOpml(exportContext, branch, res) {
+async function exportToOpml(exportContext, branch, version, res) {
+    console.log("EXPORTING VERSION ", version);
+
     const note = await branch.getNote();
 
     async function exportNoteInner(branchId) {

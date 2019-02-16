@@ -15,6 +15,7 @@ const $singleType = $("#export-type-single");
 const $exportProgressWrapper = $("#export-progress-count-wrapper");
 const $exportProgressCount = $("#export-progress-count");
 const $exportButton = $("#export-button");
+const $opmlVersions = $("#opml-versions");
 
 let exportId = '';
 
@@ -27,6 +28,9 @@ async function showDialog(defaultType) {
 
     if (defaultType === 'subtree') {
         $subtreeType.prop("checked", true).change();
+
+        // to show/hide OPML versions
+        $("input[name=export-subtree-format]:checked").change();
     }
     else if (defaultType === 'single') {
         $singleType.prop("checked", true).change();
@@ -61,17 +65,19 @@ $form.submit(() => {
         ? $("input[name=export-subtree-format]:checked").val()
         : $("input[name=export-single-format]:checked").val();
 
+    const exportVersion = exportFormat === 'opml' ? $dialog.find("input[name='opml-version']:checked").val() : "1.0";
+
     const currentNode = treeService.getCurrentNode();
 
-    exportBranch(currentNode.data.branchId, exportType, exportFormat);
+    exportBranch(currentNode.data.branchId, exportType, exportFormat, exportVersion);
 
     return false;
 });
 
-function exportBranch(branchId, type, format) {
+function exportBranch(branchId, type, format, version) {
     exportId = utils.randomString(10);
 
-    const url = utils.getHost() + `/api/notes/${branchId}/export/${type}/${format}/${exportId}?protectedSessionId=` + encodeURIComponent(protectedSessionHolder.getProtectedSessionId());
+    const url = utils.getHost() + `/api/notes/${branchId}/export/${type}/${format}/${version}/${exportId}?protectedSessionId=` + encodeURIComponent(protectedSessionHolder.getProtectedSessionId());
 
     utils.download(url);
 }
@@ -92,6 +98,15 @@ $('input[name=export-type]').change(function () {
 
         $subtreeFormats.slideUp();
         $singleFormats.slideDown();
+    }
+});
+
+$('input[name=export-subtree-format]').change(function () {
+    if (this.value === 'opml') {
+        $opmlVersions.slideDown();
+    }
+    else {
+        $opmlVersions.slideUp();
     }
 });
 

@@ -48,7 +48,7 @@ class ExportContext {
 }
 
 async function exportBranch(req, res) {
-    const {branchId, type, format, exportId} = req.params;
+    const {branchId, type, format, version, exportId} = req.params;
     const branch = await repository.getBranch(branchId);
 
     const exportContext = new ExportContext(exportId);
@@ -61,7 +61,7 @@ async function exportBranch(req, res) {
             await singleExportService.exportSingleNote(exportContext, branch, format, res);
         }
         else if (format === 'opml') {
-            await opmlExportService.exportToOpml(exportContext, branch, res);
+            await opmlExportService.exportToOpml(exportContext, branch, version, res);
         }
         else {
             return [404, "Unrecognized export format " + format];
