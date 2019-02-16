@@ -38,7 +38,7 @@ class ExportContext {
         });
     }
 
-    // must remaing static
+    // must remaing non-static
     async reportError(message) {
         await messagingService.sendMessageToAllClients({
             type: 'export-error',

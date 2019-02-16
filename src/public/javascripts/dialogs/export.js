@@ -39,6 +39,8 @@ async function showDialog(defaultType) {
         throw new Error("Unrecognized type " + defaultType);
     }
 
+    $("#opml-v2").prop("checked", true); // setting default
+
     glob.activeDialog = $dialog;
 
     $dialog.modal();

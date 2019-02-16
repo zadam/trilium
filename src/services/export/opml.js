@@ -4,7 +4,11 @@ const repository = require("../repository");
 const utils = require('../utils');
 
 async function exportToOpml(exportContext, branch, version, res) {
-    console.log("EXPORTING VERSION ", version);
+    if (!['1.0', '2.0'].includes(version)) {
+        throw new Error("Unrecognized OPML version " + version);
+    }
+
+    const opmlVersion = parseInt(version);
 
     const note = await branch.getNote();
 
@@ -18,10 +22,21 @@ async function exportToOpml(exportContext, branch, version, res) {
 
         const title = (branch.prefix ? (branch.prefix + ' - ') : '') + note.title;
 
-        const preparedTitle = prepareText(title);
-        const preparedContent = prepareText(await note.getContent());
+        if (opmlVersion === 1) {
+            const preparedTitle = escapeXmlAttribute(title);
+            const preparedContent = prepareText(await note.getContent());
 
-        res.write(`<outline title="${preparedTitle}" text="${preparedContent}">\n`);
+            res.write(`<outline title="${preparedTitle}" text="${preparedContent}">\n`);
+        }
+        else if (opmlVersion === 2) {
+            const preparedTitle = escapeXmlAttribute(title);
+            const preparedContent = escapeXmlAttribute(await note.getContent());
+
+            res.write(`<outline text="${preparedTitle}" _note="${preparedContent}">\n`);
+        }
+        else {
+            throw new Error("Unrecognized OPML version " + opmlVersion);
+        }
 
         exportContext.increaseProgressCount();
 
@@ -31,6 +46,7 @@ async function exportToOpml(exportContext, branch, version, res) {
 
         res.write('</outline>');
     }
+
 
     const filename = (branch.prefix ? (branch.prefix + ' - ') : '') + note.title + ".opml";
 

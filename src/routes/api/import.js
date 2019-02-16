@@ -46,7 +46,7 @@ class ImportContext {
         });
     }
 
-    // must remaing static
+    // must remaing non-static
     async reportError(message) {
         await messagingService.sendMessageToAllClients({
             type: 'import-error',
