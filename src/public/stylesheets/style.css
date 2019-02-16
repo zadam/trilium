@@ -893,3 +893,9 @@ div[data-notify="container"] {
     line-height: 0.5;
     border-radius: 0.2rem;
 }
+
+a.external:after, a[href^="http://"]:after, a[href^="https://"]:after {
+    font-size: smaller;
+    content: "\2197";
+    vertical-align: top;
+}
