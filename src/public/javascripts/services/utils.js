@@ -145,7 +145,6 @@ function bindShortcut(keyboardShortcut, handler) {
         }
 
         $(document).bind('keydown', keyboardShortcut, e => {
-            console.log(e);
             handler();
 
             e.preventDefault();
