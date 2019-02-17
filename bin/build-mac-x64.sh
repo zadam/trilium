@@ -20,7 +20,7 @@ cp bin/deps/mac-x64/image/gifsicle node_modules/giflossy/vendor/
 # Mac build has by default useless directory level
 mv "./dist/Trilium Notes-darwin-x64" $BUILD_DIR
 
-./reset-local.sh
+./bin/reset-local.sh
 
 echo "Zipping mac x64 electron distribution..."
 
