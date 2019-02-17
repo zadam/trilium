@@ -92,7 +92,9 @@ function initNoteAutocomplete($el, options) {
                     suggestion: function(suggestion) {
                         return suggestion.highlighted;
                     }
-                }
+                },
+                // we can't cache identical searches because notes can be created / renamed, new recent notes can be added
+                cache: false
             }
         ]);
 
