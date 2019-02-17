@@ -331,7 +331,7 @@ function addRecentNote(branchId, notePath) {
     setTimeout(async () => {
         // we include the note into recent list only if the user stayed on the note at least 5 seconds
         if (notePath && notePath === getCurrentNotePath()) {
-            await server.put('recent-notes/' + branchId + '/' + encodeURIComponent(notePath));
+            await server.post('recent-notes', { branchId, notePath });
         }
     }, 1500);
 }

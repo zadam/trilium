@@ -4,8 +4,8 @@ const optionService = require('../../services/options');
 const RecentNote = require('../../entities/recent_note');
 
 async function addRecentNote(req) {
-    const branchId = req.params.branchId;
-    const notePath = req.params.notePath;
+    const branchId = req.body.branchId;
+    const notePath = req.body.notePath;
 
     await new RecentNote({
         branchId: branchId,
