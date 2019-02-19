@@ -48,6 +48,10 @@ async function getRootCalendarNote() {
 }
 
 async function getYearNote(dateStr, rootNote) {
+    if (!rootNote) {
+        rootNote = await getRootCalendarNote();
+    }
+
     const yearStr = dateStr.substr(0, 4);
 
     let yearNote = await attributeService.getNoteWithLabel(YEAR_LABEL, yearStr);
@@ -118,9 +122,37 @@ async function getDateNote(dateStr) {
     return dateNote;
 }
 
+function getStartOfTheWeek(date, startOfTheWeek) {
+    const day = date.getDay();
+    let diff;
+
+    if (startOfTheWeek === 'monday') {
+        diff = date.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
+    }
+    else if (startOfTheWeek === 'sunday') {
+        diff = date.getDate() - day;
+    }
+    else {
+        throw new Error("Unrecognized start of the week " + startOfTheWeek);
+    }
+
+    return new Date(date.setDate(diff));
+}
+
+async function getWeekNote(dateStr, options = {}) {
+    const startOfTheWeek = options.startOfTheWeek || "monday";
+
+    const dateObj = getStartOfTheWeek(dateUtils.parseLocalDate(dateStr), startOfTheWeek);
+
+    dateStr = dateUtils.dateStr(dateObj);
+
+    return getDateNote(dateStr);
+}
+
 module.exports = {
     getRootCalendarNote,
     getYearNote,
     getMonthNote,
+    getWeekNote,
     getDateNote
 };

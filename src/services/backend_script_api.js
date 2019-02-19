@@ -215,6 +215,16 @@ function BackendScriptApi(currentNote, apiParams) {
     this.getDateNote = dateNoteService.getDateNote;
 
     /**
+     * Returns note for the first date of the week of the given date.
+     *
+     * @method
+     * @param {string} date in YYYY-MM-DD format
+     * @param {object} options - "startOfTheWeek" - either "monday" (default) or "sunday"
+     * @returns {Promise<Note|null>}
+     */
+    this.getWeekNote = dateNoteService.getWeekNote;
+
+    /**
      * Returns month note for given date. If such note doesn't exist, it is created.
      *
      * @method
