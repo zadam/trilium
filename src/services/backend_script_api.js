@@ -206,13 +206,31 @@ function BackendScriptApi(currentNote, apiParams) {
     this.getRootCalendarNote = dateNoteService.getRootCalendarNote;
 
     /**
-     * Returns day note for given date (YYYY-MM-DD format). If such note doesn't exist, it is created.
+     * Returns day note for given date. If such note doesn't exist, it is created.
      *
      * @method
-     * @param {string} date
+     * @param {string} date in YYYY-MM-DD format
      * @returns {Promise<Note|null>}
      */
     this.getDateNote = dateNoteService.getDateNote;
+
+    /**
+     * Returns month note for given date. If such note doesn't exist, it is created.
+     *
+     * @method
+     * @param {string} date in YYYY-MM format
+     * @returns {Promise<Note|null>}
+     */
+    this.getMonthNote = dateNoteService.getMonthNote;
+
+    /**
+     * Returns year note for given year. If such note doesn't exist, it is created.
+     *
+     * @method
+     * @param {string} year in YYYY format
+     * @returns {Promise<Note|null>}
+     */
+    this.getYearNote = dateNoteService.getYearNote;
 
     /**
      * @method
