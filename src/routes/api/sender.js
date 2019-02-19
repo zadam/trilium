@@ -38,26 +38,17 @@ async function uploadImage(req) {
 
     const parentNote = await dateNoteService.getDateNote(req.headers['x-local-date']);
 
-    const {note} = await noteService.createNewNote(parentNote.noteId, {
-        title: "Sender image",
-        content: "",
-        target: 'into',
-        isProtected: false,
-        type: 'text',
-        mime: 'text/html'
-    });
+    const {noteId} = await imageService.saveImage(file.buffer, "Sender image", parentNote.noteId);
 
-    const {url} = await imageService.saveImage(file, null, note.noteId);
-
-    const content = `<img src="${url}"/>`;
-
-    await sql.execute("UPDATE notes SET content = ? WHERE noteId = ?", [content, note.noteId]);
+    return {
+        noteId: noteId
+    };
 }
 
 async function saveNote(req) {
     const parentNote = await dateNoteService.getDateNote(req.headers['x-local-date']);
 
-    await noteService.createNewNote(parentNote.noteId, {
+    const {note, branch} = await noteService.createNewNote(parentNote.noteId, {
         title: req.body.title,
         content: req.body.content,
         target: 'into',
@@ -65,6 +56,11 @@ async function saveNote(req) {
         type: 'text',
         mime: 'text/html'
     });
+
+    return {
+        noteId: note.noteId,
+        branchId: branch.branchId
+    };
 }
 
 module.exports = {

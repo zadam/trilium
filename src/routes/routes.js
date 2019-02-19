@@ -197,7 +197,7 @@ function register(app) {
     apiRoute(GET, '/api/script/relation/:noteId/:relationName', scriptRoute.getRelationBundles);
 
     route(POST, '/api/sender/login', [], senderRoute.login, apiResultHandler);
-    route(POST, '/api/sender/image', [auth.checkSenderToken], senderRoute.uploadImage, apiResultHandler);
+    route(POST, '/api/sender/image', [auth.checkSenderToken, uploadMiddleware], senderRoute.uploadImage, apiResultHandler);
     route(POST, '/api/sender/note', [auth.checkSenderToken], senderRoute.saveNote, apiResultHandler);
 
     apiRoute(GET, '/api/search/:searchString', searchRoute.searchNotes);
