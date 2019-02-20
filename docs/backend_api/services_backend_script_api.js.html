@@ -39,6 +39,7 @@ const repository = require('./repository');
 const axios = require('axios');
 const cloningService = require('./cloning');
 const messagingService = require('./messaging');
+const appInfo = require('./app_info');
 
 /**
  * This is the main backend API interface for scripts. It's published in the local "api" object.
@@ -46,13 +47,17 @@ const messagingService = require('./messaging');
  * @constructor
  * @hideconstructor
  */
-function BackendScriptApi(startNote, currentNote, originEntity) {
+function BackendScriptApi(currentNote, apiParams) {
     /** @property {Note} note where script started executing */
-    this.startNote = startNote;
+    this.startNote = apiParams.startNote;
     /** @property {Note} note where script is currently executing */
     this.currentNote = currentNote;
     /** @property {Entity} entity whose event triggered this executions */
-    this.originEntity = originEntity;
+    this.originEntity = apiParams.originEntity;
+
+    for (const key in apiParams) {
+        this[key] = apiParams[key];
+    }
 
     this.axios = axios;
 
@@ -197,6 +202,23 @@ function BackendScriptApi(startNote, currentNote, originEntity) {
     this.createNote = noteService.createNote;
 
     /**
+     * Creates new note according to given params and force all connected clients to refresh their tree.
+     *
+     * @method
+     *
+     * @param {string} parentNoteId - create new note under this parent
+     * @param {string} title
+     * @param {string} [content=""]
+     * @param {CreateNoteExtraOptions} [extraOptions={}]
+     * @returns {Promise&lt;{note: Note, branch: Branch}>} object contains newly created entities note and branch
+     */
+    this.createNoteAndRefresh = async function(parentNoteId, title, content, extraOptions) {
+        await noteService.createNote(parentNoteId, title, content, extraOptions);
+
+        messagingService.refreshTree();
+    };
+
+    /**
      * Log given message to trilium logs.
      *
      * @param message
@@ -212,13 +234,41 @@ function BackendScriptApi(startNote, currentNote, originEntity) {
     this.getRootCalendarNote = dateNoteService.getRootCalendarNote;
 
     /**
-     * Returns day note for given date (YYYY-MM-DD format). If such note doesn't exist, it is created.
+     * Returns day note for given date. If such note doesn't exist, it is created.
      *
      * @method
-     * @param {string} date
+     * @param {string} date in YYYY-MM-DD format
      * @returns {Promise&lt;Note|null>}
      */
     this.getDateNote = dateNoteService.getDateNote;
+
+    /**
+     * Returns note for the first date of the week of the given date.
+     *
+     * @method
+     * @param {string} date in YYYY-MM-DD format
+     * @param {object} options - "startOfTheWeek" - either "monday" (default) or "sunday"
+     * @returns {Promise&lt;Note|null>}
+     */
+    this.getWeekNote = dateNoteService.getWeekNote;
+
+    /**
+     * Returns month note for given date. If such note doesn't exist, it is created.
+     *
+     * @method
+     * @param {string} date in YYYY-MM format
+     * @returns {Promise&lt;Note|null>}
+     */
+    this.getMonthNote = dateNoteService.getMonthNote;
+
+    /**
+     * Returns year note for given year. If such note doesn't exist, it is created.
+     *
+     * @method
+     * @param {string} year in YYYY format
+     * @returns {Promise&lt;Note|null>}
+     */
+    this.getYearNote = dateNoteService.getYearNote;
 
     /**
      * @method
@@ -261,7 +311,12 @@ function BackendScriptApi(startNote, currentNote, originEntity) {
      *
      * @returns {Promise&lt;void>}
      */
-    this.refreshTree = () => messagingService.sendMessageToAllClients({ type: 'refresh-tree' });
+    this.refreshTree = messagingService.refreshTree;
+
+    /**
+     * @return {{syncVersion, appVersion, buildRevision, dbVersion, dataDirectory, buildDate}|*} - object representing basic info about running Trilium version
+     */
+    this.getAppInfo = () => appInfo
 }
 
 module.exports = BackendScriptApi;</code></pre>
@@ -274,7 +329,7 @@ module.exports = BackendScriptApi;</code></pre>
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="ApiToken.html">ApiToken</a></li><li><a href="Attribute.html">Attribute</a></li><li><a href="BackendScriptApi.html">BackendScriptApi</a></li><li><a href="Branch.html">Branch</a></li><li><a href="Entity.html">Entity</a></li><li><a href="Link.html">Link</a></li><li><a href="Note.html">Note</a></li><li><a href="NoteRevision.html">NoteRevision</a></li><li><a href="Option.html">Option</a></li><li><a href="RecentNote.html">RecentNote</a></li></ul><h3><a href="global.html">Global</a></h3>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="ApiToken.html">ApiToken</a></li><li><a href="Attribute.html">Attribute</a></li><li><a href="BackendScriptApi.html">BackendScriptApi</a></li><li><a href="Branch.html">Branch</a></li><li><a href="Entity.html">Entity</a></li><li><a href="Link.html">Link</a></li><li><a href="Note.html">Note</a></li><li><a href="NoteContent.html">NoteContent</a></li><li><a href="NoteRevision.html">NoteRevision</a></li><li><a href="Option.html">Option</a></li><li><a href="RecentNote.html">RecentNote</a></li></ul><h3><a href="global.html">Global</a></h3>
 </nav>
 
 <br class="clear">

@@ -35,6 +35,7 @@ import treeCache from './tree_cache.js';
 import noteDetailService from './note_detail.js';
 import noteTypeService from './note_type.js';
 import noteTooltipService from './note_tooltip.js';
+import protectedSessionService from'./protected_session.js';
 
 /**
  * This is the main frontend API interface for scripts. It's published in the local "api" object.
@@ -70,7 +71,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null) {
     this.activateNewNote = async notePath => {
         await treeService.reload();
 
-        await treeService.activateNote(notePath, true);
+        await treeService.activateNote(notePath, noteDetailService.focusAndSelectTitle);
     };
 
     /**
@@ -232,6 +233,19 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null) {
     this.getCurrentNoteContent = noteDetailService.getCurrentNoteContent;
 
     /**
+     * This method checks whether user navigated away from the note from which the scripts has been started.
+     * This is necessary because script execution is async and by the time it is finished, the user might have
+     * already navigated away from this page - the end result would be that script might return data for the wrong
+     * note.
+     *
+     * @method
+     * @return {boolean} returns true if the original note is still loaded, false if user switched to another
+     */
+    this.isNoteStillLoaded = () => {
+        return this.originEntity.noteId === noteDetailService.getCurrentNoteId();
+    };
+
+    /**
      * @method
      * @param {function} func - callback called on note change as user is typing (not necessarily tied to save event)
      */
@@ -259,7 +273,12 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null) {
      * @method
      * @param {object} $el - jquery object on which to setup the tooltip
      */
-    this.setupElementTooltip = noteTooltipService.setupElementTooltip
+    this.setupElementTooltip = noteTooltipService.setupElementTooltip;
+
+    /**
+     * @method
+     */
+    this.protectCurrentNote = protectedSessionService.protectNoteAndSendToServer;
 }
 
 export default FrontendScriptApi;</code></pre>

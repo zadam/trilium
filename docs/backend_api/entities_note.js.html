@@ -30,6 +30,7 @@
 
 const Entity = require('./entity');
 const Attribute = require('./attribute');
+const NoteContent = require('./note_content');
 const protectedSessionService = require('../services/protected_session');
 const repository = require('../services/repository');
 const sql = require('../services/sql');
@@ -47,7 +48,6 @@ const RELATION_DEFINITION = 'relation-definition';
  * @property {string} type - one of "text", "code", "file" or "render"
  * @property {string} mime - MIME type, e.g. "text/html"
  * @property {string} title - note title
- * @property {string} content - note content - e.g. HTML text for text notes, file payload for files
  * @property {boolean} isProtected - true if note is protected
  * @property {boolean} isDeleted - true if note is deleted
  * @property {string} dateCreated
@@ -58,7 +58,7 @@ const RELATION_DEFINITION = 'relation-definition';
 class Note extends Entity {
     static get entityName() { return "notes"; }
     static get primaryKeyName() { return "noteId"; }
-    static get hashedProperties() { return ["noteId", "title", "content", "type", "isProtected", "isDeleted"]; }
+    static get hashedProperties() { return ["noteId", "title", "type", "isProtected", "isDeleted"]; }
 
     /**
      * @param row - object containing database row from "notes" table
@@ -75,19 +75,64 @@ class Note extends Entity {
         if (this.isProtected &amp;&amp; this.noteId) {
             this.isContentAvailable = protectedSessionService.isProtectedSessionAvailable();
 
-            protectedSessionService.decryptNote(this);
+            if (this.isContentAvailable) {
+                protectedSessionService.decryptNote(this);
+            }
+            else {
+                // saving ciphertexts in case we do want to update protected note outside of protected session
+                // (which is allowed)
+                this.titleCipherText = this.title;
+                this.title = "[protected]";
+            }
         }
-
-        this.setContent(this.content);
     }
 
-    setContent(content) {
-        this.content = content;
+    /** @returns {Promise&lt;NoteContent>} */
+    async getNoteContent() {
+        if (!this.noteContent) {
+            this.noteContent = await repository.getEntity(`SELECT * FROM note_contents WHERE noteId = ?`, [this.noteId]);
 
-        try {
-            this.jsonContent = JSON.parse(this.content);
+            if (!this.noteContent) {
+                throw new Error("Note content not found for noteId=" + this.noteId);
+            }
+
+            if (this.isStringNote()) {
+                this.noteContent.content = this.noteContent.content.toString("UTF-8");
+            }
         }
-        catch(e) {}
+
+        return this.noteContent;
+    }
+
+    /** @returns {Promise&lt;*>} */
+    async getContent() {
+        const noteContent = await this.getNoteContent();
+
+        return noteContent.content;
+    }
+
+    /** @returns {Promise&lt;*>} */
+    async getJsonContent() {
+        const content = await this.getContent();
+
+        return JSON.parse(content);
+    }
+
+    /** @returns {Promise} */
+    async setContent(content) {
+        if (!this.noteContent) {
+            // make sure it is loaded
+            await this.getNoteContent();
+        }
+
+        this.noteContent.content = content;
+
+        await this.noteContent.save();
+    }
+
+    /** @returns {Promise} */
+    async setJsonContent(content) {
+        await this.setContent(JSON.stringify(content));
     }
 
     /** @returns {boolean} true if this note is the root of the note tree. Root note has "root" noteId */
@@ -111,6 +156,11 @@ class Note extends Entity {
     /** @returns {boolean} true if this note is HTML */
     isHtml() {
         return (this.type === "code" || this.type === "file" || this.type === "render") &amp;&amp; this.mime === "text/html";
+    }
+
+    /** @returns {boolean} true if the note has string content (not binary) */
+    isStringNote() {
+        return ["text", "code", "relation-map", "search"].includes(this.type) || this.mime.startsWith('text/');
     }
 
     /** @returns {string} JS script environment - either "frontend" or "backend" */
@@ -629,13 +679,6 @@ class Note extends Entity {
     }
 
     beforeSaving() {
-        if (this.isJson() &amp;&amp; this.jsonContent) {
-            this.content = JSON.stringify(this.jsonContent, null, '\t');
-        }
-
-        // we do this here because encryption needs the note ID for the IV
-        this.generateIdIfNecessary();
-
         if (!this.isDeleted) {
             this.isDeleted = false;
         }
@@ -654,12 +697,18 @@ class Note extends Entity {
     // cannot be static!
     updatePojo(pojo) {
         if (pojo.isProtected) {
-            protectedSessionService.encryptNote(pojo);
+            if (this.isContentAvailable) {
+                protectedSessionService.encryptNote(pojo);
+            }
+            else {
+                // updating protected note outside of protected session means we will keep original ciphertexts
+                pojo.title = pojo.titleCipherText;
+            }
         }
 
-        delete pojo.jsonContent;
         delete pojo.isContentAvailable;
         delete pojo.__attributeCache;
+        delete pojo.titleCipherText;
     }
 }
 
@@ -673,7 +722,7 @@ module.exports = Note;</code></pre>
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="ApiToken.html">ApiToken</a></li><li><a href="Attribute.html">Attribute</a></li><li><a href="BackendScriptApi.html">BackendScriptApi</a></li><li><a href="Branch.html">Branch</a></li><li><a href="Entity.html">Entity</a></li><li><a href="Link.html">Link</a></li><li><a href="Note.html">Note</a></li><li><a href="NoteRevision.html">NoteRevision</a></li><li><a href="Option.html">Option</a></li><li><a href="RecentNote.html">RecentNote</a></li></ul><h3><a href="global.html">Global</a></h3>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="ApiToken.html">ApiToken</a></li><li><a href="Attribute.html">Attribute</a></li><li><a href="BackendScriptApi.html">BackendScriptApi</a></li><li><a href="Branch.html">Branch</a></li><li><a href="Entity.html">Entity</a></li><li><a href="Link.html">Link</a></li><li><a href="Note.html">Note</a></li><li><a href="NoteContent.html">NoteContent</a></li><li><a href="NoteRevision.html">NoteRevision</a></li><li><a href="Option.html">Option</a></li><li><a href="RecentNote.html">RecentNote</a></li></ul><h3><a href="global.html">Global</a></h3>
 </nav>
 
 <br class="clear">

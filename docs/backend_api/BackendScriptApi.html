@@ -81,7 +81,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line21">line 21</a>
+        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line22">line 22</a>
     </li></ul></dd>
     
 
@@ -221,7 +221,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line25">line 25</a>
+        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line26">line 26</a>
     </li></ul></dd>
     
 
@@ -331,7 +331,70 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line27">line 27</a>
+        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line28">line 28</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="refreshTree"><span class="type-signature"></span>refreshTree<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    Trigger tree refresh in all connected clients. This is required when some tree change happens in
+the backend.
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line286">line 286</a>
     </li></ul></dd>
     
 
@@ -441,7 +504,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line23">line 23</a>
+        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line24">line 24</a>
     </li></ul></dd>
     
 
@@ -695,7 +758,293 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line169">line 169</a>
+        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line174">line 174</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    object contains newly created entities note and branch
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise.&lt;{note: <a href="Note.html">Note</a>, branch: <a href="Branch.html">Branch</a>}></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="createNoteAndRefresh"><span class="type-signature"></span>createNoteAndRefresh<span class="signature">(parentNoteId, title, content<span class="signature-attributes">opt</span>, extraOptions<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise.&lt;{note: <a href="Note.html">Note</a>, branch: <a href="Branch.html">Branch</a>}>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Creates new note according to given params and force all connected clients to refresh their tree.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>parentNoteId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">create new note under this parent</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>title</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>content</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    ""
+                
+                </td>
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>extraOptions</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#CreateNoteExtraOptions">CreateNoteExtraOptions</a></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    {}
+                
+                </td>
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line187">line 187</a>
     </li></ul></dd>
     
 
@@ -875,7 +1224,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line130">line 130</a>
+        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line135">line 135</a>
     </li></ul></dd>
     
 
@@ -1074,7 +1423,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line120">line 120</a>
+        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line125">line 125</a>
     </li></ul></dd>
     
 
@@ -1109,6 +1458,113 @@
     <dd>
         
 <span class="param-type">Promise.&lt;void></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getAppInfo"><span class="type-signature"></span>getAppInfo<span class="signature">()</span><span class="type-signature"> &rarr; {Object|*}</span></h4>
+    
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line291">line 291</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    - object representing basic info about running Trilium version
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Object</span>
+|
+
+<span class="param-type">*</span>
 
 
     </dd>
@@ -1223,7 +1679,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line64">line 64</a>
+        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line69">line 69</a>
     </li></ul></dd>
     
 
@@ -1372,7 +1828,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line57">line 57</a>
+        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line62">line 62</a>
     </li></ul></dd>
     
 
@@ -1432,7 +1888,7 @@
 
 
 <div class="description">
-    Returns day note for given date (YYYY-MM-DD format). If such note doesn't exist, it is created.
+    Returns day note for given date. If such note doesn't exist, it is created.
 </div>
 
 
@@ -1484,7 +1940,7 @@
 
             
 
-            <td class="description last"></td>
+            <td class="description last">in YYYY-MM-DD format</td>
         </tr>
 
     
@@ -1525,7 +1981,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line193">line 193</a>
+        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line215">line 215</a>
     </li></ul></dd>
     
 
@@ -1697,7 +2153,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line89">line 89</a>
+        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line94">line 94</a>
     </li></ul></dd>
     
 
@@ -1873,7 +2329,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line81">line 81</a>
+        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line86">line 86</a>
     </li></ul></dd>
     
 
@@ -2022,7 +2478,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line71">line 71</a>
+        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line76">line 76</a>
     </li></ul></dd>
     
 
@@ -2127,7 +2583,7 @@ if some action needs to happen on only one specific instance.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line43">line 43</a>
+        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line48">line 48</a>
     </li></ul></dd>
     
 
@@ -2165,6 +2621,159 @@ if some action needs to happen on only one specific instance.
 |
 
 <span class="param-type">null</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getMonthNote"><span class="type-signature"></span>getMonthNote<span class="signature">(date)</span><span class="type-signature"> &rarr; {Promise.&lt;(<a href="Note.html">Note</a>|null)>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Returns month note for given date. If such note doesn't exist, it is created.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>date</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">in YYYY-MM format</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line234">line 234</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise.&lt;(<a href="Note.html">Note</a>|null)></span>
 
 
     </dd>
@@ -2279,7 +2888,7 @@ if some action needs to happen on only one specific instance.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line50">line 50</a>
+        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line55">line 55</a>
     </li></ul></dd>
     
 
@@ -2475,7 +3084,7 @@ if some action needs to happen on only one specific instance.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line99">line 99</a>
+        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line104">line 104</a>
     </li></ul></dd>
     
 
@@ -2671,7 +3280,7 @@ if some action needs to happen on only one specific instance.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line109">line 109</a>
+        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line114">line 114</a>
     </li></ul></dd>
     
 
@@ -2775,7 +3384,336 @@ if some action needs to happen on only one specific instance.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line184">line 184</a>
+        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line206">line 206</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise.&lt;(<a href="Note.html">Note</a>|null)></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getWeekNote"><span class="type-signature"></span>getWeekNote<span class="signature">(date, options)</span><span class="type-signature"> &rarr; {Promise.&lt;(<a href="Note.html">Note</a>|null)>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Returns note for the first date of the week of the given date.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>date</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">in YYYY-MM-DD format</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>options</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">"startOfTheWeek" - either "monday" (default) or "sunday"</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line225">line 225</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise.&lt;(<a href="Note.html">Note</a>|null)></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getYearNote"><span class="type-signature"></span>getYearNote<span class="signature">(year)</span><span class="type-signature"> &rarr; {Promise.&lt;(<a href="Note.html">Note</a>|null)>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Returns year note for given year. If such note doesn't exist, it is created.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>year</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">in YYYY format</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line243">line 243</a>
     </li></ul></dd>
     
 
@@ -2923,7 +3861,7 @@ if some action needs to happen on only one specific instance.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line176">line 176</a>
+        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line198">line 198</a>
     </li></ul></dd>
     
 
@@ -2946,111 +3884,6 @@ if some action needs to happen on only one specific instance.
 
 
 
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="refreshTree"><span class="type-signature"></span>refreshTree<span class="signature">()</span><span class="type-signature"> &rarr; {Promise.&lt;void>}</span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    Trigger tree refresh in all connected clients. This is required when some tree change happens in
-the backend.
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line236">line 236</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Promise.&lt;void></span>
-
-
-    </dd>
-</dl>
-
-    
 
 
 
@@ -3240,7 +4073,7 @@ This method looks similar to toggleNoteInParent() but differs because we're look
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line213">line 213</a>
+        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line263">line 263</a>
     </li></ul></dd>
     
 
@@ -3371,7 +4204,7 @@ This method looks similar to toggleNoteInParent() but differs because we're look
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line200">line 200</a>
+        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line250">line 250</a>
     </li></ul></dd>
     
 
@@ -3585,7 +4418,7 @@ This method looks similar to toggleNoteInParent() but differs because we're look
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line142">line 142</a>
+        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line147">line 147</a>
     </li></ul></dd>
     
 
@@ -3742,7 +4575,7 @@ transactional by default.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line226">line 226</a>
+        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line276">line 276</a>
     </li></ul></dd>
     
 
@@ -3808,7 +4641,7 @@ transactional by default.
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="ApiToken.html">ApiToken</a></li><li><a href="Attribute.html">Attribute</a></li><li><a href="BackendScriptApi.html">BackendScriptApi</a></li><li><a href="Branch.html">Branch</a></li><li><a href="Entity.html">Entity</a></li><li><a href="Link.html">Link</a></li><li><a href="Note.html">Note</a></li><li><a href="NoteRevision.html">NoteRevision</a></li><li><a href="Option.html">Option</a></li><li><a href="RecentNote.html">RecentNote</a></li></ul><h3><a href="global.html">Global</a></h3>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="ApiToken.html">ApiToken</a></li><li><a href="Attribute.html">Attribute</a></li><li><a href="BackendScriptApi.html">BackendScriptApi</a></li><li><a href="Branch.html">Branch</a></li><li><a href="Entity.html">Entity</a></li><li><a href="Link.html">Link</a></li><li><a href="Note.html">Note</a></li><li><a href="NoteContent.html">NoteContent</a></li><li><a href="NoteRevision.html">NoteRevision</a></li><li><a href="Option.html">Option</a></li><li><a href="RecentNote.html">RecentNote</a></li></ul><h3><a href="global.html">Global</a></h3>
 </nav>
 
 <br class="clear">

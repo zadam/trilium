@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Class: RecentNote</title>
+    <title>JSDoc: Class: NoteContent</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Class: RecentNote</h1>
+    <h1 class="page-title">Class: NoteContent</h1>
 
     
 
@@ -28,9 +28,9 @@
 
 <header>
     
-        <h2><span class="attribs"><span class="type-signature"></span></span>RecentNote<span class="signature">(branchId, notePath, isDeleted, dateModified)</span><span class="type-signature"></span></h2>
+        <h2><span class="attribs"><span class="type-signature"></span></span>NoteContent<span class="signature">(row)</span><span class="type-signature"></span></h2>
         
-            <div class="class-description">RecentNote represents recently visited note.</div>
+            <div class="class-description">This represents a Note which is a central object in the Trilium Notes project.</div>
         
     
 </header>
@@ -45,7 +45,7 @@
     
 
     
-    <h4 class="name" id="RecentNote"><span class="type-signature"></span>new RecentNote<span class="signature">(branchId, notePath, isDeleted, dateModified)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="NoteContent"><span class="type-signature"></span>new NoteContent<span class="signature">(row)</span><span class="type-signature"></span></h4>
     
 
     
@@ -85,7 +85,56 @@
 
         <tr>
             
-                <td class="name"><code>branchId</code></td>
+                <td class="name"><code>row</code></td>
+            
+
+            <td class="type">
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">object containing database row from "note_contents" table</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>noteContentId</code></td>
             
 
             <td class="type">
@@ -101,14 +150,14 @@
 
             
 
-            <td class="description last"></td>
+            <td class="description last">primary key</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>notePath</code></td>
+                <td class="name"><code>noteId</code></td>
             
 
             <td class="type">
@@ -124,20 +173,66 @@
 
             
 
-            <td class="description last"></td>
+            <td class="description last">reference to owning note</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>isDeleted</code></td>
+                <td class="name"><code>isProtected</code></td>
             
 
             <td class="type">
             
                 
 <span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">true if note content is protected</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>content</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">blob</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">note content - e.g. HTML text for text notes, file payload for files</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>dateCreated</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
 
 
             
@@ -180,8 +275,6 @@
 
 
 
-
-
 <dl class="details">
 
     
@@ -211,7 +304,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="entities_recent_note.js.html">entities/recent_note.js</a>, <a href="entities_recent_note.js.html#line16">line 16</a>
+        <a href="entities_note_content.js.html">entities/note_content.js</a>, <a href="entities_note_content.js.html#line20">line 20</a>
     </li></ul></dd>
     
 
@@ -267,6 +360,110 @@
 
     
 
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getNote"><span class="type-signature">(async) </span>getNote<span class="signature">()</span><span class="type-signature"> &rarr; {Promise.&lt;<a href="Note.html">Note</a>>}</span></h4>
+    
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="entities_note_content.js.html">entities/note_content.js</a>, <a href="entities_note_content.js.html#line63">line 63</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise.&lt;<a href="Note.html">Note</a>></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
     
 
     
