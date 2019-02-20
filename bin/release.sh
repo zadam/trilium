@@ -64,8 +64,8 @@ echo "Uploading linux x64 build"
 
 github-release upload \
     --tag $TAG \
-    --name "DEBIAN_X64_BUILD" \
-    --file "dist/DEBIAN_X64_BUILD"
+    --name "$DEBIAN_X64_BUILD" \
+    --file "dist/$DEBIAN_X64_BUILD"
 
 echo "Uploading debian x64 package"
 
