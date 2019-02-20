@@ -1,0 +1,14 @@
+{
+  "src": "dist/trilium-linux-x64",
+  "dest": "dist/",
+  "name": "trilium",
+  "productName": "Trilium Notes",
+  "genericName": "Note taker",
+  "description": "Trilium Notes is a hierarchical note taking application with focus on building large personal knowledge bases.",
+  "sections": "misc",
+  "maintainer": "zadam.apps@gmail.com",
+  "homepage": "https://github.com/zadam/trilium",
+  "bin": "trilium",
+  "icon": "dist/trilium-linux-x64/icon.png",
+  "categories": [ "Office" ]
+}

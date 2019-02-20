@@ -43,6 +43,7 @@ git push origin $TAG
 bin/build.sh
 
 LINUX_X64_BUILD=trilium-linux-x64-$VERSION.tar.xz
+DEBIAN_X64_BUILD=trilium_$VERSION_amd64.deb
 WINDOWS_X64_BUILD=trilium-windows-x64-$VERSION.zip
 MAC_X64_BUILD=trilium-mac-x64-$VERSION.zip
 SERVER_BUILD=trilium-linux-x64-server-$VERSION.tar.xz
@@ -60,6 +61,13 @@ github-release release \
     --name "$TAG release" $EXTRA
 
 echo "Uploading linux x64 build"
+
+github-release upload \
+    --tag $TAG \
+    --name "DEBIAN_X64_BUILD" \
+    --file "dist/DEBIAN_X64_BUILD"
+
+echo "Uploading debian x64 package"
 
 github-release upload \
     --tag $TAG \
