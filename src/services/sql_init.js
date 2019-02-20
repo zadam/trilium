@@ -77,14 +77,19 @@ async function createInitialDatabase(username, password) {
         await sql.executeScript(schema);
 
         const Note = require("../entities/note");
+        const NoteContent = require("../entities/note_content");
         const Branch = require("../entities/branch");
 
         const rootNote = await new Note({
             noteId: 'root',
             title: 'root',
-            content: '',
             type: 'text',
             mime: 'text/html'
+        }).save();
+
+        const rootNoteContent = await new NoteContent({
+            noteId: rootNote.noteId,
+            content: ''
         }).save();
 
         await new Branch({
@@ -96,7 +101,7 @@ async function createInitialDatabase(username, password) {
         }).save();
 
         const tarImportService = require("./import/tar");
-        await tarImportService.importTar(demoFile, rootNote);
+        await tarImportService.importTar(null, demoFile, rootNote);
 
         const startNoteId = await sql.getValue("SELECT noteId FROM branches WHERE parentNoteId = 'root' AND isDeleted = 0 ORDER BY notePosition");
 

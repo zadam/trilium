@@ -96,19 +96,6 @@ CREATE TABLE attributes
   hash         TEXT default "" not null, isInheritable int DEFAULT 0 NULL);
 CREATE INDEX IDX_attributes_name_value
   on attributes (name, value);
-CREATE TABLE IF NOT EXISTS "notes" (
-  `noteId`	TEXT NOT NULL,
-  `title`	TEXT NOT NULL DEFAULT "note",
-  `content`	TEXT NULL DEFAULT NULL,
-  `isProtected`	INT NOT NULL DEFAULT 0,
-  `type` TEXT NOT NULL DEFAULT 'text',
-  `mime` TEXT NOT NULL DEFAULT 'text/html',
-  `hash` TEXT DEFAULT "" NOT NULL,
-  `isDeleted`	INT NOT NULL DEFAULT 0,
-  `dateCreated`	TEXT NOT NULL,
-  `dateModified`	TEXT NOT NULL,
-  PRIMARY KEY(`noteId`)
-);
 CREATE TABLE IF NOT EXISTS "links" (
   `linkId`	TEXT NOT NULL,
   `noteId`	TEXT NOT NULL,
@@ -130,3 +117,26 @@ CREATE INDEX IDX_attributes_noteId_index
   on attributes (noteId);
 CREATE INDEX IDX_attributes_value_index
   on attributes (value);
+CREATE TABLE IF NOT EXISTS "note_contents" (
+  `noteContentId`	TEXT NOT NULL,
+  `noteId`	TEXT NOT NULL,
+  `isProtected`	INT NOT NULL DEFAULT 0,
+  `content`	TEXT NULL DEFAULT NULL,
+  `hash` TEXT DEFAULT "" NOT NULL,
+  `dateCreated`	TEXT NOT NULL,
+  `dateModified` TEXT NOT NULL,
+  PRIMARY KEY(`noteContentId`)
+);
+CREATE UNIQUE INDEX `IDX_note_contents_noteId` ON `note_contents` (`noteId`);
+CREATE TABLE IF NOT EXISTS "notes" (
+  `noteId`	TEXT NOT NULL,
+  `title`	TEXT NOT NULL DEFAULT "note",
+  `isProtected`	INT NOT NULL DEFAULT 0,
+  `type` TEXT NOT NULL DEFAULT 'text',
+  `mime` TEXT NOT NULL DEFAULT 'text/html',
+  `hash` TEXT DEFAULT "" NOT NULL,
+  `isDeleted`	INT NOT NULL DEFAULT 0,
+  `dateCreated`	TEXT NOT NULL,
+  `dateModified`	TEXT NOT NULL,
+  PRIMARY KEY(`noteId`)
+);

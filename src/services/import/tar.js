@@ -13,9 +13,7 @@ const stream = require('stream');
 const path = require('path');
 const commonmark = require('commonmark');
 const mimeTypes = require('mime-types');
-
-let importNoteCount;
-let lastSentCountTs = Date.now();
+const ImportContext = require('../import_context');
 
 /**
  * @param {ImportContext} importContext
@@ -24,7 +22,8 @@ let lastSentCountTs = Date.now();
  * @return {Promise<*>}
  */
 async function importTar(importContext, fileBuffer, importRootNote) {
-    importNoteCount = 0;
+    importContext = importContext || new ImportContext("1", false);
+
     // maps from original noteId (in tar file) to newly generated noteId
     const noteIdMap = {};
     const attributes = [];
