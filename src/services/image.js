@@ -43,7 +43,7 @@ async function saveImage(buffer, originalName, parentNoteId) {
     return {
         fileName,
         noteId: note.noteId,
-        url: `/api/images/${note.noteId}/${fileName}`
+        url: `api/images/${note.noteId}/${fileName}`
     };
 }
 

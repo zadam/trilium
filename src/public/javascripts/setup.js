@@ -91,7 +91,7 @@ function SetupModel() {
             }
 
             // not using server.js because it loads too many dependencies
-            const resp = await $.post('/api/setup/sync-from-server', {
+            const resp = await $.post('api/setup/sync-from-server', {
                 syncServerHost: syncServerHost,
                 syncProxy: syncProxy,
                 username: username,

@@ -26,7 +26,7 @@ async function show() {
     $fileSize.text((attributeMap.fileSize || "?") + " bytes");
     $fileType.text(currentNote.mime);
 
-    $imageView.prop("src", `/api/images/${currentNote.noteId}/${currentNote.title}`);
+    $imageView.prop("src", `api/images/${currentNote.noteId}/${currentNote.title}`);
 }
 
 $imageDownloadButton.click(() => utils.download(getFileUrl()));

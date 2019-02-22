@@ -207,7 +207,8 @@ function findImageLinks(content, foundLinks) {
     }
 
     // removing absolute references to server to keep it working between instances
-    return content.replace(/src="[^"]*\/api\/images\//g, 'src="/api/images/');
+    // we also omit / at the beginning to keep the paths relative
+    return content.replace(/src="[^"]*\/api\/images\//g, 'src="api/images/');
 }
 
 function findHyperLinks(content, foundLinks) {
