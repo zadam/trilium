@@ -1,5 +1,6 @@
 import treeService from './tree.js';
 import treeChangesService from './branches.js';
+import fileService from '../services/file.js';
 
 const dragAndDropSetup = {
     autoExpandMS: 600,
@@ -32,23 +33,28 @@ const dragAndDropSetup = {
         return true;
     },
     dragEnter: (node, data) => true, // allow drop on any node
+    dragOver: (node, data) => true,
     dragDrop: (node, data) => {
-        // This function MUST be defined to enable dropping of items on the tree.
-        // data.hitMode is 'before', 'after', or 'over'.
+        const dataTransfer = data.dataTransfer;
 
-        const selectedNodes = treeService.getSelectedNodes();
-
-        if (data.hitMode === "before") {
-            treeChangesService.moveBeforeNode(selectedNodes, node);
-        }
-        else if (data.hitMode === "after") {
-            treeChangesService.moveAfterNode(selectedNodes, node);
-        }
-        else if (data.hitMode === "over") {
-            treeChangesService.moveToNode(selectedNodes, node);
+        if (dataTransfer && dataTransfer.files && dataTransfer.files.length > 0) {
+            fileService.uploadFiles(node.data.noteId, dataTransfer.files);
         }
         else {
-            throw new Error("Unknown hitMode=" + data.hitMode);
+            // This function MUST be defined to enable dropping of items on the tree.
+            // data.hitMode is 'before', 'after', or 'over'.
+
+            const selectedNodes = treeService.getSelectedNodes();
+
+            if (data.hitMode === "before") {
+                treeChangesService.moveBeforeNode(selectedNodes, node);
+            } else if (data.hitMode === "after") {
+                treeChangesService.moveAfterNode(selectedNodes, node);
+            } else if (data.hitMode === "over") {
+                treeChangesService.moveToNode(selectedNodes, node);
+            } else {
+                throw new Error("Unknown hitMode=" + data.hitMode);
+            }
         }
     }
 };

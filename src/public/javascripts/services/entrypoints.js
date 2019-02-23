@@ -161,7 +161,7 @@ function registerEntrypoints() {
 
     $("#note-title").bind('keydown', 'return', () => $("#note-detail-text").focus());
 
-    $("#upload-file-button").click(fileService.uploadFile);
+    $("#upload-file-button").click(fileService.openUploadFileDialog);
 }
 
 export default {

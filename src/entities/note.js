@@ -13,6 +13,8 @@ const LABEL_DEFINITION = 'label-definition';
 const RELATION = 'relation';
 const RELATION_DEFINITION = 'relation-definition';
 
+const STRING_MIME_TYPES = ["application/x-javascript"];
+
 /**
  * This represents a Note which is a central object in the Trilium Notes project.
  *
@@ -132,7 +134,9 @@ class Note extends Entity {
 
     /** @returns {boolean} true if the note has string content (not binary) */
     isStringNote() {
-        return ["text", "code", "relation-map", "search"].includes(this.type) || this.mime.startsWith('text/');
+        return ["text", "code", "relation-map", "search"].includes(this.type)
+            || this.mime.startsWith('text/')
+            || STRING_MIME_TYPES.includes(this.mime);
     }
 
     /** @returns {string} JS script environment - either "frontend" or "backend" */
