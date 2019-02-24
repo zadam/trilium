@@ -18,17 +18,35 @@
 
                         <input type="file" id="import-file-upload-input" class="form-control-file" multiple />
 
-                        <p>Content of the file will be imported as child note(s) into <strong class="note-title"></strong>. Import file must be of supported type and have correct extension - one of <code>.html</code>, <code>.md</code>, <code>.tar</code>, <code>.enex</code>.</p>
+                        <p>Content of the file will be imported as child note(s) into <strong class="note-title"></strong>.
                     </div>
 
                     <div class="form-group">
+                        <strong>Options:</strong>
+
+                        <div class="checkbox">
+                            <label data-toggle="tooltip" title="Trilium <code>.tar</code> export files can contain executable scripts which may contain harmful behavior. Safe import will deactivate automatic execution of all imported scripts. Uncheck &quot;Safe import&quot; only if the imported tar archive is supposed to contain executable scripts and you completely trust the contents of the import file.">
+                                <input id="safe-import" value="1" type="checkbox" checked>
+                                Safe import
+                            </label>
+                        </div>
+
+                        <div class="checkbox">
+                            <label data-toggle="tooltip" title="<p>If you check this option, Trilium will attempt to optimize the imported images for size which may affect the perceived image quality. If unchecked, images will be imported without changes.</p><p>This doesn't apply to <code>.tar</code> imports with metadata since it is assumed these files are already optimized.</p>">
+                                <input id="optimize-images" value="1" type="checkbox" checked> Optimize images
+                            </label>
+                        </div>
+
                         <div class="checkbox">
                             <label>
-                                <input id="safe-import" value="1" type="checkbox" checked> <strong>Safe import</strong>
+                                <input id="text-imported-as-text" value="1" type="checkbox" checked> Import HTML, Markdown and TXT as text notes if it's unclear from metadata
                             </label>
+                        </div>
 
-                            <br/>
-                            Trilium <code>.tar</code> export files can contain executable scripts which may contain harmful behavior. Safe import will deactivate automatic execution of all imported scripts. Uncheck "Safe import" only if the imported tar archive is supposed to contain executable scripts and you completely trust the contents of the import file.
+                        <div class="checkbox">
+                            <label>
+                                <input id="code-imported-as-code" value="1" type="checkbox" checked> Import recognized code files (e.g. <code>.json</code>) as code notes if it's unclear from metadata
+                            </label>
                         </div>
                     </div>
                 </div>

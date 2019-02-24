@@ -134,6 +134,10 @@ $("#export-note-button").click(function () {
     exportDialog.showDialog('single');
 });
 
+$('[data-toggle="tooltip"]').tooltip({
+    html: true
+});
+
 macInit.init();
 
 searchNotesService.init(); // should be in front of treeService since that one manipulates address bar hash

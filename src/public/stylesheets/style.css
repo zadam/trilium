@@ -679,6 +679,7 @@ table.promoted-attributes-in-tooltip td, table.promoted-attributes-in-tooltip th
     /* height needs to stay small because tooltip has problem when it can't fit to either top or bottom of the cursor */
     max-height: 300px;
     overflow: hidden;
+    font-size: var(--main-font-size);
     color: var(--main-text-color);
     border: 1px solid var(--main-border-color);
     border-radius: 5px;

@@ -109,3 +109,7 @@ body {
 #note-info-table td, #note-info-table th {
     padding: 15px;
 }
+
+[data-toggle="tooltip"] {
+    text-decoration: dotted underline;
+}
