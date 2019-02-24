@@ -6,12 +6,15 @@ const messagingService = require('./messaging');
 const importContexts = {};
 
 class ImportContext {
-    constructor(importId, safeImport) {
+    constructor(importId, options) {
         // importId is to distinguish between different import events - it is possible (though not recommended)
         // to have multiple imports going at the same time
         this.importId = importId;
 
-        this.safeImport = safeImport;
+        this.safeImport = options.safeImport;
+        this.shrinkImages = options.shrinkImages;
+        this.codeImportedAsCode = options.codeImportedAsCode;
+        this.textImportedAsText = options.textImportedAsText;
 
         // // count is mean to represent count of exported notes where practical, otherwise it's just some measure of progress
         this.progressCount = 0;
@@ -19,9 +22,9 @@ class ImportContext {
     }
 
     /** @return {ImportContext} */
-    static getInstance(importId, safeImport) {
+    static getInstance(importId, options) {
         if (!importContexts[importId]) {
-            importContexts[importId] = new ImportContext(importId, safeImport);
+            importContexts[importId] = new ImportContext(importId, options);
         }
 
         return importContexts[importId];

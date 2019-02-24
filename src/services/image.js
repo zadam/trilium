@@ -12,31 +12,24 @@ const jimp = require('jimp');
 const imageType = require('image-type');
 const sanitizeFilename = require('sanitize-filename');
 
-async function saveImage(buffer, originalName, parentNoteId) {
-    const resizedImage = await resize(buffer);
-    let optimizedImage;
-    try {
-      optimizedImage = await optimize(resizedImage);
-    } catch (e) {
-      log.error(e);
-      optimizedImage = resizedImage;
-    }
+async function saveImage(buffer, originalName, parentNoteId, shrinkImage) {
+    const finalImageBuffer = shrinkImage ? await shrinkImage(buffer) : buffer;
 
-    const imageFormat = imageType(optimizedImage);
+    const imageFormat = imageType(finalImageBuffer);
 
     const parentNote = await repository.getNote(parentNoteId);
 
     const fileNameWithoutExtension = originalName.replace(/\.[^/.]+$/, "");
     const fileName = sanitizeFilename(fileNameWithoutExtension + "." + imageFormat.ext);
 
-    const {note} = await noteService.createNote(parentNoteId, fileName, optimizedImage, {
+    const {note} = await noteService.createNote(parentNoteId, fileName, finalImageBuffer, {
         target: 'into',
         type: 'image',
         isProtected: parentNote.isProtected && protectedSessionService.isProtectedSessionAvailable(),
         mime: 'image/' + imageFormat.ext.toLowerCase(),
         attributes: [
             { type: 'label', name: 'originalFileName', value: originalName },
-            { type: 'label', name: 'fileSize', value: optimizedImage.byteLength }
+            { type: 'label', name: 'fileSize', value: finalImageBuffer.byteLength }
         ]
     });
 
@@ -45,6 +38,19 @@ async function saveImage(buffer, originalName, parentNoteId) {
         noteId: note.noteId,
         url: `api/images/${note.noteId}/${fileName}`
     };
+}
+
+async function shrinkImage(buffer) {
+    const resizedImage = await resize(buffer);
+    let finalImageBuffer;
+
+    try {
+        finalImageBuffer = await optimize(resizedImage);
+    } catch (e) {
+        log.error(e);
+        finalImageBuffer = resizedImage;
+    }
+    return finalImageBuffer;
 }
 
 const MAX_SIZE = 1000;

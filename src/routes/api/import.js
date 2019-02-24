@@ -13,9 +13,14 @@ const ImportContext = require('../../services/import_context');
 
 async function importToBranch(req) {
     const {parentNoteId} = req.params;
-    let {importId, safeImport} = req.body;
+    const {importId} = req.body;
 
-    safeImport = safeImport !== 'false';
+    const options = {
+        safeImport: req.body.safeImport !== 'false',
+        optimizedImages: req.body.optimizedImages !== 'false',
+        textImportedAsText: req.body.textImportedAsText !== 'false',
+        codeImportedAsCode: req.body.codeImportedAsCode !== 'false'
+    };
 
     const file = req.file;
 
@@ -37,7 +42,7 @@ async function importToBranch(req) {
 
     let note; // typically root of the import - client can show it after finishing the import
 
-    const importContext = ImportContext.getInstance(importId, safeImport);
+    const importContext = ImportContext.getInstance(importId, options);
 
     try {
         if (extension === '.tar') {

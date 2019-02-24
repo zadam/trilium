@@ -22,8 +22,6 @@ const ImportContext = require('../import_context');
  * @return {Promise<*>}
  */
 async function importTar(importContext, fileBuffer, importRootNote) {
-    importContext = importContext || new ImportContext("1", false);
-
     // maps from original noteId (in tar file) to newly generated noteId
     const noteIdMap = {};
     const attributes = [];

@@ -233,7 +233,7 @@ async function importEnex(importContext, file, parentNote) {
               resource.mime = fileTypeFromBuffer.mime;
             }
 
-            const createResourceNote = async () => {
+            const createFileNote = async () => {
                 const resourceNote = (await noteService.createNote(noteEntity.noteId, resource.title, resource.content, {
                     attributes: resource.attributes,
                     type: 'file',
@@ -264,10 +264,10 @@ async function importEnex(importContext, file, parentNote) {
                     }
                 } catch (e) {
                     log.error("error when saving image from ENEX file: " + e);
-                    await createResourceNote();
+                    await createFileNote();
                 }
             } else {
-                await createResourceNote();
+                await createFileNote();
             }
         }
 

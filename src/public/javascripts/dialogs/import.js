@@ -12,7 +12,10 @@ const $fileUploadInput = $("#import-file-upload-input");
 const $importProgressCountWrapper = $("#import-progress-count-wrapper");
 const $importProgressCount = $("#import-progress-count");
 const $importButton = $("#import-button");
-const $safeImport = $("#safe-import");
+const $safeImportCheckbox = $("#safe-import-checkbox");
+const $shrinkImagesCheckbox = $("#shrink-images-checkbox");
+const $textImportedAsTextCheckbox = $("#text-imported-as-text-checkbox");
+const $codeImportedAsCodeCheckbox = $("#code-imported-as-code-checkbox");
 
 let importId;
 
@@ -22,7 +25,11 @@ async function showDialog() {
     $importProgressCountWrapper.hide();
     $importProgressCount.text('0');
     $fileUploadInput.val('').change(); // to trigger Import button disabling listener below
-    $safeImport.attr("checked", "checked");
+
+    $safeImportCheckbox.attr("checked", "checked");
+    $shrinkImagesCheckbox.attr("checked", "checked");
+    $textImportedAsTextCheckbox.attr("checked", "checked");
+    $codeImportedAsCodeCheckbox.attr("checked", "checked");
 
     glob.activeDialog = $dialog;
 
@@ -50,7 +57,11 @@ async function importIntoNote(importNoteId) {
     // dialog (which shouldn't happen, but still ...)
     importId = utils.randomString(10);
 
-    const safeImport = $safeImport.is(":checked") ? "true" : "false";
+    const safeImport = boolToString($safeImportCheckbox);
+    const shrinkImages = boolToString($shrinkImagesCheckbox);
+    const textImportedAsText = boolToString($textImportedAsTextCheckbox);
+    const codeImportedAsCode = boolToString($codeImportedAsCodeCheckbox);
+
     let noteId;
 
     for (const file of files) {
@@ -58,6 +69,9 @@ async function importIntoNote(importNoteId) {
         formData.append('upload', file);
         formData.append('importId', importId);
         formData.append('safeImport', safeImport);
+        formData.append('shrinkImages', shrinkImages);
+        formData.append('textImportedAsText', textImportedAsText);
+        formData.append('codeImportedAsCode', codeImportedAsCode);
 
         ({noteId} = await $.ajax({
             url: baseApiUrl + 'notes/' + importNoteId + '/import',
@@ -84,6 +98,10 @@ async function importIntoNote(importNoteId) {
 
         node.setExpanded(true);
     }
+}
+
+function boolToString($el) {
+    return $el.is(":checked") ? "true" : "false";
 }
 
 messagingService.subscribeToMessages(async message => {

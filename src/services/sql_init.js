@@ -8,6 +8,7 @@ const sql = require('./sql');
 const cls = require('./cls');
 const optionService = require('./options');
 const Option = require('../entities/option');
+const ImportContext = require('../services/import_context');
 
 async function createConnection() {
     return await sqlite.open(dataDir.DOCUMENT_PATH, {Promise});
@@ -100,8 +101,10 @@ async function createInitialDatabase(username, password) {
             notePosition: 0
         }).save();
 
+        const dummyImportContext = new ImportContext("1", false);
+
         const tarImportService = require("./import/tar");
-        await tarImportService.importTar(null, demoFile, rootNote);
+        await tarImportService.importTar(dummyImportContext, demoFile, rootNote);
 
         const startNoteId = await sql.getValue("SELECT noteId FROM branches WHERE parentNoteId = 'root' AND isDeleted = 0 ORDER BY notePosition");
 
