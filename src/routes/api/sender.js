@@ -38,7 +38,7 @@ async function uploadImage(req) {
 
     const parentNote = await dateNoteService.getDateNote(req.headers['x-local-date']);
 
-    const {noteId} = await imageService.saveImage(file.buffer, "Sender image", parentNote.noteId);
+    const {noteId} = await imageService.saveImage(file.buffer, "Sender image", parentNote.noteId, true);
 
     return {
         noteId: noteId

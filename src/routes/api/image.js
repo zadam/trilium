@@ -38,7 +38,7 @@ async function uploadImage(req) {
         return [400, "Unknown image type: " + file.mimetype];
     }
 
-    const {url} = await imageService.saveImage(file.buffer, file.originalname, noteId);
+    const {url} = await imageService.saveImage(file.buffer, file.originalname, noteId, true);
 
     return {
         uploaded: true,

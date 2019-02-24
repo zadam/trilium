@@ -251,7 +251,7 @@ async function importEnex(importContext, file, parentNote) {
                 try {
                     const originalName = "image." + resource.mime.substr(6);
 
-                    const {url} = await imageService.saveImage(resource.content, originalName, noteEntity.noteId);
+                    const {url} = await imageService.saveImage(resource.content, originalName, noteEntity.noteId, importContext.shrinkImages);
 
                     const imageLink = `<img src="${url}">`;
 
