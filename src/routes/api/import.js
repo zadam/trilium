@@ -12,9 +12,10 @@ const log = require('../../services/log');
 const ImportContext = require('../../services/import_context');
 
 async function importToBranch(req) {
-    let {parentNoteId, importId, safeImport} = req.params;
+    const {parentNoteId} = req.params;
+    let {importId, safeImport} = req.body;
 
-    safeImport = safeImport !== '0';
+    safeImport = safeImport !== 'false';
 
     const file = req.file;
 

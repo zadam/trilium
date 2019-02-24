@@ -50,15 +50,17 @@ async function importIntoNote(importNoteId) {
     // dialog (which shouldn't happen, but still ...)
     importId = utils.randomString(10);
 
-    const safeImport = $safeImport.is(":checked") ? 1 : 0;
+    const safeImport = $safeImport.is(":checked") ? "true" : "false";
     let noteId;
 
     for (const file of files) {
         const formData = new FormData();
         formData.append('upload', file);
+        formData.append('importId', importId);
+        formData.append('safeImport', safeImport);
 
-        noteId = await $.ajax({
-            url: baseApiUrl + 'notes/' + importNoteId + '/import/' + importId + '/safe/' + safeImport,
+        ({noteId} = await $.ajax({
+            url: baseApiUrl + 'notes/' + importNoteId + '/import',
             headers: server.getHeaders(),
             data: formData,
             dataType: 'json',
@@ -68,7 +70,7 @@ async function importIntoNote(importNoteId) {
             processData: false, // NEEDED, DON'T REMOVE THIS
         })
         // we actually ignore the error since it can be caused by HTTP timeout and use WS messages instead.
-            .fail((xhr, status, error) => {});
+            .fail((xhr, status, error) => {}));
     }
 
     $dialog.modal('hide');
