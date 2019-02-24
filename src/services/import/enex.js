@@ -298,12 +298,7 @@ async function importEnex(importContext, file, parentNote) {
     return new Promise((resolve, reject) =>
     {
         // resolve only when we parse the whole document AND saving of all notes have been finished
-        saxStream.on("end", () => { Promise.all(saveNotePromises).then(() => {
-                importContext.importFinished(rootNote.noteId);
-
-                resolve(rootNote);
-            });
-        });
+        saxStream.on("end", () => { Promise.all(saveNotePromises).then(() => resolve(rootNote)) });
 
         const bufferStream = new stream.PassThrough();
         bufferStream.end(file.buffer);

@@ -2,6 +2,9 @@
 
 const messagingService = require('./messaging');
 
+// importId => ImportContext
+const importContexts = {};
+
 class ImportContext {
     constructor(importId, safeImport) {
         // importId is to distinguish between different import events - it is possible (though not recommended)
@@ -13,6 +16,15 @@ class ImportContext {
         // // count is mean to represent count of exported notes where practical, otherwise it's just some measure of progress
         this.progressCount = 0;
         this.lastSentCountTs = Date.now();
+    }
+
+    /** @return {ImportContext} */
+    static getInstance(importId, safeImport) {
+        if (!importContexts[importId]) {
+            importContexts[importId] = new ImportContext(importId, safeImport);
+        }
+
+        return importContexts[importId];
     }
 
     async increaseProgressCount() {
@@ -27,14 +39,6 @@ class ImportContext {
                 progressCount: this.progressCount
             });
         }
-    }
-
-    async importFinished(noteId) {
-        await messagingService.sendMessageToAllClients({
-            importId: this.importId,
-            type: 'import-finished',
-            noteId: noteId
-        });
     }
 
     // must remaing non-static

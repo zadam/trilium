@@ -386,8 +386,6 @@ async function importTar(importContext, fileBuffer, importRootNote) {
                 }
             }
 
-            importContext.importFinished();
-
             resolve(firstNote);
         });
 

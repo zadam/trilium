@@ -36,7 +36,7 @@ async function importToBranch(req) {
 
     let note; // typically root of the import - client can show it after finishing the import
 
-    const importContext = new ImportContext(importId, safeImport);
+    const importContext = ImportContext.getInstance(importId, safeImport);
 
     try {
         if (extension === '.tar') {

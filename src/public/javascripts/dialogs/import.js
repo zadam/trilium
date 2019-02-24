@@ -43,27 +43,45 @@ $form.submit(() => {
     return false;
 });
 
-function importIntoNote(importNoteId) {
-    const formData = new FormData();
-    formData.append('upload', $fileUploadInput[0].files[0]);
+async function importIntoNote(importNoteId) {
+    const files = Array.from($fileUploadInput[0].files); // shallow copy since we're resetting the upload button below
 
     // we generate it here (and not on opening) for the case when you try to import multiple times from the same
     // dialog (which shouldn't happen, but still ...)
     importId = utils.randomString(10);
 
     const safeImport = $safeImport.is(":checked") ? 1 : 0;
+    let noteId;
 
-    $.ajax({
-        url: baseApiUrl + 'notes/' + importNoteId + '/import/' + importId + '/safe/' + safeImport,
-        headers: server.getHeaders(),
-        data: formData,
-        dataType: 'json',
-        type: 'POST',
-        contentType: false, // NEEDED, DON'T REMOVE THIS
-        processData: false, // NEEDED, DON'T REMOVE THIS
-    })
+    for (const file of files) {
+        const formData = new FormData();
+        formData.append('upload', file);
+
+        noteId = await $.ajax({
+            url: baseApiUrl + 'notes/' + importNoteId + '/import/' + importId + '/safe/' + safeImport,
+            headers: server.getHeaders(),
+            data: formData,
+            dataType: 'json',
+            type: 'POST',
+            timeout: 60 * 60 * 1000,
+            contentType: false, // NEEDED, DON'T REMOVE THIS
+            processData: false, // NEEDED, DON'T REMOVE THIS
+        })
         // we actually ignore the error since it can be caused by HTTP timeout and use WS messages instead.
-        .fail((xhr, status, error) => {});
+            .fail((xhr, status, error) => {});
+    }
+
+    $dialog.modal('hide');
+
+    infoService.showMessage("Import finished successfully.");
+
+    await treeService.reload();
+
+    if (noteId) {
+        const node = await treeService.activateNote(noteId);
+
+        node.setExpanded(true);
+    }
 }
 
 messagingService.subscribeToMessages(async message => {
@@ -82,19 +100,6 @@ messagingService.subscribeToMessages(async message => {
         $importProgressCountWrapper.slideDown();
 
         $importProgressCount.text(message.progressCount);
-    }
-    else if (message.type === 'import-finished') {
-        $dialog.modal('hide');
-
-        infoService.showMessage("Import finished successfully.");
-
-        await treeService.reload();
-
-        if (message.noteId) {
-            const node = await treeService.activateNote(message.noteId);
-
-            node.setExpanded(true);
-        }
     }
 });
 

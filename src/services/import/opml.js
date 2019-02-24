@@ -64,8 +64,6 @@ async function importOpml(importContext, fileBuffer, parentNote) {
         returnNote = returnNote || note;
     }
 
-    importContext.importFinished(returnNote.noteId);
-
     return returnNote;
 }
 

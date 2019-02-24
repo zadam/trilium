@@ -21,7 +21,6 @@ async function importMarkdown(importContext, file, parentNote) {
     });
 
     importContext.increaseProgressCount();
-    importContext.importFinished(note.noteId);
 
     return note;
 }
@@ -36,7 +35,6 @@ async function importHtml(importContext, file, parentNote) {
     });
 
     importContext.increaseProgressCount();
-    importContext.importFinished(note.noteId);
 
     return note;
 }
