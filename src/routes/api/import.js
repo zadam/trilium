@@ -49,14 +49,10 @@ async function importToBranch(req) {
             note = await tarImportService.importTar(importContext, file.buffer, parentNote);
         } else if (extension === '.opml') {
             note = await opmlImportService.importOpml(importContext, file.buffer, parentNote);
-        } else if (extension === '.md') {
-            note = await singleImportService.importMarkdown(importContext, file, parentNote);
-        } else if (extension === '.html' || extension === '.htm') {
-            note = await singleImportService.importHtml(importContext, file, parentNote);
         } else if (extension === '.enex') {
             note = await enexImportService.importEnex(importContext, file, parentNote);
         } else {
-            return [400, `Unrecognized extension ${extension}, must be .tar or .opml`];
+            note = await singleImportService.importSingleFile(importContext, file, parentNote);
         }
     }
     catch (e) {

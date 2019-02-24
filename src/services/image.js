@@ -12,8 +12,8 @@ const jimp = require('jimp');
 const imageType = require('image-type');
 const sanitizeFilename = require('sanitize-filename');
 
-async function saveImage(buffer, originalName, parentNoteId, shrinkImage) {
-    const finalImageBuffer = shrinkImage ? await shrinkImage(buffer) : buffer;
+async function saveImage(buffer, originalName, parentNoteId, shrinkImageSwitch) {
+    const finalImageBuffer = shrinkImageSwitch ? await shrinkImage(buffer) : buffer;
 
     const imageFormat = imageType(finalImageBuffer);
 
