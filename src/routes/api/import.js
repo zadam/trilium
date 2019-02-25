@@ -17,7 +17,7 @@ async function importToBranch(req) {
 
     const options = {
         safeImport: req.body.safeImport !== 'false',
-        optimizedImages: req.body.optimizedImages !== 'false',
+        shrinkImages: req.body.shrinkImages !== 'false',
         textImportedAsText: req.body.textImportedAsText !== 'false',
         codeImportedAsCode: req.body.codeImportedAsCode !== 'false'
     };

@@ -14,6 +14,7 @@ const path = require('path');
 const commonmark = require('commonmark');
 const mimeTypes = require('mime-types');
 const ImportContext = require('../import_context');
+const protectedSessionService = require('../protected_session');
 
 /**
  * @param {ImportContext} importContext
@@ -193,7 +194,8 @@ async function importTar(importContext, fileBuffer, importRootNote) {
             type: noteMeta ? noteMeta.type : 'text',
             mime: noteMeta ? noteMeta.mime : 'text/html',
             prefix: noteMeta ? noteMeta.prefix : '',
-            isExpanded: noteMeta ? noteMeta.isExpanded : false
+            isExpanded: noteMeta ? noteMeta.isExpanded : false,
+            isProtected: importRootNote.isProtected && protectedSessionService.isProtectedSessionAvailable(),
         }));
 
         await saveAttributesAndLinks(note, noteMeta);
@@ -271,7 +273,8 @@ async function importTar(importContext, fileBuffer, importRootNote) {
                 mime,
                 prefix: noteMeta ? noteMeta.prefix : '',
                 isExpanded: noteMeta ? noteMeta.isExpanded : false,
-                notePosition: noteMeta ? noteMeta.notePosition : false
+                notePosition: noteMeta ? noteMeta.notePosition : false,
+                isProtected: importRootNote.isProtected && protectedSessionService.isProtectedSessionAvailable(),
             }));
 
             await saveAttributesAndLinks(note, noteMeta);

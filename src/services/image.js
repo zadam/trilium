@@ -35,6 +35,7 @@ async function saveImage(buffer, originalName, parentNoteId, shrinkImageSwitch) 
 
     return {
         fileName,
+        note,
         noteId: note.noteId,
         url: `api/images/${note.noteId}/${fileName}`
     };
@@ -47,7 +48,7 @@ async function shrinkImage(buffer) {
     try {
         finalImageBuffer = await optimize(resizedImage);
     } catch (e) {
-        log.error(e);
+        log.error(e.message + e.stack);
         finalImageBuffer = resizedImage;
     }
     return finalImageBuffer;
@@ -75,15 +76,7 @@ async function resize(buffer) {
     // when converting PNG to JPG we lose alpha channel, this is replaced by white to match Trilium white background
     image.background(0xFFFFFFFF);
 
-    // getBuffer doesn't support promises so this workaround
-    return await new Promise((resolve, reject) => image.getBuffer(jimp.MIME_JPEG, (err, data) => {
-        if (err) {
-            reject(err);
-        }
-        else {
-            resolve(data);
-        }
-    }));
+    return image.getBufferAsync(jimp.MIME_JPEG);
 }
 
 async function optimize(buffer) {

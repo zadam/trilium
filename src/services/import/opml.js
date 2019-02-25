@@ -2,6 +2,7 @@
 
 const noteService = require('../../services/notes');
 const parseString = require('xml2js').parseString;
+const protectedSessionService = require('../protected_session');
 
 /**
  * @param {ImportContext} importContext
@@ -43,7 +44,9 @@ async function importOpml(importContext, fileBuffer, parentNote) {
             throw new Error("Unrecognized OPML version " + opmlVersion);
         }
 
-        const {note} = await noteService.createNote(parentNoteId, title, content);
+        const {note} = await noteService.createNote(parentNoteId, title, content, {
+            isProtected: parentNote.isProtected && protectedSessionService.isProtectedSessionAvailable(),
+        });
 
         importContext.increaseProgressCount();
 

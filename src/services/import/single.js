@@ -1,30 +1,124 @@
 "use strict";
 
 const noteService = require('../../services/notes');
+const imageService = require('../../services/image');
+const protectedSessionService = require('../protected_session');
 const commonmark = require('commonmark');
 const path = require('path');
+
+const CODE_MIME_TYPES = {
+    'text/plain': true,
+    'text/x-csrc': true,
+    'text/x-c++src': true,
+    'text/x-csharp': true,
+    'text/x-clojure': true,
+    'text/css': true,
+    'text/x-dockerfile': true,
+    'text/x-erlang': true,
+    'text/x-feature': true,
+    'text/x-go': true,
+    'text/x-groovy': true,
+    'text/x-haskell': true,
+    'text/html': true,
+    'message/http': true,
+    'text/x-java': true,
+    'application/javascript': 'application/javascript;env=frontend',
+    'application/x-javascript': 'application/javascript;env=frontend',
+    'application/json': true,
+    'text/x-kotlin': true,
+    'text/x-stex': true,
+    'text/x-lua': true,
+    'text/x-markdown': true,
+    'text/x-objectivec': true,
+    'text/x-pascal': true,
+    'text/x-perl': true,
+    'text/x-php': true,
+    'text/x-python': true,
+    'text/x-ruby': true,
+    'text/x-rustsrc': true,
+    'text/x-scala': true,
+    'text/x-sh': true,
+    'text/x-sql': true,
+    'text/x-swift': true,
+    'text/xml': true,
+    'text/x-yaml': true
+};
 
 async function importSingleFile(importContext, file, parentNote) {
     if (importContext.textImportedAsText) {
         if (file.mimetype === 'text/html') {
-            return importHtml(importContext, file, parentNote);
+            return await importHtml(importContext, file, parentNote);
         } else if (file.mimetype === 'text/markdown') {
-            return importMarkdown(importContext, file, parentNote);
+            return await importMarkdown(importContext, file, parentNote);
         } else if (file.mimetype === 'text/plain') {
-            return importPlainText(importContext, file, parentNote);
+            return await importPlainText(importContext, file, parentNote);
         }
     }
+
+    if (importContext.codeImportedAsCode && file.mimetype in CODE_MIME_TYPES) {
+        return await importCodeNote(importContext, file, parentNote);
+    }
+
+    if (["image/jpeg", "image/gif", "image/png"].includes(file.mimetype)) {
+        return await importImage(file, parentNote, importContext);
+    }
+
+    return await importFile(importContext, file, parentNote);
+}
+
+async function importImage(file, parentNote, importContext) {
+    const {note} = await imageService.saveImage(file.buffer, getFileNameWithoutExtension(file.originalname), parentNote.noteId, importContext.shrinkImages);
+
+    importContext.increaseProgressCount();
+
+    return note;
+}
+
+async function importFile(importContext, file, parentNote) {
+    const originalName = file.originalname;
+    const size = file.size;
+
+    const {note} = await noteService.createNote(parentNote.noteId, originalName, file.buffer, {
+        target: 'into',
+        isProtected: parentNote.isProtected && protectedSessionService.isProtectedSessionAvailable(),
+        type: 'file',
+        mime: file.mimetype,
+        attributes: [
+            { type: "label", name: "originalFileName", value: originalName },
+            { type: "label", name: "fileSize", value: size }
+        ]
+    });
+
+    importContext.increaseProgressCount();
+
+    return note;
+}
+
+async function importCodeNote(importContext, file, parentNote) {
+    const title = getFileNameWithoutExtension(file.originalname);
+    const content = file.buffer.toString("UTF-8");
+    const mime = CODE_MIME_TYPES[file.mimetype] === true ? file.mimetype : CODE_MIME_TYPES[file.mimetype];
+
+    const {note} = await noteService.createNote(parentNote.noteId, title, content, {
+        type: 'code',
+        mime: mime,
+        isProtected: parentNote.isProtected && protectedSessionService.isProtectedSessionAvailable()
+    });
+
+    importContext.increaseProgressCount();
+
+    return note;
 }
 
 async function importPlainText(importContext, file, parentNote) {
-
     const title = getFileNameWithoutExtension(file.originalname);
     const plainTextContent = file.buffer.toString("UTF-8");
     const htmlContent = convertTextToHtml(plainTextContent);
 
     const {note} = await noteService.createNote(parentNote.noteId, title, htmlContent, {
         type: 'text',
-        mime: 'text/html'
+        mime: 'text/html',
+        isProtected: parentNote.isProtected && protectedSessionService.isProtectedSessionAvailable(),
     });
 
     importContext.increaseProgressCount();
@@ -63,7 +157,8 @@ async function importMarkdown(importContext, file, parentNote) {
 
     const {note} = await noteService.createNote(parentNote.noteId, title, htmlContent, {
         type: 'text',
-        mime: 'text/html'
+        mime: 'text/html',
+        isProtected: parentNote.isProtected && protectedSessionService.isProtectedSessionAvailable(),
     });
 
     importContext.increaseProgressCount();
@@ -77,7 +172,8 @@ async function importHtml(importContext, file, parentNote) {
 
     const {note} = await noteService.createNote(parentNote.noteId, title, content, {
         type: 'text',
-        mime: 'text/html'
+        mime: 'text/html',
+        isProtected: parentNote.isProtected && protectedSessionService.isProtectedSessionAvailable(),
     });
 
     importContext.increaseProgressCount();

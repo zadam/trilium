@@ -6,6 +6,7 @@ const log = require("../log");
 const utils = require("../utils");
 const noteService = require("../notes");
 const imageService = require("../image");
+const protectedSessionService = require('../protected_session');
 
 // date format is e.g. 20181121T193703Z
 function parseDate(text) {
@@ -31,7 +32,8 @@ async function importEnex(importContext, file, parentNote) {
     // root note is new note into all ENEX/notebook's notes will be imported
     const rootNote = (await noteService.createNote(parentNote.noteId, rootNoteTitle, "", {
         type: 'text',
-        mime: 'text/html'
+        mime: 'text/html',
+        isProtected: parentNote.isProtected && protectedSessionService.isProtectedSessionAvailable(),
     })).note;
 
     // we're persisting notes as we parse the document, but these are run asynchronously and may not be finished
@@ -215,7 +217,8 @@ async function importEnex(importContext, file, parentNote) {
             attributes,
             dateCreated,
             type: 'text',
-            mime: 'text/html'
+            mime: 'text/html',
+            isProtected: parentNote.isProtected && protectedSessionService.isProtectedSessionAvailable(),
         })).note;
 
         importContext.increaseProgressCount();
@@ -237,7 +240,8 @@ async function importEnex(importContext, file, parentNote) {
                 const resourceNote = (await noteService.createNote(noteEntity.noteId, resource.title, resource.content, {
                     attributes: resource.attributes,
                     type: 'file',
-                    mime: resource.mime
+                    mime: resource.mime,
+                    isProtected: parentNote.isProtected && protectedSessionService.isProtectedSessionAvailable(),
                 })).note;
 
                 importContext.increaseProgressCount();
