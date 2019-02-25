@@ -133,7 +133,7 @@ async function importTar(importContext, fileBuffer, importRootNote) {
         let type = 'file';
 
         if (mime) {
-            if (mime === 'text/html' || mime === 'text/markdown') {
+            if (mime === 'text/html' || ['text/markdown', 'text/x-markdown'].includes(mime)) {
                 type = 'text';
             }
             else if (mime.startsWith('image/')) {
@@ -251,7 +251,7 @@ async function importTar(importContext, fileBuffer, importRootNote) {
             }
         }
 
-        if ((noteMeta && noteMeta.format === 'markdown') || (!noteMeta && mime === 'text/markdown')) {
+        if ((noteMeta && noteMeta.format === 'markdown') || (!noteMeta && ['text/markdown', 'text/x-markdown'].includes(mime))) {
             const parsed = mdReader.parse(content);
             content = mdWriter.render(parsed);
         }

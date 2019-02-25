@@ -34,7 +34,7 @@ async function exportSingleNote(exportContext, branch, format, res) {
             const turndownService = new TurndownService();
             payload = turndownService.turndown(noteContent.content);
             extension = 'md';
-            mime = 'text/markdown'
+            mime = 'text/x-markdown'
         }
     }
     else if (note.type === 'code') {

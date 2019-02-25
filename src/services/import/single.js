@@ -28,6 +28,8 @@ const CODE_MIME_TYPES = {
     'text/x-kotlin': true,
     'text/x-stex': true,
     'text/x-lua': true,
+    // possibly later migrate to text/markdown as primary MIME
+    'text/markdown': 'text/x-markdown',
     'text/x-markdown': true,
     'text/x-objectivec': true,
     'text/x-pascal': true,
@@ -48,7 +50,7 @@ async function importSingleFile(importContext, file, parentNote) {
     if (importContext.textImportedAsText) {
         if (file.mimetype === 'text/html') {
             return await importHtml(importContext, file, parentNote);
-        } else if (file.mimetype === 'text/markdown') {
+        } else if (['text/markdown', 'text/x-markdown'].includes(file.mimetype)) {
             return await importMarkdown(importContext, file, parentNote);
         } else if (file.mimetype === 'text/plain') {
             return await importPlainText(importContext, file, parentNote);
