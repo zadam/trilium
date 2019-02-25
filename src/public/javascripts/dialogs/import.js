@@ -26,10 +26,10 @@ async function showDialog() {
     $importProgressCount.text('0');
     $fileUploadInput.val('').change(); // to trigger Import button disabling listener below
 
-    $safeImportCheckbox.attr("checked", "checked");
-    $shrinkImagesCheckbox.attr("checked", "checked");
-    $textImportedAsTextCheckbox.attr("checked", "checked");
-    $codeImportedAsCodeCheckbox.attr("checked", "checked");
+    $safeImportCheckbox.prop("checked", true);
+    $shrinkImagesCheckbox.prop("checked", true);
+    $textImportedAsTextCheckbox.prop("checked", true);
+    $codeImportedAsCodeCheckbox.prop("checked", true);
 
     glob.activeDialog = $dialog;
 
@@ -57,21 +57,29 @@ async function importIntoNote(importNoteId) {
     // dialog (which shouldn't happen, but still ...)
     importId = utils.randomString(10);
 
-    const safeImport = boolToString($safeImportCheckbox);
-    const shrinkImages = boolToString($shrinkImagesCheckbox);
-    const textImportedAsText = boolToString($textImportedAsTextCheckbox);
-    const codeImportedAsCode = boolToString($codeImportedAsCodeCheckbox);
+    const options = {
+        safeImport: boolToString($safeImportCheckbox),
+        shrinkImages: boolToString($shrinkImagesCheckbox),
+        textImportedAsText: boolToString($textImportedAsTextCheckbox),
+        codeImportedAsCode: boolToString($codeImportedAsCodeCheckbox)
+    };
 
+    await uploadFiles(importNoteId, files, options);
+
+    $dialog.modal('hide');
+}
+
+async function uploadFiles(importNoteId, files, options) {
     let noteId;
 
     for (const file of files) {
         const formData = new FormData();
         formData.append('upload', file);
         formData.append('importId', importId);
-        formData.append('safeImport', safeImport);
-        formData.append('shrinkImages', shrinkImages);
-        formData.append('textImportedAsText', textImportedAsText);
-        formData.append('codeImportedAsCode', codeImportedAsCode);
+        formData.append('safeImport', options.safeImport);
+        formData.append('shrinkImages', options.shrinkImages);
+        formData.append('textImportedAsText', options.textImportedAsText);
+        formData.append('codeImportedAsCode', options.codeImportedAsCode);
 
         ({noteId} = await $.ajax({
             url: baseApiUrl + 'notes/' + importNoteId + '/import',
@@ -82,12 +90,8 @@ async function importIntoNote(importNoteId) {
             timeout: 60 * 60 * 1000,
             contentType: false, // NEEDED, DON'T REMOVE THIS
             processData: false, // NEEDED, DON'T REMOVE THIS
-        })
-        // we actually ignore the error since it can be caused by HTTP timeout and use WS messages instead.
-            .fail((xhr, status, error) => {}));
+        }));
     }
-
-    $dialog.modal('hide');
 
     infoService.showMessage("Import finished successfully.");
 
@@ -133,5 +137,6 @@ $fileUploadInput.change(() => {
 });
 
 export default {
-    showDialog
+    showDialog,
+    uploadFiles
 }

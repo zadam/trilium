@@ -1,7 +1,6 @@
 import utils from "./utils.js";
 import treeService from "./tree.js";
 import linkService from "./link.js";
-import fileService from "./file.js";
 import zoomService from "./zoom.js";
 import noteRevisionsDialog from "../dialogs/note_revisions.js";
 import optionsDialog from "../dialogs/options.js";
@@ -160,8 +159,6 @@ function registerEntrypoints() {
     }
 
     $("#note-title").bind('keydown', 'return', () => $("#note-detail-text").focus());
-
-    $("#upload-file-button").click(fileService.openUploadFileDialog);
 }
 
 export default {

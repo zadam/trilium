@@ -8,6 +8,7 @@ import optionsDialog from './dialogs/options.js';
 import sqlConsoleDialog from './dialogs/sql_console.js';
 import markdownImportDialog from './dialogs/markdown_import.js';
 import exportDialog from './dialogs/export.js';
+import importDialog from './dialogs/import.js';
 
 import cloning from './services/cloning.js';
 import contextMenu from './services/tree_context_menu.js';
@@ -137,6 +138,8 @@ $("#export-note-button").click(function () {
 $('[data-toggle="tooltip"]').tooltip({
     html: true
 });
+
+$("#import-files-button").click(importDialog.showDialog);
 
 macInit.init();
 

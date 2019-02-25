@@ -1,6 +1,6 @@
 import treeService from './tree.js';
 import treeChangesService from './branches.js';
-import fileService from '../services/file.js';
+import importDialog from '../dialogs/import.js';
 
 const dragAndDropSetup = {
     autoExpandMS: 600,
@@ -38,7 +38,12 @@ const dragAndDropSetup = {
         const dataTransfer = data.dataTransfer;
 
         if (dataTransfer && dataTransfer.files && dataTransfer.files.length > 0) {
-            fileService.uploadFiles(node.data.noteId, dataTransfer.files);
+            importDialog.uploadFiles(node.data.noteId, dataTransfer.files, {
+                safeImport: true,
+                shrinkImages: true,
+                textImportedAsText: true,
+                codeImportedAsCode: true
+            });
         }
         else {
             // This function MUST be defined to enable dropping of items on the tree.
