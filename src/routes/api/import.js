@@ -19,7 +19,8 @@ async function importToBranch(req) {
         safeImport: req.body.safeImport !== 'false',
         shrinkImages: req.body.shrinkImages !== 'false',
         textImportedAsText: req.body.textImportedAsText !== 'false',
-        codeImportedAsCode: req.body.codeImportedAsCode !== 'false'
+        codeImportedAsCode: req.body.codeImportedAsCode !== 'false',
+        explodeArchives: req.body.explodeArchives !== 'false'
     };
 
     const file = req.file;
@@ -45,11 +46,11 @@ async function importToBranch(req) {
     const importContext = ImportContext.getInstance(importId, options);
 
     try {
-        if (extension === '.tar') {
+        if (extension === '.tar' && options.explodeArchives) {
             note = await tarImportService.importTar(importContext, file.buffer, parentNote);
-        } else if (extension === '.opml') {
+        } else if (extension === '.opml' && options.explodeArchives) {
             note = await opmlImportService.importOpml(importContext, file.buffer, parentNote);
-        } else if (extension === '.enex') {
+        } else if (extension === '.enex' && options.explodeArchives) {
             note = await enexImportService.importEnex(importContext, file, parentNote);
         } else {
             note = await singleImportService.importSingleFile(importContext, file, parentNote);

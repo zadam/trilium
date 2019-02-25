@@ -32,6 +32,13 @@
                         </div>
 
                         <div class="checkbox">
+                            <label data-toggle="tooltip" title="If this is checked then Trilium will read <code>.tar</code>, <code>.enex</code> and <code>.opml</code> files and create notes from files insides those archives. If unchecked, then Trilium will attach the archives themselves to the note.">
+                                <input id="explode-archives-checkbox" value="1" type="checkbox" checked>
+                                Read contents of <code>.tar</code>, <code>.enex</code> and <code>.opml</code> archives.
+                            </label>
+                        </div>
+
+                        <div class="checkbox">
                             <label data-toggle="tooltip" title="<p>If you check this option, Trilium will attempt to shrink the imported images by scaling and optimization which may affect the perceived image quality. If unchecked, images will be imported without changes.</p><p>This doesn't apply to <code>.tar</code> imports with metadata since it is assumed these files are already optimized.</p>">
                                 <input id="shrink-images-checkbox" value="1" type="checkbox" checked> Shrink images
                             </label>

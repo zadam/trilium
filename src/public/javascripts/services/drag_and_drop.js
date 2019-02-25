@@ -42,7 +42,8 @@ const dragAndDropSetup = {
                 safeImport: true,
                 shrinkImages: true,
                 textImportedAsText: true,
-                codeImportedAsCode: true
+                codeImportedAsCode: true,
+                explodeArchives: true
             });
         }
         else {

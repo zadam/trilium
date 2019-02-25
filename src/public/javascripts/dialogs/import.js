@@ -16,6 +16,7 @@ const $safeImportCheckbox = $("#safe-import-checkbox");
 const $shrinkImagesCheckbox = $("#shrink-images-checkbox");
 const $textImportedAsTextCheckbox = $("#text-imported-as-text-checkbox");
 const $codeImportedAsCodeCheckbox = $("#code-imported-as-code-checkbox");
+const $explodeArchivesCheckbox = $("#explode-archives-checkbox");
 
 let importId;
 
@@ -30,6 +31,7 @@ async function showDialog() {
     $shrinkImagesCheckbox.prop("checked", true);
     $textImportedAsTextCheckbox.prop("checked", true);
     $codeImportedAsCodeCheckbox.prop("checked", true);
+    $explodeArchivesCheckbox.prop("checked", true);
 
     glob.activeDialog = $dialog;
 
@@ -61,7 +63,8 @@ async function importIntoNote(importNoteId) {
         safeImport: boolToString($safeImportCheckbox),
         shrinkImages: boolToString($shrinkImagesCheckbox),
         textImportedAsText: boolToString($textImportedAsTextCheckbox),
-        codeImportedAsCode: boolToString($codeImportedAsCodeCheckbox)
+        codeImportedAsCode: boolToString($codeImportedAsCodeCheckbox),
+        explodeArchives: boolToString($explodeArchivesCheckbox)
     };
 
     await uploadFiles(importNoteId, files, options);
@@ -76,10 +79,10 @@ async function uploadFiles(importNoteId, files, options) {
         const formData = new FormData();
         formData.append('upload', file);
         formData.append('importId', importId);
-        formData.append('safeImport', options.safeImport);
-        formData.append('shrinkImages', options.shrinkImages);
-        formData.append('textImportedAsText', options.textImportedAsText);
-        formData.append('codeImportedAsCode', options.codeImportedAsCode);
+
+        for (const key in options) {
+            formData.append(key, options[key]);
+        }
 
         ({noteId} = await $.ajax({
             url: baseApiUrl + 'notes/' + importNoteId + '/import',
