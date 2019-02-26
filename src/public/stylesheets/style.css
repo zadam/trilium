@@ -117,6 +117,10 @@ input, select, textarea {
     color: var(--muted-text-color) !important;
 }
 
+table td, table th {
+    color: var(--main-text-color);
+}
+
 button.close {
     color: var(--main-text-color);
 }
@@ -876,8 +880,8 @@ div[data-notify="container"] {
 }
 
 .ck-content .image > figcaption {
-    color: var(--main-text-color);
-    background-color: var(--accented-background-color);
+    color: var(--main-text-color) !important;
+    background-color: var(--accented-background-color) !important;
 }
 
 #options-dialog input[type=number] {
