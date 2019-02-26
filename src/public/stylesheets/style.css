@@ -53,6 +53,10 @@ body.theme-black {
     --menu-background-color: #222;
 }
 
+body.theme-black a, body.theme-black a:visited {
+    color: lightskyblue;
+}
+
 body.theme-black .CodeMirror {
     filter: invert(100%) hue-rotate(180deg);
 }
@@ -78,6 +82,10 @@ body.theme-dark {
     --active-item-background-color: #ccc;
     --menu-text-color: white;
     --menu-background-color: #222;
+}
+
+body.theme-dark a, body.theme-dark a:visited {
+    color: lightskyblue;
 }
 
 body.theme-dark .CodeMirror {
@@ -118,7 +126,7 @@ button.close {
 }
 
 .nav-link.active {
-    background-color: inherit;
+    background-color: inherit !important;
     color: var(--main-text-color) !important;
 }
 
