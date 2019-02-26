@@ -18,6 +18,7 @@ import noteDetailRelationMap from './note_detail_relation_map.js';
 import bundleService from "./bundle.js";
 import attributeService from "./attributes.js";
 import utils from "./utils.js";
+import importDialog from "../dialogs/import.js";
 
 const $noteTitle = $("#note-title");
 
@@ -328,6 +329,20 @@ messagingService.subscribeToSyncMessages(syncData => {
 
         reload();
     }
+});
+
+$noteDetailWrapper.on("dragover", e => e.preventDefault());
+
+$noteDetailWrapper.on("dragleave", e => e.preventDefault());
+
+$noteDetailWrapper.on("drop", e => {
+    importDialog.uploadFiles(getCurrentNoteId(), e.originalEvent.dataTransfer.files, {
+        safeImport: true,
+        shrinkImages: true,
+        textImportedAsText: true,
+        codeImportedAsCode: true,
+        explodeArchives: true
+    });
 });
 
 $(document).ready(() => {
