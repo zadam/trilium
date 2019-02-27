@@ -161,7 +161,7 @@ async function transactional(func) {
     }
 
     let ret = null;
-    const error = new Error(); // to capture correct stack trace in case of exception
+    const thisError = new Error(); // to capture correct stack trace in case of exception
 
     transactionActive = true;
     transactionPromise = new Promise(async (resolve, reject) => {
@@ -179,7 +179,7 @@ async function transactional(func) {
         }
         catch (e) {
             if (transactionActive) {
-                log.error("Error executing transaction, executing rollback. Inner exception: " + e.stack + error.stack);
+                log.error("Error executing transaction, executing rollback. Inner stack: " + e.stack + "\nOutside stack: " + thisError.stack);
 
                 await rollback();
 

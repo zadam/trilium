@@ -292,7 +292,7 @@ async function saveLinks(note, content) {
 async function saveNoteRevision(note) {
     // files and images are immutable, they can't be updated
     // but we don't even version titles which is probably not correct
-    if (note.type !== 'file' || note.type !== 'image' || await note.hasLabel('disableVersioning')) {
+    if (note.type === 'file' || note.type === 'image' || await note.hasLabel('disableVersioning')) {
         return;
     }
 
@@ -311,7 +311,7 @@ async function saveNoteRevision(note) {
             noteId: note.noteId,
             // title and text should be decrypted now
             title: note.title,
-            content: note.noteContent.content,
+            content: await note.getContent(),
             type: note.type,
             mime: note.mime,
             isProtected: false, // will be fixed in the protectNoteRevisions() call

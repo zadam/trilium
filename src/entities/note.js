@@ -685,6 +685,7 @@ class Note extends Entity {
         delete pojo.isContentAvailable;
         delete pojo.__attributeCache;
         delete pojo.titleCipherText;
+        delete pojo.noteContent;
     }
 }
 
