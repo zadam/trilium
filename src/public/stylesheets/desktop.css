@@ -110,6 +110,7 @@ body {
     padding: 15px;
 }
 
-[data-toggle="tooltip"] {
-    text-decoration: dotted underline;
+[data-toggle="tooltip"] span {
+    padding-bottom: 0;
+    border-bottom: 1px dotted;
 }
