@@ -5,6 +5,7 @@ const imageService = require('../../services/image');
 const protectedSessionService = require('../protected_session');
 const commonmark = require('commonmark');
 const path = require('path');
+const mimeTypes = require('mime-types');
 
 const CODE_MIME_TYPES = {
     'text/plain': true,
@@ -47,21 +48,23 @@ const CODE_MIME_TYPES = {
 };
 
 async function importSingleFile(importContext, file, parentNote) {
+    const mime = mimeTypes.lookup(file.originalname);
+
     if (importContext.textImportedAsText) {
-        if (file.mimetype === 'text/html') {
+        if (mime === 'text/html') {
             return await importHtml(importContext, file, parentNote);
-        } else if (['text/markdown', 'text/x-markdown'].includes(file.mimetype)) {
+        } else if (['text/markdown', 'text/x-markdown'].includes(mime)) {
             return await importMarkdown(importContext, file, parentNote);
-        } else if (file.mimetype === 'text/plain') {
+        } else if (mime === 'text/plain') {
             return await importPlainText(importContext, file, parentNote);
         }
     }
 
-    if (importContext.codeImportedAsCode && file.mimetype in CODE_MIME_TYPES) {
+    if (importContext.codeImportedAsCode && mime in CODE_MIME_TYPES) {
         return await importCodeNote(importContext, file, parentNote);
     }
 
-    if (["image/jpeg", "image/gif", "image/png"].includes(file.mimetype)) {
+    if (["image/jpeg", "image/gif", "image/png"].includes(mime)) {
         return await importImage(file, parentNote, importContext);
     }
 
@@ -84,7 +87,7 @@ async function importFile(importContext, file, parentNote) {
         target: 'into',
         isProtected: parentNote.isProtected && protectedSessionService.isProtectedSessionAvailable(),
         type: 'file',
-        mime: file.mimetype,
+        mime: mimeTypes.lookup(originalName),
         attributes: [
             { type: "label", name: "originalFileName", value: originalName },
             { type: "label", name: "fileSize", value: size }
@@ -99,7 +102,8 @@ async function importFile(importContext, file, parentNote) {
 async function importCodeNote(importContext, file, parentNote) {
     const title = getFileNameWithoutExtension(file.originalname);
     const content = file.buffer.toString("UTF-8");
-    const mime = CODE_MIME_TYPES[file.mimetype] === true ? file.mimetype : CODE_MIME_TYPES[file.mimetype];
+    const detectedMime = mimeTypes.lookup(file.originalname);
+    const mime = CODE_MIME_TYPES[detectedMime] === true ? detectedMime : CODE_MIME_TYPES[detectedMime];
 
     const {note} = await noteService.createNote(parentNote.noteId, title, content, {
         type: 'code',
