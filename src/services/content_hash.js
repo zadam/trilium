@@ -8,6 +8,7 @@ const messagingService = require('./messaging');
 const ApiToken = require('../entities/api_token');
 const Branch = require('../entities/branch');
 const Note = require('../entities/note');
+const NoteContent = require('../entities/note_content');
 const Attribute = require('../entities/attribute');
 const NoteRevision = require('../entities/note_revision');
 const RecentNote = require('../entities/recent_note');
@@ -33,6 +34,7 @@ async function getHashes() {
 
     const hashes = {
         notes: await getHash(Note),
+        note_contents: await getHash(NoteContent),
         branches: await getHash(Branch),
         note_revisions: await getHash(NoteRevision),
         recent_notes: await getHash(RecentNote),
