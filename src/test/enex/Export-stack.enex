@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE en-export SYSTEM "http://xml.evernote.com/pub/evernote-export2.dtd">
-<en-export export-date="20181101T193909Z" application="Evernote/Windows" version="6.x">
-<note><title>Note</title><content><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">
-
-<en-note><div>this is a note in a notebook in a stack</div></en-note>]]></content><created>20181101T193703Z</created><updated>20181101T193712Z</updated><note-attributes><author>Adam Zivner</author><source>desktop.win</source><source-application>evernote.win32</source-application></note-attributes></note></en-export>
