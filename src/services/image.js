@@ -13,7 +13,7 @@ const imageType = require('image-type');
 const sanitizeFilename = require('sanitize-filename');
 
 async function saveImage(buffer, originalName, parentNoteId, shrinkImageSwitch) {
-    const finalImageBuffer = shrinkImageSwitch ? await shrinkImage(buffer) : buffer;
+    const finalImageBuffer = shrinkImageSwitch ? await shrinkImage(buffer, originalName) : buffer;
 
     const imageFormat = imageType(finalImageBuffer);
 
@@ -41,14 +41,14 @@ async function saveImage(buffer, originalName, parentNoteId, shrinkImageSwitch) 
     };
 }
 
-async function shrinkImage(buffer) {
+async function shrinkImage(buffer, originalName) {
     const resizedImage = await resize(buffer);
     let finalImageBuffer;
 
     try {
         finalImageBuffer = await optimize(resizedImage);
     } catch (e) {
-        log.error(e.message + e.stack);
+        log.error("Failed to optimize image '" + originalName + "\nStack: " + e.stack);
         finalImageBuffer = resizedImage;
     }
     return finalImageBuffer;

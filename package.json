@@ -37,7 +37,7 @@
     "express-session": "1.15.6",
     "file-type": "10.8.0",
     "fs-extra": "7.0.1",
-    "get-port": "4.1.0",
+    "get-port": "4.2.0",
     "helmet": "3.15.1",
     "html": "1.0.0",
     "image-type": "3.0.0",
