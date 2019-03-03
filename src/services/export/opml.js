@@ -54,7 +54,7 @@ async function exportToOpml(exportContext, branch, version, res) {
     res.setHeader('Content-Type', 'text/x-opml');
 
     res.write(`<?xml version="1.0" encoding="UTF-8"?>
-<opml version="1.0">
+<opml version="${version}">
 <head>
 <title>Trilium export</title>
 </head>
