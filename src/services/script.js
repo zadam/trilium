@@ -65,7 +65,7 @@ async function executeScript(script, params, startNoteId, currentNoteId, originE
 
     const bundle = await getScriptBundle(currentNote);
 
-    return await executeBundle(bundle, startNote, originEntity);
+    return await executeBundle(bundle, { startNote, originEntity });
 }
 
 async function execute(ctx, script, params = []) {
