@@ -11,6 +11,11 @@ async function show() {
     if (!textEditor) {
         await libraryLoader.requireLibrary(libraryLoader.CKEDITOR);
 
+        // CKEditor since version 12 needs the element to be visible before initialization. At the same time
+        // we want to avoid flicker - i.e. show editor only once everything is ready. That's why we have separate
+        // display of $component in both branches.
+        $component.show();
+
         // textEditor might have been initialized during previous await so checking again
         // looks like double initialization can freeze CKEditor pretty badly
         if (!textEditor) {
@@ -22,9 +27,9 @@ async function show() {
 
     textEditor.isReadOnly = await isReadOnly();
 
-    textEditor.setData(noteDetailService.getCurrentNote().noteContent.content);
-
     $component.show();
+
+    textEditor.setData(noteDetailService.getCurrentNote().noteContent.content);
 }
 
 function getContent() {
