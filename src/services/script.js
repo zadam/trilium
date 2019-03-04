@@ -68,7 +68,7 @@ async function executeScript(script, params, startNoteId, currentNoteId, originE
     return await executeBundle(bundle, { startNote, originEntity });
 }
 
-async function execute(ctx, script, params = []) {
+async function execute(ctx, script) {
     // scripts run as "server" sourceId so clients recognize the changes as "foreign" and update themselves
     cls.namespace.set('sourceId', sourceIdService.getCurrentSourceId());
 
