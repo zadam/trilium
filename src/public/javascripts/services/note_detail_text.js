@@ -19,7 +19,9 @@ async function show() {
         // textEditor might have been initialized during previous await so checking again
         // looks like double initialization can freeze CKEditor pretty badly
         if (!textEditor) {
-            textEditor = await BalloonEditor.create($component[0]);
+            textEditor = await BalloonEditor.create($component[0], {
+                placeholder: "Type the content of your note here ..."
+            });
 
             onNoteChange(noteDetailService.noteChanged);
         }
