@@ -1,14 +1,14 @@
 const dayjs = require("dayjs");
 
 const labelRegex = /(\b(and|or)\s+)?@(!?)([\w_-]+|"[^"]+")((=|!=|<|<=|>|>=)([\w_-]+|"[^"]+"))?/i;
-const smartValueRegex = /^(TODAY|NOW)((\+|\-)(\d+)(H|D|M|Y)){0,1}$/i;
+const smartValueRegex = /^(TODAY|NOW)(([+\-])(\d+)([HDMY])){0,1}$/i;
 
 function calculateSmartValue(v) {
     const normalizedV = v.toUpperCase() + "+0D"; // defaults of sorts
-    const [ , keyword, sign, snum, unit] = /(TODAY|NOW)(\+|\-)(\d+)(H|D|M|Y)/.exec(normalizedV);
+    const [ , keyword, sign, snum, unit] = /(TODAY|NOW)([+\-])(\d+)([HDMY])/.exec(normalizedV);
     const num = parseInt(snum);
 
-    if (keyword != "TODAY" && keyword != "NOW") {
+    if (keyword !== "TODAY" && keyword !== "NOW") {
         return v;
     }
 
@@ -17,8 +17,8 @@ function calculateSmartValue(v) {
         NOW: { D: "days", M: "minutes", H: "hours" }
     }[keyword][unit];
 
-    const format = keyword == "TODAY" ? "YYYY-MM-DD" : "YYYY-MM-DDTHH:mm";
-    const date = (sign == "+" ? dayjs().add(num, fullUnit) : dayjs().subtract(num, fullUnit));
+    const format = keyword === "TODAY" ? "YYYY-MM-DD" : "YYYY-MM-DDTHH:mm";
+    const date = (sign === "+" ? dayjs().add(num, fullUnit) : dayjs().subtract(num, fullUnit));
 
     return date.format(format);
 }
@@ -33,7 +33,7 @@ module.exports = function(searchText) {
         const relation = match[2] !== undefined ? match[2].toLowerCase() : 'and';
         const operator = match[3] === '!' ? 'not-exists' : 'exists';
 
-        const value = match[7] !== undefined ? trimQuotes(match[7]) : null
+        const value = match[7] !== undefined ? trimQuotes(match[7]) : null;
 
         labelFilters.push({
             relation: relation,

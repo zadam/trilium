@@ -1,8 +1,8 @@
 function isVirtualAttribute(filter) {
     return (
-        filter.name == "dateModified"
-        || filter.name == "dateCreated"
-        || filter.name == "isProtected"
+        filter.name === "dateModified"
+        || filter.name === "dateCreated"
+        || filter.name === "isProtected"
     );
 }
 
