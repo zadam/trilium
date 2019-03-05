@@ -1,3 +1,18 @@
+function isVirtualAttribute(filter) {
+    return (
+        filter.name == "dateModified"
+        || filter.name == "dateCreated"
+        || filter.name == "isProtected"
+    );
+}
+
+function getValueForFilter(filter, i) {
+    return (isVirtualAttribute(filter)
+        ? `substr(notes.${filter.name}, 0, ${filter.value.length + 1})`
+        :`attribute${i}.value`
+    );
+}
+
 module.exports = function(attributeFilters) {
     const joins = [];
     const joinParams = [];
@@ -7,23 +22,34 @@ module.exports = function(attributeFilters) {
     let i = 1;
 
     for (const filter of attributeFilters) {
-        joins.push(`LEFT JOIN attributes AS attribute${i} ON attribute${i}.noteId = notes.noteId AND attribute${i}.name = ? AND attribute${i}.isDeleted = 0`);
-        joinParams.push(filter.name);
+        const virtual = isVirtualAttribute(filter);
+
+        if (!virtual) {
+            joins.push(`LEFT JOIN attributes AS attribute${i} `
+                + `ON attribute${i}.noteId = notes.noteId `
+                + `AND attribute${i}.name = ? AND attribute${i}.isDeleted = 0`
+            );
+            joinParams.push(filter.name);
+        }
 
         where += " " + filter.relation + " ";
 
+        // the value we need to test
+        const test = virtual ? filter.name : `attribute${i}.attributeId`;
+
         if (filter.operator === 'exists') {
-            where += `attribute${i}.attributeId IS NOT NULL`;
+            where += `${test} IS NOT NULL`;
         }
         else if (filter.operator === 'not-exists') {
-            where += `attribute${i}.attributeId IS NULL`;
+            where += `${test} IS NULL`;
         }
         else if (filter.operator === '=' || filter.operator === '!=') {
-            where += `attribute${i}.value ${filter.operator} ?`;
+            where += `${getValueForFilter(filter, i)} ${filter.operator} ?`;
             whereParams.push(filter.value);
         }
         else if ([">", ">=", "<", "<="].includes(filter.operator)) {
             let floatParam;
+            const value = getValueForFilter(filter, i);
 
             // from https://stackoverflow.com/questions/12643009/regular-expression-for-floating-point-numbers
             if (/^[+-]?([0-9]*[.])?[0-9]+$/.test(filter.value)) {
@@ -32,11 +58,11 @@ module.exports = function(attributeFilters) {
 
             if (floatParam === undefined || isNaN(floatParam)) {
                 // if the value can't be parsed as float then we assume that string comparison should be used instead of numeric
-                where += `attribute${i}.value ${filter.operator} ?`;
+                where += `${value} ${filter.operator} ?`;
                 whereParams.push(filter.value);
             }
             else {
-                where += `CAST(attribute${i}.value AS DECIMAL) ${filter.operator} ?`;
+                where += `CAST(${value} AS DECIMAL) ${filter.operator} ?`;
                 whereParams.push(floatParam);
             }
         }
@@ -52,9 +78,9 @@ module.exports = function(attributeFilters) {
 
     const query = `SELECT DISTINCT notes.noteId FROM notes
             ${joins.join('\r\n')}
-              WHERE 
+              WHERE
                 notes.isDeleted = 0
-                AND (${where}) 
+                AND (${where})
                 ${searchCondition}`;
 
     const params = joinParams.concat(whereParams).concat(searchParams);

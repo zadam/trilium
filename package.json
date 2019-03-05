@@ -27,6 +27,7 @@
     "cls-hooked": "4.2.2",
     "commonmark": "0.28.1",
     "cookie-parser": "1.4.4",
+    "dayjs": "^1.8.5",
     "debug": "4.1.1",
     "ejs": "2.6.1",
     "electron-debug": "2.1.0",
