@@ -116,7 +116,7 @@ async function getDateNote(dateStr) {
             dateNote = await createNote(monthNote.noteId, noteTitle);
         }
 
-        await attributeService.createLabel(dateNote.noteId, DATE_LABEL, dateStr);
+        await attributeService.createLabel(dateNote.noteId, DATE_LABEL, dateStr.substr(0, 10));
     }
 
     return dateNote;
