@@ -15,7 +15,7 @@ function setDataKey(decryptedDataKey) {
 }
 
 function setProtectedSessionId(req) {
-    cls.namespace.set('protectedSessionId', req.headers['trilium-protected-session-id']);
+    cls.namespace.set('protectedSessionId', req.headers['trilium-protected-session-id'] || req.query.protectedSessionId);
 }
 
 function getProtectedSessionId() {
@@ -62,7 +62,9 @@ function decryptNoteContent(noteContent) {
     }
 
     try {
-        noteContent.content = dataEncryptionService.decrypt(getDataKey(), noteContent.content);
+        if (noteContent.content != null) {
+            noteContent.content = dataEncryptionService.decrypt(getDataKey(), noteContent.content.toString());
+        }
     }
     catch (e) {
         e.message = `Cannot decrypt note content for noteContentId=${noteContent.noteContentId}: ` + e.message;
