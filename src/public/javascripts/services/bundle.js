@@ -9,6 +9,8 @@ async function getAndExecuteBundle(noteId, originEntity = null) {
 }
 
 async function executeBundle(bundle, originEntity) {
+    console.log(bundle);
+
     const apiContext = await ScriptContext(bundle.noteId, bundle.allNoteIds, originEntity);
 
     try {
@@ -17,7 +19,7 @@ async function executeBundle(bundle, originEntity) {
         }.call(apiContext));
     }
     catch (e) {
-        infoService.showAndLogError(`Execution of script "${bundle.note.title}" (${bundle.note.noteId}) failed with error: ${e.message}`);
+        infoService.showAndLogError(`Execution of ${bundle.noteId} failed with error: ${e.message}`);
     }
 }
 
