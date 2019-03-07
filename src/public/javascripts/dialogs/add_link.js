@@ -137,6 +137,10 @@ function linkTypeChanged() {
 
 $linkTypes.change(linkTypeChanged);
 
+// return back focus to note text detail after quitting add link
+// the problem is that cursor position is reset
+$dialog.on("hidden.bs.modal", () => noteDetailText.focus());
+
 export default {
     showDialog
 };
