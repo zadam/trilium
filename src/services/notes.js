@@ -332,18 +332,20 @@ async function updateNote(noteId, noteUpdates) {
 
     const noteTitleChanged = note.title !== noteUpdates.title;
 
-    noteUpdates.noteContent.content = await saveLinks(note, noteUpdates.noteContent.content);
-
     note.title = noteUpdates.title;
     note.isProtected = noteUpdates.isProtected;
     await note.save();
 
-    if (note.type !== 'file' && note.type !== 'image') {
-        const noteContent = await note.getNoteContent();
+    const noteContent = await note.getNoteContent();
+
+    if (!['file', 'image'].includes(note.type)) {
+        noteUpdates.noteContent.content = await saveLinks(note, noteUpdates.noteContent.content);
+
         noteContent.content = noteUpdates.noteContent.content;
-        noteContent.isProtected = noteUpdates.isProtected;
-        await noteContent.save();
     }
+
+    noteContent.isProtected = noteUpdates.isProtected;
+    await noteContent.save();
 
     if (noteTitleChanged) {
         await triggerNoteTitleChanged(note);
