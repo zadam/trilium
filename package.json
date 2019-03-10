@@ -41,6 +41,7 @@
     "get-port": "4.2.0",
     "helmet": "3.15.1",
     "html": "1.0.0",
+    "html2plaintext": "^2.1.2",
     "image-type": "3.0.0",
     "imagemin": "6.1.0",
     "imagemin-giflossy": "5.1.10",

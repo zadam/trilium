@@ -4,6 +4,7 @@ const Entity = require('./entity');
 const protectedSessionService = require('../services/protected_session');
 const repository = require('../services/repository');
 const dateUtils = require('../services/date_utils');
+const noteFulltextService = require('../services/note_fulltext');
 
 /**
  * This represents a Note which is a central object in the Trilium Notes project.
@@ -90,6 +91,10 @@ class NoteContent extends Entity {
 
         delete pojo.isContentAvailable;
         delete pojo.contentCipherText;
+    }
+
+    async afterSaving() {
+        noteFulltextService.triggerNoteFulltextUpdate(this.noteId);
     }
 }
 

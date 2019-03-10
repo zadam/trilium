@@ -7,6 +7,7 @@ const protectedSessionService = require('../services/protected_session');
 const repository = require('../services/repository');
 const sql = require('../services/sql');
 const dateUtils = require('../services/date_utils');
+const noteFulltextService = require('../services/note_fulltext');
 
 const LABEL = 'label';
 const LABEL_DEFINITION = 'label-definition';
@@ -686,6 +687,10 @@ class Note extends Entity {
         delete pojo.__attributeCache;
         delete pojo.titleCipherText;
         delete pojo.noteContent;
+    }
+
+    async afterSaving() {
+        noteFulltextService.triggerNoteFulltextUpdate(this.noteId);
     }
 }
 
