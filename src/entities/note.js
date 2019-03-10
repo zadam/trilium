@@ -106,7 +106,7 @@ class Note extends Entity {
 
     /** @returns {Promise} */
     async setJsonContent(content) {
-        await this.setContent(JSON.stringify(content));
+        await this.setContent(JSON.stringify(content, null, '\t'));
     }
 
     /** @returns {boolean} true if this note is the root of the note tree. Root note has "root" noteId */

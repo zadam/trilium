@@ -911,3 +911,8 @@ a.external:after, a[href^="http://"]:after, a[href^="https://"]:after {
     content: "\2197";
     vertical-align: top;
 }
+
+.card {
+    background-color: inherit !important;
+    border-color: var(--main-border-color) !important;
+}
