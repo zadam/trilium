@@ -4,13 +4,6 @@ CREATE TABLE IF NOT EXISTS "sync" (
   `entityId`	TEXT NOT NULL,
   `sourceId` TEXT NOT NULL,
   `syncDate`	TEXT NOT NULL);
-CREATE UNIQUE INDEX `IDX_sync_entityName_entityId` ON `sync` (
-  `entityName`,
-  `entityId`
-);
-CREATE INDEX `IDX_sync_syncDate` ON `sync` (
-  `syncDate`
-);
 CREATE TABLE IF NOT EXISTS "source_ids" (
   `sourceId`	TEXT NOT NULL,
   `dateCreated`	TEXT NOT NULL,
@@ -25,15 +18,6 @@ CREATE TABLE IF NOT EXISTS "note_revisions" (
   `dateModifiedFrom` TEXT NOT NULL,
   `dateModifiedTo` TEXT NOT NULL
 , type TEXT DEFAULT '' NOT NULL, mime TEXT DEFAULT '' NOT NULL, hash TEXT DEFAULT "" NOT NULL);
-CREATE INDEX `IDX_note_revisions_noteId` ON `note_revisions` (
-  `noteId`
-);
-CREATE INDEX `IDX_note_revisions_dateModifiedFrom` ON `note_revisions` (
-  `dateModifiedFrom`
-);
-CREATE INDEX `IDX_note_revisions_dateModifiedTo` ON `note_revisions` (
-  `dateModifiedTo`
-);
 CREATE TABLE IF NOT EXISTS "api_tokens"
 (
   apiTokenId TEXT PRIMARY KEY NOT NULL,
@@ -52,14 +36,6 @@ CREATE TABLE IF NOT EXISTS "branches" (
   `dateModified`	TEXT NOT NULL, hash TEXT DEFAULT "" NOT NULL, dateCreated TEXT NOT NULL DEFAULT '1970-01-01T00:00:00.000Z',
   PRIMARY KEY(`branchId`)
 );
-CREATE INDEX `IDX_branches_noteId` ON `branches` (
-  `noteId`
-);
-CREATE INDEX `IDX_branches_noteId_parentNoteId` ON `branches` (
-  `noteId`,
-  `parentNoteId`
-);
-CREATE INDEX IDX_branches_parentNoteId ON branches (parentNoteId);
 CREATE TABLE IF NOT EXISTS "recent_notes" (
   `branchId` TEXT NOT NULL PRIMARY KEY,
   `notePath` TEXT NOT NULL,
@@ -94,8 +70,6 @@ CREATE TABLE attributes
   dateModified TEXT not null,
   isDeleted    INT  not null,
   hash         TEXT default "" not null, isInheritable int DEFAULT 0 NULL);
-CREATE INDEX IDX_attributes_name_value
-  on attributes (name, value);
 CREATE TABLE IF NOT EXISTS "links" (
   `linkId`	TEXT NOT NULL,
   `noteId`	TEXT NOT NULL,
@@ -107,16 +81,6 @@ CREATE TABLE IF NOT EXISTS "links" (
   `dateModified`	TEXT NOT NULL,
   PRIMARY KEY(`linkId`)
 );
-CREATE INDEX IDX_links_noteId_index
-  on links (noteId);
-CREATE INDEX IDX_links_targetNoteId_index
-  on links (targetNoteId);
-CREATE INDEX IDX_attributes_name_index
-  on attributes (name);
-CREATE INDEX IDX_attributes_noteId_index
-  on attributes (noteId);
-CREATE INDEX IDX_attributes_value_index
-  on attributes (value);
 CREATE TABLE IF NOT EXISTS "note_contents" (
   `noteContentId`	TEXT NOT NULL,
   `noteId`	TEXT NOT NULL,
@@ -127,7 +91,6 @@ CREATE TABLE IF NOT EXISTS "note_contents" (
   `dateModified` TEXT NOT NULL,
   PRIMARY KEY(`noteContentId`)
 );
-CREATE UNIQUE INDEX `IDX_note_contents_noteId` ON `note_contents` (`noteId`);
 CREATE TABLE IF NOT EXISTS "notes" (
   `noteId`	TEXT NOT NULL,
   `title`	TEXT NOT NULL DEFAULT "note",
@@ -140,3 +103,47 @@ CREATE TABLE IF NOT EXISTS "notes" (
   `dateModified`	TEXT NOT NULL,
   PRIMARY KEY(`noteId`)
 );
+CREATE UNIQUE INDEX `IDX_sync_entityName_entityId` ON `sync` (
+  `entityName`,
+  `entityId`
+);
+CREATE INDEX `IDX_sync_syncDate` ON `sync` (
+  `syncDate`
+);
+CREATE INDEX `IDX_note_revisions_noteId` ON `note_revisions` (
+  `noteId`
+);
+CREATE INDEX `IDX_note_revisions_dateModifiedFrom` ON `note_revisions` (
+  `dateModifiedFrom`
+);
+CREATE INDEX `IDX_note_revisions_dateModifiedTo` ON `note_revisions` (
+  `dateModifiedTo`
+);
+CREATE INDEX `IDX_branches_noteId` ON `branches` (
+  `noteId`
+);
+CREATE INDEX `IDX_branches_noteId_parentNoteId` ON `branches` (
+  `noteId`,
+  `parentNoteId`
+);
+CREATE INDEX IDX_branches_parentNoteId ON branches (parentNoteId);
+CREATE INDEX IDX_attributes_name_value
+  on attributes (name, value);
+CREATE INDEX IDX_links_noteId_index
+  on links (noteId);
+CREATE INDEX IDX_links_targetNoteId_index
+  on links (targetNoteId);
+CREATE INDEX IDX_attributes_name_index
+  on attributes (name);
+CREATE INDEX IDX_attributes_noteId_index
+  on attributes (noteId);
+CREATE INDEX IDX_attributes_value_index
+  on attributes (value);
+CREATE UNIQUE INDEX `IDX_note_contents_noteId` ON `note_contents` (`noteId`);
+CREATE VIRTUAL TABLE note_fulltext USING fts5(noteId UNINDEXED, title, titleHash UNINDEXED, content, contentHash UNINDEXED)
+/* note_fulltext(noteId,title,titleHash,content,contentHash) */;
+CREATE TABLE IF NOT EXISTS 'note_fulltext_data'(id INTEGER PRIMARY KEY, block BLOB);
+CREATE TABLE IF NOT EXISTS 'note_fulltext_idx'(segid, term, pgno, PRIMARY KEY(segid, term)) WITHOUT ROWID;
+CREATE TABLE IF NOT EXISTS 'note_fulltext_content'(id INTEGER PRIMARY KEY, c0, c1, c2, c3, c4);
+CREATE TABLE IF NOT EXISTS 'note_fulltext_docsize'(id INTEGER PRIMARY KEY, sz BLOB);
+CREATE TABLE IF NOT EXISTS 'note_fulltext_config'(k PRIMARY KEY, v) WITHOUT ROWID;
