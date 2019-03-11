@@ -5,7 +5,7 @@ const html2plaintext = require('html2plaintext');
 const noteIdQueue = [];
 
 async function updateNoteFulltext(note) {
-    if (note.isDeleted || note.isProtected || note.hasLabel('archived')) {
+    if (note.isDeleted || note.isProtected || await note.hasLabel('archived')) {
         await sql.execute(`DELETE
                            FROM note_fulltext
                            WHERE noteId = ?`, [note.noteId]);
@@ -25,7 +25,7 @@ async function updateNoteFulltext(note) {
         }
 
         // optimistically try to update first ...
-        const res = await sql.execute(`UPDATE note_fulltext title = ?, titleHash = ?, content = ?, contentHash = ? WHERE noteId = ?`, [note.title, note.hash, content, contentHash, note.noteId]);
+        const res = await sql.execute(`UPDATE note_fulltext SET title = ?, titleHash = ?, content = ?, contentHash = ? WHERE noteId = ?`, [note.title, note.hash, content, contentHash, note.noteId]);
 
         // ... and insert only when the update did not work
         if (res.stmt.changes === 0) {

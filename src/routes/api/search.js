@@ -52,26 +52,10 @@ async function searchNotes(req) {
 }
 
 async function getFullTextResults(searchText) {
-    const tokens = searchText.toLowerCase().split(" ");
-    const tokenSql = ["1=1"];
+    const safeSearchText = utils.sanitizeSql(searchText);
 
-    for (const token of tokens) {
-        const safeToken = utils.sanitizeSql(token);
-
-        tokenSql.push(`(title LIKE '%${safeToken}%' OR content LIKE '%${safeToken}%')`);
-    }
-
-    const noteIds = await sql.getColumn(`
-      SELECT DISTINCT noteId 
-      FROM 
-        notes
-        JOIN note_contents USING(noteId)
-      WHERE isDeleted = 0 
-        AND notes.isProtected = 0
-        AND type IN ('text', 'code')
-        AND ${tokenSql.join(' AND ')}`);
-
-    return noteIds;
+    return await sql.getColumn(`SELECT noteId FROM note_fulltext 
+                                       WHERE note_fulltext MATCH '${safeSearchText}'`);
 }
 
 async function saveSearchToNote(req) {
