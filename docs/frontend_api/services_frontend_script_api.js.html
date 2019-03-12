@@ -233,6 +233,12 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null) {
     this.getCurrentNoteContent = noteDetailService.getCurrentNoteContent;
 
     /**
+     * @method
+     * @returns {NoteFull} currently loaded note in the editor (HTML, code etc.)
+     */
+    this.getCurrentNote = noteDetailService.getCurrentNote;
+
+    /**
      * This method checks whether user navigated away from the note from which the scripts has been started.
      * This is necessary because script execution is async and by the time it is finished, the user might have
      * already navigated away from this page - the end result would be that script might return data for the wrong
