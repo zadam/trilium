@@ -25,8 +25,8 @@ const STRING_MIME_TYPES = ["application/x-javascript"];
  * @property {string} title - note title
  * @property {boolean} isProtected - true if note is protected
  * @property {boolean} isDeleted - true if note is deleted
- * @property {string} dateCreated
- * @property {string} dateModified
+ * @property {string} utcDateCreated
+ * @property {string} utcDateModified
  *
  * @extends Entity
  */
@@ -660,14 +660,14 @@ class Note extends Entity {
             this.isDeleted = false;
         }
 
-        if (!this.dateCreated) {
-            this.dateCreated = dateUtils.nowDate();
+        if (!this.utcDateCreated) {
+            this.utcDateCreated = dateUtils.nowDate();
         }
 
         super.beforeSaving();
 
         if (this.isChanged) {
-            this.dateModified = dateUtils.nowDate();
+            this.utcDateModified = dateUtils.nowDate();
         }
     }
 

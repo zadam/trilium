@@ -27,7 +27,7 @@ async function getNewNotePosition(parentNoteId, noteData) {
 
         newNotePos = afterNote.notePosition + 1;
 
-        // not updating dateModified to avoig having to sync whole rows
+        // not updating utcDateModified to avoig having to sync whole rows
         await sql.execute('UPDATE branches SET notePosition = notePosition + 1 WHERE parentNoteId = ? AND notePosition > ? AND isDeleted = 0',
             [parentNoteId, afterNote.notePosition]);
 
@@ -142,7 +142,7 @@ async function createNote(parentNoteId, title, content = "", extraOptions = {}) 
         isProtected: !!extraOptions.isProtected,
         type: extraOptions.type,
         mime: extraOptions.mime,
-        dateCreated: extraOptions.dateCreated,
+        utcDateCreated: extraOptions.utcDateCreated,
         isExpanded: extraOptions.isExpanded,
         notePosition: extraOptions.notePosition
     };
@@ -302,9 +302,9 @@ async function saveNoteRevision(note) {
     const revisionCutoff = dateUtils.dateStr(new Date(now.getTime() - noteRevisionSnapshotTimeInterval * 1000));
 
     const existingNoteRevisionId = await sql.getValue(
-        "SELECT noteRevisionId FROM note_revisions WHERE noteId = ? AND dateModifiedTo >= ?", [note.noteId, revisionCutoff]);
+        "SELECT noteRevisionId FROM note_revisions WHERE noteId = ? AND utcDateModifiedTo >= ?", [note.noteId, revisionCutoff]);
 
-    const msSinceDateCreated = now.getTime() - dateUtils.parseDateTime(note.dateCreated).getTime();
+    const msSinceDateCreated = now.getTime() - dateUtils.parseDateTime(note.utcDateCreated).getTime();
 
     if (!existingNoteRevisionId && msSinceDateCreated >= noteRevisionSnapshotTimeInterval * 1000) {
         await new NoteRevision({
@@ -315,8 +315,8 @@ async function saveNoteRevision(note) {
             type: note.type,
             mime: note.mime,
             isProtected: false, // will be fixed in the protectNoteRevisions() call
-            dateModifiedFrom: note.dateModified,
-            dateModifiedTo: dateUtils.nowDate()
+            utcDateModifiedFrom: note.utcDateModified,
+            utcDateModifiedTo: dateUtils.nowDate()
         }).save();
     }
 }
@@ -405,9 +405,9 @@ async function cleanupDeletedNotes() {
     // it's better to not use repository for this because it will complain about saving protected notes
     // out of protected session
 
-    await sql.execute("UPDATE note_contents SET content = NULL WHERE content IS NOT NULL AND noteId IN (SELECT noteId FROM notes WHERE isDeleted = 1 AND notes.dateModified <= ?)", [dateUtils.dateStr(cutoffDate)]);
+    await sql.execute("UPDATE note_contents SET content = NULL WHERE content IS NOT NULL AND noteId IN (SELECT noteId FROM notes WHERE isDeleted = 1 AND notes.utcDateModified <= ?)", [dateUtils.dateStr(cutoffDate)]);
 
-    await sql.execute("UPDATE note_revisions SET content = NULL WHERE note_revisions.content IS NOT NULL AND noteId IN (SELECT noteId FROM notes WHERE isDeleted = 1 AND notes.dateModified <= ?)", [dateUtils.dateStr(cutoffDate)]);
+    await sql.execute("UPDATE note_revisions SET content = NULL WHERE note_revisions.content IS NOT NULL AND noteId IN (SELECT noteId FROM notes WHERE isDeleted = 1 AND notes.utcDateModified <= ?)", [dateUtils.dateStr(cutoffDate)]);
 }
 
 sqlInit.dbReady.then(() => {

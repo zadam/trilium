@@ -14,15 +14,15 @@ const repository = require('../services/repository');
  * @param {string} title
  * @param {string} content
  * @param {string} isProtected
- * @param {string} dateModifiedFrom
- * @param {string} dateModifiedTo
+ * @param {string} utcDateModifiedFrom
+ * @param {string} utcDateModifiedTo
  *
  * @extends Entity
  */
 class NoteRevision extends Entity {
     static get entityName() { return "note_revisions"; }
     static get primaryKeyName() { return "noteRevisionId"; }
-    static get hashedProperties() { return ["noteRevisionId", "noteId", "title", "content", "isProtected", "dateModifiedFrom", "dateModifiedTo"]; }
+    static get hashedProperties() { return ["noteRevisionId", "noteId", "title", "content", "isProtected", "utcDateModifiedFrom", "utcDateModifiedTo"]; }
 
     constructor(row) {
         super(row);

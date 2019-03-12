@@ -1,7 +1,7 @@
 function isVirtualAttribute(filter) {
     return (
-        filter.name === "dateModified"
-        || filter.name === "dateCreated"
+        filter.name === "utcDateModified"
+        || filter.name === "utcDateCreated"
         || filter.name === "isProtected"
     );
 }

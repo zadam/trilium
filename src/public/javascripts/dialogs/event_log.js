@@ -15,7 +15,7 @@ async function showDialog() {
     $list.empty();
 
     for (const event of result) {
-        const dateTime = utils.formatDateTime(utils.parseDate(event.dateCreated));
+        const dateTime = utils.formatDateTime(utils.parseDate(event.utcDateCreated));
 
         if (event.noteId) {
             const noteLink = await linkService.createNoteLink(event.noteId).prop('outerHTML');

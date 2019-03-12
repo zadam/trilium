@@ -50,7 +50,7 @@ async function getRecentNotes(currentNoteId) {
         AND branches.noteId != ?
         ${extraCondition}
       ORDER BY 
-        dateCreated DESC
+        utcDateCreated DESC
       LIMIT 200`, [currentNoteId]);
 
     return recentNotes.map(rn => {

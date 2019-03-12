@@ -79,7 +79,7 @@ async function cloneNoteAfter(noteId, afterBranchId) {
         return validationResult;
     }
 
-    // we don't change dateModified so other changes are prioritized in case of conflict
+    // we don't change utcDateModified so other changes are prioritized in case of conflict
     // also we would have to sync all those modified branches otherwise hash checks would fail
     await sql.execute("UPDATE branches SET notePosition = notePosition + 1 WHERE parentNoteId = ? AND notePosition > ? AND isDeleted = 0",
         [afterNote.parentNoteId, afterNote.notePosition]);

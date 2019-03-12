@@ -11,10 +11,10 @@ class NoteFull extends NoteShort {
         this.noteContent = row.noteContent;
 
         /** @param {string} */
-        this.dateCreated = row.dateCreated;
+        this.utcDateCreated = row.utcDateCreated;
 
         /** @param {string} */
-        this.dateModified = row.dateModified;
+        this.utcDateModified = row.utcDateModified;
     }
 }
 

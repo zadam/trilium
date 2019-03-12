@@ -8,7 +8,7 @@ const cls = require('./cls');
 async function saveSourceId(sourceId) {
     await sql.insert("source_ids", {
         sourceId: sourceId,
-        dateCreated: dateUtils.nowDate()
+        utcDateCreated: dateUtils.nowDate()
     });
 
     await refreshSourceIds();
@@ -30,7 +30,7 @@ async function generateSourceId() {
 }
 
 async function refreshSourceIds() {
-    allSourceIds = await sql.getColumn("SELECT sourceId FROM source_ids ORDER BY dateCreated DESC");
+    allSourceIds = await sql.getColumn("SELECT sourceId FROM source_ids ORDER BY utcDateCreated DESC");
 }
 
 let allSourceIds = [];

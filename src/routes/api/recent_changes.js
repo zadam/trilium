@@ -14,7 +14,7 @@ async function getRecentChanges() {
             note_revisions
             JOIN notes USING(noteId)
         ORDER BY 
-            dateModifiedTo DESC 
+            utcDateModifiedTo DESC 
         LIMIT 1000`);
 
     for (const change of recentChanges) {

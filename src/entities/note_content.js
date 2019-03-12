@@ -13,8 +13,8 @@ const noteFulltextService = require('../services/note_fulltext');
  * @property {string} noteId - reference to owning note
  * @property {boolean} isProtected - true if note content is protected
  * @property {blob} content - note content - e.g. HTML text for text notes, file payload for files
- * @property {string} dateCreated
- * @property {string} dateModified
+ * @property {string} utcDateCreated
+ * @property {string} utcDateModified
  *
  * @extends Entity
  */
@@ -66,14 +66,14 @@ class NoteContent extends Entity {
     }
 
     beforeSaving() {
-        if (!this.dateCreated) {
-            this.dateCreated = dateUtils.nowDate();
+        if (!this.utcDateCreated) {
+            this.utcDateCreated = dateUtils.nowDate();
         }
 
         super.beforeSaving();
 
         if (this.isChanged) {
-            this.dateModified = dateUtils.nowDate();
+            this.utcDateModified = dateUtils.nowDate();
         }
     }
 

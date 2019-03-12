@@ -98,7 +98,7 @@ async function exportToTar(exportContext, branch, format, res) {
             isExpanded: branch.isExpanded,
             type: note.type,
             mime: note.mime,
-            // we don't export dateCreated and dateModified of any entity since that would be a bit misleading
+            // we don't export utcDateCreated and utcDateModified of any entity since that would be a bit misleading
             attributes: (await note.getOwnedAttributes()).map(attribute => {
                 return {
                     type: attribute.type,

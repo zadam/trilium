@@ -16,8 +16,8 @@ const sql = require('../services/sql');
  * @param {string} prefix
  * @param {boolean} isExpanded
  * @param {boolean} isDeleted
- * @param {string} dateModified
- * @param {string} dateCreated
+ * @param {string} utcDateModified
+ * @param {string} utcDateCreated
  *
  * @extends Entity
  */
@@ -49,14 +49,14 @@ class Branch extends Entity {
             this.isDeleted = false;
         }
 
-        if (!this.dateCreated) {
-            this.dateCreated = dateUtils.nowDate();
+        if (!this.utcDateCreated) {
+            this.utcDateCreated = dateUtils.nowDate();
         }
 
         super.beforeSaving();
 
         if (this.isChanged) {
-            this.dateModified = dateUtils.nowDate();
+            this.utcDateModified = dateUtils.nowDate();
         }
     }
 

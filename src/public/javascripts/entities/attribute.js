@@ -17,10 +17,10 @@ class Attribute {
         this.isInheritable = row.isInheritable;
         /** @param {boolean} isDeleted */
         this.isDeleted = row.isDeleted;
-        /** @param {string} dateCreated */
-        this.dateCreated = row.dateCreated;
-        /** @param {string} dateModified */
-        this.dateModified = row.dateModified;
+        /** @param {string} utcDateCreated */
+        this.utcDateCreated = row.utcDateCreated;
+        /** @param {string} utcDateModified */
+        this.utcDateModified = row.utcDateModified;
     }
 
     /** @returns {NoteShort} */

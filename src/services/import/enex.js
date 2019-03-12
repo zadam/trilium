@@ -165,9 +165,9 @@ async function importEnex(importContext, file, parentNote) {
             if (currentTag === 'title') {
                 note.title = text;
             } else if (currentTag === 'created') {
-                note.dateCreated = parseDate(text);
+                note.utcDateCreated = parseDate(text);
             } else if (currentTag === 'updated') {
-                // updated is currently ignored since dateModified is updated automatically with each save
+                // updated is currently ignored since utcDateModified is updated automatically with each save
             } else if (currentTag === 'tag') {
                 note.attributes.push({
                     type: 'label',
@@ -206,7 +206,7 @@ async function importEnex(importContext, file, parentNote) {
 
     async function saveNote() {
         // make a copy because stream continues with the next async call and note gets overwritten
-        let {title, content, attributes, resources, dateCreated} = note;
+        let {title, content, attributes, resources, utcDateCreated} = note;
 
         const xmlObject = await parseXml(content);
 
@@ -215,7 +215,7 @@ async function importEnex(importContext, file, parentNote) {
 
         const noteEntity = (await noteService.createNote(rootNote.noteId, title, content, {
             attributes,
-            dateCreated,
+            utcDateCreated,
             type: 'text',
             mime: 'text/html',
             isProtected: parentNote.isProtected && protectedSessionService.isProtectedSessionAvailable(),
