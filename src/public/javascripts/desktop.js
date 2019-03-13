@@ -17,7 +17,8 @@ import link from './services/link.js';
 import messagingService from './services/messaging.js';
 import noteDetailService from './services/note_detail.js';
 import noteType from './services/note_type.js';
-import protected_session from './services/protected_session.js';
+import protectedSessionService from './services/protected_session.js';
+import protectedSessionHolder from './services/protected_session_holder.js';
 import searchNotesService from './services/search_notes.js';
 import FrontendScriptApi from './services/frontend_script_api.js';
 import ScriptContext from './services/script_context.js';
@@ -51,6 +52,8 @@ window.glob.refreshTree = treeService.reload;
 window.glob.getCurrentNote = noteDetailService.getCurrentNote;
 window.glob.requireLibrary = libraryLoader.requireLibrary;
 window.glob.ESLINT = libraryLoader.ESLINT;
+
+protectedSessionHolder.setProtectedSessionId(null);
 
 window.onerror = function (msg, url, lineNo, columnNo, error) {
     const string = msg.toLowerCase();

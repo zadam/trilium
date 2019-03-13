@@ -1,9 +1,10 @@
 import utils from "./utils.js";
 import optionsInitService from './options_init.js';
 
+const PROTECTED_SESSION_ID_KEY = 'protectedSessionId';
+
 let lastProtectedSessionOperationDate = null;
 let protectedSessionTimeout = null;
-let protectedSessionId = null;
 
 optionsInitService.optionsReady.then(options => protectedSessionTimeout = options.protectedSessionTimeout);
 
@@ -17,16 +18,13 @@ function setProtectedSessionTimeout(encSessTimeout) {
     protectedSessionTimeout = encSessTimeout;
 }
 
-function getProtectedSessionId() {
-    return protectedSessionId;
-}
-
 function setProtectedSessionId(id) {
-    protectedSessionId = id;
+    // using session cookie so that it disappears after browser/tab is closed
+    utils.setSessionCookie(PROTECTED_SESSION_ID_KEY, id);
 }
 
 function resetProtectedSession() {
-    protectedSessionId = null;
+    utils.setSessionCookie(PROTECTED_SESSION_ID_KEY, null);
 
     // most secure solution - guarantees nothing remained in memory
     // since this expires because user doesn't use the app, it shouldn't be disruptive
@@ -34,17 +32,16 @@ function resetProtectedSession() {
 }
 
 function isProtectedSessionAvailable() {
-    return protectedSessionId !== null;
+    return !!utils.getCookie(PROTECTED_SESSION_ID_KEY);
 }
 
 function touchProtectedSession() {
     if (isProtectedSessionAvailable()) {
-        lastProtectedSessionOperationDate = new Date();
+        setProtectedSessionId(utils.getCookie(PROTECTED_SESSION_ID_KEY));
     }
 }
 
 export default {
-    getProtectedSessionId,
     setProtectedSessionId,
     resetProtectedSession,
     isProtectedSessionAvailable,
