@@ -79,7 +79,7 @@ $form.submit(() => {
 function exportBranch(branchId, type, format, version) {
     exportId = utils.randomString(10);
 
-    const url = utils.getHost() + `/api/notes/${branchId}/export/${type}/${format}/${version}/${exportId}?protectedSessionId=` + encodeURIComponent(protectedSessionHolder.getProtectedSessionId());
+    const url = utils.getHost() + `/api/notes/${branchId}/export/${type}/${format}/${version}/${exportId}`;
 
     utils.download(url);
 }

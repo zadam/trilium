@@ -164,11 +164,23 @@ function isDesktop() {
         || (!window.device && !/Mobi/.test(navigator.userAgent));
 }
 
+// cookie code below works for simple use cases only - ASCII only
+// not setting path so that cookies do not leak into other websites if multiplexed with reverse proxy
+
 function setCookie(name, value) {
     const date = new Date(Date.now() + 10 * 365 * 24 * 60 * 60 * 1000);
     const expires = "; expires=" + date.toUTCString();
 
-    document.cookie = name + "=" + (value || "")  + expires + "; path=/";
+    document.cookie = name + "=" + (value || "")  + expires + ";";
+}
+
+function setSessionCookie(name, value) {
+    document.cookie = name + "=" + (value || "") + ";";
+}
+
+function getCookie(name) {
+    const valueMatch = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
+    return valueMatch ? valueMatch[2] : null;
 }
 
 function getNoteTypeClass(type) {
@@ -213,6 +225,8 @@ export default {
     isMobile,
     isDesktop,
     setCookie,
+    setSessionCookie,
+    getCookie,
     getNoteTypeClass,
     getMimeTypeClass
 };

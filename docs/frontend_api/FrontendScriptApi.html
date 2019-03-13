@@ -1244,7 +1244,7 @@
     
 
     
-    <h4 class="name" id="getCodeMimeTypes"><span class="type-signature"></span>getCodeMimeTypes<span class="signature">()</span><span class="type-signature"> &rarr; {array}</span></h4>
+    <h4 class="name" id="getActiveNote"><span class="type-signature"></span>getActiveNote<span class="signature">()</span><span class="type-signature"> &rarr; {<a href="NoteFull.html">NoteFull</a>}</span></h4>
     
 
     
@@ -1292,7 +1292,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line236">line 236</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line211">line 211</a>
     </li></ul></dd>
     
 
@@ -1319,7 +1319,7 @@
 
         
 <div class="param-desc">
-    list of currently used code mime types
+    active note (loaded into right pane)
 </div>
 
 
@@ -1330,7 +1330,7 @@
     </dt>
     <dd>
         
-<span class="param-type">array</span>
+<span class="param-type"><a href="NoteFull.html">NoteFull</a></span>
 
 
     </dd>
@@ -1348,7 +1348,7 @@
     
 
     
-    <h4 class="name" id="getCurrentNoteContent"><span class="type-signature"></span>getCurrentNoteContent<span class="signature">()</span><span class="type-signature"> &rarr; {string}</span></h4>
+    <h4 class="name" id="getActiveNoteContent"><span class="type-signature"></span>getActiveNoteContent<span class="signature">()</span><span class="type-signature"> &rarr; {string}</span></h4>
     
 
     
@@ -1423,7 +1423,7 @@
 
         
 <div class="param-desc">
-    content of currently loaded note in the editor (HTML, code etc.)
+    content of active note (loaded into right pane)
 </div>
 
 
@@ -1435,6 +1435,110 @@
     <dd>
         
 <span class="param-type">string</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getCodeMimeTypes"><span class="type-signature"></span>getCodeMimeTypes<span class="signature">()</span><span class="type-signature"> &rarr; {array}</span></h4>
+    
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line242">line 242</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    list of currently used code mime types
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">array</span>
 
 
     </dd>
@@ -1500,7 +1604,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line230">line 230</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line236">line 236</a>
     </li></ul></dd>
     
 
@@ -1860,7 +1964,7 @@ otherwise (by e.g. createNoteLink())
     
 
     
-    <h4 class="name" id="isNoteStillLoaded"><span class="type-signature"></span>isNoteStillLoaded<span class="signature">()</span><span class="type-signature"> &rarr; {boolean}</span></h4>
+    <h4 class="name" id="isNoteStillActive"><span class="type-signature"></span>isNoteStillActive<span class="signature">()</span><span class="type-signature"> &rarr; {boolean}</span></h4>
     
 
     
@@ -1915,7 +2019,7 @@ note.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line216">line 216</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line222">line 222</a>
     </li></ul></dd>
     
 
@@ -2068,7 +2172,7 @@ note.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line224">line 224</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line230">line 230</a>
     </li></ul></dd>
     
 
@@ -2255,7 +2359,7 @@ note.
     
 
     
-    <h4 class="name" id="protectCurrentNote"><span class="type-signature"></span>protectCurrentNote<span class="signature">()</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="protectActiveNote"><span class="type-signature"></span>protectActiveNote<span class="signature">()</span><span class="type-signature"></span></h4>
     
 
     
@@ -2303,7 +2407,7 @@ note.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line253">line 253</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line259">line 259</a>
     </li></ul></dd>
     
 
@@ -2719,7 +2823,7 @@ Internally this serializes the anonymous function into string and sends it to ba
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line242">line 242</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line248">line 248</a>
     </li></ul></dd>
     
 
@@ -2850,7 +2954,7 @@ Internally this serializes the anonymous function into string and sends it to ba
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line248">line 248</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line254">line 254</a>
     </li></ul></dd>
     
 

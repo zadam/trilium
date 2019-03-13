@@ -200,9 +200,15 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null) {
 
     /**
      * @method
-     * @returns {string} content of currently loaded note in the editor (HTML, code etc.)
+     * @returns {string} content of active note (loaded into right pane)
      */
-    this.getCurrentNoteContent = noteDetailService.getCurrentNoteContent;
+    this.getActiveNoteContent = noteDetailService.getCurrentNoteContent;
+
+    /**
+     * @method
+     * @returns {NoteFull} active note (loaded into right pane)
+     */
+    this.getActiveNote = noteDetailService.getCurrentNote;
 
     /**
      * This method checks whether user navigated away from the note from which the scripts has been started.
@@ -213,7 +219,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null) {
      * @method
      * @return {boolean} returns true if the original note is still loaded, false if user switched to another
      */
-    this.isNoteStillLoaded = () => {
+    this.isNoteStillActive = () => {
         return this.originEntity.noteId === noteDetailService.getCurrentNoteId();
     };
 
@@ -250,7 +256,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null) {
     /**
      * @method
      */
-    this.protectCurrentNote = protectedSessionService.protectNoteAndSendToServer;
+    this.protectActiveNote = protectedSessionService.protectNoteAndSendToServer;
 }
 
 export default FrontendScriptApi;

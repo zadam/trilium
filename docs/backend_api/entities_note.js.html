@@ -41,6 +41,8 @@ const LABEL_DEFINITION = 'label-definition';
 const RELATION = 'relation';
 const RELATION_DEFINITION = 'relation-definition';
 
+const STRING_MIME_TYPES = ["application/x-javascript"];
+
 /**
  * This represents a Note which is a central object in the Trilium Notes project.
  *
@@ -132,7 +134,7 @@ class Note extends Entity {
 
     /** @returns {Promise} */
     async setJsonContent(content) {
-        await this.setContent(JSON.stringify(content));
+        await this.setContent(JSON.stringify(content, null, '\t'));
     }
 
     /** @returns {boolean} true if this note is the root of the note tree. Root note has "root" noteId */
@@ -160,7 +162,9 @@ class Note extends Entity {
 
     /** @returns {boolean} true if the note has string content (not binary) */
     isStringNote() {
-        return ["text", "code", "relation-map", "search"].includes(this.type) || this.mime.startsWith('text/');
+        return ["text", "code", "relation-map", "search"].includes(this.type)
+            || this.mime.startsWith('text/')
+            || STRING_MIME_TYPES.includes(this.mime);
     }
 
     /** @returns {string} JS script environment - either "frontend" or "backend" */
@@ -709,6 +713,7 @@ class Note extends Entity {
         delete pojo.isContentAvailable;
         delete pojo.__attributeCache;
         delete pojo.titleCipherText;
+        delete pojo.noteContent;
     }
 }
 

@@ -9,8 +9,6 @@ async function getAndExecuteBundle(noteId, originEntity = null) {
 }
 
 async function executeBundle(bundle, originEntity) {
-    console.log(bundle);
-
     const apiContext = await ScriptContext(bundle.noteId, bundle.allNoteIds, originEntity);
 
     try {
