@@ -19,10 +19,12 @@
                     <button class="btn btn-danger" id="sql-console-execute">Execute <kbd>CTRL+ENTER</kbd></button>
                 </div>
 
-                <table id="sql-console-results" class="table table-striped" style="overflow: scroll; width: 100%;">
-                    <thead></thead>
-                    <tbody></tbody>
-                </table>
+                <div style="width: 100%; overflow: auto;"> <!-- This is necessary for the table to be scrollable -->
+                    <table id="sql-console-results" class="table table-striped">
+                        <thead></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>

@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS "note_revisions_mig" (
                                               hash TEXT DEFAULT "" NOT NULL);
 
 INSERT INTO note_revisions_mig (noteRevisionId, noteId, title, content, isProtected, utcDateModifiedFrom, utcDateModifiedTo, dateModifiedFrom, dateModifiedTo, type, mime, hash)
-SELECT noteRevisionId, noteId, title, content, isProtected, REPLACE(dateModifiedFrom, 'T', ' '), REPLACE(dateModifiedTo, 'T', ' '), REPLACE(REPLACE(dateModifiedFrom, 'T', ' '), 'Z', '+00:00'), REPLACE(REPLACE(dateModifiedTo, 'T', ' '), 'Z', '+00:00'), type, mime, hash FROM note_revisions;
+SELECT noteRevisionId, noteId, title, content, isProtected, REPLACE(dateModifiedFrom, 'T', ' '), REPLACE(dateModifiedTo, 'T', ' '), REPLACE(REPLACE(dateModifiedFrom, 'T', ' '), 'Z', '+0000'), REPLACE(REPLACE(dateModifiedTo, 'T', ' '), 'Z', '+0000'), type, mime, hash FROM note_revisions;
 
 DROP TABLE note_revisions;
 ALTER TABLE note_revisions_mig RENAME TO note_revisions;
@@ -192,7 +192,7 @@ CREATE TABLE IF NOT EXISTS "notes_mig" (
 );
 
 INSERT INTO notes_mig (noteId, title, isProtected, type, mime, hash, isDeleted, dateCreated, dateModified, utcDateCreated, utcDateModified)
-  SELECT noteId, title, isProtected, type, mime, hash, isDeleted, REPLACE(REPLACE(dateCreated, 'T', ' '), 'Z', '+00:00'), REPLACE(REPLACE(dateModified, 'T', ' '), 'Z', '+00:00'), REPLACE(dateCreated, 'T', ' '), REPLACE(dateModified, 'T', ' ') FROM notes;
+  SELECT noteId, title, isProtected, type, mime, hash, isDeleted, REPLACE(REPLACE(dateCreated, 'T', ' '), 'Z', '+0000'), REPLACE(REPLACE(dateModified, 'T', ' '), 'Z', '+0000'), REPLACE(dateCreated, 'T', ' '), REPLACE(dateModified, 'T', ' ') FROM notes;
 
 DROP TABLE notes;
 ALTER TABLE notes_mig RENAME TO notes;

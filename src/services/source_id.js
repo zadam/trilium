@@ -8,7 +8,7 @@ const cls = require('./cls');
 async function saveSourceId(sourceId) {
     await sql.insert("source_ids", {
         sourceId: sourceId,
-        utcDateCreated: dateUtils.nowDate()
+        utcDateCreated: dateUtils.utcNowDateTime()
     });
 
     await refreshSourceIds();

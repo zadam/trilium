@@ -12,7 +12,7 @@ async function addNoteEvent(noteId, comment) {
         eventId: utils.newEntityId(),
         noteId : noteId,
         comment: comment,
-        utcDateCreated: dateUtils.nowDate()
+        utcDateCreated: dateUtils.utcNowDateTime()
     });
 
     log.info("Event log for " + noteId + ": " + comment);

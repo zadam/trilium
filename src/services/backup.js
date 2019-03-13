@@ -24,7 +24,7 @@ async function periodBackup(optionName, fileName, periodInSeconds) {
     if (now.getTime() - lastDailyBackupDate.getTime() > periodInSeconds * 1000) {
         await backupNow(fileName);
 
-        await optionService.setOption(optionName, dateUtils.nowDate());
+        await optionService.setOption(optionName, dateUtils.utcNowDateTime());
     }
 }
 

@@ -48,7 +48,7 @@ async function addEntitySync(entityName, entityId, sourceId) {
     await sql.replace("sync", {
         entityName: entityName,
         entityId: entityId,
-        utcSyncDate: dateUtils.nowDate(),
+        utcSyncDate: dateUtils.utcNowDateTime(),
         sourceId: sourceId || cls.getSourceId() || sourceIdService.getCurrentSourceId()
     });
 }
@@ -78,7 +78,7 @@ async function fillSyncRows(entityName, entityKey, condition = '') {
                 entityName: entityName,
                 entityId: entityId,
                 sourceId: "SYNC_FILL",
-                utcSyncDate: dateUtils.nowDate()
+                utcSyncDate: dateUtils.utcNowDateTime()
             });
         }
     }

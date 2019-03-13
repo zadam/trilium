@@ -91,7 +91,7 @@ app.on('ready', async () => {
         const dateNoteService = require('./src/services/date_notes');
         const dateUtils = require('./src/services/date_utils');
 
-        const parentNote = await dateNoteService.getDateNote(dateUtils.nowLocalDate());
+        const parentNote = await dateNoteService.getDateNote(dateUtils.localNowDate());
 
         // window may be hidden / not in focus
         mainWindow.focus();

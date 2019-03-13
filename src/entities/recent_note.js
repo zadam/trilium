@@ -24,7 +24,7 @@ class RecentNote extends Entity {
         }
 
         if (!this.utcDateCreated) {
-            this.utcDateCreated = dateUtils.nowDate();
+            this.utcDateCreated = dateUtils.utcNowDateTime();
         }
 
         super.beforeSaving();

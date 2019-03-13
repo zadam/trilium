@@ -79,7 +79,7 @@ async function login() {
 }
 
 async function doLogin() {
-    const timestamp = dateUtils.nowDate();
+    const timestamp = dateUtils.utcNowDateTime();
 
     const documentSecret = await optionService.getOption('documentSecret');
     const hash = utils.hmac(documentSecret, timestamp);

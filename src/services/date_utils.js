@@ -1,8 +1,14 @@
-function nowDate() {
-    return dateStr(new Date());
+const dayjs = require('dayjs');
+
+function utcNowDateTime() {
+    return utcDateStr(new Date());
 }
 
-function nowLocalDate() {
+function localNowDateTime() {
+    return dayjs().format('YYYY-MM-DD HH:mm:ss.SSSZZ')
+}
+
+function localNowDate() {
     const date = new Date();
 
     return date.getFullYear() + "-" + pad(date.getMonth() + 1) + "-" + pad(date.getDate());
@@ -12,8 +18,8 @@ function pad(num) {
     return num <= 9 ? `0${num}` : `${num}`;
 }
 
-function dateStr(date) {
-    return date.toISOString();
+function utcDateStr(date) {
+    return date.toISOString().replace('T', ' ');
 }
 
 /**
@@ -47,9 +53,10 @@ function getDateTimeForFile() {
 }
 
 module.exports = {
-    nowDate,
-    nowLocalDate,
-    dateStr,
+    utcNowDateTime,
+    localNowDateTime,
+    localNowDate,
+    utcDateStr,
     parseDate,
     parseDateTime,
     parseLocalDate,

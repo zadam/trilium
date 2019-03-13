@@ -144,7 +144,7 @@ async function getWeekNote(dateStr, options = {}) {
 
     const dateObj = getStartOfTheWeek(dateUtils.parseLocalDate(dateStr), startOfTheWeek);
 
-    dateStr = dateUtils.dateStr(dateObj);
+    dateStr = dateUtils.utcDateStr(dateObj);
 
     return getDateNote(dateStr);
 }

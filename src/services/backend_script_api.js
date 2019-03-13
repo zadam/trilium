@@ -35,8 +35,8 @@ function BackendScriptApi(currentNote, apiParams) {
 
     this.utils = {
         unescapeHtml: utils.unescapeHtml,
-        isoDateTimeStr: dateUtils.dateStr,
-        isoDateStr: date => dateUtils.dateStr(date).substr(0, 10)
+        isoDateTimeStr: dateUtils.utcDateStr,
+        isoDateStr: date => dateUtils.utcDateStr(date).substr(0, 10)
     };
 
     /**

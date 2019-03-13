@@ -64,7 +64,8 @@ async function migrate() {
                     throw new Error("Unknown migration type " + mig.type);
                 }
 
-                await optionService.setOption("dbVersion", mig.dbVersion);
+                // not using repository because of changed utcDateModified column in migration 129
+                await sql.execute(`UPDATE options SET value = ? WHERE name = ?`, [mig.dbVersion, "dbVersion"]);
             });
 
             log.info("Migration to version " + mig.dbVersion + " has been successful.");

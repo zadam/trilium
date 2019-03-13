@@ -50,13 +50,13 @@ class Branch extends Entity {
         }
 
         if (!this.utcDateCreated) {
-            this.utcDateCreated = dateUtils.nowDate();
+            this.utcDateCreated = dateUtils.utcNowDateTime();
         }
 
         super.beforeSaving();
 
         if (this.isChanged) {
-            this.utcDateModified = dateUtils.nowDate();
+            this.utcDateModified = dateUtils.utcNowDateTime();
         }
     }
 
