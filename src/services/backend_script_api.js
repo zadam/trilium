@@ -9,6 +9,7 @@ const treeService = require('./tree');
 const config = require('./config');
 const repository = require('./repository');
 const axios = require('axios');
+const dayjs = require('dayjs');
 const cloningService = require('./cloning');
 const messagingService = require('./messaging');
 const appInfo = require('./app_info');
@@ -32,11 +33,10 @@ function BackendScriptApi(currentNote, apiParams) {
     }
 
     this.axios = axios;
+    this.dayjs = dayjs;
 
     this.utils = {
-        unescapeHtml: utils.unescapeHtml,
-        isoDateTimeStr: dateUtils.utcDateStr,
-        isoDateStr: date => dateUtils.utcDateStr(date).substr(0, 10)
+        unescapeHtml: utils.unescapeHtml
     };
 
     /**

@@ -28,7 +28,7 @@
 
 <header>
     
-        <h2><span class="attribs"><span class="type-signature"></span></span>Branch<span class="signature">(branchId, noteId, parentNoteId, notePosition, prefix, isExpanded, isDeleted, dateModified, dateCreated)</span><span class="type-signature"></span></h2>
+        <h2><span class="attribs"><span class="type-signature"></span></span>Branch<span class="signature">(branchId, noteId, parentNoteId, notePosition, prefix, isExpanded, isDeleted, utcDateModified, utcDateCreated)</span><span class="type-signature"></span></h2>
         
             <div class="class-description">Branch represents note's placement in the tree - it's essentially pair of noteId and parentNoteId.
 Each note can have multiple (at least one) branches, meaning it can be placed into multiple places in the tree.</div>
@@ -46,7 +46,7 @@ Each note can have multiple (at least one) branches, meaning it can be placed in
     
 
     
-    <h4 class="name" id="Branch"><span class="type-signature"></span>new Branch<span class="signature">(branchId, noteId, parentNoteId, notePosition, prefix, isExpanded, isDeleted, dateModified, dateCreated)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="Branch"><span class="type-signature"></span>new Branch<span class="signature">(branchId, noteId, parentNoteId, notePosition, prefix, isExpanded, isDeleted, utcDateModified, utcDateCreated)</span><span class="type-signature"></span></h4>
     
 
     
@@ -247,7 +247,7 @@ Each note can have multiple (at least one) branches, meaning it can be placed in
 
         <tr>
             
-                <td class="name"><code>dateModified</code></td>
+                <td class="name"><code>utcDateModified</code></td>
             
 
             <td class="type">
@@ -270,7 +270,7 @@ Each note can have multiple (at least one) branches, meaning it can be placed in
 
         <tr>
             
-                <td class="name"><code>dateCreated</code></td>
+                <td class="name"><code>utcDateCreated</code></td>
             
 
             <td class="type">

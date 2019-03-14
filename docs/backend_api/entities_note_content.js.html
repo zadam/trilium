@@ -32,6 +32,7 @@ const Entity = require('./entity');
 const protectedSessionService = require('../services/protected_session');
 const repository = require('../services/repository');
 const dateUtils = require('../services/date_utils');
+const noteFulltextService = require('../services/note_fulltext');
 
 /**
  * This represents a Note which is a central object in the Trilium Notes project.
@@ -40,8 +41,8 @@ const dateUtils = require('../services/date_utils');
  * @property {string} noteId - reference to owning note
  * @property {boolean} isProtected - true if note content is protected
  * @property {blob} content - note content - e.g. HTML text for text notes, file payload for files
- * @property {string} dateCreated
- * @property {string} dateModified
+ * @property {string} utcDateCreated
+ * @property {string} utcDateModified
  *
  * @extends Entity
  */
@@ -93,14 +94,14 @@ class NoteContent extends Entity {
     }
 
     beforeSaving() {
-        if (!this.dateCreated) {
-            this.dateCreated = dateUtils.nowDate();
+        if (!this.utcDateCreated) {
+            this.utcDateCreated = dateUtils.utcNowDateTime();
         }
 
         super.beforeSaving();
 
         if (this.isChanged) {
-            this.dateModified = dateUtils.nowDate();
+            this.utcDateModified = dateUtils.utcNowDateTime();
         }
     }
 
@@ -118,6 +119,10 @@ class NoteContent extends Entity {
 
         delete pojo.isContentAvailable;
         delete pojo.contentCipherText;
+    }
+
+    async afterSaving() {
+        noteFulltextService.triggerNoteFulltextUpdate(this.noteId);
     }
 }
 

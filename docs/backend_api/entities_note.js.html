@@ -35,6 +35,7 @@ const protectedSessionService = require('../services/protected_session');
 const repository = require('../services/repository');
 const sql = require('../services/sql');
 const dateUtils = require('../services/date_utils');
+const noteFulltextService = require('../services/note_fulltext');
 
 const LABEL = 'label';
 const LABEL_DEFINITION = 'label-definition';
@@ -52,8 +53,10 @@ const STRING_MIME_TYPES = ["application/x-javascript"];
  * @property {string} title - note title
  * @property {boolean} isProtected - true if note is protected
  * @property {boolean} isDeleted - true if note is deleted
- * @property {string} dateCreated
- * @property {string} dateModified
+ * @property {string} dateCreated - local date time (with offset)
+ * @property {string} dateModified - local date time (with offset)
+ * @property {string} utcDateCreated
+ * @property {string} utcDateModified
  *
  * @extends Entity
  */
@@ -688,13 +691,18 @@ class Note extends Entity {
         }
 
         if (!this.dateCreated) {
-            this.dateCreated = dateUtils.nowDate();
+            this.dateCreated = dateUtils.localNowDateTime();
+        }
+
+        if (!this.utcDateCreated) {
+            this.utcDateCreated = dateUtils.utcNowDateTime();
         }
 
         super.beforeSaving();
 
         if (this.isChanged) {
-            this.dateModified = dateUtils.nowDate();
+            this.dateModified = dateUtils.localNowDateTime();
+            this.utcDateModified = dateUtils.utcNowDateTime();
         }
     }
 
@@ -714,6 +722,10 @@ class Note extends Entity {
         delete pojo.__attributeCache;
         delete pojo.titleCipherText;
         delete pojo.noteContent;
+    }
+
+    async afterSaving() {
+        noteFulltextService.triggerNoteFulltextUpdate(this.noteId);
     }
 }
 

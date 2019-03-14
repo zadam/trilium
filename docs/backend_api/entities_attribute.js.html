@@ -44,15 +44,15 @@ const sql = require('../services/sql');
  * @param {int} position
  * @param {boolean} isInheritable
  * @param {boolean} isDeleted
- * @param {string} dateCreated
- * @param {string} dateModified
+ * @param {string} utcDateCreated
+ * @param {string} utcDateModified
  *
  * @extends Entity
  */
 class Attribute extends Entity {
     static get entityName() { return "attributes"; }
     static get primaryKeyName() { return "attributeId"; }
-    static get hashedProperties() { return ["attributeId", "noteId", "type", "name", "value", "isInheritable", "isDeleted", "dateCreated"]; }
+    static get hashedProperties() { return ["attributeId", "noteId", "type", "name", "value", "isInheritable", "isDeleted", "utcDateCreated"]; }
 
     constructor(row) {
         super(row);
@@ -123,14 +123,14 @@ class Attribute extends Entity {
             this.isDeleted = false;
         }
 
-        if (!this.dateCreated) {
-            this.dateCreated = dateUtils.nowDate();
+        if (!this.utcDateCreated) {
+            this.utcDateCreated = dateUtils.utcNowDateTime();
         }
 
         super.beforeSaving();
 
         if (this.isChanged) {
-            this.dateModified = dateUtils.nowDate();
+            this.utcDateModified = dateUtils.utcNowDateTime();
         }
     }
 

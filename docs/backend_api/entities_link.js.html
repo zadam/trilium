@@ -41,15 +41,15 @@ const dateUtils = require('../services/date_utils');
  * @param {string} targetNoteId
  * @param {string} type
  * @param {boolean} isDeleted
- * @param {string} dateModified
- * @param {string} dateCreated
+ * @param {string} utcDateModified
+ * @param {string} utcDateCreated
  *
  * @extends Entity
  */
 class Link extends Entity {
     static get entityName() { return "links"; }
     static get primaryKeyName() { return "linkId"; }
-    static get hashedProperties() { return ["linkId", "noteId", "targetNoteId", "type", "isDeleted", "dateCreated", "dateModified"]; }
+    static get hashedProperties() { return ["linkId", "noteId", "targetNoteId", "type", "isDeleted", "utcDateCreated", "utcDateModified"]; }
 
     async getNote() {
         return await repository.getEntity("SELECT * FROM notes WHERE noteId = ?", [this.noteId]);
@@ -64,14 +64,14 @@ class Link extends Entity {
             this.isDeleted = false;
         }
 
-        if (!this.dateCreated) {
-            this.dateCreated = dateUtils.nowDate();
+        if (!this.utcDateCreated) {
+            this.utcDateCreated = dateUtils.utcNowDateTime();
         }
 
         super.beforeSaving();
 
         if (this.isChanged) {
-            this.dateModified = dateUtils.nowDate();
+            this.utcDateModified = dateUtils.utcNowDateTime();
         }
     }
 }

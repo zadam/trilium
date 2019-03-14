@@ -37,22 +37,22 @@ const dateUtils = require('../services/date_utils');
  * @param {string} branchId
  * @param {string} notePath
  * @param {boolean} isDeleted
- * @param {string} dateModified
+ * @param {string} utcDateModified
  *
  * @extends Entity
  */
 class RecentNote extends Entity {
     static get entityName() { return "recent_notes"; }
     static get primaryKeyName() { return "branchId"; }
-    static get hashedProperties() { return ["branchId", "notePath", "dateCreated", "isDeleted"]; }
+    static get hashedProperties() { return ["branchId", "notePath", "utcDateCreated", "isDeleted"]; }
 
     beforeSaving() {
         if (!this.isDeleted) {
             this.isDeleted = false;
         }
 
-        if (!this.dateCreated) {
-            this.dateCreated = dateUtils.nowDate();
+        if (!this.utcDateCreated) {
+            this.utcDateCreated = dateUtils.utcNowDateTime();
         }
 
         super.beforeSaving();
