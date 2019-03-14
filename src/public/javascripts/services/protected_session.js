@@ -112,13 +112,13 @@ async function enterProtectedSessionOnServer(password) {
 }
 
 async function protectNoteAndSendToServer() {
-    if (noteDetailService.getCurrentNote().isProtected) {
+    if (noteDetailService.getActiveNote().isProtected) {
         return;
     }
 
     await ensureProtectedSession(true, true);
 
-    const note = noteDetailService.getCurrentNote();
+    const note = noteDetailService.getActiveNote();
     note.isProtected = true;
 
     await noteDetailService.saveNote(note);
@@ -129,10 +129,10 @@ async function protectNoteAndSendToServer() {
 }
 
 async function unprotectNoteAndSendToServer() {
-    const currentNote = noteDetailService.getCurrentNote();
+    const activeNote = noteDetailService.getActiveNote();
 
-    if (!currentNote.isProtected) {
-        infoService.showAndLogError(`Note ${currentNote.noteId} is not protected`);
+    if (!activeNote.isProtected) {
+        infoService.showAndLogError(`Note ${activeNote.noteId} is not protected`);
 
         return;
     }
@@ -146,11 +146,11 @@ async function unprotectNoteAndSendToServer() {
         return;
     }
 
-    currentNote.isProtected = false;
+    activeNote.isProtected = false;
 
-    await noteDetailService.saveNote(currentNote);
+    await noteDetailService.saveNote(activeNote);
 
-    treeService.setProtected(currentNote.noteId, currentNote.isProtected);
+    treeService.setProtected(activeNote.noteId, activeNote.isProtected);
 
     noteDetailService.updateNoteView();
 }

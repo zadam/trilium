@@ -31,7 +31,7 @@ async function show() {
 
     $component.show();
 
-    textEditor.setData(noteDetailService.getCurrentNote().noteContent.content);
+    textEditor.setData(noteDetailService.getActiveNote().noteContent.content);
 }
 
 function getContent() {

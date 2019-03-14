@@ -79,7 +79,7 @@ const linkOverlays = [
 ];
 
 function loadMapData() {
-    const currentNote = noteDetailService.getCurrentNote();
+    const activeNote = noteDetailService.getActiveNote();
     mapData = {
         notes: [],
         // it is important to have this exact value here so that initial transform is same as this
@@ -93,9 +93,9 @@ function loadMapData() {
         }
     };
 
-    if (currentNote.noteContent.content) {
+    if (activeNote.noteContent.content) {
         try {
-            mapData = JSON.parse(currentNote.noteContent.content);
+            mapData = JSON.parse(activeNote.noteContent.content);
         } catch (e) {
             console.log("Could not parse content: ", e);
         }
@@ -507,7 +507,7 @@ $createChildNote.click(async () => {
         return;
     }
 
-    const {note} = await server.post(`notes/${noteDetailService.getCurrentNoteId()}/children`, {
+    const {note} = await server.post(`notes/${noteDetailService.getActiveNoteId()}/children`, {
         title,
         target: 'into'
     });

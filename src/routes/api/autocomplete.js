@@ -8,14 +8,14 @@ const optionService = require('../../services/options');
 
 async function getAutocomplete(req) {
     const query = req.query.query;
-    const currentNoteId = req.query.currentNoteId || 'none';
+    const activeNoteId = req.query.activeNoteId || 'none';
 
     let results;
 
     const timestampStarted = Date.now();
 
     if (query.trim().length === 0) {
-        results = await getRecentNotes(currentNoteId);
+        results = await getRecentNotes(activeNoteId);
     }
     else {
         results = await noteCacheService.findNotes(query);
@@ -30,7 +30,7 @@ async function getAutocomplete(req) {
     return results;
 }
 
-async function getRecentNotes(currentNoteId) {
+async function getRecentNotes(activeNoteId) {
     let extraCondition = '';
 
     const hoistedNoteId = await optionService.getOption('hoistedNoteId');
@@ -51,7 +51,7 @@ async function getRecentNotes(currentNoteId) {
         ${extraCondition}
       ORDER BY 
         utcDateCreated DESC
-      LIMIT 200`, [currentNoteId]);
+      LIMIT 200`, [activeNoteId]);
 
     return recentNotes.map(rn => {
         const title = noteCacheService.getNoteTitleForPath(rn.notePath.split('/'));

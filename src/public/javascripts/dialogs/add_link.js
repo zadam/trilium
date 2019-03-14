@@ -27,7 +27,7 @@ function setLinkType(linkType) {
 async function showDialog() {
     glob.activeDialog = $dialog;
 
-    if (noteDetailService.getCurrentNoteType() === 'text') {
+    if (noteDetailService.getActiveNoteType() === 'text') {
         $linkTypeHtml.prop('disabled', false);
 
         setLinkType('html');
@@ -99,14 +99,14 @@ $form.submit(() => {
         else if (linkType === 'selected-to-current') {
             const prefix = $clonePrefix.val();
 
-            cloningService.cloneNoteTo(noteId, noteDetailService.getCurrentNoteId(), prefix);
+            cloningService.cloneNoteTo(noteId, noteDetailService.getActiveNoteId(), prefix);
 
             $dialog.modal('hide');
         }
         else if (linkType === 'current-to-selected') {
             const prefix = $clonePrefix.val();
 
-            cloningService.cloneNoteTo(noteDetailService.getCurrentNoteId(), noteId, prefix);
+            cloningService.cloneNoteTo(noteDetailService.getActiveNoteId(), noteId, prefix);
 
             $dialog.modal('hide');
         }

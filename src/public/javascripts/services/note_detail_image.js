@@ -15,18 +15,18 @@ const $fileType = $("#image-filetype");
 const $fileSize = $("#image-filesize");
 
 async function show() {
-    const currentNote = noteDetailService.getCurrentNote();
+    const activeNote = noteDetailService.getActiveNote();
 
-    const attributes = await server.get('notes/' + currentNote.noteId + '/attributes');
+    const attributes = await server.get('notes/' + activeNote.noteId + '/attributes');
     const attributeMap = utils.toObject(attributes, l => [l.name, l.value]);
 
     $component.show();
 
     $fileName.text(attributeMap.originalFileName || "?");
     $fileSize.text((attributeMap.fileSize || "?") + " bytes");
-    $fileType.text(currentNote.mime);
+    $fileType.text(activeNote.mime);
 
-    $imageView.prop("src", `api/images/${currentNote.noteId}/${currentNote.title}`);
+    $imageView.prop("src", `api/images/${activeNote.noteId}/${activeNote.title}`);
 }
 
 $imageDownloadButton.click(() => utils.download(getFileUrl()));
@@ -62,7 +62,7 @@ $copyToClipboardButton.click(() => {
 
 function getFileUrl() {
     // electron needs absolute URL so we extract current host, port, protocol
-    return utils.getHost() + "/api/notes/" + noteDetailService.getCurrentNoteId() + "/download";
+    return utils.getHost() + "/api/notes/" + noteDetailService.getActiveNoteId() + "/download";
 }
 
 export default {

@@ -32,7 +32,7 @@ const $scriptArea = $("#note-detail-script-area");
 const $savedIndicator = $("#saved-indicator");
 const $body = $("body");
 
-let currentNote = null;
+let activeNote = null;
 
 let noteChangeDisabled = false;
 
@@ -52,7 +52,7 @@ const components = {
 
 function getComponent(type) {
     if (!type) {
-        type = getCurrentNote().type;
+        type = getActiveNote().type;
     }
 
     if (components[type]) {
@@ -63,18 +63,18 @@ function getComponent(type) {
     }
 }
 
-function getCurrentNote() {
-    return currentNote;
+function getActiveNote() {
+    return activeNote;
 }
 
-function getCurrentNoteId() {
-    return currentNote ? currentNote.noteId : null;
+function getActiveNoteId() {
+    return activeNote ? activeNote.noteId : null;
 }
 
-function getCurrentNoteType() {
-    const currentNote = getCurrentNote();
+function getActiveNoteType() {
+    const activeNote = getActiveNote();
 
-    return currentNote ? currentNote.type : null;
+    return activeNote ? activeNote.type : null;
 }
 
 function noteChanged() {
@@ -90,18 +90,18 @@ function noteChanged() {
 async function reload() {
     // no saving here
 
-    await loadNoteDetail(getCurrentNoteId());
+    await loadNoteDetail(getActiveNoteId());
 }
 
 async function switchToNote(noteId) {
-    if (getCurrentNoteId() !== noteId) {
+    if (getActiveNoteId() !== noteId) {
         await saveNoteIfChanged();
 
         await loadNoteDetail(noteId);
     }
 }
 
-function getCurrentNoteContent() {
+function getActiveNoteContent() {
     return getComponent().getContent();
 }
 
@@ -110,7 +110,7 @@ function onNoteChange(func) {
 }
 
 async function saveNote() {
-    const note = getCurrentNote();
+    const note = getActiveNote();
 
     if (note.isProtected && !protectedSessionHolder.isProtectedSessionAvailable()) {
         return;
@@ -119,7 +119,7 @@ async function saveNote() {
     note.title = $noteTitle.val();
 
     if (note.noteContent != null) { // might be null for file/image
-        note.noteContent.content = getCurrentNoteContent(note);
+        note.noteContent.content = getActiveNoteContent(note);
     }
 
     // it's important to set the flag back to false immediatelly after retrieving title and content
@@ -137,7 +137,7 @@ async function saveNote() {
     $savedIndicator.fadeIn();
 
     // run async
-    bundleService.executeRelationBundles(getCurrentNote(), 'runOnNoteChange');
+    bundleService.executeRelationBundles(getActiveNote(), 'runOnNoteChange');
 }
 
 async function saveNoteIfChanged() {
@@ -150,11 +150,11 @@ async function saveNoteIfChanged() {
 }
 
 function updateNoteView() {
-    $noteDetailWrapper.toggleClass("protected", currentNote.isProtected);
-    $protectButton.toggleClass("active", currentNote.isProtected);
-    $protectButton.prop("disabled", currentNote.isProtected);
-    $unprotectButton.toggleClass("active", !currentNote.isProtected);
-    $unprotectButton.prop("disabled", !currentNote.isProtected || !protectedSessionHolder.isProtectedSessionAvailable());
+    $noteDetailWrapper.toggleClass("protected", activeNote.isProtected);
+    $protectButton.toggleClass("active", activeNote.isProtected);
+    $protectButton.prop("disabled", activeNote.isProtected);
+    $unprotectButton.toggleClass("active", !activeNote.isProtected);
+    $unprotectButton.prop("disabled", !activeNote.isProtected || !protectedSessionHolder.isProtectedSessionAvailable());
 
     for (const clazz of Array.from($body[0].classList)) { // create copy to safely iterate over while removing classes
         if (clazz.startsWith("type-") || clazz.startsWith("mime-")) {
@@ -162,14 +162,14 @@ function updateNoteView() {
         }
     }
 
-    $body.addClass(utils.getNoteTypeClass(currentNote.type));
-    $body.addClass(utils.getMimeTypeClass(currentNote.mime));
+    $body.addClass(utils.getNoteTypeClass(activeNote.type));
+    $body.addClass(utils.getMimeTypeClass(activeNote.mime));
 }
 
 async function handleProtectedSession() {
-    const newSessionCreated = await protectedSessionService.ensureProtectedSession(currentNote.isProtected, false);
+    const newSessionCreated = await protectedSessionService.ensureProtectedSession(activeNote.isProtected, false);
 
-    if (currentNote.isProtected) {
+    if (activeNote.isProtected) {
         protectedSessionHolder.touchProtectedSession();
     }
 
@@ -192,8 +192,8 @@ async function loadNoteDetail(noteId) {
         return;
     }
 
-    // only now that we're in sync with tree active node we will switch currentNote
-    currentNote = loadedNote;
+    // only now that we're in sync with tree active node we will switch activeNote
+    activeNote = loadedNote;
 
     if (utils.isDesktop()) {
         // needs to happen after loading the note itself because it references current noteId
@@ -211,15 +211,15 @@ async function loadNoteDetail(noteId) {
     noteChangeDisabled = true;
 
     try {
-        $noteTitle.val(currentNote.title);
+        $noteTitle.val(activeNote.title);
 
         if (utils.isDesktop()) {
-            noteTypeService.setNoteType(currentNote.type);
-            noteTypeService.setNoteMime(currentNote.mime);
+            noteTypeService.setNoteType(activeNote.type);
+            noteTypeService.setNoteMime(activeNote.mime);
         }
 
         for (const componentType in components) {
-            if (componentType !== currentNote.type) {
+            if (componentType !== activeNote.type) {
                 components[componentType].cleanup();
             }
         }
@@ -234,7 +234,7 @@ async function loadNoteDetail(noteId) {
 
         $noteTitle.removeAttr("readonly"); // this can be set by protected session service
 
-        await getComponent(currentNote.type).show();
+        await getComponent(activeNote.type).show();
     }
     finally {
         noteChangeDisabled = false;
@@ -243,13 +243,13 @@ async function loadNoteDetail(noteId) {
     treeService.setBranchBackgroundBasedOnProtectedStatus(noteId);
 
     // after loading new note make sure editor is scrolled to the top
-    getComponent(currentNote.type).scrollToTop();
+    getComponent(activeNote.type).scrollToTop();
 
     fireDetailLoaded();
 
     $scriptArea.empty();
 
-    await bundleService.executeRelationBundles(getCurrentNote(), 'runOnNoteView');
+    await bundleService.executeRelationBundles(getActiveNote(), 'runOnNoteView');
 
     if (utils.isDesktop()) {
         await attributeService.showAttributes();
@@ -259,7 +259,7 @@ async function loadNoteDetail(noteId) {
 }
 
 async function showChildrenOverview() {
-    const note = getCurrentNote();
+    const note = getActiveNote();
     const attributes = await attributeService.getAttributes();
     const hideChildrenOverview = attributes.some(attr => attr.type === 'label' && attr.name === 'hideChildrenOverview')
         || note.type === 'relation-map'
@@ -273,7 +273,7 @@ async function showChildrenOverview() {
 
     $childrenOverview.empty();
 
-    const notePath = treeService.getCurrentNotePath();
+    const notePath = treeService.getActiveNotePath();
 
     for (const childBranch of await note.getChildBranches()) {
         const link = $('<a>', {
@@ -317,7 +317,7 @@ function addDetailLoadedListener(noteId, callback) {
 
 function fireDetailLoaded() {
     for (const {noteId, callback} of detailLoadedListeners) {
-        if (noteId === currentNote.noteId) {
+        if (noteId === activeNote.noteId) {
             callback();
         }
     }
@@ -327,7 +327,7 @@ function fireDetailLoaded() {
 }
 
 messagingService.subscribeToSyncMessages(syncData => {
-    if (syncData.some(sync => sync.entityName === 'notes' && sync.entityId === getCurrentNoteId())) {
+    if (syncData.some(sync => sync.entityName === 'notes' && sync.entityId === getActiveNoteId())) {
         infoService.showMessage('Reloading note because of background changes');
 
         reload();
@@ -339,7 +339,7 @@ $noteDetailWrapper.on("dragover", e => e.preventDefault());
 $noteDetailWrapper.on("dragleave", e => e.preventDefault());
 
 $noteDetailWrapper.on("drop", e => {
-    importDialog.uploadFiles(getCurrentNoteId(), e.originalEvent.dataTransfer.files, {
+    importDialog.uploadFiles(getActiveNoteId(), e.originalEvent.dataTransfer.files, {
         safeImport: true,
         shrinkImages: true,
         textImportedAsText: true,
@@ -354,7 +354,7 @@ $(document).ready(() => {
 
         const title = $noteTitle.val();
 
-        treeService.setNoteTitle(getCurrentNoteId(), title);
+        treeService.setNoteTitle(getActiveNoteId(), title);
     });
 
     noteDetailText.focus();
@@ -371,10 +371,10 @@ export default {
     switchToNote,
     updateNoteView,
     loadNote,
-    getCurrentNote,
-    getCurrentNoteContent,
-    getCurrentNoteType,
-    getCurrentNoteId,
+    getActiveNote,
+    getActiveNoteContent,
+    getActiveNoteType,
+    getActiveNoteId,
     focusOnTitle,
     focusAndSelectTitle,
     saveNote,

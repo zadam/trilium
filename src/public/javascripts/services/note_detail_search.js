@@ -9,10 +9,10 @@ const $refreshButton = $('#note-detail-search-refresh-results-button');
 function show() {
     $component.show();
 
-    console.log(noteDetailService.getCurrentNote());
+    console.log(noteDetailService.getActiveNote());
 
     try {
-        const json = JSON.parse(noteDetailService.getCurrentNote().noteContent.content);
+        const json = JSON.parse(noteDetailService.getActiveNote().noteContent.content);
 
         $searchString.val(json.searchString);
     }

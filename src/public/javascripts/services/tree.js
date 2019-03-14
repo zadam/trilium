@@ -39,7 +39,7 @@ function getCurrentNode() {
     return $tree.fancytree("getActiveNode");
 }
 
-function getCurrentNotePath() {
+function getActiveNotePath() {
     const node = getCurrentNode();
 
     return treeUtils.getNotePath(node);
@@ -330,7 +330,7 @@ async function setExpandedToServer(branchId, isExpanded) {
 function addRecentNote(branchId, notePath) {
     setTimeout(async () => {
         // we include the note into recent list only if the user stayed on the note at least 5 seconds
-        if (notePath && notePath === getCurrentNotePath()) {
+        if (notePath && notePath === getActiveNotePath()) {
             await server.post('recent-notes', { branchId, notePath });
         }
     }, 1500);
@@ -339,12 +339,12 @@ function addRecentNote(branchId, notePath) {
 function setCurrentNotePathToHash(node) {
     utils.assertArguments(node);
 
-    const currentNotePath = treeUtils.getNotePath(node);
+    const activeNotePath = treeUtils.getNotePath(node);
     const currentBranchId = node.data.branchId;
 
-    document.location.hash = currentNotePath;
+    document.location.hash = activeNotePath;
 
-    addRecentNote(currentBranchId, currentNotePath);
+    addRecentNote(currentBranchId, activeNotePath);
 }
 
 function getSelectedNodes(stopOnParents = false) {
@@ -563,7 +563,7 @@ async function createNote(node, parentNoteId, target, isProtected, saveSelection
         isProtected = false;
     }
 
-    if (noteDetailService.getCurrentNoteType() !== 'text') {
+    if (noteDetailService.getActiveNoteType() !== 'text') {
         saveSelection = false;
     }
     else {
@@ -714,7 +714,7 @@ $(window).bind('hashchange', function() {
     if (isNotePathInAddress()) {
         const notePath = getHashValueFromAddress();
 
-        if (notePath !== '-' && getCurrentNotePath() !== notePath) {
+        if (notePath !== '-' && getActiveNotePath() !== notePath) {
             console.debug("Switching to " + notePath + " because of hash change");
 
             activateNote(notePath);
@@ -738,7 +738,7 @@ export default {
     activateNote,
     getFocusedNode,
     getCurrentNode,
-    getCurrentNotePath,
+    getActiveNotePath,
     setCurrentNotePathToHash,
     setNoteTitle,
     setPrefix,

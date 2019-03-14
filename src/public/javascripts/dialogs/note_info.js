@@ -13,13 +13,13 @@ function showDialog() {
 
     $dialog.modal();
 
-    const currentNote = noteDetailService.getCurrentNote();
+    const activeNote = noteDetailService.getActiveNote();
 
-    $noteId.text(currentNote.noteId);
-    $utcDateCreated.text(currentNote.utcDateCreated);
-    $utcDateModified.text(currentNote.utcDateModified);
-    $type.text(currentNote.type);
-    $mime.text(currentNote.mime);
+    $noteId.text(activeNote.noteId);
+    $utcDateCreated.text(activeNote.utcDateCreated);
+    $utcDateModified.text(activeNote.utcDateModified);
+    $type.text(activeNote.type);
+    $mime.text(activeNote.mime);
 }
 
 $okButton.click(() => $dialog.modal('hide'));

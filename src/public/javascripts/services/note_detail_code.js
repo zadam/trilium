@@ -44,14 +44,14 @@ async function show() {
 
     $component.show();
 
-    const currentNote = noteDetailService.getCurrentNote();
+    const activeNote = noteDetailService.getActiveNote();
 
     // this needs to happen after the element is shown, otherwise the editor won't be refreshed
     // CodeMirror breaks pretty badly on null so even though it shouldn't happen (guarded by consistency check)
     // we provide fallback
-    codeEditor.setValue(currentNote.noteContent.content || "");
+    codeEditor.setValue(activeNote.noteContent.content || "");
 
-    const info = CodeMirror.findModeByMIME(currentNote.mime);
+    const info = CodeMirror.findModeByMIME(activeNote.mime);
 
     if (info) {
         codeEditor.setOption("mode", info.mime);
@@ -71,21 +71,21 @@ function focus() {
 
 async function executeCurrentNote() {
     // ctrl+enter is also used elsewhere so make sure we're running only when appropriate
-    if (noteDetailService.getCurrentNoteType() !== 'code') {
+    if (noteDetailService.getActiveNoteType() !== 'code') {
         return;
     }
 
     // make sure note is saved so we load latest changes
     await noteDetailService.saveNoteIfChanged();
 
-    const currentNote = noteDetailService.getCurrentNote();
+    const activeNote = noteDetailService.getActiveNote();
 
-    if (currentNote.mime.endsWith("env=frontend")) {
-        await bundleService.getAndExecuteBundle(noteDetailService.getCurrentNoteId());
+    if (activeNote.mime.endsWith("env=frontend")) {
+        await bundleService.getAndExecuteBundle(noteDetailService.getActiveNoteId());
     }
 
-    if (currentNote.mime.endsWith("env=backend")) {
-        await server.post('script/run/' + noteDetailService.getCurrentNoteId());
+    if (activeNote.mime.endsWith("env=backend")) {
+        await server.post('script/run/' + noteDetailService.getActiveNoteId());
     }
 
     infoService.showMessage("Note executed");

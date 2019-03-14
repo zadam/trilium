@@ -15,21 +15,21 @@ const $downloadButton = $("#file-download");
 const $openButton = $("#file-open");
 
 async function show() {
-    const currentNote = noteDetailService.getCurrentNote();
+    const activeNote = noteDetailService.getActiveNote();
 
-    const attributes = await server.get('notes/' + currentNote.noteId + '/attributes');
+    const attributes = await server.get('notes/' + activeNote.noteId + '/attributes');
     const attributeMap = utils.toObject(attributes, l => [l.name, l.value]);
 
     $component.show();
 
-    $fileNoteId.text(currentNote.noteId);
+    $fileNoteId.text(activeNote.noteId);
     $fileName.text(attributeMap.originalFileName || "?");
     $fileSize.text((attributeMap.fileSize || "?") + " bytes");
-    $fileType.text(currentNote.mime);
+    $fileType.text(activeNote.mime);
 
-    if (currentNote.noteContent && currentNote.noteContent.content) {
+    if (activeNote.noteContent && activeNote.noteContent.content) {
         $previewRow.show();
-        $previewContent.text(currentNote.noteContent.content);
+        $previewContent.text(activeNote.noteContent.content);
     }
     else {
         $previewRow.hide();
@@ -51,7 +51,7 @@ $openButton.click(() => {
 
 function getFileUrl() {
     // electron needs absolute URL so we extract current host, port, protocol
-    return utils.getHost() + "/api/notes/" + noteDetailService.getCurrentNoteId();
+    return utils.getHost() + "/api/notes/" + noteDetailService.getActiveNoteId();
 }
 
 export default {

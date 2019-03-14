@@ -97,7 +97,7 @@ function NoteTypeModel() {
     };
 
     async function save() {
-        const note = noteDetailService.getCurrentNote();
+        const note = noteDetailService.getActiveNote();
 
         await server.put('notes/' + note.noteId
             + '/type/' + encodeURIComponent(self.type())
@@ -112,7 +112,7 @@ function NoteTypeModel() {
     }
 
     function confirmChangeIfContent() {
-        if (!noteDetailService.getCurrentNoteContent()) {
+        if (!noteDetailService.getActiveNoteContent()) {
             return true;
         }
 

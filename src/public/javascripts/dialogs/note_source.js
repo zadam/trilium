@@ -8,7 +8,7 @@ function showDialog() {
 
     $dialog.modal();
 
-    const noteText = noteDetailService.getCurrentNote().noteContent.content;
+    const noteText = noteDetailService.getActiveNote().noteContent.content;
 
     $noteSource.text(formatHtml(noteText));
 }

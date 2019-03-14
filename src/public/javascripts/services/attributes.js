@@ -18,7 +18,7 @@ function invalidateAttributes() {
 }
 
 function reloadAttributes() {
-    attributePromise = server.get('notes/' + noteDetailService.getCurrentNoteId() + '/attributes');
+    attributePromise = server.get('notes/' + noteDetailService.getActiveNoteId() + '/attributes');
 }
 
 async function refreshAttributes() {
@@ -40,7 +40,7 @@ async function showAttributes() {
     $attributeList.hide();
     $attributeListInner.empty();
 
-    const note = noteDetailService.getCurrentNote();
+    const note = noteDetailService.getActiveNote();
 
     const attributes = await attributePromise;
 
@@ -283,7 +283,7 @@ async function promotedAttributeChanged(event) {
         value = $attr.val();
     }
 
-    const result = await server.put("notes/" + noteDetailService.getCurrentNoteId() + "/attribute", {
+    const result = await server.put("notes/" + noteDetailService.getActiveNoteId() + "/attribute", {
         attributeId: $attr.prop("attribute-id"),
         type: $attr.prop("attribute-type"),
         name: $attr.prop("attribute-name"),

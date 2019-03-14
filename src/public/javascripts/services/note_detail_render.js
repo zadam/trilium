@@ -26,7 +26,7 @@ async function render() {
 
         $noteDetailRenderContent.append(bundle.html);
 
-        await bundleService.executeBundle(bundle, noteDetailService.getCurrentNote());
+        await bundleService.executeBundle(bundle, noteDetailService.getActiveNote());
     }
 }
 

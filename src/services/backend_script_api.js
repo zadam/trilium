@@ -22,7 +22,7 @@ const appInfo = require('./app_info');
 function BackendScriptApi(currentNote, apiParams) {
     /** @property {Note} note where script started executing */
     this.startNote = apiParams.startNote;
-    /** @property {Note} note where script is currently executing */
+    /** @property {Note} note where script is currently executing. Don't mix this up with concept of active note */
     this.currentNote = currentNote;
     /** @property {Entity} entity whose event triggered this executions */
     this.originEntity = apiParams.originEntity;
