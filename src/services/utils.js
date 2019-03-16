@@ -50,7 +50,17 @@ function isEmptyOrWhitespace(str) {
 
 function sanitizeSql(str) {
     // should be improved or usage eliminated
-    return str.replace(/'/g, "\\'");
+    return str.replace(/'/g, "''");
+}
+
+function prepareSqlForLike(prefix, str, suffix) {
+    const value = str
+        .replace(/\\/g, "\\\\")
+        .replace(/'/g, "''")
+        .replace(/_/g, "\\_")
+        .replace(/%/g, "\\%");
+
+    return `'${prefix}${value}${suffix}' ESCAPE '\\'`;
 }
 
 async function stopWatch(what, func) {
@@ -156,6 +166,7 @@ module.exports = {
     hash,
     isEmptyOrWhitespace,
     sanitizeSql,
+    prepareSqlForLike,
     stopWatch,
     escapeHtml,
     unescapeHtml,

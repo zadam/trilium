@@ -10,7 +10,7 @@ function calculateSmartValue(v) {
     }
 
     const keyword = match[1].toUpperCase();
-    const num = match[2] ? parseInt(match[2].replace(" ", "")) : 0; // can contain spaces between sign and digits
+    const num = match[2] ? parseInt(match[2].replace(/ /g, "")) : 0; // can contain spaces between sign and digits
 
     let format, date;
 
@@ -23,8 +23,8 @@ function calculateSmartValue(v) {
         format = "YYYY-MM-DD";
     }
     else if (keyword === 'WEEK') {
-        // FIXME
-        //date = dayjs().add(num, 'day');
+        // FIXME: this will always use sunday as start of the week
+        date = dayjs().startOf('week').add(7 * num, 'day');
         format = "YYYY-MM-DD";
     }
     else if (keyword === 'MONTH') {
@@ -43,6 +43,18 @@ function calculateSmartValue(v) {
 }
 
 module.exports = function (searchText) {
+    // if the string doesn't start with attribute then we consider it as just standard full text search
+    if (!searchText.trim().startsWith("@")) {
+        return [
+            {
+                relation: 'and',
+                name: 'text',
+                operator: '=',
+                value: searchText
+            }
+        ]
+    }
+
     const filters = [];
 
     function trimQuotes(str) { return str.startsWith('"') ? str.substr(1, str.length - 2) : str; }
@@ -66,8 +78,6 @@ module.exports = function (searchText) {
             )
         });
     }
-
-    console.log(filters);
 
     return filters;
 };

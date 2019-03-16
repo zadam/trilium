@@ -2,7 +2,7 @@ const utils = require('./utils');
 
 const VIRTUAL_ATTRIBUTES = ["dateCreated", "dateCreated", "dateModified", "utcDateCreated", "utcDateModified", "isProtected", "title", "content", "type", "mime", "text"];
 
-module.exports = function(filters) {
+module.exports = function(filters, selectedColumns = 'notes.*') {
     // alias => join
     const joins = {
         "notes": null
@@ -54,7 +54,7 @@ module.exports = function(filters) {
     if (orderByFilter) {
         orderBy = orderByFilter.value.split(",").map(prop => {
             const direction = prop.includes("-") ? "DESC" : "ASC";
-            const cleanedProp = prop.trim().replace("-", "");
+            const cleanedProp = prop.trim().replace(/-/g, "");
 
             return getAccessor(cleanedProp) + " " + direction;
         });
@@ -101,17 +101,17 @@ module.exports = function(filters) {
         else if (filter.operator === '*=' || filter.operator === '!*=') {
             where += `${accessor}`
                     + (filter.operator.includes('!') ? ' NOT' : '')
-                    + ` LIKE '%` + filter.value + "'"; // FIXME: escaping
+                    + ` LIKE ` + utils.prepareSqlForLike('%', filter.value, '');
         }
         else if (filter.operator === '=*' || filter.operator === '!=*') {
             where += `${accessor}`
                     + (filter.operator.includes('!') ? ' NOT' : '')
-                    + ` LIKE '` + filter.value + "%'"; // FIXME: escaping
+                    + ` LIKE '` + utils.prepareSqlForLike('', filter.value, '%');
         }
         else if (filter.operator === '*=*' || filter.operator === '!*=*') {
             where += `${accessor}`
                     + (filter.operator.includes('!') ? ' NOT' : '')
-                    + ` LIKE '%` + filter.value + "%'"; // FIXME: escaping
+                    + ` LIKE ` + utils.prepareSqlForLike('%', filter.value, '%');
         }
         else if ([">", ">=", "<", "<="].includes(filter.operator)) {
             let floatParam;
@@ -141,12 +141,13 @@ module.exports = function(filters) {
         orderBy.push("notes.title");
     }
 
-    const query = `SELECT DISTINCT notes.noteId FROM notes
+    const query = `SELECT ${selectedColumns} FROM notes
             ${Object.values(joins).join('\r\n')}
               WHERE
                 notes.isDeleted = 0
                 AND (${where})
-              ORDER BY ` + orderBy.join(", ");
+              GROUP BY notes.noteId
+              ORDER BY ${orderBy.join(", ")}`;
 
     console.log(query);
     console.log(params);

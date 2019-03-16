@@ -1,20 +1,13 @@
 "use strict";
 
-const sql = require('../../services/sql');
-const utils = require('../../services/utils');
 const noteService = require('../../services/notes');
 const noteCacheService = require('../../services/note_cache');
-const parseFilters = require('../../services/parse_filters');
-const buildSearchQuery = require('../../services/build_search_query');
+const searchService = require('../../services/search');
 
 async function searchNotes(req) {
-    const filters = parseFilters(req.params.searchString);
+    const noteIds = await searchService.searchForNoteIds(req.params.searchString);
 
-    const {query, params} = buildSearchQuery(filters);
-
-    const labelFiltersNoteIds = await sql.getColumn(query, params);
-
-    return labelFiltersNoteIds.map(noteCacheService.getNotePath).filter(res => !!res);
+    return noteIds.map(noteCacheService.getNotePath).filter(res => !!res);
 }
 
 async function saveSearchToNote(req) {

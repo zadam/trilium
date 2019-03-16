@@ -55,7 +55,7 @@ function getDesktopFileContent() {
 }
 
 function escapePath(path) {
-    return path.replace(" ", "\\ ");
+    return path.replace(/ /g, "\\ ");
 }
 
 function getExePath() {
