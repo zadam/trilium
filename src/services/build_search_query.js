@@ -1,3 +1,5 @@
+const utils = require('./utils');
+
 const VIRTUAL_ATTRIBUTES = ["dateCreated", "dateCreated", "dateModified", "utcDateCreated", "utcDateModified", "isProtected", "title", "content", "type", "mime", "text"];
 
 module.exports = function(filters) {
@@ -21,10 +23,9 @@ module.exports = function(filters) {
             accessor = `${alias}.value`;
         }
         else if (property === 'content') {
-            const alias = "note_content";
+            const alias = "note_contents";
 
             if (!(alias in joins)) {
-                // FIXME: this will fail if there's more instances of content
                 joins[alias] = `JOIN note_contents ON note_contents.noteId = notes.noteId`;
             }
 
@@ -34,7 +35,6 @@ module.exports = function(filters) {
             const alias = "note_fulltext";
 
             if (!(alias in joins)) {
-                // FIXME: this will fail if there's more instances of content
                 joins[alias] = `JOIN note_fulltext ON note_fulltext.noteId = notes.noteId`;
             }
 
@@ -47,10 +47,27 @@ module.exports = function(filters) {
         return accessor;
     }
 
+    let orderBy = [];
+
+    const orderByFilter = filters.find(filter => filter.name.toLowerCase() === 'orderby');
+
+    if (orderByFilter) {
+        orderBy = orderByFilter.value.split(",").map(prop => {
+            const direction = prop.includes("-") ? "DESC" : "ASC";
+            const cleanedProp = prop.trim().replace("-", "");
+
+            return getAccessor(cleanedProp) + " " + direction;
+        });
+    }
+
     let where = '1';
     const params = [];
 
     for (const filter of filters) {
+        if (filter.name.toLowerCase() === 'orderby') {
+            continue; // orderby is not real filter
+        }
+
         where += " " + filter.relation + " ";
 
         const accessor = getAccessor(filter.name);
@@ -64,8 +81,17 @@ module.exports = function(filters) {
         else if (filter.operator === '=' || filter.operator === '!=') {
             if (filter.name === 'text') {
                 const safeSearchText = utils.sanitizeSql(filter.value);
+                let condition = accessor + ' ' + `MATCH '${safeSearchText}'`;
 
-                where += accessor + ' ' + (filter.operator === '!=' ? 'NOT ' : '') + `MATCH '${safeSearchText}'`;
+                if (filter.operator.includes("!")) {
+                    // not supported!
+                }
+                else if (orderBy.length === 0) {
+                    // if there's a positive full text search and there's no defined order then order by rank
+                    orderBy.push("rank");
+                }
+
+                where += condition;
             }
             else {
                 where += `${accessor} ${filter.operator} ?`;
@@ -110,11 +136,17 @@ module.exports = function(filters) {
         }
     }
 
+    if (orderBy.length === 0) {
+        // if no ordering is given then order at least by note title
+        orderBy.push("notes.title");
+    }
+
     const query = `SELECT DISTINCT notes.noteId FROM notes
             ${Object.values(joins).join('\r\n')}
               WHERE
                 notes.isDeleted = 0
-                AND (${where})`;
+                AND (${where})
+              ORDER BY ` + orderBy.join(", ");
 
     console.log(query);
     console.log(params);
