@@ -1,41 +1,61 @@
 const dayjs = require("dayjs");
 
-const labelRegex = /(\b(and|or)\s+)?@(!?)([\w_-]+|"[^"]+")((=|!=|<|<=|>|>=)([\w_-]+|"[^"]+"))?/i;
-const smartValueRegex = /^(TODAY|NOW)(([+\-])(\d+)([HDMY])){0,1}$/i;
+const filterRegex = /(\b(AND|OR)\s+)?@(!?)([\w_-]+|"[^"]+")((=|!=|<|<=|>|>=|\*=|=\*)([\w_-]+|"[^"]+"))?/ig;
+const smartValueRegex = /^(NOW|TODAY|WEEK|MONTH|YEAR) *([+\-] *\d+)?$/i;
 
 function calculateSmartValue(v) {
-    const normalizedV = v.toUpperCase() + "+0D"; // defaults of sorts
-    const [ , keyword, sign, snum, unit] = /(TODAY|NOW)([+\-])(\d+)([HDMY])/.exec(normalizedV);
-    const num = parseInt(snum);
-
-    if (keyword !== "TODAY" && keyword !== "NOW") {
-        return v;
+    const match = smartValueRegex.exec(v);
+    if (match === null) {
+        return;
     }
 
-    const fullUnit = {
-        TODAY: { D: "days", M: "months", Y: "years" },
-        NOW: { D: "days", M: "minutes", H: "hours" }
-    }[keyword][unit];
+    const keyword = match[1].toUpperCase();
+    const num = match[2] ? parseInt(match[2].replace(" ", "")) : 0; // can contain spaces between sign and digits
 
-    const format = keyword === "TODAY" ? "YYYY-MM-DD" : "YYYY-MM-DDTHH:mm";
-    const date = (sign === "+" ? dayjs().add(num, fullUnit) : dayjs().subtract(num, fullUnit));
+    let format, date;
+
+    if (keyword === 'NOW') {
+        date = dayjs().add(num, 'second');
+        format = "YYYY-MM-DD HH:mm:ss";
+    }
+    else if (keyword === 'TODAY') {
+        date = dayjs().add(num, 'day');
+        format = "YYYY-MM-DD";
+    }
+    else if (keyword === 'WEEK') {
+        // FIXME
+        //date = dayjs().add(num, 'day');
+        format = "YYYY-MM-DD";
+    }
+    else if (keyword === 'MONTH') {
+        date = dayjs().add(num, 'month');
+        format = "YYYY-MM";
+    }
+    else if (keyword === 'YEAR') {
+        date = dayjs().add(num, 'year');
+        format = "YYYY";
+    }
+    else {
+        throw new Error("Unrecognized keyword: " + keyword);
+    }
 
     return date.format(format);
 }
 
-module.exports = function(searchText) {
-    const labelFilters = [];
-    let match = labelRegex.exec(searchText);
+module.exports = function (searchText) {
+    const filters = [];
 
     function trimQuotes(str) { return str.startsWith('"') ? str.substr(1, str.length - 2) : str; }
 
-    while (match != null) {
+    let match;
+
+    while (match = filterRegex.exec(searchText)) {
         const relation = match[2] !== undefined ? match[2].toLowerCase() : 'and';
         const operator = match[3] === '!' ? 'not-exists' : 'exists';
 
         const value = match[7] !== undefined ? trimQuotes(match[7]) : null;
 
-        labelFilters.push({
+        filters.push({
             relation: relation,
             name: trimQuotes(match[4]),
             operator: match[6] !== undefined ? match[6] : operator,
@@ -45,12 +65,9 @@ module.exports = function(searchText) {
                     : value
             )
         });
-
-        // remove labels from further fulltext search
-        searchText = searchText.split(match[0]).join('');
-
-        match = labelRegex.exec(searchText);
     }
 
-    return { labelFilters: labelFilters, searchText };
+    console.log(filters);
+
+    return filters;
 };

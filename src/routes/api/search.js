@@ -8,54 +8,13 @@ const parseFilters = require('../../services/parse_filters');
 const buildSearchQuery = require('../../services/build_search_query');
 
 async function searchNotes(req) {
-    const {labelFilters, searchText} = parseFilters(req.params.searchString);
+    const filters = parseFilters(req.params.searchString);
 
-    let labelFiltersNoteIds = null;
+    const {query, params} = buildSearchQuery(filters);
 
-    if (labelFilters.length > 0) {
-        const {query, params} = buildSearchQuery(labelFilters, searchText);
+    const labelFiltersNoteIds = await sql.getColumn(query, params);
 
-        labelFiltersNoteIds = await sql.getColumn(query, params);
-    }
-
-    let searchTextResults = null;
-
-    if (searchText.trim().length > 0) {
-        searchTextResults = await noteCacheService.findNotes(searchText);
-
-        let fullTextNoteIds = await getFullTextResults(searchText);
-
-        for (const noteId of fullTextNoteIds) {
-            if (!searchTextResults.some(item => item.noteId === noteId)) {
-                const result = noteCacheService.getNotePath(noteId);
-
-                if (result) {
-                    searchTextResults.push(result);
-                }
-            }
-        }
-    }
-
-    let results;
-
-    if (labelFiltersNoteIds && searchTextResults) {
-        results = searchTextResults.filter(item => labelFiltersNoteIds.includes(item.noteId));
-    }
-    else if (labelFiltersNoteIds) {
-        results = labelFiltersNoteIds.map(noteCacheService.getNotePath).filter(res => !!res);
-    }
-    else {
-        results = searchTextResults;
-    }
-
-    return results;
-}
-
-async function getFullTextResults(searchText) {
-    const safeSearchText = utils.sanitizeSql(searchText);
-
-    return await sql.getColumn(`SELECT noteId FROM note_fulltext 
-                                       WHERE note_fulltext MATCH '${safeSearchText}'`);
+    return labelFiltersNoteIds.map(noteCacheService.getNotePath).filter(res => !!res);
 }
 
 async function saveSearchToNote(req) {

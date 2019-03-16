@@ -1,16 +1,7 @@
-function isVirtualAttribute(filter) {
-    return (
-        filter.name === "utcDateModified"
-        || filter.name === "utcDateCreated"
-        || filter.name === "isProtected"
-    );
-}
+const VIRTUAL_ATTRIBUTES = ["dateCreated", "dateCreated", "dateModified", "utcDateCreated", "utcDateModified", "isProtected", "title", "content", "type", "mime", "text"];
 
 function getValueForFilter(filter, i) {
-    return (isVirtualAttribute(filter)
-        ? `substr(notes.${filter.name}, 0, ${filter.value.length + 1})`
-        :`attribute${i}.value`
-    );
+    return VIRTUAL_ATTRIBUTES.includes(filter.name) ? `notes.${filter.name}` :`attribute${i}.value`;
 }
 
 module.exports = function(attributeFilters) {
@@ -22,7 +13,7 @@ module.exports = function(attributeFilters) {
     let i = 1;
 
     for (const filter of attributeFilters) {
-        const virtual = isVirtualAttribute(filter);
+        const virtual = VIRTUAL_ATTRIBUTES.includes(filter.name);
 
         if (!virtual) {
             joins.push(`LEFT JOIN attributes AS attribute${i} `
@@ -30,6 +21,16 @@ module.exports = function(attributeFilters) {
                 + `AND attribute${i}.name = ? AND attribute${i}.isDeleted = 0`
             );
             joinParams.push(filter.name);
+        }
+        else if (filter.name === 'content') {
+            // FIXME: this will fail if there's more instances of content
+            joins.push(`JOIN note_contents ON note_contents.noteId = notes.noteId`);
+
+            filter.name = 'note_contents.content';
+        }
+        else if (filter.name === 'text') {
+            // FIXME: this will fail if there's more instances of content
+            joins.push(`JOIN note_fulltext ON note_fulltext.noteId = notes.noteId`);
         }
 
         where += " " + filter.relation + " ";
@@ -44,8 +45,30 @@ module.exports = function(attributeFilters) {
             where += `${test} IS NULL`;
         }
         else if (filter.operator === '=' || filter.operator === '!=') {
-            where += `${getValueForFilter(filter, i)} ${filter.operator} ?`;
-            whereParams.push(filter.value);
+            if (filter.name === 'text') {
+                const safeSearchText = utils.sanitizeSql(filter.value);
+
+                where += (filter.operator === '!=' ? 'NOT ' : '') + `MATCH '${safeSearchText}'`;
+            }
+            else {
+                where += `${getValueForFilter(filter, i)} ${filter.operator} ?`;
+                whereParams.push(filter.value);
+            }
+        }
+        else if (filter.operator === '*=' || filter.operator === '!*=') {
+            where += `${getValueForFilter(filter, i)}`
+                    + (filter.operator.includes('!') ? ' NOT' : '')
+                    + ` LIKE '%` + filter.value + "'"; // FIXME: escaping
+        }
+        else if (filter.operator === '=*' || filter.operator === '!=*') {
+            where += `${getValueForFilter(filter, i)}`
+                    + (filter.operator.includes('!') ? ' NOT' : '')
+                    + ` LIKE '` + filter.value + "%'"; // FIXME: escaping
+        }
+        else if (filter.operator === '*=*' || filter.operator === '!*=*') {
+            where += `${getValueForFilter(filter, i)}`
+                    + (filter.operator.includes('!') ? ' NOT' : '')
+                    + ` LIKE '%` + filter.value + "%'"; // FIXME: escaping
         }
         else if ([">", ">=", "<", "<="].includes(filter.operator)) {
             let floatParam;
@@ -84,6 +107,9 @@ module.exports = function(attributeFilters) {
                 ${searchCondition}`;
 
     const params = joinParams.concat(whereParams).concat(searchParams);
+
+    console.log(query);
+    console.log(params);
 
     return { query, params };
 };
