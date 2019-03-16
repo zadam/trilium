@@ -1,78 +1,94 @@
 const VIRTUAL_ATTRIBUTES = ["dateCreated", "dateCreated", "dateModified", "utcDateCreated", "utcDateModified", "isProtected", "title", "content", "type", "mime", "text"];
 
-function getValueForFilter(filter, i) {
-    return VIRTUAL_ATTRIBUTES.includes(filter.name) ? `notes.${filter.name}` :`attribute${i}.value`;
-}
+module.exports = function(filters) {
+    // alias => join
+    const joins = {
+        "notes": null
+    };
 
-module.exports = function(attributeFilters) {
-    const joins = [];
-    const joinParams = [];
+    function getAccessor(property) {
+        let accessor;
+
+        if (!VIRTUAL_ATTRIBUTES.includes(property)) {
+            const alias = "attr_" + property;
+
+            if (!(alias in joins)) {
+                joins[alias] = `LEFT JOIN attributes AS ${alias} `
+                    + `ON ${alias}.noteId = notes.noteId `
+                    + `AND ${alias}.name = '${property}' AND ${alias}.isDeleted = 0`;
+            }
+
+            accessor = `${alias}.value`;
+        }
+        else if (property === 'content') {
+            const alias = "note_content";
+
+            if (!(alias in joins)) {
+                // FIXME: this will fail if there's more instances of content
+                joins[alias] = `JOIN note_contents ON note_contents.noteId = notes.noteId`;
+            }
+
+            accessor = `${alias}.${property}`;
+        }
+        else if (property === 'text') {
+            const alias = "note_fulltext";
+
+            if (!(alias in joins)) {
+                // FIXME: this will fail if there's more instances of content
+                joins[alias] = `JOIN note_fulltext ON note_fulltext.noteId = notes.noteId`;
+            }
+
+            accessor = alias;
+        }
+        else {
+            accessor = "notes." + property;
+        }
+
+        return accessor;
+    }
+
     let where = '1';
-    const whereParams = [];
+    const params = [];
 
-    let i = 1;
-
-    for (const filter of attributeFilters) {
-        const virtual = VIRTUAL_ATTRIBUTES.includes(filter.name);
-
-        if (!virtual) {
-            joins.push(`LEFT JOIN attributes AS attribute${i} `
-                + `ON attribute${i}.noteId = notes.noteId `
-                + `AND attribute${i}.name = ? AND attribute${i}.isDeleted = 0`
-            );
-            joinParams.push(filter.name);
-        }
-        else if (filter.name === 'content') {
-            // FIXME: this will fail if there's more instances of content
-            joins.push(`JOIN note_contents ON note_contents.noteId = notes.noteId`);
-
-            filter.name = 'note_contents.content';
-        }
-        else if (filter.name === 'text') {
-            // FIXME: this will fail if there's more instances of content
-            joins.push(`JOIN note_fulltext ON note_fulltext.noteId = notes.noteId`);
-        }
-
+    for (const filter of filters) {
         where += " " + filter.relation + " ";
 
-        // the value we need to test
-        const test = virtual ? filter.name : `attribute${i}.attributeId`;
+        const accessor = getAccessor(filter.name);
 
         if (filter.operator === 'exists') {
-            where += `${test} IS NOT NULL`;
+            where += `${accessor} IS NOT NULL`;
         }
         else if (filter.operator === 'not-exists') {
-            where += `${test} IS NULL`;
+            where += `${accessor} IS NULL`;
         }
         else if (filter.operator === '=' || filter.operator === '!=') {
             if (filter.name === 'text') {
                 const safeSearchText = utils.sanitizeSql(filter.value);
 
-                where += (filter.operator === '!=' ? 'NOT ' : '') + `MATCH '${safeSearchText}'`;
+                where += accessor + ' ' + (filter.operator === '!=' ? 'NOT ' : '') + `MATCH '${safeSearchText}'`;
             }
             else {
-                where += `${getValueForFilter(filter, i)} ${filter.operator} ?`;
-                whereParams.push(filter.value);
+                where += `${accessor} ${filter.operator} ?`;
+                params.push(filter.value);
             }
         }
         else if (filter.operator === '*=' || filter.operator === '!*=') {
-            where += `${getValueForFilter(filter, i)}`
+            where += `${accessor}`
                     + (filter.operator.includes('!') ? ' NOT' : '')
                     + ` LIKE '%` + filter.value + "'"; // FIXME: escaping
         }
         else if (filter.operator === '=*' || filter.operator === '!=*') {
-            where += `${getValueForFilter(filter, i)}`
+            where += `${accessor}`
                     + (filter.operator.includes('!') ? ' NOT' : '')
                     + ` LIKE '` + filter.value + "%'"; // FIXME: escaping
         }
         else if (filter.operator === '*=*' || filter.operator === '!*=*') {
-            where += `${getValueForFilter(filter, i)}`
+            where += `${accessor}`
                     + (filter.operator.includes('!') ? ' NOT' : '')
                     + ` LIKE '%` + filter.value + "%'"; // FIXME: escaping
         }
         else if ([">", ">=", "<", "<="].includes(filter.operator)) {
             let floatParam;
-            const value = getValueForFilter(filter, i);
 
             // from https://stackoverflow.com/questions/12643009/regular-expression-for-floating-point-numbers
             if (/^[+-]?([0-9]*[.])?[0-9]+$/.test(filter.value)) {
@@ -81,32 +97,24 @@ module.exports = function(attributeFilters) {
 
             if (floatParam === undefined || isNaN(floatParam)) {
                 // if the value can't be parsed as float then we assume that string comparison should be used instead of numeric
-                where += `${value} ${filter.operator} ?`;
-                whereParams.push(filter.value);
+                where += `${accessor} ${filter.operator} ?`;
+                params.push(filter.value);
             }
             else {
-                where += `CAST(${value} AS DECIMAL) ${filter.operator} ?`;
-                whereParams.push(floatParam);
+                where += `CAST(${accessor} AS DECIMAL) ${filter.operator} ?`;
+                params.push(floatParam);
             }
         }
         else {
             throw new Error("Unknown operator " + filter.operator);
         }
-
-        i++;
     }
 
-    let searchCondition = '';
-    const searchParams = [];
-
     const query = `SELECT DISTINCT notes.noteId FROM notes
-            ${joins.join('\r\n')}
+            ${Object.values(joins).join('\r\n')}
               WHERE
                 notes.isDeleted = 0
-                AND (${where})
-                ${searchCondition}`;
-
-    const params = joinParams.concat(whereParams).concat(searchParams);
+                AND (${where})`;
 
     console.log(query);
     console.log(params);

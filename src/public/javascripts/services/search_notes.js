@@ -13,7 +13,7 @@ const $searchResultsInner = $("#search-results-inner");
 const $closeSearchButton = $("#close-search-button");
 
 function showSearch() {
-    $searchBox.show();
+    $searchBox.slideDown();
     $searchInput.focus();
 }
 
@@ -21,7 +21,7 @@ function hideSearch() {
     resetSearch();
 
     $searchResults.hide();
-    $searchBox.hide();
+    $searchBox.slideUp();
 }
 
 function toggleSearch() {
