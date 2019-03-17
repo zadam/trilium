@@ -71,7 +71,7 @@ body {
     border-radius: 7px;
 }
 
-#context-menu-container {
+#context-menu-container, #context-menu-container .dropdown-menu {
     padding: 3px 0 0;
 }
 
@@ -113,4 +113,24 @@ body {
 [data-toggle="tooltip"] span {
     padding-bottom: 0;
     border-bottom: 1px dotted;
+}
+
+li.dropdown-submenu:hover > ul.dropdown-menu {
+    display: block;
+}
+
+.dropdown-submenu {
+    position:relative;
+}
+
+.dropdown-submenu > .dropdown-menu {
+    top: 0;
+    left: 100%;
+    margin-top: -6px;
+}
+
+/* rotate caret on hover */
+.dropdown-menu > li > a:hover:after {
+    text-decoration: underline;
+    transform: rotate(-90deg);
 }

@@ -77,9 +77,17 @@ function cut(nodes) {
     infoService.showMessage("Note(s) have been cut into clipboard.");
 }
 
+const noteTypeItems = [
+    {title: "Plain text", cmd: "insertNoteAfter", uiIcon: "file"},
+    {title: "Terminal", cmd: "insertNoteAfter", uiIcon: "terminal"},
+    {title: "Saved search", cmd: "insertNoteAfter", uiIcon: "search-folder"},
+    {title: "Relation Map", cmd: "insertNoteAfter", uiIcon: "map"},
+    {title: "Render HTML note", cmd: "insertNoteAfter", uiIcon: "play"}
+];
+
 const contextMenuItems = [
-    {title: "Insert note after <kbd>Ctrl+O</kbd>", cmd: "insertNoteAfter", uiIcon: "plus"},
-    {title: "Insert child note <kbd>Ctrl+P</kbd>", cmd: "insertChildNote", uiIcon: "plus"},
+    {title: "Insert note after <kbd>Ctrl+O</kbd>", cmd: "insertNoteAfter", uiIcon: "plus", items: noteTypeItems},
+    {title: "Insert child note <kbd>Ctrl+P</kbd>", cmd: "insertChildNote", uiIcon: "plus", items: noteTypeItems},
     {title: "Delete <kbd>Delete</kbd>", cmd: "delete", uiIcon: "trash"},
     {title: "----"},
     {title: "Hoist note <kbd>Ctrl-H</kbd>", cmd: "hoist", uiIcon: "arrow-up"},

@@ -5,41 +5,59 @@ function initContextMenu(event, itemContainer, selectContextMenuItem) {
 
     $contextMenuContainer.empty();
 
-    for (const item of itemContainer.getItems()) {
-        if (item.title === '----') {
-            $contextMenuContainer.append($("<div>").addClass("dropdown-divider"));
-        } else {
-            const $icon = $("<span>");
-
-            if (item.uiIcon) {
-                $icon.addClass("jam jam-" + item.uiIcon);
+    function addItems($parent, items) {
+        for (const item of items) {
+            if (item.title === '----') {
+                $parent.append($("<div>").addClass("dropdown-divider"));
             } else {
-                $icon.append("&nbsp;");
+                const $icon = $("<span>");
+
+                if (item.uiIcon) {
+                    $icon.addClass("jam jam-" + item.uiIcon);
+                } else {
+                    $icon.append("&nbsp;");
+                }
+
+                const $item = $("<li>")
+                    .addClass("dropdown-item");
+
+                const $link = $("<a>")
+                    .append($icon)
+                    .append(" &nbsp; ") // some space between icon and text
+                    .prop("data-cmd", item.cmd)
+                    .append(item.title);
+
+                $item.append($link);
+
+                if (item.enabled !== undefined && !item.enabled) {
+                    $link.addClass("disabled");
+                }
+
+                $link.click(async function (e) {
+                    const cmd = $(e.target).prop("data-cmd");
+
+                    e.originalTarget = event.target;
+
+                    await selectContextMenuItem(e, cmd);
+                });
+
+                if (item.items) {
+                    $item.addClass("dropdown-submenu");
+                    $link.addClass("dropdown-toggle");
+
+                    const $subMenu = $("<ul>").addClass("dropdown-menu");
+
+                    addItems($subMenu, item.items);
+
+                    $item.append($subMenu);
+                }
+
+                $parent.append($item);
             }
-
-            const $item = $("<a>")
-                .append($icon)
-                .append(" &nbsp; ") // some space between icon and text
-                .addClass("dropdown-item")
-                .prop("data-cmd", item.cmd)
-                .append(item.title);
-
-
-            if (item.enabled !== undefined && !item.enabled) {
-                $item.addClass("disabled");
-            }
-
-            $item.click(async function (e) {
-                const cmd = $(e.target).prop("data-cmd");
-
-                e.originalTarget = event.target;
-
-                await selectContextMenuItem(e, cmd);
-            });
-
-            $contextMenuContainer.append($item);
         }
     }
+
+    addItems($contextMenuContainer, itemContainer.getItems());
 
     // code below tries to detect when dropdown would overflow from page
     // in such case we'll position it above click coordinates so it will fit into client
