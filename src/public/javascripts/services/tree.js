@@ -551,10 +551,13 @@ async function createNewTopLevelNote() {
 
     const rootNode = getNodesByNoteId(hoistedNoteId)[0];
 
-    await createNote(rootNode, hoistedNoteId, "into", false);
+    await createNote(rootNode, hoistedNoteId, "into", null, false);
 }
 
-async function createNote(node, parentNoteId, target, isProtected, saveSelection = false) {
+/**
+ * @param type - type can be falsy - in that case it will be chosen automatically based on parent note
+ */
+async function createNote(node, parentNoteId, target, type, isProtected, saveSelection = false) {
     utils.assertArguments(node, parentNoteId, target);
 
     // if isProtected isn't available (user didn't enter password yet), then note is created as unencrypted
@@ -586,7 +589,8 @@ async function createNote(node, parentNoteId, target, isProtected, saveSelection
         content: content,
         target: target,
         target_branchId: node.data.branchId,
-        isProtected: isProtected
+        isProtected: isProtected,
+        type: type
     });
 
     if (saveSelection) {
@@ -695,13 +699,13 @@ utils.bindShortcut('ctrl+o', async () => {
         return;
     }
 
-    createNote(node, parentNoteId, 'after', isProtected, true);
+    createNote(node, parentNoteId, 'after', null, isProtected, true);
 });
 
 function createNoteInto() {
     const node = getCurrentNode();
 
-    createNote(node, node.data.noteId, 'into', node.data.isProtected, true);
+    createNote(node, node.data.noteId, 'into', null, node.data.isProtected, true);
 }
 
 window.glob.createNoteInto = createNoteInto;

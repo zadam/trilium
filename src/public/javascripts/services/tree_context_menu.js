@@ -77,38 +77,42 @@ function cut(nodes) {
     infoService.showMessage("Note(s) have been cut into clipboard.");
 }
 
-const noteTypeItems = [
-    {title: "Plain text", cmd: "insertNoteAfter", uiIcon: "file"},
-    {title: "Terminal", cmd: "insertNoteAfter", uiIcon: "terminal"},
-    {title: "Saved search", cmd: "insertNoteAfter", uiIcon: "search-folder"},
-    {title: "Relation Map", cmd: "insertNoteAfter", uiIcon: "map"},
-    {title: "Render HTML note", cmd: "insertNoteAfter", uiIcon: "play"}
-];
+function getNoteTypeItems(baseCmd) {
+    return [
+        { title: "Text", cmd: baseCmd + "_text", uiIcon: "file" },
+        { title: "Code", cmd: baseCmd + "_code", uiIcon: "terminal" },
+        { title: "Saved search", cmd: baseCmd + "_search", uiIcon: "search-folder" },
+        { title: "Relation Map", cmd: baseCmd + "_relation-map", uiIcon: "map" },
+        { title: "Render HTML note", cmd: baseCmd + "_render", uiIcon: "play" }
+    ];
+}
 
-const contextMenuItems = [
-    {title: "Insert note after <kbd>Ctrl+O</kbd>", cmd: "insertNoteAfter", uiIcon: "plus", items: noteTypeItems},
-    {title: "Insert child note <kbd>Ctrl+P</kbd>", cmd: "insertChildNote", uiIcon: "plus", items: noteTypeItems},
-    {title: "Delete <kbd>Delete</kbd>", cmd: "delete", uiIcon: "trash"},
-    {title: "----"},
-    {title: "Hoist note <kbd>Ctrl-H</kbd>", cmd: "hoist", uiIcon: "arrow-up"},
-    {title: "Unhoist note <kbd>Ctrl-H</kbd>", cmd: "unhoist", uiIcon: "arrow-up"},
-    {title: "Edit branch prefix <kbd>F2</kbd>", cmd: "editBranchPrefix", uiIcon: "pencil"},
-    {title: "----"},
-    {title: "Protect subtree", cmd: "protectSubtree", uiIcon: "shield-check"},
-    {title: "Unprotect subtree", cmd: "unprotectSubtree", uiIcon: "shield-close"},
-    {title: "----"},
-    {title: "Copy / clone <kbd>Ctrl+C</kbd>", cmd: "copy", uiIcon: "files"},
-    {title: "Cut <kbd>Ctrl+X</kbd>", cmd: "cut", uiIcon: "scissors"},
-    {title: "Paste into <kbd>Ctrl+V</kbd>", cmd: "pasteInto", uiIcon: "clipboard"},
-    {title: "Paste after", cmd: "pasteAfter", uiIcon: "clipboard"},
-    {title: "----"},
-    {title: "Export", cmd: "export", uiIcon: "arrow-up-right"},
-    {title: "Import into note", cmd: "importIntoNote", uiIcon: "arrow-down-left"},
-    {title: "----"},
-    {title: "Collapse subtree <kbd>Alt+-</kbd>", cmd: "collapseSubtree", uiIcon: "align-justify"},
-    {title: "Force note sync", cmd: "forceNoteSync", uiIcon: "refresh"},
-    {title: "Sort alphabetically <kbd>Alt+S</kbd>", cmd: "sortAlphabetically", uiIcon: "arrows-v"}
-];
+function getTopLevelItems(note) {
+    return [
+        { title: "Insert note after <kbd>Ctrl+O</kbd>", cmd: "insertNoteAfter", uiIcon: "plus", items: note.type !== 'search' ? getNoteTypeItems("insertNoteAfter") : null },
+        { title: "Insert child note <kbd>Ctrl+P</kbd>", cmd: "insertChildNote", uiIcon: "plus", items: note.type !== 'search' ? getNoteTypeItems("insertChildNote") : null },
+        { title: "Delete <kbd>Delete</kbd>", cmd: "delete", uiIcon: "trash" },
+        { title: "----" },
+        { title: "Hoist note <kbd>Ctrl-H</kbd>", cmd: "hoist", uiIcon: "arrow-up" },
+        { title: "Unhoist note <kbd>Ctrl-H</kbd>", cmd: "unhoist", uiIcon: "arrow-up" },
+        { title: "Edit branch prefix <kbd>F2</kbd>", cmd: "editBranchPrefix", uiIcon: "pencil" },
+        { title: "----" },
+        { title: "Protect subtree", cmd: "protectSubtree", uiIcon: "shield-check" },
+        { title: "Unprotect subtree", cmd: "unprotectSubtree", uiIcon: "shield-close" },
+        { title: "----" },
+        { title: "Copy / clone <kbd>Ctrl+C</kbd>", cmd: "copy", uiIcon: "files" },
+        { title: "Cut <kbd>Ctrl+X</kbd>", cmd: "cut", uiIcon: "scissors" },
+        { title: "Paste into <kbd>Ctrl+V</kbd>", cmd: "pasteInto", uiIcon: "clipboard" },
+        { title: "Paste after", cmd: "pasteAfter", uiIcon: "clipboard" },
+        { title: "----" },
+        { title: "Export", cmd: "export", uiIcon: "arrow-up-right" },
+        { title: "Import into note", cmd: "importIntoNote", uiIcon: "arrow-down-left" },
+        { title: "----" },
+        { title: "Collapse subtree <kbd>Alt+-</kbd>", cmd: "collapseSubtree", uiIcon: "align-justify" },
+        { title: "Force note sync", cmd: "forceNoteSync", uiIcon: "refresh" },
+        { title: "Sort alphabetically <kbd>Alt+S</kbd>", cmd: "sortAlphabetically", uiIcon: "arrows-v" }
+    ];
+}
 
 async function getContextMenuItems(event) {
     const node = $.ui.fancytree.getNode(event);
@@ -118,7 +122,7 @@ async function getContextMenuItems(event) {
     const isNotRoot = note.noteId !== 'root';
     const isHoisted = note.noteId === await hoistedNoteService.getHoistedNoteId();
 
-    const itemsContainer = new ContextMenuItemsContainer(contextMenuItems);
+    const itemsContainer = new ContextMenuItemsContainer(getTopLevelItems(note));
 
     // Modify menu entries depending on node status
     itemsContainer.enableItem("insertNoteAfter", isNotRoot && !isHoisted && parentNote.type !== 'search');
@@ -151,14 +155,17 @@ function selectContextMenuItem(event, cmd) {
     // context menu is always triggered on current node
     const node = treeService.getCurrentNode();
 
-    if (cmd === "insertNoteAfter") {
+    if (cmd.startsWith("insertNoteAfter")) {
         const parentNoteId = node.data.parentNoteId;
         const isProtected = treeUtils.getParentProtectedStatus(node);
+        const type = cmd.split("_")[1];
 
-        treeService.createNote(node, parentNoteId, 'after', isProtected);
+        treeService.createNote(node, parentNoteId, 'after', type, isProtected);
     }
-    else if (cmd === "insertChildNote") {
-        treeService.createNote(node, node.data.noteId, 'into');
+    else if (cmd.startsWith("insertChildNote")) {
+        const type = cmd.split("_")[1];
+
+        treeService.createNote(node, node.data.noteId, 'into', type);
     }
     else if (cmd === "editBranchPrefix") {
         branchPrefixDialog.showDialog(node);

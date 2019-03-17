@@ -81,10 +81,6 @@ async function createNewNote(parentNoteId, noteData) {
     noteData.type = noteData.type || parentNote.type;
     noteData.mime = noteData.mime || parentNote.mime;
 
-    if (noteData.type === 'text' || noteData.type === 'code') {
-        noteData.content = noteData.content || "";
-    }
-
     const note = await new Note({
         noteId: noteData.noteId, // optionally can force specific noteId
         title: noteData.title,
@@ -92,6 +88,10 @@ async function createNewNote(parentNoteId, noteData) {
         type: noteData.type || 'text',
         mime: noteData.mime || 'text/html'
     }).save();
+
+    if (note.isStringNote()) {
+        noteData.content = noteData.content || "";
+    }
 
     note.noteContent = await new NoteContent({
         noteId: note.noteId,

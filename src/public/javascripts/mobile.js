@@ -93,10 +93,10 @@ $("#note-menu-button").click(async e => {
             const parentNoteId = node.data.parentNoteId;
             const isProtected = treeUtils.getParentProtectedStatus(node);
 
-            treeService.createNote(node, parentNoteId, 'after', isProtected);
+            treeService.createNote(node, parentNoteId, 'after', null, isProtected);
         }
         else if (cmd === "insertChildNote") {
-            treeService.createNote(node, node.data.noteId, 'into');
+            treeService.createNote(node, node.data.noteId, 'into', null);
         }
         else if (cmd === "delete") {
             treeChangesService.deleteNodes([node]);

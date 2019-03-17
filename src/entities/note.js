@@ -74,7 +74,8 @@ class Note extends Entity {
             }
 
             if (this.isStringNote()) {
-                this.noteContent.content = this.noteContent.content.toString("UTF-8");
+                this.noteContent.content = this.noteContent.content === null
+                    ? "" : this.noteContent.content.toString("UTF-8");
             }
         }
 
