@@ -93,6 +93,8 @@ async function deleteNodes(nodes) {
         await server.remove('branches/' + node.data.branchId);
     }
 
+
+
     // following code assumes that nodes contain only top-most selected nodes - getSelectedNodes has been
     // called with stopOnParent=true
     let next = nodes[nodes.length - 1].getNextSibling();
@@ -112,9 +114,19 @@ async function deleteNodes(nodes) {
         treeService.setCurrentNotePathToHash(next);
     }
 
-    infoService.showMessage("Note(s) has been deleted.");
+    await treeService.loadTreeCache();
 
-    await treeService.reload();
+    const parentNoteIds = Array.from(new Set(nodes.map(node => node.getParent().data.noteId)));
+
+    for (const node of nodes) {
+        node.remove();
+    }
+
+    for (const parentNoteId of parentNoteIds) {
+        treeService.reloadNote(parentNoteId);
+    }
+
+    infoService.showMessage("Note(s) has been deleted.");
 }
 
 async function moveNodeUpInHierarchy(node) {

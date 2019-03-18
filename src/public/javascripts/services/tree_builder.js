@@ -6,11 +6,7 @@ import treeCache from "./tree_cache.js";
 import messagingService from "./messaging.js";
 import hoistedNoteService from "./hoisted_note.js";
 
-async function prepareTree(noteRows, branchRows, relations) {
-    utils.assertArguments(noteRows, branchRows, relations);
-
-    treeCache.load(noteRows, branchRows, relations);
-
+async function prepareTree() {
     const hoistedNoteId = await hoistedNoteService.getHoistedNoteId();
 
     let hoistedBranch;

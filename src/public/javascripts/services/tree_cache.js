@@ -158,21 +158,21 @@ class TreeCache {
             return;
         }
 
-        const branchId = treeCache.childParentToBranch[childNoteId + '-' + oldParentNoteId];
+        const branchId = this.childParentToBranch[childNoteId + '-' + oldParentNoteId];
         const branch = await this.getBranch(branchId);
         branch.parentNoteId = newParentNoteId;
 
-        treeCache.childParentToBranch[childNoteId + '-' + newParentNoteId] = branchId;
-        delete treeCache.childParentToBranch[childNoteId + '-' + oldParentNoteId]; // this is correct because we know that oldParentId isn't same as newParentId
+        this.childParentToBranch[childNoteId + '-' + newParentNoteId] = branchId;
+        delete this.childParentToBranch[childNoteId + '-' + oldParentNoteId]; // this is correct because we know that oldParentId isn't same as newParentId
 
         // remove old associations
-        treeCache.parents[childNoteId] = treeCache.parents[childNoteId].filter(p => p !== oldParentNoteId);
-        treeCache.children[oldParentNoteId] = treeCache.children[oldParentNoteId].filter(ch => ch !== childNoteId);
+        this.parents[childNoteId] = this.parents[childNoteId].filter(p => p !== oldParentNoteId);
+        this.children[oldParentNoteId] = this.children[oldParentNoteId].filter(ch => ch !== childNoteId);
 
         // add new associations
-        treeCache.parents[childNoteId].push(newParentNoteId);
+        this.parents[childNoteId].push(newParentNoteId);
 
-        const children = treeCache.children[newParentNoteId] = treeCache.children[newParentNoteId] || []; // this might be first child
+        const children = this.children[newParentNoteId] = this.children[newParentNoteId] || []; // this might be first child
 
         // we try to put the note into precise order which might be used again by lazy-loaded nodes
         if (beforeNoteId && children.includes(beforeNoteId)) {

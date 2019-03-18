@@ -491,7 +491,7 @@ function getHashValueFromAddress() {
     return document.location.hash ? document.location.hash.substr(1) : ""; // strip initial #
 }
 
-async function loadTree() {
+async function loadTreeCache() {
     const resp = await server.get('tree');
     startNotePath = resp.startNotePath;
 
@@ -499,7 +499,13 @@ async function loadTree() {
         startNotePath = getHashValueFromAddress();
     }
 
-    return await treeBuilder.prepareTree(resp.notes, resp.branches, resp.relations);
+    treeCache.load(resp.notes, resp.branches, resp.relations);
+}
+
+async function loadTree() {
+    await loadTreeCache();
+
+    return await treeBuilder.prepareTree();
 }
 
 async function collapseTree(node = null) {
@@ -783,5 +789,6 @@ export default {
     getHashValueFromAddress,
     getNodesByNoteId,
     checkFolderStatus,
-    reloadNote
+    reloadNote,
+    loadTreeCache
 };
