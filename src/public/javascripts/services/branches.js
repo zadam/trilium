@@ -3,6 +3,7 @@ import utils from './utils.js';
 import server from './server.js';
 import infoService from "./info.js";
 import treeCache from "./tree_cache.js";
+import treeBuilder from "./tree_builder.js";
 
 async function moveBeforeNode(nodesToMove, beforeNode) {
     nodesToMove = filterRootNote(nodesToMove);
@@ -138,6 +139,22 @@ async function moveNodeUpInHierarchy(node) {
         node);
 }
 
+async function checkFolderStatus(node) {
+    const children = node.getChildren();
+    const note = await treeCache.getNote(node.data.noteId);
+
+    if (!children || children.length === 0) {
+        node.folder = false;
+        node.icon = await treeBuilder.getIcon(note);
+        node.renderTitle();
+    }
+    else if (children && children.length > 0) {
+        node.folder = true;
+        node.icon = await treeBuilder.getIcon(note);
+        node.renderTitle();
+    }
+}
+
 async function changeNode(func, node, beforeNoteId = null, afterNoteId = null) {
     utils.assertArguments(func, node);
 
@@ -159,15 +176,8 @@ async function changeNode(func, node, beforeNoteId = null, afterNoteId = null) {
 
     treeService.setCurrentNotePathToHash(node);
 
-    if (!thisOldParentNode.getChildren() || thisOldParentNode.getChildren().length === 0) {
-        thisOldParentNode.folder = false;
-        thisOldParentNode.renderTitle();
-    }
-
-    if (!thisNewParentNode.folder) {
-        thisNewParentNode.folder = true;
-        thisNewParentNode.renderTitle();
-    }
+    await checkFolderStatus(thisOldParentNode);
+    await checkFolderStatus(thisNewParentNode);
 
     if (!thisNewParentNode.isExpanded()) {
         // this expands the note in case it become the folder only after the move
@@ -181,8 +191,8 @@ async function changeNode(func, node, beforeNoteId = null, afterNoteId = null) {
         }
 
         newParentNode.load(true); // force reload to show up new note
-        newParentNode.folder = true;
-        newParentNode.renderTitle();
+
+        await checkFolderStatus(newParentNode);
     }
 
     for (const oldParentNode of treeService.getNodesByNoteId(thisOldParentNode.data.noteId)) {
@@ -193,11 +203,7 @@ async function changeNode(func, node, beforeNoteId = null, afterNoteId = null) {
 
         await oldParentNode.load(true); // force reload to show up new note
 
-        if (oldParentNode.getChildren().length === 0) {
-            oldParentNode.folder = false;
-        }
-
-        oldParentNode.renderTitle();
+        await checkFolderStatus(oldParentNode);
     }
 }
 
