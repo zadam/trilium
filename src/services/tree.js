@@ -1,5 +1,8 @@
 "use strict";
 
+import treeCache from "../public/javascripts/services/tree_cache.js";
+import treeBuilder from "../public/javascripts/services/tree_builder.js";
+
 const sql = require('./sql');
 const repository = require('./repository');
 const Branch = require('../entities/branch');

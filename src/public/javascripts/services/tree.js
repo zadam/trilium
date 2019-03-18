@@ -708,6 +708,30 @@ function createNoteInto() {
     createNote(node, node.data.noteId, 'into', null, node.data.isProtected, true);
 }
 
+async function checkFolderStatus(node) {
+    const children = node.getChildren();
+    const note = await treeCache.getNote(node.data.noteId);
+
+    if (!children || children.length === 0) {
+        node.folder = false;
+        node.icon = await treeBuilder.getIcon(note);
+        node.renderTitle();
+    }
+    else if (children && children.length > 0) {
+        node.folder = true;
+        node.icon = await treeBuilder.getIcon(note);
+        node.renderTitle();
+    }
+}
+
+async function reloadNote(noteId) {
+    for (const node of getNodesByNoteId(noteId)) {
+        await node.load(true);
+
+        await checkFolderStatus(node);
+    }
+}
+
 window.glob.createNoteInto = createNoteInto;
 
 utils.bindShortcut('ctrl+p', createNoteInto);
@@ -757,5 +781,7 @@ export default {
     treeInitialized,
     setExpandedToServer,
     getHashValueFromAddress,
-    getNodesByNoteId
+    getNodesByNoteId,
+    checkFolderStatus,
+    reloadNote
 };

@@ -1,4 +1,5 @@
 import treeService from './tree.js';
+import treeCache from './tree_cache.js';
 import server from './server.js';
 
 async function cloneNoteTo(childNoteId, parentNoteId, prefix) {
@@ -11,7 +12,9 @@ async function cloneNoteTo(childNoteId, parentNoteId, prefix) {
         return;
     }
 
-    await treeService.reload();
+    treeCache.addBranchRelationship(resp.branchId, childNoteId, parentNoteId);
+
+    await treeService.reloadNote(parentNoteId);
 }
 
 // beware that first arg is noteId and second is branchId!
@@ -23,7 +26,11 @@ async function cloneNoteAfter(noteId, afterBranchId) {
         return;
     }
 
-    await treeService.reload();
+    const afterBranch = await treeCache.getBranch(afterBranchId);
+
+    treeCache.addBranchRelationship(resp.branchId, noteId, afterBranch.parentNoteId);
+
+    await treeService.reloadNote(afterBranch.parentNoteId);
 }
 
 export default {

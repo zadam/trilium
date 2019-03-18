@@ -46,6 +46,8 @@ async function pasteInto(node) {
 
         await treeChangesService.moveToNode(nodes, node);
 
+        await node.setExpanded(true);
+
         clipboardIds = [];
         clipboardMode = null;
     }
@@ -53,6 +55,9 @@ async function pasteInto(node) {
         for (const noteId of clipboardIds) {
             await cloningService.cloneNoteTo(noteId, node.data.noteId);
         }
+
+        await node.setExpanded(true);
+
         // copy will keep clipboardIds and clipboardMode so it's possible to paste into multiple places
     }
     else if (clipboardIds.length === 0) {

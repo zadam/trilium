@@ -139,22 +139,6 @@ async function moveNodeUpInHierarchy(node) {
         node);
 }
 
-async function checkFolderStatus(node) {
-    const children = node.getChildren();
-    const note = await treeCache.getNote(node.data.noteId);
-
-    if (!children || children.length === 0) {
-        node.folder = false;
-        node.icon = await treeBuilder.getIcon(note);
-        node.renderTitle();
-    }
-    else if (children && children.length > 0) {
-        node.folder = true;
-        node.icon = await treeBuilder.getIcon(note);
-        node.renderTitle();
-    }
-}
-
 async function changeNode(func, node, beforeNoteId = null, afterNoteId = null) {
     utils.assertArguments(func, node);
 
@@ -176,8 +160,8 @@ async function changeNode(func, node, beforeNoteId = null, afterNoteId = null) {
 
     treeService.setCurrentNotePathToHash(node);
 
-    await checkFolderStatus(thisOldParentNode);
-    await checkFolderStatus(thisNewParentNode);
+    await treeService.checkFolderStatus(thisOldParentNode);
+    await treeService.checkFolderStatus(thisNewParentNode);
 
     if (!thisNewParentNode.isExpanded()) {
         // this expands the note in case it become the folder only after the move
@@ -192,7 +176,7 @@ async function changeNode(func, node, beforeNoteId = null, afterNoteId = null) {
 
         newParentNode.load(true); // force reload to show up new note
 
-        await checkFolderStatus(newParentNode);
+        await treeService.checkFolderStatus(newParentNode);
     }
 
     for (const oldParentNode of treeService.getNodesByNoteId(thisOldParentNode.data.noteId)) {
@@ -203,7 +187,7 @@ async function changeNode(func, node, beforeNoteId = null, afterNoteId = null) {
 
         await oldParentNode.load(true); // force reload to show up new note
 
-        await checkFolderStatus(oldParentNode);
+        await treeService.checkFolderStatus(oldParentNode);
     }
 }
 

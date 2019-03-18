@@ -18,7 +18,7 @@ async function cloneNoteToParent(noteId, parentNoteId, prefix) {
         return validationResult;
     }
 
-    await new Branch({
+    const branch = await new Branch({
         noteId: noteId,
         parentNoteId: parentNoteId,
         prefix: prefix,
@@ -27,7 +27,7 @@ async function cloneNoteToParent(noteId, parentNoteId, prefix) {
 
     await sql.execute("UPDATE branches SET isExpanded = 1 WHERE noteId = ?", [parentNoteId]);
 
-    return { success: true };
+    return { success: true, branchId: branch.branchId };
 }
 
 async function ensureNoteIsPresentInParent(noteId, parentNoteId, prefix) {
@@ -86,14 +86,14 @@ async function cloneNoteAfter(noteId, afterBranchId) {
 
     await syncTable.addNoteReorderingSync(afterNote.parentNoteId);
 
-    await new Branch({
+    const branch = await new Branch({
         noteId: noteId,
         parentNoteId: afterNote.parentNoteId,
         notePosition: afterNote.notePosition + 1,
         isExpanded: 0
     }).save();
 
-    return { success: true };
+    return { success: true, branchId: branch.branchId };
 }
 
 async function isNoteDeleted(noteId) {
