@@ -20,7 +20,7 @@ const keyBindings = {
         return false;
     },
     "ctrl+down": node => {
-        let afterNode = node.getNextSibling();
+        const afterNode = node.getNextSibling();
         if (afterNode !== null) {
             treeChangesService.moveAfterNode([node], afterNode);
         }
@@ -33,7 +33,7 @@ const keyBindings = {
         return false;
     },
     "ctrl+right": node => {
-        let toNode = node.getPrevSibling();
+        const toNode = node.getPrevSibling();
 
         if (toNode !== null) {
             treeChangesService.moveToNode([node], toNode);

@@ -86,18 +86,12 @@ async function prepareNode(branch) {
         extraClasses: await getExtraClasses(note),
         icon: await getIcon(note),
         refKey: note.noteId,
-        expanded: branch.isExpanded || hoistedNoteId === note.noteId
+        expanded: branch.isExpanded || hoistedNoteId === note.noteId,
+        lazy: true
     };
 
     if (note.hasChildren() || note.type === 'search') {
         node.folder = true;
-
-        if (node.expanded && note.type !== 'search') {
-            node.children = await prepareRealBranch(note);
-        }
-        else {
-            node.lazy = true;
-        }
     }
 
     return node;

@@ -20,7 +20,11 @@ async function moveBeforeNode(nodesToMove, beforeNode) {
             return;
         }
 
-        await changeNode(nodeToMove, node => node.moveTo(beforeNode, 'before'));
+        await changeNode(
+            node => node.moveTo(beforeNode, 'before'),
+            nodeToMove,
+            beforeNode.data.noteId,
+            null);
     }
 }
 
@@ -42,7 +46,11 @@ async function moveAfterNode(nodesToMove, afterNode) {
             return;
         }
 
-        await changeNode(nodeToMove, node => node.moveTo(afterNode, 'after'));
+        await changeNode(
+            node => node.moveTo(afterNode, 'after'),
+            nodeToMove,
+            null,
+            afterNode.data.noteId);
     }
 }
 
@@ -57,20 +65,14 @@ async function moveToNode(nodesToMove, toNode) {
             return;
         }
 
-        await changeNode(nodeToMove, async node => {
-            // first expand which will force lazy load and only then move the node
-            // if this is not expanded before moving, then lazy load won't happen because it already contains node
-            // this doesn't work if this isn't a folder yet, that's why we expand second time below
-            await toNode.setExpanded(true);
+        await changeNode(async node => {
+                // first expand which will force lazy load and only then move the node
+                // if this is not expanded before moving, then lazy load won't happen because it already contains node
+                // this doesn't work if this isn't a folder yet, that's why we expand second time below
+                await toNode.setExpanded(true);
 
-            node.moveTo(toNode);
-
-            toNode.folder = true;
-            toNode.renderTitle();
-
-            // this expands the note in case it become the folder only after the move
-            await toNode.setExpanded(true);
-        });
+                node.moveTo(toNode);
+            }, nodeToMove);
     }
 }
 
@@ -131,22 +133,72 @@ async function moveNodeUpInHierarchy(node) {
         node.getParent().renderTitle();
     }
 
-    await changeNode(node, node => node.moveTo(node.getParent(), 'after'));
+    await changeNode(
+        node => node.moveTo(node.getParent(), 'after'),
+        node);
 }
 
-async function changeNode(node, func) {
-    utils.assertArguments(node.data.parentNoteId, node.data.noteId);
+async function changeNode(func, node, beforeNoteId = null, afterNoteId = null) {
+    utils.assertArguments(func, node);
 
     const childNoteId = node.data.noteId;
-    const oldParentNoteId = node.data.parentNoteId;
+    const thisOldParentNode = node.getParent();
 
+    // this will move the node the user is directly operating on to the desired location
+    // note that there might be other instances of this note in the tree and those are updated through
+    // force reloading. We could simplify our lives by just reloading this one as well, but that leads
+    // to flickering and not good user experience. Current solution leads to no-flicker experience in most
+    // cases (since cloning is not used that often) and correct for multi-clone use cases
     await func(node);
 
-    const newParentNoteId = node.data.parentNoteId = utils.isTopLevelNode(node) ? 'root' : node.getParent().data.noteId;
+    const thisNewParentNode = node.getParent();
 
-    await treeCache.moveNote(childNoteId, oldParentNoteId, newParentNoteId);
+    node.data.parentNoteId = thisNewParentNode.data.noteId;
+
+    await treeCache.moveNote(childNoteId, thisOldParentNode.data.noteId, thisNewParentNode.data.noteId, beforeNoteId, afterNoteId);
 
     treeService.setCurrentNotePathToHash(node);
+
+    if (!thisOldParentNode.getChildren() || thisOldParentNode.getChildren().length === 0) {
+        thisOldParentNode.folder = false;
+        thisOldParentNode.renderTitle();
+    }
+
+    if (!thisNewParentNode.folder) {
+        thisNewParentNode.folder = true;
+        thisNewParentNode.renderTitle();
+    }
+
+    if (!thisNewParentNode.isExpanded()) {
+        // this expands the note in case it become the folder only after the move
+        await thisNewParentNode.setExpanded(true);
+    }
+
+    for (const newParentNode of treeService.getNodesByNoteId(thisNewParentNode.data.noteId)) {
+        if (newParentNode.key === thisNewParentNode.key) {
+            // this one has been handled above specifically
+            continue;
+        }
+
+        newParentNode.load(true); // force reload to show up new note
+        newParentNode.folder = true;
+        newParentNode.renderTitle();
+    }
+
+    for (const oldParentNode of treeService.getNodesByNoteId(thisOldParentNode.data.noteId)) {
+        if (oldParentNode.key === thisOldParentNode.key) {
+            // this one has been handled above specifically
+            continue;
+        }
+
+        await oldParentNode.load(true); // force reload to show up new note
+
+        if (oldParentNode.getChildren().length === 0) {
+            oldParentNode.folder = false;
+        }
+
+        oldParentNode.renderTitle();
+    }
 }
 
 export default {

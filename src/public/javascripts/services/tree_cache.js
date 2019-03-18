@@ -151,7 +151,7 @@ class TreeCache {
     }
 
     /* Move note from one parent to another. */
-    async moveNote(childNoteId, oldParentNoteId, newParentNoteId) {
+    async moveNote(childNoteId, oldParentNoteId, newParentNoteId, beforeNoteId, afterNoteId) {
         utils.assertArguments(childNoteId, oldParentNoteId, newParentNoteId);
 
         if (oldParentNoteId === newParentNoteId) {
@@ -172,8 +172,18 @@ class TreeCache {
         // add new associations
         treeCache.parents[childNoteId].push(newParentNoteId);
 
-        treeCache.children[newParentNoteId] = treeCache.children[newParentNoteId] || []; // this might be first child
-        treeCache.children[newParentNoteId].push(childNoteId);
+        const children = treeCache.children[newParentNoteId] = treeCache.children[newParentNoteId] || []; // this might be first child
+
+        // we try to put the note into precise order which might be used again by lazy-loaded nodes
+        if (beforeNoteId && children.includes(beforeNoteId)) {
+            children.splice(children.indexOf(beforeNoteId), 0, childNoteId);
+        }
+        else if (afterNoteId && children.includes(afterNoteId)) {
+            children.splice(children.indexOf(afterNoteId) + 1, 0, childNoteId);
+        }
+        else {
+            children.push(childNoteId);
+        }
     }
 }
 

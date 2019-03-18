@@ -756,5 +756,6 @@ export default {
     loadTree,
     treeInitialized,
     setExpandedToServer,
-    getHashValueFromAddress
+    getHashValueFromAddress,
+    getNodesByNoteId
 };
