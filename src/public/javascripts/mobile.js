@@ -4,7 +4,6 @@ import dragAndDropSetup from "./services/drag_and_drop.js";
 import treeCache from "./services/tree_cache.js";
 import treeBuilder from "./services/tree_builder.js";
 import contextMenuWidget from "./services/context_menu.js";
-import ContextMenuItemsContainer from "./services/context_menu_items_container.js";
 import treeChangesService from "./services/branches.js";
 import utils from "./services/utils.js";
 import treeUtils from "./services/tree_utils.js";
@@ -78,17 +77,16 @@ $("#note-menu-button").click(async e => {
     const parentNote = await treeCache.getNote(branch.parentNoteId);
     const isNotRoot = note.noteId !== 'root';
 
-    const itemsContainer = new ContextMenuItemsContainer([
-        {title: "Insert note after", cmd: "insertNoteAfter", uiIcon: "plus"},
-        {title: "Insert child note", cmd: "insertChildNote", uiIcon: "plus"},
-        {title: "Delete this note", cmd: "delete", uiIcon: "trash"}
-    ]);
+    const items = [
+        { title: "Insert note after", cmd: "insertNoteAfter", uiIcon: "plus",
+            enabled: isNotRoot && parentNote.type !== 'search' },
+        { title: "Insert child note", cmd: "insertChildNote", uiIcon: "plus",
+            enabled: note.type !== 'search' },
+        { title: "Delete this note", cmd: "delete", uiIcon: "trash",
+            enabled: isNotRoot && parentNote.type !== 'search' }
+    ];
 
-    itemsContainer.enableItem("insertNoteAfter", isNotRoot && parentNote.type !== 'search');
-    itemsContainer.enableItem("insertChildNote", note.type !== 'search');
-    itemsContainer.enableItem("delete", isNotRoot && parentNote.type !== 'search');
-
-    contextMenuWidget.initContextMenu(e, itemsContainer, (event, cmd) => {
+    contextMenuWidget.initContextMenu(e, items, (event, cmd) => {
         if (cmd === "insertNoteAfter") {
             const parentNoteId = node.data.parentNoteId;
             const isProtected = treeUtils.getParentProtectedStatus(node);

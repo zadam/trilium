@@ -11,7 +11,6 @@ import infoService from "./info.js";
 import treeCache from "./tree_cache.js";
 import syncService from "./sync.js";
 import hoistedNoteService from './hoisted_note.js';
-import ContextMenuItemsContainer from './context_menu_items_container.js';
 
 let clipboardIds = [];
 let clipboardMode = null;
@@ -92,34 +91,7 @@ function getNoteTypeItems(baseCmd) {
     ];
 }
 
-function getTopLevelItems(note) {
-    return [
-        { title: "Insert note after <kbd>Ctrl+O</kbd>", cmd: "insertNoteAfter", uiIcon: "plus", items: note.type !== 'search' ? getNoteTypeItems("insertNoteAfter") : null },
-        { title: "Insert child note <kbd>Ctrl+P</kbd>", cmd: "insertChildNote", uiIcon: "plus", items: note.type !== 'search' ? getNoteTypeItems("insertChildNote") : null },
-        { title: "Delete <kbd>Delete</kbd>", cmd: "delete", uiIcon: "trash" },
-        { title: "----" },
-        { title: "Hoist note <kbd>Ctrl-H</kbd>", cmd: "hoist", uiIcon: "arrow-up" },
-        { title: "Unhoist note <kbd>Ctrl-H</kbd>", cmd: "unhoist", uiIcon: "arrow-up" },
-        { title: "Edit branch prefix <kbd>F2</kbd>", cmd: "editBranchPrefix", uiIcon: "pencil" },
-        { title: "----" },
-        { title: "Protect subtree", cmd: "protectSubtree", uiIcon: "shield-check" },
-        { title: "Unprotect subtree", cmd: "unprotectSubtree", uiIcon: "shield-close" },
-        { title: "----" },
-        { title: "Copy / clone <kbd>Ctrl+C</kbd>", cmd: "copy", uiIcon: "files" },
-        { title: "Cut <kbd>Ctrl+X</kbd>", cmd: "cut", uiIcon: "scissors" },
-        { title: "Paste into <kbd>Ctrl+V</kbd>", cmd: "pasteInto", uiIcon: "clipboard" },
-        { title: "Paste after", cmd: "pasteAfter", uiIcon: "clipboard" },
-        { title: "----" },
-        { title: "Export", cmd: "export", uiIcon: "arrow-up-right" },
-        { title: "Import into note", cmd: "importIntoNote", uiIcon: "arrow-down-left" },
-        { title: "----" },
-        { title: "Collapse subtree <kbd>Alt+-</kbd>", cmd: "collapseSubtree", uiIcon: "align-justify" },
-        { title: "Force note sync", cmd: "forceNoteSync", uiIcon: "refresh" },
-        { title: "Sort alphabetically <kbd>Alt+S</kbd>", cmd: "sortAlphabetically", uiIcon: "arrows-v" }
-    ];
-}
-
-async function getContextMenuItems(event) {
+async function getTopLevelItems(event) {
     const node = $.ui.fancytree.getNode(event);
     const branch = await treeCache.getBranch(node.data.branchId);
     const note = await treeCache.getNote(node.data.noteId);
@@ -127,24 +99,52 @@ async function getContextMenuItems(event) {
     const isNotRoot = note.noteId !== 'root';
     const isHoisted = note.noteId === await hoistedNoteService.getHoistedNoteId();
 
-    const itemsContainer = new ContextMenuItemsContainer(getTopLevelItems(note));
+    const insertNoteAfterEnabled = isNotRoot && !isHoisted && parentNote.type !== 'search';
+    const insertChildNoteEnabled = note.type !== 'search';
 
-    // Modify menu entries depending on node status
-    itemsContainer.enableItem("insertNoteAfter", isNotRoot && !isHoisted && parentNote.type !== 'search');
-    itemsContainer.enableItem("insertChildNote", note.type !== 'search');
-    itemsContainer.enableItem("delete", isNotRoot && parentNote.type !== 'search');
-    itemsContainer.enableItem("copy", isNotRoot);
-    itemsContainer.enableItem("cut", isNotRoot);
-    itemsContainer.enableItem("pasteAfter", clipboardIds.length > 0 && isNotRoot && parentNote.type !== 'search');
-    itemsContainer.enableItem("pasteInto", clipboardIds.length > 0 && note.type !== 'search');
-    itemsContainer.enableItem("importIntoNote", note.type !== 'search');
-    itemsContainer.enableItem("export", note.type !== 'search');
-    itemsContainer.enableItem("editBranchPrefix", isNotRoot && parentNote.type !== 'search');
+    return [
+        { title: "Insert note after <kbd>Ctrl+O</kbd>", cmd: "insertNoteAfter", uiIcon: "plus",
+            items: insertNoteAfterEnabled ? getNoteTypeItems("insertNoteAfter") : null,
+            enabled: insertNoteAfterEnabled },
+        { title: "Insert child note <kbd>Ctrl+P</kbd>", cmd: "insertChildNote", uiIcon: "plus",
+            items: insertChildNoteEnabled ? getNoteTypeItems("insertChildNote") : null,
+            enabled: insertChildNoteEnabled },
+        { title: "Delete <kbd>Delete</kbd>", cmd: "delete", uiIcon: "trash",
+            enabled: isNotRoot && parentNote.type !== 'search' },
+        { title: "----" },
+        isHoisted ? null : { title: "Hoist note <kbd>Ctrl-H</kbd>", cmd: "hoist", uiIcon: "arrow-up" },
+        !isHoisted || !isNotRoot ? null : { title: "Unhoist note <kbd>Ctrl-H</kbd>", cmd: "unhoist", uiIcon: "arrow-up" },
+        { title: "Edit branch prefix <kbd>F2</kbd>", cmd: "editBranchPrefix", uiIcon: "pencil",
+            enabled: isNotRoot && parentNote.type !== 'search'},
+        { title: "----" },
+        { title: "Protect subtree", cmd: "protectSubtree", uiIcon: "shield-check" },
+        { title: "Unprotect subtree", cmd: "unprotectSubtree", uiIcon: "shield-close" },
+        { title: "----" },
+        { title: "Copy / clone <kbd>Ctrl+C</kbd>", cmd: "copy", uiIcon: "files",
+            enabled: isNotRoot },
+        { title: "Cut <kbd>Ctrl+X</kbd>", cmd: "cut", uiIcon: "scissors",
+            enabled: isNotRoot },
+        { title: "Paste into <kbd>Ctrl+V</kbd>", cmd: "pasteInto", uiIcon: "clipboard",
+            enabled: clipboardIds.length > 0 && note.type !== 'search' },
+        { title: "Paste after", cmd: "pasteAfter", uiIcon: "clipboard",
+            enabled: clipboardIds.length > 0 && isNotRoot && parentNote.type !== 'search' },
+        { title: "----" },
+        { title: "Export", cmd: "export", uiIcon: "arrow-up-right",
+            enabled: note.type !== 'search' },
+        { title: "Import into note", cmd: "importIntoNote", uiIcon: "arrow-down-left",
+            enabled: note.type !== 'search' },
+        { title: "----" },
+        { title: "Collapse subtree <kbd>Alt+-</kbd>", cmd: "collapseSubtree", uiIcon: "align-justify" },
+        { title: "Force note sync", cmd: "forceNoteSync", uiIcon: "refresh" },
+        { title: "Sort alphabetically <kbd>Alt+S</kbd>", cmd: "sortAlphabetically", uiIcon: "arrows-v" }
+    ].filter(row => row !== null);
+}
 
-    itemsContainer.hideItem("hoist", isHoisted);
-    itemsContainer.hideItem("unhoist", !isHoisted || !isNotRoot);
+async function getContextMenuItems(event) {
+    const items = await getTopLevelItems(event);
 
     // Activate node on right-click
+    const node = $.ui.fancytree.getNode(event);
     node.setActive();
 
     // right click resets selection to just this node
@@ -153,7 +153,7 @@ async function getContextMenuItems(event) {
     node.setSelected(true);
     treeService.clearSelectedNodes();
 
-    return itemsContainer;
+    return items;
 }
 
 function selectContextMenuItem(event, cmd) {

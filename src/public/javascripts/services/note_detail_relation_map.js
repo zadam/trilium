@@ -9,7 +9,6 @@ import attributeAutocompleteService from "./attribute_autocomplete.js";
 import promptDialog from "../dialogs/prompt.js";
 import infoDialog from "../dialogs/info.js";
 import confirmDialog from "../dialogs/confirm.js";
-import ContextMenuItemsContainer from "./context_menu_items_container.js";
 
 const $component = $("#note-detail-relation-map");
 const $relationMapContainer = $("#relation-map-container");
@@ -314,9 +313,9 @@ function connectionContextMenuHandler(connection, event) {
     event.preventDefault();
     event.stopPropagation();
 
-    const contextMenuItemsContainer = new ContextMenuItemsContainer([ {title: "Remove relation", cmd: "remove", uiIcon: "trash"} ]);
+    const items = [ {title: "Remove relation", cmd: "remove", uiIcon: "trash"} ];
 
-    contextMenuWidget.initContextMenu(event, contextMenuItemsContainer, async (event, cmd) => {
+    contextMenuWidget.initContextMenu(event, items, async (event, cmd) => {
         if (cmd === 'remove') {
             if (!await confirmDialog.confirm("Are you sure you want to remove the relation?")) {
                 return;
@@ -390,12 +389,12 @@ async function connectionCreatedHandler(info, originalEvent) {
 }
 
 $relationMapContainer.on("contextmenu", ".note-box", e => {
-    const contextMenuItemsContainer = new ContextMenuItemsContainer([
+    const items = [
         {title: "Remove note", cmd: "remove", uiIcon: "trash"},
         {title: "Edit title", cmd: "edit-title", uiIcon: "pencil"},
-    ]);
+    ];
 
-    contextMenuWidget.initContextMenu(e, contextMenuItemsContainer, noteContextMenuHandler);
+    contextMenuWidget.initContextMenu(e, items, noteContextMenuHandler);
 
     return false;
 });

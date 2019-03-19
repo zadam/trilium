@@ -426,6 +426,10 @@ div.ui-tooltip {
     background-color: var(--menu-background-color) !important;
 }
 
+.dropdown-menu .disabled {
+    color: #888 !important;
+}
+
 .dropdown-menu a:hover:not(.disabled) {
     color: var(--hover-item-text-color) !important;
     background-color: var(--hover-item-background-color) !important;

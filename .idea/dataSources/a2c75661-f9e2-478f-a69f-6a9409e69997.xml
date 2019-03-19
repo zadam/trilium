@@ -76,7 +76,6 @@ contentHash UNINDEXED</Arguments>
     <index id="31" parent="6" name="sqlite_autoindex_api_tokens_1">
       <NameSurrogate>1</NameSurrogate>
       <ColNames>apiTokenId</ColNames>
-      <ColumnCollations></ColumnCollations>
       <Unique>1</Unique>
     </index>
     <key id="32" parent="6">
@@ -145,25 +144,20 @@ contentHash UNINDEXED</Arguments>
     <index id="44" parent="7" name="sqlite_autoindex_attributes_1">
       <NameSurrogate>1</NameSurrogate>
       <ColNames>attributeId</ColNames>
-      <ColumnCollations></ColumnCollations>
       <Unique>1</Unique>
     </index>
     <index id="45" parent="7" name="IDX_attributes_noteId_index">
       <ColNames>noteId</ColNames>
-      <ColumnCollations></ColumnCollations>
     </index>
     <index id="46" parent="7" name="IDX_attributes_name_value">
       <ColNames>name
 value</ColNames>
-      <ColumnCollations></ColumnCollations>
     </index>
     <index id="47" parent="7" name="IDX_attributes_name_index">
       <ColNames>name</ColNames>
-      <ColumnCollations></ColumnCollations>
     </index>
     <index id="48" parent="7" name="IDX_attributes_value_index">
       <ColNames>value</ColNames>
-      <ColumnCollations></ColumnCollations>
     </index>
     <key id="49" parent="7">
       <ColNames>attributeId</ColNames>
@@ -224,21 +218,17 @@ value</ColNames>
     <index id="60" parent="8" name="sqlite_autoindex_branches_1">
       <NameSurrogate>1</NameSurrogate>
       <ColNames>branchId</ColNames>
-      <ColumnCollations></ColumnCollations>
       <Unique>1</Unique>
     </index>
     <index id="61" parent="8" name="IDX_branches_noteId_parentNoteId">
       <ColNames>noteId
 parentNoteId</ColNames>
-      <ColumnCollations></ColumnCollations>
     </index>
     <index id="62" parent="8" name="IDX_branches_noteId">
       <ColNames>noteId</ColNames>
-      <ColumnCollations></ColumnCollations>
     </index>
     <index id="63" parent="8" name="IDX_branches_parentNoteId">
       <ColNames>parentNoteId</ColNames>
-      <ColumnCollations></ColumnCollations>
     </index>
     <key id="64" parent="8">
       <ColNames>branchId</ColNames>
@@ -266,7 +256,6 @@ parentNoteId</ColNames>
     <index id="69" parent="9" name="sqlite_autoindex_event_log_1">
       <NameSurrogate>1</NameSurrogate>
       <ColNames>eventId</ColNames>
-      <ColumnCollations></ColumnCollations>
       <Unique>1</Unique>
     </index>
     <key id="70" parent="9">
@@ -319,16 +308,13 @@ parentNoteId</ColNames>
     <index id="79" parent="10" name="sqlite_autoindex_links_1">
       <NameSurrogate>1</NameSurrogate>
       <ColNames>linkId</ColNames>
-      <ColumnCollations></ColumnCollations>
       <Unique>1</Unique>
     </index>
     <index id="80" parent="10" name="IDX_links_noteId_index">
       <ColNames>noteId</ColNames>
-      <ColumnCollations></ColumnCollations>
     </index>
     <index id="81" parent="10" name="IDX_links_targetNoteId_index">
       <ColNames>targetNoteId</ColNames>
-      <ColumnCollations></ColumnCollations>
     </index>
     <key id="82" parent="10">
       <ColNames>linkId</ColNames>
@@ -375,12 +361,10 @@ parentNoteId</ColNames>
     <index id="90" parent="11" name="sqlite_autoindex_note_contents_1">
       <NameSurrogate>1</NameSurrogate>
       <ColNames>noteContentId</ColNames>
-      <ColumnCollations></ColumnCollations>
       <Unique>1</Unique>
     </index>
     <index id="91" parent="11" name="IDX_note_contents_noteId">
       <ColNames>noteId</ColNames>
-      <ColumnCollations></ColumnCollations>
       <Unique>1</Unique>
     </index>
     <key id="92" parent="11">
@@ -398,7 +382,6 @@ parentNoteId</ColNames>
     <index id="95" parent="12" name="sqlite_autoindex_note_fulltext_config_1">
       <NameSurrogate>1</NameSurrogate>
       <ColNames>k</ColNames>
-      <ColumnCollations></ColumnCollations>
       <Unique>1</Unique>
     </index>
     <key id="96" parent="12">
@@ -468,7 +451,6 @@ parentNoteId</ColNames>
       <NameSurrogate>1</NameSurrogate>
       <ColNames>segid
 term</ColNames>
-      <ColumnCollations></ColumnCollations>
       <Unique>1</Unique>
     </index>
     <key id="114" parent="16">
@@ -532,20 +514,16 @@ term</ColNames>
     <index id="125" parent="17" name="sqlite_autoindex_note_revisions_1">
       <NameSurrogate>1</NameSurrogate>
       <ColNames>noteRevisionId</ColNames>
-      <ColumnCollations></ColumnCollations>
       <Unique>1</Unique>
     </index>
     <index id="126" parent="17" name="IDX_note_revisions_noteId">
       <ColNames>noteId</ColNames>
-      <ColumnCollations></ColumnCollations>
     </index>
     <index id="127" parent="17" name="IDX_note_revisions_dateModifiedFrom">
       <ColNames>dateModifiedFrom</ColNames>
-      <ColumnCollations></ColumnCollations>
     </index>
     <index id="128" parent="17" name="IDX_note_revisions_dateModifiedTo">
       <ColNames>dateModifiedTo</ColNames>
-      <ColumnCollations></ColumnCollations>
     </index>
     <key id="129" parent="17">
       <ColNames>noteRevisionId</ColNames>
@@ -606,7 +584,6 @@ term</ColNames>
     <index id="139" parent="18" name="sqlite_autoindex_notes_1">
       <NameSurrogate>1</NameSurrogate>
       <ColNames>noteId</ColNames>
-      <ColumnCollations></ColumnCollations>
       <Unique>1</Unique>
     </index>
     <key id="140" parent="18">
@@ -648,7 +625,6 @@ term</ColNames>
     <index id="147" parent="19" name="sqlite_autoindex_options_1">
       <NameSurrogate>1</NameSurrogate>
       <ColNames>name</ColNames>
-      <ColumnCollations></ColumnCollations>
       <Unique>1</Unique>
     </index>
     <key id="148" parent="19">
@@ -684,7 +660,6 @@ term</ColNames>
     <index id="154" parent="20" name="sqlite_autoindex_recent_notes_1">
       <NameSurrogate>1</NameSurrogate>
       <ColNames>branchId</ColNames>
-      <ColumnCollations></ColumnCollations>
       <Unique>1</Unique>
     </index>
     <key id="155" parent="20">
@@ -705,7 +680,6 @@ term</ColNames>
     <index id="158" parent="21" name="sqlite_autoindex_source_ids_1">
       <NameSurrogate>1</NameSurrogate>
       <ColNames>sourceId</ColNames>
-      <ColumnCollations></ColumnCollations>
       <Unique>1</Unique>
     </index>
     <key id="159" parent="21">
@@ -768,12 +742,10 @@ term</ColNames>
     <index id="172" parent="24" name="IDX_sync_entityName_entityId">
       <ColNames>entityName
 entityId</ColNames>
-      <ColumnCollations></ColumnCollations>
       <Unique>1</Unique>
     </index>
     <index id="173" parent="24" name="IDX_sync_syncDate">
       <ColNames>syncDate</ColNames>
-      <ColumnCollations></ColumnCollations>
     </index>
     <key id="174" parent="24">
       <ColNames>id</ColNames>

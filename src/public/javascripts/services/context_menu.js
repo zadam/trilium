@@ -1,6 +1,6 @@
 const $contextMenuContainer = $("#context-menu-container");
 
-function initContextMenu(event, itemContainer, selectContextMenuItem) {
+function initContextMenu(event, contextMenuItems, selectContextMenuItem) {
     event.stopPropagation();
 
     $contextMenuContainer.empty();
@@ -57,7 +57,7 @@ function initContextMenu(event, itemContainer, selectContextMenuItem) {
         }
     }
 
-    addItems($contextMenuContainer, itemContainer.getItems());
+    addItems($contextMenuContainer, contextMenuItems);
 
     // code below tries to detect when dropdown would overflow from page
     // in such case we'll position it above click coordinates so it will fit into client
