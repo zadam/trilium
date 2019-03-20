@@ -2,7 +2,6 @@ const log = require('./log');
 const noteService = require('./notes');
 const sql = require('./sql');
 const utils = require('./utils');
-const dateUtils = require('./date_utils');
 const attributeService = require('./attributes');
 const dateNoteService = require('./date_notes');
 const treeService = require('./tree');
@@ -13,6 +12,7 @@ const dayjs = require('dayjs');
 const cloningService = require('./cloning');
 const messagingService = require('./messaging');
 const appInfo = require('./app_info');
+const searchService = require('./search');
 
 /**
  * This is the main backend API interface for scripts. It's published in the local "api" object.
@@ -92,6 +92,16 @@ function BackendScriptApi(currentNote, apiParams) {
      * @returns {Promise<Entity[]>}
      */
     this.getEntities = repository.getEntities;
+
+    /**
+     * This is a powerful search method - you can search by attributes and their values, e.g.:
+     * "@dateModified =* MONTH AND @log". See full documentation for all options at: https://github.com/zadam/trilium/wiki/Search
+     *
+     * @method
+     * @param {string} searchString
+     * @returns ${Promise<Note[]>}
+     */
+    this.searchForNotes = searchService.searchForNotes;
 
     /**
      * Retrieves notes with given label name & value
