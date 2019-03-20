@@ -71,7 +71,7 @@ async function showTree() {
 }
 
 $("#note-menu-button").click(async e => {
-    const node = treeService.getCurrentNode();
+    const node = treeService.getActiveNode();
     const branch = await treeCache.getBranch(node.data.branchId);
     const note = await treeCache.getNote(node.data.noteId);
     const parentNote = await treeCache.getNote(branch.parentNoteId);

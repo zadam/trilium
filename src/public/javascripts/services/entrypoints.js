@@ -138,7 +138,7 @@ function registerEntrypoints() {
 
     // FIXME: do we really need these at this point?
     utils.bindShortcut("ctrl+shift+up", () => {
-        const node = treeService.getCurrentNode();
+        const node = treeService.getActiveNode();
         node.navigate($.ui.keyCode.UP, true);
 
         $("#note-detail-text").focus();
@@ -147,7 +147,7 @@ function registerEntrypoints() {
 
     // FIXME: do we really need these at this point?
     utils.bindShortcut("ctrl+shift+down", () => {
-        const node = treeService.getCurrentNode();
+        const node = treeService.getActiveNode();
         node.navigate($.ui.keyCode.DOWN, true);
 
         $("#note-detail-text").focus();

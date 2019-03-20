@@ -7,12 +7,14 @@ const log = require('./log');
 
 async function executeNote(note, apiParams) {
     if (!note.isJavaScript() || note.getScriptEnv() !== 'backend' || !note.isContentAvailable) {
+        log.info(`Cannot execute note ${note.noteId}`);
+
         return;
     }
 
     const bundle = await getScriptBundle(note);
 
-    await executeBundle(bundle, apiParams);
+    return await executeBundle(bundle, apiParams);
 }
 
 async function executeNoteNoException(note, apiParams) {

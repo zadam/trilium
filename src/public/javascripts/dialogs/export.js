@@ -45,7 +45,7 @@ async function showDialog(defaultType) {
 
     $dialog.modal();
 
-    const currentNode = treeService.getCurrentNode();
+    const currentNode = treeService.getActiveNode();
     const noteTitle = await treeUtils.getNoteTitle(currentNode.data.noteId);
 
     $noteTitle.html(noteTitle);
@@ -69,7 +69,7 @@ $form.submit(() => {
 
     const exportVersion = exportFormat === 'opml' ? $dialog.find("input[name='opml-version']:checked").val() : "1.0";
 
-    const currentNode = treeService.getCurrentNode();
+    const currentNode = treeService.getActiveNode();
 
     exportBranch(currentNode.data.branchId, exportType, exportFormat, exportVersion);
 

@@ -16,7 +16,7 @@ async function showDialog() {
 
     $dialog.modal();
 
-    const currentNode = treeService.getCurrentNode();
+    const currentNode = treeService.getActiveNode();
 
     branchId = currentNode.data.branchId;
     const branch = await treeCache.getBranch(branchId);

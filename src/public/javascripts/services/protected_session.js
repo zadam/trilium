@@ -43,7 +43,7 @@ function ensureProtectedSession(requireProtectedSession, modal) {
         $noteTitle.prop("readonly", true);
 
         if (modal) {
-            if (treeService.getCurrentNode().data.isProtected) {
+            if (treeService.getActiveNode().data.isProtected) {
                 $noteDetailWrapper.hide();
             }
 

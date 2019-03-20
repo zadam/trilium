@@ -41,7 +41,7 @@ import macInit from './services/mac_init.js';
 import cssLoader from './services/css_loader.js';
 
 // required for CKEditor image upload plugin
-window.glob.getCurrentNode = treeService.getCurrentNode;
+window.glob.getActiveNode = treeService.getActiveNode;
 window.glob.getHeaders = server.getHeaders;
 window.glob.showAddLinkDialog = addLinkDialog.showDialog;
 // this is required by CKEditor when uploading images
@@ -120,7 +120,7 @@ if (utils.isElectron()) {
         await treeService.activateNote(parentNoteId);
 
         setTimeout(async () => {
-            const parentNode = treeService.getCurrentNode();
+            const parentNode = treeService.getActiveNode();
 
             const {note} = await treeService.createNote(parentNode, parentNode.data.noteId, 'into', "text", parentNode.data.isProtected);
 

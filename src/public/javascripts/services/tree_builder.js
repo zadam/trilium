@@ -115,22 +115,7 @@ async function prepareRealBranch(parentNote) {
 }
 
 async function prepareSearchBranch(note) {
-    const fullNote = await noteDetailService.loadNote(note.noteId);
-
-    console.log("ZZZ", fullNote.noteContent.content);
-
-    if (!fullNote.noteContent.content || !fullNote.noteContent.content.trim()) {
-        return [];
-    }
-
-    const json = JSON.parse(fullNote.noteContent.content);
-
-    if (!json.searchString || !json.searchString.trim()) {
-        return [];
-    }
-
-    const results = (await server.get('search/' + encodeURIComponent(json.searchString)))
-        .filter(res => res.noteId !== note.noteId); // this is necessary because title of the search note is often the same as the search text which would match and create circle
+    const results = await server.get('search-note/' + note.noteId);
 
     // force to load all the notes at once instead of one by one
     await treeCache.getNotes(results.map(res => res.noteId));
@@ -149,7 +134,7 @@ async function prepareSearchBranch(note) {
         treeCache.addBranch(branch);
     }
 
-    return await prepareRealBranch(fullNote);
+    return await prepareRealBranch(note);
 }
 
 async function getExtraClasses(note) {

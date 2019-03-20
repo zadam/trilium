@@ -202,6 +202,7 @@ function register(app) {
 
     apiRoute(GET, '/api/search/:searchString', searchRoute.searchNotes);
     apiRoute(POST, '/api/search/:searchString', searchRoute.saveSearchToNote);
+    apiRoute(GET, '/api/search-note/:noteId', searchRoute.searchFromNote);
 
     route(POST, '/api/login/sync', [], loginApiRoute.loginSync, apiResultHandler);
     // this is for entering protected mode so user has to be already logged-in (that's the reason we don't require username)

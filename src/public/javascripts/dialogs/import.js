@@ -35,14 +35,14 @@ async function showDialog() {
 
     glob.activeDialog = $dialog;
 
-    const currentNode = treeService.getCurrentNode();
+    const currentNode = treeService.getActiveNode();
     $noteTitle.text(await treeUtils.getNoteTitle(currentNode.data.noteId));
 
     $dialog.modal();
 }
 
 $form.submit(() => {
-    const currentNode = treeService.getCurrentNode();
+    const currentNode = treeService.getActiveNode();
 
     // disabling so that import is not triggered again.
     $importButton.attr("disabled", "disabled");

@@ -158,7 +158,7 @@ async function getContextMenuItems(event) {
 
 function selectContextMenuItem(event, cmd) {
     // context menu is always triggered on current node
-    const node = treeService.getCurrentNode();
+    const node = treeService.getActiveNode();
 
     if (cmd.startsWith("insertNoteAfter")) {
         const parentNoteId = node.data.parentNoteId;

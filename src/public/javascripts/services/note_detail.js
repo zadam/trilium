@@ -187,7 +187,7 @@ async function loadNoteDetail(noteId) {
     // this is useful when user quickly switches notes (by e.g. holding down arrow) so that we don't
     // try to render all those loaded notes one after each other. This only guarantees that correct note
     // will be displayed independent of timing
-    const currentTreeNode = treeService.getCurrentNode();
+    const currentTreeNode = treeService.getActiveNode();
     if (currentTreeNode && currentTreeNode.data.noteId !== loadedNote.noteId) {
         return;
     }
@@ -196,7 +196,7 @@ async function loadNoteDetail(noteId) {
     activeNote = loadedNote;
 
     if (utils.isDesktop()) {
-        // needs to happen after loading the note itself because it references current noteId
+        // needs to happen after loading the note itself because it references active noteId
         attributeService.refreshAttributes();
     }
     else {

@@ -20,7 +20,7 @@ import confirmDialog from "../dialogs/confirm.js";
 const $tree = $("#tree");
 const $createTopLevelNoteButton = $("#create-top-level-note-button");
 const $collapseTreeButton = $("#collapse-tree-button");
-const $scrollToCurrentNoteButton = $("#scroll-to-current-note-button");
+const $scrollToActiveNoteButton = $("#scroll-to-active-note-button");
 const $notePathList = $("#note-path-list");
 const $notePathCount = $("#note-path-count");
 
@@ -35,12 +35,12 @@ function getFocusedNode() {
 }
 
 // note that if you want to access data like noteId or isProtected, you need to go into "data" property
-function getCurrentNode() {
+function getActiveNode() {
     return $tree.fancytree("getActiveNode");
 }
 
 function getActiveNotePath() {
-    const node = getCurrentNode();
+    const node = getActiveNode();
 
     return treeUtils.getNotePath(node);
 }
@@ -356,7 +356,7 @@ function clearSelectedNodes() {
         selectedNode.setSelected(false);
     }
 
-    const currentNode = getCurrentNode();
+    const currentNode = getActiveNode();
 
     if (currentNode) {
         currentNode.setSelected(true);
@@ -520,8 +520,8 @@ async function collapseTree(node = null) {
     node.visit(node => node.setExpanded(false));
 }
 
-function scrollToCurrentNote() {
-    const node = getCurrentNode();
+function scrollToActiveNote() {
+    const node = getActiveNode();
 
     if (node) {
         node.makeVisible({scrollIntoView: true});
@@ -697,7 +697,7 @@ messagingService.subscribeToSyncMessages(syncData => {
 });
 
 utils.bindShortcut('ctrl+o', async () => {
-    const node = getCurrentNode();
+    const node = getActiveNode();
     const parentNoteId = node.data.parentNoteId;
     const isProtected = treeUtils.getParentProtectedStatus(node);
 
@@ -709,7 +709,7 @@ utils.bindShortcut('ctrl+o', async () => {
 });
 
 function createNoteInto() {
-    const node = getCurrentNode();
+    const node = getActiveNode();
 
     createNote(node, node.data.noteId, 'into', null, node.data.isProtected, true);
 }
@@ -742,7 +742,7 @@ window.glob.createNoteInto = createNoteInto;
 
 utils.bindShortcut('ctrl+p', createNoteInto);
 
-utils.bindShortcut('ctrl+.', scrollToCurrentNote);
+utils.bindShortcut('ctrl+.', scrollToActiveNote);
 
 $(window).bind('hashchange', function() {
     if (isNotePathInAddress()) {
@@ -760,18 +760,18 @@ utils.bindShortcut('alt+c', () => collapseTree()); // don't use shortened form s
 $collapseTreeButton.click(() => collapseTree());
 
 $createTopLevelNoteButton.click(createNewTopLevelNote);
-$scrollToCurrentNoteButton.click(scrollToCurrentNote);
+$scrollToActiveNoteButton.click(scrollToActiveNote);
 
 export default {
     reload,
     collapseTree,
-    scrollToCurrentNote,
+    scrollToActiveNote,
     setBranchBackgroundBasedOnProtectedStatus,
     setProtected,
     expandToNote,
     activateNote,
     getFocusedNode,
-    getCurrentNode,
+    getActiveNode,
     getActiveNotePath,
     setCurrentNotePathToHash,
     setNoteTitle,
