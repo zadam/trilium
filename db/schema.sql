@@ -1,64 +1,72 @@
+CREATE VIRTUAL TABLE note_fulltext USING fts5(noteId UNINDEXED, title, titleHash UNINDEXED, content, contentHash UNINDEXED)
+/* note_fulltext(noteId,title,titleHash,content,contentHash) */;
 CREATE TABLE IF NOT EXISTS "sync" (
-  `id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-  `entityName`	TEXT NOT NULL,
-  `entityId`	TEXT NOT NULL,
-  `sourceId` TEXT NOT NULL,
-  `syncDate`	TEXT NOT NULL);
+                                    `id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                                    `entityName`	TEXT NOT NULL,
+                                    `entityId`	TEXT NOT NULL,
+                                    `sourceId` TEXT NOT NULL,
+                                    `utcSyncDate`	TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS "source_ids" (
-  `sourceId`	TEXT NOT NULL,
-  `dateCreated`	TEXT NOT NULL,
-  PRIMARY KEY(`sourceId`)
+                                          `sourceId`	TEXT NOT NULL,
+                                          `utcDateCreated`	TEXT NOT NULL,
+                                          PRIMARY KEY(`sourceId`)
 );
 CREATE TABLE IF NOT EXISTS "note_revisions" (
-  `noteRevisionId`	TEXT NOT NULL PRIMARY KEY,
-  `noteId`	TEXT NOT NULL,
-  `title`	TEXT,
-  `content`	TEXT,
-  `isProtected`	INT NOT NULL DEFAULT 0,
-  `dateModifiedFrom` TEXT NOT NULL,
-  `dateModifiedTo` TEXT NOT NULL
-, type TEXT DEFAULT '' NOT NULL, mime TEXT DEFAULT '' NOT NULL, hash TEXT DEFAULT "" NOT NULL);
+                                              `noteRevisionId`	TEXT NOT NULL PRIMARY KEY,
+                                              `noteId`	TEXT NOT NULL,
+                                              `title`	TEXT,
+                                              `content`	TEXT,
+                                              `isProtected`	INT NOT NULL DEFAULT 0,
+                                              `utcDateModifiedFrom` TEXT NOT NULL,
+                                              `utcDateModifiedTo` TEXT NOT NULL,
+                                              `dateModifiedFrom` TEXT NOT NULL,
+                                              `dateModifiedTo` TEXT NOT NULL,
+                                              type TEXT DEFAULT '' NOT NULL,
+                                              mime TEXT DEFAULT '' NOT NULL,
+                                              hash TEXT DEFAULT "" NOT NULL);
 CREATE TABLE IF NOT EXISTS "api_tokens"
 (
   apiTokenId TEXT PRIMARY KEY NOT NULL,
   token TEXT NOT NULL,
-  dateCreated TEXT NOT NULL,
-  isDeleted INT NOT NULL DEFAULT 0
-, hash TEXT DEFAULT "" NOT NULL);
+  utcDateCreated TEXT NOT NULL,
+  isDeleted INT NOT NULL DEFAULT 0,
+  hash TEXT DEFAULT "" NOT NULL);
 CREATE TABLE IF NOT EXISTS "branches" (
-  `branchId`	TEXT NOT NULL,
-  `noteId`	TEXT NOT NULL,
-  `parentNoteId`	TEXT NOT NULL,
-  `notePosition`	INTEGER NOT NULL,
-  `prefix`	TEXT,
-  `isExpanded`	BOOLEAN,
-  `isDeleted`	INTEGER NOT NULL DEFAULT 0,
-  `dateModified`	TEXT NOT NULL, hash TEXT DEFAULT "" NOT NULL, dateCreated TEXT NOT NULL DEFAULT '1970-01-01T00:00:00.000Z',
-  PRIMARY KEY(`branchId`)
+                                        `branchId`	TEXT NOT NULL,
+                                        `noteId`	TEXT NOT NULL,
+                                        `parentNoteId`	TEXT NOT NULL,
+                                        `notePosition`	INTEGER NOT NULL,
+                                        `prefix`	TEXT,
+                                        `isExpanded`	BOOLEAN,
+                                        `isDeleted`	INTEGER NOT NULL DEFAULT 0,
+                                        `utcDateModified`	TEXT NOT NULL,
+                                        utcDateCreated TEXT NOT NULL,
+                                        hash TEXT DEFAULT "" NOT NULL,
+                                        PRIMARY KEY(`branchId`)
 );
 CREATE TABLE IF NOT EXISTS "recent_notes" (
-  `branchId` TEXT NOT NULL PRIMARY KEY,
-  `notePath` TEXT NOT NULL,
-  hash TEXT DEFAULT "" NOT NULL,
-  `dateCreated` TEXT NOT NULL,
-  isDeleted INT
+                                            `branchId` TEXT NOT NULL PRIMARY KEY,
+                                            `notePath` TEXT NOT NULL,
+                                            hash TEXT DEFAULT "" NOT NULL,
+                                            `utcDateCreated` TEXT NOT NULL,
+                                            isDeleted INT
 );
 CREATE TABLE IF NOT EXISTS "event_log" (
-  `eventId`	TEXT NOT NULL PRIMARY KEY,
-  `noteId`	TEXT,
-  `comment`	TEXT,
-  `dateCreated`	TEXT NOT NULL
+                                         `eventId`	TEXT NOT NULL PRIMARY KEY,
+                                         `noteId`	TEXT,
+                                         `comment`	TEXT,
+                                         `utcDateCreated`	TEXT NOT NULL
 );
 CREATE TABLE IF NOT EXISTS "options"
 (
   name TEXT not null PRIMARY KEY,
   value TEXT,
-  dateModified INT,
   isSynced INTEGER default 0 not null,
   hash TEXT default "" not null,
-  dateCreated TEXT default '1970-01-01T00:00:00.000Z' not null
+  utcDateCreated TEXT not null,
+  utcDateModified TEXT NOT NULL
 );
-CREATE TABLE attributes
+CREATE TABLE IF NOT EXISTS "attributes"
 (
   attributeId      TEXT not null primary key,
   noteId       TEXT not null,
@@ -66,66 +74,69 @@ CREATE TABLE attributes
   name         TEXT not null,
   value        TEXT default '' not null,
   position     INT  default 0 not null,
-  dateCreated  TEXT not null,
-  dateModified TEXT not null,
+  utcDateCreated  TEXT not null,
+  utcDateModified TEXT not null,
   isDeleted    INT  not null,
-  hash         TEXT default "" not null, isInheritable int DEFAULT 0 NULL);
+  hash         TEXT default "" not null,
+  isInheritable int DEFAULT 0 NULL);
 CREATE TABLE IF NOT EXISTS "links" (
-  `linkId`	TEXT NOT NULL,
-  `noteId`	TEXT NOT NULL,
-  `targetNoteId`	TEXT NOT NULL,
-  `type` TEXT NOT NULL,
-  `hash` TEXT DEFAULT "" NOT NULL,
-  `isDeleted`	INTEGER NOT NULL DEFAULT 0,
-  `dateCreated`	TEXT NOT NULL,
-  `dateModified`	TEXT NOT NULL,
-  PRIMARY KEY(`linkId`)
+                                     `linkId`	TEXT NOT NULL,
+                                     `noteId`	TEXT NOT NULL,
+                                     `targetNoteId`	TEXT NOT NULL,
+                                     `type` TEXT NOT NULL,
+                                     `hash` TEXT DEFAULT "" NOT NULL,
+                                     `isDeleted`	INTEGER NOT NULL DEFAULT 0,
+                                     `utcDateCreated`	TEXT NOT NULL,
+                                     `utcDateModified`	TEXT NOT NULL,
+                                     PRIMARY KEY(`linkId`)
 );
 CREATE TABLE IF NOT EXISTS "note_contents" (
-  `noteContentId`	TEXT NOT NULL,
-  `noteId`	TEXT NOT NULL,
-  `isProtected`	INT NOT NULL DEFAULT 0,
-  `content`	TEXT NULL DEFAULT NULL,
-  `hash` TEXT DEFAULT "" NOT NULL,
-  `dateCreated`	TEXT NOT NULL,
-  `dateModified` TEXT NOT NULL,
-  PRIMARY KEY(`noteContentId`)
+                                             `noteContentId`	TEXT NOT NULL,
+                                             `noteId`	TEXT NOT NULL,
+                                             `isProtected`	INT NOT NULL DEFAULT 0,
+                                             `content`	TEXT NULL DEFAULT NULL,
+                                             `hash` TEXT DEFAULT "" NOT NULL,
+                                             `utcDateCreated`	TEXT NOT NULL,
+                                             `utcDateModified` TEXT NOT NULL,
+                                             PRIMARY KEY(`noteContentId`)
 );
 CREATE TABLE IF NOT EXISTS "notes" (
-  `noteId`	TEXT NOT NULL,
-  `title`	TEXT NOT NULL DEFAULT "note",
-  `isProtected`	INT NOT NULL DEFAULT 0,
-  `type` TEXT NOT NULL DEFAULT 'text',
-  `mime` TEXT NOT NULL DEFAULT 'text/html',
-  `hash` TEXT DEFAULT "" NOT NULL,
-  `isDeleted`	INT NOT NULL DEFAULT 0,
-  `dateCreated`	TEXT NOT NULL,
-  `dateModified`	TEXT NOT NULL,
-  PRIMARY KEY(`noteId`)
+                                     `noteId`	TEXT NOT NULL,
+                                     `title`	TEXT NOT NULL DEFAULT "note",
+                                     `isProtected`	INT NOT NULL DEFAULT 0,
+                                     `type` TEXT NOT NULL DEFAULT 'text',
+                                     `mime` TEXT NOT NULL DEFAULT 'text/html',
+                                     `hash` TEXT DEFAULT "" NOT NULL,
+                                     `isDeleted`	INT NOT NULL DEFAULT 0,
+                                     `dateCreated`	TEXT NOT NULL,
+                                     `dateModified`	TEXT NOT NULL,
+                                     `utcDateCreated`	TEXT NOT NULL,
+                                     `utcDateModified`	TEXT NOT NULL,
+                                     PRIMARY KEY(`noteId`)
 );
 CREATE UNIQUE INDEX `IDX_sync_entityName_entityId` ON `sync` (
-  `entityName`,
-  `entityId`
-);
-CREATE INDEX `IDX_sync_syncDate` ON `sync` (
-  `syncDate`
-);
+                                                              `entityName`,
+                                                              `entityId`
+  );
+CREATE INDEX `IDX_sync_utcSyncDate` ON `sync` (
+                                            `utcSyncDate`
+  );
 CREATE INDEX `IDX_note_revisions_noteId` ON `note_revisions` (
-  `noteId`
-);
+                                                              `noteId`
+  );
 CREATE INDEX `IDX_note_revisions_dateModifiedFrom` ON `note_revisions` (
-  `dateModifiedFrom`
-);
+                                                                        `utcDateModifiedFrom`
+  );
 CREATE INDEX `IDX_note_revisions_dateModifiedTo` ON `note_revisions` (
-  `dateModifiedTo`
-);
+                                                                      `utcDateModifiedTo`
+  );
 CREATE INDEX `IDX_branches_noteId` ON `branches` (
-  `noteId`
-);
+                                                  `noteId`
+  );
 CREATE INDEX `IDX_branches_noteId_parentNoteId` ON `branches` (
-  `noteId`,
-  `parentNoteId`
-);
+                                                               `noteId`,
+                                                               `parentNoteId`
+  );
 CREATE INDEX IDX_branches_parentNoteId ON branches (parentNoteId);
 CREATE INDEX IDX_attributes_name_value
   on attributes (name, value);
@@ -140,10 +151,3 @@ CREATE INDEX IDX_attributes_noteId_index
 CREATE INDEX IDX_attributes_value_index
   on attributes (value);
 CREATE UNIQUE INDEX `IDX_note_contents_noteId` ON `note_contents` (`noteId`);
-CREATE VIRTUAL TABLE note_fulltext USING fts5(noteId UNINDEXED, title, titleHash UNINDEXED, content, contentHash UNINDEXED)
-/* note_fulltext(noteId,title,titleHash,content,contentHash) */;
-CREATE TABLE IF NOT EXISTS 'note_fulltext_data'(id INTEGER PRIMARY KEY, block BLOB);
-CREATE TABLE IF NOT EXISTS 'note_fulltext_idx'(segid, term, pgno, PRIMARY KEY(segid, term)) WITHOUT ROWID;
-CREATE TABLE IF NOT EXISTS 'note_fulltext_content'(id INTEGER PRIMARY KEY, c0, c1, c2, c3, c4);
-CREATE TABLE IF NOT EXISTS 'note_fulltext_docsize'(id INTEGER PRIMARY KEY, sz BLOB);
-CREATE TABLE IF NOT EXISTS 'note_fulltext_config'(k PRIMARY KEY, v) WITHOUT ROWID;

@@ -26,6 +26,10 @@ class Option extends Entity {
     }
 
     beforeSaving() {
+        if (!this.utcDateCreated) {
+            this.utcDateCreated = dateUtils.utcNowDateTime();
+        }
+
         super.beforeSaving();
 
         if (this.isChanged) {
