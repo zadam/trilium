@@ -861,6 +861,10 @@ div[data-notify="container"] {
     color: var(--muted-text-color);
 }
 
+.ck-editor__nested-editable_focused {
+    background-color: var(--accented-background-color) !important;
+}
+
 .fancytree-loading span.fancytree-expander {
     background-image: none !important;
     display: inline-block;
