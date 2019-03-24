@@ -68,7 +68,9 @@
 
     <div class="dropdown-menu dropdown-menu-sm" id="context-menu-container"></div>
 
-    <form action="logout" id="logout-form" method="POST" style="display: none;"></form>
+    <form action="logout" id="logout-form" method="POST" style="display: none;">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>"/>
+    </form>
 </div>
 
 <script type="text/javascript">
@@ -78,7 +80,8 @@
         activeDialog: null,
         sourceId: '<%= sourceId %>',
         maxSyncIdAtLoad: <%= maxSyncIdAtLoad %>,
-        instanceName: '<%= instanceName %>'
+        instanceName: '<%= instanceName %>',
+        csrfToken: '<%= csrfToken %>'
     };
 </script>
 

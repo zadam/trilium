@@ -1,4 +1,3 @@
-import protectedSessionHolder from './protected_session_holder.js';
 import utils from './utils.js';
 import infoService from "./info.js";
 
@@ -7,7 +6,8 @@ function getHeaders() {
     // so hypothetical protectedSessionId becomes protectedsessionid on the backend
     // also avoiding using underscores instead of dashes since nginx filters them out by default
     return {
-        'trilium-source-id': glob.sourceId
+        'trilium-source-id': glob.sourceId,
+        'x-csrf-token': glob.csrfToken
     };
 }
 

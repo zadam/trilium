@@ -27,6 +27,7 @@
     "cls-hooked": "4.2.2",
     "commonmark": "0.28.1",
     "cookie-parser": "1.4.4",
+    "csurf": "^1.9.0",
     "dayjs": "1.8.11",
     "debug": "4.1.1",
     "ejs": "2.6.1",

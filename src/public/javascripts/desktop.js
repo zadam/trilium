@@ -98,7 +98,8 @@ $(document).on("click", "button[data-help-page]", e => {
 $("#logout-button").toggle(!utils.isElectron());
 
 $("#logout-button").click(() => {
-    const $logoutForm = $('<form action="logout" method="POST">');
+    const $logoutForm = $('<form action="logout" method="POST">')
+                            .append($(`<input type="hidden" name="_csrf" value="${glob.csrfToken}"/>`));
 
     $("body").append($logoutForm);
     $logoutForm.submit();

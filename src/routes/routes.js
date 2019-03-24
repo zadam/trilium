@@ -38,6 +38,9 @@ const auth = require('../services/auth');
 const cls = require('../services/cls');
 const sql = require('../services/sql');
 const protectedSessionService = require('../services/protected_session');
+const csurf = require('csurf');
+
+const csrfMiddleware = csurf({ cookie: true });
 
 function apiResultHandler(req, res, result) {
     // if it's an array and first element is integer then we consider this to be [statusCode, response] format
@@ -59,7 +62,7 @@ function apiResultHandler(req, res, result) {
 }
 
 function apiRoute(method, path, routeHandler) {
-    route(method, path, [auth.checkApiAuth], routeHandler, apiResultHandler);
+    route(method, path, [auth.checkApiAuth, csrfMiddleware], routeHandler, apiResultHandler);
 }
 
 function route(method, path, middleware, routeHandler, resultHandler, transactional = true) {
@@ -95,10 +98,10 @@ const GET = 'get', POST = 'post', PUT = 'put', DELETE = 'delete';
 const uploadMiddleware = multer.single('upload');
 
 function register(app) {
-    route(GET, '/', [auth.checkAuth], indexRoute.index);
+    route(GET, '/', [auth.checkAuth, csrfMiddleware], indexRoute.index);
     route(GET, '/login', [auth.checkAppInitialized], loginRoute.loginPage);
     route(POST, '/login', [], loginRoute.login);
-    route(POST, '/logout', [auth.checkAuth], loginRoute.logout);
+    route(POST, '/logout', [csrfMiddleware, auth.checkAuth], loginRoute.logout);
     route(GET, '/setup', [auth.checkAppNotInitialized], setupRoute.setupPage);
 
     apiRoute(GET, '/api/tree', treeApiRoute.getTree);
@@ -129,9 +132,9 @@ function register(app) {
     apiRoute(PUT, '/api/notes/:noteId/clone-after/:afterBranchId', cloningApiRoute.cloneNoteAfter);
 
     route(GET, '/api/notes/:branchId/export/:type/:format/:version/:exportId', [auth.checkApiAuthOrElectron], exportRoute.exportBranch);
-    route(POST, '/api/notes/:parentNoteId/import', [auth.checkApiAuthOrElectron, uploadMiddleware], importRoute.importToBranch, apiResultHandler);
+    route(POST, '/api/notes/:parentNoteId/import', [auth.checkApiAuthOrElectron, uploadMiddleware, csrfMiddleware], importRoute.importToBranch, apiResultHandler);
 
-    route(POST, '/api/notes/:parentNoteId/upload', [auth.checkApiAuthOrElectron, uploadMiddleware],
+    route(POST, '/api/notes/:parentNoteId/upload', [auth.checkApiAuthOrElectron, uploadMiddleware, csrfMiddleware],
         filesRoute.uploadFile, apiResultHandler);
 
     route(GET, '/api/notes/:noteId/download', [auth.checkApiAuthOrElectron], filesRoute.downloadFile);
@@ -148,7 +151,7 @@ function register(app) {
     apiRoute(GET, '/api/attributes/values/:attributeName', attributesRoute.getValuesForAttribute);
 
     route(GET, '/api/images/:noteId/:filename', [auth.checkApiAuthOrElectron], imageRoute.returnImage);
-    route(POST, '/api/images', [auth.checkApiAuthOrElectron, uploadMiddleware], imageRoute.uploadImage, apiResultHandler);
+    route(POST, '/api/images', [auth.checkApiAuthOrElectron, uploadMiddleware, csrfMiddleware], imageRoute.uploadImage, apiResultHandler);
 
     apiRoute(GET, '/api/recent-changes', recentChangesApiRoute.getRecentChanges);
 
@@ -176,6 +179,7 @@ function register(app) {
     apiRoute(POST, '/api/recent-notes', recentNotesRoute.addRecentNote);
     apiRoute(GET, '/api/app-info', appInfoRoute.getAppInfo);
 
+    // group of services below are meant to be executed from outside
     route(GET, '/api/setup/status', [], setupApiRoute.getStatus, apiResultHandler);
     route(POST, '/api/setup/new-document', [auth.checkAppNotInitialized], setupApiRoute.setupNewDocument, apiResultHandler);
     route(POST, '/api/setup/sync-from-server', [auth.checkAppNotInitialized], setupApiRoute.setupSyncFromServer, apiResultHandler, false);
@@ -188,7 +192,7 @@ function register(app) {
 
     apiRoute(POST, '/api/cleanup/cleanup-unused-images', cleanupRoute.cleanupUnusedImages);
     // VACUUM requires execution outside of transaction
-    route(POST, '/api/cleanup/vacuum-database', [auth.checkApiAuthOrElectron], cleanupRoute.vacuumDatabase, apiResultHandler, false);
+    route(POST, '/api/cleanup/vacuum-database', [auth.checkApiAuthOrElectron, csrfMiddleware], cleanupRoute.vacuumDatabase, apiResultHandler, false);
 
     apiRoute(POST, '/api/script/exec', scriptRoute.exec);
     apiRoute(POST, '/api/script/run/:noteId', scriptRoute.run);
@@ -196,6 +200,7 @@ function register(app) {
     apiRoute(GET, '/api/script/bundle/:noteId', scriptRoute.getBundle);
     apiRoute(GET, '/api/script/relation/:noteId/:relationName', scriptRoute.getRelationBundles);
 
+    // no CSRF since this is called from android app
     route(POST, '/api/sender/login', [], senderRoute.login, apiResultHandler);
     route(POST, '/api/sender/image', [auth.checkSenderToken, uploadMiddleware], senderRoute.uploadImage, apiResultHandler);
     route(POST, '/api/sender/note', [auth.checkSenderToken], senderRoute.saveNote, apiResultHandler);

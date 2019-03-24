@@ -4,6 +4,8 @@ const fileUploadService = require('./api/file_upload');
 const scriptService = require('../services/script');
 
 function register(router) {
+    // explicitly no CSRF middleware since it's meant to allow integration from external services
+
     router.all('/custom/:path*', async (req, res, next) => {
         // express puts content after first slash into 0 index element
         const path = req.params.path + req.params[0];

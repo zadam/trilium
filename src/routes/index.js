@@ -12,6 +12,7 @@ async function index(req, res) {
     const view = req.cookies['trilium-device'] === 'mobile' ? 'mobile' : 'desktop';
 
     res.render(view, {
+        csrfToken: req.csrfToken(),
         theme: options.theme,
         leftPaneMinWidth: parseInt(options.leftPaneMinWidth),
         leftPaneWidthPercent: parseInt(options.leftPaneWidthPercent),
