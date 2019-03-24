@@ -79,6 +79,11 @@
                         <kbd>ALT+O</kbd>
                     </a>
 
+                    <a class="dropdown-item" id="show-about-dialog-button">
+                        <span class="jam jam-info"></span>
+                        About Trilium Notes
+                    </a>
+
                     <a class="dropdown-item" id="logout-button">
                         <span class="jam jam-log-out"></span>
                         Logout
@@ -207,6 +212,7 @@
 
     <% include details/detail.ejs %>
 
+    <% include dialogs/about.ejs %>
     <% include dialogs/add_link.ejs %>
     <% include dialogs/attributes.ejs %>
     <% include dialogs/branch_prefix.ejs %>
