@@ -40,7 +40,10 @@ const sql = require('../services/sql');
 const protectedSessionService = require('../services/protected_session');
 const csurf = require('csurf');
 
-const csrfMiddleware = csurf({ cookie: true });
+const csrfMiddleware = csurf({
+    cookie: true,
+    path: '' // nothing so cookie is valid only for current path
+});
 
 function apiResultHandler(req, res, result) {
     // if it's an array and first element is integer then we consider this to be [statusCode, response] format
