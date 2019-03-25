@@ -24,7 +24,11 @@ function setLinkType(linkType) {
     linkTypeChanged();
 }
 
-async function showDialog() {
+async function showDialogForClone() {
+    showDialog('selected-to-current');
+}
+
+async function showDialog(linkType) {
     glob.activeDialog = $dialog;
 
     if (noteDetailService.getActiveNoteType() === 'text') {
@@ -36,6 +40,10 @@ async function showDialog() {
         $linkTypeHtml.prop('disabled', true);
 
         setLinkType('selected-to-current');
+    }
+
+    if (linkType==='selected-to-current') {
+        setLinkType(linkType);
     }
 
     $dialog.modal();
@@ -142,5 +150,6 @@ $linkTypes.change(linkTypeChanged);
 $dialog.on("hidden.bs.modal", () => noteDetailText.focus());
 
 export default {
-    showDialog
+    showDialog,
+    showDialogForClone
 };
