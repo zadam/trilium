@@ -9,25 +9,48 @@ function setDbConnection(connection) {
     dbConnection = connection;
 }
 
-async function insert(table_name, rec, replace = false) {
+async function insert(tableName, rec, replace = false) {
     const keys = Object.keys(rec);
     if (keys.length === 0) {
-        log.error("Can't insert empty object into table " + table_name);
+        log.error("Can't insert empty object into table " + tableName);
         return;
     }
 
     const columns = keys.join(", ");
     const questionMarks = keys.map(p => "?").join(", ");
 
-    const query = "INSERT " + (replace ? "OR REPLACE" : "") + " INTO " + table_name + "(" + columns + ") VALUES (" + questionMarks + ")";
+    const query = "INSERT " + (replace ? "OR REPLACE" : "") + " INTO " + tableName + "(" + columns + ") VALUES (" + questionMarks + ")";
 
     const res = await execute(query, Object.values(rec));
 
     return res.lastID;
 }
 
-async function replace(table_name, rec) {
-    return await insert(table_name, rec, true);
+async function replace(tableName, rec) {
+    return await insert(tableName, rec, true);
+}
+
+async function upsert(tableName, primaryKey, rec) {
+    const keys = Object.keys(rec);
+    if (keys.length === 0) {
+        log.error("Can't upsert empty object into table " + tableName);
+        return;
+    }
+
+    const columns = keys.join(", ");
+
+    let i = 0;
+
+    const questionMarks = keys.map(p => ":" + i++).join(", ");
+
+    i = 0;
+
+    const updateMarks = keys.map(key => `${key} = :${i++}`).join(", ");
+
+    const query = `INSERT INTO ${tableName} (${columns}) VALUES (${questionMarks}) 
+                   ON CONFLICT (${primaryKey}) DO UPDATE SET ${updateMarks}`;
+
+    await execute(query, Object.values(rec));
 }
 
 async function beginTransaction() {
@@ -213,5 +236,6 @@ module.exports = {
     getColumn,
     execute,
     executeScript,
-    transactional
+    transactional,
+    upsert
 };

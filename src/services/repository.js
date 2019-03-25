@@ -103,7 +103,7 @@ async function updateEntity(entity) {
     }
 
     await sql.transactional(async () => {
-        await sql.replace(entityName, clone);
+        await sql.upsert(entityName, primaryKeyName, clone);
 
         const primaryKey = entity[primaryKeyName];
 
