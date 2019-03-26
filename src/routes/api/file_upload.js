@@ -51,7 +51,7 @@ async function downloadNoteFile(noteId, res) {
     res.setHeader('Content-Disposition', utils.getContentDisposition(fileName));
     res.setHeader('Content-Type', note.mime);
 
-    res.send((await note.getNoteContent()).content);
+    res.send(await note.getContent());
 }
 
 async function downloadFile(req, res) {

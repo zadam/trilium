@@ -42,19 +42,6 @@ async function getNote(noteId) {
     return await getEntity("SELECT * FROM notes WHERE noteId = ?", [noteId]);
 }
 
-/** @returns {Promise<Note|null>} */
-async function getNoteWithContent(noteId) {
-    const note = await getEntity("SELECT * FROM notes WHERE noteId = ?", [noteId]);
-    await note.getNoteContent();
-
-    return note;
-}
-
-/** @returns {Promise<NoteContent|null>} */
-async function getNoteContent(noteContentId) {
-    return await getEntity("SELECT * FROM note_contents WHERE noteContentId = ?", [noteContentId]);
-}
-
 /** @returns {Promise<Branch|null>} */
 async function getBranch(branchId) {
     return await getEntity("SELECT * FROM branches WHERE branchId = ?", [branchId]);
@@ -138,8 +125,6 @@ module.exports = {
     getEntities,
     getEntity,
     getNote,
-    getNoteWithContent,
-    getNoteContent,
     getBranch,
     getAttribute,
     getOption,

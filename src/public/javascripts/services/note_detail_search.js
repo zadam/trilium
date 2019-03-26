@@ -10,7 +10,7 @@ function show() {
     $component.show();
 
     try {
-        const json = JSON.parse(noteDetailService.getActiveNote().noteContent.content);
+        const json = JSON.parse(noteDetailService.getActiveNote().content);
 
         $searchString.val(json.searchString);
     }

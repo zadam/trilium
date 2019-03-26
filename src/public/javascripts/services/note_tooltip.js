@@ -113,11 +113,11 @@ async function renderTooltip(note, attributes) {
     if (note.type === 'text') {
         // surround with <div> for a case when note's content is pure text (e.g. "[protected]") which
         // then fails the jquery non-empty text test
-        content += '<div>' + note.noteContent.content + '</div>';
+        content += '<div>' + note.content + '</div>';
     }
     else if (note.type === 'code') {
         content += $("<pre>")
-            .text(note.noteContent.content)
+            .text(note.content)
             .prop('outerHTML');
     }
     else if (note.type === 'image') {

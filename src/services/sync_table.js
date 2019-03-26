@@ -8,8 +8,8 @@ async function addNoteSync(noteId, sourceId) {
     await addEntitySync("notes", noteId, sourceId)
 }
 
-async function addNoteContentSync(noteContentId, sourceId) {
-    await addEntitySync("note_contents", noteContentId, sourceId)
+async function addNoteContentSync(noteId, sourceId) {
+    await addEntitySync("note_contents", noteId, sourceId)
 }
 
 async function addBranchSync(branchId, sourceId) {

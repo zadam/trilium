@@ -13,10 +13,10 @@ async function getNote(req) {
     }
 
     if (note.isStringNote()) {
-        const noteContent = await note.getNoteContent();
+        await note.getContent();
 
         if (note.type === 'file') {
-            noteContent.content = noteContent.content.substr(0, 10000);
+            note.content = note.content.substr(0, 10000);
         }
     }
 

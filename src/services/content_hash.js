@@ -8,17 +8,16 @@ const messagingService = require('./messaging');
 const ApiToken = require('../entities/api_token');
 const Branch = require('../entities/branch');
 const Note = require('../entities/note');
-const NoteContent = require('../entities/note_content');
 const Attribute = require('../entities/attribute');
 const NoteRevision = require('../entities/note_revision');
 const RecentNote = require('../entities/recent_note');
 const Option = require('../entities/option');
 const Link = require('../entities/link');
 
-async function getHash(entityConstructor, whereBranch) {
+async function getHash(tableName, primaryKeyName, whereBranch) {
     // subselect is necessary to have correct ordering in GROUP_CONCAT
-    const query = `SELECT GROUP_CONCAT(hash) FROM (SELECT hash FROM ${entityConstructor.entityName} `
-        + (whereBranch ? `WHERE ${whereBranch} ` : '') + `ORDER BY ${entityConstructor.primaryKeyName})`;
+    const query = `SELECT GROUP_CONCAT(hash) FROM (SELECT hash FROM ${tableName} `
+        + (whereBranch ? `WHERE ${whereBranch} ` : '') + `ORDER BY ${primaryKeyName})`;
 
     let contentToHash = await sql.getValue(query);
 
@@ -33,15 +32,15 @@ async function getHashes() {
     const startTime = new Date();
 
     const hashes = {
-        notes: await getHash(Note),
-        note_contents: await getHash(NoteContent),
-        branches: await getHash(Branch),
-        note_revisions: await getHash(NoteRevision),
-        recent_notes: await getHash(RecentNote),
-        options: await getHash(Option, "isSynced = 1"),
-        attributes: await getHash(Attribute),
-        api_tokens: await getHash(ApiToken),
-        links: await getHash(Link)
+        notes: await getHash(Note.entityName, Note.primaryKeyName),
+        note_contents: await getHash("note_contents", "noteId"),
+        branches: await getHash(Branch.entityName, Branch.primaryKeyName),
+        note_revisions: await getHash(NoteRevision.entityName, NoteRevision.primaryKeyName),
+        recent_notes: await getHash(RecentNote.entityName, RecentNote.primaryKeyName),
+        options: await getHash(Option.entityName, Option.primaryKeyName, "isSynced = 1"),
+        attributes: await getHash(Attribute.entityName, Attribute.primaryKeyName),
+        api_tokens: await getHash(ApiToken.entityName, ApiToken.primaryKeyName),
+        links: await getHash(Link.entityName, Link.primaryKeyName)
     };
 
     const elapseTimeMs = Date.now() - startTime.getTime();

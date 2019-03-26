@@ -78,7 +78,6 @@ async function createInitialDatabase(username, password) {
         await sql.executeScript(schema);
 
         const Note = require("../entities/note");
-        const NoteContent = require("../entities/note_content");
         const Branch = require("../entities/branch");
 
         const rootNote = await new Note({
@@ -88,10 +87,7 @@ async function createInitialDatabase(username, password) {
             mime: 'text/html'
         }).save();
 
-        const rootNoteContent = await new NoteContent({
-            noteId: rootNote.noteId,
-            content: ''
-        }).save();
+        await rootNote.setContent('');
 
         await new Branch({
             branchId: 'root',

@@ -14,14 +14,14 @@ async function updateNoteFulltext(note) {
         let contentHash = null;
 
         if (['text', 'code'].includes(note.type)) {
-            const noteContent = await note.getNoteContent();
-            content = noteContent.content;
+            content = await note.getContent();
 
             if (note.type === 'text' && note.mime === 'text/html') {
                 content = html2plaintext(content);
             }
 
-            contentHash = noteContent.hash;
+            // FIXME
+            //contentHash = noteContent.hash;
         }
 
         // optimistically try to update first ...

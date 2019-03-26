@@ -2,12 +2,13 @@
 
 const Entity = require('./entity');
 const Attribute = require('./attribute');
-const NoteContent = require('./note_content');
 const protectedSessionService = require('../services/protected_session');
 const repository = require('../services/repository');
 const sql = require('../services/sql');
+const utils = require('../services/utils');
 const dateUtils = require('../services/date_utils');
 const noteFulltextService = require('../services/note_fulltext');
+const syncTableService = require('../services/sync_table');
 
 const LABEL = 'label';
 const LABEL_DEFINITION = 'label-definition';
@@ -56,37 +57,33 @@ class Note extends Entity {
                 protectedSessionService.decryptNote(this);
             }
             else {
-                // saving ciphertexts in case we do want to update protected note outside of protected session
-                // (which is allowed)
-                this.titleCipherText = this.title;
                 this.title = "[protected]";
             }
         }
     }
 
-    /** @returns {Promise<NoteContent>} */
-    async getNoteContent() {
-        if (!this.noteContent) {
-            this.noteContent = await repository.getEntity(`SELECT * FROM note_contents WHERE noteId = ?`, [this.noteId]);
+    /** @returns {Promise<*>} */
+    async getContent() {
+        if (this.content === undefined) {
+            this.content = await sql.getValue(`SELECT content FROM note_contents WHERE noteId = ?`, [this.noteId]);
 
-            if (!this.noteContent) {
-                throw new Error("Note content not found for noteId=" + this.noteId);
+            if (this.isProtected) {
+                if (this.isContentAvailable) {
+                    protectedSessionService.decryptNoteContent(this);
+                }
+                else {
+                    this.content = "";
+                }
             }
 
             if (this.isStringNote()) {
-                this.noteContent.content = this.noteContent.content === null
-                    ? "" : this.noteContent.content.toString("UTF-8");
+                this.content = this.content === null
+                    ? ""
+                    : this.content.toString("UTF-8");
             }
         }
 
-        return this.noteContent;
-    }
-
-    /** @returns {Promise<*>} */
-    async getContent() {
-        const noteContent = await this.getNoteContent();
-
-        return noteContent.content;
+        return this.content;
     }
 
     /** @returns {Promise<*>} */
@@ -98,14 +95,31 @@ class Note extends Entity {
 
     /** @returns {Promise} */
     async setContent(content) {
-        if (!this.noteContent) {
-            // make sure it is loaded
-            await this.getNoteContent();
+        this.content = content;
+
+        const pojo = {
+            noteId: this.noteId,
+            content: content,
+            utcDateModified: dateUtils.utcNowDateTime(),
+            hash: utils.hash(this.noteId + "|" + content)
+        };
+
+        if (this.isProtected) {
+            if (this.isContentAvailable) {
+                protectedSessionService.encryptNoteContent(pojo);
+            }
+            else {
+                throw new Error(`Cannot update content of noteId=${this.noteId} since we're out of protected session.`);
+            }
         }
 
-        this.noteContent.content = content;
+        await sql.upsert("note_contents", "noteId", pojo);
 
-        await this.noteContent.save();
+        await syncTableService.addNoteContentSync(this.noteId);
+
+        this.forcedChange = true;
+
+        await this.save();
     }
 
     /** @returns {Promise} */
@@ -687,14 +701,13 @@ class Note extends Entity {
             }
             else {
                 // updating protected note outside of protected session means we will keep original ciphertexts
-                pojo.title = pojo.titleCipherText;
+                delete pojo.title;
             }
         }
 
         delete pojo.isContentAvailable;
         delete pojo.__attributeCache;
-        delete pojo.titleCipherText;
-        delete pojo.noteContent;
+        delete pojo.content;
     }
 
     async afterSaving() {

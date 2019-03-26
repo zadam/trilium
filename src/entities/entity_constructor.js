@@ -1,5 +1,4 @@
 const Note = require('../entities/note');
-const NoteContent = require('../entities/note_content');
 const NoteRevision = require('../entities/note_revision');
 const Link = require('../entities/link');
 const Branch = require('../entities/branch');
@@ -13,7 +12,6 @@ const ENTITY_NAME_TO_ENTITY = {
     "attributes": Attribute,
     "branches": Branch,
     "notes": Note,
-    "note_contents": NoteContent,
     "note_revisions": NoteRevision,
     "recent_notes": RecentNote,
     "options": Option,
@@ -49,9 +47,6 @@ function createEntityFromRow(row) {
     }
     else if (row.branchId) {
         entity = new Branch(row);
-    }
-    else if (row.noteContentId) {
-        entity = new NoteContent(row);
     }
     else if (row.noteId) {
         entity = new Note(row);

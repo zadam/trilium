@@ -27,9 +27,9 @@ async function show() {
     $fileSize.text((attributeMap.fileSize || "?") + " bytes");
     $fileType.text(activeNote.mime);
 
-    if (activeNote.noteContent && activeNote.noteContent.content) {
+    if (activeNote.content) {
         $previewRow.show();
-        $previewContent.text(activeNote.noteContent.content);
+        $previewContent.text(activeNote.content);
     }
     else {
         $previewRow.hide();

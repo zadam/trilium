@@ -56,18 +56,14 @@ function decryptNote(note) {
     }
 }
 
-function decryptNoteContent(noteContent) {
-    if (!noteContent.isProtected) {
-        return;
-    }
-
+function decryptNoteContent(note) {
     try {
-        if (noteContent.content != null) {
-            noteContent.content = dataEncryptionService.decrypt(getDataKey(), noteContent.content.toString());
+        if (note.content != null) {
+            note.content = dataEncryptionService.decrypt(getDataKey(), note.content.toString());
         }
     }
     catch (e) {
-        e.message = `Cannot decrypt note content for noteContentId=${noteContent.noteContentId}: ` + e.message;
+        e.message = `Cannot decrypt content for noteId=${note.noteId}: ` + e.message;
         throw e;
     }
 }
@@ -98,8 +94,8 @@ function encryptNote(note) {
     note.title = dataEncryptionService.encrypt(getDataKey(), note.title);
 }
 
-function encryptNoteContent(noteContent) {
-    noteContent.content = dataEncryptionService.encrypt(getDataKey(), noteContent.content);
+function encryptNoteContent(note) {
+    note.content = dataEncryptionService.encrypt(getDataKey(), note.content);
 }
 
 function encryptNoteRevision(revision) {

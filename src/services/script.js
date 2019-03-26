@@ -58,10 +58,10 @@ async function executeBundle(bundle, apiParams = {}) {
  */
 async function executeScript(script, params, startNoteId, currentNoteId, originEntityName, originEntityId) {
     const startNote = await repository.getNote(startNoteId);
-    const currentNote = await repository.getNoteWithContent(currentNoteId);
+    const currentNote = await repository.getNote(currentNoteId);
     const originEntity = await repository.getEntityFromName(originEntityName, originEntityId);
 
-    currentNote.noteContent.content = `return await (${script}\r\n)(${getParams(params)})`;
+    currentNote.content = `return await (${script}\r\n)(${getParams(params)})`;
     currentNote.type = 'code';
     currentNote.mime = 'application/javascript;env=backend';
 

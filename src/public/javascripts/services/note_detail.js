@@ -117,10 +117,7 @@ async function saveNote() {
     }
 
     note.title = $noteTitle.val();
-
-    if (note.noteContent != null) { // might be null for file/image
-        note.noteContent.content = getActiveNoteContent(note);
-    }
+    note.content = getActiveNoteContent(note);
 
     // it's important to set the flag back to false immediatelly after retrieving title and content
     // otherwise we might overwrite another change (especially async code)

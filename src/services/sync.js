@@ -239,7 +239,7 @@ async function syncRequest(syncContext, method, requestPath, body) {
 
 const primaryKeys = {
     "notes": "noteId",
-    "note_contents": "noteContentId",
+    "note_contents": "noteId",
     "branches": "branchId",
     "note_revisions": "noteRevisionId",
     "recent_notes": "branchId",

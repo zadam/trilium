@@ -8,7 +8,6 @@ const eventService = require('./events');
 const repository = require('./repository');
 const cls = require('../services/cls');
 const Note = require('../entities/note');
-const NoteContent = require('../entities/note_content');
 const Link = require('../entities/link');
 const NoteRevision = require('../entities/note_revision');
 const Branch = require('../entities/branch');
@@ -93,10 +92,7 @@ async function createNewNote(parentNoteId, noteData) {
         noteData.content = noteData.content || "";
     }
 
-    note.noteContent = await new NoteContent({
-        noteId: note.noteId,
-        content: noteData.content
-    }).save();
+    await note.setContent(noteData.content);
 
     const branch = await new Branch({
         noteId: note.noteId,
@@ -338,16 +334,11 @@ async function updateNote(noteId, noteUpdates) {
     note.isProtected = noteUpdates.isProtected;
     await note.save();
 
-    const noteContent = await note.getNoteContent();
-
     if (!['file', 'image'].includes(note.type)) {
-        noteUpdates.noteContent.content = await saveLinks(note, noteUpdates.noteContent.content);
-
-        noteContent.content = noteUpdates.noteContent.content;
+        noteUpdates.content = await saveLinks(note, noteUpdates.content);
     }
 
-    noteContent.isProtected = noteUpdates.isProtected;
-    await noteContent.save();
+    await note.setContent(noteUpdates.content);
 
     if (noteTitleChanged) {
         await triggerNoteTitleChanged(note);

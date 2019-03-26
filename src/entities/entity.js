@@ -26,7 +26,13 @@ class Entity {
 
         this.hash = this.generateHash();
 
-        this.isChanged = origHash !== this.hash;
+        if (this.forcedChange) {
+            this.isChanged = true;
+            delete this.forcedChange;
+        }
+        else {
+            this.isChanged = origHash !== this.hash;
+        }
     }
 
     generateIdIfNecessary() {

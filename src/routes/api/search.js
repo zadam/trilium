@@ -14,11 +14,11 @@ async function searchNotes(req) {
 }
 
 async function saveSearchToNote(req) {
-    const noteContent = {
+    const content = {
         searchString: req.params.searchString
     };
 
-    const {note} = await noteService.createNote('root', req.params.searchString, noteContent, {
+    const {note} = await noteService.createNote('root', req.params.searchString, content, {
         json: true,
         type: 'search',
         mime: "application/json"

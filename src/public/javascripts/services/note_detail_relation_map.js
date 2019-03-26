@@ -92,9 +92,9 @@ function loadMapData() {
         }
     };
 
-    if (activeNote.noteContent.content) {
+    if (activeNote.content) {
         try {
-            mapData = JSON.parse(activeNote.noteContent.content);
+            mapData = JSON.parse(activeNote.content);
         } catch (e) {
             console.log("Could not parse content: ", e);
         }
