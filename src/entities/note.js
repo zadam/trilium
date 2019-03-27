@@ -62,6 +62,15 @@ class Note extends Entity {
         }
     }
 
+    /*
+     * Note content has quite special handling - it's not a separate entity, but a lazily loaded
+     * part of Note entity with it's own sync. Reasons behind this hybrid design has been:
+     *
+     * - content can be quite large and it's not necessary to load it / fill memory for any note access even if we don't need a content, especially for bulk operations like search
+     * - changes in the note metadata or title should not trigger note content sync (so we keep separate utcDateModified and sync rows)
+     * - but to the user note content and title changes are one and the same - single dateModified (so all changes must go through Note and content is not a separate entity)
+     */
+
     /** @returns {Promise<*>} */
     async getContent() {
         if (this.content === undefined) {
