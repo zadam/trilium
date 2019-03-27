@@ -20,8 +20,7 @@ async function updateNoteFulltext(note) {
                 content = html2plaintext(content);
             }
 
-            // FIXME
-            //contentHash = noteContent.hash;
+            contentHash = note.contentHash;
         }
 
         // optimistically try to update first ...

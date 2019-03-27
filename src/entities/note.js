@@ -74,7 +74,10 @@ class Note extends Entity {
     /** @returns {Promise<*>} */
     async getContent() {
         if (this.content === undefined) {
-            this.content = await sql.getValue(`SELECT content FROM note_contents WHERE noteId = ?`, [this.noteId]);
+            const res = await sql.getRow(`SELECT content, hash FROM note_contents WHERE noteId = ?`, [this.noteId]);
+
+            this.content = res.content;
+            this.contentHash = res.contentHash; // used only for note_fulltext consistency check
 
             if (this.isProtected) {
                 if (this.isContentAvailable) {
