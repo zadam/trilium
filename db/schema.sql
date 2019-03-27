@@ -90,16 +90,6 @@ CREATE TABLE IF NOT EXISTS "links" (
                                      `utcDateModified`	TEXT NOT NULL,
                                      PRIMARY KEY(`linkId`)
 );
-CREATE TABLE IF NOT EXISTS "note_contents" (
-                                             `noteContentId`	TEXT NOT NULL,
-                                             `noteId`	TEXT NOT NULL,
-                                             `isProtected`	INT NOT NULL DEFAULT 0,
-                                             `content`	TEXT NULL DEFAULT NULL,
-                                             `hash` TEXT DEFAULT "" NOT NULL,
-                                             `utcDateCreated`	TEXT NOT NULL,
-                                             `utcDateModified` TEXT NOT NULL,
-                                             PRIMARY KEY(`noteContentId`)
-);
 CREATE TABLE IF NOT EXISTS "notes" (
                                      `noteId`	TEXT NOT NULL,
                                      `title`	TEXT NOT NULL DEFAULT "note",
@@ -150,4 +140,10 @@ CREATE INDEX IDX_attributes_noteId_index
   on attributes (noteId);
 CREATE INDEX IDX_attributes_value_index
   on attributes (value);
-CREATE UNIQUE INDEX `IDX_note_contents_noteId` ON `note_contents` (`noteId`);
+CREATE TABLE IF NOT EXISTS "note_contents" (
+                                                   `noteId`	TEXT NOT NULL,
+                                                   `content`	TEXT NULL DEFAULT NULL,
+                                                   `hash` TEXT DEFAULT "" NOT NULL,
+                                                   `utcDateModified` TEXT NOT NULL,
+                                                   PRIMARY KEY(`noteId`)
+);

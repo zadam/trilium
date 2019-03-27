@@ -58,7 +58,7 @@ async function sync() {
             };
         }
         else {
-            log.info("sync failed: " + e.message);
+            log.info("sync failed: " + e.message + e.stack);
 
             return {
                 success: false,
@@ -261,6 +261,12 @@ async function getEntityRow(entityName, entityId) {
         }
 
         const entity = await sql.getRow(`SELECT * FROM ${entityName} WHERE ${primaryKey} = ?`, [entityId]);
+
+        if (!entity) {
+            console.log(entityName, entityId);
+
+            console.log(`SELECT * FROM ${entityName} WHERE ${primaryKey} = '${entityId}'`);
+        }
 
         if (['note_contents', 'note_revisions'].includes(entityName) && entity.content !== null) {
             if (typeof entity.content === 'string') {

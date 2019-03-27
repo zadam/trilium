@@ -172,10 +172,10 @@ function register(app) {
     apiRoute(POST, '/api/sync/fill-sync-rows', syncApiRoute.fillSyncRows);
     apiRoute(POST, '/api/sync/force-full-sync', syncApiRoute.forceFullSync);
     apiRoute(POST, '/api/sync/force-note-sync/:noteId', syncApiRoute.forceNoteSync);
-    apiRoute(GET, '/api/sync/changed', syncApiRoute.getChanged);
-    apiRoute(PUT, '/api/sync/update', syncApiRoute.update);
+    route(GET, '/api/sync/changed', [auth.checkApiAuth], syncApiRoute.getChanged, apiResultHandler);
+    route(PUT, '/api/sync/update', [auth.checkApiAuth], syncApiRoute.update, apiResultHandler);
+    route(POST, '/api/sync/finished', [auth.checkApiAuth], syncApiRoute.syncFinished, apiResultHandler);
     route(GET, '/api/sync/stats', [], syncApiRoute.getStats, apiResultHandler);
-    apiRoute(POST, '/api/sync/finished', syncApiRoute.syncFinished);
 
     apiRoute(GET, '/api/event-log', eventLogRoute.getEventLog);
 

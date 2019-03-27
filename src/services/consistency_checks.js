@@ -357,13 +357,6 @@ async function findLogicIssues() {
 
             logFix(`Removed link ${linkId} because target note ${targetNoteId} is also deleted.`);
         });
-
-    await findIssues(`
-          SELECT noteId
-          FROM notes
-          JOIN note_contents USING(noteId)
-          WHERE notes.isDeleted = 0 AND notes.isProtected != note_contents.isProtected`,
-        ({noteId}) => `Note ${noteId} has inconsistent isProtected in notes and note_contents tables`);
 }
 
 async function runSyncRowChecks(entityName, key) {

@@ -88,7 +88,7 @@ async function fillAllSyncRows() {
     await sql.execute("DELETE FROM sync");
 
     await fillSyncRows("notes", "noteId");
-    await fillSyncRows("note_contents", "noteContentId");
+    await fillSyncRows("note_contents", "noteId");
     await fillSyncRows("branches", "branchId");
     await fillSyncRows("note_revisions", "noteRevisionId");
     await fillSyncRows("recent_notes", "branchId");
