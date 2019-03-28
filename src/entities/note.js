@@ -720,6 +720,7 @@ class Note extends Entity {
         delete pojo.isContentAvailable;
         delete pojo.__attributeCache;
         delete pojo.content;
+        delete pojo.contentHash;
     }
 
     async afterSaving() {
