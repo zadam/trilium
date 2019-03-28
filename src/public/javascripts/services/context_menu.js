@@ -1,5 +1,7 @@
 const $contextMenuContainer = $("#context-menu-container");
 
+let dateContextMenuOpenedMs = 0;
+
 function initContextMenu(event, contextMenuItems, selectContextMenuItem) {
     event.stopPropagation();
 
@@ -73,6 +75,8 @@ function initContextMenu(event, contextMenuItems, selectContextMenuItem) {
         top = event.pageY - 10;
     }
 
+    dateContextMenuOpenedMs = Date.now();
+
     $contextMenuContainer.css({
         display: "block",
         top: top,
@@ -80,8 +84,18 @@ function initContextMenu(event, contextMenuItems, selectContextMenuItem) {
     }).addClass("show");
 }
 
-$(document).click(() => $contextMenuContainer.hide());
+$(document).click(() => hideContextMenu());
+
+function hideContextMenu() {
+    // this date checking comes from change in FF66 - https://github.com/zadam/trilium/issues/468
+    // "contextmenu" event also triggers "click" event which depending on the timing can close just opened context menu
+    // we might filter out right clicks, but then it's better if even right clicks close the context menu
+    if (Date.now() - dateContextMenuOpenedMs > 300) {
+        $contextMenuContainer.hide();
+    }
+}
 
 export default {
-    initContextMenu
+    initContextMenu,
+    hideContextMenu
 }
