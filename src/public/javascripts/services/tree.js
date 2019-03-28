@@ -417,6 +417,9 @@ function initFancyTree(tree) {
             const node = data.node;
             const noteId = node.data.noteId;
 
+            // click event won't propagate so let's close context menu manually
+            contextMenuWidget.hideContextMenu();
+
             setCurrentNotePathToHash(node);
 
             noteDetailService.switchToNote(noteId);
