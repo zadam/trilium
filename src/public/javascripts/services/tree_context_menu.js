@@ -165,12 +165,15 @@ function selectContextMenuItem(event, cmd) {
         const isProtected = treeUtils.getParentProtectedStatus(node);
         const type = cmd.split("_")[1];
 
-        treeService.createNote(node, parentNoteId, 'after', type, isProtected);
+        treeService.createNote(node, parentNoteId, 'after', {
+            type: type,
+            isProtected: isProtected
+        });
     }
     else if (cmd.startsWith("insertChildNote")) {
         const type = cmd.split("_")[1];
 
-        treeService.createNote(node, node.data.noteId, 'into', type);
+        treeService.createNote(node, node.data.noteId, 'into', { type: type });
     }
     else if (cmd === "editBranchPrefix") {
         branchPrefixDialog.showDialog(node);

@@ -66,7 +66,7 @@ body {
     display: flex;
     justify-content: space-around;
     padding: 10px 0 10px 0;
-    margin: 0 20px 0 10px;
+    margin: 0 10px 0 10px;
     border: 1px solid var(--main-border-color);
     border-radius: 7px;
 }

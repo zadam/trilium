@@ -123,7 +123,10 @@ if (utils.isElectron()) {
         setTimeout(async () => {
             const parentNode = treeService.getActiveNode();
 
-            const {note} = await treeService.createNote(parentNode, parentNode.data.noteId, 'into', "text", parentNode.data.isProtected);
+            const {note} = await treeService.createNote(parentNode, parentNode.data.noteId, 'into', {
+                type: "text",
+                isProtected: parentNode.data.isProtected
+            });
 
             await treeService.activateNote(note.noteId);
 

@@ -560,49 +560,44 @@ async function createNewTopLevelNote() {
 
     const rootNode = getNodesByNoteId(hoistedNoteId)[0];
 
-    await createNote(rootNode, hoistedNoteId, "into", null, false);
+    await createNote(rootNode, hoistedNoteId, "into");
 }
 
-/**
- * @param type - type can be falsy - in that case it will be chosen automatically based on parent note
- */
-async function createNote(node, parentNoteId, target, type, isProtected, saveSelection = false) {
+async function createNote(node, parentNoteId, target, extraOptions) {
     utils.assertArguments(node, parentNoteId, target);
 
     // if isProtected isn't available (user didn't enter password yet), then note is created as unencrypted
     // but this is quite weird since user doesn't see WHERE the note is being created so it shouldn't occur often
-    if (!isProtected || !protectedSessionHolder.isProtectedSessionAvailable()) {
-        isProtected = false;
+    if (!extraOptions.isProtected || !protectedSessionHolder.isProtectedSessionAvailable()) {
+        extraOptions.isProtected = false;
     }
 
     if (noteDetailService.getActiveNoteType() !== 'text') {
-        saveSelection = false;
+        extraOptions.saveSelection = false;
     }
     else {
         // just disable this feature altogether - there's a problem that note containing image or table at the beginning
         // of the content will be auto-selected by CKEditor and then CTRL-P with no user interaction will automatically save
         // the selection - see https://github.com/ckeditor/ckeditor5/issues/1384
-        saveSelection = false;
+        extraOptions.saveSelection = false;
     }
 
-    let title, content;
-
-    if (saveSelection) {
-        [title, content] = parseSelectedHtml(window.cutToNote.getSelectedHtml());
+    if (extraOptions.saveSelection) {
+        [extraOptions.title, extraOptions.content] = parseSelectedHtml(window.cutToNote.getSelectedHtml());
     }
 
-    const newNoteName = title || "new note";
+    const newNoteName = extraOptions.title || "new note";
 
     const {note, branch} = await server.post('notes/' + parentNoteId + '/children', {
         title: newNoteName,
-        content: content,
+        content: extraOptions.content,
         target: target,
         target_branchId: node.data.branchId,
-        isProtected: isProtected,
-        type: type
+        isProtected: extraOptions.isProtected,
+        type: extraOptions.type
     });
 
-    if (saveSelection) {
+    if (extraOptions.saveSelection) {
         // we remove the selection only after it was saved to server to make sure we don't lose anything
         window.cutToNote.removeSelection();
     }
@@ -622,9 +617,11 @@ async function createNote(node, parentNoteId, target, type, isProtected, saveSel
         parentNoteId: parentNoteId,
         refKey: branchEntity.noteId,
         branchId: branchEntity.branchId,
-        isProtected: isProtected,
+        isProtected: extraOptions.isProtected,
         extraClasses: await treeBuilder.getExtraClasses(noteEntity),
-        icon: await treeBuilder.getIcon(noteEntity)
+        icon: await treeBuilder.getIcon(noteEntity),
+        folder: extraOptions.type === 'search',
+        lazy: true
     };
 
     if (target === 'after') {
@@ -708,13 +705,19 @@ utils.bindShortcut('ctrl+o', async () => {
         return;
     }
 
-    createNote(node, parentNoteId, 'after', null, isProtected, true);
+    await createNote(node, parentNoteId, 'after', {
+        isProtected: isProtected,
+        saveSelection: true
+    });
 });
 
-function createNoteInto() {
+async function createNoteInto() {
     const node = getActiveNode();
 
-    createNote(node, node.data.noteId, 'into', null, node.data.isProtected, true);
+    await createNote(node, node.data.noteId, 'into', {
+        isProtected: node.data.isProtected,
+        saveSelection: true
+    });
 }
 
 async function checkFolderStatus(node) {
@@ -768,10 +771,8 @@ $scrollToActiveNoteButton.click(scrollToActiveNote);
 export default {
     reload,
     collapseTree,
-    scrollToActiveNote,
     setBranchBackgroundBasedOnProtectedStatus,
     setProtected,
-    expandToNote,
     activateNote,
     getFocusedNode,
     getActiveNode,
@@ -779,7 +780,6 @@ export default {
     setCurrentNotePathToHash,
     setNoteTitle,
     setPrefix,
-    createNewTopLevelNote,
     createNote,
     createNoteInto,
     getSelectedNodes,

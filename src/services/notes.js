@@ -77,6 +77,18 @@ async function createNewNote(parentNoteId, noteData) {
         }
     }
 
+    if (!noteData.mime) {
+        if (noteData.type === 'text') {
+            noteData.mime = 'text/html';
+        }
+        else if (noteData.type === 'code') {
+            noteData.mime = 'text/plain';
+        }
+        else if (noteData.type === 'relation-map' || noteData.type === 'search') {
+            noteData.mime = 'application/json';
+        }
+    }
+
     noteData.type = noteData.type || parentNote.type;
     noteData.mime = noteData.mime || parentNote.mime;
 

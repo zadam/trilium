@@ -1,6 +1,17 @@
 const utils = require('./utils');
 
-const VIRTUAL_ATTRIBUTES = ["dateCreated", "dateCreated", "dateModified", "utcDateCreated", "utcDateModified", "isProtected", "title", "content", "type", "mime", "text"];
+const VIRTUAL_ATTRIBUTES = [
+    "dateCreated",
+    "dateModified",
+    "utcDateCreated",
+    "utcDateModified",
+    "isProtected",
+    "title",
+    "content",
+    "type",
+    "mime",
+    "text"
+];
 
 module.exports = function(filters, selectedColumns = 'notes.*') {
     // alias => join
@@ -106,7 +117,7 @@ module.exports = function(filters, selectedColumns = 'notes.*') {
         else if (filter.operator === '=*' || filter.operator === '!=*') {
             where += `${accessor}`
                     + (filter.operator.includes('!') ? ' NOT' : '')
-                    + ` LIKE '` + utils.prepareSqlForLike('', filter.value, '%');
+                    + ` LIKE ` + utils.prepareSqlForLike('', filter.value, '%');
         }
         else if (filter.operator === '*=*' || filter.operator === '!*=*') {
             where += `${accessor}`
@@ -148,9 +159,6 @@ module.exports = function(filters, selectedColumns = 'notes.*') {
                 AND (${where})
               GROUP BY notes.noteId
               ORDER BY ${orderBy.join(", ")}`;
-
-    console.log(query);
-    console.log(params);
 
     return { query, params };
 };

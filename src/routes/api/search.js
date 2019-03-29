@@ -1,6 +1,5 @@
 "use strict";
 
-const noteService = require('../../services/notes');
 const repository = require('../../services/repository');
 const noteCacheService = require('../../services/note_cache');
 const log = require('../../services/log');
@@ -11,20 +10,6 @@ async function searchNotes(req) {
     const noteIds = await searchService.searchForNoteIds(req.params.searchString);
 
     return noteIds.map(noteCacheService.getNotePath).filter(res => !!res);
-}
-
-async function saveSearchToNote(req) {
-    const content = {
-        searchString: req.params.searchString
-    };
-
-    const {note} = await noteService.createNote('root', req.params.searchString, content, {
-        json: true,
-        type: 'search',
-        mime: "application/json"
-    });
-
-    return { noteId: note.noteId };
 }
 
 async function searchFromNote(req) {
@@ -52,7 +37,7 @@ async function searchFromNote(req) {
         noteIds = await searchFromRelation(note, relationName);
     }
     else {
-        noteIds = searchService.searchForNoteIds(json.searchString);
+        noteIds = await searchService.searchForNoteIds(json.searchString);
     }
 
     // we won't return search note's own noteId
@@ -100,6 +85,5 @@ async function searchFromRelation(note, relationName) {
 
 module.exports = {
     searchNotes,
-    saveSearchToNote,
     searchFromNote
 };

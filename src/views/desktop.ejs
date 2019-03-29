@@ -105,17 +105,23 @@
         </div>
 
         <div id="search-box">
-            <div style="display: flex; align-items: center; flex-wrap: wrap;">
-                <input name="search-text" id="search-text" placeholder="Search text, labels" style="flex-grow: 100; margin-left: 5px; margin-right: 5px; flex-basis: 5em; min-width: 0;" autocomplete="off">
-                <button id="do-search-button" class="btn btn-sm icon-button jam jam-search" title="Search (enter)"></button>
+            <div class="form-group">
+                <div class="input-group">
+                    <input name="search-text" id="search-text" class="form-control" placeholder="Search text, labels" autocomplete="off">
 
-                &nbsp;
+                    <div class="input-group-append">
+                        <button id="do-search-button" class="btn btn-sm icon-button jam jam-search" title="Search (enter)"></button>
+                    </div>
+                </div>
+            </div>
 
-                <button id="save-search-button" class="btn btn-sm icon-button jam jam-save" title="Save search"></button>
 
-                &nbsp;
+            <div style="display: flex; align-items: center; justify-content: space-evenly; flex-wrap: wrap;">
+                <button id="save-search-button" class="btn btn-sm"
+                    title="This will create new saved search note under active note.">
+                    <span class="jam jam-save"></span> Save search</button>
 
-                <button id="close-search-button" class="btn btn-sm icon-button jam jam-close" title="Close search"></button>
+                <button id="close-search-button" class="btn btn-sm"><span class="jam jam-close"></span> Close search</button>
             </div>
         </div>
 

@@ -1,6 +1,7 @@
 import treeService from './tree.js';
+import treeCache from "./tree_cache.js";
 import server from './server.js';
-import treeUtils from "./tree_utils.js";
+import infoService from "./info.js";
 
 const $tree = $("#tree");
 const $searchInput = $("input[name='search-text']");
@@ -64,16 +65,35 @@ async function doSearch(searchText) {
 
         $searchResultsInner.append($result);
     }
+
+    // have at least some feedback which is good especially in situations
+    // when the result list does not change with a query
+    infoService.showMessage("Search finished successfully.");
 }
 
 async function saveSearch() {
-    const {noteId} = await server.post('search/' + encodeURIComponent($searchInput.val()));
+    const searchString = $searchInput.val().trim();
+
+    if (searchString.length === 0) {
+        alert("Write some search criteria first so there is something to save.");
+        return;
+    }
+
+    let activeNode = treeService.getActiveNode();
+    const parentNote = await treeCache.getNote(activeNode.data.noteId);
+
+    if (parentNote.type === 'search') {
+        activeNode = activeNode.getParent();
+    }
+
+    await treeService.createNote(activeNode, activeNode.data.noteId, 'into', {
+        type: "search",
+        mime: "application/json",
+        title: searchString,
+        content: JSON.stringify({ searchString: searchString })
+    });
 
     resetSearch();
-
-    await treeService.reload();
-
-    await treeService.activateNote(noteId);
 }
 
 function init() {
