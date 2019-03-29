@@ -611,7 +611,7 @@ async function createNote(node, parentNoteId, target, extraOptions) {
 
     treeCache.add(noteEntity, branchEntity);
 
-    const newNode = {
+    let newNode = {
         title: newNoteName,
         noteId: branchEntity.noteId,
         parentNoteId: parentNoteId,
@@ -648,6 +648,21 @@ async function createNote(node, parentNoteId, target, extraOptions) {
     }
 
     clearSelectedNodes(); // to unmark previously active node
+
+    // need to refresh because original doesn't have methods like .getParent()
+    newNode = getNodesByNoteId(branchEntity.noteId)[0];
+
+    // following for cycle will make sure that also clones of a parent are refreshed
+    for (const newParentNode of getNodesByNoteId(parentNoteId)) {
+        if (newParentNode.key === newNode.getParent().key) {
+            // we've added a note into this one so no need to refresh
+            continue;
+        }
+
+        await newParentNode.load(true); // force reload to show up new note
+
+        await checkFolderStatus(newParentNode);
+    }
 
     return {note, branch};
 }
