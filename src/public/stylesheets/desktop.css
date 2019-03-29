@@ -134,3 +134,9 @@ li.dropdown-submenu:hover > ul.dropdown-menu {
     text-decoration: underline;
     transform: rotate(-90deg);
 }
+
+.refresh-search-button {
+    cursor: pointer;
+    position: relative;
+    top: -1px;
+}

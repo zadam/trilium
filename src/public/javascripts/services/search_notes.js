@@ -96,6 +96,15 @@ async function saveSearch() {
     resetSearch();
 }
 
+async function refreshSearch() {
+    const activeNode = treeService.getActiveNode();
+
+    activeNode.load(true);
+    activeNode.setExpanded(true);
+
+    infoService.showMessage("Saved search note refreshed.");
+}
+
 function init() {
     const hashValue = treeService.getHashValueFromAddress();
 
@@ -129,6 +138,7 @@ export default {
     toggleSearch,
     resetSearch,
     showSearch,
+    refreshSearch,
     doSearch,
     init
 };

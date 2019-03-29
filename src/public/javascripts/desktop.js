@@ -107,6 +107,8 @@ $("#logout-button").click(() => {
 
 $("#tree").on("click", ".unhoist-button", hoistedNoteService.unhoist);
 
+$("#tree").on("click", ".refresh-search-button", searchNotesService.refreshSearch);
+
 $("body").on("click", "a.external", function () {
     window.open($(this).attr("href"), '_blank');
 });
