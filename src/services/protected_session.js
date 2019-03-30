@@ -15,7 +15,8 @@ function setDataKey(decryptedDataKey) {
 }
 
 function setProtectedSessionId(req) {
-    cls.namespace.set('protectedSessionId', req.cookies.protectedSessionId);
+    // cookies is the main storage but for electron header is used when bypassing HTTP
+    cls.namespace.set('protectedSessionId', req.headers['trilium-protected-session-id'] || req.cookies.protectedSessionId);
 }
 
 function getProtectedSessionId() {
@@ -81,12 +82,17 @@ function decryptNoteRevision(hist) {
         return;
     }
 
-    if (hist.title) {
-        hist.title = dataEncryptionService.decryptString(dataKey, hist.title);
-    }
+    try {
+        if (hist.title) {
+            hist.title = dataEncryptionService.decryptString(dataKey, hist.title);
+        }
 
-    if (hist.content) {
-        hist.content = dataEncryptionService.decryptString(dataKey, hist.content);
+        if (hist.content) {
+            hist.content = dataEncryptionService.decryptString(dataKey, hist.content);
+        }
+    }
+    catch (e) {
+        throw new Error(`Decryption failed for note ${hist.noteId}: ` + e.message + " " + e.stack);
     }
 }
 
