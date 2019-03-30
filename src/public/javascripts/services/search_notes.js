@@ -16,6 +16,17 @@ const $closeSearchButton = $("#close-search-button");
 function showSearch() {
     $searchBox.slideDown();
     $searchInput.focus();
+
+    $searchBox.tooltip({
+        trigger: 'focus',
+        html: true,
+        title: 'Hello! <a href="http://google.com" class="external">google</a>',
+        placement: 'right',
+        delay: {
+            show: 500, // necessary because sliding out may cause wrong position
+            hide: 500
+        }
+    });
 }
 
 function hideSearch() {

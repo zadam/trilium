@@ -685,9 +685,9 @@ table.promoted-attributes-in-tooltip td, table.promoted-attributes-in-tooltip th
 }
 
 /* this should help with tooltip flickering */
-.tooltip {
-    pointer-events: none;
-}
+/*.tooltip {*/
+/*    pointer-events: none;*/
+/*}*/
 
 .tooltip-inner {
     background-color: var(--accented-background-color) !important;

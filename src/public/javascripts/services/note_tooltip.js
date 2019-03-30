@@ -8,7 +8,7 @@ function setupGlobalTooltip() {
     $(document).on("mouseleave", "a", mouseLeaveHandler);
 
     // close any tooltip after click, this fixes the problem that sometimes tooltips remained on the screen
-    $(document).on("click", () => $('.tooltip').remove());
+    //$(document).on("click", () => $('.tooltip').remove());
 }
 
 function setupElementTooltip($el) {
