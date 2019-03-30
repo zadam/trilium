@@ -15,7 +15,7 @@ cp bin/deps/mac-x64/image/cjpeg node_modules/mozjpeg/vendor/
 cp bin/deps/mac-x64/image/pngquant node_modules/pngquant-bin/vendor/
 cp bin/deps/mac-x64/image/gifsicle node_modules/giflossy/vendor/
 
-./node_modules/.bin/electron-packager . --asar --out=dist --executable-name=trilium --platform=darwin --arch=x64 --overwrite --icon=src/public/images/app-icons/mac/icon.icns
+./node_modules/.bin/electron-packager . --asar --out=dist --executable-name=trilium --platform=darwin --arch=x64 --overwrite --icon=images/app-icons/mac/icon.icns
 
 # Mac build has by default useless directory level
 mv "./dist/Trilium Notes-darwin-x64" $BUILD_DIR

@@ -15,7 +15,7 @@ cp bin/deps/win-x64/image/cjpeg.exe node_modules/mozjpeg/vendor/
 cp bin/deps/win-x64/image/pngquant.exe node_modules/pngquant-bin/vendor/
 cp bin/deps/win-x64/image/gifsicle.exe node_modules/giflossy/vendor/
 
-./node_modules/.bin/electron-packager . --asar --out=dist --executable-name=trilium --platform=win32  --arch=x64 --overwrite --icon=src/public/images/app-icons/win/icon.ico
+./node_modules/.bin/electron-packager . --asar --out=dist --executable-name=trilium --platform=win32  --arch=x64 --overwrite --icon=images/app-icons/win/icon.ico
 
 mv "./dist/Trilium Notes-win32-x64" $BUILD_DIR
 

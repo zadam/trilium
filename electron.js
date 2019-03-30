@@ -41,7 +41,7 @@ async function createMainWindow() {
         width: mainWindowState.width,
         height: mainWindowState.height,
         title: 'Trilium Notes',
-        icon: path.join(__dirname, 'src/public/images/app-icons/png/256x256.png')
+        icon: path.join(__dirname, 'images/app-icons/png/256x256.png')
     });
 
     mainWindowState.manage(win);

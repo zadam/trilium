@@ -43,6 +43,8 @@ app.use(bodyParser.json({limit: '500mb'}));
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/libraries', express.static(path.join(__dirname, '..', 'libraries')));
+app.use('/images', express.static(path.join(__dirname, '..', 'images')));
 const sessionParser = session({
     secret: sessionSecret,
     resave: false, // true forces the session to be saved back to the session store, even if the session was never modified during the request.
@@ -59,7 +61,7 @@ const sessionParser = session({
 });
 app.use(sessionParser);
 
-app.use(favicon(__dirname + '/public/images/app-icons/win/icon.ico'));
+app.use(favicon(__dirname + '/../images/app-icons/win/icon.ico'));
 
 require('./routes/routes').register(app);
 

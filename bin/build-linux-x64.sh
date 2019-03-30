@@ -11,7 +11,7 @@ cp -r bin/deps/linux-x64/sqlite/* node_modules/sqlite3/lib/binding/
 
 mv "./dist/Trilium Notes-linux-x64" $BUILD_DIR
 
-cp src/public/images/app-icons/png/128x128.png $BUILD_DIR/icon.png
+cp images/app-icons/png/128x128.png $BUILD_DIR/icon.png
 
 # removing software WebGL binaries because they are pretty huge and not necessary
 rm -r $BUILD_DIR/swiftshader
