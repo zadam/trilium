@@ -25,7 +25,7 @@ function setLinkType(linkType) {
 }
 
 async function showDialogForClone() {
-    showDialog('selected-to-current');
+    showDialog('selected-to-active');
 }
 
 async function showDialog(linkType) {
@@ -39,10 +39,10 @@ async function showDialog(linkType) {
     else {
         $linkTypeHtml.prop('disabled', true);
 
-        setLinkType('selected-to-current');
+        setLinkType('selected-to-active');
     }
 
-    if (linkType==='selected-to-current') {
+    if (linkType === 'selected-to-active') {
         setLinkType(linkType);
     }
 
@@ -104,14 +104,14 @@ $form.submit(() => {
                 linkService.addLinkToEditor(linkTitle, linkHref);
             }
         }
-        else if (linkType === 'selected-to-current') {
+        else if (linkType === 'selected-to-active') {
             const prefix = $clonePrefix.val();
 
             cloningService.cloneNoteTo(noteId, noteDetailService.getActiveNoteId(), prefix);
 
             $dialog.modal('hide');
         }
-        else if (linkType === 'current-to-selected') {
+        else if (linkType === 'active-to-selected') {
             const prefix = $clonePrefix.val();
 
             cloningService.cloneNoteTo(noteDetailService.getActiveNoteId(), noteId, prefix);
