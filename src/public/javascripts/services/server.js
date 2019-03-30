@@ -3,10 +3,20 @@ import utils from './utils.js';
 import infoService from "./info.js";
 
 function getHeaders() {
+    let protectedSessionId = null;
+
+    try { // this is because protected session might not be declared in some cases
+        protectedSessionId = protectedSessionHolder.getProtectedSessionId();
+    }
+    catch(e) {}
+
     // headers need to be lowercase because node.js automatically converts them to lower case
     // so hypothetical protectedSessionId becomes protectedsessionid on the backend
     // also avoiding using underscores instead of dashes since nginx filters them out by default
     return {
+        // protectedSessionId is normally carried in cookie, but for electron AJAX requests we bypass
+        // HTTP so no cookies and we need to pass it here explicitly
+        'trilium-protected-session-id': protectedSessionId,
         'trilium-source-id': glob.sourceId
     };
 }

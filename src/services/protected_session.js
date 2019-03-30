@@ -15,7 +15,8 @@ function setDataKey(decryptedDataKey) {
 }
 
 function setProtectedSessionId(req) {
-    cls.namespace.set('protectedSessionId', req.cookies.protectedSessionId);
+    // cookies is the main storage but for electron header is used when bypassing HTTP
+    cls.namespace.set('protectedSessionId', req.headers['trilium-protected-session-id'] || req.cookies.protectedSessionId);
 }
 
 function getProtectedSessionId() {

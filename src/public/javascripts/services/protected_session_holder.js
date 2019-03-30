@@ -18,6 +18,10 @@ function setProtectedSessionTimeout(encSessTimeout) {
     protectedSessionTimeout = encSessTimeout;
 }
 
+function getProtectedSessionId() {
+    return utils.getCookie(PROTECTED_SESSION_ID_KEY);
+}
+
 function setProtectedSessionId(id) {
     // using session cookie so that it disappears after browser/tab is closed
     utils.setSessionCookie(PROTECTED_SESSION_ID_KEY, id);
@@ -42,6 +46,7 @@ function touchProtectedSession() {
 }
 
 export default {
+    getProtectedSessionId,
     setProtectedSessionId,
     resetProtectedSession,
     isProtectedSessionAvailable,
