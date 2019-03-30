@@ -23,6 +23,7 @@ function registerEntrypoints() {
     jQuery.hotkeys.options.filterTextInputs = false;
 
     utils.bindShortcut('ctrl+l', addLinkDialog.showDialog);
+    utils.bindShortcut('ctrl+shift+l', addLinkDialog.showDialogForClone);
 
     $("#jump-to-note-dialog-button").click(jumpToNoteDialog.showDialog);
     utils.bindShortcut('ctrl+j', jumpToNoteDialog.showDialog);
