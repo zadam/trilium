@@ -95,7 +95,8 @@ async function createNewNote(parentNoteId, noteData) {
 
     note.noteContent = await new NoteContent({
         noteId: note.noteId,
-        content: noteData.content
+        content: noteData.content,
+        isProtected: noteData.isProtected
     }).save();
 
     const branch = await new Branch({

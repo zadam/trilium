@@ -86,12 +86,17 @@ function decryptNoteRevision(hist) {
         return;
     }
 
-    if (hist.title) {
-        hist.title = dataEncryptionService.decryptString(dataKey, hist.title);
-    }
+    try {
+        if (hist.title) {
+            hist.title = dataEncryptionService.decryptString(dataKey, hist.title);
+        }
 
-    if (hist.content) {
-        hist.content = dataEncryptionService.decryptString(dataKey, hist.content);
+        if (hist.content) {
+            hist.content = dataEncryptionService.decryptString(dataKey, hist.content);
+        }
+    }
+    catch (e) {
+        throw new Error(`Decryption failed for note ${hist.noteId}: ` + e.message + " " + e.stack);
     }
 }
 
