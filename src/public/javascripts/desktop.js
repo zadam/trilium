@@ -115,11 +115,6 @@ $("body").on("click", "a.external", function () {
 
 if (utils.isElectron()) {
     require('electron').ipcRenderer.on('create-day-sub-note', async function(event, parentNoteId) {
-        // this might occur when day note had to be created
-        if (!await treeCache.getNote(parentNoteId)) {
-            await treeService.reload();
-        }
-
         await treeService.activateNote(parentNoteId);
 
         setTimeout(async () => {

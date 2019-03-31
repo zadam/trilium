@@ -98,7 +98,7 @@ async function uploadFiles(importNoteId, files, options) {
 
     infoService.showMessage("Import finished successfully.");
 
-    await treeService.reload();
+    await treeService.reloadNote(importNoteId);
 
     if (noteId) {
         const node = await treeService.activateNote(noteId);
