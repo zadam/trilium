@@ -307,12 +307,12 @@ async function saveNoteRevision(note) {
     const now = new Date();
     const noteRevisionSnapshotTimeInterval = parseInt(await optionService.getOption('noteRevisionSnapshotTimeInterval'));
 
-    const revisionCutoff = dateUtils.dateStr(new Date(now.getTime() - noteRevisionSnapshotTimeInterval * 1000));
+    const revisionCutoff = dateUtils.utcDateStr(new Date(now.getTime() - noteRevisionSnapshotTimeInterval * 1000));
 
     const existingNoteRevisionId = await sql.getValue(
-        "SELECT noteRevisionId FROM note_revisions WHERE noteId = ? AND dateModifiedTo >= ?", [note.noteId, revisionCutoff]);
+        "SELECT noteRevisionId FROM note_revisions WHERE noteId = ? AND utcDateModifiedTo >= ?", [note.noteId, revisionCutoff]);
 
-    const msSinceDateCreated = now.getTime() - dateUtils.parseDateTime(note.dateCreated).getTime();
+    const msSinceDateCreated = now.getTime() - dateUtils.parseDateTime(note.utcDateCreated).getTime();
 
     if (!existingNoteRevisionId && msSinceDateCreated >= noteRevisionSnapshotTimeInterval * 1000) {
         await new NoteRevision({
@@ -323,8 +323,10 @@ async function saveNoteRevision(note) {
             type: note.type,
             mime: note.mime,
             isProtected: false, // will be fixed in the protectNoteRevisions() call
+            utcDateModifiedFrom: note.utcDateModified,
+            utcDateModifiedTo: dateUtils.utcNowDateTime(),
             dateModifiedFrom: note.dateModified,
-            dateModifiedTo: dateUtils.nowDate()
+            dateModifiedTo: dateUtils.localNowDateTime()
         }).save();
     }
 }
@@ -344,16 +346,11 @@ async function updateNote(noteId, noteUpdates) {
     note.isProtected = noteUpdates.isProtected;
     await note.save();
 
-    const noteContent = await note.getNoteContent();
-
     if (!['file', 'image'].includes(note.type)) {
-        noteUpdates.noteContent.content = await saveLinks(note, noteUpdates.noteContent.content);
+        noteUpdates.content = await saveLinks(note, noteUpdates.content);
 
-        noteContent.content = noteUpdates.noteContent.content;
+        await note.setContent(noteUpdates.content);
     }
-
-    noteContent.isProtected = noteUpdates.isProtected;
-    await noteContent.save();
 
     if (noteTitleChanged) {
         await triggerNoteTitleChanged(note);
