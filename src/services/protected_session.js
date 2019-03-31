@@ -83,11 +83,11 @@ function decryptNoteRevision(hist) {
 
     try {
         if (hist.title) {
-            hist.title = dataEncryptionService.decryptString(dataKey, hist.title);
+            hist.title = dataEncryptionService.decryptString(dataKey, hist.title.toString());
         }
 
         if (hist.content) {
-            hist.content = dataEncryptionService.decryptString(dataKey, hist.content);
+            hist.content = dataEncryptionService.decryptString(dataKey, hist.content.toString());
         }
     }
     catch (e) {
