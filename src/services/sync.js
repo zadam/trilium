@@ -49,7 +49,7 @@ async function sync() {
     catch (e) {
         proxyToggle = !proxyToggle;
 
-        if (e.message && e.message.indexOf('ECONNREFUSED') !== -1) {
+        if (e.message && (e.message.includes('ECONNREFUSED') || e.message.includes('ERR_CONNECTION_REFUSED'))) {
             log.info("No connection to sync server.");
 
             return {
