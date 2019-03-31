@@ -5,6 +5,7 @@ const VIRTUAL_ATTRIBUTES = [
     "dateModified",
     "utcDateCreated",
     "utcDateModified",
+    "noteId",
     "isProtected",
     "title",
     "content",
@@ -37,19 +38,10 @@ module.exports = function(filters, selectedColumns = 'notes.*') {
             const alias = "note_contents";
 
             if (!(alias in joins)) {
-                joins[alias] = `JOIN note_contents ON note_contents.noteId = notes.noteId`;
+                joins[alias] = `LEFT JOIN note_contents ON note_contents.noteId = notes.noteId`;
             }
 
             accessor = `${alias}.${property}`;
-        }
-        else if (property === 'text') {
-            const alias = "note_fulltext";
-
-            if (!(alias in joins)) {
-                joins[alias] = `JOIN note_fulltext ON note_fulltext.noteId = notes.noteId`;
-            }
-
-            accessor = alias;
         }
         else {
             accessor = "notes." + property;
@@ -92,17 +84,11 @@ module.exports = function(filters, selectedColumns = 'notes.*') {
         else if (filter.operator === '=' || filter.operator === '!=') {
             if (filter.name === 'text') {
                 const safeSearchText = utils.sanitizeSql(filter.value);
-                let condition = accessor + ' ' + `MATCH '${safeSearchText}'`;
+                const not = filter.operator.includes("!") ? "NOT" : "";
 
-                if (filter.operator.includes("!")) {
-                    // not supported!
-                }
-                else if (orderBy.length === 0) {
-                    // if there's a positive full text search and there's no defined order then order by rank
-                    orderBy.push("rank");
-                }
-
-                where += condition;
+                // fulltext needs to use subselect because fulltext doesn't support OR operations at all
+                // which makes it impossible to combine more operations together
+                where += `notes.noteId ${not} IN (SELECT noteId FROM note_fulltext WHERE note_fulltext MATCH '${safeSearchText}')`;
             }
             else {
                 where += `${accessor} ${filter.operator} ?`;

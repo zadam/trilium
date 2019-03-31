@@ -91,7 +91,7 @@ function decryptNoteRevision(hist) {
         }
     }
     catch (e) {
-        throw new Error(`Decryption failed for note ${hist.noteId}: ` + e.message + " " + e.stack);
+        throw new Error(`Decryption failed for note ${hist.noteId}, revision ${hist.noteRevisionId}: ` + e.message + " " + e.stack);
     }
 }
 

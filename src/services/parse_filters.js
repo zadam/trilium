@@ -51,6 +51,12 @@ module.exports = function (searchText) {
                 name: 'text',
                 operator: '=',
                 value: searchText
+            },
+            {
+                relation: 'or',
+                name: 'noteId',
+                operator: '=',
+                value: searchText
             }
         ]
     }
