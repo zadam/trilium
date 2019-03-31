@@ -4,8 +4,11 @@ import searchNotesService from "./search_notes.js";
 const $searchString = $("#search-string");
 const $component = $('#note-detail-search');
 const $refreshButton = $('#note-detail-search-refresh-results-button');
+const $help = $("#note-detail-search-help");
 
 function show() {
+    $help.html(searchNotesService.getHelpText());
+
     $component.show();
 
     try {

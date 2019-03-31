@@ -3,7 +3,6 @@ import treeCache from "./tree_cache.js";
 import server from './server.js';
 import infoService from "./info.js";
 
-const $tree = $("#tree");
 const $searchInput = $("input[name='search-text']");
 const $resetSearchButton = $("#reset-search-button");
 const $doSearchButton = $("#do-search-button");
@@ -13,20 +12,36 @@ const $searchResults = $("#search-results");
 const $searchResultsInner = $("#search-results-inner");
 const $closeSearchButton = $("#close-search-button");
 
+const helpText = `
+<strong>Search tips</strong> - also see <button class="btn btn-sm" type="button" data-help-page="Search">complete help on search</button>
+<p>
+<ul>
+    <li>Just enter any text for full text search</li>
+    <li><code>@abc</code> - returns notes with label abc</li>
+    <li><code>@year=2019</code> - matches notes with label <code>year</code> having value <code>2019</code></li>
+    <li><code>@rock @pop</code> - matches notes which have both <code>rock</code> and <code>pop</code> labels</li>
+    <li><code>@rock or @pop</code> - only one of the labels must be present</li>
+    <li><code>@year&lt;=2000</code> - numerical comparison (also &gt;, &gt;=, &lt;).</li>
+    <li><code>@dateCreated>=MONTH-1</code> - notes created in the last month</li>
+    <li><code>=handler</code> - will execute script defined in <code>handler</code> relation to get results</li>
+</ul>
+</p>`;
+
 function showSearch() {
     $searchBox.slideDown();
-    $searchInput.focus();
 
     $searchBox.tooltip({
         trigger: 'focus',
         html: true,
-        title: 'Hello! <a href="http://google.com" class="external">google</a>',
+        title: helpText,
         placement: 'right',
         delay: {
             show: 500, // necessary because sliding out may cause wrong position
-            hide: 500
+            hide: 200
         }
     });
+
+    $searchInput.focus();
 }
 
 function hideSearch() {
@@ -49,16 +64,20 @@ function resetSearch() {
     $searchInput.val("");
 }
 
-function getTree() {
-    return $tree.fancytree('getTree');
-}
-
 async function doSearch(searchText) {
     if (searchText) {
         $searchInput.val(searchText);
     }
     else {
         searchText = $searchInput.val();
+    }
+
+    if (searchText.trim().length === 0) {
+        infoService.showMessage("Please enter search criteria first.");
+
+        $searchInput.focus();
+
+        return;
     }
 
     const results = await server.get('search/' + encodeURIComponent(searchText));
@@ -151,5 +170,6 @@ export default {
     showSearch,
     refreshSearch,
     doSearch,
-    init
+    init,
+    getHelpText: () => helpText
 };

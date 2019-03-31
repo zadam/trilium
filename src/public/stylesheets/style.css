@@ -28,6 +28,7 @@
     --active-item-background-color: #ccc;
     --menu-text-color: black;
     --menu-background-color: white;
+    --tooltip-background-color: #f8f8f8;
 }
 
 body.theme-black {
@@ -51,6 +52,7 @@ body.theme-black {
     --active-item-background-color: #ccc;
     --menu-text-color: white;
     --menu-background-color: #222;
+    --tooltip-background-color: black;
 }
 
 body.theme-black a, body.theme-black a:visited {
@@ -82,6 +84,7 @@ body.theme-dark {
     --active-item-background-color: #ccc;
     --menu-text-color: white;
     --menu-background-color: #222;
+    --tooltip-background-color: #333;
 }
 
 body.theme-dark a, body.theme-dark a:visited {
@@ -684,22 +687,20 @@ table.promoted-attributes-in-tooltip td, table.promoted-attributes-in-tooltip th
     padding: 20px;
 }
 
-/* this should help with tooltip flickering */
-/*.tooltip {*/
-/*    pointer-events: none;*/
-/*}*/
+.tooltip {
+    font-size: var(--main-font-size) !important;
+}
 
 .tooltip-inner {
-    background-color: var(--accented-background-color) !important;
-    max-width: 400px;
+    background-color: var(--tooltip-background-color) !important;
+    max-width: 500px;
     /* height needs to stay small because tooltip has problem when it can't fit to either top or bottom of the cursor */
     max-height: 300px;
     overflow: hidden;
-    font-size: var(--main-font-size);
-    color: var(--main-text-color);
     border: 1px solid var(--main-border-color);
     border-radius: 5px;
     text-align: left;
+    color: var(--main-text-color) !important;
 }
 
 .tooltip-inner img {
