@@ -3,6 +3,7 @@
 const electron = require('electron');
 const path = require('path');
 const log = require('./src/services/log');
+const sqlInit = require('./src/services/sql_init');
 const cls = require('./src/services/cls');
 const url = require("url");
 const port = require('./src/services/port');
@@ -29,7 +30,13 @@ function onClosed() {
 }
 
 async function createMainWindow() {
-    let mainWindowState = windowStateKeeper({
+    // if schema doesn't exist -> setup process
+    // if schema exists, then we need to wait until the migration process is finished
+    if (await sqlInit.schemaExists()) {
+        await sqlInit.dbReady;
+    }
+
+    const mainWindowState = windowStateKeeper({
         // default window width & height so it's usable on 1600 * 900 display (including some extra panels etc.)
         defaultWidth: 1200,
         defaultHeight: 800
