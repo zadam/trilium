@@ -78,7 +78,7 @@ async function importTar(importContext, fileBuffer, importRootNote) {
         };
     }
 
-    function getParentNoteId(filePath, parentNoteMeta) {
+    async function getParentNoteId(filePath, parentNoteMeta) {
         let parentNoteId;
 
         if (parentNoteMeta) {
@@ -94,7 +94,9 @@ async function importTar(importContext, fileBuffer, importRootNote) {
                 parentNoteId = createdPaths[parentPath];
             }
             else {
-                throw new Error(`Could not find existing path ${parentPath} for ${filePath}.`);
+                // tar allows creating out of order records - i.e. file in a directory can appear in the tar stream before actual directory
+                // (out-of-order-directory-records.tar in test set)
+                parentNoteId = await saveDirectory(parentPath);
             }
         }
 
@@ -181,7 +183,7 @@ async function importTar(importContext, fileBuffer, importRootNote) {
 
         const noteId = getNoteId(noteMeta, filePath);
         const noteTitle = getNoteTitle(filePath, noteMeta);
-        const parentNoteId = getParentNoteId(filePath, parentNoteMeta);
+        const parentNoteId = await getParentNoteId(filePath, parentNoteMeta);
 
         let note = await repository.getNote(noteId);
 
@@ -205,6 +207,8 @@ async function importTar(importContext, fileBuffer, importRootNote) {
         }
 
         createdPaths[filePath] = noteId;
+
+        return noteId;
     }
 
     function getTextFileWithoutExtension(filePath) {
@@ -222,7 +226,7 @@ async function importTar(importContext, fileBuffer, importRootNote) {
         const {parentNoteMeta, noteMeta} = getMeta(filePath);
 
         const noteId = getNoteId(noteMeta, filePath);
-        const parentNoteId = getParentNoteId(filePath, parentNoteMeta);
+        const parentNoteId = await getParentNoteId(filePath, parentNoteMeta);
 
         if (noteMeta && noteMeta.isClone) {
             await new Branch({
