@@ -14,6 +14,8 @@ rm node-v${NODE_VERSION}-linux-x64.tar.xz
 mv node-v${NODE_VERSION}-linux-x64 node
 
 cp -r ../../node_modules/ ./
+cp -r ../../images/ ./
+cp -r ../../libraries/ ./
 cp -r ../../src/ ./
 cp -r ../../db/ ./
 cp -r ../../package.json ./
