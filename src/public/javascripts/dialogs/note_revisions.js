@@ -26,11 +26,9 @@ async function showNoteRevisionsDialog(noteId, noteRevisionId) {
     revisionItems = await server.get('notes/' + noteId + '/revisions');
 
     for (const item of revisionItems) {
-        const utcDateModified = utils.parseDate(item.utcDateModifiedFrom);
-
         $list.append($('<option>', {
             value: item.noteRevisionId,
-            text: utils.formatDateTime(utcDateModified)
+            text: item.dateModifiedFrom
         }));
     }
 
