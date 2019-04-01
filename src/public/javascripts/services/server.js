@@ -5,12 +5,17 @@ function getHeaders() {
     // headers need to be lowercase because node.js automatically converts them to lower case
     // so hypothetical protectedSessionId becomes protectedsessionid on the backend
     // also avoiding using underscores instead of dashes since nginx filters them out by default
-    return {
-        // passing it explicitely here because of the electron HTTP bypass
-        'cookie': document.cookie,
+    const headers = {
         'trilium-source-id': glob.sourceId,
         'x-csrf-token': glob.csrfToken
     };
+
+    if (utils.isElectron()) {
+        // passing it explicitely here because of the electron HTTP bypass
+        headers.cookie = document.cookie;
+    }
+
+    return headers;
 }
 
 async function get(url) {
