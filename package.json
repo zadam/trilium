@@ -37,7 +37,7 @@
     "electron-window-state": "5.0.3",
     "express": "4.16.4",
     "express-session": "1.15.6",
-    "file-type": "10.9.0",
+    "file-type": "10.10.0",
     "fs-extra": "7.0.1",
     "get-port": "4.2.0",
     "helmet": "3.16.0",

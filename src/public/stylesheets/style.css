@@ -455,6 +455,10 @@ div.ui-tooltip {
     float: right;
 }
 
+.dropdown-item {
+    color: var(--menu-text-color) !important;
+}
+
 .dropdown-item.disabled, .dropdown-item.disabled kbd {
     color: #aaa !important;
 }
