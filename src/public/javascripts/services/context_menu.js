@@ -20,28 +20,30 @@ function initContextMenu(event, contextMenuItems, selectContextMenuItem) {
                     $icon.append("&nbsp;");
                 }
 
-                const $item = $("<li>")
-                    .addClass("dropdown-item");
-
-                const $link = $("<a>")
+                const $link = $("<span>")
                     .append($icon)
                     .append(" &nbsp; ") // some space between icon and text
-                    .prop("data-cmd", item.cmd)
                     .append(item.title);
 
-                $item.append($link);
+                const $item = $("<li>")
+                    .addClass("dropdown-item")
+                    .append($link)
+                    .attr("data-cmd", item.cmd)
+                    .click(function (e) {
+                        const cmd = $(e.target).closest(".dropdown-item").attr("data-cmd");
+
+                        e.originalTarget = event.target;
+
+                        selectContextMenuItem(e, cmd);
+
+                        // it's important to stop the propagation especially for sub-menus, otherwise the event
+                        // might be handled again by top-level menu
+                        return false;
+                    });
 
                 if (item.enabled !== undefined && !item.enabled) {
                     $link.addClass("disabled");
                 }
-
-                $link.click(async function (e) {
-                    const cmd = $(e.target).prop("data-cmd");
-
-                    e.originalTarget = event.target;
-
-                    await selectContextMenuItem(e, cmd);
-                });
 
                 if (item.items) {
                     $item.addClass("dropdown-submenu");

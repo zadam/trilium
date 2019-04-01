@@ -173,7 +173,10 @@ function selectContextMenuItem(event, cmd) {
     else if (cmd.startsWith("insertChildNote")) {
         const type = cmd.split("_")[1];
 
-        treeService.createNote(node, node.data.noteId, 'into', { type: type });
+        treeService.createNote(node, node.data.noteId, 'into', {
+            type: type,
+            isProtected: node.data.isProtected
+        });
     }
     else if (cmd === "editBranchPrefix") {
         branchPrefixDialog.showDialog(node);

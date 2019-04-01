@@ -77,6 +77,27 @@ body {
 
 #context-menu-container .dropdown-item {
     padding: 0 7px 0 10px;
+    cursor: pointer;
+}
+
+li.dropdown-submenu:hover > ul.dropdown-menu {
+    display: block;
+}
+
+.dropdown-submenu {
+    position:relative;
+}
+
+.dropdown-submenu > .dropdown-menu {
+    top: 0;
+    left: 100%;
+    margin-top: -6px;
+}
+
+/* rotate caret on hover */
+.dropdown-menu > li > a:hover:after {
+    text-decoration: underline;
+    transform: rotate(-90deg);
 }
 
 .fancytree-loading span.fancytree-expander {
@@ -113,26 +134,6 @@ body {
 [data-toggle="tooltip"] span {
     padding-bottom: 0;
     border-bottom: 1px dotted;
-}
-
-li.dropdown-submenu:hover > ul.dropdown-menu {
-    display: block;
-}
-
-.dropdown-submenu {
-    position:relative;
-}
-
-.dropdown-submenu > .dropdown-menu {
-    top: 0;
-    left: 100%;
-    margin-top: -6px;
-}
-
-/* rotate caret on hover */
-.dropdown-menu > li > a:hover:after {
-    text-decoration: underline;
-    transform: rotate(-90deg);
 }
 
 .refresh-search-button {
