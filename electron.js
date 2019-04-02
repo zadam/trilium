@@ -30,6 +30,8 @@ function onClosed() {
 }
 
 async function createMainWindow() {
+    await sqlInit.dbConnection;
+
     // if schema doesn't exist -> setup process
     // if schema exists, then we need to wait until the migration process is finished
     if (await sqlInit.schemaExists()) {

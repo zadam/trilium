@@ -14,13 +14,19 @@ async function createConnection() {
     return await sqlite.open(dataDir.DOCUMENT_PATH, {Promise});
 }
 
+const dbConnection = new Promise(async (resolve, reject) => {
+    // no need to create new connection now since DB stays the same all the time
+    const db = await createConnection();
+    sql.setDbConnection(db);
+
+    resolve();
+});
+
 let dbReadyResolve = null;
 const dbReady = new Promise(async (resolve, reject) => {
     dbReadyResolve = resolve;
 
-    // no need to create new connection now since DB stays the same all the time
-    const db = await createConnection();
-    sql.setDbConnection(db);
+    await dbConnection;
 
     initDbConnection();
 });
@@ -165,6 +171,7 @@ dbReady.then(async () => {
 
 module.exports = {
     dbReady,
+    dbConnection,
     schemaExists,
     isDbInitialized,
     initDbConnection,
