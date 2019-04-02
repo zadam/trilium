@@ -80,12 +80,17 @@ async function doSearch(searchText) {
         return;
     }
 
-    const results = await server.get('search/' + encodeURIComponent(searchText));
+    const response = await server.get('search/' + encodeURIComponent(searchText));
+
+    if (!response.success) {
+        infoService.showError("Search failed.", 3000);
+        return;
+    }
 
     $searchResultsInner.empty();
     $searchResults.show();
 
-    for (const result of results) {
+    for (const result of response.results) {
         const link = $('<a>', {
             href: 'javascript:',
             text: result.title

@@ -9,7 +9,17 @@ const searchService = require('../../services/search');
 async function searchNotes(req) {
     const noteIds = await searchService.searchForNoteIds(req.params.searchString);
 
-    return noteIds.map(noteCacheService.getNotePath).filter(res => !!res);
+    try {
+        return {
+            success: true,
+            results: noteIds.map(noteCacheService.getNotePath).filter(res => !!res)
+        }
+    }
+    catch {
+        return {
+            success: false
+        }
+    }
 }
 
 async function searchFromNote(req) {

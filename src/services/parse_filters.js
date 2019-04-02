@@ -45,18 +45,20 @@ function calculateSmartValue(v) {
 module.exports = function (searchText) {
     // if the string doesn't start with attribute then we consider it as just standard full text search
     if (!searchText.trim().startsWith("@")) {
+        const sanitizedSearchText = searchText.replace(/[^\w ]+/g, "");
+
         return [
             {
                 relation: 'and',
                 name: 'text',
                 operator: '=',
-                value: searchText
+                value: sanitizedSearchText
             },
             {
                 relation: 'or',
                 name: 'noteId',
                 operator: '=',
-                value: searchText
+                value: sanitizedSearchText
             }
         ]
     }
