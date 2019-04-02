@@ -118,21 +118,29 @@ function registerEntrypoints() {
         $("#open-dev-tools-button").click(openDevTools);
     }
 
+    let findInPage;
+
+    if (utils.isElectron()) {
+        const { remote } = require('electron');
+        const { FindInPage } = require('electron-find');
+
+        findInPage = new FindInPage(remote.getCurrentWebContents(), {
+            offsetTop: 10,
+            offsetRight: 10,
+            boxBgColor: 'var(--main-background-color)',
+            boxShadowColor: '#000',
+            inputColor: 'var(--input-text-color)',
+            inputBgColor: 'var(--input-background-color)',
+            inputFocusColor: '#555',
+            textColor: 'var(--main-text-color)',
+            textHoverBgColor: '#555',
+            caseSelectedColor: 'var(--main-border-color)'
+        });
+    }
+
     function openInPageSearch() {
         if (utils.isElectron()) {
-            const $searchWindowWebview = $(".electron-in-page-search-window");
-            $searchWindowWebview.show();
-
-            const searchInPage = require('electron-in-page-search').default;
-            const {remote} = require('electron');
-
-            const inPageSearch = searchInPage(remote.getCurrentWebContents(), {
-                searchWindowWebview: $searchWindowWebview[0],
-                //openDevToolsOfSearchWindow: true,
-                customCssPath: '/libraries/electron-in-page-search/default-style.css'
-            });
-
-            inPageSearch.openSearchWindow();
+            findInPage.openFindWindow();
 
             return false;
         }
