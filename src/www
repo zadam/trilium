@@ -35,6 +35,14 @@ async function startTrilium() {
     app.set('port', usedPort);
 
     if (config['Network']['https']) {
+        if (!config['Network']['keyPath'] || !config['Network']['keyPath'].trim().length) {
+            throw new Error("keyPath in config.ini is required when https=true, but it's empty");
+        }
+
+        if (!config['Network']['certPath'] || !config['Network']['certPath'].trim().length) {
+            throw new Error("certPath in config.ini is required when https=true, but it's empty");
+        }
+
         const options = {
             key: fs.readFileSync(config['Network']['keyPath']),
             cert: fs.readFileSync(config['Network']['certPath'])

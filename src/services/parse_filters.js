@@ -45,7 +45,8 @@ function calculateSmartValue(v) {
 module.exports = function (searchText) {
     // if the string doesn't start with attribute then we consider it as just standard full text search
     if (!searchText.trim().startsWith("@")) {
-        const sanitizedSearchText = searchText.replace(/[^\w ]+/g, "");
+        // replace with space instead of empty string since these characters are probably separators
+        const sanitizedSearchText = searchText.replace(/[^\w ]+/g, " ");
 
         return [
             {
