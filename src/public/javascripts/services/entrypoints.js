@@ -138,15 +138,13 @@ function registerEntrypoints() {
         });
     }
 
-    function openInPageSearch() {
-        if (utils.isElectron()) {
+    if (utils.isElectron()) {
+        utils.bindShortcut('ctrl+f', () => {
             findInPage.openFindWindow();
 
             return false;
-        }
+        });
     }
-
-    utils.bindShortcut('ctrl+f', openInPageSearch);
 
     // FIXME: do we really need these at this point?
     utils.bindShortcut("ctrl+shift+up", () => {
