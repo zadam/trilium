@@ -132,6 +132,14 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null) {
     };
 
     /**
+     * Returns note by given noteId. If note is missing from cache, it's loaded.
+     **
+     * @param {string} noteId
+     * @return {Promise<NoteShort>}
+     */
+    this.getNote = async noteId => await treeCache.getNote(noteId);
+
+    /**
      * Returns list of notes. If note is missing from cache, it's loaded.
      *
      * This is often used to bulk-fill the cache with notes which would have to be picked one by one
@@ -209,6 +217,12 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null) {
      * @returns {NoteFull} active note (loaded into right pane)
      */
     this.getActiveNote = noteDetailService.getActiveNote;
+
+    /**
+     * @method
+     * @returns {string} returns note path of active note
+     */
+    this.getActiveNotePath = treeService.getActiveNotePath;
 
     /**
      * This method checks whether user navigated away from the note from which the scripts has been started.
