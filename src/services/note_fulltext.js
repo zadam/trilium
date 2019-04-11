@@ -5,6 +5,11 @@ const html2plaintext = require('html2plaintext');
 const noteIdQueue = [];
 
 async function updateNoteFulltext(note) {
+    if (!note) {
+        // this might happen when note content is being synced before note itself
+        return;
+    }
+
     if (note.isDeleted || note.isProtected || await note.hasLabel('archived')) {
         await sql.execute(`DELETE
                            FROM note_fulltext

@@ -107,6 +107,10 @@ class Note extends Entity {
 
     /** @returns {Promise} */
     async setContent(content) {
+        // force updating note itself so that dateChanged is represented correctly even for the content
+        this.forcedChange = true;
+        await this.save();
+
         this.content = content;
 
         const pojo = {
@@ -128,10 +132,6 @@ class Note extends Entity {
         await sql.upsert("note_contents", "noteId", pojo);
 
         await syncTableService.addNoteContentSync(this.noteId);
-
-        this.forcedChange = true;
-
-        await this.save();
     }
 
     /** @returns {Promise} */
