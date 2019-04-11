@@ -24,7 +24,7 @@ async function login(req, res) {
             }
 
             req.session.loggedIn = true;
-            res.redirect('/');
+            res.redirect('..');
         });
     }
     else {
@@ -44,7 +44,7 @@ function logout(req, res) {
     req.session.regenerate(() => {
         req.session.loggedIn = false;
 
-        res.redirect('/');
+        res.redirect('login');
     });
 
 }
