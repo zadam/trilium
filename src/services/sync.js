@@ -49,7 +49,11 @@ async function sync() {
     catch (e) {
         proxyToggle = !proxyToggle;
 
-        if (e.message && (e.message.includes('ECONNREFUSED') || e.message.includes('ERR_CONNECTION_REFUSED'))) {
+        if (e.message &&
+                (e.message.includes('ECONNREFUSED') ||
+                 e.message.includes('ERR_CONNECTION_REFUSED') ||
+                 e.message.includes('Bad Gateway'))) {
+
             log.info("No connection to sync server.");
 
             return {
@@ -263,9 +267,7 @@ async function getEntityRow(entityName, entityId) {
         const entity = await sql.getRow(`SELECT * FROM ${entityName} WHERE ${primaryKey} = ?`, [entityId]);
 
         if (!entity) {
-            console.log(entityName, entityId);
-
-            console.log(`SELECT * FROM ${entityName} WHERE ${primaryKey} = '${entityId}'`);
+            throw new Error(`Entity ${entityName} ${entityId} not found.`);
         }
 
         if (['note_contents', 'note_revisions'].includes(entityName) && entity.content !== null) {

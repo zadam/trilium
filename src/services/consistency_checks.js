@@ -430,6 +430,7 @@ async function runSyncRowChecks(entityName, key) {
 
 async function findSyncRowsIssues() {
     await runSyncRowChecks("notes", "noteId");
+    await runSyncRowChecks("note_contents", "noteId");
     await runSyncRowChecks("note_revisions", "noteRevisionId");
     await runSyncRowChecks("branches", "branchId");
     await runSyncRowChecks("recent_notes", "branchId");
