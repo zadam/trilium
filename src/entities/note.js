@@ -72,9 +72,18 @@ class Note extends Entity {
      */
 
     /** @returns {Promise<*>} */
-    async getContent() {
+    async getContent(silentNotFoundError = false) {
         if (this.content === undefined) {
             const res = await sql.getRow(`SELECT content, hash FROM note_contents WHERE noteId = ?`, [this.noteId]);
+
+            if (!res) {
+                if (silentNotFoundError) {
+                    return undefined;
+                }
+                else {
+                    throw new Error("Cannot find note content for noteId=" + this.noteId);
+                }
+            }
 
             this.content = res.content;
             this.contentHash = res.contentHash; // used only for note_fulltext consistency check

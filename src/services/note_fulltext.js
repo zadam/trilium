@@ -19,13 +19,16 @@ async function updateNoteFulltext(note) {
         let contentHash = null;
 
         if (['text', 'code'].includes(note.type)) {
-            content = await note.getContent();
+            content = await note.getContent(true);
 
-            if (note.type === 'text' && note.mime === 'text/html') {
-                content = html2plaintext(content);
+            // might not be available during sync before note_contents is synced
+            if (content) {
+                if (note.type === 'text' && note.mime === 'text/html') {
+                    content = html2plaintext(content);
+                }
+
+                contentHash = note.contentHash;
             }
-
-            contentHash = note.contentHash;
         }
 
         // optimistically try to update first ...
