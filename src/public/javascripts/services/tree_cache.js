@@ -50,7 +50,10 @@ class TreeCache {
         }
     }
 
-    async reload(noteId) {
+    /**
+     * Reload children of given noteId.
+     */
+    async reloadChildren(noteId) {
         const resp = await server.post('tree/load', { noteIds: [noteId] });
 
         for (const childNoteId of this.children[noteId] || []) {
@@ -67,6 +70,22 @@ class TreeCache {
         delete this.notes[noteId];
 
         this.addResp(resp.notes, resp.branches, resp.relations);
+    }
+
+    /**
+     * Reloads parents of given noteId - useful when new note is created to make sure note is loaded
+     * in a correct order.
+     */
+    async reloadParents(noteId) {
+        // to be able to find parents we need first to make sure it is actually loaded
+        await this.getNote(noteId);
+
+        for (const parentNoteId of this.parents[noteId] || []) {
+            await this.reloadChildren(parentNoteId);
+        }
+
+        // this is done to load the new parents for the noteId
+        await this.reloadChildren(noteId);
     }
 
     /** @return {Promise<NoteShort[]>} */

@@ -375,8 +375,6 @@ async function treeInitialized() {
         // this is weird but it looks like even though init event has been called, but we the tree still
         // can't find nodes for given path which causes double loading of data. Little timeout fixes this.
         setTimeout(async () => {
-            console.log("activating ", startNotePath);
-
             const node = await activateNote(startNotePath);
 
             // looks like this this doesn't work when triggered immediatelly after activating node
@@ -761,7 +759,7 @@ async function checkFolderStatus(node) {
 }
 
 async function reloadNote(noteId) {
-    await treeCache.reload(noteId);
+    await treeCache.reloadChildren(noteId);
 
     for (const node of getNodesByNoteId(noteId)) {
         await node.load(true);
