@@ -110,12 +110,7 @@ async function expandToNote(notePath, expandOpts) {
             let node = getNode(childNoteId, parentNoteId);
 
             if (!node && parentNoteId) {
-                const parents = getNodesByNoteId(parentNoteId);
-
-                for (const parent of parents) {
-                    // force load parents. This is useful when fancytree doesn't contain recently created notes yet.
-                    await parent.load(true);
-                }
+                await reloadNote(parentNoteId);
 
                 node = getNode(childNoteId, parentNoteId);
             }
@@ -371,17 +366,23 @@ async function treeInitialized() {
 
     const noteId = treeUtils.getNoteIdFromNotePath(startNotePath);
 
-    if (!await treeCache.getNote(noteId)) {
+    if (!await treeCache.noteExists(noteId)) {
         // note doesn't exist so don't try to activate it
         startNotePath = null;
     }
 
     if (startNotePath) {
-        const node = await activateNote(startNotePath);
+        // this is weird but it looks like even though init event has been called, but we the tree still
+        // can't find nodes for given path which causes double loading of data. Little timeout fixes this.
+        setTimeout(async () => {
+            console.log("activating ", startNotePath);
 
-        // looks like this this doesn't work when triggered immediatelly after activating node
-        // so waiting a second helps
-        setTimeout(() => node.makeVisible({scrollIntoView: true}), 1000);
+            const node = await activateNote(startNotePath);
+
+            // looks like this this doesn't work when triggered immediatelly after activating node
+            // so waiting a second helps
+            setTimeout(() => node.makeVisible({scrollIntoView: true}), 1000);
+        }, 100);
     }
 }
 
@@ -760,6 +761,8 @@ async function checkFolderStatus(node) {
 }
 
 async function reloadNote(noteId) {
+    await treeCache.reload(noteId);
+
     for (const node of getNodesByNoteId(noteId)) {
         await node.load(true);
 

@@ -17,8 +17,12 @@ class TreeCache {
     }
 
     init() {
+        /** @type {Object.<string, string>} */
         this.parents = {};
+        /** @type {Object.<string, string>} */
         this.children = {};
+
+        /** @type {Object.<string, string>} */
         this.childParentToBranch = {};
 
         /** @type {Object.<string, NoteShort>} */
@@ -46,6 +50,26 @@ class TreeCache {
         }
     }
 
+    async reload(noteId) {
+        const resp = await server.post('tree/load', { noteIds: [noteId] });
+
+        for (const childNoteId of this.children[noteId] || []) {
+            this.parents[childNoteId] = this.parents[childNoteId].filter(p => p !== noteId);
+
+            const branchId = this.getBranchIdByChildParent(childNoteId, noteId);
+
+            delete this.branches[branchId];
+            delete this.childParentToBranch[childNoteId + '-' + noteId];
+        }
+
+        this.children[noteId] = [];
+
+        delete this.notes[noteId];
+
+        this.addResp(resp.notes, resp.branches, resp.relations);
+    }
+
+    /** @return {Promise<NoteShort[]>} */
     async getNotes(noteIds, silentNotFoundError = false) {
         const missingNoteIds = noteIds.filter(noteId => this.notes[noteId] === undefined);
 
@@ -67,7 +91,14 @@ class TreeCache {
         }).filter(note => note !== null);
     }
 
-    /** @return NoteShort */
+    /** @return {Promise<boolean>} */
+    async noteExists(noteId) {
+        const notes = await this.getNotes([noteId], true);
+
+        return notes.length === 1;
+    }
+
+    /** @return {Promise<NoteShort>} */
     async getNote(noteId) {
         if (noteId === 'none') {
             return null;
