@@ -71,9 +71,6 @@ async function executeScript(script, params, startNoteId, currentNoteId, originE
 }
 
 async function execute(ctx, script) {
-    // scripts run as "server" sourceId so clients recognize the changes as "foreign" and update themselves
-    cls.namespace.set('sourceId', sourceIdService.getCurrentSourceId());
-
     return await (function() { return eval(`const apiContext = this;\r\n(${script}\r\n)()`); }.call(ctx));
 }
 
