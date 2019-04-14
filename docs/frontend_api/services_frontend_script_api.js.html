@@ -36,6 +36,7 @@ import noteDetailService from './note_detail.js';
 import noteTypeService from './note_type.js';
 import noteTooltipService from './note_tooltip.js';
 import protectedSessionService from'./protected_session.js';
+import dateNotesService from'./date_notes.js';
 
 /**
  * This is the main frontend API interface for scripts. It's published in the local "api" object.
@@ -52,6 +53,9 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null) {
     this.currentNote = currentNote;
     /** @property {object|null} entity whose event triggered this execution */
     this.originEntity = originEntity;
+
+    // to keep consistency with backend API
+    this.dayjs = dayjs;
 
     /**
      * Activates note in the tree and in the note detail.
@@ -160,6 +164,14 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null) {
     };
 
     /**
+     * Returns note by given noteId. If note is missing from cache, it's loaded.
+     **
+     * @param {string} noteId
+     * @return {Promise&lt;NoteShort>}
+     */
+    this.getNote = async noteId => await treeCache.getNote(noteId);
+
+    /**
      * Returns list of notes. If note is missing from cache, it's loaded.
      *
      * This is often used to bulk-fill the cache with notes which would have to be picked one by one
@@ -170,6 +182,18 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null) {
      * @return {Promise&lt;NoteShort[]>}
      */
     this.getNotes = async (noteIds, silentNotFoundError = false) => await treeCache.getNotes(noteIds, silentNotFoundError);
+
+    /**
+     * @param {string} noteId
+     * @method
+     */
+    this.reloadChildren = async noteId => await treeCache.reloadChildren(noteId);
+
+    /**
+     * @param {string} noteId
+     * @method
+     */
+    this.reloadParents = async noteId => await treeCache.reloadParents(noteId);
 
     /**
      * Instance name identifies particular Trilium instance. It can be useful for scripts
@@ -239,6 +263,12 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null) {
     this.getActiveNote = noteDetailService.getActiveNote;
 
     /**
+     * @method
+     * @returns {string} returns note path of active note
+     */
+    this.getActiveNotePath = treeService.getActiveNotePath;
+
+    /**
      * This method checks whether user navigated away from the note from which the scripts has been started.
      * This is necessary because script execution is async and by the time it is finished, the user might have
      * already navigated away from this page - the end result would be that script might return data for the wrong
@@ -285,6 +315,41 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null) {
      * @method
      */
     this.protectActiveNote = protectedSessionService.protectNoteAndSendToServer;
+
+    /**
+     * Returns date-note for today. If it doesn't exist, it is automatically created.
+     *
+     * @method
+     * @return {Promise&lt;NoteShort>}
+     */
+    this.getTodayNote = dateNotesService.getTodayNote;
+
+    /**
+     * Returns date-note. If it doesn't exist, it is automatically created.
+     *
+     * @method
+     * @param {string} date - e.g. "2019-04-29"
+     * @return {Promise&lt;NoteShort>}
+     */
+    this.getDateNote = dateNotesService.getDateNote;
+
+    /**
+     * Returns month-note. If it doesn't exist, it is automatically created.
+     *
+     * @method
+     * @param {string} month - e.g. "2019-04"
+     * @return {Promise&lt;NoteShort>}
+     */
+    this.getMonthNote = dateNotesService.getMonthNote;
+
+    /**
+     * Returns year-note. If it doesn't exist, it is automatically created.
+     *
+     * @method
+     * @param {string} year - e.g. "2019"
+     * @return {Promise&lt;NoteShort>}
+     */
+    this.getYearNote = dateNotesService.getYearNote;
 }
 
 export default FrontendScriptApi;</code></pre>

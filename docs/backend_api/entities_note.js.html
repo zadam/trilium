@@ -90,10 +90,31 @@ class Note extends Entity {
         }
     }
 
+    /*
+     * Note content has quite special handling - it's not a separate entity, but a lazily loaded
+     * part of Note entity with it's own sync. Reasons behind this hybrid design has been:
+     *
+     * - content can be quite large and it's not necessary to load it / fill memory for any note access even if we don't need a content, especially for bulk operations like search
+     * - changes in the note metadata or title should not trigger note content sync (so we keep separate utcDateModified and sync rows)
+     * - but to the user note content and title changes are one and the same - single dateModified (so all changes must go through Note and content is not a separate entity)
+     */
+
     /** @returns {Promise&lt;*>} */
-    async getContent() {
+    async getContent(silentNotFoundError = false) {
         if (this.content === undefined) {
-            this.content = await sql.getValue(`SELECT content FROM note_contents WHERE noteId = ?`, [this.noteId]);
+            const res = await sql.getRow(`SELECT content, hash FROM note_contents WHERE noteId = ?`, [this.noteId]);
+
+            if (!res) {
+                if (silentNotFoundError) {
+                    return undefined;
+                }
+                else {
+                    throw new Error("Cannot find note content for noteId=" + this.noteId);
+                }
+            }
+
+            this.content = res.content;
+            this.contentHash = res.contentHash; // used only for note_fulltext consistency check
 
             if (this.isProtected) {
                 if (this.isContentAvailable) {
@@ -123,6 +144,10 @@ class Note extends Entity {
 
     /** @returns {Promise} */
     async setContent(content) {
+        // force updating note itself so that dateChanged is represented correctly even for the content
+        this.forcedChange = true;
+        await this.save();
+
         this.content = content;
 
         const pojo = {
@@ -144,10 +169,6 @@ class Note extends Entity {
         await sql.upsert("note_contents", "noteId", pojo);
 
         await syncTableService.addNoteContentSync(this.noteId);
-
-        this.forcedChange = true;
-
-        await this.save();
     }
 
     /** @returns {Promise} */
@@ -736,6 +757,7 @@ class Note extends Entity {
         delete pojo.isContentAvailable;
         delete pojo.__attributeCache;
         delete pojo.content;
+        delete pojo.contentHash;
     }
 
     async afterSaving() {

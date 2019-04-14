@@ -8,6 +8,7 @@ import noteDetailService from './note_detail.js';
 import noteTypeService from './note_type.js';
 import noteTooltipService from './note_tooltip.js';
 import protectedSessionService from'./protected_session.js';
+import dateNotesService from'./date_notes.js';
 
 /**
  * This is the main frontend API interface for scripts. It's published in the local "api" object.
@@ -286,6 +287,41 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null) {
      * @method
      */
     this.protectActiveNote = protectedSessionService.protectNoteAndSendToServer;
+
+    /**
+     * Returns date-note for today. If it doesn't exist, it is automatically created.
+     *
+     * @method
+     * @return {Promise<NoteShort>}
+     */
+    this.getTodayNote = dateNotesService.getTodayNote;
+
+    /**
+     * Returns date-note. If it doesn't exist, it is automatically created.
+     *
+     * @method
+     * @param {string} date - e.g. "2019-04-29"
+     * @return {Promise<NoteShort>}
+     */
+    this.getDateNote = dateNotesService.getDateNote;
+
+    /**
+     * Returns month-note. If it doesn't exist, it is automatically created.
+     *
+     * @method
+     * @param {string} month - e.g. "2019-04"
+     * @return {Promise<NoteShort>}
+     */
+    this.getMonthNote = dateNotesService.getMonthNote;
+
+    /**
+     * Returns year-note. If it doesn't exist, it is automatically created.
+     *
+     * @method
+     * @param {string} year - e.g. "2019"
+     * @return {Promise<NoteShort>}
+     */
+    this.getYearNote = dateNotesService.getYearNote;
 }
 
 export default FrontendScriptApi;
