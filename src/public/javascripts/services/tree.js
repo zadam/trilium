@@ -151,7 +151,7 @@ async function activateNote(notePath, noteLoadedListener) {
         glob.activeDialog.modal('hide');
     }
 
-    const node = await expandToNote(notePath, {noAnimation: true});
+    const node = await expandToNote(notePath);
 
     if (noteLoadedListener) {
         noteDetailService.addDetailLoadedListener(node.data.noteId, noteLoadedListener);
