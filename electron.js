@@ -97,15 +97,10 @@ app.on('ready', async () => {
     mainWindow = await createMainWindow();
 
     const result = globalShortcut.register('CommandOrControl+Alt+P', cls.wrap(async () => {
-        const dateNoteService = require('./src/services/date_notes');
-        const dateUtils = require('./src/services/date_utils');
-
-        const parentNote = await dateNoteService.getDateNote(dateUtils.localNowDate());
-
         // window may be hidden / not in focus
         mainWindow.focus();
 
-        mainWindow.webContents.send('create-day-sub-note', parentNote.noteId);
+        mainWindow.webContents.send('create-day-sub-note');
     }));
 
     if (!result) {

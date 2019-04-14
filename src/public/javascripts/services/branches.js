@@ -3,7 +3,6 @@ import utils from './utils.js';
 import server from './server.js';
 import infoService from "./info.js";
 import treeCache from "./tree_cache.js";
-import treeBuilder from "./tree_builder.js";
 
 async function moveBeforeNode(nodesToMove, beforeNode) {
     nodesToMove = filterRootNote(nodesToMove);

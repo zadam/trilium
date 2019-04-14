@@ -817,5 +817,6 @@ export default {
     getNodesByNoteId,
     checkFolderStatus,
     reloadNote,
-    loadTreeCache
+    loadTreeCache,
+    expandToNote
 };

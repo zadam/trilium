@@ -30,6 +30,7 @@ const scriptRoute = require('./api/script');
 const senderRoute = require('./api/sender');
 const filesRoute = require('./api/file_upload');
 const searchRoute = require('./api/search');
+const dateNotesRoute = require('./api/date_notes');
 
 const log = require('../services/log');
 const express = require('express');
@@ -152,6 +153,10 @@ function register(app) {
     apiRoute(DELETE, '/api/notes/:noteId/attributes/:attributeId', attributesRoute.deleteNoteAttribute);
     apiRoute(GET, '/api/attributes/names', attributesRoute.getAttributeNames);
     apiRoute(GET, '/api/attributes/values/:attributeName', attributesRoute.getValuesForAttribute);
+
+    apiRoute(GET, '/api/date-notes/date/:date', dateNotesRoute.getDateNote);
+    apiRoute(GET, '/api/date-notes/month/:month', dateNotesRoute.getMonthNote);
+    apiRoute(GET, '/api/date-notes/year/:year', dateNotesRoute.getYearNote);
 
     route(GET, '/api/images/:noteId/:filename', [auth.checkApiAuthOrElectron], imageRoute.returnImage);
     route(POST, '/api/images', [auth.checkApiAuthOrElectron, uploadMiddleware, csrfMiddleware], imageRoute.uploadImage, apiResultHandler);

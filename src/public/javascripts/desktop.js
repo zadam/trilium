@@ -39,6 +39,7 @@ import linkService from './services/link.js';
 import noteAutocompleteService from './services/note_autocomplete.js';
 import macInit from './services/mac_init.js';
 import cssLoader from './services/css_loader.js';
+import dateNoteService from './services/date_notes.js';
 
 // required for CKEditor image upload plugin
 window.glob.getActiveNode = treeService.getActiveNode;
@@ -114,20 +115,14 @@ $("body").on("click", "a.external", function () {
 });
 
 if (utils.isElectron()) {
-    require('electron').ipcRenderer.on('create-day-sub-note', async function(event, parentNoteId) {
-        await treeService.activateNote(parentNoteId);
+    require('electron').ipcRenderer.on('create-day-sub-note', async function(event) {
+        const todayNote = await dateNoteService.getTodayNote();
+        const node = await treeService.expandToNote(todayNote.noteId);
 
-        setTimeout(async () => {
-            const parentNode = treeService.getActiveNode();
-
-            const {note} = await treeService.createNote(parentNode, parentNode.data.noteId, 'into', {
-                type: "text",
-                isProtected: parentNode.data.isProtected
-            });
-
-            await treeService.activateNote(note.noteId);
-
-        }, 500);
+        await treeService.createNote(node, todayNote.noteId, 'into', {
+            type: "text",
+            isProtected: node.data.isProtected
+        });
     });
 }
 

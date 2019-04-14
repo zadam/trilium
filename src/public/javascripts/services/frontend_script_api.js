@@ -25,6 +25,9 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null) {
     /** @property {object|null} entity whose event triggered this execution */
     this.originEntity = originEntity;
 
+    // to keep consistency with backend API
+    this.dayjs = dayjs;
+
     /**
      * Activates note in the tree and in the note detail.
      *
