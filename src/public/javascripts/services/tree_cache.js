@@ -5,6 +5,9 @@ import infoService from "./info.js";
 import messagingService from "./messaging.js";
 import server from "./server.js";
 
+/**
+ * TreeCache keeps a read only cache of note tree structure in frontend's memory.
+ */
 class TreeCache {
     constructor() {
         this.init();

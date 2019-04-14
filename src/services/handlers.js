@@ -1,7 +1,6 @@
 const eventService = require('./events');
 const scriptService = require('./script');
 const treeService = require('./tree');
-const messagingService = require('./messaging');
 const log = require('./log');
 const Attribute = require('../entities/attribute');
 
@@ -29,9 +28,6 @@ eventService.subscribe(eventService.NOTE_TITLE_CHANGED, async note => {
         for (const parent of parents) {
             if (await parent.hasLabel("sorted")) {
                 await treeService.sortNotesAlphabetically(parent.noteId);
-
-                messagingService.refreshTree();
-                break; // sending the message once is enough
             }
         }
     }
