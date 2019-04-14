@@ -103,6 +103,7 @@ function registerEntrypoints() {
 
     utils.bindShortcut('f5', utils.reloadApp);
 
+    $("#reload-frontend-button").click(utils.reloadApp);
     utils.bindShortcut('ctrl+r', utils.reloadApp);
 
     $("#open-dev-tools-button").toggle(utils.isElectron());
