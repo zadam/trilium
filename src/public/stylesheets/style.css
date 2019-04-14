@@ -929,3 +929,8 @@ a.external:after, a[href^="http://"]:after, a[href^="https://"]:after {
     background-color: inherit !important;
     border-color: var(--main-border-color) !important;
 }
+
+.jam-empty {
+    width: 1em;
+    display: inline-block;
+}

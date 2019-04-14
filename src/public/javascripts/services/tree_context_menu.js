@@ -112,9 +112,9 @@ async function getTopLevelItems(event) {
         { title: "Delete <kbd>Delete</kbd>", cmd: "delete", uiIcon: "trash",
             enabled: isNotRoot && parentNote.type !== 'search' },
         { title: "----" },
-        isHoisted ? null : { title: "Hoist note <kbd>Ctrl-H</kbd>", cmd: "hoist", uiIcon: "arrow-up" },
+        isHoisted ? null : { title: "Hoist note <kbd>Ctrl-H</kbd>", cmd: "hoist", uiIcon: "empty" },
         !isHoisted || !isNotRoot ? null : { title: "Unhoist note <kbd>Ctrl-H</kbd>", cmd: "unhoist", uiIcon: "arrow-up" },
-        { title: "Edit branch prefix <kbd>F2</kbd>", cmd: "editBranchPrefix", uiIcon: "pencil",
+        { title: "Edit branch prefix <kbd>F2</kbd>", cmd: "editBranchPrefix", uiIcon: "empty",
             enabled: isNotRoot && parentNote.type !== 'search'},
         { title: "----" },
         { title: "Protect subtree", cmd: "protectSubtree", uiIcon: "shield-check" },
@@ -129,14 +129,14 @@ async function getTopLevelItems(event) {
         { title: "Paste after", cmd: "pasteAfter", uiIcon: "clipboard",
             enabled: clipboardIds.length > 0 && isNotRoot && parentNote.type !== 'search' },
         { title: "----" },
-        { title: "Export", cmd: "export", uiIcon: "arrow-up-right",
+        { title: "Export", cmd: "export", uiIcon: "empty",
             enabled: note.type !== 'search' },
-        { title: "Import into note", cmd: "importIntoNote", uiIcon: "arrow-down-left",
+        { title: "Import into note", cmd: "importIntoNote", uiIcon: "empty",
             enabled: note.type !== 'search' },
         { title: "----" },
         { title: "Collapse subtree <kbd>Alt+-</kbd>", cmd: "collapseSubtree", uiIcon: "align-justify" },
         { title: "Force note sync", cmd: "forceNoteSync", uiIcon: "refresh" },
-        { title: "Sort alphabetically <kbd>Alt+S</kbd>", cmd: "sortAlphabetically", uiIcon: "arrows-v" }
+        { title: "Sort alphabetically <kbd>Alt+S</kbd>", cmd: "sortAlphabetically", uiIcon: "empty" }
     ].filter(row => row !== null);
 }
 
