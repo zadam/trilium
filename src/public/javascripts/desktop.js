@@ -117,7 +117,7 @@ $("body").on("click", "a.external", function () {
 if (utils.isElectron()) {
     require('electron').ipcRenderer.on('create-day-sub-note', async function(event) {
         const todayNote = await dateNoteService.getTodayNote();
-        const node = await treeService.expandToNote(todayNote.noteId);
+        const node = await treeService.expandToNote(todayNote.noteId, {noAnimation: true});
 
         await treeService.createNote(node, todayNote.noteId, 'into', {
             type: "text",

@@ -96,6 +96,10 @@ class TreeCache {
             const resp = await server.post('tree/load', { noteIds: missingNoteIds });
 
             this.addResp(resp.notes, resp.branches, resp.relations);
+
+            for (const note of resp.notes) {
+                await this.reloadParents(note.noteId);
+            }
         }
 
         return noteIds.map(noteId => {
