@@ -51,6 +51,13 @@ async function shrinkImage(buffer, originalName) {
         log.error("Failed to optimize image '" + originalName + "\nStack: " + e.stack);
         finalImageBuffer = resizedImage;
     }
+
+    // if resizing & shrinking did not help with size then save the original
+    // (can happen when e.g. resizing PNG into JPEG)
+    if (finalImageBuffer.byteLength >= buffer.byteLength) {
+        finalImageBuffer = buffer;
+    }
+
     return finalImageBuffer;
 }
 
