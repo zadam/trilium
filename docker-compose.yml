@@ -1,0 +1,17 @@
+version: '2.1'
+services:
+  trilium:
+    build:
+      context: .
+    image: zadam/trilium
+    restart: always
+    environment:
+      - TRILIUM_DATA_DIR=/data
+    ports:
+      - "8080:8080"
+    volumes:
+      - trilium:/data
+
+volumes:
+  trilium:
+
