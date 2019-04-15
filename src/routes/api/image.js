@@ -14,7 +14,7 @@ async function returnImage(req, res) {
     else if (image.type !== 'image') {
         return res.sendStatus(400);
     }
-    else if (image.data === null) {
+    else if (image.isDeleted || image.data === null) {
         res.set('Content-Type', 'image/png');
         return res.send(fs.readFileSync(RESOURCE_DIR + '/db/image-deleted.png'));
     }
