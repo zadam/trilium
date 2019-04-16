@@ -86,10 +86,10 @@ $("#note-menu-button").click(async e => {
             enabled: isNotRoot && parentNote.type !== 'search' }
     ];
 
-    contextMenuWidget.initContextMenu(e, items, (event, cmd) => {
+    contextMenuWidget.initContextMenu(e, items, async (event, cmd) => {
         if (cmd === "insertNoteAfter") {
             const parentNoteId = node.data.parentNoteId;
-            const isProtected = treeUtils.getParentProtectedStatus(node);
+            const isProtected = await treeUtils.getParentProtectedStatus(node);
 
             treeService.createNote(node, parentNoteId, 'after', { isProtected: isProtected });
         }

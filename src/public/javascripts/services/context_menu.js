@@ -42,7 +42,7 @@ function initContextMenu(event, contextMenuItems, selectContextMenuItem) {
                     });
 
                 if (item.enabled !== undefined && !item.enabled) {
-                    $link.addClass("disabled");
+                    $item.addClass("disabled");
                 }
 
                 if (item.items) {

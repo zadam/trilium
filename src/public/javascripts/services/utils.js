@@ -60,14 +60,6 @@ function assertArguments() {
     }
 }
 
-function isTopLevelNode(node) {
-    return isRootNode(node.getParent());
-}
-
-function isRootNode(node) {
-    return node.data.noteId === "root";
-}
-
 function escapeHtml(str) {
     return $('<div/>').text(str).html();
 }
@@ -211,8 +203,6 @@ export default {
     isElectron,
     isMac,
     assertArguments,
-    isTopLevelNode,
-    isRootNode,
     escapeHtml,
     stopWatch,
     formatValueWithWhitespace,

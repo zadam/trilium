@@ -109,8 +109,8 @@ const keyBindings = {
 
         return false;
     },
-    "backspace": node => {
-        if (!utils.isRootNode(node)) {
+    "backspace": async node => {
+        if (!await hoistedNoteService.isRootNode(node)) {
             node.getParent().setActive().then(treeService.clearSelectedNodes);
         }
     },

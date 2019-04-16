@@ -236,7 +236,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null) {
 
     /**
      * @method
-     * @returns {string} returns note path of active note
+     * @returns {Promise<string>} returns note path of active note
      */
     this.getActiveNotePath = treeService.getActiveNotePath;
 

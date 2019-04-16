@@ -1,10 +1,11 @@
 import utils from './utils.js';
+import hoistedNoteService from './hoisted_note.js';
 import treeCache from "./tree_cache.js";
 
 const $tree = $("#tree");
 
-function getParentProtectedStatus(node) {
-    return utils.isRootNode(node) ? 0 : node.getParent().data.isProtected;
+async function getParentProtectedStatus(node) {
+    return await hoistedNoteService.isRootNode(node) ? 0 : node.getParent().data.isProtected;
 }
 
 function getNodeByKey(key) {
@@ -21,10 +22,15 @@ function getNoteIdFromNotePath(notePath) {
     return path[path.length - 1];
 }
 
-function getNotePath(node) {
+async function getNotePath(node) {
+    if (!node) {
+        console.error("Node is null");
+        return "";
+    }
+
     const path = [];
 
-    while (node && !utils.isRootNode(node)) {
+    while (node && !await hoistedNoteService.isRootNode(node)) {
         if (node.data.noteId) {
             path.push(node.data.noteId);
         }
@@ -32,7 +38,7 @@ function getNotePath(node) {
         node = node.getParent();
     }
 
-    path.push('root');
+    path.push(node.data.noteId); // root or hoisted noteId
 
     return path.reverse().join("/");
 }

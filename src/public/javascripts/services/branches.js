@@ -3,9 +3,10 @@ import utils from './utils.js';
 import server from './server.js';
 import infoService from "./info.js";
 import treeCache from "./tree_cache.js";
+import hoistedNoteService from "./hoisted_note.js";
 
 async function moveBeforeNode(nodesToMove, beforeNode) {
-    nodesToMove = filterRootNote(nodesToMove);
+    nodesToMove = await filterRootNote(nodesToMove);
 
     if (beforeNode.data.noteId === 'root') {
         alert('Cannot move notes before root note.');
@@ -29,9 +30,9 @@ async function moveBeforeNode(nodesToMove, beforeNode) {
 }
 
 async function moveAfterNode(nodesToMove, afterNode) {
-    nodesToMove = filterRootNote(nodesToMove);
+    nodesToMove = await filterRootNote(nodesToMove);
 
-    if (afterNode.data.noteId === 'root') {
+    if (afterNode.data.noteId === 'root' || afterNode.data.noteId === await hoistedNoteService.getHoistedNoteId()) {
         alert('Cannot move notes after root note.');
         return;
     }
@@ -55,7 +56,7 @@ async function moveAfterNode(nodesToMove, afterNode) {
 }
 
 async function moveToNode(nodesToMove, toNode) {
-    nodesToMove = filterRootNote(nodesToMove);
+    nodesToMove = await filterRootNote(nodesToMove);
 
     for (const nodeToMove of nodesToMove) {
         const resp = await server.put('branches/' + nodeToMove.data.branchId + '/move-to/' + toNode.data.noteId);
@@ -76,13 +77,8 @@ async function moveToNode(nodesToMove, toNode) {
     }
 }
 
-function filterRootNote(nodes) {
-    // some operations are not possible on root notes
-    return nodes.filter(node => node.data.noteId !== 'root');
-}
-
 async function deleteNodes(nodes) {
-    nodes = filterRootNote(nodes);
+    nodes = await filterRootNote(nodes);
 
     if (nodes.length === 0 || !confirm('Are you sure you want to delete select note(s) and all the sub-notes?')) {
         return;
@@ -92,8 +88,6 @@ async function deleteNodes(nodes) {
         await server.remove('branches/' + node.data.branchId);
     }
 
-
-
     // following code assumes that nodes contain only top-most selected nodes - getSelectedNodes has been
     // called with stopOnParent=true
     let next = nodes[nodes.length - 1].getNextSibling();
@@ -102,7 +96,7 @@ async function deleteNodes(nodes) {
         next = nodes[0].getPrevSibling();
     }
 
-    if (!next && !utils.isTopLevelNode(nodes[0])) {
+    if (!next && !hoistedNoteService.isTopLevelNode(nodes[0])) {
         next = nodes[0].getParent();
     }
 
@@ -129,7 +123,7 @@ async function deleteNodes(nodes) {
 }
 
 async function moveNodeUpInHierarchy(node) {
-    if (utils.isRootNode(node) || utils.isTopLevelNode(node)) {
+    if (await hoistedNoteService.isRootNode(node) || await hoistedNoteService.isTopLevelNode(node)) {
         return;
     }
 
@@ -140,7 +134,7 @@ async function moveNodeUpInHierarchy(node) {
         return;
     }
 
-    if (!utils.isTopLevelNode(node) && node.getParent().getChildren().length <= 1) {
+    if (!hoistedNoteService.isTopLevelNode(node) && node.getParent().getChildren().length <= 1) {
         node.getParent().folder = false;
         node.getParent().renderTitle();
     }
@@ -200,6 +194,14 @@ async function changeNode(func, node, beforeNoteId = null, afterNoteId = null) {
 
         await treeService.checkFolderStatus(oldParentNode);
     }
+}
+
+async function filterRootNote(nodes) {
+    const hoistedNoteId = await hoistedNoteService.getHoistedNoteId();
+
+    return nodes.filter(node =>
+        node.data.noteId !== 'root'
+        && node.data.noteId !== hoistedNoteId);
 }
 
 export default {

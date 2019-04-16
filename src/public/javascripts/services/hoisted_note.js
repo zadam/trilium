@@ -26,8 +26,20 @@ async function unhoist() {
     await setHoistedNoteId('root');
 }
 
+async function isTopLevelNode(node) {
+    return await isRootNode(node.getParent());
+}
+
+async function isRootNode(node) {
+    // even though check for 'root' should not be necessary, we keep it just in case
+    return node.data.noteId === "root"
+        || node.data.noteId === await getHoistedNoteId();
+}
+
 export default {
     getHoistedNoteId,
     setHoistedNoteId,
-    unhoist
+    unhoist,
+    isTopLevelNode,
+    isRootNode
 }

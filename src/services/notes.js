@@ -12,6 +12,7 @@ const Link = require('../entities/link');
 const NoteRevision = require('../entities/note_revision');
 const Branch = require('../entities/branch');
 const Attribute = require('../entities/attribute');
+const hoistedNoteService = require('../services/hoisted_note');
 
 async function getNewNotePosition(parentNoteId, noteData) {
     let newNotePos = 0;
@@ -364,7 +365,10 @@ async function deleteNote(branch) {
         return;
     }
 
-    if (branch.branchId === 'root' || branch.noteId === 'root') {
+    if (branch.branchId === 'root'
+        || branch.noteId === 'root'
+        || branch.noteId === await hoistedNoteService.getHoistedNoteId()) {
+
         throw new Error("Can't delete root branch/note");
     }
 

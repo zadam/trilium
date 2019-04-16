@@ -270,7 +270,7 @@ async function showChildrenOverview() {
 
     $childrenOverview.empty();
 
-    const notePath = treeService.getActiveNotePath();
+    const notePath = await treeService.getActiveNotePath();
 
     for (const childBranch of await note.getChildBranches()) {
         const link = $('<a>', {

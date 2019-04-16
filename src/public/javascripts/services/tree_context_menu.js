@@ -110,7 +110,7 @@ async function getTopLevelItems(event) {
             items: insertChildNoteEnabled ? getNoteTypeItems("insertChildNote") : null,
             enabled: insertChildNoteEnabled },
         { title: "Delete <kbd>Delete</kbd>", cmd: "delete", uiIcon: "trash",
-            enabled: isNotRoot && parentNote.type !== 'search' },
+            enabled: isNotRoot && !isHoisted && parentNote.type !== 'search' },
         { title: "----" },
         isHoisted ? null : { title: "Hoist note <kbd>Ctrl-H</kbd>", cmd: "hoist", uiIcon: "empty" },
         !isHoisted || !isNotRoot ? null : { title: "Unhoist note <kbd>Ctrl-H</kbd>", cmd: "unhoist", uiIcon: "arrow-up" },
@@ -156,13 +156,13 @@ async function getContextMenuItems(event) {
     return items;
 }
 
-function selectContextMenuItem(event, cmd) {
+async function selectContextMenuItem(event, cmd) {
     // context menu is always triggered on current node
     const node = treeService.getActiveNode();
 
     if (cmd.startsWith("insertNoteAfter")) {
         const parentNoteId = node.data.parentNoteId;
-        const isProtected = treeUtils.getParentProtectedStatus(node);
+        const isProtected = await treeUtils.getParentProtectedStatus(node);
         const type = cmd.split("_")[1];
 
         treeService.createNote(node, parentNoteId, 'after', {

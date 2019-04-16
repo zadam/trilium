@@ -39,10 +39,8 @@ function getActiveNode() {
     return $tree.fancytree("getActiveNode");
 }
 
-function getActiveNotePath() {
-    const node = getActiveNode();
-
-    return treeUtils.getNotePath(node);
+async function getActiveNotePath() {
+    return getHashValueFromAddress();
 }
 
 async function getNodesByBranchId(branchId) {
@@ -325,16 +323,16 @@ async function setExpandedToServer(branchId, isExpanded) {
 function addRecentNote(branchId, notePath) {
     setTimeout(async () => {
         // we include the note into recent list only if the user stayed on the note at least 5 seconds
-        if (notePath && notePath === getActiveNotePath()) {
+        if (notePath && notePath === await getActiveNotePath()) {
             await server.post('recent-notes', { branchId, notePath });
         }
     }, 1500);
 }
 
-function setCurrentNotePathToHash(node) {
+async function setCurrentNotePathToHash(node) {
     utils.assertArguments(node);
 
-    const activeNotePath = treeUtils.getNotePath(node);
+    const activeNotePath = await treeUtils.getNotePath(node);
     const currentBranchId = node.data.branchId;
 
     document.location.hash = activeNotePath;
@@ -412,14 +410,14 @@ function initFancyTree(tree) {
                 return false;
             }
         },
-        activate: (event, data) => {
+        activate: async (event, data) => {
             const node = data.node;
             const noteId = node.data.noteId;
 
             // click event won't propagate so let's close context menu manually
             contextMenuWidget.hideContextMenu();
 
-            setCurrentNotePathToHash(node);
+            await setCurrentNotePathToHash(node);
 
             noteDetailService.switchToNote(noteId);
 
@@ -721,7 +719,7 @@ messagingService.subscribeToSyncMessages(syncData => {
 utils.bindShortcut('ctrl+o', async () => {
     const node = getActiveNode();
     const parentNoteId = node.data.parentNoteId;
-    const isProtected = treeUtils.getParentProtectedStatus(node);
+    const isProtected = await treeUtils.getParentProtectedStatus(node);
 
     if (node.data.noteId === 'root' || node.data.noteId === await hoistedNoteService.getHoistedNoteId()) {
         return;
@@ -774,11 +772,11 @@ utils.bindShortcut('ctrl+p', createNoteInto);
 
 utils.bindShortcut('ctrl+.', scrollToActiveNote);
 
-$(window).bind('hashchange', function() {
+$(window).bind('hashchange', async function() {
     if (isNotePathInAddress()) {
         const notePath = getHashValueFromAddress();
 
-        if (notePath !== '-' && getActiveNotePath() !== notePath) {
+        if (notePath !== '-' && await getActiveNotePath() !== notePath) {
             console.debug("Switching to " + notePath + " because of hash change");
 
             activateNote(notePath);
