@@ -7,8 +7,8 @@ function setupGlobalTooltip() {
     $(document).on("mouseenter", "a", mouseEnterHandler);
     $(document).on("mouseleave", "a", mouseLeaveHandler);
 
-    // close any tooltip after click, this fixes the problem that sometimes tooltips remained on the screen
-    //$(document).on("click", () => $('.tooltip').remove());
+    // close any note tooltip after click, this fixes the problem that sometimes tooltips remained on the screen
+    $(document).on("click", () => $('.note-tooltip').remove());
 }
 
 function setupElementTooltip($el) {
@@ -58,7 +58,8 @@ async function mouseEnterHandler() {
             trigger: 'manual',
             boundary: 'window',
             title: html,
-            html: true
+            html: true,
+            template: '<div class="tooltip note-tooltip" role="tooltip"><div class="arrow"></div><div class="tooltip-inner"></div></div>'
         });
 
         $(this).tooltip('show');
