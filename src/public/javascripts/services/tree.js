@@ -114,7 +114,7 @@ async function expandToNote(notePath, expandOpts) {
             }
 
             if (!node) {
-                console.error(`Can't find node for noteId=${childNoteId} with parentNoteId=${parentNoteId}`);
+                console.error(`Can't find node for noteId=${childNoteId} with parentNoteId=${parentNoteId} and hoistedNoteId=${hoistedNoteId}`);
             }
 
             if (childNoteId === noteId) {
@@ -382,6 +382,8 @@ async function treeInitialized() {
     }
 }
 
+let ignoreNextActivationNoteId = null;
+
 function initFancyTree(tree) {
     utils.assertArguments(tree);
 
@@ -410,9 +412,20 @@ function initFancyTree(tree) {
                 return false;
             }
         },
+        beforeActivate: (event, data) => {
+            // this is for the case when tree reload has been called and we don't want to
+            if (ignoreNextActivationNoteId && getActiveNode() !== null) {
+                return false;
+            }
+        },
         activate: async (event, data) => {
             const node = data.node;
             const noteId = node.data.noteId;
+
+            if (ignoreNextActivationNoteId === noteId) {
+                ignoreNextActivationNoteId = null;
+                return;
+            }
 
             // click event won't propagate so let's close context menu manually
             contextMenuWidget.hideContextMenu();
@@ -487,7 +500,11 @@ function getTree() {
 async function reload() {
     const notes = await loadTree();
 
-    // this will also reload the note content
+    // make sure the reload won't trigger reactivation. This is important especially in cases where we wait for the reload
+    // to finish to then activate some other note. But since the activate() event is called asynchronously, it may be called
+    // (or finished calling) after we switched to a different note.
+    ignoreNextActivationNoteId = getActiveNode().data.noteId;
+
     await getTree().reload(notes);
 }
 
