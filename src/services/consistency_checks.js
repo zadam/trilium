@@ -5,7 +5,6 @@ const sqlInit = require('./sql_init');
 const log = require('./log');
 const messagingService = require('./messaging');
 const syncMutexService = require('./sync_mutex');
-const noteFulltextService = require('./note_fulltext');
 const repository = require('./repository');
 const cls = require('./cls');
 const syncTableService = require('./sync_table');
@@ -357,42 +356,6 @@ async function findLogicIssues() {
             await link.save();
 
             logFix(`Removed link ${linkId} because target note ${targetNoteId} is also deleted.`);
-        });
-
-    // this doesn't try to find notes for which the fulltext doesn't exist at all - reason is the "archived" label
-    // which is inheritable and not easy to filter out such rows in consistency check which would mean that it would
-    // find some false positives.
-    await findAndFixIssues(`
-          SELECT 
-            noteId
-          FROM 
-            notes
-            JOIN note_contents USING(noteId)
-            JOIN note_fulltext USING(noteId)
-          WHERE
-            notes.isDeleted = 0
-            AND notes.isProtected = 0
-            AND (note_fulltext.noteId IS NULL 
-                 OR note_fulltext.titleHash != notes.hash
-                 OR note_fulltext.contentHash != note_contents.hash)`,
-        async ({noteId}) => {
-            noteFulltextService.triggerNoteFulltextUpdate(noteId);
-
-            logFix(`Triggered fulltext update of note ${noteId} since it was out of sync.`);
-        });
-
-    await findAndFixIssues(`
-          SELECT 
-            noteId
-          FROM 
-            notes
-            JOIN note_fulltext USING(noteId)
-          WHERE
-              (notes.isDeleted = 1 OR notes.isProtected = 1)`,
-        async ({noteId}) => {
-            noteFulltextService.triggerNoteFulltextUpdate(noteId);
-
-            logFix(`Triggered fulltext update of note ${noteId} since it was out of sync.`);
         });
 }
 

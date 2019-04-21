@@ -7,7 +7,6 @@ const repository = require('../services/repository');
 const sql = require('../services/sql');
 const utils = require('../services/utils');
 const dateUtils = require('../services/date_utils');
-const noteFulltextService = require('../services/note_fulltext');
 const syncTableService = require('../services/sync_table');
 
 const LABEL = 'label';
@@ -86,7 +85,6 @@ class Note extends Entity {
             }
 
             this.content = res.content;
-            this.contentHash = res.contentHash; // used only for note_fulltext consistency check
 
             if (this.isProtected) {
                 if (this.isContentAvailable) {
@@ -730,10 +728,6 @@ class Note extends Entity {
         delete pojo.__attributeCache;
         delete pojo.content;
         delete pojo.contentHash;
-    }
-
-    async afterSaving() {
-        noteFulltextService.triggerNoteFulltextUpdate(this.noteId);
     }
 }
 

@@ -1,5 +1,3 @@
-CREATE VIRTUAL TABLE note_fulltext USING fts5(noteId UNINDEXED, title, titleHash UNINDEXED, content, contentHash UNINDEXED)
-/* note_fulltext(noteId,title,titleHash,content,contentHash) */;
 CREATE TABLE IF NOT EXISTS "sync" (
                                     `id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
                                     `entityName`	TEXT NOT NULL,

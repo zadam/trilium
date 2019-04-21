@@ -3,7 +3,6 @@ const log = require('./log');
 const eventLogService = require('./event_log');
 const syncTableService = require('./sync_table');
 const eventService = require('./events');
-const noteFulltextService = require('../services/note_fulltext');
 
 async function updateEntity(sync, entity, sourceId) {
     const {entityName} = sync;
@@ -62,8 +61,6 @@ async function updateNote(entity, sourceId) {
             await syncTableService.addNoteSync(entity.noteId, sourceId);
         });
 
-        noteFulltextService.triggerNoteFulltextUpdate(entity.noteId);
-
         log.info("Update/sync note " + entity.noteId);
     }
 }
@@ -79,8 +76,6 @@ async function updateNoteContent(entity, sourceId) {
 
             await syncTableService.addNoteContentSync(entity.noteId, sourceId);
         });
-
-        noteFulltextService.triggerNoteFulltextUpdate(entity.noteId);
 
         log.info("Update/sync note content for noteId=" + entity.noteId);
     }
