@@ -36,6 +36,10 @@ const DIR_NAME = 'trilium-data';
 
 function getTriliumDataDir() {
     if (process.env.TRILIUM_DATA_DIR) {
+        if (!fs.existsSync(process.env.TRILIUM_DATA_DIR)) {
+            fs.mkdirSync(process.env.TRILIUM_DATA_DIR, 0o700);
+        }
+
         return process.env.TRILIUM_DATA_DIR;
     }
 
