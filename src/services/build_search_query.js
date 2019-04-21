@@ -82,18 +82,8 @@ module.exports = function(filters, selectedColumns = 'notes.*') {
             where += `${accessor} IS NULL`;
         }
         else if (filter.operator === '=' || filter.operator === '!=') {
-            if (filter.name === 'text') {
-                const safeSearchText = utils.sanitizeSql(filter.value);
-                const not = filter.operator.includes("!") ? "NOT" : "";
-
-                // fulltext needs to use subselect because fulltext doesn't support OR operations at all
-                // which makes it impossible to combine more operations together
-                where += `notes.noteId ${not} IN (SELECT noteId FROM note_fulltext WHERE note_fulltext MATCH '${safeSearchText}')`;
-            }
-            else {
-                where += `${accessor} ${filter.operator} ?`;
-                params.push(filter.value);
-            }
+            where += `${accessor} ${filter.operator} ?`;
+            params.push(filter.value);
         }
         else if (filter.operator === '*=' || filter.operator === '!*=') {
             where += `${accessor}`
@@ -106,9 +96,17 @@ module.exports = function(filters, selectedColumns = 'notes.*') {
                     + ` LIKE ` + utils.prepareSqlForLike('', filter.value, '%');
         }
         else if (filter.operator === '*=*' || filter.operator === '!*=*') {
-            where += `${accessor}`
-                    + (filter.operator.includes('!') ? ' NOT' : '')
-                    + ` LIKE ` + utils.prepareSqlForLike('%', filter.value, '%');
+            const columns = filter.name === 'text' ? [getAccessor("title"), getAccessor("content")] : [accessor];
+
+            let condition = "(" + columns.map(column =>
+                `${column}` + ` LIKE ` + utils.prepareSqlForLike('%', filter.value, '%'))
+                .join(" OR ") + ")";
+
+            if (filter.operator.includes('!')) {
+                condition = "NOT(" + condition + ")";
+            }
+
+            where += condition;
         }
         else if ([">", ">=", "<", "<="].includes(filter.operator)) {
             let floatParam;

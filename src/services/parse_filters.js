@@ -43,25 +43,45 @@ function calculateSmartValue(v) {
 }
 
 module.exports = function (searchText) {
-    // if the string doesn't start with attribute then we consider it as just standard full text search
-    if (!searchText.trim().startsWith("@")) {
-        // replace with space instead of empty string since these characters are probably separators
-        const sanitizedSearchText = searchText.replace(/[^\w ]+/g, " ");
+    searchText = searchText.trim();
 
-        return [
-            {
+    // if the string doesn't start with attribute then we consider it as just standard full text search
+    if (!searchText.startsWith("@")) {
+        // replace with space instead of empty string since these characters are probably separators
+        const filters = [];
+
+        if (searchText.startsWith('"') && searchText.endsWith('"')) {
+            // "bla bla" will search for exact match
+            searchText = searchText.substr(1, searchText.length - 2);
+
+            filters.push({
                 relation: 'and',
                 name: 'text',
-                operator: '=',
-                value: sanitizedSearchText
-            },
-            {
-                relation: 'or',
-                name: 'noteId',
-                operator: '=',
-                value: sanitizedSearchText
+                operator: '*=*',
+                value: searchText
+            });
+        }
+        else {
+            const tokens = searchText.split(/\s+/);
+
+            for (const token of tokens) {
+                filters.push({
+                    relation: 'and',
+                    name: 'text',
+                    operator: '*=*',
+                    value: token
+                });
             }
-        ]
+        }
+
+        filters.push({
+            relation: 'or',
+            name: 'noteId',
+            operator: '=',
+            value: searchText
+        });
+
+        return filters;
     }
 
     const filters = [];
