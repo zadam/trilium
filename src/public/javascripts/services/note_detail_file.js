@@ -34,6 +34,9 @@ async function show() {
     else {
         $previewRow.hide();
     }
+
+    // open doesn't work for protected notes since it works through browser which isn't in protected session
+    $openButton.toggle(!currentNote.isProtected);
 }
 
 $downloadButton.click(() => utils.download(getFileUrl()));
@@ -51,7 +54,7 @@ $openButton.click(() => {
 
 function getFileUrl() {
     // electron needs absolute URL so we extract current host, port, protocol
-    return utils.getHost() + "/api/notes/" + noteDetailService.getCurrentNoteId();
+    return utils.getHost() + "/api/notes/" + noteDetailService.getCurrentNoteId() + "/download";
 }
 
 export default {
