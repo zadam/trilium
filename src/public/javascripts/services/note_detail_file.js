@@ -36,7 +36,7 @@ async function show() {
     }
 
     // open doesn't work for protected notes since it works through browser which isn't in protected session
-    $openButton.toggle(!currentNote.isProtected);
+    $openButton.toggle(!activeNote.isProtected);
 }
 
 $downloadButton.click(() => utils.download(getFileUrl()));
