@@ -67,8 +67,8 @@ module.exports = function(filters, selectedColumns = 'notes.*') {
     const params = [];
 
     for (const filter of filters) {
-        if (filter.name.toLowerCase() === 'orderby') {
-            continue; // orderby is not real filter
+        if (['orderby', 'limit'].includes(filter.name.toLowerCase())) {
+            continue; // orderby and limit are not real filters
         }
 
         where += " " + filter.relation + " ";

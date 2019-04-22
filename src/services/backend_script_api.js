@@ -99,9 +99,23 @@ function BackendScriptApi(currentNote, apiParams) {
      *
      * @method
      * @param {string} searchString
-     * @returns ${Promise<Note[]>}
+     * @returns {Promise<Note[]>}
      */
     this.searchForNotes = searchService.searchForNotes;
+
+    /**
+     * This is a powerful search method - you can search by attributes and their values, e.g.:
+     * "@dateModified =* MONTH AND @log". See full documentation for all options at: https://github.com/zadam/trilium/wiki/Search
+     *
+     * @method
+     * @param {string} searchString
+     * @returns {Promise<Note|null>}
+     */
+    this.searchForNote = async searchString => {
+        const notes = await searchService.searchForNotes(searchString);
+
+        return notes.length > 0 ? notes[0] : null;
+    };
 
     /**
      * Retrieves notes with given label name & value

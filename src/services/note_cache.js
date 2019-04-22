@@ -376,6 +376,16 @@ eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED
     }
 });
 
+/**
+ * @param noteId
+ * @returns {boolean} - true if note exists (is not deleted) and is not archived.
+ */
+function isAvailable(noteId) {
+    const notePath = getNotePath(noteId);
+
+    return !!notePath;
+}
+
 eventService.subscribe(eventService.ENTER_PROTECTED_SESSION, () => {
     if (loaded) {
         loadProtectedNotes();
@@ -388,5 +398,6 @@ module.exports = {
     findNotes,
     getNotePath,
     getNoteTitleForPath,
+    isAvailable,
     load
 };

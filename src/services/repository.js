@@ -42,6 +42,21 @@ async function getNote(noteId) {
     return await getEntity("SELECT * FROM notes WHERE noteId = ?", [noteId]);
 }
 
+/** @returns {Promise<Note[]>} */
+async function getNotes(noteIds) {
+    // this note might be optimised, but remember that it must keep the existing order of noteIds
+    // (important e.g. for @orderBy in search)
+    const notes = [];
+
+    for (const noteId of noteIds) {
+        const note = await getNote(noteId);
+
+        notes.push(note);
+    }
+
+    return notes;
+}
+
 /** @returns {Promise<Branch|null>} */
 async function getBranch(branchId) {
     return await getEntity("SELECT * FROM branches WHERE branchId = ?", [branchId]);
@@ -125,6 +140,7 @@ module.exports = {
     getEntities,
     getEntity,
     getNote,
+    getNotes,
     getBranch,
     getAttribute,
     getOption,
