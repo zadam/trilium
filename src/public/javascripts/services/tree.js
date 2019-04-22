@@ -792,8 +792,9 @@ utils.bindShortcut('ctrl+.', scrollToActiveNote);
 $(window).bind('hashchange', async function() {
     if (isNotePathInAddress()) {
         const notePath = getHashValueFromAddress();
+        const noteId = notePath.split("/").pop();
 
-        if (notePath !== '-' && await getActiveNotePath() !== notePath) {
+        if (noteId !== '-' && noteId !== getActiveNode().data.noteId) {
             console.debug("Switching to " + notePath + " because of hash change");
 
             activateNote(notePath);
