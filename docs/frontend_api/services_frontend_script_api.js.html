@@ -164,6 +164,38 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null) {
     };
 
     /**
+     * This is a powerful search method - you can search by attributes and their values, e.g.:
+     * "@dateModified =* MONTH AND @log". See full documentation for all options at: https://github.com/zadam/trilium/wiki/Search
+     *
+     * @method
+     * @param {string} searchString
+     * @returns {Promise&lt;NoteShort[]>}
+     */
+    this.searchForNotes = async searchString => {
+        const noteIds = await this.runOnServer(async searchString => {
+            const notes = await api.searchForNotes(searchString);
+
+            return notes.map(note => note.noteId);
+        }, [searchString]);
+
+        return await treeCache.getNotes(noteIds);
+    };
+
+    /**
+     * This is a powerful search method - you can search by attributes and their values, e.g.:
+     * "@dateModified =* MONTH AND @log". See full documentation for all options at: https://github.com/zadam/trilium/wiki/Search
+     *
+     * @method
+     * @param {string} searchString
+     * @returns {Promise&lt;NoteShort|null>}
+     */
+    this.searchForNote = async searchString => {
+        const notes = await this.searchForNotes(searchString);
+
+        return notes.length > 0 ? notes[0] : null;
+    };
+
+    /**
      * Returns note by given noteId. If note is missing from cache, it's loaded.
      **
      * @param {string} noteId
