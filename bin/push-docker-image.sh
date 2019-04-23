@@ -5,7 +5,11 @@ if [[ $# -eq 0 ]] ; then
     exit 1
 fi
 
-sudo docker push zadam/trilium:$1
+VERSION=$1
+SERIES=${VERSION:0:4}-latest
+
+sudo docker push zadam/trilium:$VERSION
+sudo docker push zadam/trilium:$SERIES
 
 if [[ $1 != *"beta"* ]]; then
   sudo docker push zadam/trilium:latest
