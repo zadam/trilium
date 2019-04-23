@@ -6,6 +6,7 @@ const resourceDir = require('./resource_dir');
 const appInfo = require('./app_info');
 const sql = require('./sql');
 const cls = require('./cls');
+const utils = require('./utils');
 const optionService = require('./options');
 const Option = require('../entities/option');
 const ImportContext = require('../services/import_context');
@@ -57,6 +58,14 @@ async function initDbConnection() {
         }
 
         await sql.execute("PRAGMA foreign_keys = ON");
+
+        const currentDbVersion = await getDbVersion();
+
+        if (currentDbVersion > appInfo.dbVersion) {
+            log.error(`Current DB version ${currentDbVersion} is newer than app db version ${appInfo.dbVersion} which means that it was created by newer and incompatible version of Trilium. Upgrade to latest version of Trilium to resolve this issue.`);
+
+            utils.crash();
+        }
 
         if (!await isDbUpToDate()) {
             // avoiding circular dependency
@@ -147,8 +156,12 @@ async function createDatabaseForSync(options, syncServerHost = '', syncProxy = '
     log.info("Schema and not synced options generated.");
 }
 
+async function getDbVersion() {
+    return parseInt(await sql.getValue("SELECT value FROM options WHERE name = 'dbVersion'"));
+}
+
 async function isDbUpToDate() {
-    const dbVersion = parseInt(await sql.getValue("SELECT value FROM options WHERE name = 'dbVersion'"));
+    const dbVersion = await getDbVersion();
 
     const upToDate = dbVersion >= appInfo.dbVersion;
 
