@@ -18,6 +18,16 @@ body {
     grid-gap: 10px;
 }
 
+#container.distraction-free-mode {
+    grid-template-areas:
+    "title"
+    "note-detail" !important;
+    grid-template-rows: auto
+    auto
+    !important;
+    grid-template-columns: 1fr !important;
+}
+
 #search-box {
     display: none;
     padding: 10px;

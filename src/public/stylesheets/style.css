@@ -451,20 +451,6 @@ div.ui-tooltip {
 }
 
 /*
-* .electron-in-page-search-window is a class specified to default
-* <webview> element for search window.
-*/
-.electron-in-page-search-window {
-    position: fixed;
-    top: 45px;
-    right: 10px;
-    width: 360px;
-    height: 55px;
-    display: none;
-    z-index: 1001;
-}
-
-/*
 * .search-inactive is added to search window <webview> when the window
 * is inactive.
 */
