@@ -142,6 +142,18 @@ function registerEntrypoints() {
         });
     }
 
+    if (utils.isElectron()) {
+        utils.bindShortcut('f11', () => {
+            const win = require('electron').remote.getCurrentWindow();
+
+            if (win.isFullScreenable()) {
+                win.setFullScreen(!win.isFullScreen());
+            }
+
+            return false;
+        });
+    }
+
     // FIXME: do we really need these at this point?
     utils.bindShortcut("ctrl+shift+up", () => {
         const node = treeService.getActiveNode();
