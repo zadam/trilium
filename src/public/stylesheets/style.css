@@ -6,7 +6,6 @@
     --detail-font-family: inherit;
     --detail-font-size: normal;
     --detail-text-font-family: inherit;
-
     --main-background-color: white;
     --main-text-color: black;
     --main-border-color: #ccc;
@@ -29,6 +28,7 @@
     --menu-text-color: black;
     --menu-background-color: white;
     --tooltip-background-color: #f8f8f8;
+    --link-color: blue;
 }
 
 body.theme-black {
@@ -53,10 +53,7 @@ body.theme-black {
     --menu-text-color: white;
     --menu-background-color: #222;
     --tooltip-background-color: black;
-}
-
-body.theme-black a, body.theme-black a:visited {
-    color: lightskyblue;
+    --link-color: lightskyblue;
 }
 
 body.theme-black .CodeMirror {
@@ -85,14 +82,99 @@ body.theme-dark {
     --menu-text-color: white;
     --menu-background-color: #222;
     --tooltip-background-color: #333;
-}
-
-body.theme-dark a, body.theme-dark a:visited {
-    color: lightskyblue;
+    --link-color: lightskyblue;
 }
 
 body.theme-dark .CodeMirror {
     filter: invert(90%) hue-rotate(180deg);
+}
+
+body {
+    /* -- Overrides generic colors. ------------------------------------------------------------- */
+
+    --ck-color-base-foreground: var(--accented-background-color);
+    --ck-color-focus-border: var(--main-border-color);
+    --ck-color-text: var(--main-text-color);
+    --ck-color-shadow-drop: var(--main-background-color);
+    --ck-color-shadow-inner: var(--main-background-color);
+
+    /* -- Overrides the default .ck-button class colors. ---------------------------------------- */
+
+    --ck-color-button-default-background: var(--accented-background-color);
+    --ck-color-button-default-hover-background: var(--more-accented-background-color);
+    --ck-color-button-default-active-background: var(--more-accented-background-color);
+    --ck-color-button-default-active-shadow: var(--more-accented-background-color);
+    --ck-color-button-default-disabled-background: var(--accented-background-color);
+
+    --ck-color-button-on-background: var(--accented-background-color);
+    --ck-color-button-on-hover-background: var(--more-accented-background-color);
+    --ck-color-button-on-active-background: var(--more-accented-background-color);
+    --ck-color-button-on-active-shadow: var(--more-accented-background-color);
+    --ck-color-button-on-disabled-background: var(--main-background-color);
+
+    --ck-color-button-action-background: var(--accented-background-color);
+    --ck-color-button-action-hover-background: var(--more-accented-background-color);
+    --ck-color-button-action-active-background: var(--more-accented-background-color);
+    --ck-color-button-action-active-shadow: var(--more-accented-background-color);
+    --ck-color-button-action-disabled-background: var(--main-background-color);
+    --ck-color-button-action-text: var(--main-text-color);
+
+    --ck-color-button-save: hsl(120, 100%, 46%);
+    --ck-color-button-cancel: hsl(15, 100%, 56%);
+
+    /* -- Overrides the default .ck-dropdown class colors. -------------------------------------- */
+
+    --ck-color-dropdown-panel-background: var(--accented-background-color);
+    --ck-color-dropdown-panel-border: var(--main-border-color);
+
+    /* -- Overrides the default .ck-input class colors. ----------------------------------------- */
+
+    --ck-color-input-background: var(--accented-background-color);
+    --ck-color-input-border: var(--main-border-color);
+    --ck-color-input-text: var(--main-text-color);
+    --ck-color-input-disabled-background: var(--main-background-color);
+    --ck-color-input-disabled-border: var(--main-border-color);
+    --ck-color-input-disabled-text: var(--muted-text-color);
+
+    /* -- Overrides the default .ck-list class colors. ------------------------------------------ */
+
+    --ck-color-list-background: var(--accented-background-color);
+    --ck-color-list-button-hover-background: var(--ck-color-base-foreground);
+    --ck-color-list-button-on-background: var(--ck-color-base-active);
+    --ck-color-list-button-on-background-focus: var(--ck-color-base-active-focus);
+    --ck-color-list-button-on-text: var(--ck-color-base-background);
+
+    /* -- Overrides the default .ck-balloon-panel class colors. --------------------------------- */
+
+    --ck-color-panel-background: var(--accented-background-color);
+    --ck-color-panel-border: var(--main-border-color);
+
+    /* -- Overrides the default .ck-toolbar class colors. --------------------------------------- */
+
+    --ck-color-toolbar-background: var(--accented-background-color);
+    --ck-color-toolbar-border: var(--main-border-color);
+
+    /* -- Overrides the default .ck-tooltip class colors. --------------------------------------- */
+
+    --ck-color-tooltip-background: var(--accented-background-color);
+    --ck-color-tooltip-text: var(--main-text-color);
+
+    /* -- Overrides the default colors used by the ckeditor5-image package. --------------------- */
+
+    --ck-color-image-caption-background: var(--main-background-color);
+    --ck-color-image-caption-text: var(--main-text-color);
+
+    /* -- Overrides the default colors used by the ckeditor5-widget package. -------------------- */
+
+    --ck-color-widget-blurred-border: var(--main-border-color);
+    --ck-color-widget-hover-border: var(--main-border-color);
+    --ck-color-widget-editable-focus-background: var(--main-background-color);
+
+    /* -- Overrides the default colors used by the ckeditor5-link package. ---------------------- */
+
+    --ck-color-link-default: var(--link-color);
+
+    --ck-color-table-focused-cell-background: var(--accented-background-color);
 }
 
 html {
@@ -108,6 +190,10 @@ body {
     background-color: var(--main-background-color);
     color: var(--main-text-color);
     font-family: var(--main-font-family);
+}
+
+a, a:visited, a:hover {
+    color: var(--link-color);
 }
 
 input, select, textarea {
@@ -599,6 +685,8 @@ button.icon-button {
 
 .ck.ck-block-toolbar-button {
     transform: translateX(10px);
+    color: var(--muted-text-color);
+    background-color: var(--main-background-color);
 }
 
 #note-detail-promoted-attributes {
@@ -866,8 +954,8 @@ div[data-notify="container"] {
     color: var(--muted-text-color);
 }
 
-.ck-editor__nested-editable_focused {
-    background-color: var(--accented-background-color) !important;
+.ck-content .table table th {
+    background-color: var(--accented-background-color);
 }
 
 .fancytree-loading span.fancytree-expander {
