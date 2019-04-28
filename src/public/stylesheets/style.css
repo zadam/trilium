@@ -174,7 +174,7 @@ body {
 
     --ck-color-link-default: var(--link-color);
 
-    --ck-color-table-focused-cell-background: var(--accented-background-color);
+    --ck-color-table-focused-cell-background: var(--more-accented-background-color);
 }
 
 html {
