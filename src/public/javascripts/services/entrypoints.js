@@ -143,7 +143,7 @@ function registerEntrypoints() {
     }
 
     if (utils.isElectron()) {
-        utils.bindShortcut('f11', () => {
+        const toggleFullscreen = function() {
             const win = require('electron').remote.getCurrentWindow();
 
             if (win.isFullScreenable()) {
@@ -151,7 +151,15 @@ function registerEntrypoints() {
             }
 
             return false;
-        });
+        };
+
+        $("#toggle-fullscreen-button").click(toggleFullscreen);
+
+        utils.bindShortcut('f11', toggleFullscreen);
+    }
+    else {
+        // outside of electron this is handled by the browser
+        $("#toggle-fullscreen-button").hide();
     }
 
     // FIXME: do we really need these at this point?
