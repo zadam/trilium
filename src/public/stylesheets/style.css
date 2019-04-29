@@ -201,6 +201,10 @@ input, select, textarea {
     background: var(--input-background-color) !important;
 }
 
+button.btn, button.btn-sm {
+    font-size: inherit;
+}
+
 .input-group-text {
     background-color: var(--accented-background-color) !important;
     color: var(--muted-text-color) !important;
