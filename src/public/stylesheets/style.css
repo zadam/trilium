@@ -674,9 +674,12 @@ button.icon-button {
 }
 
 .ck.ck-block-toolbar-button {
-    transform: translateX(10px);
+    transform: translateX(7px);
     color: var(--muted-text-color);
     background-color: var(--main-background-color);
+    /* Making this narrower because https://github.com/zadam/trilium/issues/502 (problem only in smaller font sizes) */
+    min-width: 0;
+    padding: 0;
 }
 
 #note-detail-promoted-attributes {
