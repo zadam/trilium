@@ -585,7 +585,7 @@ async function createNewTopLevelNote() {
     await createNote(rootNode, hoistedNoteId, "into");
 }
 
-async function createNote(node, parentNoteId, target, extraOptions) {
+async function createNote(node, parentNoteId, target, extraOptions = {}) {
     utils.assertArguments(node, parentNoteId, target);
 
     // if isProtected isn't available (user didn't enter password yet), then note is created as unencrypted
