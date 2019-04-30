@@ -150,6 +150,41 @@
         <div class="dropdown-menu dropdown-menu-sm" id="context-menu-container"></div>
     </div>
 
+    <div id="tabs-container">
+        <div class="chrome-tabs">
+            <div class="chrome-tabs-content">
+                <div class="chrome-tab">
+                    <div class="chrome-tab-content">
+                        <div class="chrome-tab-title">Google</div>
+                        <div class="chrome-tab-drag-handle"></div>
+                        <div class="chrome-tab-close"></div>
+                    </div>
+                </div>
+                <div class="chrome-tab" active>
+                    <div class="chrome-tab-content">
+                        <div class="chrome-tab-title">Facebook</div>
+                        <div class="chrome-tab-drag-handle"></div>
+                        <div class="chrome-tab-close"></div>
+                    </div>
+                </div>
+            </div>
+            <!-- Styles to prevent flash after JS initialization -->
+            <style>
+                .chrome-tabs .chrome-tab {
+                    width: 258px
+                }
+
+                .chrome-tabs .chrome-tab:nth-child(1) {
+                    transform: translate3d(0px, 0, 0)
+                }
+
+                .chrome-tabs .chrome-tab:nth-child(2) {
+                    transform: translate3d(239px, 0, 0)
+                }
+            </style>
+        </div>
+    </div>
+
     <div id="title-container">
         <div style="display: flex; align-items: center;">
             <div class="dropdown hide-toggle">
@@ -289,6 +324,9 @@
 <script src="libraries/autocomplete.jquery.min.js"></script>
 
 <script src="libraries/dayjs.min.js"></script>
+
+<script src="libraries/chrome-tabs/chrome-tabs.js"></script>
+<link href="libraries/chrome-tabs/chrome-tabs.css" rel="stylesheet">
 
 <link href="stylesheets/style.css" rel="stylesheet">
 <link href="stylesheets/desktop.css" rel="stylesheet">

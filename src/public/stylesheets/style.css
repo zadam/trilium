@@ -231,6 +231,10 @@ button.close {
     grid-area: title;
 }
 
+#tabs-container {
+    grid-area: tabs;
+}
+
 #note-title {
     margin-left: 15px;
     margin-right: 10px;

@@ -8,9 +8,11 @@ body {
 
     display: grid;
     grid-template-areas: "header header"
+    "left-pane tabs"
     "left-pane title"
     "left-pane note-detail";
     grid-template-rows: auto
+    auto
     auto
     1fr;
 
