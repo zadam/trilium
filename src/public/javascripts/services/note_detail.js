@@ -44,11 +44,22 @@ async function reload() {
 }
 
 async function switchToNote(noteId) {
-    if (getActiveNoteId() !== noteId) {
+    if (Object.keys(noteContexts).length === 0) {
+        const tabContent = $("#note-tab-content-template").clone();
+
+        tabContent.removeAttr('id');
+        tabContent.attr('data-note-id', noteId);
+
+        $noteTabsContainer.append(tabContent);
+
+        noteContexts[noteId] = new NoteContext(noteId);
+    }
+
+    //if (getActiveNoteId() !== noteId) {
         await saveNotesIfChanged();
 
         await loadNoteDetail(noteId);
-    }
+    //}
 }
 
 function getActiveNoteContent() {
@@ -60,7 +71,7 @@ function onNoteChange(func) {
 }
 
 async function saveNotesIfChanged() {
-    for (const ctx of noteContexts) {
+    for (const ctx of Object.values(noteContexts)) {
         await ctx.saveNoteIfChanged();
     }
 
@@ -103,7 +114,7 @@ function getActiveContext() {
 }
 
 function showTab(noteId) {
-    for (const ctx of noteContexts) {
+    for (const ctx of Object.values(noteContexts)) {
         ctx.$noteTab.toggle(ctx.noteId === noteId);
     }
 }

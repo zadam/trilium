@@ -1,53 +1,49 @@
-<div id="title-container" style="flex-grow: 0; flex-shrink: 0;">
+<div style="flex-grow: 0; flex-shrink: 0;">
     <div style="display: flex; align-items: center;">
         <div class="dropdown hide-toggle">
-            <button id="note-path-list-button" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-sm dropdown-toggle">
-                <span id="note-path-count">1 path</span>
+            <button class="btn btn-sm dropdown-toggle note-path-list-button" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <span class="note-path-count">1 path</span>
 
                 <span class="caret"></span>
             </button>
-            <ul id="note-path-list" class="dropdown-menu" aria-labelledby="note-path-list-button">
+            <ul class="note-path-list dropdown-menu" aria-labelledby="note-path-list-button">
             </ul>
         </div>
 
-        <input autocomplete="off" value="" id="note-title" tabindex="1">
+        <input autocomplete="off" value="" class="note-title" tabindex="1">
 
-        <span id="saved-indicator" title="All changes have been saved" class="jam jam-check"></span>
+        <span class="saved-indicator jam jam-check" title="All changes have been saved"></span>
 
         <div class="hide-toggle" style="display: flex; align-items: center;">
-            <button class="btn btn-sm icon-button jam jam-play"
+            <button class="btn btn-sm icon-button jam jam-play render-button"
                     style="display: none; margin-right: 10px;"
-                    title="Render"
-                    id="render-button"></button>
+                    title="Render"></button>
 
-            <button class="btn btn-sm icon-button jam jam-play"
+            <button class="btn btn-sm icon-button jam jam-play execute-script-button"
                     style="display: none; margin-right: 10px;"
-                    title="Execute (Ctrl+Enter)"
-                    id="execute-script-button"></button>
+                    title="Execute (Ctrl+Enter)"></button>
 
             <div class="btn-group btn-group-xs">
                 <button type="button"
-                        class="btn btn-sm icon-button jam jam-shield-check"
-                        id="protect-button"
+                        class="btn btn-sm icon-button jam jam-shield-check protect-button"
                         title="Protected note can be viewed and edited only after entering password">
                 </button>
 
                 <button type="button"
-                        class="btn btn-sm icon-button jam jam-shield-close"
-                        id="unprotect-button"
+                        class="btn btn-sm icon-button jam jam-shield-close unprotect-button"
                         title="Not protected note can be viewed without entering password">
                 </button>
             </div>
 
             &nbsp; &nbsp;
 
-            <div id="note-type-wrapper" style="display: flex;">
-                <div class="dropdown" id="note-type">
+            <div class="note-type-wrapper" style="display: flex;">
+                <div class="dropdown note-type">
                     <button data-bind="disable: isDisabled()" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-sm dropdown-toggle">
                         Type: <span data-bind="text: typeString()"></span>
                         <span class="caret"></span>
                     </button>
-                    <div id="note-type-dropdown" class="dropdown-menu dropdown-menu-right">
+                    <div class="note-type-dropdown dropdown-menu dropdown-menu-right">
                         <a class="dropdown-item" data-bind="click: selectText, css: { selected: type() == 'text' }"><span class="check">&check;</span> <strong>Text</strong></a>
                         <div class="dropdown-divider"></div>
                         <a class="dropdown-item" data-bind="click: selectRelationMap, css: { selected: type() == 'relation-map' && mime() == '' }"><span class="check">&check;</span> <strong>Relation Map</strong></a>
@@ -61,18 +57,18 @@
                     </div>
                 </div>
 
-                <div class="dropdown" id="note-actions">
+                <div class="dropdown note-actions">
                     <button type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-sm dropdown-toggle">
                         Note actions
                         <span class="caret"></span>
                     </button>
                     <div class="dropdown-menu dropdown-menu-right">
-                        <a class="dropdown-item" id="show-note-revisions-button" data-bind="css: { disabled: type() == 'file' || type() == 'image' }">Revisions</a>
+                        <a class="dropdown-item show-note-revisions-button" data-bind="css: { disabled: type() == 'file' || type() == 'image' }">Revisions</a>
                         <a class="dropdown-item show-attributes-button"><kbd>Alt+A</kbd> Attributes</a>
-                        <a class="dropdown-item" id="show-source-button" data-bind="css: { disabled: type() != 'text' && type() != 'code' && type() != 'relation-map' && type() != 'search' }">Note source</a>
-                        <a class="dropdown-item" id="import-files-button">Import files</a>
-                        <a class="dropdown-item" id="export-note-button" data-bind="css: { disabled: type() != 'text' }">Export note</a>
-                        <a class="dropdown-item" id="show-note-info-button">Note info</a>
+                        <a class="dropdown-item show-source-button" data-bind="css: { disabled: type() != 'text' && type() != 'code' && type() != 'relation-map' && type() != 'search' }">Note source</a>
+                        <a class="dropdown-item import-files-button">Import files</a>
+                        <a class="dropdown-item export-note-button" data-bind="css: { disabled: type() != 'text' }">Export note</a>
+                        <a class="dropdown-item show-note-info-button">Note info</a>
                     </div>
                 </div>
             </div>

@@ -18,17 +18,17 @@
 </div>
 
 <div id="note-tab-container">
-    <div class="note-tab-content">
+    <div id="note-tab-content-template" class="note-tab-content">
         <% include title.ejs %>
 
-        <div id="note-detail-script-area"></div>
+        <div class="note-detail-script-area"></div>
 
-        <table id="note-detail-promoted-attributes"></table>
+        <table class="note-detail-promoted-attributes"></table>
 
-        <div id="note-detail-component-wrapper">
-            <div id="note-detail-text" class="note-detail-component" tabindex="10000"></div>
+        <div class="note-detail-component-wrapper">
+            <div class="note-detail-text note-detail-component" tabindex="10000"></div>
 
-            <div id="note-detail-code" class="note-detail-component"></div>
+            <div class="note-detail-code note-detail-component"></div>
 
             <% include details/search.ejs %>
 
@@ -42,13 +42,13 @@
 
             <% include details/protected_session_password.ejs %>
 
-            <div id="children-overview"></div>
+            <div class="children-overview"></div>
         </div>
 
-        <div id="attribute-list">
+        <div class="attribute-list">
             <button class="btn btn-sm show-attributes-button">Attributes:</button>
 
-            <span id="attribute-list-inner"></span>
+            <span class="attribute-list-inner"></span>
         </div>
     </div>
 </div>

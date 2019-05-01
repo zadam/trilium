@@ -8,6 +8,7 @@ class NoteDetailText {
      * @param {NoteContext} ctx
      */
     constructor(ctx) {
+        this.ctx = ctx;
         this.$component = ctx.$noteTab.find('.note-detail-text');
         this.textEditor = null;
 
@@ -48,11 +49,11 @@ class NoteDetailText {
             }
         }
 
-        this.textEditor.isReadOnly = await isReadOnly();
+        this.textEditor.isReadOnly = await this.isReadOnly();
 
         this.$component.show();
 
-        this.textEditor.setData(noteDetailService.getActiveNote().content);
+        this.textEditor.setData(this.ctx.note.content);
     }
 
     getContent() {

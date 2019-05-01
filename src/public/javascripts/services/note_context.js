@@ -1,17 +1,19 @@
-import treeService from "./tree";
-import protectedSessionHolder from "./protected_session_holder";
-import server from "./server";
-import bundleService from "./bundle";
-import attributeService from "./attributes";
-import treeUtils from "./tree_utils";
-import utils from "./utils";
-import noteDetailCode from "./note_detail_code";
-import noteDetailText from "./note_detail_text";
-import noteDetailFile from "./note_detail_file";
-import noteDetailImage from "./note_detail_image";
-import noteDetailSearch from "./note_detail_search";
-import noteDetailRender from "./note_detail_render";
-import noteDetailRelationMap from "./note_detail_relation_map";
+import treeService from "./tree.js";
+import protectedSessionHolder from "./protected_session_holder.js";
+import server from "./server.js";
+import bundleService from "./bundle.js";
+import attributeService from "./attributes.js";
+import treeUtils from "./tree_utils.js";
+import utils from "./utils.js";
+import noteDetailCode from "./note_detail_code.js";
+import noteDetailText from "./note_detail_text.js";
+import noteDetailFile from "./note_detail_file.js";
+import noteDetailImage from "./note_detail_image.js";
+import noteDetailSearch from "./note_detail_search.js";
+import noteDetailRender from "./note_detail_render.js";
+import noteDetailRelationMap from "./note_detail_relation_map.js";
+
+const $noteTabsContainer = $("#note-tab-container");
 
 const componentClasses = {
     'code': noteDetailCode,
