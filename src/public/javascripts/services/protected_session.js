@@ -10,7 +10,7 @@ const $component = $("#protected-session-password-component");
 const $passwordForms = $(".protected-session-password-form");
 const $passwordInputs = $(".protected-session-password");
 const $passwordInModal = $("#protected-session-password-in-modal");
-const $noteDetailWrapper = $("#note-detail-wrapper");
+const $tabContent = $(".note-tab-content"); // FIXME TAB
 const $protectButton = $("#protect-button");
 const $unprotectButton = $("#unprotect-button");
 const $enterProtectedSessionButton = $("#enter-protected-session-button");
@@ -44,7 +44,7 @@ function ensureProtectedSession(requireProtectedSession, modal) {
 
         if (modal) {
             if (treeService.getActiveNode().data.isProtected) {
-                $noteDetailWrapper.hide();
+                $tabContent.hide();
             }
 
             $dialog.modal();
@@ -83,7 +83,7 @@ async function setupProtectedSession(password) {
     if (protectedSessionDeferred !== null) {
         ensureDialogIsClosed();
 
-        $noteDetailWrapper.show();
+        $tabContent.show();
 
         protectedSessionDeferred.resolve(true);
         protectedSessionDeferred = null;

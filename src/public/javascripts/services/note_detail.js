@@ -26,7 +26,8 @@ const $noteDetailComponents = $(".note-detail-component");
 
 const $protectButton = $("#protect-button");
 const $unprotectButton = $("#unprotect-button");
-const $noteDetailWrapper = $("#note-detail-wrapper");
+const $noteTabContent = $(".note-tab-content");
+const $noteTabsContainer = $("#note-tab-container");
 const $childrenOverview = $("#children-overview");
 const $scriptArea = $("#note-detail-script-area");
 const $savedIndicator = $("#saved-indicator");
@@ -147,7 +148,7 @@ async function saveNoteIfChanged() {
 }
 
 function updateNoteView() {
-    $noteDetailWrapper.toggleClass("protected", activeNote.isProtected);
+    $noteTabContent.toggleClass("protected", activeNote.isProtected);
     $protectButton.toggleClass("active", activeNote.isProtected);
     $protectButton.prop("disabled", activeNote.isProtected);
     $unprotectButton.toggleClass("active", !activeNote.isProtected);
@@ -203,7 +204,7 @@ async function loadNoteDetail(noteId) {
 
     updateNoteView();
 
-    $noteDetailWrapper.show();
+    $noteTabContent.show();
 
     noteChangeDisabled = true;
 
@@ -331,11 +332,11 @@ messagingService.subscribeToSyncMessages(syncData => {
     }
 });
 
-$noteDetailWrapper.on("dragover", e => e.preventDefault());
+$noteTabsContainer.on("dragover", e => e.preventDefault());
 
-$noteDetailWrapper.on("dragleave", e => e.preventDefault());
+$noteTabsContainer.on("dragleave", e => e.preventDefault());
 
-$noteDetailWrapper.on("drop", e => {
+$noteTabsContainer.on("drop", e => {
     importDialog.uploadFiles(getActiveNoteId(), e.originalEvent.dataTransfer.files, {
         safeImport: true,
         shrinkImages: true,

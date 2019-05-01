@@ -103,7 +103,7 @@ ul.fancytree-container {
     display: none;
 }
 
-#note-detail-wrapper {
+.note-tab-content {
     display: flex;
     flex-direction: column;
     height: 100%;
@@ -148,7 +148,7 @@ ul.fancytree-container {
 
 /** we disable shield background when in distraction free mode because I couldn't get it to stay static
     (it kept growing with content) */
-#container:not(.distraction-free-mode) #note-detail-wrapper.protected {
+#container:not(.distraction-free-mode) .note-tab-content.protected {
     /* DON'T COLLAPSE THE RULES INTO SINGLE ONE, BACKGROUND WON'T DISPLAY */
     background: url('../images/shield.svg') no-repeat;
     background-size: contain;

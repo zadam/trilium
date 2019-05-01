@@ -15,24 +15,10 @@
             </div>
         </div>
     </div>
-    <!-- Styles to prevent flash after JS initialization -->
-    <style>
-        .chrome-tabs .chrome-tab {
-            width: 258px
-        }
-
-        .chrome-tabs .chrome-tab:nth-child(1) {
-            transform: translate3d(0px, 0, 0)
-        }
-
-        .chrome-tabs .chrome-tab:nth-child(2) {
-            transform: translate3d(239px, 0, 0)
-        }
-    </style>
 </div>
 
-<div id="tabs-container">
-    <div id="note-detail-wrapper">
+<div id="note-tab-container">
+    <div class="note-tab-content">
         <% include title.ejs %>
 
         <div id="note-detail-script-area"></div>

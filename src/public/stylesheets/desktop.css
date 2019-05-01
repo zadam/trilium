@@ -28,7 +28,7 @@ body {
     grid-template-columns: 1fr !important;
 }
 
-#tabs-container {
+#note-tab-container {
     grid-area: tab-container;
     min-height: 0;
     min-height: 0;
@@ -134,7 +134,7 @@ li.dropdown-submenu:hover > ul.dropdown-menu {
     border-style: solid;
 }
 
-#note-detail-wrapper {
+.note-tab-content {
     font-family: var(--detail-font-family);
     font-size: var(--detail-font-size);
 }
