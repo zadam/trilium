@@ -624,7 +624,7 @@ async function createNote(node, parentNoteId, target, extraOptions = {}) {
         window.cutToNote.removeSelection();
     }
 
-    await noteDetailService.saveNoteIfChanged();
+    await noteDetailService.saveNotesIfChanged();
 
     noteDetailService.addDetailLoadedListener(note.noteId, noteDetailService.focusAndSelectTitle);
 

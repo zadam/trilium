@@ -1,5 +1,5 @@
 import treeService from './tree.js';
-import treeUtils from './tree_utils.js';
+import NoteContext from './note_context.js';
 import noteTypeService from './note_type.js';
 import protectedSessionService from './protected_session.js';
 import protectedSessionHolder from './protected_session_holder.js';
@@ -8,67 +8,26 @@ import messagingService from "./messaging.js";
 import infoService from "./info.js";
 import treeCache from "./tree_cache.js";
 import NoteFull from "../entities/note_full.js";
-import noteDetailCode from './note_detail_code.js';
-import noteDetailText from './note_detail_text.js';
-import noteDetailFile from './note_detail_file.js';
-import noteDetailImage from './note_detail_image.js';
-import noteDetailSearch from './note_detail_search.js';
-import noteDetailRender from './note_detail_render.js';
-import noteDetailRelationMap from './note_detail_relation_map.js';
 import bundleService from "./bundle.js";
 import attributeService from "./attributes.js";
 import utils from "./utils.js";
 import importDialog from "../dialogs/import.js";
 
-const $noteTitle = $("#note-title");
-
-const $noteDetailComponents = $(".note-detail-component");
-
-const $protectButton = $("#protect-button");
-const $unprotectButton = $("#unprotect-button");
-const $noteTabContent = $(".note-tab-content");
 const $noteTabsContainer = $("#note-tab-container");
-const $childrenOverview = $("#children-overview");
-const $scriptArea = $("#note-detail-script-area");
 const $savedIndicator = $("#saved-indicator");
-const $body = $("body");
-
-let activeNote = null;
 
 let noteChangeDisabled = false;
 
-let isNoteChanged = false;
-
 let detailLoadedListeners = [];
 
-const components = {
-    'code': noteDetailCode,
-    'text': noteDetailText,
-    'file': noteDetailFile,
-    'image': noteDetailImage,
-    'search': noteDetailSearch,
-    'render': noteDetailRender,
-    'relation-map': noteDetailRelationMap
-};
-
-function getComponent(type) {
-    if (!type) {
-        type = getActiveNote().type;
-    }
-
-    if (components[type]) {
-        return components[type];
-    }
-    else {
-        infoService.throwError("Unrecognized type: " + type);
-    }
-}
-
 function getActiveNote() {
-    return activeNote;
+    const activeContext = getActiveContext();
+    return activeContext ? activeContext.note : null;
 }
 
 function getActiveNoteId() {
+    const activeNote = getActiveNote();
+
     return activeNote ? activeNote.noteId : null;
 }
 
@@ -76,16 +35,6 @@ function getActiveNoteType() {
     const activeNote = getActiveNote();
 
     return activeNote ? activeNote.type : null;
-}
-
-function noteChanged() {
-    if (noteChangeDisabled) {
-        return;
-    }
-
-    isNoteChanged = true;
-
-    $savedIndicator.fadeOut();
 }
 
 async function reload() {
@@ -96,78 +45,33 @@ async function reload() {
 
 async function switchToNote(noteId) {
     if (getActiveNoteId() !== noteId) {
-        await saveNoteIfChanged();
+        await saveNotesIfChanged();
 
         await loadNoteDetail(noteId);
     }
 }
 
 function getActiveNoteContent() {
-    return getComponent().getContent();
+    return getActiveContext().getComponent().getContent();
 }
 
 function onNoteChange(func) {
-    return getComponent().onNoteChange(func);
+    return getActiveContext().getComponent().onNoteChange(func);
 }
 
-async function saveNote() {
-    const note = getActiveNote();
-
-    if (note.isProtected && !protectedSessionHolder.isProtectedSessionAvailable()) {
-        return;
-    }
-
-    note.title = $noteTitle.val();
-    note.content = getActiveNoteContent(note);
-
-    // it's important to set the flag back to false immediatelly after retrieving title and content
-    // otherwise we might overwrite another change (especially async code)
-    isNoteChanged = false;
-
-    treeService.setNoteTitle(note.noteId, note.title);
-
-    await server.put('notes/' + note.noteId, note.dto);
-
-    if (note.isProtected) {
-        protectedSessionHolder.touchProtectedSession();
-    }
-
-    $savedIndicator.fadeIn();
-
-    // run async
-    bundleService.executeRelationBundles(getActiveNote(), 'runOnNoteChange');
-}
-
-async function saveNoteIfChanged() {
-    if (isNoteChanged) {
-        await saveNote();
+async function saveNotesIfChanged() {
+    for (const ctx of noteContexts) {
+        await ctx.saveNoteIfChanged();
     }
 
     // make sure indicator is visible in a case there was some race condition.
     $savedIndicator.fadeIn();
 }
 
-function updateNoteView() {
-    $noteTabContent.toggleClass("protected", activeNote.isProtected);
-    $protectButton.toggleClass("active", activeNote.isProtected);
-    $protectButton.prop("disabled", activeNote.isProtected);
-    $unprotectButton.toggleClass("active", !activeNote.isProtected);
-    $unprotectButton.prop("disabled", !activeNote.isProtected || !protectedSessionHolder.isProtectedSessionAvailable());
-
-    for (const clazz of Array.from($body[0].classList)) { // create copy to safely iterate over while removing classes
-        if (clazz.startsWith("type-") || clazz.startsWith("mime-")) {
-            $body.removeClass(clazz);
-        }
-    }
-
-    $body.addClass(utils.getNoteTypeClass(activeNote.type));
-    $body.addClass(utils.getMimeTypeClass(activeNote.mime));
-}
-
 async function handleProtectedSession() {
-    const newSessionCreated = await protectedSessionService.ensureProtectedSession(activeNote.isProtected, false);
+    const newSessionCreated = await protectedSessionService.ensureProtectedSession(getActiveNote().isProtected, false);
 
-    if (activeNote.isProtected) {
+    if (getActiveNote().isProtected) {
         protectedSessionHolder.touchProtectedSession();
     }
 
@@ -178,7 +82,34 @@ async function handleProtectedSession() {
     return newSessionCreated;
 }
 
+/** @type {Object.<string, NoteContext>} */
+const noteContexts = {};
+
+/** @returns {NoteContext} */
+function getContext(noteId) {
+    if (noteId in noteContexts) {
+        return noteContexts[noteId];
+    }
+    else {
+        throw new Error(`Can't find note context for ${noteId}`);
+    }
+}
+
+/** @returns {NoteContext} */
+function getActiveContext() {
+    const currentTreeNode = treeService.getActiveNode();
+
+    return getContext(currentTreeNode.data.noteId);
+}
+
+function showTab(noteId) {
+    for (const ctx of noteContexts) {
+        ctx.$noteTab.toggle(ctx.noteId === noteId);
+    }
+}
+
 async function loadNoteDetail(noteId) {
+    const ctx = getContext(noteId);
     const loadedNote = await loadNote(noteId);
 
     // we will try to render the new note only if it's still the active one in the tree
@@ -191,38 +122,41 @@ async function loadNoteDetail(noteId) {
     }
 
     // only now that we're in sync with tree active node we will switch activeNote
-    activeNote = loadedNote;
+    ctx.note = loadedNote;
+    ctx.noteId = loadedNote.noteId;
 
     if (utils.isDesktop()) {
         // needs to happen after loading the note itself because it references active noteId
-        attributeService.refreshAttributes();
+        // FIXME
+        //attributeService.refreshAttributes();
     }
     else {
         // mobile usually doesn't need attributes so we just invalidate
-        attributeService.invalidateAttributes();
+        // FIXME
+        //attributeService.invalidateAttributes();
     }
 
-    updateNoteView();
+    ctx.updateNoteView();
 
-    $noteTabContent.show();
+    showTab(noteId);
 
     noteChangeDisabled = true;
 
     try {
-        $noteTitle.val(activeNote.title);
+        ctx.$noteTitle.val(ctx.note.title);
 
         if (utils.isDesktop()) {
-            noteTypeService.setNoteType(activeNote.type);
-            noteTypeService.setNoteMime(activeNote.mime);
+            noteTypeService.setNoteType(ctx.note.type);
+            noteTypeService.setNoteMime(ctx.note.mime);
         }
 
-        for (const componentType in components) {
-            if (componentType !== activeNote.type) {
-                components[componentType].cleanup();
+        for (const componentType in ctx.components) {
+            if (componentType !== ctx.note.type) {
+                ctx.components[componentType].cleanup();
             }
         }
 
-        $noteDetailComponents.hide();
+        ctx.$noteDetailComponents.hide();
 
         const newSessionCreated = await handleProtectedSession();
         if (newSessionCreated) {
@@ -230,9 +164,9 @@ async function loadNoteDetail(noteId) {
             return;
         }
 
-        $noteTitle.removeAttr("readonly"); // this can be set by protected session service
+        ctx.$noteTitle.removeAttr("readonly"); // this can be set by protected session service
 
-        await getComponent(activeNote.type).show();
+        await ctx.getComponent(ctx.note.type).show(ctx);
     }
     finally {
         noteChangeDisabled = false;
@@ -241,49 +175,19 @@ async function loadNoteDetail(noteId) {
     treeService.setBranchBackgroundBasedOnProtectedStatus(noteId);
 
     // after loading new note make sure editor is scrolled to the top
-    getComponent(activeNote.type).scrollToTop();
+    ctx.getComponent(ctx.note.type).scrollToTop();
 
     fireDetailLoaded();
 
-    $scriptArea.empty();
+    ctx.$scriptArea.empty();
 
     await bundleService.executeRelationBundles(getActiveNote(), 'runOnNoteView');
 
     if (utils.isDesktop()) {
         await attributeService.showAttributes();
 
-        await showChildrenOverview();
+        await ctx.showChildrenOverview();
     }
-}
-
-async function showChildrenOverview() {
-    const note = getActiveNote();
-    const attributes = await attributeService.getAttributes();
-    const hideChildrenOverview = attributes.some(attr => attr.type === 'label' && attr.name === 'hideChildrenOverview')
-        || note.type === 'relation-map'
-        || note.type === 'image'
-        || note.type === 'file';
-
-    if (hideChildrenOverview) {
-        $childrenOverview.hide();
-        return;
-    }
-
-    $childrenOverview.empty();
-
-    const notePath = await treeService.getActiveNotePath();
-
-    for (const childBranch of await note.getChildBranches()) {
-        const link = $('<a>', {
-            href: 'javascript:',
-            text: await treeUtils.getNoteTitle(childBranch.noteId, childBranch.parentNoteId)
-        }).attr('data-action', 'note').attr('data-note-path', notePath + '/' + childBranch.noteId);
-
-        const childEl = $('<div class="child-overview-item">').html(link);
-        $childrenOverview.append(childEl);
-    }
-
-    $childrenOverview.show();
 }
 
 async function loadNote(noteId) {
@@ -293,11 +197,11 @@ async function loadNote(noteId) {
 }
 
 function focusOnTitle() {
-    $noteTitle.focus();
+    getActiveContext().$noteTitle.focus();
 }
 
 function focusAndSelectTitle() {
-    $noteTitle.focus().select();
+    getActiveContext().$noteTitle.focus().select();
 }
 
 /**
@@ -315,7 +219,7 @@ function addDetailLoadedListener(noteId, callback) {
 
 function fireDetailLoaded() {
     for (const {noteId, callback} of detailLoadedListeners) {
-        if (noteId === activeNote.noteId) {
+        if (noteId === getActiveNoteId()) {
             callback();
         }
     }
@@ -346,28 +250,15 @@ $noteTabsContainer.on("drop", e => {
     });
 });
 
-$(document).ready(() => {
-    $noteTitle.on('input', () => {
-        noteChanged();
-
-        const title = $noteTitle.val();
-
-        treeService.setNoteTitle(getActiveNoteId(), title);
-    });
-
-    noteDetailText.focus();
-});
-
 // this makes sure that when user e.g. reloads the page or navigates away from the page, the note's content is saved
 // this sends the request asynchronously and doesn't wait for result
-$(window).on('beforeunload', () => { saveNoteIfChanged(); }); // don't convert to short form, handler doesn't like returned promise
+$(window).on('beforeunload', () => { saveNotesIfChanged(); }); // don't convert to short form, handler doesn't like returned promise
 
-setInterval(saveNoteIfChanged, 3000);
+setInterval(saveNotesIfChanged, 3000);
 
 export default {
     reload,
     switchToNote,
-    updateNoteView,
     loadNote,
     getActiveNote,
     getActiveNoteContent,
@@ -375,9 +266,7 @@ export default {
     getActiveNoteId,
     focusOnTitle,
     focusAndSelectTitle,
-    saveNote,
-    saveNoteIfChanged,
-    noteChanged,
+    saveNotesIfChanged,
     onNoteChange,
     addDetailLoadedListener
 };

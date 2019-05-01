@@ -76,7 +76,7 @@ async function executeCurrentNote() {
     }
 
     // make sure note is saved so we load latest changes
-    await noteDetailService.saveNoteIfChanged();
+    await noteDetailService.saveNotesIfChanged();
 
     const activeNote = noteDetailService.getActiveNote();
 

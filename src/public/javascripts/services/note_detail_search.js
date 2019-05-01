@@ -31,7 +31,7 @@ function getContent() {
 }
 
 $refreshButton.click(async () => {
-    await noteDetailService.saveNoteIfChanged();
+    await noteDetailService.saveNotesIfChanged();
 
     await searchNotesService.refreshSearch();
 });
