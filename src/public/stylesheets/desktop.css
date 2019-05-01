@@ -9,10 +9,8 @@ body {
     display: grid;
     grid-template-areas: "header header"
     "left-pane tabs"
-    "left-pane title"
-    "left-pane note-detail";
+    "left-pane tab-container";
     grid-template-rows: auto
-    auto
     auto
     1fr;
 
@@ -28,6 +26,12 @@ body {
     auto
     !important;
     grid-template-columns: 1fr !important;
+}
+
+#tabs-container {
+    grid-area: tab-container;
+    min-height: 0;
+    min-height: 0;
 }
 
 #search-box {
@@ -131,6 +135,7 @@ li.dropdown-submenu:hover > ul.dropdown-menu {
 }
 
 #note-detail-wrapper {
+    font-family: var(--detail-font-family);
     font-size: var(--detail-font-size);
 }
 

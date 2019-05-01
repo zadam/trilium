@@ -48,14 +48,6 @@ button.close {
     color: var(--main-text-color) !important;
 }
 
-#title-container {
-    grid-area: title;
-}
-
-#tabs-container {
-    grid-area: tabs;
-}
-
 #note-title {
     margin-left: 15px;
     margin-right: 10px;
@@ -112,14 +104,9 @@ ul.fancytree-container {
 }
 
 #note-detail-wrapper {
-    position: relative;
-    overflow: hidden;
-    grid-area: note-detail;
-    padding-left: 10px;
-    padding-top: 10px;
     display: flex;
     flex-direction: column;
-    font-family: var(--detail-font-family);
+    height: 100%;
 }
 
 #note-detail-component-wrapper {
@@ -150,6 +137,7 @@ ul.fancytree-container {
     box-shadow: none !important;
     /* This is because with empty content height of editor is 0 and it's impossible to click into it */
     min-height: 200px;
+    padding-top: 10px;
     overflow: auto;
     font-family: var(--detail-text-font-family);
 }
@@ -723,9 +711,6 @@ div[data-notify="container"] {
 }
 
 #saved-indicator {
-    position: absolute;
-    right: 10px;
-    top: -7px;
     font-size: 150%;
     color: var(--main-text-color);
     z-index: 100;

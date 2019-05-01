@@ -1,0 +1,68 @@
+<div class="chrome-tabs">
+    <div class="chrome-tabs-content">
+        <div class="chrome-tab">
+            <div class="chrome-tab-content">
+                <div class="chrome-tab-title">Google</div>
+                <div class="chrome-tab-drag-handle"></div>
+                <div class="chrome-tab-close"></div>
+            </div>
+        </div>
+        <div class="chrome-tab" active>
+            <div class="chrome-tab-content">
+                <div class="chrome-tab-title">Facebook</div>
+                <div class="chrome-tab-drag-handle"></div>
+                <div class="chrome-tab-close"></div>
+            </div>
+        </div>
+    </div>
+    <!-- Styles to prevent flash after JS initialization -->
+    <style>
+        .chrome-tabs .chrome-tab {
+            width: 258px
+        }
+
+        .chrome-tabs .chrome-tab:nth-child(1) {
+            transform: translate3d(0px, 0, 0)
+        }
+
+        .chrome-tabs .chrome-tab:nth-child(2) {
+            transform: translate3d(239px, 0, 0)
+        }
+    </style>
+</div>
+
+<div id="tabs-container">
+    <div id="note-detail-wrapper">
+        <% include title.ejs %>
+
+        <div id="note-detail-script-area"></div>
+
+        <table id="note-detail-promoted-attributes"></table>
+
+        <div id="note-detail-component-wrapper">
+            <div id="note-detail-text" class="note-detail-component" tabindex="10000"></div>
+
+            <div id="note-detail-code" class="note-detail-component"></div>
+
+            <% include details/search.ejs %>
+
+            <% include details/render.ejs %>
+
+            <% include details/file.ejs %>
+
+            <% include details/image.ejs %>
+
+            <% include details/relation_map.ejs %>
+
+            <% include details/protected_session_password.ejs %>
+
+            <div id="children-overview"></div>
+        </div>
+
+        <div id="attribute-list">
+            <button class="btn btn-sm show-attributes-button">Attributes:</button>
+
+            <span id="attribute-list-inner"></span>
+        </div>
+    </div>
+</div>
