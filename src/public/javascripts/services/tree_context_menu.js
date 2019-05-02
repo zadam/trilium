@@ -11,6 +11,7 @@ import infoService from "./info.js";
 import treeCache from "./tree_cache.js";
 import syncService from "./sync.js";
 import hoistedNoteService from './hoisted_note.js';
+import noteDetailService from './note_detail.js';
 
 let clipboardIds = [];
 let clipboardMode = null;
@@ -103,6 +104,7 @@ async function getTopLevelItems(event) {
     const insertChildNoteEnabled = note.type !== 'search';
 
     return [
+        { title: "Open in new tab", cmd: "openInTab", uiIcon: "empty" },
         { title: "Insert note after <kbd>Ctrl+O</kbd>", cmd: "insertNoteAfter", uiIcon: "plus",
             items: insertNoteAfterEnabled ? getNoteTypeItems("insertNoteAfter") : null,
             enabled: insertNoteAfterEnabled },
@@ -143,9 +145,7 @@ async function getTopLevelItems(event) {
 async function getContextMenuItems(event) {
     const items = await getTopLevelItems(event);
 
-    // Activate node on right-click
     const node = $.ui.fancytree.getNode(event);
-    node.setActive();
 
     // right click resets selection to just this node
     // this is important when e.g. you right click on a note while having different note active
@@ -153,14 +153,17 @@ async function getContextMenuItems(event) {
     node.setSelected(true);
     treeService.clearSelectedNodes();
 
-    return items;
+    return [node, items];
 }
 
 async function selectContextMenuItem(event, cmd) {
     // context menu is always triggered on current node
     const node = treeService.getActiveNode();
 
-    if (cmd.startsWith("insertNoteAfter")) {
+    if (cmd === 'openInTab') {
+        noteDetailService.openInTab(node.data.noteId);
+    }
+    else if (cmd.startsWith("insertNoteAfter")) {
         const parentNoteId = node.data.parentNoteId;
         const isProtected = await treeUtils.getParentProtectedStatus(node);
         const type = cmd.split("_")[1];

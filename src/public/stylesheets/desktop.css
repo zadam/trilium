@@ -31,7 +31,6 @@ body {
 #note-tab-container {
     grid-area: tab-container;
     min-height: 0;
-    min-height: 0;
 }
 
 #search-box {
@@ -148,7 +147,7 @@ li.dropdown-submenu:hover > ul.dropdown-menu {
     border: 1px solid var(--main-border-color);
 }
 
-#note-info-table td, #note-info-table th {
+.note-info-table td, .note-info-table th {
     padding: 15px;
 }
 

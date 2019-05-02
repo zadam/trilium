@@ -36,6 +36,9 @@ async function getAttributes() {
 }
 
 async function showAttributes() {
+    // FIXME tabs
+    return;
+
     $promotedAttributesContainer.empty();
     $attributeList.hide();
     $attributeListInner.empty();

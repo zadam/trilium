@@ -50,7 +50,7 @@ html, body {
     padding-left: 35px;
 }
 
-#note-title-row {
+.note-title-row {
     display: flex;
     padding-left: 15px;
     flex-shrink: 0;

@@ -9,7 +9,7 @@ class NoteDetailText {
      */
     constructor(ctx) {
         this.ctx = ctx;
-        this.$component = ctx.$noteTab.find('.note-detail-text');
+        this.$component = ctx.$noteTabContent.find('.note-detail-text');
         this.textEditor = null;
 
         this.$component.on("dblclick", "img", e => {
@@ -53,7 +53,7 @@ class NoteDetailText {
 
         this.$component.show();
 
-        this.textEditor.setData(this.ctx.note.content);
+//        this.textEditor.setData(this.ctx.note.content);
     }
 
     getContent() {

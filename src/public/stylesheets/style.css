@@ -48,7 +48,7 @@ button.close {
     color: var(--main-text-color) !important;
 }
 
-#note-title {
+.note-title {
     margin-left: 15px;
     margin-right: 10px;
     font-size: 150%;
@@ -95,11 +95,15 @@ ul.fancytree-container {
     content: "\e9ba";
 }
 
-#note-title[readonly] {
+.note-title[readonly] {
     background: inherit;
 }
 
 .tdialog {
+    display: none;
+}
+
+#note-tab-content-template {
     display: none;
 }
 
@@ -109,7 +113,7 @@ ul.fancytree-container {
     height: 100%;
 }
 
-#note-detail-component-wrapper {
+.note-detail-component-wrapper {
     flex-grow: 100;
     position: relative;
     overflow: auto;
@@ -125,14 +129,14 @@ ul.fancytree-container {
     display: none;
 }
 
-#note-detail-text h1 { font-size: 2.0em; }
-#note-detail-text h2 { font-size: 1.8em; }
-#note-detail-text h3 { font-size: 1.6em; }
-#note-detail-text h4 { font-size: 1.4em; }
-#note-detail-text h5 { font-size: 1.2em; }
-#note-detail-text h6 { font-size: 1.1em; }
+.note-detail-text h1 { font-size: 2.0em; }
+.note-detail-text h2 { font-size: 1.8em; }
+.note-detail-text h3 { font-size: 1.6em; }
+.note-detail-text h4 { font-size: 1.4em; }
+.note-detail-text h5 { font-size: 1.2em; }
+.note-detail-text h6 { font-size: 1.1em; }
 
-#note-detail-text {
+.note-detail-text {
     border: 0 !important;
     box-shadow: none !important;
     /* This is because with empty content height of editor is 0 and it's impossible to click into it */
@@ -142,7 +146,7 @@ ul.fancytree-container {
     font-family: var(--detail-text-font-family);
 }
 
-#note-detail-text p:first-child, #note-detail-text::before {
+.note-detail-text p:first-child, .note-detail-text::before {
     margin-top: 0;
 }
 
@@ -352,12 +356,12 @@ div.ui-tooltip {
     color: #aaa !important;
 }
 
-#note-detail-code {
+.note-detail-code {
     min-height: 200px;
     overflow: auto;
 }
 
-#note-detail-render {
+.note-detail-render {
     min-height: 200px;
 }
 
@@ -376,7 +380,7 @@ div.ui-tooltip {
     border-right: none;
 }
 
-#note-type-dropdown {
+.note-type-dropdown {
     max-height: 500px;
     overflow-y: auto;
     overflow-x: hidden;
@@ -403,7 +407,7 @@ div.ui-tooltip {
     margin-right: 5px;
 }
 
-#file-table th, #file-table td {
+.file-table th, .file-table td {
     padding: 10px;
     font-size: larger;
 }
@@ -464,7 +468,7 @@ div.ui-tooltip {
     background-color: var(--button-disabled-background-color) !important;
 }
 
-#note-path-list a.current {
+.note-path-list a.current {
     font-weight: bold;
 }
 
@@ -473,12 +477,12 @@ button.icon-button {
     padding: 2px;
 }
 
-#note-actions {
+.note-actions {
     margin-left: 10px;
     margin-right: 10px;
 }
 
-#note-actions .dropdown-menu {
+.note-actions .dropdown-menu {
     width: 15em;
 }
 
@@ -495,7 +499,7 @@ button.icon-button {
     padding: 0;
 }
 
-#note-detail-promoted-attributes {
+.note-detail-promoted-attributes {
     margin: auto;
     /* setting the display to block since "table" doesn't support scrolling */
     display: block;
@@ -505,15 +509,15 @@ button.icon-button {
     overflow: auto;
 }
 
-#note-detail-promoted-attributes td, #note-detail-promoted-attributes th {
+.note-detail-promoted-attributes td, .note-detail-promoted-attributes th {
     padding: 5px;
 }
 
-#note-detail-image {
+.note-detail-image {
     text-align: center;
 }
 
-#note-detail-image-view {
+.note-detail-image-view {
     max-width: 100%;
 }
 
@@ -521,7 +525,7 @@ pre:not(.CodeMirror-line) {
     color: var(--main-text-color) !important;
 }
 
-#file-preview-content {
+.file-preview-content {
     background-color: var(--accented-background-color);
     padding: 15px;
     max-width: 600px;
@@ -580,7 +584,7 @@ table.promoted-attributes-in-tooltip td, table.promoted-attributes-in-tooltip th
     padding: 10px;
 }
 
-#note-detail-render-help {
+.note-detail-render-help {
     margin: 50px;
     padding: 20px;
 }

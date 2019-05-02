@@ -106,9 +106,9 @@ function init() {
 // of opening the link in new window/tab
 $(document).on('click', "a[data-action='note']", goToLink);
 $(document).on('click', 'div.popover-content a, div.ui-tooltip-content a', goToLink);
-$(document).on('dblclick', '#note-detail-text a', goToLink);
-$(document).on('click', '#note-detail-render a', goToLink);
-$(document).on('click', '#note-detail-text.ck-read-only a', goToLink);
+$(document).on('dblclick', '.note-detail-text a', goToLink);
+$(document).on('click', '.note-detail-render a', goToLink);
+$(document).on('click', '.note-detail-text.ck-read-only a', goToLink);
 $(document).on('click', 'span.ck-button__label', e => {
     // this is a link preview dialog from CKEditor link editing
     // for some reason clicked element is span

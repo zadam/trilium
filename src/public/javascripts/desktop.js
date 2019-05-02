@@ -157,13 +157,3 @@ noteTypeService.init();
 linkService.init();
 
 noteAutocompleteService.init();
-
-$(document).ready(() => {
-    const el = $('.chrome-tabs')[0];
-    const chromeTabs = new ChromeTabs();
-    chromeTabs.init(el);
-
-    el.addEventListener('activeTabChange', ({detail}) => console.log('Active tab changed', detail.tabEl));
-    el.addEventListener('tabAdd', ({detail}) => console.log('Tab added', detail.tabEl));
-    el.addEventListener('tabRemove', ({detail}) => console.log('Tab removed', detail.tabEl));
-});

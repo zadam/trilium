@@ -485,7 +485,7 @@ function initFancyTree(tree) {
     });
 
     $tree.on('contextmenu', '.fancytree-node', function(e) {
-        treeContextMenuService.getContextMenuItems(e).then(contextMenuItems => {
+        treeContextMenuService.getContextMenuItems(e).then(([node, contextMenuItems]) => {
             contextMenuWidget.initContextMenu(e, contextMenuItems, treeContextMenuService.selectContextMenuItem);
         });
 

@@ -13,7 +13,15 @@ import noteDetailSearch from "./note_detail_search.js";
 import noteDetailRender from "./note_detail_render.js";
 import noteDetailRelationMap from "./note_detail_relation_map.js";
 
-const $noteTabsContainer = $("#note-tab-container");
+const $noteTabContentsContainer = $("#note-tab-container");
+
+const el = $('.chrome-tabs')[0];
+const chromeTabs = new ChromeTabs();
+chromeTabs.init(el);
+
+el.addEventListener('activeTabChange', ({detail}) => console.log('Active tab changed', detail.tabEl));
+el.addEventListener('tabAdd', ({detail}) => console.log('Tab added', detail.tabEl));
+el.addEventListener('tabRemove', ({detail}) => console.log('Tab removed', detail.tabEl));
 
 const componentClasses = {
     'code': noteDetailCode,
@@ -26,17 +34,17 @@ const componentClasses = {
 };
 
 class NoteContext {
-    constructor(noteId) {
+    constructor(note) {
         /** @type {NoteFull} */
-        this.note = null;
-        this.noteId = noteId;
-        this.$noteTab = $noteTabsContainer.find(`[data-note-id="${noteId}"]`);
-        this.$noteTitle = this.$noteTab.find(".note-title");
-        this.$noteDetailComponents = this.$noteTab.find(".note-detail-component");
-        this.$protectButton = this.$noteTab.find(".protect-button");
-        this.$unprotectButton = this.$noteTab.find(".unprotect-button");
-        this.$childrenOverview = this.$noteTab.find(".children-overview");
-        this.$scriptArea = this.$noteTab.find(".note-detail-script-area");
+        this.note = note;
+        this.noteId = note.noteId;
+        this.$noteTabContent = $noteTabContentsContainer.find(`[data-note-id="${this.noteId}"]`);
+        this.$noteTitle = this.$noteTabContent.find(".note-title");
+        this.$noteDetailComponents = this.$noteTabContent.find(".note-detail-component");
+        this.$protectButton = this.$noteTabContent.find(".protect-button");
+        this.$unprotectButton = this.$noteTabContent.find(".unprotect-button");
+        this.$childrenOverview = this.$noteTabContent.find(".children-overview");
+        this.$scriptArea = this.$noteTabContent.find(".note-detail-script-area");
         this.isNoteChanged = false;
         this.components = {};
 
@@ -47,6 +55,19 @@ class NoteContext {
 
             treeService.setNoteTitle(this.noteId, title);
         });
+
+        this.tab = chromeTabs.addTab({
+            title: note.title,
+            favicon: false
+        });
+    }
+
+    setNote(note) {
+        this.noteId = note.noteId;
+        this.note = note;
+        this.$noteTabContent.attr('data-note-id', note.noteId);
+
+        chromeTabs.updateTab(this.tab, {title: note.title});
     }
 
     getComponent(type) {
@@ -135,20 +156,20 @@ class NoteContext {
     }
 
     updateNoteView() {
-        this.$noteTab.toggleClass("protected", this.note.isProtected);
+        this.$noteTabContent.toggleClass("protected", this.note.isProtected);
         this.$protectButton.toggleClass("active", this.note.isProtected);
         this.$protectButton.prop("disabled", this.note.isProtected);
         this.$unprotectButton.toggleClass("active", !this.note.isProtected);
         this.$unprotectButton.prop("disabled", !this.note.isProtected || !protectedSessionHolder.isProtectedSessionAvailable());
 
-        for (const clazz of Array.from(this.$noteTab[0].classList)) { // create copy to safely iterate over while removing classes
+        for (const clazz of Array.from(this.$noteTabContent[0].classList)) { // create copy to safely iterate over while removing classes
             if (clazz.startsWith("type-") || clazz.startsWith("mime-")) {
-                this.$noteTab.removeClass(clazz);
+                this.$noteTabContent.removeClass(clazz);
             }
         }
 
-        this.$noteTab.addClass(utils.getNoteTypeClass(this.note.type));
-        this.$noteTab.addClass(utils.getMimeTypeClass(this.note.mime));
+        this.$noteTabContent.addClass(utils.getNoteTypeClass(this.note.type));
+        this.$noteTabContent.addClass(utils.getMimeTypeClass(this.note.mime));
     }
 }
 

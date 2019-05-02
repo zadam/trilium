@@ -13,7 +13,7 @@ import attributeService from "./attributes.js";
 import utils from "./utils.js";
 import importDialog from "../dialogs/import.js";
 
-const $noteTabsContainer = $("#note-tab-container");
+const $noteTabContentsContainer = $("#note-tab-container");
 const $savedIndicator = $("#saved-indicator");
 
 let noteChangeDisabled = false;
@@ -43,18 +43,11 @@ async function reload() {
     await loadNoteDetail(getActiveNoteId());
 }
 
+async function openInTab(noteId) {
+    await loadNoteDetail(noteId, true);
+}
+
 async function switchToNote(noteId) {
-    if (Object.keys(noteContexts).length === 0) {
-        const tabContent = $("#note-tab-content-template").clone();
-
-        tabContent.removeAttr('id');
-        tabContent.attr('data-note-id', noteId);
-
-        $noteTabsContainer.append(tabContent);
-
-        noteContexts[noteId] = new NoteContext(noteId);
-    }
-
     //if (getActiveNoteId() !== noteId) {
         await saveNotesIfChanged();
 
@@ -71,7 +64,7 @@ function onNoteChange(func) {
 }
 
 async function saveNotesIfChanged() {
-    for (const ctx of Object.values(noteContexts)) {
+    for (const ctx of noteContexts) {
         await ctx.saveNoteIfChanged();
     }
 
@@ -93,13 +86,15 @@ async function handleProtectedSession() {
     return newSessionCreated;
 }
 
-/** @type {Object.<string, NoteContext>} */
-const noteContexts = {};
+/** @type {NoteContext[]} */
+const noteContexts = [];
 
 /** @returns {NoteContext} */
 function getContext(noteId) {
-    if (noteId in noteContexts) {
-        return noteContexts[noteId];
+    const noteContext = noteContexts.find(nc => nc.noteId === noteId);
+
+    if (noteContext) {
+        return noteContext;
     }
     else {
         throw new Error(`Can't find note context for ${noteId}`);
@@ -108,20 +103,35 @@ function getContext(noteId) {
 
 /** @returns {NoteContext} */
 function getActiveContext() {
-    const currentTreeNode = treeService.getActiveNode();
-
-    return getContext(currentTreeNode.data.noteId);
-}
-
-function showTab(noteId) {
-    for (const ctx of Object.values(noteContexts)) {
-        ctx.$noteTab.toggle(ctx.noteId === noteId);
+    for (const ctx of noteContexts) {
+        if (ctx.$noteTabContent.is(":visible")) {
+            return ctx;
+        }
     }
 }
 
-async function loadNoteDetail(noteId) {
-    const ctx = getContext(noteId);
+function showTab(noteId) {
+    for (const ctx of noteContexts) {
+        ctx.$noteTabContent.toggle(ctx.noteId === noteId);
+    }
+}
+
+async function loadNoteDetail(noteId, newTab = false) {
     const loadedNote = await loadNote(noteId);
+
+    if (noteContexts.length === 0 || newTab) {
+        const tabContent = $("#note-tab-content-template").clone();
+
+        tabContent.removeAttr('id');
+        tabContent.attr('data-note-id', noteId);
+
+        $noteTabContentsContainer.append(tabContent);
+
+        noteContexts.push(new NoteContext(loadedNote));
+    }
+
+    const ctx = getActiveContext();
+    ctx.setNote(loadedNote);
 
     // we will try to render the new note only if it's still the active one in the tree
     // this is useful when user quickly switches notes (by e.g. holding down arrow) so that we don't
@@ -247,11 +257,11 @@ messagingService.subscribeToSyncMessages(syncData => {
     }
 });
 
-$noteTabsContainer.on("dragover", e => e.preventDefault());
+$noteTabContentsContainer.on("dragover", e => e.preventDefault());
 
-$noteTabsContainer.on("dragleave", e => e.preventDefault());
+$noteTabContentsContainer.on("dragleave", e => e.preventDefault());
 
-$noteTabsContainer.on("drop", e => {
+$noteTabContentsContainer.on("drop", e => {
     importDialog.uploadFiles(getActiveNoteId(), e.originalEvent.dataTransfer.files, {
         safeImport: true,
         shrinkImages: true,
@@ -269,6 +279,7 @@ setInterval(saveNotesIfChanged, 3000);
 
 export default {
     reload,
+    openInTab,
     switchToNote,
     loadNote,
     getActiveNote,
