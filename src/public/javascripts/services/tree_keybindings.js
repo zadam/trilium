@@ -1,10 +1,9 @@
 import noteDetailService from "./note_detail.js";
-import utils from "./utils.js";
 import treeChangesService from "./branches.js";
-import contextMenuService from "./tree_context_menu.js";
 import treeService from "./tree.js";
 import editBranchPrefixDialog from "../dialogs/branch_prefix.js";
 import hoistedNoteService from "./hoisted_note.js";
+import clipboard from "./clipboard.js";
 
 const keyBindings = {
     "del": node => {
@@ -90,17 +89,17 @@ const keyBindings = {
         return false;
     },
     "ctrl+c": () => {
-        contextMenuService.copy(treeService.getSelectedNodes());
+        clipboard.copy(treeService.getSelectedNodes());
 
         return false;
     },
     "ctrl+x": () => {
-        contextMenuService.cut(treeService.getSelectedNodes());
+        clipboard.cut(treeService.getSelectedNodes());
 
         return false;
     },
     "ctrl+v": node => {
-        contextMenuService.pasteInto(node);
+        clipboard.pasteInto(node);
 
         return false;
     },

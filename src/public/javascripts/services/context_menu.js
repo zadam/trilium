@@ -2,7 +2,7 @@ const $contextMenuContainer = $("#context-menu-container");
 
 let dateContextMenuOpenedMs = 0;
 
-function initContextMenu(event, contextMenuItems, selectContextMenuItem) {
+async function initContextMenu(event, contextMenu) {
     event.stopPropagation();
 
     $contextMenuContainer.empty();
@@ -34,7 +34,7 @@ function initContextMenu(event, contextMenuItems, selectContextMenuItem) {
 
                         e.originalTarget = event.target;
 
-                        selectContextMenuItem(e, cmd);
+                        contextMenu.selectContextMenuItem(e, cmd);
 
                         // it's important to stop the propagation especially for sub-menus, otherwise the event
                         // might be handled again by top-level menu
@@ -61,7 +61,7 @@ function initContextMenu(event, contextMenuItems, selectContextMenuItem) {
         }
     }
 
-    addItems($contextMenuContainer, contextMenuItems);
+    addItems($contextMenuContainer, await contextMenu.getContextMenuItems());
 
     // code below tries to detect when dropdown would overflow from page
     // in such case we'll position it above click coordinates so it will fit into client

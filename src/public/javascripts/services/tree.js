@@ -16,6 +16,7 @@ import Branch from '../entities/branch.js';
 import NoteShort from '../entities/note_short.js';
 import hoistedNoteService from '../services/hoisted_note.js';
 import confirmDialog from "../dialogs/confirm.js";
+import TreeContextMenu from "./tree_context_menu.js";
 
 const $tree = $("#tree");
 const $createTopLevelNoteButton = $("#create-top-level-note-button");
@@ -485,9 +486,15 @@ function initFancyTree(tree) {
     });
 
     $tree.on('contextmenu', '.fancytree-node', function(e) {
-        treeContextMenuService.getContextMenuItems(e).then(([node, contextMenuItems]) => {
-            contextMenuWidget.initContextMenu(e, contextMenuItems, treeContextMenuService.selectContextMenuItem);
-        });
+        const node = $.ui.fancytree.getNode(e);
+
+        // right click resets selection to just this node
+        // this is important when e.g. you right click on a note while having different note active
+        // and then click on delete - obviously you want to delete only that one right-clicked
+        node.setSelected(true);
+        clearSelectedNodes();
+
+        contextMenuWidget.initContextMenu(e, new TreeContextMenu(node));
 
         return false; // blocks default browser right click menu
     });
