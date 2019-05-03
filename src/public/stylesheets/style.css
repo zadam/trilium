@@ -714,10 +714,8 @@ div[data-notify="container"] {
     text-align: center;
 }
 
-#saved-indicator {
+.saved-indicator {
     font-size: 150%;
-    color: var(--main-text-color);
-    z-index: 100;
 }
 
 #export-form .form-check {

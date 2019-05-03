@@ -9,7 +9,7 @@ import noteDetailService from "./note_detail.js";
 const $attributeList = $("#attribute-list");
 const $attributeListInner = $("#attribute-list-inner");
 const $promotedAttributesContainer = $("#note-detail-promoted-attributes");
-const $savedIndicator = $("#saved-indicator");
+const $savedIndicator = $(".saved-indicator");
 
 let attributePromise;
 

@@ -19,10 +19,6 @@ const el = $('.chrome-tabs')[0];
 const chromeTabs = new ChromeTabs();
 chromeTabs.init(el);
 
-el.addEventListener('activeTabChange', ({detail}) => console.log('Active tab changed', detail.tabEl));
-el.addEventListener('tabAdd', ({detail}) => console.log('Tab added', detail.tabEl));
-el.addEventListener('tabRemove', ({detail}) => console.log('Tab removed', detail.tabEl));
-
 const componentClasses = {
     'code': noteDetailCode,
     'text': noteDetailText,
@@ -34,7 +30,7 @@ const componentClasses = {
 };
 
 class NoteContext {
-    constructor(note) {
+    constructor(note, openOnBackground) {
         /** @type {NoteFull} */
         this.note = note;
         this.noteId = note.noteId;
@@ -45,6 +41,7 @@ class NoteContext {
         this.$unprotectButton = this.$noteTabContent.find(".unprotect-button");
         this.$childrenOverview = this.$noteTabContent.find(".children-overview");
         this.$scriptArea = this.$noteTabContent.find(".note-detail-script-area");
+        this.$savedIndicator = this.$noteTabContent.find(".saved-indicator");
         this.isNoteChanged = false;
         this.components = {};
 
@@ -59,7 +56,11 @@ class NoteContext {
         this.tab = chromeTabs.addTab({
             title: note.title,
             favicon: false
+        }, {
+            background: openOnBackground
         });
+
+        this.tab.setAttribute('data-note-id', this.noteId);
     }
 
     setNote(note) {
@@ -102,10 +103,10 @@ class NoteContext {
             protectedSessionHolder.touchProtectedSession();
         }
 
-        $savedIndicator.fadeIn();
+        this.$savedIndicator.fadeIn();
 
         // run async
-        bundleService.executeRelationBundles(getActiveNote(), 'runOnNoteChange');
+        bundleService.executeRelationBundles(this.note, 'runOnNoteChange');
     }
 
     async saveNoteIfChanged() {
@@ -121,7 +122,7 @@ class NoteContext {
 
         this.isNoteChanged = true;
 
-        $savedIndicator.fadeOut();
+        this.$savedIndicator.fadeOut();
     }
 
     async showChildrenOverview() {

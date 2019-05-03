@@ -8,6 +8,7 @@ class NoteDetailFile {
      * @param {NoteContext} ctx
      */
     constructor(ctx) {
+        this.ctx = ctx;
         this.$component = ctx.$noteTabContent.find('.note-detail-file');
         this.$fileNoteId = ctx.$noteTabContent.find(".file-note-id");
         this.$fileName = ctx.$noteTabContent.find(".file-filename");
@@ -33,33 +34,31 @@ class NoteDetailFile {
     }
 
     async show() {
-        const activeNote = noteDetailService.getActiveNote();
-
-        const attributes = await server.get('notes/' + activeNote.noteId + '/attributes');
+        const attributes = await server.get('notes/' + this.ctx.note.noteId + '/attributes');
         const attributeMap = utils.toObject(attributes, l => [l.name, l.value]);
 
         this.$component.show();
 
-        this.$fileNoteId.text(activeNote.noteId);
+        this.$fileNoteId.text(this.ctx.note.noteId);
         this.$fileName.text(attributeMap.originalFileName || "?");
         this.$fileSize.text((attributeMap.fileSize || "?") + " bytes");
-        this.$fileType.text(activeNote.mime);
+        this.$fileType.text(this.ctx.note.mime);
 
-        if (activeNote.content) {
+        if (this.ctx.note.content) {
             this.$previewRow.show();
-            this.$previewContent.text(activeNote.content);
+            this.$previewContent.text(this.ctx.note.content);
         }
         else {
             this.$previewRow.hide();
         }
 
         // open doesn't work for protected notes since it works through browser which isn't in protected session
-        this.$openButton.toggle(!activeNote.isProtected);
+        this.$openButton.toggle(!this.ctx.note.isProtected);
     }
 
     getFileUrl() {
         // electron needs absolute URL so we extract current host, port, protocol
-        return utils.getHost() + "/api/notes/" + noteDetailService.getActiveNoteId() + "/download";
+        return utils.getHost() + "/api/notes/" + this.ctx.note.noteId + "/download";
     }
 
     getContent() {}

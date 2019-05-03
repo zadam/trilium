@@ -36,6 +36,8 @@ async function initContextMenu(event, contextMenu) {
 
                         contextMenu.selectContextMenuItem(e, cmd);
 
+                        hideContextMenu();
+
                         // it's important to stop the propagation especially for sub-menus, otherwise the event
                         // might be handled again by top-level menu
                         return false;

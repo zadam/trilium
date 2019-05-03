@@ -14,7 +14,7 @@ import utils from "./utils.js";
 import importDialog from "../dialogs/import.js";
 
 const $noteTabContentsContainer = $("#note-tab-container");
-const $savedIndicator = $("#saved-indicator");
+const $savedIndicator = $(".saved-indicator");
 
 let noteChangeDisabled = false;
 
@@ -118,6 +118,7 @@ function showTab(noteId) {
 
 async function loadNoteDetail(noteId, newTab = false) {
     const loadedNote = await loadNote(noteId);
+    let ctx;
 
     if (noteContexts.length === 0 || newTab) {
         const tabContent = $("#note-tab-content-template").clone();
@@ -127,24 +128,27 @@ async function loadNoteDetail(noteId, newTab = false) {
 
         $noteTabContentsContainer.append(tabContent);
 
-        noteContexts.push(new NoteContext(loadedNote));
-    }
+        // if it's a new tab explicitly by user then it's in background
+        ctx = new NoteContext(loadedNote, newTab);
+        noteContexts.push(ctx);
 
-    const ctx = getActiveContext();
-    ctx.setNote(loadedNote);
+        if (!newTab) {
+            showTab(noteId);
+        }
+    }
+    else {
+        ctx = getActiveContext();
+        ctx.setNote(loadedNote);
+    }
 
     // we will try to render the new note only if it's still the active one in the tree
     // this is useful when user quickly switches notes (by e.g. holding down arrow) so that we don't
     // try to render all those loaded notes one after each other. This only guarantees that correct note
     // will be displayed independent of timing
     const currentTreeNode = treeService.getActiveNode();
-    if (currentTreeNode && currentTreeNode.data.noteId !== loadedNote.noteId) {
+    if (!newTab && currentTreeNode && currentTreeNode.data.noteId !== loadedNote.noteId) {
         return;
     }
-
-    // only now that we're in sync with tree active node we will switch activeNote
-    ctx.note = loadedNote;
-    ctx.noteId = loadedNote.noteId;
 
     if (utils.isDesktop()) {
         // needs to happen after loading the note itself because it references active noteId
@@ -158,8 +162,6 @@ async function loadNoteDetail(noteId, newTab = false) {
     }
 
     ctx.updateNoteView();
-
-    showTab(noteId);
 
     noteChangeDisabled = true;
 
@@ -202,13 +204,13 @@ async function loadNoteDetail(noteId, newTab = false) {
 
     ctx.$scriptArea.empty();
 
-    await bundleService.executeRelationBundles(getActiveNote(), 'runOnNoteView');
+    await bundleService.executeRelationBundles(ctx.note, 'runOnNoteView');
 
-    if (utils.isDesktop()) {
-        await attributeService.showAttributes();
-
-        await ctx.showChildrenOverview();
-    }
+    // if (utils.isDesktop()) {
+    //     await attributeService.showAttributes();
+    //
+    //     await ctx.showChildrenOverview();
+    // }
 }
 
 async function loadNote(noteId) {
@@ -270,6 +272,9 @@ $noteTabContentsContainer.on("drop", e => {
         explodeArchives: true
     });
 });
+
+document.querySelector('.chrome-tabs')
+    .addEventListener('activeTabChange', ({ detail }) => showTab(detail.tabEl.getAttribute('data-note-id')));
 
 // this makes sure that when user e.g. reloads the page or navigates away from the page, the note's content is saved
 // this sends the request asynchronously and doesn't wait for result
