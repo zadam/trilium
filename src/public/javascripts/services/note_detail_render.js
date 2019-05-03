@@ -3,40 +3,55 @@ import server from "./server.js";
 import noteDetailService from "./note_detail.js";
 import attributeService from "./attributes.js";
 
-const $component = $('#note-detail-render');
-const $noteDetailRenderHelp = $('#note-detail-render-help');
-const $noteDetailRenderContent = $('#note-detail-render-content');
-const $renderButton = $('#render-button');
+class NoteDetailRender {
+    /**
+     * @param {NoteContext} ctx
+     */
+    constructor(ctx) {
+        this.ctx = ctx;
+        this.$component = ctx.$noteTabContent.find('.note-detail-render');
+        this.$noteDetailRenderHelp = ctx.$noteTabContent.find('.note-detail-render-help');
+        this.$noteDetailRenderContent = ctx.$noteTabContent.find('.note-detail-render-content');
+        this.$renderButton = ctx.$noteTabContent.find('.render-button');
 
-async function render() {
-    const attributes = await attributeService.getAttributes();
-    const renderNotes = attributes.filter(attr =>
-        attr.type === 'relation'
-        && attr.name === 'renderNote'
-        && !!attr.value);
+        this.$renderButton.click(this.show);
+    }
 
-    $component.show();
+    async show() {
+        const attributes = await attributeService.getAttributes();
+        const renderNotes = attributes.filter(attr =>
+            attr.type === 'relation'
+            && attr.name === 'renderNote'
+            && !!attr.value);
 
-    $noteDetailRenderContent.empty();
-    $noteDetailRenderContent.toggle(renderNotes.length > 0);
-    $noteDetailRenderHelp.toggle(renderNotes.length === 0);
+        this.$component.show();
 
-    for (const renderNote of renderNotes) {
-        const bundle = await server.get('script/bundle/' + renderNote.value);
+        this.$noteDetailRenderContent.empty();
+        this.$noteDetailRenderContent.toggle(renderNotes.length > 0);
+        this.$noteDetailRenderHelp.toggle(renderNotes.length === 0);
 
-        $noteDetailRenderContent.append(bundle.html);
+        for (const renderNote of renderNotes) {
+            const bundle = await server.get('script/bundle/' + renderNote.value);
 
-        await bundleService.executeBundle(bundle, noteDetailService.getActiveNote());
+            this.$noteDetailRenderContent.append(bundle.html);
+
+            await bundleService.executeBundle(bundle, noteDetailService.getActiveNote());
+        }
+    }
+
+    getContent() {}
+
+    focus() {}
+
+    onNoteChange() {}
+
+    cleanup() {
+        this.$noteDetailRenderContent.empty();
+    }
+
+    scrollToTop() {
+        this.$component.scrollTop(0);
     }
 }
 
-$renderButton.click(render);
-
-export default {
-    show: render,
-    getContent: () => "",
-    focus: () => null,
-    onNoteChange: () => null,
-    cleanup: () => $noteDetailRenderContent.empty(),
-    scrollToTop: () => $component.scrollTop(0)
-}
+export default NoteDetailRender;

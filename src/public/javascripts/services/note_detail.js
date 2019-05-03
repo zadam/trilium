@@ -121,12 +121,12 @@ async function loadNoteDetail(noteId, newTab = false) {
     let ctx;
 
     if (noteContexts.length === 0 || newTab) {
-        const tabContent = $("#note-tab-content-template").clone();
+        const $tabContent = $(".note-tab-content-template").clone();
 
-        tabContent.removeAttr('id');
-        tabContent.attr('data-note-id', noteId);
+        $tabContent.removeClass('note-tab-content-template');
+        $tabContent.attr('data-note-id', noteId);
 
-        $noteTabContentsContainer.append(tabContent);
+        $noteTabContentsContainer.append($tabContent);
 
         // if it's a new tab explicitly by user then it's in background
         ctx = new NoteContext(loadedNote, newTab);

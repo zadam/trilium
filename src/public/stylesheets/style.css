@@ -103,8 +103,8 @@ ul.fancytree-container {
     display: none;
 }
 
-#note-tab-content-template {
-    display: none;
+.note-tab-content-template {
+    display: none !important;
 }
 
 .note-tab-content {

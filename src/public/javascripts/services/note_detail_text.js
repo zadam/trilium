@@ -53,7 +53,7 @@ class NoteDetailText {
 
         this.$component.show();
 
-//        this.textEditor.setData(this.ctx.note.content);
+        this.textEditor.setData(this.ctx.note.content);
     }
 
     getContent() {
