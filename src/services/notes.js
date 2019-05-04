@@ -186,7 +186,12 @@ async function protectNoteRecursively(note, protect) {
 
 async function protectNote(note, protect) {
     if (protect !== note.isProtected) {
+        const content = await note.getContent();
+
         note.isProtected = protect;
+
+        // this will force de/encryption
+        await note.setContent(content);
 
         await note.save();
     }
