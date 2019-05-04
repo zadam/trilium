@@ -59,7 +59,7 @@ function decryptNote(note) {
 function decryptNoteContent(note) {
     try {
         if (note.content != null) {
-            note.content = dataEncryptionService.decrypt(getDataKey(), note.content.toString());
+            note.content = dataEncryptionService.decrypt(getDataKey(), note.content);
         }
     }
     catch (e) {

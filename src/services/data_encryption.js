@@ -56,25 +56,38 @@ function decrypt(key, cipherText, ivLength = 13) {
         return "[protected]";
     }
 
-    const cipherTextBufferWithIv = Buffer.from(cipherText, 'base64');
-    const iv = cipherTextBufferWithIv.slice(0, ivLength);
+    try {
+        const cipherTextBufferWithIv = Buffer.from(cipherText.toString(), 'base64');
+        const iv = cipherTextBufferWithIv.slice(0, ivLength);
 
-    const cipherTextBuffer = cipherTextBufferWithIv.slice(ivLength);
+        const cipherTextBuffer = cipherTextBufferWithIv.slice(ivLength);
 
-    const decipher = crypto.createDecipheriv('aes-128-cbc', pad(key), pad(iv));
+        const decipher = crypto.createDecipheriv('aes-128-cbc', pad(key), pad(iv));
 
-    const decryptedBytes = Buffer.concat([decipher.update(cipherTextBuffer), decipher.final()]);
+        const decryptedBytes = Buffer.concat([decipher.update(cipherTextBuffer), decipher.final()]);
 
-    const digest = decryptedBytes.slice(0, 4);
-    const payload = decryptedBytes.slice(4);
+        const digest = decryptedBytes.slice(0, 4);
+        const payload = decryptedBytes.slice(4);
 
-    const computedDigest = shaArray(payload).slice(0, 4);
+        const computedDigest = shaArray(payload).slice(0, 4);
 
-    if (!arraysIdentical(digest, computedDigest)) {
-        return false;
+        if (!arraysIdentical(digest, computedDigest)) {
+            return false;
+        }
+
+        return payload;
     }
+    catch (e) {
+        // recovery from https://github.com/zadam/trilium/issues/510
+        if (e.message && e.message.includes("WRONG_FINAL_BLOCK_LENGTH")) {
+            log.info("Caught WRONG_FINAL_BLOCK_LENGTH, returning cipherText instead");
 
-    return payload;
+            return cipherText;
+        }
+        else {
+            throw e;
+        }
+    }
 }
 
 function decryptString(dataKey, cipherText) {
