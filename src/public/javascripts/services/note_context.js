@@ -42,6 +42,7 @@ class NoteContext {
         this.$childrenOverview = this.$noteTabContent.find(".children-overview");
         this.$scriptArea = this.$noteTabContent.find(".note-detail-script-area");
         this.$savedIndicator = this.$noteTabContent.find(".saved-indicator");
+        this.noteChangeDisabled = false;
         this.isNoteChanged = false;
         this.components = {};
 
@@ -116,7 +117,7 @@ class NoteContext {
     }
 
     noteChanged() {
-        if (noteChangeDisabled) {
+        if (this.noteChangeDisabled) {
             return;
         }
 

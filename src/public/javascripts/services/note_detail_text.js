@@ -45,7 +45,7 @@ class NoteDetailText {
                     placeholder: "Type the content of your note here ..."
                 });
 
-                this.onNoteChange(noteDetailService.noteChanged);
+                this.onNoteChange(() => this.ctx.noteChanged());
             }
         }
 
@@ -85,7 +85,6 @@ class NoteDetailText {
     onNoteChange(func) {
         this.textEditor.model.document.on('change:data', func);
     }
-
 
     cleanup() {
         if (this.textEditor) {

@@ -16,9 +16,9 @@ class NoteDetailCode {
         this.$component = ctx.$noteTabContent.find('.note-detail-code');
         this.$executeScriptButton = ctx.$noteTabContent.find(".execute-script-button");
 
-        utils.bindShortcut("ctrl+return", this.executeCurrentNote);
+        utils.bindShortcut("ctrl+return", () => this.executeCurrentNote());
 
-        this.$executeScriptButton.click(this.executeCurrentNote);
+        this.$executeScriptButton.click(() => this.executeCurrentNote());
     }
 
     async show() {
@@ -50,7 +50,7 @@ class NoteDetailCode {
                 lineWrapping: true
             });
 
-            this.onNoteChange(noteDetailService.noteChanged);
+            this.onNoteChange(() => this.ctx.noteChanged());
         }
 
         this.$component.show();

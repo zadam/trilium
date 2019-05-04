@@ -16,8 +16,6 @@ import importDialog from "../dialogs/import.js";
 const $noteTabContentsContainer = $("#note-tab-container");
 const $savedIndicator = $(".saved-indicator");
 
-let noteChangeDisabled = false;
-
 let detailLoadedListeners = [];
 
 function getActiveNote() {
@@ -163,7 +161,7 @@ async function loadNoteDetail(noteId, newTab = false) {
 
     ctx.updateNoteView();
 
-    noteChangeDisabled = true;
+    ctx.noteChangeDisabled = true;
 
     try {
         ctx.$noteTitle.val(ctx.note.title);
@@ -192,7 +190,7 @@ async function loadNoteDetail(noteId, newTab = false) {
         await ctx.getComponent(ctx.note.type).show(ctx);
     }
     finally {
-        noteChangeDisabled = false;
+        ctx.noteChangeDisabled = false;
     }
 
     treeService.setBranchBackgroundBasedOnProtectedStatus(noteId);
