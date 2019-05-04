@@ -186,7 +186,12 @@ async function protectNoteRecursively(note, protect) {
 
 async function protectNote(note, protect) {
     if (protect !== note.isProtected) {
+        const content = await note.getContent();
+
         note.isProtected = protect;
+
+        // this will force de/encryption
+        await note.setContent(content);
 
         await note.save();
     }
@@ -341,6 +346,11 @@ async function updateNote(noteId, noteUpdates) {
 
     await saveNoteRevision(note);
 
+    // if protected status changed, then we need to encrypt/decrypt the content anyway
+    if (['file', 'image'].includes(note.type) && note.isProtected !== noteUpdates.isProtected) {
+        noteUpdates.content = await note.getContent();
+    }
+
     const noteTitleChanged = note.title !== noteUpdates.title;
 
     note.title = noteUpdates.title;
@@ -350,6 +360,9 @@ async function updateNote(noteId, noteUpdates) {
     if (!['file', 'image'].includes(note.type)) {
         noteUpdates.content = await saveLinks(note, noteUpdates.content);
 
+        await note.setContent(noteUpdates.content);
+    }
+    else if (noteUpdates.content) {
         await note.setContent(noteUpdates.content);
     }
 
