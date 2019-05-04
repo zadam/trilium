@@ -412,7 +412,7 @@ div.ui-tooltip {
     font-size: larger;
 }
 
-#children-overview {
+.children-overview {
     flex-grow: 1000;
     flex-shrink: 1000;
     flex-basis: 0;

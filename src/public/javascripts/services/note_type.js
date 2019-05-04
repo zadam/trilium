@@ -4,10 +4,6 @@ import server from './server.js';
 import infoService from "./info.js";
 import confirmDialog from "../dialogs/confirm.js";
 
-const $executeScriptButton = $("#execute-script-button");
-const $toggleEditButton = $('#toggle-edit-button');
-const $renderButton = $('#render-button');
-
 const DEFAULT_MIME_TYPES = [
     { mime: 'text/x-csrc', title: 'C' },
     { mime: 'text/x-c++src', title: 'C++' },
@@ -45,15 +41,24 @@ const DEFAULT_MIME_TYPES = [
     { mime: 'text/x-yaml', title: 'YAML' }
 ];
 
-let noteTypeModel;
+let mimeTypes = DEFAULT_MIME_TYPES;
 
-function NoteTypeModel() {
+/**
+ * @param {NoteContext} ctx
+ * @constructor
+ */
+function NoteTypeContext(ctx) {
     const self = this;
 
+    this.$executeScriptButton = ctx.$noteTabContent.find(".execute-script-button");
+    this.$toggleEditButton = ctx.$noteTabContent.find('.toggle-edit-button');
+    this.$renderButton = ctx.$noteTabContent.find('.render-button');
+
+    this.ctx = ctx;
     this.type = ko.observable('text');
     this.mime = ko.observable('');
 
-    this.codeMimeTypes = ko.observableArray(DEFAULT_MIME_TYPES);
+    this.codeMimeTypes = ko.observableArray(mimeTypes);
 
     this.typeString = function() {
         const type = self.type();
@@ -97,9 +102,7 @@ function NoteTypeModel() {
     };
 
     async function save() {
-        const note = noteDetailService.getActiveNote();
-
-        await server.put('notes/' + note.noteId
+        await server.put('notes/' + self.ctx.note.noteId
             + '/type/' + encodeURIComponent(self.type())
             + '/mime/' + encodeURIComponent(self.mime()));
 
@@ -175,32 +178,21 @@ function NoteTypeModel() {
     };
 
     this.updateExecuteScriptButtonVisibility = function() {
-        $executeScriptButton.toggle(self.mime().startsWith('application/javascript'));
+        self.$executeScriptButton.toggle(self.mime().startsWith('application/javascript'));
 
-        $toggleEditButton.toggle(self.type() === 'render');
-        $renderButton.toggle(self.type() === 'render');
-    }
-}
+        self.$toggleEditButton.toggle(self.type() === 'render');
+        self.$renderButton.toggle(self.type() === 'render');
+    };
 
-function init() {
-    noteTypeModel = new NoteTypeModel();
-
-    ko.applyBindings(noteTypeModel, document.getElementById('note-type-wrapper'));
+    ko.applyBindings(this, ctx.$noteTabContent.find('.note-type-wrapper')[0])
 }
 
 export default {
-    getNoteType: () => noteTypeModel.type(),
-    setNoteType: type => noteTypeModel.type(type),
-
-    getNoteMime: () => noteTypeModel.mime(),
-    setNoteMime: mime => {
-        noteTypeModel.mime(mime);
-
-        noteTypeModel.updateExecuteScriptButtonVisibility();
-    },
-
     getDefaultCodeMimeTypes: () => DEFAULT_MIME_TYPES.slice(),
-    getCodeMimeTypes: () => noteTypeModel.codeMimeTypes(),
-    setCodeMimeTypes: types => noteTypeModel.codeMimeTypes(types),
-    init
+    getCodeMimeTypes: () => mimeTypes,
+    setCodeMimeTypes: types => { mimeTypes = types; }
+};
+
+export {
+    NoteTypeContext
 };

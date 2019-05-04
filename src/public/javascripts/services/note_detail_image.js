@@ -8,6 +8,7 @@ class NoteDetailImage {
      * @param {NoteContext} ctx
      */
     constructor(ctx) {
+        this.ctx = ctx;
         this.$component = ctx.$noteTabContent.find('.note-detail-image');
         this.$imageWrapper = ctx.$noteTabContent.find('.note-detail-image-wrapper');
         this.$imageView = ctx.$noteTabContent.find('.note-detail-image-view');
@@ -42,18 +43,16 @@ class NoteDetailImage {
     }
 
     async show() {
-        const activeNote = noteDetailService.getActiveNote();
-
-        const attributes = await server.get('notes/' + activeNote.noteId + '/attributes');
+        const attributes = await server.get('notes/' + this.ctx.note.noteId + '/attributes');
         const attributeMap = utils.toObject(attributes, l => [l.name, l.value]);
 
         this.$component.show();
 
         this.$fileName.text(attributeMap.originalFileName || "?");
         this.$fileSize.text((attributeMap.fileSize || "?") + " bytes");
-        this.$fileType.text(activeNote.mime);
+        this.$fileType.text(this.ctx.note.mime);
 
-        this.$imageView.prop("src", `api/images/${activeNote.noteId}/${activeNote.title}`);
+        this.$imageView.prop("src", `api/images/${this.ctx.note.noteId}/${this.ctx.note.title}`);
     }
 
     selectImage(element) {

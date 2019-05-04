@@ -1,7 +1,5 @@
 import libraryLoader from "./library_loader.js";
-import noteDetailService from './note_detail.js';
 import treeService from './tree.js';
-import attributeService from "./attributes.js";
 
 class NoteDetailText {
     /**
@@ -69,7 +67,7 @@ class NoteDetailText {
     }
 
     async isReadOnly() {
-        const attributes = await attributeService.getAttributes();
+        const attributes = await this.ctx.attributes.getAttributes();
 
         return attributes.some(attr => attr.type === 'label' && attr.name === 'readOnly');
     }

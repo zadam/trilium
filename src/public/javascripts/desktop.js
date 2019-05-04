@@ -152,8 +152,6 @@ noteTooltipService.setupGlobalTooltip();
 
 bundle.executeStartupBundles();
 
-noteTypeService.init();
-
 linkService.init();
 
 noteAutocompleteService.init();

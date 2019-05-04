@@ -9,7 +9,6 @@ import infoService from "./info.js";
 import treeCache from "./tree_cache.js";
 import NoteFull from "../entities/note_full.js";
 import bundleService from "./bundle.js";
-import attributeService from "./attributes.js";
 import utils from "./utils.js";
 import importDialog from "../dialogs/import.js";
 
@@ -167,8 +166,8 @@ async function loadNoteDetail(noteId, newTab = false) {
         ctx.$noteTitle.val(ctx.note.title);
 
         if (utils.isDesktop()) {
-            noteTypeService.setNoteType(ctx.note.type);
-            noteTypeService.setNoteMime(ctx.note.mime);
+            ctx.noteType.type(ctx.note.type);
+            ctx.noteType.mime(ctx.note.mime);
         }
 
         for (const componentType in ctx.components) {
@@ -204,11 +203,11 @@ async function loadNoteDetail(noteId, newTab = false) {
 
     await bundleService.executeRelationBundles(ctx.note, 'runOnNoteView');
 
-    // if (utils.isDesktop()) {
-    //     await attributeService.showAttributes();
-    //
-    //     await ctx.showChildrenOverview();
-    // }
+    if (utils.isDesktop()) {
+        await ctx.attributes.showAttributes();
+
+        await ctx.showChildrenOverview();
+    }
 }
 
 async function loadNote(noteId) {
@@ -293,5 +292,6 @@ export default {
     focusAndSelectTitle,
     saveNotesIfChanged,
     onNoteChange,
-    addDetailLoadedListener
+    addDetailLoadedListener,
+    getActiveContext
 };

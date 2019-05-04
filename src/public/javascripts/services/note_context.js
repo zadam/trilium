@@ -2,9 +2,11 @@ import treeService from "./tree.js";
 import protectedSessionHolder from "./protected_session_holder.js";
 import server from "./server.js";
 import bundleService from "./bundle.js";
-import attributeService from "./attributes.js";
+import Attributes from "./attributes.js";
 import treeUtils from "./tree_utils.js";
 import utils from "./utils.js";
+import {NoteTypeContext} from "./note_type.js";
+import noteDetailService from "./note_detail.js";
 import noteDetailCode from "./note_detail_code.js";
 import noteDetailText from "./note_detail_text.js";
 import noteDetailFile from "./note_detail_file.js";
@@ -44,6 +46,8 @@ class NoteContext {
         this.$savedIndicator = this.$noteTabContent.find(".saved-indicator");
         this.noteChangeDisabled = false;
         this.isNoteChanged = false;
+        this.attributes = new Attributes(this);
+        this.noteType = new NoteTypeContext(this);
         this.components = {};
 
         this.$noteTitle.on('input', () => {
@@ -70,6 +74,8 @@ class NoteContext {
         this.$noteTabContent.attr('data-note-id', note.noteId);
 
         chromeTabs.updateTab(this.tab, {title: note.title});
+
+        this.attributes.invalidateAttributes();
     }
 
     getComponent(type) {
@@ -90,7 +96,7 @@ class NoteContext {
         }
 
         this.note.title = this.$noteTitle.val();
-        this.note.content = getActiveNoteContent(this.note);
+        this.note.content = noteDetailService.getActiveNoteContent();
 
         // it's important to set the flag back to false immediatelly after retrieving title and content
         // otherwise we might overwrite another change (especially async code)
@@ -127,9 +133,7 @@ class NoteContext {
     }
 
     async showChildrenOverview() {
-        return; // FIXME
-
-        const attributes = await attributeService.getAttributes();
+        const attributes = await this.attributes.getAttributes();
         const hideChildrenOverview = attributes.some(attr => attr.type === 'label' && attr.name === 'hideChildrenOverview')
             || this.note.type === 'relation-map'
             || this.note.type === 'image'

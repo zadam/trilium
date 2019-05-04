@@ -2,7 +2,6 @@ import noteDetailService from '../services/note_detail.js';
 import server from '../services/server.js';
 import infoService from "../services/info.js";
 import treeUtils from "../services/tree_utils.js";
-import attributeService from "../services/attributes.js";
 import attributeAutocompleteService from "../services/attribute_autocomplete.js";
 
 const $dialog = $("#attributes-dialog");
@@ -168,7 +167,9 @@ function AttributesModel() {
 
         infoService.showMessage("Attributes have been saved.");
 
-        attributeService.refreshAttributes();
+        const ctx = noteDetailService.getActiveContext();
+
+        ctx.attributes.refreshAttributes();
 
         noteDetailService.reload();
     };
