@@ -73,20 +73,6 @@ async function saveNotesIfChanged() {
     $savedIndicator.fadeIn();
 }
 
-async function handleProtectedSession() {
-    const newSessionCreated = await protectedSessionService.ensureProtectedSession(getActiveNote().isProtected, false);
-
-    if (getActiveNote().isProtected) {
-        protectedSessionHolder.touchProtectedSession();
-    }
-
-    // this might be important if we focused on protected note when not in protected note and we got a dialog
-    // to login, but we chose instead to come to another node - at that point the dialog is still visible and this will close it.
-    protectedSessionService.ensureDialogIsClosed();
-
-    return newSessionCreated;
-}
-
 /** @type {NoteContext[]} */
 let noteContexts = [];
 
@@ -175,15 +161,9 @@ async function loadNoteDetail(noteId, newTab = false) {
 
         ctx.$noteDetailComponents.hide();
 
-        const newSessionCreated = await handleProtectedSession();
-        if (newSessionCreated) {
-            // in such case we're reloading note anyway so no need to continue here.
-            return;
-        }
-
         ctx.$noteTitle.removeAttr("readonly"); // this can be set by protected session service
 
-        await ctx.getComponent(ctx.note.type).show(ctx);
+        await ctx.getComponent().show(ctx);
     }
     finally {
         ctx.noteChangeDisabled = false;
@@ -192,7 +172,7 @@ async function loadNoteDetail(noteId, newTab = false) {
     treeService.setBranchBackgroundBasedOnProtectedStatus(noteId);
 
     // after loading new note make sure editor is scrolled to the top
-    ctx.getComponent(ctx.note.type).scrollToTop();
+    ctx.getComponent().scrollToTop();
 
     fireDetailLoaded();
 

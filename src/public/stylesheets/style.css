@@ -827,3 +827,8 @@ a.external:after, a[href^="http://"]:after, a[href^="https://"]:after {
     width: 1em;
     display: inline-block;
 }
+
+.protected-session-password-component {
+    width: 300px;
+    margin: 30px auto auto;
+}

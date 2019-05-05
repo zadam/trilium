@@ -14,6 +14,7 @@ import noteDetailImage from "./note_detail_image.js";
 import noteDetailSearch from "./note_detail_search.js";
 import noteDetailRender from "./note_detail_render.js";
 import noteDetailRelationMap from "./note_detail_relation_map.js";
+import noteDetailProtectedSession from "./note_detail_protected_session.js";
 
 const $noteTabContentsContainer = $("#note-tab-container");
 
@@ -24,7 +25,8 @@ const componentClasses = {
     'image': noteDetailImage,
     'search': noteDetailSearch,
     'render': noteDetailRender,
-    'relation-map': noteDetailRelationMap
+    'relation-map': noteDetailRelationMap,
+    'protected-session': noteDetailProtectedSession
 };
 
 let tabIdCounter = 1;
@@ -89,9 +91,19 @@ class NoteContext {
         console.log(`Switched tab ${this.tabId} to ${this.noteId}`);
     }
 
-    getComponent(type) {
-        if (!type) {
-            type = this.note.type;
+    getComponent() {
+        let type = this.note.type;
+
+        if (this.note.isProtected) {
+            if (protectedSessionHolder.isProtectedSessionAvailable()) {
+                protectedSessionHolder.touchProtectedSession();
+            }
+            else {
+                type = 'protected-session';
+
+                // user shouldn't be able to edit note title
+                this.$noteTitle.prop("readonly", true);
+            }
         }
 
         if (!(type in this.components)) {
