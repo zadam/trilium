@@ -9,6 +9,7 @@ import sqlConsoleDialog from './dialogs/sql_console.js';
 import markdownImportDialog from './dialogs/markdown_import.js';
 import exportDialog from './dialogs/export.js';
 import importDialog from './dialogs/import.js';
+import protectedSessionDialog from './dialogs/protected_session.js';
 
 import cloning from './services/cloning.js';
 import contextMenu from './services/tree_context_menu.js';

@@ -4,17 +4,12 @@ import utils from './utils.js';
 import server from './server.js';
 import protectedSessionHolder from './protected_session_holder.js';
 import infoService from "./info.js";
+import protectedSessionDialog from "../dialogs/protected_session.js";
 
 const $enterProtectedSessionButton = $("#enter-protected-session-button");
 const $leaveProtectedSessionButton = $("#leave-protected-session-button");
 
 let protectedSessionDeferred = null;
-
-async function enterProtectedSession() {
-    if (!protectedSessionHolder.isProtectedSessionAvailable()) {
-        await ensureProtectedSession(true, true);
-    }
-}
 
 async function leaveProtectedSession() {
     if (protectedSessionHolder.isProtectedSessionAvailable()) {
@@ -23,22 +18,17 @@ async function leaveProtectedSession() {
 }
 
 /** returned promise resolves with true if new protected session was established, false if no action was necessary */
-function ensureProtectedSession(requireProtectedSession, modal) {
+function enterProtectedSession() {
     const dfd = $.Deferred();
 
-    if (requireProtectedSession && !protectedSessionHolder.isProtectedSessionAvailable()) {
+    if (protectedSessionHolder.isProtectedSessionAvailable()) {
+        dfd.resolve(false);
+    }
+    else {
         // using deferred instead of promise because it allows resolving from outside
         protectedSessionDeferred = dfd;
 
-        if (modal) {
-            $dialog.modal();
-        }
-        else {
-            $component.show();
-        }
-    }
-    else {
-        dfd.resolve(false);
+        protectedSessionDialog.show();
     }
 
     return dfd.promise();
@@ -56,12 +46,12 @@ async function setupProtectedSession(password) {
 
     await treeService.reload();
 
-    // it's important that tree has been already reloaded at this point
-    // since detail also uses tree cache (for children overview)
-    await noteDetailService.reload();
+    // it's important that tree has been already reloaded at this point since detail also uses tree cache (for children overview)
+    // children overview is the reason why we need to reload all tabs
+    await noteDetailService.reloadAllTabs();
 
     if (protectedSessionDeferred !== null) {
-        ensureDialogIsClosed();
+        protectedSessionDialog.close();
 
         protectedSessionDeferred.resolve(true);
         protectedSessionDeferred = null;
@@ -71,16 +61,6 @@ async function setupProtectedSession(password) {
     }
 
     infoService.showMessage("Protected session has been started.");
-}
-
-function ensureDialogIsClosed() {
-    // this may fal if the dialog has not been previously opened (not sure if still true with Bootstrap modal)
-    try {
-        $dialog.modal('hide');
-    }
-    catch (e) {}
-
-    $passwordInputs.val('');
 }
 
 async function enterProtectedSessionOnServer(password) {
@@ -94,16 +74,16 @@ async function protectNoteAndSendToServer() {
         return;
     }
 
-    await ensureProtectedSession(true, true);
+    await enterProtectedSession();
 
     const note = noteDetailService.getActiveNote();
     note.isProtected = true;
 
-    await noteDetailService.saveNote(note);
+    await noteDetailService.getActiveContext().saveNote();
 
     treeService.setProtected(note.noteId, note.isProtected);
 
-    noteDetailService.updateNoteView();
+    await noteDetailService.reload();
 }
 
 async function unprotectNoteAndSendToServer() {
@@ -117,7 +97,7 @@ async function unprotectNoteAndSendToServer() {
 
     if (!protectedSessionHolder.isProtectedSessionAvailable()) {
         console.log("Unprotecting notes outside of protected session is not allowed.");
-        // the reason is that it's not easy to handle even with ensureProtectedSession,
+        // the reason is that it's not easy to handle even with enterProtectedSession,
         // because we would first have to make sure the note is loaded and only then unprotect
         // we used to have a bug where we would overwrite the previous note with unprotected content.
 
@@ -126,15 +106,15 @@ async function unprotectNoteAndSendToServer() {
 
     activeNote.isProtected = false;
 
-    await noteDetailService.saveNote(activeNote);
+    await noteDetailService.getActiveContext().saveNote();
 
     treeService.setProtected(activeNote.noteId, activeNote.isProtected);
 
-    noteDetailService.updateNoteView();
+    await noteDetailService.reload();
 }
 
 async function protectSubtree(noteId, protect) {
-    await ensureProtectedSession(true, true);
+    await enterProtectedSession();
 
     await server.put('notes/' + noteId + "/protect/" + (protect ? 1 : 0));
 
@@ -145,9 +125,7 @@ async function protectSubtree(noteId, protect) {
 }
 
 export default {
-    ensureProtectedSession,
     protectSubtree,
-    ensureDialogIsClosed,
     enterProtectedSession,
     leaveProtectedSession,
     protectNoteAndSendToServer,

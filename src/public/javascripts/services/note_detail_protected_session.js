@@ -10,12 +10,6 @@ class NoteDetailProtectedSession {
         this.$passwordForm = ctx.$noteTabContent.find(".protected-session-password-form");
         this.$passwordInput = ctx.$noteTabContent.find(".protected-session-password");
 
-        this.$protectButton = ctx.$noteTabContent.find(".protect-button");
-        this.$protectButton.click(protectedSessionService.protectNoteAndSendToServer);
-
-        this.$unprotectButton = ctx.$noteTabContent.find(".unprotect-button");
-        this.$unprotectButton.click(protectedSessionService.unprotectNoteAndSendToServer);
-
         this.$passwordForm.submit(() => {
             const password = this.$passwordInput.val();
             this.$passwordInput.val("");

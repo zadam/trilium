@@ -1,8 +1,5 @@
 import treeService from './tree.js';
 import NoteContext from './note_context.js';
-import noteTypeService from './note_type.js';
-import protectedSessionService from './protected_session.js';
-import protectedSessionHolder from './protected_session_holder.js';
 import server from './server.js';
 import messagingService from "./messaging.js";
 import infoService from "./info.js";
@@ -21,6 +18,7 @@ const $savedIndicator = $(".saved-indicator");
 
 let detailLoadedListeners = [];
 
+/** @return {NoteFull} */
 function getActiveNote() {
     const activeContext = getActiveContext();
     return activeContext ? activeContext.note : null;
@@ -42,6 +40,14 @@ async function reload() {
     // no saving here
 
     await loadNoteDetail(getActiveNoteId());
+}
+
+async function reloadAllTabs() {
+    for (const noteContext of noteContexts) {
+        const note = await loadNote(noteContext.note.noteId);
+
+        await loadNoteDetailToContext(noteContext, note);
+    }
 }
 
 async function openInTab(noteId) {
@@ -77,18 +83,6 @@ async function saveNotesIfChanged() {
 let noteContexts = [];
 
 /** @returns {NoteContext} */
-function getContext(noteId) {
-    const noteContext = noteContexts.find(nc => nc.noteId === noteId);
-
-    if (noteContext) {
-        return noteContext;
-    }
-    else {
-        throw new Error(`Can't find note context for ${noteId}`);
-    }
-}
-
-/** @returns {NoteContext} */
 function getActiveContext() {
     for (const ctx of noteContexts) {
         if (ctx.$noteTabContent.is(":visible")) {
@@ -105,43 +99,20 @@ function showTab(tabId) {
     }
 }
 
-async function loadNoteDetail(noteId, newTab = false) {
-    const loadedNote = await loadNote(noteId);
-    let ctx;
-
-    if (noteContexts.length === 0 || newTab) {
-        // if it's a new tab explicitly by user then it's in background
-        ctx = new NoteContext(chromeTabs, loadedNote, newTab);
-        noteContexts.push(ctx);
-
-        if (!newTab) {
-            showTab(ctx.tabId);
-        }
-    }
-    else {
-        ctx = getActiveContext();
-        ctx.setNote(loadedNote);
-    }
-
-    // we will try to render the new note only if it's still the active one in the tree
-    // this is useful when user quickly switches notes (by e.g. holding down arrow) so that we don't
-    // try to render all those loaded notes one after each other. This only guarantees that correct note
-    // will be displayed independent of timing
-    const currentTreeNode = treeService.getActiveNode();
-    if (!newTab && currentTreeNode && currentTreeNode.data.noteId !== loadedNote.noteId) {
-        return;
-    }
+/**
+ * @param {NoteContext} ctx
+ * @param {NoteFull} note
+ */
+async function loadNoteDetailToContext(ctx, note) {
+    ctx.setNote(note);
 
     if (utils.isDesktop()) {
         // needs to happen after loading the note itself because it references active noteId
         ctx.attributes.refreshAttributes();
-    }
-    else {
+    } else {
         // mobile usually doesn't need attributes so we just invalidate
         ctx.attributes.invalidateAttributes();
     }
-
-    ctx.updateNoteView();
 
     ctx.noteChangeDisabled = true;
 
@@ -164,12 +135,11 @@ async function loadNoteDetail(noteId, newTab = false) {
         ctx.$noteTitle.removeAttr("readonly"); // this can be set by protected session service
 
         await ctx.getComponent().show(ctx);
-    }
-    finally {
+    } finally {
         ctx.noteChangeDisabled = false;
     }
 
-    treeService.setBranchBackgroundBasedOnProtectedStatus(noteId);
+    treeService.setBranchBackgroundBasedOnProtectedStatus(note.noteId);
 
     // after loading new note make sure editor is scrolled to the top
     ctx.getComponent().scrollToTop();
@@ -185,6 +155,35 @@ async function loadNoteDetail(noteId, newTab = false) {
 
         await ctx.showChildrenOverview();
     }
+}
+
+async function loadNoteDetail(noteId, newTab = false) {
+    const loadedNote = await loadNote(noteId);
+    let ctx;
+
+    if (noteContexts.length === 0 || newTab) {
+        // if it's a new tab explicitly by user then it's in background
+        ctx = new NoteContext(chromeTabs, newTab);
+        noteContexts.push(ctx);
+
+        if (!newTab) {
+            showTab(ctx.tabId);
+        }
+    }
+    else {
+        ctx = getActiveContext();
+    }
+
+    // we will try to render the new note only if it's still the active one in the tree
+    // this is useful when user quickly switches notes (by e.g. holding down arrow) so that we don't
+    // try to render all those loaded notes one after each other. This only guarantees that correct note
+    // will be displayed independent of timing
+    const currentTreeNode = treeService.getActiveNode();
+    if (!newTab && currentTreeNode && currentTreeNode.data.noteId !== loadedNote.noteId) {
+        return;
+    }
+
+    await loadNoteDetailToContext(ctx, loadedNote);
 }
 
 async function loadNote(noteId) {
@@ -282,6 +281,7 @@ setInterval(saveNotesIfChanged, 3000);
 
 export default {
     reload,
+    reloadAllTabs,
     openInTab,
     switchToNote,
     loadNote,
