@@ -7,7 +7,7 @@ import messagingService from "../services/messaging.js";
 
 const $dialog = $("#import-dialog");
 const $form = $("#import-form");
-const $noteTitle = $dialog.find(".note-title");
+const $noteTitle = $dialog.find(".import-note-title");
 const $fileUploadInput = $("#import-file-upload-input");
 const $importProgressCountWrapper = $("#import-progress-count-wrapper");
 const $importProgressCount = $("#import-progress-count");

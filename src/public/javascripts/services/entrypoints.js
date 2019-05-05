@@ -28,22 +28,6 @@ function registerEntrypoints() {
     $("#jump-to-note-dialog-button").click(jumpToNoteDialog.showDialog);
     utils.bindShortcut('ctrl+j', jumpToNoteDialog.showDialog);
 
-    $("#show-note-revisions-button").click(function() {
-        if ($(this).hasClass("disabled")) {
-            return;
-        }
-
-        noteRevisionsDialog.showCurrentNoteRevisions();
-    });
-
-    $("#show-source-button").click(function() {
-        if ($(this).hasClass("disabled")) {
-            return;
-        }
-
-        noteSourceDialog.showDialog();
-    });
-
     $("#recent-changes-button").click(recentChangesDialog.showDialog);
 
     $("#enter-protected-session-button").click(protectedSessionService.enterProtectedSession);
@@ -52,8 +36,27 @@ function registerEntrypoints() {
     $("#toggle-search-button").click(searchNotesService.toggleSearch);
     utils.bindShortcut('ctrl+s', searchNotesService.toggleSearch);
 
-    $(".show-attributes-button").click(attributesDialog.showDialog);
+    const $noteTabContainer = $("#note-tab-container");
+    $noteTabContainer.on("click", ".show-attributes-button", attributesDialog.showDialog);
     utils.bindShortcut('alt+a', attributesDialog.showDialog);
+
+    $noteTabContainer.on("click", ".show-note-info-button", noteInfoDialog.showDialog);
+
+    $noteTabContainer.on("click", ".show-note-revisions-button", function() {
+        if ($(this).hasClass("disabled")) {
+            return;
+        }
+
+        noteRevisionsDialog.showCurrentNoteRevisions();
+    });
+
+    $noteTabContainer.on("click", ".show-source-button", function() {
+        if ($(this).hasClass("disabled")) {
+            return;
+        }
+
+        noteSourceDialog.showDialog();
+    });
 
     $("#options-button").click(optionsDialog.showDialog);
 
@@ -62,8 +65,6 @@ function registerEntrypoints() {
 
     $("#open-sql-console-button").click(sqlConsoleDialog.showDialog);
     utils.bindShortcut('alt+o', sqlConsoleDialog.showDialog);
-
-    $("#show-note-info-button").click(noteInfoDialog.showDialog);
 
     $("#show-about-dialog-button").click(aboutDialog.showDialog);
 

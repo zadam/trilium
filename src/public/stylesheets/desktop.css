@@ -147,7 +147,7 @@ li.dropdown-submenu:hover > ul.dropdown-menu {
     border: 1px solid var(--main-border-color);
 }
 
-.note-info-table td, .note-info-table th {
+#note-info-table td, #note-info-table th {
     padding: 15px;
 }
 

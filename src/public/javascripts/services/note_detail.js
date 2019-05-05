@@ -148,13 +148,11 @@ async function loadNoteDetail(noteId, newTab = false) {
 
     if (utils.isDesktop()) {
         // needs to happen after loading the note itself because it references active noteId
-        // FIXME
-        //attributeService.refreshAttributes();
+        ctx.attributes.refreshAttributes();
     }
     else {
         // mobile usually doesn't need attributes so we just invalidate
-        // FIXME
-        //attributeService.invalidateAttributes();
+        ctx.attributes.invalidateAttributes();
     }
 
     ctx.updateNoteView();

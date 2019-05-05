@@ -126,7 +126,9 @@ if (utils.isElectron()) {
     });
 }
 
-$("#export-note-button").click(function () {
+const $noteTabContainer = $("#note-tab-container");
+
+$noteTabContainer.on("click", ".export-note-button", function () {
     if ($(this).hasClass("disabled")) {
         return;
     }
@@ -134,11 +136,11 @@ $("#export-note-button").click(function () {
     exportDialog.showDialog('single');
 });
 
+$noteTabContainer.on("click", ".import-files-button", importDialog.showDialog);
+
 $('[data-toggle="tooltip"]').tooltip({
     html: true
 });
-
-$("#import-files-button").click(importDialog.showDialog);
 
 macInit.init();
 
