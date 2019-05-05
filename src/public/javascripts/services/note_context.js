@@ -17,10 +17,6 @@ import noteDetailRelationMap from "./note_detail_relation_map.js";
 
 const $noteTabContentsContainer = $("#note-tab-container");
 
-const el = $('.chrome-tabs')[0];
-const chromeTabs = new ChromeTabs();
-chromeTabs.init(el);
-
 const componentClasses = {
     'code': noteDetailCode,
     'text': noteDetailText,
@@ -31,12 +27,25 @@ const componentClasses = {
     'relation-map': noteDetailRelationMap
 };
 
+let tabIdCounter = 1;
+
 class NoteContext {
-    constructor(note, openOnBackground) {
+    constructor(chromeTabs, note, openOnBackground) {
+        this.tabId = tabIdCounter++;
+        this.chromeTabs = chromeTabs;
         /** @type {NoteFull} */
         this.note = note;
         this.noteId = note.noteId;
-        this.$noteTabContent = $noteTabContentsContainer.find(`[data-note-id="${this.noteId}"]`);
+
+        this.$noteTabContent = $(".note-tab-content-template").clone();
+        this.$noteTabContent.removeClass('note-tab-content-template');
+        this.$noteTabContent.attr('data-note-id', this.noteId);
+        this.$noteTabContent.attr('data-tab-id', this.tabId);
+
+        $noteTabContentsContainer.append(this.$noteTabContent);
+
+        console.log(`Creating note tab ${this.tabId} for ${this.noteId}`);
+
         this.$noteTitle = this.$noteTabContent.find(".note-title");
         this.$noteDetailComponents = this.$noteTabContent.find(".note-detail-component");
         this.$protectButton = this.$noteTabContent.find(".protect-button");
@@ -58,9 +67,9 @@ class NoteContext {
             treeService.setNoteTitle(this.noteId, title);
         });
 
-        this.tab = chromeTabs.addTab({
+        this.tab = this.chromeTabs.addTab({
             title: note.title,
-            favicon: false
+            id: this.tabId
         }, {
             background: openOnBackground
         });
@@ -73,9 +82,11 @@ class NoteContext {
         this.note = note;
         this.$noteTabContent.attr('data-note-id', note.noteId);
 
-        chromeTabs.updateTab(this.tab, {title: note.title});
+        this.chromeTabs.updateTab(this.tab, {title: note.title});
 
         this.attributes.invalidateAttributes();
+
+        console.log(`Switched tab ${this.tabId} to ${this.noteId}`);
     }
 
     getComponent(type) {

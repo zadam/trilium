@@ -50,8 +50,7 @@
   `
 
   const defaultTapProperties = {
-    title: 'New tab',
-    favicon: false
+    title: 'New tab'
   }
 
   let instanceId = 0

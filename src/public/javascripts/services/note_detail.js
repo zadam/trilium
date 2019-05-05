@@ -12,6 +12,10 @@ import bundleService from "./bundle.js";
 import utils from "./utils.js";
 import importDialog from "../dialogs/import.js";
 
+const chromeTabsEl = document.querySelector('.chrome-tabs');
+const chromeTabs = new ChromeTabs();
+chromeTabs.init(chromeTabsEl);
+
 const $noteTabContentsContainer = $("#note-tab-container");
 const $savedIndicator = $(".saved-indicator");
 
@@ -84,7 +88,7 @@ async function handleProtectedSession() {
 }
 
 /** @type {NoteContext[]} */
-const noteContexts = [];
+let noteContexts = [];
 
 /** @returns {NoteContext} */
 function getContext(noteId) {
@@ -107,9 +111,11 @@ function getActiveContext() {
     }
 }
 
-function showTab(noteId) {
+function showTab(tabId) {
+    tabId = parseInt(tabId);
+
     for (const ctx of noteContexts) {
-        ctx.$noteTabContent.toggle(ctx.noteId === noteId);
+        ctx.$noteTabContent.toggle(ctx.tabId === tabId);
     }
 }
 
@@ -118,19 +124,12 @@ async function loadNoteDetail(noteId, newTab = false) {
     let ctx;
 
     if (noteContexts.length === 0 || newTab) {
-        const $tabContent = $(".note-tab-content-template").clone();
-
-        $tabContent.removeClass('note-tab-content-template');
-        $tabContent.attr('data-note-id', noteId);
-
-        $noteTabContentsContainer.append($tabContent);
-
         // if it's a new tab explicitly by user then it's in background
-        ctx = new NoteContext(loadedNote, newTab);
+        ctx = new NoteContext(chromeTabs, loadedNote, newTab);
         noteContexts.push(ctx);
 
         if (!newTab) {
-            showTab(noteId);
+            showTab(ctx.tabId);
         }
     }
     else {
@@ -270,8 +269,32 @@ $noteTabContentsContainer.on("drop", e => {
     });
 });
 
-document.querySelector('.chrome-tabs')
-    .addEventListener('activeTabChange', ({ detail }) => showTab(detail.tabEl.getAttribute('data-note-id')));
+chromeTabsEl.addEventListener('activeTabChange', ({ detail }) => {
+    const tabId = detail.tabEl.getAttribute('data-tab-id');
+
+    showTab(tabId);
+
+    console.log(`Activated tab ${tabId}`);
+});
+
+chromeTabsEl.addEventListener('tabRemove', ({ detail }) => {
+    const tabId = parseInt(detail.tabEl.getAttribute('data-tab-id'));
+
+    noteContexts = noteContexts.filter(nc => nc.tabId !== tabId);
+
+    console.log(`Removed tab ${tabId}`);
+});
+
+if (utils.isElectron()) {
+    utils.bindShortcut('ctrl+w', () => {
+        if (noteContexts.length === 1) {
+            // at least one tab must be present
+            return;
+        }
+
+        chromeTabs.removeTab(chromeTabs.activeTabEl);
+    });
+}
 
 // this makes sure that when user e.g. reloads the page or navigates away from the page, the note's content is saved
 // this sends the request asynchronously and doesn't wait for result
