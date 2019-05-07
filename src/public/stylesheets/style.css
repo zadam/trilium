@@ -39,6 +39,10 @@ button.close {
     color: var(--main-text-color);
 }
 
+button.close:hover {
+    color: var(--hover-item-text-color);
+}
+
 .modal-content {
     background-color: var(--modal-background-color) !important;
 }

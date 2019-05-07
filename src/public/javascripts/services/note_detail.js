@@ -47,6 +47,7 @@ async function reloadAllTabs() {
         const note = await loadNote(noteContext.note.noteId);
 
         await loadNoteDetailToContext(noteContext, note);
+
     }
 }
 
@@ -270,6 +271,22 @@ if (utils.isElectron()) {
         }
 
         chromeTabs.removeTab(chromeTabs.activeTabEl);
+    });
+
+    utils.bindShortcut('ctrl+tab', () => {
+        const nextTab = chromeTabs.nextTabEl;
+
+        if (nextTab) {
+            chromeTabs.setCurrentTab(nextTab);
+        }
+    });
+
+    utils.bindShortcut('ctrl+shift+tab', () => {
+        const prevTab = chromeTabs.previousTabEl;
+
+        if (prevTab) {
+            chromeTabs.setCurrentTab(prevTab);
+        }
     });
 }
 
