@@ -1,6 +1,7 @@
 import treeService from './tree.js';
-import noteDetailText from './note_detail_text.js';
 import treeUtils from './tree_utils.js';
+import contextMenuService from "./context_menu.js";
+import noteDetailService from "./note_detail.js";
 
 function getNotePathFromUrl(url) {
     const notePathMatch = /#(root[A-Za-z0-9/]*)$/.exec(url);
@@ -11,16 +12,6 @@ function getNotePathFromUrl(url) {
     else {
         return notePathMatch[1];
     }
-}
-
-function getNotePathFromLabel(label) {
-    const notePathMatch = / \((root[A-Za-z0-9/]*)\)/.exec(label);
-
-    if (notePathMatch !== null) {
-        return notePathMatch[1];
-    }
-
-    return null;
 }
 
 async function createNoteLink(notePath, noteTitle = null) {
@@ -71,7 +62,7 @@ function goToLink(e) {
 }
 
 function addLinkToEditor(linkTitle, linkHref) {
-    const editor = noteDetailText.getEditor();
+    const editor = noteDetailService.getActiveComponent().getEditor();
 
     editor.model.change( writer => {
         const insertPosition = editor.model.document.selection.getFirstPosition();
@@ -80,7 +71,7 @@ function addLinkToEditor(linkTitle, linkHref) {
 }
 
 function addTextToEditor(text) {
-    const editor = noteDetailText.getEditor();
+    const editor = noteDetailService.getActiveComponent().getEditor();
 
     editor.model.change(writer => {
         const insertPosition = editor.model.document.selection.getFirstPosition();
@@ -101,6 +92,35 @@ function init() {
         }
     };
 }
+
+function noteContextMenu(e) {
+    const $link = $(e.target);
+
+    const notePath = getNotePathFromLink($link);
+
+    if (!notePath) {
+        return;
+    }
+
+    e.preventDefault();
+
+    contextMenuService.initContextMenu(e, {
+        getContextMenuItems: () => {
+            return [
+                {title: "Open note in new tab", cmd: "openNoteInNewTab", uiIcon: "empty"}
+            ];
+        },
+        selectContextMenuItem: (e, cmd) => {
+            if (cmd === 'openNoteInNewTab') {
+                noteDetailService.loadNoteDetail(notePath.split("/").pop(), true);
+            }
+        }
+    });
+}
+
+$(document).on('contextmenu', '.note-detail-text a', noteContextMenu);
+$(document).on('contextmenu', "a[data-action='note']", noteContextMenu);
+$(document).on('contextmenu', ".note-detail-render a", noteContextMenu);
 
 // when click on link popup, in case of internal link, just go the the referenced note instead of default behavior
 // of opening the link in new window/tab
@@ -124,7 +144,6 @@ $(document).on('click', 'span.ck-button__label', e => {
 });
 
 export default {
-    getNotePathFromLabel,
     getNotePathFromUrl,
     createNoteLink,
     addLinkToEditor,

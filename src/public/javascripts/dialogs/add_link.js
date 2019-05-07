@@ -2,7 +2,6 @@ import cloningService from '../services/cloning.js';
 import linkService from '../services/link.js';
 import noteDetailService from '../services/note_detail.js';
 import treeUtils from '../services/tree_utils.js';
-import noteDetailText from "../services/note_detail_text.js";
 import noteAutocompleteService from "../services/note_autocomplete.js";
 
 const $dialog = $("#add-link-dialog");
@@ -96,7 +95,7 @@ $form.submit(() => {
             const linkHref = '#' + notePath;
 
             if (hasSelection()) {
-                const editor = noteDetailText.getEditor();
+                const editor = noteDetailService.getActiveComponent().getEditor();
 
                 editor.execute('link', linkHref);
             }
@@ -128,7 +127,7 @@ $form.submit(() => {
 
 // returns true if user selected some text, false if there's no selection
 function hasSelection() {
-    const model = noteDetailText.getEditor().model;
+    const model = noteDetailService.getActiveComponent().getEditor().model;
     const selection = model.document.selection;
 
     return !selection.isCollapsed;
@@ -147,7 +146,7 @@ $linkTypes.change(linkTypeChanged);
 
 // return back focus to note text detail after quitting add link
 // the problem is that cursor position is reset
-$dialog.on("hidden.bs.modal", () => noteDetailText.focus());
+$dialog.on("hidden.bs.modal", () => noteDetailService.getActiveComponent().focus());
 
 export default {
     showDialog,

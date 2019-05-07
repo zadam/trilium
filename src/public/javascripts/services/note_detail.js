@@ -84,6 +84,10 @@ async function saveNotesIfChanged() {
 /** @type {NoteContext[]} */
 let noteContexts = [];
 
+function getActiveComponent() {
+    return getActiveContext().getComponent();
+}
+
 /** @returns {NoteContext} */
 function getActiveContext() {
     for (const ctx of noteContexts) {
@@ -320,6 +324,7 @@ export default {
     openInTab,
     switchToNote,
     loadNote,
+    loadNoteDetail,
     getActiveNote,
     getActiveNoteContent,
     getActiveNoteType,
@@ -329,5 +334,6 @@ export default {
     saveNotesIfChanged,
     onNoteChange,
     addDetailLoadedListener,
-    getActiveContext
+    getActiveContext,
+    getActiveComponent
 };
