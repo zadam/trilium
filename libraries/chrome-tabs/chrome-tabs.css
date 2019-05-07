@@ -5,6 +5,8 @@
   background: var(--main-background-color);
   border-radius: 5px 5px 0 0;
   overflow: hidden;
+  grid-area: tabs;
+  margin-top: 5px;
 }
 .chrome-tabs * {
   box-sizing: inherit;

@@ -53,6 +53,7 @@ html, body {
 .note-title-row {
     display: flex;
     padding-left: 15px;
+    padding-top: 10px;
     flex-shrink: 0;
 }
 

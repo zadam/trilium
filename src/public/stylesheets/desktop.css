@@ -15,7 +15,7 @@ body {
     1fr;
 
     justify-content: center;
-    grid-gap: 10px;
+    grid-gap: 0;
 }
 
 #container.distraction-free-mode {
@@ -31,6 +31,7 @@ body {
 #note-tab-container {
     grid-area: tab-container;
     min-height: 0;
+    padding-left: 10px;
 }
 
 #search-box {
@@ -81,9 +82,9 @@ body {
     display: flex;
     justify-content: space-around;
     padding: 10px 0 10px 0;
-    margin: 0 10px 0 10px;
     border: 1px solid var(--main-border-color);
     border-radius: 7px;
+    margin: 10px 10px 0;
 }
 
 .dropdown-menu {
@@ -160,4 +161,10 @@ li.dropdown-submenu:hover > ul.dropdown-menu {
     cursor: pointer;
     position: relative;
     top: -1px;
+}
+
+.note-title-row {
+    flex-grow: 0;
+    flex-shrink: 0;
+    margin-top: 10px;
 }

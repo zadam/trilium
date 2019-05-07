@@ -69,6 +69,7 @@
       this.setupEvents()
       this.layoutTabs()
       this.setupDraggabilly()
+      this.setVisibility()
     }
 
     emit(eventName, data) {
@@ -91,6 +92,10 @@
       })
 
       this.tabEls.forEach((tabEl) => this.setTabCloseEventListener(tabEl))
+    }
+
+    setVisibility() {
+      this.el.style.display = this.tabEls.length > 1 ? "block" : "none";
     }
 
     get tabEls() {
@@ -191,6 +196,7 @@
 
       tabProperties = Object.assign({}, defaultTapProperties, tabProperties)
       this.tabContentEl.appendChild(tabEl)
+      this.setVisibility()
       this.setTabCloseEventListener(tabEl)
       this.updateTab(tabEl, tabProperties)
       this.emit('tabAdd', { tabEl })
@@ -275,6 +281,7 @@
       this.cleanUpPreviouslyDraggedTabs()
       this.layoutTabs()
       this.setupDraggabilly()
+      this.setVisibility()
     }
 
     removeAllTabsExceptForThis(remainingTabEl) {
