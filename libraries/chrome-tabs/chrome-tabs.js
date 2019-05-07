@@ -277,6 +277,14 @@
       this.setupDraggabilly()
     }
 
+    removeAllTabsExceptForThis(remainingTabEl) {
+      for (const tabEl of this.tabEls) {
+        if (remainingTabEl !== tabEl) {
+          this.removeTab(tabEl);
+        }
+      }
+    }
+
     updateTab(tabEl, tabProperties) {
       tabEl.querySelector('.chrome-tab-title').textContent = tabProperties.title
 

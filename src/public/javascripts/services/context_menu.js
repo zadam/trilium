@@ -2,6 +2,10 @@ const $contextMenuContainer = $("#context-menu-container");
 
 let dateContextMenuOpenedMs = 0;
 
+/**
+ * @param event - originating click event (used to get coordinates to display menu at position)
+ * @param {object} contextMenu - needs to have getContextMenuItems() and selectContextMenuItem(e, cmd)
+ */
 async function initContextMenu(event, contextMenu) {
     event.stopPropagation();
 

@@ -8,6 +8,7 @@ import NoteFull from "../entities/note_full.js";
 import bundleService from "./bundle.js";
 import utils from "./utils.js";
 import importDialog from "../dialogs/import.js";
+import contextMenuService from "./context_menu.js";
 
 const chromeTabsEl = document.querySelector('.chrome-tabs');
 const chromeTabs = new ChromeTabs();
@@ -261,6 +262,23 @@ chromeTabsEl.addEventListener('tabRemove', ({ detail }) => {
     noteContexts = noteContexts.filter(nc => nc.tabId !== tabId);
 
     console.log(`Removed tab ${tabId}`);
+});
+
+$(chromeTabsEl).on('contextmenu', '.chrome-tab', e => {
+    const tab = $(e.target).closest(".chrome-tab");
+
+    contextMenuService.initContextMenu(e, {
+        getContextMenuItems: () => {
+            return [
+                {title: "Close all tabs except for this", cmd: "removeAllTabsExceptForThis", uiIcon: "empty"}
+            ];
+        },
+        selectContextMenuItem: (e, cmd) => {
+            if (cmd === 'removeAllTabsExceptForThis') {
+                chromeTabs.removeAllTabsExceptForThis(tab[0]);
+            }
+        }
+    });
 });
 
 if (utils.isElectron()) {
