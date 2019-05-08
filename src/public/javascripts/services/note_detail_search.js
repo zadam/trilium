@@ -3,14 +3,14 @@ import searchNotesService from "./search_notes.js";
 
 class NoteDetailSearch {
     /**
-     * @param {NoteContext} ctx
+     * @param {TabContext} ctx
      */
     constructor(ctx) {
         this.ctx = ctx;
-        this.$searchString = ctx.$noteTabContent.find(".search-string");
-        this.$component = ctx.$noteTabContent.find('.note-detail-search');
-        this.$help = ctx.$noteTabContent.find(".note-detail-search-help");
-        this.$refreshButton = ctx.$noteTabContent.find('.note-detail-search-refresh-results-button');
+        this.$searchString = ctx.$tabContent.find(".search-string");
+        this.$component = ctx.$tabContent.find('.note-detail-search');
+        this.$help = ctx.$tabContent.find(".note-detail-search-help");
+        this.$refreshButton = ctx.$tabContent.find('.note-detail-search-refresh-results-button');
 
         this.$refreshButton.click(async () => {
             await noteDetailService.saveNotesIfChanged();

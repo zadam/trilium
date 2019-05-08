@@ -8,13 +8,13 @@ import utils from "./utils.js";
 class NoteDetailCode {
 
     /**
-     * @param {NoteContext} ctx
+     * @param {TabContext} ctx
      */
     constructor(ctx) {
         this.ctx = ctx;
         this.codeEditor = null;
-        this.$component = ctx.$noteTabContent.find('.note-detail-code');
-        this.$executeScriptButton = ctx.$noteTabContent.find(".execute-script-button");
+        this.$component = ctx.$tabContent.find('.note-detail-code');
+        this.$executeScriptButton = ctx.$tabContent.find(".execute-script-button");
 
         utils.bindShortcut("ctrl+return", () => this.executeCurrentNote());
 

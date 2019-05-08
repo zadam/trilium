@@ -7,14 +7,14 @@ import linkService from "./link.js";
 
 class Attributes {
     /**
-     * @param {NoteContext} ctx
+     * @param {TabContext} ctx
      */
     constructor(ctx) {
         this.ctx = ctx;
-        this.$attributeList = ctx.$noteTabContent.find(".attribute-list");
-        this.$attributeListInner = ctx.$noteTabContent.find(".attribute-list-inner");
-        this.$promotedAttributesContainer = ctx.$noteTabContent.find(".note-detail-promoted-attributes");
-        this.$savedIndicator = ctx.$noteTabContent.find(".saved-indicator");
+        this.$attributeList = ctx.$tabContent.find(".attribute-list");
+        this.$attributeListInner = ctx.$tabContent.find(".attribute-list-inner");
+        this.$promotedAttributesContainer = ctx.$tabContent.find(".note-detail-promoted-attributes");
+        this.$savedIndicator = ctx.$tabContent.find(".saved-indicator");
         this.attributePromise = null;
     }
 

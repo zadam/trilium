@@ -3,11 +3,11 @@ import treeService from './tree.js';
 
 class NoteDetailText {
     /**
-     * @param {NoteContext} ctx
+     * @param {TabContext} ctx
      */
     constructor(ctx) {
         this.ctx = ctx;
-        this.$component = ctx.$noteTabContent.find('.note-detail-text');
+        this.$component = ctx.$tabContent.find('.note-detail-text');
         this.textEditor = null;
 
         this.$component.on("dblclick", "img", e => {

@@ -5,19 +5,19 @@ import noteDetailService from "./note_detail.js";
 
 class NoteDetailFile {
     /**
-     * @param {NoteContext} ctx
+     * @param {TabContext} ctx
      */
     constructor(ctx) {
         this.ctx = ctx;
-        this.$component = ctx.$noteTabContent.find('.note-detail-file');
-        this.$fileNoteId = ctx.$noteTabContent.find(".file-note-id");
-        this.$fileName = ctx.$noteTabContent.find(".file-filename");
-        this.$fileType = ctx.$noteTabContent.find(".file-filetype");
-        this.$fileSize = ctx.$noteTabContent.find(".file-filesize");
-        this.$previewRow = ctx.$noteTabContent.find(".file-preview-row");
-        this.$previewContent = ctx.$noteTabContent.find(".file-preview-content");
-        this.$downloadButton = ctx.$noteTabContent.find(".file-download");
-        this.$openButton = ctx.$noteTabContent.find(".file-open");
+        this.$component = ctx.$tabContent.find('.note-detail-file');
+        this.$fileNoteId = ctx.$tabContent.find(".file-note-id");
+        this.$fileName = ctx.$tabContent.find(".file-filename");
+        this.$fileType = ctx.$tabContent.find(".file-filetype");
+        this.$fileSize = ctx.$tabContent.find(".file-filesize");
+        this.$previewRow = ctx.$tabContent.find(".file-preview-row");
+        this.$previewContent = ctx.$tabContent.find(".file-preview-content");
+        this.$downloadButton = ctx.$tabContent.find(".file-download");
+        this.$openButton = ctx.$tabContent.find(".file-open");
 
         this.$downloadButton.click(() => utils.download(this.getFileUrl()));
 

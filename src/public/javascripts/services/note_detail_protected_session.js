@@ -2,13 +2,13 @@ import protectedSessionService from './protected_session.js';
 
 class NoteDetailProtectedSession {
     /**
-     * @param {NoteContext} ctx
+     * @param {TabContext} ctx
      */
     constructor(ctx) {
         this.ctx = ctx;
-        this.$component = ctx.$noteTabContent.find(".protected-session-password-component");
-        this.$passwordForm = ctx.$noteTabContent.find(".protected-session-password-form");
-        this.$passwordInput = ctx.$noteTabContent.find(".protected-session-password");
+        this.$component = ctx.$tabContent.find(".protected-session-password-component");
+        this.$passwordForm = ctx.$tabContent.find(".protected-session-password-form");
+        this.$passwordInput = ctx.$tabContent.find(".protected-session-password");
 
         this.$passwordForm.submit(() => {
             const password = this.$passwordInput.val();

@@ -68,16 +68,16 @@ let containerCounter = 1;
 
 class NoteDetailRelationMap {
     /**
-     * @param {NoteContext} ctx
+     * @param {TabContext} ctx
      */
     constructor(ctx) {
         this.ctx = ctx;
-        this.$component = ctx.$noteTabContent.find(".note-detail-relation-map");
-        this.$relationMapContainer = ctx.$noteTabContent.find(".relation-map-container");
-        this.$createChildNote = ctx.$noteTabContent.find(".relation-map-create-child-note");
-        this.$zoomInButton = ctx.$noteTabContent.find(".relation-map-zoom-in");
-        this.$zoomOutButton = ctx.$noteTabContent.find(".relation-map-zoom-out");
-        this.$resetPanZoomButton = ctx.$noteTabContent.find(".relation-map-reset-pan-zoom");
+        this.$component = ctx.$tabContent.find(".note-detail-relation-map");
+        this.$relationMapContainer = ctx.$tabContent.find(".relation-map-container");
+        this.$createChildNote = ctx.$tabContent.find(".relation-map-create-child-note");
+        this.$zoomInButton = ctx.$tabContent.find(".relation-map-zoom-in");
+        this.$zoomOutButton = ctx.$tabContent.find(".relation-map-zoom-out");
+        this.$resetPanZoomButton = ctx.$tabContent.find(".relation-map-reset-pan-zoom");
 
         this.mapData = null;
         this.jsPlumbInstance = null;
@@ -94,7 +94,7 @@ class NoteDetailRelationMap {
                         {title: "Edit title", cmd: "edit-title", uiIcon: "pencil"},
                     ];
                 },
-                selectContextMenuItem: (event, cmd) => this.noteContextMenuHandler(event, cmd)
+                selectContextMenuItem: (event, cmd) => this.tabContextMenuHandler(event, cmd)
             });
 
             return false;
@@ -133,7 +133,7 @@ class NoteDetailRelationMap {
         this.$component.on("dragover", ev => ev.preventDefault());
     }
 
-    async noteContextMenuHandler(event, cmd) {
+    async tabContextMenuHandler(event, cmd) {
         const $noteBox = $(event.originalTarget).closest(".note-box");
         const $title = $noteBox.find(".title a");
         const noteId = this.idToNoteId($noteBox.prop("id"));

@@ -5,19 +5,19 @@ import server from "./server.js";
 
 class NoteDetailImage {
     /**
-     * @param {NoteContext} ctx
+     * @param {TabContext} ctx
      */
     constructor(ctx) {
         this.ctx = ctx;
-        this.$component = ctx.$noteTabContent.find('.note-detail-image');
-        this.$imageWrapper = ctx.$noteTabContent.find('.note-detail-image-wrapper');
-        this.$imageView = ctx.$noteTabContent.find('.note-detail-image-view');
-        this.$copyToClipboardButton = ctx.$noteTabContent.find(".image-copy-to-clipboard");
-        this.$fileName = ctx.$noteTabContent.find(".image-filename");
-        this.$fileType = ctx.$noteTabContent.find(".image-filetype");
-        this.$fileSize = ctx.$noteTabContent.find(".image-filesize");
+        this.$component = ctx.$tabContent.find('.note-detail-image');
+        this.$imageWrapper = ctx.$tabContent.find('.note-detail-image-wrapper');
+        this.$imageView = ctx.$tabContent.find('.note-detail-image-view');
+        this.$copyToClipboardButton = ctx.$tabContent.find(".image-copy-to-clipboard");
+        this.$fileName = ctx.$tabContent.find(".image-filename");
+        this.$fileType = ctx.$tabContent.find(".image-filetype");
+        this.$fileSize = ctx.$tabContent.find(".image-filesize");
 
-        this.$imageDownloadButton = ctx.$noteTabContent.find(".image-download");
+        this.$imageDownloadButton = ctx.$tabContent.find(".image-download");
         this.$imageDownloadButton.click(() => utils.download(this.getFileUrl()));
 
         this.$copyToClipboardButton.click(() => {

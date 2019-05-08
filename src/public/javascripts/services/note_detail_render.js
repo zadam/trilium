@@ -5,14 +5,14 @@ import attributeService from "./attributes.js";
 
 class NoteDetailRender {
     /**
-     * @param {NoteContext} ctx
+     * @param {TabContext} ctx
      */
     constructor(ctx) {
         this.ctx = ctx;
-        this.$component = ctx.$noteTabContent.find('.note-detail-render');
-        this.$noteDetailRenderHelp = ctx.$noteTabContent.find('.note-detail-render-help');
-        this.$noteDetailRenderContent = ctx.$noteTabContent.find('.note-detail-render-content');
-        this.$renderButton = ctx.$noteTabContent.find('.render-button');
+        this.$component = ctx.$tabContent.find('.note-detail-render');
+        this.$noteDetailRenderHelp = ctx.$tabContent.find('.note-detail-render-help');
+        this.$noteDetailRenderContent = ctx.$tabContent.find('.note-detail-render-content');
+        this.$renderButton = ctx.$tabContent.find('.render-button');
 
         this.$renderButton.click(this.show);
     }

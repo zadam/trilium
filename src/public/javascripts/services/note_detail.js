@@ -1,5 +1,5 @@
 import treeService from './tree.js';
-import NoteContext from './note_context.js';
+import TabContext from './note_context.js';
 import server from './server.js';
 import messagingService from "./messaging.js";
 import infoService from "./info.js";
@@ -14,7 +14,7 @@ const chromeTabsEl = document.querySelector('.chrome-tabs');
 const chromeTabs = new ChromeTabs();
 chromeTabs.init(chromeTabsEl);
 
-const $noteTabContentsContainer = $("#note-tab-container");
+const $tabContentsContainer = $("#note-tab-container");
 const $savedIndicator = $(".saved-indicator");
 
 let detailLoadedListeners = [];
@@ -44,10 +44,10 @@ async function reload() {
 }
 
 async function reloadAllTabs() {
-    for (const noteContext of noteContexts) {
-        const note = await loadNote(noteContext.note.noteId);
+    for (const tabContext of tabContexts) {
+        const note = await loadNote(tabContext.note.noteId);
 
-        await loadNoteDetailToContext(noteContext, note);
+        await loadNoteDetailToContext(tabContext, note);
 
     }
 }
@@ -73,7 +73,7 @@ function onNoteChange(func) {
 }
 
 async function saveNotesIfChanged() {
-    for (const ctx of noteContexts) {
+    for (const ctx of tabContexts) {
         await ctx.saveNoteIfChanged();
     }
 
@@ -81,17 +81,17 @@ async function saveNotesIfChanged() {
     $savedIndicator.fadeIn();
 }
 
-/** @type {NoteContext[]} */
-let noteContexts = [];
+/** @type {TabContext[]} */
+let tabContexts = [];
 
 function getActiveComponent() {
     return getActiveContext().getComponent();
 }
 
-/** @returns {NoteContext} */
+/** @returns {TabContext} */
 function getActiveContext() {
-    for (const ctx of noteContexts) {
-        if (ctx.$noteTabContent.is(":visible")) {
+    for (const ctx of tabContexts) {
+        if (ctx.$tabContent.is(":visible")) {
             return ctx;
         }
     }
@@ -100,13 +100,13 @@ function getActiveContext() {
 function showTab(tabId) {
     tabId = parseInt(tabId);
 
-    for (const ctx of noteContexts) {
-        ctx.$noteTabContent.toggle(ctx.tabId === tabId);
+    for (const ctx of tabContexts) {
+        ctx.$tabContent.toggle(ctx.tabId === tabId);
     }
 }
 
 /**
- * @param {NoteContext} ctx
+ * @param {TabContext} ctx
  * @param {NoteFull} note
  */
 async function loadNoteDetailToContext(ctx, note) {
@@ -167,10 +167,10 @@ async function loadNoteDetail(noteId, newTab = false) {
     const loadedNote = await loadNote(noteId);
     let ctx;
 
-    if (noteContexts.length === 0 || newTab) {
+    if (tabContexts.length === 0 || newTab) {
         // if it's a new tab explicitly by user then it's in background
-        ctx = new NoteContext(chromeTabs, newTab);
-        noteContexts.push(ctx);
+        ctx = new TabContext(chromeTabs, newTab);
+        tabContexts.push(ctx);
 
         if (!newTab) {
             showTab(ctx.tabId);
@@ -238,11 +238,11 @@ messagingService.subscribeToSyncMessages(syncData => {
     }
 });
 
-$noteTabContentsContainer.on("dragover", e => e.preventDefault());
+$tabContentsContainer.on("dragover", e => e.preventDefault());
 
-$noteTabContentsContainer.on("dragleave", e => e.preventDefault());
+$tabContentsContainer.on("dragleave", e => e.preventDefault());
 
-$noteTabContentsContainer.on("drop", e => {
+$tabContentsContainer.on("drop", e => {
     importDialog.uploadFiles(getActiveNoteId(), e.originalEvent.dataTransfer.files, {
         safeImport: true,
         shrinkImages: true,
@@ -263,7 +263,7 @@ chromeTabsEl.addEventListener('activeTabChange', ({ detail }) => {
 chromeTabsEl.addEventListener('tabRemove', ({ detail }) => {
     const tabId = parseInt(detail.tabEl.getAttribute('data-tab-id'));
 
-    noteContexts = noteContexts.filter(nc => nc.tabId !== tabId);
+    tabContexts = tabContexts.filter(nc => nc.tabId !== tabId);
 
     console.log(`Removed tab ${tabId}`);
 });
@@ -287,7 +287,7 @@ $(chromeTabsEl).on('contextmenu', '.chrome-tab', e => {
 
 if (utils.isElectron()) {
     utils.bindShortcut('ctrl+w', () => {
-        if (noteContexts.length === 1) {
+        if (tabContexts.length === 1) {
             // at least one tab must be present
             return;
         }

@@ -98,7 +98,7 @@ function init() {
     };
 }
 
-function noteContextMenu(e) {
+function tabContextMenu(e) {
     const $link = $(e.target);
 
     const notePath = getNotePathFromLink($link);
@@ -123,9 +123,9 @@ function noteContextMenu(e) {
     });
 }
 
-$(document).on('contextmenu', '.note-detail-text a', noteContextMenu);
-$(document).on('contextmenu', "a[data-action='note']", noteContextMenu);
-$(document).on('contextmenu', ".note-detail-render a", noteContextMenu);
+$(document).on('contextmenu', '.note-detail-text a', tabContextMenu);
+$(document).on('contextmenu', "a[data-action='note']", tabContextMenu);
+$(document).on('contextmenu', ".note-detail-render a", tabContextMenu);
 
 // when click on link popup, in case of internal link, just go the the referenced note instead of default behavior
 // of opening the link in new window/tab

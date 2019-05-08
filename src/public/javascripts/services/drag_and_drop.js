@@ -10,7 +10,7 @@ const dragAndDropSetup = {
             return false;
         }
 
-        if (!data.originalEvent.ctrlKey) {
+        if (!data.originalEvent.shiftKey) {
             // keep existing selection only if CTRL key is pressed
             for (const selectedNode of treeService.getSelectedNodes()) {
                 selectedNode.setSelected(false);

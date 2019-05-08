@@ -44,15 +44,15 @@ const DEFAULT_MIME_TYPES = [
 let mimeTypes = DEFAULT_MIME_TYPES;
 
 /**
- * @param {NoteContext} ctx
+ * @param {TabContext} ctx
  * @constructor
  */
 function NoteTypeContext(ctx) {
     const self = this;
 
-    this.$executeScriptButton = ctx.$noteTabContent.find(".execute-script-button");
-    this.$toggleEditButton = ctx.$noteTabContent.find('.toggle-edit-button');
-    this.$renderButton = ctx.$noteTabContent.find('.render-button');
+    this.$executeScriptButton = ctx.$tabContent.find(".execute-script-button");
+    this.$toggleEditButton = ctx.$tabContent.find('.toggle-edit-button');
+    this.$renderButton = ctx.$tabContent.find('.render-button');
 
     this.ctx = ctx;
     this.type = ko.observable('text');
@@ -184,7 +184,7 @@ function NoteTypeContext(ctx) {
         self.$renderButton.toggle(self.type() === 'render');
     };
 
-    ko.applyBindings(this, ctx.$noteTabContent.find('.note-type-wrapper')[0])
+    ko.applyBindings(this, ctx.$tabContent.find('.note-type-wrapper')[0])
 }
 
 export default {
