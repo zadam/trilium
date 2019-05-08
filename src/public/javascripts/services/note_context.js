@@ -77,8 +77,9 @@ class TabContext {
         console.log(`Created note tab ${this.tabId} for ${this.noteId}`);
     }
 
-    setNote(note) {
+    setNote(note, notePath) {
         this.noteId = note.noteId;
+        this.notePath = notePath;
         this.note = note;
         this.tab.setAttribute('data-note-id', this.noteId);
         this.$tabContent.attr('data-note-id', note.noteId);

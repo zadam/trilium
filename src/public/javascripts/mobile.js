@@ -53,7 +53,9 @@ async function showTree() {
 
             showDetailPane();
 
-            noteDetailService.switchToNote(noteId, true);
+            const notePath = await treeUtils.getNotePath(node);
+
+            noteDetailService.switchToNote(notePath);
         },
         expand: (event, data) => treeService.setExpandedToServer(data.node.data.branchId, true),
         collapse: (event, data) => treeService.setExpandedToServer(data.node.data.branchId, false),

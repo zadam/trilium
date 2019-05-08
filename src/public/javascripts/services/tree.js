@@ -436,7 +436,9 @@ function initFancyTree(tree) {
 
             await setCurrentNotePathToHash(node);
 
-            noteDetailService.switchToNote(noteId);
+            const notePath = await treeUtils.getNotePath(node);
+
+            noteDetailService.switchToNote(notePath);
 
             showPaths(noteId, node);
         },

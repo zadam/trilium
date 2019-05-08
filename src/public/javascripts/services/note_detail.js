@@ -9,6 +9,7 @@ import bundleService from "./bundle.js";
 import utils from "./utils.js";
 import importDialog from "../dialogs/import.js";
 import contextMenuService from "./context_menu.js";
+import treeUtils from "./tree_utils.js";
 
 const chromeTabsEl = document.querySelector('.chrome-tabs');
 const chromeTabs = new ChromeTabs();
@@ -47,7 +48,7 @@ async function reloadAllTabs() {
     for (const tabContext of tabContexts) {
         const note = await loadNote(tabContext.note.noteId);
 
-        await loadNoteDetailToContext(tabContext, note);
+        await loadNoteDetailToContext(tabContext, note, tabContext.notePath);
 
     }
 }
@@ -56,12 +57,10 @@ async function openInTab(noteId) {
     await loadNoteDetail(noteId, true);
 }
 
-async function switchToNote(noteId) {
-    //if (getActiveNoteId() !== noteId) {
-        await saveNotesIfChanged();
+async function switchToNote(notePath) {
+    await saveNotesIfChanged();
 
-        await loadNoteDetail(noteId);
-    //}
+    await loadNoteDetail(notePath);
 }
 
 function getActiveNoteContent() {
@@ -109,8 +108,8 @@ function showTab(tabId) {
  * @param {TabContext} ctx
  * @param {NoteFull} note
  */
-async function loadNoteDetailToContext(ctx, note) {
-    ctx.setNote(note);
+async function loadNoteDetailToContext(ctx, note, notePath) {
+    ctx.setNote(note, notePath);
 
     if (utils.isDesktop()) {
         // needs to happen after loading the note itself because it references active noteId
@@ -163,7 +162,8 @@ async function loadNoteDetailToContext(ctx, note) {
     }
 }
 
-async function loadNoteDetail(noteId, newTab = false) {
+async function loadNoteDetail(notePath, newTab = false) {
+    const noteId = treeUtils.getNoteIdFromNotePath(notePath);
     const loadedNote = await loadNote(noteId);
     let ctx;
 
@@ -189,7 +189,7 @@ async function loadNoteDetail(noteId, newTab = false) {
         return;
     }
 
-    await loadNoteDetailToContext(ctx, loadedNote);
+    await loadNoteDetailToContext(ctx, loadedNote, notePath);
 }
 
 async function loadNote(noteId) {
