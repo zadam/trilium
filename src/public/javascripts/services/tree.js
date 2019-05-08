@@ -400,14 +400,17 @@ function initFancyTree(tree) {
             const node = data.node;
 
             if (targetType === 'title' || targetType === 'icon') {
-                if (!event.ctrlKey) {
+                if (event.shiftKey) {
+                    node.setSelected(!node.isSelected());
+                }
+                else if (event.ctrlKey) {
+                    noteDetailService.loadNoteDetail(node.data.noteId, true);
+                }
+                else {
                     node.setActive();
                     node.setSelected(true);
 
                     clearSelectedNodes();
-                }
-                else {
-                    node.setSelected(!node.isSelected());
                 }
 
                 return false;

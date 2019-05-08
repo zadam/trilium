@@ -50,7 +50,12 @@ function goToLink(e) {
     const notePath = getNotePathFromLink($link);
 
     if (notePath) {
-        treeService.activateNote(notePath);
+        if (e.ctrlKey) {
+            noteDetailService.loadNoteDetail(notePath.split("/").pop(), true);
+        }
+        else {
+            treeService.activateNote(notePath);
+        }
     }
     else {
         const address = $link.attr('href');
@@ -127,6 +132,16 @@ $(document).on('contextmenu', ".note-detail-render a", noteContextMenu);
 $(document).on('click', "a[data-action='note']", goToLink);
 $(document).on('click', 'div.popover-content a, div.ui-tooltip-content a', goToLink);
 $(document).on('dblclick', '.note-detail-text a', goToLink);
+$(document).on('click', '.note-detail-text a', function (e) {
+    const notePath = getNotePathFromLink($(e.target));
+    if (notePath && e.ctrlKey) {
+        // if it's a ctrl-click, then we open on new tab, otherwise normal flow (CKEditor opens link-editing dialog)
+        e.preventDefault();
+
+        noteDetailService.loadNoteDetail(notePath.split("/").pop(), true);
+    }
+});
+
 $(document).on('click', '.note-detail-render a', goToLink);
 $(document).on('click', '.note-detail-text.ck-read-only a', goToLink);
 $(document).on('click', 'span.ck-button__label', e => {
