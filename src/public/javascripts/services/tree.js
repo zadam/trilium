@@ -82,51 +82,53 @@ async function setNodeTitleWithPrefix(node) {
     node.setTitle(utils.escapeHtml(title));
 }
 
-function getNode(childNoteId, parentNoteId) {
-    return getNodesByNoteId(childNoteId).find(node => !parentNoteId || node.data.parentNoteId === parentNoteId);
+async function expandToNote(notePath, expandOpts) {
+    return await getNodeFromPath(notePath, true, expandOpts);
 }
 
-async function expandToNote(notePath, expandOpts) {
+async function getNodeFromPath(notePath, expand = false, expandOpts = {}) {
     utils.assertArguments(notePath);
 
-    const runPath = await getRunPath(notePath);
-
-    const noteId = treeUtils.getNoteIdFromNotePath(notePath);
-
     const hoistedNoteId = await hoistedNoteService.getHoistedNoteId();
-    let hoistedNoteFound = false;
+    let parentNode = null;
 
-    let parentNoteId = null;
-
-    for (const childNoteId of runPath) {
+    for (const childNoteId of await getRunPath(notePath)) {
         if (childNoteId === hoistedNoteId) {
-            hoistedNoteFound = true;
+            // there must be exactly one node with given hoistedNoteId
+            parentNode = getNodesByNoteId(childNoteId)[0];
+
+            continue;
         }
 
         // we expand only after hoisted note since before then nodes are not actually present in the tree
-        if (hoistedNoteFound) {
-            // for first node (!parentNoteId) it doesn't matter which node is found
-            let node = getNode(childNoteId, parentNoteId);
-
-            if (!node && parentNoteId) {
-                await reloadNote(parentNoteId);
-
-                node = getNode(childNoteId, parentNoteId);
+        if (parentNode) {
+            if (!parentNode.isLoaded()) {
+                await parentNode.load();
             }
 
-            if (!node) {
-                console.error(`Can't find node for noteId=${childNoteId} with parentNoteId=${parentNoteId} and hoistedNoteId=${hoistedNoteId}`);
+            if (expand) {
+               parentNode.setExpanded(true, expandOpts);
             }
 
-            if (childNoteId === noteId) {
-                return node;
-            } else {
-                await node.setExpanded(true, expandOpts);
+            let foundChildNode = null;
+
+            for (const childNode of parentNode.getChildren()) {
+                if (childNode.data.noteId === childNoteId) {
+                    foundChildNode = childNode;
+                    break;
+                }
             }
+
+            if (!foundChildNode) {
+                console.error(`Can't find node for child node of noteId=${childNoteId} for parent of noteId=${parentNode.data.noteId} and hoistedNoteId=${hoistedNoteId}`);
+                return;
+            }
+
+            parentNode = foundChildNode;
         }
-
-        parentNoteId = childNoteId;
     }
+
+    return parentNode;
 }
 
 async function activateNote(notePath, noteLoadedListener) {
@@ -557,13 +559,17 @@ async function collapseTree(node = null) {
     node.visit(node => node.setExpanded(false));
 }
 
-function scrollToActiveNote() {
-    const node = getActiveNode();
+async function scrollToActiveNote() {
+    const activeContext = noteDetailService.getActiveContext();
 
-    if (node) {
+    if (activeContext) {
+        const node = await expandToNote(activeContext.notePath);
+
         node.makeVisible({scrollIntoView: true});
 
         node.setFocus();
+
+        await activateNote(activeContext.notePath);
     }
 }
 
@@ -846,5 +852,6 @@ export default {
     checkFolderStatus,
     reloadNote,
     loadTreeCache,
-    expandToNote
+    expandToNote,
+    getNodeFromPath
 };

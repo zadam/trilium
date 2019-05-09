@@ -96,11 +96,27 @@ function getActiveContext() {
     }
 }
 
-function showTab(tabId) {
+async function showTab(tabId) {
     tabId = parseInt(tabId);
 
     for (const ctx of tabContexts) {
         ctx.$tabContent.toggle(ctx.tabId === tabId);
+    }
+
+    const oldActiveNode = treeService.getActiveNode();
+
+    if (oldActiveNode) {
+        oldActiveNode.setActive(false);
+    }
+
+    treeService.clearSelectedNodes();
+
+    const newActiveTabContext = getActiveContext();
+    const newActiveNode = await treeService.getNodeFromPath(newActiveTabContext.notePath);
+
+    if (newActiveNode && newActiveNode.isVisible()) {
+        newActiveNode.setActive(true, { noEvents: true });
+        newActiveNode.setSelected(true);
     }
 }
 
@@ -171,10 +187,6 @@ async function loadNoteDetail(notePath, newTab = false) {
         // if it's a new tab explicitly by user then it's in background
         ctx = new TabContext(chromeTabs, newTab);
         tabContexts.push(ctx);
-
-        if (!newTab) {
-            showTab(ctx.tabId);
-        }
     }
     else {
         ctx = getActiveContext();
@@ -190,6 +202,14 @@ async function loadNoteDetail(notePath, newTab = false) {
     }
 
     await loadNoteDetailToContext(ctx, loadedNote, notePath);
+
+    if (!chromeTabs.activeTabEl) {
+        // will also trigger showTab via event
+        chromeTabs.setCurrentTab(ctx.tab);
+    }
+    else if (!newTab) {
+        await showTab(ctx.tabId);
+    }
 }
 
 async function loadNote(noteId) {

@@ -33,14 +33,14 @@ const componentClasses = {
 let tabIdCounter = 1;
 
 class TabContext {
-    constructor(chromeTabs, openOnBackground) {
+    constructor(chromeTabs) {
         this.tabId = tabIdCounter++;
         this.chromeTabs = chromeTabs;
         this.tab = this.chromeTabs.addTab({
             title: '', // will be set later
             id: this.tabId
         }, {
-            background: openOnBackground
+            background: true
         });
 
         this.$tabContent = $(".note-tab-content-template").clone();
