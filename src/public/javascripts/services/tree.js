@@ -1,5 +1,4 @@
 import contextMenuWidget from './context_menu.js';
-import treeContextMenuService from './tree_context_menu.js';
 import dragAndDropSetup from './drag_and_drop.js';
 import linkService from './link.js';
 import messagingService from './messaging.js';
@@ -16,6 +15,7 @@ import Branch from '../entities/branch.js';
 import NoteShort from '../entities/note_short.js';
 import hoistedNoteService from '../services/hoisted_note.js';
 import confirmDialog from "../dialogs/confirm.js";
+import optionsInit from "../services/options_init.js";
 import TreeContextMenu from "./tree_context_menu.js";
 
 const $tree = $("#tree");
@@ -24,8 +24,6 @@ const $collapseTreeButton = $("#collapse-tree-button");
 const $scrollToActiveNoteButton = $("#scroll-to-active-note-button");
 const $notePathList = $("#note-path-list");
 const $notePathCount = $("#note-path-count");
-
-let startNotePath = null;
 
 // focused & not active node can happen during multiselection where the node is selected but not activated
 // (its content is not displayed in the detail)
@@ -360,29 +358,45 @@ function clearSelectedNodes() {
 }
 
 async function treeInitialized() {
-    // - is used in mobile to indicate that we don't want to activate any note after load
-    if (startNotePath === '-') {
-        return;
+    let openTabs = [];
+
+    try {
+        const options = await optionsInit.optionsReady;
+
+        openTabs = JSON.parse(options.openTabs);
+    }
+    catch (e) {
+        messagingService.logError("Cannot retrieve open tabs: " + e.stack);
     }
 
-    const noteId = treeUtils.getNoteIdFromNotePath(startNotePath);
+    const filteredTabs = [];
 
-    if (!await treeCache.noteExists(noteId)) {
-        // note doesn't exist so don't try to activate it
-        startNotePath = null;
+    for (const openTab of openTabs) {
+        const noteId = treeUtils.getNoteIdFromNotePath(openTab.notePath);
+
+        if (await treeCache.noteExists(noteId)) {
+            // note doesn't exist so don't try to open tab for it
+            filteredTabs.push(openTab);
+        }
     }
 
-    if (startNotePath) {
-        // this is weird but it looks like even though init event has been called, but we the tree still
-        // can't find nodes for given path which causes double loading of data. Little timeout fixes this.
-        setTimeout(async () => {
-            const node = await activateNote(startNotePath);
-
-            // looks like this this doesn't work when triggered immediatelly after activating node
-            // so waiting a second helps
-            setTimeout(() => node.makeVisible({scrollIntoView: true}), 1000);
-        }, 100);
+    if (filteredTabs.length === 0) {
+        filteredTabs.push({
+            notePath: 'root',
+            active: true
+        });
     }
+
+    for (const tab of filteredTabs) {
+        await noteDetailService.loadNoteDetail(tab.notePath, {
+            newTab: true,
+            activate: tab.active
+        });
+    }
+
+    // previous opening triggered task to save tab changes but these are bogus changes (this is init)
+    // so we'll cancel it
+    noteDetailService.clearOpenTabsTask();
 }
 
 let ignoreNextActivationNoteId = null;
@@ -406,7 +420,7 @@ function initFancyTree(tree) {
                     node.setSelected(!node.isSelected());
                 }
                 else if (event.ctrlKey) {
-                    noteDetailService.loadNoteDetail(node.data.noteId, true);
+                    noteDetailService.loadNoteDetail(node.data.noteId, { newTab: true });
                 }
                 else {
                     node.setActive();
@@ -532,11 +546,6 @@ function getHashValueFromAddress() {
 
 async function loadTreeCache() {
     const resp = await server.get('tree');
-    startNotePath = resp.startNotePath;
-
-    if (isNotePathInAddress()) {
-        startNotePath = getHashValueFromAddress();
-    }
 
     treeCache.load(resp.notes, resp.branches, resp.relations);
 }

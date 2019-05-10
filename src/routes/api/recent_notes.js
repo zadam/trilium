@@ -11,8 +11,6 @@ async function addRecentNote(req) {
         branchId: branchId,
         notePath: notePath
     }).save();
-
-    await optionService.setOption('startNotePath', notePath);
 }
 
 module.exports = {

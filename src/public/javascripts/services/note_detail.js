@@ -1,5 +1,5 @@
 import treeService from './tree.js';
-import TabContext from './note_context.js';
+import TabContext from './tab_context.js';
 import server from './server.js';
 import messagingService from "./messaging.js";
 import infoService from "./info.js";
@@ -54,7 +54,7 @@ async function reloadAllTabs() {
 }
 
 async function openInTab(noteId) {
-    await loadNoteDetail(noteId, true);
+    await loadNoteDetail(noteId, { newTab: true });
 }
 
 async function switchToNote(notePath) {
@@ -178,7 +178,10 @@ async function loadNoteDetailToContext(ctx, note, notePath) {
     }
 }
 
-async function loadNoteDetail(notePath, newTab = false) {
+async function loadNoteDetail(notePath, options) {
+    const newTab = !!options.newTab;
+    const activate = !!options.activate;
+
     const noteId = treeUtils.getNoteIdFromNotePath(notePath);
     const loadedNote = await loadNote(noteId);
     let ctx;
@@ -203,12 +206,9 @@ async function loadNoteDetail(notePath, newTab = false) {
 
     await loadNoteDetailToContext(ctx, loadedNote, notePath);
 
-    if (!chromeTabs.activeTabEl) {
+    if (activate) {
         // will also trigger showTab via event
         chromeTabs.setCurrentTab(ctx.tab);
-    }
-    else if (!newTab) {
-        await showTab(ctx.tabId);
     }
 }
 
@@ -332,6 +332,49 @@ if (utils.isElectron()) {
     });
 }
 
+chromeTabsEl.addEventListener('activeTabChange', openTabsChanged);
+chromeTabsEl.addEventListener('tabAdd', openTabsChanged);
+chromeTabsEl.addEventListener('tabRemove', openTabsChanged);
+chromeTabsEl.addEventListener('tabReorder', openTabsChanged);
+
+let tabsChangedTaskId = null;
+
+function clearOpenTabsTask() {
+    if (tabsChangedTaskId) {
+        clearTimeout(tabsChangedTaskId);
+    }
+}
+
+function openTabsChanged() {
+    // we don't want to send too many requests with tab changes so we always schedule task to do this in 3 seconds,
+    // but if there's any change in between, we cancel the old one and schedule new one
+    // so effectively we kind of wait until user stopped e.g. quickly switching tabs
+    clearOpenTabsTask();
+
+    tabsChangedTaskId = setTimeout(saveOpenTabs, 3000);
+}
+
+async function saveOpenTabs() {
+    const activeTabEl = chromeTabs.activeTabEl;
+    const openTabs = [];
+
+    for (const tabEl of chromeTabs.tabEls) {
+        const tabId = parseInt(tabEl.getAttribute('data-tab-id'));
+        const tabContext = tabContexts.find(tc => tc.tabId === tabId);
+
+        if (tabContext) {
+            openTabs.push({
+                notePath: tabContext.notePath,
+                active: activeTabEl === tabEl
+            });
+        }
+    }
+
+    await server.put('options', {
+        openTabs: JSON.stringify(openTabs)
+    });
+}
+
 // this makes sure that when user e.g. reloads the page or navigates away from the page, the note's content is saved
 // this sends the request asynchronously and doesn't wait for result
 $(window).on('beforeunload', () => { saveNotesIfChanged(); }); // don't convert to short form, handler doesn't like returned promise
@@ -355,5 +398,6 @@ export default {
     onNoteChange,
     addDetailLoadedListener,
     getActiveContext,
-    getActiveComponent
+    getActiveComponent,
+    clearOpenTabsTask
 };

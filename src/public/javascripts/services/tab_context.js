@@ -74,7 +74,7 @@ class TabContext {
         this.$unprotectButton = this.$tabContent.find(".unprotect-button");
         this.$unprotectButton.click(protectedSessionService.unprotectNoteAndSendToServer);
 
-        console.log(`Created note tab ${this.tabId} for ${this.noteId}`);
+        console.log(`Created note tab ${this.tabId}`);
     }
 
     setNote(note, notePath) {

@@ -29,7 +29,12 @@ async function initSyncedOptions(username, password) {
 }
 
 async function initNotSyncedOptions(initialized, startNotePath = 'root', syncServerHost = '', syncProxy = '') {
-    await optionService.createOption('startNotePath', startNotePath, false);
+    await optionService.createOption('openTabs', JSON.stringify([
+        {
+            notePath: startNotePath,
+            active: 1
+        }
+    ]), false);
     await optionService.createOption('hoistedNoteId', 'root', false);
     await optionService.createOption('lastDailyBackupDate', dateUtils.utcNowDateTime(), false);
     await optionService.createOption('lastWeeklyBackupDate', dateUtils.utcNowDateTime(), false);

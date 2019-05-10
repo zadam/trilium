@@ -51,7 +51,7 @@ function goToLink(e) {
 
     if (notePath) {
         if (e.ctrlKey) {
-            noteDetailService.loadNoteDetail(notePath.split("/").pop(), true);
+            noteDetailService.loadNoteDetail(notePath.split("/").pop(), { newTab: true });
         }
         else {
             treeService.activateNote(notePath);
@@ -117,7 +117,7 @@ function tabContextMenu(e) {
         },
         selectContextMenuItem: (e, cmd) => {
             if (cmd === 'openNoteInNewTab') {
-                noteDetailService.loadNoteDetail(notePath.split("/").pop(), true);
+                noteDetailService.loadNoteDetail(notePath.split("/").pop(), { newTab: true });
             }
         }
     });
@@ -138,7 +138,7 @@ $(document).on('click', '.note-detail-text a', function (e) {
         // if it's a ctrl-click, then we open on new tab, otherwise normal flow (CKEditor opens link-editing dialog)
         e.preventDefault();
 
-        noteDetailService.loadNoteDetail(notePath.split("/").pop(), true);
+        noteDetailService.loadNoteDetail(notePath.split("/").pop(), { newTab: true });
     }
 });
 
