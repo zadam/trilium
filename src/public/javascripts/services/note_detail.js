@@ -61,6 +61,8 @@ async function switchToNote(notePath) {
     await saveNotesIfChanged();
 
     await loadNoteDetail(notePath);
+
+    openTabsChanged();
 }
 
 function getActiveNoteContent() {
@@ -178,7 +180,7 @@ async function loadNoteDetailToContext(ctx, note, notePath) {
     }
 }
 
-async function loadNoteDetail(notePath, options) {
+async function loadNoteDetail(notePath, options = {}) {
     const newTab = !!options.newTab;
     const activate = !!options.activate;
 
@@ -216,6 +218,19 @@ async function loadNote(noteId) {
     const row = await server.get('notes/' + noteId);
 
     return new NoteFull(treeCache, row);
+}
+
+async function filterTabs(noteId) {
+    for (const tc of tabContexts) {
+        chromeTabs.removeTab(tc.tab);
+    }
+
+    await loadNoteDetail(noteId, {
+        newTab: true,
+        activate: true
+    });
+
+    await saveOpenTabs();
 }
 
 function focusOnTitle() {
@@ -280,8 +295,16 @@ chromeTabsEl.addEventListener('activeTabChange', ({ detail }) => {
     console.log(`Activated tab ${tabId}`);
 });
 
-chromeTabsEl.addEventListener('tabRemove', ({ detail }) => {
+chromeTabsEl.addEventListener('tabRemove', async ({ detail }) => {
     const tabId = parseInt(detail.tabEl.getAttribute('data-tab-id'));
+
+    await saveNotesIfChanged();
+
+    const tabContentToDelete = tabContexts.find(nc => nc.tabId === tabId);
+
+    if (tabContentToDelete) {
+        tabContentToDelete.$tabContent.remove();
+    }
 
     tabContexts = tabContexts.filter(nc => nc.tabId !== tabId);
 
@@ -399,5 +422,6 @@ export default {
     addDetailLoadedListener,
     getActiveContext,
     getActiveComponent,
-    clearOpenTabsTask
+    clearOpenTabsTask,
+    filterTabs
 };

@@ -743,7 +743,7 @@ div[data-notify="container"] {
 
 .unhoist-button {
     text-decoration: underline !important;
-    color: blue !important;
+    color: var(--link-color) !important;
     cursor: pointer !important;
 }
 

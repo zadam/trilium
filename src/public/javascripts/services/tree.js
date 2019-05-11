@@ -531,7 +531,9 @@ async function reload() {
     // make sure the reload won't trigger reactivation. This is important especially in cases where we wait for the reload
     // to finish to then activate some other note. But since the activate() event is called asynchronously, it may be called
     // (or finished calling) after we switched to a different note.
-    ignoreNextActivationNoteId = getActiveNode().data.noteId;
+    if (getActiveNode()) {
+        ignoreNextActivationNoteId = getActiveNode().data.noteId;
+    }
 
     await getTree().reload(notes);
 }

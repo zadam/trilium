@@ -1,6 +1,7 @@
 import optionsInit from './options_init.js';
 import server from "./server.js";
 import tree from "./tree.js";
+import noteDetailService from "./note_detail.js";
 
 let hoistedNoteId;
 
@@ -16,6 +17,10 @@ async function getHoistedNoteId() {
 
 async function setHoistedNoteId(noteId) {
     hoistedNoteId = noteId;
+
+    if (noteId !== 'root') {
+        await noteDetailService.filterTabs(noteId);
+    }
 
     await server.put('options/hoistedNoteId/' + noteId);
 
