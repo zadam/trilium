@@ -19,8 +19,6 @@ const TAB_SIZE_SMALL = 84;
 const TAB_SIZE_SMALLER = 60;
 const TAB_SIZE_MINI = 48;
 
-const noop = _ => {};
-
 const closest = (value, array) => {
     let closest = Infinity;
     let closestIndex = -1;
@@ -53,7 +51,8 @@ let instanceId = 0;
 
 class TabRow {
     constructor() {
-        this.draggabillies = []
+        this.draggabillies = [];
+        this.eventListeners = {};
     }
 
     init(el) {
@@ -71,8 +70,15 @@ class TabRow {
         this.setVisibility();
     }
 
-    emit(eventName, data) {
-        this.el.dispatchEvent(new CustomEvent(eventName, { detail: data }));
+    addListener(eventName, callback) {
+        this.eventListeners[eventName] = this.eventListeners[eventName] || [];
+        this.eventListeners[eventName].push(callback);
+    }
+
+    async emit(eventName, data) {
+        for (const listener of this.eventListeners[eventName]) {
+            await listener({ detail: data });
+        }
     }
 
     setupCustomProperties() {
@@ -194,7 +200,6 @@ class TabRow {
         this.setVisibility();
         this.setTabCloseEventListener(tabEl);
         this.updateTab(tabEl, tabProperties);
-        this.emit('tabAdd', { tabEl });
         if (!background) this.setCurrentTab(tabEl);
         this.cleanUpPreviouslyDraggedTabs();
         this.layoutTabs();
@@ -255,34 +260,34 @@ class TabRow {
         return !!this.activeTabEl;
     }
 
-    setCurrentTab(tabEl) {
+    async setCurrentTab(tabEl) {
         const activeTabEl = this.activeTabEl;
         if (activeTabEl === tabEl) return;
         if (activeTabEl) activeTabEl.removeAttribute('active');
         tabEl.setAttribute('active', '');
-        this.emit('activeTabChange', { tabEl });
+        await this.emit('activeTabChange', { tabEl });
     }
 
-    removeTab(tabEl) {
+    async removeTab(tabEl) {
         if (tabEl === this.activeTabEl) {
             if (tabEl.nextElementSibling) {
-                this.setCurrentTab(tabEl.nextElementSibling)
+                await this.setCurrentTab(tabEl.nextElementSibling)
             } else if (tabEl.previousElementSibling) {
-                this.setCurrentTab(tabEl.previousElementSibling)
+                await this.setCurrentTab(tabEl.previousElementSibling)
             }
         }
         tabEl.parentNode.removeChild(tabEl);
-        this.emit('tabRemove', { tabEl });
+        await this.emit('tabRemove', { tabEl });
         this.cleanUpPreviouslyDraggedTabs();
         this.layoutTabs();
         this.setupDraggabilly();
         this.setVisibility();
     }
 
-    removeAllTabsExceptForThis(remainingTabEl) {
+    async removeAllTabsExceptForThis(remainingTabEl) {
         for (const tabEl of this.tabEls) {
             if (remainingTabEl !== tabEl) {
-                this.removeTab(tabEl);
+                await this.removeTab(tabEl);
             }
         }
     }
@@ -310,7 +315,7 @@ class TabRow {
             this.draggabillyDragging.element.style.transform = '';
             this.draggabillyDragging.dragEnd();
             this.draggabillyDragging.isDragging = false;
-            this.draggabillyDragging.positionDrag = noop; // Prevent Draggabilly from updating tabEl.style.transform in later frames
+            this.draggabillyDragging.positionDrag = _ => {}; // Prevent Draggabilly from updating tabEl.style.transform in later frames
             this.draggabillyDragging.destroy();
             this.draggabillyDragging = null;
         }
@@ -380,13 +385,13 @@ class TabRow {
         })
     }
 
-    animateTabMove(tabEl, originIndex, destinationIndex) {
+    async animateTabMove(tabEl, originIndex, destinationIndex) {
         if (destinationIndex < originIndex) {
             tabEl.parentNode.insertBefore(tabEl, this.tabEls[destinationIndex]);
         } else {
             tabEl.parentNode.insertBefore(tabEl, this.tabEls[destinationIndex + 1]);
         }
-        this.emit('tabReorder', { tabEl, originIndex, destinationIndex });
+        await this.emit('tabReorder', { tabEl, originIndex, destinationIndex });
         this.layoutTabs();
     }
 }

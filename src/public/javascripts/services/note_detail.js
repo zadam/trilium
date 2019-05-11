@@ -19,7 +19,7 @@ let detailLoadedListeners = [];
 
 /** @return {NoteFull} */
 function getActiveNote() {
-    const activeContext = getActiveContext();
+    const activeContext = getActiveTabContext();
     return activeContext ? activeContext.note : null;
 }
 
@@ -38,7 +38,7 @@ function getActiveNoteType() {
 async function reload() {
     // no saving here
 
-    await loadNoteDetail(getActiveNoteId());
+    await loadNoteDetail(getActiveTabContext().notePath);
 }
 
 async function reloadAllTabs() {
@@ -46,12 +46,11 @@ async function reloadAllTabs() {
         const note = await loadNote(tabContext.note.noteId);
 
         await loadNoteDetailToContext(tabContext, note, tabContext.notePath);
-
     }
 }
 
-async function openInTab(noteId) {
-    await loadNoteDetail(noteId, { newTab: true });
+async function openInTab(notePath) {
+    await loadNoteDetail(notePath, { newTab: true });
 }
 
 async function switchToNote(notePath) {
@@ -63,11 +62,11 @@ async function switchToNote(notePath) {
 }
 
 function getActiveNoteContent() {
-    return getActiveContext().getComponent().getContent();
+    return getActiveTabContext().getComponent().getContent();
 }
 
 function onNoteChange(func) {
-    return getActiveContext().getComponent().onNoteChange(func);
+    return getActiveTabContext().getComponent().onNoteChange(func);
 }
 
 async function saveNotesIfChanged() {
@@ -83,11 +82,15 @@ async function saveNotesIfChanged() {
 let tabContexts = [];
 
 function getActiveComponent() {
-    return getActiveContext().getComponent();
+    return getActiveTabContext().getComponent();
+}
+
+function getTabContexts() {
+    return tabContexts;
 }
 
 /** @returns {TabContext} */
-function getActiveContext() {
+function getActiveTabContext() {
     for (const ctx of tabContexts) {
         if (ctx.$tabContent.is(":visible")) {
             return ctx;
@@ -110,7 +113,7 @@ async function showTab(tabId) {
 
     treeService.clearSelectedNodes();
 
-    const newActiveTabContext = getActiveContext();
+    const newActiveTabContext = getActiveTabContext();
     const newActiveNode = await treeService.getNodeFromPath(newActiveTabContext.notePath);
 
     if (newActiveNode && newActiveNode.isVisible()) {
@@ -181,6 +184,8 @@ async function loadNoteDetail(notePath, options = {}) {
     const newTab = !!options.newTab;
     const activate = !!options.activate;
 
+    notePath = await treeService.resolveNotePath(notePath);
+
     const noteId = treeUtils.getNoteIdFromNotePath(notePath);
     const loadedNote = await loadNote(noteId);
     let ctx;
@@ -191,7 +196,7 @@ async function loadNoteDetail(notePath, options = {}) {
         tabContexts.push(ctx);
     }
     else {
-        ctx = getActiveContext();
+        ctx = getActiveTabContext();
     }
 
     // we will try to render the new note only if it's still the active one in the tree
@@ -219,23 +224,27 @@ async function loadNote(noteId) {
 
 async function filterTabs(noteId) {
     for (const tc of tabContexts) {
-        tabRow.removeTab(tc.tab);
+        if (tc.notePath && !tc.notePath.split("/").includes(noteId)) {
+            await tabRow.removeTab(tc.tab);
+        }
     }
 
-    await loadNoteDetail(noteId, {
-        newTab: true,
-        activate: true
-    });
+    if (tabContexts.length === 0) {
+        await loadNoteDetail(noteId, {
+            newTab: true,
+            activate: true
+        });
+    }
 
     await saveOpenTabs();
 }
 
 function focusOnTitle() {
-    getActiveContext().$noteTitle.focus();
+    getActiveTabContext().$noteTitle.focus();
 }
 
 function focusAndSelectTitle() {
-    getActiveContext().$noteTitle.focus().select();
+    getActiveTabContext().$noteTitle.focus().select();
 }
 
 /**
@@ -284,22 +293,21 @@ $tabContentsContainer.on("drop", e => {
     });
 });
 
-tabRow.el.addEventListener('activeTabChange', ({ detail }) => {
+tabRow.addListener('activeTabChange', async ({ detail }) => {
     const tabId = detail.tabEl.getAttribute('data-tab-id');
 
-    showTab(tabId);
+    await showTab(tabId);
 
     console.log(`Activated tab ${tabId}`);
 });
 
-tabRow.el.addEventListener('tabRemove', async ({ detail }) => {
+tabRow.addListener('tabRemove', async ({ detail }) => {
     const tabId = parseInt(detail.tabEl.getAttribute('data-tab-id'));
-
-    await saveNotesIfChanged();
 
     const tabContentToDelete = tabContexts.find(nc => nc.tabId === tabId);
 
     if (tabContentToDelete) {
+        await tabContentToDelete.saveNoteIfChanged();
         tabContentToDelete.$tabContent.remove();
     }
 
@@ -352,10 +360,9 @@ if (utils.isElectron()) {
     });
 }
 
-tabRow.el.addEventListener('activeTabChange', openTabsChanged);
-tabRow.el.addEventListener('tabAdd', openTabsChanged);
-tabRow.el.addEventListener('tabRemove', openTabsChanged);
-tabRow.el.addEventListener('tabReorder', openTabsChanged);
+tabRow.addListener('activeTabChange', openTabsChanged);
+tabRow.addListener('tabRemove', openTabsChanged);
+tabRow.addListener('tabReorder', openTabsChanged);
 
 let tabsChangedTaskId = null;
 
@@ -417,7 +424,8 @@ export default {
     saveNotesIfChanged,
     onNoteChange,
     addDetailLoadedListener,
-    getActiveContext,
+    getTabContexts,
+    getActiveTabContext,
     getActiveComponent,
     clearOpenTabsTask,
     filterTabs

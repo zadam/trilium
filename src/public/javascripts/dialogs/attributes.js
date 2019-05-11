@@ -167,7 +167,7 @@ function AttributesModel() {
 
         infoService.showMessage("Attributes have been saved.");
 
-        const ctx = noteDetailService.getActiveContext();
+        const ctx = noteDetailService.getActiveTabContext();
 
         ctx.attributes.refreshAttributes();
 

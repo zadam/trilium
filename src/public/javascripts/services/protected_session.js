@@ -79,7 +79,7 @@ async function protectNoteAndSendToServer() {
     const note = noteDetailService.getActiveNote();
     note.isProtected = true;
 
-    await noteDetailService.getActiveContext().saveNote();
+    await noteDetailService.getActiveTabContext().saveNote();
 
     treeService.setProtected(note.noteId, note.isProtected);
 
@@ -106,7 +106,7 @@ async function unprotectNoteAndSendToServer() {
 
     activeNote.isProtected = false;
 
-    await noteDetailService.getActiveContext().saveNote();
+    await noteDetailService.getActiveTabContext().saveNote();
 
     treeService.setProtected(activeNote.noteId, activeNote.isProtected);
 

@@ -16,11 +16,11 @@ async function getHoistedNoteId() {
 }
 
 async function setHoistedNoteId(noteId) {
-    hoistedNoteId = noteId;
-
     if (noteId !== 'root') {
         await noteDetailService.filterTabs(noteId);
     }
+
+    hoistedNoteId = noteId;
 
     await server.put('options/hoistedNoteId/' + noteId);
 

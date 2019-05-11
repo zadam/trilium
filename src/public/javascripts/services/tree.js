@@ -166,6 +166,16 @@ async function activateNote(notePath, noteLoadedListener) {
 }
 
 /**
+ * Accepts notePath which might or might not be valid and returns an existing path as close to the original
+ * notePath as possible.
+ */
+async function resolveNotePath(notePath) {
+    const runPath = await getRunPath(notePath);
+
+    return runPath.join("/");
+}
+
+/**
  * Accepts notePath and tries to resolve it. Part of the path might not be valid because of note moving (which causes
  * path change) or other corruption, in that case this will try to get some other valid path to the correct note.
  */
@@ -358,6 +368,11 @@ function clearSelectedNodes() {
 }
 
 async function treeInitialized() {
+    if (noteDetailService.getTabContexts().length > 0) {
+        // this is just tree reload - tabs are already in place
+        return;
+    }
+
     let openTabs = [];
 
     try {
@@ -571,7 +586,7 @@ async function collapseTree(node = null) {
 }
 
 async function scrollToActiveNote() {
-    const activeContext = noteDetailService.getActiveContext();
+    const activeContext = noteDetailService.getActiveTabContext();
 
     if (activeContext) {
         const node = await expandToNote(activeContext.notePath);
@@ -864,5 +879,6 @@ export default {
     reloadNote,
     loadTreeCache,
     expandToNote,
-    getNodeFromPath
+    getNodeFromPath,
+    resolveNotePath
 };
