@@ -33,10 +33,13 @@ const componentClasses = {
 let tabIdCounter = 1;
 
 class TabContext {
-    constructor(chromeTabs) {
+    /**
+     * @param {TabRow} tabRow
+     */
+    constructor(tabRow) {
         this.tabId = tabIdCounter++;
-        this.chromeTabs = chromeTabs;
-        this.tab = this.chromeTabs.addTab({
+        this.tabRow = tabRow;
+        this.tab = this.tabRow.addTab({
             title: '', // will be set later
             id: this.tabId
         }, {
@@ -84,7 +87,7 @@ class TabContext {
         this.tab.setAttribute('data-note-id', this.noteId);
         this.$tabContent.attr('data-note-id', note.noteId);
 
-        this.chromeTabs.updateTab(this.tab, {title: note.title});
+        this.tabRow.updateTab(this.tab, {title: note.title});
 
         this.attributes.invalidateAttributes();
 

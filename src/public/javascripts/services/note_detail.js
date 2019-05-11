@@ -10,10 +10,7 @@ import utils from "./utils.js";
 import importDialog from "../dialogs/import.js";
 import contextMenuService from "./context_menu.js";
 import treeUtils from "./tree_utils.js";
-
-const chromeTabsEl = document.querySelector('.chrome-tabs');
-const chromeTabs = new ChromeTabs();
-chromeTabs.init(chromeTabsEl);
+import tabRow from "./tab_row.js";
 
 const $tabContentsContainer = $("#note-tab-container");
 const $savedIndicator = $(".saved-indicator");
@@ -190,7 +187,7 @@ async function loadNoteDetail(notePath, options = {}) {
 
     if (tabContexts.length === 0 || newTab) {
         // if it's a new tab explicitly by user then it's in background
-        ctx = new TabContext(chromeTabs, newTab);
+        ctx = new TabContext(tabRow);
         tabContexts.push(ctx);
     }
     else {
@@ -210,7 +207,7 @@ async function loadNoteDetail(notePath, options = {}) {
 
     if (activate) {
         // will also trigger showTab via event
-        chromeTabs.setCurrentTab(ctx.tab);
+        tabRow.setCurrentTab(ctx.tab);
     }
 }
 
@@ -222,7 +219,7 @@ async function loadNote(noteId) {
 
 async function filterTabs(noteId) {
     for (const tc of tabContexts) {
-        chromeTabs.removeTab(tc.tab);
+        tabRow.removeTab(tc.tab);
     }
 
     await loadNoteDetail(noteId, {
@@ -287,7 +284,7 @@ $tabContentsContainer.on("drop", e => {
     });
 });
 
-chromeTabsEl.addEventListener('activeTabChange', ({ detail }) => {
+tabRow.el.addEventListener('activeTabChange', ({ detail }) => {
     const tabId = detail.tabEl.getAttribute('data-tab-id');
 
     showTab(tabId);
@@ -295,7 +292,7 @@ chromeTabsEl.addEventListener('activeTabChange', ({ detail }) => {
     console.log(`Activated tab ${tabId}`);
 });
 
-chromeTabsEl.addEventListener('tabRemove', async ({ detail }) => {
+tabRow.el.addEventListener('tabRemove', async ({ detail }) => {
     const tabId = parseInt(detail.tabEl.getAttribute('data-tab-id'));
 
     await saveNotesIfChanged();
@@ -311,8 +308,8 @@ chromeTabsEl.addEventListener('tabRemove', async ({ detail }) => {
     console.log(`Removed tab ${tabId}`);
 });
 
-$(chromeTabsEl).on('contextmenu', '.chrome-tab', e => {
-    const tab = $(e.target).closest(".chrome-tab");
+$(tabRow.el).on('contextmenu', '.note-tab', e => {
+    const tab = $(e.target).closest(".note-tab");
 
     contextMenuService.initContextMenu(e, {
         getContextMenuItems: () => {
@@ -322,7 +319,7 @@ $(chromeTabsEl).on('contextmenu', '.chrome-tab', e => {
         },
         selectContextMenuItem: (e, cmd) => {
             if (cmd === 'removeAllTabsExceptForThis') {
-                chromeTabs.removeAllTabsExceptForThis(tab[0]);
+                tabRow.removeAllTabsExceptForThis(tab[0]);
             }
         }
     });
@@ -335,30 +332,30 @@ if (utils.isElectron()) {
             return;
         }
 
-        chromeTabs.removeTab(chromeTabs.activeTabEl);
+        tabRow.removeTab(tabRow.activeTabEl);
     });
 
     utils.bindShortcut('ctrl+tab', () => {
-        const nextTab = chromeTabs.nextTabEl;
+        const nextTab = tabRow.nextTabEl;
 
         if (nextTab) {
-            chromeTabs.setCurrentTab(nextTab);
+            tabRow.setCurrentTab(nextTab);
         }
     });
 
     utils.bindShortcut('ctrl+shift+tab', () => {
-        const prevTab = chromeTabs.previousTabEl;
+        const prevTab = tabRow.previousTabEl;
 
         if (prevTab) {
-            chromeTabs.setCurrentTab(prevTab);
+            tabRow.setCurrentTab(prevTab);
         }
     });
 }
 
-chromeTabsEl.addEventListener('activeTabChange', openTabsChanged);
-chromeTabsEl.addEventListener('tabAdd', openTabsChanged);
-chromeTabsEl.addEventListener('tabRemove', openTabsChanged);
-chromeTabsEl.addEventListener('tabReorder', openTabsChanged);
+tabRow.el.addEventListener('activeTabChange', openTabsChanged);
+tabRow.el.addEventListener('tabAdd', openTabsChanged);
+tabRow.el.addEventListener('tabRemove', openTabsChanged);
+tabRow.el.addEventListener('tabReorder', openTabsChanged);
 
 let tabsChangedTaskId = null;
 
@@ -378,10 +375,10 @@ function openTabsChanged() {
 }
 
 async function saveOpenTabs() {
-    const activeTabEl = chromeTabs.activeTabEl;
+    const activeTabEl = tabRow.activeTabEl;
     const openTabs = [];
 
-    for (const tabEl of chromeTabs.tabEls) {
+    for (const tabEl of tabRow.tabEls) {
         const tabId = parseInt(tabEl.getAttribute('data-tab-id'));
         const tabContext = tabContexts.find(tc => tc.tabId === tabId);
 
