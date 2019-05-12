@@ -9,7 +9,6 @@
 
 const Draggabilly = window.Draggabilly;
 
-const TAB_CONTENT_MARGIN = 0;
 const TAB_CONTENT_OVERLAP_DISTANCE = 1;
 
 const TAB_CONTENT_MIN_WIDTH = 24;
@@ -40,8 +39,7 @@ const tabTemplate = `
     <div class="note-tab-drag-handle"></div>
     <div class="note-tab-close"><span>×</span></div>
   </div>
-</div>
-`;
+</div>`;
 
 const defaultTapProperties = {
     title: 'New tab'
@@ -62,7 +60,6 @@ class TabRow {
         this.el.setAttribute('data-note-tab-row-instance-id', this.instanceId);
         instanceId += 1;
 
-        this.setupCustomProperties();
         this.setupStyleEl();
         this.setupEvents();
         this.layoutTabs();
@@ -79,10 +76,6 @@ class TabRow {
         for (const listener of this.eventListeners[eventName]) {
             await listener({ detail: data });
         }
-    }
-
-    setupCustomProperties() {
-        this.el.style.setProperty('--tab-content-margin', `${ TAB_CONTENT_MARGIN }px`);
     }
 
     setupStyleEl() {
@@ -115,10 +108,10 @@ class TabRow {
         const numberOfTabs = this.tabEls.length;
         const tabsContentWidth = this.tabContentEl.clientWidth;
         const tabsCumulativeOverlappedWidth = (numberOfTabs - 1) * TAB_CONTENT_OVERLAP_DISTANCE;
-        const targetWidth = (tabsContentWidth - (2 * TAB_CONTENT_MARGIN) + tabsCumulativeOverlappedWidth) / numberOfTabs;
+        const targetWidth = (tabsContentWidth + tabsCumulativeOverlappedWidth) / numberOfTabs;
         const clampedTargetWidth = Math.max(TAB_CONTENT_MIN_WIDTH, Math.min(TAB_CONTENT_MAX_WIDTH, targetWidth));
         const flooredClampedTargetWidth = Math.floor(clampedTargetWidth);
-        const totalTabsWidthUsingTarget = (flooredClampedTargetWidth * numberOfTabs) + (2 * TAB_CONTENT_MARGIN) - tabsCumulativeOverlappedWidth;
+        const totalTabsWidthUsingTarget = (flooredClampedTargetWidth * numberOfTabs) - tabsCumulativeOverlappedWidth;
         const totalExtraWidthDueToFlooring = tabsContentWidth - totalTabsWidthUsingTarget;
 
         const widths = [];
@@ -129,14 +122,14 @@ class TabRow {
             if (extraWidthRemaining > 0) extraWidthRemaining -= 1;
         }
 
-        return widths
+        return widths;
     }
 
     get tabContentPositions() {
         const positions = [];
         const tabContentWidths = this.tabContentWidths;
 
-        let position = TAB_CONTENT_MARGIN;
+        let position = 0;
         tabContentWidths.forEach((width, i) => {
             const offset = i * TAB_CONTENT_OVERLAP_DISTANCE;
             positions.push(position - offset);
@@ -150,7 +143,7 @@ class TabRow {
         const positions = [];
 
         this.tabContentPositions.forEach((contentPosition) => {
-            positions.push(contentPosition - TAB_CONTENT_MARGIN);
+            positions.push(contentPosition);
         });
 
         return positions;
@@ -160,17 +153,16 @@ class TabRow {
         const tabContentWidths = this.tabContentWidths;
 
         this.tabEls.forEach((tabEl, i) => {
-            const contentWidth = tabContentWidths[i];
-            const width = contentWidth + (2 * TAB_CONTENT_MARGIN);
+            const width = tabContentWidths[i];
 
             tabEl.style.width = width + 'px';
             tabEl.removeAttribute('is-small');
             tabEl.removeAttribute('is-smaller');
             tabEl.removeAttribute('is-mini');
 
-            if (contentWidth < TAB_SIZE_SMALL) tabEl.setAttribute('is-small', '');
-            if (contentWidth < TAB_SIZE_SMALLER) tabEl.setAttribute('is-smaller', '');
-            if (contentWidth < TAB_SIZE_MINI) tabEl.setAttribute('is-mini', '');
+            if (width < TAB_SIZE_SMALL) tabEl.setAttribute('is-small', '');
+            if (width < TAB_SIZE_SMALLER) tabEl.setAttribute('is-smaller', '');
+            if (width < TAB_SIZE_MINI) tabEl.setAttribute('is-mini', '');
         });
 
         let styleHTML = '';

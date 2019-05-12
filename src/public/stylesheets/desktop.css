@@ -218,8 +218,8 @@ li.dropdown-submenu:hover > ul.dropdown-menu {
     display: flex;
     top: 0;
     bottom: 0;
-    left: var(--tab-content-margin);
-    right: var(--tab-content-margin);
+    left: 0;
+    right: 0;
     padding: 5px 8px;
     border-top-left-radius: 8px;
     border-top-right-radius: 8px;
