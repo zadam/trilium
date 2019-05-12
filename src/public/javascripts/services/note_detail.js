@@ -310,7 +310,7 @@ $tabContentsContainer.on("drop", e => {
     });
 });
 
-async function createEmptyTab() {
+async function openEmptyTab() {
     const ctx = new TabContext(tabRow);
     tabContexts.push(ctx);
 
@@ -319,7 +319,7 @@ async function createEmptyTab() {
     await tabRow.setCurrentTab(ctx.tab);
 }
 
-tabRow.addListener('newTab', createEmptyTab);
+tabRow.addListener('newTab', openEmptyTab);
 
 tabRow.addListener('activeTabChange', async ({ detail }) => {
     const tabId = detail.tabEl.getAttribute('data-tab-id');
@@ -342,6 +342,10 @@ tabRow.addListener('tabRemove', async ({ detail }) => {
     tabContexts = tabContexts.filter(nc => nc.tabId !== tabId);
 
     console.log(`Removed tab ${tabId}`);
+
+    if (tabContexts.length === 0) {
+        openEmptyTab();
+    }
 });
 
 $(tabRow.el).on('contextmenu', '.note-tab', e => {
@@ -363,7 +367,7 @@ $(tabRow.el).on('contextmenu', '.note-tab', e => {
 
 if (utils.isElectron()) {
     utils.bindShortcut('ctrl+t', () => {
-        createEmptyTab();
+        openEmptyTab();
     });
 
     utils.bindShortcut('ctrl+w', () => {

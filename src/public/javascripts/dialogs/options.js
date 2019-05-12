@@ -6,6 +6,7 @@ import infoService from "../services/info.js";
 import zoomService from "../services/zoom.js";
 import utils from "../services/utils.js";
 import cssLoader from "../services/css_loader.js";
+import optionsInit from "../services/options_init.js";
 
 const $dialog = $("#options-dialog");
 
@@ -43,6 +44,7 @@ export default {
 addTabHandler((function() {
     const $themeSelect = $("#theme-select");
     const $zoomFactorSelect = $("#zoom-factor-select");
+    const $oneTabDisplaySelect = $("#one-tab-display-select");
     const $leftPaneMinWidth = $("#left-pane-min-width");
     const $leftPaneWidthPercent = $("#left-pane-width-percent");
     const $mainFontSize = $("#main-font-size");
@@ -75,6 +77,8 @@ addTabHandler((function() {
         else {
             $zoomFactorSelect.prop('disabled', true);
         }
+
+        $oneTabDisplaySelect.val(options.hideTabRowForOneTab === 'true' ? 'hide' : 'show');
 
         $leftPaneMinWidth.val(options.leftPaneMinWidth);
         $leftPaneWidthPercent.val(options.leftPaneWidthPercent);
@@ -115,6 +119,13 @@ addTabHandler((function() {
 
         $container.css("grid-template-columns", `minmax(${leftPaneMinWidth}px, ${leftPanePercent}fr) ${rightPanePercent}fr`);
     }
+
+    $oneTabDisplaySelect.change(function() {
+        const hideTabRowForOneTab = $(this).val() === 'hide' ? 'true' : 'false';
+
+        server.put('options/hideTabRowForOneTab/' + hideTabRowForOneTab)
+            .then(optionsInit.loadOptions);
+    });
 
     $leftPaneMinWidth.change(async function() {
         await server.put('options/leftPaneMinWidth/' + $(this).val());
@@ -217,7 +228,7 @@ addTabHandler((function() {
         const protectedSessionTimeout = $protectedSessionTimeout.val();
 
         saveOptions({ 'protectedSessionTimeout': protectedSessionTimeout }).then(() => {
-            protectedSessionHolder.setProtectedSessionTimeout(protectedSessionTimeout);
+            optionsInit.loadOptions();
         });
 
         return false;

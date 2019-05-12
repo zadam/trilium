@@ -6,7 +6,7 @@ const PROTECTED_SESSION_ID_KEY = 'protectedSessionId';
 let lastProtectedSessionOperationDate = null;
 let protectedSessionTimeout = null;
 
-optionsInitService.optionsReady.then(options => protectedSessionTimeout = options.protectedSessionTimeout);
+optionsInitService.addLoadListener(options => setProtectedSessionTimeout(options.protectedSessionTimeout));
 
 setInterval(() => {
     if (lastProtectedSessionOperationDate !== null && Date.now() - lastProtectedSessionOperationDate.getTime() > protectedSessionTimeout * 1000) {

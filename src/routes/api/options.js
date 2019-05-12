@@ -19,7 +19,8 @@ const ALLOWED_OPTIONS = [
     'mainFontSize',
     'treeFontSize',
     'detailFontSize',
-    'openTabs'
+    'openTabs',
+    'hideTabRowForOneTab'
 ];
 
 async function getOptions() {
