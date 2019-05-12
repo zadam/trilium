@@ -244,9 +244,9 @@ class TabRow {
 
     async removeTab(tabEl) {
         if (tabEl === this.activeTabEl) {
-            if (tabEl.nextElementSibling) {
+            if (tabEl.nextElementSibling && tabEl.nextElementSibling.classList.contains("note-tab")) {
                 await this.setCurrentTab(tabEl.nextElementSibling)
-            } else if (tabEl.previousElementSibling) {
+            } else if (tabEl.previousElementSibling && tabEl.previousElementSibling.classList.contains("note-tab")) {
                 await this.setCurrentTab(tabEl.previousElementSibling)
             }
         }

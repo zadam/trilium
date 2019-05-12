@@ -836,3 +836,7 @@ a.external:after, a[href^="http://"]:after, a[href^="https://"]:after {
     width: 300px;
     margin: 30px auto auto;
 }
+
+.note-detail-empty {
+    margin: 50px;
+}

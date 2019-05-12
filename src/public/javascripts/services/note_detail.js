@@ -310,14 +310,16 @@ $tabContentsContainer.on("drop", e => {
     });
 });
 
-tabRow.addListener('newTab', async () => {
+async function createEmptyTab() {
     const ctx = new TabContext(tabRow);
     tabContexts.push(ctx);
 
-    renderComponent(ctx);
+    await renderComponent(ctx);
 
     await tabRow.setCurrentTab(ctx.tab);
-});
+}
+
+tabRow.addListener('newTab', createEmptyTab);
 
 tabRow.addListener('activeTabChange', async ({ detail }) => {
     const tabId = detail.tabEl.getAttribute('data-tab-id');
@@ -360,13 +362,14 @@ $(tabRow.el).on('contextmenu', '.note-tab', e => {
 });
 
 if (utils.isElectron()) {
-    utils.bindShortcut('ctrl+w', () => {
-        if (tabContexts.length === 1) {
-            // at least one tab must be present
-            return;
-        }
+    utils.bindShortcut('ctrl+t', () => {
+        createEmptyTab();
+    });
 
-        tabRow.removeTab(tabRow.activeTabEl);
+    utils.bindShortcut('ctrl+w', () => {
+        if (tabRow.activeTabEl) {
+            tabRow.removeTab(tabRow.activeTabEl);
+        }
     });
 
     utils.bindShortcut('ctrl+tab', () => {
@@ -415,7 +418,7 @@ async function saveOpenTabs() {
         const tabId = tabEl.getAttribute('data-tab-id');
         const tabContext = tabContexts.find(tc => tc.tabId === tabId);
 
-        if (tabContext) {
+        if (tabContext && tabContext.notePath) {
             openTabs.push({
                 notePath: tabContext.notePath,
                 active: activeTabEl === tabEl
