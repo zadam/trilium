@@ -199,6 +199,24 @@ li.dropdown-submenu:hover > ul.dropdown-menu {
     pointer-events: none;
 }
 
+.note-new-tab {
+    position: absolute;
+    left: 0;
+    height: 32px;
+    width: 32px;
+    border: 0;
+    margin: 0;
+    z-index: 1;
+    text-align: center;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.note-new-tab:hover {
+    background-color: var(--accented-background-color);
+    border-radius: 5px;
+}
+
 .note-tab-row .note-tab[active] {
     z-index: 5;
 }

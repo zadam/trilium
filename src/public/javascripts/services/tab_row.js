@@ -11,24 +11,11 @@ const Draggabilly = window.Draggabilly;
 
 const TAB_CONTENT_MIN_WIDTH = 24;
 const TAB_CONTENT_MAX_WIDTH = 240;
+const NEW_TAB_WIDTH = 32;
 
 const TAB_SIZE_SMALL = 84;
 const TAB_SIZE_SMALLER = 60;
 const TAB_SIZE_MINI = 48;
-
-const closest = (value, array) => {
-    let closest = Infinity;
-    let closestIndex = -1;
-
-    array.forEach((v, i) => {
-        if (Math.abs(value - v) < closest) {
-            closest = Math.abs(value - v);
-            closestIndex = i
-        }
-    });
-
-    return closestIndex;
-};
 
 const tabTemplate = `
 <div class="note-tab">
@@ -38,6 +25,8 @@ const tabTemplate = `
     <div class="note-tab-close"><span>×</span></div>
   </div>
 </div>`;
+
+const newTabButtonTemplate = `<div class="note-new-tab" title="Add new tab">+</div>`;
 
 const defaultTapProperties = {
     title: 'New tab'
@@ -62,6 +51,7 @@ class TabRow {
         this.setupEvents();
         this.layoutTabs();
         this.setupDraggabilly();
+        this.setupNewButton();
         this.setVisibility();
     }
 
@@ -104,7 +94,7 @@ class TabRow {
 
     get tabContentWidths() {
         const numberOfTabs = this.tabEls.length;
-        const tabsContentWidth = this.tabContentEl.clientWidth;
+        const tabsContentWidth = this.tabContentEl.clientWidth - NEW_TAB_WIDTH;
         const targetWidth = tabsContentWidth / numberOfTabs;
         const clampedTargetWidth = Math.max(TAB_CONTENT_MIN_WIDTH, Math.min(TAB_CONTENT_MAX_WIDTH, targetWidth));
         const flooredClampedTargetWidth = Math.floor(clampedTargetWidth);
@@ -122,27 +112,19 @@ class TabRow {
         return widths;
     }
 
-    get tabContentPositions() {
-        const positions = [];
+    getTabPositions() {
+        const tabPositions = [];
         const tabContentWidths = this.tabContentWidths;
 
         let position = 0;
         tabContentWidths.forEach(width => {
-            positions.push(position);
+            tabPositions.push(position);
             position += width;
         });
 
-        return positions;
-    }
+        const newTabPosition = position;
 
-    get tabPositions() {
-        const positions = [];
-
-        this.tabContentPositions.forEach((contentPosition) => {
-            positions.push(contentPosition);
-        });
-
-        return positions;
+        return {tabPositions, newTabPosition};
     }
 
     layoutTabs() {
@@ -162,7 +144,10 @@ class TabRow {
         });
 
         let styleHTML = '';
-        this.tabPositions.forEach((position, i) => {
+
+        const {tabPositions, newTabPosition} = this.getTabPositions();
+
+        tabPositions.forEach((position, i) => {
             styleHTML += `
       .note-tab-row[data-note-tab-row-instance-id="${ this.instanceId }"] .note-tab:nth-child(${ i + 1 }) {
         transform: translate3d(${ position }px, 0, 0)
@@ -170,25 +155,24 @@ class TabRow {
     `
         });
 
+        styleHTML += `.note-new-tab { transform: translate3d(${ newTabPosition }px, 0, 0) }`;
+
         this.styleEl.innerHTML = styleHTML;
     }
 
-    addTab(tabProperties, { animate = true, background = false } = {}) {
+    addTab(tabProperties) {
         const div = document.createElement('div');
         div.innerHTML = tabTemplate;
         const tabEl = div.firstElementChild;
 
-        if (animate) {
-            tabEl.classList.add('note-tab-was-just-added');
-            setTimeout(() => tabEl.classList.remove('note-tab-was-just-added'), 500);
-        }
+        tabEl.classList.add('note-tab-was-just-added');
+        setTimeout(() => tabEl.classList.remove('note-tab-was-just-added'), 500);
 
         tabProperties = Object.assign({}, defaultTapProperties, tabProperties);
         this.tabContentEl.appendChild(tabEl);
         this.setVisibility();
         this.setTabCloseEventListener(tabEl);
         this.updateTab(tabEl, tabProperties);
-        if (!background) this.setCurrentTab(tabEl);
         this.cleanUpPreviouslyDraggedTabs();
         this.layoutTabs();
         this.setupDraggabilly();
@@ -294,7 +278,7 @@ class TabRow {
 
     setupDraggabilly() {
         const tabEls = this.tabEls;
-        const tabPositions = this.tabPositions;
+        const {tabPositions} = this.getTabPositions();
 
         if (this.isDragging) {
             this.isDragging = false;
@@ -363,7 +347,7 @@ class TabRow {
                 const currentIndex = tabEls.indexOf(tabEl);
 
                 const currentTabPositionX = originalTabPositionX + moveVector.x;
-                const destinationIndexTarget = closest(currentTabPositionX, tabPositions);
+                const destinationIndexTarget = this.closest(currentTabPositionX, tabPositions);
                 const destinationIndex = Math.max(0, Math.min(tabEls.length, destinationIndexTarget));
 
                 if (currentIndex !== destinationIndex) {
@@ -382,6 +366,29 @@ class TabRow {
         await this.emit('tabReorder', { tabEl, originIndex, destinationIndex });
         this.layoutTabs();
     }
+
+    setupNewButton() {
+        const div = document.createElement('div');
+        div.innerHTML = newTabButtonTemplate;
+        this.newTabEl = div.firstElementChild;
+
+        this.tabContentEl.appendChild(this.newTabEl);
+        this.layoutTabs();
+    }
+
+    closest(value, array) {
+        let closest = Infinity;
+        let closestIndex = -1;
+
+        array.forEach((v, i) => {
+            if (Math.abs(value - v) < closest) {
+                closest = Math.abs(value - v);
+                closestIndex = i
+            }
+        });
+
+        return closestIndex;
+    };
 }
 
 const noteTabRowEl = document.querySelector('.note-tab-row');

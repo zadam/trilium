@@ -42,8 +42,6 @@ class TabContext {
         this.tab = this.tabRow.addTab({
             title: '', // will be set later
             id: this.tabId
-        }, {
-            background: true
         });
 
         this.$tabContent = $(".note-tab-content-template").clone();
