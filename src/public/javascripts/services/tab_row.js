@@ -9,8 +9,6 @@
 
 const Draggabilly = window.Draggabilly;
 
-const TAB_CONTENT_OVERLAP_DISTANCE = 1;
-
 const TAB_CONTENT_MIN_WIDTH = 24;
 const TAB_CONTENT_MAX_WIDTH = 240;
 
@@ -107,11 +105,10 @@ class TabRow {
     get tabContentWidths() {
         const numberOfTabs = this.tabEls.length;
         const tabsContentWidth = this.tabContentEl.clientWidth;
-        const tabsCumulativeOverlappedWidth = (numberOfTabs - 1) * TAB_CONTENT_OVERLAP_DISTANCE;
-        const targetWidth = (tabsContentWidth + tabsCumulativeOverlappedWidth) / numberOfTabs;
+        const targetWidth = tabsContentWidth / numberOfTabs;
         const clampedTargetWidth = Math.max(TAB_CONTENT_MIN_WIDTH, Math.min(TAB_CONTENT_MAX_WIDTH, targetWidth));
         const flooredClampedTargetWidth = Math.floor(clampedTargetWidth);
-        const totalTabsWidthUsingTarget = (flooredClampedTargetWidth * numberOfTabs) - tabsCumulativeOverlappedWidth;
+        const totalTabsWidthUsingTarget = flooredClampedTargetWidth * numberOfTabs;
         const totalExtraWidthDueToFlooring = tabsContentWidth - totalTabsWidthUsingTarget;
 
         const widths = [];
@@ -130,9 +127,8 @@ class TabRow {
         const tabContentWidths = this.tabContentWidths;
 
         let position = 0;
-        tabContentWidths.forEach((width, i) => {
-            const offset = i * TAB_CONTENT_OVERLAP_DISTANCE;
-            positions.push(position - offset);
+        tabContentWidths.forEach(width => {
+            positions.push(position);
             position += width;
         });
 
