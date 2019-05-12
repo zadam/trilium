@@ -78,7 +78,7 @@ class TreeContextMenu {
 
     async selectContextMenuItem(event, cmd) {
         if (cmd === 'openInTab') {
-            const notePath = treeUtils.getNotePath(this.node);
+            const notePath = await treeUtils.getNotePath(this.node);
 
             noteDetailService.openInTab(notePath);
         }

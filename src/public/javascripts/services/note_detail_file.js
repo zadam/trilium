@@ -1,7 +1,5 @@
 import utils from "./utils.js";
 import server from "./server.js";
-import protectedSessionHolder from "./protected_session_holder.js";
-import noteDetailService from "./note_detail.js";
 
 class NoteDetailFile {
     /**
@@ -33,7 +31,7 @@ class NoteDetailFile {
         });
     }
 
-    async show() {
+    async render() {
         const attributes = await server.get('notes/' + this.ctx.note.noteId + '/attributes');
         const attributeMap = utils.toObject(attributes, l => [l.name, l.value]);
 

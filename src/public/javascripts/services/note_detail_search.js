@@ -19,7 +19,7 @@ class NoteDetailSearch {
         });
     }
 
-    show() {
+    render() {
         this.$help.html(searchNotesService.getHelpText());
 
         this.$component.show();

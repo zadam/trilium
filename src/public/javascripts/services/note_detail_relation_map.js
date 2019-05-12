@@ -207,7 +207,7 @@ class NoteDetailRelationMap {
         return id.substr(13);
     }
 
-    async show() {
+    async render() {
         this.$component.show();
 
         await libraryLoader.requireLibrary(libraryLoader.RELATION_MAP);

@@ -42,7 +42,7 @@ class NoteDetailImage {
         });
     }
 
-    async show() {
+    async render() {
         const attributes = await server.get('notes/' + this.ctx.note.noteId + '/attributes');
         const attributeMap = utils.toObject(attributes, l => [l.name, l.value]);
 

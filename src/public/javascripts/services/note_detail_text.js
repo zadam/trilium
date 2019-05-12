@@ -27,7 +27,7 @@ class NoteDetailText {
         })
     }
 
-    async show() {
+    async render() {
         if (!this.textEditor) {
             await libraryLoader.requireLibrary(libraryLoader.CKEDITOR);
 

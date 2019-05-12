@@ -38,6 +38,7 @@ class TabRow {
     constructor() {
         this.draggabillies = [];
         this.eventListeners = {};
+        this.tabIdCounter = 1;
     }
 
     init(el) {
@@ -164,12 +165,13 @@ class TabRow {
         const div = document.createElement('div');
         div.innerHTML = tabTemplate;
         const tabEl = div.firstElementChild;
+        tabEl.setAttribute('data-tab-id', "t" + this.tabIdCounter++);
 
         tabEl.classList.add('note-tab-was-just-added');
         setTimeout(() => tabEl.classList.remove('note-tab-was-just-added'), 500);
 
         tabProperties = Object.assign({}, defaultTapProperties, tabProperties);
-        this.tabContentEl.appendChild(tabEl);
+        this.newTabEl.before(tabEl);
         this.setVisibility();
         this.setTabCloseEventListener(tabEl);
         this.updateTab(tabEl, tabProperties);
@@ -266,10 +268,6 @@ class TabRow {
 
     updateTab(tabEl, tabProperties) {
         tabEl.querySelector('.note-tab-title').textContent = tabProperties.title;
-
-        if (tabProperties.id) {
-            tabEl.setAttribute('data-tab-id', tabProperties.id);
-        }
     }
 
     cleanUpPreviouslyDraggedTabs() {
@@ -374,6 +372,8 @@ class TabRow {
 
         this.tabContentEl.appendChild(this.newTabEl);
         this.layoutTabs();
+
+        this.newTabEl.addEventListener('click', _ => this.emit('newTab'));
     }
 
     closest(value, array) {

@@ -7,8 +7,9 @@ import treeUtils from "./tree_utils.js";
 import utils from "./utils.js";
 import {NoteTypeContext} from "./note_type.js";
 import noteDetailService from "./note_detail.js";
-import noteDetailCode from "./note_detail_code.js";
+import noteDetailEmpty from "./note_detail_empty.js";
 import noteDetailText from "./note_detail_text.js";
+import noteDetailCode from "./note_detail_code.js";
 import noteDetailFile from "./note_detail_file.js";
 import noteDetailImage from "./note_detail_image.js";
 import noteDetailSearch from "./note_detail_search.js";
@@ -20,8 +21,9 @@ import protectedSessionService from "./protected_session.js";
 const $tabContentsContainer = $("#note-tab-container");
 
 const componentClasses = {
-    'code': noteDetailCode,
+    'empty': noteDetailEmpty,
     'text': noteDetailText,
+    'code': noteDetailCode,
     'file': noteDetailFile,
     'image': noteDetailImage,
     'search': noteDetailSearch,
@@ -30,19 +32,14 @@ const componentClasses = {
     'protected-session': noteDetailProtectedSession
 };
 
-let tabIdCounter = 1;
-
 class TabContext {
     /**
      * @param {TabRow} tabRow
      */
     constructor(tabRow) {
-        this.tabId = tabIdCounter++;
         this.tabRow = tabRow;
-        this.tab = this.tabRow.addTab({
-            title: '', // will be set later
-            id: this.tabId
-        });
+        this.tab = this.tabRow.addTab();
+        this.tabId = this.tab.getAttribute('data-tab-id');
 
         this.$tabContent = $(".note-tab-content-template").clone();
         this.$tabContent.removeClass('note-tab-content-template');
@@ -51,6 +48,7 @@ class TabContext {
         $tabContentsContainer.append(this.$tabContent);
 
         this.$noteTitle = this.$tabContent.find(".note-title");
+        this.$noteTitleRow = this.$tabContent.find(".note-title-row");
         this.$noteDetailComponents = this.$tabContent.find(".note-detail-component");
         this.$childrenOverview = this.$tabContent.find(".children-overview");
         this.$scriptArea = this.$tabContent.find(".note-detail-script-area");
@@ -82,9 +80,6 @@ class TabContext {
         this.noteId = note.noteId;
         this.notePath = notePath;
         this.note = note;
-        this.tab.setAttribute('data-note-id', this.noteId);
-        this.$tabContent.attr('data-note-id', note.noteId);
-
         this.tabRow.updateTab(this.tab, {title: note.title});
 
         this.attributes.invalidateAttributes();
@@ -108,18 +103,24 @@ class TabContext {
     }
 
     getComponent() {
-        let type = this.note.type;
+        let type;
 
-        if (this.note.isProtected) {
-            if (protectedSessionHolder.isProtectedSessionAvailable()) {
-                protectedSessionHolder.touchProtectedSession();
-            }
-            else {
-                type = 'protected-session';
+        if (this.note) {
+            type = this.note.type;
 
-                // user shouldn't be able to edit note title
-                this.$noteTitle.prop("readonly", true);
+            if (this.note.isProtected) {
+                if (protectedSessionHolder.isProtectedSessionAvailable()) {
+                    protectedSessionHolder.touchProtectedSession();
+                } else {
+                    type = 'protected-session';
+
+                    // user shouldn't be able to edit note title
+                    this.$noteTitle.prop("readonly", true);
+                }
             }
+        }
+        else {
+            type = 'empty';
         }
 
         if (!(type in this.components)) {

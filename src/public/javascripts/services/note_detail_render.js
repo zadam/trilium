@@ -14,10 +14,10 @@ class NoteDetailRender {
         this.$noteDetailRenderContent = ctx.$tabContent.find('.note-detail-render-content');
         this.$renderButton = ctx.$tabContent.find('.render-button');
 
-        this.$renderButton.click(this.show);
+        this.$renderButton.click(this.render);
     }
 
-    async show() {
+    async render() {
         const attributes = await attributeService.getAttributes();
         const renderNotes = attributes.filter(attr =>
             attr.type === 'relation'

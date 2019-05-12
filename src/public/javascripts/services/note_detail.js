@@ -91,16 +91,18 @@ function getTabContexts() {
 
 /** @returns {TabContext} */
 function getActiveTabContext() {
-    for (const ctx of tabContexts) {
-        if (ctx.$tabContent.is(":visible")) {
-            return ctx;
-        }
+    const activeTabEl = tabRow.activeTabEl;
+
+    if (!activeTabEl) {
+        return null;
     }
+
+    const tabId = activeTabEl.getAttribute('data-tab-id');
+
+    return tabContexts.find(tc => tc.tabId === tabId);
 }
 
 async function showTab(tabId) {
-    tabId = parseInt(tabId);
-
     for (const ctx of tabContexts) {
         ctx.$tabContent.toggle(ctx.tabId === tabId);
     }
@@ -114,12 +116,30 @@ async function showTab(tabId) {
     treeService.clearSelectedNodes();
 
     const newActiveTabContext = getActiveTabContext();
-    const newActiveNode = await treeService.getNodeFromPath(newActiveTabContext.notePath);
 
-    if (newActiveNode && newActiveNode.isVisible()) {
-        newActiveNode.setActive(true, { noEvents: true });
-        newActiveNode.setSelected(true);
+    if (newActiveTabContext && newActiveTabContext.notePath) {
+        const newActiveNode = await treeService.getNodeFromPath(newActiveTabContext.notePath);
+
+        if (newActiveNode && newActiveNode.isVisible()) {
+            newActiveNode.setActive(true, {noEvents: true});
+            newActiveNode.setSelected(true);
+        }
     }
+}
+
+async function renderComponent(ctx) {
+    for (const componentType in ctx.components) {
+        if (componentType !== ctx.note.type) {
+            ctx.components[componentType].cleanup();
+        }
+    }
+
+    ctx.$noteDetailComponents.hide();
+
+    ctx.$noteTitle.show(); // this can be hidden by empty detail
+    ctx.$noteTitle.removeAttr("readonly"); // this can be set by protected session service
+
+    await ctx.getComponent().render();
 }
 
 /**
@@ -128,6 +148,8 @@ async function showTab(tabId) {
  */
 async function loadNoteDetailToContext(ctx, note, notePath) {
     ctx.setNote(note, notePath);
+
+    openTabsChanged();
 
     if (utils.isDesktop()) {
         // needs to happen after loading the note itself because it references active noteId
@@ -147,17 +169,7 @@ async function loadNoteDetailToContext(ctx, note, notePath) {
             ctx.noteType.mime(ctx.note.mime);
         }
 
-        for (const componentType in ctx.components) {
-            if (componentType !== ctx.note.type) {
-                ctx.components[componentType].cleanup();
-            }
-        }
-
-        ctx.$noteDetailComponents.hide();
-
-        ctx.$noteTitle.removeAttr("readonly"); // this can be set by protected session service
-
-        await ctx.getComponent().show(ctx);
+        await renderComponent(ctx);
     } finally {
         ctx.noteChangeDisabled = false;
     }
@@ -180,11 +192,16 @@ async function loadNoteDetailToContext(ctx, note, notePath) {
     }
 }
 
-async function loadNoteDetail(notePath, options = {}) {
+async function loadNoteDetail(origNotePath, options = {}) {
     const newTab = !!options.newTab;
     const activate = !!options.activate;
 
-    notePath = await treeService.resolveNotePath(notePath);
+    const notePath = await treeService.resolveNotePath(origNotePath);
+
+    if (!notePath) {
+        console.error(`Cannot resolve note path ${origNotePath}`);
+        return;
+    }
 
     const noteId = treeUtils.getNoteIdFromNotePath(notePath);
     const loadedNote = await loadNote(noteId);
@@ -293,6 +310,15 @@ $tabContentsContainer.on("drop", e => {
     });
 });
 
+tabRow.addListener('newTab', async () => {
+    const ctx = new TabContext(tabRow);
+    tabContexts.push(ctx);
+
+    renderComponent(ctx);
+
+    await tabRow.setCurrentTab(ctx.tab);
+});
+
 tabRow.addListener('activeTabChange', async ({ detail }) => {
     const tabId = detail.tabEl.getAttribute('data-tab-id');
 
@@ -302,7 +328,7 @@ tabRow.addListener('activeTabChange', async ({ detail }) => {
 });
 
 tabRow.addListener('tabRemove', async ({ detail }) => {
-    const tabId = parseInt(detail.tabEl.getAttribute('data-tab-id'));
+    const tabId = detail.tabEl.getAttribute('data-tab-id');
 
     const tabContentToDelete = tabContexts.find(nc => nc.tabId === tabId);
 
@@ -386,7 +412,7 @@ async function saveOpenTabs() {
     const openTabs = [];
 
     for (const tabEl of tabRow.tabEls) {
-        const tabId = parseInt(tabEl.getAttribute('data-tab-id'));
+        const tabId = tabEl.getAttribute('data-tab-id');
         const tabContext = tabContexts.find(tc => tc.tabId === tabId);
 
         if (tabContext) {

@@ -21,7 +21,7 @@ class NoteDetailCode {
         this.$executeScriptButton.click(() => this.executeCurrentNote());
     }
 
-    async show() {
+    async render() {
         await libraryLoader.requireLibrary(libraryLoader.CODE_MIRROR);
 
         if (!this.codeEditor) {

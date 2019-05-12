@@ -20,7 +20,7 @@ class NoteDetailProtectedSession {
         });
     }
 
-    show() {
+    render() {
         this.$component.show();
     }
 
