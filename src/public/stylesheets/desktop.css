@@ -169,6 +169,15 @@ li.dropdown-submenu:hover > ul.dropdown-menu {
     margin-top: 10px;
 }
 
+.note-title {
+    margin-left: 15px;
+    margin-right: 10px;
+    font-size: 150%;
+    border: 0;
+    width: 5em;
+    flex-grow: 100;
+}
+
 .note-tab-row {
     box-sizing: border-box;
     position: relative;

@@ -52,15 +52,6 @@ button.close:hover {
     color: var(--main-text-color) !important;
 }
 
-.note-title {
-    margin-left: 15px;
-    margin-right: 10px;
-    font-size: 150%;
-    border: 0;
-    width: 5em;
-    flex-grow: 100;
-}
-
 ul.fancytree-container {
     /* override specific size from fancytree.css */
     font-family: inherit !important;

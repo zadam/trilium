@@ -56,7 +56,11 @@ class TabContext {
         this.noteChangeDisabled = false;
         this.isNoteChanged = false;
         this.attributes = new Attributes(this);
-        this.noteType = new NoteTypeContext(this);
+
+        if (utils.isDesktop()) {
+            this.noteType = new NoteTypeContext(this);
+        }
+
         this.components = {};
 
         this.$noteTitle.on('input', () => {

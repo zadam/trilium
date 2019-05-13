@@ -11,7 +11,6 @@ import treeUtils from "./services/tree_utils.js";
 const $leftPane = $("#left-pane");
 const $tree = $("#tree");
 const $detail = $("#detail");
-const $closeDetailButton = $("#close-detail-button");
 
 function togglePanes() {
     if (!$leftPane.is(":visible") || !$detail.is(":visible")) {
@@ -27,7 +26,7 @@ function showDetailPane() {
     }
 }
 
-$closeDetailButton.click(() => {
+$detail.on("click", ".close-detail-button",() => {
     // no page is opened
     document.location.hash = '-';
 
@@ -43,9 +42,8 @@ async function showTree() {
         source: tree,
         scrollParent: $tree,
         minExpandLevel: 2, // root can't be collapsed
-        activate: (event, data) => {
+        activate: async (event, data) => {
             const node = data.node;
-            const noteId = node.data.noteId;
 
             treeService.clearSelectedNodes();
 
@@ -72,7 +70,7 @@ async function showTree() {
     });
 }
 
-$("#note-menu-button").click(async e => {
+$detail.on("click", ".note-menu-button", async e => {
     const node = treeService.getActiveNode();
     const branch = await treeCache.getBranch(node.data.branchId);
     const note = await treeCache.getNote(node.data.noteId);
@@ -88,24 +86,27 @@ $("#note-menu-button").click(async e => {
             enabled: isNotRoot && parentNote.type !== 'search' }
     ];
 
-    contextMenuWidget.initContextMenu(e, items, async (event, cmd) => {
-        if (cmd === "insertNoteAfter") {
-            const parentNoteId = node.data.parentNoteId;
-            const isProtected = await treeUtils.getParentProtectedStatus(node);
+    contextMenuWidget.initContextMenu(e, {
+        getContextMenuItems: () => items,
+        selectContextMenuItem: async (event, cmd) => {
+            if (cmd === "insertNoteAfter") {
+                const parentNoteId = node.data.parentNoteId;
+                const isProtected = await treeUtils.getParentProtectedStatus(node);
 
-            treeService.createNote(node, parentNoteId, 'after', { isProtected: isProtected });
-        }
-        else if (cmd === "insertChildNote") {
-            treeService.createNote(node, node.data.noteId, 'into');
-        }
-        else if (cmd === "delete") {
-            treeChangesService.deleteNodes([node]);
+                treeService.createNote(node, parentNoteId, 'after', { isProtected: isProtected });
+            }
+            else if (cmd === "insertChildNote") {
+                treeService.createNote(node, node.data.noteId, 'into');
+            }
+            else if (cmd === "delete") {
+                treeChangesService.deleteNodes([node]);
 
-            // move to the tree
-            togglePanes();
-        }
-        else {
-            throw new Error("Unrecognized command " + cmd);
+                // move to the tree
+                togglePanes();
+            }
+            else {
+                throw new Error("Unrecognized command " + cmd);
+            }
         }
     });
 });

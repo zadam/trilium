@@ -40,14 +40,12 @@ html, body {
     flex-direction: column;
 }
 
-#detail-content {
-    position: relative;
-    overflow: auto;
-    flex-direction: column;
-    /* for some reason detail overflows a little bit so we subtract few pixels */
-    height: calc(100% - 25px);
-    /* large left padding is necessary for ckeditor gutter in detail-only (smartphone) layout */
-    padding-left: 35px;
+#note-tab-container {
+    height: 100%;
+}
+
+.note-tab-row {
+    display: none !important;
 }
 
 .note-title-row {
@@ -103,4 +101,15 @@ kbd {
     margin: 4px;
     border-width: 2px;
     border-style: solid;
+}
+
+.note-detail-component-wrapper {
+    position: relative;
+    overflow: auto;
+    flex-direction: column;
+    /* for some reason detail overflows a little bit so we subtract few pixels */
+    height: calc(100% - 25px);
+    /* large left padding is necessary for ckeditor gutter in detail-only (smartphone) layout */
+    padding-left: 35px;
+    padding-top: 10px;
 }

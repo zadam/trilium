@@ -32,35 +32,39 @@
     </div>
 
     <div id="detail" class="d-none d-sm-flex d-md-flex d-lg-flex d-xl-flex col-12 col-sm-7 col-md-8 col-lg-8">
-        <div id="note-title-row">
-            <button type="button" id="note-menu-button" class="action-button jam jam-align-justify"></button>
-
-            <input autocomplete="off" value="" id="note-title" class="form-control" tabindex="1">
-
-            <button type="button" id="close-detail-button" class="action-button d-sm-none d-md-none d-lg-none d-xl-none" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
+        <div class="note-tab-row">
+            <div class="note-tab-row-content"></div>
         </div>
 
-        <div style="position: relative; height: 100%;"> <!-- This div here is for saved indicator to have suitable parent -->
-            <span id="saved-indicator" title="All changes have been saved" class="jam jam-check"></span>
+        <div id="note-tab-container">
+            <div class="note-tab-content note-tab-content-template">
+                <div class="note-title-row">
+                    <button type="button" class="note-menu-button action-button jam jam-align-justify"></button>
 
-            <div id="detail-content">
-                <div id="note-detail-text" class="note-detail-component" tabindex="10000"></div>
+                    <input autocomplete="off" value="" class="form-control note-title" tabindex="1">
 
-                <div id="note-detail-code" class="note-detail-component"></div>
+                    <button type="button" class="close-detail-button action-button d-sm-none d-md-none d-lg-none d-xl-none" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
 
-                <% include details/search.ejs %>
+                <div class="note-detail-component-wrapper">
+                    <div class="note-detail-text note-detail-component" tabindex="10000"></div>
 
-                <% include details/render.ejs %>
+                    <div class="note-detail-code note-detail-component"></div>
 
-                <% include details/file.ejs %>
+                    <% include details/search.ejs %>
 
-                <% include details/image.ejs %>
+                    <% include details/render.ejs %>
 
-                <% include details/relation_map.ejs %>
+                    <% include details/file.ejs %>
 
-                <% include details/protected_session_password.ejs %>
+                    <% include details/image.ejs %>
+
+                    <% include details/relation_map.ejs %>
+
+                    <% include details/protected_session_password.ejs %>
+                </div>
             </div>
         </div>
     </div>

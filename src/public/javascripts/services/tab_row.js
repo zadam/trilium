@@ -34,8 +34,6 @@ const defaultTapProperties = {
     title: 'New tab'
 };
 
-let instanceId = 0;
-
 class TabRow {
     constructor(el) {
         this.draggabillies = [];
@@ -44,10 +42,6 @@ class TabRow {
 
         this.el = el;
         this.hideTabRowForOneTab = false;
-
-        this.instanceId = instanceId;
-        this.el.setAttribute('data-note-tab-row-instance-id', this.instanceId);
-        instanceId += 1;
 
         this.setupStyleEl();
         this.setupEvents();
@@ -156,14 +150,10 @@ class TabRow {
         const {tabPositions, newTabPosition} = this.getTabPositions();
 
         tabPositions.forEach((position, i) => {
-            styleHTML += `
-      .note-tab-row[data-note-tab-row-instance-id="${ this.instanceId }"] .note-tab:nth-child(${ i + 1 }) {
-        transform: translate3d(${ position }px, 0, 0)
-      }
-    `
+            styleHTML += `.note-tab:nth-child(${ i + 1 }) { transform: translate3d(${ position }px, 0, 0)} `;
         });
 
-        styleHTML += `.note-new-tab { transform: translate3d(${ newTabPosition }px, 0, 0) }`;
+        styleHTML += `.note-new-tab { transform: translate3d(${ newTabPosition }px, 0, 0) } `;
 
         this.styleEl.innerHTML = styleHTML;
     }
