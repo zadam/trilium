@@ -92,7 +92,7 @@ async function getManyRows(query, params) {
     let results = [];
 
     while (params.length > 0) {
-        const curParams = params.slice(0, Math.max(params.length, PARAM_LIMIT));
+        const curParams = params.slice(0, Math.min(params.length, PARAM_LIMIT));
         params = params.slice(curParams.length);
 
         let i = 1;
