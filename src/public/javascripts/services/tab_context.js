@@ -38,8 +38,8 @@ class TabContext {
      */
     constructor(tabRow) {
         this.tabRow = tabRow;
-        this.tab = this.tabRow.addTab();
-        this.tabId = this.tab.getAttribute('data-tab-id');
+        this.$tab = $(this.tabRow.addTab());
+        this.tabId = this.$tab.attr('data-tab-id');
 
         this.$tabContent = $(".note-tab-content-template").clone();
         this.$tabContent.removeClass('note-tab-content-template');
@@ -80,7 +80,7 @@ class TabContext {
         this.noteId = note.noteId;
         this.notePath = notePath;
         this.note = note;
-        this.tabRow.updateTab(this.tab, {title: note.title});
+        this.tabRow.updateTab(this.$tab[0], {title: note.title});
 
         this.attributes.invalidateAttributes();
 
@@ -90,16 +90,31 @@ class TabContext {
         this.$unprotectButton.toggleClass("active", !this.note.isProtected);
         this.$unprotectButton.prop("disabled", !this.note.isProtected || !protectedSessionHolder.isProtectedSessionAvailable());
 
+        this.setupClasses();
+
+        console.log(`Switched tab ${this.tabId} to ${this.noteId}`);
+    }
+
+    setupClasses() {
+        for (const clazz of Array.from(this.$tab[0].classList)) { // create copy to safely iterate over while removing classes
+            if (clazz !== 'note-tab') {
+                this.$tab.removeClass(clazz);
+            }
+        }
+
         for (const clazz of Array.from(this.$tabContent[0].classList)) { // create copy to safely iterate over while removing classes
-            if (clazz.startsWith("type-") || clazz.startsWith("mime-")) {
+            if (clazz !== 'note-tab-content') {
                 this.$tabContent.removeClass(clazz);
             }
         }
 
+        this.$tab.addClass(this.note.cssClass);
+        this.$tab.addClass(utils.getNoteTypeClass(this.note.type));
+        this.$tab.addClass(utils.getMimeTypeClass(this.note.mime));
+
+        this.$tabContent.addClass(this.note.cssClass);
         this.$tabContent.addClass(utils.getNoteTypeClass(this.note.type));
         this.$tabContent.addClass(utils.getMimeTypeClass(this.note.mime));
-
-        console.log(`Switched tab ${this.tabId} to ${this.noteId}`);
     }
 
     getComponent() {

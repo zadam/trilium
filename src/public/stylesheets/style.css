@@ -126,6 +126,7 @@ ul.fancytree-container {
     display: flex;
     flex-direction: column;
     min-height: 200px;
+    word-break: break-all; /* otherwise CKEditor fails miserably on super long lines */
 }
 
 .note-detail-component {

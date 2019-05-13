@@ -20,6 +20,8 @@ async function getNote(req) {
         }
     }
 
+    note.cssClass = (await note.getLabels("cssClass")).map(label => label.value).join(" ");
+
     return note;
 }
 

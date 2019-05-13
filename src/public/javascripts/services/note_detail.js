@@ -229,7 +229,7 @@ async function loadNoteDetail(origNotePath, options = {}) {
 
     if (activate) {
         // will also trigger showTab via event
-        tabRow.setCurrentTab(ctx.tab);
+        tabRow.setCurrentTab(ctx.$tab[0]);
     }
 }
 
