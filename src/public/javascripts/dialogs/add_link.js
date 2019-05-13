@@ -94,15 +94,16 @@ $form.submit(() => {
             $dialog.modal('hide');
 
             const linkHref = '#' + notePath;
+            const editor = noteDetailText.getEditor();
 
             if (hasSelection()) {
-                const editor = noteDetailText.getEditor();
-
                 editor.execute('link', linkHref);
             }
             else {
                 linkService.addLinkToEditor(linkTitle, linkHref);
             }
+
+            editor.editing.view.focus();
         }
         else if (linkType === 'selected-to-active') {
             const prefix = $clonePrefix.val();
@@ -144,10 +145,6 @@ function linkTypeChanged() {
 }
 
 $linkTypes.change(linkTypeChanged);
-
-// return back focus to note text detail after quitting add link
-// the problem is that cursor position is reset
-$dialog.on("hidden.bs.modal", () => noteDetailText.focus());
 
 export default {
     showDialog,
