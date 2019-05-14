@@ -134,11 +134,6 @@ li.dropdown-submenu:hover > ul.dropdown-menu {
     border-style: solid;
 }
 
-.note-tab-content {
-    font-family: var(--detail-font-family);
-    font-size: var(--detail-font-size);
-}
-
 ::-webkit-scrollbar {
     width: 12px;
 }

@@ -1,6 +1,5 @@
 "use strict";
 
-const optionService = require('../../services/options');
 const RecentNote = require('../../entities/recent_note');
 
 async function addRecentNote(req) {

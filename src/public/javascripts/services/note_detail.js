@@ -102,9 +102,27 @@ function getActiveTabContext() {
     return tabContexts.find(tc => tc.tabId === tabId);
 }
 
+function isActive(tabContext) {
+    return tabContext.$tab[0] === tabRow.activateTab;
+}
+
+async function activateTabContext(tabContext) {
+    await tabRow.activateTab(tabContext.$tab[0]);
+}
+
+/** @returns {TabContext} */
+function getTabContext(tabId) {
+    return tabContexts.find(tc => tc.tabId === tabId);
+}
+
 async function showTab(tabId) {
     for (const ctx of tabContexts) {
-        ctx.$tabContent.toggle(ctx.tabId === tabId);
+        if (ctx.tabId === tabId) {
+            ctx.show();
+        }
+        else {
+            ctx.hide();
+        }
     }
 
     const oldActiveNode = treeService.getActiveNode();
@@ -207,9 +225,9 @@ async function loadNoteDetail(origNotePath, options = {}) {
     const loadedNote = await loadNote(noteId);
     let ctx;
 
-    if (tabContexts.length === 0 || newTab) {
+    if (!getActiveTabContext() || newTab) {
         // if it's a new tab explicitly by user then it's in background
-        ctx = new TabContext(tabRow);
+        ctx = new TabContext(tabRow, options.tabId);
         tabContexts.push(ctx);
     }
     else {
@@ -229,7 +247,7 @@ async function loadNoteDetail(origNotePath, options = {}) {
 
     if (activate) {
         // will also trigger showTab via event
-        tabRow.setCurrentTab(ctx.$tab[0]);
+        await tabRow.activateTab(ctx.$tab[0]);
     }
 }
 
@@ -316,7 +334,7 @@ async function openEmptyTab() {
 
     await renderComponent(ctx);
 
-    await tabRow.setCurrentTab(ctx.tab);
+    await tabRow.activateTab(ctx.$tab[0]);
 }
 
 tabRow.addListener('newTab', openEmptyTab);
@@ -380,7 +398,7 @@ if (utils.isElectron()) {
         const nextTab = tabRow.nextTabEl;
 
         if (nextTab) {
-            tabRow.setCurrentTab(nextTab);
+            tabRow.activateTab(nextTab);
         }
     });
 
@@ -388,7 +406,7 @@ if (utils.isElectron()) {
         const prevTab = tabRow.previousTabEl;
 
         if (prevTab) {
-            tabRow.setCurrentTab(prevTab);
+            tabRow.activateTab(prevTab);
         }
     });
 }
@@ -424,6 +442,7 @@ async function saveOpenTabs() {
 
         if (tabContext && tabContext.notePath) {
             openTabs.push({
+                tabId: tabContext.tabId,
                 notePath: tabContext.notePath,
                 active: activeTabEl === tabEl
             });
@@ -457,8 +476,11 @@ export default {
     saveNotesIfChanged,
     onNoteChange,
     addDetailLoadedListener,
+    getTabContext,
     getTabContexts,
     getActiveTabContext,
+    isActive,
+    activateTabContext,
     getActiveComponent,
     clearOpenTabsTask,
     filterTabs

@@ -36,10 +36,10 @@ class TabContext {
     /**
      * @param {TabRow} tabRow
      */
-    constructor(tabRow) {
+    constructor(tabRow, tabId = null) {
         this.tabRow = tabRow;
-        this.$tab = $(this.tabRow.addTab());
-        this.tabId = this.$tab.attr('data-tab-id');
+        this.tabId = tabId || utils.randomString(4);
+        this.$tab = $(this.tabRow.addTab(this.tabId));
 
         this.$tabContent = $(".note-tab-content-template").clone();
         this.$tabContent.removeClass('note-tab-content-template');
@@ -96,7 +96,38 @@ class TabContext {
 
         this.setupClasses();
 
+        this.setCurrentNotePathToHash();
+
+        setTimeout(async () => {
+            // we include the note into recent list only if the user stayed on the note at least 5 seconds
+            if (notePath && notePath === await this.notePath) {
+                await server.post('recent-notes', { notePath });
+            }
+        }, 5000);
+
         console.log(`Switched tab ${this.tabId} to ${this.noteId}`);
+    }
+
+    show() {
+        this.$tabContent.show();
+        this.setCurrentNotePathToHash();
+
+        document.title = "Trilium Notes";
+
+        if (this.note) {
+            // it helps navigating in history if note title is included in the title
+            document.title += " - " + this.note.title;
+        }
+    }
+
+    hide() {
+        this.$tabContent.hide();
+    }
+
+    setCurrentNotePathToHash() {
+        if (this.$tab[0] === this.tabRow.activeTabEl) {
+            document.location.hash = (this.notePath || "") + "-" + this.tabId;
+        }
     }
 
     setupClasses() {
@@ -205,13 +236,11 @@ class TabContext {
 
         this.$childrenOverview.empty();
 
-        const notePath = await treeService.getActiveNotePath();
-
         for (const childBranch of await this.note.getChildBranches()) {
             const link = $('<a>', {
                 href: 'javascript:',
                 text: await treeUtils.getNoteTitle(childBranch.noteId, childBranch.parentNoteId)
-            }).attr('data-action', 'note').attr('data-note-path', notePath + '/' + childBranch.noteId);
+            }).attr('data-action', 'note').attr('data-note-path', this.notePath + '/' + childBranch.noteId);
 
             const childEl = $('<div class="child-overview-item">').html(link);
             this.$childrenOverview.append(childEl);

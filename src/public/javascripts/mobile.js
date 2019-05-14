@@ -47,8 +47,6 @@ async function showTree() {
 
             treeService.clearSelectedNodes();
 
-            treeService.setCurrentNotePathToHash(node);
-
             showDetailPane();
 
             const notePath = await treeUtils.getNotePath(node);

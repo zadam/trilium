@@ -141,7 +141,7 @@ async function refreshSearch() {
 }
 
 function init() {
-    const hashValue = treeService.getHashValueFromAddress();
+    const hashValue = document.location.hash ? document.location.hash.substr(1) : ""; // strip initial #
 
     if (hashValue.startsWith("search=")) {
         showSearch();

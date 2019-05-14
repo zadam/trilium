@@ -38,10 +38,6 @@ function getActiveNode() {
     return $tree.fancytree("getActiveNode");
 }
 
-async function getActiveNotePath() {
-    return getHashValueFromAddress();
-}
-
 async function getNodesByBranchId(branchId) {
     utils.assertArguments(branchId);
 
@@ -135,6 +131,12 @@ async function activateNote(notePath, noteLoadedListener) {
     // notePath argument can contain only noteId which is not good when hoisted since
     // then we need to check the whole note path
     const runNotePath = await getRunPath(notePath);
+
+    if (!runNotePath) {
+        console.log("Cannot activate " + notePath);
+        return;
+    }
+
     const hoistedNoteId = await hoistedNoteService.getHoistedNoteId();
 
     if (hoistedNoteId !== 'root' && !runNotePath.includes(hoistedNoteId)) {
@@ -172,7 +174,7 @@ async function activateNote(notePath, noteLoadedListener) {
 async function resolveNotePath(notePath) {
     const runPath = await getRunPath(notePath);
 
-    return runPath.join("/");
+    return runPath ? runPath.join("/") : null;
 }
 
 /**
@@ -205,7 +207,8 @@ async function getRunPath(notePath) {
             const child = await treeCache.getNote(childNoteId);
 
             if (!child) {
-                console.log("Can't find " + childNoteId);
+                console.log("Can't find note " + childNoteId);
+                return;
             }
 
             const parents = await child.getParentNotes();
@@ -331,26 +334,6 @@ async function setExpandedToServer(branchId, isExpanded) {
     await server.put('branches/' + branchId + '/expanded/' + expandedNum);
 }
 
-function addRecentNote(branchId, notePath) {
-    setTimeout(async () => {
-        // we include the note into recent list only if the user stayed on the note at least 5 seconds
-        if (notePath && notePath === await getActiveNotePath()) {
-            await server.post('recent-notes', { branchId, notePath });
-        }
-    }, 1500);
-}
-
-async function setCurrentNotePathToHash(node) {
-    utils.assertArguments(node);
-
-    const activeNotePath = await treeUtils.getNotePath(node);
-    const currentBranchId = node.data.branchId;
-
-    document.location.hash = activeNotePath;
-
-    addRecentNote(currentBranchId, activeNotePath);
-}
-
 function getSelectedNodes(stopOnParents = false) {
     return getTree().getSelectedNodes(stopOnParents);
 }
@@ -402,8 +385,13 @@ async function treeInitialized() {
         });
     }
 
+    if (!filteredTabs.find(tab => tab.active)) {
+        filteredTabs[0].active = true;
+    }
+
     for (const tab of filteredTabs) {
         await noteDetailService.loadNoteDetail(tab.notePath, {
+            tabId: tab.tabId,
             newTab: true,
             activate: tab.active
         });
@@ -464,8 +452,6 @@ function initFancyTree(tree) {
 
             // click event won't propagate so let's close context menu manually
             contextMenuWidget.hideContextMenu();
-
-            await setCurrentNotePathToHash(node);
 
             const notePath = await treeUtils.getNotePath(node);
 
@@ -554,11 +540,17 @@ async function reload() {
 }
 
 function isNotePathInAddress() {
-    return getHashValueFromAddress().startsWith("root");
+    const [notePath, tabId] = getHashValueFromAddress();
+
+    return notePath.startsWith("root")
+        // empty string is for empty/uninitialized tab
+        || (notePath === '' && !!tabId);
 }
 
 function getHashValueFromAddress() {
-    return document.location.hash ? document.location.hash.substr(1) : ""; // strip initial #
+    const str = document.location.hash ? document.location.hash.substr(1) : ""; // strip initial #
+
+    return str.split("-");
 }
 
 async function loadTreeCache() {
@@ -835,13 +827,27 @@ utils.bindShortcut('ctrl+.', scrollToActiveNote);
 
 $(window).bind('hashchange', async function() {
     if (isNotePathInAddress()) {
-        const notePath = getHashValueFromAddress();
-        const noteId = notePath.split("/").pop();
+        const [notePath, tabId] = getHashValueFromAddress();
 
-        if (noteId !== '-' && noteId !== getActiveNode().data.noteId) {
-            console.debug("Switching to " + notePath + " because of hash change");
+        console.debug(`Switching to ${notePath} on tab ${tabId} because of hash change`);
 
-            activateNote(notePath);
+        let tabContext = noteDetailService.getTabContext(tabId);
+
+        if (!tabContext) {
+            noteDetailService.loadNoteDetail(notePath, {
+                newTab: true,
+                tabId: tabId,
+                activate: true
+            });
+        }
+        else {
+            if (!noteDetailService.isActive(tabContext)) {
+                noteDetailService.activateTabContext(tabContext);
+            }
+
+            if (notePath && tabContext.notePath !== notePath) {
+                noteDetailService.loadNoteDetail(notePath);
+            }
         }
     }
 });
@@ -860,8 +866,6 @@ export default {
     activateNote,
     getFocusedNode,
     getActiveNode,
-    getActiveNotePath,
-    setCurrentNotePathToHash,
     setNoteTitle,
     setPrefix,
     createNote,

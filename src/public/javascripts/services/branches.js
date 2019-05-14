@@ -103,8 +103,6 @@ async function deleteNodes(nodes) {
     if (next) {
         // activate next element after this one is deleted so we don't lose focus
         next.setActive();
-
-        treeService.setCurrentNotePathToHash(next);
     }
 
     await treeService.loadTreeCache();
@@ -162,8 +160,6 @@ async function changeNode(func, node, beforeNoteId = null, afterNoteId = null) {
     node.data.parentNoteId = thisNewParentNode.data.noteId;
 
     await treeCache.moveNote(childNoteId, thisOldParentNode.data.noteId, thisNewParentNode.data.noteId, beforeNoteId, afterNoteId);
-
-    treeService.setCurrentNotePathToHash(node);
 
     await treeService.checkFolderStatus(thisOldParentNode);
     await treeService.checkFolderStatus(thisNewParentNode);

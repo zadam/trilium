@@ -268,9 +268,13 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null) {
 
     /**
      * @method
-     * @returns {Promise<string>} returns note path of active note
+     * @returns {Promise<string|null>} returns note path of active note or null if there isn't active note
      */
-    this.getActiveNotePath = treeService.getActiveNotePath;
+    this.getActiveNotePath = () => {
+        const activeTabContext = noteDetailService.getActiveTabContext();
+
+        return activeTabContext ? activeTabContext.notePath : null;
+    };
 
     /**
      * This method checks whether user navigated away from the note from which the scripts has been started.
