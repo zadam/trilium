@@ -1,9 +1,9 @@
-#note-detail-relation-map {
+.note-detail-relation-map {
     height: 100%;
     overflow: hidden !important;
 }
 
-#relation-map-wrapper {
+.relation-map-wrapper {
     position: relative;
     height: 100%;
     outline: none; /* remove dotted outline on click */

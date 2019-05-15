@@ -372,11 +372,14 @@ $(tabRow.el).on('contextmenu', '.note-tab', e => {
     contextMenuService.initContextMenu(e, {
         getContextMenuItems: () => {
             return [
+                {title: "Close all tabs", cmd: "removeAllTabs", uiIcon: "empty"},
                 {title: "Close all tabs except for this", cmd: "removeAllTabsExceptForThis", uiIcon: "empty"}
             ];
         },
         selectContextMenuItem: (e, cmd) => {
-            if (cmd === 'removeAllTabsExceptForThis') {
+            if (cmd === 'removeAllTabs') {
+                tabRow.removeAllTabs();
+            } else if (cmd === 'removeAllTabsExceptForThis') {
                 tabRow.removeAllTabsExceptForThis(tab[0]);
             }
         }

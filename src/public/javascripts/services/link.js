@@ -43,18 +43,19 @@ function getNotePathFromLink($link) {
 }
 
 function goToLink(e) {
-    e.preventDefault();
-
     const $link = $(e.target);
 
     const notePath = getNotePathFromLink($link);
 
     if (notePath) {
-        if (e.ctrlKey) {
-            noteDetailService.loadNoteDetail(notePath.split("/").pop(), { newTab: true });
+        if ((e.which === 1 && e.ctrlKey) || e.which === 2) {
+            noteDetailService.openInTab(notePath);
+        }
+        else if (e.which === 1) {
+            treeService.activateNote(notePath);
         }
         else {
-            treeService.activateNote(notePath);
+            return false;
         }
     }
     else {
@@ -64,6 +65,11 @@ function goToLink(e) {
             window.open(address, '_blank');
         }
     }
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    return true;
 }
 
 function addLinkToEditor(linkTitle, linkHref) {
@@ -129,22 +135,24 @@ $(document).on('contextmenu', ".note-detail-render a", tabContextMenu);
 
 // when click on link popup, in case of internal link, just go the the referenced note instead of default behavior
 // of opening the link in new window/tab
-$(document).on('click', "a[data-action='note']", goToLink);
-$(document).on('click', 'div.popover-content a, div.ui-tooltip-content a', goToLink);
+$(document).on('mousedown', "a[data-action='note']", goToLink);
+$(document).on('mousedown', 'div.popover-content a, div.ui-tooltip-content a', goToLink);
 $(document).on('dblclick', '.note-detail-text a', goToLink);
-$(document).on('click', '.note-detail-text a', function (e) {
+$(document).on('mousedown', '.note-detail-text a', function (e) {
     const notePath = getNotePathFromLink($(e.target));
-    if (notePath && e.ctrlKey) {
+    if (notePath && ((e.which === 1 && e.ctrlKey) || e.which === 2)) {
         // if it's a ctrl-click, then we open on new tab, otherwise normal flow (CKEditor opens link-editing dialog)
         e.preventDefault();
 
-        noteDetailService.loadNoteDetail(notePath.split("/").pop(), { newTab: true });
+        noteDetailService.loadNoteDetail(notePath, { newTab: true });
+
+        return true;
     }
 });
 
-$(document).on('click', '.note-detail-render a', goToLink);
-$(document).on('click', '.note-detail-text.ck-read-only a', goToLink);
-$(document).on('click', 'span.ck-button__label', e => {
+$(document).on('mousedown', '.note-detail-render a', goToLink);
+$(document).on('mousedown', '.note-detail-text.ck-read-only a', goToLink);
+$(document).on('mousedown', 'span.ck-button__label', e => {
     // this is a link preview dialog from CKEditor link editing
     // for some reason clicked element is span
 
@@ -163,5 +171,6 @@ export default {
     createNoteLink,
     addLinkToEditor,
     addTextToEditor,
-    init
+    init,
+    goToLink
 };

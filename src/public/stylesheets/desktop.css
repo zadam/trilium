@@ -93,6 +93,7 @@ body {
 
 #context-menu-container, #context-menu-container .dropdown-menu {
     padding: 3px 0 0;
+    z-index: 1111;
 }
 
 #context-menu-container .dropdown-item {

@@ -90,6 +90,7 @@ class NoteDetailRelationMap {
             contextMenuWidget.initContextMenu(e, {
                 getContextMenuItems: () => {
                     return [
+                        {title: "Open in new tab", cmd: "open-in-new-tab", uiIcon: "empty"},
                         {title: "Remove note", cmd: "remove", uiIcon: "trash"},
                         {title: "Edit title", cmd: "edit-title", uiIcon: "pencil"},
                     ];
@@ -125,7 +126,7 @@ class NoteDetailRelationMap {
 
         this.$resetPanZoomButton.click(() => {
             // reset to initial pan & zoom state
-            this.pzInstance.zoomTo(0, 0, 1 / getZoom());
+            this.pzInstance.zoomTo(0, 0, 1 / this.getZoom());
             this.pzInstance.moveTo(0, 0);
         });
 
@@ -138,7 +139,10 @@ class NoteDetailRelationMap {
         const $title = $noteBox.find(".title a");
         const noteId = this.idToNoteId($noteBox.prop("id"));
 
-        if (cmd === "remove") {
+        if (cmd === "open-in-new-tab") {
+            noteDetailService.openInTab(noteId);
+        }
+        else if (cmd === "remove") {
             if (!await confirmDialog.confirmDeleteNoteBoxWithNote($title.text())) {
                 return;
             }
@@ -310,7 +314,7 @@ class NoteDetailRelationMap {
             maxZoom: 2,
             minZoom: 0.3,
             smoothScroll: false,
-            onMouseDown: function(event) {
+            onMouseDown: event => {
                 if (this.clipboard) {
                     let {x, y} = this.getMousePosition(event);
 
@@ -402,9 +406,6 @@ class NoteDetailRelationMap {
         this.jsPlumbInstance.registerConnectionType("link", { anchor:"Continuous", connector:"StateMachine", overlays: linkOverlays });
 
         this.jsPlumbInstance.bind("connection", (info, originalEvent) => this.connectionCreatedHandler(info, originalEvent));
-
-        // so that canvas is not panned when clicking/dragging note box
-        this.$relationMapContainer.on('mousedown touchstart', '.note-box, .connection-label', e => e.stopPropagation());
     }
 
     async connectionCreatedHandler(info, originalEvent) {
@@ -490,10 +491,17 @@ class NoteDetailRelationMap {
     }
 
     async createNoteBox(noteId, title, x, y) {
+        const $link = await linkService.createNoteLink(noteId, title);
+        $link.mousedown(e => {
+            console.log(e);
+
+            linkService.goToLink(e);
+        });
+
         const $noteBox = $("<div>")
             .addClass("note-box")
             .prop("id", this.noteIdToId(noteId))
-            .append($("<span>").addClass("title").html(await linkService.createNoteLink(noteId, title)))
+            .append($("<span>").addClass("title").append($link))
             .append($("<div>").addClass("endpoint").attr("title", "Start dragging relations from here and drop them on another note."))
             .css("left", x + "px")
             .css("top", y + "px");

@@ -177,6 +177,14 @@ class TabRow {
 
     setTabCloseEventListener(tabEl) {
         tabEl.querySelector('.note-tab-close').addEventListener('click', _ => this.removeTab(tabEl));
+
+        tabEl.addEventListener('mousedown', e => {
+            if (e.which === 2) {
+                this.removeTab(tabEl);
+
+                return true; // event has been handled
+            }
+        });
     }
 
     get activeTabEl() {
@@ -249,6 +257,12 @@ class TabRow {
         this.layoutTabs();
         this.setupDraggabilly();
         this.setVisibility();
+    }
+
+    async removeAllTabs() {
+        for (const tabEl of this.tabEls) {
+            await this.removeTab(tabEl);
+        }
     }
 
     async removeAllTabsExceptForThis(remainingTabEl) {

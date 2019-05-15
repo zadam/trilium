@@ -852,6 +852,22 @@ $(window).bind('hashchange', async function() {
     }
 });
 
+// fancytree doesn't support middle click so this is a way to support it
+$tree.on('mousedown', '.fancytree-title', e => {
+    if (e.which === 2) {
+        const node = $.ui.fancytree.getNode(e);
+
+        treeUtils.getNotePath(node).then(notePath => {
+            if (notePath) {
+                noteDetailService.openInTab(notePath);
+            }
+        });
+
+        e.stopPropagation();
+        e.preventDefault();
+    }
+});
+
 utils.bindShortcut('alt+c', () => collapseTree()); // don't use shortened form since collapseTree() accepts argument
 $collapseTreeButton.click(() => collapseTree());
 

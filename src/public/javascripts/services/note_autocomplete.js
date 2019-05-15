@@ -46,7 +46,8 @@ function initNoteAutocomplete($el, options) {
                 .prop("title", "Show recent notes");
 
         const $goToSelectedNoteButton = $("<a>")
-            .addClass("input-group-text go-to-selected-note-button jam jam-arrow-right");
+            .addClass("input-group-text go-to-selected-note-button jam jam-arrow-right")
+            .attr("data-action", "note");
 
         const $sideButtons = $("<div>")
             .addClass("input-group-append")
@@ -67,14 +68,6 @@ function initNoteAutocomplete($el, options) {
             // this will cause the click not give focus to the "show recent notes" button
             // this is important because otherwise input will lose focus immediatelly and not show the results
             return false;
-        });
-
-        $goToSelectedNoteButton.click(() => {
-            if ($el.hasClass("disabled")) {
-                return;
-            }
-
-            treeService.activateNote($el.getSelectedPath());
         });
 
         $el.autocomplete({
