@@ -84,7 +84,7 @@ body {
     padding: 10px 0 10px 0;
     border: 1px solid var(--main-border-color);
     border-radius: 7px;
-    margin: 10px 10px 0;
+    margin: 5px 15px 5px 5px;
 }
 
 .dropdown-menu {
@@ -248,11 +248,11 @@ li.dropdown-submenu:hover > ul.dropdown-menu {
     border-top-right-radius: 8px;
     overflow: hidden;
     pointer-events: all;
-    background-color: var(--accented-background-color);
+    background-image: linear-gradient(to bottom, var(--accented-background-color), var(--main-background-color));
 }
 
 .note-tab-row .note-tab[active] .note-tab-wrapper {
-    background-color: var(--more-accented-background-color);
+    background-image: linear-gradient(to bottom, var(--more-accented-background-color), var(--accented-background-color));
 }
 
 .note-tab-row .note-tab[is-mini] .note-tab-wrapper {
