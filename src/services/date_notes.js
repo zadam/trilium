@@ -70,6 +70,15 @@ async function getYearNote(dateStr, rootNote) {
     return yearNote;
 }
 
+async function getMonthNoteTitle(rootNote, monthNumber, dateObj) {
+    const pattern = await rootNote.getLabelValue("monthPattern") || "{monthNumberPadded} - {month}";
+    const monthName = MONTHS[dateObj.getMonth()];
+
+    return pattern
+        .replace(/{monthNumberPadded}/g, monthNumber)
+        .replace(/{month}/g, monthName);
+}
+
 async function getMonthNote(dateStr, rootNote) {
     const monthStr = dateStr.substr(0, 7);
     const monthNumber = dateStr.substr(5, 2);
@@ -84,7 +93,7 @@ async function getMonthNote(dateStr, rootNote) {
         if (!monthNote) {
             const dateObj = dateUtils.parseLocalDate(dateStr);
 
-            const noteTitle = monthNumber + " - " + MONTHS[dateObj.getMonth()];
+            const noteTitle = await getMonthNoteTitle(rootNote, monthNumber, dateObj);
 
             monthNote = await createNote(yearNote.noteId, noteTitle);
         }
@@ -94,6 +103,17 @@ async function getMonthNote(dateStr, rootNote) {
     }
 
     return monthNote;
+}
+
+async function getDateNoteTitle(rootNote, dayNumber, dateObj) {
+    const pattern = await rootNote.getLabelValue("datePattern") || "{dayInMonthPadded} - {weekDay}";
+    const weekDay = DAYS[dateObj.getDay()];
+
+    return pattern
+        .replace(/{dayInMonthPadded}/g, dayNumber)
+        .replace(/{weekDay}/g, weekDay)
+        .replace(/{weekDay3}/g, weekDay.substr(0, 3))
+        .replace(/{weekDay2}/g, weekDay.substr(0, 2));
 }
 
 async function getDateNote(dateStr) {
@@ -111,7 +131,7 @@ async function getDateNote(dateStr) {
         if (!dateNote) {
             const dateObj = dateUtils.parseLocalDate(dateStr);
 
-            const noteTitle = dayNumber + " - " + DAYS[dateObj.getDay()];
+            const noteTitle = await getDateNoteTitle(rootNote, dayNumber, dateObj);
 
             dateNote = await createNote(monthNote.noteId, noteTitle);
         }
