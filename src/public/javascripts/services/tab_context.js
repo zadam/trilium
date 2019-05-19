@@ -18,7 +18,6 @@ import noteDetailRelationMap from "./note_detail_relation_map.js";
 import noteDetailProtectedSession from "./note_detail_protected_session.js";
 import protectedSessionService from "./protected_session.js";
 import linkService from "./link.js";
-import treeCache from "./tree_cache.js";
 
 const $tabContentsContainer = $("#note-tab-container");
 

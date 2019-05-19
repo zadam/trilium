@@ -2,7 +2,7 @@ import FrontendScriptApi from './frontend_script_api.js';
 import utils from './utils.js';
 import treeCache from './tree_cache.js';
 
-async function ScriptContext(startNoteId, allNoteIds, originEntity = null) {
+async function ScriptContext(startNoteId, allNoteIds, originEntity = null, tabContext = null) {
     const modules = {};
 
     const startNote = await treeCache.getNote(startNoteId);
@@ -11,7 +11,7 @@ async function ScriptContext(startNoteId, allNoteIds, originEntity = null) {
     return {
         modules: modules,
         notes: utils.toObject(allNotes, note => [note.noteId, note]),
-        apis: utils.toObject(allNotes, note => [note.noteId, new FrontendScriptApi(startNote, note, originEntity)]),
+        apis: utils.toObject(allNotes, note => [note.noteId, new FrontendScriptApi(startNote, note, originEntity, tabContext)]),
         require: moduleNoteIds => {
             return moduleName => {
                 const candidates = allNotes.filter(note => moduleNoteIds.includes(note.noteId));

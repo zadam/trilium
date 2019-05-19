@@ -16,7 +16,7 @@ import dateNotesService from'./date_notes.js';
  * @constructor
  * @hideconstructor
  */
-function FrontendScriptApi(startNote, currentNote, originEntity = null) {
+function FrontendScriptApi(startNote, currentNote, originEntity = null, tabContext = null) {
     const $pluginButtons = $("#plugin-buttons");
 
     /** @property {object} note where script started executing */
@@ -28,6 +28,9 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null) {
 
     // to keep consistency with backend API
     this.dayjs = dayjs;
+
+    /** @property {TabContext|null} - experimental! */
+    this.tabContext = tabContext;
 
     /**
      * Activates note in the tree and in the note detail.

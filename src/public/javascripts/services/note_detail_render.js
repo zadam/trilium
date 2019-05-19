@@ -1,7 +1,5 @@
 import bundleService from "./bundle.js";
 import server from "./server.js";
-import noteDetailService from "./note_detail.js";
-import attributeService from "./attributes.js";
 
 class NoteDetailRender {
     /**
@@ -14,7 +12,7 @@ class NoteDetailRender {
         this.$noteDetailRenderContent = ctx.$tabContent.find('.note-detail-render-content');
         this.$renderButton = ctx.$tabContent.find('.render-button');
 
-        this.$renderButton.click(this.render);
+        this.$renderButton.click(() => this.render()); // long form!
     }
 
     async render() {
@@ -35,7 +33,11 @@ class NoteDetailRender {
 
             this.$noteDetailRenderContent.append(bundle.html);
 
-            await bundleService.executeBundle(bundle, noteDetailService.getActiveNote());
+            const $result = await bundleService.executeBundle(bundle, this.ctx.note, this.ctx);
+
+            if ($result) {
+                this.$noteDetailRenderContent.append($result);
+            }
         }
     }
 
