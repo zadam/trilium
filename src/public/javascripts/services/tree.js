@@ -80,6 +80,18 @@ async function expandToNote(notePath, expandOpts) {
     return await getNodeFromPath(notePath, true, expandOpts);
 }
 
+function findChildNode(parentNode, childNoteId) {
+    let foundChildNode = null;
+
+    for (const childNode of parentNode.getChildren()) {
+        if (childNode.data.noteId === childNoteId) {
+            foundChildNode = childNode;
+            break;
+        }
+    }
+    return foundChildNode;
+}
+
 async function getNodeFromPath(notePath, expand = false, expandOpts = {}) {
     utils.assertArguments(notePath);
 
@@ -104,18 +116,17 @@ async function getNodeFromPath(notePath, expand = false, expandOpts = {}) {
                parentNode.setExpanded(true, expandOpts);
             }
 
-            let foundChildNode = null;
+            let foundChildNode = findChildNode(parentNode, childNoteId);
 
-            for (const childNode of parentNode.getChildren()) {
-                if (childNode.data.noteId === childNoteId) {
-                    foundChildNode = childNode;
-                    break;
+            if (!foundChildNode) { // note might be recently created so we'll force reload and try again
+                await parentNode.load(true);
+
+                foundChildNode = findChildNode(parentNode, childNoteId);
+
+                if (!foundChildNode) {
+                    messagingService.logError(`Can't find node for child node of noteId=${childNoteId} for parent of noteId=${parentNode.data.noteId} and hoistedNoteId=${hoistedNoteId}, requested path is ${notePath}`);
+                    return;
                 }
-            }
-
-            if (!foundChildNode) {
-                console.error(`Can't find node for child node of noteId=${childNoteId} for parent of noteId=${parentNode.data.noteId} and hoistedNoteId=${hoistedNoteId}`);
-                return;
             }
 
             parentNode = foundChildNode;
@@ -317,7 +328,8 @@ async function getSomeNotePath(note) {
         const parents = await cur.getParentNotes();
 
         if (!parents.length) {
-            infoService.throwError("Can't find parents for " + cur);
+            infoService.throwError("Can't find parents for ", cur);
+            return;
         }
 
         cur = parents[0];
@@ -900,5 +912,6 @@ export default {
     loadTreeCache,
     expandToNote,
     getNodeFromPath,
-    resolveNotePath
+    resolveNotePath,
+    getSomeNotePath
 };
