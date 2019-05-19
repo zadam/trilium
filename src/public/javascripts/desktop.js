@@ -120,6 +120,8 @@ if (utils.isElectron()) {
         const todayNote = await dateNoteService.getTodayNote();
         const node = await treeService.expandToNote(todayNote.noteId);
 
+        await noteDetailService.openEmptyTab(false);
+
         await treeService.createNote(node, todayNote.noteId, 'into', {
             type: "text",
             isProtected: node.data.isProtected

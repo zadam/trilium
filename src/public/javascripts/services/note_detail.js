@@ -335,11 +335,13 @@ $tabContentsContainer.on("drop", e => {
     });
 });
 
-async function openEmptyTab() {
+async function openEmptyTab(render = true) {
     const ctx = new TabContext(tabRow);
     tabContexts.push(ctx);
 
-    await renderComponent(ctx);
+    if (render) {
+        await renderComponent(ctx);
+    }
 
     await tabRow.activateTab(ctx.$tab[0]);
 }
@@ -493,5 +495,6 @@ export default {
     isActive,
     activateTabContext,
     clearOpenTabsTask,
-    filterTabs
+    filterTabs,
+    openEmptyTab
 };

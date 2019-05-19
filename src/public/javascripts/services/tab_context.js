@@ -68,6 +68,7 @@ class TabContext {
 
             const title = this.$noteTitle.val();
 
+            this.tabRow.updateTab(this.$tab[0], {title});
             treeService.setNoteTitle(this.noteId, title);
         });
 
