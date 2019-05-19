@@ -16,7 +16,7 @@ class NoteDetailCode {
         this.$component = ctx.$tabContent.find('.note-detail-code');
         this.$executeScriptButton = ctx.$tabContent.find(".execute-script-button");
 
-        utils.bindShortcut("ctrl+return", () => this.executeCurrentNote());
+        utils.bindElShortcut(ctx.$tabContent, "ctrl+return", () => this.executeCurrentNote());
 
         this.$executeScriptButton.click(() => this.executeCurrentNote());
     }

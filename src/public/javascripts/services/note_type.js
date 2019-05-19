@@ -51,7 +51,6 @@ function NoteTypeContext(ctx) {
     const self = this;
 
     this.$executeScriptButton = ctx.$tabContent.find(".execute-script-button");
-    this.$toggleEditButton = ctx.$tabContent.find('.toggle-edit-button');
     this.$renderButton = ctx.$tabContent.find('.render-button');
 
     this.ctx = ctx;
@@ -178,10 +177,8 @@ function NoteTypeContext(ctx) {
     };
 
     this.updateExecuteScriptButtonVisibility = function() {
-        self.$executeScriptButton.toggle(self.mime().startsWith('application/javascript'));
-
-        self.$toggleEditButton.toggle(self.type() === 'render');
-        self.$renderButton.toggle(self.type() === 'render');
+        self.$executeScriptButton.toggle(ctx.note.mime.startsWith('application/javascript'));
+        self.$renderButton.toggle(ctx.note.type === 'render');
     };
 
     ko.applyBindings(this, ctx.$tabContent.find('.note-type-wrapper')[0])

@@ -130,13 +130,17 @@ function randomString(len) {
 }
 
 function bindShortcut(keyboardShortcut, handler) {
+    bindElShortcut($(document), keyboardShortcut, handler);
+}
+
+function bindElShortcut($el, keyboardShortcut, handler) {
     if (isDesktop()) {
         if (isMac()) {
             // use CMD (meta) instead of CTRL for all shortcuts
             keyboardShortcut = keyboardShortcut.replace("ctrl", "meta");
         }
 
-        $(document).bind('keydown', keyboardShortcut, e => {
+        $el.bind('keydown', keyboardShortcut, e => {
             handler();
 
             e.preventDefault();
@@ -212,6 +216,7 @@ export default {
     toObject,
     randomString,
     bindShortcut,
+    bindElShortcut,
     isMobile,
     isDesktop,
     setCookie,

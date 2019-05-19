@@ -106,6 +106,10 @@ class TabContext {
             }
         }, 5000);
 
+        if (utils.isDesktop()) {
+            this.noteType.updateExecuteScriptButtonVisibility();
+        }
+
         console.log(`Switched tab ${this.tabId} to ${this.noteId}`);
     }
 
