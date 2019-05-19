@@ -163,29 +163,10 @@ function registerEntrypoints() {
         $("#toggle-fullscreen-button").hide();
     }
 
-    // FIXME: do we really need these at this point?
-    utils.bindShortcut("ctrl+shift+up", () => {
-        const node = treeService.getActiveNode();
-        node.navigate($.ui.keyCode.UP, true);
-
-        $("#note-detail-text").focus();
-    });
-
-
-    // FIXME: do we really need these at this point?
-    utils.bindShortcut("ctrl+shift+down", () => {
-        const node = treeService.getActiveNode();
-        node.navigate($.ui.keyCode.DOWN, true);
-
-        $("#note-detail-text").focus();
-    });
-
     if (utils.isElectron()) {
         utils.bindShortcut('ctrl+-', zoomService.decreaseZoomFactor);
         utils.bindShortcut('ctrl+=', zoomService.increaseZoomFactor);
     }
-
-    $("#note-title").bind('keydown', 'return', () => $("#note-detail-text").focus());
 }
 
 export default {

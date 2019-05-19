@@ -22,8 +22,6 @@ const $tree = $("#tree");
 const $createTopLevelNoteButton = $("#create-top-level-note-button");
 const $collapseTreeButton = $("#collapse-tree-button");
 const $scrollToActiveNoteButton = $("#scroll-to-active-note-button");
-const $notePathList = $("#note-path-list");
-const $notePathCount = $("#note-path-count");
 
 // focused & not active node can happen during multiselection where the node is selected but not activated
 // (its content is not displayed in the detail)
@@ -267,54 +265,6 @@ async function getRunPath(notePath) {
     return effectivePath.reverse();
 }
 
-async function addPath(notePath, isCurrent) {
-    const title = await treeUtils.getNotePathTitle(notePath);
-
-    const noteLink = await linkService.createNoteLink(notePath, title);
-
-    noteLink
-        .addClass("no-tooltip-preview")
-        .addClass("dropdown-item");
-
-    if (isCurrent) {
-        noteLink.addClass("current");
-    }
-
-    $notePathList.append(noteLink);
-}
-
-async function showPaths(noteId, node) {
-    utils.assertArguments(noteId, node);
-
-    const note = await treeCache.getNote(noteId);
-
-    if (note.noteId === 'root') {
-        // root doesn't have any parent, but it's still technically 1 path
-
-        $notePathCount.html("1 path");
-
-        $notePathList.empty();
-
-        await addPath('root', true);
-    }
-    else {
-        const parents = await note.getParentNotes();
-
-        $notePathCount.html(parents.length + " path" + (parents.length > 1 ? "s" : ""));
-
-        $notePathList.empty();
-
-        for (const parentNote of parents) {
-            const parentNotePath = await getSomeNotePath(parentNote);
-            // this is to avoid having root notes leading '/'
-            const notePath = parentNotePath ? (parentNotePath + '/' + noteId) : noteId;
-            const isCurrent = node.getParent().data.noteId === parentNote.noteId;
-
-            await addPath(notePath, isCurrent);
-        }
-    }
-}
-
 async function getSomeNotePath(note) {
     utils.assertArguments(note);
 
@@ -328,7 +278,7 @@ async function getSomeNotePath(note) {
         const parents = await cur.getParentNotes();
 
         if (!parents.length) {
-            infoService.throwError("Can't find parents for ", cur);
+            infoService.throwError(`Can't find parents for note ${cur.noteId}`);
             return;
         }
 
@@ -468,8 +418,6 @@ function initFancyTree(tree) {
             const notePath = await treeUtils.getNotePath(node);
 
             noteDetailService.switchToNote(notePath);
-
-            showPaths(noteId, node);
         },
         expand: (event, data) => setExpandedToServer(data.node.data.branchId, true),
         collapse: (event, data) => setExpandedToServer(data.node.data.branchId, false),

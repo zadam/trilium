@@ -17,6 +17,8 @@ import noteDetailRender from "./note_detail_render.js";
 import noteDetailRelationMap from "./note_detail_relation_map.js";
 import noteDetailProtectedSession from "./note_detail_protected_session.js";
 import protectedSessionService from "./protected_session.js";
+import linkService from "./link.js";
+import treeCache from "./tree_cache.js";
 
 const $tabContentsContainer = $("#note-tab-container");
 
@@ -49,6 +51,8 @@ class TabContext {
 
         this.$noteTitle = this.$tabContent.find(".note-title");
         this.$noteTitleRow = this.$tabContent.find(".note-title-row");
+        this.$notePathList = this.$tabContent.find(".note-path-list");
+        this.$notePathCount = this.$tabContent.find(".note-path-count");
         this.$noteDetailComponents = this.$tabContent.find(".note-detail-component");
         this.$childrenOverview = this.$tabContent.find(".children-overview");
         this.$scriptArea = this.$tabContent.find(".note-detail-script-area");
@@ -71,6 +75,8 @@ class TabContext {
             this.tabRow.updateTab(this.$tab[0], {title});
             treeService.setNoteTitle(this.noteId, title);
         });
+
+        this.$noteTitle.bind('keydown', 'return', () => this.getComponent().focus());
 
         this.$protectButton = this.$tabContent.find(".protect-button");
         this.$protectButton.click(protectedSessionService.protectNoteAndSendToServer);
@@ -109,6 +115,8 @@ class TabContext {
         if (utils.isDesktop()) {
             this.noteType.updateExecuteScriptButtonVisibility();
         }
+
+        this.showPaths();
 
         console.log(`Switched tab ${this.tabId} to ${this.noteId}`);
     }
@@ -252,6 +260,52 @@ class TabContext {
         }
 
         this.$childrenOverview.show();
+    }
+
+    async addPath(notePath, isCurrent) {
+        const title = await treeUtils.getNotePathTitle(notePath);
+
+        const noteLink = await linkService.createNoteLink(notePath, title);
+
+        noteLink
+            .addClass("no-tooltip-preview")
+            .addClass("dropdown-item");
+
+        if (isCurrent) {
+            noteLink.addClass("current");
+        }
+
+        this.$notePathList.append(noteLink);
+    }
+
+    async showPaths() {
+        if (this.note.noteId === 'root') {
+            // root doesn't have any parent, but it's still technically 1 path
+
+            this.$notePathCount.html("1 path");
+
+            this.$notePathList.empty();
+
+            await this.addPath('root', true);
+        }
+        else {
+            const parents = await this.note.getParentNotes();
+
+            this.$notePathCount.html(parents.length + " path" + (parents.length > 1 ? "s" : ""));
+            this.$notePathList.empty();
+
+            const pathSegments = this.notePath.split("/");
+            const activeNoteParentNoteId = pathSegments[pathSegments.length - 2]; // we know this is not root so there must be a parent
+
+            for (const parentNote of parents) {
+                const parentNotePath = await treeService.getSomeNotePath(parentNote);
+                // this is to avoid having root notes leading '/'
+                const notePath = parentNotePath ? (parentNotePath + '/' + this.noteId) : this.noteId;
+                const isCurrent = activeNoteParentNoteId === parentNote.noteId;
+
+                await this.addPath(notePath, isCurrent);
+            }
+        }
     }
 }
 
