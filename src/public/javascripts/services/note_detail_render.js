@@ -18,7 +18,7 @@ class NoteDetailRender {
     }
 
     async render() {
-        const attributes = await attributeService.getAttributes();
+        const attributes = await this.ctx.attributes.getAttributes();
         const renderNotes = attributes.filter(attr =>
             attr.type === 'relation'
             && attr.name === 'renderNote'

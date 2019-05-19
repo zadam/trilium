@@ -81,10 +81,6 @@ async function saveNotesIfChanged() {
 /** @type {TabContext[]} */
 let tabContexts = [];
 
-function getActiveComponent() {
-    return getActiveTabContext().getComponent();
-}
-
 function getActiveEditor() {
     const activeTabContext = getActiveTabContext();
 
@@ -496,7 +492,6 @@ export default {
     getActiveEditor,
     isActive,
     activateTabContext,
-    getActiveComponent,
     clearOpenTabsTask,
     filterTabs
 };
