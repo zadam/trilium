@@ -85,6 +85,17 @@ function getActiveComponent() {
     return getActiveTabContext().getComponent();
 }
 
+function getActiveEditor() {
+    const activeTabContext = getActiveTabContext();
+
+    if (activeTabContext && activeTabContext.note && activeTabContext.note.type === 'text') {
+        return activeTabContext.getComponent().getEditor();
+    }
+    else {
+        return null;
+    }
+}
+
 function getTabContexts() {
     return tabContexts;
 }
@@ -482,6 +493,7 @@ export default {
     getTabContext,
     getTabContexts,
     getActiveTabContext,
+    getActiveEditor,
     isActive,
     activateTabContext,
     getActiveComponent,

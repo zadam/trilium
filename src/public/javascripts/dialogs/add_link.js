@@ -93,7 +93,7 @@ $form.submit(() => {
             $dialog.modal('hide');
 
             const linkHref = '#' + notePath;
-            const editor = noteDetailService.getActiveComponent().getEditor();
+            const editor = noteDetailService.getActiveEditor();
 
             if (hasSelection()) {
                 editor.execute('link', linkHref);
@@ -128,7 +128,7 @@ $form.submit(() => {
 
 // returns true if user selected some text, false if there's no selection
 function hasSelection() {
-    const model = noteDetailService.getActiveComponent().getEditor().model;
+    const model = noteDetailService.getActiveEditor().model;
     const selection = model.document.selection;
 
     return !selection.isCollapsed;

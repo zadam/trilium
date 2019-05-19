@@ -1,7 +1,7 @@
 import libraryLoader from "../services/library_loader.js";
 import infoService from "../services/info.js";
 import utils from "../services/utils.js";
-import noteDetailTextService from "../services/note_detail_text.js";
+import noteDetailService from "../services/note_detail.js";
 
 const $dialog = $('#markdown-import-dialog');
 const $importTextarea = $('#markdown-import-textarea');
@@ -16,7 +16,7 @@ async function convertMarkdownToHtml(text) {
 
     const result = writer.render(parsed);
 
-    const textEditor = noteDetailTextService.getEditor();
+    const textEditor = noteDetailService.getActiveEditor();
     const viewFragment = textEditor.data.processor.toView(result);
     const modelFragment = textEditor.data.toModel(viewFragment);
 

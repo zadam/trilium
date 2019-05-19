@@ -73,21 +73,25 @@ function goToLink(e) {
 }
 
 function addLinkToEditor(linkTitle, linkHref) {
-    const editor = noteDetailService.getActiveComponent().getEditor();
+    const editor = noteDetailService.getActiveEditor();
 
-    editor.model.change( writer => {
-        const insertPosition = editor.model.document.selection.getFirstPosition();
-        writer.insertText(linkTitle, { linkHref: linkHref }, insertPosition);
-    });
+    if (editor) {
+        editor.model.change(writer => {
+            const insertPosition = editor.model.document.selection.getFirstPosition();
+            writer.insertText(linkTitle, {linkHref: linkHref}, insertPosition);
+        });
+    }
 }
 
 function addTextToEditor(text) {
-    const editor = noteDetailService.getActiveComponent().getEditor();
+    const editor = noteDetailService.getActiveEditor();
 
-    editor.model.change(writer => {
-        const insertPosition = editor.model.document.selection.getFirstPosition();
-        writer.insertText(text, insertPosition);
-    });
+    if (editor) {
+        editor.model.change(writer => {
+            const insertPosition = editor.model.document.selection.getFirstPosition();
+            writer.insertText(text, insertPosition);
+        });
+    }
 }
 
 function init() {
