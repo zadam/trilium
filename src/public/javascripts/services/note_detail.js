@@ -41,11 +41,17 @@ async function reload() {
     await loadNoteDetail(getActiveTabContext().notePath);
 }
 
-async function reloadAllTabs() {
-    for (const tabContext of tabContexts) {
+async function reloadTab(tabContext) {
+    if (tabContext.note) {
         const note = await loadNote(tabContext.note.noteId);
 
         await loadNoteDetailToContext(tabContext, note, tabContext.notePath);
+    }
+}
+
+async function reloadAllTabs() {
+    for (const tabContext of tabContexts) {
+        await reloadTab(tabContext);
     }
 }
 
@@ -289,6 +295,14 @@ async function noteDeleted(noteId) {
     }
 }
 
+async function refreshTabs(sourceTabId, noteId) {
+    for (const tc of tabContexts) {
+        if (tc.noteId === noteId && tc.tabId !== sourceTabId) {
+            await reloadTab(tc);
+        }
+    }
+}
+
 function focusOnTitle() {
     getActiveTabContext().$noteTitle.focus();
 }
@@ -322,10 +336,10 @@ function fireDetailLoaded() {
 }
 
 messagingService.subscribeToSyncMessages(syncData => {
-    if (syncData.some(sync => sync.entityName === 'notes' && sync.entityId === getActiveNoteId())) {
+    if (syncData.some(sync => sync.entityName === 'notes')) {
         infoService.showMessage('Reloading note because of background changes');
 
-        reload();
+        refreshTabs(null, sync.entityId);
     }
 });
 
@@ -505,5 +519,6 @@ export default {
     clearOpenTabsTask,
     filterTabs,
     openEmptyTab,
-    noteDeleted
+    noteDeleted,
+    refreshTabs
 };

@@ -221,6 +221,8 @@ class TabContext {
     async saveNoteIfChanged() {
         if (this.isNoteChanged) {
             await this.saveNote();
+
+            noteDetailService.refreshTabs(this.tabId, this.noteId);
         }
     }
 
