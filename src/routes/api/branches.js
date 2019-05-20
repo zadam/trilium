@@ -102,7 +102,9 @@ async function setExpanded(req) {
 async function deleteBranch(req) {
     const branch = await repository.getBranch(req.params.branchId);
 
-    await notes.deleteNote(branch);
+    return {
+        noteDeleted: await notes.deleteNote(branch)
+    };
 }
 
 async function setPrefix(req) {

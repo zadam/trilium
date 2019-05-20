@@ -373,9 +373,10 @@ async function updateNote(noteId, noteUpdates) {
     await protectNoteRevisions(note);
 }
 
+/** @return {boolean} - true if note has been deleted, false otherwise */
 async function deleteNote(branch) {
     if (!branch || branch.isDeleted) {
-        return;
+        return false;
     }
 
     if (branch.branchId === 'root'
@@ -418,6 +419,11 @@ async function deleteNote(branch) {
             link.isDeleted = true;
             await link.save();
         }
+
+        return true;
+    }
+    else {
+        return false;
     }
 }
 

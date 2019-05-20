@@ -267,7 +267,7 @@ async function loadNote(noteId) {
 async function filterTabs(noteId) {
     for (const tc of tabContexts) {
         if (tc.notePath && !tc.notePath.split("/").includes(noteId)) {
-            await tabRow.removeTab(tc.tab);
+            await tabRow.removeTab(tc.$tab[0]);
         }
     }
 
@@ -279,6 +279,14 @@ async function filterTabs(noteId) {
     }
 
     await saveOpenTabs();
+}
+
+async function noteDeleted(noteId) {
+    for (const tc of tabContexts) {
+        if (tc.notePath && tc.notePath.split("/").includes(noteId)) {
+            await tabRow.removeTab(tc.$tab[0]);
+        }
+    }
 }
 
 function focusOnTitle() {
@@ -496,5 +504,6 @@ export default {
     activateTabContext,
     clearOpenTabsTask,
     filterTabs,
-    openEmptyTab
+    openEmptyTab,
+    noteDeleted
 };

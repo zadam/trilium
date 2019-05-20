@@ -4,6 +4,7 @@ import server from './server.js';
 import infoService from "./info.js";
 import treeCache from "./tree_cache.js";
 import hoistedNoteService from "./hoisted_note.js";
+import noteDetailService from "./note_detail.js";
 
 async function moveBeforeNode(nodesToMove, beforeNode) {
     nodesToMove = await filterRootNote(nodesToMove);
@@ -85,7 +86,11 @@ async function deleteNodes(nodes) {
     }
 
     for (const node of nodes) {
-        await server.remove('branches/' + node.data.branchId);
+        const {noteDeleted} = await server.remove('branches/' + node.data.branchId);
+
+        if (noteDeleted) {
+            noteDetailService.noteDeleted(node.data.noteId);
+        }
     }
 
     // following code assumes that nodes contain only top-most selected nodes - getSelectedNodes has been

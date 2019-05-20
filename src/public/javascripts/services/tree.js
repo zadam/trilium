@@ -853,7 +853,6 @@ export default {
     loadTree,
     treeInitialized,
     setExpandedToServer,
-    getHashValueFromAddress,
     getNodesByNoteId,
     checkFolderStatus,
     reloadNote,
