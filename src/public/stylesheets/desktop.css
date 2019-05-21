@@ -251,7 +251,8 @@ li.dropdown-submenu:hover > ul.dropdown-menu {
 }
 
 .note-tab-row .note-tab[active] .note-tab-wrapper {
-    background-image: linear-gradient(to bottom, var(--more-accented-background-color), var(--accented-background-color));
+    background-image: linear-gradient(to bottom, var(--more-accented-background-color), var(--main-background-color));
+    font-weight: bold;
 }
 
 .note-tab-row .note-tab[is-mini] .note-tab-wrapper {
