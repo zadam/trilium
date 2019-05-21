@@ -94,6 +94,7 @@ class TabContext {
 
         this.attributes.invalidateAttributes();
 
+        this.$noteTitleRow.show(); // might be hidden from empty detail
         this.$tabContent.toggleClass("protected", this.note.isProtected);
         this.$protectButton.toggleClass("active", this.note.isProtected);
         this.$protectButton.prop("disabled", this.note.isProtected);
@@ -106,8 +107,11 @@ class TabContext {
 
         setTimeout(async () => {
             // we include the note into recent list only if the user stayed on the note at least 5 seconds
-            if (notePath && notePath === await this.notePath) {
-                await server.post('recent-notes', { notePath });
+            if (notePath && notePath === this.notePath) {
+                await server.post('recent-notes', {
+                    noteId: this.noteId,
+                    notePath: this.notePath
+                });
             }
         }, 5000);
 

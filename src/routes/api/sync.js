@@ -78,12 +78,13 @@ async function forceNoteSync(req) {
 
     for (const branchId of await sql.getColumn("SELECT branchId FROM branches WHERE isDeleted = 0 AND noteId = ?", [noteId])) {
         await syncTableService.addBranchSync(branchId);
-        await syncTableService.addRecentNoteSync(branchId);
     }
 
     for (const noteRevisionId of await sql.getColumn("SELECT noteRevisionId FROM note_revisions WHERE noteId = ?", [noteId])) {
         await syncTableService.addNoteRevisionSync(noteRevisionId);
     }
+
+    await syncTableService.addRecentNoteSync(noteId);
 
     log.info("Forcing note sync for " + noteId);
 

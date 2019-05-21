@@ -246,7 +246,7 @@ const primaryKeys = {
     "note_contents": "noteId",
     "branches": "branchId",
     "note_revisions": "noteRevisionId",
-    "recent_notes": "branchId",
+    "recent_notes": "noteId",
     "api_tokens": "apiTokenId",
     "options": "name",
     "attributes": "attributeId",

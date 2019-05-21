@@ -396,7 +396,7 @@ async function findSyncRowsIssues() {
     await runSyncRowChecks("note_contents", "noteId");
     await runSyncRowChecks("note_revisions", "noteRevisionId");
     await runSyncRowChecks("branches", "branchId");
-    await runSyncRowChecks("recent_notes", "branchId");
+    await runSyncRowChecks("recent_notes", "noteId");
     await runSyncRowChecks("attributes", "attributeId");
     await runSyncRowChecks("api_tokens", "apiTokenId");
     await runSyncRowChecks("options", "name");

@@ -43,11 +43,11 @@ async function getRecentNotes(activeNoteId) {
         recent_notes.* 
       FROM 
         recent_notes
-        JOIN branches USING(branchId)
+        JOIN notes USING(noteId)
       WHERE
         recent_notes.isDeleted = 0
-        AND branches.isDeleted = 0
-        AND branches.noteId != ?
+        AND notes.isDeleted = 0
+        AND notes.noteId != ?
         ${extraCondition}
       ORDER BY 
         utcDateCreated DESC

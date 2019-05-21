@@ -6,7 +6,7 @@ const dateUtils = require('../services/date_utils');
 /**
  * RecentNote represents recently visited note.
  *
- * @param {string} branchId
+ * @param {string} noteId
  * @param {string} notePath
  * @param {boolean} isDeleted
  * @param {string} utcDateModified
@@ -15,8 +15,8 @@ const dateUtils = require('../services/date_utils');
  */
 class RecentNote extends Entity {
     static get entityName() { return "recent_notes"; }
-    static get primaryKeyName() { return "branchId"; }
-    static get hashedProperties() { return ["branchId", "notePath", "utcDateCreated", "isDeleted"]; }
+    static get primaryKeyName() { return "noteId"; }
+    static get hashedProperties() { return ["noteId", "notePath", "utcDateCreated", "isDeleted"]; }
 
     beforeSaving() {
         if (!this.isDeleted) {

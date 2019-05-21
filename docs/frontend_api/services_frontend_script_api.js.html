@@ -44,7 +44,7 @@ import dateNotesService from'./date_notes.js';
  * @constructor
  * @hideconstructor
  */
-function FrontendScriptApi(startNote, currentNote, originEntity = null) {
+function FrontendScriptApi(startNote, currentNote, originEntity = null, tabContext = null) {
     const $pluginButtons = $("#plugin-buttons");
 
     /** @property {object} note where script started executing */
@@ -56,6 +56,9 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null) {
 
     // to keep consistency with backend API
     this.dayjs = dayjs;
+
+    /** @property {TabContext|null} - experimental! */
+    this.tabContext = tabContext;
 
     /**
      * Activates note in the tree and in the note detail.
@@ -284,21 +287,19 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null) {
 
     /**
      * @method
-     * @returns {string} content of active note (loaded into right pane)
-     */
-    this.getActiveNoteContent = noteDetailService.getActiveNoteContent;
-
-    /**
-     * @method
      * @returns {NoteFull} active note (loaded into right pane)
      */
     this.getActiveNote = noteDetailService.getActiveNote;
 
     /**
      * @method
-     * @returns {Promise&lt;string>} returns note path of active note
+     * @returns {Promise&lt;string|null>} returns note path of active note or null if there isn't active note
      */
-    this.getActiveNotePath = treeService.getActiveNotePath;
+    this.getActiveNotePath = () => {
+        const activeTabContext = noteDetailService.getActiveTabContext();
+
+        return activeTabContext ? activeTabContext.notePath : null;
+    };
 
     /**
      * This method checks whether user navigated away from the note from which the scripts has been started.

@@ -28,8 +28,8 @@ async function addOptionsSync(name, sourceId) {
     await addEntitySync("options", name, sourceId);
 }
 
-async function addRecentNoteSync(branchId, sourceId) {
-    await addEntitySync("recent_notes", branchId, sourceId);
+async function addRecentNoteSync(noteId, sourceId) {
+    await addEntitySync("recent_notes", noteId, sourceId);
 }
 
 async function addLinkSync(linkId, sourceId) {
@@ -91,7 +91,7 @@ async function fillAllSyncRows() {
     await fillSyncRows("note_contents", "noteId");
     await fillSyncRows("branches", "branchId");
     await fillSyncRows("note_revisions", "noteRevisionId");
-    await fillSyncRows("recent_notes", "branchId");
+    await fillSyncRows("recent_notes", "noteId");
     await fillSyncRows("attributes", "attributeId");
     await fillSyncRows("api_tokens", "apiTokenId");
     await fillSyncRows("links", "linkId");
