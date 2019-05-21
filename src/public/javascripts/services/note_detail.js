@@ -124,7 +124,7 @@ async function switchToTab(tabId, notePath) {
         await tabContext.activate();
 
         if (notePath && tabContext.notePath !== notePath) {
-            await loadNoteDetail(notePath);
+            await treeService.activateNote(notePath);
         }
     }
 }
