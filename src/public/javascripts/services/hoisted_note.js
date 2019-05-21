@@ -25,6 +25,12 @@ async function setHoistedNoteId(noteId) {
     await server.put('options/hoistedNoteId/' + noteId);
 
     await tree.reload();
+
+    const activeTabContext = noteDetailService.getActiveTabContext();
+
+    if (activeTabContext) {
+        await tree.activateNote(activeTabContext.notePath);
+    }
 }
 
 async function unhoist() {
