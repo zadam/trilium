@@ -259,12 +259,6 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
 
     /**
      * @method
-     * @returns {string} content of active note (loaded into right pane)
-     */
-    this.getActiveNoteContent = noteDetailService.getActiveNoteContent;
-
-    /**
-     * @method
      * @returns {NoteFull} active note (loaded into right pane)
      */
     this.getActiveNote = noteDetailService.getActiveNote;

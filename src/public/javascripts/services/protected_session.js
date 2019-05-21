@@ -70,7 +70,7 @@ async function enterProtectedSessionOnServer(password) {
 }
 
 async function protectNoteAndSendToServer() {
-    if (noteDetailService.getActiveNote().isProtected) {
+    if (!noteDetailService.getActiveNote() || noteDetailService.getActiveNote().isProtected) {
         return;
     }
 

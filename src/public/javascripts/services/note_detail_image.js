@@ -65,7 +65,7 @@ class NoteDetailImage {
 
     getFileUrl() {
         // electron needs absolute URL so we extract current host, port, protocol
-        return utils.getHost() + "/api/notes/" + noteDetailService.getActiveNoteId() + "/download";
+        return utils.getHost() + `/api/notes/${this.ctx.note.noteId}/download`;
     }
 
     getContent() {}

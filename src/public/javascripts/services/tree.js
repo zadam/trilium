@@ -791,24 +791,7 @@ $(window).bind('hashchange', async function() {
 
         console.debug(`Switching to ${notePath} on tab ${tabId} because of hash change`);
 
-        let tabContext = noteDetailService.getTabContext(tabId);
-
-        if (!tabContext) {
-            noteDetailService.loadNoteDetail(notePath, {
-                newTab: true,
-                tabId: tabId,
-                activate: true
-            });
-        }
-        else {
-            if (!noteDetailService.isActive(tabContext)) {
-                noteDetailService.activateTabContext(tabContext);
-            }
-
-            if (notePath && tabContext.notePath !== notePath) {
-                noteDetailService.loadNoteDetail(notePath);
-            }
-        }
+        noteDetailService.switchToTab(tabId, notePath);
     }
 });
 

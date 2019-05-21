@@ -192,13 +192,17 @@ class TabContext {
         return this.components[type];
     }
 
+    async activate() {
+        await this.tabRow.activateTab(this.$tab[0]);
+    }
+
     async saveNote() {
         if (this.note.isProtected && !protectedSessionHolder.isProtectedSessionAvailable()) {
             return;
         }
 
         this.note.title = this.$noteTitle.val();
-        this.note.content = noteDetailService.getActiveNoteContent();
+        this.note.content = this.getComponent().getContent();
 
         // it's important to set the flag back to false immediatelly after retrieving title and content
         // otherwise we might overwrite another change (especially async code)

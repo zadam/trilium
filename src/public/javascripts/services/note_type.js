@@ -114,7 +114,7 @@ function NoteTypeContext(ctx) {
     }
 
     function confirmChangeIfContent() {
-        if (!noteDetailService.getActiveNoteContent()) {
+        if (!self.ctx.getComponent().getContent()) {
             return true;
         }
 

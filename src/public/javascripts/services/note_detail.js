@@ -17,24 +17,6 @@ const $savedIndicator = $(".saved-indicator");
 
 let detailLoadedListeners = [];
 
-/** @return {NoteFull} */
-function getActiveNote() {
-    const activeContext = getActiveTabContext();
-    return activeContext ? activeContext.note : null;
-}
-
-function getActiveNoteId() {
-    const activeNote = getActiveNote();
-
-    return activeNote ? activeNote.noteId : null;
-}
-
-function getActiveNoteType() {
-    const activeNote = getActiveNote();
-
-    return activeNote ? activeNote.type : null;
-}
-
 async function reload() {
     // no saving here
 
@@ -65,10 +47,6 @@ async function switchToNote(notePath) {
     await loadNoteDetail(notePath);
 
     openTabsChanged();
-}
-
-function getActiveNoteContent() {
-    return getActiveTabContext().getComponent().getContent();
 }
 
 function onNoteChange(func) {
@@ -115,17 +93,40 @@ function getActiveTabContext() {
     return tabContexts.find(tc => tc.tabId === tabId);
 }
 
-function isActive(tabContext) {
-    return tabContext.$tab[0] === tabRow.activateTab;
+/** @return {NoteFull} */
+function getActiveNote() {
+    const activeContext = getActiveTabContext();
+    return activeContext ? activeContext.note : null;
 }
 
-async function activateTabContext(tabContext) {
-    await tabRow.activateTab(tabContext.$tab[0]);
+function getActiveNoteId() {
+    const activeNote = getActiveNote();
+
+    return activeNote ? activeNote.noteId : null;
 }
 
-/** @returns {TabContext} */
-function getTabContext(tabId) {
-    return tabContexts.find(tc => tc.tabId === tabId);
+function getActiveNoteType() {
+    const activeNote = getActiveNote();
+
+    return activeNote ? activeNote.type : null;
+}
+
+async function switchToTab(tabId, notePath) {
+    const tabContext = tabContexts.find(tc => tc.tabId === tabId);
+
+    if (!tabContext) {
+        await loadNoteDetail(notePath, {
+            newTab: true,
+            tabId: tabId,
+            activate: true
+        });
+    } else {
+        await tabContext.activate();
+
+        if (notePath && tabContext.notePath !== notePath) {
+            await loadNoteDetail(notePath);
+        }
+    }
 }
 
 async function showTab(tabId) {
@@ -348,7 +349,13 @@ $tabContentsContainer.on("dragover", e => e.preventDefault());
 $tabContentsContainer.on("dragleave", e => e.preventDefault());
 
 $tabContentsContainer.on("drop", e => {
-    importDialog.uploadFiles(getActiveNoteId(), e.originalEvent.dataTransfer.files, {
+    const activeNote = getActiveNote();
+
+    if (!activeNote) {
+        return;
+    }
+
+    importDialog.uploadFiles(activeNote.noteId, e.originalEvent.dataTransfer.files, {
         safeImport: true,
         shrinkImages: true,
         textImportedAsText: true,
@@ -502,7 +509,6 @@ export default {
     loadNote,
     loadNoteDetail,
     getActiveNote,
-    getActiveNoteContent,
     getActiveNoteType,
     getActiveNoteId,
     focusOnTitle,
@@ -510,12 +516,10 @@ export default {
     saveNotesIfChanged,
     onNoteChange,
     addDetailLoadedListener,
-    getTabContext,
+    switchToTab,
     getTabContexts,
     getActiveTabContext,
     getActiveEditor,
-    isActive,
-    activateTabContext,
     clearOpenTabsTask,
     filterTabs,
     openEmptyTab,
