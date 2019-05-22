@@ -34,7 +34,6 @@ class TabRow {
     constructor(el) {
         this.draggabillies = [];
         this.eventListeners = {};
-        this.tabIdCounter = 1;
 
         this.el = el;
         this.hideTabRowForOneTab = false;
@@ -365,7 +364,9 @@ class TabRow {
         if (destinationIndex < originIndex) {
             tabEl.parentNode.insertBefore(tabEl, this.tabEls[destinationIndex]);
         } else {
-            tabEl.parentNode.insertBefore(tabEl, this.tabEls[destinationIndex + 1]);
+            const beforeEl = this.tabEls[destinationIndex + 1] || this.newTabEl;
+
+            tabEl.parentNode.insertBefore(tabEl, beforeEl);
         }
         await this.emit('tabReorder', { tabEl, originIndex, destinationIndex });
         this.layoutTabs();

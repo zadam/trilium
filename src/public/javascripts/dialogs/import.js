@@ -73,6 +73,10 @@ async function importIntoNote(importNoteId) {
 }
 
 async function uploadFiles(importNoteId, files, options) {
+    if (files.length === 0) {
+        return;
+    }
+
     let noteId;
 
     for (const file of files) {
