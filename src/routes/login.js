@@ -24,7 +24,7 @@ async function login(req, res) {
             }
 
             req.session.loggedIn = true;
-            res.redirect('..');
+            res.redirect('.');
         });
     }
     else {

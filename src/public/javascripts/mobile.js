@@ -47,6 +47,7 @@ async function showTree() {
         minExpandLevel: 2, // root can't be collapsed
         click: (event, data) => {
             if (data.targetType !== 'expander' && data.node.isActive()) {
+                // this is important for single column mobile view, otherwise it's not possible to see again previously displayed note
                 $tree.fancytree('getTree').reactivate(true);
 
                 return false;

@@ -337,10 +337,10 @@ function fireDetailLoaded() {
 }
 
 messagingService.subscribeToSyncMessages(syncData => {
-    if (syncData.some(sync => sync.entityName === 'notes')) {
-        infoService.showMessage('Reloading note because of background changes');
-
-        refreshTabs(null, sync.entityId);
+    for (const sync of syncData) {
+        if (sync.entityName === 'notes') {
+            refreshTabs(null, sync.entityId);
+        }
     }
 });
 
