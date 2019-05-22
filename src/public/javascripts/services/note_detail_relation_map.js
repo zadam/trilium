@@ -85,6 +85,27 @@ class NoteDetailRelationMap {
         this.relations = null;
         this.pzInstance = null;
 
+        this.$relationMapWrapper = ctx.$tabContent.find('.relation-map-wrapper');
+        this.$relationMapWrapper.click(event => {
+            if (this.clipboard) {
+                let {x, y} = this.getMousePosition(event);
+
+                // modifying position so that cursor is on the top-center of the box
+                x -= 80;
+                y -= 15;
+
+                this.createNoteBox(this.clipboard.noteId, this.clipboard.title, x, y);
+
+                this.mapData.notes.push({ noteId: this.clipboard.noteId, x, y });
+
+                this.saveData();
+
+                this.clipboard = null;
+            }
+
+            return true;
+        });
+
         this.$relationMapContainer.attr("id", "relation-map-container-" + (containerCounter++));
         this.$relationMapContainer.on("contextmenu", ".note-box", e => {
             contextMenuWidget.initContextMenu(e, {
@@ -130,7 +151,7 @@ class NoteDetailRelationMap {
             this.pzInstance.moveTo(0, 0);
         });
 
-        this.$component.on("drop", this.dropNoteOntoRelationMapHandler);
+        this.$component.on("drop", ev => this.dropNoteOntoRelationMapHandler(ev));
         this.$component.on("dragover", ev => ev.preventDefault());
     }
 
@@ -314,25 +335,6 @@ class NoteDetailRelationMap {
             maxZoom: 2,
             minZoom: 0.3,
             smoothScroll: false,
-            onMouseDown: event => {
-                if (this.clipboard) {
-                    let {x, y} = this.getMousePosition(event);
-
-                    // modifying position so that cursor is on the top-center of the box
-                    x -= 80;
-                    y -= 15;
-
-                    this.createNoteBox(this.clipboard.noteId, this.clipboard.title, x, y);
-
-                    this.mapData.notes.push({ noteId: this.clipboard.noteId, x, y });
-
-                    this.saveData();
-
-                    this.clipboard = null;
-                }
-
-                return true;
-            },
             filterKey: function(e, dx, dy, dz) {
                 // if ALT is pressed then panzoom should bubble the event up
                 // this is to preserve ALT-LEFT, ALT-RIGHT navigation working
