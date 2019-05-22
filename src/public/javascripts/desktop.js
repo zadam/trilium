@@ -42,6 +42,9 @@ import macInit from './services/mac_init.js';
 import cssLoader from './services/css_loader.js';
 import dateNoteService from './services/date_notes.js';
 
+window.glob.isDesktop = utils.isDesktop;
+window.glob.isMobile = utils.isMobile;
+
 // required for CKEditor image upload plugin
 window.glob.getActiveNode = treeService.getActiveNode;
 window.glob.getHeaders = server.getHeaders;

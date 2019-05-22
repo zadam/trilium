@@ -649,9 +649,8 @@ async function createNote(node, parentNoteId, target, extraOptions = {}) {
         if (!node.getChildren() && node.isFolder()) {
             await node.setExpanded();
         }
-        else {
-            node.addChildren(newNode);
-        }
+
+        node.addChildren(newNode);
 
         await node.getLastChild().setActive(true);
 

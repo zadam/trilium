@@ -82,7 +82,7 @@ async function deleteNodes(nodes) {
     nodes = await filterRootNote(nodes);
 
     if (nodes.length === 0 || !confirm('Are you sure you want to delete select note(s) and all the sub-notes?')) {
-        return;
+        return false;
     }
 
     for (const node of nodes) {
@@ -123,6 +123,8 @@ async function deleteNodes(nodes) {
     }
 
     infoService.showMessage("Note(s) has been deleted.");
+
+    return true;
 }
 
 async function moveNodeUpInHierarchy(node) {

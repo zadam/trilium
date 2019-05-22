@@ -8,6 +8,9 @@ import treeChangesService from "./services/branches.js";
 import utils from "./services/utils.js";
 import treeUtils from "./services/tree_utils.js";
 
+window.glob.isDesktop = utils.isDesktop;
+window.glob.isMobile = utils.isMobile;
+
 const $leftPane = $("#left-pane");
 const $tree = $("#tree");
 const $detail = $("#detail");
@@ -42,6 +45,13 @@ async function showTree() {
         source: tree,
         scrollParent: $tree,
         minExpandLevel: 2, // root can't be collapsed
+        click: (event, data) => {
+            if (data.targetType !== 'expander' && data.node.isActive()) {
+                $tree.fancytree('getTree').reactivate(true);
+
+                return false;
+            }
+        },
         activate: async (event, data) => {
             const node = data.node;
 
@@ -97,10 +107,10 @@ $detail.on("click", ".note-menu-button", async e => {
                 treeService.createNote(node, node.data.noteId, 'into');
             }
             else if (cmd === "delete") {
-                treeChangesService.deleteNodes([node]);
-
-                // move to the tree
-                togglePanes();
+                if (await treeChangesService.deleteNodes([node])) {
+                    // move to the tree
+                    togglePanes();
+                }
             }
             else {
                 throw new Error("Unrecognized command " + cmd);

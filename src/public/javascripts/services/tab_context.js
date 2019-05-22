@@ -75,7 +75,10 @@ class TabContext {
             treeService.setNoteTitle(this.noteId, title);
         });
 
-        this.$noteTitle.bind('keydown', 'return', () => this.getComponent().focus());
+        if (utils.isDesktop()) {
+            // keyboard plugin is not loaded in mobile
+            this.$noteTitle.bind('keydown', 'return', () => this.getComponent().focus());
+        }
 
         this.$protectButton = this.$tabContent.find(".protect-button");
         this.$protectButton.click(protectedSessionService.protectNoteAndSendToServer);
