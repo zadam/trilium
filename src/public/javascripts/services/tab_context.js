@@ -97,13 +97,6 @@ class TabContext {
 
         this.attributes.invalidateAttributes();
 
-        this.$noteTitleRow.show(); // might be hidden from empty detail
-        this.$tabContent.toggleClass("protected", this.note.isProtected);
-        this.$protectButton.toggleClass("active", this.note.isProtected);
-        this.$protectButton.prop("disabled", this.note.isProtected);
-        this.$unprotectButton.toggleClass("active", !this.note.isProtected);
-        this.$unprotectButton.prop("disabled", !this.note.isProtected || !protectedSessionHolder.isProtectedSessionAvailable());
-
         this.setupClasses();
 
         this.setCurrentNotePathToHash();
@@ -169,6 +162,13 @@ class TabContext {
         this.$tabContent.addClass(this.note.cssClass);
         this.$tabContent.addClass(utils.getNoteTypeClass(this.note.type));
         this.$tabContent.addClass(utils.getMimeTypeClass(this.note.mime));
+
+        this.$noteTitleRow.show(); // might be hidden from empty detail
+        this.$tabContent.toggleClass("protected", this.note.isProtected);
+        this.$protectButton.toggleClass("active", this.note.isProtected);
+        this.$protectButton.prop("disabled", this.note.isProtected);
+        this.$unprotectButton.toggleClass("active", !this.note.isProtected);
+        this.$unprotectButton.prop("disabled", !this.note.isProtected || !protectedSessionHolder.isProtectedSessionAvailable());
     }
 
     getComponent() {
