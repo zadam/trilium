@@ -66,6 +66,7 @@
     "session-file-store": "1.2.0",
     "simple-node-logger": "18.12.22",
     "sqlite": "3.0.3",
+    "sqlite3": "4.0.6",
     "tar-stream": "2.0.1",
     "turndown": "5.0.3",
     "unescape": "1.0.1",
