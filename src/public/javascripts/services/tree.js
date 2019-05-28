@@ -400,6 +400,7 @@ function initFancyTree(tree) {
         beforeActivate: (event, data) => {
             // this is for the case when tree reload has been called and we don't want to
             if (ignoreNextActivationNoteId && getActiveNode() !== null) {
+                ignoreNextActivationNoteId = null;
                 return false;
             }
         },
