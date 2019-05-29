@@ -5,14 +5,18 @@ const sql = require('../services/sql');
 const attributeService = require('../services/attributes');
 const config = require('../services/config');
 const optionService = require('../services/options');
+const log = require('../services/log');
 
 async function index(req, res) {
     const options = await optionService.getOptionsMap();
 
     const view = req.cookies['trilium-device'] === 'mobile' ? 'mobile' : 'desktop';
 
+    const csrfToken = req.csrfToken();
+    log.info(`Generated CSRF token ${csrfToken} with secret ${res.getHeader('set-cookie')}`);
+
     res.render(view, {
-        csrfToken: req.csrfToken(),
+        csrfToken: csrfToken,
         theme: options.theme,
         leftPaneMinWidth: parseInt(options.leftPaneMinWidth),
         leftPaneWidthPercent: parseInt(options.leftPaneWidthPercent),
