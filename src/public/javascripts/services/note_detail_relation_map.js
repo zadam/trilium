@@ -553,7 +553,13 @@ class NoteDetailRelationMap {
     getZoom() {
         const matrixRegex = /matrix\((-?\d*\.?\d+),\s*0,\s*0,\s*-?\d*\.?\d+,\s*-?\d*\.?\d+,\s*-?\d*\.?\d+\)/;
 
-        const matches = this.$relationMapContainer.css('transform').match(matrixRegex);
+        const transform = this.$relationMapContainer.css('transform');
+
+        const matches = transform.match(matrixRegex);
+
+        if (!matches) {
+            throw new Error("Cannot match transform: " + transform);
+        }
 
         return matches[1];
     }
