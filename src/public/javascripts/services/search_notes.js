@@ -80,6 +80,8 @@ async function doSearch(searchText) {
         return;
     }
 
+    $searchBox.tooltip("hide");
+
     const response = await server.get('search/' + encodeURIComponent(searchText));
 
     if (!response.success) {
