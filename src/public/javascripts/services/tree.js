@@ -404,7 +404,9 @@ function initFancyTree(tree) {
         },
         beforeActivate: (event, data) => {
             // this is for the case when tree reload has been called and we don't want to
-            if (ignoreNextActivationNoteId && getActiveNode() !== null) {
+            // FIXME: why do we have this in both beforeActivate and activate?
+            // FIXME: also shouldn't we set ignoreNextActivationNoteId in any case? Otherwise subsequent activation of this note might be one-time ignored
+            if (ignoreNextActivationNoteId && getActiveNode() !== null && getActiveNode().data.noteId === data.node.data.noteId) {
                 ignoreNextActivationNoteId = null;
                 return false;
             }
