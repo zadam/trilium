@@ -235,7 +235,7 @@ class TabContext {
         this.$savedIndicator.fadeIn();
 
         // run async
-        bundleService.executeRelationBundles(this.note, 'runOnNoteChange');
+        bundleService.executeRelationBundles(this.note, 'runOnNoteChange', this);
     }
 
     async saveNoteIfChanged() {

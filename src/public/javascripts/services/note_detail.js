@@ -215,7 +215,7 @@ async function loadNoteDetailToContext(ctx, note, notePath) {
 
     ctx.$scriptArea.empty();
 
-    await bundleService.executeRelationBundles(ctx.note, 'runOnNoteView');
+    await bundleService.executeRelationBundles(ctx.note, 'runOnNoteView', ctx);
 
     if (utils.isDesktop()) {
         await ctx.attributes.showAttributes();

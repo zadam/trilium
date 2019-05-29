@@ -29,7 +29,7 @@ async function executeStartupBundles() {
     }
 }
 
-async function executeRelationBundles(note, relationName) {
+async function executeRelationBundles(note, relationName, tabContext) {
     note.bundleCache = note.bundleCache || {};
 
     if (!note.bundleCache[relationName]) {
@@ -37,7 +37,7 @@ async function executeRelationBundles(note, relationName) {
     }
 
     for (const bundle of note.bundleCache[relationName]) {
-        await executeBundle(bundle, note);
+        await executeBundle(bundle, note, tabContext);
     }
 }
 
