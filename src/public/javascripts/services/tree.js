@@ -403,27 +403,20 @@ function initFancyTree(tree) {
             }
         },
         beforeActivate: (event, data) => {
-            // this is for the case when tree reload has been called and we don't want to
-            // FIXME: why do we have this in both beforeActivate and activate?
-            // FIXME: also shouldn't we set ignoreNextActivationNoteId in any case? Otherwise subsequent activation of this note might be one-time ignored
+            // make sure the reload won't trigger reactivation.
+            // This is important especially in cases where we wait for the reload to finish to then activate some other note.
+            // But since the activate() event is called asynchronously, it may be called (or finished calling)
+            // after we switched to a different note so it's not possible to just check if current note matches requested note
             if (ignoreNextActivationNoteId && getActiveNode() !== null && getActiveNode().data.noteId === data.node.data.noteId) {
                 ignoreNextActivationNoteId = null;
                 return false;
             }
         },
         activate: async (event, data) => {
-            const node = data.node;
-            const noteId = node.data.noteId;
-
-            if (ignoreNextActivationNoteId === noteId) {
-                ignoreNextActivationNoteId = null;
-                return;
-            }
-
             // click event won't propagate so let's close context menu manually
             contextMenuWidget.hideContextMenu();
 
-            const notePath = await treeUtils.getNotePath(node);
+            const notePath = await treeUtils.getNotePath(data.node);
 
             noteDetailService.switchToNote(notePath);
         },
@@ -497,9 +490,6 @@ function getTree() {
 async function reload() {
     const notes = await loadTree();
 
-    // make sure the reload won't trigger reactivation. This is important especially in cases where we wait for the reload
-    // to finish to then activate some other note. But since the activate() event is called asynchronously, it may be called
-    // (or finished calling) after we switched to a different note.
     if (getActiveNode()) {
         ignoreNextActivationNoteId = getActiveNode().data.noteId;
     }
