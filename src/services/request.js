@@ -19,7 +19,7 @@ function exec(opts) {
             };
 
             if (opts.auth) {
-                const token = new Buffer(opts.auth.user + ":" + opts.auth.pass).toString('base64');
+                const token = Buffer.from(opts.auth.user + ":" + opts.auth.pass).toString('base64');
 
                 headers['Authorization'] = `Basic ${token}`;
             }
