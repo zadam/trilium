@@ -9,12 +9,12 @@
  *
  * This section is automatically generated from the `skin-common.less` template.
  *
- * Copyright (c) 2008-2019, Martin Wendt (http://wwWendt.de)
+ * Copyright (c) 2008-2019, Martin Wendt (https://wwWendt.de)
  * Released under the MIT license
  * https://github.com/mar10/fancytree/wiki/LicenseInfo
  *
- * @version 2.30.2
- * @date 2019-01-13T08:17:01Z
+ * @version 2.31.0
+ * @date 2019-05-31T11:32:38Z
 ******************************************************************************/
 /*------------------------------------------------------------------------------
  * Helpers
@@ -228,7 +228,7 @@ span.fancytree-expander {
 .fancytree-fade-expander:hover span.fancytree-expander,
 .fancytree-fade-expander.fancytree-treefocus span.fancytree-expander,
 .fancytree-fade-expander .fancytree-treefocus span.fancytree-expander,
-.fancytree-fade-expander [class*='fancytree-statusnode-'] span.fancytree-expander {
+.fancytree-fade-expander [class*="fancytree-statusnode-"] span.fancytree-expander {
   transition: opacity 0.6s;
   opacity: 1;
 }
@@ -284,6 +284,19 @@ span.fancytree-checkbox.fancytree-radio:hover {
 }
 .fancytree-unselectable.fancytree-selected span.fancytree-checkbox:hover {
   background-position: -32px -32px;
+}
+.fancytree-container.fancytree-checkbox-auto-hide span.fancytree-checkbox {
+  visibility: hidden;
+}
+.fancytree-container.fancytree-checkbox-auto-hide .fancytree-node:hover span.fancytree-checkbox,
+.fancytree-container.fancytree-checkbox-auto-hide tr:hover td span.fancytree-checkbox,
+.fancytree-container.fancytree-checkbox-auto-hide .fancytree-node.fancytree-selected span.fancytree-checkbox,
+.fancytree-container.fancytree-checkbox-auto-hide tr.fancytree-selected td span.fancytree-checkbox {
+  visibility: unset;
+}
+.fancytree-container.fancytree-checkbox-auto-hide.fancytree-treefocus .fancytree-node.fancytree-active span.fancytree-checkbox,
+.fancytree-container.fancytree-checkbox-auto-hide.fancytree-treefocus tr.fancytree-active td span.fancytree-checkbox {
+  visibility: unset;
 }
 /*------------------------------------------------------------------------------
  * Node type icon
@@ -542,7 +555,7 @@ table.fancytree-ext-columnview span.fancytree-node.fancytree-expanded {
   background-color: #e0e0e0;
 }
 table.fancytree-ext-columnview span.fancytree-node.fancytree-active {
-  background-color: #CBE8F6;
+  background-color: #cbe8f6;
 }
 table.fancytree-ext-columnview .fancytree-has-children span.fancytree-cv-right {
   position: absolute;
