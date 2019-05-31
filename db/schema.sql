@@ -42,13 +42,6 @@ CREATE TABLE IF NOT EXISTS "branches" (
                                         hash TEXT DEFAULT "" NOT NULL,
                                         PRIMARY KEY(`branchId`)
 );
-CREATE TABLE IF NOT EXISTS "recent_notes" (
-                                            `branchId` TEXT NOT NULL PRIMARY KEY,
-                                            `notePath` TEXT NOT NULL,
-                                            hash TEXT DEFAULT "" NOT NULL,
-                                            `utcDateCreated` TEXT NOT NULL,
-                                            isDeleted INT
-);
 CREATE TABLE IF NOT EXISTS "event_log" (
                                          `eventId`	TEXT NOT NULL PRIMARY KEY,
                                          `noteId`	TEXT,
@@ -144,4 +137,12 @@ CREATE TABLE IF NOT EXISTS "note_contents" (
                                                    `hash` TEXT DEFAULT "" NOT NULL,
                                                    `utcDateModified` TEXT NOT NULL,
                                                    PRIMARY KEY(`noteId`)
+);
+CREATE TABLE recent_notes
+(
+    noteId TEXT not null primary key,
+    notePath TEXT not null,
+    hash TEXT default "" not null,
+    utcDateCreated TEXT not null,
+    isDeleted INT
 );

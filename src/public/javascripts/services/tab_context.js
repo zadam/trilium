@@ -101,6 +101,8 @@ class TabContext {
 
         this.setCurrentNotePathToHash();
 
+        this.setTitleBar();
+
         setTimeout(async () => {
             // we include the note into recent list only if the user stayed on the note at least 5 seconds
             if (notePath && notePath === this.notePath) {
@@ -123,6 +125,13 @@ class TabContext {
     show() {
         this.$tabContent.show();
         this.setCurrentNotePathToHash();
+        this.setTitleBar();
+    }
+
+    setTitleBar() {
+        if (!this.$tabContent.is(":visible")) {
+            return;
+        }
 
         document.title = "Trilium Notes";
 
@@ -226,7 +235,7 @@ class TabContext {
         this.$savedIndicator.fadeIn();
 
         // run async
-        bundleService.executeRelationBundles(this.note, 'runOnNoteChange');
+        bundleService.executeRelationBundles(this.note, 'runOnNoteChange', this);
     }
 
     async saveNoteIfChanged() {

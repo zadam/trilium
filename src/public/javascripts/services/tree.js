@@ -1,6 +1,5 @@
 import contextMenuWidget from './context_menu.js';
 import dragAndDropSetup from './drag_and_drop.js';
-import linkService from './link.js';
 import messagingService from './messaging.js';
 import noteDetailService from './note_detail.js';
 import protectedSessionHolder from './protected_session_holder.js';
@@ -17,11 +16,15 @@ import hoistedNoteService from '../services/hoisted_note.js';
 import confirmDialog from "../dialogs/confirm.js";
 import optionsInit from "../services/options_init.js";
 import TreeContextMenu from "./tree_context_menu.js";
+import bundle from "./bundle.js";
 
 const $tree = $("#tree");
 const $createTopLevelNoteButton = $("#create-top-level-note-button");
 const $collapseTreeButton = $("#collapse-tree-button");
 const $scrollToActiveNoteButton = $("#scroll-to-active-note-button");
+
+let setFrontendAsLoaded;
+const frontendLoaded = new Promise(resolve => { setFrontendAsLoaded = resolve; });
 
 // focused & not active node can happen during multiselection where the node is selected but not activated
 // (its content is not displayed in the detail)
@@ -362,6 +365,8 @@ async function treeInitialized() {
     // previous opening triggered task to save tab changes but these are bogus changes (this is init)
     // so we'll cancel it
     noteDetailService.clearOpenTabsTask();
+
+    setFrontendAsLoaded();
 }
 
 let ignoreNextActivationNoteId = null;
@@ -398,24 +403,20 @@ function initFancyTree(tree) {
             }
         },
         beforeActivate: (event, data) => {
-            // this is for the case when tree reload has been called and we don't want to
-            if (ignoreNextActivationNoteId && getActiveNode() !== null) {
+            // make sure the reload won't trigger reactivation.
+            // This is important especially in cases where we wait for the reload to finish to then activate some other note.
+            // But since the activate() event is called asynchronously, it may be called (or finished calling)
+            // after we switched to a different note so it's not possible to just check if current note matches requested note
+            if (ignoreNextActivationNoteId && getActiveNode() !== null && getActiveNode().data.noteId === data.node.data.noteId) {
+                ignoreNextActivationNoteId = null;
                 return false;
             }
         },
         activate: async (event, data) => {
-            const node = data.node;
-            const noteId = node.data.noteId;
-
-            if (ignoreNextActivationNoteId === noteId) {
-                ignoreNextActivationNoteId = null;
-                return;
-            }
-
             // click event won't propagate so let's close context menu manually
             contextMenuWidget.hideContextMenu();
 
-            const notePath = await treeUtils.getNotePath(node);
+            const notePath = await treeUtils.getNotePath(data.node);
 
             noteDetailService.switchToNote(notePath);
         },
@@ -489,9 +490,6 @@ function getTree() {
 async function reload() {
     const notes = await loadTree();
 
-    // make sure the reload won't trigger reactivation. This is important especially in cases where we wait for the reload
-    // to finish to then activate some other note. But since the activate() event is called asynchronously, it may be called
-    // (or finished calling) after we switched to a different note.
     if (getActiveNode()) {
         ignoreNextActivationNoteId = getActiveNode().data.noteId;
     }
@@ -815,6 +813,8 @@ $collapseTreeButton.click(() => collapseTree());
 
 $createTopLevelNoteButton.click(createNewTopLevelNote);
 $scrollToActiveNoteButton.click(scrollToActiveNote);
+
+frontendLoaded.then(bundle.executeStartupBundles);
 
 export default {
     reload,

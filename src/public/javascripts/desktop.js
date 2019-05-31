@@ -160,8 +160,6 @@ entrypoints.registerEntrypoints();
 
 noteTooltipService.setupGlobalTooltip();
 
-bundle.executeStartupBundles();
-
 linkService.init();
 
 noteAutocompleteService.init();

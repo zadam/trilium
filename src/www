@@ -8,6 +8,11 @@ process.on('unhandledRejection', error => {
     require('./services/log').info(error);
 });
 
+process.on('SIGINT', function() {
+	console.log("Caught interrupt signal. Exiting.");
+	process.exit();
+});
+
 const { app, sessionParser } = require('./app');
 const debug = require('debug')('node:server');
 const fs = require('fs');
