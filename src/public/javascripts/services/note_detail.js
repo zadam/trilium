@@ -232,6 +232,12 @@ async function loadNoteDetail(origNotePath, options = {}) {
 
     if (!notePath) {
         console.error(`Cannot resolve note path ${origNotePath}`);
+
+        // fallback to display something
+        if (tabContexts.length === 0) {
+            await openEmptyTab();
+        }
+
         return;
     }
 
