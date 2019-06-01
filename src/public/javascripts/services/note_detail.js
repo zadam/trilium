@@ -337,10 +337,18 @@ function fireDetailLoaded() {
 }
 
 messagingService.subscribeToSyncMessages(syncData => {
-    for (const sync of syncData) {
-        if (sync.entityName === 'notes') {
-            refreshTabs(null, sync.entityId);
-        }
+    const noteIdsToRefresh = new Set();
+
+    syncData
+        .filter(sync => sync.entityName === 'notes')
+        .forEach(sync => noteIdsToRefresh.add(sync.entityId));
+
+    syncData
+        .filter(sync => sync.entityName === 'attributes')
+        .forEach(sync => noteIdsToRefresh.add(sync.noteId));
+
+    for (const noteId of noteIdsToRefresh) {
+        refreshTabs(null, noteId);
     }
 });
 

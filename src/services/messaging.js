@@ -65,6 +65,13 @@ async function sendMessageToAllClients(message) {
 
 async function sendPing(client, lastSentSyncId) {
     const syncData = await sql.getRows("SELECT * FROM sync WHERE id > ?", [lastSentSyncId]);
+
+    for (const sync of syncData) {
+        if (sync.entityName === 'attributes') {
+            sync.noteId = await sql.getValue(`SELECT noteId FROM attributes WHERE attributeId = ?`, [sync.entityId]);
+        }
+    }
+
     const stats = require('./sync').stats;
 
     await sendMessage(client, {
