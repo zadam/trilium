@@ -109,6 +109,8 @@ async function getNodeFromPath(notePath, expand = false, expandOpts = {}) {
 
         // we expand only after hoisted note since before then nodes are not actually present in the tree
         if (parentNode) {
+            checkFolderStatus(parentNode);
+
             if (!parentNode.isLoaded()) {
                 await parentNode.load();
             }
@@ -531,7 +533,7 @@ async function collapseTree(node = null) {
 async function scrollToActiveNote() {
     const activeContext = noteDetailService.getActiveTabContext();
 
-    if (activeContext) {
+    if (activeContext && activeContext.notePath) {
         const node = await expandToNote(activeContext.notePath);
 
         node.makeVisible({scrollIntoView: true});
