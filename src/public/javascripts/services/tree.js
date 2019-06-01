@@ -369,8 +369,6 @@ async function treeInitialized() {
     setFrontendAsLoaded();
 }
 
-let ignoreNextActivationNoteId = null;
-
 function initFancyTree(tree) {
     utils.assertArguments(tree);
 
@@ -399,16 +397,6 @@ function initFancyTree(tree) {
                     clearSelectedNodes();
                 }
 
-                return false;
-            }
-        },
-        beforeActivate: (event, data) => {
-            // make sure the reload won't trigger reactivation.
-            // This is important especially in cases where we wait for the reload to finish to then activate some other note.
-            // But since the activate() event is called asynchronously, it may be called (or finished calling)
-            // after we switched to a different note so it's not possible to just check if current note matches requested note
-            if (ignoreNextActivationNoteId && getActiveNode() !== null && getActiveNode().data.noteId === data.node.data.noteId) {
-                ignoreNextActivationNoteId = null;
                 return false;
             }
         },
@@ -490,11 +478,16 @@ function getTree() {
 async function reload() {
     const notes = await loadTree();
 
-    if (getActiveNode()) {
-        ignoreNextActivationNoteId = getActiveNode().data.noteId;
-    }
+    const activeNotePath = getActiveNode() !== null ? await treeUtils.getNotePath(getActiveNode()) : null;
 
     await getTree().reload(notes);
+
+    // reactivate originally activated node, but don't trigger note loading
+    if (activeNotePath) {
+        const node = await getNodeFromPath(activeNotePath, true);
+
+        await node.setActive(true, {noEvents: true});
+    }
 }
 
 function isNotePathInAddress() {
