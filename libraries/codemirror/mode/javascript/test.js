@@ -226,6 +226,12 @@
      "  [keyword return] [variable-2 x];",
      "}");
 
+  MT(
+    "param_destructuring",
+    "[keyword function] [def foo]([def x] [operator =] [string-2 `foo${][number 10][string-2 }bar`]) {",
+    "  [keyword return] [variable-2 x];",
+    "}");
+
   MT("new_target",
      "[keyword function] [def F]([def target]) {",
      "  [keyword if] ([variable-2 target] [operator &&] [keyword new].[keyword target].[property name]) {",
@@ -441,6 +447,12 @@
 
   TS("abstract class",
      "[keyword export] [keyword abstract] [keyword class] [def Foo] {}")
+
+  TS("interface without semicolons",
+     "[keyword interface] [def Foo] {",
+     "  [property greet]([def x]: [type int]): [type blah]",
+     "  [property bar]: [type void]",
+     "}")
 
   var jsonld_mode = CodeMirror.getMode(
     {indentUnit: 2},

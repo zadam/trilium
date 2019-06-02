@@ -32,7 +32,7 @@
     function flatXMLIndent(state) {
       var tagName = state.tagName
       state.tagName = null
-      var result = xmlMode.indent(state, "")
+      var result = xmlMode.indent(state, "", "")
       state.tagName = tagName
       return result
     }
@@ -105,7 +105,7 @@
     function jsToken(stream, state, cx) {
       if (stream.peek() == "<" && jsMode.expressionAllowed(stream, cx.state)) {
         jsMode.skipExpression(cx.state)
-        state.context = new Context(CodeMirror.startState(xmlMode, jsMode.indent(cx.state, "")),
+        state.context = new Context(CodeMirror.startState(xmlMode, jsMode.indent(cx.state, "", "")),
                                     xmlMode, 0, state.context)
         return null
       }

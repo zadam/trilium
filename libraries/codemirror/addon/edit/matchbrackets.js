@@ -14,20 +14,25 @@
 
   var Pos = CodeMirror.Pos;
 
-  var matching = {"(": ")>", ")": "(<", "[": "]>", "]": "[<", "{": "}>", "}": "{<"};
+  var matching = {"(": ")>", ")": "(<", "[": "]>", "]": "[<", "{": "}>", "}": "{<", "<": ">>", ">": "<<"};
+
+  function bracketRegex(config) {
+    return config && config.bracketRegex || /[(){}[\]]/
+  }
 
   function findMatchingBracket(cm, where, config) {
     var line = cm.getLineHandle(where.line), pos = where.ch - 1;
     var afterCursor = config && config.afterCursor
     if (afterCursor == null)
       afterCursor = /(^| )cm-fat-cursor($| )/.test(cm.getWrapperElement().className)
+    var re = bracketRegex(config)
 
     // A cursor is defined as between two characters, but in in vim command mode
     // (i.e. not insert mode), the cursor is visually represented as a
     // highlighted box on top of the 2nd character. Otherwise, we allow matches
     // from before or after the cursor.
-    var match = (!afterCursor && pos >= 0 && matching[line.text.charAt(pos)]) ||
-        matching[line.text.charAt(++pos)];
+    var match = (!afterCursor && pos >= 0 && re.test(line.text.charAt(pos)) && matching[line.text.charAt(pos)]) ||
+        re.test(line.text.charAt(pos + 1)) && matching[line.text.charAt(++pos)];
     if (!match) return null;
     var dir = match.charAt(1) == ">" ? 1 : -1;
     if (config && config.strict && (dir > 0) != (pos == where.ch)) return null;
@@ -51,7 +56,7 @@
     var maxScanLines = (config && config.maxScanLines) || 1000;
 
     var stack = [];
-    var re = config && config.bracketRegex ? config.bracketRegex : /[(){}[\]]/;
+    var re = bracketRegex(config)
     var lineEnd = dir > 0 ? Math.min(where.line + maxScanLines, cm.lastLine() + 1)
                           : Math.max(cm.firstLine() - 1, where.line - maxScanLines);
     for (var lineNo = where.line; lineNo != lineEnd; lineNo += dir) {
@@ -64,7 +69,7 @@
         var ch = line.charAt(pos);
         if (re.test(ch) && (style === undefined || cm.getTokenTypeAt(Pos(lineNo, pos + 1)) == style)) {
           var match = matching[ch];
-          if ((match.charAt(1) == ">") == (dir > 0)) stack.push(ch);
+          if (match && (match.charAt(1) == ">") == (dir > 0)) stack.push(ch);
           else if (!stack.length) return {pos: Pos(lineNo, pos), ch: ch};
           else stack.pop();
         }

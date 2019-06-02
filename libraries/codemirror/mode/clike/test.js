@@ -23,6 +23,8 @@
   MT("def",
      "[type void] [def foo]() {}",
      "[keyword struct] [def bar]{}",
+     "[keyword enum] [def zot]{}",
+     "[keyword union] [def ugh]{}",
      "[type int] [type *][def baz]() {}");
 
   MT("def_new_line",
@@ -43,6 +45,26 @@
      "[type unsigned] [type int] [variable bar] [operator =] [number 8];",
      "[meta #include <baz> ][comment // comment]")
 
+  MT("c_underscores",
+     "[builtin __FOO];",
+     "[builtin _Complex];",
+     "[builtin __aName];",
+     "[variable _aName];");
+
+  MT("c_types",
+    "[type int];",
+    "[type long];",
+    "[type char];",
+    "[type short];",
+    "[type double];",
+    "[type float];",
+    "[type unsigned];",
+    "[type signed];",
+    "[type void];",
+    "[type bool];",
+    "[type foo_t];",
+    "[variable foo_T];",
+    "[variable _t];");
 
   var mode_cpp = CodeMirror.getMode({indentUnit: 2}, "text/x-c++src");
   function MTCPP(name) { test.mode(name, mode_cpp, Array.prototype.slice.call(arguments, 1)); }
@@ -56,6 +78,54 @@
   MTCPP("ctor_dtor",
      "[def Foo::Foo]() {}",
      "[def Foo::~Foo]() {}");
+
+  MTCPP("cpp_underscores",
+        "[builtin __FOO];",
+        "[builtin _Complex];",
+        "[builtin __aName];",
+        "[variable _aName];");
+
+  var mode_objc = CodeMirror.getMode({indentUnit: 2}, "text/x-objectivec");
+  function MTOBJC(name) { test.mode(name, mode_objc, Array.prototype.slice.call(arguments, 1)); }
+
+  MTOBJC("objc_underscores",
+         "[builtin __FOO];",
+         "[builtin _Complex];",
+         "[builtin __aName];",
+         "[variable _aName];");
+
+  MTOBJC("objc_interface",
+         "[keyword @interface] [def foo] {",
+         "  [type int] [variable bar];",
+         "}",
+         "[keyword @property] ([keyword atomic], [keyword nullable]) [variable NSString][operator *] [variable a];",
+         "[keyword @property] ([keyword nonatomic], [keyword assign]) [type int] [variable b];",
+         "[operator -]([type instancetype])[variable initWithFoo]:([type int])[variable a] " +
+           "[builtin NS_DESIGNATED_INITIALIZER];",
+         "[keyword @end]");
+
+  MTOBJC("objc_implementation",
+         "[keyword @implementation] [def foo] {",
+         "  [type int] [variable bar];",
+         "}",
+         "[keyword @property] ([keyword readwrite]) [type SEL] [variable a];",
+         "[operator -]([type instancetype])[variable initWithFoo]:([type int])[variable a] {",
+         "  [keyword if](([keyword self] [operator =] [[[keyword super] [variable init] ]])) {}",
+         "  [keyword return] [keyword self];",
+         "}",
+         "[keyword @end]");
+
+  MTOBJC("objc_types",
+         "[type int];",
+         "[type foo_t];",
+         "[variable foo_T];",
+         "[type id];",
+         "[type SEL];",
+         "[type instancetype];",
+         "[type Class];",
+         "[type Protocol];",
+         "[type BOOL];"
+         );
 
   var mode_scala = CodeMirror.getMode({indentUnit: 2}, "text/x-scala");
   function MTSCALA(name) { test.mode("scala_" + name, mode_scala, Array.prototype.slice.call(arguments, 1)); }

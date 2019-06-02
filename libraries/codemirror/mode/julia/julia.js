@@ -23,58 +23,50 @@ CodeMirror.defineMode("julia", function(config, parserConf) {
   var uChar = "([^\\u0027\\u005C\\uD800-\\uDFFF]|[\\uD800-\\uDFFF][\\uDC00-\\uDFFF])";
 
   var operators = parserConf.operators || wordRegexp([
-      "[<>]:", "[<>=]=", "<<=?", ">>>?=?", "=>", "->", "\\/\\/",
-      "[\\\\%*+\\-<>!=\\/^|&\\u00F7\\u22BB]=?", "\\?", "\\$", "~", ":",
-      "\\u00D7", "\\u2208", "\\u2209", "\\u220B", "\\u220C", "\\u2218",
-      "\\u221A", "\\u221B", "\\u2229", "\\u222A", "\\u2260", "\\u2264",
-      "\\u2265", "\\u2286", "\\u2288", "\\u228A", "\\u22C5",
-      "\\b(in|isa)\\b(?!\.?\\()"], "");
+        "[<>]:", "[<>=]=", "<<=?", ">>>?=?", "=>", "->", "\\/\\/",
+        "[\\\\%*+\\-<>!=\\/^|&\\u00F7\\u22BB]=?", "\\?", "\\$", "~", ":",
+        "\\u00D7", "\\u2208", "\\u2209", "\\u220B", "\\u220C", "\\u2218",
+        "\\u221A", "\\u221B", "\\u2229", "\\u222A", "\\u2260", "\\u2264",
+        "\\u2265", "\\u2286", "\\u2288", "\\u228A", "\\u22C5",
+        "\\b(in|isa)\\b(?!\.?\\()"], "");
   var delimiters = parserConf.delimiters || /^[;,()[\]{}]/;
   var identifiers = parserConf.identifiers ||
-      /^[_A-Za-z\u00A1-\u2217\u2219-\uFFFF][\w\u00A1-\u2217\u2219-\uFFFF]*!*/;
+        /^[_A-Za-z\u00A1-\u2217\u2219-\uFFFF][\w\u00A1-\u2217\u2219-\uFFFF]*!*/;
 
   var chars = wordRegexp([octChar, hexChar, sChar, uChar], "'");
 
-  var commonOpeners = ["begin", "function", "type", "struct", "immutable",
-      "let", "macro", "for", "while", "quote", "if", "else", "elseif", "try",
-                       "finally", "catch", "do"];
+  var openersList = ["begin", "function", "type", "struct", "immutable", "let",
+        "macro", "for", "while", "quote", "if", "else", "elseif", "try",
+        "finally", "catch", "do"];
 
-  var commonClosers = ["end", "else", "elseif", "catch", "finally"];
+  var closersList = ["end", "else", "elseif", "catch", "finally"];
 
-  var commonKeywords = ["if", "else", "elseif", "while", "for", "begin",
-                        "let", "end", "do", "try", "catch", "finally", "return", "break",
-                        "continue", "global", "local", "const", "export", "import", "importall",
-                        "using", "function", "where", "macro", "module", "baremodule", "struct",
-                        "type", "mutable", "immutable", "quote", "typealias", "abstract",
-                        "primitive", "bitstype"];
+  var keywordsList = ["if", "else", "elseif", "while", "for", "begin", "let",
+        "end", "do", "try", "catch", "finally", "return", "break", "continue",
+        "global", "local", "const", "export", "import", "importall", "using",
+        "function", "where", "macro", "module", "baremodule", "struct", "type",
+        "mutable", "immutable", "quote", "typealias", "abstract", "primitive",
+        "bitstype"];
 
-  var commonBuiltins = ["true", "false", "nothing", "NaN", "Inf"];
+  var builtinsList = ["true", "false", "nothing", "NaN", "Inf"];
 
-  CodeMirror.registerHelper("hintWords", "julia", commonKeywords.concat(commonBuiltins));
+  CodeMirror.registerHelper("hintWords", "julia", keywordsList.concat(builtinsList));
 
-  var openers = wordRegexp(commonOpeners);
-  var closers = wordRegexp(commonClosers);
-  var keywords = wordRegexp(commonKeywords);
-  var builtins = wordRegexp(commonBuiltins);
+  var openers = wordRegexp(openersList);
+  var closers = wordRegexp(closersList);
+  var keywords = wordRegexp(keywordsList);
+  var builtins = wordRegexp(builtinsList);
 
   var macro = /^@[_A-Za-z][\w]*/;
   var symbol = /^:[_A-Za-z\u00A1-\uFFFF][\w\u00A1-\uFFFF]*!*/;
   var stringPrefixes = /^(`|([_A-Za-z\u00A1-\uFFFF]*"("")?))/;
 
   function inArray(state) {
-    return inGenerator(state, '[')
+    return (state.nestedArrays > 0);
   }
 
-  function inGenerator(state, bracket, depth) {
-    if (typeof(bracket) === "undefined") { bracket = '('; }
-    if (typeof(depth)   === "undefined") { depth   = 0;   }
-    var scope = currentScope(state, depth);
-    if ((depth == 0 && scope === "if" && inGenerator(state, bracket, depth + 1)) ||
-        (scope === "for" && inGenerator(state, bracket, depth + 1)) ||
-        (scope === bracket)) {
-      return true;
-    }
-    return false;
+  function inGenerator(state) {
+    return (state.nestedGenerators > 0);
   }
 
   function currentScope(state, n) {
@@ -126,16 +118,19 @@ CodeMirror.defineMode("julia", function(config, parserConf) {
 
     if (ch === '[') {
       state.scopes.push('[');
+      state.nestedArrays++;
     }
 
     if (ch === '(') {
       state.scopes.push('(');
+      state.nestedGenerators++;
     }
 
     if (inArray(state) && ch === ']') {
       if (currentScope(state) === "if") { state.scopes.pop(); }
       while (currentScope(state) === "for") { state.scopes.pop(); }
       state.scopes.pop();
+      state.nestedArrays--;
       state.leavingExpr = true;
     }
 
@@ -143,6 +138,7 @@ CodeMirror.defineMode("julia", function(config, parserConf) {
       if (currentScope(state) === "if") { state.scopes.pop(); }
       while (currentScope(state) === "for") { state.scopes.pop(); }
       state.scopes.pop();
+      state.nestedGenerators--;
       state.leavingExpr = true;
     }
 
@@ -156,14 +152,12 @@ CodeMirror.defineMode("julia", function(config, parserConf) {
     }
 
     var match;
-    if (match = stream.match(openers)) {
+    if (match = stream.match(openers, false)) {
       state.scopes.push(match[0]);
-      return "keyword";
     }
 
-    if (stream.match(closers)) {
+    if (stream.match(closers, false)) {
       state.scopes.pop();
-      return "keyword";
     }
 
     // Handle type annotations
@@ -307,13 +301,13 @@ CodeMirror.defineMode("julia", function(config, parserConf) {
   function tokenAnnotation(stream, state) {
     stream.match(/.*?(?=,|;|{|}|\(|\)|=|$|\s)/);
     if (stream.match(/^{/)) {
-      state.nestedLevels++;
-    } else if (stream.match(/^}/)) {
-      state.nestedLevels--;
+      state.nestedParameters++;
+    } else if (stream.match(/^}/) && state.nestedParameters > 0) {
+      state.nestedParameters--;
     }
-    if (state.nestedLevels > 0) {
+    if (state.nestedParameters > 0) {
       stream.match(/.*?(?={|})/) || stream.next();
-    } else if (state.nestedLevels == 0) {
+    } else if (state.nestedParameters == 0) {
       state.tokenize = tokenBase;
     }
     return "builtin";
@@ -321,14 +315,14 @@ CodeMirror.defineMode("julia", function(config, parserConf) {
 
   function tokenComment(stream, state) {
     if (stream.match(/^#=/)) {
-      state.nestedLevels++;
+      state.nestedComments++;
     }
     if (!stream.match(/.*?(?=(#=|=#))/)) {
       stream.skipToEnd();
     }
     if (stream.match(/^=#/)) {
-      state.nestedLevels--;
-      if (state.nestedLevels == 0)
+      state.nestedComments--;
+      if (state.nestedComments == 0)
         state.tokenize = tokenBase;
     }
     return "comment";
@@ -391,7 +385,10 @@ CodeMirror.defineMode("julia", function(config, parserConf) {
         lastToken: null,
         leavingExpr: false,
         isDefinition: false,
-        nestedLevels: 0,
+        nestedArrays: 0,
+        nestedComments: 0,
+        nestedGenerators: 0,
+        nestedParameters: 0,
         charsAdvanced: 0,
         firstParenPos: -1
       };
@@ -422,6 +419,7 @@ CodeMirror.defineMode("julia", function(config, parserConf) {
     blockCommentStart: "#=",
     blockCommentEnd: "=#",
     lineComment: "#",
+    closeBrackets: "()[]{}\"\"",
     fold: "indent"
   };
   return external;

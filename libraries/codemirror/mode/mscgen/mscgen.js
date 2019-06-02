@@ -33,9 +33,9 @@
     },
     xu: {
       "keywords" : ["msc", "xu"],
-      "options" : ["hscale", "width", "arcgradient", "wordwraparcs", "watermark"],
+      "options" : ["hscale", "width", "arcgradient", "wordwraparcs", "wordwrapentities", "watermark"],
       "constants" : ["true", "false", "on", "off", "auto"],
-      "attributes" : ["label", "idurl", "id", "url", "linecolor", "linecolour", "textcolor", "textcolour", "textbgcolor", "textbgcolour", "arclinecolor", "arclinecolour", "arctextcolor", "arctextcolour", "arctextbgcolor", "arctextbgcolour", "arcskip"],
+      "attributes" : ["label", "idurl", "id", "url", "linecolor", "linecolour", "textcolor", "textcolour", "textbgcolor", "textbgcolour", "arclinecolor", "arclinecolour", "arctextcolor", "arctextcolour", "arctextbgcolor", "arctextbgcolour", "arcskip", "title", "deactivate", "activate", "activation"],
       "brackets" : ["\\{", "\\}"],  // [ and  ] are brackets too, but these get handled in with lists
       "arcsWords" : ["note", "abox", "rbox", "box", "alt", "else", "opt", "break", "par", "seq", "strict", "neg", "critical", "ignore", "consider", "assert", "loop", "ref", "exc"],
       "arcsOthers" : ["\\|\\|\\|", "\\.\\.\\.", "---", "--", "<->", "==", "<<=>>", "<=>", "\\.\\.", "<<>>", "::", "<:>", "->", "=>>", "=>", ">>", ":>", "<-", "<<=", "<=", "<<", "<:", "x-", "-x"],
@@ -44,7 +44,7 @@
     },
     msgenny: {
       "keywords" : null,
-      "options" : ["hscale", "width", "arcgradient", "wordwraparcs", "watermark"],
+      "options" : ["hscale", "width", "arcgradient", "wordwraparcs", "wordwrapentities", "watermark"],
       "constants" : ["true", "false", "on", "off", "auto"],
       "attributes" : null,
       "brackets" : ["\\{", "\\}"],

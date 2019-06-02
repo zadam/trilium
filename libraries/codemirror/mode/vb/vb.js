@@ -25,16 +25,16 @@ CodeMirror.defineMode("vb", function(conf, parserConf) {
     var tripleDelimiters = new RegExp("^((//=)|(>>=)|(<<=)|(\\*\\*=))");
     var identifiers = new RegExp("^[_A-Za-z][_A-Za-z0-9]*");
 
-    var openingKeywords = ['class','module', 'sub','enum','select','while','if','function',  'get','set','property', 'try'];
-    var middleKeywords = ['else','elseif','case', 'catch'];
+    var openingKeywords = ['class','module', 'sub','enum','select','while','if','function', 'get','set','property', 'try', 'structure', 'synclock', 'using', 'with'];
+    var middleKeywords = ['else','elseif','case', 'catch', 'finally'];
     var endKeywords = ['next','loop'];
 
-    var operatorKeywords = ['and', 'or', 'not', 'xor', 'in'];
+    var operatorKeywords = ['and', "andalso", 'or', 'orelse', 'xor', 'in', 'not', 'is', 'isnot', 'like'];
     var wordOperators = wordRegexp(operatorKeywords);
-    var commonKeywords = ['as', 'dim', 'break',  'continue','optional', 'then',  'until',
-                          'goto', 'byval','byref','new','handles','property', 'return',
-                          'const','private', 'protected', 'friend', 'public', 'shared', 'static', 'true','false'];
-    var commontypes = ['integer','string','double','decimal','boolean','short','char', 'float','single'];
+
+    var commonKeywords = ["#const", "#else", "#elseif", "#end", "#if", "#region", "addhandler", "addressof", "alias", "as", "byref", "byval", "cbool", "cbyte", "cchar", "cdate", "cdbl", "cdec", "cint", "clng", "cobj", "compare", "const", "continue", "csbyte", "cshort", "csng", "cstr", "cuint", "culng", "cushort", "declare", "default", "delegate", "dim", "directcast", "each", "erase", "error", "event", "exit", "explicit", "false", "for", "friend", "gettype", "goto", "handles", "implements", "imports", "infer", "inherits", "interface", "isfalse", "istrue", "lib", "me", "mod", "mustinherit", "mustoverride", "my", "mybase", "myclass", "namespace", "narrowing", "new", "nothing", "notinheritable", "notoverridable", "of", "off", "on", "operator", "option", "optional", "out", "overloads", "overridable", "overrides", "paramarray", "partial", "private", "protected", "public", "raiseevent", "readonly", "redim", "removehandler", "resume", "return", "shadows", "shared", "static", "step", "stop", "strict", "then", "throw", "to", "true", "trycast", "typeof", "until", "until", "when", "widening", "withevents", "writeonly"];
+
+    var commontypes = ['object', 'boolean', 'char', 'string', 'byte', 'sbyte', 'short', 'ushort', 'int16', 'uint16', 'integer', 'uinteger', 'int32', 'uint32', 'long', 'ulong', 'int64', 'uint64', 'decimal', 'single', 'double', 'float', 'date', 'datetime', 'intptr', 'uintptr'];
 
     var keywords = wordRegexp(commonKeywords);
     var types = wordRegexp(commontypes);

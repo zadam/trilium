@@ -65,7 +65,10 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
       numberStart = parserConfig.numberStart || /[\d\.]/,
       number = parserConfig.number || /^(?:0x[a-f\d]+|0b[01]+|(?:\d+\.?\d*|\.\d+)(?:e[-+]?\d+)?)(u|ll?|l|f)?/i,
       isOperatorChar = parserConfig.isOperatorChar || /[+\-*&%=<>!?|\/]/,
-      isIdentifierChar = parserConfig.isIdentifierChar || /[\w\$_\xa1-\uffff]/;
+      isIdentifierChar = parserConfig.isIdentifierChar || /[\w\$_\xa1-\uffff]/,
+      // An optional function that takes a {string} token and returns true if it
+      // should be treated as a builtin.
+      isReservedIdentifier = parserConfig.isReservedIdentifier || false;
 
   var curPunc, isDefKeyword;
 
@@ -113,7 +116,8 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
       return "keyword";
     }
     if (contains(types, cur)) return "type";
-    if (contains(builtin, cur)) {
+    if (contains(builtin, cur)
+        || (isReservedIdentifier && isReservedIdentifier(cur))) {
       if (contains(blockKeywords, cur)) curPunc = "newstatement";
       return "builtin";
     }
@@ -263,8 +267,33 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
     }
   }
   var cKeywords = "auto if break case register continue return default do sizeof " +
-    "static else struct switch extern typedef union for goto while enum const volatile";
-  var cTypes = "int long char short double float unsigned signed void size_t ptrdiff_t";
+    "static else struct switch extern typedef union for goto while enum const " +
+    "volatile inline restrict asm fortran";
+
+  // Do not use this. Use the cTypes function below. This is global just to avoid
+  // excessive calls when cTypes is being called multiple times during a parse.
+  var basicCTypes = words("int long char short double float unsigned signed " +
+    "void bool");
+
+  // Do not use this. Use the objCTypes function below. This is global just to avoid
+  // excessive calls when objCTypes is being called multiple times during a parse.
+  var basicObjCTypes = words("SEL instancetype id Class Protocol BOOL");
+
+  // Returns true if identifier is a "C" type.
+  // C type is defined as those that are reserved by the compiler (basicTypes),
+  // and those that end in _t (Reserved by POSIX for types)
+  // http://www.gnu.org/software/libc/manual/html_node/Reserved-Names.html
+  function cTypes(identifier) {
+    return contains(basicCTypes, identifier) || /.+_t$/.test(identifier);
+  }
+
+  // Returns true if identifier is a "Objective C" type.
+  function objCTypes(identifier) {
+    return cTypes(identifier) || contains(basicObjCTypes, identifier);
+  }
+
+  var cBlockKeywords = "case do else for if switch while struct enum union";
+  var cDefKeywords = "struct enum union";
 
   function cppHook(stream, state) {
     if (!state.startOfLine) return false
@@ -284,6 +313,14 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
   function pointerHook(_stream, state) {
     if (state.prevToken == "type") return "type";
     return false;
+  }
+
+  // For C and C++ (and ObjC): identifiers starting with __
+  // or _ followed by a capital letter are reserved for the compiler.
+  function cIsReservedIdentifier(token) {
+    if (!token || token.length < 2) return false;
+    if (token[0] != '_') return false;
+    return (token[1] == '_') || (token[1] !== token[1].toLowerCase());
   }
 
   function cpp14Literal(stream) {
@@ -368,31 +405,36 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
   def(["text/x-csrc", "text/x-c", "text/x-chdr"], {
     name: "clike",
     keywords: words(cKeywords),
-    types: words(cTypes + " bool _Complex _Bool float_t double_t intptr_t intmax_t " +
-                 "int8_t int16_t int32_t int64_t uintptr_t uintmax_t uint8_t uint16_t " +
-                 "uint32_t uint64_t"),
-    blockKeywords: words("case do else for if switch while struct"),
-    defKeywords: words("struct"),
+    types: cTypes,
+    blockKeywords: words(cBlockKeywords),
+    defKeywords: words(cDefKeywords),
     typeFirstDefinitions: true,
     atoms: words("NULL true false"),
-    hooks: {"#": cppHook, "*": pointerHook},
+    isReservedIdentifier: cIsReservedIdentifier,
+    hooks: {
+      "#": cppHook,
+      "*": pointerHook,
+    },
     modeProps: {fold: ["brace", "include"]}
   });
 
   def(["text/x-c++src", "text/x-c++hdr"], {
     name: "clike",
-    keywords: words(cKeywords + " asm dynamic_cast namespace reinterpret_cast try explicit new " +
-                    "static_cast typeid catch operator template typename class friend private " +
-                    "this using const_cast inline public throw virtual delete mutable protected " +
-                    "alignas alignof constexpr decltype nullptr noexcept thread_local final " +
-                    "static_assert override"),
-    types: words(cTypes + " bool wchar_t"),
-    blockKeywords: words("catch class do else finally for if struct switch try while"),
-    defKeywords: words("class namespace struct enum union"),
+    // Keywords from https://en.cppreference.com/w/cpp/keyword includes C++20.
+    keywords: words(cKeywords + "alignas alignof and and_eq audit axiom bitand bitor catch " +
+                    "class compl concept constexpr const_cast decltype delete dynamic_cast " +
+                    "explicit export final friend import module mutable namespace new noexcept " +
+                    "not not_eq operator or or_eq override private protected public " +
+                    "reinterpret_cast requires static_assert static_cast template this " +
+                    "thread_local throw try typeid typename using virtual xor xor_eq"),
+    types: cTypes,
+    blockKeywords: words(cBlockKeywords + " class try catch"),
+    defKeywords: words(cDefKeywords + " class namespace"),
     typeFirstDefinitions: true,
-    atoms: words("true false NULL"),
+    atoms: words("true false NULL nullptr"),
     dontIndentStatements: /^template$/,
     isIdentifierChar: /[\w\$_~\xa1-\uffff]/,
+    isReservedIdentifier: cIsReservedIdentifier,
     hooks: {
       "#": cppHook,
       "*": pointerHook,
@@ -513,7 +555,6 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
   def("text/x-scala", {
     name: "clike",
     keywords: words(
-
       /* scala */
       "abstract case catch class def do else extends final finally for forSome if " +
       "implicit import lazy match new null object override package private protected return " +
@@ -628,6 +669,9 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
         stream.eatWhile(/[\w\$_]/);
         return "meta";
       },
+      '*': function(_stream, state) {
+        return state.prevToken == '.' ? 'variable' : 'operator';
+      },
       '"': function(stream, state) {
         state.tokenize = tokenKotlinString(stream.match('""'));
         return state.tokenize(stream, state);
@@ -708,11 +752,11 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
 
   def("text/x-nesc", {
     name: "clike",
-    keywords: words(cKeywords + "as atomic async call command component components configuration event generic " +
+    keywords: words(cKeywords + " as atomic async call command component components configuration event generic " +
                     "implementation includes interface module new norace nx_struct nx_union post provides " +
                     "signal task uses abstract extends"),
-    types: words(cTypes),
-    blockKeywords: words("case do else for if switch while struct"),
+    types: cTypes,
+    blockKeywords: words(cBlockKeywords),
     atoms: words("null true false"),
     hooks: {"#": cppHook},
     modeProps: {fold: ["brace", "include"]}
@@ -720,28 +764,34 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
 
   def("text/x-objectivec", {
     name: "clike",
-    keywords: words(cKeywords + "inline restrict _Bool _Complex _Imaginary BOOL Class bycopy byref id IMP in " +
-                    "inout nil oneway out Protocol SEL self super atomic nonatomic retain copy readwrite readonly"),
-    types: words(cTypes),
-    atoms: words("YES NO NULL NILL ON OFF true false"),
+    keywords: words(cKeywords + " bycopy byref in inout oneway out self super atomic nonatomic retain copy " +
+                    "readwrite readonly strong weak assign typeof nullable nonnull null_resettable _cmd " +
+                    "@interface @implementation @end @protocol @encode @property @synthesize @dynamic @class " +
+                    "@public @package @private @protected @required @optional @try @catch @finally @import " +
+                    "@selector @encode @defs @synchronized @autoreleasepool @compatibility_alias @available"),
+    types: objCTypes,
+    builtin: words("FOUNDATION_EXPORT FOUNDATION_EXTERN NS_INLINE NS_FORMAT_FUNCTION NS_RETURNS_RETAINED " +
+                   "NS_ERROR_ENUM NS_RETURNS_NOT_RETAINED NS_RETURNS_INNER_POINTER NS_DESIGNATED_INITIALIZER " +
+                   "NS_ENUM NS_OPTIONS NS_REQUIRES_NIL_TERMINATION NS_ASSUME_NONNULL_BEGIN " +
+                   "NS_ASSUME_NONNULL_END NS_SWIFT_NAME NS_REFINED_FOR_SWIFT"),
+    blockKeywords: words(cBlockKeywords + " @synthesize @try @catch @finally @autoreleasepool @synchronized"),
+    defKeywords: words(cDefKeywords + " @interface @implementation @protocol @class"),
+    dontIndentStatements: /^@.*$/,
+    typeFirstDefinitions: true,
+    atoms: words("YES NO NULL Nil nil true false nullptr"),
+    isReservedIdentifier: cIsReservedIdentifier,
     hooks: {
-      "@": function(stream) {
-        stream.eatWhile(/[\w\$]/);
-        return "keyword";
-      },
       "#": cppHook,
-      indent: function(_state, ctx, textAfter) {
-        if (ctx.type == "statement" && /^@\w/.test(textAfter)) return ctx.indented
-      }
+      "*": pointerHook,
     },
-    modeProps: {fold: "brace"}
+    modeProps: {fold: ["brace", "include"]}
   });
 
   def("text/x-squirrel", {
     name: "clike",
     keywords: words("base break clone continue const default delete enum extends function in class" +
                     " foreach local resume return this throw typeof yield constructor instanceof static"),
-    types: words(cTypes),
+    types: cTypes,
     blockKeywords: words("case catch class else for foreach if switch try while"),
     defKeywords: words("function local class"),
     typeFirstDefinitions: true,

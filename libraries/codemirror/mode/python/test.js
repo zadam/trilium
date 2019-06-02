@@ -35,4 +35,10 @@
   MT("fInvalidFString", "[error f'this is wrong}]");
   MT("fNestedFString", "[string f'expression ]{[number 100] [operator +] [string f'inner]{[number 5]}[string ']}[string string']");
   MT("uValidStringPrefix", "[string u'this is an unicode string']");
+
+  MT("nestedString", "[string f']{[variable b][[ [string \"c\"] ]]}[string f'] [comment # oops]")
+
+  MT("bracesInFString", "[string f']{[variable x] [operator +] {}}[string !']")
+
+  MT("nestedFString", "[string f']{[variable b][[ [string f\"c\"] ]]}[string f'] [comment # oops]")
 })();
