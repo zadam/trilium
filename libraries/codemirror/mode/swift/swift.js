@@ -73,9 +73,9 @@
       stream.match("..")
       return "punctuation"
     }
-    if (ch == '"' || ch == "'") {
-      stream.next()
-      var tokenize = tokenString(ch)
+    var stringMatch
+    if (stringMatch = stream.match(/("""|"|')/)) {
+      var tokenize = tokenString.bind(null, stringMatch[0])
       state.tokenize.push(tokenize)
       return tokenize(stream, state)
     }
@@ -116,25 +116,29 @@
     }
   }
 
-  function tokenString(quote) {
-    return function(stream, state) {
-      var ch, escaped = false
-      while (ch = stream.next()) {
-        if (escaped) {
-          if (ch == "(") {
-            state.tokenize.push(tokenUntilClosingParen())
-            return "string"
-          }
-          escaped = false
-        } else if (ch == quote) {
-          break
-        } else {
-          escaped = ch == "\\"
+  function tokenString(openQuote, stream, state) {
+    var singleLine = openQuote.length == 1
+    var ch, escaped = false
+    while (ch = stream.peek()) {
+      if (escaped) {
+        stream.next()
+        if (ch == "(") {
+          state.tokenize.push(tokenUntilClosingParen())
+          return "string"
         }
+        escaped = false
+      } else if (stream.match(openQuote)) {
+        state.tokenize.pop()
+        return "string"
+      } else {
+        stream.next()
+        escaped = ch == "\\"
       }
-      state.tokenize.pop()
-      return "string"
     }
+    if (singleLine) {
+      state.tokenize.pop()
+    }
+    return "string"
   }
 
   function tokenComment(stream, state) {

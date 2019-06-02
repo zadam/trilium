@@ -13,4 +13,11 @@
 
   MT("complex_regexp",
      "[keyword if] [variable cr] [operator =~] [string-2 /(?: \\( #{][tag RE_NOT][string-2 }\\( | #{][tag RE_NOT_PAR_OR][string-2 }* #{][tag RE_OPA_OR][string-2 } )/][variable x]")
+
+  MT("indented_heredoc",
+     "[keyword def] [def x]",
+     "  [variable y] [operator =] [string <<-FOO]",
+     "[string     bar]",
+     "[string   FOO]",
+     "[keyword end]")
 })();

@@ -19,7 +19,7 @@ CodeMirror.defineMode("r", function(config) {
     for (var i = 0; i < words.length; ++i) res[words[i]] = true;
     return res;
   }
-  var commonAtoms = ["NULL", "NA", "Inf", "NaN", "NA_integer_", "NA_real_", "NA_complex_", "NA_character_"];
+  var commonAtoms = ["NULL", "NA", "Inf", "NaN", "NA_integer_", "NA_real_", "NA_complex_", "NA_character_", "TRUE", "FALSE"];
   var commonBuiltins = ["list", "quote", "bquote", "eval", "return", "call", "parse", "deparse"];
   var commonKeywords = ["if", "else", "repeat", "while", "function", "for", "in", "next", "break"];
   var commonBlockKeywords = ["if", "else", "repeat", "while", "function", "for"];

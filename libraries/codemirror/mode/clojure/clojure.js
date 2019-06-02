@@ -166,7 +166,7 @@ CodeMirror.defineMode("clojure", function (options) {
   var qualifiedSymbol = /^(?:(?:[^\\\/\[\]\d\s"#'(),;@^`{}~][^\\\[\]\s"(),;@^`{}~]*(?:\.[^\\\/\[\]\d\s"#'(),;@^`{}~][^\\\[\]\s"(),;@^`{}~]*)*\/)?(?:\/|[^\\\/\[\]\d\s"#'(),;@^`{}~][^\\\[\]\s"(),;@^`{}~]*)*(?=[\\\[\]\s"(),;@^`{}~]|$))/;
 
   function base(stream, state) {
-    if (stream.eatSpace()) return ["space", null];
+    if (stream.eatSpace() || stream.eat(",")) return ["space", null];
     if (stream.match(numberLiteral)) return [null, "number"];
     if (stream.match(characterLiteral)) return [null, "string-2"];
     if (stream.eat(/^"/)) return (state.tokenize = inString)(stream, state);

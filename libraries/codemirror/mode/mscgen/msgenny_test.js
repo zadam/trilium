@@ -20,6 +20,7 @@
 
   MT("xù/ msgenny keywords classify as 'keyword'",
     "[keyword watermark]",
+    "[keyword wordwrapentities]",
     "[keyword alt]","[keyword loop]","[keyword opt]","[keyword ref]","[keyword else]","[keyword break]","[keyword par]","[keyword seq]","[keyword assert]"
   );
 
