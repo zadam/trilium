@@ -10,6 +10,7 @@ import markdownImportDialog from './dialogs/markdown_import.js';
 import exportDialog from './dialogs/export.js';
 import importDialog from './dialogs/import.js';
 import protectedSessionDialog from './dialogs/protected_session.js';
+import linkMapDialog from './dialogs/link_map.js';
 
 import cloning from './services/cloning.js';
 import contextMenu from './services/tree_context_menu.js';

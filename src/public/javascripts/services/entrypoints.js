@@ -14,6 +14,7 @@ import attributesDialog from "../dialogs/attributes.js";
 import helpDialog from "../dialogs/help.js";
 import noteInfoDialog from "../dialogs/note_info.js";
 import aboutDialog from "../dialogs/about.js";
+import linkMapDialog from "../dialogs/link_map.js";
 import protectedSessionService from "./protected_session.js";
 
 function registerEntrypoints() {
@@ -56,6 +57,10 @@ function registerEntrypoints() {
         }
 
         noteSourceDialog.showDialog();
+    });
+
+    $noteTabContainer.on("click", ".show-link-map-button", function() {
+        linkMapDialog.showDialog();
     });
 
     $("#options-button").click(optionsDialog.showDialog);
