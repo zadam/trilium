@@ -19,7 +19,7 @@ const dateUtils = require('../services/date_utils');
  * @extends Entity
  */
 class Link extends Entity {
-    static get entityName() { return "links"; }
+    static get entityName() { return "link_map.js"; }
     static get primaryKeyName() { return "linkId"; }
     static get hashedProperties() { return ["linkId", "noteId", "targetNoteId", "type", "isDeleted", "utcDateCreated", "utcDateModified"]; }
 

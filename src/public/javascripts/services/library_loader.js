@@ -34,6 +34,8 @@ const RELATION_MAP = {
     ]
 };
 
+const SPRINGY = {js: ["libraries/springy.js"]};
+
 async function requireLibrary(library) {
     if (library.css) {
         library.css.map(cssUrl => cssLoader.requireCss(cssUrl));
@@ -67,5 +69,6 @@ export default {
     CODE_MIRROR,
     ESLINT,
     COMMONMARK,
-    RELATION_MAP
+    RELATION_MAP,
+    SPRINGY
 }

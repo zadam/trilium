@@ -28,7 +28,7 @@ async function updateEntity(sync, entity, sourceId) {
     else if (entityName === 'recent_notes') {
         await updateRecentNotes(entity, sourceId);
     }
-    else if (entityName === 'links') {
+    else if (entityName === 'link_map.js') {
         await updateLink(entity, sourceId);
     }
     else if (entityName === 'attributes') {
@@ -164,7 +164,7 @@ async function updateLink(entity, sourceId) {
 
     if (!origLink || origLink.utcDateModified <= entity.utcDateModified) {
         await sql.transactional(async () => {
-            await sql.replace("links", entity);
+            await sql.replace("link_map.js", entity);
 
             await syncTableService.addLinkSync(entity.linkId, sourceId);
         });
