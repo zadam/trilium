@@ -55,10 +55,10 @@ async function setupProtectedSession(password) {
 
         protectedSessionDeferred.resolve(true);
         protectedSessionDeferred = null;
-
-        $enterProtectedSessionButton.hide();
-        $leaveProtectedSessionButton.show();
     }
+
+    $enterProtectedSessionButton.hide();
+    $leaveProtectedSessionButton.show();
 
     infoService.showMessage("Protected session has been started.");
 }
