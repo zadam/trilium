@@ -1,6 +1,7 @@
 import server from '../services/server.js';
 import noteDetailService from "../services/note_detail.js";
 import libraryLoader from "../services/library_loader.js";
+import treeCache from "../services/tree_cache.js";
 
 const $linkMapContainer = $("#link-map-container");
 
@@ -84,9 +85,12 @@ async function loadNotesAndRelations() {
 
     const noteIds = new Set(links.map(l => l.noteId).concat(links.map(l => l.targetNoteId)));
 
+    // preload all notes
+    const notes = await treeCache.getNotes(Array.from(noteIds));
+
     const graph = new Springy.Graph();
     graph.addNodes(...noteIds);
-    graph.addEdges(links.map(l => [l.noteId, l.targetNoteId]));
+    graph.addEdges(...links.map(l => [l.noteId, l.targetNoteId]));
 
     const layout = new Springy.Layout.ForceDirected(
         graph,
@@ -95,10 +99,38 @@ async function loadNotesAndRelations() {
         0.5 // Damping
     );
 
+    const renderer = new Springy.Renderer(
+        layout,
+        () => {},
+        () => {},
+        () => {},
+        () => {
+            layout.eachNode((node, point) => {
+                console.log(node, point.p);
 
-    for (const link of links) {
+                const note = notes.find(n => n.noteId === node.id);
 
-    }
+                const $noteBox = $("<div>")
+                    .addClass("note-box")
+                    .prop("id", noteIdToId(node.id))
+                    .append($("<span>").addClass("title").append(note.title))
+                    .css("left", (300 + point.p.x * 100) + "px")
+                    .css("top", (300 + point.p.y * 100) + "px");
+
+                jsPlumbInstance.getContainer().appendChild($noteBox[0]);
+            });
+
+            for (const link of links) {
+                const connection = jsPlumbInstance.connect({
+                    source: noteIdToId(link.noteId),
+                    target: noteIdToId(link.targetNoteId),
+                    type: link.type
+                });
+            }
+        }
+    );
+
+    renderer.start();
 }
 
 function initJsPlumbInstance() {
@@ -113,23 +145,27 @@ function initJsPlumbInstance() {
         return;
     }
 
-    this.jsPlumbInstance = jsPlumb.getInstance({
+    jsPlumbInstance = jsPlumb.getInstance({
         Endpoint: ["Dot", {radius: 2}],
         Connector: "StateMachine",
         ConnectionOverlays: uniDirectionalOverlays,
         HoverPaintStyle: { stroke: "#777", strokeWidth: 1 },
-        Container: this.$relationMapContainer.attr("id")
+        Container: $linkMapContainer.attr("id")
     });
 
-    this.jsPlumbInstance.registerConnectionType("uniDirectional", { anchor:"Continuous", connector:"StateMachine", overlays: uniDirectionalOverlays });
+    jsPlumbInstance.registerConnectionType("uniDirectional", { anchor:"Continuous", connector:"StateMachine", overlays: uniDirectionalOverlays });
 
-    this.jsPlumbInstance.registerConnectionType("biDirectional", { anchor:"Continuous", connector:"StateMachine", overlays: biDirectionalOverlays });
+    jsPlumbInstance.registerConnectionType("biDirectional", { anchor:"Continuous", connector:"StateMachine", overlays: biDirectionalOverlays });
 
-    this.jsPlumbInstance.registerConnectionType("inverse", { anchor:"Continuous", connector:"StateMachine", overlays: inverseRelationsOverlays });
+    jsPlumbInstance.registerConnectionType("inverse", { anchor:"Continuous", connector:"StateMachine", overlays: inverseRelationsOverlays });
 
-    this.jsPlumbInstance.registerConnectionType("link", { anchor:"Continuous", connector:"StateMachine", overlays: linkOverlays });
+    jsPlumbInstance.registerConnectionType("link", { anchor:"Continuous", connector:"StateMachine", overlays: linkOverlays });
 
-    this.jsPlumbInstance.bind("connection", (info, originalEvent) => this.connectionCreatedHandler(info, originalEvent));
+    jsPlumbInstance.bind("connection", (info, originalEvent) => connectionCreatedHandler(info, originalEvent));
+}
+
+function noteIdToId(noteId) {
+    return "link-map-note-" + noteId;
 }
 
 export default {

@@ -336,3 +336,9 @@ li.dropdown-submenu:hover > ul.dropdown-menu {
 .note-tab-row:not(.note-tab-row-is-sorting) .note-tab.note-tab-was-just-dragged {
     transition: transform 120ms ease-in-out;
 }
+
+#link-map-container {
+    position: relative;
+    height: 700px;
+    outline: none; /* remove dotted outline on click */
+}

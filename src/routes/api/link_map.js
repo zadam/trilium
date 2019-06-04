@@ -14,7 +14,7 @@ async function getLinks(noteIds) {
         WHERE (noteId IN (???) OR value IN (???))
           AND type = 'relation'
           AND isDeleted = 0
-    `, noteIds);
+    `, Array.from(noteIds));
 }
 
 async function getLinkMap(req) {
@@ -27,7 +27,7 @@ async function getLinkMap(req) {
         const newLinks = await getLinks(noteIds);
         const newNoteIds = new Set(newLinks.map(l => l.noteId).concat(newLinks.map(l => l.targetNoteId)));
 
-        if (newNoteIds.length === noteIds.length) {
+        if (newNoteIds.size === noteIds.size) {
             // no new note discovered, no need to search any further
             break;
         }
