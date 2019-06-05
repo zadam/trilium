@@ -62,25 +62,32 @@ async function cleanupSyncRowsForMissingEntities(entityName, entityKey) {
 }
 
 async function fillSyncRows(entityName, entityKey, condition = '') {
-    await cleanupSyncRowsForMissingEntities(entityName, entityKey);
+    try {
+        await cleanupSyncRowsForMissingEntities(entityName, entityKey);
 
-    const entityIds = await sql.getColumn(`SELECT ${entityKey} FROM ${entityName}`
-        + (condition ? ` WHERE ${condition}` : ''));
+        const entityIds = await sql.getColumn(`SELECT ${entityKey} FROM ${entityName}`
+            + (condition ? ` WHERE ${condition}` : ''));
 
-    for (const entityId of entityIds) {
-        const existingRows = await sql.getValue("SELECT COUNT(id) FROM sync WHERE entityName = ? AND entityId = ?", [entityName, entityId]);
+        for (const entityId of entityIds) {
+            const existingRows = await sql.getValue("SELECT COUNT(id) FROM sync WHERE entityName = ? AND entityId = ?", [entityName, entityId]);
 
-        // we don't want to replace existing entities (which would effectively cause full resync)
-        if (existingRows === 0) {
-            log.info(`Creating missing sync record for ${entityName} ${entityId}`);
+            // we don't want to replace existing entities (which would effectively cause full resync)
+            if (existingRows === 0) {
+                log.info(`Creating missing sync record for ${entityName} ${entityId}`);
 
-            await sql.insert("sync", {
-                entityName: entityName,
-                entityId: entityId,
-                sourceId: "SYNC_FILL",
-                utcSyncDate: dateUtils.utcNowDateTime()
-            });
+                await sql.insert("sync", {
+                    entityName: entityName,
+                    entityId: entityId,
+                    sourceId: "SYNC_FILL",
+                    utcSyncDate: dateUtils.utcNowDateTime()
+                });
+            }
         }
+    }
+    catch (e) {
+        // this is to fix migration from 0.30 to 0.32, can be removed later
+        // see https://github.com/zadam/trilium/issues/557
+        log.error(`Filling sync rows failed for ${entityName} ${entityKey} with error "${e.message}", continuing`);
     }
 }
 
