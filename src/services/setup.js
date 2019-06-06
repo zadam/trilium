@@ -5,6 +5,7 @@ const repository = require('./repository');
 const optionService = require('./options');
 const syncOptions = require('./sync_options');
 const request = require('./request');
+const appInfo = require('./app_info');
 
 async function hasSyncServerSchemaAndSeed() {
     const response = await requestToSyncServer('GET', '/api/setup/status');
@@ -27,7 +28,8 @@ async function sendSeedToSyncServer() {
     log.info("Initiating sync to server");
 
     await requestToSyncServer('POST', '/api/setup/sync-seed', {
-        options: await getSyncSeedOptions()
+        options: await getSyncSeedOptions(),
+        syncVersion: appInfo.syncVersion
     });
 
     // this is completely new sync, need to reset counters. If this would not be new sync,

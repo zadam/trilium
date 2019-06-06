@@ -47,8 +47,46 @@ const CODE_MIME_TYPES = {
     'text/x-yaml': true
 };
 
+// extensions missing in mime-db
+const EXTENSION_TO_MIME = {
+    ".cs": "text/x-csharp",
+    ".clj": "text/x-clojure",
+    ".erl": "text/x-erlang",
+    ".hrl": "text/x-erlang",
+    ".feature": "text/x-feature",
+    ".go": "text/x-go",
+    ".groovy": "text/x-groovy",
+    ".hs": "text/x-haskell",
+    ".lhs": "text/x-haskell",
+    ".http": "message/http",
+    ".kt": "text/x-kotlin",
+    ".m": "text/x-objectivec",
+    ".py": "text/x-python",
+    ".rb": "text/x-ruby",
+    ".scala": "text/x-scala",
+    ".swift": "text/x-swift"
+};
+
+function getMime(fileName) {
+    if (fileName.toLowerCase() === 'dockerfile') {
+        return "text/x-dockerfile";
+    }
+
+    const ext = path.extname(fileName).toLowerCase();
+
+    console.log("EXT", ext);
+
+    if (ext in EXTENSION_TO_MIME) {
+        console.log(EXTENSION_TO_MIME[ext]);
+
+        return EXTENSION_TO_MIME[ext];
+    }
+
+    return mimeTypes.lookup(fileName);
+}
+
 async function importSingleFile(importContext, file, parentNote) {
-    const mime = mimeTypes.lookup(file.originalname);
+    const mime = getMime(file.originalname);
 
     if (importContext.textImportedAsText) {
         if (mime === 'text/html') {
@@ -87,7 +125,7 @@ async function importFile(importContext, file, parentNote) {
         target: 'into',
         isProtected: parentNote.isProtected && protectedSessionService.isProtectedSessionAvailable(),
         type: 'file',
-        mime: mimeTypes.lookup(originalName),
+        mime: getMime(originalName),
         attributes: [
             { type: "label", name: "originalFileName", value: originalName },
             { type: "label", name: "fileSize", value: size }
@@ -102,7 +140,7 @@ async function importFile(importContext, file, parentNote) {
 async function importCodeNote(importContext, file, parentNote) {
     const title = getFileNameWithoutExtension(file.originalname);
     const content = file.buffer.toString("UTF-8");
-    const detectedMime = mimeTypes.lookup(file.originalname);
+    const detectedMime = getMime(file.originalname);
     const mime = CODE_MIME_TYPES[detectedMime] === true ? detectedMime : CODE_MIME_TYPES[detectedMime];
 
     const {note} = await noteService.createNote(parentNote.noteId, title, content, {
