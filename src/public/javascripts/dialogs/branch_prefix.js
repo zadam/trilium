@@ -21,7 +21,7 @@ async function showDialog() {
     branchId = currentNode.data.branchId;
     const branch = await treeCache.getBranch(branchId);
 
-    $treePrefixInput.val(branch.prefix).focus();
+    $treePrefixInput.val(branch.prefix);
 
     const noteTitle = await treeUtils.getNoteTitle(currentNode.data.noteId);
 
@@ -45,6 +45,8 @@ $form.submit(() => {
 
     return false;
 });
+
+$dialog.on('shown.bs.modal', () => $treePrefixInput.focus());
 
 export default {
     showDialog
