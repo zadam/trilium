@@ -746,19 +746,11 @@ async function createNoteInto() {
 }
 
 async function checkFolderStatus(node) {
-    const children = node.getChildren();
     const note = await treeCache.getNote(node.data.noteId);
 
-    if (!children || children.length === 0) {
-        node.folder = false;
-        node.icon = await treeBuilder.getIcon(note);
-        node.renderTitle();
-    }
-    else if (children && children.length > 0) {
-        node.folder = true;
-        node.icon = await treeBuilder.getIcon(note);
-        node.renderTitle();
-    }
+    node.folder = note.type === 'search' || note.getChildNoteIds().length > 0;
+    node.icon = await treeBuilder.getIcon(note);
+    node.renderTitle();
 }
 
 async function reloadNote(noteId) {
