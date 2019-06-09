@@ -34,7 +34,16 @@ const RELATION_MAP = {
     ]
 };
 
-const SPRINGY = {js: ["libraries/springy.js"]};
+const LINK_MAP = {
+    js: [
+        "libraries/jsplumb.js",
+        "libraries/panzoom.js",
+        "libraries/springy.js"
+    ],
+    css: [
+        "stylesheets/relation_map.css"
+    ]
+};
 
 async function requireLibrary(library) {
     if (library.css) {
@@ -70,5 +79,5 @@ export default {
     ESLINT,
     COMMONMARK,
     RELATION_MAP,
-    SPRINGY
+    LINK_MAP
 }

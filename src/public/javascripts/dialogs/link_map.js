@@ -62,15 +62,17 @@ const linkOverlays = [
 const $dialog = $("#link-map-dialog");
 
 let jsPlumbInstance = null;
+let pzInstance = null;
 
 async function showDialog() {
     glob.activeDialog = $dialog;
 
-    await libraryLoader.requireLibrary(libraryLoader.RELATION_MAP);
-    await libraryLoader.requireLibrary(libraryLoader.SPRINGY);
+    await libraryLoader.requireLibrary(libraryLoader.LINK_MAP);
 
     jsPlumb.ready(() => {
         initJsPlumbInstance();
+
+        initPanZoom();
 
         loadNotesAndRelations();
     });
@@ -133,6 +135,23 @@ async function loadNotesAndRelations() {
     renderer.start();
 }
 
+function initPanZoom() {
+    if (pzInstance) {
+        return;
+    }
+
+    pzInstance = panzoom($linkMapContainer[0], {
+        maxZoom: 2,
+        minZoom: 0.3,
+        smoothScroll: false,
+        filterKey: function (e, dx, dy, dz) {
+            // if ALT is pressed then panzoom should bubble the event up
+            // this is to preserve ALT-LEFT, ALT-RIGHT navigation working
+            return e.altKey;
+        }
+    });
+}
+
 function initJsPlumbInstance() {
     if (jsPlumbInstance) {
         // delete all endpoints and connections
@@ -160,8 +179,6 @@ function initJsPlumbInstance() {
     jsPlumbInstance.registerConnectionType("inverse", { anchor:"Continuous", connector:"StateMachine", overlays: inverseRelationsOverlays });
 
     jsPlumbInstance.registerConnectionType("link", { anchor:"Continuous", connector:"StateMachine", overlays: linkOverlays });
-
-    jsPlumbInstance.bind("connection", (info, originalEvent) => connectionCreatedHandler(info, originalEvent));
 }
 
 function noteIdToId(noteId) {
