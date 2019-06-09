@@ -33,7 +33,7 @@ async function addRecentNoteSync(noteId, sourceId) {
 }
 
 async function addLinkSync(linkId, sourceId) {
-    await addEntitySync("link_map.js", linkId, sourceId);
+    await addEntitySync("links", linkId, sourceId);
 }
 
 async function addAttributeSync(attributeId, sourceId) {
@@ -101,7 +101,7 @@ async function fillAllSyncRows() {
     await fillSyncRows("recent_notes", "noteId");
     await fillSyncRows("attributes", "attributeId");
     await fillSyncRows("api_tokens", "apiTokenId");
-    await fillSyncRows("link_map.js", "linkId");
+    await fillSyncRows("links", "linkId");
     await fillSyncRows("options", "name", 'isSynced = 1');
 }
 
