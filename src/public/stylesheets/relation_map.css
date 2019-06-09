@@ -10,7 +10,7 @@
     outline: none; /* remove dotted outline on click */
 }
 
-.note-box {
+.note-detail-relation-map .note-box {
     padding: 16px;
     position: absolute !important;
     background-color: var(--accented-background-color);
@@ -29,20 +29,20 @@
     overflow: hidden;
 }
 
-.note-box:hover {
+.note-detail-relation-map .note-box:hover {
     background-color: var(--more-accented-background-color);
 }
 
-.note-box .title {
+.note-detail-relation-map .note-box .title {
     font-size: larger;
     font-weight: 600;
 }
 
-.connection-label.jtk-hover, .jtk-source-hover, .jtk-target-hover {
+.note-detail-relation-map .connection-label.jtk-hover, .jtk-source-hover, .jtk-target-hover {
     background-color: var(--more-accented-background-color);
 }
 
-.connection-label {
+.note-detail-relation-map .connection-label {
     background-color: var(--accented-background-color);
     color: var(--main-text-color);
     opacity: 0.8;
@@ -52,7 +52,7 @@
     cursor: pointer;
 }
 
-.endpoint {
+.note-detail-relation-map .endpoint {
     position: absolute;
     bottom: 37%;
     right: 5px;
@@ -63,21 +63,21 @@
     box-shadow: 0 0 2px black;
 }
 
-.endpoint:hover {
+.note-detail-relation-map .endpoint:hover {
     box-shadow: 0 0 6px black;
 }
 
-.dragHover {
+.note-detail-relation-map .dragHover {
     border: 2px solid orange;
 }
 
-path, .jtk-endpoint { cursor:pointer; }
+.note-detail-relation-map path, .note-detail-relation-map .jtk-endpoint { cursor:pointer; }
 
-.ui-contextmenu {
+.note-detail-relation-map .ui-contextmenu {
     z-index: 100;
 }
 
-.floating-button {
+.note-detail-relation-map .floating-button {
     position: absolute !important;
     z-index: 100;
 }

@@ -41,7 +41,7 @@ const LINK_MAP = {
         "libraries/springy.js"
     ],
     css: [
-        "stylesheets/relation_map.css"
+        "stylesheets/link_map.css"
     ]
 };
 

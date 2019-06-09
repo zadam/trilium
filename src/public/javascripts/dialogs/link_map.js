@@ -2,6 +2,7 @@ import server from '../services/server.js';
 import noteDetailService from "../services/note_detail.js";
 import libraryLoader from "../services/library_loader.js";
 import treeCache from "../services/tree_cache.js";
+import linkService from "../services/link.js";
 
 const $linkMapContainer = $("#link-map-container");
 
@@ -13,41 +14,6 @@ const uniDirectionalOverlays = [
         foldback: 0.8
     } ],
     [ "Label", { label: "", id: "label", cssClass: "connection-label" }]
-];
-
-const biDirectionalOverlays = [
-    [ "Arrow", {
-        location: 1,
-        id: "arrow",
-        length: 14,
-        foldback: 0.8
-    } ],
-    [ "Label", { label: "", id: "label", cssClass: "connection-label" }],
-    [ "Arrow", {
-        location: 0,
-        id: "arrow2",
-        length: 14,
-        direction: -1,
-        foldback: 0.8
-    } ]
-];
-
-const inverseRelationsOverlays = [
-    [ "Arrow", {
-        location: 1,
-        id: "arrow",
-        length: 14,
-        foldback: 0.8
-    } ],
-    [ "Label", { label: "", location: 0.2, id: "label-source", cssClass: "connection-label" }],
-    [ "Label", { label: "", location: 0.8, id: "label-target", cssClass: "connection-label" }],
-    [ "Arrow", {
-        location: 0,
-        id: "arrow2",
-        length: 14,
-        direction: -1,
-        foldback: 0.8
-    } ]
 ];
 
 const linkOverlays = [
@@ -81,9 +47,9 @@ async function showDialog() {
 }
 
 async function loadNotesAndRelations() {
-    const noteId = noteDetailService.getActiveNoteId();
+    const activeNoteId = noteDetailService.getActiveNoteId();
 
-    const links = await server.get(`notes/${noteId}/link-map`);
+    const links = await server.get(`notes/${activeNoteId}/link-map`);
 
     const noteIds = new Set(links.map(l => l.noteId).concat(links.map(l => l.targetNoteId)));
 
@@ -113,17 +79,33 @@ async function loadNotesAndRelations() {
 
         const $noteBox = $("<div>")
             .addClass("note-box")
-            .prop("id", noteBoxId)
-            .append($("<span>").addClass("title").append(note.title));
+            .prop("id", noteBoxId);
+
+        linkService.createNoteLink(noteId, note.title).then($link => {
+            $noteBox.append($("<span>").addClass("title").append($link));
+        });
+
+        if (activeNoteId === noteId) {
+            $noteBox.addClass("link-map-active-note");
+        }
 
         jsPlumbInstance.getContainer().appendChild($noteBox[0]);
+
+        jsPlumbInstance.draggable($noteBox[0], {
+            start: params => {
+                renderer.stop();
+            },
+            drag: params => {},
+            stop: params => {}
+        });
+
 
         return $noteBox;
     }
 
     const renderer = new Springy.Renderer(
         layout,
-        () => {}, //cleanup(),
+        () => {},
         (edge, p1, p2) => {
             const connectionId = edge.source.id + '-' + edge.target.id;
 
@@ -137,7 +119,7 @@ async function loadNotesAndRelations() {
             const connection = jsPlumbInstance.connect({
                 source: noteIdToId(edge.source.id),
                 target: noteIdToId(edge.target.id),
-                type: 'relation' // FIXME
+                type: 'link'
             });
 
             connection.canvas.id = connectionId;
@@ -194,19 +176,12 @@ function initJsPlumbInstance() {
 
     jsPlumbInstance = jsPlumb.getInstance({
         Endpoint: ["Dot", {radius: 2}],
-        Connector: "StateMachine",
         ConnectionOverlays: uniDirectionalOverlays,
         HoverPaintStyle: { stroke: "#777", strokeWidth: 1 },
         Container: $linkMapContainer.attr("id")
     });
 
-    jsPlumbInstance.registerConnectionType("uniDirectional", { anchor:"Continuous", connector:"StateMachine", overlays: uniDirectionalOverlays });
-
-    jsPlumbInstance.registerConnectionType("biDirectional", { anchor:"Continuous", connector:"StateMachine", overlays: biDirectionalOverlays });
-
-    jsPlumbInstance.registerConnectionType("inverse", { anchor:"Continuous", connector:"StateMachine", overlays: inverseRelationsOverlays });
-
-    jsPlumbInstance.registerConnectionType("link", { anchor:"Continuous", connector:"StateMachine", overlays: linkOverlays });
+    jsPlumbInstance.registerConnectionType("link", { anchor: "Continuous", connector: "Straight", overlays: linkOverlays });
 }
 
 function noteIdToId(noteId) {
