@@ -101,34 +101,58 @@ async function loadNotesAndRelations() {
         0.5 // Damping
     );
 
+    function getNoteBox(noteId) {
+        const noteBoxId = noteIdToId(noteId);
+        const $existingNoteBox = $("#" + noteBoxId);
+
+        if ($existingNoteBox.length > 0) {
+            return $existingNoteBox;
+        }
+
+        const note = notes.find(n => n.noteId === noteId);
+
+        const $noteBox = $("<div>")
+            .addClass("note-box")
+            .prop("id", noteBoxId)
+            .append($("<span>").addClass("title").append(note.title));
+
+        jsPlumbInstance.getContainer().appendChild($noteBox[0]);
+
+        return $noteBox;
+    }
+
     const renderer = new Springy.Renderer(
         layout,
-        () => {},
+        () => {}, //cleanup(),
+        (edge, p1, p2) => {
+            const connectionId = edge.source.id + '-' + edge.target.id;
+
+            if ($("#" + connectionId).length > 0) {
+                return;
+            }
+
+            getNoteBox(edge.source.id);
+            getNoteBox(edge.target.id);
+
+            const connection = jsPlumbInstance.connect({
+                source: noteIdToId(edge.source.id),
+                target: noteIdToId(edge.target.id),
+                type: 'relation' // FIXME
+            });
+
+            connection.canvas.id = connectionId;
+        },
+        (node, p) => {
+            const $noteBox = getNoteBox(node.id);
+
+            $noteBox
+                .css("left", (300 + p.x * 100) + "px")
+                .css("top", (300 + p.y * 100) + "px");
+        },
         () => {},
         () => {},
         () => {
-            layout.eachNode((node, point) => {
-                console.log(node, point.p);
-
-                const note = notes.find(n => n.noteId === node.id);
-
-                const $noteBox = $("<div>")
-                    .addClass("note-box")
-                    .prop("id", noteIdToId(node.id))
-                    .append($("<span>").addClass("title").append(note.title))
-                    .css("left", (300 + point.p.x * 100) + "px")
-                    .css("top", (300 + point.p.y * 100) + "px");
-
-                jsPlumbInstance.getContainer().appendChild($noteBox[0]);
-            });
-
-            for (const link of links) {
-                const connection = jsPlumbInstance.connect({
-                    source: noteIdToId(link.noteId),
-                    target: noteIdToId(link.targetNoteId),
-                    type: link.type
-                });
-            }
+            jsPlumbInstance.repaintEverything();
         }
     );
 
@@ -152,14 +176,18 @@ function initPanZoom() {
     });
 }
 
+function cleanup() {
+    // delete all endpoints and connections
+    // this is done at this point (after async operations) to reduce flicker to the minimum
+    jsPlumbInstance.deleteEveryEndpoint();
+
+    // without this we still end up with note boxes remaining in the canvas
+    $linkMapContainer.empty();
+}
+
 function initJsPlumbInstance() {
     if (jsPlumbInstance) {
-        // delete all endpoints and connections
-        // this is done at this point (after async operations) to reduce flicker to the minimum
-        jsPlumbInstance.deleteEveryEndpoint();
-
-        // without this we still end up with note boxes remaining in the canvas
-        $linkMapContainer.empty();
+        cleanup();
 
         return;
     }
