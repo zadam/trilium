@@ -567,19 +567,29 @@ class NoteDetailRelationMap {
     async dropNoteOntoRelationMapHandler(ev) {
         ev.preventDefault();
 
-        const note = JSON.parse(ev.originalEvent.dataTransfer.getData("text"));
+        const notes = JSON.parse(ev.originalEvent.dataTransfer.getData("text"));
 
         let {x, y} = this.getMousePosition(ev);
 
-        const exists = this.mapData.notes.some(n => n.noteId === note.noteId);
+        for (const note of notes) {
+            const exists = this.mapData.notes.some(n => n.noteId === note.noteId);
 
-        if (exists) {
-            await infoDialog.info(`Note "${note.title}" is already placed into the diagram`);
+            if (exists) {
+                infoService.showError(`Note "${note.title}" is already in the diagram.`);
 
-            return;
+                continue;
+            }
+
+            this.mapData.notes.push({noteId: note.noteId, x, y});
+
+            if (x > 1000) {
+                y += 100;
+                x = 0;
+            }
+            else {
+                x += 200;
+            }
         }
-
-        this.mapData.notes.push({noteId: note.noteId, x, y});
 
         this.saveData();
 

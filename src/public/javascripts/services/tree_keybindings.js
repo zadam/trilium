@@ -43,6 +43,14 @@ const keyBindings = {
     "shift+up": () => {
         const node = treeService.getFocusedNode();
 
+        if (!node) {
+            return;
+        }
+
+        if (node.isActive()) {
+            node.setSelected(true);
+        }
+
         node.navigate($.ui.keyCode.UP, false).then(() => {
             const currentNode = treeService.getFocusedNode();
 
@@ -57,6 +65,14 @@ const keyBindings = {
     },
     "shift+down": () => {
         const node = treeService.getFocusedNode();
+
+        if (!node) {
+            return;
+        }
+
+        if (node.isActive()) {
+            node.setSelected(true);
+        }
 
         node.navigate($.ui.keyCode.DOWN, false).then(() => {
             const currentNode = treeService.getFocusedNode();

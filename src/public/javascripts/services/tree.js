@@ -309,12 +309,6 @@ function clearSelectedNodes() {
     for (const selectedNode of getSelectedNodes()) {
         selectedNode.setSelected(false);
     }
-
-    const currentNode = getActiveNode();
-
-    if (currentNode) {
-        currentNode.setSelected(true);
-    }
 }
 
 async function treeInitialized() {
@@ -388,13 +382,13 @@ function initFancyTree(tree) {
             if (targetType === 'title' || targetType === 'icon') {
                 if (event.shiftKey) {
                     node.setSelected(!node.isSelected());
+                    node.setFocus(true);
                 }
                 else if (event.ctrlKey) {
                     noteDetailService.loadNoteDetail(node.data.noteId, { newTab: true });
                 }
                 else {
                     node.setActive();
-                    node.setSelected(true);
 
                     clearSelectedNodes();
                 }

@@ -188,33 +188,27 @@ span.fancytree-node.fancytree-active-clone:not(.fancytree-active) .fancytree-tit
     padding-left: 5px;
 }
 
-span.fancytree-active.fancytree-focused .fancytree-title {
+span.fancytree-active .fancytree-title {
+    font-weight: bold;
+    border-color: var(--main-background-color) !important; /* invisible border */
+}
+
+span.fancytree-focused .fancytree-title, span.fancytree-focused.fancytree-selected .fancytree-title {
     color: var(--active-item-text-color) !important;
     background-color: var(--active-item-background-color) !important;
-    border-color: var(--main-border-color) !important;
+    border-color: var(--main-background-color) !important; /* invisible border */
     border-radius: 3px;
-    font-weight: bold;
 }
 
-span.fancytree-active:not(.fancytree-focused) .fancytree-title {
+span.fancytree-selected .fancytree-title {
     color: var(--hover-item-text-color) !important;
     background-color: var(--hover-item-background-color) !important;
-    border-color: var(--main-border-color) !important;
-    border-radius: 3px;
-    font-weight: bold;
-}
-
-span.fancytree-selected:not(.fancytree-active) .fancytree-title {
-    color: var(--hover-item-text-color) !important;
-    background-color: var(--hover-item-background-color) !important;
-    border-color: var(--main-border-color) !important;
+    border-color: var(--main-background-color) !important; /* invisible border */
     border-radius: 3px;
     font-style: italic;
 }
 
-span.fancytree-node:not(.fancytree-active):hover span.fancytree-title {
-    color: var(--hover-item-text-color) !important;
-    background-color: var(--hover-item-background-color) !important;
+span.fancytree-node:hover span.fancytree-title {
     border-color: var(--main-border-color) !important;
     border-radius: 3px;
 }

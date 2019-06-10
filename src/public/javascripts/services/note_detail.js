@@ -154,7 +154,6 @@ async function showTab(tabId) {
 
         if (newActiveNode && newActiveNode.isVisible()) {
             newActiveNode.setActive(true, {noEvents: true});
-            newActiveNode.setSelected(true);
         }
     }
 }
