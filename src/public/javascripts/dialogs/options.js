@@ -17,6 +17,8 @@ function addTabHandler(handler) {
 }
 
 async function showDialog() {
+    utils.closeActiveDialog();
+
     glob.activeDialog = $dialog;
 
     const options = await server.get('options');

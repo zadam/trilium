@@ -15,6 +15,8 @@ async function showCurrentNoteRevisions() {
 }
 
 async function showNoteRevisionsDialog(noteId, noteRevisionId) {
+    utils.closeActiveDialog();
+
     glob.activeDialog = $dialog;
 
     $dialog.modal();

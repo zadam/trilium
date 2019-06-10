@@ -3,6 +3,7 @@ import linkService from '../services/link.js';
 import noteDetailService from '../services/note_detail.js';
 import treeUtils from '../services/tree_utils.js';
 import noteAutocompleteService from "../services/note_autocomplete.js";
+import utils from "../services/utils.js";
 
 const $dialog = $("#add-link-dialog");
 const $form = $("#add-link-form");
@@ -28,6 +29,8 @@ async function showDialogForClone() {
 }
 
 async function showDialog(linkType) {
+    utils.closeActiveDialog();
+
     glob.activeDialog = $dialog;
 
     if (noteDetailService.getActiveNoteType() === 'text') {

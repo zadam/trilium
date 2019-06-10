@@ -1,4 +1,5 @@
 import server from "../services/server.js";
+import utils from "../services/utils.js";
 
 const $dialog = $("#about-dialog");
 const $appVersion = $("#app-version");
@@ -9,6 +10,8 @@ const $buildRevision = $("#build-revision");
 const $dataDirectory = $("#data-directory");
 
 async function showDialog() {
+    utils.closeActiveDialog();
+
     const appInfo = await server.get('app-info');
 
     $appVersion.text(appInfo.appVersion);

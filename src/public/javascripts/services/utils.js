@@ -194,6 +194,12 @@ function getMimeTypeClass(mime) {
     return 'mime-' + mime.toLowerCase().replace(/[\W_]+/g,"-");
 }
 
+function closeActiveDialog() {
+    if (glob.activeDialog) {
+        glob.activeDialog.modal('hide');
+    }
+}
+
 export default {
     reloadApp,
     parseDate,
@@ -223,5 +229,6 @@ export default {
     setSessionCookie,
     getCookie,
     getNoteTypeClass,
-    getMimeTypeClass
+    getMimeTypeClass,
+    closeActiveDialog
 };

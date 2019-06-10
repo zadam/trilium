@@ -3,6 +3,7 @@ import noteDetailService from "../services/note_detail.js";
 import libraryLoader from "../services/library_loader.js";
 import treeCache from "../services/tree_cache.js";
 import linkService from "../services/link.js";
+import utils from "../services/utils.js";
 
 const $linkMapContainer = $("#link-map-container");
 
@@ -26,6 +27,8 @@ let pzInstance = null;
 let renderer = null;
 
 async function showDialog() {
+    utils.closeActiveDialog();
+
     glob.activeDialog = $dialog;
 
     // set default settings

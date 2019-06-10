@@ -1,6 +1,7 @@
 import libraryLoader from '../services/library_loader.js';
 import server from '../services/server.js';
 import infoService from "../services/info.js";
+import utils from "../services/utils.js";
 
 const $dialog = $("#sql-console-dialog");
 const $query = $('#sql-console-query');
@@ -14,6 +15,8 @@ let codeEditor;
 $dialog.on("shown.bs.modal", e => initEditor());
 
 async function showDialog() {
+    utils.closeActiveDialog();
+
     glob.activeDialog = $dialog;
 
     await showTables();

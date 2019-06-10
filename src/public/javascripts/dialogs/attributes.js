@@ -3,6 +3,7 @@ import server from '../services/server.js';
 import infoService from "../services/info.js";
 import treeUtils from "../services/tree_utils.js";
 import attributeAutocompleteService from "../services/attribute_autocomplete.js";
+import utils from "../services/utils.js";
 
 const $dialog = $("#attributes-dialog");
 const $saveAttributesButton = $("#save-attributes-button");
@@ -254,6 +255,8 @@ function AttributesModel() {
 }
 
 async function showDialog() {
+    utils.closeActiveDialog();
+
     // lazily apply bindings on first use
     if (!ko.dataFor($dialog[0])) {
         ko.applyBindings(attributesModel, $dialog[0]);

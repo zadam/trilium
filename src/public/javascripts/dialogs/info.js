@@ -1,3 +1,5 @@
+import utils from "../services/utils.js";
+
 const $dialog = $("#info-dialog");
 const $infoContent = $("#info-dialog-content");
 const $okButton = $("#info-dialog-ok-button");
@@ -5,6 +7,8 @@ const $okButton = $("#info-dialog-ok-button");
 let resolve;
 
 function info(message) {
+    utils.closeActiveDialog();
+
     glob.activeDialog = $dialog;
 
     $infoContent.text(message);

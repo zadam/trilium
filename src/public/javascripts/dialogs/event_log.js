@@ -6,6 +6,8 @@ const $dialog = $("#event-log-dialog");
 const $list = $("#event-log-list");
 
 async function showDialog() {
+    utils.closeActiveDialog();
+
     glob.activeDialog = $dialog;
 
     $dialog.modal();

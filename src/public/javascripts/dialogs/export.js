@@ -1,7 +1,6 @@
 import treeService from '../services/tree.js';
 import treeUtils from "../services/tree_utils.js";
 import utils from "../services/utils.js";
-import protectedSessionHolder from "../services/protected_session_holder.js";
 import messagingService from "../services/messaging.js";
 import infoService from "../services/info.js";
 
@@ -20,6 +19,8 @@ const $opmlVersions = $("#opml-versions");
 let exportId = '';
 
 async function showDialog(defaultType) {
+    utils.closeActiveDialog();
+
     // each opening of the dialog resets the exportId so we don't associate it with previous exports anymore
     exportId = '';
     $exportButton.removeAttr("disabled");

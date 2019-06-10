@@ -1,4 +1,5 @@
 import noteDetailService from '../services/note_detail.js';
+import utils from "../services/utils.js";
 
 const $dialog = $("#note-info-dialog");
 const $noteId = $("#note-info-note-id");
@@ -9,6 +10,8 @@ const $mime = $("#note-info-mime");
 const $okButton = $("#note-info-ok-button");
 
 function showDialog() {
+    utils.closeActiveDialog();
+
     glob.activeDialog = $dialog;
 
     $dialog.modal();

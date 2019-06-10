@@ -6,6 +6,8 @@ const $dialog = $("#recent-changes-dialog");
 const $content = $("#recent-changes-content");
 
 async function showDialog() {
+    utils.closeActiveDialog();
+
     glob.activeDialog = $dialog;
 
     $dialog.modal();

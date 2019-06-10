@@ -3,6 +3,7 @@ import server from '../services/server.js';
 import treeCache from "../services/tree_cache.js";
 import treeUtils from "../services/tree_utils.js";
 import infoService from "../services/info.js";
+import utils from "../services/utils.js";
 
 const $dialog = $("#branch-prefix-dialog");
 const $form = $("#branch-prefix-form");
@@ -12,6 +13,8 @@ const $noteTitle = $('#branch-prefix-note-title');
 let branchId;
 
 async function showDialog() {
+    utils.closeActiveDialog();
+
     glob.activeDialog = $dialog;
 
     $dialog.modal();

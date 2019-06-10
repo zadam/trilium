@@ -162,9 +162,7 @@ async function activateNote(notePath, noteLoadedListener) {
         await hoistedNoteService.unhoist();
     }
 
-    if (glob.activeDialog) {
-        glob.activeDialog.modal('hide');
-    }
+    utils.closeActiveDialog();
 
     const node = await expandToNote(notePath);
 

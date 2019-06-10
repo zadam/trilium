@@ -21,6 +21,8 @@ const $explodeArchivesCheckbox = $("#explode-archives-checkbox");
 let importId;
 
 async function showDialog() {
+    utils.closeActiveDialog();
+
     // each opening of the dialog resets the importId so we don't associate it with previous imports anymore
     importId = '';
     $importProgressCountWrapper.hide();

@@ -1,3 +1,5 @@
+import utils from "../services/utils.js";
+
 const $dialog = $("#prompt-dialog");
 const $dialogBody = $dialog.find(".modal-body");
 
@@ -10,6 +12,8 @@ let resolve;
 let shownCb;
 
 function ask({ message, defaultValue, shown }) {
+    utils.closeActiveDialog();
+
     glob.activeDialog = $dialog;
 
     shownCb = shown;
