@@ -6,22 +6,13 @@ import linkService from "../services/link.js";
 
 const $linkMapContainer = $("#link-map-container");
 
-const uniDirectionalOverlays = [
-    [ "Arrow", {
-        location: 1,
-        id: "arrow",
-        length: 14,
-        foldback: 0.8
-    } ],
-    [ "Label", { label: "", id: "label", cssClass: "connection-label" }]
-];
-
 const linkOverlays = [
     [ "Arrow", {
         location: 1,
         id: "arrow",
-        length: 14,
-        foldback: 0.8
+        length: 10,
+        width: 10,
+        foldback: 0.7
     } ]
 ];
 
@@ -165,6 +156,10 @@ function cleanup() {
 
     // without this we still end up with note boxes remaining in the canvas
     $linkMapContainer.empty();
+
+    // reset zoom/pan
+    pzInstance.zoomTo(0, 0, 1);
+    pzInstance.moveTo(0, 0);
 }
 
 function initJsPlumbInstance() {
@@ -175,9 +170,9 @@ function initJsPlumbInstance() {
     }
 
     jsPlumbInstance = jsPlumb.getInstance({
-        Endpoint: ["Dot", {radius: 2}],
-        ConnectionOverlays: uniDirectionalOverlays,
-        HoverPaintStyle: { stroke: "#777", strokeWidth: 1 },
+        ConnectionOverlays: linkOverlays,
+        PaintStyle: { stroke: "var(--muted-text-color)", strokeWidth: 1 },
+        HoverPaintStyle: { stroke: "var(--main-text-color)", strokeWidth: 1 },
         Container: $linkMapContainer.attr("id")
     });
 
