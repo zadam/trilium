@@ -16,13 +16,21 @@ const linkOverlays = [
     } ]
 ];
 
+const LINK_TYPES = [ "hyper", "image", "relation", "relation-map" ];
+
 const $dialog = $("#link-map-dialog");
+const $maxNotesInput = $("#link-map-max-notes");
 
 let jsPlumbInstance = null;
 let pzInstance = null;
+let renderer = null;
 
 async function showDialog() {
     glob.activeDialog = $dialog;
+
+    // set default settings
+    $maxNotesInput.val(50);
+    LINK_TYPES.forEach(lt => $("#link-map-" + lt).attr("checked", "checked"));
 
     await libraryLoader.requireLibrary(libraryLoader.LINK_MAP);
 
@@ -38,11 +46,25 @@ async function showDialog() {
 }
 
 async function loadNotesAndRelations() {
+    cleanup();
+
+    const linkTypes = LINK_TYPES.filter(lt => $(`#link-map-${lt}:checked`).length > 0);
+    const maxNotes = parseInt($maxNotesInput.val());
+
+    console.log(linkTypes);
+
     const activeNoteId = noteDetailService.getActiveNoteId();
 
-    const links = await server.get(`notes/${activeNoteId}/link-map`);
+    const links = await server.post(`notes/${activeNoteId}/link-map`, {
+        linkTypes,
+        maxNotes
+    });
 
     const noteIds = new Set(links.map(l => l.noteId).concat(links.map(l => l.targetNoteId)));
+
+    if (noteIds.size === 0) {
+        noteIds.add(activeNoteId);
+    }
 
     // preload all notes
     const notes = await treeCache.getNotes(Array.from(noteIds));
@@ -94,7 +116,7 @@ async function loadNotesAndRelations() {
         return $noteBox;
     }
 
-    const renderer = new Springy.Renderer(
+    renderer = new Springy.Renderer(
         layout,
         () => {},
         (edge, p1, p2) => {
@@ -150,6 +172,10 @@ function initPanZoom() {
 }
 
 function cleanup() {
+    if (renderer) {
+        renderer.stop();
+    }
+
     // delete all endpoints and connections
     // this is done at this point (after async operations) to reduce flicker to the minimum
     jsPlumbInstance.deleteEveryEndpoint();
@@ -182,6 +208,10 @@ function initJsPlumbInstance() {
 function noteIdToId(noteId) {
     return "link-map-note-" + noteId;
 }
+
+$(".link-map-settings").change(loadNotesAndRelations);
+
+$maxNotesInput.on("input", loadNotesAndRelations);
 
 export default {
     showDialog

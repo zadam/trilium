@@ -506,7 +506,7 @@
 		Springy.requestAnimationFrame(function step() {
 			t.tick(0.03);
 
-			if (render !== undefined) {
+			if (!t._stop && render !== undefined) {
 				render();
 			}
 

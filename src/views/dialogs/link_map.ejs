@@ -1,8 +1,40 @@
 <div id="link-map-dialog" class="modal fade mx-auto" tabindex="-1" role="dialog">
-    <div class="modal-dialog modal-xl" role="document">
+    <div class="modal-dialog modal-xl" style="max-width: 90%;" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title mr-auto">Link map</h5>
+                <h5 class="modal-title" style="width: auto;">Link map</h5>
+
+                <div style="vertical-align: middle;">
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input link-map-settings" type="checkbox" id="link-map-hyper">
+                        <label class="form-check-label" for="link-map-hyper">text links</label>
+                    </div>
+
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input link-map-settings" type="checkbox" id="link-map-image">
+                        <label class="form-check-label" for="link-map-image">image links</label>
+                    </div>
+
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input link-map-settings" type="checkbox" id="link-map-relation">
+                        <label class="form-check-label" for="link-map-relation">relations</label>
+                    </div>
+
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input link-map-settings" type="checkbox" id="link-map-relation-map">
+                        <label class="form-check-label" for="link-map-relation-map">relation map links</label>
+                    </div>
+
+                    <div style="display: inline-block; position: relative; top: -3px;">
+                        <label for="link-map-max-notes" title="Max number of displayed notes">
+                            <strong>max notes:</strong>
+                        </label>
+
+                        <input id="link-map-max-notes" type="number" value="50" min="5" max="1000" step="10"
+                               class="form-control form-control-sm"
+                               style="width: 80px; display: inline-block; text-align: right;"/>
+                    </div>
+                </div>
 
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-left: 0;">
                     <span aria-hidden="true">&times;</span>

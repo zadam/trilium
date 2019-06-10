@@ -1,5 +1,7 @@
-.link-map-active-note {
-    background-color: var(--more-accented-background-color) !important;
+#link-map-container {
+    position: relative;
+    height: calc(95vh - 130px);
+    outline: none; /* remove dotted outline on click */
 }
 
 #link-map-container .note-box {
@@ -33,4 +35,8 @@
 #link-map-container .floating-button {
     position: absolute !important;
     z-index: 100;
+}
+
+.link-map-active-note {
+    background-color: var(--more-accented-background-color) !important;
 }
