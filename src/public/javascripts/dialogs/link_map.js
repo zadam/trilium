@@ -32,8 +32,8 @@ async function showDialog() {
     glob.activeDialog = $dialog;
 
     // set default settings
-    $maxNotesInput.val(50);
-    LINK_TYPES.forEach(lt => $("#link-map-" + lt).attr("checked", "checked"));
+    $maxNotesInput.val(20);
+    LINK_TYPES.forEach(lt => $("#link-map-" + lt).prop('checked', true));
 
     await libraryLoader.requireLibrary(libraryLoader.LINK_MAP);
 
@@ -53,8 +53,6 @@ async function loadNotesAndRelations() {
 
     const linkTypes = LINK_TYPES.filter(lt => $(`#link-map-${lt}:checked`).length > 0);
     const maxNotes = parseInt($maxNotesInput.val());
-
-    console.log(linkTypes);
 
     const activeNoteId = noteDetailService.getActiveNoteId();
 
@@ -142,10 +140,12 @@ async function loadNotesAndRelations() {
         },
         (node, p) => {
             const $noteBox = getNoteBox(node.id);
+            const middleW = $linkMapContainer.width() / 2;
+            const middleH = $linkMapContainer.height() / 2;
 
             $noteBox
-                .css("left", (300 + p.x * 100) + "px")
-                .css("top", (300 + p.y * 100) + "px");
+                .css("left", (middleW + p.x * 100) + "px")
+                .css("top", (middleH + p.y * 100) + "px");
         },
         () => {},
         () => {},
@@ -199,6 +199,7 @@ function initJsPlumbInstance() {
     }
 
     jsPlumbInstance = jsPlumb.getInstance({
+        Endpoint: ["Blank", {}],
         ConnectionOverlays: linkOverlays,
         PaintStyle: { stroke: "var(--muted-text-color)", strokeWidth: 1 },
         HoverPaintStyle: { stroke: "var(--main-text-color)", strokeWidth: 1 },
