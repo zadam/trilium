@@ -75,10 +75,10 @@
   },
   "devDependencies": {
     "devtron": "1.4.0",
-    "electron": "4.0.3",
+    "electron": "6.0.0-beta.6",
     "electron-builder": "20.43.0",
     "electron-compile": "6.4.4",
-    "electron-installer-debian": "1.2.0",
+    "electron-installer-debian": "2.0.0",
     "electron-packager": "13.1.1",
     "electron-rebuild": "1.8.5",
     "lorem-ipsum": "2.0.3",
