@@ -36,7 +36,7 @@
     "electron-find": "1.0.6",
     "electron-window-state": "5.0.3",
     "express": "4.17.1",
-    "express-session": "1.16.1",
+    "express-session": "1.16.2",
     "file-type": "11.1.0",
     "fs-extra": "8.0.1",
     "get-port": "5.0.0",
@@ -75,7 +75,7 @@
   },
   "devDependencies": {
     "devtron": "1.4.0",
-    "electron": "6.0.0-beta.6",
+    "electron": "6.0.0-beta.7",
     "electron-builder": "20.43.0",
     "electron-compile": "6.4.4",
     "electron-installer-debian": "2.0.0",

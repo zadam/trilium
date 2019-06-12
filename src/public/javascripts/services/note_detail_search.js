@@ -34,7 +34,7 @@ class NoteDetailSearch {
             this.$searchString.val('');
         }
 
-        this.$searchString.on('input', noteDetailService.noteChanged);
+        this.$searchString.on('input', () => this.ctx.noteChanged());
     }
 
     getContent() {

@@ -508,6 +508,14 @@ async function saveOpenTabs() {
     });
 }
 
+function noteChanged() {
+    const activeTabContext = getActiveTabContext();
+
+    if (activeTabContext) {
+        activeTabContext.noteChanged();
+    }
+}
+
 // this makes sure that when user e.g. reloads the page or navigates away from the page, the note's content is saved
 // this sends the request asynchronously and doesn't wait for result
 $(window).on('beforeunload', () => { saveNotesIfChanged(); }); // don't convert to short form, handler doesn't like returned promise
@@ -537,5 +545,6 @@ export default {
     filterTabs,
     openEmptyTab,
     noteDeleted,
-    refreshTabs
+    refreshTabs,
+    noteChanged
 };

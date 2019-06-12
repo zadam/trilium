@@ -32,7 +32,7 @@ async function showDialog() {
     glob.activeDialog = $dialog;
 
     // set default settings
-    $maxNotesInput.val(20);
+    $maxNotesInput.val(10);
     LINK_TYPES.forEach(lt => $("#link-map-" + lt).prop('checked', true));
 
     await libraryLoader.requireLibrary(libraryLoader.LINK_MAP);
