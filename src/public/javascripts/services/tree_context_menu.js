@@ -122,7 +122,13 @@ class TreeContextMenu {
             clipboard.pasteInto(this.node);
         }
         else if (cmd === "delete") {
-            treeChangesService.deleteNodes(treeService.getSelectedNodes(true));
+            let notesToDelete = treeService.getSelectedNodes(true);
+
+            if (notesToDelete.length === 0) {
+                notesToDelete.push(this.node);
+            }
+
+            treeChangesService.deleteNodes(notesToDelete);
         }
         else if (cmd === "export") {
             exportDialog.showDialog("subtree");

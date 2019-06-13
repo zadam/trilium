@@ -7,7 +7,13 @@ import clipboard from "./clipboard.js";
 
 const keyBindings = {
     "del": node => {
-        treeChangesService.deleteNodes(treeService.getSelectedNodes(true));
+        let notesToDelete = treeService.getSelectedNodes(true);
+
+        if (notesToDelete.length === 0) {
+            notesToDelete.push(node);
+        }
+
+        treeChangesService.deleteNodes(notesToDelete);
     },
     "ctrl+up": node => {
         const beforeNode = node.getPrevSibling();
