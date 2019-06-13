@@ -38,7 +38,9 @@ async function getNotePath(node) {
         node = node.getParent();
     }
 
-    path.push(node.data.noteId); // root or hoisted noteId
+    if (node) { // null node can happen directly after unhoisting when tree is still hoisted but option has been changed already
+        path.push(node.data.noteId); // root or hoisted noteId
+    }
 
     return path.reverse().join("/");
 }
