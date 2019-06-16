@@ -7,13 +7,7 @@ import clipboard from "./clipboard.js";
 
 const keyBindings = {
     "del": node => {
-        let notesToDelete = treeService.getSelectedNodes(true);
-
-        if (notesToDelete.length === 0) {
-            notesToDelete.push(node);
-        }
-
-        treeChangesService.deleteNodes(notesToDelete);
+        treeChangesService.deleteNodes(treeService.getSelectedOrActiveNodes(node));
     },
     "ctrl+up": node => {
         const beforeNode = node.getPrevSibling();
@@ -110,13 +104,13 @@ const keyBindings = {
 
         return false;
     },
-    "ctrl+c": () => {
-        clipboard.copy(treeService.getSelectedNodes());
+    "ctrl+c": node => {
+        clipboard.copy(treeService.getSelectedOrActiveNodes(node));
 
         return false;
     },
-    "ctrl+x": () => {
-        clipboard.cut(treeService.getSelectedNodes());
+    "ctrl+x": node => {
+        clipboard.cut(treeService.getSelectedOrActiveNodes(node));
 
         return false;
     },

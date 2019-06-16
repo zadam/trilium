@@ -111,10 +111,10 @@ class TreeContextMenu {
             protectedSessionService.protectSubtree(this.node.data.noteId, false);
         }
         else if (cmd === "copy") {
-            clipboard.copy(treeService.getSelectedNodes());
+            clipboard.copy(treeService.getSelectedOrActiveNodes(this.node));
         }
         else if (cmd === "cut") {
-            clipboard.cut(treeService.getSelectedNodes());
+            clipboard.cut(treeService.getSelectedOrActiveNodes(this.node));
         }
         else if (cmd === "pasteAfter") {
             clipboard.pasteAfter(this.node);
@@ -123,13 +123,7 @@ class TreeContextMenu {
             clipboard.pasteInto(this.node);
         }
         else if (cmd === "delete") {
-            let notesToDelete = treeService.getSelectedNodes(true);
-
-            if (notesToDelete.length === 0) {
-                notesToDelete.push(this.node);
-            }
-
-            treeChangesService.deleteNodes(notesToDelete);
+            treeChangesService.deleteNodes(treeService.getSelectedOrActiveNodes(this.node));
         }
         else if (cmd === "export") {
             exportDialog.showDialog("subtree");

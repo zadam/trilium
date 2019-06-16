@@ -303,6 +303,15 @@ function getSelectedNodes(stopOnParents = false) {
     return getTree().getSelectedNodes(stopOnParents);
 }
 
+function getSelectedOrActiveNodes(node) {
+    let notes = getSelectedNodes(true);
+
+    if (notes.length === 0) {
+        notes.push(node);
+    }
+    return notes;
+}
+
 function clearSelectedNodes() {
     for (const selectedNode of getSelectedNodes()) {
         selectedNode.setSelected(false);
@@ -805,6 +814,7 @@ export default {
     createNote,
     createNoteInto,
     getSelectedNodes,
+    getSelectedOrActiveNodes,
     clearSelectedNodes,
     sortAlphabetically,
     showTree,
