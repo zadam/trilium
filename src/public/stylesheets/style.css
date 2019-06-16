@@ -197,20 +197,20 @@ span.fancytree-focused .fancytree-title, span.fancytree-focused.fancytree-select
     color: var(--active-item-text-color) !important;
     background-color: var(--active-item-background-color) !important;
     border-color: var(--main-background-color) !important; /* invisible border */
-    border-radius: 3px;
+    border-radius: 5px;
 }
 
 span.fancytree-selected .fancytree-title {
     color: var(--hover-item-text-color) !important;
     background-color: var(--hover-item-background-color) !important;
     border-color: var(--main-background-color) !important; /* invisible border */
-    border-radius: 3px;
+    border-radius: 5px;
     font-style: italic;
 }
 
 span.fancytree-node:hover span.fancytree-title {
     border-color: var(--main-border-color) !important;
-    border-radius: 3px;
+    border-radius: 5px;
 }
 
 .ui-autocomplete {

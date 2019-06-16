@@ -520,13 +520,12 @@ async function scrollToActiveNote() {
     const activeContext = noteDetailService.getActiveTabContext();
 
     if (activeContext && activeContext.notePath) {
+        $tree.find('.fancytree-container').focus();
+
         const node = await expandToNote(activeContext.notePath);
 
         node.makeVisible({scrollIntoView: true});
-
-        node.setFocus();
-
-        await activateNote(activeContext.notePath);
+        node.setFocus(true);
     }
 }
 
