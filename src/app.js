@@ -90,10 +90,10 @@ app.use((req, res, next) => {
 app.use((err, req, res, next) => {
     if (err && err.message && err.message.includes("Invalid package")) {
         // electron 6 outputs a lot of such errors which do not seem important
-        return;
     }
-
-    log.info(err);
+    else {
+        log.info(err);
+    }
 
     res.status(err.status || 500);
     res.send({
