@@ -33,46 +33,47 @@ class TreeContextMenu {
         const parentNote = await treeCache.getNote(branch.parentNoteId);
         const isNotRoot = note.noteId !== 'root';
         const isHoisted = note.noteId === await hoistedNoteService.getHoistedNoteId();
+        const noSelectedNotes = treeService.getSelectedNodes().length === 0;
 
         const insertNoteAfterEnabled = isNotRoot && !isHoisted && parentNote.type !== 'search';
         const insertChildNoteEnabled = note.type !== 'search';
 
         return [
-            { title: "Open in new tab", cmd: "openInTab", uiIcon: "empty" },
+            { title: "Open in new tab", cmd: "openInTab", uiIcon: "empty", enabled: noSelectedNotes },
             { title: "Insert note after <kbd>Ctrl+O</kbd>", cmd: "insertNoteAfter", uiIcon: "plus",
                 items: insertNoteAfterEnabled ? this.getNoteTypeItems("insertNoteAfter") : null,
-                enabled: insertNoteAfterEnabled },
+                enabled: insertNoteAfterEnabled && noSelectedNotes },
             { title: "Insert child note <kbd>Ctrl+P</kbd>", cmd: "insertChildNote", uiIcon: "plus",
                 items: insertChildNoteEnabled ? this.getNoteTypeItems("insertChildNote") : null,
-                enabled: insertChildNoteEnabled },
+                enabled: insertChildNoteEnabled && noSelectedNotes },
             { title: "Delete <kbd>Delete</kbd>", cmd: "delete", uiIcon: "trash",
                 enabled: isNotRoot && !isHoisted && parentNote.type !== 'search' },
             { title: "----" },
-            isHoisted ? null : { title: "Hoist note <kbd>Ctrl-H</kbd>", cmd: "hoist", uiIcon: "empty" },
+            isHoisted ? null : { title: "Hoist note <kbd>Ctrl-H</kbd>", cmd: "hoist", uiIcon: "empty", enabled: noSelectedNotes },
             !isHoisted || !isNotRoot ? null : { title: "Unhoist note <kbd>Ctrl-H</kbd>", cmd: "unhoist", uiIcon: "arrow-up" },
             { title: "Edit branch prefix <kbd>F2</kbd>", cmd: "editBranchPrefix", uiIcon: "empty",
-                enabled: isNotRoot && parentNote.type !== 'search'},
+                enabled: isNotRoot && parentNote.type !== 'search' && noSelectedNotes},
             { title: "----" },
-            { title: "Protect subtree", cmd: "protectSubtree", uiIcon: "shield-check" },
-            { title: "Unprotect subtree", cmd: "unprotectSubtree", uiIcon: "shield-close" },
+            { title: "Protect subtree", cmd: "protectSubtree", uiIcon: "shield-check", enabled: noSelectedNotes },
+            { title: "Unprotect subtree", cmd: "unprotectSubtree", uiIcon: "shield-close", enabled: noSelectedNotes },
             { title: "----" },
             { title: "Copy / clone <kbd>Ctrl+C</kbd>", cmd: "copy", uiIcon: "files",
                 enabled: isNotRoot },
             { title: "Cut <kbd>Ctrl+X</kbd>", cmd: "cut", uiIcon: "scissors",
                 enabled: isNotRoot },
             { title: "Paste into <kbd>Ctrl+V</kbd>", cmd: "pasteInto", uiIcon: "clipboard",
-                enabled: !clipboard.isEmpty() && note.type !== 'search' },
+                enabled: !clipboard.isEmpty() && note.type !== 'search' && noSelectedNotes },
             { title: "Paste after", cmd: "pasteAfter", uiIcon: "clipboard",
-                enabled: !clipboard.isEmpty() && isNotRoot && parentNote.type !== 'search' },
+                enabled: !clipboard.isEmpty() && isNotRoot && parentNote.type !== 'search' && noSelectedNotes },
             { title: "----" },
             { title: "Export", cmd: "export", uiIcon: "empty",
-                enabled: note.type !== 'search' },
+                enabled: note.type !== 'search' && noSelectedNotes },
             { title: "Import into note", cmd: "importIntoNote", uiIcon: "empty",
-                enabled: note.type !== 'search' },
+                enabled: note.type !== 'search' && noSelectedNotes },
             { title: "----" },
-            { title: "Collapse subtree <kbd>Alt+-</kbd>", cmd: "collapseSubtree", uiIcon: "align-justify" },
-            { title: "Force note sync", cmd: "forceNoteSync", uiIcon: "refresh" },
-            { title: "Sort alphabetically <kbd>Alt+S</kbd>", cmd: "sortAlphabetically", uiIcon: "empty" }
+            { title: "Collapse subtree <kbd>Alt+-</kbd>", cmd: "collapseSubtree", uiIcon: "align-justify", enabled: noSelectedNotes },
+            { title: "Force note sync", cmd: "forceNoteSync", uiIcon: "refresh", enabled: noSelectedNotes },
+            { title: "Sort alphabetically <kbd>Alt+S</kbd>", cmd: "sortAlphabetically", uiIcon: "empty", enabled: noSelectedNotes }
         ].filter(row => row !== null);
     }
 
