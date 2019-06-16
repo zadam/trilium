@@ -516,11 +516,15 @@ async function collapseTree(node = null) {
     node.visit(node => node.setExpanded(false));
 }
 
+function focusTree() {
+    $tree.find('.fancytree-container').focus();
+}
+
 async function scrollToActiveNote() {
     const activeContext = noteDetailService.getActiveTabContext();
 
     if (activeContext && activeContext.notePath) {
-        $tree.find('.fancytree-container').focus();
+        focusTree();
 
         const node = await expandToNote(activeContext.notePath);
 
@@ -814,5 +818,6 @@ export default {
     expandToNote,
     getNodeFromPath,
     resolveNotePath,
-    getSomeNotePath
+    getSomeNotePath,
+    focusTree
 };

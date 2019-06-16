@@ -3,6 +3,7 @@ import utils from './utils.js';
 import server from './server.js';
 import infoService from "./info.js";
 import treeCache from "./tree_cache.js";
+import treeUtils from "./tree_utils.js";
 import hoistedNoteService from "./hoisted_note.js";
 import noteDetailService from "./note_detail.js";
 
@@ -105,9 +106,10 @@ async function deleteNodes(nodes) {
         next = nodes[0].getParent();
     }
 
+    let activeNotePath = null;
+
     if (next) {
-        // activate next element after this one is deleted so we don't lose focus
-        next.setActive();
+        activeNotePath = await treeUtils.getNotePath(next);
     }
 
     await treeService.loadTreeCache();
@@ -119,7 +121,15 @@ async function deleteNodes(nodes) {
     }
 
     for (const parentNoteId of parentNoteIds) {
-        treeService.reloadNote(parentNoteId);
+        await treeService.reloadNote(parentNoteId);
+    }
+
+    // activate after all the reloading
+    if (activeNotePath) {
+        treeService.focusTree();
+
+        const node = await treeService.activateNote(activeNotePath);
+        node.setFocus(true);
     }
 
     infoService.showMessage("Note(s) has been deleted.");
