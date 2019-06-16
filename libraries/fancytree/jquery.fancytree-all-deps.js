@@ -3235,7 +3235,8 @@ var uniqueId = $.fn.extend( {
 					node.makeVisible({ scrollIntoView: false });
 				} catch (e) {} // #272
 				if (activate === false) {
-					return node.setFocus();
+					node.setFocus();
+					return _getResolvedPromise();
 				}
 				return node.setActive();
 			}
