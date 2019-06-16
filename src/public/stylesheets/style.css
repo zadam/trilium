@@ -190,7 +190,8 @@ span.fancytree-node.fancytree-active-clone:not(.fancytree-active) .fancytree-tit
 
 span.fancytree-active .fancytree-title {
     font-weight: bold;
-    border-color: var(--main-background-color) !important; /* invisible border */
+    border-color: var(--main-border-color) !important;
+    border-radius: 5px;
 }
 
 span.fancytree-focused .fancytree-title, span.fancytree-focused.fancytree-selected .fancytree-title {
