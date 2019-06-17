@@ -33,7 +33,13 @@ class TreeContextMenu {
         const parentNote = await treeCache.getNote(branch.parentNoteId);
         const isNotRoot = note.noteId !== 'root';
         const isHoisted = note.noteId === await hoistedNoteService.getHoistedNoteId();
-        const noSelectedNotes = treeService.getSelectedNodes().length === 0;
+
+        // some actions don't support multi-note so they are disabled when notes are selected
+        // the only exception is when the only selected note is the one that was right-clicked, then
+        // it's clear what the user meant to do.
+        const selNodes = treeService.getSelectedNodes();
+        const noSelectedNotes = selNodes.length === 0
+                || (selNodes.length === 1 && selNodes[0] === this.node);
 
         const insertNoteAfterEnabled = isNotRoot && !isHoisted && parentNote.type !== 'search';
         const insertChildNoteEnabled = note.type !== 'search';
