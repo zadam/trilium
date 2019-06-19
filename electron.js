@@ -58,7 +58,7 @@ async function createMainWindow() {
 
     mainWindowState.manage(win);
 
-    win.setMenu(null);
+    win.setMenuBarVisibility(false);
     win.loadURL('http://localhost:' + await port);
     win.on('closed', onClosed);
 
