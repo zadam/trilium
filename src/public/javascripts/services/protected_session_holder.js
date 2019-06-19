@@ -37,6 +37,8 @@ function isProtectedSessionAvailable() {
 
 function touchProtectedSession() {
     if (isProtectedSessionAvailable()) {
+        lastProtectedSessionOperationDate = new Date();
+
         setProtectedSessionId(utils.getCookie(PROTECTED_SESSION_ID_KEY));
     }
 }

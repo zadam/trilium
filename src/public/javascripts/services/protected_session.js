@@ -43,6 +43,7 @@ async function setupProtectedSession(password) {
     }
 
     protectedSessionHolder.setProtectedSessionId(response.protectedSessionId);
+    protectedSessionHolder.touchProtectedSession();
 
     await treeService.reload();
 
