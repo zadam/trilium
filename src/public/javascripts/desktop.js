@@ -142,10 +142,10 @@ $noteTabContainer.on("click", ".export-note-button", function () {
         return;
     }
 
-    exportDialog.showDialog('single');
+    exportDialog.showDialog(treeService.getActiveNode(), 'single');
 });
 
-$noteTabContainer.on("click", ".import-files-button", importDialog.showDialog);
+$noteTabContainer.on("click", ".import-files-button", () => importDialog.showDialog(treeService.getActiveNode()));
 
 $('[data-toggle="tooltip"]').tooltip({
     html: true

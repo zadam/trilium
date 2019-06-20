@@ -1,4 +1,3 @@
-import treeService from '../services/tree.js';
 import treeUtils from "../services/tree_utils.js";
 import utils from "../services/utils.js";
 import messagingService from "../services/messaging.js";
@@ -6,7 +5,7 @@ import infoService from "../services/info.js";
 
 const $dialog = $("#export-dialog");
 const $form = $("#export-form");
-const $noteTitle = $dialog.find(".note-title");
+const $noteTitle = $dialog.find(".export-note-title");
 const $subtreeFormats = $("#export-subtree-formats");
 const $singleFormats = $("#export-single-formats");
 const $subtreeType = $("#export-type-subtree");
@@ -17,8 +16,9 @@ const $exportButton = $("#export-button");
 const $opmlVersions = $("#opml-versions");
 
 let exportId = '';
+let branchId = null;
 
-async function showDialog(defaultType) {
+async function showDialog(node, defaultType) {
     utils.closeActiveDialog();
 
     // each opening of the dialog resets the exportId so we don't associate it with previous exports anymore
@@ -46,8 +46,9 @@ async function showDialog(defaultType) {
 
     $dialog.modal();
 
-    const currentNode = treeService.getActiveNode();
-    const noteTitle = await treeUtils.getNoteTitle(currentNode.data.noteId);
+    branchId = node.data.branchId;
+
+    const noteTitle = await treeUtils.getNoteTitle(node.data.noteId);
 
     $noteTitle.html(noteTitle);
 }
@@ -70,9 +71,7 @@ $form.submit(() => {
 
     const exportVersion = exportFormat === 'opml' ? $dialog.find("input[name='opml-version']:checked").val() : "1.0";
 
-    const currentNode = treeService.getActiveNode();
-
-    exportBranch(currentNode.data.branchId, exportType, exportFormat, exportVersion);
+    exportBranch(branchId, exportType, exportFormat, exportVersion);
 
     return false;
 });

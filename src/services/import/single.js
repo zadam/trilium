@@ -74,8 +74,6 @@ function getMime(fileName) {
 
     const ext = path.extname(fileName).toLowerCase();
 
-    console.log("EXT", ext);
-
     if (ext in EXTENSION_TO_MIME) {
         console.log(EXTENSION_TO_MIME[ext]);
 

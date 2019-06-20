@@ -19,8 +19,9 @@ const $codeImportedAsCodeCheckbox = $("#code-imported-as-code-checkbox");
 const $explodeArchivesCheckbox = $("#explode-archives-checkbox");
 
 let importId;
+let importIntoNoteId = null;
 
-async function showDialog() {
+async function showDialog(node) {
     utils.closeActiveDialog();
 
     // each opening of the dialog resets the importId so we don't associate it with previous imports anymore
@@ -37,19 +38,18 @@ async function showDialog() {
 
     glob.activeDialog = $dialog;
 
-    const currentNode = treeService.getActiveNode();
-    $noteTitle.text(await treeUtils.getNoteTitle(currentNode.data.noteId));
+    importIntoNoteId = node.data.noteId;
+
+    $noteTitle.text(await treeUtils.getNoteTitle(importIntoNoteId));
 
     $dialog.modal();
 }
 
 $form.submit(() => {
-    const currentNode = treeService.getActiveNode();
-
     // disabling so that import is not triggered again.
     $importButton.attr("disabled", "disabled");
 
-    importIntoNote(currentNode.data.noteId);
+    importIntoNote(importIntoNoteId);
 
     return false;
 });

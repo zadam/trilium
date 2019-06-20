@@ -132,10 +132,10 @@ class TreeContextMenu {
             treeChangesService.deleteNodes(treeService.getSelectedOrActiveNodes(this.node));
         }
         else if (cmd === "export") {
-            exportDialog.showDialog("subtree");
+            exportDialog.showDialog(this.node,"subtree");
         }
         else if (cmd === "importIntoNote") {
-            importDialog.showDialog();
+            importDialog.showDialog(this.node);
         }
         else if (cmd === "collapseSubtree") {
             treeService.collapseTree(this.node);
