@@ -18,6 +18,7 @@ RUN set -x \
         make \
         nasm \
         libpng-dev \
+        python \
     && npm install --production \
     && apk del .build-dependencies
 
