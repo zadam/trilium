@@ -32,6 +32,7 @@ const filesRoute = require('./api/file_upload');
 const searchRoute = require('./api/search');
 const dateNotesRoute = require('./api/date_notes');
 const linkMapRoute = require('./api/link_map');
+const clipperRoute = require('./api/clipper');
 
 const log = require('../services/log');
 const express = require('express');
@@ -222,6 +223,10 @@ function register(app) {
     route(POST, '/api/login/sync', [], loginApiRoute.loginSync, apiResultHandler);
     // this is for entering protected mode so user has to be already logged-in (that's the reason we don't require username)
     apiRoute(POST, '/api/login/protected', loginApiRoute.loginToProtectedSession);
+
+    route(POST, '/api/clipper/notes', [], clipperRoute.createNote, apiResultHandler);
+    route(POST, '/api/clipper/screenshot', [], clipperRoute.createScreenshot, apiResultHandler);
+    route(GET, '/api/clipper/ping', [], clipperRoute.ping);
 
     app.use('', router);
 }

@@ -833,3 +833,7 @@ a.external:after, a[href^="http://"]:after, a[href^="https://"]:after {
 .note-detail-empty {
     margin: 50px;
 }
+
+.modal-header {
+    padding: 0.7rem 1rem !important; /* make modal header padding slightly smaller */
+}

@@ -48,7 +48,7 @@ async function shrinkImage(buffer, originalName) {
     try {
         finalImageBuffer = await optimize(resizedImage);
     } catch (e) {
-        log.error("Failed to optimize image '" + originalName + "\nStack: " + e.stack);
+        log.error("Failed to optimize image '" + originalName + "'\nStack: " + e.stack);
         finalImageBuffer = resizedImage;
     }
 
@@ -93,7 +93,7 @@ async function optimize(buffer) {
                 quality: 50
             }),
             imageminPngQuant({
-                quality: "0-70"
+                quality: [0, 0.7]
             }),
             imageminGifLossy({
                 lossy: 80,
