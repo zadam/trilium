@@ -226,6 +226,7 @@ function register(app) {
 
     route(POST, '/api/clipper/notes', [], clipperRoute.createNote, apiResultHandler);
     route(POST, '/api/clipper/image', [], clipperRoute.createImage, apiResultHandler);
+    route(POST, '/api/clipper/open/:noteId', [], clipperRoute.openNote, apiResultHandler);
     route(GET, '/api/clipper/ping', [], clipperRoute.ping);
 
     app.use('', router);

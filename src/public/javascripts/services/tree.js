@@ -707,6 +707,18 @@ messagingService.subscribeToMessages(message => {
    if (message.type === 'refresh-tree') {
        reload();
    }
+   else if (message.type === 'open-note') {
+       noteDetailService.loadNoteDetail(message.noteId, {
+           newTab: true,
+           activate: true
+       });
+
+       if (utils.isElectron()) {
+           const currentWindow = require("electron").remote.getCurrentWindow();
+
+           currentWindow.show();
+       }
+   }
 });
 
 messagingService.subscribeToSyncMessages(syncData => {

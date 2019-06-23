@@ -4,6 +4,7 @@ const noteService = require('../../services/notes');
 const dateNoteService = require('../../services/date_notes');
 const dateUtils = require('../../services/date_utils');
 const imageService = require('../../services/image');
+const messagingService = require('../../services/messaging');
 const log = require('../../services/log');
 const path = require('path');
 const Link = require('../../entities/link');
@@ -52,7 +53,9 @@ async function createNote(req) {
 
     await note.setContent(rewrittenHtml);
 
-    return {};
+    return {
+        noteId: note.noteId
+    };
 }
 
 async function createImage(req) {
@@ -92,7 +95,16 @@ async function createImage(req) {
         await note.setLabel('pageUrl', pageUrl);
     }
 
-    return {};
+    return {
+        noteId: note.noteId
+    };
+}
+
+async function openNote(req) {
+    messagingService.sendMessageToAllClients({
+        type: 'open-note',
+        noteId: req.params.noteId
+    });
 }
 
 async function ping(req, res) {
@@ -104,5 +116,6 @@ async function ping(req, res) {
 module.exports = {
     createNote,
     createImage,
+    openNote,
     ping
 };
