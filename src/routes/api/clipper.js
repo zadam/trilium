@@ -4,15 +4,16 @@ const noteService = require('../../services/notes');
 const dateNoteService = require('../../services/date_notes');
 const dateUtils = require('../../services/date_utils');
 const imageService = require('../../services/image');
+const log = require('../../services/log');
+const path = require('path');
+const Link = require('../../entities/link');
 
 async function createNote(req) {
-    console.log(req.body);
-
-    const {title, html, url} = req.body;
+    const {title, html, url, images} = req.body;
 
     const todayNote = await dateNoteService.getDateNote(dateUtils.localNowDate());
 
-    await noteService.createNote(todayNote.noteId, title, html, {
+    const {note} = await noteService.createNote(todayNote.noteId, title, html, {
         attributes: [
             {
                 type: 'label',
@@ -21,6 +22,35 @@ async function createNote(req) {
             }
         ]
     });
+
+    let rewrittenHtml = html;
+
+    for (const {src, dataUrl, imageId} of images) {
+        const filename = path.basename(src);
+
+        if (!dataUrl.startsWith("data:image")) {
+            log.info("Image could not be recognized as data URL:", dataUrl.substr(0, Math.min(100, dataUrl.length)));
+            continue;
+        }
+
+        const buffer = Buffer.from(dataUrl.split(",")[1], 'base64');
+
+        const {note: imageNote, url} = await imageService.saveImage(buffer, filename, note.noteId, true);
+
+        await new Link({
+            noteId: note.noteId,
+            targetNoteId: imageNote.noteId,
+            type: 'image'
+        }).save();
+
+        console.log(`Replacing ${imageId} with ${url}`);
+
+        rewrittenHtml = rewrittenHtml.replace(imageId, url);
+    }
+
+    console.log("Done", rewrittenHtml);
+
+    await note.setContent(rewrittenHtml);
 
     return {};
 }
