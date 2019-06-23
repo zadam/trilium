@@ -55,24 +55,41 @@ async function createNote(req) {
     return {};
 }
 
-async function createScreenshot(req) {
-    console.log(req.body);
+async function createImage(req) {
+    let {dataUrl, title, sourceUrl, pageUrl} = req.body;
 
-    const {imageDataUrl, title, url} = req.body;
-
-    const prefix = "data:image/png;base64,";
-
-    if (imageDataUrl.startsWith(prefix)) {
-        const buffer = Buffer.from(imageDataUrl.substr(prefix.length), 'base64');
-
-        const todayNote = await dateNoteService.getDateNote(dateUtils.localNowDate());
-
-        const {note} = await imageService.saveImage(buffer, title + ".png", todayNote.noteId, true);
-
-        await note.setLabel('sourceUrl', url);
+    if (!dataUrl) {
+        dataUrl = sourceUrl;
+        sourceUrl = null;
     }
-    else {
-        console.log("Unrecognized prefix");
+
+    if (!dataUrl.startsWith("data:image/")) {
+        const message = "Unrecognized prefix: " + dataUrl.substr(0, Math.min(dataUrl.length, 100));
+        log.info(message);
+
+        return [400, message];
+    }
+
+    if (!title && sourceUrl) {
+        title = path.basename(sourceUrl);
+    }
+
+    if (!title) {
+        title = "clipped image";
+    }
+
+    const buffer = Buffer.from(dataUrl.split(",")[1], 'base64');
+
+    const todayNote = await dateNoteService.getDateNote(dateUtils.localNowDate());
+
+    const {note} = await imageService.saveImage(buffer, title, todayNote.noteId, true);
+
+    if (sourceUrl) {
+        await note.setLabel('sourceUrl', sourceUrl);
+    }
+
+    if (pageUrl) {
+        await note.setLabel('pageUrl', pageUrl);
     }
 
     return {};
@@ -86,6 +103,6 @@ async function ping(req, res) {
 
 module.exports = {
     createNote,
-    createScreenshot,
+    createImage,
     ping
 };

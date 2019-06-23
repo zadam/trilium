@@ -225,7 +225,7 @@ function register(app) {
     apiRoute(POST, '/api/login/protected', loginApiRoute.loginToProtectedSession);
 
     route(POST, '/api/clipper/notes', [], clipperRoute.createNote, apiResultHandler);
-    route(POST, '/api/clipper/screenshot', [], clipperRoute.createScreenshot, apiResultHandler);
+    route(POST, '/api/clipper/image', [], clipperRoute.createImage, apiResultHandler);
     route(GET, '/api/clipper/ping', [], clipperRoute.ping);
 
     app.use('', router);
