@@ -34,7 +34,7 @@ async function uploadImage(req) {
         return [404, `Note ${noteId} doesn't exist.`];
     }
 
-    if (!["image/png", "image/jpeg", "image/gif"].includes(file.mimetype)) {
+    if (!["image/png", "image/jpeg", "image/gif", "image/webp"].includes(file.mimetype)) {
         return [400, "Unknown image type: " + file.mimetype];
     }
 

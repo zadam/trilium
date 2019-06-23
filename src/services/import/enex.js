@@ -251,7 +251,7 @@ async function importEnex(importContext, file, parentNote) {
                 noteContent = noteContent.replace(mediaRegex, resourceLink);
             };
 
-            if (["image/jpeg", "image/png", "image/gif"].includes(resource.mime)) {
+            if (["image/jpeg", "image/png", "image/gif", "image/webp"].includes(resource.mime)) {
                 try {
                     const originalName = "image." + resource.mime.substr(6);
 

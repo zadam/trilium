@@ -13,6 +13,13 @@ const imageType = require('image-type');
 const sanitizeFilename = require('sanitize-filename');
 
 async function saveImage(buffer, originalName, parentNoteId, shrinkImageSwitch) {
+    const origImageFormat = imageType(buffer);
+
+    if (origImageFormat.ext === "webp") {
+        // JIMP does not support webp at the moment: https://github.com/oliver-moran/jimp/issues/144
+        shrinkImageSwitch = false;
+    }
+
     const finalImageBuffer = shrinkImageSwitch ? await shrinkImage(buffer, originalName) : buffer;
 
     const imageFormat = imageType(finalImageBuffer);

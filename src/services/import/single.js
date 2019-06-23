@@ -100,7 +100,7 @@ async function importSingleFile(importContext, file, parentNote) {
         return await importCodeNote(importContext, file, parentNote);
     }
 
-    if (["image/jpeg", "image/gif", "image/png"].includes(mime)) {
+    if (["image/jpeg", "image/gif", "image/png", "image/webp"].includes(mime)) {
         return await importImage(file, parentNote, importContext);
     }
 
