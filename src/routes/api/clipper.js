@@ -8,7 +8,7 @@ const imageService = require('../../services/image');
 async function createNote(req) {
     console.log(req.body);
 
-    const {title, html, source_url} = req.body;
+    const {title, html, url} = req.body;
 
     const todayNote = await dateNoteService.getDateNote(dateUtils.localNowDate());
 
@@ -17,7 +17,7 @@ async function createNote(req) {
             {
                 type: 'label',
                 name: 'sourceUrl',
-                value: source_url
+                value: url
             }
         ]
     });
@@ -37,13 +37,15 @@ async function createScreenshot(req) {
 
         const todayNote = await dateNoteService.getDateNote(dateUtils.localNowDate());
 
-        const {note} = await imageService.saveImage(buffer, title, todayNote.noteId, true);
+        const {note} = await imageService.saveImage(buffer, title + ".png", todayNote.noteId, true);
 
         await note.setLabel('sourceUrl', url);
     }
     else {
         console.log("Unrecognized prefix");
     }
+
+    return {};
 }
 
 async function ping(req, res) {
