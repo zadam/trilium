@@ -401,11 +401,14 @@ tabRow.addListener('activeTabChange', async ({ detail }) => {
 tabRow.addListener('tabRemove', async ({ detail }) => {
     const tabId = detail.tabEl.getAttribute('data-tab-id');
 
-    const tabContentToDelete = tabContexts.find(nc => nc.tabId === tabId);
+    const tabContextToDelete = tabContexts.find(nc => nc.tabId === tabId);
 
-    if (tabContentToDelete) {
-        await tabContentToDelete.saveNoteIfChanged();
-        tabContentToDelete.$tabContent.remove();
+    if (tabContextToDelete) {
+        // sometimes there are orphan autocompletes after closing the tab
+        tabContextToDelete.$tabContent.find('.aa-input').autocomplete('close');
+
+        await tabContextToDelete.saveNoteIfChanged();
+        tabContextToDelete.$tabContent.remove();
     }
 
     tabContexts = tabContexts.filter(nc => nc.tabId !== tabId);
