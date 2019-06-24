@@ -59,7 +59,7 @@ async function createMainWindow() {
     mainWindowState.manage(win);
 
     win.setMenuBarVisibility(false);
-    win.loadURL('http://localhost:' + await port);
+    win.loadURL('http://127.0.0.1:' + await port);
     win.on('closed', onClosed);
 
     win.webContents.on('new-window', (e, url) => {
@@ -74,7 +74,7 @@ async function createMainWindow() {
         const parsedUrl = url.parse(targetUrl);
 
         // we still need to allow internal redirects from setup and migration pages
-        if (parsedUrl.hostname !== 'localhost' || (parsedUrl.path && parsedUrl.path !== '/')) {
+        if (parsedUrl.hostname !== 'localhost' || parsedUrl.hostname !== '127.0.0.1' || (parsedUrl.path && parsedUrl.path !== '/')) {
             ev.preventDefault();
         }
     });
