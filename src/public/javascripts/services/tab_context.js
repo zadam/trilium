@@ -67,12 +67,18 @@ class TabContext {
         this.components = {};
 
         this.$noteTitle.on('input', () => {
+            if (!this.note) {
+                return;
+            }
+
             this.noteChanged();
 
-            const title = this.$noteTitle.val();
+            this.note.title = this.$noteTitle.val();
 
-            this.tabRow.updateTab(this.$tab[0], {title});
-            treeService.setNoteTitle(this.noteId, title);
+            this.tabRow.updateTab(this.$tab[0], {title: this.note.title});
+            treeService.setNoteTitle(this.noteId, this.note.title);
+
+            this.setTitleBar();
         });
 
         if (utils.isDesktop()) {
