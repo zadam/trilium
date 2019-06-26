@@ -405,7 +405,7 @@ tabRow.addListener('tabRemove', async ({ detail }) => {
 
     if (tabContextToDelete) {
         // sometimes there are orphan autocompletes after closing the tab
-        tabContextToDelete.$tabContent.find('.aa-input').autocomplete('close');
+        tabContextToDelete.closeAutocomplete();
 
         await tabContextToDelete.saveNoteIfChanged();
         tabContextToDelete.$tabContent.remove();

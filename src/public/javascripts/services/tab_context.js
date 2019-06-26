@@ -109,6 +109,8 @@ class TabContext {
 
         this.setTitleBar();
 
+        this.closeAutocomplete(); // esp. on windows autocomplete is not getting closed automatically
+
         setTimeout(async () => {
             // we include the note into recent list only if the user stayed on the note at least 5 seconds
             if (notePath && notePath === this.notePath) {
@@ -333,6 +335,10 @@ class TabContext {
                 await this.addPath(notePath, isCurrent);
             }
         }
+    }
+
+    closeAutocomplete() {
+        this.$tabContent.find('.aa-input').autocomplete('close');
     }
 }
 
