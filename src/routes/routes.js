@@ -32,6 +32,7 @@ const filesRoute = require('./api/file_upload');
 const searchRoute = require('./api/search');
 const dateNotesRoute = require('./api/date_notes');
 const linkMapRoute = require('./api/link_map');
+const clipperRoute = require('./api/clipper');
 
 const log = require('../services/log');
 const express = require('express');
@@ -212,7 +213,7 @@ function register(app) {
     apiRoute(GET, '/api/script/relation/:noteId/:relationName', scriptRoute.getRelationBundles);
 
     // no CSRF since this is called from android app
-    route(POST, '/api/sender/login', [], senderRoute.login, apiResultHandler);
+    route(POST, '/api/sender/login', [], loginApiRoute.token, apiResultHandler);
     route(POST, '/api/sender/image', [auth.checkSenderToken, uploadMiddleware], senderRoute.uploadImage, apiResultHandler);
     route(POST, '/api/sender/note', [auth.checkSenderToken], senderRoute.saveNote, apiResultHandler);
 
@@ -222,6 +223,12 @@ function register(app) {
     route(POST, '/api/login/sync', [], loginApiRoute.loginSync, apiResultHandler);
     // this is for entering protected mode so user has to be already logged-in (that's the reason we don't require username)
     apiRoute(POST, '/api/login/protected', loginApiRoute.loginToProtectedSession);
+    route(POST, '/api/login/token', [], loginApiRoute.token, apiResultHandler);
+
+    route(POST, '/api/clipper/notes', [], clipperRoute.createNote, apiResultHandler);
+    route(POST, '/api/clipper/image', [], clipperRoute.createImage, apiResultHandler);
+    route(POST, '/api/clipper/open/:noteId', [], clipperRoute.openNote, apiResultHandler);
+    route(GET, '/api/clipper/ping', [], clipperRoute.ping);
 
     app.use('', router);
 }

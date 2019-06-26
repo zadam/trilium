@@ -11,6 +11,8 @@ const eventService = require('../../services/events');
 const cls = require('../../services/cls');
 const sqlInit = require('../../services/sql_init');
 const sql = require('../../services/sql');
+const optionService = require('../../services/options');
+const ApiToken = require('../../entities/api_token');
 
 async function loginSync(req) {
     if (!await sqlInit.schemaExists()) {
@@ -76,7 +78,28 @@ async function loginToProtectedSession(req) {
     };
 }
 
+async function token(req) {
+    const username = req.body.username;
+    const password = req.body.password;
+
+    const isUsernameValid = username === await optionService.getOption('username');
+    const isPasswordValid = await passwordEncryptionService.verifyPassword(password);
+
+    if (!isUsernameValid || !isPasswordValid) {
+        return [401, "Incorrect username/password"];
+    }
+
+    const apiToken = await new ApiToken({
+        token: utils.randomSecureToken()
+    }).save();
+
+    return {
+        token: apiToken.token
+    };
+}
+
 module.exports = {
     loginSync,
-    loginToProtectedSession
+    loginToProtectedSession,
+    token
 };

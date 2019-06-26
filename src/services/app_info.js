@@ -6,6 +6,7 @@ const {TRILIUM_DATA_DIR} = require('./data_dir');
 
 const APP_DB_VERSION = 136;
 const SYNC_VERSION = 9;
+const CLIPPER_VERSION = 1;
 
 module.exports = {
     appVersion: packageJson.version,
