@@ -74,7 +74,7 @@ async function createMainWindow() {
         const parsedUrl = url.parse(targetUrl);
 
         // we still need to allow internal redirects from setup and migration pages
-        if (parsedUrl.hostname !== 'localhost' || parsedUrl.hostname !== '127.0.0.1' || (parsedUrl.path && parsedUrl.path !== '/')) {
+        if (!['localhost', '127.0.0.1'].includes(parsedUrl.hostname) || (parsedUrl.path && parsedUrl.path !== '/')) {
             ev.preventDefault();
         }
     });

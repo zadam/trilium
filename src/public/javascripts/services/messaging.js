@@ -88,10 +88,13 @@ setTimeout(() => {
             console.log("Lost connection to server");
         }
 
-        ws.send(JSON.stringify({
-            type: 'ping',
-            lastSyncId: lastSyncId
-        }));
+        try {
+            ws.send(JSON.stringify({
+                type: 'ping',
+                lastSyncId: lastSyncId
+            }));
+        }
+        catch (e) {} // if the connection is closed then this produces a lot of messages
     }, 1000);
 }, 0);
 
