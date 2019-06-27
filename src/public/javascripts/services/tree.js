@@ -630,7 +630,8 @@ async function createNote(node, parentNoteId, target, extraOptions = {}) {
         extraClasses: await treeBuilder.getExtraClasses(noteEntity),
         icon: await treeBuilder.getIcon(noteEntity),
         folder: extraOptions.type === 'search',
-        lazy: true
+        lazy: true,
+        key: utils.randomString(12) // this should prevent some "duplicate key" errors
     };
 
     if (target === 'after') {
