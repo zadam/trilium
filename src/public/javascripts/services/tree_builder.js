@@ -83,7 +83,8 @@ async function prepareNode(branch) {
         icon: await getIcon(note),
         refKey: note.noteId,
         expanded: branch.isExpanded || hoistedNoteId === note.noteId,
-        lazy: true
+        lazy: true,
+        key: utils.randomString(12) // this should prevent some "duplicate key" errors
     };
 
     if (note.hasChildren() || note.type === 'search') {
