@@ -45,6 +45,8 @@ const LINK_MAP = {
     ]
 };
 
+const PRINT_THIS = {js: ["libraries/printThis.js"]};
+
 async function requireLibrary(library) {
     if (library.css) {
         library.css.map(cssUrl => cssLoader.requireCss(cssUrl));
@@ -79,5 +81,6 @@ export default {
     ESLINT,
     COMMONMARK,
     RELATION_MAP,
-    LINK_MAP
+    LINK_MAP,
+    PRINT_THIS
 }

@@ -147,6 +147,26 @@ $noteTabContainer.on("click", ".export-note-button", function () {
 
 $noteTabContainer.on("click", ".import-files-button", () => importDialog.showDialog(treeService.getActiveNode()));
 
+$noteTabContainer.on("click", ".print-note-button", async function () {
+    if ($(this).hasClass("disabled")) {
+        return;
+    }
+
+    const $tabContext = noteDetailService.getActiveTabContext();
+    if (!$tabContext) {
+        return;
+    }
+
+    await libraryLoader.requireLibrary(libraryLoader.PRINT_THIS);
+
+    $tabContext.$tabContent.find('.note-detail-component:visible').printThis({
+        header: $("<h2>").text($tabContext.note && $tabContext.note.title).prop('outerHTML') ,
+        importCSS: false,
+        loadCSS: "libraries/codemirror/codemirror.css",
+        debug: true
+    });
+});
+
 $('[data-toggle="tooltip"]').tooltip({
     html: true
 });
