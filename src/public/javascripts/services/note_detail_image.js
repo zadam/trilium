@@ -1,5 +1,4 @@
 import utils from "./utils.js";
-import noteDetailService from "./note_detail.js";
 import infoService from "./info.js";
 import server from "./server.js";
 
