@@ -25,7 +25,11 @@ let mainWindow;
 require('electron-dl')({ saveAs: true });
 
 contextMenu({
-    prepend: (defaultActions, params, browserWindow) => [
+    menu: (actions, params, browserWindow) => [
+        actions.cut(),
+        actions.copy(),
+        actions.copyLink(),
+        actions.paste(),
         {
             label: 'Search DuckDuckGo for “{selection}”',
             // Only show it when right-clicking text
@@ -35,7 +39,8 @@ contextMenu({
 
                 shell.openExternal(`https://duckduckgo.com?q=${encodeURIComponent(params.selectionText)}`);
             }
-        }
+        },
+        actions.inspect()
     ]
 });
 
