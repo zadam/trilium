@@ -9,6 +9,7 @@ const url = require("url");
 const port = require('./src/services/port');
 const appIconService = require('./src/services/app_icon');
 const windowStateKeeper = require('electron-window-state');
+const contextMenu = require('electron-context-menu');
 
 const app = electron.app;
 const globalShortcut = electron.globalShortcut;
@@ -22,6 +23,21 @@ appIconService.installLocalAppIcon();
 let mainWindow;
 
 require('electron-dl')({ saveAs: true });
+
+contextMenu({
+    prepend: (defaultActions, params, browserWindow) => [
+        {
+            label: 'Search DuckDuckGo for “{selection}”',
+            // Only show it when right-clicking text
+            visible: params.selectionText.trim().length > 0,
+            click: () => {
+                const {shell} = require('electron');
+
+                shell.openExternal(`https://duckduckgo.com?q=${encodeURIComponent(params.selectionText)}`);
+            }
+        }
+    ]
+});
 
 function onClosed() {
     // Dereference the window
