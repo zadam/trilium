@@ -338,7 +338,9 @@ class TabContext {
     }
 
     closeAutocomplete() {
-        this.$tabContent.find('.aa-input').autocomplete('close');
+        if (utils.isDesktop()) {
+            this.$tabContent.find('.aa-input').autocomplete('close');
+        }
     }
 }
 
