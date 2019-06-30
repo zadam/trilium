@@ -135,13 +135,16 @@ ul.fancytree-container {
 .note-detail-text h6 { font-size: 1.1em; }
 
 .note-detail-text {
+    overflow: auto;
+    font-family: var(--detail-text-font-family);
+}
+
+.note-detail-text-editor {
+    padding-top: 10px;
     border: 0 !important;
     box-shadow: none !important;
     /* This is because with empty content height of editor is 0 and it's impossible to click into it */
     min-height: 200px;
-    padding-top: 10px;
-    overflow: auto;
-    font-family: var(--detail-text-font-family);
 }
 
 .note-detail-text p:first-child, .note-detail-text::before {

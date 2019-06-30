@@ -8,6 +8,7 @@ class NoteDetailText {
     constructor(ctx) {
         this.ctx = ctx;
         this.$component = ctx.$tabContent.find('.note-detail-text');
+        this.$editorEl = this.$component.find('.note-detail-text-editor');
         this.textEditor = null;
 
         this.$component.on("dblclick", "img", e => {
@@ -39,7 +40,7 @@ class NoteDetailText {
             // textEditor might have been initialized during previous await so checking again
             // looks like double initialization can freeze CKEditor pretty badly
             if (!this.textEditor) {
-                this.textEditor = await BalloonEditor.create(this.$component[0], {
+                this.textEditor = await BalloonEditor.create(this.$editorEl[0], {
                     placeholder: "Type the content of your note here ..."
                 });
 
