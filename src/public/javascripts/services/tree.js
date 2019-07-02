@@ -635,12 +635,16 @@ async function createNote(node, parentNoteId, target, extraOptions = {}) {
     };
 
     if (target === 'after') {
+        console.log(`Appending node...`); // to debug duplicated nodes
+
         await node.appendSibling(newNode).setActive(true);
     }
     else if (target === 'into') {
         if (!node.getChildren() && node.isFolder()) {
             await node.setExpanded();
         }
+
+        console.log(`Adding node as child...`); // to debug duplicated nodes
 
         node.addChildren(newNode);
 
