@@ -7,8 +7,11 @@ const $custom = $("#confirm-dialog-custom");
 const DELETE_NOTE_BUTTON_ID = "confirm-dialog-delete-note";
 
 let resolve;
+let $originallyFocused; // element focused before the dialog was opened so we can return to it afterwards
 
 function confirm(message) {
+    $originallyFocused = $(':focus');
+
     $custom.hide();
 
     glob.activeDialog = $dialog;
@@ -54,6 +57,11 @@ $dialog.on('shown.bs.modal', () => $okButton.trigger("focus"));
 $dialog.on("hidden.bs.modal", () => {
     if (resolve) {
         resolve(false);
+    }
+
+    if ($originallyFocused) {
+        $originallyFocused.focus();
+        $originallyFocused = null;
     }
 });
 
