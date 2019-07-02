@@ -5,8 +5,11 @@ const $infoContent = $("#info-dialog-content");
 const $okButton = $("#info-dialog-ok-button");
 
 let resolve;
+let $originallyFocused; // element focused before the dialog was opened so we can return to it afterwards
 
 function info(message) {
+    $originallyFocused = $(':focus');
+
     utils.closeActiveDialog();
 
     glob.activeDialog = $dialog;
@@ -23,6 +26,11 @@ $dialog.on('shown.bs.modal', () => $okButton.trigger("focus"));
 $dialog.on("hidden.bs.modal", () => {
     if (resolve) {
         resolve();
+    }
+
+    if ($originallyFocused) {
+        $originallyFocused.focus();
+        $originallyFocused = null;
     }
 });
 

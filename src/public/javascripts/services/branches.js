@@ -6,6 +6,7 @@ import treeCache from "./tree_cache.js";
 import treeUtils from "./tree_utils.js";
 import hoistedNoteService from "./hoisted_note.js";
 import noteDetailService from "./note_detail.js";
+import confirmDialog from "../dialogs/confirm.js";
 
 async function moveBeforeNode(nodesToMove, beforeNode) {
     nodesToMove = await filterRootNote(nodesToMove);
@@ -82,7 +83,7 @@ async function moveToNode(nodesToMove, toNode) {
 async function deleteNodes(nodes) {
     nodes = await filterRootNote(nodes);
 
-    if (nodes.length === 0 || !confirm('Are you sure you want to delete select note(s) and all the sub-notes?')) {
+    if (nodes.length === 0 || !await confirmDialog.confirm('Are you sure you want to delete select note(s) and all the sub-notes?')) {
         return false;
     }
 
