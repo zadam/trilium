@@ -74,7 +74,7 @@ class NoteDetailText {
     }
 
     focus() {
-        this.$component.focus();
+        this.$editorEl.focus();
     }
 
     getEditor() {
