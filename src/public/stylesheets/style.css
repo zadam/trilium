@@ -357,8 +357,11 @@ div.ui-tooltip {
 }
 
 .note-detail-code {
-    min-height: 200px;
     overflow: auto;
+}
+
+.note-detail-code-editor {
+    min-height: 200px;
 }
 
 .note-detail-render {

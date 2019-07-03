@@ -14,6 +14,7 @@ class NoteDetailCode {
         this.ctx = ctx;
         this.codeEditor = null;
         this.$component = ctx.$tabContent.find('.note-detail-code');
+        this.$editorEl = this.$component.find('.note-detail-code-editor');
         this.$executeScriptButton = ctx.$tabContent.find(".execute-script-button");
 
         utils.bindElShortcut(ctx.$tabContent, "ctrl+return", () => this.executeCurrentNote());
@@ -34,7 +35,7 @@ class NoteDetailCode {
 
             CodeMirror.modeURL = 'libraries/codemirror/mode/%N/%N.js';
 
-            this.codeEditor = CodeMirror(this.$component[0], {
+            this.codeEditor = CodeMirror(this.$editorEl[0], {
                 value: "",
                 viewportMargin: Infinity,
                 indentUnit: 4,
