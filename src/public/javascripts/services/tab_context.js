@@ -83,7 +83,11 @@ class TabContext {
 
         if (utils.isDesktop()) {
             // keyboard plugin is not loaded in mobile
-            this.$noteTitle.bind('keydown', 'return', () => this.getComponent().focus());
+            this.$noteTitle.bind('keydown', 'return', () => {
+                this.getComponent().focus();
+
+                return false; // to not propagate the enter into the editor (causes issues with codemirror)
+            });
         }
 
         this.$protectButton = this.$tabContent.find(".protect-button");
