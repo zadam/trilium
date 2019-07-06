@@ -4,22 +4,70 @@ const noteService = require('../../services/notes');
 const dateNoteService = require('../../services/date_notes');
 const dateUtils = require('../../services/date_utils');
 const imageService = require('../../services/image');
+const appInfo = require('../../services/app_info');
 const messagingService = require('../../services/messaging');
 const log = require('../../services/log');
 const path = require('path');
 const Link = require('../../entities/link');
 
+async function findClippingNote(todayNote, pageUrl) {
+    const notes = await todayNote.getDescendantNotesWithLabel('pageUrl', pageUrl);
+
+    for (const note of notes) {
+        if (await note.getLabelValue('clipType') === 'clippings') {
+            return note;
+        }
+    }
+
+    return null;
+}
+
+async function addClipping(req) {
+    const {title, content, pageUrl, images} = req.body;
+
+    const todayNote = await dateNoteService.getDateNote(dateUtils.localNowDate());
+
+    let clippingNote = await findClippingNote(todayNote, pageUrl);
+
+    if (!clippingNote) {
+        clippingNote = (await noteService.createNote(todayNote.noteId, title, '')).note;
+
+        await clippingNote.setLabel('clipType', 'clippings');
+        await clippingNote.setLabel('pageUrl', pageUrl);
+    }
+
+    const rewrittenContent = await addImagesToNote(images, clippingNote, content);
+
+    await clippingNote.setContent(await clippingNote.getContent() + rewrittenContent);
+
+    return {
+        noteId: clippingNote.noteId
+    };
+}
+
 async function createNote(req) {
-    const {title, content, url, images} = req.body;
+    const {title, content, pageUrl, images} = req.body;
 
     const todayNote = await dateNoteService.getDateNote(dateUtils.localNowDate());
 
     const {note} = await noteService.createNote(todayNote.noteId, title, content);
 
-    if (url) {
-        await note.setLabel('sourceUrl', url);
+    await note.setLabel('clipType', 'note');
+
+    if (pageUrl) {
+        await note.setLabel('pageUrl', pageUrl);
     }
 
+    const rewrittenContent = await addImagesToNote(images, note, content);
+
+    await note.setContent(rewrittenContent);
+
+    return {
+        noteId: note.noteId
+    };
+}
+
+async function addImagesToNote(images, note, content) {
     let rewrittenContent = content;
 
     if (images) {
@@ -47,19 +95,16 @@ async function createNote(req) {
         }
     }
 
-    await note.setContent(rewrittenContent);
-
-    return {
-        noteId: note.noteId
-    };
+    return rewrittenContent;
 }
 
 async function createImage(req) {
-    let {dataUrl, title, sourceUrl, pageUrl} = req.body;
+    let {dataUrl, title, imageUrl, pageUrl} = req.body;
 
     if (!dataUrl) {
-        dataUrl = sourceUrl;
-        sourceUrl = null;
+        // this is image inlined into the src attribute so there isn't any source image URL
+        dataUrl = imageUrl;
+        imageUrl = null;
     }
 
     if (!dataUrl.startsWith("data:image/")) {
@@ -69,8 +114,8 @@ async function createImage(req) {
         return [400, message];
     }
 
-    if (!title && sourceUrl) {
-        title = path.basename(sourceUrl);
+    if (!title && imageUrl) {
+        title = path.basename(imageUrl);
     }
 
     if (!title) {
@@ -83,8 +128,10 @@ async function createImage(req) {
 
     const {note} = await imageService.saveImage(buffer, title, todayNote.noteId, true);
 
-    if (sourceUrl) {
-        await note.setLabel('sourceUrl', sourceUrl);
+    await note.setLabel('clipType', 'image');
+
+    if (imageUrl) {
+        await note.setLabel('imageUrl', imageUrl);
     }
 
     if (pageUrl) {
@@ -105,15 +152,17 @@ async function openNote(req) {
     return {};
 }
 
-async function ping(req, res) {
-    console.log("PING!!!!");
-
-    res.status(200).send("TriliumClipperServer");
+async function handshake() {
+    return {
+        appName: "trilium",
+        appVersion: appInfo.appVersion
+    }
 }
 
 module.exports = {
     createNote,
     createImage,
+    addClipping,
     openNote,
-    ping
+    handshake
 };

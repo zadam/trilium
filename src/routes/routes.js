@@ -225,10 +225,11 @@ function register(app) {
     apiRoute(POST, '/api/login/protected', loginApiRoute.loginToProtectedSession);
     route(POST, '/api/login/token', [], loginApiRoute.token, apiResultHandler);
 
+    route(GET, '/api/clipper/handshake', [], clipperRoute.handshake, apiResultHandler);
+    route(POST, '/api/clipper/clippings', [], clipperRoute.addClipping, apiResultHandler);
     route(POST, '/api/clipper/notes', [], clipperRoute.createNote, apiResultHandler);
     route(POST, '/api/clipper/image', [], clipperRoute.createImage, apiResultHandler);
     route(POST, '/api/clipper/open/:noteId', [], clipperRoute.openNote, apiResultHandler);
-    route(GET, '/api/clipper/ping', [], clipperRoute.ping);
 
     app.use('', router);
 }

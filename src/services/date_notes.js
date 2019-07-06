@@ -29,6 +29,7 @@ async function getNoteStartingWith(parentNoteId, startsWith) {
                                     AND branches.isDeleted = 0`, [parentNoteId]);
 }
 
+/** @return {Promise<Note>} */
 async function getRootCalendarNote() {
     // some caching here could be useful (e.g. in CLS)
     let rootNote = await attributeService.getNoteWithLabel(CALENDAR_ROOT_LABEL);
@@ -47,6 +48,7 @@ async function getRootCalendarNote() {
     return rootNote;
 }
 
+/** @return {Promise<Note>} */
 async function getYearNote(dateStr, rootNote) {
     if (!rootNote) {
         rootNote = await getRootCalendarNote();
@@ -79,6 +81,7 @@ async function getMonthNoteTitle(rootNote, monthNumber, dateObj) {
         .replace(/{month}/g, monthName);
 }
 
+/** @return {Promise<Note>} */
 async function getMonthNote(dateStr, rootNote) {
     const monthStr = dateStr.substr(0, 7);
     const monthNumber = dateStr.substr(5, 2);
@@ -116,6 +119,7 @@ async function getDateNoteTitle(rootNote, dayNumber, dateObj) {
         .replace(/{weekDay2}/g, weekDay.substr(0, 2));
 }
 
+/** @return {Promise<Note>} */
 async function getDateNote(dateStr) {
     const rootNote = await getRootCalendarNote();
 
