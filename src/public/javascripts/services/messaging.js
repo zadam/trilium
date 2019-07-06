@@ -67,12 +67,9 @@ function connectWebSocket() {
 
     // use wss for secure messaging
     const ws = new WebSocket(protocol + "://" + location.host);
-    ws.onopen = event => console.debug(utils.now(), "Connected to server with WebSocket");
+    ws.onopen = () => console.debug(utils.now(), "Connected to server with WebSocket");
     ws.onmessage = handleMessage;
-    ws.onclose = function(){
-        // Try to reconnect in 5 seconds
-        setTimeout(() => connectWebSocket(), 5000);
-    };
+    // we're not handling ws.onclose here because reconnection is done in sendPing()
 
     return ws;
 }
@@ -88,13 +85,17 @@ setTimeout(() => {
             console.log("Lost connection to server");
         }
 
-        try {
+        if (ws.readyState === ws.OPEN) {
             ws.send(JSON.stringify({
                 type: 'ping',
                 lastSyncId: lastSyncId
             }));
         }
-        catch (e) {} // if the connection is closed then this produces a lot of messages
+        else if (ws.readyState === ws.CLOSED || ws.readyState === ws.CLOSING) {
+            console.log("WS closed or closing, trying to reconnect");
+
+            ws = connectWebSocket();
+        }
     }, 1000);
 }, 0);
 

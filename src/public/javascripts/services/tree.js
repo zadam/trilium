@@ -635,18 +635,18 @@ async function createNote(node, parentNoteId, target, extraOptions = {}) {
     };
 
     if (target === 'after') {
-        console.log(`Appending node...`); // to debug duplicated nodes
-
         await node.appendSibling(newNode).setActive(true);
     }
     else if (target === 'into') {
         if (!node.getChildren() && node.isFolder()) {
+            // folder is not loaded - load will bring up the note since it was already put into cache
+            await node.load(true);
+
             await node.setExpanded();
         }
-
-        console.log(`Adding node as child...`); // to debug duplicated nodes
-
-        node.addChildren(newNode);
+        else {
+            node.addChildren(newNode);
+        }
 
         await node.getLastChild().setActive(true);
 
@@ -754,10 +754,12 @@ utils.bindShortcut('ctrl+o', async () => {
 async function createNoteInto() {
     const node = getActiveNode();
 
-    await createNote(node, node.data.noteId, 'into', {
-        isProtected: node.data.isProtected,
-        saveSelection: true
-    });
+    if (node) {
+        await createNote(node, node.data.noteId, 'into', {
+            isProtected: node.data.isProtected,
+            saveSelection: true
+        });
+    }
 }
 
 async function checkFolderStatus(node) {
