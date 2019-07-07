@@ -13,8 +13,8 @@
     "url": "https://github.com/zadam/trilium.git"
   },
   "scripts": {
-    "start": "node ./src/www",
-    "start-electron": "electron . --disable-gpu",
+    "start-server": "TRILIUM_ENV=dev node ./src/www",
+    "start-electron": "TRILIUM_ENV=dev electron . --disable-gpu",
     "build-backend-docs": "jsdoc -c jsdoc-conf.json -d ./docs/backend_api src/entities/*.js src/services/backend_script_api.js",
     "build-frontend-docs": "jsdoc -c jsdoc-conf.json -d ./docs/frontend_api src/public/javascripts/entities/*.js src/public/javascripts/services/frontend_script_api.js",
     "build-docs": "npm run build-backend-docs && npm run build-frontend-docs",
@@ -40,7 +40,6 @@
     "express-session": "1.16.2",
     "file-type": "12.0.1",
     "fs-extra": "8.1.0",
-    "get-port": "5.0.0",
     "helmet": "3.18.0",
     "html": "1.0.0",
     "html2plaintext": "2.1.2",
@@ -57,6 +56,7 @@
     "node-abi": "2.9.0",
     "open": "6.4.0",
     "pngjs": "3.4.0",
+    "portscanner": "^2.2.0",
     "rand-token": "0.4.0",
     "rcedit": "2.0.0",
     "rimraf": "2.6.3",
