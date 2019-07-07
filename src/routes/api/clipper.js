@@ -165,7 +165,7 @@ async function openNote(req) {
 async function handshake() {
     return {
         appName: "trilium",
-        appVersion: appInfo.appVersion
+        protocolVersion: appInfo.clipperProtocolVersion
     }
 }
 
