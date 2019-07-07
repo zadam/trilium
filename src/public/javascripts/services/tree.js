@@ -713,10 +713,7 @@ messagingService.subscribeToMessages(message => {
        reload();
    }
    else if (message.type === 'open-note') {
-       noteDetailService.loadNoteDetail(message.noteId, {
-           newTab: true,
-           activate: true
-       });
+       noteDetailService.activateOrOpenNote(message.noteId);
 
        if (utils.isElectron()) {
            const currentWindow = require("electron").remote.getCurrentWindow();

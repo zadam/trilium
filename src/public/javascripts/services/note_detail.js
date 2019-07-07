@@ -76,6 +76,22 @@ function getActiveEditor() {
     }
 }
 
+async function activateOrOpenNote(noteId) {
+    for (const tabContext of tabContexts) {
+        if (tabContext.note && tabContext.note.noteId === noteId) {
+            await tabContext.activate();
+            return;
+        }
+    }
+
+    // if no tab with this note has been found we'll create new tab
+
+    await loadNoteDetail(noteId, {
+        newTab: true,
+        activate: true
+    });
+}
+
 function getTabContexts() {
     return tabContexts;
 }
@@ -544,6 +560,7 @@ export default {
     getTabContexts,
     getActiveTabContext,
     getActiveEditor,
+    activateOrOpenNote,
     clearOpenTabsTask,
     filterTabs,
     openEmptyTab,
