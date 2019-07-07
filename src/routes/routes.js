@@ -1,6 +1,7 @@
 const setupRoute = require('./setup');
 const loginRoute = require('./login');
 const indexRoute = require('./index');
+const utils = require('../services/utils');
 const multer = require('multer')();
 
 // API routes
@@ -214,8 +215,8 @@ function register(app) {
 
     // no CSRF since this is called from android app
     route(POST, '/api/sender/login', [], loginApiRoute.token, apiResultHandler);
-    route(POST, '/api/sender/image', [auth.checkSenderToken, uploadMiddleware], senderRoute.uploadImage, apiResultHandler);
-    route(POST, '/api/sender/note', [auth.checkSenderToken], senderRoute.saveNote, apiResultHandler);
+    route(POST, '/api/sender/image', [auth.checkToken, uploadMiddleware], senderRoute.uploadImage, apiResultHandler);
+    route(POST, '/api/sender/note', [auth.checkToken], senderRoute.saveNote, apiResultHandler);
 
     apiRoute(GET, '/api/search/:searchString', searchRoute.searchNotes);
     apiRoute(GET, '/api/search-note/:noteId', searchRoute.searchFromNote);
@@ -225,11 +226,14 @@ function register(app) {
     apiRoute(POST, '/api/login/protected', loginApiRoute.loginToProtectedSession);
     route(POST, '/api/login/token', [], loginApiRoute.token, apiResultHandler);
 
-    route(GET, '/api/clipper/handshake', [], clipperRoute.handshake, apiResultHandler);
-    route(POST, '/api/clipper/clippings', [], clipperRoute.addClipping, apiResultHandler);
-    route(POST, '/api/clipper/notes', [], clipperRoute.createNote, apiResultHandler);
-    route(POST, '/api/clipper/image', [], clipperRoute.createImage, apiResultHandler);
-    route(POST, '/api/clipper/open/:noteId', [], clipperRoute.openNote, apiResultHandler);
+    // in case of local electron, local calls are allowed unauthenticated, for server they need auth
+    const clipperMiddleware = utils.isElectron() ? [] : [auth.checkToken];
+
+    route(GET, '/api/clipper/handshake', clipperMiddleware, clipperRoute.handshake, apiResultHandler);
+    route(POST, '/api/clipper/clippings', clipperMiddleware, clipperRoute.addClipping, apiResultHandler);
+    route(POST, '/api/clipper/notes', clipperMiddleware, clipperRoute.createNote, apiResultHandler);
+    route(POST, '/api/clipper/image', clipperMiddleware, clipperRoute.createImage, apiResultHandler);
+    route(POST, '/api/clipper/open/:noteId', clipperMiddleware, clipperRoute.openNote, apiResultHandler);
 
     app.use('', router);
 }

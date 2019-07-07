@@ -7,6 +7,7 @@ const imageService = require('../../services/image');
 const appInfo = require('../../services/app_info');
 const messagingService = require('../../services/messaging');
 const log = require('../../services/log');
+const utils = require('../../services/utils');
 const path = require('path');
 const Link = require('../../entities/link');
 
@@ -144,12 +145,21 @@ async function createImage(req) {
 }
 
 async function openNote(req) {
-    messagingService.sendMessageToAllClients({
-        type: 'open-note',
-        noteId: req.params.noteId
-    });
+    if (utils.isElectron()) {
+        messagingService.sendMessageToAllClients({
+            type: 'open-note',
+            noteId: req.params.noteId
+        });
 
-    return {};
+        return {
+            result: 'ok'
+        };
+    }
+    else {
+        return {
+            result: 'open-in-browser'
+        }
+    }
 }
 
 async function handshake() {

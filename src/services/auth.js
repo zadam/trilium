@@ -56,7 +56,7 @@ async function checkAppNotInitialized(req, res, next) {
     }
 }
 
-async function checkSenderToken(req, res, next) {
+async function checkToken(req, res, next) {
     const token = req.headers.authorization;
 
     if (await sql.getValue("SELECT COUNT(*) FROM api_tokens WHERE isDeleted = 0 AND token = ?", [token]) === 0) {
@@ -89,6 +89,6 @@ module.exports = {
     checkAppInitialized,
     checkAppNotInitialized,
     checkApiAuthOrElectron,
-    checkSenderToken,
+    checkToken,
     checkBasicAuth
 };
