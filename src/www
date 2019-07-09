@@ -25,6 +25,7 @@ const messagingService = require('./services/messaging');
 const utils = require('./services/utils');
 const sqlInit = require('./services/sql_init');
 const port = require('./services/port');
+const host = require('./services/host');
 const semver = require('semver');
 
 if (!semver.satisfies(process.version, ">=10.5.0")) {
@@ -36,8 +37,10 @@ let httpServer;
 
 async function startTrilium() {
     const usedPort = await port;
+    const usedHost = await host;
 
     app.set('port', usedPort);
+    app.set('host', usedHost);
 
     if (config['Network']['https']) {
         if (!config['Network']['keyPath'] || !config['Network']['keyPath'].trim().length) {
@@ -70,7 +73,7 @@ async function startTrilium() {
      */
 
     httpServer.keepAliveTimeout = 120000 * 5;
-    httpServer.listen(usedPort);
+    httpServer.listen(usedPort, usedHost);
     httpServer.on('error', onError);
     httpServer.on('listening', () => debug('Listening on port' + httpServer.address().port));
 
