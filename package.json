@@ -28,7 +28,7 @@
     "commonmark": "0.29.0",
     "cookie-parser": "1.4.4",
     "csurf": "1.10.0",
-    "dayjs": "1.8.14",
+    "dayjs": "1.8.15",
     "debug": "4.1.1",
     "ejs": "2.6.2",
     "electron-context-menu": "^0.13.0",
@@ -71,7 +71,7 @@
     "tar-stream": "2.1.0",
     "turndown": "5.0.3",
     "unescape": "1.0.1",
-    "ws": "7.0.1",
+    "ws": "7.1.0",
     "xml2js": "0.4.19"
   },
   "devDependencies": {

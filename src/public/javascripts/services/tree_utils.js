@@ -19,7 +19,10 @@ function getNoteIdFromNotePath(notePath) {
 
     const path = notePath.split("/");
 
-    return path[path.length - 1];
+    const lastSegment = path[path.length - 1];
+
+    // path could have also tabId suffix
+    return lastSegment.split("-")[0];
 }
 
 async function getNotePath(node) {

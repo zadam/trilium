@@ -196,6 +196,8 @@ async function resolveNotePath(notePath) {
 async function getRunPath(notePath) {
     utils.assertArguments(notePath);
 
+    notePath = notePath.split("-")[0];
+
     const path = notePath.split("/").reverse();
 
     if (!path.includes("root")) {
@@ -333,6 +335,31 @@ async function treeInitialized() {
     }
     catch (e) {
         messagingService.logError("Cannot retrieve open tabs: " + e.stack);
+    }
+
+    // if there's notePath in the URL, make sure it's open and active
+    // (useful, among others, for opening clipped notes from clipper)
+    if (location.hash) {
+        const notePath = location.hash.substr(1);
+        const noteId = treeUtils.getNoteIdFromNotePath(notePath);
+
+        if (await treeCache.noteExists(noteId)) {
+            for (const tab of openTabs) {
+                tab.active = false;
+            }
+
+            const foundTab = openTabs.find(tab => noteId === treeUtils.getNoteIdFromNotePath(tab.notePath));
+
+            if (foundTab) {
+                foundTab.active = true;
+            }
+            else {
+                openTabs.push({
+                    notePath: notePath,
+                    active: true
+                });
+            }
+        }
     }
 
     const filteredTabs = [];
