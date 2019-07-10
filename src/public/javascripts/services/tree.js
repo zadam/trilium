@@ -196,6 +196,8 @@ async function resolveNotePath(notePath) {
 async function getRunPath(notePath) {
     utils.assertArguments(notePath);
 
+    notePath = notePath.split("-")[0];
+
     const path = notePath.split("/").reverse();
 
     if (!path.includes("root")) {
