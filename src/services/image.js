@@ -13,6 +13,13 @@ const imageType = require('image-type');
 const sanitizeFilename = require('sanitize-filename');
 
 async function saveImage(buffer, originalName, parentNoteId, shrinkImageSwitch) {
+    const origImageFormat = imageType(buffer);
+
+    if (origImageFormat.ext === "webp") {
+        // JIMP does not support webp at the moment: https://github.com/oliver-moran/jimp/issues/144
+        shrinkImageSwitch = false;
+    }
+
     const finalImageBuffer = shrinkImageSwitch ? await shrinkImage(buffer, originalName) : buffer;
 
     const imageFormat = imageType(finalImageBuffer);
@@ -48,7 +55,7 @@ async function shrinkImage(buffer, originalName) {
     try {
         finalImageBuffer = await optimize(resizedImage);
     } catch (e) {
-        log.error("Failed to optimize image '" + originalName + "\nStack: " + e.stack);
+        log.error("Failed to optimize image '" + originalName + "'\nStack: " + e.stack);
         finalImageBuffer = resizedImage;
     }
 
@@ -93,7 +100,7 @@ async function optimize(buffer) {
                 quality: 50
             }),
             imageminPngQuant({
-                quality: "0-70"
+                quality: [0, 0.7]
             }),
             imageminGifLossy({
                 lossy: 80,
