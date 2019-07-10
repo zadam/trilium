@@ -75,8 +75,6 @@ function getMime(fileName) {
     const ext = path.extname(fileName).toLowerCase();
 
     if (ext in EXTENSION_TO_MIME) {
-        console.log(EXTENSION_TO_MIME[ext]);
-
         return EXTENSION_TO_MIME[ext];
     }
 
@@ -108,7 +106,7 @@ async function importSingleFile(importContext, file, parentNote) {
 }
 
 async function importImage(file, parentNote, importContext) {
-    const {note} = await imageService.saveImage(file.buffer, getFileNameWithoutExtension(file.originalname), parentNote.noteId, importContext.shrinkImages);
+    const {note} = await imageService.saveImage(file.buffer, file.originalname, parentNote.noteId, importContext.shrinkImages);
 
     importContext.increaseProgressCount();
 

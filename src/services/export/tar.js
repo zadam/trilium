@@ -32,11 +32,11 @@ async function exportToTar(exportContext, branch, format, res) {
             do {
                 index = existingFileNames[lcFileName]++;
 
-                newName = lcFileName + "_" + index;
+                newName = index + "_" + lcFileName;
             }
             while (newName in existingFileNames);
 
-            return fileName + "_" + index;
+            return index + "_" + fileName;
         }
         else {
             existingFileNames[lcFileName] = 1;
