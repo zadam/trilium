@@ -62,7 +62,7 @@ async function exportToTar(exportContext, branch, format, res) {
         const existingExtension = path.extname(fileName).toLowerCase();
 
         // if the note is already named with extension (e.g. "jquery.js"), then it's silly to append exact same extension again
-        if (existingExtension !== extension) {
+        if (existingExtension !== "." + extension) {
             fileName += "." + extension;
         }
 
