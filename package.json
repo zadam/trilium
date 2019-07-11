@@ -2,7 +2,7 @@
   "name": "trilium",
   "productName": "Trilium Notes",
   "description": "Trilium Notes",
-  "version": "0.33.6",
+  "version": "0.33.7",
   "license": "AGPL-3.0-only",
   "main": "electron.js",
   "bin": {
@@ -76,7 +76,7 @@
   },
   "devDependencies": {
     "devtron": "1.4.0",
-    "electron": "6.0.0-beta.11",
+    "electron": "6.0.0-beta.13",
     "electron-builder": "20.44.4",
     "electron-compile": "6.4.4",
     "electron-installer-debian": "2.0.0",

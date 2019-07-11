@@ -32,11 +32,11 @@ async function exportToTar(exportContext, branch, format, res) {
             do {
                 index = existingFileNames[lcFileName]++;
 
-                newName = lcFileName + "_" + index;
+                newName = index + "_" + lcFileName;
             }
             while (newName in existingFileNames);
 
-            return fileName + "_" + index;
+            return index + "_" + fileName;
         }
         else {
             existingFileNames[lcFileName] = 1;
@@ -46,24 +46,32 @@ async function exportToTar(exportContext, branch, format, res) {
     }
 
     function getDataFileName(note, baseFileName, existingFileNames) {
-        let extension;
+        const existingExtension = path.extname(baseFileName).toLowerCase();
+        let newExtension;
 
+        // following two are handled specifically since we always want to have these extensions no matter the automatic detection
+        // and/or existing detected extensions in the note name
         if (note.type === 'text' && format === 'markdown') {
-            extension = 'md';
+            newExtension = 'md';
+        }
+        else if (note.type === 'text' && format === 'html') {
+            newExtension = 'html';
         }
         else if (note.mime === 'application/x-javascript' || note.mime === 'text/javascript') {
-            extension = 'js';
+            newExtension = 'js';
+        }
+        else if (existingExtension.length > 0) { // if the page already has an extension, then we'll just keep it
+            newExtension = null;
         }
         else {
-            extension = mimeTypes.extension(note.mime) || "dat";
+            newExtension = mimeTypes.extension(note.mime) || "dat";
         }
 
         let fileName = baseFileName;
-        const existingExtension = path.extname(fileName).toLowerCase();
 
         // if the note is already named with extension (e.g. "jquery.js"), then it's silly to append exact same extension again
-        if (existingExtension !== extension) {
-            fileName += "." + extension;
+        if (newExtension && existingExtension !== "." + newExtension.toLowerCase()) {
+            fileName += "." + newExtension;
         }
 
         return getUniqueFilename(existingFileNames, fileName);

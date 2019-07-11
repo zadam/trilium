@@ -26,8 +26,7 @@ async function saveImage(buffer, originalName, parentNoteId, shrinkImageSwitch) 
 
     const parentNote = await repository.getNote(parentNoteId);
 
-    const fileNameWithoutExtension = originalName.replace(/\.[^/.]+$/, "");
-    const fileName = sanitizeFilename(fileNameWithoutExtension + "." + imageFormat.ext);
+    const fileName = sanitizeFilename(originalName);
 
     const {note} = await noteService.createNote(parentNoteId, fileName, finalImageBuffer, {
         target: 'into',

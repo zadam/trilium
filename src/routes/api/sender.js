@@ -1,5 +1,6 @@
 "use strict";
 
+const imageType = require('image-type');
 const imageService = require('../../services/image');
 const dateNoteService = require('../../services/date_notes');
 const noteService = require('../../services/notes');
@@ -11,9 +12,11 @@ async function uploadImage(req) {
         return [400, "Unknown image type: " + file.mimetype];
     }
 
+    const originalName = "Sender image." + imageType(file.buffer).ext;
+
     const parentNote = await dateNoteService.getDateNote(req.headers['x-local-date']);
 
-    const {noteId} = await imageService.saveImage(file.buffer, "Sender image", parentNote.noteId, true);
+    const {noteId} = await imageService.saveImage(file.buffer, originalName, parentNote.noteId, true);
 
     return {
         noteId: noteId
