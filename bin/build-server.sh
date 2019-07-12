@@ -30,7 +30,7 @@ rm -r ./node_modules/sqlite3/lib/binding/*
 
 cp -r ../../bin/deps/linux-x64/sqlite/node* ./node_modules/sqlite3/lib/binding/
 
-printf "#/bin/sh\n./node/bin/node src/www" > trilium.sh
+printf "#!/bin/sh\n./node/bin/node src/www" > trilium.sh
 chmod 755 trilium.sh
 
 cd ..
