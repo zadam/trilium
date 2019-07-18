@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+export GITHUB_REPO=trilium
+
 if [[ $# -eq 0 ]] ; then
     echo "Missing argument of new version"
     exit 1
