@@ -99,51 +99,6 @@ async function addImagesToNote(images, note, content) {
     return rewrittenContent;
 }
 
-async function createImage(req) {
-    let {dataUrl, title, imageUrl, pageUrl} = req.body;
-
-    if (!dataUrl) {
-        // this is image inlined into the src attribute so there isn't any source image URL
-        dataUrl = imageUrl;
-        imageUrl = null;
-    }
-
-    if (!dataUrl.startsWith("data:image/")) {
-        const message = "Unrecognized prefix: " + dataUrl.substr(0, Math.min(dataUrl.length, 100));
-        log.info(message);
-
-        return [400, message];
-    }
-
-    if (!title && imageUrl) {
-        title = path.basename(imageUrl);
-    }
-
-    if (!title) {
-        title = "clipped image";
-    }
-
-    const buffer = Buffer.from(dataUrl.split(",")[1], 'base64');
-
-    const todayNote = await dateNoteService.getDateNote(dateUtils.localNowDate());
-
-    const {note} = await imageService.saveImage(buffer, title, todayNote.noteId, true);
-
-    await note.setLabel('clipType', 'image');
-
-    if (imageUrl) {
-        await note.setLabel('imageUrl', imageUrl);
-    }
-
-    if (pageUrl) {
-        await note.setLabel('pageUrl', pageUrl);
-    }
-
-    return {
-        noteId: note.noteId
-    };
-}
-
 async function openNote(req) {
     if (utils.isElectron()) {
         messagingService.sendMessageToAllClients({
@@ -171,7 +126,6 @@ async function handshake() {
 
 module.exports = {
     createNote,
-    createImage,
     addClipping,
     openNote,
     handshake

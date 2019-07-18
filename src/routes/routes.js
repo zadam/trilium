@@ -232,7 +232,6 @@ function register(app) {
     route(GET, '/api/clipper/handshake', clipperMiddleware, clipperRoute.handshake, apiResultHandler);
     route(POST, '/api/clipper/clippings', clipperMiddleware, clipperRoute.addClipping, apiResultHandler);
     route(POST, '/api/clipper/notes', clipperMiddleware, clipperRoute.createNote, apiResultHandler);
-    route(POST, '/api/clipper/image', clipperMiddleware, clipperRoute.createImage, apiResultHandler);
     route(POST, '/api/clipper/open/:noteId', clipperMiddleware, clipperRoute.openNote, apiResultHandler);
 
     app.use('', router);
