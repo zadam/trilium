@@ -47,13 +47,13 @@ async function addClipping(req) {
 }
 
 async function createNote(req) {
-    const {title, content, pageUrl, images} = req.body;
+    const {title, content, pageUrl, images, clipType} = req.body;
 
     const todayNote = await dateNoteService.getDateNote(dateUtils.localNowDate());
 
     const {note} = await noteService.createNote(todayNote.noteId, title, content);
 
-    await note.setLabel('clipType', 'note');
+    await note.setLabel('clipType', clipType);
 
     if (pageUrl) {
         await note.setLabel('pageUrl', pageUrl);
