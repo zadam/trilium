@@ -69,10 +69,19 @@ class TabRow {
     }
 
     setupEvents() {
-        window.addEventListener('resize', _ => {
+        const resizeListener = _ => {
             this.cleanUpPreviouslyDraggedTabs();
             this.layoutTabs();
-        });
+        };
+
+        // ResizeObserver exists only in FF69
+        if (typeof ResizeObserver !== "undefined") {
+            new ResizeObserver(resizeListener).observe(this.el);
+        }
+        else {
+            // for older firefox
+            window.addEventListener('resize', resizeListener);
+        }
 
         this.tabEls.forEach((tabEl) => this.setTabCloseEventListener(tabEl));
     }
