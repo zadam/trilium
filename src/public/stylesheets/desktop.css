@@ -134,6 +134,11 @@ li.dropdown-submenu:hover > ul.dropdown-menu {
     border-style: solid;
 }
 
+body {
+    /* FF basic styling */
+    scrollbar-color: var(--active-item-background-color) var(--main-background-color);
+}
+
 ::-webkit-scrollbar {
     width: 12px;
 }
@@ -141,6 +146,10 @@ li.dropdown-submenu:hover > ul.dropdown-menu {
 ::-webkit-scrollbar-thumb {
     border-radius: 3px;
     border: 1px solid var(--main-border-color);
+}
+
+::-webkit-scrollbar-corner {
+    background-color: inherit;
 }
 
 #note-info-table td, #note-info-table th {
