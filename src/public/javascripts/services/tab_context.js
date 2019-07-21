@@ -60,9 +60,9 @@ class TabContext {
         this.noteChangeDisabled = false;
         this.isNoteChanged = false;
         this.attributes = new Attributes(this);
-        this.sidebar = new Sidebar(this);
 
         if (utils.isDesktop()) {
+            this.sidebar = new Sidebar(this);
             this.noteType = new NoteTypeContext(this);
         }
 
@@ -132,6 +132,10 @@ class TabContext {
         }
 
         this.showPaths();
+
+        if (this.sidebar) {
+            this.sidebar.noteLoaded();
+        }
 
         console.debug(`Switched tab ${this.tabId} to ${this.noteId}`);
     }
