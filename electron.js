@@ -7,6 +7,7 @@ const sqlInit = require('./src/services/sql_init');
 const cls = require('./src/services/cls');
 const url = require("url");
 const port = require('./src/services/port');
+const env = require('./src/services/env');
 const appIconService = require('./src/services/app_icon');
 const windowStateKeeper = require('electron-window-state');
 const contextMenu = require('electron-context-menu');
@@ -74,7 +75,7 @@ async function createMainWindow() {
         webPreferences: {
             nodeIntegration: true
         },
-        icon: path.join(__dirname, 'images/app-icons/png/256x256.png')
+        icon: path.join(__dirname, 'images/app-icons/png/256x256' + (env.isDev() ? '-dev' : '') + '.png')
     });
 
     mainWindowState.manage(win);
