@@ -116,10 +116,19 @@ ul.fancytree-container {
 }
 
 .note-detail-sidebar {
-    min-width: 300px;
+    min-width: 350px;
     overflow: auto;
     padding-top: 12px;
     padding-left: 7px;
+    font-size: 90%;
+}
+
+.note-detail-sidebar .widget-title {
+    width: 100%;
+    border-radius: 0;
+    padding: 0;
+    border-left: 0;
+    border-right: 0;
 }
 
 .note-detail-sidebar .card {
@@ -141,7 +150,7 @@ ul.fancytree-container {
 }
 
 .note-detail-sidebar .card-body {
-    max-width: 300px;
+    width: 100%;
     padding: 8px;
     border: 0;
 }

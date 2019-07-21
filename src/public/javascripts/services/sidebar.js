@@ -1,4 +1,5 @@
 import NoteInfoWidget from "../widgets/note_info.js";
+import LinkMapWidget from "../widgets/link_map.js";
 
 const WIDGET_TPL = `
 <div class="card widget">
@@ -46,7 +47,7 @@ class Sidebar {
         this.$widgets.empty();
 
         this.addNoteInfoWidget();
-        this.addNoteInfoWidget();
+        this.addLinkMapWidget();
     }
 
     async addNoteInfoWidget() {
@@ -54,6 +55,15 @@ class Sidebar {
 
         const noteInfoWidget = new NoteInfoWidget(this.ctx, $widget);
         await noteInfoWidget.renderBody();
+
+        this.$widgets.append($widget);
+    }
+
+    async addLinkMapWidget() {
+        const $widget = this.createWidgetElement();
+
+        const linkMapWidget = new LinkMapWidget(this.ctx, $widget);
+        await linkMapWidget.renderBody();
 
         console.log($widget);
 
