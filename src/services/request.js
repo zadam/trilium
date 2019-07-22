@@ -98,6 +98,11 @@ function getClient(opts) {
         return require('electron').net;
     }
     else {
+        // hack for cases where electron.net does not work but we don't want to set proxy
+        if (opts.proxy === 'noproxy') {
+            opts.proxy = null;
+        }
+
         // in case there's explicit proxy then we need to use protocol of the proxy since we're actually
         // connecting to the proxy server and not to the end-target server
         const {protocol} = url.parse(opts.proxy || opts.url);
