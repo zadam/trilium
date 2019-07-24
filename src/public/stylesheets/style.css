@@ -123,30 +123,36 @@ ul.fancytree-container {
     font-size: 90%;
 }
 
-.note-detail-sidebar .widget-title {
-    width: 100%;
-    border-radius: 0;
-    padding: 0;
-    border-left: 0;
-    border-right: 0;
-}
-
 .note-detail-sidebar .card {
     border: 0;
 }
 
 .note-detail-sidebar .card-header {
     background: inherit;
+    padding: 5px;
+    width: 100%;
+    background-color: var(--button-background-color);
+    border-color: var(--button-border-color);
+    border-width: 1px 0 1px 0;
+    border-style: solid;
+    display: flex;
+    justify-content: space-between;
+}
+
+.note-detail-sidebar .widget-title {
+    border-radius: 0;
     padding: 0;
     border: 0;
+    background: inherit;
+    font-weight: bold;
 }
 
-.note-detail-sidebar .card-header button {
-
+.note-detail-sidebar .widget-header-actions {
 }
 
-.note-detail-sidebar .card-header h5 {
-    font-size: 1rem;
+.note-detail-sidebar .widget-header-action {
+    color: var(--link-color) !important;
+    cursor: pointer;
 }
 
 .note-detail-sidebar .card-body {

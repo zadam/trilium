@@ -19,14 +19,21 @@ async function getLinks(noteIds, linkTypes) {
 
 async function getLinkMap(req) {
     const {noteId} = req.params;
-    const {linkTypes, maxNotes} = req.body;
+    const {linkTypes, maxNotes, maxDepth} = req.body;
 
     let noteIds = new Set([noteId]);
     let links = [];
 
+    let depth = 0;
+
     while (true) {
-        const newLinks = await getLinks(noteIds, linkTypes);
-        const newNoteIds = new Set(newLinks.map(l => l.noteId).concat(newLinks.map(l => l.targetNoteId)));
+        links = await getLinks(noteIds, linkTypes);
+
+        if (depth === maxDepth) {
+            break;
+        }
+
+        const newNoteIds = new Set(links.map(l => l.noteId).concat(links.map(l => l.targetNoteId)));
 
         if (newNoteIds.size === noteIds.size) {
             // no new note discovered, no need to search any further
@@ -39,7 +46,8 @@ async function getLinkMap(req) {
         }
 
         noteIds = newNoteIds;
-        links = newLinks;
+
+        depth++;
     }
 
     // keep only links coming from and targetting some note in the noteIds set

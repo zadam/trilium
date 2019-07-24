@@ -1,4 +1,5 @@
 import libraryLoader from "../services/library_loader.js";
+import linkMapDialog from "../dialogs/link_map.js";
 import server from "../services/server.js";
 import treeCache from "../services/tree_cache.js";
 import linkService from "../services/link.js";
@@ -31,6 +32,14 @@ class LinkMapWidget {
         this.$widget = $widget;
         this.$title = this.$widget.find('.widget-title');
         this.$title.text("Link map");
+        this.$headerActions = this.$widget.find('.widget-header-actions');
+
+        const $showFullButton = $("<a>").append("show full").addClass('widget-header-action');
+        $showFullButton.click(() => {
+            linkMapDialog.showDialog();
+        });
+
+        this.$headerActions.append($showFullButton);
     }
 
     async renderBody() {
@@ -61,7 +70,8 @@ class LinkMapWidget {
 
         const links = await server.post(`notes/${noteId}/link-map`, {
             linkTypes,
-            maxNotes
+            maxNotes,
+            maxDepth: 1
         });
 
         const noteIds = new Set(links.map(l => l.noteId).concat(links.map(l => l.targetNoteId)));
@@ -190,7 +200,7 @@ class LinkMapWidget {
         this.$linkMapContainer.empty();
 
         // reset zoom/pan
-        this.pzInstance.zoomTo(0, 0, 0.5);
+        this.pzInstance.zoomTo(0, 0, 0.7);
         this.pzInstance.moveTo(0, 0);
     }
 

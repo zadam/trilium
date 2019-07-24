@@ -3,12 +3,12 @@ import LinkMapWidget from "../widgets/link_map.js";
 
 const WIDGET_TPL = `
 <div class="card widget">
-    <div class="card-header">
-        <h5 class="mb-0">
-            <button class="btn btn-sm widget-title" data-toggle="collapse" data-target="#collapseOne">
-                Collapsible Group Item
-            </button>
-        </h5>
+    <div class="card-header">        
+        <button class="btn btn-sm widget-title" data-toggle="collapse" data-target="#collapseOne">
+            Collapsible Group Item
+        </button>
+        
+        <div class="widget-header-actions"></div>
     </div>
 
     <div id="collapseOne" class="collapse show body-wrapper">
