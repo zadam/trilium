@@ -43,6 +43,8 @@
     "helmet": "3.19.0",
     "html": "1.0.0",
     "html2plaintext": "2.1.2",
+    "http-proxy-agent": "^2.1.0",
+    "https-proxy-agent": "^2.2.2",
     "image-type": "4.1.0",
     "imagemin": "7.0.0",
     "imagemin-giflossy": "5.1.10",
