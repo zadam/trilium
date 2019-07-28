@@ -20,8 +20,7 @@ body {
 
 #container.distraction-free-mode {
     grid-template-areas:
-    "title"
-    "note-detail" !important;
+    "tab-container" !important;
     grid-template-rows: auto
     auto
     !important;
