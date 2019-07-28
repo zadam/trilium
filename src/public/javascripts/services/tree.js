@@ -881,5 +881,6 @@ export default {
     getNodeFromPath,
     resolveNotePath,
     getSomeNotePath,
-    focusTree
+    focusTree,
+    scrollToActiveNote
 };
