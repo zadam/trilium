@@ -196,7 +196,11 @@ async function resolveNotePath(notePath) {
 async function getRunPath(notePath) {
     utils.assertArguments(notePath);
 
-    notePath = notePath.split("-")[0];
+    notePath = notePath.split("-")[0].trim();
+
+    if (notePath.length === 0) {
+        return;
+    }
 
     const path = notePath.split("/").reverse();
 
@@ -362,7 +366,7 @@ async function treeInitialized() {
         }
     }
 
-    const filteredTabs = [];
+    let filteredTabs = [];
 
     for (const openTab of openTabs) {
         const noteId = treeUtils.getNoteIdFromNotePath(openTab.notePath);
@@ -371,6 +375,11 @@ async function treeInitialized() {
             // note doesn't exist so don't try to open tab for it
             filteredTabs.push(openTab);
         }
+    }
+
+    if (utils.isMobile()) {
+        // mobile frontend doesn't have tabs so show only the active tab
+        filteredTabs = filteredTabs.filter(tab => tab.active);
     }
 
     if (filteredTabs.length === 0) {
