@@ -18,6 +18,7 @@ import noteDetailRelationMap from "./note_detail_relation_map.js";
 import noteDetailProtectedSession from "./note_detail_protected_session.js";
 import protectedSessionService from "./protected_session.js";
 import linkService from "./link.js";
+import Sidebar from "./sidebar.js";
 
 const $tabContentsContainer = $("#note-tab-container");
 
@@ -61,6 +62,7 @@ class TabContext {
         this.attributes = new Attributes(this);
 
         if (utils.isDesktop()) {
+            this.sidebar = new Sidebar(this);
             this.noteType = new NoteTypeContext(this);
         }
 
@@ -130,6 +132,10 @@ class TabContext {
         }
 
         this.showPaths();
+
+        if (this.sidebar) {
+            this.sidebar.noteLoaded();
+        }
 
         console.debug(`Switched tab ${this.tabId} to ${this.noteId}`);
     }

@@ -1,10 +1,10 @@
-#link-map-container {
+.link-map-container {
     position: relative;
-    height: calc(95vh - 130px);
+    height: 300px;
     outline: none; /* remove dotted outline on click */
 }
 
-#link-map-container .note-box {
+.link-map-container .note-box {
     padding: 8px;
     position: absolute !important;
     background-color: var(--accented-background-color);
@@ -23,16 +23,16 @@
     overflow: hidden;
 }
 
-#link-map-container .note-box:hover {
+.link-map-container .note-box:hover {
     background-color: var(--more-accented-background-color);
 }
 
-#link-map-container .note-box .title {
+.link-map-container .note-box .title {
     font-size: larger;
     font-weight: 600;
 }
 
-#link-map-container .floating-button {
+.link-map-container .floating-button {
     position: absolute !important;
     z-index: 100;
 }

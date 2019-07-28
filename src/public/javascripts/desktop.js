@@ -42,6 +42,7 @@ import noteAutocompleteService from './services/note_autocomplete.js';
 import macInit from './services/mac_init.js';
 import cssLoader from './services/css_loader.js';
 import dateNoteService from './services/date_notes.js';
+import sidebarService from './services/sidebar.js';
 
 window.glob.isDesktop = utils.isDesktop;
 window.glob.isMobile = utils.isMobile;

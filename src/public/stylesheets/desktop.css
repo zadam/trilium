@@ -133,6 +133,11 @@ li.dropdown-submenu:hover > ul.dropdown-menu {
     border-style: solid;
 }
 
+body {
+    /* FF basic styling */
+    scrollbar-color: var(--active-item-background-color) var(--main-background-color);
+}
+
 ::-webkit-scrollbar {
     width: 12px;
 }
@@ -142,8 +147,12 @@ li.dropdown-submenu:hover > ul.dropdown-menu {
     border: 1px solid var(--main-border-color);
 }
 
-#note-info-table td, #note-info-table th {
-    padding: 15px;
+::-webkit-scrollbar-corner {
+    background-color: inherit;
+}
+
+.widget .note-info-table td, .widget .note-info-table th {
+    padding: 5px;
 }
 
 [data-toggle="tooltip"] span {

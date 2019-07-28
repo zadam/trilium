@@ -4,42 +4,46 @@
 
 <div id="note-tab-container">
     <div class="note-tab-content note-tab-content-template">
-        <% include title.ejs %>
+        <div class="note-detail-content">
+            <% include title.ejs %>
 
-        <div class="note-detail-script-area"></div>
+            <div class="note-detail-script-area"></div>
 
-        <table class="note-detail-promoted-attributes"></table>
+            <table class="note-detail-promoted-attributes"></table>
 
-        <div class="note-detail-component-wrapper">
-            <div class="note-detail-text note-detail-component">
-                <div class="note-detail-text-editor" tabindex="10000"></div>
+            <div class="note-detail-component-wrapper">
+                <div class="note-detail-text note-detail-component">
+                    <div class="note-detail-text-editor" tabindex="10000"></div>
+                </div>
+
+                <div class="note-detail-code note-detail-component">
+                    <div class="note-detail-code-editor"></div>
+                </div>
+
+                <% include details/empty.ejs %>
+
+                <% include details/search.ejs %>
+
+                <% include details/render.ejs %>
+
+                <% include details/file.ejs %>
+
+                <% include details/image.ejs %>
+
+                <% include details/relation_map.ejs %>
+
+                <% include details/protected_session_password.ejs %>
+
+                <div class="children-overview hide-toggle"></div>
             </div>
 
-            <div class="note-detail-code note-detail-component">
-                <div class="note-detail-code-editor"></div>
+            <div class="attribute-list">
+                <button class="btn btn-sm show-attributes-button">Attributes:</button>
+
+                <span class="attribute-list-inner"></span>
             </div>
-
-            <% include details/empty.ejs %>
-
-            <% include details/search.ejs %>
-
-            <% include details/render.ejs %>
-
-            <% include details/file.ejs %>
-
-            <% include details/image.ejs %>
-
-            <% include details/relation_map.ejs %>
-
-            <% include details/protected_session_password.ejs %>
-
-            <div class="children-overview hide-toggle"></div>
         </div>
 
-        <div class="attribute-list">
-            <button class="btn btn-sm show-attributes-button">Attributes:</button>
-
-            <span class="attribute-list-inner"></span>
-        </div>
+        <% include sidebar.ejs %>
     </div>
 </div>

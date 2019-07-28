@@ -1,6 +1,7 @@
 "use strict";
 
 const sql = require('./sql');
+const log = require('./log');
 const sqlInit = require('./sql_init');
 const utils = require('./utils');
 const passwordEncryptionService = require('./password_encryption');
@@ -22,7 +23,7 @@ async function checkAuth(req, res, next) {
 // currently we're doing that for file upload because handling form data seems to be difficult
 async function checkApiAuthOrElectron(req, res, next) {
     if (!req.session.loggedIn && !utils.isElectron()) {
-        res.status(401).send("Not authorized");
+        reject(req, res, "Not authorized");
     }
     else {
         next();
@@ -31,7 +32,7 @@ async function checkApiAuthOrElectron(req, res, next) {
 
 async function checkApiAuth(req, res, next) {
     if (!req.session.loggedIn) {
-        res.status(401).send("Not authorized");
+        reject(req, res, "Not authorized");
     }
     else {
         next();
@@ -49,7 +50,7 @@ async function checkAppInitialized(req, res, next) {
 
 async function checkAppNotInitialized(req, res, next) {
     if (await sqlInit.isDbInitialized()) {
-        res.status(400).send("App already initialized.");
+        reject(req, res, "App already initialized.");
     }
     else {
         next();
@@ -60,11 +61,17 @@ async function checkToken(req, res, next) {
     const token = req.headers.authorization;
 
     if (await sql.getValue("SELECT COUNT(*) FROM api_tokens WHERE isDeleted = 0 AND token = ?", [token]) === 0) {
-        res.status(401).send("Not authorized");
+        reject(req, res, "Not authorized");
     }
     else {
         next();
     }
+}
+
+function reject(req, res, message) {
+    log.info(`${req.method} ${req.path} rejected with 401 ${message}`);
+
+    res.status(401).send(message);
 }
 
 async function checkBasicAuth(req, res, next) {

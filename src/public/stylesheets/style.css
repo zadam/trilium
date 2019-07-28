@@ -104,8 +104,61 @@ ul.fancytree-container {
 
 .note-tab-content {
     display: flex;
+    flex-direction: row;
+    height: 100%;
+    width: 100%;
+}
+
+.note-detail-content {
+    display: flex;
     flex-direction: column;
     height: 100%;
+}
+
+.note-detail-sidebar {
+    min-width: 350px;
+    overflow: auto;
+    padding-top: 12px;
+    padding-left: 7px;
+    font-size: 90%;
+}
+
+.note-detail-sidebar .card {
+    border: 0;
+}
+
+.note-detail-sidebar .card-header {
+    background: inherit;
+    padding: 3px 10px 3px 10px;
+    width: 100%;
+    background-color: var(--button-background-color);
+    border-color: var(--button-border-color);
+    border-width: 1px 0 1px 0;
+    border-style: solid;
+    display: flex;
+    justify-content: space-between;
+}
+
+.note-detail-sidebar .widget-title {
+    border-radius: 0;
+    padding: 0;
+    border: 0;
+    background: inherit;
+    font-weight: bold;
+}
+
+.note-detail-sidebar .widget-header-actions {
+}
+
+.note-detail-sidebar .widget-header-action {
+    color: var(--link-color) !important;
+    cursor: pointer;
+}
+
+.note-detail-sidebar .card-body {
+    width: 100%;
+    padding: 8px;
+    border: 0;
 }
 
 .note-detail-component-wrapper {
