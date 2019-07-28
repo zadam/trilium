@@ -129,7 +129,7 @@ ul.fancytree-container {
 
 .note-detail-sidebar .card-header {
     background: inherit;
-    padding: 5px;
+    padding: 3px 10px 3px 10px;
     width: 100%;
     background-color: var(--button-background-color);
     border-color: var(--button-border-color);
