@@ -4,7 +4,7 @@ body {
 
 #container {
     margin: 0 auto; /* center */
-    height: 100vh;
+    height: 100%;
 
     display: grid;
     grid-template-areas: "header header"
