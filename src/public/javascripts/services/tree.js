@@ -484,11 +484,11 @@ function initFancyTree(tree) {
             }
         },
         // this is done to automatically lazy load all expanded search notes after tree load
-        loadChildren: function(event, data) {
-            data.node.visit(function(subNode){
+        loadChildren: (event, data) => {
+            data.node.visit((subNode) => {
                 // Load all lazy/unloaded child nodes
                 // (which will trigger `loadChildren` recursively)
-                if( subNode.isUndefined() && subNode.isExpanded() ) {
+                if (subNode.isUndefined() && subNode.isExpanded()) {
                     subNode.load();
                 }
             });
