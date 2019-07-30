@@ -75,6 +75,16 @@ async function showTree() {
         },
         clones: {
             highlightActiveClones: true
+        },
+        // this is done to automatically lazy load all expanded search notes after tree load
+        loadChildren: (event, data) => {
+            data.node.visit((subNode) => {
+                // Load all lazy/unloaded child nodes
+                // (which will trigger `loadChildren` recursively)
+                if (subNode.isUndefined() && subNode.isExpanded()) {
+                    subNode.load();
+                }
+            });
         }
     });
 }

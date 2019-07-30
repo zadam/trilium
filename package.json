@@ -55,7 +55,7 @@
     "mime-types": "2.1.24",
     "moment": "2.24.0",
     "multer": "1.4.2",
-    "node-abi": "2.9.0",
+    "node-abi": "2.10.0",
     "open": "6.4.0",
     "pngjs": "3.4.0",
     "portscanner": "2.2.0",
@@ -78,11 +78,11 @@
   },
   "devDependencies": {
     "devtron": "1.4.0",
-    "electron": "6.0.0-beta.14",
-    "electron-builder": "21.1.1",
+    "electron": "6.0.0",
+    "electron-builder": "21.1.5",
     "electron-compile": "6.4.4",
     "electron-installer-debian": "2.0.0",
-    "electron-packager": "14.0.2",
+    "electron-packager": "14.0.4",
     "electron-rebuild": "1.8.5",
     "lorem-ipsum": "2.0.3",
     "xo": "0.24.0"
