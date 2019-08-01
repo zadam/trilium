@@ -117,7 +117,7 @@ ul.fancytree-container {
     display: flex;
     flex-direction: column;
     min-height: 200px;
-    word-break: break-all; /* otherwise CKEditor fails miserably on super long lines */
+    overflow-wrap: break-word; /* otherwise CKEditor fails miserably on super long lines */
     font-family: var(--detail-font-family);
     font-size: var(--detail-font-size);
 }
@@ -439,7 +439,7 @@ div.ui-tooltip {
     text-align: center;
     margin-top: 15px;
     text-overflow: ellipsis;
-    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 .child-overview-item a {
