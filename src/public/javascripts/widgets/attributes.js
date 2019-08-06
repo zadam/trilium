@@ -32,31 +32,57 @@ class AttributesWidget {
         const ownedAttributes = attributes.filter(attr => attr.noteId === this.ctx.note.noteId);
 
         if (ownedAttributes.length === 0) {
-            $body.text("No attributes yet...");
-            return;
+            $body.text("No own attributes yet...");
         }
 
-        if (ownedAttributes.length > 0) {
-            for (const attribute of ownedAttributes) {
-                if (attribute.type === 'label') {
-                    $body.append(utils.formatLabel(attribute) + " ");
+        await this.renderAttributes(ownedAttributes, $body);
+
+        const inheritedAttributes = attributes.filter(attr => attr.noteId !== this.ctx.note.noteId);
+
+        if (inheritedAttributes.length > 0) {
+            const $inheritedAttrs = $("<span>").append($("<strong>").text("Inherited: "));
+            const $showInheritedAttributes = $("<a>")
+                .attr("href", "javascript:")
+                .text("+show inherited")
+                .click(() => {
+                    $showInheritedAttributes.hide();
+                    $inheritedAttrs.show();
+                });
+
+            const $hideInheritedAttributes = $("<a>")
+                .attr("href", "javascript:")
+                .text("-hide inherited")
+                .click(() => {
+                    $showInheritedAttributes.show();
+                    $inheritedAttrs.hide();
+                });
+
+            $body.append($showInheritedAttributes);
+            $body.append($inheritedAttrs);
+
+            await this.renderAttributes(inheritedAttributes, $inheritedAttrs);
+
+            $inheritedAttrs.append($hideInheritedAttributes);
+            $inheritedAttrs.hide();
+        }
+    }
+
+    async renderAttributes(attributes, $container) {
+        for (const attribute of attributes) {
+            if (attribute.type === 'label') {
+                $container.append(utils.formatLabel(attribute) + " ");
+            } else if (attribute.type === 'relation') {
+                if (attribute.value) {
+                    $container.append('@' + attribute.name + "=");
+                    $container.append(await linkService.createNoteLink(attribute.value));
+                    $container.append(" ");
+                } else {
+                    messagingService.logError(`Relation ${attribute.attributeId} has empty target`);
                 }
-                else if (attribute.type === 'relation') {
-                    if (attribute.value) {
-                        $body.append('@' + attribute.name + "=");
-                        $body.append(await linkService.createNoteLink(attribute.value));
-                        $body.append(" ");
-                    }
-                    else {
-                        messagingService.logError(`Relation ${attribute.attributeId} has empty target`);
-                    }
-                }
-                else if (attribute.type === 'label-definition' || attribute.type === 'relation-definition') {
-                    $body.append(attribute.name + " definition ");
-                }
-                else {
-                    messagingService.logError("Unknown attr type: " + attribute.type);
-                }
+            } else if (attribute.type === 'label-definition' || attribute.type === 'relation-definition') {
+                $container.append(attribute.name + " definition ");
+            } else {
+                messagingService.logError("Unknown attr type: " + attribute.type);
             }
         }
     }
