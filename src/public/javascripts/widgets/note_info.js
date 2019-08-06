@@ -57,8 +57,6 @@ class NoteInfoWidget {
 
     syncDataReceived(syncData) {
         if (syncData.find(sd => sd.entityName === 'notes' && sd.entityId === this.ctx.note.noteId)) {
-            console.log("Re-rendering note info");
-
             this.renderBody();
         }
     }

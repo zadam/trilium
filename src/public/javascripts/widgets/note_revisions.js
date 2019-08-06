@@ -39,6 +39,12 @@ class NoteRevisionsWidget {
             }).text(item.dateModifiedFrom)));
         }
     }
+
+    syncDataReceived(syncData) {
+        if (syncData.find(sd => sd.entityName === 'note_revisions' && sd.noteId === this.ctx.note.noteId)) {
+            this.renderBody();
+        }
+    }
 }
 
 export default NoteRevisionsWidget;

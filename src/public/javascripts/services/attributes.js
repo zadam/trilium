@@ -268,6 +268,12 @@ class Attributes {
             this.$savedIndicator.fadeIn();
         }
     }
+
+    syncDataReceived(syncData) {
+        if (syncData.find(sd => sd.entityName === 'attributes' && sd.noteId === this.ctx.note.noteId)) {
+            this.reloadAttributes();
+        }
+    }
 }
 
 export default Attributes;

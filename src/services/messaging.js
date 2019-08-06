@@ -70,6 +70,9 @@ async function sendPing(client, lastSentSyncId) {
         if (sync.entityName === 'attributes') {
             sync.noteId = await sql.getValue(`SELECT noteId FROM attributes WHERE attributeId = ?`, [sync.entityId]);
         }
+        else if (sync.entityName === 'note_revisions') {
+            sync.noteId = await sql.getValue(`SELECT noteId FROM note_revisions WHERE noteRevisionId = ?`, [sync.entityId]);
+        }
     }
 
     const stats = require('./sync').stats;

@@ -26,8 +26,6 @@ class AttributesWidget {
     async renderBody() {
         const $body = this.$widget.find('.card-body');
 
-        $body.empty();
-
         const attributes = await this.ctx.attributes.getAttributes();
         const ownedAttributes = attributes.filter(attr => attr.noteId === this.ctx.note.noteId);
 
@@ -35,7 +33,9 @@ class AttributesWidget {
             $body.text("No own attributes yet...");
         }
 
-        await this.renderAttributes(ownedAttributes, $body);
+        const $attributesContainer = $("<div>");
+
+        await this.renderAttributes(ownedAttributes, $attributesContainer);
 
         const inheritedAttributes = attributes.filter(attr => attr.noteId !== this.ctx.note.noteId);
 
@@ -57,14 +57,16 @@ class AttributesWidget {
                     $inheritedAttrs.hide();
                 });
 
-            $body.append($showInheritedAttributes);
-            $body.append($inheritedAttrs);
+            $attributesContainer.append($showInheritedAttributes);
+            $attributesContainer.append($inheritedAttrs);
 
             await this.renderAttributes(inheritedAttributes, $inheritedAttrs);
 
             $inheritedAttrs.append($hideInheritedAttributes);
             $inheritedAttrs.hide();
         }
+
+        $body.empty().append($attributesContainer);
     }
 
     async renderAttributes(attributes, $container) {
@@ -84,6 +86,14 @@ class AttributesWidget {
             } else {
                 messagingService.logError("Unknown attr type: " + attribute.type);
             }
+        }
+    }
+
+    syncDataReceived(syncData) {
+        if (syncData.find(sd => sd.entityName === 'attributes' && sd.noteId === this.ctx.note.noteId)) {
+            // no need to invalidate attributes since the Attribute class listens to this as well
+            // (and is guaranteed to run first)
+            this.renderBody();
         }
     }
 }

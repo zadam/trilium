@@ -357,6 +357,8 @@ class TabContext {
     }
 
     syncDataReceived(syncData) {
+        this.attributes.syncDataReceived(syncData);
+
         if (this.sidebar) {
             this.sidebar.syncDataReceived(syncData);
         }
