@@ -3,7 +3,8 @@ import infoService from "./info.js";
 
 const $outstandingSyncsCount = $("#outstanding-syncs-count");
 
-const syncMessageHandlers = [];
+const allSyncMessageHandlers = [];
+const outsideSyncMessageHandlers = [];
 const messageHandlers = [];
 
 let ws;
@@ -26,8 +27,12 @@ function subscribeToMessages(messageHandler) {
     messageHandlers.push(messageHandler);
 }
 
-function subscribeToSyncMessages(messageHandler) {
-    syncMessageHandlers.push(messageHandler);
+function subscribeToOutsideSyncMessages(messageHandler) {
+    outsideSyncMessageHandlers.push(messageHandler);
+}
+
+function subscribeToAllSyncMessages(messageHandler) {
+    allSyncMessageHandlers.push(messageHandler);
 }
 
 function handleMessage(event) {
@@ -46,9 +51,13 @@ function handleMessage(event) {
             lastSyncId = message.data[message.data.length - 1].id;
         }
 
+        for (const syncMessageHandler of allSyncMessageHandlers) {
+            syncMessageHandler(message.data);
+        }
+
         const syncData = message.data.filter(sync => sync.sourceId !== glob.sourceId);
 
-        for (const syncMessageHandler of syncMessageHandlers) {
+        for (const syncMessageHandler of outsideSyncMessageHandlers) {
             syncMessageHandler(syncData);
         }
 
@@ -102,5 +111,6 @@ setTimeout(() => {
 export default {
     logError,
     subscribeToMessages,
-    subscribeToSyncMessages
+    subscribeToAllSyncMessages,
+    subscribeToOutsideSyncMessages
 };

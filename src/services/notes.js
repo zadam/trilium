@@ -371,6 +371,11 @@ async function updateNote(noteId, noteUpdates) {
     }
 
     await protectNoteRevisions(note);
+
+    return {
+        dateModified: note.dateModified,
+        utcDateModified: note.utcDateModified
+    };
 }
 
 /** @return {boolean} - true if note has been deleted, false otherwise */

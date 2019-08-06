@@ -244,7 +244,10 @@ class TabContext {
 
         treeService.setNoteTitle(this.note.noteId, this.note.title);
 
-        await server.put('notes/' + this.note.noteId, this.note.dto);
+        const resp = await server.put('notes/' + this.note.noteId, this.note.dto);
+
+        this.note.dateModified = resp.dateModified;
+        this.note.utcDateModified = resp.utcDateModified;
 
         if (this.note.isProtected) {
             protectedSessionHolder.touchProtectedSession();
@@ -350,6 +353,12 @@ class TabContext {
     closeAutocomplete() {
         if (utils.isDesktop()) {
             this.$tabContent.find('.aa-input').autocomplete('close');
+        }
+    }
+
+    syncDataReceived(syncData) {
+        if (this.sidebar) {
+            this.sidebar.syncDataReceived(syncData);
         }
     }
 }

@@ -759,7 +759,7 @@ messagingService.subscribeToMessages(message => {
    }
 });
 
-messagingService.subscribeToSyncMessages(syncData => {
+messagingService.subscribeToOutsideSyncMessages(syncData => {
     if (syncData.some(sync => sync.entityName === 'branches')
         || syncData.some(sync => sync.entityName === 'notes')) {
 

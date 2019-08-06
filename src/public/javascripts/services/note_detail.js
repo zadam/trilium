@@ -357,19 +357,26 @@ function fireDetailLoaded() {
     detailLoadedListeners = [];
 }
 
-messagingService.subscribeToSyncMessages(syncData => {
+messagingService.subscribeToOutsideSyncMessages(syncData => {
     const noteIdsToRefresh = new Set();
 
     syncData
         .filter(sync => sync.entityName === 'notes')
         .forEach(sync => noteIdsToRefresh.add(sync.entityId));
 
+    // we need to reload because of promoted attributes
     syncData
         .filter(sync => sync.entityName === 'attributes')
         .forEach(sync => noteIdsToRefresh.add(sync.noteId));
 
     for (const noteId of noteIdsToRefresh) {
         refreshTabs(null, noteId);
+    }
+});
+
+messagingService.subscribeToAllSyncMessages(syncData => {
+    for (const tc of tabContexts) {
+        tc.syncDataReceived(syncData);
     }
 });
 

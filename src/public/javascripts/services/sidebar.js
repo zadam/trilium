@@ -27,6 +27,7 @@ class Sidebar {
      */
     constructor(ctx) {
         this.ctx = ctx;
+        this.widgets = [];
         this.$sidebar = ctx.$tabContent.find(".note-detail-sidebar");
         this.$widgets = this.$sidebar.find(".note-detail-widgets");
         this.$showSideBarButton = this.ctx.$tabContent.find(".show-sidebar-button");
@@ -46,6 +47,7 @@ class Sidebar {
     }
 
     async noteLoaded() {
+        this.widgets = [];
         this.$widgets.empty();
 
         const widgetClasses = [AttributesWidget, LinkMapWidget, NoteRevisionsWidget, NoteInfoWidget];
@@ -54,6 +56,8 @@ class Sidebar {
             const $widget = this.createWidgetElement();
 
             const attributesWidget = new widgetClass(this.ctx, $widget);
+            this.widgets.push(attributesWidget);
+
             attributesWidget.renderBody(); // let it run in parallel
 
             this.$widgets.append($widget);
@@ -68,6 +72,14 @@ class Sidebar {
         $widget.find('.body-wrapper').attr('id', widgetId);
 
         return $widget;
+    }
+
+    syncDataReceived(syncData) {
+        for (const widget of this.widgets) {
+            if (widget.syncDataReceived) {
+                widget.syncDataReceived(syncData);
+            }
+        }
     }
 }
 

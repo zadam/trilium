@@ -68,7 +68,7 @@ async function updateNote(req) {
     const note = req.body;
     const noteId = req.params.noteId;
 
-    await noteService.updateNote(noteId, note);
+    return await noteService.updateNote(noteId, note);
 }
 
 async function deleteNote(req) {

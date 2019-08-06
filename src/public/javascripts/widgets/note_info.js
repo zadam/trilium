@@ -54,6 +54,14 @@ class NoteInfoWidget {
         $type.text(note.type);
         $mime.text(note.mime);
     }
+
+    syncDataReceived(syncData) {
+        if (syncData.find(sd => sd.entityName === 'notes' && sd.entityId === this.ctx.note.noteId)) {
+            console.log("Re-rendering note info");
+
+            this.renderBody();
+        }
+    }
 }
 
 export default NoteInfoWidget;
