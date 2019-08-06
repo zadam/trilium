@@ -48,46 +48,16 @@ class Sidebar {
     async noteLoaded() {
         this.$widgets.empty();
 
-        this.addAttributesWidget();
-        this.addNoteInfoWidget();
-        this.addLinkMapWidget();
-        this.addNoteRevisionsWidget();
-    }
+        const widgetClasses = [AttributesWidget, LinkMapWidget, NoteRevisionsWidget, NoteInfoWidget];
 
-    async addAttributesWidget() {
-        const $widget = this.createWidgetElement();
+        for (const widgetClass of widgetClasses) {
+            const $widget = this.createWidgetElement();
 
-        const attributesWidget = new AttributesWidget(this.ctx, $widget);
-        await attributesWidget.renderBody();
+            const attributesWidget = new widgetClass(this.ctx, $widget);
+            attributesWidget.renderBody(); // let it run in parallel
 
-        this.$widgets.append($widget);
-    }
-
-    async addNoteInfoWidget() {
-        const $widget = this.createWidgetElement();
-
-        const noteInfoWidget = new NoteInfoWidget(this.ctx, $widget);
-        await noteInfoWidget.renderBody();
-
-        this.$widgets.append($widget);
-    }
-
-    async addLinkMapWidget() {
-        const $widget = this.createWidgetElement();
-
-        const linkMapWidget = new LinkMapWidget(this.ctx, $widget);
-        await linkMapWidget.renderBody();
-
-        this.$widgets.append($widget);
-    }
-
-    async addNoteRevisionsWidget() {
-        const $widget = this.createWidgetElement();
-
-        const noteRevisionsWidget = new NoteRevisionsWidget(this.ctx, $widget);
-        await noteRevisionsWidget.renderBody();
-
-        this.$widgets.append($widget);
+            this.$widgets.append($widget);
+        }
     }
 
     createWidgetElement() {

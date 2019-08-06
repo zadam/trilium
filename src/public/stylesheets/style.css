@@ -118,6 +118,7 @@ ul.fancytree-container {
 
 .note-detail-sidebar {
     min-width: 350px;
+    max-width: 350px;
     overflow: auto;
     padding-top: 12px;
     padding-left: 7px;
