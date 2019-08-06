@@ -1,6 +1,7 @@
 import NoteInfoWidget from "../widgets/note_info.js";
 import LinkMapWidget from "../widgets/link_map.js";
 import NoteRevisionsWidget from "../widgets/note_revisions.js";
+import AttributesWidget from "../widgets/attributes.js";
 
 const WIDGET_TPL = `
 <div class="card widget">
@@ -47,9 +48,19 @@ class Sidebar {
     async noteLoaded() {
         this.$widgets.empty();
 
+        this.addAttributesWidget();
         this.addNoteInfoWidget();
         this.addLinkMapWidget();
         this.addNoteRevisionsWidget();
+    }
+
+    async addAttributesWidget() {
+        const $widget = this.createWidgetElement();
+
+        const attributesWidget = new AttributesWidget(this.ctx, $widget);
+        await attributesWidget.renderBody();
+
+        this.$widgets.append($widget);
     }
 
     async addNoteInfoWidget() {

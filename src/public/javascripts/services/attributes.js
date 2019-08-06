@@ -11,8 +11,6 @@ class Attributes {
      */
     constructor(ctx) {
         this.ctx = ctx;
-        this.$attributeList = ctx.$tabContent.find(".attribute-list");
-        this.$attributeListInner = ctx.$tabContent.find(".attribute-list-inner");
         this.$promotedAttributesContainer = ctx.$tabContent.find(".note-detail-promoted-attributes");
         this.$savedIndicator = ctx.$tabContent.find(".saved-indicator");
         this.attributePromise = null;
@@ -42,10 +40,6 @@ class Attributes {
 
     async showAttributes() {
         this.$promotedAttributesContainer.empty();
-        this.$attributeList.hide();
-        this.$attributeListInner.empty();
-
-        const note = this.ctx.note;
 
         const attributes = await this.getAttributes();
 
@@ -88,36 +82,6 @@ class Attributes {
             // we replace the whole content in one step so there can't be any race conditions
             // (previously we saw promoted attributes doubling)
             this.$promotedAttributesContainer.empty().append($tbody);
-        }
-        else if (note.type !== 'relation-map') {
-            // display only "own" notes
-            const ownedAttributes = attributes.filter(attr => attr.noteId === note.noteId);
-
-            if (ownedAttributes.length > 0) {
-                for (const attribute of ownedAttributes) {
-                    if (attribute.type === 'label') {
-                        this.$attributeListInner.append(utils.formatLabel(attribute) + " ");
-                    }
-                    else if (attribute.type === 'relation') {
-                        if (attribute.value) {
-                            this.$attributeListInner.append('@' + attribute.name + "=");
-                            this.$attributeListInner.append(await linkService.createNoteLink(attribute.value));
-                            this.$attributeListInner.append(" ");
-                        }
-                        else {
-                            messagingService.logError(`Relation ${attribute.attributeId} has empty target`);
-                        }
-                    }
-                    else if (attribute.type === 'label-definition' || attribute.type === 'relation-definition') {
-                        this.$attributeListInner.append(attribute.name + " definition ");
-                    }
-                    else {
-                        messagingService.logError("Unknown attr type: " + attribute.type);
-                    }
-                }
-
-                this.$attributeList.show();
-            }
         }
 
         return attributes;
