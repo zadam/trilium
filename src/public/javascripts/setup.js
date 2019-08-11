@@ -23,6 +23,19 @@ function SetupModel() {
     this.password1 = ko.observable();
     this.password2 = ko.observable();
 
+    this.theme = ko.observable("white");
+    this.theme.subscribe(function(newTheme) {
+        const $body = $("body");
+
+        for (const clazz of Array.from($body[0].classList)) { // create copy to safely iterate over while removing classes
+            if (clazz.startsWith("theme-")) {
+                $body.removeClass(clazz);
+            }
+        }
+
+        $body.addClass("theme-" + newTheme);
+    });
+
     this.syncServerHost = ko.observable();
     this.syncProxy = ko.observable();
 
@@ -45,6 +58,7 @@ function SetupModel() {
             const username = this.username();
             const password1 = this.password1();
             const password2 = this.password2();
+            const theme = this.theme();
 
             if (!username) {
                 showAlert("Username can't be empty");
@@ -64,7 +78,8 @@ function SetupModel() {
             // not using server.js because it loads too many dependencies
             $.post('/api/setup/new-document', {
                 username: username,
-                password: password1
+                password: password1,
+                theme: theme
             }).then(() => {
                 window.location.replace("/");
             });

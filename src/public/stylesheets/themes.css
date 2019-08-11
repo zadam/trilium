@@ -176,3 +176,22 @@ body {
 
     --ck-color-table-focused-cell-background: var(--more-accented-background-color);
 }
+
+body {
+    background-color: var(--main-background-color);
+    color: var(--main-text-color);
+    font-family: var(--main-font-family);
+}
+
+a, a:visited, a:hover {
+    color: var(--link-color);
+}
+
+input, select, textarea {
+    color: var(--input-text-color) !important;
+    background: var(--input-background-color) !important;
+}
+
+table td, table th {
+    color: var(--main-text-color);
+}

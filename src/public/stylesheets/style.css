@@ -8,18 +8,6 @@ body {
        on the last line of the editor. */
     position: fixed;
     width: 100%;
-    background-color: var(--main-background-color);
-    color: var(--main-text-color);
-    font-family: var(--main-font-family);
-}
-
-a, a:visited, a:hover {
-    color: var(--link-color);
-}
-
-input, select, textarea {
-    color: var(--input-text-color) !important;
-    background: var(--input-background-color) !important;
 }
 
 button.btn, button.btn-sm {
@@ -29,10 +17,6 @@ button.btn, button.btn-sm {
 .input-group-text {
     background-color: var(--accented-background-color) !important;
     color: var(--muted-text-color) !important;
-}
-
-table td, table th {
-    color: var(--main-text-color);
 }
 
 button.close {

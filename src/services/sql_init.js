@@ -79,7 +79,7 @@ async function initDbConnection() {
     });
 }
 
-async function createInitialDatabase(username, password) {
+async function createInitialDatabase(username, password, theme) {
     log.info("Creating initial database ...");
 
     if (await isDbInitialized()) {
@@ -123,7 +123,7 @@ async function createInitialDatabase(username, password) {
 
         await optionsInitService.initDocumentOptions();
         await optionsInitService.initSyncedOptions(username, password);
-        await optionsInitService.initNotSyncedOptions(true, startNoteId);
+        await optionsInitService.initNotSyncedOptions(true, startNoteId, { theme });
 
         await require('./sync_table').fillAllSyncRows();
     });
@@ -145,7 +145,7 @@ async function createDatabaseForSync(options, syncServerHost = '', syncProxy = '
     await sql.transactional(async () => {
         await sql.executeScript(schema);
 
-        await require('./options_init').initNotSyncedOptions(false, 'root', syncServerHost, syncProxy);
+        await require('./options_init').initNotSyncedOptions(false, 'root', { syncServerHost, syncProxy });
 
         // document options required for sync to kick off
         for (const opt of options) {
