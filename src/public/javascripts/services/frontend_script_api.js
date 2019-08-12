@@ -40,9 +40,13 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
      * @returns {Promise<void>}
      */
     this.activateNote = async (notePath, noteLoadedListener) => {
-        await treeService.activateNote(notePath, noteLoadedListener);
+        await treeService.activateNote(notePath, async () => {
+            await treeService.scrollToActiveNote();
 
-        await treeService.scrollToActiveNote();
+            if (noteLoadedListener) {
+                noteLoadedListener();
+            }
+        });
     };
 
     /**

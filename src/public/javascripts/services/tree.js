@@ -562,7 +562,7 @@ async function collapseTree(node = null) {
 }
 
 function focusTree() {
-    $tree.find('.fancytree-container').focus();
+    getTree().setFocus();
 }
 
 async function scrollToActiveNote() {
@@ -573,8 +573,8 @@ async function scrollToActiveNote() {
 
         const node = await expandToNote(activeContext.notePath);
 
-        node.makeVisible({scrollIntoView: true});
-        node.setFocus(true);
+        await node.makeVisible({scrollIntoView: true});
+        node.setFocus();
     }
 }
 
