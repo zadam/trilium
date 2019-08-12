@@ -769,7 +769,7 @@ messagingService.subscribeToSyncMessages(syncData => {
     }
 });
 
-utils.bindShortcut('ctrl+o', async () => {
+utils.bindGlobalShortcut('ctrl+o', async () => {
     const node = getActiveNode();
     const parentNoteId = node.data.parentNoteId;
     const isProtected = await treeUtils.getParentProtectedStatus(node);
@@ -815,9 +815,9 @@ async function reloadNote(noteId) {
 
 window.glob.createNoteInto = createNoteInto;
 
-utils.bindShortcut('ctrl+p', createNoteInto);
+utils.bindGlobalShortcut('ctrl+p', createNoteInto);
 
-utils.bindShortcut('ctrl+.', scrollToActiveNote);
+utils.bindGlobalShortcut('ctrl+.', scrollToActiveNote);
 
 $(window).bind('hashchange', async function() {
     if (isNotePathInAddress()) {
@@ -845,7 +845,7 @@ $tree.on('mousedown', '.fancytree-title', e => {
     }
 });
 
-utils.bindShortcut('alt+c', () => collapseTree()); // don't use shortened form since collapseTree() accepts argument
+utils.bindGlobalShortcut('alt+c', () => collapseTree()); // don't use shortened form since collapseTree() accepts argument
 $collapseTreeButton.click(() => collapseTree());
 
 $createTopLevelNoteButton.click(createNewTopLevelNote);

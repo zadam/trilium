@@ -95,7 +95,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
         }
 
         if (opts.shortcut) {
-            $(document).bind('keydown', opts.shortcut, opts.action);
+            utils.bindGlobalShortcut(opts.shortcut, opts.action);
 
             button.attr("title", "Shortcut " + opts.shortcut);
         }

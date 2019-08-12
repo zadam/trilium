@@ -23,11 +23,11 @@ function registerEntrypoints() {
     jQuery.hotkeys.options.filterContentEditable = false;
     jQuery.hotkeys.options.filterTextInputs = false;
 
-    utils.bindShortcut('ctrl+l', addLinkDialog.showDialog);
-    utils.bindShortcut('ctrl+shift+l', addLinkDialog.showDialogForClone);
+    utils.bindGlobalShortcut('ctrl+l', addLinkDialog.showDialog);
+    utils.bindGlobalShortcut('ctrl+shift+l', addLinkDialog.showDialogForClone);
 
     $("#jump-to-note-dialog-button").click(jumpToNoteDialog.showDialog);
-    utils.bindShortcut('ctrl+j', jumpToNoteDialog.showDialog);
+    utils.bindGlobalShortcut('ctrl+j', jumpToNoteDialog.showDialog);
 
     $("#recent-changes-button").click(recentChangesDialog.showDialog);
 
@@ -35,11 +35,11 @@ function registerEntrypoints() {
     $("#leave-protected-session-button").click(protectedSessionService.leaveProtectedSession);
 
     $("#toggle-search-button").click(searchNotesService.toggleSearch);
-    utils.bindShortcut('ctrl+s', searchNotesService.toggleSearch);
+    utils.bindGlobalShortcut('ctrl+s', searchNotesService.toggleSearch);
 
     const $noteTabContainer = $("#note-tab-container");
     $noteTabContainer.on("click", ".show-attributes-button", attributesDialog.showDialog);
-    utils.bindShortcut('alt+a', attributesDialog.showDialog);
+    utils.bindGlobalShortcut('alt+a', attributesDialog.showDialog);
 
     $noteTabContainer.on("click", ".show-note-info-button", noteInfoDialog.showDialog);
 
@@ -66,10 +66,10 @@ function registerEntrypoints() {
     $("#options-button").click(optionsDialog.showDialog);
 
     $("#show-help-button").click(helpDialog.showDialog);
-    utils.bindShortcut('f1', helpDialog.showDialog);
+    utils.bindGlobalShortcut('f1', helpDialog.showDialog);
 
     $("#open-sql-console-button").click(sqlConsoleDialog.showDialog);
-    utils.bindShortcut('alt+o', sqlConsoleDialog.showDialog);
+    utils.bindGlobalShortcut('alt+o', sqlConsoleDialog.showDialog);
 
     $("#show-about-dialog-button").click(aboutDialog.showDialog);
 
@@ -80,32 +80,32 @@ function registerEntrypoints() {
 
         if (utils.isMac()) {
             // Mac has a different history navigation shortcuts - https://github.com/zadam/trilium/issues/376
-            utils.bindShortcut('meta+left', window.history.back);
-            utils.bindShortcut('meta+right', window.history.forward);
+            utils.bindGlobalShortcut('meta+left', window.history.back);
+            utils.bindGlobalShortcut('meta+right', window.history.forward);
         }
         else {
-            utils.bindShortcut('alt+left', window.history.back);
-            utils.bindShortcut('alt+right', window.history.forward);
+            utils.bindGlobalShortcut('alt+left', window.history.back);
+            utils.bindGlobalShortcut('alt+right', window.history.forward);
         }
     }
 
-    utils.bindShortcut('alt+m', e => {
+    utils.bindGlobalShortcut('alt+m', e => {
         $(".hide-toggle").toggle();
         $("#container").toggleClass("distraction-free-mode");
     });
 
     // hide (toggle) everything except for the note content for distraction free writing
-    utils.bindShortcut('alt+t', e => {
+    utils.bindGlobalShortcut('alt+t', e => {
         const date = new Date();
         const dateString = utils.formatDateTime(date);
 
         linkService.addTextToEditor(dateString);
     });
 
-    utils.bindShortcut('f5', utils.reloadApp);
+    utils.bindGlobalShortcut('f5', utils.reloadApp);
 
     $("#reload-frontend-button").click(utils.reloadApp);
-    utils.bindShortcut('ctrl+r', utils.reloadApp);
+    utils.bindGlobalShortcut('ctrl+r', utils.reloadApp);
 
     $("#open-dev-tools-button").toggle(utils.isElectron());
 
@@ -116,7 +116,7 @@ function registerEntrypoints() {
             return false;
         };
 
-        utils.bindShortcut('ctrl+shift+i', openDevTools);
+        utils.bindGlobalShortcut('ctrl+shift+i', openDevTools);
         $("#open-dev-tools-button").click(openDevTools);
     }
 
@@ -141,7 +141,7 @@ function registerEntrypoints() {
     }
 
     if (utils.isElectron()) {
-        utils.bindShortcut('ctrl+f', () => {
+        utils.bindGlobalShortcut('ctrl+f', () => {
             findInPage.openFindWindow();
 
             return false;
@@ -161,7 +161,7 @@ function registerEntrypoints() {
 
         $("#toggle-fullscreen-button").click(toggleFullscreen);
 
-        utils.bindShortcut('f11', toggleFullscreen);
+        utils.bindGlobalShortcut('f11', toggleFullscreen);
     }
     else {
         // outside of electron this is handled by the browser
@@ -169,8 +169,8 @@ function registerEntrypoints() {
     }
 
     if (utils.isElectron()) {
-        utils.bindShortcut('ctrl+-', zoomService.decreaseZoomFactor);
-        utils.bindShortcut('ctrl+=', zoomService.increaseZoomFactor);
+        utils.bindGlobalShortcut('ctrl+-', zoomService.decreaseZoomFactor);
+        utils.bindGlobalShortcut('ctrl+=', zoomService.increaseZoomFactor);
     }
 }
 

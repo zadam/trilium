@@ -45,7 +45,7 @@ function showInFullText(e) {
 
 $showInFullTextButton.click(showInFullText);
 
-$dialog.bind('keydown', 'ctrl+return', showInFullText);
+utils.bindElShortcut($dialog, 'ctrl+return', showInFullText);
 
 export default {
     showDialog
