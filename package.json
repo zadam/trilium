@@ -78,7 +78,7 @@
   },
   "devDependencies": {
     "devtron": "1.4.0",
-    "electron": "6.0.1",
+    "electron": "6.0.2",
     "electron-builder": "21.1.5",
     "electron-compile": "6.4.4",
     "electron-installer-debian": "2.0.0",
