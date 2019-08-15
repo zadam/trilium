@@ -2,22 +2,13 @@ import attributesDialog from "../dialogs/attributes.js";
 import utils from "../services/utils.js";
 import linkService from "../services/link.js";
 import messagingService from "../services/messaging.js";
+import StandardWidget from "./standard_widget.js";
 
-class AttributesWidget {
-    /**
-     * @param {TabContext} ctx
-     * @param {jQuery} $widget
-     */
-    constructor(ctx, $widget) {
-        this.ctx = ctx;
-        this.$widget = $widget;
-        this.$widget.on('show.bs.collapse', () => this.renderBody());
-        this.$widget.on('show.bs.collapse', () => this.ctx.stateChanged());
-        this.$widget.on('hide.bs.collapse', () => this.ctx.stateChanged());
-        this.$title = this.$widget.find('.widget-title');
+class AttributesWidget extends StandardWidget {
+    constructor(ctx, state) {
+        super(ctx, state, 'attributes');
+
         this.$title.text("Attributes");
-        this.$headerActions = this.$widget.find('.widget-header-actions');
-        this.$bodyWrapper = this.$widget.find('.body-wrapper');
 
         const $showFullButton = $("<a>").append("show dialog").addClass('widget-header-action');
         $showFullButton.click(() => {
@@ -27,18 +18,12 @@ class AttributesWidget {
         this.$headerActions.append($showFullButton);
     }
 
-    async renderBody() {
-        if (!this.isVisible()) {
-            return;
-        }
-
-        const $body = this.$widget.find('.card-body');
-
+    async doRenderBody() {
         const attributes = await this.ctx.attributes.getAttributes();
         const ownedAttributes = attributes.filter(attr => attr.noteId === this.ctx.note.noteId);
 
         if (attributes.length === 0) {
-            $body.text("No attributes yet...");
+            this.$body.text("No attributes yet...");
             return;
         }
 
@@ -75,7 +60,7 @@ class AttributesWidget {
             $inheritedAttrs.hide();
         }
 
-        $body.empty().append($attributesContainer);
+        this.$body.empty().append($attributesContainer);
     }
 
     async renderAttributes(attributes, $container) {
@@ -102,19 +87,8 @@ class AttributesWidget {
         if (syncData.find(sd => sd.entityName === 'attributes' && sd.noteId === this.ctx.note.noteId)) {
             // no need to invalidate attributes since the Attribute class listens to this as well
             // (and is guaranteed to run first)
-            this.renderBody();
+            this.doRenderBody();
         }
-    }
-
-    getWidgetState() {
-        return {
-            id: 'attributes',
-            visible: this.isVisible()
-        };
-    }
-
-    isVisible() {
-        return this.$bodyWrapper.is(":visible");
     }
 }
 

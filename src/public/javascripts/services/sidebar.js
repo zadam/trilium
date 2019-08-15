@@ -3,22 +3,6 @@ import LinkMapWidget from "../widgets/link_map.js";
 import NoteRevisionsWidget from "../widgets/note_revisions.js";
 import AttributesWidget from "../widgets/attributes.js";
 
-const WIDGET_TPL = `
-<div class="card widget">
-    <div class="card-header">        
-        <button class="btn btn-sm widget-title" data-toggle="collapse" data-target="#collapseOne">
-            Collapsible Group Item
-        </button>
-        
-        <div class="widget-header-actions"></div>
-    </div>
-
-    <div id="collapseOne" class="collapse show body-wrapper">
-        <div class="card-body"></div>
-    </div>
-</div>
-`;
-
 let widgetIdCtr = 1;
 
 class Sidebar {
@@ -28,8 +12,9 @@ class Sidebar {
     constructor(ctx) {
         this.ctx = ctx;
         this.widgets = [];
+        this.rendered = false;
         this.$sidebar = ctx.$tabContent.find(".note-detail-sidebar");
-        this.$widgets = this.$sidebar.find(".note-detail-widgets");
+        this.$widgetContainer = this.$sidebar.find(".note-detail-widget-container");
         this.$showSideBarButton = this.ctx.$tabContent.find(".show-sidebar-button");
         this.$showSideBarButton.hide();
 
@@ -61,30 +46,19 @@ class Sidebar {
 
     async noteLoaded() {
         this.widgets = [];
-        this.$widgets.empty();
+        this.$widgetContainer.empty();
 
-        const widgetClasses = [AttributesWidget, LinkMapWidget, NoteRevisionsWidget, NoteInfoWidget];
+        //const widgetClasses = [AttributesWidget, LinkMapWidget, NoteRevisionsWidget, NoteInfoWidget];
+        const widgetClasses = [AttributesWidget];
 
         for (const widgetClass of widgetClasses) {
-            const $widget = this.createWidgetElement();
+            const widget = new widgetClass(this.ctx);
+            this.widgets.push(widget);
 
-            const attributesWidget = new widgetClass(this.ctx, $widget);
-            this.widgets.push(attributesWidget);
+            widget.renderBody(); // let it run in parallel
 
-            attributesWidget.renderBody(); // let it run in parallel
-
-            this.$widgets.append($widget);
+            this.$widgetContainer.append(widget.getWidgetElement());
         }
-    }
-
-    createWidgetElement() {
-        const widgetId = 'widget-' + widgetIdCtr++;
-
-        const $widget = $(WIDGET_TPL);
-        $widget.find('[data-target]').attr('data-target', "#" + widgetId);
-        $widget.find('.body-wrapper').attr('id', widgetId);
-
-        return $widget;
     }
 
     syncDataReceived(syncData) {
