@@ -127,7 +127,7 @@ async function showTables() {
     }
 }
 
-$query.bind('keydown', 'ctrl+return', execute);
+utils.bindElShortcut($query, 'ctrl+return', execute);
 
 $executeButton.click(execute);
 

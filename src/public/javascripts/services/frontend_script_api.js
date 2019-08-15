@@ -40,9 +40,13 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
      * @returns {Promise<void>}
      */
     this.activateNote = async (notePath, noteLoadedListener) => {
-        await treeService.activateNote(notePath, noteLoadedListener);
+        await treeService.activateNote(notePath, async () => {
+            await treeService.scrollToActiveNote();
 
-        await treeService.scrollToActiveNote();
+            if (noteLoadedListener) {
+                noteLoadedListener();
+            }
+        });
     };
 
     /**
@@ -91,7 +95,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
         }
 
         if (opts.shortcut) {
-            $(document).bind('keydown', opts.shortcut, opts.action);
+            utils.bindGlobalShortcut(opts.shortcut, opts.action);
 
             button.attr("title", "Shortcut " + opts.shortcut);
         }

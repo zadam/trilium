@@ -11,7 +11,7 @@ function ScriptContext(allNotes, apiParams = {}) {
             const note = candidates.find(c => c.title === moduleName);
 
             if (!note) {
-                throw new Error("Could not find module note " + moduleName);
+                return require(moduleName);
             }
 
             return this.modules[note.noteId].exports;

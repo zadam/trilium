@@ -53,7 +53,7 @@ async function sendForm() {
 
 $importButton.click(sendForm);
 
-$dialog.bind('keydown', 'ctrl+return', sendForm);
+utils.bindElShortcut($dialog, 'ctrl+return', sendForm);
 
 // for CKEditor integration (button on block toolbar)
 window.glob.importMarkdownInline = importMarkdownInline;

@@ -464,17 +464,17 @@ $(tabRow.el).on('contextmenu', '.note-tab', e => {
 });
 
 if (utils.isElectron()) {
-    utils.bindShortcut('ctrl+t', () => {
+    utils.bindGlobalShortcut('ctrl+t', () => {
         openEmptyTab();
     });
 
-    utils.bindShortcut('ctrl+w', () => {
+    utils.bindGlobalShortcut('ctrl+w', () => {
         if (tabRow.activeTabEl) {
             tabRow.removeTab(tabRow.activeTabEl);
         }
     });
 
-    utils.bindShortcut('ctrl+tab', () => {
+    utils.bindGlobalShortcut('ctrl+tab', () => {
         const nextTab = tabRow.nextTabEl;
 
         if (nextTab) {
@@ -482,7 +482,7 @@ if (utils.isElectron()) {
         }
     });
 
-    utils.bindShortcut('ctrl+shift+tab', () => {
+    utils.bindGlobalShortcut('ctrl+shift+tab', () => {
         const prevTab = tabRow.previousTabEl;
 
         if (prevTab) {

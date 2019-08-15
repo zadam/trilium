@@ -129,7 +129,7 @@ function randomString(len) {
     return text;
 }
 
-function bindShortcut(keyboardShortcut, handler) {
+function bindGlobalShortcut(keyboardShortcut, handler) {
     bindElShortcut($(document), keyboardShortcut, handler);
 }
 
@@ -221,7 +221,7 @@ export default {
     download,
     toObject,
     randomString,
-    bindShortcut,
+    bindGlobalShortcut,
     bindElShortcut,
     isMobile,
     isDesktop,
