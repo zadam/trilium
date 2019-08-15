@@ -363,6 +363,23 @@ class TabContext {
             this.sidebar.syncDataReceived(syncData);
         }
     }
+
+    getTabState() {
+        if (!this.notePath) {
+            return null;
+        }
+
+        return {
+            tabId: this.tabId,
+            notePath: this.notePath,
+            active: this.tabRow.activeTabEl === this.$tab[0],
+            sidebar: this.sidebar && this.sidebar.getSidebarState()
+        }
+    }
+
+    stateChanged() {
+        noteDetailService.openTabsChanged();
+    }
 }
 
 export default TabContext;

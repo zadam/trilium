@@ -11,9 +11,13 @@ class AttributesWidget {
     constructor(ctx, $widget) {
         this.ctx = ctx;
         this.$widget = $widget;
+        this.$widget.on('show.bs.collapse', () => this.renderBody());
+        this.$widget.on('show.bs.collapse', () => this.ctx.stateChanged());
+        this.$widget.on('hide.bs.collapse', () => this.ctx.stateChanged());
         this.$title = this.$widget.find('.widget-title');
         this.$title.text("Attributes");
         this.$headerActions = this.$widget.find('.widget-header-actions');
+        this.$bodyWrapper = this.$widget.find('.body-wrapper');
 
         const $showFullButton = $("<a>").append("show dialog").addClass('widget-header-action');
         $showFullButton.click(() => {
@@ -24,13 +28,18 @@ class AttributesWidget {
     }
 
     async renderBody() {
+        if (!this.isVisible()) {
+            return;
+        }
+
         const $body = this.$widget.find('.card-body');
 
         const attributes = await this.ctx.attributes.getAttributes();
         const ownedAttributes = attributes.filter(attr => attr.noteId === this.ctx.note.noteId);
 
-        if (ownedAttributes.length === 0) {
-            $body.text("No own attributes yet...");
+        if (attributes.length === 0) {
+            $body.text("No attributes yet...");
+            return;
         }
 
         const $attributesContainer = $("<div>");
@@ -95,6 +104,17 @@ class AttributesWidget {
             // (and is guaranteed to run first)
             this.renderBody();
         }
+    }
+
+    getWidgetState() {
+        return {
+            id: 'attributes',
+            visible: this.isVisible()
+        };
+    }
+
+    isVisible() {
+        return this.$bodyWrapper.is(":visible");
     }
 }
 

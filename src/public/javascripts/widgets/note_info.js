@@ -31,11 +31,19 @@ class NoteInfoWidget {
     constructor(ctx, $widget) {
         this.ctx = ctx;
         this.$widget = $widget;
+        this.$widget.on('show.bs.collapse', () => this.renderBody());
+        this.$widget.on('show.bs.collapse', () => this.ctx.stateChanged());
+        this.$widget.on('hide.bs.collapse', () => this.ctx.stateChanged());
         this.$title = this.$widget.find('.widget-title');
         this.$title.text("Note info");
+        this.$bodyWrapper = this.$widget.find('.body-wrapper');
     }
 
     async renderBody() {
+        if (!this.isVisible()) {
+            return;
+        }
+
         const $body = this.$widget.find('.card-body');
 
         $body.html(TPL);
@@ -59,6 +67,17 @@ class NoteInfoWidget {
         if (syncData.find(sd => sd.entityName === 'notes' && sd.entityId === this.ctx.note.noteId)) {
             this.renderBody();
         }
+    }
+
+    getWidgetState() {
+        return {
+            id: 'attributes',
+            visible: this.isVisible()
+        };
+    }
+
+    isVisible() {
+        return this.$bodyWrapper.is(":visible");
     }
 }
 

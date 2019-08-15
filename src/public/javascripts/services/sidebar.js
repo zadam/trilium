@@ -38,12 +38,25 @@ class Sidebar {
         this.$hideSidebarButton.click(() => {
             this.$sidebar.hide();
             this.$showSideBarButton.show();
+            this.ctx.stateChanged();
         });
 
         this.$showSideBarButton.click(() => {
             this.$sidebar.show();
             this.$showSideBarButton.hide();
+            this.ctx.stateChanged();
         });
+    }
+
+    isVisible() {
+        return this.$sidebar.is(":visible");
+    }
+
+    getSidebarState() {
+        return {
+            visible: this.isVisible(),
+            widgets: this.widgets.map(w => w.getWidgetState())
+        }
     }
 
     async noteLoaded() {

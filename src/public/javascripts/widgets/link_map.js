@@ -30,9 +30,13 @@ class LinkMapWidget {
     constructor(ctx, $widget) {
         this.ctx = ctx;
         this.$widget = $widget;
+        this.$widget.on('show.bs.collapse', () => this.renderBody());
+        this.$widget.on('show.bs.collapse', () => this.ctx.stateChanged());
+        this.$widget.on('hide.bs.collapse', () => this.ctx.stateChanged());
         this.$title = this.$widget.find('.widget-title');
         this.$title.text("Link map");
         this.$headerActions = this.$widget.find('.widget-header-actions');
+        this.$bodyWrapper = this.$widget.find('.body-wrapper');
 
         const $showFullButton = $("<a>").append("show full").addClass('widget-header-action');
         $showFullButton.click(() => {
@@ -43,6 +47,10 @@ class LinkMapWidget {
     }
 
     async renderBody() {
+        if (!this.isVisible()) {
+            return;
+        }
+
         const $body = this.$widget.find('.card-body');
         $body.html(TPL);
 
@@ -224,6 +232,17 @@ class LinkMapWidget {
 
     noteIdToId(noteId) {
         return "link-map-note-" + noteId;
+    }
+
+    getWidgetState() {
+        return {
+            id: 'attributes',
+            visible: this.isVisible()
+        };
+    }
+
+    isVisible() {
+        return this.$bodyWrapper.is(":visible");
     }
 }
 

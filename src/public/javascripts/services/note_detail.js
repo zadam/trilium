@@ -513,19 +513,18 @@ function openTabsChanged() {
 }
 
 async function saveOpenTabs() {
-    const activeTabEl = tabRow.activeTabEl;
     const openTabs = [];
 
     for (const tabEl of tabRow.tabEls) {
         const tabId = tabEl.getAttribute('data-tab-id');
         const tabContext = tabContexts.find(tc => tc.tabId === tabId);
 
-        if (tabContext && tabContext.notePath) {
-            openTabs.push({
-                tabId: tabContext.tabId,
-                notePath: tabContext.notePath,
-                active: activeTabEl === tabEl
-            });
+        if (tabContext) {
+            const tabState = tabContext.getTabState();
+
+            if (tabState) {
+                openTabs.push(tabState);
+            }
         }
     }
 
@@ -573,5 +572,6 @@ export default {
     openEmptyTab,
     noteDeleted,
     refreshTabs,
-    noteChanged
+    noteChanged,
+    openTabsChanged
 };

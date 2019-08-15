@@ -13,11 +13,19 @@ class NoteRevisionsWidget {
     constructor(ctx, $widget) {
         this.ctx = ctx;
         this.$widget = $widget;
+        this.$widget.on('show.bs.collapse', () => this.renderBody());
+        this.$widget.on('show.bs.collapse', () => this.ctx.stateChanged());
+        this.$widget.on('hide.bs.collapse', () => this.ctx.stateChanged());
         this.$title = this.$widget.find('.widget-title');
         this.$title.text("Note revisions");
+        this.$bodyWrapper = this.$widget.find('.body-wrapper');
     }
 
     async renderBody() {
+        if (!this.isVisible()) {
+            return;
+        }
+
         const $body = this.$widget.find('.card-body');
         const revisionItems = await server.get(`notes/${this.ctx.note.noteId}/revisions`);
 
@@ -44,6 +52,17 @@ class NoteRevisionsWidget {
         if (syncData.find(sd => sd.entityName === 'note_revisions' && sd.noteId === this.ctx.note.noteId)) {
             this.renderBody();
         }
+    }
+
+    getWidgetState() {
+        return {
+            id: 'attributes',
+            visible: this.isVisible()
+        };
+    }
+
+    isVisible() {
+        return this.$bodyWrapper.is(":visible");
     }
 }
 
