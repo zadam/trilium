@@ -3,6 +3,7 @@ import linkMapDialog from "../dialogs/link_map.js";
 import server from "../services/server.js";
 import treeCache from "../services/tree_cache.js";
 import linkService from "../services/link.js";
+import StandardWidget from "./standard_widget.js";
 
 let linkMapContainerIdCtr = 1;
 
@@ -22,21 +23,15 @@ const linkOverlays = [
     } ]
 ];
 
-class LinkMapWidget {
+class LinkMapWidget extends StandardWidget {
     /**
      * @param {TabContext} ctx
-     * @param {jQuery} $widget
+     * @param {object} state
      */
-    constructor(ctx, $widget) {
-        this.ctx = ctx;
-        this.$widget = $widget;
-        this.$widget.on('show.bs.collapse', () => this.renderBody());
-        this.$widget.on('show.bs.collapse', () => this.ctx.stateChanged());
-        this.$widget.on('hide.bs.collapse', () => this.ctx.stateChanged());
-        this.$title = this.$widget.find('.widget-title');
+    constructor(ctx, state) {
+        super(ctx, state,'link-map');
+
         this.$title.text("Link map");
-        this.$headerActions = this.$widget.find('.widget-header-actions');
-        this.$bodyWrapper = this.$widget.find('.body-wrapper');
 
         const $showFullButton = $("<a>").append("show full").addClass('widget-header-action');
         $showFullButton.click(() => {
@@ -46,15 +41,10 @@ class LinkMapWidget {
         this.$headerActions.append($showFullButton);
     }
 
-    async renderBody() {
-        if (!this.isVisible()) {
-            return;
-        }
+    async doRenderBody() {
+        this.$body.html(TPL);
 
-        const $body = this.$widget.find('.card-body');
-        $body.html(TPL);
-
-        this.$linkMapContainer = $body.find('.link-map-container');
+        this.$linkMapContainer = this.$body.find('.link-map-container');
         this.$linkMapContainer.attr("id", "link-map-container-" + linkMapContainerIdCtr++);
 
         await libraryLoader.requireLibrary(libraryLoader.LINK_MAP);
@@ -232,17 +222,6 @@ class LinkMapWidget {
 
     noteIdToId(noteId) {
         return "link-map-note-" + noteId;
-    }
-
-    getWidgetState() {
-        return {
-            id: 'attributes',
-            visible: this.isVisible()
-        };
-    }
-
-    isVisible() {
-        return this.$bodyWrapper.is(":visible");
     }
 }
 

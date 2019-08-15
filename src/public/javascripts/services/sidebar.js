@@ -48,8 +48,7 @@ class Sidebar {
         this.widgets = [];
         this.$widgetContainer.empty();
 
-        //const widgetClasses = [AttributesWidget, LinkMapWidget, NoteRevisionsWidget, NoteInfoWidget];
-        const widgetClasses = [AttributesWidget];
+        const widgetClasses = [AttributesWidget, LinkMapWidget, NoteRevisionsWidget, NoteInfoWidget];
 
         for (const widgetClass of widgetClasses) {
             const widget = new widgetClass(this.ctx);

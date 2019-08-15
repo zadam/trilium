@@ -8,7 +8,7 @@ const WIDGET_TPL = `
         <div class="widget-header-actions"></div>
     </div>
 
-    <div id="[to be set]" class="collapse body-wrapper">
+    <div id="[to be set]" class="collapse body-wrapper" style="transition: none;">
         <div class="card-body"></div>
     </div>
 </div>
@@ -18,17 +18,19 @@ class StandardWidget {
     /**
      * @param {TabContext} ctx
      * @param {object} state
-     * @param {string} widgetId
+     * @param {string} widgetName
      */
-    constructor(ctx, state, widgetId) {
+    constructor(ctx, state, widgetName) {
         this.ctx = ctx;
-        this.widgetId = widgetId;
+        this.widgetName = widgetName;
+
+        const widgetId = `tab-${ctx.tabId}-widget-${widgetName}`;
 
         this.$widget = $(WIDGET_TPL);
-        this.$widget.find('[data-target]').attr('data-target', "#widget-" + widgetId);
+        this.$widget.find('[data-target]').attr('data-target', "#" + widgetId);
 
         this.$bodyWrapper = this.$widget.find('.body-wrapper');
-        this.$bodyWrapper.attr('id', "widget-" + widgetId);
+        this.$bodyWrapper.attr('id', widgetId);
 
         if (state && state.visible) {
             this.$bodyWrapper.addClass("show");
@@ -62,7 +64,7 @@ class StandardWidget {
 
     getWidgetState() {
         return {
-            id: this.widgetId,
+            name: this.widgetName,
             visible: this.isVisible()
         };
     }

@@ -1,42 +1,33 @@
 import server from "../services/server.js";
+import StandardWidget from "./standard_widget.js";
 
 const TPL = `
 <ul class="note-revision-list" style="max-height: 150px; overflow: auto;">
 </ul>
 `;
 
-class NoteRevisionsWidget {
+class NoteRevisionsWidget extends StandardWidget {
     /**
      * @param {TabContext} ctx
-     * @param {jQuery} $widget
+     * @param {object} state
      */
-    constructor(ctx, $widget) {
-        this.ctx = ctx;
-        this.$widget = $widget;
-        this.$widget.on('show.bs.collapse', () => this.renderBody());
-        this.$widget.on('show.bs.collapse', () => this.ctx.stateChanged());
-        this.$widget.on('hide.bs.collapse', () => this.ctx.stateChanged());
-        this.$title = this.$widget.find('.widget-title');
+    constructor(ctx, state) {
+        super(ctx, state, 'note-revisions');
+
         this.$title.text("Note revisions");
-        this.$bodyWrapper = this.$widget.find('.body-wrapper');
     }
 
-    async renderBody() {
-        if (!this.isVisible()) {
-            return;
-        }
-
-        const $body = this.$widget.find('.card-body');
+    async doRenderBody() {
         const revisionItems = await server.get(`notes/${this.ctx.note.noteId}/revisions`);
 
         if (revisionItems.length === 0) {
-            $body.text("No revisions yet...");
+            this.$body.text("No revisions yet...");
             return;
         }
 
-        $body.html(TPL);
+        this.$body.html(TPL);
 
-        const $list = $body.find('.note-revision-list');
+        const $list = this.$body.find('.note-revision-list');
 
         for (const item of revisionItems) {
             $list.append($('<li>').append($("<a>", {
@@ -50,19 +41,8 @@ class NoteRevisionsWidget {
 
     syncDataReceived(syncData) {
         if (syncData.find(sd => sd.entityName === 'note_revisions' && sd.noteId === this.ctx.note.noteId)) {
-            this.renderBody();
+            this.doRenderBody();
         }
-    }
-
-    getWidgetState() {
-        return {
-            id: 'attributes',
-            visible: this.isVisible()
-        };
-    }
-
-    isVisible() {
-        return this.$bodyWrapper.is(":visible");
     }
 }
 

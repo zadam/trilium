@@ -1,3 +1,5 @@
+import StandardWidget from "./standard_widget.js";
+
 const TPL = `
 <table class="note-info-table">
     <tr>
@@ -23,36 +25,25 @@ const TPL = `
 </table>
 `;
 
-class NoteInfoWidget {
+class NoteInfoWidget extends StandardWidget {
     /**
      * @param {TabContext} ctx
-     * @param {jQuery} $widget
+     * @param {object} state
      */
-    constructor(ctx, $widget) {
-        this.ctx = ctx;
-        this.$widget = $widget;
-        this.$widget.on('show.bs.collapse', () => this.renderBody());
-        this.$widget.on('show.bs.collapse', () => this.ctx.stateChanged());
-        this.$widget.on('hide.bs.collapse', () => this.ctx.stateChanged());
-        this.$title = this.$widget.find('.widget-title');
+    constructor(ctx, state) {
+        super(ctx, state, 'note-info');
+
         this.$title.text("Note info");
-        this.$bodyWrapper = this.$widget.find('.body-wrapper');
     }
 
-    async renderBody() {
-        if (!this.isVisible()) {
-            return;
-        }
+    async doRenderBody() {
+        this.$body.html(TPL);
 
-        const $body = this.$widget.find('.card-body');
-
-        $body.html(TPL);
-
-        const $noteId = $body.find(".note-info-note-id");
-        const $dateCreated = $body.find(".note-info-date-created");
-        const $dateModified = $body.find(".note-info-date-modified");
-        const $type = $body.find(".note-info-type");
-        const $mime = $body.find(".note-info-mime");
+        const $noteId = this.$body.find(".note-info-note-id");
+        const $dateCreated = this.$body.find(".note-info-date-created");
+        const $dateModified = this.$body.find(".note-info-date-modified");
+        const $type = this.$body.find(".note-info-type");
+        const $mime = this.$body.find(".note-info-mime");
 
         const note = this.ctx.note;
 
@@ -65,19 +56,8 @@ class NoteInfoWidget {
 
     syncDataReceived(syncData) {
         if (syncData.find(sd => sd.entityName === 'notes' && sd.entityId === this.ctx.note.noteId)) {
-            this.renderBody();
+            this.doRenderBody();
         }
-    }
-
-    getWidgetState() {
-        return {
-            id: 'attributes',
-            visible: this.isVisible()
-        };
-    }
-
-    isVisible() {
-        return this.$bodyWrapper.is(":visible");
     }
 }
 
