@@ -503,12 +503,12 @@ function clearOpenTabsTask() {
 }
 
 function openTabsChanged() {
-    // we don't want to send too many requests with tab changes so we always schedule task to do this in 3 seconds,
+    // we don't want to send too many requests with tab changes so we always schedule task to do this in 1 seconds,
     // but if there's any change in between, we cancel the old one and schedule new one
     // so effectively we kind of wait until user stopped e.g. quickly switching tabs
     clearOpenTabsTask();
 
-    tabsChangedTaskId = setTimeout(saveOpenTabs, 3000);
+    tabsChangedTaskId = setTimeout(saveOpenTabs, 1000);
 }
 
 async function saveOpenTabs() {

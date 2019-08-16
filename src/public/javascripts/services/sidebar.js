@@ -6,8 +6,9 @@ import AttributesWidget from "../widgets/attributes.js";
 class Sidebar {
     /**
      * @param {TabContext} ctx
+     * @param {object} state
      */
-    constructor(ctx, state) {
+    constructor(ctx, state = {}) {
         this.ctx = ctx;
         this.state = state;
         this.widgets = [];
@@ -15,8 +16,6 @@ class Sidebar {
         this.$sidebar = ctx.$tabContent.find(".note-detail-sidebar");
         this.$widgetContainer = this.$sidebar.find(".note-detail-widget-container");
         this.$showSideBarButton = this.ctx.$tabContent.find(".show-sidebar-button");
-        this.$showSideBarButton.hide();
-
         this.$hideSidebarButton = this.$sidebar.find(".hide-sidebar-button");
 
         this.$hideSidebarButton.click(() => {
@@ -30,10 +29,13 @@ class Sidebar {
             this.$showSideBarButton.hide();
             this.ctx.stateChanged();
         });
+
+        this.$showSideBarButton.toggle(!state.visible);
+        this.$sidebar.toggle(state.visible);
     }
 
     isVisible() {
-        return this.$sidebar.is(":visible");
+        return this.$sidebar.css("display") !== "none";
     }
 
     getSidebarState() {

@@ -58,7 +58,7 @@ class StandardWidget {
     async doRenderBody() {}
 
     isVisible() {
-        return this.$bodyWrapper.is(":visible");
+        return this.$bodyWrapper.hasClass("show");
     }
 
     getWidgetState() {
