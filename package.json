@@ -73,7 +73,7 @@
     "tar-stream": "2.1.0",
     "turndown": "5.0.3",
     "unescape": "1.0.1",
-    "ws": "7.1.1",
+    "ws": "7.1.2",
     "xml2js": "0.4.19"
   },
   "devDependencies": {
@@ -83,7 +83,7 @@
     "electron-compile": "6.4.4",
     "electron-installer-debian": "2.0.0",
     "electron-packager": "14.0.4",
-    "electron-rebuild": "1.8.5",
+    "electron-rebuild": "1.8.6",
     "lorem-ipsum": "2.0.3",
     "xo": "0.24.0"
   },

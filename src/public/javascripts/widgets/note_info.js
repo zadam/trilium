@@ -31,7 +31,7 @@ class NoteInfoWidget extends StandardWidget {
      * @param {object} state
      */
     constructor(ctx, state) {
-        super(ctx, state, 'note-info');
+        super(ctx, state);
 
         this.$title.text("Note info");
     }

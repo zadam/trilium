@@ -133,7 +133,6 @@ async function switchToTab(tabId, notePath) {
     if (!tabContext) {
         await loadNoteDetail(notePath, {
             newTab: true,
-            tabId: tabId,
             activate: true
         });
     } else {
@@ -262,7 +261,7 @@ async function loadNoteDetail(origNotePath, options = {}) {
 
     if (!getActiveTabContext() || newTab) {
         // if it's a new tab explicitly by user then it's in background
-        ctx = new TabContext(tabRow, options.tabId);
+        ctx = new TabContext(tabRow, options.state);
         tabContexts.push(ctx);
     }
     else {

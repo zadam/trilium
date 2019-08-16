@@ -12,7 +12,7 @@ class NoteRevisionsWidget extends StandardWidget {
      * @param {object} state
      */
     constructor(ctx, state) {
-        super(ctx, state, 'note-revisions');
+        super(ctx, state);
 
         this.$title.text("Note revisions");
     }

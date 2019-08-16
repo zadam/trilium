@@ -395,7 +395,7 @@ async function treeInitialized() {
 
     for (const tab of filteredTabs) {
         await noteDetailService.loadNoteDetail(tab.notePath, {
-            tabId: tab.tabId,
+            state: tab,
             newTab: true,
             activate: tab.active
         });

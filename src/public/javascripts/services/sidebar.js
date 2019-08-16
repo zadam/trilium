@@ -3,14 +3,13 @@ import LinkMapWidget from "../widgets/link_map.js";
 import NoteRevisionsWidget from "../widgets/note_revisions.js";
 import AttributesWidget from "../widgets/attributes.js";
 
-let widgetIdCtr = 1;
-
 class Sidebar {
     /**
      * @param {TabContext} ctx
      */
-    constructor(ctx) {
+    constructor(ctx, state) {
         this.ctx = ctx;
+        this.state = state;
         this.widgets = [];
         this.rendered = false;
         this.$sidebar = ctx.$tabContent.find(".note-detail-sidebar");
@@ -51,7 +50,9 @@ class Sidebar {
         const widgetClasses = [AttributesWidget, LinkMapWidget, NoteRevisionsWidget, NoteInfoWidget];
 
         for (const widgetClass of widgetClasses) {
-            const widget = new widgetClass(this.ctx);
+            const state = (this.state.widgets || []).find(s => s.name === widgetClass.name);
+
+            const widget = new widgetClass(this.ctx, state);
             this.widgets.push(widget);
 
             widget.renderBody(); // let it run in parallel

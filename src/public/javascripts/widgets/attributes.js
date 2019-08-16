@@ -6,7 +6,7 @@ import StandardWidget from "./standard_widget.js";
 
 class AttributesWidget extends StandardWidget {
     constructor(ctx, state) {
-        super(ctx, state, 'attributes');
+        super(ctx, state);
 
         this.$title.text("Attributes");
 

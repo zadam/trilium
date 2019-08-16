@@ -29,7 +29,7 @@ class LinkMapWidget extends StandardWidget {
      * @param {object} state
      */
     constructor(ctx, state) {
-        super(ctx, state,'link-map');
+        super(ctx, state);
 
         this.$title.text("Link map");
 

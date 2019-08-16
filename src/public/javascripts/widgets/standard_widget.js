@@ -18,13 +18,12 @@ class StandardWidget {
     /**
      * @param {TabContext} ctx
      * @param {object} state
-     * @param {string} widgetName
      */
-    constructor(ctx, state, widgetName) {
+    constructor(ctx, state) {
         this.ctx = ctx;
-        this.widgetName = widgetName;
+        this.widgetName = this.constructor.name;
 
-        const widgetId = `tab-${ctx.tabId}-widget-${widgetName}`;
+        const widgetId = `tab-${ctx.tabId}-widget-${this.widgetName}`;
 
         this.$widget = $(WIDGET_TPL);
         this.$widget.find('[data-target]').attr('data-target', "#" + widgetId);
@@ -33,7 +32,7 @@ class StandardWidget {
         this.$bodyWrapper.attr('id', widgetId);
 
         if (state && state.visible) {
-            this.$bodyWrapper.addClass("show");
+            this.$bodyWrapper.collapse("show");
         }
 
         this.$body = this.$bodyWrapper.find('.card-body');

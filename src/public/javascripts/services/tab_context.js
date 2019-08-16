@@ -37,10 +37,11 @@ const componentClasses = {
 class TabContext {
     /**
      * @param {TabRow} tabRow
+     * @param {object} state
      */
-    constructor(tabRow, tabId = null) {
+    constructor(tabRow, state = {}) {
         this.tabRow = tabRow;
-        this.tabId = tabId || utils.randomString(4);
+        this.tabId = state.tabId || utils.randomString(4);
         this.$tab = $(this.tabRow.addTab(this.tabId));
 
         this.$tabContent = $(".note-tab-content-template").clone();
@@ -62,7 +63,7 @@ class TabContext {
         this.attributes = new Attributes(this);
 
         if (utils.isDesktop()) {
-            this.sidebar = new Sidebar(this);
+            this.sidebar = new Sidebar(this, state.sidebar);
             this.noteType = new NoteTypeContext(this);
         }
 
