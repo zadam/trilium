@@ -87,7 +87,7 @@ async function deleteNodes(nodes) {
         return false;
     }
 
-    const nodeTitles = nodes.map((node) => node.text);
+    const nodeTitles = nodes.map((node) => node.title);
     const confirmText = 'This will delete the following notes and their sub-notes: ' + nodeTitles.join(', ');
 
     if (!await confirmDialog.confirm(confirmText)) {
