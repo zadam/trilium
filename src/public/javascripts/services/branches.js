@@ -83,7 +83,14 @@ async function moveToNode(nodesToMove, toNode) {
 async function deleteNodes(nodes) {
     nodes = await filterRootNote(nodes);
 
-    if (nodes.length === 0 || !await confirmDialog.confirm('Are you sure you want to delete select note(s) and all the sub-notes?')) {
+    if (nodes.length === 0) {
+        return false;
+    }
+
+    const nodeTitles = nodes.map((node) => node.title);
+    const confirmText = 'This will delete the following notes and their sub-notes: ' + nodeTitles.join(', ');
+
+    if (!await confirmDialog.confirm(confirmText)) {
         return false;
     }
 
