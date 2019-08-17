@@ -47,6 +47,7 @@ class TabContext {
         this.$tabContent = $(".note-tab-content-template").clone();
         this.$tabContent.removeClass('note-tab-content-template');
         this.$tabContent.attr('data-tab-id', this.tabId);
+        this.$tabContent.hide();
 
         $tabContentsContainer.append(this.$tabContent);
 
