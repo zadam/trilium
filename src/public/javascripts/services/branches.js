@@ -110,7 +110,7 @@ async function deleteNodes(nodes) {
         next = nodes[0].getPrevSibling();
     }
 
-    if (!next && !await hoistedNoteService.isTopLevelNode(nodes[0])) {
+    if (!next && !await hoistedNoteService.isRootNode(nodes[0])) {
         next = nodes[0].getParent();
     }
 
