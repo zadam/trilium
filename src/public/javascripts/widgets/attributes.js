@@ -5,17 +5,15 @@ import messagingService from "../services/messaging.js";
 import StandardWidget from "./standard_widget.js";
 
 class AttributesWidget extends StandardWidget {
-    constructor(ctx, state) {
-        super(ctx, state);
+    getWidgetTitle() { return "Attributes"; }
 
-        this.$title.text("Attributes");
-
+    getHeaderActions() {
         const $showFullButton = $("<a>").append("show dialog").addClass('widget-header-action');
         $showFullButton.click(() => {
             attributesDialog.showDialog();
         });
 
-        this.$headerActions.append($showFullButton);
+        return [$showFullButton];
     }
 
     async doRenderBody() {

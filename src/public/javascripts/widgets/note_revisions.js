@@ -7,15 +7,7 @@ const TPL = `
 `;
 
 class NoteRevisionsWidget extends StandardWidget {
-    /**
-     * @param {TabContext} ctx
-     * @param {object} state
-     */
-    constructor(ctx, state) {
-        super(ctx, state);
-
-        this.$title.text("Note revisions");
-    }
+    getWidgetTitle() { return "Note revisions"; }
 
     async doRenderBody() {
         const revisionItems = await server.get(`notes/${this.ctx.note.noteId}/revisions`);

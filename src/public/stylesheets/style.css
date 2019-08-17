@@ -134,6 +134,7 @@ ul.fancytree-container {
 }
 
 .note-detail-sidebar .widget-header-actions {
+    padding-right: 10px;
 }
 
 .note-detail-sidebar .widget-header-action {

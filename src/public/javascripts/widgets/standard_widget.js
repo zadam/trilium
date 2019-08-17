@@ -41,8 +41,14 @@ class StandardWidget {
         this.$widget.on('shown.bs.collapse', () => this.ctx.stateChanged());
         this.$widget.on('hidden.bs.collapse', () => this.ctx.stateChanged());
         this.$title = this.$widget.find('.widget-title');
+        this.$title.text(this.getWidgetTitle());
         this.$headerActions = this.$widget.find('.widget-header-actions');
+        this.$headerActions.append(...this.getHeaderActions());
     }
+
+    getWidgetTitle() { return "Untitled widget"; }
+
+    getHeaderActions() { return []; }
 
     async renderBody() {
         if (!this.isVisible() || this.rendered) {

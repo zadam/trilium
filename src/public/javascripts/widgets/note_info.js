@@ -26,15 +26,7 @@ const TPL = `
 `;
 
 class NoteInfoWidget extends StandardWidget {
-    /**
-     * @param {TabContext} ctx
-     * @param {object} state
-     */
-    constructor(ctx, state) {
-        super(ctx, state);
-
-        this.$title.text("Note info");
-    }
+    getWidgetTitle() { return "Note info"; }
 
     async doRenderBody() {
         this.$body.html(TPL);

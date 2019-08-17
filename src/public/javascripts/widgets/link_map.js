@@ -24,21 +24,15 @@ const linkOverlays = [
 ];
 
 class LinkMapWidget extends StandardWidget {
-    /**
-     * @param {TabContext} ctx
-     * @param {object} state
-     */
-    constructor(ctx, state) {
-        super(ctx, state);
+    getWidgetTitle() { return "Link map"; }
 
-        this.$title.text("Link map");
-
+    getHeaderActions() {
         const $showFullButton = $("<a>").append("show full").addClass('widget-header-action');
         $showFullButton.click(() => {
             linkMapDialog.showDialog();
         });
 
-        this.$headerActions.append($showFullButton);
+        return [$showFullButton];
     }
 
     async doRenderBody() {
