@@ -16,7 +16,11 @@ function confirm(message) {
 
     glob.activeDialog = $dialog;
 
-    $confirmContent.text(message);
+    if (typeof message === 'string') {
+        message = $("<div>").text(message);
+    }
+
+    $confirmContent.empty().append(message);
 
     $dialog.modal();
 

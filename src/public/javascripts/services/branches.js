@@ -87,8 +87,8 @@ async function deleteNodes(nodes) {
         return false;
     }
 
-    const nodeTitles = nodes.map((node) => node.title);
-    const confirmText = 'This will delete the following notes and their sub-notes: ' + nodeTitles.join(', ');
+    const nodeTitles = $("<ul>").append(...nodes.map(node => $("<li>").text(node.title)));
+    const confirmText = $("<div>").text('This will delete the following notes and their sub-notes: ').append(nodeTitles);
 
     if (!await confirmDialog.confirm(confirmText)) {
         return false;
