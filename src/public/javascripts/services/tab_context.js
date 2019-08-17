@@ -106,6 +106,7 @@ class TabContext {
     setNote(note, notePath) {
         this.noteId = note.noteId;
         this.notePath = notePath;
+        /** @property {NoteFull} */
         this.note = note;
         this.tabRow.updateTab(this.$tab[0], {title: note.title});
 
@@ -136,7 +137,7 @@ class TabContext {
         this.showPaths();
 
         if (this.sidebar) {
-            this.sidebar.noteLoaded();
+            this.sidebar.noteLoaded(); // load async
         }
 
         console.debug(`Switched tab ${this.tabId} to ${this.noteId}`);

@@ -5,7 +5,7 @@ import infoService from "./info.js";
 async function getAndExecuteBundle(noteId, originEntity = null) {
     const bundle = await server.get('script/bundle/' + noteId);
 
-    await executeBundle(bundle, originEntity);
+    return await executeBundle(bundle, originEntity);
 }
 
 async function executeBundle(bundle, originEntity, tabContext) {

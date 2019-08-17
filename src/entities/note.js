@@ -250,6 +250,21 @@ class Note extends Entity {
 
     /**
      * @param {string} [name] - relation name to filter
+     * @returns {Promise<Note[]>}
+     */
+    async getRelationTargets(name) {
+        const relations = await this.getRelations(name);
+        const targets = [];
+
+        for (const relation of relations) {
+            targets.push(await relation.getTargetNote());
+        }
+
+        return targets;
+    }
+
+    /**
+     * @param {string} [name] - relation name to filter
      * @returns {Promise<Attribute[]>} all note's relation definitions including inherited ones
      */
     async getRelationDefinitions(name) {

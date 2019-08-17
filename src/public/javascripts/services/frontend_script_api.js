@@ -7,8 +7,9 @@ import treeCache from './tree_cache.js';
 import noteDetailService from './note_detail.js';
 import noteTypeService from './note_type.js';
 import noteTooltipService from './note_tooltip.js';
-import protectedSessionService from'./protected_session.js';
-import dateNotesService from'./date_notes.js';
+import protectedSessionService from './protected_session.js';
+import dateNotesService from './date_notes.js';
+import StandardWidget from '../widgets/standard_widget.js';
 
 /**
  * This is the main frontend API interface for scripts. It's published in the local "api" object.
@@ -31,6 +32,9 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
 
     /** @property {TabContext|null} - experimental! */
     this.tabContext = tabContext;
+
+    /** @property {StandardWidget} */
+    this.StandardWidget = StandardWidget;
 
     /**
      * Activates note in the tree and in the note detail.

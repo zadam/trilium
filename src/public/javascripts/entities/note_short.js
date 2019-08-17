@@ -196,12 +196,27 @@ class NoteShort {
 
     /**
      * @param {string} name
-     * @returns {Promise<Note>|null} target note of the relation or null (if target is empty or note was not found)
+     * @returns {Promise<NoteShort>|null} target note of the relation or null (if target is empty or note was not found)
      */
     async getRelationTarget(name) {
-        const relation = await this.getRelation(name);
+        const targets = await this.getRelationTargets(name);
 
-        return relation ? await repository.getNote(relation.value) : null;
+        return targets.length > 0 ? targets[0] : null;
+    }
+
+    /**
+     * @param {string} [name] - relation name to filter
+     * @returns {Promise<NoteShort[]>}
+     */
+    async getRelationTargets(name) {
+        const relations = await this.getRelations(name);
+        const targets = [];
+
+        for (const relation of relations) {
+            targets.push(await this.treeCache.getNote(relation.value));
+        }
+
+        return targets;
     }
 
     /**

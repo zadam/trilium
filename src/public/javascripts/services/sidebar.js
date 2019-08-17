@@ -2,6 +2,8 @@ import NoteInfoWidget from "../widgets/note_info.js";
 import LinkMapWidget from "../widgets/link_map.js";
 import NoteRevisionsWidget from "../widgets/note_revisions.js";
 import AttributesWidget from "../widgets/attributes.js";
+import bundleService from "./bundle.js";
+import messagingService from "./messaging.js";
 
 class Sidebar {
     /**
@@ -9,6 +11,7 @@ class Sidebar {
      * @param {object} state
      */
     constructor(ctx, state = {}) {
+        /** @property {TabContext} */
         this.ctx = ctx;
         this.state = state;
         this.widgets = [];
@@ -51,15 +54,27 @@ class Sidebar {
 
         const widgetClasses = [AttributesWidget, LinkMapWidget, NoteRevisionsWidget, NoteInfoWidget];
 
+        const widgetRelations = await this.ctx.note.getRelations('widget');
+
+        for (const widgetRelation of widgetRelations) {
+            const widgetClass = await bundleService.getAndExecuteBundle(widgetRelation.value, this.ctx.note);
+
+            widgetClasses.push(widgetClass);
+        }
+
         for (const widgetClass of widgetClasses) {
             const state = (this.state.widgets || []).find(s => s.name === widgetClass.name);
 
-            const widget = new widgetClass(this.ctx, state);
-            this.widgets.push(widget);
+            try {
+                const widget = new widgetClass(this.ctx, state);
+                await widget.renderBody();
 
-            widget.renderBody(); // let it run in parallel
-
-            this.$widgetContainer.append(widget.getWidgetElement());
+                this.widgets.push(widget);
+                this.$widgetContainer.append(widget.getWidgetElement());
+            }
+            catch (e) {
+                messagingService.logError(`Error while loading widget ${widgetClass.name}: ${e.message}`);
+            }
         }
     }
 
