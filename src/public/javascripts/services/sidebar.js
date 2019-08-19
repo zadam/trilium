@@ -2,6 +2,7 @@ import NoteInfoWidget from "../widgets/note_info.js";
 import LinkMapWidget from "../widgets/link_map.js";
 import NoteRevisionsWidget from "../widgets/note_revisions.js";
 import AttributesWidget from "../widgets/attributes.js";
+import WhatLinksHereWidget from "../widgets/what_links_here.js";
 import bundleService from "./bundle.js";
 import messagingService from "./messaging.js";
 
@@ -52,7 +53,7 @@ class Sidebar {
         this.widgets = [];
         this.$widgetContainer.empty();
 
-        const widgetClasses = [AttributesWidget, LinkMapWidget, NoteRevisionsWidget, NoteInfoWidget];
+        const widgetClasses = [AttributesWidget, LinkMapWidget, WhatLinksHereWidget, NoteRevisionsWidget, NoteInfoWidget];
 
         const widgetRelations = await this.ctx.note.getRelations('widget');
 

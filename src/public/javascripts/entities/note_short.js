@@ -1,6 +1,5 @@
 import server from '../services/server.js';
 import Attribute from './attribute.js';
-import Link from './link.js';
 
 const LABEL = 'label';
 const LABEL_DEFINITION = 'label-definition';
@@ -231,11 +230,13 @@ class NoteShort {
     }
 
     /**
-     * @return {Promise<Link[]>}
+     * Get relations which target this note
+     *
+     * @returns {Promise<Attribute[]>}
      */
-    async getLinks() {
-        return (await server.get('notes/' + this.noteId + '/links'))
-            .map(linkRow => new Link(this.treeCache, linkRow));
+    async getTargetRelations() {
+        return (await server.get('notes/' + this.noteId + '/target-relations'))
+            .map(attrRow => new Attribute(this.treeCache, attrRow));
     }
 
     get toString() {

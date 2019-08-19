@@ -37,6 +37,13 @@ class StandardWidget {
 
         this.$body = this.$bodyWrapper.find('.card-body');
 
+        const maxHeight = this.getMaxHeight();
+
+        if (maxHeight) {
+            this.$body.css("max-height", maxHeight);
+            this.$body.css("overflow", "auto");
+        }
+
         this.$widget.on('shown.bs.collapse', () => this.renderBody());
         this.$widget.on('shown.bs.collapse', () => this.ctx.stateChanged());
         this.$widget.on('hidden.bs.collapse', () => this.ctx.stateChanged());
@@ -49,6 +56,8 @@ class StandardWidget {
     getWidgetTitle() { return "Untitled widget"; }
 
     getHeaderActions() { return []; }
+
+    getMaxHeight() { return null; }
 
     async renderBody() {
         if (!this.isVisible() || this.rendered) {
