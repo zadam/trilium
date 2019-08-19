@@ -9,12 +9,12 @@ async function getRelations(noteIds, relationNames) {
         WHERE (noteId IN (???) OR value IN (???))
           AND type = 'relation'
           AND isDeleted = 0
-    `, Array.from(noteIds))).filter(l => relationNames.includes(l.name));
+    `, Array.from(noteIds)));
 }
 
 async function getLinkMap(req) {
     const {noteId} = req.params;
-    const {relationNames, maxNotes, maxDepth} = req.body;
+    const {maxNotes, maxDepth} = req.body;
 
     let noteIds = new Set([noteId]);
     let relations;
@@ -22,7 +22,7 @@ async function getLinkMap(req) {
     let depth = 0;
 
     while (true) {
-        relations = await getRelations(noteIds, relationNames);
+        relations = await getRelations(noteIds);
 
         if (depth === maxDepth) {
             break;

@@ -55,13 +55,11 @@ class LinkMapWidget extends StandardWidget {
     async loadNotesAndRelations() {
         this.cleanup();
 
-        const linkTypes = [ "hyper", "image", "relation", "relation-map" ];
         const maxNotes = 50;
 
         const currentNoteId = this.ctx.note.noteId;
 
         const links = await server.post(`notes/${currentNoteId}/link-map`, {
-            linkTypes,
             maxNotes,
             maxDepth: 1
         });

@@ -116,18 +116,6 @@ async function findBrokenReferenceIssues() {
         ({attributeId, noteId}) => `Relation ${attributeId} references missing note ${noteId}`);
 
     await findIssues(`
-          SELECT linkId, links.noteId
-          FROM links LEFT JOIN notes USING(noteId)
-          WHERE links.isDeleted = 0 AND notes.noteId IS NULL`,
-        ({linkId, noteId}) => `Link ${linkId} references missing source note ${noteId}`);
-
-    await findIssues(`
-          SELECT linkId, links.noteId
-          FROM links LEFT JOIN notes ON notes.noteId = links.targetNoteId
-          WHERE links.isDeleted = 0 AND notes.noteId IS NULL`,
-        ({linkId, noteId}) => `Link ${linkId} references missing target note ${noteId}`);
-
-    await findIssues(`
           SELECT noteRevisionId, note_revisions.noteId
           FROM note_revisions LEFT JOIN notes USING(noteId)
           WHERE notes.noteId IS NULL`,
@@ -135,7 +123,7 @@ async function findBrokenReferenceIssues() {
 }
 
 async function findExistencyIssues() {
-    // principle for fixing inconsistencies is that if the note itself is deleted (isDeleted=true) then all related entities should be also deleted (branches, links, attributes)
+    // principle for fixing inconsistencies is that if the note itself is deleted (isDeleted=true) then all related entities should be also deleted (branches, attributes)
     // but if note is not deleted, then at least one branch should exist.
 
     // the order here is important - first we might need to delete inconsistent branches and after that
@@ -314,48 +302,6 @@ async function findLogicIssues() {
             await attribute.save();
 
             logFix(`Removed attribute ${attributeId} because target note ${targetNoteId} is also deleted.`);
-        });
-
-    await findIssues(`
-          SELECT linkId
-          FROM links
-          WHERE type NOT IN ('image', 'hyper', 'relation-map')`,
-        ({linkId, type}) => `Link ${linkId} has invalid type '${type}'`);
-
-    await findAndFixIssues(`
-          SELECT
-            linkId,
-            links.noteId AS sourceNoteId
-          FROM
-            links
-              JOIN notes AS sourceNote ON sourceNote.noteId = links.noteId
-          WHERE
-            links.isDeleted = 0
-            AND sourceNote.isDeleted = 1`,
-        async ({linkId, sourceNoteId}) => {
-            const link = await repository.getLink(linkId);
-            link.isDeleted = true;
-            await link.save();
-
-            logFix(`Removed link ${linkId} because source note ${sourceNoteId} is also deleted.`);
-        });
-
-    await findAndFixIssues(`
-          SELECT 
-            linkId,
-            links.targetNoteId
-          FROM 
-            links
-            JOIN notes AS targetNote ON targetNote.noteId = links.targetNoteId
-          WHERE
-            links.isDeleted = 0
-            AND targetNote.isDeleted = 1`,
-        async ({linkId, targetNoteId}) => {
-            const link = await repository.getLink(linkId);
-            link.isDeleted = true;
-            await link.save();
-
-            logFix(`Removed link ${linkId} because target note ${targetNoteId} is also deleted.`);
         });
 }
 
