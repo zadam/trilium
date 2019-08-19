@@ -354,10 +354,18 @@ addTabHandler((async function () {
 addTabHandler((function() {
     const $sidebarMinWidth = $("#sidebar-min-width");
     const $sidebarWidthPercent = $("#sidebar-width-percent");
+    const $showSidebarInNewTab = $("#show-sidebar-in-new-tab");
 
     async function optionsLoaded(options) {
         $sidebarMinWidth.val(options.sidebarMinWidth);
         $sidebarWidthPercent.val(options.sidebarWidthPercent);
+
+        if (parseInt(options.showSidebarInNewTab)) {
+            $showSidebarInNewTab.attr("checked", "checked");
+        }
+        else {
+            $showSidebarInNewTab.removeAttr("checked");
+        }
     }
 
     function resizeSidebar() {
@@ -383,6 +391,14 @@ addTabHandler((function() {
         await server.put('options/sidebarWidthPercent/' + $(this).val());
 
         resizeSidebar();
+    });
+
+    $showSidebarInNewTab.change(async function() {
+        const flag = $(this).is(":checked") ? 1 : 0;
+
+        await server.put('options/showSidebarInNewTab/' + flag);
+
+        optionsInit.loadOptions();
     });
 
     return {

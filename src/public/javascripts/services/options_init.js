@@ -26,9 +26,16 @@ function addLoadListener(listener) {
     optionsReady.then(listener);
 }
 
+async function getOption(name) {
+    const options = await optionsReady;
+
+    return options[name];
+}
+
 export default {
     // use addLoadListener() which will be called also on refreshes
     optionsReady,
     addLoadListener,
-    loadOptions
+    loadOptions,
+    getOption
 }

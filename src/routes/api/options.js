@@ -17,6 +17,7 @@ const ALLOWED_OPTIONS = [
     'leftPaneWidthPercent',
     'sidebarMinWidth',
     'sidebarWidthPercent',
+    'showSidebarInNewTab',
     'hoistedNoteId',
     'mainFontSize',
     'treeFontSize',
