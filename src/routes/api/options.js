@@ -15,6 +15,8 @@ const ALLOWED_OPTIONS = [
     'syncProxy',
     'leftPaneMinWidth',
     'leftPaneWidthPercent',
+    'sidebarMinWidth',
+    'sidebarWidthPercent',
     'hoistedNoteId',
     'mainFontSize',
     'treeFontSize',

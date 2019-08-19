@@ -70,13 +70,25 @@
             <div class="col-6">
                 <label for="left-pane-min-width">Left pane minimum width (in pixels)</label>
 
-                <input type="number" class="form-control" id="left-pane-min-width" min="100" max="2000" step="1"/>
+                <div class="input-group">
+                    <input type="number" class="form-control" id="left-pane-min-width" min="100" max="2000" step="1"/>
+
+                    <div class="input-group-append">
+                        <span class="input-group-text">px</span>
+                    </div>
+                </div>
             </div>
 
             <div class="col-6">
                 <label for="left-pane-min-width">Left pane width percent of window size</label>
 
-                <input type="number" class="form-control" id="left-pane-width-percent" min="0" max="99" step="1"/>
+                <div class="input-group">
+                    <input type="number" class="form-control" id="left-pane-width-percent" min="0" max="99" step="1"/>
+
+                    <div class="input-group-append">
+                        <span class="input-group-text">%</span>
+                    </div>
+                </div>
             </div>
         </div>
 

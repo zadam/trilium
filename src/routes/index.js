@@ -21,6 +21,8 @@ async function index(req, res) {
         leftPaneMinWidth: parseInt(options.leftPaneMinWidth),
         leftPaneWidthPercent: parseInt(options.leftPaneWidthPercent),
         rightPaneWidthPercent: 100 - parseInt(options.leftPaneWidthPercent),
+        sidebarMinWidth: parseInt(options.sidebarMinWidth),
+        sidebarWidthPercent: parseInt(options.sidebarWidthPercent),
         mainFontSize: parseInt(options.mainFontSize),
         treeFontSize: parseInt(options.treeFontSize),
         detailFontSize: parseInt(options.detailFontSize),

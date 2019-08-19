@@ -350,3 +350,42 @@ addTabHandler((async function () {
 
     return {};
 })());
+
+addTabHandler((function() {
+    const $sidebarMinWidth = $("#sidebar-min-width");
+    const $sidebarWidthPercent = $("#sidebar-width-percent");
+
+    async function optionsLoaded(options) {
+        $sidebarMinWidth.val(options.sidebarMinWidth);
+        $sidebarWidthPercent.val(options.sidebarWidthPercent);
+    }
+
+    function resizeSidebar() {
+        const sidebarWidthPercent = parseInt($sidebarWidthPercent.val());
+        const sidebarMinWidth = $sidebarMinWidth.val();
+
+        // need to find them dynamically since they change
+        const $sidebar = $(".note-detail-sidebar");
+
+        console.log("Resizing to ", sidebarWidthPercent, sidebarMinWidth);
+
+        $sidebar.css("width", sidebarWidthPercent + '%');
+        $sidebar.css("min-width", sidebarMinWidth + 'px');
+    }
+
+    $sidebarMinWidth.change(async function() {
+        await server.put('options/sidebarMinWidth/' + $(this).val());
+
+        resizeSidebar();
+    });
+
+    $sidebarWidthPercent.change(async function() {
+        await server.put('options/sidebarWidthPercent/' + $(this).val());
+
+        resizeSidebar();
+    });
+
+    return {
+        optionsLoaded
+    };
+})());

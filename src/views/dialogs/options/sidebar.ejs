@@ -1,3 +1,31 @@
 <div id="options-sidebar" class="tab-pane">
-    Hi!
+    <h3>Sidebar sizing</h3>
+
+    <div class="form-group row">
+        <div class="col-6">
+            <label for="sidebar-min-width">Sidebar minimum width (in pixels)</label>
+
+            <div class="input-group">
+                <input type="number" class="form-control" id="sidebar-min-width" min="100" max="2000" step="1"/>
+
+                <div class="input-group-append">
+                    <span class="input-group-text">px</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6">
+            <label for="left-pane-min-width">Sidebar width percent of the detail pane</label>
+
+            <div class="input-group">
+                <input type="number" class="form-control" id="sidebar-width-percent" min="0" max="70" step="1"/>
+
+                <div class="input-group-append">
+                    <span class="input-group-text">%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <p>Sidebar width is calculated from the percent of the detail pane, if this is smaller than minimum width, then minimum width is used. If you want to have fixed width sidebar, set minimum width to the desired width and set percent to 0.</p>
 </div>
