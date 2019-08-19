@@ -9,7 +9,7 @@ const messagingService = require('../../services/messaging');
 const log = require('../../services/log');
 const utils = require('../../services/utils');
 const path = require('path');
-const Link = require('../../entities/link');
+const Attribute = require('../../entities/attribute');
 
 async function findClippingNote(todayNote, pageUrl) {
     const notes = await todayNote.getDescendantNotesWithLabel('pageUrl', pageUrl);
@@ -84,10 +84,11 @@ async function addImagesToNote(images, note, content) {
 
             const {note: imageNote, url} = await imageService.saveImage(buffer, filename, note.noteId, true);
 
-            await new Link({
+            await new Attribute({
                 noteId: note.noteId,
-                targetNoteId: imageNote.noteId,
-                type: 'image'
+                type: 'relation',
+                value: imageNote.noteId,
+                name: 'image-link'
             }).save();
 
             console.log(`Replacing ${imageId} with ${url}`);

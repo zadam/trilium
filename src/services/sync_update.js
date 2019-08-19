@@ -28,9 +28,6 @@ async function updateEntity(sync, entity, sourceId) {
     else if (entityName === 'recent_notes') {
         await updateRecentNotes(entity, sourceId);
     }
-    else if (entityName === 'links') {
-        await updateLink(entity, sourceId);
-    }
     else if (entityName === 'attributes') {
         await updateAttribute(entity, sourceId);
     }
@@ -156,20 +153,6 @@ async function updateRecentNotes(entity, sourceId) {
 
             await syncTableService.addRecentNoteSync(entity.noteId, sourceId);
         });
-    }
-}
-
-async function updateLink(entity, sourceId) {
-    const origLink = await sql.getRow("SELECT * FROM links WHERE linkId = ?", [entity.linkId]);
-
-    if (!origLink || origLink.utcDateModified <= entity.utcDateModified) {
-        await sql.transactional(async () => {
-            await sql.replace("links", entity);
-
-            await syncTableService.addLinkSync(entity.linkId, sourceId);
-        });
-
-        log.info("Update/sync link " + entity.linkId);
     }
 }
 

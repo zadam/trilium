@@ -58,9 +58,9 @@ class LinkMapWidget extends StandardWidget {
         const linkTypes = [ "hyper", "image", "relation", "relation-map" ];
         const maxNotes = 50;
 
-        const noteId = this.ctx.note.noteId;
+        const currentNoteId = this.ctx.note.noteId;
 
-        const links = await server.post(`notes/${noteId}/link-map`, {
+        const links = await server.post(`notes/${currentNoteId}/link-map`, {
             linkTypes,
             maxNotes,
             maxDepth: 1
@@ -69,7 +69,7 @@ class LinkMapWidget extends StandardWidget {
         const noteIds = new Set(links.map(l => l.noteId).concat(links.map(l => l.targetNoteId)));
 
         if (noteIds.size === 0) {
-            noteIds.add(noteId);
+            noteIds.add(currentNoteId);
         }
 
         // preload all notes
@@ -104,7 +104,7 @@ class LinkMapWidget extends StandardWidget {
                 $noteBox.append($("<span>").addClass("title").append($link));
             });
 
-            if (noteId === noteId) {
+            if (noteId === currentNoteId) {
                 $noteBox.addClass("link-map-active-note");
             }
 

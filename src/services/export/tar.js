@@ -115,12 +115,6 @@ async function exportToTar(exportContext, branch, format, res) {
                     isInheritable: attribute.isInheritable,
                     position: attribute.position
                 };
-            }),
-            links: (await note.getLinks()).map(link => {
-                return {
-                    type: link.type,
-                    targetNoteId: link.targetNoteId
-                }
             })
         };
 
@@ -220,9 +214,8 @@ async function exportToTar(exportContext, branch, format, res) {
     };
 
     for (const noteMeta of Object.values(noteIdToMeta)) {
-        // filter out relations and links which are not inside this export
+        // filter out relations which are not inside this export
         noteMeta.attributes = noteMeta.attributes.filter(attr => attr.type !== 'relation' || attr.value in noteIdToMeta);
-        noteMeta.links = noteMeta.links.filter(link => link.targetNoteId in noteIdToMeta);
     }
 
     if (!metaFile.files[0]) { // corner case of disabled export for exported note

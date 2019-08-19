@@ -249,8 +249,7 @@ const primaryKeys = {
     "recent_notes": "noteId",
     "api_tokens": "apiTokenId",
     "options": "name",
-    "attributes": "attributeId",
-    "links": "linkId"
+    "attributes": "attributeId"
 };
 
 async function getEntityRow(entityName, entityId) {

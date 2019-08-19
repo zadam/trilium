@@ -628,10 +628,17 @@ class Note extends Entity {
     /**
      * Get list of links coming out of this note.
      *
-     * @returns {Promise<Link[]>}
+     * @deprecated - not intended for general use
+     * @returns {Promise<Attribute[]>}
      */
     async getLinks() {
-        return await repository.getEntities("SELECT * FROM links WHERE noteId = ? AND isDeleted = 0", [this.noteId]);
+        return await repository.getEntities(`
+            SELECT * 
+            FROM attributes 
+            WHERE noteId = ? AND 
+                  isDeleted = 0 AND 
+                  type = 'relation' AND 
+                  name IN ('internal-link', 'image-link', 'relation-map-link')`, [this.noteId]);
     }
 
     /**

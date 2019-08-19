@@ -1,7 +1,6 @@
 "use strict";
 
 const Attribute = require('../../entities/attribute');
-const Link = require('../../entities/link');
 const utils = require('../../services/utils');
 const log = require('../../services/log');
 const repository = require('../../services/repository');
@@ -26,7 +25,6 @@ async function importTar(importContext, fileBuffer, importRootNote) {
     // maps from original noteId (in tar file) to newly generated noteId
     const noteIdMap = {};
     const attributes = [];
-    const links = [];
     // path => noteId
     const createdPaths = { '/': importRootNote.noteId, '\\': importRootNote.noteId };
     const mdReader = new commonmark.Parser();
@@ -146,7 +144,7 @@ async function importTar(importContext, fileBuffer, importRootNote) {
         return { type, mime };
     }
 
-    async function saveAttributesAndLinks(note, noteMeta) {
+    async function saveAttributes(note, noteMeta) {
         if (!noteMeta) {
             return;
         }
@@ -168,13 +166,6 @@ async function importTar(importContext, fileBuffer, importRootNote) {
             }
 
             attributes.push(attr);
-        }
-
-        for (const link of noteMeta.links) {
-            link.noteId = note.noteId;
-            link.targetNoteId = getNewNoteId(link.targetNoteId);
-
-            links.push(link);
         }
     }
 
@@ -200,7 +191,7 @@ async function importTar(importContext, fileBuffer, importRootNote) {
             isProtected: importRootNote.isProtected && protectedSessionService.isProtectedSessionAvailable(),
         }));
 
-        await saveAttributesAndLinks(note, noteMeta);
+        await saveAttributes(note, noteMeta);
 
         if (!firstNote) {
             firstNote = note;
@@ -246,9 +237,11 @@ async function importTar(importContext, fileBuffer, importRootNote) {
             content = content.toString("UTF-8");
 
             if (noteMeta) {
+                const internalLinks = (noteMeta.attributes || []).find(attr => attr.type === 'relation' && attr.name === 'internal-link');
+
                 // this will replace all internal links (<a> and <img>) inside the body
                 // links pointing outside the export will be broken and changed (ctx.getNewNoteId() will still assign new noteId)
-                for (const link of noteMeta.links || []) {
+                for (const link of internalLinks) {
                     // no need to escape the regexp find string since it's a noteId which doesn't contain any special characters
                     content = content.replace(new RegExp(link.targetNoteId, "g"), getNewNoteId(link.targetNoteId));
                 }
@@ -278,7 +271,7 @@ async function importTar(importContext, fileBuffer, importRootNote) {
                 isProtected: importRootNote.isProtected && protectedSessionService.isProtectedSessionAvailable(),
             }));
 
-            await saveAttributesAndLinks(note, noteMeta);
+            await saveAttributes(note, noteMeta);
 
             if (!noteMeta && (type === 'file' || type === 'image')) {
                 attributes.push({
@@ -376,15 +369,6 @@ async function importTar(importContext, fileBuffer, importRootNote) {
                 }
                 else {
                     log.info("Relation not imported since target note doesn't exist: " + JSON.stringify(attr));
-                }
-            }
-
-            for (const link of links) {
-                if (link.targetNoteId in createdNoteIds) {
-                    await new Link(link).save();
-                }
-                else {
-                    log.info("Link not imported since target note doesn't exist: " + JSON.stringify(link));
                 }
             }
 

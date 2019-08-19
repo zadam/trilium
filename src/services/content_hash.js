@@ -12,7 +12,6 @@ const Attribute = require('../entities/attribute');
 const NoteRevision = require('../entities/note_revision');
 const RecentNote = require('../entities/recent_note');
 const Option = require('../entities/option');
-const Link = require('../entities/link');
 
 async function getHash(tableName, primaryKeyName, whereBranch) {
     // subselect is necessary to have correct ordering in GROUP_CONCAT
@@ -40,7 +39,6 @@ async function getHashes() {
         options: await getHash(Option.entityName, Option.primaryKeyName, "isSynced = 1"),
         attributes: await getHash(Attribute.entityName, Attribute.primaryKeyName),
         api_tokens: await getHash(ApiToken.entityName, ApiToken.primaryKeyName),
-        links: await getHash(Link.entityName, Link.primaryKeyName)
     };
 
     const elapseTimeMs = Date.now() - startTime.getTime();

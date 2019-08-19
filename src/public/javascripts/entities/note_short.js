@@ -1,4 +1,6 @@
 import server from '../services/server.js';
+import Attribute from './attribute.js';
+import Link from './link.js';
 
 const LABEL = 'label';
 const LABEL_DEFINITION = 'label-definition';
@@ -84,7 +86,8 @@ class NoteShort {
      */
     async getAttributes(name) {
         if (!this.attributeCache) {
-            this.attributeCache = await server.get('notes/' + this.noteId + '/attributes');
+            this.attributeCache = (await server.get('notes/' + this.noteId + '/attributes'))
+                .map(attrRow => new Attribute(this.treeCache, attrRow));
         }
 
         if (name) {
@@ -225,6 +228,14 @@ class NoteShort {
      */
     invalidateAttributeCache() {
         this.attributeCache = null;
+    }
+
+    /**
+     * @return {Promise<Link[]>}
+     */
+    async getLinks() {
+        return (await server.get('notes/' + this.noteId + '/links'))
+            .map(linkRow => new Link(this.treeCache, linkRow));
     }
 
     get toString() {

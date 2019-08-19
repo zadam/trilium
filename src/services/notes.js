@@ -8,7 +8,6 @@ const eventService = require('./events');
 const repository = require('./repository');
 const cls = require('../services/cls');
 const Note = require('../entities/note');
-const Link = require('../entities/link');
 const NoteRevision = require('../entities/note_revision');
 const Branch = require('../entities/branch');
 const Attribute = require('../entities/attribute');
@@ -215,8 +214,8 @@ function findImageLinks(content, foundLinks) {
 
     while (match = re.exec(content)) {
         foundLinks.push({
-            type: 'image',
-            targetNoteId: match[1]
+            type: 'image-link',
+            value: match[1]
         });
     }
 
@@ -225,14 +224,14 @@ function findImageLinks(content, foundLinks) {
     return content.replace(/src="[^"]*\/api\/images\//g, 'src="api/images/');
 }
 
-function findHyperLinks(content, foundLinks) {
+function findInternalLinks(content, foundLinks) {
     const re = /href="[^"]*#root[a-zA-Z0-9\/]*\/([a-zA-Z0-9]+)\/?"/g;
     let match;
 
     while (match = re.exec(content)) {
         foundLinks.push({
-            type: 'hyper',
-            targetNoteId: match[1]
+            name: 'internal-link',
+            value: match[1]
         });
     }
 
@@ -245,8 +244,8 @@ function findRelationMapLinks(content, foundLinks) {
 
     for (const note of obj.notes) {
         foundLinks.push({
-            type: 'relation-map',
-            targetNoteId: note.noteId
+            type: 'relation-map-link',
+            value: note.noteId
         })
     }
 }
@@ -260,7 +259,7 @@ async function saveLinks(note, content) {
 
     if (note.type === 'text') {
         content = findImageLinks(content, foundLinks);
-        content = findHyperLinks(content, foundLinks);
+        content = findInternalLinks(content, foundLinks);
     }
     else if (note.type === 'relation-map') {
         findRelationMapLinks(content, foundLinks);
@@ -273,14 +272,15 @@ async function saveLinks(note, content) {
 
     for (const foundLink of foundLinks) {
         const existingLink = existingLinks.find(existingLink =>
-            existingLink.targetNoteId === foundLink.targetNoteId
-            && existingLink.type === foundLink.type);
+            existingLink.value === foundLink.value
+            && existingLink.name === foundLink.name);
 
         if (!existingLink) {
-            await new Link({
+            await new Attribute({
                 noteId: note.noteId,
-                targetNoteId: foundLink.targetNoteId,
-                type: foundLink.type
+                type: 'relation',
+                name: foundLink.name,
+                value: foundLink.targetNoteId,
             }).save();
         }
         else if (existingLink.isDeleted) {
@@ -292,8 +292,8 @@ async function saveLinks(note, content) {
 
     // marking links as deleted if they are not present on the page anymore
     const unusedLinks = existingLinks.filter(existingLink => !foundLinks.some(foundLink =>
-                                    existingLink.targetNoteId === foundLink.targetNoteId
-                                    && existingLink.type === foundLink.type));
+                                    existingLink.value === foundLink.value
+                                    && existingLink.name === foundLink.name));
 
     for (const unusedLink of unusedLinks) {
         unusedLink.isDeleted = true;
@@ -413,11 +413,6 @@ async function deleteNote(branch) {
         for (const relation of await note.getTargetRelations()) {
             relation.isDeleted = true;
             await relation.save();
-        }
-
-        for (const link of await note.getLinks()) {
-            link.isDeleted = true;
-            await link.save();
         }
 
         for (const link of await note.getTargetLinks()) {

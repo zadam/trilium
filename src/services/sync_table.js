@@ -32,10 +32,6 @@ async function addRecentNoteSync(noteId, sourceId) {
     await addEntitySync("recent_notes", noteId, sourceId);
 }
 
-async function addLinkSync(linkId, sourceId) {
-    await addEntitySync("links", linkId, sourceId);
-}
-
 async function addAttributeSync(attributeId, sourceId) {
     await addEntitySync("attributes", attributeId, sourceId);
 }
@@ -101,7 +97,6 @@ async function fillAllSyncRows() {
     await fillSyncRows("recent_notes", "noteId");
     await fillSyncRows("attributes", "attributeId");
     await fillSyncRows("api_tokens", "apiTokenId");
-    await fillSyncRows("links", "linkId");
     await fillSyncRows("options", "name", 'isSynced = 1');
 }
 
@@ -115,7 +110,6 @@ module.exports = {
     addRecentNoteSync,
     addAttributeSync,
     addApiTokenSync,
-    addLinkSync,
     addEntitySync,
     fillAllSyncRows
 };
