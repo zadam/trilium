@@ -13,7 +13,6 @@ import treeKeyBindings from "./tree_keybindings.js";
 import Branch from '../entities/branch.js';
 import NoteShort from '../entities/note_short.js';
 import hoistedNoteService from '../services/hoisted_note.js';
-import confirmDialog from "../dialogs/confirm.js";
 import optionsInit from "../services/options_init.js";
 import TreeContextMenu from "./tree_context_menu.js";
 import bundle from "./bundle.js";
@@ -154,6 +153,8 @@ async function activateNote(notePath, noteLoadedListener) {
     const hoistedNoteId = await hoistedNoteService.getHoistedNoteId();
 
     if (hoistedNoteId !== 'root' && !runNotePath.includes(hoistedNoteId)) {
+        const confirmDialog = await import('../dialogs/confirm.js');
+
         if (!await confirmDialog.confirm("Requested note is outside of hoisted note subtree. Do you want to unhoist?")) {
             return;
         }

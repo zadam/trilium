@@ -21,7 +21,7 @@ const $explodeArchivesCheckbox = $("#explode-archives-checkbox");
 let importId;
 let importIntoNoteId = null;
 
-async function showDialog(node) {
+export async function showDialog(node) {
     utils.closeActiveDialog();
 
     // each opening of the dialog resets the importId so we don't associate it with previous imports anymore
@@ -74,7 +74,7 @@ async function importIntoNote(importNoteId) {
     $dialog.modal('hide');
 }
 
-async function uploadFiles(importNoteId, files, options) {
+export async function uploadFiles(importNoteId, files, options) {
     if (files.length === 0) {
         return;
     }
@@ -144,8 +144,3 @@ $fileUploadInput.change(() => {
         $importButton.attr("disabled", "disabled");
     }
 });
-
-export default {
-    showDialog,
-    uploadFiles
-}

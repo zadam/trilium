@@ -6,9 +6,6 @@ import treeService from "./tree.js";
 import contextMenuWidget from "./context_menu.js";
 import infoService from "./info.js";
 import attributeAutocompleteService from "./attribute_autocomplete.js";
-import promptDialog from "../dialogs/prompt.js";
-import infoDialog from "../dialogs/info.js";
-import confirmDialog from "../dialogs/confirm.js";
 
 const uniDirectionalOverlays = [
     [ "Arrow", {
@@ -125,6 +122,7 @@ class NoteDetailRelationMap {
         this.clipboard = null;
 
         this.$createChildNote.click(async () => {
+            const promptDialog = await import('"../dialogs/prompt.js"');
             const title = await promptDialog.ask({ message: "Enter title of new note",  defaultValue: "new note" });
 
             if (!title.trim()) {
@@ -164,6 +162,8 @@ class NoteDetailRelationMap {
             noteDetailService.openInTab(noteId);
         }
         else if (cmd === "remove") {
+            const confirmDialog = await import('../dialogs/confirm.js');
+
             if (!await confirmDialog.confirmDeleteNoteBoxWithNote($title.text())) {
                 return;
             }
@@ -184,6 +184,7 @@ class NoteDetailRelationMap {
             this.saveData();
         }
         else if (cmd === "edit-title") {
+            const promptDialog = await import('"../dialogs/prompt.js"');
             const title = await promptDialog.ask({
                 message: "Enter new note title:",
                 defaultValue: $title.text()
@@ -429,6 +430,8 @@ class NoteDetailRelationMap {
                     },
                     selectContextMenuItem: async (event, cmd) => {
                         if (cmd === 'remove') {
+                            const confirmDialog = await import('../dialogs/confirm.js');
+
                             if (!await confirmDialog.confirm("Are you sure you want to remove the relation?")) {
                                 return;
                             }
@@ -451,6 +454,7 @@ class NoteDetailRelationMap {
             return;
         }
 
+        const promptDialog = await import('"../dialogs/prompt.js"');
         const name = await promptDialog.ask({
             message: "Specify new relation name:",
             shown: ({ $answer }) =>
@@ -476,6 +480,7 @@ class NoteDetailRelationMap {
             && rel.name === name);
 
         if (relationExists) {
+            const infoDialog = await import('../dialogs/info.js');
             await infoDialog.info("Connection '" + name + "' between these notes already exists.");
 
             this.jsPlumbInstance.deleteConnection(connection);

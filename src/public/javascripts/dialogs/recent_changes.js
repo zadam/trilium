@@ -5,7 +5,7 @@ import server from '../services/server.js';
 const $dialog = $("#recent-changes-dialog");
 const $content = $("#recent-changes-content");
 
-async function showDialog() {
+export async function showDialog() {
     utils.closeActiveDialog();
 
     glob.activeDialog = $dialog;
@@ -76,7 +76,3 @@ function groupByDate(result) {
     }
     return groupedByDate;
 }
-
-export default {
-    showDialog
-};

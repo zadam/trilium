@@ -1,5 +1,4 @@
 import libraryLoader from "../services/library_loader.js";
-import linkMapDialog from "../dialogs/link_map.js";
 import server from "../services/server.js";
 import treeCache from "../services/tree_cache.js";
 import linkService from "../services/link.js";
@@ -28,7 +27,8 @@ class LinkMapWidget extends StandardWidget {
 
     getHeaderActions() {
         const $showFullButton = $("<a>").append("show full").addClass('widget-header-action');
-        $showFullButton.click(() => {
+        $showFullButton.click(async () => {
+            const linkMapDialog = await import("../dialogs/link_map.js");
             linkMapDialog.showDialog();
         });
 

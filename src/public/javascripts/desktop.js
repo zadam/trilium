@@ -1,17 +1,3 @@
-import addLinkDialog from './dialogs/add_link.js';
-import jumpToNoteDialog from './dialogs/jump_to_note.js';
-import attributesDialog from './dialogs/attributes.js';
-import noteRevisionsDialog from './dialogs/note_revisions.js';
-import noteSourceDialog from './dialogs/note_source.js';
-import recentChangesDialog from './dialogs/recent_changes.js';
-import optionsDialog from './dialogs/options.js';
-import sqlConsoleDialog from './dialogs/sql_console.js';
-import markdownImportDialog from './dialogs/markdown_import.js';
-import exportDialog from './dialogs/export.js';
-import importDialog from './dialogs/import.js';
-import protectedSessionDialog from './dialogs/protected_session.js';
-import linkMapDialog from './dialogs/link_map.js';
-
 import cloning from './services/cloning.js';
 import contextMenu from './services/tree_context_menu.js';
 import dragAndDropSetup from './services/drag_and_drop.js';
@@ -50,7 +36,7 @@ window.glob.isMobile = utils.isMobile;
 // required for CKEditor image upload plugin
 window.glob.getActiveNode = treeService.getActiveNode;
 window.glob.getHeaders = server.getHeaders;
-window.glob.showAddLinkDialog = addLinkDialog.showDialog;
+window.glob.showAddLinkDialog = () => import('./dialogs/add_link.js').then(d => d.showDialog());
 // this is required by CKEditor when uploading images
 window.glob.noteChanged = noteDetailService.noteChanged;
 window.glob.refreshTree = treeService.reload;

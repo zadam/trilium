@@ -12,7 +12,7 @@ const $noteTitle = $('#branch-prefix-note-title');
 
 let branchId;
 
-async function showDialog(node) {
+export async function showDialog(node) {
     utils.closeActiveDialog();
 
     glob.activeDialog = $dialog;
@@ -48,7 +48,3 @@ $form.submit(() => {
 });
 
 $dialog.on('shown.bs.modal', () => $treePrefixInput.focus());
-
-export default {
-    showDialog
-};

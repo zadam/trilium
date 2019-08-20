@@ -2,7 +2,6 @@ import treeService from './tree.js';
 import noteDetailService from './note_detail.js';
 import server from './server.js';
 import infoService from "./info.js";
-import confirmDialog from "../dialogs/confirm.js";
 
 const DEFAULT_MIME_TYPES = [
     { mime: 'text/x-csrc', title: 'C' },
@@ -113,12 +112,13 @@ function NoteTypeContext(ctx) {
         self.updateExecuteScriptButtonVisibility();
     }
 
-    function confirmChangeIfContent() {
+    async function confirmChangeIfContent() {
         if (!self.ctx.getComponent().getContent()) {
             return true;
         }
 
-        return confirmDialog.confirm("It is not recommended to change note type when note content is not empty. Do you want to continue anyway?");
+        const confirmDialog = await import("../dialogs/confirm.js");
+        return await confirmDialog.confirm("It is not recommended to change note type when note content is not empty. Do you want to continue anyway?");
     }
 
     this.selectText = async function() {

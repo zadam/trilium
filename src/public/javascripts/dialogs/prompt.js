@@ -11,7 +11,7 @@ const $form = $("#prompt-dialog-form");
 let resolve;
 let shownCb;
 
-function ask({ message, defaultValue, shown }) {
+export function ask({ message, defaultValue, shown }) {
     utils.closeActiveDialog();
 
     glob.activeDialog = $dialog;
@@ -58,7 +58,3 @@ $form.submit(() => {
 
     $dialog.modal('hide');
 });
-
-export default {
-    ask
-}

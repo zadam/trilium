@@ -9,7 +9,7 @@ const $type = $("#note-info-type");
 const $mime = $("#note-info-mime");
 const $okButton = $("#note-info-ok-button");
 
-function showDialog() {
+export function showDialog() {
     utils.closeActiveDialog();
 
     glob.activeDialog = $dialog;
@@ -26,7 +26,3 @@ function showDialog() {
 }
 
 $okButton.click(() => $dialog.modal('hide'));
-
-export default {
-    showDialog
-};

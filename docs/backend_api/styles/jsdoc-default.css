@@ -273,7 +273,7 @@ tr > th:last-child { border-right: 1px solid #ddd; }
     margin: 0;
 }
 
-.prettyprint
+.source
 {
     border: 1px solid #ddd;
     width: 80%;
@@ -284,7 +284,7 @@ tr > th:last-child { border-right: 1px solid #ddd; }
     width: inherit;
 }
 
-.prettyprint code
+.source code
 {
     font-size: 100%;
     line-height: 18px;

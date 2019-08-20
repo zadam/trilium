@@ -15,8 +15,8 @@
   "scripts": {
     "start-server": "TRILIUM_ENV=dev node ./src/www",
     "start-electron": "TRILIUM_ENV=dev electron . --disable-gpu",
-    "build-backend-docs": "jsdoc -c jsdoc-conf.json -d ./docs/backend_api src/entities/*.js src/services/backend_script_api.js",
-    "build-frontend-docs": "jsdoc -c jsdoc-conf.json -d ./docs/frontend_api src/public/javascripts/entities/*.js src/public/javascripts/services/frontend_script_api.js",
+    "build-backend-docs": "./node_modules/.bin/jsdoc -c jsdoc-conf.json -d ./docs/backend_api src/entities/*.js src/services/backend_script_api.js",
+    "build-frontend-docs": "./node_modules/.bin/jsdoc -c jsdoc-conf.json -d ./docs/frontend_api src/public/javascripts/entities/*.js src/public/javascripts/services/frontend_script_api.js",
     "build-docs": "npm run build-backend-docs && npm run build-frontend-docs",
     "postinstall": "electron-builder install-app-deps"
   },
@@ -38,7 +38,7 @@
     "electron-window-state": "5.0.3",
     "express": "4.17.1",
     "express-session": "1.16.2",
-    "file-type": "12.1.0",
+    "file-type": "12.2.0",
     "fs-extra": "8.1.0",
     "helmet": "3.20.0",
     "html": "1.0.0",
@@ -69,7 +69,7 @@
     "session-file-store": "1.3.1",
     "simple-node-logger": "18.12.23",
     "sqlite": "3.0.3",
-    "sqlite3": "4.0.9",
+    "sqlite3": "4.1.0",
     "tar-stream": "2.1.0",
     "turndown": "5.0.3",
     "unescape": "1.0.1",
@@ -77,12 +77,13 @@
     "xml2js": "0.4.19"
   },
   "devDependencies": {
-    "electron": "6.0.2",
+    "electron": "6.0.3",
     "electron-builder": "21.2.0",
     "electron-compile": "6.4.4",
     "electron-installer-debian": "2.0.0",
     "electron-packager": "14.0.4",
     "electron-rebuild": "1.8.6",
+    "jsdoc": "^3.6.3",
     "lorem-ipsum": "2.0.3",
     "xo": "0.24.0"
   },

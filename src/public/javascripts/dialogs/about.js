@@ -9,7 +9,7 @@ const $buildDate = $("#build-date");
 const $buildRevision = $("#build-revision");
 const $dataDirectory = $("#data-directory");
 
-async function showDialog() {
+export async function showDialog() {
     utils.closeActiveDialog();
 
     const appInfo = await server.get('app-info');
@@ -25,8 +25,4 @@ async function showDialog() {
     glob.activeDialog = $dialog;
 
     $dialog.modal();
-}
-
-export default {
-    showDialog
 }

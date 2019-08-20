@@ -2,12 +2,10 @@ import treeService from './tree.js';
 import TabContext from './tab_context.js';
 import server from './server.js';
 import messagingService from "./messaging.js";
-import infoService from "./info.js";
 import treeCache from "./tree_cache.js";
 import NoteFull from "../entities/note_full.js";
 import bundleService from "./bundle.js";
 import utils from "./utils.js";
-import importDialog from "../dialogs/import.js";
 import contextMenuService from "./context_menu.js";
 import treeUtils from "./tree_utils.js";
 import tabRow from "./tab_row.js";
@@ -383,13 +381,14 @@ $tabContentsContainer.on("dragover", e => e.preventDefault());
 
 $tabContentsContainer.on("dragleave", e => e.preventDefault());
 
-$tabContentsContainer.on("drop", e => {
+$tabContentsContainer.on("drop", async e => {
     const activeNote = getActiveNote();
 
     if (!activeNote) {
         return;
     }
 
+    const importDialog = await import("../dialogs/import.js");
     importDialog.uploadFiles(activeNote.noteId, e.originalEvent.dataTransfer.files, {
         safeImport: true,
         shrinkImages: true,

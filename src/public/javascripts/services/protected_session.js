@@ -4,7 +4,6 @@ import utils from './utils.js';
 import server from './server.js';
 import protectedSessionHolder from './protected_session_holder.js';
 import infoService from "./info.js";
-import protectedSessionDialog from "../dialogs/protected_session.js";
 
 const $enterProtectedSessionButton = $("#enter-protected-session-button");
 const $leaveProtectedSessionButton = $("#leave-protected-session-button");
@@ -28,7 +27,7 @@ function enterProtectedSession() {
         // using deferred instead of promise because it allows resolving from outside
         protectedSessionDeferred = dfd;
 
-        protectedSessionDialog.show();
+        import("../dialogs/protected_session.js").then(protectedSessionDialog => protectedSessionDialog.show())
     }
 
     return dfd.promise();

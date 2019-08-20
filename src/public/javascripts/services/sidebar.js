@@ -1,8 +1,3 @@
-import NoteInfoWidget from "../widgets/note_info.js";
-import LinkMapWidget from "../widgets/link_map.js";
-import NoteRevisionsWidget from "../widgets/note_revisions.js";
-import AttributesWidget from "../widgets/attributes.js";
-import WhatLinksHereWidget from "../widgets/what_links_here.js";
 import bundleService from "./bundle.js";
 import messagingService from "./messaging.js";
 
@@ -32,6 +27,7 @@ class Sidebar {
             this.$sidebar.show();
             this.$showSideBarButton.hide();
             this.ctx.stateChanged();
+            this.noteLoaded();
         });
 
         this.$showSideBarButton.toggle(!state.visible);
@@ -50,10 +46,20 @@ class Sidebar {
     }
 
     async noteLoaded() {
+        if (!this.isVisible() || !this.ctx.note) {
+            return;
+        }
+
         this.widgets = [];
         this.$widgetContainer.empty();
 
-        const widgetClasses = [AttributesWidget, LinkMapWidget, WhatLinksHereWidget, NoteRevisionsWidget, NoteInfoWidget];
+        const widgetClasses = [
+            await import("../widgets/note_info.js"),
+            await import("../widgets/link_map.js"),
+            await import("../widgets/note_revisions.js"),
+            await import("../widgets/attributes.js"),
+            await import("../widgets/what_links_here.js")
+        ].map(m => m.default);
 
         const widgetRelations = await this.ctx.note.getRelations('widget');
 

@@ -1,21 +1,21 @@
 import utils from "./utils.js";
-import treeService from "./tree.js";
 import linkService from "./link.js";
 import zoomService from "./zoom.js";
-import noteRevisionsDialog from "../dialogs/note_revisions.js";
-import optionsDialog from "../dialogs/options.js";
-import addLinkDialog from "../dialogs/add_link.js";
-import jumpToNoteDialog from "../dialogs/jump_to_note.js";
-import noteSourceDialog from "../dialogs/note_source.js";
-import recentChangesDialog from "../dialogs/recent_changes.js";
-import sqlConsoleDialog from "../dialogs/sql_console.js";
-import searchNotesService from "./search_notes.js";
-import attributesDialog from "../dialogs/attributes.js";
-import helpDialog from "../dialogs/help.js";
-import noteInfoDialog from "../dialogs/note_info.js";
-import aboutDialog from "../dialogs/about.js";
-import linkMapDialog from "../dialogs/link_map.js";
 import protectedSessionService from "./protected_session.js";
+import searchNotesService from "./search_notes.js";
+
+const NOTE_REVISIONS = "../dialogs/note_revisions.js";
+const OPTIONS = "../dialogs/options.js";
+const ADD_LINK = "../dialogs/add_link.js";
+const JUMP_TO_NOTE = "../dialogs/jump_to_note.js";
+const NOTE_SOURCE = "../dialogs/note_source.js";
+const RECENT_CHANGES = "../dialogs/recent_changes.js";
+const SQL_CONSOLE = "../dialogs/sql_console.js";
+const ATTRIBUTES = "../dialogs/attributes.js";
+const HELP = "../dialogs/help.js";
+const NOTE_INFO = "../dialogs/note_info.js";
+const ABOUT = "../dialogs/about.js";
+const LINK_MAP = "../dialogs/link_map.js";
 
 function registerEntrypoints() {
     // hot keys are active also inside inputs and content editables
@@ -23,13 +23,13 @@ function registerEntrypoints() {
     jQuery.hotkeys.options.filterContentEditable = false;
     jQuery.hotkeys.options.filterTextInputs = false;
 
-    utils.bindGlobalShortcut('ctrl+l', addLinkDialog.showDialog);
-    utils.bindGlobalShortcut('ctrl+shift+l', addLinkDialog.showDialogForClone);
+    utils.bindGlobalShortcut('ctrl+l', () => import(ADD_LINK).then(d => d.showDialog()));
+    utils.bindGlobalShortcut('ctrl+shift+l', () => import(ADD_LINK).then(d => d.showDialogForClone()));
 
-    $("#jump-to-note-dialog-button").click(jumpToNoteDialog.showDialog);
-    utils.bindGlobalShortcut('ctrl+j', jumpToNoteDialog.showDialog);
+    $("#jump-to-note-dialog-button").click(() => import(JUMP_TO_NOTE).then(d => d.showDialog()));
+    utils.bindGlobalShortcut('ctrl+j', () => import(JUMP_TO_NOTE).then(d => d.showDialog()));
 
-    $("#recent-changes-button").click(recentChangesDialog.showDialog);
+    $("#recent-changes-button").click(() => import(RECENT_CHANGES).then(d => d.showDialog()));
 
     $("#enter-protected-session-button").click(protectedSessionService.enterProtectedSession);
     $("#leave-protected-session-button").click(protectedSessionService.leaveProtectedSession);
@@ -38,17 +38,17 @@ function registerEntrypoints() {
     utils.bindGlobalShortcut('ctrl+s', searchNotesService.toggleSearch);
 
     const $noteTabContainer = $("#note-tab-container");
-    $noteTabContainer.on("click", ".show-attributes-button", attributesDialog.showDialog);
-    utils.bindGlobalShortcut('alt+a', attributesDialog.showDialog);
+    $noteTabContainer.on("click", ".show-attributes-button", () => import(ATTRIBUTES).then(d => d.showDialog()));
+    utils.bindGlobalShortcut('alt+a', () => import(ATTRIBUTES).then(d => d.showDialog()));
 
-    $noteTabContainer.on("click", ".show-note-info-button", noteInfoDialog.showDialog);
+    $noteTabContainer.on("click", ".show-note-info-button", () => import(NOTE_INFO).then(d => d.showDialog()));
 
     $noteTabContainer.on("click", ".show-note-revisions-button", function() {
         if ($(this).hasClass("disabled")) {
             return;
         }
 
-        noteRevisionsDialog.showCurrentNoteRevisions();
+        import(NOTE_REVISIONS).then(d => d.showDialog());
     });
 
     $noteTabContainer.on("click", ".show-source-button", function() {
@@ -56,22 +56,26 @@ function registerEntrypoints() {
             return;
         }
 
-        noteSourceDialog.showDialog();
+        import(NOTE_SOURCE).then(d => {
+            console.log(d);
+
+            d.showDialog()
+        });
     });
 
     $noteTabContainer.on("click", ".show-link-map-button", function() {
-        linkMapDialog.showDialog();
+        import(LINK_MAP).then(d => d.showDialog());
     });
 
-    $("#options-button").click(optionsDialog.showDialog);
+    $("#options-button").click(() => import(OPTIONS).then(d => d.showDialog()));
 
-    $("#show-help-button").click(helpDialog.showDialog);
-    utils.bindGlobalShortcut('f1', helpDialog.showDialog);
+    $("#show-help-button").click(() => import(HELP).then(d => d.showDialog()));
+    utils.bindGlobalShortcut('f1', () => import(HELP).then(d => d.showDialog()));
 
-    $("#open-sql-console-button").click(sqlConsoleDialog.showDialog);
-    utils.bindGlobalShortcut('alt+o', sqlConsoleDialog.showDialog);
+    $("#open-sql-console-button").click(() => import(SQL_CONSOLE).then(d => d.showDialog()));
+    utils.bindGlobalShortcut('alt+o', () => import(SQL_CONSOLE).then(d => d.showDialog()));
 
-    $("#show-about-dialog-button").click(aboutDialog.showDialog);
+    $("#show-about-dialog-button").click(() => import(ABOUT).then(d => d.showDialog()));
 
     if (utils.isElectron()) {
         $("#history-navigation").show();

@@ -3,9 +3,6 @@ import messagingService from './messaging.js';
 import protectedSessionService from './protected_session.js';
 import treeChangesService from './branches.js';
 import treeUtils from './tree_utils.js';
-import branchPrefixDialog from '../dialogs/branch_prefix.js';
-import exportDialog from '../dialogs/export.js';
-import importDialog from '../dialogs/import.js';
 import treeCache from "./tree_cache.js";
 import syncService from "./sync.js";
 import hoistedNoteService from './hoisted_note.js';
@@ -108,6 +105,7 @@ class TreeContextMenu {
             });
         }
         else if (cmd === "editBranchPrefix") {
+            const branchPrefixDialog = await import('../dialogs/branch_prefix.js');
             branchPrefixDialog.showDialog(this.node);
         }
         else if (cmd === "protectSubtree") {
@@ -132,9 +130,11 @@ class TreeContextMenu {
             treeChangesService.deleteNodes(treeService.getSelectedOrActiveNodes(this.node));
         }
         else if (cmd === "export") {
+            const exportDialog = await import('../dialogs/export.js');
             exportDialog.showDialog(this.node,"subtree");
         }
         else if (cmd === "importIntoNote") {
+            const importDialog = await import('../dialogs/import.js');
             importDialog.showDialog(this.node);
         }
         else if (cmd === "collapseSubtree") {

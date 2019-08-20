@@ -25,7 +25,7 @@ async function convertMarkdownToHtml(text) {
     infoService.showMessage("Markdown content has been imported into the document.");
 }
 
-async function importMarkdownInline() {
+export async function importMarkdownInline() {
     if (utils.isElectron()) {
         const {clipboard} = require('electron');
         const text = clipboard.readText();
@@ -57,7 +57,3 @@ utils.bindElShortcut($dialog, 'ctrl+return', sendForm);
 
 // for CKEditor integration (button on block toolbar)
 window.glob.importMarkdownInline = importMarkdownInline;
-
-export default {
-    importMarkdownInline
-};

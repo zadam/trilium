@@ -4,7 +4,7 @@ import utils from "../services/utils.js";
 const $dialog = $("#note-source-dialog");
 const $noteSource = $("#note-source");
 
-function showDialog() {
+export function showDialog() {
     utils.closeActiveDialog();
 
     glob.activeDialog = $dialog;
@@ -42,7 +42,3 @@ function formatNode(node, level) {
 
     return node;
 }
-
-export default {
-    showDialog
-};

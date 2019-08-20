@@ -14,7 +14,7 @@ async function showCurrentNoteRevisions() {
     await showNoteRevisionsDialog(noteDetailService.getActiveNoteId());
 }
 
-async function showNoteRevisionsDialog(noteId, noteRevisionId) {
+export async function showNoteRevisionsDialog(noteId, noteRevisionId) {
     utils.closeActiveDialog();
 
     glob.activeDialog = $dialog;
@@ -73,7 +73,3 @@ $(document).on('click', "a[data-action='note-revision']", event => {
 
     return false;
 });
-
-export default {
-    showCurrentNoteRevisions
-};

@@ -1,4 +1,3 @@
-import attributesDialog from "../dialogs/attributes.js";
 import utils from "../services/utils.js";
 import linkService from "../services/link.js";
 import messagingService from "../services/messaging.js";
@@ -9,7 +8,8 @@ class AttributesWidget extends StandardWidget {
 
     getHeaderActions() {
         const $showFullButton = $("<a>").append("show dialog").addClass('widget-header-action');
-        $showFullButton.click(() => {
+        $showFullButton.click(async () => {
+            const attributesDialog = await import("../dialogs/attributes.js");
             attributesDialog.showDialog();
         });
 

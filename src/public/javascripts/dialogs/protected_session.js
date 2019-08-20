@@ -4,13 +4,13 @@ const $dialog = $("#protected-session-password-dialog");
 const $passwordForm = $dialog.find(".protected-session-password-form");
 const $passwordInput = $dialog.find(".protected-session-password");
 
-function show() {
+export function show() {
     $dialog.modal();
 
     $passwordInput.focus();
 }
 
-function close() {
+export function close() {
     // this may fal if the dialog has not been previously opened (not sure if still true with Bootstrap modal)
     try {
         $dialog.modal('hide');
@@ -26,8 +26,3 @@ $passwordForm.submit(() => {
 
     return false;
 });
-
-export default {
-    show,
-    close
-}

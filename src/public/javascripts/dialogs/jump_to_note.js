@@ -7,7 +7,7 @@ const $dialog = $("#jump-to-note-dialog");
 const $autoComplete = $("#jump-to-note-autocomplete");
 const $showInFullTextButton = $("#show-in-full-text-button");
 
-async function showDialog() {
+export async function showDialog() {
     utils.closeActiveDialog();
 
     glob.activeDialog = $dialog;
@@ -46,7 +46,3 @@ function showInFullText(e) {
 $showInFullTextButton.click(showInFullText);
 
 utils.bindElShortcut($dialog, 'ctrl+return', showInFullText);
-
-export default {
-    showDialog
-};

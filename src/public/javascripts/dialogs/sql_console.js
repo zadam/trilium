@@ -14,7 +14,7 @@ let codeEditor;
 
 $dialog.on("shown.bs.modal", e => initEditor());
 
-async function showDialog() {
+export async function showDialog() {
     utils.closeActiveDialog();
 
     glob.activeDialog = $dialog;
@@ -130,7 +130,3 @@ async function showTables() {
 utils.bindElShortcut($query, 'ctrl+return', execute);
 
 $executeButton.click(execute);
-
-export default {
-    showDialog
-};

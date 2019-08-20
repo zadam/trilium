@@ -1,6 +1,5 @@
 import treeService from './tree.js';
 import treeChangesService from './branches.js';
-import importDialog from '../dialogs/import.js';
 
 const dragAndDropSetup = {
     autoExpandMS: 600,
@@ -25,10 +24,12 @@ const dragAndDropSetup = {
     },
     dragEnter: (node, data) => true, // allow drop on any node
     dragOver: (node, data) => true,
-    dragDrop: (node, data) => {
+    dragDrop: async (node, data) => {
         const dataTransfer = data.dataTransfer;
 
         if (dataTransfer && dataTransfer.files && dataTransfer.files.length > 0) {
+            const importDialog = await import('../dialogs/import.js');
+
             importDialog.uploadFiles(node.data.noteId, dataTransfer.files, {
                 safeImport: true,
                 shrinkImages: true,

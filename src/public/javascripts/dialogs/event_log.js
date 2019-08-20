@@ -5,7 +5,7 @@ import server from '../services/server.js';
 const $dialog = $("#event-log-dialog");
 const $list = $("#event-log-list");
 
-async function showDialog() {
+export async function showDialog() {
     utils.closeActiveDialog();
 
     glob.activeDialog = $dialog;
@@ -30,7 +30,3 @@ async function showDialog() {
         $list.append(eventEl);
     }
 }
-
-export default {
-    showDialog
-};

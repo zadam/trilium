@@ -254,7 +254,7 @@ function AttributesModel() {
     }
 }
 
-async function showDialog() {
+export async function showDialog() {
     utils.closeActiveDialog();
 
     // lazily apply bindings on first use
@@ -286,7 +286,3 @@ $dialog.on('focus', '.label-value', function (e) {
         open: true
     })
 });
-
-export default {
-    showDialog
-};

@@ -24,11 +24,11 @@ function setLinkType(linkType) {
     linkTypeChanged();
 }
 
-async function showDialogForClone() {
+export async function showDialogForClone() {
     showDialog('selected-to-active');
 }
 
-async function showDialog(linkType) {
+export async function showDialog(linkType) {
     utils.closeActiveDialog();
 
     glob.activeDialog = $dialog;
@@ -147,8 +147,3 @@ function linkTypeChanged() {
 }
 
 $linkTypes.change(linkTypeChanged);
-
-export default {
-    showDialog,
-    showDialogForClone
-};

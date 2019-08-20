@@ -16,7 +16,7 @@ function addTabHandler(handler) {
     tabHandlers.push(handler);
 }
 
-async function showDialog() {
+export async function showDialog() {
     utils.closeActiveDialog();
 
     glob.activeDialog = $dialog;
@@ -37,11 +37,6 @@ async function saveOptions(options) {
 
     infoService.showMessage("Options change have been saved.");
 }
-
-export default {
-    showDialog,
-    saveOptions
-};
 
 addTabHandler((function() {
     const $themeSelect = $("#theme-select");

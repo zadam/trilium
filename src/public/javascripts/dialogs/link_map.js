@@ -26,7 +26,7 @@ let jsPlumbInstance = null;
 let pzInstance = null;
 let renderer = null;
 
-async function showDialog() {
+export async function showDialog() {
     utils.closeActiveDialog();
 
     glob.activeDialog = $dialog;
@@ -216,7 +216,3 @@ function noteIdToId(noteId) {
 $(".link-map-settings").change(loadNotesAndRelations);
 
 $maxNotesInput.on("input", loadNotesAndRelations);
-
-export default {
-    showDialog
-};

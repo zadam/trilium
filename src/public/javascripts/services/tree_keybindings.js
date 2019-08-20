@@ -1,7 +1,6 @@
 import noteDetailService from "./note_detail.js";
 import treeChangesService from "./branches.js";
 import treeService from "./tree.js";
-import editBranchPrefixDialog from "../dialogs/branch_prefix.js";
 import hoistedNoteService from "./hoisted_note.js";
 import clipboard from "./clipboard.js";
 
@@ -86,7 +85,8 @@ const keyBindings = {
 
         return false;
     },
-    "f2": node => {
+    "f2": async node => {
+        const editBranchPrefixDialog = await import("../dialogs/branch_prefix.js");
         editBranchPrefixDialog.showDialog(node);
     },
     "alt+-": node => {

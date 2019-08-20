@@ -7,7 +7,7 @@ const $okButton = $("#info-dialog-ok-button");
 let resolve;
 let $originallyFocused; // element focused before the dialog was opened so we can return to it afterwards
 
-function info(message) {
+export function info(message) {
     $originallyFocused = $(':focus');
 
     utils.closeActiveDialog();
@@ -35,7 +35,3 @@ $dialog.on("hidden.bs.modal", () => {
 });
 
 $okButton.click(() => $dialog.modal("hide"));
-
-export default {
-    info
-}

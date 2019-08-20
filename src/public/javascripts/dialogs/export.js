@@ -18,7 +18,7 @@ const $opmlVersions = $("#opml-versions");
 let exportId = '';
 let branchId = null;
 
-async function showDialog(node, defaultType) {
+export async function showDialog(node, defaultType) {
     utils.closeActiveDialog();
 
     // each opening of the dialog resets the exportId so we don't associate it with previous exports anymore
@@ -135,7 +135,3 @@ messagingService.subscribeToMessages(async message => {
         infoService.showMessage("Export finished successfully.");
     }
 });
-
-export default {
-    showDialog
-};

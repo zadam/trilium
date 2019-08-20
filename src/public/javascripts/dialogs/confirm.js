@@ -9,7 +9,7 @@ const DELETE_NOTE_BUTTON_ID = "confirm-dialog-delete-note";
 let resolve;
 let $originallyFocused; // element focused before the dialog was opened so we can return to it afterwards
 
-function confirm(message) {
+export function confirm(message) {
     $originallyFocused = $(':focus');
 
     $custom.hide();
@@ -27,7 +27,7 @@ function confirm(message) {
     return new Promise((res, rej) => { resolve = res; });
 }
 
-function confirmDeleteNoteBoxWithNote(title) {
+export function confirmDeleteNoteBoxWithNote(title) {
     glob.activeDialog = $dialog;
 
     $confirmContent.text(`Are you sure you want to remove the note "${title}" from relation map?`);
@@ -52,7 +52,7 @@ function confirmDeleteNoteBoxWithNote(title) {
     return new Promise((res, rej) => { resolve = res; });
 }
 
-function isDeleteNoteChecked() {
+export function isDeleteNoteChecked() {
     return $("#" + DELETE_NOTE_BUTTON_ID + ":checked").length > 0;
 }
 
@@ -78,9 +78,3 @@ function doResolve(ret) {
 
 $cancelButton.click(() => doResolve(false));
 $okButton.click(() => doResolve(true));
-
-export default {
-    confirm,
-    confirmDeleteNoteBoxWithNote,
-    isDeleteNoteChecked
-}
