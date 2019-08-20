@@ -47,6 +47,8 @@ const LINK_MAP = {
 
 const PRINT_THIS = {js: ["libraries/printThis.js"]};
 
+const SORTABLE = {js: ["libraries/sortable.min.js"]};
+
 async function requireLibrary(library) {
     if (library.css) {
         library.css.map(cssUrl => cssLoader.requireCss(cssUrl));
@@ -82,5 +84,6 @@ export default {
     COMMONMARK,
     RELATION_MAP,
     LINK_MAP,
-    PRINT_THIS
+    PRINT_THIS,
+    SORTABLE
 }

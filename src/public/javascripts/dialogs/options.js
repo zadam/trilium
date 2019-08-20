@@ -7,6 +7,7 @@ import zoomService from "../services/zoom.js";
 import utils from "../services/utils.js";
 import cssLoader from "../services/css_loader.js";
 import optionsInit from "../services/options_init.js";
+import libraryLoader from "../services/library_loader.js";
 
 const $dialog = $("#options-dialog");
 
@@ -346,10 +347,24 @@ addTabHandler((async function () {
     return {};
 })());
 
-addTabHandler((function() {
+addTabHandler((async function() {
     const $sidebarMinWidth = $("#sidebar-min-width");
     const $sidebarWidthPercent = $("#sidebar-width-percent");
     const $showSidebarInNewTab = $("#show-sidebar-in-new-tab");
+    const $widgetsActive = $("#widgets-active");
+    const $widgetsInactive = $("#widgets-inactive");
+
+    await libraryLoader.requireLibrary(libraryLoader.SORTABLE);
+
+    new Sortable($widgetsActive[0], {
+        group: 'shared',
+        animation: 150
+    });
+
+    new Sortable($widgetsInactive[0], {
+        group: 'shared',
+        animation: 150
+    });
 
     async function optionsLoaded(options) {
         $sidebarMinWidth.val(options.sidebarMinWidth);

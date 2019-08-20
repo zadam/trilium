@@ -344,3 +344,15 @@ body {
 .note-tab-row:not(.note-tab-row-is-sorting) .note-tab.note-tab-was-just-dragged {
     transition: transform 120ms ease-in-out;
 }
+
+#widgets-configuration {
+    margin: 0;
+}
+
+#widgets-configuration h5 {
+    text-align: center;
+}
+
+#widgets-configuration .list-group-item {
+    background: transparent;
+}
