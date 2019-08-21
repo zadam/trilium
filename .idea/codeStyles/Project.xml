@@ -6,5 +6,8 @@
         <option name="TAB_SIZE" value="2" />
       </value>
     </option>
+    <JSCodeStyleSettings version="0">
+      <option name="USE_EXPLICIT_JS_EXTENSION" value="TRUE" />
+    </JSCodeStyleSettings>
   </code_scheme>
 </component>

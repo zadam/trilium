@@ -53,13 +53,13 @@ class Sidebar {
         this.widgets = [];
         this.$widgetContainer.empty();
 
-        const widgetClasses = [
-            await import("../widgets/note_info.js"),
-            await import("../widgets/link_map.js"),
-            await import("../widgets/note_revisions.js"),
-            await import("../widgets/attributes.js"),
-            await import("../widgets/what_links_here.js")
-        ].map(m => m.default);
+        const widgetClasses = (await Promise.all([
+            import("../widgets/note_info.js"),
+            import("../widgets/link_map.js"),
+            import("../widgets/note_revisions.js"),
+            import("../widgets/attributes.js"),
+            import("../widgets/what_links_here.js")
+        ])).map(m => m.default);
 
         const widgetRelations = await this.ctx.note.getRelations('widget');
 
