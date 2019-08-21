@@ -355,4 +355,12 @@ body {
 
 #widgets-configuration .list-group-item {
     background: transparent;
+    font-size: larger;
+    display: flex;
+    justify-content: space-between;
+}
+
+#widgets-configuration .handle {
+    margin-right: 20px;
+    display: inline-block;
 }

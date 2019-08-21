@@ -10,14 +10,47 @@ export default class SidebarOptions {
         this.$widgetsActive = $("#widgets-active");
         this.$widgetsInactive = $("#widgets-inactive");
 
+        const widgets = {
+            attributes: 'Attributes',
+            linkMap: 'Link map',
+            noteInfo: 'Note info',
+            noteRevisions: 'Note revisions',
+            whatLinksHere: 'What links here'
+        };
+
+        for (const widgetName in widgets) {
+            const $widgetTitle = $('<div class="widget-title">')
+                .attr('data-widget-name', widgetName)
+                .append($("<span>").addClass("handle jam jam-move"))
+                .append($("<span>").text(widgets[widgetName]));
+
+            const $expandedCheckbox = $('<div class="expansion-conf">')
+                .attr("title", "If checked, the widget will be by default expanded (opened)")
+                .append($('<input type="checkbox">')
+                    .attr('id', 'widget-exp-' + widgetName))
+                .append("&nbsp;")
+                .append($("<label>")
+                    .attr("for", 'widget-exp-' + widgetName)
+                    .text(" expanded"));
+
+            const $el = $('<div>')
+                .addClass("list-group-item")
+                .append($widgetTitle)
+                .append($expandedCheckbox);
+
+            this.$widgetsActive.append($el);
+        }
+
         libraryLoader.requireLibrary(libraryLoader.SORTABLE).then(() => {
             new Sortable(this.$widgetsActive[0], {
-                group: 'shared',
+                group: 'widgets',
+                handle: '.handle',
                 animation: 150
             });
 
             new Sortable(this.$widgetsInactive[0], {
-                group: 'shared',
+                group: 'widgets',
+                handle: '.handle',
                 animation: 150
             });
         });
