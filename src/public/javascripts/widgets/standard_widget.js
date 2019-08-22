@@ -1,3 +1,5 @@
+import optionsInit from "../services/options_init.js";
+
 const WIDGET_TPL = `
 <div class="card widget">
     <div class="card-header">        
@@ -21,9 +23,20 @@ class StandardWidget {
      */
     constructor(ctx, state) {
         this.ctx = ctx;
-        this.widgetName = this.constructor.name;
+        this.state = state;
+        // construct in camelCase
+        this.widgetName = this.constructor.name.substr(0, 1).toLowerCase() + this.constructor.name.substr(1);
 
-        const widgetId = `tab-${ctx.tabId}-widget-${this.widgetName}`;
+    }
+
+    getWidgetTitle() { return "Untitled widget"; }
+
+    getHeaderActions() { return []; }
+
+    getMaxHeight() { return null; }
+
+    async render() {
+        const widgetId = `tab-${this.ctx.tabId}-widget-${this.widgetName}`;
 
         this.$widget = $(WIDGET_TPL);
         this.$widget.find('[data-target]').attr('data-target', "#" + widgetId);
@@ -31,7 +44,7 @@ class StandardWidget {
         this.$bodyWrapper = this.$widget.find('.body-wrapper');
         this.$bodyWrapper.attr('id', widgetId);
 
-        if (state && state.expanded) {
+        if (this.state && this.state.expanded) {
             this.$bodyWrapper.collapse("show");
         }
 
@@ -51,13 +64,11 @@ class StandardWidget {
         this.$title.text(this.getWidgetTitle());
         this.$headerActions = this.$widget.find('.widget-header-actions');
         this.$headerActions.append(...this.getHeaderActions());
+
+        await this.renderBody();
+
+        return this.$widget;
     }
-
-    getWidgetTitle() { return "Untitled widget"; }
-
-    getHeaderActions() { return []; }
-
-    getMaxHeight() { return null; }
 
     async renderBody() {
         if (!this.isExpanded() || this.rendered) {
@@ -72,6 +83,12 @@ class StandardWidget {
     /** for overriding */
     async doRenderBody() {}
 
+    async isEnabled() {
+        const option = await optionsInit.getJsonOption(this.widgetName + 'Widget');
+
+        return option ? option.enabled : true;
+    }
+
     isExpanded() {
         return this.$bodyWrapper.hasClass("show");
     }
@@ -81,10 +98,6 @@ class StandardWidget {
             name: this.widgetName,
             expanded: this.isExpanded()
         };
-    }
-
-    getWidgetElement() {
-        return this.$widget;
     }
 
     syncDataReceived(syncData) {}

@@ -74,10 +74,13 @@ class Sidebar {
 
             try {
                 const widget = new widgetClass(this.ctx, state);
-                await widget.renderBody();
 
-                this.widgets.push(widget);
-                this.$widgetContainer.append(widget.getWidgetElement());
+                if (await widget.isEnabled()) {
+                    const $el = await widget.render();
+
+                    this.widgets.push(widget);
+                    this.$widgetContainer.append($el);
+                }
             }
             catch (e) {
                 messagingService.logError(`Error while loading widget ${widgetClass.name}: ${e.message}`);

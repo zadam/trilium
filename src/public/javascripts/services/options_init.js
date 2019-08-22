@@ -4,9 +4,42 @@ let optionsReady;
 
 const loadListeners = [];
 
-function loadOptions() {
+class Options {
+    constructor(arr) {
+        this.arr = arr;
+    }
+
+    get(key) {
+        return this.arr[key];
+    }
+
+    getJson(key) {
+        try {
+            return JSON.parse(this.arr[key]);
+        }
+        catch (e) {
+            return null;
+        }
+    }
+
+    getInt(key) {
+        return parseInt(this.arr[key]);
+    }
+
+    getFloat(key) {
+        return parseFloat(this.arr[key]);
+    }
+
+    is(key) {
+        return this.arr[key] === 'true';
+    }
+}
+
+function reloadOptions() {
     optionsReady = new Promise((resolve, reject) => {
-        server.get('options').then(options => {
+        server.get('options').then(optionArr => {
+            const options = new Options(optionArr);
+
             resolve(options);
 
             for (const listener of loadListeners) {
@@ -14,9 +47,16 @@ function loadOptions() {
             }
         });
     });
+
+    return optionsReady;
 }
 
-loadOptions(); // initial load
+/** just waits for some options without triggering reload */
+async function waitForOptions() {
+    return await optionsReady;
+}
+
+reloadOptions(); // initial load
 
 function addLoadListener(listener) {
     loadListeners.push(listener);
@@ -26,28 +66,8 @@ function addLoadListener(listener) {
     optionsReady.then(listener);
 }
 
-async function getOption(name) {
-    const options = await optionsReady;
-
-    return options[name];
-}
-
-async function getJsonOption(name) {
-    const option = await getOption(name);
-
-    try {
-        return JSON.parse(option);
-    }
-    catch (e) {
-        return null;
-    }
-}
-
 export default {
-    // use addLoadListener() which will be called also on refreshes
-    optionsReady,
     addLoadListener,
-    loadOptions,
-    getOption,
-    getJsonOption
+    reloadOptions,
+    waitForOptions
 }

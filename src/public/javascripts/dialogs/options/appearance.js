@@ -45,7 +45,7 @@ export default class ApperanceOptions {
             const hideTabRowForOneTab = this.$oneTabDisplaySelect.val() === 'hide' ? 'true' : 'false';
 
             server.put('options/hideTabRowForOneTab/' + hideTabRowForOneTab)
-                .then(optionsInit.loadOptions);
+                .then(optionsInit.reloadOptions);
         });
 
         this.$leftPaneMinWidth.change(async () => {

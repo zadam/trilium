@@ -5,12 +5,12 @@ import noteDetailService from "./note_detail.js";
 
 let hoistedNoteId;
 
-optionsInit.optionsReady.then(options => {
-    hoistedNoteId = options['hoistedNoteId'];
+optionsInit.waitForOptions().then(options => {
+    hoistedNoteId = options.get('hoistedNoteId');
 });
 
 async function getHoistedNoteId() {
-    await optionsInit.optionsReady;
+    await optionsInit.waitForOptions();
 
     return hoistedNoteId;
 }

@@ -18,7 +18,7 @@ export default class ProtectedSessionOptions {
         const protectedSessionTimeout = this.$protectedSessionTimeout.val();
 
         server.put('options', { 'protectedSessionTimeout': protectedSessionTimeout }).then(() => {
-            optionsInit.loadOptions();
+            optionsInit.reloadOptions();
 
             infoService.showMessage("Options change have been saved.");
         });

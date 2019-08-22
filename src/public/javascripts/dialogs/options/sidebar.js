@@ -24,11 +24,11 @@ export default class SidebarOptions {
         });
 
         this.$showSidebarInNewTab.change(async () => {
-            const flag = this.$showSidebarInNewTab.is(":checked") ? 1 : 0;
+            const flag = this.$showSidebarInNewTab.is(":checked") ? 'true' : 'false';
 
             await server.put('options/showSidebarInNewTab/' + flag);
 
-            optionsInit.loadOptions();
+            optionsInit.reloadOptions();
         });
     }
 
@@ -116,6 +116,8 @@ export default class SidebarOptions {
         });
 
         await server.put('options', opts);
+
+        optionsInit.reloadOptions();
     }
 
     parseJsonSafely(str) {

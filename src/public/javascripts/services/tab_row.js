@@ -410,6 +410,6 @@ class TabRow {
 const noteTabRowEl = document.querySelector('.note-tab-row');
 const tabRow = new TabRow(noteTabRowEl);
 
-optionsInit.addLoadListener(options => tabRow.setHideTabRowForOneTab(options.hideTabRowForOneTab === 'true'));
+optionsInit.addLoadListener(options => tabRow.setHideTabRowForOneTab(options.is('hideTabRowForOneTab')));
 
 export default tabRow;

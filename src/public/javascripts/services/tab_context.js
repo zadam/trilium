@@ -38,7 +38,7 @@ const componentClasses = {
 let showSidebarInNewTab = true;
 
 optionsInitService.addLoadListener(options => {
-    showSidebarInNewTab = options.showSidebarInNewTab === '1';
+    showSidebarInNewTab = options.is('showSidebarInNewTab');
 });
 
 class TabContext {

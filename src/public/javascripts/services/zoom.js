@@ -40,7 +40,7 @@ function getCurrentZoom() {
 }
 
 if (utils.isElectron()) {
-    optionsInitService.addLoadListener(options => setZoomFactor(options.zoomFactor))
+    optionsInitService.addLoadListener(options => setZoomFactor(options.getFloat('zoomFactor')))
 }
 
 export default {

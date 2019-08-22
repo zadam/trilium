@@ -331,16 +331,9 @@ async function treeInitialized() {
         return;
     }
 
-    let openTabs = [];
+    const options = await optionsInit.waitForOptions();
 
-    try {
-        const options = await optionsInit.optionsReady;
-
-        openTabs = JSON.parse(options.openTabs);
-    }
-    catch (e) {
-        messagingService.logError("Cannot retrieve open tabs: " + e.stack);
-    }
+    const openTabs = options.getJson('openTabs') || [];
 
     // if there's notePath in the URL, make sure it's open and active
     // (useful, among others, for opening clipped notes from clipper)
