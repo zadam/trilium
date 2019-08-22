@@ -31,7 +31,7 @@ class StandardWidget {
         this.$bodyWrapper = this.$widget.find('.body-wrapper');
         this.$bodyWrapper.attr('id', widgetId);
 
-        if (state && state.visible) {
+        if (state && state.expanded) {
             this.$bodyWrapper.collapse("show");
         }
 
@@ -60,7 +60,7 @@ class StandardWidget {
     getMaxHeight() { return null; }
 
     async renderBody() {
-        if (!this.isVisible() || this.rendered) {
+        if (!this.isExpanded() || this.rendered) {
             return;
         }
 
@@ -72,14 +72,14 @@ class StandardWidget {
     /** for overriding */
     async doRenderBody() {}
 
-    isVisible() {
+    isExpanded() {
         return this.$bodyWrapper.hasClass("show");
     }
 
     getWidgetState() {
         return {
             name: this.widgetName,
-            visible: this.isVisible()
+            expanded: this.isExpanded()
         };
     }
 

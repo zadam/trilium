@@ -32,10 +32,22 @@ async function getOption(name) {
     return options[name];
 }
 
+async function getJsonOption(name) {
+    const option = await getOption(name);
+
+    try {
+        return JSON.parse(option);
+    }
+    catch (e) {
+        return null;
+    }
+}
+
 export default {
     // use addLoadListener() which will be called also on refreshes
     optionsReady,
     addLoadListener,
     loadOptions,
-    getOption
+    getOption,
+    getJsonOption
 }

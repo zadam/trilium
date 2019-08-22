@@ -23,7 +23,12 @@ const ALLOWED_OPTIONS = [
     'treeFontSize',
     'detailFontSize',
     'openTabs',
-    'hideTabRowForOneTab'
+    'hideTabRowForOneTab',
+    'noteInfoWidget',
+    'attributesWidget',
+    'linkMapWidget',
+    'noteRevisionsWidget',
+    'whatLinksHereWidget'
 ];
 
 async function getOptions() {

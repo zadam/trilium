@@ -354,10 +354,12 @@ body {
 }
 
 #widgets-configuration .list-group-item {
-    background: transparent;
+    background: var(--more-accented-background-color);
     font-size: larger;
     display: flex;
     justify-content: space-between;
+    padding-bottom: 2px;
+    border-radius: 10px;
 }
 
 #widgets-configuration .handle {
