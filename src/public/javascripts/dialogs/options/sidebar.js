@@ -7,6 +7,7 @@ export default class SidebarOptions {
         this.$sidebarMinWidth = $("#sidebar-min-width");
         this.$sidebarWidthPercent = $("#sidebar-width-percent");
         this.$showSidebarInNewTab = $("#show-sidebar-in-new-tab");
+        this.$widgetsConfiguration = $("#widgets-configuration");
         this.$widgetsEnabled = $("#widgets-enabled");
         this.$widgetsDisabled = $("#widgets-disabled");
 
@@ -69,7 +70,8 @@ export default class SidebarOptions {
             const $expandedCheckbox = $('<div class="expansion-conf">')
                 .attr("title", "If checked, the widget will be by default expanded (opened)")
                 .append($(`<input type="checkbox"${option.expanded ? ' checked' : ''}>`)
-                    .attr('id', 'widget-exp-' + name))
+                    .attr('id', 'widget-exp-' + name)
+                    .change(() => this.save()))
                 .append("&nbsp;")
                 .append($("<label>")
                     .attr("for", 'widget-exp-' + name)
@@ -83,19 +85,37 @@ export default class SidebarOptions {
             (option.enabled ? this.$widgetsEnabled : this.$widgetsDisabled).append($el);
         }
 
-        libraryLoader.requireLibrary(libraryLoader.SORTABLE).then(() => {
-            new Sortable(this.$widgetsEnabled[0], {
-                group: 'widgets',
-                handle: '.handle',
-                animation: 150
-            });
+        await libraryLoader.requireLibrary(libraryLoader.SORTABLE);
 
-            new Sortable(this.$widgetsDisabled[0], {
-                group: 'widgets',
-                handle: '.handle',
-                animation: 150
+        new Sortable(this.$widgetsEnabled[0], {
+            group: 'widgets',
+            handle: '.handle',
+            animation: 150,
+            onSort: evt => this.save()
+        });
+
+        new Sortable(this.$widgetsDisabled[0], {
+            group: 'widgets',
+            handle: '.handle',
+            animation: 150,
+            onSort: evt => this.save()
+        });
+    }
+
+    async save() {
+        const opts = {};
+
+        this.$widgetsConfiguration.find('.list-group-item').each((i, el) => {
+            const widgetName = $(el).find('div[data-widget-name]').attr('data-widget-name');
+
+            opts[widgetName + 'Widget'] = JSON.stringify({
+                enabled: $.contains(this.$widgetsEnabled[0], el),
+                expanded: $(el).find("input[type=checkbox]").is(":checked"),
+                position: (i + 1) * 10
             });
         });
+
+        await server.put('options', opts);
     }
 
     parseJsonSafely(str) {

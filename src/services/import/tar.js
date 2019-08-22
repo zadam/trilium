@@ -237,7 +237,7 @@ async function importTar(importContext, fileBuffer, importRootNote) {
             content = content.toString("UTF-8");
 
             if (noteMeta) {
-                const internalLinks = (noteMeta.attributes || []).find(attr => attr.type === 'relation' && attr.name === 'internal-link');
+                const internalLinks = (noteMeta.attributes || []).filter(attr => attr.type === 'relation' && attr.name === 'internal-link');
 
                 // this will replace all internal links (<a> and <img>) inside the body
                 // links pointing outside the export will be broken and changed (ctx.getNewNoteId() will still assign new noteId)
