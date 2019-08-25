@@ -13,9 +13,13 @@
 
   CodeMirror.defineSimpleMode("handlebars-tags", {
     start: [
+      { regex: /\{\{\{/, push: "handlebars_raw", token: "tag" },
       { regex: /\{\{!--/, push: "dash_comment", token: "comment" },
       { regex: /\{\{!/,   push: "comment", token: "comment" },
       { regex: /\{\{/,    push: "handlebars", token: "tag" }
+    ],
+    handlebars_raw: [
+      { regex: /\}\}\}/, pop: true, token: "tag" },
     ],
     handlebars: [
       { regex: /\}\}/, pop: true, token: "tag" },

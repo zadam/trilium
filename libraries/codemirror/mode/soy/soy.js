@@ -26,6 +26,8 @@
     "literal": { },
     "msg": {},
     "fallbackmsg": { noEndTag: true, reduceIndent: true},
+    "select": {},
+    "plural": {},
     "let": { soyState: "var-def" },
     "if": {},
     "elseif": { noEndTag: true, reduceIndent: true},

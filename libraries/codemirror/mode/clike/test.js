@@ -136,4 +136,30 @@
      "[comment ///// let / me / show / you /////]",
      "[comment */]");
 
+  var mode_java = CodeMirror.getMode({indentUnit: 2}, "text/x-java");
+  function MTJAVA(name) { test.mode("java_" + name, mode_java, Array.prototype.slice.call(arguments, 1)); }
+  MTJAVA("types",
+         "[type byte];",
+         "[type short];",
+         "[type int];",
+         "[type long];",
+         "[type float];",
+         "[type double];",
+         "[type boolean];",
+         "[type char];",
+         "[type void];",
+         "[type Boolean];",
+         "[type Byte];",
+         "[type Character];",
+         "[type Double];",
+         "[type Float];",
+         "[type Integer];",
+         "[type Long];",
+         "[type Number];",
+         "[type Object];",
+         "[type Short];",
+         "[type String];",
+         "[type StringBuffer];",
+         "[type StringBuilder];",
+         "[type Void];");
 })();

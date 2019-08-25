@@ -24,11 +24,10 @@ class StandardWidget {
      */
     constructor(ctx, options, state) {
         this.ctx = ctx;
-        this.options = options;
         this.state = state;
         // construct in camelCase
         this.widgetName = this.constructor.name.substr(0, 1).toLowerCase() + this.constructor.name.substr(1);
-
+        this.widgetOptions = options.getJson(this.widgetName) || {};
     }
 
     getWidgetTitle() { return "Untitled widget"; }
@@ -46,7 +45,7 @@ class StandardWidget {
         this.$bodyWrapper = this.$widget.find('.body-wrapper');
         this.$bodyWrapper.attr('id', widgetId);
 
-        if (this.state && this.state.expanded) {
+        if ((this.state && this.state.expanded) || (!this.state && this.widgetOptions.expanded)) {
             this.$bodyWrapper.collapse("show");
         }
 
@@ -86,9 +85,7 @@ class StandardWidget {
     async doRenderBody() {}
 
     async isEnabled() {
-        const option = this.options.getJson(this.widgetName + 'Widget');
-
-        return option ? option.enabled : true;
+        return this.widgetOptions.enabled;
     }
 
     isExpanded() {
