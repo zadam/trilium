@@ -19,10 +19,12 @@ const WIDGET_TPL = `
 class StandardWidget {
     /**
      * @param {TabContext} ctx
+     * @param {Options} options
      * @param {object} state
      */
-    constructor(ctx, state) {
+    constructor(ctx, options, state) {
         this.ctx = ctx;
+        this.options = options;
         this.state = state;
         // construct in camelCase
         this.widgetName = this.constructor.name.substr(0, 1).toLowerCase() + this.constructor.name.substr(1);
@@ -84,7 +86,7 @@ class StandardWidget {
     async doRenderBody() {}
 
     async isEnabled() {
-        const option = await optionsService.getJsonOption(this.widgetName + 'Widget');
+        const option = this.options.getJson(this.widgetName + 'Widget');
 
         return option ? option.enabled : true;
     }

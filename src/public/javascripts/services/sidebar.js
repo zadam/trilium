@@ -1,5 +1,6 @@
 import bundleService from "./bundle.js";
 import messagingService from "./messaging.js";
+import optionsService from "./options.js";
 
 class Sidebar {
     /**
@@ -61,6 +62,8 @@ class Sidebar {
             import("../widgets/what_links_here.js")
         ])).map(m => m.default);
 
+        const options = await optionsService.waitForOptions();
+
         const widgetRelations = await this.ctx.note.getRelations('widget');
 
         for (const widgetRelation of widgetRelations) {
@@ -73,7 +76,7 @@ class Sidebar {
             const state = (this.state.widgets || []).find(s => s.name === widgetClass.name);
 
             try {
-                const widget = new widgetClass(this.ctx, state);
+                const widget = new widgetClass(this.ctx, options, state);
 
                 if (await widget.isEnabled()) {
                     const $el = await widget.render();
