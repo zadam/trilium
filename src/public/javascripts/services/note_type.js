@@ -60,6 +60,8 @@ class NoteTypeContext {
     constructor(ctx) {
         this.ctx = ctx;
 
+        ctx.$tabContent.find('.note-type').on('show.bs.dropdown', () => this.renderDropdown());
+
         this.$noteTypeDropdown = ctx.$tabContent.find(".note-type-dropdown");
         this.$noteTypeButton = ctx.$tabContent.find(".note-type-button");
         this.$noteTypeDesc = ctx.$tabContent.find(".note-type-desc");
@@ -71,9 +73,11 @@ class NoteTypeContext {
         this.$noteTypeButton.prop("disabled",
             () => ["file", "image", "search"].includes(this.ctx.note.type));
 
-        this.$noteTypeDropdown.empty();
-
         this.$noteTypeDesc.text(this.findTypeTitle(this.ctx.note.type));
+    }
+
+    renderDropdown() {
+        this.$noteTypeDropdown.empty();
 
         for (const noteType of NOTE_TYPES.filter(nt => nt.selectable)) {
             const $typeLink = $('<a class="dropdown-item">')
