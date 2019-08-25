@@ -2,7 +2,7 @@ import server from "../../services/server.js";
 import utils from "../../services/utils.js";
 import cssLoader from "../../services/css_loader.js";
 import zoomService from "../../services/zoom.js";
-import optionsInit from "../../services/options_init.js";
+import optionsService from "../../services/options.js";
 
 export default class ApperanceOptions {
     constructor() {
@@ -45,7 +45,7 @@ export default class ApperanceOptions {
             const hideTabRowForOneTab = this.$oneTabDisplaySelect.val() === 'hide' ? 'true' : 'false';
 
             server.put('options/hideTabRowForOneTab/' + hideTabRowForOneTab)
-                .then(optionsInit.reloadOptions);
+                .then(optionsService.reloadOptions);
         });
 
         this.$leftPaneMinWidth.change(async () => {

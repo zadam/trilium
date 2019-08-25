@@ -1,16 +1,16 @@
-import optionsInit from './options_init.js';
+import optionsService from './options.js';
 import server from "./server.js";
 import tree from "./tree.js";
 import noteDetailService from "./note_detail.js";
 
 let hoistedNoteId;
 
-optionsInit.waitForOptions().then(options => {
+optionsService.waitForOptions().then(options => {
     hoistedNoteId = options.get('hoistedNoteId');
 });
 
 async function getHoistedNoteId() {
-    await optionsInit.waitForOptions();
+    await optionsService.waitForOptions();
 
     return hoistedNoteId;
 }

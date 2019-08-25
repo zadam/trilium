@@ -1,4 +1,4 @@
-import optionsInit from "../services/options_init.js";
+import optionsService from "../services/options.js";
 
 const WIDGET_TPL = `
 <div class="card widget">
@@ -84,7 +84,7 @@ class StandardWidget {
     async doRenderBody() {}
 
     async isEnabled() {
-        const option = await optionsInit.getJsonOption(this.widgetName + 'Widget');
+        const option = await optionsService.getJsonOption(this.widgetName + 'Widget');
 
         return option ? option.enabled : true;
     }

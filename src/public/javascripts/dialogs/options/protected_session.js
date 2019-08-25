@@ -1,4 +1,4 @@
-import optionsInit from "../../services/options_init.js";
+import optionsService from "../../services/options.js";
 import server from "../../services/server.js";
 import infoService from "../../services/info.js";
 
@@ -18,7 +18,7 @@ export default class ProtectedSessionOptions {
         const protectedSessionTimeout = this.$protectedSessionTimeout.val();
 
         server.put('options', { 'protectedSessionTimeout': protectedSessionTimeout }).then(() => {
-            optionsInit.reloadOptions();
+            optionsService.reloadOptions();
 
             infoService.showMessage("Options change have been saved.");
         });

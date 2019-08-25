@@ -1,6 +1,6 @@
 import libraryLoader from "../../services/library_loader.js";
 import server from "../../services/server.js";
-import optionsInit from "../../services/options_init.js";
+import optionsService from "../../services/options.js";
 
 export default class SidebarOptions {
     constructor() {
@@ -28,7 +28,7 @@ export default class SidebarOptions {
 
             await server.put('options/showSidebarInNewTab/' + flag);
 
-            optionsInit.reloadOptions();
+            optionsService.reloadOptions();
         });
     }
 
@@ -117,7 +117,7 @@ export default class SidebarOptions {
 
         await server.put('options', opts);
 
-        optionsInit.reloadOptions();
+        optionsService.reloadOptions();
     }
 
     parseJsonSafely(str) {

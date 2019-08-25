@@ -13,7 +13,7 @@ import treeKeyBindings from "./tree_keybindings.js";
 import Branch from '../entities/branch.js';
 import NoteShort from '../entities/note_short.js';
 import hoistedNoteService from '../services/hoisted_note.js';
-import optionsInit from "../services/options_init.js";
+import optionsService from "../services/options.js";
 import TreeContextMenu from "./tree_context_menu.js";
 import bundle from "./bundle.js";
 
@@ -331,7 +331,7 @@ async function treeInitialized() {
         return;
     }
 
-    const options = await optionsInit.waitForOptions();
+    const options = await optionsService.waitForOptions();
 
     const openTabs = options.getJson('openTabs') || [];
 

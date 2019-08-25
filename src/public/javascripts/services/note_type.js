@@ -181,7 +181,7 @@ function NoteTypeContext(ctx) {
         self.$renderButton.toggle(ctx.note.type === 'render');
     };
 
-    ko.applyBindings(this, ctx.$tabContent.find('.note-type-wrapper')[0])
+    ko.applyBindings(this, ctx.$tabContent.find('.note-type-wrapper')[0]);
 }
 
 export default {

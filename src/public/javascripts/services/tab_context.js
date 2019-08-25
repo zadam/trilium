@@ -17,7 +17,7 @@ import noteDetailRender from "./note_detail_render.js";
 import noteDetailRelationMap from "./note_detail_relation_map.js";
 import noteDetailProtectedSession from "./note_detail_protected_session.js";
 import protectedSessionService from "./protected_session.js";
-import optionsInitService from "./options_init.js";
+import optionsService from "./options.js";
 import linkService from "./link.js";
 import Sidebar from "./sidebar.js";
 
@@ -37,7 +37,7 @@ const componentClasses = {
 
 let showSidebarInNewTab = true;
 
-optionsInitService.addLoadListener(options => {
+optionsService.addLoadListener(options => {
     showSidebarInNewTab = options.is('showSidebarInNewTab');
 });
 

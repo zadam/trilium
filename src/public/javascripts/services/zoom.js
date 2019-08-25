@@ -1,6 +1,6 @@
 import server from "./server.js";
 import utils from "./utils.js";
-import optionsInitService from "./options_init.js";
+import optionsService from "./options.js";
 
 const MIN_ZOOM = 0.5;
 const MAX_ZOOM = 2.0;
@@ -40,7 +40,7 @@ function getCurrentZoom() {
 }
 
 if (utils.isElectron()) {
-    optionsInitService.addLoadListener(options => setZoomFactor(options.getFloat('zoomFactor')))
+    optionsService.addLoadListener(options => setZoomFactor(options.getFloat('zoomFactor')))
 }
 
 export default {
