@@ -59,6 +59,8 @@ class NoteDetailFile {
         return utils.getHost() + "/api/notes/" + this.ctx.note.noteId + "/download";
     }
 
+    show() {}
+
     getContent() {}
 
     focus() {}

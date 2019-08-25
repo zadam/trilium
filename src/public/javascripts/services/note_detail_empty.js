@@ -28,6 +28,8 @@ class NoteDetailEmpty {
         this.$autoComplete.focus();
     }
 
+    show() {}
+
     getContent() {}
 
     focus() {}

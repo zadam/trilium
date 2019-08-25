@@ -616,6 +616,8 @@ class NoteDetailRelationMap {
         return JSON.stringify(this.mapData);
     }
 
+    show() {}
+
     focus() {}
 
     onNoteChange() {}

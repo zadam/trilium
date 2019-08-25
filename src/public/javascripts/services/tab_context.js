@@ -158,6 +158,7 @@ class TabContext {
         this.$tabContent.show();
         this.setCurrentNotePathToHash();
         this.setTitleBar();
+        this.getComponent().show();
     }
 
     setTitleBar() {

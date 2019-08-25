@@ -24,6 +24,8 @@ class NoteDetailProtectedSession {
         this.$component.show();
     }
 
+    show() {}
+
     getContent() {}
 
     focus() {}

@@ -45,6 +45,8 @@ class NoteDetailSearch {
 
     focus() {}
 
+    show() {}
+
     onNoteChange() {}
 
     cleanup() {}

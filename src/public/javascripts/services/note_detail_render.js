@@ -43,6 +43,8 @@ class NoteDetailRender {
 
     getContent() {}
 
+    show() {}
+
     focus() {}
 
     onNoteChange() {}

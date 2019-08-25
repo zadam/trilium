@@ -54,9 +54,6 @@ class NoteDetailCode {
             this.onNoteChange(() => this.ctx.noteChanged());
         }
 
-        this.$component.show();
-
-        // this needs to happen after the element is shown, otherwise the editor won't be refreshed
         // CodeMirror breaks pretty badly on null so even though it shouldn't happen (guarded by consistency check)
         // we provide fallback
         this.codeEditor.setValue(this.ctx.note.content || "");
@@ -68,6 +65,11 @@ class NoteDetailCode {
             CodeMirror.autoLoadMode(this.codeEditor, info.mode);
         }
 
+        this.show();
+    }
+
+    show() {
+        this.$component.show();
         this.codeEditor.refresh();
     }
 

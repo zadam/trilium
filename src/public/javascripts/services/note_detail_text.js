@@ -77,6 +77,8 @@ class NoteDetailText {
         this.$editorEl.focus();
     }
 
+    show() {}
+
     getEditor() {
         return this.textEditor;
     }
