@@ -141,10 +141,6 @@ class TabContext {
             }
         }, 5000);
 
-        if (utils.isDesktop()) {
-            this.noteType.updateExecuteScriptButtonVisibility();
-        }
-
         this.showPaths();
 
         if (this.sidebar) {

@@ -39,22 +39,11 @@
 
             <div class="note-type-wrapper" style="display: flex;">
                 <div class="dropdown note-type">
-                    <button data-bind="disable: isDisabled()" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-sm dropdown-toggle">
-                        Type: <span data-bind="text: typeString()"></span>
+                    <button type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-sm dropdown-toggle note-type-button">
+                        Type: <span class="note-type-desc"></span>
                         <span class="caret"></span>
                     </button>
-                    <div class="note-type-dropdown dropdown-menu dropdown-menu-right">
-                        <a class="dropdown-item" data-bind="click: selectText, css: { selected: type() == 'text' }"><span class="check">&check;</span> <strong>Text</strong></a>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" data-bind="click: selectRelationMap, css: { selected: type() == 'relation-map' && mime() == '' }"><span class="check">&check;</span> <strong>Relation Map</strong></a>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" data-bind="click: selectRender, css: { selected: type() == 'render' && mime() == '' }"><span class="check">&check;</span> <strong>Render HTML note</strong></a>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" data-bind="click: selectCode, css: { selected: type() == 'code' && mime() == '' }"><span class="check">&check;</span> <strong>Code</strong></a>
-                        <!-- ko foreach: codeMimeTypes -->
-                        <a class="dropdown-item" data-bind="click: $parent.selectCodeMime, css: { selected: $parent.type() == 'code' && $parent.mime() == mime }"><span class="check">&check;</span> <span data-bind="text: title"></span></a>
-                        <!-- /ko -->
-                    </div>
+                    <div class="note-type-dropdown dropdown-menu dropdown-menu-right"></div>
                 </div>
 
                 <div class="dropdown note-actions">

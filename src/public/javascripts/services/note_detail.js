@@ -209,8 +209,7 @@ async function loadNoteDetailToContext(ctx, note, notePath) {
         ctx.$noteTitle.val(ctx.note.title);
 
         if (utils.isDesktop()) {
-            ctx.noteType.type(ctx.note.type);
-            ctx.noteType.mime(ctx.note.mime);
+            ctx.noteType.update();
         }
 
         await renderComponent(ctx);

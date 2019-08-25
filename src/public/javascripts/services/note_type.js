@@ -3,6 +3,17 @@ import noteDetailService from './note_detail.js';
 import server from './server.js';
 import infoService from "./info.js";
 
+const NOTE_TYPES = [
+    { type: "file", title: "File", selectable: false },
+    { type: "image", title: "Image", selectable: false },
+    { type: "search", title: "Saved search", selectable: false },
+
+    { type: "text", mime: "text/html", title: "Text", selectable: true },
+    { type: "relation-map", mime: "application/json", title: "Relation Map", selectable: true },
+    { type: "render", mime: '', title: "Render HTML note", selectable: true },
+    { type: "code", mime: 'text/plain', title: "Code", selectable: true }
+];
+
 const DEFAULT_MIME_TYPES = [
     { mime: 'text/x-csrc', title: 'C' },
     { mime: 'text/x-c++src', title: 'C++' },
@@ -42,146 +53,102 @@ const DEFAULT_MIME_TYPES = [
 
 let mimeTypes = DEFAULT_MIME_TYPES;
 
-/**
- * @param {TabContext} ctx
- * @constructor
- */
-function NoteTypeContext(ctx) {
-    const self = this;
+class NoteTypeContext {
+    /**
+     * @param {TabContext} ctx
+     */
+    constructor(ctx) {
+        this.ctx = ctx;
 
-    this.$executeScriptButton = ctx.$tabContent.find(".execute-script-button");
-    this.$renderButton = ctx.$tabContent.find('.render-button');
+        this.$noteTypeDropdown = ctx.$tabContent.find(".note-type-dropdown");
+        this.$noteTypeButton = ctx.$tabContent.find(".note-type-button");
+        this.$noteTypeDesc = ctx.$tabContent.find(".note-type-desc");
+        this.$executeScriptButton = ctx.$tabContent.find(".execute-script-button");
+        this.$renderButton = ctx.$tabContent.find('.render-button');
+    }
 
-    this.ctx = ctx;
-    this.type = ko.observable('text');
-    this.mime = ko.observable('');
+    update() {
+        this.$noteTypeButton.prop("disabled",
+            () => ["file", "image", "search"].includes(this.ctx.note.type));
 
-    this.codeMimeTypes = ko.observableArray(mimeTypes);
+        this.$noteTypeDropdown.empty();
 
-    this.typeString = function() {
-        const type = self.type();
-        const mime = self.mime();
+        this.$noteTypeDesc.text(this.findTypeTitle(this.ctx.note.type));
 
-        if (type === 'text') {
-            return 'Text';
-        }
-        else if (type === 'code') {
-            if (!mime) {
-                return 'Code';
+        for (const noteType of NOTE_TYPES.filter(nt => nt.selectable)) {
+            const $typeLink = $('<a class="dropdown-item">')
+                .attr("data-note-type", noteType.type)
+                .append('<span class="check">&check;</span> ')
+                .append($('<strong>').text(noteType.title))
+                .click(e => {
+                    const type = $typeLink.attr('data-note-type');
+                    const noteType = NOTE_TYPES.find(nt => nt.type === type);
+
+                    this.save(noteType.type, noteType.mime);
+                });
+
+            if (this.ctx.note.type === noteType.type) {
+                $typeLink.addClass("selected");
             }
-            else {
-                const found = self.codeMimeTypes().find(x => x.mime === mime);
 
-                return found ? found.title : mime;
+            this.$noteTypeDropdown.append($typeLink);
+
+            if (noteType.type !== 'code') {
+                this.$noteTypeDropdown.append('<div class="dropdown-divider"></div>');
             }
         }
-        else if (type === 'render') {
-            return 'Render HTML note';
-        }
-        else if (type === 'file') {
-            return 'File';
-        }
-        else if (type === 'relation-map') {
-            return 'Relation Map';
-        }
-        else if (type === 'search') {
-            return 'Search note'
-        }
-        else if (type === 'image') {
-            return 'Image'
-        }
-        else {
-            infoService.throwError('Unrecognized type: ' + type);
-        }
-    };
 
-    this.isDisabled = function() {
-        return ["file", "image", "search"].includes(self.type());
-    };
+        for (const mimeType of mimeTypes) {
+            const $mimeLink = $('<a class="dropdown-item">')
+                .attr("data-mime-type", mimeType.mime)
+                .append('<span class="check">&check;</span> ')
+                .append($('<span>').text(mimeType.title))
+                .click(e => this.save('code', $(e.target).attr('data-mime-type')));
 
-    async function save() {
-        await server.put('notes/' + self.ctx.note.noteId
-            + '/type/' + encodeURIComponent(self.type())
-            + '/mime/' + encodeURIComponent(self.mime()));
+            if (this.ctx.note.type === 'code' && this.ctx.note.mime === mimeType.mime) {
+                $mimeLink.addClass("selected");
+
+                this.$noteTypeDesc.text(mimeType.title);
+            }
+
+            this.$noteTypeDropdown.append($mimeLink);
+        }
+
+        this.$executeScriptButton.toggle(this.ctx.note.mime.startsWith('application/javascript'));
+        this.$renderButton.toggle(this.ctx.note.type === 'render');
+    }
+
+    findTypeTitle(type) {
+        const noteType = NOTE_TYPES.find(nt => nt.type === type);
+
+        return noteType ? noteType.title : type;
+    }
+
+    async save(type, mime) {
+        if (type !== this.ctx.note.type && !await this.confirmChangeIfContent()) {
+            return;
+        }
+
+        await server.put('notes/' + this.ctx.note.noteId
+            + '/type/' + encodeURIComponent(type)
+            + '/mime/' + encodeURIComponent(mime));
 
         await noteDetailService.reload();
 
         // for the note icon to be updated in the tree
         await treeService.reload();
 
-        self.updateExecuteScriptButtonVisibility();
+        this.update();
     }
 
-    async function confirmChangeIfContent() {
-        if (!self.ctx.getComponent().getContent()) {
+    async confirmChangeIfContent() {
+        if (!this.ctx.getComponent().getContent()) {
             return true;
         }
 
         const confirmDialog = await import("../dialogs/confirm.js");
         return await confirmDialog.confirm("It is not recommended to change note type when note content is not empty. Do you want to continue anyway?");
     }
-
-    this.selectText = async function() {
-        if (!await confirmChangeIfContent()) {
-            return;
-        }
-
-        self.type('text');
-        self.mime('text/html');
-
-        save();
-    };
-
-    this.selectRender = async function() {
-        if (!await confirmChangeIfContent()) {
-            return;
-        }
-
-        self.type('render');
-        self.mime('text/html');
-
-        save();
-    };
-
-    this.selectRelationMap = async function() {
-        if (!await confirmChangeIfContent()) {
-            return;
-        }
-
-        self.type('relation-map');
-        self.mime('application/json');
-
-        save();
-    };
-
-    this.selectCode = async function() {
-        if (!await confirmChangeIfContent()) {
-            return;
-        }
-
-        self.type('code');
-        self.mime('text/plain');
-
-        save();
-    };
-
-    this.selectCodeMime = async function(el) {
-        if (!await confirmChangeIfContent()) {
-            return;
-        }
-
-        self.type('code');
-        self.mime(el.mime);
-
-        save();
-    };
-
-    this.updateExecuteScriptButtonVisibility = function() {
-        self.$executeScriptButton.toggle(ctx.note.mime.startsWith('application/javascript'));
-        self.$renderButton.toggle(ctx.note.type === 'render');
-    };
-
-    ko.applyBindings(this, ctx.$tabContent.find('.note-type-wrapper')[0]);
 }
 
 export default {
