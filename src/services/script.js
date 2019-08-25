@@ -92,6 +92,10 @@ function getParams(params) {
 async function getScriptBundleForFrontend(note) {
     const bundle = await getScriptBundle(note);
 
+    if (!bundle) {
+        return;
+    }
+
     // for frontend we return just noteIds because frontend needs to use its own entity instances
     bundle.noteId = bundle.note.noteId;
     delete bundle.note;

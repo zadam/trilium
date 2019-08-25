@@ -141,9 +141,10 @@ function bindElShortcut($el, keyboardShortcut, handler) {
         }
 
         $el.bind('keydown', keyboardShortcut, e => {
-            handler();
+            handler(e);
 
             e.preventDefault();
+            e.stopPropagation();
         });
     }
 }

@@ -50,11 +50,7 @@ async function initEditor() {
     codeEditor.focus();
 }
 
-async function execute(e) {
-    // stop from propagating upwards (dangerous especially with ctrl+enter executable javascript notes)
-    e.preventDefault();
-    e.stopPropagation();
-
+async function execute() {
     // execute the selected text or the whole content if there's no selection
     let sqlQuery = codeEditor.getSelection();
 
