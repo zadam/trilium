@@ -94,20 +94,6 @@ function addTextToEditor(text) {
     }
 }
 
-function init() {
-    ko.bindingHandlers.noteLink = {
-        init: async function(element, valueAccessor, allBindings, viewModel, bindingContext) {
-            const noteId = ko.unwrap(valueAccessor());
-
-            if (noteId) {
-                const link = await createNoteLink(noteId);
-
-                $(element).append(link);
-            }
-        }
-    };
-}
-
 function tabContextMenu(e) {
     const $link = $(e.target);
 
@@ -175,6 +161,5 @@ export default {
     createNoteLink,
     addLinkToEditor,
     addTextToEditor,
-    init,
     goToLink
 };

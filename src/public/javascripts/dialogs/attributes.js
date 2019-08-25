@@ -4,7 +4,9 @@ import infoService from "../services/info.js";
 import treeUtils from "../services/tree_utils.js";
 import attributeAutocompleteService from "../services/attribute_autocomplete.js";
 import utils from "../services/utils.js";
+import linkService from "../services/link.js";
 import libraryLoader from "../services/library_loader.js";
+import noteAutocompleteService from "../services/note_autocomplete.js";
 
 const $dialog = $("#attributes-dialog");
 const $saveAttributesButton = $("#save-attributes-button");
@@ -255,15 +257,43 @@ function AttributesModel() {
 
 let attributesModel;
 
+function initKoPlugins() {
+    ko.bindingHandlers.noteLink = {
+        init: async function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+            const noteId = ko.unwrap(valueAccessor());
+
+            if (noteId) {
+                const link = await linkService.createNoteLink(noteId);
+
+                $(element).append(link);
+            }
+        }
+    };
+
+    ko.bindingHandlers.noteAutocomplete = {
+        init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+            noteAutocompleteService.initNoteAutocomplete($(element));
+
+            $(element).setSelectedPath(bindingContext.$data.selectedPath);
+
+            $(element).on('autocomplete:selected', function (event, suggestion, dataset) {
+                bindingContext.$data.selectedPath = $(element).val().trim() ? suggestion.path : '';
+            });
+        }
+    };
+}
+
 export async function showDialog() {
     utils.closeActiveDialog();
 
     await libraryLoader.requireLibrary(libraryLoader.KNOCKOUT);
 
-    attributesModel = new AttributesModel();
-
     // lazily apply bindings on first use
-    if (!ko.dataFor($dialog[0])) {
+    if (!attributesModel) {
+        attributesModel = new AttributesModel();
+
+        initKoPlugins();
+
         ko.applyBindings(attributesModel, $dialog[0]);
     }
 

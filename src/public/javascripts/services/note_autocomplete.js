@@ -132,18 +132,6 @@ function init() {
             .toggleClass("disabled", !path.trim())
             .attr(SELECTED_PATH_KEY, path); // we also set attr here so tooltip can be displayed
     };
-
-    ko.bindingHandlers.noteAutocomplete = {
-        init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
-            initNoteAutocomplete($(element));
-
-            $(element).setSelectedPath(bindingContext.$data.selectedPath);
-
-            $(element).on('autocomplete:selected', function (event, suggestion, dataset) {
-                bindingContext.$data.selectedPath = $(element).val().trim() ? suggestion.path : '';
-            });
-        }
-    };
 }
 
 export default {

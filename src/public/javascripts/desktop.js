@@ -168,6 +168,4 @@ entrypoints.registerEntrypoints();
 
 noteTooltipService.setupGlobalTooltip();
 
-linkService.init();
-
 noteAutocompleteService.init();
