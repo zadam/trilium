@@ -49,6 +49,8 @@ const PRINT_THIS = {js: ["libraries/printThis.js"]};
 
 const SORTABLE = {js: ["libraries/sortable.min.js"]};
 
+const KNOCKOUT = {js: ["libraries/knockout.min.js"]};
+
 async function requireLibrary(library) {
     if (library.css) {
         library.css.map(cssUrl => cssLoader.requireCss(cssUrl));
@@ -85,5 +87,6 @@ export default {
     RELATION_MAP,
     LINK_MAP,
     PRINT_THIS,
-    SORTABLE
+    SORTABLE,
+    KNOCKOUT
 }

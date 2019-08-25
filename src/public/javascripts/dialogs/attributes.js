@@ -4,12 +4,11 @@ import infoService from "../services/info.js";
 import treeUtils from "../services/tree_utils.js";
 import attributeAutocompleteService from "../services/attribute_autocomplete.js";
 import utils from "../services/utils.js";
+import libraryLoader from "../services/library_loader.js";
 
 const $dialog = $("#attributes-dialog");
 const $saveAttributesButton = $("#save-attributes-button");
 const $ownedAttributesBody = $('#owned-attributes-table tbody');
-
-const attributesModel = new AttributesModel();
 
 function AttributesModel() {
     const self = this;
@@ -254,8 +253,14 @@ function AttributesModel() {
     }
 }
 
+let attributesModel;
+
 export async function showDialog() {
     utils.closeActiveDialog();
+
+    await libraryLoader.requireLibrary(libraryLoader.KNOCKOUT);
+
+    attributesModel = new AttributesModel();
 
     // lazily apply bindings on first use
     if (!ko.dataFor($dialog[0])) {
