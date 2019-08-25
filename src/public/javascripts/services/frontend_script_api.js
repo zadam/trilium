@@ -306,24 +306,6 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
 
     /**
      * @method
-     * @returns {array} list of default code mime types
-     */
-    this.getDefaultCodeMimeTypes = noteTypeService.getDefaultCodeMimeTypes;
-
-    /**
-     * @method
-     * @returns {array} list of currently used code mime types
-     */
-    this.getCodeMimeTypes = noteTypeService.getCodeMimeTypes;
-
-    /**
-     * @method
-     * @param {array} types - list of mime types to be used
-     */
-    this.setCodeMimeTypes = noteTypeService.setCodeMimeTypes;
-
-    /**
-     * @method
      * @param {object} $el - jquery object on which to setup the tooltip
      */
     this.setupElementTooltip = noteTooltipService.setupElementTooltip;

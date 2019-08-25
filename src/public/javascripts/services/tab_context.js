@@ -5,7 +5,7 @@ import bundleService from "./bundle.js";
 import Attributes from "./attributes.js";
 import treeUtils from "./tree_utils.js";
 import utils from "./utils.js";
-import {NoteTypeContext} from "./note_type.js";
+import NoteTypeContext from "./note_type.js";
 import noteDetailService from "./note_detail.js";
 import noteDetailEmpty from "./note_detail_empty.js";
 import noteDetailText from "./note_detail_text.js";

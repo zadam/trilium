@@ -1,7 +1,6 @@
 import treeService from './tree.js';
 import noteDetailService from './note_detail.js';
 import server from './server.js';
-import infoService from "./info.js";
 
 const NOTE_TYPES = [
     { type: "file", title: "File", selectable: false },
@@ -53,7 +52,7 @@ const DEFAULT_MIME_TYPES = [
 
 let mimeTypes = DEFAULT_MIME_TYPES;
 
-class NoteTypeContext {
+export default class NoteTypeContext {
     /**
      * @param {TabContext} ctx
      */
@@ -76,6 +75,7 @@ class NoteTypeContext {
         this.$noteTypeDesc.text(this.findTypeTitle(this.ctx.note.type));
     }
 
+    /** actual body is rendered lazily on note-type button click */
     renderDropdown() {
         this.$noteTypeDropdown.empty();
 
@@ -154,13 +154,3 @@ class NoteTypeContext {
         return await confirmDialog.confirm("It is not recommended to change note type when note content is not empty. Do you want to continue anyway?");
     }
 }
-
-export default {
-    getDefaultCodeMimeTypes: () => DEFAULT_MIME_TYPES.slice(),
-    getCodeMimeTypes: () => mimeTypes,
-    setCodeMimeTypes: types => { mimeTypes = types; }
-};
-
-export {
-    NoteTypeContext
-};
