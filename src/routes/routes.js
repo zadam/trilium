@@ -35,6 +35,7 @@ const dateNotesRoute = require('./api/date_notes');
 const linkMapRoute = require('./api/link_map');
 const linksRoute = require('./api/links');
 const clipperRoute = require('./api/clipper');
+const customCodeMimeTypesRoute = require('./api/custom_code_mime_types.js');
 
 const log = require('../services/log');
 const express = require('express');
@@ -237,6 +238,8 @@ function register(app) {
     route(POST, '/api/clipper/clippings', clipperMiddleware, clipperRoute.addClipping, apiResultHandler);
     route(POST, '/api/clipper/notes', clipperMiddleware, clipperRoute.createNote, apiResultHandler);
     route(POST, '/api/clipper/open/:noteId', clipperMiddleware, clipperRoute.openNote, apiResultHandler);
+
+    apiRoute(GET, '/api/custom-code-mime-types', customCodeMimeTypesRoute.get);
 
     app.use('', router);
 }

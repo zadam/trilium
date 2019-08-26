@@ -50,7 +50,26 @@ const DEFAULT_MIME_TYPES = [
     { mime: 'text/x-yaml', title: 'YAML' }
 ];
 
-let mimeTypes = DEFAULT_MIME_TYPES;
+let mimeTypes = null;
+
+async function getMimeTypes() {
+    if (!mimeTypes) {
+        let customCodeMimeTypes = [];
+
+        try {
+            customCodeMimeTypes = await server.get('custom-code-mime-types');
+        }
+        catch (e) {
+            log.error(`Could not retrieve custom mime types: ${e.message}`);
+        }
+
+        mimeTypes = DEFAULT_MIME_TYPES.concat(customCodeMimeTypes);
+
+        mimeTypes.sort((a, b) => a.title < b.title ? -1 : 1);
+    }
+
+    return mimeTypes;
+}
 
 export default class NoteTypeContext {
     /**
@@ -68,15 +87,15 @@ export default class NoteTypeContext {
         this.$renderButton = ctx.$tabContent.find('.render-button');
     }
 
-    update() {
+    async update() {
         this.$noteTypeButton.prop("disabled",
             () => ["file", "image", "search"].includes(this.ctx.note.type));
 
-        this.$noteTypeDesc.text(this.findTypeTitle(this.ctx.note.type));
+        this.$noteTypeDesc.text(await this.findTypeTitle(this.ctx.note.type, this.ctx.note.mime));
     }
 
     /** actual body is rendered lazily on note-type button click */
-    renderDropdown() {
+    async renderDropdown() {
         this.$noteTypeDropdown.empty();
 
         for (const noteType of NOTE_TYPES.filter(nt => nt.selectable)) {
@@ -102,7 +121,7 @@ export default class NoteTypeContext {
             }
         }
 
-        for (const mimeType of mimeTypes) {
+        for (const mimeType of await getMimeTypes()) {
             const $mimeLink = $('<a class="dropdown-item">')
                 .attr("data-mime-type", mimeType.mime)
                 .append('<span class="check">&check;</span> ')
@@ -122,10 +141,18 @@ export default class NoteTypeContext {
         this.$renderButton.toggle(this.ctx.note.type === 'render');
     }
 
-    findTypeTitle(type) {
-        const noteType = NOTE_TYPES.find(nt => nt.type === type);
+    async findTypeTitle(type, mime) {
+        if (type === 'code') {
+            const mimeTypes = await getMimeTypes();
+            const found = mimeTypes.find(mt => mt.mime === mime);
 
-        return noteType ? noteType.title : type;
+            return found ? found.title : mime;
+        }
+        else {
+            const noteType = NOTE_TYPES.find(nt => nt.type === type);
+
+            return noteType ? noteType.title : type;
+        }
     }
 
     async save(type, mime) {
