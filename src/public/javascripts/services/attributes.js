@@ -1,6 +1,6 @@
 import server from "./server.js";
 import utils from "./utils.js";
-import messagingService from "./messaging.js";
+import ws from "./ws.js";
 import treeUtils from "./tree_utils.js";
 import noteAutocompleteService from "./note_autocomplete.js";
 import linkService from "./link.js";
@@ -179,7 +179,7 @@ class Attributes {
                     .append($openButton));
             }
             else {
-                messagingService.logError("Unknown labelType=" + definitionAttr.labelType);
+                ws.logError("Unknown labelType=" + definitionAttr.labelType);
             }
         }
         else if (valueAttr.type === 'relation') {
@@ -197,7 +197,7 @@ class Attributes {
             $input.setSelectedPath(valueAttr.value);
         }
         else {
-            messagingService.logError("Unknown attribute type=" + valueAttr.type);
+            ws.logError("Unknown attribute type=" + valueAttr.type);
             return;
         }
 

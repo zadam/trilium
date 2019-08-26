@@ -4,7 +4,7 @@ const sql = require('./sql');
 const utils = require('./utils');
 const log = require('./log');
 const eventLogService = require('./event_log');
-const messagingService = require('./messaging');
+const ws = require('./ws.js');
 const ApiToken = require('../entities/api_token');
 const Branch = require('../entities/branch');
 const Note = require('../entities/note');
@@ -60,7 +60,7 @@ async function checkContentHashes(otherHashes) {
 
             if (key !== 'recent_notes') {
                 // let's not get alarmed about recent notes which get updated often and can cause failures in race conditions
-                await messagingService.sendMessageToAllClients({type: 'sync-hash-check-failed'});
+                await ws.sendMessageToAllClients({type: 'sync-hash-check-failed'});
             }
         }
     }

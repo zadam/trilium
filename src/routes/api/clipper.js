@@ -5,7 +5,7 @@ const dateNoteService = require('../../services/date_notes');
 const dateUtils = require('../../services/date_utils');
 const imageService = require('../../services/image');
 const appInfo = require('../../services/app_info');
-const messagingService = require('../../services/messaging');
+const ws = require('../../services/ws.js');
 const log = require('../../services/log');
 const utils = require('../../services/utils');
 const path = require('path');
@@ -102,7 +102,7 @@ async function addImagesToNote(images, note, content) {
 
 async function openNote(req) {
     if (utils.isElectron()) {
-        messagingService.sendMessageToAllClients({
+        ws.sendMessageToAllClients({
             type: 'open-note',
             noteId: req.params.noteId
         });

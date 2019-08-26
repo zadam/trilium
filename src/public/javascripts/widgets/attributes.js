@@ -1,6 +1,6 @@
 import utils from "../services/utils.js";
 import linkService from "../services/link.js";
-import messagingService from "../services/messaging.js";
+import ws from "../services/ws.js";
 import StandardWidget from "./standard_widget.js";
 
 class AttributesWidget extends StandardWidget {
@@ -71,12 +71,12 @@ class AttributesWidget extends StandardWidget {
                     $container.append(await linkService.createNoteLink(attribute.value));
                     $container.append(" ");
                 } else {
-                    messagingService.logError(`Relation ${attribute.attributeId} has empty target`);
+                    ws.logError(`Relation ${attribute.attributeId} has empty target`);
                 }
             } else if (attribute.type === 'label-definition' || attribute.type === 'relation-definition') {
                 $container.append(attribute.name + " definition ");
             } else {
-                messagingService.logError("Unknown attr type: " + attribute.type);
+                ws.logError("Unknown attr type: " + attribute.type);
             }
         }
     }

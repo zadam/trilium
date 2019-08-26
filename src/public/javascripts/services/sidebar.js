@@ -1,5 +1,5 @@
 import bundleService from "./bundle.js";
-import messagingService from "./messaging.js";
+import ws from "./ws.js";
 import optionsService from "./options.js";
 
 class Sidebar {
@@ -83,7 +83,7 @@ class Sidebar {
                 }
             }
             catch (e) {
-                messagingService.logError(`Error while creating widget ${widgetClass.name}: ${e.message}`);
+                ws.logError(`Error while creating widget ${widgetClass.name}: ${e.message}`);
             }
         }
 
@@ -95,7 +95,7 @@ class Sidebar {
                 this.$widgetContainer.append($el);
             }
             catch (e) {
-                messagingService.logError(`Error while loading widget ${widget.widgetName}: ${e.message}`);
+                ws.logError(`Error while loading widget ${widget.widgetName}: ${e.message}`);
             }
         }
     }

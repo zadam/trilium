@@ -3,7 +3,7 @@ import utils from '../services/utils.js';
 import treeUtils from "../services/tree_utils.js";
 import server from "../services/server.js";
 import infoService from "../services/info.js";
-import messagingService from "../services/messaging.js";
+import ws from "../services/ws.js";
 
 const $dialog = $("#import-dialog");
 const $form = $("#import-form");
@@ -117,7 +117,7 @@ function boolToString($el) {
     return $el.is(":checked") ? "true" : "false";
 }
 
-messagingService.subscribeToMessages(async message => {
+ws.subscribeToMessages(async message => {
     if (message.type === 'import-error') {
         infoService.showError(message.message);
         $dialog.modal('hide');

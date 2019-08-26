@@ -1,6 +1,6 @@
 import treeUtils from "../services/tree_utils.js";
 import utils from "../services/utils.js";
-import messagingService from "../services/messaging.js";
+import ws from "../services/ws.js";
 import infoService from "../services/info.js";
 
 const $dialog = $("#export-dialog");
@@ -112,7 +112,7 @@ $('input[name=export-subtree-format]').change(function () {
     }
 });
 
-messagingService.subscribeToMessages(async message => {
+ws.subscribeToMessages(async message => {
     if (message.type === 'export-error') {
         infoService.showError(message.message);
         $dialog.modal('hide');

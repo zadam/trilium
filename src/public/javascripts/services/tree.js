@@ -1,6 +1,6 @@
 import contextMenuWidget from './context_menu.js';
 import dragAndDropSetup from './drag_and_drop.js';
-import messagingService from './messaging.js';
+import ws from './ws.js';
 import noteDetailService from './note_detail.js';
 import protectedSessionHolder from './protected_session_holder.js';
 import treeUtils from './tree_utils.js';
@@ -126,7 +126,7 @@ async function getNodeFromPath(notePath, expand = false, expandOpts = {}) {
                 foundChildNode = findChildNode(parentNode, childNoteId);
 
                 if (!foundChildNode) {
-                    messagingService.logError(`Can't find node for child node of noteId=${childNoteId} for parent of noteId=${parentNode.data.noteId} and hoistedNoteId=${hoistedNoteId}, requested path is ${notePath}`);
+                    ws.logError(`Can't find node for child node of noteId=${childNoteId} for parent of noteId=${parentNode.data.noteId} and hoistedNoteId=${hoistedNoteId}, requested path is ${notePath}`);
                     return;
                 }
             }
@@ -233,7 +233,7 @@ async function getRunPath(notePath) {
             const parents = await child.getParentNotes();
 
             if (!parents) {
-                messagingService.logError("No parents found for " + childNoteId);
+                ws.logError("No parents found for " + childNoteId);
                 return;
             }
 
@@ -258,7 +258,7 @@ async function getRunPath(notePath) {
                     break;
                 }
                 else {
-                    messagingService.logError("No parents, can't activate node.");
+                    ws.logError("No parents, can't activate node.");
                     return;
                 }
             }
@@ -738,7 +738,7 @@ async function showTree() {
     initFancyTree(tree);
 }
 
-messagingService.subscribeToMessages(message => {
+ws.subscribeToMessages(message => {
    if (message.type === 'refresh-tree') {
        reload();
    }
@@ -753,7 +753,7 @@ messagingService.subscribeToMessages(message => {
    }
 });
 
-messagingService.subscribeToOutsideSyncMessages(syncData => {
+ws.subscribeToOutsideSyncMessages(syncData => {
     if (syncData.some(sync => sync.entityName === 'branches')
         || syncData.some(sync => sync.entityName === 'notes')) {
 

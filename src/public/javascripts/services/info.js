@@ -1,4 +1,4 @@
-import messagingService from "./messaging.js";
+import ws from "./ws.js";
 import utils from "./utils.js";
 
 function showMessage(message) {
@@ -13,7 +13,7 @@ function showMessage(message) {
 function showAndLogError(message, delay = 10000) {
     showError(message, delay);
 
-    messagingService.logError(message);
+    ws.logError(message);
 }
 
 function showError(message, delay = 10000) {
@@ -44,7 +44,7 @@ function getNotifySettings(type, delay) {
 }
 
 function throwError(message) {
-    messagingService.logError(message);
+    ws.logError(message);
 
     throw new Error(message);
 }

@@ -1,6 +1,6 @@
 "use strict";
 
-const messagingService = require('./messaging');
+const ws = require('./ws.js');
 
 // importId => ImportContext
 const importContexts = {};
@@ -36,7 +36,7 @@ class ImportContext {
         if (Date.now() - this.lastSentCountTs >= 500) {
             this.lastSentCountTs = Date.now();
 
-            await messagingService.sendMessageToAllClients({
+            await ws.sendMessageToAllClients({
                 importId: this.importId,
                 type: 'import-progress-count',
                 progressCount: this.progressCount
@@ -46,7 +46,7 @@ class ImportContext {
 
     // must remaing non-static
     async reportError(message) {
-        await messagingService.sendMessageToAllClients({
+        await ws.sendMessageToAllClients({
             type: 'import-error',
             message: message
         });

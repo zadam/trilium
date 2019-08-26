@@ -1,5 +1,5 @@
 import treeService from './tree.js';
-import messagingService from './messaging.js';
+import ws from './ws.js';
 import protectedSessionService from './protected_session.js';
 import treeChangesService from './branches.js';
 import treeUtils from './tree_utils.js';
@@ -153,7 +153,7 @@ class TreeContextMenu {
             hoistedNoteService.unhoist();
         }
         else {
-            messagingService.logError("Unknown command: " + cmd);
+            ws.logError("Unknown command: " + cmd);
         }
     }
 }

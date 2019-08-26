@@ -2,7 +2,7 @@ import utils from "./utils.js";
 import Branch from "../entities/branch.js";
 import NoteShort from "../entities/note_short.js";
 import infoService from "./info.js";
-import messagingService from "./messaging.js";
+import ws from "./ws.js";
 import server from "./server.js";
 
 /**
@@ -107,7 +107,7 @@ class TreeCache {
 
         return noteIds.map(noteId => {
             if (!this.notes[noteId] && !silentNotFoundError) {
-                messagingService.logError(`Can't find note "${noteId}"`);
+                ws.logError(`Can't find note "${noteId}"`);
 
                 return null;
             }

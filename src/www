@@ -21,7 +21,7 @@ const https = require('https');
 const config = require('./services/config');
 const log = require('./services/log');
 const appInfo = require('./services/app_info');
-const messagingService = require('./services/messaging');
+const ws = require('./services/ws.js');
 const utils = require('./services/utils');
 const sqlInit = require('./services/sql_init');
 const port = require('./services/port');
@@ -77,7 +77,7 @@ async function startTrilium() {
     httpServer.on('error', onError);
     httpServer.on('listening', () => debug('Listening on port' + httpServer.address().port));
 
-    sqlInit.dbReady.then(() => messagingService.init(httpServer, sessionParser));
+    sqlInit.dbReady.then(() => ws.init(httpServer, sessionParser));
 
     if (utils.isElectron()) {
         const electronRouting = require('./routes/electron');

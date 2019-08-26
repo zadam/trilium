@@ -3,7 +3,7 @@
 const sql = require('./sql');
 const sqlInit = require('./sql_init');
 const log = require('./log');
-const messagingService = require('./messaging');
+const ws = require('./ws.js');
 const syncMutexService = require('./sync_mutex');
 const repository = require('./repository');
 const cls = require('./cls');
@@ -381,13 +381,13 @@ async function runChecks() {
     });
 
     if (fixedIssues) {
-        messagingService.refreshTree();
+        ws.refreshTree();
     }
 
     if (unrecoverableConsistencyErrors) {
         log.info(`Consistency checks failed (took ${elapsedTimeMs}ms)`);
 
-        messagingService.sendMessageToAllClients({type: 'consistency-checks-failed'});
+        ws.sendMessageToAllClients({type: 'consistency-checks-failed'});
     }
     else {
         log.info(`All consistency checks passed (took ${elapsedTimeMs}ms)`);

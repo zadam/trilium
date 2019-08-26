@@ -10,7 +10,7 @@ const repository = require('./repository');
 const axios = require('axios');
 const dayjs = require('dayjs');
 const cloningService = require('./cloning');
-const messagingService = require('./messaging');
+const ws = require('./ws.js');
 const appInfo = require('./app_info');
 const searchService = require('./search');
 
@@ -211,7 +211,7 @@ function BackendScriptApi(currentNote, apiParams) {
     this.createNoteAndRefresh = async function(parentNoteId, title, content, extraOptions) {
         await noteService.createNote(parentNoteId, title, content, extraOptions);
 
-        messagingService.refreshTree();
+        ws.refreshTree();
     };
 
     /**
@@ -307,7 +307,7 @@ function BackendScriptApi(currentNote, apiParams) {
      *
      * @returns {Promise<void>}
      */
-    this.refreshTree = messagingService.refreshTree;
+    this.refreshTree = ws.refreshTree;
 
     /**
      * @return {{syncVersion, appVersion, buildRevision, dbVersion, dataDirectory, buildDate}|*} - object representing basic info about running Trilium version

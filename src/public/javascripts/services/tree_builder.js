@@ -3,7 +3,7 @@ import utils from "./utils.js";
 import Branch from "../entities/branch.js";
 import server from "./server.js";
 import treeCache from "./tree_cache.js";
-import messagingService from "./messaging.js";
+import ws from "./ws.js";
 import hoistedNoteService from "./hoisted_note.js";
 
 async function prepareTree() {
@@ -100,7 +100,7 @@ async function prepareRealBranch(parentNote) {
     const childBranches = await parentNote.getChildBranches();
 
     if (!childBranches) {
-        messagingService.logError(`No children for ${parentNote}. This shouldn't happen.`);
+        ws.logError(`No children for ${parentNote}. This shouldn't happen.`);
         return;
     }
 

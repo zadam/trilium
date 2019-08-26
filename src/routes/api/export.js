@@ -4,7 +4,7 @@ const tarExportService = require('../../services/export/tar');
 const singleExportService = require('../../services/export/single');
 const opmlExportService = require('../../services/export/opml');
 const repository = require("../../services/repository");
-const messagingService = require("../../services/messaging");
+const ws = require("../../services/ws.js");
 const log = require("../../services/log");
 
 class ExportContext {
@@ -23,7 +23,7 @@ class ExportContext {
         if (Date.now() - this.lastSentCountTs >= 500) {
             this.lastSentCountTs = Date.now();
 
-            await messagingService.sendMessageToAllClients({
+            await ws.sendMessageToAllClients({
                 exportId: this.exportId,
                 type: 'export-progress-count',
                 progressCount: this.progressCount
@@ -32,7 +32,7 @@ class ExportContext {
     }
 
     async exportFinished() {
-        await messagingService.sendMessageToAllClients({
+        await ws.sendMessageToAllClients({
             exportId: this.exportId,
             type: 'export-finished'
         });
@@ -40,7 +40,7 @@ class ExportContext {
 
     // must remaing non-static
     async reportError(message) {
-        await messagingService.sendMessageToAllClients({
+        await ws.sendMessageToAllClients({
             type: 'export-error',
             message: message
         });

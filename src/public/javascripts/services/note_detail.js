@@ -1,7 +1,7 @@
 import treeService from './tree.js';
 import TabContext from './tab_context.js';
 import server from './server.js';
-import messagingService from "./messaging.js";
+import ws from "./ws.js";
 import treeCache from "./tree_cache.js";
 import NoteFull from "../entities/note_full.js";
 import bundleService from "./bundle.js";
@@ -353,7 +353,7 @@ function fireDetailLoaded() {
     detailLoadedListeners = [];
 }
 
-messagingService.subscribeToOutsideSyncMessages(syncData => {
+ws.subscribeToOutsideSyncMessages(syncData => {
     const noteIdsToRefresh = new Set();
 
     syncData
@@ -370,7 +370,7 @@ messagingService.subscribeToOutsideSyncMessages(syncData => {
     }
 });
 
-messagingService.subscribeToAllSyncMessages(syncData => {
+ws.subscribeToAllSyncMessages(syncData => {
     for (const tc of tabContexts) {
         tc.syncDataReceived(syncData);
     }

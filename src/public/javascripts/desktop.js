@@ -2,7 +2,7 @@ import cloning from './services/cloning.js';
 import contextMenu from './services/tree_context_menu.js';
 import dragAndDropSetup from './services/drag_and_drop.js';
 import link from './services/link.js';
-import messagingService from './services/messaging.js';
+import ws from './services/ws.js';
 import noteDetailService from './services/note_detail.js';
 import noteType from './services/note_type.js';
 import protectedSessionService from './services/protected_session.js';
@@ -71,7 +71,7 @@ window.onerror = function (msg, url, lineNo, columnNo, error) {
         ].join(' - ');
     }
 
-    messagingService.logError(message);
+    ws.logError(message);
 
     return false;
 };
