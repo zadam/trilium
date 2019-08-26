@@ -79,14 +79,23 @@ class Sidebar {
                 const widget = new widgetClass(this.ctx, options, state);
 
                 if (await widget.isEnabled()) {
-                    const $el = await widget.render();
-
                     this.widgets.push(widget);
-                    this.$widgetContainer.append($el);
                 }
             }
             catch (e) {
-                messagingService.logError(`Error while loading widget ${widgetClass.name}: ${e.message}`);
+                messagingService.logError(`Error while creating widget ${widgetClass.name}: ${e.message}`);
+            }
+        }
+
+        this.widgets.sort((a, b) => a.getPosition() < b.getPosition() ? -1 : 1);
+
+        for (const widget of this.widgets) {
+            try {
+                const $el = await widget.render();
+                this.$widgetContainer.append($el);
+            }
+            catch (e) {
+                messagingService.logError(`Error while loading widget ${widget.widgetName}: ${e.message}`);
             }
         }
     }

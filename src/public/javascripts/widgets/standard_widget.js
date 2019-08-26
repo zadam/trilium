@@ -36,6 +36,8 @@ class StandardWidget {
 
     getMaxHeight() { return null; }
 
+    getPosition() { return this.widgetOptions.position; }
+
     async render() {
         const widgetId = `tab-${this.ctx.tabId}-widget-${this.widgetName}`;
 
