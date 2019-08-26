@@ -7,15 +7,6 @@ import treeUtils from "./tree_utils.js";
 import utils from "./utils.js";
 import NoteTypeContext from "./note_type.js";
 import noteDetailService from "./note_detail.js";
-import noteDetailEmpty from "./note_detail_empty.js";
-import noteDetailText from "./note_detail_text.js";
-import noteDetailCode from "./note_detail_code.js";
-import noteDetailFile from "./note_detail_file.js";
-import noteDetailImage from "./note_detail_image.js";
-import noteDetailSearch from "./note_detail_search.js";
-import noteDetailRender from "./note_detail_render.js";
-import noteDetailRelationMap from "./note_detail_relation_map.js";
-import noteDetailProtectedSession from "./note_detail_protected_session.js";
 import protectedSessionService from "./protected_session.js";
 import optionsService from "./options.js";
 import linkService from "./link.js";
@@ -24,15 +15,15 @@ import Sidebar from "./sidebar.js";
 const $tabContentsContainer = $("#note-tab-container");
 
 const componentClasses = {
-    'empty': noteDetailEmpty,
-    'text': noteDetailText,
-    'code': noteDetailCode,
-    'file': noteDetailFile,
-    'image': noteDetailImage,
-    'search': noteDetailSearch,
-    'render': noteDetailRender,
-    'relation-map': noteDetailRelationMap,
-    'protected-session': noteDetailProtectedSession
+    'empty': "./note_detail_empty.js",
+    'text': "./note_detail_text.js",
+    'code': "./note_detail_code.js",
+    'file': "./note_detail_file.js",
+    'image': "./note_detail_image.js",
+    'search': "./note_detail_search.js",
+    'render': "./note_detail_render.js",
+    'relation-map': "./note_detail_relation_map.js",
+    'protected-session': "./note_detail_protected_session.js"
 };
 
 let showSidebarInNewTab = true;
@@ -114,7 +105,7 @@ class TabContext {
         console.debug(`Created note tab ${this.tabId}`);
     }
 
-    setNote(note, notePath) {
+    async setNote(note, notePath) {
         this.noteId = note.noteId;
         this.notePath = notePath;
         /** @property {NoteFull} */
@@ -122,6 +113,8 @@ class TabContext {
         this.tabRow.updateTab(this.$tab[0], {title: note.title});
 
         this.attributes.invalidateAttributes();
+
+        await this.initComponent();
 
         this.setupClasses();
 
@@ -209,7 +202,23 @@ class TabContext {
         this.$unprotectButton.prop("disabled", !this.note.isProtected || !protectedSessionHolder.isProtectedSessionAvailable());
     }
 
+    async initComponent() {
+        const type = this.getComponentType();
+
+        if (!(type in this.components)) {
+            const clazz = await import(componentClasses[type]);
+
+            this.components[type] = new clazz.default(this);
+        }
+    }
+
     getComponent() {
+        const type = this.getComponentType();
+
+        return this.components[type];
+    }
+
+    getComponentType() {
         let type;
 
         if (this.note) {
@@ -225,16 +234,10 @@ class TabContext {
                     this.$noteTitle.prop("readonly", true);
                 }
             }
-        }
-        else {
+        } else {
             type = 'empty';
         }
-
-        if (!(type in this.components)) {
-            this.components[type] = new componentClasses[type](this);
-        }
-
-        return this.components[type];
+        return type;
     }
 
     async activate() {

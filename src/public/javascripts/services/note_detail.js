@@ -191,7 +191,7 @@ async function renderComponent(ctx) {
  * @param {NoteFull} note
  */
 async function loadNoteDetailToContext(ctx, note, notePath) {
-    ctx.setNote(note, notePath);
+    await ctx.setNote(note, notePath);
 
     openTabsChanged();
 
