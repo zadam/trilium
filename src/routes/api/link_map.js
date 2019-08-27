@@ -2,13 +2,15 @@
 
 const sql = require('../../services/sql');
 
-async function getRelations(noteIds, relationNames) {
+async function getRelations(noteIds) {
     return (await sql.getManyRows(`
         SELECT noteId, name, value AS targetNoteId
         FROM attributes
         WHERE (noteId IN (???) OR value IN (???))
           AND type = 'relation'
           AND isDeleted = 0
+          AND noteId != ''
+          AND value != ''
     `, Array.from(noteIds)));
 }
 
@@ -35,9 +37,9 @@ async function getLinkMap(req) {
             // no new note discovered, no need to search any further
             break;
         }
-
+        console.log(newNoteIds.size, maxNotes);
         if (newNoteIds.size > maxNotes) {
-            // to many notes to display
+            // too many notes to display
             break;
         }
 

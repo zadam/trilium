@@ -280,7 +280,7 @@ async function saveLinks(note, content) {
                 noteId: note.noteId,
                 type: 'relation',
                 name: foundLink.name,
-                value: foundLink.targetNoteId,
+                value: foundLink.value,
             }).save();
         }
         else if (existingLink.isDeleted) {

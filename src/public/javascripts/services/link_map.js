@@ -18,6 +18,7 @@ export default class LinkMap {
         this.note = note;
         this.options = $.extend({
             maxDepth: 10,
+            maxNotes: 30,
             zoom: 1.0
         }, options);
 
@@ -37,13 +38,13 @@ export default class LinkMap {
         });
     }
 
-    async loadNotesAndRelations() {
+    async loadNotesAndRelations(options = {}) {
+        this.options = $.extend(this.options, options);
+
         this.cleanup();
 
-        const maxNotes = 50;
-
         const links = await server.post(`notes/${this.note.noteId}/link-map`, {
-            maxNotes,
+            maxNotes: this.options.maxNotes,
             maxDepth: this.options.maxDepth
         });
 

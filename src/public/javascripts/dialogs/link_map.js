@@ -4,12 +4,16 @@ import noteDetailService from "../services/note_detail.js";
 
 const $linkMapContainer = $("#link-map-container");
 
-const LINK_TYPES = [ "hyper", "image", "relation", "relation-map" ];
-
 const $dialog = $("#link-map-dialog");
 const $maxNotesInput = $("#link-map-max-notes");
 
 let linkMapService;
+
+function getOptions() {
+    return {
+        maxNotes: $maxNotesInput.val()
+    };
+}
 
 export async function showDialog() {
     utils.closeActiveDialog();
@@ -17,8 +21,7 @@ export async function showDialog() {
     glob.activeDialog = $dialog;
 
     // set default settings
-    $maxNotesInput.val(10);
-    LINK_TYPES.forEach(lt => $("#link-map-" + lt).prop('checked', true));
+    $maxNotesInput.val(20);
 
     const note = noteDetailService.getActiveNote();
 
@@ -28,12 +31,11 @@ export async function showDialog() {
 
     $linkMapContainer.css("height", $("body").height() - 150);
 
-    linkMapService = new LinkMapService(note, $linkMapContainer);
+    linkMapService = new LinkMapService(note, $linkMapContainer, getOptions());
+
     linkMapService.render();
 
     $dialog.modal();
 }
 
-$(".link-map-settings").change(() => linkMapService.loadNotesAndRelations());
-
-$maxNotesInput.on("input", () => linkMapService.loadNotesAndRelations());
+$maxNotesInput.on("input", () => linkMapService.loadNotesAndRelations(getOptions()));
