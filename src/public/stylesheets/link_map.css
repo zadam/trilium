@@ -1,6 +1,5 @@
 .link-map-container {
     position: relative;
-    height: 300px;
     outline: none; /* remove dotted outline on click */
 }
 

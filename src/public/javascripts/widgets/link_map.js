@@ -26,10 +26,14 @@ class LinkMapWidget extends StandardWidget {
 
         const $linkMapContainer = this.$body.find('.link-map-container');
         $linkMapContainer.attr("id", "link-map-container-" + linkMapContainerIdCtr++);
+        $linkMapContainer.css("height", "300px");
 
         const LinkMapServiceClass = (await import('../services/link_map.js')).default;
 
-        const linkMapService = new LinkMapServiceClass(this.ctx.note, $linkMapContainer);
+        const linkMapService = new LinkMapServiceClass(this.ctx.note, $linkMapContainer, {
+            maxDepth: 1,
+            zoom: 0.7
+        });
 
         await linkMapService.render();
     }

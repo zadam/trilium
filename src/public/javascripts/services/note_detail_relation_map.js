@@ -552,6 +552,10 @@ class NoteDetailRelationMap {
 
         const transform = this.$relationMapContainer.css('transform');
 
+        if (transform === 'none') {
+            return 1;
+        }
+
         const matches = transform.match(matrixRegex);
 
         if (!matches) {

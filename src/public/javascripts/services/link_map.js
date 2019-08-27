@@ -14,8 +14,13 @@ const linkOverlays = [
 ];
 
 export default class LinkMap {
-    constructor(note, $linkMapContainer) {
+    constructor(note, $linkMapContainer, options = {}) {
         this.note = note;
+        this.options = $.extend({
+            maxDepth: 10,
+            zoom: 1.0
+        }, options);
+
         this.$linkMapContainer = $linkMapContainer;
         this.linkMapContainerId = this.$linkMapContainer.attr("id");
     }
@@ -37,17 +42,15 @@ export default class LinkMap {
 
         const maxNotes = 50;
 
-        const currentNoteId = this.note.noteId;
-
-        const links = await server.post(`notes/${currentNoteId}/link-map`, {
+        const links = await server.post(`notes/${this.note.noteId}/link-map`, {
             maxNotes,
-            maxDepth: 1
+            maxDepth: this.options.maxDepth
         });
 
         const noteIds = new Set(links.map(l => l.noteId).concat(links.map(l => l.targetNoteId)));
 
         if (noteIds.size === 0) {
-            noteIds.add(currentNoteId);
+            noteIds.add(this.note.noteId);
         }
 
         // preload all notes
@@ -55,6 +58,7 @@ export default class LinkMap {
 
         const graph = new Springy.Graph();
         graph.addNodes(...noteIds);
+        graph.addEdges(...links.map(l => [l.noteId, l.targetNoteId]));
 
         const layout = new Springy.Layout.ForceDirected(
             graph,
@@ -81,7 +85,7 @@ export default class LinkMap {
                 $noteBox.append($("<span>").addClass("title").append($link));
             });
 
-            if (noteId === currentNoteId) {
+            if (noteId === this.note.noteId) {
                 $noteBox.addClass("link-map-active-note");
             }
 
@@ -89,7 +93,7 @@ export default class LinkMap {
 
             this.jsPlumbInstance.draggable($noteBox[0], {
                 start: params => {
-                    renderer.stop();
+                    this.renderer.stop();
                 },
                 drag: params => {},
                 stop: params => {}
@@ -103,7 +107,7 @@ export default class LinkMap {
             layout,
             () => {},
             (edge, p1, p2) => {
-                const connectionId = edge.source.id + '-' + edge.target.id;
+                const connectionId = this.linkMapContainerId + '-' + edge.source.id + '-' + edge.target.id;
 
                 if ($("#" + connectionId).length > 0) {
                     return;
@@ -169,7 +173,7 @@ export default class LinkMap {
         this.$linkMapContainer.empty();
 
         // reset zoom/pan
-        this.pzInstance.zoomTo(0, 0, 0.7);
+        this.pzInstance.zoomTo(0, 0, this.options.zoom);
         this.pzInstance.moveTo(0, 0);
     }
 

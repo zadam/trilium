@@ -20,11 +20,13 @@ export async function showDialog() {
     $maxNotesInput.val(10);
     LINK_TYPES.forEach(lt => $("#link-map-" + lt).prop('checked', true));
 
-    const note = noteDetailService.getActiveNoteId();
+    const note = noteDetailService.getActiveNote();
 
     if (!note) {
         return;
     }
+
+    $linkMapContainer.css("height", $("body").height() - 150);
 
     linkMapService = new LinkMapService(note, $linkMapContainer);
     linkMapService.render();
