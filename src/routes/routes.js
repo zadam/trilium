@@ -33,7 +33,6 @@ const filesRoute = require('./api/file_upload');
 const searchRoute = require('./api/search');
 const dateNotesRoute = require('./api/date_notes');
 const linkMapRoute = require('./api/link_map');
-const linksRoute = require('./api/links');
 const clipperRoute = require('./api/clipper');
 const customCodeMimeTypesRoute = require('./api/custom_code_mime_types.js');
 
@@ -161,8 +160,6 @@ function register(app) {
     apiRoute(GET, '/api/notes/:noteId/target-relations', attributesRoute.getTargetRelations);
 
     apiRoute(POST, '/api/notes/:noteId/link-map', linkMapRoute.getLinkMap);
-    apiRoute(GET, '/api/notes/:noteId/links', linksRoute.getLinks);
-    apiRoute(GET, '/api/notes/:noteId/incoming-links', linksRoute.getIncomingLinks);
 
     apiRoute(GET, '/api/date-notes/date/:date', dateNotesRoute.getDateNote);
     apiRoute(GET, '/api/date-notes/month/:month', dateNotesRoute.getMonthNote);

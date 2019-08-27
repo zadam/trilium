@@ -72,11 +72,6 @@ async function getOption(name) {
     return await getEntity("SELECT * FROM options WHERE name = ?", [name]);
 }
 
-/** @returns {Promise<Link|null>} */
-async function getLink(linkId) {
-    return await getEntity("SELECT * FROM links WHERE linkId = ?", [linkId]);
-}
-
 async function updateEntity(entity) {
     const entityName = entity.constructor.entityName;
     const primaryKeyName = entity.constructor.primaryKeyName;
@@ -144,7 +139,6 @@ module.exports = {
     getBranch,
     getAttribute,
     getOption,
-    getLink,
     updateEntity,
     setEntityConstructor
 };

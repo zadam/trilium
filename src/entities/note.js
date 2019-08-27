@@ -642,24 +642,6 @@ class Note extends Entity {
     }
 
     /**
-     * Get list of links targetting this note.
-     *
-     * @returns {Promise<Link[]>}
-     */
-    async getTargetLinks() {
-        return await repository.getEntities("SELECT * FROM links WHERE targetNoteId = ? AND isDeleted = 0", [this.noteId]);
-    }
-
-    /**
-     * Return all links from this note, including deleted ones.
-     *
-     * @returns {Promise<Link[]>}
-     */
-    async getLinksWithDeleted() {
-        return await repository.getEntities("SELECT * FROM links WHERE noteId = ?", [this.noteId]);
-    }
-
-    /**
      * @returns {Promise<Branch[]>}
      */
     async getBranches() {

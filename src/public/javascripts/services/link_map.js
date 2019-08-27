@@ -55,7 +55,6 @@ export default class LinkMap {
 
         const graph = new Springy.Graph();
         graph.addNodes(...noteIds);
-        graph.addEdges(...links.map(l => [l.noteId, l.targetNoteId]));
 
         const layout = new Springy.Layout.ForceDirected(
             graph,

@@ -316,14 +316,6 @@ class NoteDetailRelationMap {
 
                 connection.canvas.setAttribute("data-connection-id", connection.id);
             }
-
-            for (const link of data.links) {
-                this.jsPlumbInstance.connect({
-                    source: this.noteIdToId(link.sourceNoteId),
-                    target: this.noteIdToId(link.targetNoteId),
-                    type: 'link'
-                });
-            }
         });
     }
 

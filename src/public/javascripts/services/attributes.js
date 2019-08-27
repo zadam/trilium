@@ -1,9 +1,7 @@
 import server from "./server.js";
-import utils from "./utils.js";
 import ws from "./ws.js";
 import treeUtils from "./tree_utils.js";
 import noteAutocompleteService from "./note_autocomplete.js";
-import linkService from "./link.js";
 
 class Attributes {
     /**
