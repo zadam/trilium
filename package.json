@@ -28,7 +28,7 @@
     "commonmark": "0.29.0",
     "cookie-parser": "1.4.4",
     "csurf": "1.10.0",
-    "dayjs": "1.8.15",
+    "dayjs": "1.8.16",
     "debug": "4.1.1",
     "ejs": "2.6.2",
     "electron-context-menu": "0.14.0",

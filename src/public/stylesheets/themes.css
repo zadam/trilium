@@ -92,6 +92,7 @@ body.theme-dark .CodeMirror {
 body {
     /* -- Overrides generic colors. ------------------------------------------------------------- */
 
+    --ck-color-base-text: var(--main-text-color);
     --ck-color-base-foreground: var(--accented-background-color);
     --ck-color-focus-border: var(--main-border-color);
     --ck-color-text: var(--main-text-color);
@@ -175,6 +176,10 @@ body {
     --ck-color-link-default: var(--link-color);
 
     --ck-color-table-focused-cell-background: var(--more-accented-background-color);
+
+    /* todo lists */
+
+    --ck-color-todo-list-checkmark-border: var(--main-border-color);
 }
 
 body {
@@ -194,4 +199,8 @@ input, select, textarea {
 
 table td, table th {
     color: var(--main-text-color);
+}
+
+.ck .todo-list__checkmark {
+    top: 10px !important;
 }
