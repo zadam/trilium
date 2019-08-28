@@ -6,6 +6,16 @@ class WhatLinksHereWidget extends StandardWidget {
 
     getMaxHeight() { return "200px"; }
 
+    getHeaderActions() {
+        const $showFullButton = $("<a>").append("show link map").addClass('widget-header-action');
+        $showFullButton.click(async () => {
+            const linkMapDialog = await import("../dialogs/link_map.js");
+            linkMapDialog.showDialog();
+        });
+
+        return [$showFullButton];
+    }
+
     async doRenderBody() {
         const targetRelations = await this.ctx.note.getTargetRelations();
 

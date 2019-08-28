@@ -63,9 +63,10 @@ export default class LinkMap {
 
         const layout = new Springy.Layout.ForceDirected(
             graph,
-            400.0, // Spring stiffness
+            // param explanation here: https://github.com/dhotson/springy/issues/58
+            800.0, // Spring stiffness
             400.0, // Node repulsion
-            0.5 // Damping
+            0.2 // Damping
         );
 
         const getNoteBox = noteId => {
@@ -123,7 +124,12 @@ export default class LinkMap {
                     type: 'link'
                 });
 
-                connection.canvas.id = connectionId;
+                if (connection) {
+                    connection.canvas.id = connectionId;
+                }
+                else {
+                    console.log(`connection not created for`, edge);
+                }
             },
             (node, p) => {
                 const $noteBox = getNoteBox(node.id);

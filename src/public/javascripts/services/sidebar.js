@@ -53,6 +53,10 @@ class Sidebar {
             return;
         }
 
+        for (const widget of this.widgets) {
+            widget.cleanup();
+        }
+
         this.widgets = [];
         this.$widgetContainer.empty();
 

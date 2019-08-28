@@ -100,54 +100,6 @@ ul.fancytree-container {
     height: 100%;
 }
 
-.note-detail-sidebar {
-    min-width: 350px;
-    width: 50%;
-    overflow: auto;
-    padding-top: 12px;
-    padding-left: 7px;
-    font-size: 90%;
-}
-
-.note-detail-sidebar .card {
-    border: 0;
-}
-
-.note-detail-sidebar .card-header {
-    background: inherit;
-    padding: 3px 10px 3px 10px;
-    width: 100%;
-    background-color: var(--button-background-color);
-    border-color: var(--button-border-color);
-    border-width: 1px 0 1px 0;
-    border-style: solid;
-    display: flex;
-    justify-content: space-between;
-}
-
-.note-detail-sidebar .widget-title {
-    border-radius: 0;
-    padding: 0;
-    border: 0;
-    background: inherit;
-    font-weight: bold;
-}
-
-.note-detail-sidebar .widget-header-actions {
-    padding-right: 10px;
-}
-
-.note-detail-sidebar .widget-header-action {
-    color: var(--link-color) !important;
-    cursor: pointer;
-}
-
-.note-detail-sidebar .card-body {
-    width: 100%;
-    padding: 8px;
-    border: 0;
-}
-
 .note-detail-component-wrapper {
     flex-grow: 100;
     position: relative;
@@ -865,8 +817,4 @@ a.external:after, a[href^="http://"]:after, a[href^="https://"]:after {
 
 .modal-header {
     padding: 0.7rem 1rem !important; /* make modal header padding slightly smaller */
-}
-
-.hide-sidebar-button {
-    color: var(--main-text-color);
 }

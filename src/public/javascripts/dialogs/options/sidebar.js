@@ -136,7 +136,11 @@ export default class SidebarOptions {
         // need to find them dynamically since they change
         const $sidebar = $(".note-detail-sidebar");
 
+        const $content = $(".note-detail-content");
+
         $sidebar.css("width", sidebarWidthPercent + '%');
         $sidebar.css("min-width", sidebarMinWidth + 'px');
+
+        $content.css("width", (100 - sidebarWidthPercent) + '%');
     }
 }

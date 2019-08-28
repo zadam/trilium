@@ -104,6 +104,8 @@ class StandardWidget {
     }
 
     syncDataReceived(syncData) {}
+
+    cleanup() {}
 }
 
 export default StandardWidget;

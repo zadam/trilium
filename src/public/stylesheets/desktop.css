@@ -345,6 +345,57 @@ body {
     transition: transform 120ms ease-in-out;
 }
 
+.hide-sidebar-button {
+    color: var(--main-text-color);
+}
+
+.note-detail-sidebar {
+    overflow: auto;
+    padding-top: 12px;
+    padding-left: 7px;
+    font-size: 90%;
+}
+
+.note-detail-sidebar .card {
+    border: 0;
+}
+
+.note-detail-sidebar .card-header {
+    background: inherit;
+    padding: 5px 10px 5px 10px;
+    width: 99%; /* to give minimal right margin */
+    background-color: var(--button-background-color);
+    border-color: var(--button-border-color);
+    border-width: 1px 0 1px 0;
+    border-radius: 3px;
+    border-style: solid;
+    display: flex;
+    justify-content: space-between;
+}
+
+.note-detail-sidebar .widget-title {
+    border-radius: 0;
+    padding: 0;
+    border: 0;
+    background: inherit;
+    font-weight: bold;
+}
+
+.note-detail-sidebar .widget-header-actions {
+    padding-right: 10px;
+}
+
+.note-detail-sidebar .widget-header-action {
+    color: var(--link-color) !important;
+    cursor: pointer;
+}
+
+.note-detail-sidebar .card-body {
+    width: 100%;
+    padding: 8px;
+    border: 0;
+}
+
 #widgets-configuration {
     margin: 0;
 }
