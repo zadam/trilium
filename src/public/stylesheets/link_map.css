@@ -6,7 +6,7 @@
 .link-map-container .note-box {
     padding: 8px;
     position: absolute !important;
-    background-color: var(--accented-background-color);
+    background-color: var(--main-background-color);
     color: var(--main-text-color);
     z-index: 4;
     border: 1px solid #666;
@@ -37,7 +37,7 @@
 }
 
 .link-map-active-note {
-    background-color: var(--more-accented-background-color) !important;
+    background-color: var(--accented-background-color) !important;
 }
 
 .link-map-container .jsplumb-connection-hover path {

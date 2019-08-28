@@ -146,6 +146,10 @@ export default class LinkMap {
                 $noteBox
                     .css("left", (middleW + p.x * 100) + "px")
                     .css("top", (middleH + p.y * 100) + "px");
+
+                if ($noteBox.hasClass("link-map-active-note")) {
+                    this.moveToCenterOfElement($noteBox[0]);
+                }
             },
             () => {},
             () => {},
@@ -158,6 +162,21 @@ export default class LinkMap {
 
         // long rendering is annoying and by 3rd seconds the basic layout should be finished
         setTimeout(() => this.renderer.stop(), 3000);
+    }
+
+    moveToCenterOfElement(element) {
+        const elemBounds = element.getBoundingClientRect();
+        const containerBounds = this.pzInstance.getOwner().getBoundingClientRect();
+
+        const centerX = -elemBounds.left + containerBounds.left + (containerBounds.width / 2) - (elemBounds.width / 2);
+        const centerY = -elemBounds.top + containerBounds.top + (containerBounds.height / 2) - (elemBounds.height / 2);
+
+        const transform = this.pzInstance.getTransform();
+
+        const newX = transform.x + centerX;
+        const newY = transform.y + centerY;
+
+        this.pzInstance.moveTo(newX, newY);
     }
 
     initPanZoom() {
