@@ -39,3 +39,8 @@
 .link-map-active-note {
     background-color: var(--more-accented-background-color) !important;
 }
+
+.link-map-container .jsplumb-connection-hover path {
+    stroke-width: 2 !important;
+    stroke: var(--main-text-color);
+}

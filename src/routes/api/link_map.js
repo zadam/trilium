@@ -37,7 +37,7 @@ async function getLinkMap(req) {
             // no new note discovered, no need to search any further
             break;
         }
-        console.log(newNoteIds.size, maxNotes);
+
         if (newNoteIds.size > maxNotes) {
             // too many notes to display
             break;

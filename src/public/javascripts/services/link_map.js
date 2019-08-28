@@ -64,9 +64,9 @@ export default class LinkMap {
         const layout = new Springy.Layout.ForceDirected(
             graph,
             // param explanation here: https://github.com/dhotson/springy/issues/58
-            800.0, // Spring stiffness
+            400.0, // Spring stiffness
             400.0, // Node repulsion
-            0.2 // Damping
+            0.15 // Damping
         );
 
         const getNoteBox = noteId => {
@@ -90,6 +90,10 @@ export default class LinkMap {
             if (noteId === this.note.noteId) {
                 $noteBox.addClass("link-map-active-note");
             }
+
+            $noteBox
+                .mouseover(() => $(".link-" + noteId).addClass("jsplumb-connection-hover"))
+                .mouseout(() => $(".link-" + noteId).removeClass("jsplumb-connection-hover"));
 
             this.$linkMapContainer.append($noteBox);
 
@@ -125,7 +129,10 @@ export default class LinkMap {
                 });
 
                 if (connection) {
-                    connection.canvas.id = connectionId;
+                    $(connection.canvas)
+                        .prop("id", connectionId)
+                        .addClass('link-' + edge.source.id)
+                        .addClass('link-' + edge.target.id);
                 }
                 else {
                     console.log(`connection not created for`, edge);
@@ -148,6 +155,9 @@ export default class LinkMap {
         );
 
         this.renderer.start();
+
+        // long rendering is annoying and by 3rd seconds the basic layout should be finished
+        setTimeout(() => this.renderer.stop(), 3000);
     }
 
     initPanZoom() {

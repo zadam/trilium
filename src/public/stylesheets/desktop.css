@@ -367,7 +367,7 @@ body {
     background-color: var(--button-background-color);
     border-color: var(--button-border-color);
     border-width: 1px 0 1px 0;
-    border-radius: 3px;
+    border-radius: 4px;
     border-style: solid;
     display: flex;
     justify-content: space-between;
@@ -379,10 +379,6 @@ body {
     border: 0;
     background: inherit;
     font-weight: bold;
-}
-
-.note-detail-sidebar .widget-header-actions {
-    padding-right: 10px;
 }
 
 .note-detail-sidebar .widget-header-action {
