@@ -20,14 +20,16 @@ class StandardWidget {
     /**
      * @param {TabContext} ctx
      * @param {Options} options
-     * @param {object} state
+     * @param {object} sidebarState
      */
-    constructor(ctx, options, state) {
+    constructor(ctx, options, sidebarState) {
         this.ctx = ctx;
-        this.state = state;
         // construct in camelCase
         this.widgetName = this.constructor.name.substr(0, 1).toLowerCase() + this.constructor.name.substr(1);
         this.widgetOptions = options.getJson(this.widgetName) || {};
+        this.state = sidebarState.widgets.find(s => s.name === this.widgetName) || {
+            expanded: this.widgetOptions.expanded
+        };
     }
 
     getWidgetTitle() { return "Untitled widget"; }
@@ -47,7 +49,7 @@ class StandardWidget {
         this.$bodyWrapper = this.$widget.find('.body-wrapper');
         this.$bodyWrapper.attr('id', widgetId);
 
-        if ((this.state && this.state.expanded) || (!this.state && this.widgetOptions.expanded)) {
+        if (this.state.expanded) {
             this.$bodyWrapper.collapse("show");
         }
 

@@ -77,7 +77,7 @@
     "xml2js": "0.4.19"
   },
   "devDependencies": {
-    "electron": "6.0.4",
+    "electron": "6.0.5",
     "electron-builder": "21.2.0",
     "electron-compile": "6.4.4",
     "electron-installer-debian": "2.0.0",

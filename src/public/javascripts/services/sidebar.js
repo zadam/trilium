@@ -10,7 +10,9 @@ class Sidebar {
     constructor(ctx, state = {}) {
         /** @property {TabContext} */
         this.ctx = ctx;
-        this.state = state;
+        this.state = Object.assign({
+            widgets: []
+        }, state);
         this.widgets = [];
         this.rendered = false;
         this.$sidebar = ctx.$tabContent.find(".note-detail-sidebar");
@@ -73,10 +75,8 @@ class Sidebar {
         }
 
         for (const widgetClass of widgetClasses) {
-            const state = (this.state.widgets || []).find(s => s.name === widgetClass.name);
-
             try {
-                const widget = new widgetClass(this.ctx, options, state);
+                const widget = new widgetClass(this.ctx, options, this.state);
 
                 if (await widget.isEnabled()) {
                     this.widgets.push(widget);

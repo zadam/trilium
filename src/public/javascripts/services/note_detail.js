@@ -183,6 +183,8 @@ async function renderComponent(ctx) {
     ctx.$noteTitle.show(); // this can be hidden by empty detail
     ctx.$noteTitle.removeAttr("readonly"); // this can be set by protected session service
 
+    await ctx.initComponent();
+
     await ctx.getComponent().render();
 }
 

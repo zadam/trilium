@@ -16,7 +16,7 @@ const linkOverlays = [
 export default class LinkMap {
     constructor(note, $linkMapContainer, options = {}) {
         this.note = note;
-        this.options = $.extend({
+        this.options = Object.assign({
             maxDepth: 10,
             maxNotes: 30,
             zoom: 1.0
@@ -39,7 +39,7 @@ export default class LinkMap {
     }
 
     async loadNotesAndRelations(options = {}) {
-        this.options = $.extend(this.options, options);
+        this.options = Object.assign(this.options, options);
 
         this.cleanup();
 
