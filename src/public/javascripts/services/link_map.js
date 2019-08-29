@@ -65,7 +65,7 @@ export default class LinkMap {
             graph,
             // param explanation here: https://github.com/dhotson/springy/issues/58
             400.0, // Spring stiffness
-            400.0, // Node repulsion
+            200.0, // Node repulsion
             0.15 // Damping
         );
 
@@ -78,6 +78,10 @@ export default class LinkMap {
             }
 
             const note = notes.find(n => n.noteId === noteId);
+
+            if (!note) {
+                return null;
+            }
 
             const $noteBox = $("<div>")
                 .addClass("note-box")

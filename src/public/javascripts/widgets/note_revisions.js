@@ -9,6 +9,16 @@ const TPL = `
 class NoteRevisionsWidget extends StandardWidget {
     getWidgetTitle() { return "Note revisions"; }
 
+    getHeaderActions() {
+        const $showFullButton = $("<a>").append("show dialog").addClass('widget-header-action');
+        $showFullButton.click(async () => {
+            const attributesDialog = await import("../dialogs/note_revisions.js");
+            attributesDialog.showDialog();
+        });
+
+        return [$showFullButton];
+    }
+
     async doRenderBody() {
         const revisionItems = await server.get(`notes/${this.ctx.note.noteId}/revisions`);
 

@@ -214,7 +214,7 @@ function findImageLinks(content, foundLinks) {
 
     while (match = re.exec(content)) {
         foundLinks.push({
-            type: 'image-link',
+            name: 'image-link',
             value: match[1]
         });
     }
@@ -244,7 +244,7 @@ function findRelationMapLinks(content, foundLinks) {
 
     for (const note of obj.notes) {
         foundLinks.push({
-            type: 'relation-map-link',
+            name: 'relation-map-link',
             value: note.noteId
         })
     }
