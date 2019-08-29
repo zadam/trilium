@@ -70,17 +70,6 @@ CREATE TABLE IF NOT EXISTS "attributes"
   isDeleted    INT  not null,
   hash         TEXT default "" not null,
   isInheritable int DEFAULT 0 NULL);
-CREATE TABLE IF NOT EXISTS "links" (
-                                     `linkId`	TEXT NOT NULL,
-                                     `noteId`	TEXT NOT NULL,
-                                     `targetNoteId`	TEXT NOT NULL,
-                                     `type` TEXT NOT NULL,
-                                     `hash` TEXT DEFAULT "" NOT NULL,
-                                     `isDeleted`	INTEGER NOT NULL DEFAULT 0,
-                                     `utcDateCreated`	TEXT NOT NULL,
-                                     `utcDateModified`	TEXT NOT NULL,
-                                     PRIMARY KEY(`linkId`)
-);
 CREATE TABLE IF NOT EXISTS "notes" (
                                      `noteId`	TEXT NOT NULL,
                                      `title`	TEXT NOT NULL DEFAULT "note",
@@ -94,6 +83,21 @@ CREATE TABLE IF NOT EXISTS "notes" (
                                      `utcDateCreated`	TEXT NOT NULL,
                                      `utcDateModified`	TEXT NOT NULL,
                                      PRIMARY KEY(`noteId`)
+);
+CREATE TABLE IF NOT EXISTS "note_contents" (
+                                                   `noteId`	TEXT NOT NULL,
+                                                   `content`	TEXT NULL DEFAULT NULL,
+                                                   `hash` TEXT DEFAULT "" NOT NULL,
+                                                   `utcDateModified` TEXT NOT NULL,
+                                                   PRIMARY KEY(`noteId`)
+);
+CREATE TABLE recent_notes
+(
+    noteId TEXT not null primary key,
+    notePath TEXT not null,
+    hash TEXT default "" not null,
+    utcDateCreated TEXT not null,
+    isDeleted INT
 );
 CREATE UNIQUE INDEX `IDX_sync_entityName_entityId` ON `sync` (
                                                               `entityName`,
@@ -121,28 +125,9 @@ CREATE INDEX `IDX_branches_noteId_parentNoteId` ON `branches` (
 CREATE INDEX IDX_branches_parentNoteId ON branches (parentNoteId);
 CREATE INDEX IDX_attributes_name_value
   on attributes (name, value);
-CREATE INDEX IDX_links_noteId_index
-  on links (noteId);
-CREATE INDEX IDX_links_targetNoteId_index
-  on links (targetNoteId);
 CREATE INDEX IDX_attributes_name_index
   on attributes (name);
 CREATE INDEX IDX_attributes_noteId_index
   on attributes (noteId);
 CREATE INDEX IDX_attributes_value_index
   on attributes (value);
-CREATE TABLE IF NOT EXISTS "note_contents" (
-                                                   `noteId`	TEXT NOT NULL,
-                                                   `content`	TEXT NULL DEFAULT NULL,
-                                                   `hash` TEXT DEFAULT "" NOT NULL,
-                                                   `utcDateModified` TEXT NOT NULL,
-                                                   PRIMARY KEY(`noteId`)
-);
-CREATE TABLE recent_notes
-(
-    noteId TEXT not null primary key,
-    notePath TEXT not null,
-    hash TEXT default "" not null,
-    utcDateCreated TEXT not null,
-    isDeleted INT
-);

@@ -25,6 +25,8 @@ async function initSyncedOptions(username, password) {
     // passwordEncryptionService expects these options to already exist
     await optionService.createOption('encryptedDataKey', '', true);
 
+    await optionService.createOption('codeNotesMimeTypes', '["text/x-csrc","text/x-c++src","text/x-csharp","text/css","text/x-go","text/x-groovy","text/x-haskell","text/html","message/http","text/x-java","application/javascript;env=frontend","application/javascript;env=backend","application/json","text/x-kotlin","text/x-markdown","text/x-perl","text/x-php","text/x-python","text/x-ruby",null,"text/x-sql","text/x-swift","text/xml","text/x-yaml"]', true);
+
     await passwordEncryptionService.setDataKey(password, utils.randomSecureToken(16), true);
 }
 
@@ -32,7 +34,11 @@ async function initNotSyncedOptions(initialized, startNotePath = 'root', opts = 
     await optionService.createOption('openTabs', JSON.stringify([
         {
             notePath: startNotePath,
-            active: 1
+            active: true,
+            sidebar: {
+                visible: true,
+                widgets: []
+            }
         }
     ]), false);
     await optionService.createOption('hoistedNoteId', 'root', false);
@@ -57,6 +63,17 @@ async function initNotSyncedOptions(initialized, startNotePath = 'root', opts = 
     await optionService.createOption('mainFontSize', '100', false);
     await optionService.createOption('treeFontSize', '100', false);
     await optionService.createOption('detailFontSize', '110', false);
+
+    await optionService.createOption('sidebarMinWidth', '350', false);
+    await optionService.createOption('sidebarWidthPercent', '25', false);
+
+    await optionService.createOption('showSidebarInNewTab', 'true', false);
+
+    await optionService.createOption('noteInfoWidget', '{"enabled":true,"expanded":true,"position":10}', false);
+    await optionService.createOption('attributesWidget', '{"enabled":true,"expanded":true,"position":20}', false);
+    await optionService.createOption('linkMapWidget', '{"enabled":true,"expanded":true,"position":30}', false);
+    await optionService.createOption('noteRevisionsWidget', '{"enabled":true,"expanded":true,"position":40}', false);
+    await optionService.createOption('whatLinksHereWidget', '{"enabled":false,"expanded":true,"position":50}', false);
 
     await optionService.createOption('initialized', initialized ? 'true' : 'false', false);
 }
