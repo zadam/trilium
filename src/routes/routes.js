@@ -34,7 +34,6 @@ const searchRoute = require('./api/search');
 const dateNotesRoute = require('./api/date_notes');
 const linkMapRoute = require('./api/link_map');
 const clipperRoute = require('./api/clipper');
-const customCodeMimeTypesRoute = require('./api/custom_code_mime_types.js');
 
 const log = require('../services/log');
 const express = require('express');
