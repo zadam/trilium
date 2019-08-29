@@ -236,8 +236,6 @@ function register(app) {
     route(POST, '/api/clipper/notes', clipperMiddleware, clipperRoute.createNote, apiResultHandler);
     route(POST, '/api/clipper/open/:noteId', clipperMiddleware, clipperRoute.openNote, apiResultHandler);
 
-    apiRoute(GET, '/api/custom-code-mime-types', customCodeMimeTypesRoute.get);
-
     app.use('', router);
 }
 

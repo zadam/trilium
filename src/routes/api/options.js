@@ -28,7 +28,8 @@ const ALLOWED_OPTIONS = [
     'attributesWidget',
     'linkMapWidget',
     'noteRevisionsWidget',
-    'whatLinksHereWidget'
+    'whatLinksHereWidget',
+    'codeNotesMimeTypes'
 ];
 
 async function getOptions() {

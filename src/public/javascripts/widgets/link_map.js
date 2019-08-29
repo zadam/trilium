@@ -32,7 +32,7 @@ class LinkMapWidget extends StandardWidget {
 
         this.linkMapService = new LinkMapServiceClass(this.ctx.note, $linkMapContainer, {
             maxDepth: 1,
-            zoom: 0.7
+            zoom: 0.8
         });
 
         await this.linkMapService.render();

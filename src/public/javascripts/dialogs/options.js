@@ -17,6 +17,7 @@ export async function showDialog() {
     (await Promise.all([
         import('./options/advanced.js'),
         import('./options/appearance.js'),
+        import('./options/code_notes.js'),
         import('./options/change_password.js'),
         import('./options/note_revisions.js'),
         import('./options/protected_session.js'),

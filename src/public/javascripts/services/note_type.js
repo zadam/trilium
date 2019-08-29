@@ -1,6 +1,7 @@
 import treeService from './tree.js';
 import noteDetailService from './note_detail.js';
 import server from './server.js';
+import mimeTypesService from './mime_types.js';
 
 const NOTE_TYPES = [
     { type: "file", title: "File", selectable: false },
@@ -12,64 +13,6 @@ const NOTE_TYPES = [
     { type: "render", mime: '', title: "Render HTML note", selectable: true },
     { type: "code", mime: 'text/plain', title: "Code", selectable: true }
 ];
-
-const DEFAULT_MIME_TYPES = [
-    { mime: 'text/x-csrc', title: 'C' },
-    { mime: 'text/x-c++src', title: 'C++' },
-    { mime: 'text/x-csharp', title: 'C#' },
-    { mime: 'text/x-clojure', title: 'Clojure' },
-    { mime: 'text/css', title: 'CSS' },
-    { mime: 'text/x-dockerfile', title: 'Dockerfile' },
-    { mime: 'text/x-erlang', title: 'Erlang' },
-    { mime: 'text/x-feature', title: 'Gherkin' },
-    { mime: 'text/x-go', title: 'Go' },
-    { mime: 'text/x-groovy', title: 'Groovy' },
-    { mime: 'text/x-haskell', title: 'Haskell' },
-    { mime: 'text/html', title: 'HTML' },
-    { mime: 'message/http', title: 'HTTP' },
-    { mime: 'text/x-java', title: 'Java' },
-    { mime: 'application/javascript;env=frontend', title: 'JavaScript frontend' },
-    { mime: 'application/javascript;env=backend', title: 'JavaScript backend' },
-    { mime: 'application/json', title: 'JSON' },
-    { mime: 'text/x-kotlin', title: 'Kotlin' },
-    { mime: 'text/x-stex', title: 'LaTex' },
-    { mime: 'text/x-lua', title: 'Lua' },
-    { mime: 'text/x-markdown', title: 'Markdown' },
-    { mime: 'text/x-objectivec', title: 'Objective C' },
-    { mime: 'text/x-pascal', title: 'Pascal' },
-    { mime: 'text/x-perl', title: 'Perl' },
-    { mime: 'text/x-php', title: 'PHP' },
-    { mime: 'text/x-python', title: 'Python' },
-    { mime: 'text/x-ruby', title: 'Ruby' },
-    { mime: 'text/x-rustsrc', title: 'Rust' },
-    { mime: 'text/x-scala', title: 'Scala' },
-    { mime: 'text/x-sh', title: 'Shell' },
-    { mime: 'text/x-sql', title: 'SQL' },
-    { mime: 'text/x-swift', title: 'Swift' },
-    { mime: 'text/xml', title: 'XML' },
-    { mime: 'text/x-yaml', title: 'YAML' }
-];
-
-let mimeTypes = null;
-
-async function getMimeTypes() {
-    if (!mimeTypes) {
-        let customCodeMimeTypes = [];
-
-        try {
-            customCodeMimeTypes = await server.get('custom-code-mime-types');
-        }
-        catch (e) {
-            log.error(`Could not retrieve custom mime types: ${e.message}`);
-        }
-
-        mimeTypes = DEFAULT_MIME_TYPES.concat(customCodeMimeTypes);
-
-        mimeTypes.sort((a, b) => a.title < b.title ? -1 : 1);
-    }
-
-    return mimeTypes;
-}
 
 export default class NoteTypeContext {
     /**
@@ -121,7 +64,11 @@ export default class NoteTypeContext {
             }
         }
 
-        for (const mimeType of await getMimeTypes()) {
+        for (const mimeType of await mimeTypesService.getMimeTypes()) {
+            if (!mimeType.enabled) {
+                continue;
+            }
+
             const $mimeLink = $('<a class="dropdown-item">')
                 .attr("data-mime-type", mimeType.mime)
                 .append('<span class="check">&check;</span> ')
@@ -143,7 +90,7 @@ export default class NoteTypeContext {
 
     async findTypeTitle(type, mime) {
         if (type === 'code') {
-            const mimeTypes = await getMimeTypes();
+            const mimeTypes = await mimeTypesService.getMimeTypes();
             const found = mimeTypes.find(mt => mt.mime === mime);
 
             return found ? found.title : mime;
