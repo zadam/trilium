@@ -209,7 +209,7 @@ async function protectNoteRevisions(note) {
 }
 
 function findImageLinks(content, foundLinks) {
-    const re = /src="[^"]*\/api\/images\/([a-zA-Z0-9]+)\//g;
+    const re = /src="[^"]*api\/images\/([a-zA-Z0-9]+)\//g;
     let match;
 
     while (match = re.exec(content)) {
