@@ -401,7 +401,7 @@ body {
 }
 
 #widgets-configuration .list-group-item {
-    background: var(--more-accented-background-color);
+    background: var(--accented-background-color);
     font-size: larger;
     display: flex;
     justify-content: space-between;

@@ -20,7 +20,6 @@
     --muted-text-color: #444;
     --input-text-color: black;
     --input-background-color: white;
-    --modal-background-color: white;
     --hover-item-text-color: black;
     --hover-item-background-color: #eee;
     --active-item-text-color: black;
@@ -29,6 +28,8 @@
     --menu-background-color: white;
     --tooltip-background-color: #f8f8f8;
     --link-color: blue;
+    --modal-background-color: white;
+    --modal-backdrop-color: black;
 }
 
 body.theme-black {
@@ -45,7 +46,6 @@ body.theme-black {
     --muted-text-color: #ccc;
     --input-text-color: white;
     --input-background-color: black;
-    --modal-background-color: #222;
     --hover-item-text-color: black;
     --hover-item-background-color: #aaa;
     --active-item-text-color: black;
@@ -54,6 +54,8 @@ body.theme-black {
     --menu-background-color: #222;
     --tooltip-background-color: black;
     --link-color: lightskyblue;
+    --modal-background-color: black;
+    --modal-backdrop-color: #444;
 }
 
 body.theme-black .CodeMirror {
@@ -74,7 +76,6 @@ body.theme-dark {
     --muted-text-color: #ccc;
     --input-text-color: white;
     --input-background-color: #333;
-    --modal-background-color: #555;
     --hover-item-text-color: black;
     --hover-item-background-color: #aaa;
     --active-item-text-color: black;
@@ -83,6 +84,8 @@ body.theme-dark {
     --menu-background-color: #222;
     --tooltip-background-color: #333;
     --link-color: lightskyblue;
+    --modal-background-color: #333;
+    --modal-backdrop-color: #444;
 }
 
 body.theme-dark .CodeMirror {
@@ -203,4 +206,8 @@ table td, table th {
 
 .ck .todo-list__checkmark {
     top: 10px !important;
+}
+
+.modal-backdrop {
+    background-color: var(--modal-backdrop-color) !important;
 }
