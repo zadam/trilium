@@ -65,8 +65,9 @@ export default class LinkMap {
             graph,
             // param explanation here: https://github.com/dhotson/springy/issues/58
             400.0, // Spring stiffness
-            400.0, // Node repulsion
-            0.15 // Damping
+            600.0, // Node repulsion
+            0.15, // Damping
+            0.1 // min energy threshold
         );
 
         const getNoteBox = noteId => {
@@ -163,9 +164,6 @@ export default class LinkMap {
         );
 
         this.renderer.start();
-
-        // long rendering is annoying and by 3rd seconds the basic layout should be finished
-        setTimeout(() => this.renderer.stop(), 3000);
     }
 
     moveToCenterOfElement(element) {
@@ -213,7 +211,7 @@ export default class LinkMap {
         this.$linkMapContainer.empty();
 
         // reset zoom/pan
-        this.pzInstance.zoomTo(0, 0, this.options.zoom);
+        this.pzInstance.zoomAbs(0, 0, this.options.zoom);
         this.pzInstance.moveTo(0, 0);
     }
 

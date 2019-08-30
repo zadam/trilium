@@ -417,11 +417,12 @@
 				{
 					var d = point1.p.subtract(point2.p);
 					var distance = d.magnitude() + 0.1; // avoid massive forces at small distances (and divide by zero)
+
 					var direction = d.normalise();
 
 					// apply force to each end point
-					point1.applyForce(direction.multiply(this.repulsion).divide(distance * distance * 0.5));
-					point2.applyForce(direction.multiply(this.repulsion).divide(distance * distance * -0.5));
+					point1.applyForce(direction.multiply(this.repulsion).divide(distance * distance * distance * 0.5));
+					point2.applyForce(direction.multiply(this.repulsion).divide(distance * distance * distance * -0.5));
 				}
 			});
 		});
