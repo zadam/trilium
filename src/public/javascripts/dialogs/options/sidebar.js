@@ -33,6 +33,9 @@ export default class SidebarOptions {
     }
 
     async optionsLoaded(options) {
+        this.$widgetsEnabled.empty();
+        this.$widgetsDisabled.empty();
+
         this.$sidebarMinWidth.val(options.sidebarMinWidth);
         this.$sidebarWidthPercent.val(options.sidebarWidthPercent);
 

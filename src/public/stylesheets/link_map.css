@@ -16,7 +16,7 @@
     font-size: 11px;
     width: auto;
     height: auto;
-    max-width: 150px;
+    max-width: 200px;
     min-width: 120px;
     max-height: 100px;
     overflow: hidden;
@@ -43,4 +43,13 @@
 .link-map-container .jsplumb-connection-hover path {
     stroke-width: 2 !important;
     stroke: var(--main-text-color);
+}
+
+.link-map-widget {
+    outline: none;
+    overflow: hidden;
+}
+
+.link-map-widget .note-box .title {
+    font-size: 16px !important;
 }

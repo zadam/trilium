@@ -3,7 +3,7 @@ import StandardWidget from "./standard_widget.js";
 let linkMapContainerIdCtr = 1;
 
 const TPL = `
-<div style="outline: none; overflow: hidden;">
+<div class="link-map-widget">
     <div class="link-map-container"></div>
 </div>
 `;
@@ -32,7 +32,7 @@ class LinkMapWidget extends StandardWidget {
 
         this.linkMapService = new LinkMapServiceClass(this.ctx.note, $linkMapContainer, {
             maxDepth: 1,
-            zoom: 0.8
+            zoom: 0.6
         });
 
         await this.linkMapService.render();
