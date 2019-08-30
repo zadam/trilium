@@ -1,9 +1,9 @@
 async function requireCss(url) {
-    const css = Array
+    const cssLinks = Array
         .from(document.querySelectorAll('link'))
-        .map(scr => scr.href);
+        .map(el => el.href);
 
-    if (!css.includes(url)) {
+    if (!cssLinks.some(l => l.endsWith(url))) {
         $('head').append($('<link rel="stylesheet" type="text/css" />').attr('href', url));
     }
 }

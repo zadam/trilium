@@ -237,13 +237,15 @@ async function importTar(importContext, fileBuffer, importRootNote) {
             content = content.toString("UTF-8");
 
             if (noteMeta) {
-                const internalLinks = (noteMeta.attributes || []).filter(attr => attr.type === 'relation' && attr.name === 'internal-link');
+                const internalLinks = (noteMeta.attributes || [])
+                    .filter(attr => attr.type === 'relation' &&
+                                    ['internal-link', 'relation-map-link', 'image-link'].includes(attr.name));
 
                 // this will replace all internal links (<a> and <img>) inside the body
                 // links pointing outside the export will be broken and changed (ctx.getNewNoteId() will still assign new noteId)
                 for (const link of internalLinks) {
                     // no need to escape the regexp find string since it's a noteId which doesn't contain any special characters
-                    content = content.replace(new RegExp(link.targetNoteId, "g"), getNewNoteId(link.targetNoteId));
+                    content = content.replace(new RegExp(link.value, "g"), getNewNoteId(link.value));
                 }
             }
         }

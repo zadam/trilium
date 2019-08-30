@@ -56,11 +56,7 @@ function registerEntrypoints() {
             return;
         }
 
-        import(NOTE_SOURCE).then(d => {
-            console.log(d);
-
-            d.showDialog()
-        });
+        import(NOTE_SOURCE).then(d => d.showDialog());
     });
 
     $noteTabContainer.on("click", ".show-link-map-button", function() {
