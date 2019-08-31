@@ -155,51 +155,51 @@ async function exportToTar(exportContext, branch, format, res) {
         return meta;
     }
 
-    function findImageLinks(content, noteMeta) {
-        try {
-            return content.replace(/src="[^"]*api\/images\/([a-zA-Z0-9]+)\/[^"]*"/g, (_, targetNoteId) => {
-                const targetNoteMeta = noteIdToMeta[targetNoteId];
+    function getTargetUrl(targetNoteId, sourceMeta) {
+        const targetMeta = noteIdToMeta[targetNoteId];
 
-                if (!targetNoteMeta) {
-                    return null;
-                }
-
-                const targetPath = targetNoteMeta.notePath.slice();
-                const sourcePath = noteMeta.notePath.slice();
-
-                console.log("targetPath", targetPath);
-                console.log("sourcePath", sourcePath);
-
-                // > 1 for edge case that targetPath and sourcePath are exact same (link to itself)
-                while (targetPath.length > 1 && sourcePath.length > 1 && targetPath[0] === sourcePath[0]) {
-                    targetPath.shift();
-                    sourcePath.shift();
-                }
-
-                console.log("targetPath", targetPath);
-                console.log("sourcePath", sourcePath);
-
-                let url = "../".repeat(sourcePath.length - 1);
-
-                for (let i = 0; i < targetPath.length - 1; i++) {
-                    const meta = noteIdToMeta[targetPath[i]];
-
-                    url += meta.dirFileName + '/';
-                }
-
-                const meta = noteIdToMeta[targetPath[targetPath.length - 1]];
-
-                url += meta.dataFileName;
-
-                console.log("URL", url);
-
-                return url;
-            });
+        if (!targetMeta) {
+            return null;
         }
-        catch (e) {
-            log.error("Could not parse links from", content);
-            throw e;
+
+        const targetPath = targetMeta.notePath.slice();
+        const sourcePath = sourceMeta.notePath.slice();
+
+        // > 1 for edge case that targetPath and sourcePath are exact same (link to itself)
+        while (targetPath.length > 1 && sourcePath.length > 1 && targetPath[0] === sourcePath[0]) {
+            targetPath.shift();
+            sourcePath.shift();
         }
+
+        let url = "../".repeat(sourcePath.length - 1);
+
+        for (let i = 0; i < targetPath.length - 1; i++) {
+            const meta = noteIdToMeta[targetPath[i]];
+
+            url += meta.dirFileName + '/';
+        }
+
+        const meta = noteIdToMeta[targetPath[targetPath.length - 1]];
+
+        url += meta.dataFileName;
+
+        return url;
+    }
+
+    function findLinks(content, noteMeta) {
+        content = content.replace(/src="[^"]*api\/images\/([a-zA-Z0-9]+)\/[^"]*"/g, (_, targetNoteId) => {
+            const url = getTargetUrl(targetNoteId, noteMeta);
+
+            return `src="${url}"`;
+        });
+
+        content = content.replace(/href="[^"]*#root[a-zA-Z0-9\/]*\/([a-zA-Z0-9]+)\/?"/g, (_, targetNoteId) => {
+            const url = getTargetUrl(targetNoteId, noteMeta);
+
+            return `href="${url}"`;
+        });
+
+        return content;
     }
 
     async function prepareContent(note, noteMeta) {
@@ -208,18 +208,30 @@ async function exportToTar(exportContext, branch, format, res) {
         if (['html', 'markdown'].includes(noteMeta.format)) {
             content = content.toString();
 
-            findImageLinks(content, noteMeta);
+            content = findLinks(content, noteMeta);
         }
 
         if (noteMeta.format === 'html') {
-            if (!content.toLowerCase().includes("<html")) {
-                note.content = '<html><head><meta charset="utf-8"></head><body>' + content + '</body></html>';
+            if (!content.substr(0, 100).toLowerCase().includes("<html")) {
+                content = `<html>
+<head><meta charset="utf-8"></head>
+<body>
+  <h1>${utils.escapeHtml(note.title)}</h1>
+${content}
+</body>
+</html>`;
             }
 
             return html.prettyPrint(content, {indent_size: 2});
         }
         else if (noteMeta.format === 'markdown') {
-            return turndownService.turndown(content);
+            let markdownContent = turndownService.turndown(content);
+
+            if (markdownContent.trim().length > 0 && !markdownContent.startsWith("# ")) {
+                markdownContent = '# ' + note.title + "\r\n" + markdownContent;
+            }
+
+            return markdownContent;
         }
         else {
             return content;
