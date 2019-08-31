@@ -273,6 +273,8 @@ async function importTar(importContext, fileBuffer, importRootNote) {
             content = mdWriter.render(parsed);
         }
 
+        const noteTitle = getNoteTitle(filePath, noteMeta);
+
         if (type === 'text') {
             function isUrlAbsolute(url) {
                 return /^(?:[a-z]+:)?\/\//i.test(url);
@@ -301,6 +303,15 @@ async function importTar(importContext, fileBuffer, importRootNote) {
 
                 return `href="#root/${targetNoteId}"`;
             });
+
+            content = content.replace(/<h1>([^<]*)<\/h1>/g, (match, text) => {
+                if (noteTitle.trim() === text.trim()) {
+                    return ""; // remove whole H1 tag
+                }
+                else {
+                    return match;
+                }
+            });
         }
 
         if (type === 'relation-map' && noteMeta) {
@@ -320,8 +331,6 @@ async function importTar(importContext, fileBuffer, importRootNote) {
             await note.setContent(content);
         }
         else {
-            const noteTitle = getNoteTitle(filePath, noteMeta);
-
             ({note} = await noteService.createNote(parentNoteId, noteTitle, content, {
                 noteId,
                 type,
