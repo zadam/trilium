@@ -8,6 +8,7 @@ const mimeTypes = require('mime-types');
 const TurndownService = require('turndown');
 const packageInfo = require('../../../package.json');
 const utils = require('../utils');
+const log = require('../log');
 const sanitize = require("sanitize-filename");
 
 /**
@@ -77,7 +78,7 @@ async function exportToTar(exportContext, branch, format, res) {
         return getUniqueFilename(existingFileNames, fileName);
     }
 
-    async function getNote(branch, existingFileNames) {
+    async function getNoteMeta(branch, parentMeta, existingFileNames) {
         const note = await branch.getNote();
 
         if (await note.hasLabel('excludeFromExport')) {
@@ -100,6 +101,7 @@ async function exportToTar(exportContext, branch, format, res) {
         const meta = {
             isClone: false,
             noteId: note.noteId,
+            notePath: parentMeta.notePath.concat([note.noteId]),
             title: note.title,
             notePosition: branch.notePosition,
             prefix: branch.prefix,
@@ -141,7 +143,7 @@ async function exportToTar(exportContext, branch, format, res) {
             const childExistingNames = {};
 
             for (const childBranch of childBranches) {
-                const note = await getNote(childBranch, childExistingNames);
+                const note = await getNoteMeta(childBranch, meta, childExistingNames);
 
                 // can be undefined if export is disabled for this note
                 if (note) {
@@ -153,17 +155,70 @@ async function exportToTar(exportContext, branch, format, res) {
         return meta;
     }
 
-    async function prepareContent(note, format) {
-        const content = await note.getContent();
+    function findImageLinks(content, noteMeta) {
+        try {
+            return content.replace(/src="[^"]*api\/images\/([a-zA-Z0-9]+)\/[^"]*"/g, (_, targetNoteId) => {
+                const targetNoteMeta = noteIdToMeta[targetNoteId];
 
-        if (format === 'html') {
+                if (!targetNoteMeta) {
+                    return null;
+                }
+
+                const targetPath = targetNoteMeta.notePath.slice();
+                const sourcePath = noteMeta.notePath.slice();
+
+                console.log("targetPath", targetPath);
+                console.log("sourcePath", sourcePath);
+
+                // > 1 for edge case that targetPath and sourcePath are exact same (link to itself)
+                while (targetPath.length > 1 && sourcePath.length > 1 && targetPath[0] === sourcePath[0]) {
+                    targetPath.shift();
+                    sourcePath.shift();
+                }
+
+                console.log("targetPath", targetPath);
+                console.log("sourcePath", sourcePath);
+
+                let url = "../".repeat(sourcePath.length - 1);
+
+                for (let i = 0; i < targetPath.length - 1; i++) {
+                    const meta = noteIdToMeta[targetPath[i]];
+
+                    url += meta.dirFileName + '/';
+                }
+
+                const meta = noteIdToMeta[targetPath[targetPath.length - 1]];
+
+                url += meta.dataFileName;
+
+                console.log("URL", url);
+
+                return url;
+            });
+        }
+        catch (e) {
+            log.error("Could not parse links from", content);
+            throw e;
+        }
+    }
+
+    async function prepareContent(note, noteMeta) {
+        let content = await note.getContent();
+
+        if (['html', 'markdown'].includes(noteMeta.format)) {
+            content = content.toString();
+
+            findImageLinks(content, noteMeta);
+        }
+
+        if (noteMeta.format === 'html') {
             if (!content.toLowerCase().includes("<html")) {
                 note.content = '<html><head><meta charset="utf-8"></head><body>' + content + '</body></html>';
             }
 
             return html.prettyPrint(content, {indent_size: 2});
         }
-        else if (format === 'markdown') {
+        else if (noteMeta.format === 'markdown') {
             return turndownService.turndown(content);
         }
         else {
@@ -174,28 +229,28 @@ async function exportToTar(exportContext, branch, format, res) {
     // noteId => file path
     const notePaths = {};
 
-    async function saveNote(noteMeta, path) {
+    async function saveNote(noteMeta, filePathPrefix) {
         if (noteMeta.isClone) {
             const content = "Note is present at " + notePaths[noteMeta.noteId];
 
-            pack.entry({name: path + noteMeta.dataFileName, size: content.length}, content);
+            pack.entry({name: filePathPrefix + noteMeta.dataFileName, size: content.length}, content);
             return;
         }
 
         const note = await repository.getNote(noteMeta.noteId);
 
-        notePaths[note.noteId] = path + (noteMeta.dataFileName || noteMeta.dirFileName);
+        notePaths[note.noteId] = filePathPrefix + (noteMeta.dataFileName || noteMeta.dirFileName);
 
         if (noteMeta.dataFileName) {
-            const content = await prepareContent(note, noteMeta.format);
+            const content = await prepareContent(note, noteMeta);
 
-            pack.entry({name: path + noteMeta.dataFileName, size: content.length}, content);
+            pack.entry({name: filePathPrefix + noteMeta.dataFileName, size: content.length}, content);
         }
 
         exportContext.increaseProgressCount();
 
         if (noteMeta.children && noteMeta.children.length > 0) {
-            const directoryPath = path + noteMeta.dirFileName;
+            const directoryPath = filePathPrefix + noteMeta.dirFileName;
 
             pack.entry({name: directoryPath, type: 'directory'});
 
@@ -209,7 +264,7 @@ async function exportToTar(exportContext, branch, format, res) {
         formatVersion: 1,
         appVersion: packageInfo.version,
         files: [
-            await getNote(branch, [])
+            await getNoteMeta(branch, { notePath: [] }, [])
         ]
     };
 
