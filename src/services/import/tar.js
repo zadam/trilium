@@ -113,19 +113,27 @@ async function importTar(importContext, fileBuffer, importRootNote) {
     }
 
     function getNoteId(noteMeta, filePath) {
+        let noteId;
+
         if (noteMeta) {
-            return getNewNoteId(noteMeta.noteId);
+            noteId = getNewNoteId(noteMeta.noteId);
+
+            createdPaths[filePath] = noteId;
         }
         else {
             const filePathNoExt = getTextFileWithoutExtension(filePath);
 
             if (filePathNoExt in createdPaths) {
-                return createdPaths[filePathNoExt];
+                noteId = createdPaths[filePathNoExt];
             }
             else {
-                return utils.newEntityId();
+                noteId = utils.newEntityId();
             }
+
+            createdPaths[filePathNoExt] = noteId;
         }
+
+        return noteId;
     }
 
     function detectFileTypeAndMime(filePath) {
@@ -197,8 +205,6 @@ async function importTar(importContext, fileBuffer, importRootNote) {
             firstNote = note;
         }
 
-        createdPaths[filePath] = noteId;
-
         return noteId;
     }
 
@@ -211,6 +217,31 @@ async function importTar(importContext, fileBuffer, importRootNote) {
         else {
             return filePath;
         }
+    }
+
+    function getNoteIdFromRelativeUrl(url, filePath) {
+        while (url.startsWith("./")) {
+            url = url.substr(2);
+        }
+
+        let absUrl = path.dirname(filePath);
+
+        while (url.startsWith("../")) {
+            absUrl = path.dirname(absUrl);
+
+            url = url.substr(3);
+        }
+
+        if (absUrl === '.') {
+            absUrl = '';
+        }
+
+        absUrl += (absUrl.length > 0 ? '/' : '') + url;
+
+        console.log("absUrl", absUrl);
+
+        const targetNoteId = getNoteId(null, absUrl);
+        return targetNoteId;
     }
 
     async function saveNote(filePath, content) {
@@ -235,24 +266,52 @@ async function importTar(importContext, fileBuffer, importRootNote) {
 
         if (type !== 'file' && type !== 'image') {
             content = content.toString("UTF-8");
-
-            if (noteMeta) {
-                const internalLinks = (noteMeta.attributes || [])
-                    .filter(attr => attr.type === 'relation' &&
-                                    ['internal-link', 'relation-map-link', 'image-link'].includes(attr.name));
-
-                // this will replace all internal links (<a> and <img>) inside the body
-                // links pointing outside the export will be broken and changed (ctx.getNewNoteId() will still assign new noteId)
-                for (const link of internalLinks) {
-                    // no need to escape the regexp find string since it's a noteId which doesn't contain any special characters
-                    content = content.replace(new RegExp(link.value, "g"), getNewNoteId(link.value));
-                }
-            }
         }
 
         if ((noteMeta && noteMeta.format === 'markdown') || (!noteMeta && ['text/markdown', 'text/x-markdown'].includes(mime))) {
             const parsed = mdReader.parse(content);
             content = mdWriter.render(parsed);
+        }
+
+        if (type === 'text') {
+            function isUrlAbsolute(url) {
+                return /^(?:[a-z]+:)?\/\//i.test(url);
+            }
+
+            content = content.replace(/src="([^"]*)"/g, (match, url) => {
+                url = decodeURIComponent(url);
+
+                if (isUrlAbsolute(url) || url.startsWith("/")) {
+                    return match;
+                }
+
+                const targetNoteId = getNoteIdFromRelativeUrl(url, filePath);
+
+                return `src="api/images/${targetNoteId}/${path.basename(url)}"`;
+            });
+
+            content = content.replace(/href="([^"]*)"/g, (match, url) => {
+                url = decodeURIComponent(url);
+
+                if (isUrlAbsolute(url)) {
+                    return match;
+                }
+
+                const targetNoteId = getNoteIdFromRelativeUrl(url, filePath);
+
+                return `href="#root/${targetNoteId}"`;
+            });
+        }
+
+        if (type === 'relation-map' && noteMeta) {
+            const relationMapLinks = (noteMeta.attributes || [])
+                .filter(attr => attr.type === 'relation' && attr.name === 'relation-map-link');
+
+            // this will replace relation map links
+            for (const link of relationMapLinks) {
+                // no need to escape the regexp find string since it's a noteId which doesn't contain any special characters
+                content = content.replace(new RegExp(link.value, "g"), getNewNoteId(link.value));
+            }
         }
 
         let note = await repository.getNote(noteId);
@@ -298,8 +357,6 @@ async function importTar(importContext, fileBuffer, importRootNote) {
             if (type === 'text') {
                 filePath = getTextFileWithoutExtension(filePath);
             }
-
-            createdPaths[filePath] = noteId;
         }
     }
 

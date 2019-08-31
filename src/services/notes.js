@@ -415,11 +415,6 @@ async function deleteNote(branch) {
             await relation.save();
         }
 
-        for (const link of await note.getTargetLinks()) {
-            link.isDeleted = true;
-            await link.save();
-        }
-
         return true;
     }
     else {

@@ -187,16 +187,16 @@ async function exportToTar(exportContext, branch, format, res) {
     }
 
     function findLinks(content, noteMeta) {
-        content = content.replace(/src="[^"]*api\/images\/([a-zA-Z0-9]+)\/[^"]*"/g, (_, targetNoteId) => {
+        content = content.replace(/src="[^"]*api\/images\/([a-zA-Z0-9]+)\/[^"]*"/g, (match, targetNoteId) => {
             const url = getTargetUrl(targetNoteId, noteMeta);
 
-            return `src="${url}"`;
+            return url ? `src="${encodeURIComponent(url)}"` : match;
         });
 
-        content = content.replace(/href="[^"]*#root[a-zA-Z0-9\/]*\/([a-zA-Z0-9]+)\/?"/g, (_, targetNoteId) => {
+        content = content.replace(/href="[^"]*#root[a-zA-Z0-9\/]*\/([a-zA-Z0-9]+)\/?"/g, (match, targetNoteId) => {
             const url = getTargetUrl(targetNoteId, noteMeta);
 
-            return `href="${url}"`;
+            return url ? `href="${encodeURIComponent(url)}"` : match;
         });
 
         return content;
