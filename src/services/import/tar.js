@@ -304,7 +304,10 @@ async function importTar(importContext, fileBuffer, importRootNote) {
                 return `href="#root/${targetNoteId}"`;
             });
 
-            content = content.replace(/<h1>([^<]*)<\/h1>/g, (match, text) => {
+            content = content.replace(/<html.*<body[^>]*>/gis, "");
+            content = content.replace(/<\/body>.*<\/html>/gis, "");
+
+            content = content.replace(/<h1>([^<]*)<\/h1>/gi, (match, text) => {
                 if (noteTitle.trim() === text.trim()) {
                     return ""; // remove whole H1 tag
                 }
