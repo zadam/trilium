@@ -29,6 +29,7 @@ const ALLOWED_OPTIONS = [
     'linkMapWidget',
     'noteRevisionsWidget',
     'whatLinksHereWidget',
+    'similarNotesWidget',
     'codeNotesMimeTypes'
 ];
 

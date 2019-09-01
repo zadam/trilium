@@ -34,6 +34,7 @@ const searchRoute = require('./api/search');
 const dateNotesRoute = require('./api/date_notes');
 const linkMapRoute = require('./api/link_map');
 const clipperRoute = require('./api/clipper');
+const similarNotesRoute = require('./api/similar_notes');
 
 const log = require('../services/log');
 const express = require('express');
@@ -234,6 +235,8 @@ function register(app) {
     route(POST, '/api/clipper/clippings', clipperMiddleware, clipperRoute.addClipping, apiResultHandler);
     route(POST, '/api/clipper/notes', clipperMiddleware, clipperRoute.createNote, apiResultHandler);
     route(POST, '/api/clipper/open/:noteId', clipperMiddleware, clipperRoute.openNote, apiResultHandler);
+
+    apiRoute(GET, '/api/similar_notes/:noteId', similarNotesRoute.getSimilarNotes);
 
     app.use('', router);
 }

@@ -65,7 +65,8 @@ class Sidebar {
             import("../widgets/link_map.js"),
             import("../widgets/note_revisions.js"),
             import("../widgets/attributes.js"),
-            import("../widgets/what_links_here.js")
+            import("../widgets/what_links_here.js"),
+            import("../widgets/similar_notes.js")
         ])).map(m => m.default);
 
         const options = await optionsService.waitForOptions();

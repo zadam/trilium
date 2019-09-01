@@ -51,7 +51,8 @@ export default class SidebarOptions {
             {name: 'linkMap', title: 'Link map'},
             {name: 'noteInfo', title: 'Note info'},
             {name: 'noteRevisions', title: 'Note revisions'},
-            {name: 'whatLinksHere', title: 'What links here'}
+            {name: 'whatLinksHere', title: 'What links here'},
+            {name: 'similarNotes', title: 'Similar notes'}
         ].map(widget => {
             widget.option = this.parseJsonSafely(options[widget.name + 'Widget']) || {
                 enabled: true,
