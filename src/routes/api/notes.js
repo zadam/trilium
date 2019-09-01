@@ -77,7 +77,7 @@ async function deleteNote(req) {
     const note = await repository.getNote(noteId);
 
     for (const branch of await note.getBranches()) {
-        await noteService.deleteNote(branch);
+        await noteService.deleteBranch(branch);
     }
 }
 

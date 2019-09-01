@@ -86,21 +86,44 @@ async function deleteNodes(nodes) {
         return false;
     }
 
-    const nodeTitles = $("<ul>").append(...nodes.map(node => $("<li>").text(node.title)));
-    const confirmText = $("<div>").text('This will delete the following notes and their sub-notes: ').append(nodeTitles);
+    const $deleteClonesCheckbox = $('<div class="form-check">')
+        .append($('<input type="checkbox" class="form-check-input" id="delete-clones-checkbox">'))
+        .append($('<label for="delete-clones-checkbox">')
+                    .text("delete also all note clones")
+                    .attr("title", "all clones of selected notes will be deleted and as such the whole note will be deleted."));
+    const $nodeTitles = $("<ul>").append(...nodes.map(node => $("<li>").text(node.title)));
+    const $confirmText = $("<div>")
+        .append($("<p>").text('This will delete the following notes and their sub-notes: '))
+        .append($nodeTitles)
+        .append($deleteClonesCheckbox);
 
     const confirmDialog = await import('../dialogs/confirm.js');
 
-    if (!await confirmDialog.confirm(confirmText)) {
+    if (!await confirmDialog.confirm($confirmText)) {
         return false;
     }
 
-    for (const node of nodes) {
-        const {noteDeleted} = await server.remove('branches/' + node.data.branchId);
+    const deleteClones = $deleteClonesCheckbox.find("input").is(":checked");
 
-        if (noteDeleted) {
+    for (const node of nodes) {
+        if (deleteClones) {
+            await server.remove('notes/' + node.data.noteId);
+
             noteDetailService.noteDeleted(node.data.noteId);
         }
+        else {
+            const {noteDeleted} = await server.remove('branches/' + node.data.branchId);
+
+            if (noteDeleted) {
+                noteDetailService.noteDeleted(node.data.noteId);
+            }
+        }
+    }
+
+    if (deleteClones) {
+        // if clones are also deleted we give up with targeted cleanup of the tree
+        treeService.reload();
+        return true;
     }
 
     // following code assumes that nodes contain only top-most selected nodes - getSelectedNodes has been

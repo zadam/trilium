@@ -103,7 +103,7 @@ async function deleteBranch(req) {
     const branch = await repository.getBranch(req.params.branchId);
 
     return {
-        noteDeleted: await notes.deleteNote(branch)
+        noteDeleted: await notes.deleteBranch(branch)
     };
 }
 

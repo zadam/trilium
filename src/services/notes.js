@@ -384,7 +384,7 @@ async function updateNote(noteId, noteUpdates) {
 }
 
 /** @return {boolean} - true if note has been deleted, false otherwise */
-async function deleteNote(branch) {
+async function deleteBranch(branch) {
     if (!branch || branch.isDeleted) {
         return false;
     }
@@ -407,7 +407,7 @@ async function deleteNote(branch) {
         await note.save();
 
         for (const childBranch of await note.getChildBranches()) {
-            await deleteNote(childBranch);
+            await deleteBranch(childBranch);
         }
 
         for (const attribute of await note.getOwnedAttributes()) {
@@ -461,7 +461,7 @@ module.exports = {
     createNewNote,
     createNote,
     updateNote,
-    deleteNote,
+    deleteBranch,
     protectNoteRecursively,
     scanForLinks
 };

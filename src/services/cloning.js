@@ -53,7 +53,7 @@ async function ensureNoteIsAbsentFromParent(noteId, parentNoteId) {
     const branch = await repository.getEntity(`SELECT * FROM branches WHERE noteId = ? AND parentNoteId = ? AND isDeleted = 0`, [noteId, parentNoteId]);
 
     if (branch) {
-        await noteService.deleteNote(branch);
+        await noteService.deleteBranch(branch);
     }
 }
 
