@@ -2,6 +2,7 @@ import StandardWidget from "./standard_widget.js";
 import linkService from "../services/link.js";
 import server from "../services/server.js";
 import treeCache from "../services/tree_cache.js";
+import treeUtils from "../services/tree_utils.js";
 
 class SimilarNotesWidget extends StandardWidget {
     getWidgetTitle() { return "Similar notes"; }
@@ -9,20 +10,23 @@ class SimilarNotesWidget extends StandardWidget {
     getMaxHeight() { return "200px"; }
 
     async doRenderBody() {
-        const similarNoteIds = await server.get('similar_notes/' + this.ctx.note.noteId);
+        const similarNotes = await server.get('similar_notes/' + this.ctx.note.noteId);
 
-        if (similarNoteIds.length === 0) {
+        if (similarNotes.length === 0) {
             this.$body.text("No similar notes found ...");
             return;
         }
 
-        await treeCache.getNotes(similarNoteIds); // preload all at once
+        await treeCache.getNotes(similarNotes.map(note => note.noteId)); // preload all at once
 
-        const $list = $("<ul>");
+        const $list = $('<ul style="padding-left: 20px;">');
 
-        for (const similarNoteId of similarNoteIds) {
+        for (const similarNote of similarNotes) {
+            similarNote.notePath.pop(); // remove last noteId since it's already in the link
+
             const $item = $("<li>")
-                .append(await linkService.createNoteLink(similarNoteId));
+                .append(await linkService.createNoteLink(similarNote.noteId))
+                .append($("<small>").text(" (" + await treeUtils.getNotePathTitle(similarNote.notePath.join("/")) + ")"));
 
             $list.append($item);
         }

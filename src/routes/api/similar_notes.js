@@ -12,11 +12,14 @@ async function getSimilarNotes(req) {
         return [404, `Note ${noteId} not found.`];
     }
 
-    const results = await noteCacheService.findNotes(note.title);
+    const start = new Date();
+
+    const results = await noteCacheService.findSimilarNotes(note.title);
+
+    console.log("Similar note took: " + (Date.now() - start.getTime()) + "ms");
 
     return results
-        .map(r => r.noteId)
-        .filter(similarNoteId => similarNoteId !== noteId);
+        .filter(note => note.noteId !== noteId);
 }
 
 module.exports = {

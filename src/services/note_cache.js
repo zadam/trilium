@@ -5,6 +5,7 @@ const repository = require('./repository');
 const protectedSessionService = require('./protected_session');
 const utils = require('./utils');
 const hoistedNoteService = require('./hoisted_note');
+const stringSimilarity = require('string-similarity');
 
 let loaded = false;
 let noteTitles = {};
@@ -35,6 +36,10 @@ async function load() {
 
     if (protectedSessionService.isProtectedSessionAvailable()) {
         await loadProtectedNotes();
+    }
+
+    for (const noteId in childToParent) {
+        resortChildToParent(noteId);
     }
 
     loaded = true;
@@ -161,11 +166,27 @@ async function findNotes(query) {
     return apiResults;
 }
 
+function isArchived(notePath) {
+    // if the note is archived directly
+    if (archived[notePath[notePath.length - 1]] !== undefined) {
+        return true;
+    }
+
+    for (let i = 0; i < notePath.length - 1; i++) {
+        // this is going through parents so archived must be inheritable
+        if (archived[notePath[i]] === 1) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 function search(noteId, tokens, path, results) {
     if (tokens.length === 0) {
         const retPath = getSomePath(noteId, path);
 
-        if (retPath) {
+        if (retPath && !isArchived(retPath)) {
             const thisNoteId = retPath[retPath.length - 1];
             const thisParentNoteId = retPath[retPath.length - 2];
 
@@ -262,7 +283,13 @@ function getNoteTitleForPath(path) {
     return titles.join(' / ');
 }
 
-function getSomePath(noteId, path) {
+/**
+ * Returns notePath for noteId from cache. Note hoisting is respected.
+ * Archived notes are also returned, but non-archived paths are preferred if available
+ * - this means that archived paths is returned only if there's no non-archived path
+ * - you can check whether returned path is archived using isArchived()
+ */
+function getSomePath(noteId, path = []) {
     if (noteId === 'root') {
         path.push(noteId);
         path.reverse();
@@ -280,11 +307,6 @@ function getSomePath(noteId, path) {
     }
 
     for (const parentNoteId of parents) {
-        // archived applies here only if inheritable
-        if (archived[parentNoteId] === 1) {
-            continue;
-        }
-
         const retPath = getSomePath(parentNoteId, path.concat([noteId]));
 
         if (retPath) {
@@ -296,9 +318,9 @@ function getSomePath(noteId, path) {
 }
 
 function getNotePath(noteId) {
-    const retPath = getSomePath(noteId, []);
+    const retPath = getSomePath(noteId);
 
-    if (retPath) {
+    if (retPath && !isArchived(retPath)) {
         const noteTitle = getNoteTitleForPath(retPath);
         const parentNoteId = childToParent[noteId][0];
 
@@ -309,6 +331,43 @@ function getNotePath(noteId) {
             path: retPath.join('/')
         };
     }
+}
+
+function evaluateSimilarity(text1, text2, noteId, results) {
+    let coeff = stringSimilarity.compareTwoStrings(text1, text2);
+
+    if (coeff > 0.4) {
+        const notePath = getSomePath(noteId);
+
+        // this takes care of note hoisting
+        if (!notePath) {
+            return;
+        }
+
+        if (isArchived(notePath)) {
+            coeff -= 0.2; // archived penalization
+        }
+
+        results.push({coeff, notePath, noteId});
+    }
+}
+
+function findSimilarNotes(title) {
+    const results = [];
+
+    for (const noteId in noteTitles) {
+        evaluateSimilarity(title, noteTitles[noteId], noteId, results);
+    }
+
+    if (protectedSessionService.isProtectedSessionAvailable()) {
+        for (const noteId in protectedNoteTitles) {
+            evaluateSimilarity(title, protectedNoteTitles[noteId], noteId, results);
+        }
+    }
+
+    results.sort((a, b) => a.coeff > b.coeff ? -1 : 1);
+
+    return results.length > 50 ? results.slice(0, 50) : results;
 }
 
 eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED, eventService.ENTITY_SYNCED], async ({entityName, entity}) => {
@@ -355,6 +414,8 @@ eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED
             }
 
             childToParent[branch.noteId].push(branch.parentNoteId);
+            resortChildToParent(branch.noteId);
+
             childParentToBranchId[branch.noteId + '-' + branch.parentNoteId] = branch.branchId;
         }
     }
@@ -375,6 +436,16 @@ eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED
         }
     }
 });
+
+// will sort the childs so that non-archived are first and archived at the end
+// this is done so that non-archived paths are always explored as first when searching for note path
+function resortChildToParent(noteId) {
+    if (!childToParent[noteId]) {
+        return;
+    }
+
+    childToParent[noteId].sort((a, b) => archived[a] === 1 ? 1 : -1);
+}
 
 /**
  * @param noteId
@@ -399,5 +470,6 @@ module.exports = {
     getNotePath,
     getNoteTitleForPath,
     isAvailable,
-    load
+    load,
+    findSimilarNotes
 };

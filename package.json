@@ -70,6 +70,7 @@
     "simple-node-logger": "18.12.23",
     "sqlite": "3.0.3",
     "sqlite3": "4.1.0",
+    "string-similarity": "^3.0.0",
     "tar-stream": "2.1.0",
     "turndown": "5.0.3",
     "unescape": "1.0.1",
