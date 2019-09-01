@@ -271,6 +271,11 @@ async function saveLinks(note, content) {
     const existingLinks = await note.getLinks();
 
     for (const foundLink of foundLinks) {
+        const targetNote = await repository.getNote(foundLink.value);
+        if (!targetNote || targetNote.isDeleted) {
+            continue;
+        }
+
         const existingLink = existingLinks.find(existingLink =>
             existingLink.value === foundLink.value
             && existingLink.name === foundLink.name);
@@ -422,6 +427,18 @@ async function deleteNote(branch) {
     }
 }
 
+async function scanForLinks(noteId) {
+    const note = await repository.getNote(noteId);
+    if (!note || !['text', 'relation-map'].includes(note.type)) {
+        return;
+    }
+
+    const content = await note.getContent();
+    const newContent = await saveLinks(note, content);
+
+    await note.setContent(newContent);
+}
+
 async function cleanupDeletedNotes() {
     const cutoffDate = new Date(Date.now() - 48 * 3600 * 1000);
 
@@ -445,5 +462,6 @@ module.exports = {
     createNote,
     updateNote,
     deleteNote,
-    protectNoteRecursively
+    protectNoteRecursively,
+    scanForLinks
 };

@@ -250,7 +250,7 @@ ${content}
         if (noteMeta.isClone) {
             const targetUrl = getTargetUrl(noteMeta.noteId, noteMeta);
 
-            let content = `<p>This is a clone of a note. Go to its <a href="${targetUrl}">primary location</a>.</p>`;
+            let content = `<p>This is a clone of a note. Go to its <a href="${encodeURIComponent(targetUrl)}">primary location</a>.</p>`;
 
             content = prepareContent(noteMeta.title, content, noteMeta);
 

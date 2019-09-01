@@ -429,7 +429,11 @@ async function importTar(importContext, fileBuffer, importRootNote) {
             const createdNoteIds = {};
 
             for (const path in createdPaths) {
-                createdNoteIds[createdPaths[path]] = true;
+                const noteId = createdPaths[path];
+
+                createdNoteIds[noteId] = true;
+
+                await noteService.scanForLinks(noteId);
             }
 
             // we're saving attributes and links only now so that all relation and link target notes
