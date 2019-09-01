@@ -11,8 +11,6 @@ class SimilarNotesWidget extends StandardWidget {
     async doRenderBody() {
         const similarNoteIds = await server.get('similar_notes/' + this.ctx.note.noteId);
 
-        console.log(similarNoteIds);
-
         if (similarNoteIds.length === 0) {
             this.$body.text("No similar notes found ...");
             return;

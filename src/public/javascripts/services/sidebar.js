@@ -14,7 +14,6 @@ class Sidebar {
             widgets: []
         }, state);
         this.widgets = [];
-        this.rendered = false;
         this.$sidebar = ctx.$tabContent.find(".note-detail-sidebar");
         this.$widgetContainer = this.$sidebar.find(".note-detail-widget-container");
         this.$showSideBarButton = this.ctx.$tabContent.find(".show-sidebar-button");
@@ -54,7 +53,9 @@ class Sidebar {
         }
 
         for (const widget of this.widgets) {
-            widget.cleanup();
+            if (widget.cleanup) {
+                widget.cleanup();
+            }
         }
 
         this.widgets = [];
@@ -100,7 +101,7 @@ class Sidebar {
                 this.$widgetContainer.append($el);
             }
             catch (e) {
-                ws.logError(`Error while loading widget ${widget.widgetName}: ${e.message}`);
+                ws.logError(`Error while rendering widget ${widget.widgetName}: ${e.message}`);
             }
         }
     }

@@ -89,7 +89,16 @@ class StandardWidget {
     async doRenderBody() {}
 
     async isEnabled() {
-        return this.widgetOptions.enabled;
+        const label = await this.ctx.note.getLabelValue(this.widgetName);
+
+        if (label === 'enabled') {
+            return true;
+        } else if (label === 'disabled') {
+            return false;
+        }
+        else {
+            return this.widgetOptions.enabled;
+        }
     }
 
     isExpanded() {
