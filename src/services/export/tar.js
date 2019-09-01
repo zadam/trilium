@@ -85,23 +85,29 @@ async function exportToTar(exportContext, branch, format, res) {
             return;
         }
 
-        const baseFileName = sanitize(branch.prefix ? (branch.prefix + ' - ' + note.title) : note.title);
+        const completeTitle = branch.prefix ? (branch.prefix + ' - ' + note.title) : note.title;
+        const baseFileName = sanitize(completeTitle);
+        const notePath = parentMeta.notePath.concat([note.noteId]);
 
         if (note.noteId in noteIdToMeta) {
-            const fileName = getUniqueFilename(existingFileNames, baseFileName + ".clone");
+            const fileName = getUniqueFilename(existingFileNames, baseFileName + ".clone." + (format === 'html' ? 'html' : 'md'));
 
             return {
                 isClone: true,
                 noteId: note.noteId,
+                notePath: notePath,
+                title: note.title,
                 prefix: branch.prefix,
-                dataFileName: fileName
+                dataFileName: fileName,
+                type: 'text', // export will have text description,
+                format: format
             };
         }
 
         const meta = {
             isClone: false,
             noteId: note.noteId,
-            notePath: parentMeta.notePath.concat([note.noteId]),
+            notePath: notePath,
             title: note.title,
             notePosition: branch.notePosition,
             prefix: branch.prefix,
@@ -181,7 +187,8 @@ async function exportToTar(exportContext, branch, format, res) {
 
         const meta = noteIdToMeta[targetPath[targetPath.length - 1]];
 
-        url += meta.dataFileName;
+        // link can target note which is only "folder-note" and as such will not have a file in an export
+        url += meta.dataFileName || meta.dirFileName;
 
         return url;
     }
@@ -202,9 +209,7 @@ async function exportToTar(exportContext, branch, format, res) {
         return content;
     }
 
-    async function prepareContent(note, noteMeta) {
-        let content = await note.getContent();
-
+    function prepareContent(title, content, noteMeta) {
         if (['html', 'markdown'].includes(noteMeta.format)) {
             content = content.toString();
 
@@ -216,7 +221,7 @@ async function exportToTar(exportContext, branch, format, res) {
                 content = `<html>
 <head><meta charset="utf-8"></head>
 <body>
-  <h1>${utils.escapeHtml(note.title)}</h1>
+  <h1>${utils.escapeHtml(title)}</h1>
 ${content}
 </body>
 </html>`;
@@ -228,7 +233,7 @@ ${content}
             let markdownContent = turndownService.turndown(content);
 
             if (markdownContent.trim().length > 0 && !markdownContent.startsWith("# ")) {
-                markdownContent = '# ' + note.title + "\r\n" + markdownContent;
+                markdownContent = '# ' + title + "\r\n" + markdownContent;
             }
 
             return markdownContent;
@@ -243,7 +248,11 @@ ${content}
 
     async function saveNote(noteMeta, filePathPrefix) {
         if (noteMeta.isClone) {
-            const content = "Note is present at " + notePaths[noteMeta.noteId];
+            const targetUrl = getTargetUrl(noteMeta.noteId, noteMeta);
+
+            let content = `<p>This is a clone of a note. Go to its <a href="${targetUrl}">primary location</a>.</p>`;
+
+            content = prepareContent(noteMeta.title, content, noteMeta);
 
             pack.entry({name: filePathPrefix + noteMeta.dataFileName, size: content.length}, content);
             return;
@@ -254,7 +263,7 @@ ${content}
         notePaths[note.noteId] = filePathPrefix + (noteMeta.dataFileName || noteMeta.dirFileName);
 
         if (noteMeta.dataFileName) {
-            const content = await prepareContent(note, noteMeta);
+            const content = prepareContent(noteMeta.title, await note.getContent(), noteMeta);
 
             pack.entry({name: filePathPrefix + noteMeta.dataFileName, size: content.length}, content);
         }
