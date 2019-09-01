@@ -3,6 +3,7 @@ import linkService from "../services/link.js";
 import server from "../services/server.js";
 import treeCache from "../services/tree_cache.js";
 import treeUtils from "../services/tree_utils.js";
+import treeService from "../services/tree.js";
 
 class SimilarNotesWidget extends StandardWidget {
     getWidgetTitle() { return "Similar notes"; }
@@ -19,17 +20,19 @@ class SimilarNotesWidget extends StandardWidget {
 
         await treeCache.getNotes(similarNotes.map(note => note.noteId)); // preload all at once
 
-        const $list = $('<ul style="padding-left: 20px;">');
+        const $list = $('<ul>');
 
         for (const similarNote of similarNotes) {
-            const $item = $("<li>")
-                .append(await linkService.createNoteLink(similarNote.notePath.join("/")));
+            const note = await treeCache.getNote(similarNote.noteId);
 
-            similarNote.notePath.pop(); // remove last noteId since it's already in the link
-
-            if (similarNote.notePath.length > 0) {
-                $item.append($("<small>").text(" (" + await treeUtils.getNotePathTitle(similarNote.notePath.join("/")) + ")"));
+            if (!note) {
+                continue;
             }
+
+            const notePath = await treeService.getSomeNotePath(note);
+
+            const $item = $("<li>")
+                .append(await linkService.createNoteLinkWithPath(notePath));
 
             $list.append($item);
         }

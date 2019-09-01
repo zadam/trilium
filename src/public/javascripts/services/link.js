@@ -30,6 +30,25 @@ async function createNoteLink(notePath, noteTitle = null) {
     return noteLink;
 }
 
+async function createNoteLinkWithPath(notePath) {
+    const $link = await createNoteLink(notePath);
+
+    const $res = $("<span>").append($link);
+
+    if (notePath.includes("/")) {
+        const noteIds = notePath.split("/");
+        noteIds.pop(); // remove last element
+
+        const parentNotePath = noteIds.join("/").trim();
+
+        if (parentNotePath) {
+            $res.append($("<small>").text(" (" + await treeUtils.getNotePathTitle(parentNotePath) + ")"));
+        }
+    }
+
+    return $res;
+}
+
 function getNotePathFromLink($link) {
     const notePathAttr = $link.attr("data-note-path");
 
@@ -159,6 +178,7 @@ $(document).on('mousedown', 'span.ck-button__label', e => {
 export default {
     getNotePathFromUrl,
     createNoteLink,
+    createNoteLinkWithPath,
     addLinkToEditor,
     addTextToEditor,
     goToLink

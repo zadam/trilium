@@ -392,6 +392,11 @@ body {
     border: 0;
 }
 
+.note-detail-sidebar .card-body ul {
+    padding-left: 25px;
+    margin-bottom: 5px;
+}
+
 #widgets-configuration {
     margin: 0;
 }

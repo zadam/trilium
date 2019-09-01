@@ -348,7 +348,7 @@ function evaluateSimilarity(text1, text2, noteId, results) {
             coeff -= 0.2; // archived penalization
         }
 
-        results.push({coeff, notePath, noteId});
+        results.push({coeff, noteId});
     }
 }
 
