@@ -22,11 +22,14 @@ class SimilarNotesWidget extends StandardWidget {
         const $list = $('<ul style="padding-left: 20px;">');
 
         for (const similarNote of similarNotes) {
+            const $item = $("<li>")
+                .append(await linkService.createNoteLink(similarNote.notePath.join("/")));
+
             similarNote.notePath.pop(); // remove last noteId since it's already in the link
 
-            const $item = $("<li>")
-                .append(await linkService.createNoteLink(similarNote.noteId))
-                .append($("<small>").text(" (" + await treeUtils.getNotePathTitle(similarNote.notePath.join("/")) + ")"));
+            if (similarNote.notePath.length > 0) {
+                $item.append($("<small>").text(" (" + await treeUtils.getNotePathTitle(similarNote.notePath.join("/")) + ")"));
+            }
 
             $list.append($item);
         }
