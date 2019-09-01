@@ -8,7 +8,7 @@ const mimeTypes = require('mime-types');
 const TurndownService = require('turndown');
 const packageInfo = require('../../../package.json');
 const utils = require('../utils');
-const log = require('../log');
+const protectedSessionService = require('../protected_session');
 const sanitize = require("sanitize-filename");
 
 /**
@@ -136,8 +136,10 @@ async function exportToTar(exportContext, branch, format, res) {
 
         const childBranches = await note.getChildBranches();
 
+        const available = !note.isProtected || protectedSessionService.isProtectedSessionAvailable();
+
         // if it's a leaf then we'll export it even if it's empty
-        if ((await note.getContent()).length > 0 || childBranches.length === 0) {
+        if (available && ((await note.getContent()).length > 0 || childBranches.length === 0)) {
             meta.dataFileName = getDataFileName(note, baseFileName, existingFileNames);
         }
 

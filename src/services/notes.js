@@ -12,6 +12,8 @@ const NoteRevision = require('../entities/note_revision');
 const Branch = require('../entities/branch');
 const Attribute = require('../entities/attribute');
 const hoistedNoteService = require('../services/hoisted_note');
+const protectedSessionService = require('../services/protected_session');
+const log = require('../services/log');
 
 async function getNewNotePosition(parentNoteId, noteData) {
     let newNotePos = 0;
@@ -255,6 +257,10 @@ async function saveLinks(note, content) {
         return content;
     }
 
+    if (note.isProtected && !protectedSessionService.isProtectedSessionAvailable()) {
+        return content;
+    }
+
     const foundLinks = [];
 
     if (note.type === 'text') {
@@ -433,10 +439,15 @@ async function scanForLinks(noteId) {
         return;
     }
 
-    const content = await note.getContent();
-    const newContent = await saveLinks(note, content);
+    try {
+        const content = await note.getContent();
+        const newContent = await saveLinks(note, content);
 
-    await note.setContent(newContent);
+        await note.setContent(newContent);
+    }
+    catch (e) {
+        log.error(`Could not scan for links note ${noteId}: ${e.message}`);
+    }
 }
 
 async function cleanupDeletedNotes() {

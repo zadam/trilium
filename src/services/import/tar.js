@@ -238,8 +238,6 @@ async function importTar(importContext, fileBuffer, importRootNote) {
 
         absUrl += (absUrl.length > 0 ? '/' : '') + url;
 
-        console.log("absUrl", absUrl);
-
         const targetNoteId = getNoteId(null, absUrl);
         return targetNoteId;
     }
@@ -434,6 +432,8 @@ async function importTar(importContext, fileBuffer, importRootNote) {
                 createdNoteIds[noteId] = true;
 
                 await noteService.scanForLinks(noteId);
+
+                importContext.increaseProgressCount();
             }
 
             // we're saving attributes and links only now so that all relation and link target notes
