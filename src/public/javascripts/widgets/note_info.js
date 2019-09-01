@@ -3,23 +3,22 @@ import StandardWidget from "./standard_widget.js";
 const TPL = `
 <table class="note-info-table">
     <tr>
-        <th>Note ID</th>
-        <td class="note-info-note-id"></td>
+        <th>Note ID:</th>
+        <td colspan="3" class="note-info-note-id"></td>
     </tr>
     <tr>
-        <th>Created</th>
-        <td class="note-info-date-created"></td>
+        <th>Created:</th>
+        <td colspan="3" class="note-info-date-created"></td>
     </tr>
     <tr>
-        <th>Modified</th>
-        <td class="note-info-date-modified"></td>
+        <th>Modified:</th>
+        <td colspan="3" class="note-info-date-modified"></td>
     </tr>
     <tr>
-        <th>Type</th>
+        <th>Type:</th>
         <td class="note-info-type"></td>
-    </tr>
-    <tr>
-        <th>MIME</th>
+        
+        <th>MIME:</th>
         <td class="note-info-mime"></td>
     </tr>
 </table>
