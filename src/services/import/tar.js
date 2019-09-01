@@ -115,23 +115,27 @@ async function importTar(importContext, fileBuffer, importRootNote) {
     function getNoteId(noteMeta, filePath) {
         let noteId;
 
-        if (noteMeta) {
-            noteId = getNewNoteId(noteMeta.noteId);
+        const filePathNoExt = getTextFileWithoutExtension(filePath);
 
-            createdPaths[filePath] = noteId;
+        if (noteMeta) {
+            if (filePathNoExt in createdPaths) {
+                noteId = createdPaths[filePathNoExt];
+                noteIdMap[noteMeta.noteId] = noteId;
+            }
+            else {
+                noteId = getNewNoteId(noteMeta.noteId);
+            }
         }
         else {
-            const filePathNoExt = getTextFileWithoutExtension(filePath);
-
             if (filePathNoExt in createdPaths) {
                 noteId = createdPaths[filePathNoExt];
             }
             else {
                 noteId = utils.newEntityId();
             }
-
-            createdPaths[filePathNoExt] = noteId;
         }
+
+        createdPaths[filePathNoExt] = noteId;
 
         return noteId;
     }
