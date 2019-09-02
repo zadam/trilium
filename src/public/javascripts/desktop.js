@@ -159,6 +159,13 @@ $('[data-toggle="tooltip"]').tooltip({
     html: true
 });
 
+// for CKEditor integration (button on block toolbar)
+window.glob.importMarkdownInline = async () => {
+    const dialog = await import("./dialogs/markdown_import.js");
+
+    dialog.importMarkdownInline();
+};
+
 macInit.init();
 
 searchNotesService.init(); // should be in front of treeService since that one manipulates address bar hash

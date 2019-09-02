@@ -33,8 +33,6 @@ export async function importMarkdownInline() {
         convertMarkdownToHtml(text);
     }
     else {
-        $("input[name='search-text']").focus();
-
         glob.activeDialog = $dialog;
 
         $dialog.modal();
@@ -53,7 +51,6 @@ async function sendForm() {
 
 $importButton.click(sendForm);
 
-utils.bindElShortcut($dialog, 'ctrl+return', sendForm);
+$dialog.on('shown.bs.modal', () => $importTextarea.focus());
 
-// for CKEditor integration (button on block toolbar)
-window.glob.importMarkdownInline = importMarkdownInline;
+utils.bindElShortcut($dialog, 'ctrl+return', sendForm);
