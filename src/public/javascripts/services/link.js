@@ -30,8 +30,8 @@ async function createNoteLink(notePath, noteTitle = null) {
     return noteLink;
 }
 
-async function createNoteLinkWithPath(notePath) {
-    const $link = await createNoteLink(notePath);
+async function createNoteLinkWithPath(notePath, noteTitle = null) {
+    const $link = await createNoteLink(notePath, noteTitle);
 
     const $res = $("<span>").append($link);
 

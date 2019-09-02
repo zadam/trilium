@@ -1,6 +1,8 @@
 import linkService from '../services/link.js';
 import utils from '../services/utils.js';
 import server from '../services/server.js';
+import treeService from "../services/tree.js";
+import treeCache from "../services/tree_cache.js";
 
 const $dialog = $("#recent-changes-dialog");
 const $content = $("#recent-changes-content");
@@ -13,6 +15,9 @@ export async function showDialog() {
     $dialog.modal();
 
     const result = await server.get('recent-changes');
+
+    // preload all notes into cache
+    await treeCache.getNotes(result.map(r => r.noteId), true);
 
     $content.empty();
 
@@ -28,7 +33,7 @@ export async function showDialog() {
         const dayEl = $('<div>').append($('<b>').html(utils.formatDate(dateDay))).append(changesListEl);
 
         for (const change of dayChanges) {
-            const formattedTime = utils.formatTime(utils.parseDate(change.utcDateModifiedTo));
+            const formattedTime = utils.formatTime(utils.parseDate(change.date));
 
             let noteLink;
 
@@ -36,7 +41,10 @@ export async function showDialog() {
                 noteLink = change.current_title;
             }
             else {
-                noteLink = await linkService.createNoteLink(change.noteId, change.title);
+                const note = await treeCache.getNote(change.noteId);
+                const notePath = await treeService.getSomeNotePath(note);
+
+                noteLink = await linkService.createNoteLinkWithPath(notePath, change.title);
             }
 
             changesListEl.append($('<li>')
@@ -53,7 +61,7 @@ function groupByDate(result) {
     const dayCache = {};
 
     for (const row of result) {
-        let dateDay = utils.parseDate(row.utcDateModifiedTo);
+        let dateDay = utils.parseDate(row.date);
         dateDay.setHours(0);
         dateDay.setMinutes(0);
         dateDay.setSeconds(0);
