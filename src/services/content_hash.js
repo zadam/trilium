@@ -3,7 +3,6 @@
 const sql = require('./sql');
 const utils = require('./utils');
 const log = require('./log');
-const eventLogService = require('./event_log');
 const ws = require('./ws.js');
 const ApiToken = require('../entities/api_token');
 const Branch = require('../entities/branch');
@@ -55,8 +54,6 @@ async function checkContentHashes(otherHashes) {
     for (const key in hashes) {
         if (hashes[key] !== otherHashes[key]) {
             allChecksPassed = false;
-
-            await eventLogService.addEvent(`Content hash check for ${key} FAILED. Local is ${hashes[key]}, remote is ${otherHashes[key]}`);
 
             if (key !== 'recent_notes') {
                 // let's not get alarmed about recent notes which get updated often and can cause failures in race conditions

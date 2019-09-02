@@ -16,7 +16,6 @@ const optionsApiRoute = require('./api/options');
 const passwordApiRoute = require('./api/password');
 const syncApiRoute = require('./api/sync');
 const loginApiRoute = require('./api/login');
-const eventLogRoute = require('./api/event_log');
 const recentNotesRoute = require('./api/recent_notes');
 const appInfoRoute = require('./api/app_info');
 const exportRoute = require('./api/export');
@@ -188,8 +187,6 @@ function register(app) {
     route(PUT, '/api/sync/update', [auth.checkApiAuth], syncApiRoute.update, apiResultHandler);
     route(POST, '/api/sync/finished', [auth.checkApiAuth], syncApiRoute.syncFinished, apiResultHandler);
     route(GET, '/api/sync/stats', [], syncApiRoute.getStats, apiResultHandler);
-
-    apiRoute(GET, '/api/event-log', eventLogRoute.getEventLog);
 
     apiRoute(POST, '/api/recent-notes', recentNotesRoute.addRecentNote);
     apiRoute(GET, '/api/app-info', appInfoRoute.getAppInfo);

@@ -1,6 +1,5 @@
 const sql = require('./sql');
 const log = require('./log');
-const eventLogService = require('./event_log');
 const syncTableService = require('./sync_table');
 const eventService = require('./events');
 
@@ -138,8 +137,6 @@ async function updateOptions(entity, sourceId) {
             await sql.replace('options', entity);
 
             await syncTableService.addOptionsSync(entity.name, sourceId);
-
-            await eventLogService.addEvent("Synced option " + entity.name);
         }
     });
 }
