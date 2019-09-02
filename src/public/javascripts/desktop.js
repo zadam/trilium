@@ -129,10 +129,11 @@ $noteTabContainer.on("click", ".export-note-button", function () {
         return;
     }
 
-    exportDialog.showDialog(treeService.getActiveNode(), 'single');
+    import('./dialogs/export.js').then(d => d.showDialog(treeService.getActiveNode(), 'single'));
 });
 
-$noteTabContainer.on("click", ".import-files-button", () => importDialog.showDialog(treeService.getActiveNode()));
+$noteTabContainer.on("click", ".import-files-button",
+    () => import('./dialogs/import.js').then(d => d.showDialog(treeService.getActiveNode())));
 
 $noteTabContainer.on("click", ".print-note-button", async function () {
     if ($(this).hasClass("disabled")) {

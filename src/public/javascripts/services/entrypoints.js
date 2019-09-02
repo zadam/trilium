@@ -48,7 +48,7 @@ function registerEntrypoints() {
             return;
         }
 
-        import(NOTE_REVISIONS).then(d => d.showDialog());
+        import(NOTE_REVISIONS).then(d => d.showCurrentNoteRevisions());
     });
 
     $noteTabContainer.on("click", ".show-source-button", function() {

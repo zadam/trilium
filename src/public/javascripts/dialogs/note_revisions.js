@@ -10,7 +10,7 @@ const $title = $("#note-revision-title");
 let revisionItems = [];
 let note;
 
-async function showCurrentNoteRevisions() {
+export async function showCurrentNoteRevisions() {
     await showNoteRevisionsDialog(noteDetailService.getActiveNoteId());
 }
 
