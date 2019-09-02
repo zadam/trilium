@@ -18,7 +18,9 @@ class SimilarNotesWidget extends StandardWidget {
             return;
         }
 
-        await treeCache.getNotes(similarNotes.map(note => note.noteId)); // preload all at once
+        const noteIds = similarNotes.flatMap(note => note.notePath);
+
+        await treeCache.getNotes(noteIds); // preload all at once
 
         const $list = $('<ul>');
 
@@ -29,10 +31,8 @@ class SimilarNotesWidget extends StandardWidget {
                 continue;
             }
 
-            const notePath = await treeService.getSomeNotePath(note);
-
             const $item = $("<li>")
-                .append(await linkService.createNoteLinkWithPath(notePath));
+                .append(await linkService.createNoteLinkWithPath(similarNote.notePath.join("/")));
 
             $list.append($item);
         }
