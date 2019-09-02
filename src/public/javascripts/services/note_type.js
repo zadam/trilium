@@ -10,7 +10,7 @@ const NOTE_TYPES = [
 
     { type: "text", mime: "text/html", title: "Text", selectable: true },
     { type: "relation-map", mime: "application/json", title: "Relation Map", selectable: true },
-    { type: "render", mime: '', title: "Render HTML note", selectable: true },
+    { type: "render", mime: '', title: "Render Note", selectable: true },
     { type: "code", mime: 'text/plain', title: "Code", selectable: true }
 ];
 
