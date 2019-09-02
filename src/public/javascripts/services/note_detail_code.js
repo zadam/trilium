@@ -48,7 +48,8 @@ class NoteDetailCode {
                 tabindex: 100,
                 // we linewrap partly also because without it horizontal scrollbar displays only when you scroll
                 // all the way to the bottom of the note. With line wrap there's no horizontal scrollbar so no problem
-                lineWrapping: true
+                lineWrapping: true,
+                dragDrop: false // with true the editor inlines dropped files which is not what we expect
             });
 
             this.onNoteChange(() => this.ctx.noteChanged());

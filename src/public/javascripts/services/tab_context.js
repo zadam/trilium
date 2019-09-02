@@ -101,8 +101,6 @@ class TabContext {
 
         this.$unprotectButton = this.$tabContent.find(".unprotect-button");
         this.$unprotectButton.click(protectedSessionService.unprotectNoteAndSendToServer);
-
-        console.debug(`Created note tab ${this.tabId}`);
     }
 
     async setNote(note, notePath) {
@@ -139,8 +137,6 @@ class TabContext {
         if (this.sidebar) {
             this.sidebar.noteLoaded(); // load async
         }
-
-        console.debug(`Switched tab ${this.tabId} to ${this.noteId}`);
     }
 
     show() {

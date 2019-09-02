@@ -389,8 +389,11 @@ $tabContentsContainer.on("drop", async e => {
         return;
     }
 
+    const files = [...e.originalEvent.dataTransfer.files]; // chrome has issue that dataTransfer.files empties after async operation
+
     const importDialog = await import("../dialogs/import.js");
-    importDialog.uploadFiles(activeNote.noteId, e.originalEvent.dataTransfer.files, {
+
+    importDialog.uploadFiles(activeNote.noteId, files, {
         safeImport: true,
         shrinkImages: true,
         textImportedAsText: true,
@@ -416,8 +419,6 @@ tabRow.addListener('activeTabChange', async ({ detail }) => {
     const tabId = detail.tabEl.getAttribute('data-tab-id');
 
     await showTab(tabId);
-
-    console.log(`Activated tab ${tabId}`);
 });
 
 tabRow.addListener('tabRemove', async ({ detail }) => {
