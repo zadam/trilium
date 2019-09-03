@@ -267,6 +267,8 @@ class TabContext {
 
         // run async
         bundleService.executeRelationBundles(this.note, 'runOnNoteChange', this);
+
+        this.eventReceived('noteSaved');
     }
 
     async saveNoteIfChanged() {
@@ -366,11 +368,11 @@ class TabContext {
         }
     }
 
-    syncDataReceived(syncData) {
-        this.attributes.syncDataReceived(syncData);
+    eventReceived(name, data) {
+        this.attributes.eventReceived(name, data);
 
         if (this.sidebar) {
-            this.sidebar.syncDataReceived(syncData);
+            this.sidebar.eventReceived(name, data);
         }
     }
 

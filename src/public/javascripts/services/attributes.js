@@ -267,9 +267,11 @@ class Attributes {
         }
     }
 
-    syncDataReceived(syncData) {
-        if (syncData.find(sd => sd.entityName === 'attributes' && sd.noteId === this.ctx.note.noteId)) {
-            this.reloadAttributes();
+    eventReceived(name, data) {
+        if (name === 'syncData') {
+            if (data.find(sd => sd.entityName === 'attributes' && sd.noteId === this.ctx.note.noteId)) {
+                this.reloadAttributes();
+            }
         }
     }
 }

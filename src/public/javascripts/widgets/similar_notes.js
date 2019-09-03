@@ -2,8 +2,6 @@ import StandardWidget from "./standard_widget.js";
 import linkService from "../services/link.js";
 import server from "../services/server.js";
 import treeCache from "../services/tree_cache.js";
-import treeUtils from "../services/tree_utils.js";
-import treeService from "../services/tree.js";
 
 class SimilarNotesWidget extends StandardWidget {
     getWidgetTitle() { return "Similar notes"; }
@@ -11,6 +9,9 @@ class SimilarNotesWidget extends StandardWidget {
     getMaxHeight() { return "200px"; }
 
     async doRenderBody() {
+        // remember which title was when we found the similar notes
+        this.title = this.ctx.note.title;
+
         const similarNotes = await server.get('similar_notes/' + this.ctx.note.noteId);
 
         if (similarNotes.length === 0) {
@@ -38,6 +39,16 @@ class SimilarNotesWidget extends StandardWidget {
         }
 
         this.$body.empty().append($list);
+    }
+
+    eventReceived(name, data) {
+        if (name === 'noteSaved') {
+            if (this.title !== this.ctx.note.title) {
+                this.rendered = false;
+
+                this.renderBody();
+            }
+        }
     }
 }
 

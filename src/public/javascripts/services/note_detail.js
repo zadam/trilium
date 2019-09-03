@@ -374,7 +374,7 @@ ws.subscribeToOutsideSyncMessages(syncData => {
 
 ws.subscribeToAllSyncMessages(syncData => {
     for (const tc of tabContexts) {
-        tc.syncDataReceived(syncData);
+        tc.eventReceived('syncData', syncData);
     }
 });
 

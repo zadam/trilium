@@ -106,10 +106,10 @@ class Sidebar {
         }
     }
 
-    syncDataReceived(syncData) {
+    eventReceived(name, data) {
         for (const widget of this.widgets) {
-            if (widget.syncDataReceived) {
-                widget.syncDataReceived(syncData);
+            if (widget.eventReceived) {
+                widget.eventReceived(name, data);
             }
         }
     }

@@ -112,7 +112,7 @@ class StandardWidget {
         };
     }
 
-    syncDataReceived(syncData) {}
+    eventReceived(name, data) {}
 
     cleanup() {}
 }

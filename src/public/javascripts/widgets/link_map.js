@@ -44,12 +44,14 @@ class LinkMapWidget extends StandardWidget {
         }
     }
 
-    syncDataReceived(syncData) {
-        if (syncData.find(sd => sd.entityName === 'attributes' && sd.noteId === this.ctx.note.noteId)) {
-            // no need to invalidate attributes since the Attribute class listens to this as well
-            // (and is guaranteed to run first)
-            if (this.linkMapService) {
-                this.linkMapService.loadNotesAndRelations();
+    eventReceived(name, data) {
+        if (name === 'syncData') {
+            if (data.find(sd => sd.entityName === 'attributes' && sd.noteId === this.ctx.note.noteId)) {
+                // no need to invalidate attributes since the Attribute class listens to this as well
+                // (and is guaranteed to run first)
+                if (this.linkMapService) {
+                    this.linkMapService.loadNotesAndRelations();
+                }
             }
         }
     }
