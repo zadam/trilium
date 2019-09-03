@@ -170,8 +170,8 @@ span.fancytree-node.protected > span.fancytree-custom-icon {
     filter: drop-shadow(2px 2px 2px black);
 }
 
-span.fancytree-node.multiple-parents .fancytree-title {
-    text-decoration: underline dotted;
+span.fancytree-node.multiple-parents .fancytree-title::after {
+    content: " *"
 }
 
 span.fancytree-node.fancytree-active-clone:not(.fancytree-active) .fancytree-title {
