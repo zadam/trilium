@@ -364,17 +364,37 @@ function evaluateSimilarity(text1, text2, noteId, results) {
     }
 }
 
-function findSimilarNotes(title) {
+/**
+ * Point of this is to break up long running sync process to avoid blocking
+ * see https://snyk.io/blog/nodejs-how-even-quick-async-functions-can-block-the-event-loop-starve-io/
+ */
+function setImmediatePromise() {
+    return new Promise((resolve) => {
+        setImmediate(() => resolve());
+    });
+}
+
+async function evaluateSimilarityDict(title, dict, results) {
+    let i = 0;
+
+    for (const noteId in dict) {
+        evaluateSimilarity(title, dict[noteId], noteId, results);
+
+        i++;
+
+        if (i % 200 === 0) {
+            await setImmediatePromise();
+        }
+    }
+}
+
+async function findSimilarNotes(title) {
     const results = [];
 
-    for (const noteId in noteTitles) {
-        evaluateSimilarity(title, noteTitles[noteId], noteId, results);
-    }
+    await evaluateSimilarityDict(title, noteTitles, results);
 
     if (protectedSessionService.isProtectedSessionAvailable()) {
-        for (const noteId in protectedNoteTitles) {
-            evaluateSimilarity(title, protectedNoteTitles[noteId], noteId, results);
-        }
+        await evaluateSimilarityDict(title, protectedNoteTitles, results);
     }
 
     results.sort((a, b) => a.coeff > b.coeff ? -1 : 1);
