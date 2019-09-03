@@ -17,19 +17,33 @@ async function searchForNoteIds(searchString) {
     const {query, params} = buildSearchQuery(filters, 'notes.noteId');
 
     try {
-        const noteIds = await sql.getColumn(query, params);
+        let noteIds = await sql.getColumn(query, params);
 
-        const availableNoteIds = noteIds.filter(noteCacheService.isAvailable);
+        noteIds = noteIds.filter(noteCacheService.isAvailable);
+
+        const isArchivedFilter = filters.find(filter => filter.name.toLowerCase() === 'isarchived');
+
+        if (isArchivedFilter) {console.log(isArchivedFilter);
+            if (isArchivedFilter.operator === 'exists') {
+                noteIds = noteIds.filter(noteCacheService.isArchived);
+            }
+            else if (isArchivedFilter.operator === 'not-exists') {
+                noteIds = noteIds.filter(noteId => !noteCacheService.isArchived(noteId));
+            }
+            else {
+                throw new Error(`Unrecognized isArchived operator ${isArchivedFilter.operator}`);
+            }
+        }
 
         const limitFilter = filters.find(filter => filter.name.toLowerCase() === 'limit');
 
         if (limitFilter) {
             const limit = parseInt(limitFilter.value);
 
-            return availableNoteIds.splice(0, limit);
+            return noteIds.splice(0, limit);
         }
         else {
-            return availableNoteIds;
+            return noteIds;
         }
 
     }

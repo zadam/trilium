@@ -166,7 +166,7 @@ async function findNotes(query) {
     return apiResults;
 }
 
-function isArchived(notePath) {
+function isNotePathArchived(notePath) {
     // if the note is archived directly
     if (archived[notePath[notePath.length - 1]] !== undefined) {
         return true;
@@ -182,11 +182,23 @@ function isArchived(notePath) {
     return false;
 }
 
+/**
+ * This assumes that note is available. "archived" note means that there isn't a single non-archived note-path
+ * leading to this note.
+ *
+ * @param noteId
+ */
+function isArchived(noteId) {
+    const notePath = getSomePath(noteId);
+
+    return isNotePathArchived(notePath);
+}
+
 function search(noteId, tokens, path, results) {
     if (tokens.length === 0) {
         const retPath = getSomePath(noteId, path);
 
-        if (retPath && !isArchived(retPath)) {
+        if (retPath && !isNotePathArchived(retPath)) {
             const thisNoteId = retPath[retPath.length - 1];
             const thisParentNoteId = retPath[retPath.length - 2];
 
@@ -320,7 +332,7 @@ function getSomePath(noteId, path = []) {
 function getNotePath(noteId) {
     const retPath = getSomePath(noteId);
 
-    if (retPath && !isArchived(retPath)) {
+    if (retPath) {
         const noteTitle = getNoteTitleForPath(retPath);
         const parentNoteId = childToParent[noteId][0];
 
@@ -344,7 +356,7 @@ function evaluateSimilarity(text1, text2, noteId, results) {
             return;
         }
 
-        if (isArchived(notePath)) {
+        if (isNotePathArchived(notePath)) {
             coeff -= 0.2; // archived penalization
         }
 
@@ -449,7 +461,7 @@ function resortChildToParent(noteId) {
 
 /**
  * @param noteId
- * @returns {boolean} - true if note exists (is not deleted) and is not archived.
+ * @returns {boolean} - true if note exists (is not deleted) and is available in current note hoisting
  */
 function isAvailable(noteId) {
     const notePath = getNotePath(noteId);
@@ -470,6 +482,7 @@ module.exports = {
     getNotePath,
     getNoteTitleForPath,
     isAvailable,
+    isArchived,
     load,
     findSimilarNotes
 };

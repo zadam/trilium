@@ -75,6 +75,12 @@ module.exports = function (searchText) {
         }
 
         filters.push({
+            relation: 'and',
+            name: 'isArchived',
+            operator: 'not-exists'
+        });
+
+        filters.push({
             relation: 'or',
             name: 'noteId',
             operator: '=',
