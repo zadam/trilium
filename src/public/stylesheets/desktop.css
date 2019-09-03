@@ -418,3 +418,10 @@ body {
     margin-right: 20px;
     display: inline-block;
 }
+
+.note-info-mime {
+    max-width: 13em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

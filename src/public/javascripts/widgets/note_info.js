@@ -42,7 +42,7 @@ class NoteInfoWidget extends StandardWidget {
         $dateCreated.text(note.dateCreated);
         $dateModified.text(note.dateModified);
         $type.text(note.type);
-        $mime.text(note.mime);
+        $mime.text(note.mime).attr("title", note.mime);
     }
 
     eventReceived(name, data) {
