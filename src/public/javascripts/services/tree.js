@@ -391,7 +391,8 @@ async function treeInitialized() {
         await noteDetailService.loadNoteDetail(tab.notePath, {
             state: tab,
             newTab: true,
-            activate: tab.active
+            activate: tab.active,
+            async: true // faster initial load
         });
     }
 

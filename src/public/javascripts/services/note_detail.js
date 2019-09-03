@@ -275,12 +275,19 @@ async function loadNoteDetail(origNotePath, options = {}) {
     if (!newTab && currentTreeNode && currentTreeNode.data.noteId !== loadedNote.noteId) {
         return;
     }
+    
+    const loadPromise = loadNoteDetailToContext(ctx, loadedNote, notePath).then(() => {
+        if (activate) {
+            // will also trigger showTab via event
+            return tabRow.activateTab(ctx.$tab[0]);
+        }
+        else {
+            return Promise.resolve();
+        }
+    });
 
-    await loadNoteDetailToContext(ctx, loadedNote, notePath);
-
-    if (activate) {
-        // will also trigger showTab via event
-        await tabRow.activateTab(ctx.$tab[0]);
+    if (!options.async) {
+        await loadPromise;
     }
 }
 
