@@ -41,6 +41,14 @@ class TabContext {
         this.tabRow = tabRow;
         this.tabId = state.tabId || utils.randomString(4);
         this.$tab = $(this.tabRow.addTab(this.tabId));
+        this.initialized = false;
+        this.state = state;
+    }
+
+    initTabContent() {
+        if (this.initialized) {
+            return;
+        }
 
         this.$tabContent = $(".note-tab-content-template").clone();
         this.$tabContent.removeClass('note-tab-content-template');
@@ -62,7 +70,7 @@ class TabContext {
         this.attributes = new Attributes(this);
 
         if (utils.isDesktop()) {
-            const sidebarState = state.sidebar || {
+            const sidebarState = this.state.sidebar || {
                 visible: showSidebarInNewTab
             };
 
@@ -101,6 +109,8 @@ class TabContext {
 
         this.$unprotectButton = this.$tabContent.find(".unprotect-button");
         this.$unprotectButton.click(protectedSessionService.unprotectNoteAndSendToServer);
+
+        this.initialized = true;
     }
 
     async setNote(note, notePath) {
@@ -110,13 +120,42 @@ class TabContext {
         this.note = note;
         this.tabRow.updateTab(this.$tab[0], {title: note.title});
 
-        this.attributes.invalidateAttributes();
+        if (!this.initialized) {
+            return;
+        }
 
         await this.initComponent();
+
+        // after loading new note make sure editor is scrolled to the top
+        this.getComponent().scrollToTop();
+
+        if (utils.isDesktop()) {
+            // needs to happen after loading the note itself because it references active noteId
+            this.attributes.refreshAttributes();
+
+            await this.showChildrenOverview();
+        } else {
+            // mobile usually doesn't need attributes so we just invalidate
+            this.attributes.invalidateAttributes();
+        }
 
         this.setupClasses();
 
         this.setCurrentNotePathToHash();
+
+        this.noteChangeDisabled = true;
+
+        try {
+            this.$noteTitle.val(this.note.title);
+
+            if (utils.isDesktop()) {
+                this.noteType.update();
+            }
+
+            await this.renderComponent();
+        } finally {
+            this.noteChangeDisabled = false;
+        }
 
         this.setTitleBar();
 
@@ -137,14 +176,44 @@ class TabContext {
         if (this.sidebar) {
             this.sidebar.noteLoaded(); // load async
         }
+
+        await bundleService.executeRelationBundles(this.note, 'runOnNoteView', this);
     }
 
-    show() {
+    async show() {
+        if (!this.initialized) {
+            this.initTabContent();
+
+            await this.initComponent();
+
+            if (this.note) {
+                await this.setNote(this.note, this.notePath);
+            }
+        }
+
         this.$tabContent.show();
         this.setCurrentNotePathToHash();
         this.setTitleBar();
         this.getComponent().show();
     }
+
+    async renderComponent() {
+        for (const componentType in this.components) {
+            if (componentType !== this.note.type) {
+                this.components[componentType].cleanup();
+            }
+        }
+
+        this.$noteDetailComponents.hide();
+
+        this.$noteTitle.show(); // this can be hidden by empty detail
+        this.$noteTitle.removeAttr("readonly"); // this can be set by protected session service
+
+        await this.initComponent();
+
+        await this.getComponent().render();
+    }
+
 
     setTitleBar() {
         if (!this.$tabContent.is(":visible")) {
@@ -160,7 +229,9 @@ class TabContext {
     }
 
     hide() {
-        this.$tabContent.hide();
+        if (this.initialized) {
+            this.$tabContent.hide();
+        }
     }
 
     setCurrentNotePathToHash() {
@@ -264,6 +335,8 @@ class TabContext {
         }
 
         this.$savedIndicator.fadeIn();
+
+        this.$scriptArea.empty();
 
         // run async
         bundleService.executeRelationBundles(this.note, 'runOnNoteChange', this);
@@ -369,6 +442,10 @@ class TabContext {
     }
 
     eventReceived(name, data) {
+        if (!this.initialized) {
+            return;
+        }
+
         this.attributes.eventReceived(name, data);
 
         if (this.sidebar) {

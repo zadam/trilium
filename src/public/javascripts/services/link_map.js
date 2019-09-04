@@ -97,8 +97,8 @@ export default class LinkMap {
             }
 
             $noteBox
-                .mouseover(() => $(".link-" + noteId).addClass("jsplumb-connection-hover"))
-                .mouseout(() => $(".link-" + noteId).removeClass("jsplumb-connection-hover"));
+                .mouseover(() => this.$linkMapContainer.find(".link-" + noteId).addClass("jsplumb-connection-hover"))
+                .mouseout(() => this.$linkMapContainer.find(".link-" + noteId).removeClass("jsplumb-connection-hover"));
 
             this.$linkMapContainer.append($noteBox);
 

@@ -145,7 +145,7 @@ async function switchToTab(tabId, notePath) {
 async function showTab(tabId) {
     for (const ctx of tabContexts) {
         if (ctx.tabId === tabId) {
-            ctx.show();
+            await ctx.show();
         }
         else {
             ctx.hide();
@@ -171,23 +171,6 @@ async function showTab(tabId) {
     }
 }
 
-async function renderComponent(ctx) {
-    for (const componentType in ctx.components) {
-        if (componentType !== ctx.note.type) {
-            ctx.components[componentType].cleanup();
-        }
-    }
-
-    ctx.$noteDetailComponents.hide();
-
-    ctx.$noteTitle.show(); // this can be hidden by empty detail
-    ctx.$noteTitle.removeAttr("readonly"); // this can be set by protected session service
-
-    await ctx.initComponent();
-
-    await ctx.getComponent().render();
-}
-
 /**
  * @param {TabContext} ctx
  * @param {NoteFull} note
@@ -197,44 +180,9 @@ async function loadNoteDetailToContext(ctx, note, notePath) {
 
     openTabsChanged();
 
-    if (utils.isDesktop()) {
-        // needs to happen after loading the note itself because it references active noteId
-        ctx.attributes.refreshAttributes();
-    } else {
-        // mobile usually doesn't need attributes so we just invalidate
-        ctx.attributes.invalidateAttributes();
-    }
-
-    ctx.noteChangeDisabled = true;
-
-    try {
-        ctx.$noteTitle.val(ctx.note.title);
-
-        if (utils.isDesktop()) {
-            ctx.noteType.update();
-        }
-
-        await renderComponent(ctx);
-    } finally {
-        ctx.noteChangeDisabled = false;
-    }
-
     treeService.setBranchBackgroundBasedOnProtectedStatus(note.noteId);
 
-    // after loading new note make sure editor is scrolled to the top
-    ctx.getComponent().scrollToTop();
-
     fireDetailLoaded();
-
-    ctx.$scriptArea.empty();
-
-    await bundleService.executeRelationBundles(ctx.note, 'runOnNoteView', ctx);
-
-    if (utils.isDesktop()) {
-        await ctx.attributes.showAttributes();
-
-        await ctx.showChildrenOverview();
-    }
 }
 
 async function loadNoteDetail(origNotePath, options = {}) {
@@ -409,13 +357,9 @@ $tabContentsContainer.on("drop", async e => {
     });
 });
 
-async function openEmptyTab(render = true) {
+async function openEmptyTab() {
     const ctx = new TabContext(tabRow);
     tabContexts.push(ctx);
-
-    if (render) {
-        await renderComponent(ctx);
-    }
 
     await tabRow.activateTab(ctx.$tab[0]);
 }
