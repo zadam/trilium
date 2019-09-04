@@ -268,6 +268,10 @@ class Attributes {
     }
 
     eventReceived(name, data) {
+        if (!this.ctx.note) {
+            return;
+        }
+
         if (name === 'syncData') {
             if (data.find(sd => sd.entityName === 'attributes' && sd.noteId === this.ctx.note.noteId)) {
                 this.reloadAttributes();

@@ -374,19 +374,10 @@ tabRow.addListener('activeTabChange', async ({ detail }) => {
 tabRow.addListener('tabRemove', async ({ detail }) => {
     const tabId = detail.tabEl.getAttribute('data-tab-id');
 
-    const tabContextToDelete = tabContexts.find(nc => nc.tabId === tabId);
-
-    if (tabContextToDelete) {
-        // sometimes there are orphan autocompletes after closing the tab
-        tabContextToDelete.closeAutocomplete();
-
-        await tabContextToDelete.saveNoteIfChanged();
-        tabContextToDelete.$tabContent.remove();
-    }
+    tabContexts.filter(nc => nc.tabId === tabId)
+        .forEach(tc => tc.remove());
 
     tabContexts = tabContexts.filter(nc => nc.tabId !== tabId);
-
-    console.log(`Removed tab ${tabId}`);
 
     if (tabContexts.length === 0) {
         openEmptyTab();

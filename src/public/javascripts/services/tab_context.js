@@ -112,6 +112,10 @@ class TabContext {
         this.$unprotectButton = this.$tabContent.find(".unprotect-button");
         this.$unprotectButton.click(protectedSessionService.unprotectNoteAndSendToServer);
 
+        await this.initComponent();
+    }
+
+    async initComponent() {
         const type = this.getComponentType();
 
         if (!(type in this.components)) {
@@ -122,18 +126,14 @@ class TabContext {
     }
 
     async setNote(note, notePath) {
-        this.noteId = note.noteId;
-        this.notePath = notePath;
         /** @property {NoteFull} */
         this.note = note;
-        this.tabRow.updateTab(this.$tab[0], {title: note.title});
+        this.notePath = notePath;
+        this.tabRow.updateTab(this.$tab[0], {title: this.note.title});
 
         if (!this.initialized) {
             return;
         }
-
-        // after loading new note make sure editor is scrolled to the top
-        this.getComponent().scrollToTop();
 
         this.setupClasses();
 
@@ -149,6 +149,9 @@ class TabContext {
             this.noteChangeDisabled = false;
         }
 
+        // after loading new note make sure editor is scrolled to the top
+        this.getComponent().scrollToTop();
+
         this.setTitleBar();
 
         this.closeAutocomplete(); // esp. on windows autocomplete is not getting closed automatically
@@ -157,7 +160,7 @@ class TabContext {
             // we include the note into recent list only if the user stayed on the note at least 5 seconds
             if (notePath && notePath === this.notePath) {
                 await server.post('recent-notes', {
-                    noteId: this.noteId,
+                    noteId: this.note.noteId,
                     notePath: this.notePath
                 });
             }
@@ -192,6 +195,9 @@ class TabContext {
             if (this.note) {
                 await this.setNote(this.note, this.notePath);
             }
+            else {
+                await this.renderComponent(); // render empty page
+            }
         }
 
         this.$tabContent.show();
@@ -201,6 +207,8 @@ class TabContext {
     }
 
     async renderComponent() {
+        await this.initComponent()
+
         for (const componentType in this.components) {
             if (componentType !== this.getComponentType()) {
                 this.components[componentType].cleanup();
@@ -424,6 +432,14 @@ class TabContext {
                 await this.addPath(notePath, isCurrent);
             }
         }
+    }
+
+    async remove() {
+        // sometimes there are orphan autocompletes after closing the tab
+        this.closeAutocomplete();
+
+        await this.saveNoteIfChanged();
+        this.$tabContent.remove();
     }
 
     closeAutocomplete() {

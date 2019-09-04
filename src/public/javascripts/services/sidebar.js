@@ -59,7 +59,6 @@ class Sidebar {
         }
 
         this.widgets = [];
-        this.$widgetContainer.empty();
 
         const widgetClasses = (await Promise.all([
             import("../widgets/note_info.js"),
@@ -95,15 +94,19 @@ class Sidebar {
 
         this.widgets.sort((a, b) => a.getPosition() < b.getPosition() ? -1 : 1);
 
+        const widgetsToAppend = [];
+
         for (const widget of this.widgets) {
             try {
                 const $el = await widget.render();
-                this.$widgetContainer.append($el);
+                widgetsToAppend.push($el);
             }
             catch (e) {
                 ws.logError(`Error while rendering widget ${widget.widgetName}: ${e.message}`);
             }
         }
+
+        this.$widgetContainer.empty().append(...widgetsToAppend);
     }
 
     eventReceived(name, data) {
