@@ -45,10 +45,12 @@ class TabContext {
         this.state = state;
     }
 
-    initTabContent() {
+    async initTabContent() {
         if (this.initialized) {
             return;
         }
+
+        this.initialized = true;
 
         this.$tabContent = $(".note-tab-content-template").clone();
         this.$tabContent.removeClass('note-tab-content-template');
@@ -110,7 +112,13 @@ class TabContext {
         this.$unprotectButton = this.$tabContent.find(".unprotect-button");
         this.$unprotectButton.click(protectedSessionService.unprotectNoteAndSendToServer);
 
-        this.initialized = true;
+        const type = this.getComponentType();
+
+        if (!(type in this.components)) {
+            const clazz = await import(componentClasses[type]);
+
+            this.components[type] = new clazz.default(this);
+        }
     }
 
     async setNote(note, notePath) {
@@ -124,20 +132,8 @@ class TabContext {
             return;
         }
 
-        await this.initComponent();
-
         // after loading new note make sure editor is scrolled to the top
         this.getComponent().scrollToTop();
-
-        if (utils.isDesktop()) {
-            // needs to happen after loading the note itself because it references active noteId
-            this.attributes.refreshAttributes();
-
-            await this.showChildrenOverview();
-        } else {
-            // mobile usually doesn't need attributes so we just invalidate
-            this.attributes.invalidateAttributes();
-        }
 
         this.setupClasses();
 
@@ -147,10 +143,6 @@ class TabContext {
 
         try {
             this.$noteTitle.val(this.note.title);
-
-            if (utils.isDesktop()) {
-                this.noteType.update();
-            }
 
             await this.renderComponent();
         } finally {
@@ -173,18 +165,29 @@ class TabContext {
 
         this.showPaths();
 
+        if (utils.isDesktop()) {
+            this.attributes.refreshAttributes();
+
+            this.noteType.update();
+
+            this.showChildrenOverview();
+        } else {
+            // mobile usually doesn't need attributes so we just invalidate
+            this.attributes.invalidateAttributes();
+        }
+
         if (this.sidebar) {
             this.sidebar.noteLoaded(); // load async
         }
 
-        await bundleService.executeRelationBundles(this.note, 'runOnNoteView', this);
+        bundleService.executeRelationBundles(this.note, 'runOnNoteView', this);
     }
 
     async show() {
         if (!this.initialized) {
-            this.initTabContent();
+            await this.initTabContent();
 
-            await this.initComponent();
+            this.$tabContent.show(); // show immediately so that user can see something
 
             if (this.note) {
                 await this.setNote(this.note, this.notePath);
@@ -192,14 +195,14 @@ class TabContext {
         }
 
         this.$tabContent.show();
+
         this.setCurrentNotePathToHash();
         this.setTitleBar();
-        this.getComponent().show();
     }
 
     async renderComponent() {
         for (const componentType in this.components) {
-            if (componentType !== this.note.type) {
+            if (componentType !== this.getComponentType()) {
                 this.components[componentType].cleanup();
             }
         }
@@ -209,11 +212,9 @@ class TabContext {
         this.$noteTitle.show(); // this can be hidden by empty detail
         this.$noteTitle.removeAttr("readonly"); // this can be set by protected session service
 
-        await this.initComponent();
-
+        this.getComponent().show();
         await this.getComponent().render();
     }
-
 
     setTitleBar() {
         if (!this.$tabContent.is(":visible")) {
@@ -267,16 +268,6 @@ class TabContext {
         this.$protectButton.prop("disabled", this.note.isProtected);
         this.$unprotectButton.toggleClass("active", !this.note.isProtected);
         this.$unprotectButton.prop("disabled", !this.note.isProtected || !protectedSessionHolder.isProtectedSessionAvailable());
-    }
-
-    async initComponent() {
-        const type = this.getComponentType();
-
-        if (!(type in this.components)) {
-            const clazz = await import(componentClasses[type]);
-
-            this.components[type] = new clazz.default(this);
-        }
     }
 
     getComponent() {

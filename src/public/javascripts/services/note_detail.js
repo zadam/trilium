@@ -174,13 +174,12 @@ async function showTab(tabId) {
 /**
  * @param {TabContext} ctx
  * @param {NoteFull} note
+ * @param {string} notePath
  */
 async function loadNoteDetailToContext(ctx, note, notePath) {
     await ctx.setNote(note, notePath);
 
     openTabsChanged();
-
-    treeService.setBranchBackgroundBasedOnProtectedStatus(note.noteId);
 
     fireDetailLoaded();
 }

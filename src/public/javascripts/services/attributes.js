@@ -33,7 +33,7 @@ class Attributes {
             this.reloadAttributes();
         }
 
-        return await this.attributePromise;
+        return this.attributePromise;
     }
 
     async showAttributes() {
