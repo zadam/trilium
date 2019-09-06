@@ -106,6 +106,7 @@ class Sidebar {
             }
         }
 
+        // update at once to reduce flickering
         this.$widgetContainer.empty().append(...widgetsToAppend);
     }
 

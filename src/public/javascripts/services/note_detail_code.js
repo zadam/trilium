@@ -71,7 +71,10 @@ class NoteDetailCode {
 
     show() {
         this.$component.show();
-        this.codeEditor.refresh();
+
+        if (this.codeEditor) { // show can be called before render
+            this.codeEditor.refresh();
+        }
     }
 
     getContent() {

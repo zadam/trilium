@@ -426,7 +426,7 @@ class TabContext {
             for (const parentNote of parents) {
                 const parentNotePath = await treeService.getSomeNotePath(parentNote);
                 // this is to avoid having root notes leading '/'
-                const notePath = parentNotePath ? (parentNotePath + '/' + this.noteId) : this.noteId;
+                const notePath = parentNotePath ? (parentNotePath + '/' + this.note.noteId) : this.note.noteId;
                 const isCurrent = activeNoteParentNoteId === parentNote.noteId;
 
                 await this.addPath(notePath, isCurrent);
