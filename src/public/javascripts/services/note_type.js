@@ -73,7 +73,11 @@ export default class NoteTypeContext {
                 .attr("data-mime-type", mimeType.mime)
                 .append('<span class="check">&check;</span> ')
                 .append($('<span>').text(mimeType.title))
-                .click(e => this.save('code', $(e.target).attr('data-mime-type')));
+                .click(e => {
+                    const $link = $(e.target).closest('.dropdown-item');
+
+                    this.save('code', $link.attr('data-mime-type'))
+                });
 
             if (this.ctx.note.type === 'code' && this.ctx.note.mime === mimeType.mime) {
                 $mimeLink.addClass("selected");

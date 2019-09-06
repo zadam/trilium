@@ -203,16 +203,18 @@ export default class LinkMap {
             this.renderer.stop();
         }
 
-        // delete all endpoints and connections
-        // this is done at this point (after async operations) to reduce flicker to the minimum
-        this.jsPlumbInstance.deleteEveryEndpoint();
+        if (this.jsPlumbInstance) {
+            // delete all endpoints and connections
+            // this is done at this point (after async operations) to reduce flicker to the minimum
+            this.jsPlumbInstance.deleteEveryEndpoint();
 
-        // without this we still end up with note boxes remaining in the canvas
-        this.$linkMapContainer.empty();
+            // without this we still end up with note boxes remaining in the canvas
+            this.$linkMapContainer.empty();
 
-        // reset zoom/pan
-        this.pzInstance.zoomAbs(0, 0, this.options.zoom);
-        this.pzInstance.moveTo(0, 0);
+            // reset zoom/pan
+            this.pzInstance.zoomAbs(0, 0, this.options.zoom);
+            this.pzInstance.moveTo(0, 0);
+        }
     }
 
     initJsPlumbInstance() {
