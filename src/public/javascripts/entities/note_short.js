@@ -8,7 +8,6 @@ const RELATION_DEFINITION = 'relation-definition';
 
 /**
  * This note's representation is used in note tree and is kept in TreeCache.
- * Its notable omission is the note content.
  */
 class NoteShort {
     constructor(treeCache, row) {
@@ -25,12 +24,33 @@ class NoteShort {
         this.mime = row.mime;
         /** @param {boolean} */
         this.archived = row.archived;
+        /** @param {string} */
         this.cssClass = row.cssClass;
     }
 
     /** @returns {boolean} */
     isJson() {
         return this.mime === "application/json";
+    }
+
+    async getContent() {
+        // we're not caching content since these objects are in treeCache and as such pretty long lived
+        const note = await server.get("notes/" + this.noteId);
+
+        return note.content;
+    }
+
+    async getJsonContent() {
+        const content = await this.getContent();
+
+        try {
+            return JSON.parse(content);
+        }
+        catch (e) {
+            console.log(`Cannot parse content of note ${this.noteId}: `, e.message);
+
+            return null;
+        }
     }
 
     /** @returns {Promise<Branch[]>} */

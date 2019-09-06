@@ -33,6 +33,7 @@ const BUILTIN_ATTRIBUTES = [
     { type: 'relation', name: 'runOnAttributeCreation', isDangerous: true },
     { type: 'relation', name: 'runOnAttributeChange', isDangerous: true },
     { type: 'relation', name: 'template' },
+    { type: 'relation', name: 'widget', isDangerous: true },
     { type: 'relation', name: 'renderNote', isDangerous: true }
 ];
 
