@@ -196,8 +196,30 @@ class Note extends Entity {
     /**
      * @returns {Promise<Attribute[]>} attributes belonging to this specific note (excludes inherited attributes)
      */
-    async getOwnedAttributes() {
-        return await repository.getEntities(`SELECT * FROM attributes WHERE isDeleted = 0 AND noteId = ?`, [this.noteId]);
+    async getOwnedAttributes(type, name) {
+        let query = `SELECT * FROM attributes WHERE isDeleted = 0 AND noteId = ?`;
+        const params = [this.noteId];
+
+        if (type) {
+            query += ` AND type = ?`;
+            params.push(type);
+        }
+
+        if (name) {
+            query += ` AND name = ?`;
+            params.push(name);
+        }
+
+        return await repository.getEntities(query, params);
+    }
+
+    /**
+     * @returns {Promise<Attribute>} attribute belonging to this specific note (excludes inherited attributes)
+     */
+    async getOwnedAttribute(type, name) {
+        const attrs = await this.getOwnedAttributes(type, name);
+
+        return attrs.length > 0 ? attrs[0] : null;
     }
 
     /**
