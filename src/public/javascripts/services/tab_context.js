@@ -92,7 +92,7 @@ class TabContext {
             this.note.title = this.$noteTitle.val();
 
             this.tabRow.updateTab(this.$tab[0], {title: this.note.title});
-            treeService.setNoteTitle(this.noteId, this.note.title);
+            treeService.setNoteTitle(this.note.noteId, this.note.title);
 
             this.setTitleBar();
         });
@@ -135,6 +135,13 @@ class TabContext {
             return;
         }
 
+        if (utils.isDesktop()) {
+            this.attributes.refreshAttributes();
+        } else {
+            // mobile usually doesn't need attributes so we just invalidate
+            this.attributes.invalidateAttributes();
+        }
+
         this.setupClasses();
 
         this.setCurrentNotePathToHash();
@@ -169,14 +176,9 @@ class TabContext {
         this.showPaths();
 
         if (utils.isDesktop()) {
-            this.attributes.refreshAttributes();
-
             this.noteType.update();
 
             this.showChildrenOverview();
-        } else {
-            // mobile usually doesn't need attributes so we just invalidate
-            this.attributes.invalidateAttributes();
         }
 
         if (this.sidebar) {
@@ -207,7 +209,7 @@ class TabContext {
     }
 
     async renderComponent() {
-        await this.initComponent()
+        await this.initComponent();
 
         for (const componentType in this.components) {
             if (componentType !== this.getComponentType()) {
@@ -347,7 +349,7 @@ class TabContext {
         if (this.isNoteChanged) {
             await this.saveNote();
 
-            noteDetailService.refreshTabs(this.tabId, this.noteId);
+            noteDetailService.refreshTabs(this.tabId, this.note.noteId);
         }
     }
 
