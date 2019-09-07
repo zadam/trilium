@@ -295,16 +295,16 @@ class Note extends Entity {
             treeWithAttrs(noteId, level) AS (
                 SELECT * FROM tree
                 UNION
-                SELECT attributes.value, treeWithAttrs.level + 1 FROM attributes
+                SELECT attributes.value, treeWithAttrs.level FROM attributes
                      JOIN treeWithAttrs ON treeWithAttrs.noteId = attributes.noteId
                 WHERE attributes.isDeleted = 0
                   AND attributes.type = 'relation'
                   AND attributes.name = 'template'
-                  AND (attributes.noteId = ? OR attributes.isInheritable = 1)
+                  AND (treeWithAttrs.level = 0 OR attributes.isInheritable = 1)
                 )
             SELECT attributes.* FROM attributes JOIN treeWithAttrs ON attributes.noteId = treeWithAttrs.noteId
-            WHERE attributes.isDeleted = 0 AND (attributes.isInheritable = 1 OR attributes.noteId = ?)
-            ORDER BY level, noteId, position`, [this.noteId, this.noteId, this.noteId]);
+            WHERE attributes.isDeleted = 0 AND (attributes.isInheritable = 1 OR treeWithAttrs.level = 0)
+            ORDER BY level, noteId, position`, [this.noteId]);
         // attributes are ordered so that "closest" attributes are first
         // we order by noteId so that attributes from same note stay together. Actual noteId ordering doesn't matter.
 

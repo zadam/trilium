@@ -9,7 +9,8 @@ class EditedNotesWidget extends StandardWidget {
     getMaxHeight() { return "200px"; }
 
     async isEnabled() {
-        return await this.ctx.note.hasLabel("dateNote");
+        return await super.isEnabled()
+            && await this.ctx.note.hasLabel("dateNote");
     }
 
     async doRenderBody() {
