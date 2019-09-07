@@ -102,7 +102,7 @@ async function createNewNote(parentNoteId, noteData) {
         mime: noteData.mime || 'text/html'
     }).save();
 
-    if (note.isStringNote()) {
+    if (note.isStringNote() || this.type === 'render') { // render to just make sure it's not null
         noteData.content = noteData.content || "";
     }
 

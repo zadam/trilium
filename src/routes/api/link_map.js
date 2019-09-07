@@ -23,27 +23,29 @@ async function getLinkMap(req) {
 
     let depth = 0;
 
-    while (true) {
+    while (noteIds.size < maxNotes) {
         relations = await getRelations(noteIds);
 
         if (depth === maxDepth) {
             break;
         }
 
-        const newNoteIds = new Set(relations.map(rel => rel.noteId)
-                                            .concat(relations.map(rel => rel.targetNoteId)));
+        let newNoteIds = relations.map(rel => rel.noteId)
+                                  .concat(relations.map(rel => rel.targetNoteId))
+                                  .filter(noteId => !noteIds.has(noteId));
 
-        if (newNoteIds.size === noteIds.size) {
+        if (newNoteIds.length === 0) {
             // no new note discovered, no need to search any further
             break;
         }
 
-        if (newNoteIds.size > maxNotes) {
-            // too many notes to display
-            break;
-        }
+        for (const newNoteId of newNoteIds) {
+            noteIds.add(newNoteId);
 
-        noteIds = newNoteIds;
+            if (noteIds.size >= maxNotes) {
+                break;
+            }
+        }
 
         depth++;
     }
