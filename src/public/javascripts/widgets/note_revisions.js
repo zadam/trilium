@@ -37,7 +37,7 @@ class NoteRevisionsWidget extends StandardWidget {
                 'data-note-path': this.ctx.note.noteId,
                 'data-note-revision-id': item.noteRevisionId,
                 href: 'javascript:'
-            }).text(item.dateModifiedFrom)));
+            }).text(item.dateModifiedFrom.substr(0, 16))));
         }
     }
 
