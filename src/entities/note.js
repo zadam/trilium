@@ -195,6 +195,8 @@ class Note extends Entity {
 
     /**
      * @returns {Promise<Attribute[]>} attributes belonging to this specific note (excludes inherited attributes)
+     *
+     * This method can be significantly faster than the getAttributes()
      */
     async getOwnedAttributes(type, name) {
         let query = `SELECT * FROM attributes WHERE isDeleted = 0 AND noteId = ?`;
@@ -215,6 +217,8 @@ class Note extends Entity {
 
     /**
      * @returns {Promise<Attribute>} attribute belonging to this specific note (excludes inherited attributes)
+     *
+     * This method can be significantly faster than the getAttribute()
      */
     async getOwnedAttribute(type, name) {
         const attrs = await this.getOwnedAttributes(type, name);

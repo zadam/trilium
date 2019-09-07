@@ -35,6 +35,9 @@ export default class NoteTypeContext {
             () => ["file", "image", "search"].includes(this.ctx.note.type));
 
         this.$noteTypeDesc.text(await this.findTypeTitle(this.ctx.note.type, this.ctx.note.mime));
+
+        this.$executeScriptButton.toggle(this.ctx.note.mime.startsWith('application/javascript'));
+        this.$renderButton.toggle(this.ctx.note.type === 'render');
     }
 
     /** actual body is rendered lazily on note-type button click */
@@ -87,9 +90,6 @@ export default class NoteTypeContext {
 
             this.$noteTypeDropdown.append($mimeLink);
         }
-
-        this.$executeScriptButton.toggle(this.ctx.note.mime.startsWith('application/javascript'));
-        this.$renderButton.toggle(this.ctx.note.type === 'render');
     }
 
     async findTypeTitle(type, mime) {

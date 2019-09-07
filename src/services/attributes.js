@@ -72,6 +72,15 @@ async function createLabel(noteId, name, value = "") {
     });
 }
 
+async function createRelation(noteId, name, targetNoteId) {
+    return await createAttribute({
+        noteId: noteId,
+        type: 'relation',
+        name: name,
+        value: targetNoteId
+    });
+}
+
 async function createAttribute(attribute) {
     return await new Attribute(attribute).save();
 }
@@ -114,6 +123,7 @@ module.exports = {
     getNotesWithLabels,
     getNoteWithLabel,
     createLabel,
+    createRelation,
     createAttribute,
     getAttributeNames,
     isAttributeType,
