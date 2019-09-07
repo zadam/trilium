@@ -30,6 +30,7 @@ const ALLOWED_OPTIONS = [
     'noteRevisionsWidget',
     'whatLinksHereWidget',
     'similarNotesWidget',
+    'editedNotesWidget',
     'codeNotesMimeTypes'
 ];
 

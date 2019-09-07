@@ -340,6 +340,7 @@ function getNotePath(noteId) {
             noteId: noteId,
             branchId: childParentToBranchId[`${noteId}-${parentNoteId}`],
             title: noteTitle,
+            notePath: retPath,
             path: retPath.join('/')
         };
     }

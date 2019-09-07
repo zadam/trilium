@@ -26,7 +26,10 @@ class StandardWidget {
         this.ctx = ctx;
         // construct in camelCase
         this.widgetName = this.constructor.name.substr(0, 1).toLowerCase() + this.constructor.name.substr(1);
-        this.widgetOptions = options.getJson(this.widgetName) || {};
+        this.widgetOptions = options.getJson(this.widgetName) || {
+            expanded: true
+        };
+
         this.state = sidebarState.widgets.find(s => s.name === this.widgetName) || {
             expanded: this.widgetOptions.expanded
         };

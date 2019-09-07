@@ -135,6 +135,8 @@ function register(app) {
     apiRoute(POST, '/api/notes/relation-map', notesApiRoute.getRelationMap);
     apiRoute(PUT, '/api/notes/:noteId/change-title', notesApiRoute.changeTitle);
 
+    apiRoute(GET, '/api/edited-notes/:date', noteRevisionsApiRoute.getEditedNotesOnDate);
+
     apiRoute(PUT, '/api/notes/:noteId/clone-to/:parentNoteId', cloningApiRoute.cloneNoteToParent);
     apiRoute(PUT, '/api/notes/:noteId/clone-after/:afterBranchId', cloningApiRoute.cloneNoteAfter);
 
