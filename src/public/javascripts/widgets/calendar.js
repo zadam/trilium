@@ -49,9 +49,9 @@ class CalendarWidget extends StandardWidget {
     }
 
     init($el, activeDate) {
-        this.date = new Date();
-        this.todaysDate = new Date();
         this.activeDate = new Date(Date.parse(activeDate));
+        this.todaysDate = new Date();
+        this.date = new Date(this.activeDate.getTime());
 
         this.$month = $el.find('[data-calendar-area="month"]');
         this.$next = $el.find('[data-calendar-toggle="next"]');

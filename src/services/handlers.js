@@ -2,6 +2,7 @@ const eventService = require('./events');
 const scriptService = require('./script');
 const treeService = require('./tree');
 const log = require('./log');
+const repository = require('./repository');
 const Attribute = require('../entities/attribute');
 
 async function runAttachedRelations(note, relationName, originEntity) {
@@ -45,6 +46,28 @@ eventService.subscribe([ eventService.ENTITY_CHANGED, eventService.ENTITY_DELETE
 eventService.subscribe(eventService.ENTITY_CREATED, async ({ entityName, entity }) => {
     if (entityName === 'attributes') {
         await runAttachedRelations(await entity.getNote(), 'runOnAttributeCreation', entity);
+
+        if (entity.type === 'relation' && entity.name === 'template') {
+            const note = await repository.getNote(entity.noteId);
+
+            if (!note.isStringNote()) {
+                return;
+            }
+
+            const content = await note.getContent();
+
+            if (content && content.trim().length > 0) {
+                return;
+            }
+
+            const targetNote = await repository.getNote(entity.value);
+
+            if (!targetNote || !targetNote.isStringNote()) {
+                return;
+            }
+
+            await note.setContent(await targetNote.getContent());
+        }
     }
     else if (entityName === 'notes') {
         await runAttachedRelations(entity, 'runOnNoteCreation', entity);
