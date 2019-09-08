@@ -21,12 +21,12 @@ class SimilarNotesWidget extends StandardWidget {
 
         const noteIds = similarNotes.flatMap(note => note.notePath);
 
-        await treeCache.getNotes(noteIds); // preload all at once
+        await treeCache.getNotes(noteIds, true); // preload all at once
 
         const $list = $('<ul>');
 
         for (const similarNote of similarNotes) {
-            const note = await treeCache.getNote(similarNote.noteId);
+            const note = await treeCache.getNote(similarNote.noteId, true);
 
             if (!note) {
                 continue;

@@ -55,7 +55,7 @@ export default class LinkMap {
         }
 
         // preload all notes
-        const notes = await treeCache.getNotes(Array.from(noteIds));
+        const notes = await treeCache.getNotes(Array.from(noteIds), true);
 
         const graph = new Springy.Graph();
         graph.addNodes(...noteIds);

@@ -135,6 +135,8 @@ class TabContext {
             return;
         }
 
+        this.$scriptArea.empty();
+
         if (utils.isDesktop()) {
             this.attributes.refreshAttributes();
         } else {

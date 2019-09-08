@@ -27,7 +27,7 @@ function enterProtectedSession() {
         // using deferred instead of promise because it allows resolving from outside
         protectedSessionDeferred = dfd;
 
-        import("../dialogs/protected_session.js").then(protectedSessionDialog => protectedSessionDialog.show())
+        import("../dialogs/protected_session.js").then(dialog => dialog.show());
     }
 
     return dfd.promise();
@@ -51,7 +51,7 @@ async function setupProtectedSession(password) {
     await noteDetailService.reloadAllTabs();
 
     if (protectedSessionDeferred !== null) {
-        protectedSessionDialog.close();
+        import("../dialogs/protected_session.js").then(dialog => dialog.close());
 
         protectedSessionDeferred.resolve(true);
         protectedSessionDeferred = null;

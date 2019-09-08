@@ -294,7 +294,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
      * @return {boolean} returns true if the original note is still loaded, false if user switched to another
      */
     this.isNoteStillActive = () => {
-        return this.originEntity.noteId === tabContext.noteId;
+        return tabContext.note && this.originEntity.noteId === tabContext.note.noteId;
     };
 
     /**

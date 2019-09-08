@@ -818,8 +818,6 @@ $(window).bind('hashchange', async function() {
     if (isNotePathInAddress()) {
         const [notePath, tabId] = getHashValueFromAddress();
 
-        console.debug(`Switching to ${notePath} on tab ${tabId} because of hash change`);
-
         noteDetailService.switchToTab(tabId, notePath);
     }
 });

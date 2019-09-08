@@ -28,19 +28,20 @@ class EditedNotesWidget extends StandardWidget {
 
         const noteIds = editedNotes.flatMap(note => note.notePath);
 
-        await treeCache.getNotes(noteIds); // preload all at once
+        await treeCache.getNotes(noteIds, true); // preload all at once
 
         const $list = $('<ul>');
 
         for (const editedNote of editedNotes) {
-            const note = await treeCache.getNote(editedNote.noteId);
+            const note = await treeCache.getNote(editedNote.noteId, true);
+            const $item = $("<li>");
 
             if (!note) {
-                continue;
+                $item.append($("<i>").text(editedNote.title + " (deleted)"));
             }
-
-            const $item = $("<li>")
-                .append(editedNote.notePath ? await linkService.createNoteLinkWithPath(editedNote.notePath.join("/")) : editedNote.title);
+            else {
+                $item.append(editedNote.notePath ? await linkService.createNoteLinkWithPath(editedNote.notePath.join("/")) : editedNote.title);
+            }
 
             $list.append($item);
         }

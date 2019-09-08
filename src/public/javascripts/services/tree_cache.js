@@ -121,12 +121,12 @@ class TreeCache {
     }
 
     /** @return {Promise<NoteShort>} */
-    async getNote(noteId) {
+    async getNote(noteId, silentNotFoundError = false) {
         if (noteId === 'none') {
             return null;
         }
 
-        return (await this.getNotes([noteId]))[0];
+        return (await this.getNotes([noteId], silentNotFoundError))[0];
     }
 
     addBranch(branch) {
