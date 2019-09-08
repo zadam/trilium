@@ -51,6 +51,8 @@ const SORTABLE = {js: ["libraries/sortable.min.js"]};
 
 const KNOCKOUT = {js: ["libraries/knockout.min.js"]};
 
+const CALENDAR_WIDGET = {css: ["stylesheets/calendar.css"]};
+
 async function requireLibrary(library) {
     if (library.css) {
         library.css.map(cssUrl => cssLoader.requireCss(cssUrl));
@@ -88,5 +90,6 @@ export default {
     LINK_MAP,
     PRINT_THIS,
     SORTABLE,
-    KNOCKOUT
+    KNOCKOUT,
+    CALENDAR_WIDGET
 }

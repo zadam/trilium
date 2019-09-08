@@ -1,0 +1,88 @@
+.calendar-widget *, .calendar-widget *:before, .calendar-widget *:after {
+  box-sizing: border-box;
+}
+
+.calendar-widget {
+  margin: 0 auto;
+  overflow: hidden;
+  width: 100%;
+}
+
+.calendar-widget .calendar-btn {
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -webkit-appearance: button;
+  background: none;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  line-height: normal;
+  min-width: 27px;
+  outline: none;
+  overflow: visible;
+  padding: 0;
+  text-align: center;
+}
+
+.calendar-widget .calendar-header {
+  align-items: center;
+  display: flex;
+  padding: 0 0.5rem 0.5rem 0.5rem;
+}
+
+.calendar-widget .calendar-header__label {
+  font-weight: bold;
+  text-align: center;
+  width: 100%;
+}
+
+.calendar-widget .calendar-week {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.calendar-widget .calendar-week span {
+  flex-direction: column;
+  flex: 0 0 14.28%;
+  font-size: 1rem;
+  font-weight: bold;
+  max-width: 14.28%;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.calendar-widget .calendar-body {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.calendar-widget .calendar-date {
+  align-items: center;
+  background-color: #fff;
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 14.28%;
+  max-width: 14.28%;
+  padding: 0.6rem 0;
+}
+
+.calendar-widget .calendar-date:hover {
+  color: var(--hover-item-text-color);
+  background-color: var(--hover-item-background-color);
+}
+
+.calendar-widget .calendar-date-active {
+  background-color: var(--active-item-background-color);
+  color: var(--active-item-text-color);
+}
+
+.calendar-widget .calendar-date-today {
+  font-weight: bold;
+}
+
+.calendar-widget .calendar-date:not(.calendar-date-active) {
+  cursor: pointer;
+}
