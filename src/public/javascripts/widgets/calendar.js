@@ -3,6 +3,7 @@ import libraryLoader from "../services/library_loader.js";
 import utils from "../services/utils.js";
 import dateNoteService from "../services/date_notes.js";
 import treeService from "../services/tree.js";
+import server from "../services/server.js";
 
 const TPL = `
 <div class="calendar-widget">
@@ -87,8 +88,8 @@ class CalendarWidget extends StandardWidget {
         });
     }
 
-    createDay(num, day) {
-        const $newDay = $('<div>')
+    createDay(dateNotesForMonth, num, day) {
+        const $newDay = $('<a>')
             .addClass("calendar-date")
             .attr('data-calendar-date', utils.formatDateISO(this.date));
         const $date = $('<span>').html(num);
@@ -100,6 +101,13 @@ class CalendarWidget extends StandardWidget {
             } else {
                 $newDay.css("marginLeft", ((day - 1) * 14.28) + '%');
             }
+        }
+
+        const dateNoteId = dateNotesForMonth[utils.formatDateISO(this.date)];
+
+        if (dateNoteId) {
+            $newDay.addClass('calendar-date-exists');
+            $newDay.attr("data-note-path", dateNoteId);
         }
 
         if (this.isEqual(this.date, this.activeDate)) {
@@ -120,10 +128,14 @@ class CalendarWidget extends StandardWidget {
             && a.getDate() === b.getDate();
     }
 
-    createMonth() {
+    async createMonth() {
+        const month = utils.formatDateISO(this.date).substr(0, 7);
+        const dateNotesForMonth = await server.get('date-notes/notes-for-month/' + month);
+
         const currentMonth = this.date.getMonth();
         while (this.date.getMonth() === currentMonth) {
             this.createDay(
+                dateNotesForMonth,
                 this.date.getDate(),
                 this.date.getDay(),
                 this.date.getFullYear()

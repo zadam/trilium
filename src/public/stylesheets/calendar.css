@@ -66,7 +66,8 @@
   flex-direction: column;
   flex: 0 0 14.28%;
   max-width: 14.28%;
-  padding: 0.6rem 0;
+  padding: 0.4rem 0;
+  font-size: 120%;
 }
 
 .calendar-widget .calendar-date:hover {
@@ -81,6 +82,10 @@
 
 .calendar-widget .calendar-date-today {
   font-weight: bold;
+}
+
+.calendar-widget .calendar-date-exists {
+  text-decoration: underline !important;
 }
 
 .calendar-widget .calendar-date:not(.calendar-date-active) {
