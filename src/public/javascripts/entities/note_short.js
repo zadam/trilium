@@ -7,6 +7,9 @@ const RELATION = 'relation';
 const RELATION_DEFINITION = 'relation-definition';
 
 /**
+ * FIXME: rethink how attributes are cached in Note entities since they are long lived inside the cache.
+ * Attribute cache should be limited to "transaction".
+ *
  * This note's representation is used in note tree and is kept in TreeCache.
  */
 class NoteShort {

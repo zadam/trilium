@@ -43,7 +43,7 @@ class StandardWidget {
 
     getPosition() { return this.widgetOptions.position; }
 
-    async render() {
+    render() {
         const widgetId = `tab-${this.ctx.tabId}-widget-${this.widgetName}`;
 
         this.$widget = $(WIDGET_TPL);
@@ -73,7 +73,8 @@ class StandardWidget {
         this.$headerActions = this.$widget.find('.widget-header-actions');
         this.$headerActions.append(...this.getHeaderActions());
 
-        await this.renderBody();
+        // actual rendering is async
+        this.renderBody();
 
         return this.$widget;
     }

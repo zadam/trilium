@@ -52,14 +52,6 @@ class Sidebar {
             return;
         }
 
-        for (const widget of this.widgets) {
-            if (widget.cleanup) {
-                widget.cleanup();
-            }
-        }
-
-        this.widgets = [];
-
         const widgetClasses = (await Promise.all([
             import("../widgets/note_info.js"),
             import("../widgets/link_map.js"),
@@ -80,12 +72,14 @@ class Sidebar {
             widgetClasses.push(widgetClass);
         }
 
+        const widgets = [];
+
         for (const widgetClass of widgetClasses) {
             try {
                 const widget = new widgetClass(this.ctx, options, this.state);
 
                 if (await widget.isEnabled()) {
-                    this.widgets.push(widget);
+                    widgets.push(widget);
                 }
             }
             catch (e) {
@@ -93,16 +87,29 @@ class Sidebar {
             }
         }
 
+        this.renderWidgets(widgets);
+    }
+
+    // it's important that this method is sync so that the whole render-update is atomic
+    // otherwise we could get race issues (doubled widgets etc.)
+    renderWidgets(widgets) {
+        // cleanup old widgets
+        for (const widget of this.widgets) {
+            if (widget.cleanup) {
+                widget.cleanup();
+            }
+        }
+
+        this.widgets = widgets;
         this.widgets.sort((a, b) => a.getPosition() < b.getPosition() ? -1 : 1);
 
         const widgetsToAppend = [];
 
         for (const widget of this.widgets) {
             try {
-                const $el = await widget.render();
+                const $el = widget.render();
                 widgetsToAppend.push($el);
-            }
-            catch (e) {
+            } catch (e) {
                 ws.logError(`Error while rendering widget ${widget.widgetName}: ${e.message}`);
             }
         }
