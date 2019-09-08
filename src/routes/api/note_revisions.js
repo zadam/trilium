@@ -5,7 +5,32 @@ const noteCacheService = require('../../services/note_cache');
 
 async function getNoteRevisions(req) {
     const noteId = req.params.noteId;
-    return await repository.getEntities("SELECT * FROM note_revisions WHERE noteId = ? order by utcDateModifiedTo desc", [noteId]);
+
+    return await repository.getEntities(`
+        SELECT note_revisions.*
+        FROM note_revisions 
+        WHERE noteId = ? 
+        ORDER BY utcDateModifiedTo DESC`, [noteId]);
+}
+
+async function getNoteRevisionList(req) {
+    const noteId = req.params.noteId;
+
+    return await repository.getEntities(`
+        SELECT noteRevisionId,
+               noteId,
+               title,
+               isProtected,
+               utcDateModifiedFrom,
+               utcDateModifiedTo,
+               dateModifiedFrom,
+               dateModifiedTo,
+               type,
+               mime,
+               CASE isProtected WHEN 1 THEN null ELSE LENGTH(content) END AS contentLength
+        FROM note_revisions 
+        WHERE noteId = ? 
+        ORDER BY utcDateModifiedTo DESC`, [noteId]);
 }
 
 async function getEditedNotesOnDate(req) {
@@ -30,5 +55,6 @@ async function getEditedNotesOnDate(req) {
 
 module.exports = {
     getNoteRevisions,
+    getNoteRevisionList,
     getEditedNotesOnDate
 };

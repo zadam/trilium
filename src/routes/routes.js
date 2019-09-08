@@ -132,6 +132,7 @@ function register(app) {
     apiRoute(PUT, '/api/notes/:noteId/protect/:isProtected', notesApiRoute.protectSubtree);
     apiRoute(PUT, /\/api\/notes\/(.*)\/type\/(.*)\/mime\/(.*)/, notesApiRoute.setNoteTypeMime);
     apiRoute(GET, '/api/notes/:noteId/revisions', noteRevisionsApiRoute.getNoteRevisions);
+    apiRoute(GET, '/api/notes/:noteId/revision-list', noteRevisionsApiRoute.getNoteRevisionList);
     apiRoute(POST, '/api/notes/relation-map', notesApiRoute.getRelationMap);
     apiRoute(PUT, '/api/notes/:noteId/change-title', notesApiRoute.changeTitle);
 

@@ -20,7 +20,7 @@ class NoteRevisionsWidget extends StandardWidget {
     }
 
     async doRenderBody() {
-        const revisionItems = await server.get(`notes/${this.ctx.note.noteId}/revisions`);
+        const revisionItems = await server.get(`notes/${this.ctx.note.noteId}/revision-list`);
 
         if (revisionItems.length === 0) {
             this.$body.text("No revisions yet...");
@@ -32,12 +32,18 @@ class NoteRevisionsWidget extends StandardWidget {
         const $list = this.$body.find('.note-revision-list');
 
         for (const item of revisionItems) {
-            $list.append($('<li>').append($("<a>", {
+            const $listItem = $('<li>').append($("<a>", {
                 'data-action': 'note-revision',
                 'data-note-path': this.ctx.note.noteId,
                 'data-note-revision-id': item.noteRevisionId,
                 href: 'javascript:'
-            }).text(item.dateModifiedFrom.substr(0, 16))));
+            }).text(item.dateModifiedFrom.substr(0, 16)));
+
+            if (item.contentLength !== null) {
+                $listItem.append($("<span>").text(` (${item.contentLength} characters)`))
+            }
+
+            $list.append($listItem);
         }
     }
 
