@@ -1,0 +1,2 @@
+INSERT INTO options (name, value, utcDateCreated, utcDateModified, isSynced)
+VALUES ('calendarWidget', '{"enabled":true,"expanded":true,"position":20}', '2018-07-29T18:31:00.874Z', '2018-07-29T18:31:00.874Z', 0);

@@ -25,13 +25,20 @@ class WhatLinksHereWidget extends StandardWidget {
         }
 
         const $list = $("<ul>");
+        let i = 0;
 
-        for (const rel of targetRelations) {
+        for (; i < targetRelations.length && i < 50; i++) {
+            const rel = targetRelations[i];
+
             const $item = $("<li>")
                 .append(await linkService.createNoteLink(rel.noteId))
                 .append($("<span>").text(" (" + rel.name + ")"));
 
             $list.append($item);
+        }
+
+        if (i < targetRelations.length) {
+            $list.append($("<li>").text(`${targetRelations.length - i} more links ...`))
         }
 
         this.$body.empty().append($list);

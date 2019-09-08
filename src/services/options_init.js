@@ -69,12 +69,14 @@ async function initNotSyncedOptions(initialized, startNotePath = 'root', opts = 
 
     await optionService.createOption('showSidebarInNewTab', 'true', false);
 
-    await optionService.createOption('noteInfoWidget', '{"enabled":true,"expanded":true,"position":10}', false);
-    await optionService.createOption('attributesWidget', '{"enabled":true,"expanded":true,"position":20}', false);
-    await optionService.createOption('linkMapWidget', '{"enabled":true,"expanded":true,"position":30}', false);
-    await optionService.createOption('noteRevisionsWidget', '{"enabled":true,"expanded":true,"position":40}', false);
-    await optionService.createOption('whatLinksHereWidget', '{"enabled":false,"expanded":true,"position":50}', false);
-    await optionService.createOption('similarNotesWidget', '{"enabled":true,"expanded":true,"position":60}', false);
+    await optionService.createOption('calendarWidget', '{"enabled":true,"expanded":true,"position":20}', false);
+    await optionService.createOption('editedNotesWidget', '{"enabled":true,"expanded":true,"position":50}', false);
+    await optionService.createOption('noteInfoWidget', '{"enabled":true,"expanded":true,"position":100}', false);
+    await optionService.createOption('attributesWidget', '{"enabled":true,"expanded":true,"position":200}', false);
+    await optionService.createOption('linkMapWidget', '{"enabled":true,"expanded":true,"position":300}', false);
+    await optionService.createOption('noteRevisionsWidget', '{"enabled":true,"expanded":true,"position":400}', false);
+    await optionService.createOption('whatLinksHereWidget', '{"enabled":false,"expanded":true,"position":500}', false);
+    await optionService.createOption('similarNotesWidget', '{"enabled":true,"expanded":true,"position":600}', false);
 
     await optionService.createOption('initialized', initialized ? 'true' : 'false', false);
 }

@@ -31,6 +31,7 @@ const ALLOWED_OPTIONS = [
     'whatLinksHereWidget',
     'similarNotesWidget',
     'editedNotesWidget',
+    'calendarWidget',
     'codeNotesMimeTypes'
 ];
 

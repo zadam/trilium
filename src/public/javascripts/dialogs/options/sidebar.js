@@ -53,7 +53,8 @@ export default class SidebarOptions {
             {name: 'noteRevisions', title: 'Note revisions'},
             {name: 'whatLinksHere', title: 'What links here'},
             {name: 'similarNotes', title: 'Similar notes'},
-            {name: 'editedNotes', title: 'Edited notes (only on day note)'}
+            {name: 'editedNotes', title: 'Edited notes (only on day note)'},
+            {name: 'calendar', title: 'Calendar (only on day note)'}
         ].map(widget => {
             widget.option = this.parseJsonSafely(options[widget.name + 'Widget']) || {
                 enabled: true,
