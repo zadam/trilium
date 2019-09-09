@@ -89,6 +89,15 @@ export default class LinkMap {
                 .prop("id", noteBoxId);
 
             linkService.createNoteLink(noteId, note.title).then($link => {
+                $link.click(e => {
+                    try {
+                        $link.tooltip('dispose');
+                    }
+                    catch (e) {}
+
+                    linkService.goToLink(e);
+                });
+
                 $noteBox.append($("<span>").addClass("title").append($link));
             });
 

@@ -59,7 +59,7 @@ export default class SidebarOptions {
             widget.option = this.parseJsonSafely(options[widget.name + 'Widget']) || {
                 enabled: true,
                 expanded: true,
-                position: 100
+                position: 1000
             };
 
             return widget;
@@ -117,7 +117,7 @@ export default class SidebarOptions {
             opts[widgetName + 'Widget'] = JSON.stringify({
                 enabled: $.contains(this.$widgetsEnabled[0], el),
                 expanded: $(el).find("input[type=checkbox]").is(":checked"),
-                position: (i + 1) * 10
+                position: (i + 1) * 100
             });
         });
 

@@ -7,14 +7,14 @@ const utils = require('../../services/utils');
 const optionService = require('../../services/options');
 
 async function getAutocomplete(req) {
-    const query = req.query.query;
+    const query = req.query.query.trim();
     const activeNoteId = req.query.activeNoteId || 'none';
 
     let results;
 
     const timestampStarted = Date.now();
 
-    if (query.trim().length === 0) {
+    if (query.length === 0) {
         results = await getRecentNotes(activeNoteId);
     }
     else {

@@ -23,7 +23,7 @@ async function searchForNoteIds(searchString) {
 
         const isArchivedFilter = filters.find(filter => filter.name.toLowerCase() === 'isarchived');
 
-        if (isArchivedFilter) {console.log(isArchivedFilter);
+        if (isArchivedFilter) {
             if (isArchivedFilter.operator === 'exists') {
                 noteIds = noteIds.filter(noteCacheService.isArchived);
             }
