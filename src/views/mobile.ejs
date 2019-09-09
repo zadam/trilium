@@ -38,36 +38,38 @@
 
         <div id="note-tab-container">
             <div class="note-tab-content note-tab-content-template">
-                <div class="note-title-row">
-                    <button type="button" class="note-menu-button action-button jam jam-align-justify"></button>
+                <div class="note-detail-content" style="width: 100%">
+                    <div class="note-title-row">
+                        <button type="button" class="note-menu-button action-button jam jam-align-justify"></button>
 
-                    <input autocomplete="off" value="" class="form-control note-title" tabindex="1">
+                        <input autocomplete="off" value="" class="form-control note-title" tabindex="1">
 
-                    <button type="button" class="close-detail-button action-button d-sm-none d-md-none d-lg-none d-xl-none" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-
-                <div class="note-detail-component-wrapper">
-                    <div class="note-detail-text note-detail-component" tabindex="10000">
-                        <div class="note-detail-text-editor"></div>
+                        <button type="button" class="close-detail-button action-button d-sm-none d-md-none d-lg-none d-xl-none" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
                     </div>
 
-                    <div class="note-detail-code note-detail-component">
-                        <div class="note-detail-code-editor"></div>
+                    <div class="note-detail-component-wrapper">
+                        <div class="note-detail-text note-detail-component" tabindex="10000">
+                            <div class="note-detail-text-editor"></div>
+                        </div>
+
+                        <div class="note-detail-code note-detail-component">
+                            <div class="note-detail-code-editor"></div>
+                        </div>
+
+                        <% include details/search.ejs %>
+
+                        <% include details/render.ejs %>
+
+                        <% include details/file.ejs %>
+
+                        <% include details/image.ejs %>
+
+                        <% include details/relation_map.ejs %>
+
+                        <% include details/protected_session_password.ejs %>
                     </div>
-
-                    <% include details/search.ejs %>
-
-                    <% include details/render.ejs %>
-
-                    <% include details/file.ejs %>
-
-                    <% include details/image.ejs %>
-
-                    <% include details/relation_map.ejs %>
-
-                    <% include details/protected_session_password.ejs %>
                 </div>
             </div>
         </div>
