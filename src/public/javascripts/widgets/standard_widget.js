@@ -2,10 +2,14 @@ import optionsService from "../services/options.js";
 
 const WIDGET_TPL = `
 <div class="card widget">
-    <div class="card-header">        
-        <button class="btn btn-sm widget-title" data-toggle="collapse" data-target="#[to be set]">
-            Collapsible Group Item
-        </button>
+    <div class="card-header">
+        <div>           
+            <button class="btn btn-sm widget-title" data-toggle="collapse" data-target="#[to be set]">
+                Collapsible Group Item
+            </button>
+            
+            <a class="widget-help external no-arrow jam jam-help"></a>
+        </div>
         
         <div class="widget-header-actions"></div>
     </div>
@@ -39,6 +43,8 @@ class StandardWidget {
 
     getHeaderActions() { return []; }
 
+    getHelp() { return {}; }
+
     getMaxHeight() { return null; }
 
     getPosition() { return this.widgetOptions.position; }
@@ -68,8 +74,25 @@ class StandardWidget {
         this.$widget.on('shown.bs.collapse', () => this.renderBody());
         this.$widget.on('shown.bs.collapse', () => this.ctx.stateChanged());
         this.$widget.on('hidden.bs.collapse', () => this.ctx.stateChanged());
+
         this.$title = this.$widget.find('.widget-title');
         this.$title.text(this.getWidgetTitle());
+
+        this.$help = this.$widget.find('.widget-help');
+        const help = this.getHelp();
+
+        if (help.title) {
+            this.$help.attr("title", help.title);
+            this.$help.attr("href", help.url || "javascript:");
+
+            if (!help.url) {
+                this.$help.addClass('no-link');
+            }
+        }
+        else {
+            this.$help.hide();
+        }
+
         this.$headerActions = this.$widget.find('.widget-header-actions');
         this.$headerActions.append(...this.getHeaderActions());
 

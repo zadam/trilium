@@ -6,6 +6,12 @@ class WhatLinksHereWidget extends StandardWidget {
 
     getMaxHeight() { return "200px"; }
 
+    getHelp() {
+        return {
+            title: "This list contains all notes which link to this note through links and relations."
+        };
+    }
+
     getHeaderActions() {
         const $showFullButton = $("<a>").append("show link map").addClass('widget-header-action');
         $showFullButton.click(async () => {

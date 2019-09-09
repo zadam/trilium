@@ -9,6 +9,13 @@ const TPL = `
 class NoteRevisionsWidget extends StandardWidget {
     getWidgetTitle() { return "Note revisions"; }
 
+    getHelp() {
+        return {
+            title: "Note revisions track changes in the note across the time.",
+            url: "https://github.com/zadam/trilium/wiki/Note-revisions"
+        };
+    }
+
     getHeaderActions() {
         const $showFullButton = $("<a>").append("show dialog").addClass('widget-header-action');
         $showFullButton.click(async () => {

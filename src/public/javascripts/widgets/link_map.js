@@ -11,6 +11,13 @@ const TPL = `
 class LinkMapWidget extends StandardWidget {
     getWidgetTitle() { return "Link map"; }
 
+    getHelp() {
+        return {
+            title: "Link map shows incoming and outgoing links from/to the current note.",
+            url: "https://github.com/zadam/trilium/wiki/Link-map"
+        };
+    }
+
     getHeaderActions() {
         const $showFullButton = $("<a>").append("show full").addClass('widget-header-action');
         $showFullButton.click(async () => {

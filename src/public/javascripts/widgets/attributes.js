@@ -6,6 +6,13 @@ import StandardWidget from "./standard_widget.js";
 class AttributesWidget extends StandardWidget {
     getWidgetTitle() { return "Attributes"; }
 
+    getHelp() {
+        return {
+            title: "Attributes are key-value records owned by assigned to this note.",
+            url: "https://github.com/zadam/trilium/wiki/Attributes"
+        };
+    }
+
     getHeaderActions() {
         const $showFullButton = $("<a>").append("show dialog").addClass('widget-header-action');
         $showFullButton.click(async () => {

@@ -6,6 +6,12 @@ import treeCache from "../services/tree_cache.js";
 class EditedNotesWidget extends StandardWidget {
     getWidgetTitle() { return "Edited notes on this day"; }
 
+    getHelp() {
+        return {
+            title: "This contains a list of notes created or updated on this day."
+        };
+    }
+
     getMaxHeight() { return "200px"; }
 
     async isEnabled() {

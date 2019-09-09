@@ -6,6 +6,12 @@ import treeCache from "../services/tree_cache.js";
 class SimilarNotesWidget extends StandardWidget {
     getWidgetTitle() { return "Similar notes"; }
 
+    getHelp() {
+        return {
+            title: "This list contains notes which might be similar to the current note based on textual similarity of note title."
+        };
+    }
+
     getMaxHeight() { return "200px"; }
 
     async doRenderBody() {

@@ -790,7 +790,7 @@ div[data-notify="container"] {
     border-radius: 0.2rem;
 }
 
-a.external:after, a[href^="http://"]:after, a[href^="https://"]:after {
+a.external:not(.no-arrow):after, a[href^="http://"]:not(.no-arrow):after, a[href^="https://"]:not(.no-arrow):after {
     font-size: smaller;
     content: "\2197";
     vertical-align: top;

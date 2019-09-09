@@ -386,6 +386,15 @@ body {
     cursor: pointer;
 }
 
+.note-detail-sidebar .widget-help {
+    color: var(--main-text-color);
+}
+
+.note-detail-sidebar .widget-help.no-link:hover {
+    cursor: default;
+    text-decoration: none;
+}
+
 .note-detail-sidebar .card-body {
     width: 100%;
     padding: 8px;
