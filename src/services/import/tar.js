@@ -1,5 +1,6 @@
 "use strict";
 
+
 const Attribute = require('../../entities/attribute');
 const utils = require('../../services/utils');
 const log = require('../../services/log');
@@ -11,9 +12,9 @@ const tar = require('tar-stream');
 const stream = require('stream');
 const path = require('path');
 const commonmark = require('commonmark');
-const mimeTypes = require('mime-types');
 const ImportContext = require('../import_context');
 const protectedSessionService = require('../protected_session');
+const mimeService = require("./mime");
 
 /**
  * @param {ImportContext} importContext
@@ -140,20 +141,11 @@ async function importTar(importContext, fileBuffer, importRootNote) {
         return noteId;
     }
 
-    function detectFileTypeAndMime(filePath) {
-        const mime = mimeTypes.lookup(filePath);
-        let type = 'file';
+    function detectFileTypeAndMime(importContext, filePath) {
+        const mime = mimeService.getMime(filePath);
+        const type = mimeService.getType(importContext, mime);
 
-        if (mime) {
-            if (mime === 'text/html' || ['text/markdown', 'text/x-markdown'].includes(mime)) {
-                type = 'text';
-            }
-            else if (mime.startsWith('image/')) {
-                type = 'image';
-            }
-        }
-
-        return { type, mime };
+        return { mime, type };
     }
 
     async function saveAttributes(note, noteMeta) {
@@ -264,7 +256,7 @@ async function importTar(importContext, fileBuffer, importRootNote) {
             return;
         }
 
-        const {type, mime} = noteMeta ? noteMeta : detectFileTypeAndMime(filePath);
+        const {type, mime} = noteMeta ? noteMeta : detectFileTypeAndMime(importContext, filePath);
 
         if (type !== 'file' && type !== 'image') {
             content = content.toString("UTF-8");
