@@ -73,6 +73,7 @@
     "string-similarity": "^3.0.0",
     "tar-stream": "2.1.0",
     "turndown": "5.0.3",
+    "turndown-plugin-gfm": "1.0.2",
     "unescape": "1.0.1",
     "ws": "7.1.2",
     "xml2js": "0.4.22"

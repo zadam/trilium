@@ -1,9 +1,9 @@
 "use strict";
 
-const TurndownService = require('turndown');
 const mimeTypes = require('mime-types');
 const html = require('html');
 const utils = require('../utils');
+const mdService = require('./md');
 
 async function exportSingleNote(exportContext, branch, format, res) {
     const note = await branch.getNote();
@@ -31,8 +31,7 @@ async function exportSingleNote(exportContext, branch, format, res) {
             mime = 'text/html';
         }
         else if (format === 'markdown') {
-            const turndownService = new TurndownService();
-            payload = turndownService.turndown(content);
+            payload = mdService.toMarkdown(content);
             extension = 'md';
             mime = 'text/x-markdown'
         }

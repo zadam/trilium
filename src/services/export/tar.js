@@ -5,7 +5,7 @@ const repository = require('../repository');
 const tar = require('tar-stream');
 const path = require('path');
 const mimeTypes = require('mime-types');
-const TurndownService = require('turndown');
+const mdService = require('./md');
 const packageInfo = require('../../../package.json');
 const utils = require('../utils');
 const protectedSessionService = require('../protected_session');
@@ -17,8 +17,6 @@ const sanitize = require("sanitize-filename");
  * @param {string} format - 'html' or 'markdown'
  */
 async function exportToTar(exportContext, branch, format, res) {
-    let turndownService = format === 'markdown' ? new TurndownService() : null;
-
     const pack = tar.pack();
 
     const noteIdToMeta = {};
@@ -232,7 +230,7 @@ ${content}
             return html.prettyPrint(content, {indent_size: 2});
         }
         else if (noteMeta.format === 'markdown') {
-            let markdownContent = turndownService.turndown(content);
+            let markdownContent = mdService.toMarkdown(content);
 
             if (markdownContent.trim().length > 0 && !markdownContent.startsWith("# ")) {
                 markdownContent = '# ' + title + "\r\n" + markdownContent;
