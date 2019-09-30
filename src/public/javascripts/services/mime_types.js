@@ -111,7 +111,7 @@ const MIME_TYPES_DICT = [
     { title: "Scala", mime: "text/x-scala" },
     { title: "Scheme", mime: "text/x-scheme" },
     { title: "SCSS", mime: "text/x-scss" },
-    { default: true, title: "Shell", mimes: "text/x-sh" },
+    { default: true, title: "Shell", mime: "text/x-sh" },
     { title: "Sieve", mime: "application/sieve" },
     { title: "Slim", mime: "text/x-slim" },
     { title: "Smalltalk", mime: "text/x-stsrc" },
