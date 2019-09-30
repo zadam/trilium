@@ -21,7 +21,7 @@
     "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {
-    "async-mutex": "0.1.3",
+    "async-mutex": "0.1.4",
     "axios": "0.19.0",
     "body-parser": "1.19.0",
     "cls-hooked": "4.2.2",
@@ -40,7 +40,7 @@
     "express-session": "1.16.2",
     "file-type": "12.3.0",
     "fs-extra": "8.1.0",
-    "helmet": "3.21.0",
+    "helmet": "3.21.1",
     "html": "1.0.0",
     "html2plaintext": "2.1.2",
     "http-proxy-agent": "^2.1.0",
@@ -51,7 +51,7 @@
     "imagemin-mozjpeg": "8.0.0",
     "imagemin-pngquant": "8.0.0",
     "ini": "1.3.5",
-    "jimp": "0.8.0",
+    "jimp": "0.8.4",
     "mime-types": "2.1.24",
     "moment": "2.24.0",
     "multer": "1.4.2",
@@ -78,15 +78,15 @@
     "xml2js": "0.4.22"
   },
   "devDependencies": {
-    "electron": "6.0.7",
+    "electron": "6.0.10",
     "electron-builder": "21.2.0",
     "electron-compile": "6.4.4",
-    "electron-installer-debian": "2.0.0",
+    "electron-installer-debian": "2.0.1",
     "electron-packager": "14.0.6",
     "electron-rebuild": "1.8.6",
     "jsdoc": "^3.6.3",
     "lorem-ipsum": "2.0.3",
-    "xo": "0.24.0"
+    "xo": "0.25.3"
   },
   "xo": {
     "envs": [

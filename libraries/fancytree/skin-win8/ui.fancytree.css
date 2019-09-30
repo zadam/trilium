@@ -13,8 +13,8 @@
  * Released under the MIT license
  * https://github.com/mar10/fancytree/wiki/LicenseInfo
  *
- * @version 2.31.0
- * @date 2019-05-31T11:32:38Z
+ * @version 2.32.0
+ * @date 2019-09-10T07:42:12Z
 ******************************************************************************/
 /*------------------------------------------------------------------------------
  * Helpers
@@ -279,11 +279,17 @@ span.fancytree-checkbox.fancytree-radio:hover {
 .fancytree-unselectable span.fancytree-checkbox:hover {
   background-position: 0px -32px;
 }
+.fancytree-unselectable span.fancytree-checkbox.fancytree-radio:hover {
+  background-position: 0px -48px;
+}
 .fancytree-unselectable.fancytree-partsel span.fancytree-checkbox:hover {
   background-position: -64px -32px;
 }
 .fancytree-unselectable.fancytree-selected span.fancytree-checkbox:hover {
   background-position: -32px -32px;
+}
+.fancytree-unselectable.fancytree-selected span.fancytree-checkbox.fancytree-radio:hover {
+  background-position: -32px -48px;
 }
 .fancytree-container.fancytree-checkbox-auto-hide span.fancytree-checkbox {
   visibility: hidden;
