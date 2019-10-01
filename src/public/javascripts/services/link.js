@@ -14,7 +14,7 @@ function getNotePathFromUrl(url) {
     }
 }
 
-async function createNoteLink(notePath, noteTitle = null) {
+async function createNoteLink(notePath, noteTitle = null, tooltip = true) {
     if (!noteTitle) {
         const noteId = treeUtils.getNoteIdFromNotePath(notePath);
 
@@ -27,7 +27,9 @@ async function createNoteLink(notePath, noteTitle = null) {
     }).attr('data-action', 'note')
         .attr('data-note-path', notePath);
 
-    $noteLink.addClass("no-tooltip-preview");
+    if (!tooltip) {
+        $noteLink.addClass("no-tooltip-preview");
+    }
 
     return $noteLink;
 }

@@ -17,7 +17,7 @@ class NoteDetailBook {
         for (const childNote of await this.ctx.note.getChildNotes()) {
             this.$component.append(
                 $('<div class="note-book">')
-                    .append($('<h5 class="note-book-title">').append(await linkService.createNoteLink(childNote.noteId)))
+                    .append($('<h5 class="note-book-title">').append(await linkService.createNoteLink(childNote.noteId, null, false)))
                     .append($('<div class="note-book-content">').append(await this.getNoteContent(childNote)))
             );
         }
