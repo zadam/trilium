@@ -21,13 +21,15 @@ async function createNoteLink(notePath, noteTitle = null) {
         noteTitle = await treeUtils.getNoteTitle(noteId);
     }
 
-    const noteLink = $("<a>", {
+    const $noteLink = $("<a>", {
         href: 'javascript:',
         text: noteTitle
     }).attr('data-action', 'note')
         .attr('data-note-path', notePath);
 
-    return noteLink;
+    $noteLink.addClass("no-tooltip-preview");
+
+    return $noteLink;
 }
 
 async function createNoteLinkWithPath(notePath, noteTitle = null) {

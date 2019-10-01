@@ -216,7 +216,7 @@ async function findLogicIssues() {
           FROM notes 
           WHERE
             isDeleted = 0    
-            AND type NOT IN ('text', 'code', 'render', 'file', 'image', 'search', 'relation-map')`,
+            AND type NOT IN ('text', 'code', 'render', 'file', 'image', 'search', 'relation-map', 'book')`,
         ({noteId, type}) => `Note ${noteId} has invalid type=${type}`);
 
     await findIssues(`

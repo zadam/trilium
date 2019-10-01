@@ -23,7 +23,8 @@ const componentClasses = {
     'search': "./note_detail_search.js",
     'render': "./note_detail_render.js",
     'relation-map': "./note_detail_relation_map.js",
-    'protected-session': "./note_detail_protected_session.js"
+    'protected-session': "./note_detail_protected_session.js",
+    'book': "./note_detail_book.js"
 };
 
 let showSidebarInNewTab = true;
@@ -163,7 +164,7 @@ class TabContext {
 
         this.setTitleBar();
 
-        this.closeAutocomplete(); // esp. on windows autocomplete is not getting closed automatically
+        this.cleanup(); // esp. on windows autocomplete is not getting closed automatically
 
         setTimeout(async () => {
             // we include the note into recent list only if the user stayed on the note at least 5 seconds
@@ -289,24 +290,23 @@ class TabContext {
     }
 
     getComponentType() {
-        let type;
-
-        if (this.note) {
-            type = this.note.type;
-
-            if (this.note.isProtected) {
-                if (protectedSessionHolder.isProtectedSessionAvailable()) {
-                    protectedSessionHolder.touchProtectedSession();
-                } else {
-                    type = 'protected-session';
-
-                    // user shouldn't be able to edit note title
-                    this.$noteTitle.prop("readonly", true);
-                }
-            }
-        } else {
-            type = 'empty';
+        if (!this.note) {
+            return "empty";
         }
+
+        let type = this.note.type;
+
+        if (this.note.isProtected) {
+            if (protectedSessionHolder.isProtectedSessionAvailable()) {
+                protectedSessionHolder.touchProtectedSession();
+            } else {
+                type = 'protected-session';
+
+                // user shouldn't be able to edit note title
+                this.$noteTitle.prop("readonly", true);
+            }
+        }
+
         return type;
     }
 
@@ -368,9 +368,7 @@ class TabContext {
     async showChildrenOverview() {
         const attributes = await this.attributes.getAttributes();
         const hideChildrenOverview = attributes.some(attr => attr.type === 'label' && attr.name === 'hideChildrenOverview')
-            || this.note.type === 'relation-map'
-            || this.note.type === 'image'
-            || this.note.type === 'file';
+            || ['relation-map', 'image', 'file', 'book'].includes(this.note.type);
 
         if (hideChildrenOverview) {
             this.$childrenOverview.hide();
@@ -440,15 +438,17 @@ class TabContext {
 
     async remove() {
         // sometimes there are orphan autocompletes after closing the tab
-        this.closeAutocomplete();
+        this.cleanup();
 
         await this.saveNoteIfChanged();
         this.$tabContent.remove();
     }
 
-    closeAutocomplete() {
+    cleanup() {
         if (utils.isDesktop()) {
             this.$tabContent.find('.aa-input').autocomplete('close');
+
+            $('.note-tooltip').remove();
         }
     }
 

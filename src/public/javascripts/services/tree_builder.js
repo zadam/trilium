@@ -31,6 +31,16 @@ async function prepareBranch(note) {
     }
 }
 
+const NOTE_TYPE_ICONS = {
+    "file": "jam jam-attachment",
+    "image": "jam jam-picture",
+    "code": "jam jam-terminal",
+    "render": "jam jam-play",
+    "search": "jam jam-search-folder",
+    "relation-map": "jam jam-map",
+    "book": "jam jam-book"
+};
+
 async function getIcon(note) {
     const hoistedNoteId = await hoistedNoteService.getHoistedNoteId();
 
@@ -48,23 +58,8 @@ async function getIcon(note) {
             return "jam jam-file";
         }
     }
-    else if (note.type === 'file') {
-        return "jam jam-attachment"
-    }
-    else if (note.type === 'image') {
-        return "jam jam-picture"
-    }
-    else if (note.type === 'code') {
-        return "jam jam-terminal"
-    }
-    else if (note.type === 'render') {
-        return "jam jam-play"
-    }
-    else if (note.type === 'search') {
-        return "jam jam-search-folder"
-    }
-    else if (note.type === 'relation-map') {
-        return "jam jam-map"
+    else {
+        return NOTE_TYPE_ICONS[note.type];
     }
 }
 
