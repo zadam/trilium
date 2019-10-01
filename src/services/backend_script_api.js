@@ -209,11 +209,11 @@ function BackendScriptApi(currentNote, apiParams) {
      * @returns {Promise<{note: Note, branch: Branch}>} object contains newly created entities note and branch
      */
     this.createNoteAndRefresh = async function(parentNoteId, title, content, extraOptions) {
-        const note = await noteService.createNote(parentNoteId, title, content, extraOptions);
+        const ret = await noteService.createNote(parentNoteId, title, content, extraOptions);
 
         ws.refreshTree();
         
-        return note;
+        return ret;
     };
 
     /**
