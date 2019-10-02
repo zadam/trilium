@@ -248,7 +248,7 @@ function findRelationMapLinks(content, foundLinks) {
         foundLinks.push({
             name: 'relation-map-link',
             value: note.noteId
-        })
+        });
     }
 }
 
