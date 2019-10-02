@@ -36,6 +36,18 @@ class NoteDetailBook {
                 return $content;
             }
         }
+        else if (note.type === 'code') {
+            const fullNote = await server.get('notes/' + note.noteId);
+
+            if (fullNote.content.trim() === "") {
+                return "";
+            }
+
+            return $("<pre>").text(fullNote.content);
+        }
+        else if (note.type === 'image') {
+            return $("<img>").attr("src", `api/images/${note.noteId}/${note.title}`);
+        }
         else {
             return "<em>Content of this note cannot be displayed in the book format</em>";
         }
