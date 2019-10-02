@@ -150,6 +150,11 @@ async function importTar(importContext, fileBuffer, importRootNote) {
                 continue;
             }
 
+            if (attr.type === 'relation' && ['internal-link', 'image-link', 'relation-map-link'].includes(attr.name)) {
+                // these relations are created automatically and as such don't need to be duplicated in the import
+                continue;
+            }
+
             if (attr.type === 'relation') {
                 attr.value = getNewNoteId(attr.value);
             }
