@@ -1,6 +1,5 @@
 "use strict";
 
-
 const Attribute = require('../../entities/attribute');
 const utils = require('../../services/utils');
 const log = require('../../services/log');
@@ -114,27 +113,17 @@ async function importTar(importContext, fileBuffer, importRootNote) {
     }
 
     function getNoteId(noteMeta, filePath) {
-        let noteId;
-
         const filePathNoExt = getTextFileWithoutExtension(filePath);
 
-        if (noteMeta) {
-            if (filePathNoExt in createdPaths) {
-                noteId = createdPaths[filePathNoExt];
-                noteIdMap[noteMeta.noteId] = noteId;
-            }
-            else {
-                noteId = getNewNoteId(noteMeta.noteId);
-            }
+        console.log(`Searching for noteId of filePath ${filePath} with meta: ${!!noteMeta}`);
+
+        if (filePathNoExt in createdPaths) {
+            console.log("Found existing path", filePathNoExt, createdPaths[filePathNoExt]);
+
+            return createdPaths[filePathNoExt];
         }
-        else {
-            if (filePathNoExt in createdPaths) {
-                noteId = createdPaths[filePathNoExt];
-            }
-            else {
-                noteId = utils.newEntityId();
-            }
-        }
+
+        const noteId = noteMeta ? getNewNoteId(noteMeta.noteId) : utils.newEntityId();
 
         createdPaths[filePathNoExt] = noteId;
 
@@ -234,7 +223,8 @@ async function importTar(importContext, fileBuffer, importRootNote) {
 
         absUrl += (absUrl.length > 0 ? '/' : '') + url;
 
-        const targetNoteId = getNoteId(null, absUrl);
+        const {noteMeta} = getMeta(absUrl);
+        const targetNoteId = getNoteId(noteMeta, absUrl);
         return targetNoteId;
     }
 
@@ -340,22 +330,6 @@ async function importTar(importContext, fileBuffer, importRootNote) {
 
             await saveAttributes(note, noteMeta);
 
-            if (!noteMeta && (type === 'file' || type === 'image')) {
-                attributes.push({
-                    noteId,
-                    type: 'label',
-                    name: 'originalFileName',
-                    value: path.basename(filePath)
-                });
-
-                attributes.push({
-                    noteId,
-                    type: 'label',
-                    name: 'fileSize',
-                    value: content.byteLength
-                });
-            }
-
             if (!firstNote) {
                 firstNote = note;
             }
@@ -363,6 +337,22 @@ async function importTar(importContext, fileBuffer, importRootNote) {
             if (type === 'text') {
                 filePath = getTextFileWithoutExtension(filePath);
             }
+        }
+
+        if (!noteMeta && (type === 'file' || type === 'image')) {
+            attributes.push({
+                noteId,
+                type: 'label',
+                name: 'originalFileName',
+                value: path.basename(filePath)
+            });
+
+            attributes.push({
+                noteId,
+                type: 'label',
+                name: 'fileSize',
+                value: content.byteLength
+            });
         }
     }
 
@@ -426,7 +416,9 @@ async function importTar(importContext, fileBuffer, importRootNote) {
                 const noteId = createdPaths[path];
 
                 createdNoteIds[noteId] = true;
+            }
 
+            for (const noteId in createdNoteIds) { // now the noteIds are unique
                 await noteService.scanForLinks(noteId);
 
                 importContext.increaseProgressCount();

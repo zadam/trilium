@@ -64,12 +64,14 @@ async function fillSyncRows(entityName, entityKey, condition = '') {
         const entityIds = await sql.getColumn(`SELECT ${entityKey} FROM ${entityName}`
             + (condition ? ` WHERE ${condition}` : ''));
 
+        let createdCount = 0;
+
         for (const entityId of entityIds) {
             const existingRows = await sql.getValue("SELECT COUNT(id) FROM sync WHERE entityName = ? AND entityId = ?", [entityName, entityId]);
 
             // we don't want to replace existing entities (which would effectively cause full resync)
             if (existingRows === 0) {
-                log.info(`Creating missing sync record for ${entityName} ${entityId}`);
+                createdCount++;
 
                 await sql.insert("sync", {
                     entityName: entityName,
@@ -78,6 +80,10 @@ async function fillSyncRows(entityName, entityKey, condition = '') {
                     utcSyncDate: dateUtils.utcNowDateTime()
                 });
             }
+        }
+
+        if (createdCount > 0) {
+            log.info(`Created ${createdCount} missing sync records for ${entityName}.`);
         }
     }
     catch (e) {
