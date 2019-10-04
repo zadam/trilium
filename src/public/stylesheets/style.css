@@ -819,10 +819,41 @@ a.external:not(.no-arrow):after, a[href^="http://"]:not(.no-arrow):after, a[href
     padding: 0.7rem 1rem !important; /* make modal header padding slightly smaller */
 }
 
+.floating-button {
+    position: absolute !important;
+    z-index: 100;
+}
+
+.note-detail-book-content {
+    display: flex;
+    flex-wrap: wrap;
+    overflow: auto;
+    align-content: start;
+}
+
 .note-book {
     border-radius: 10px;
     background-color: var(--accented-background-color);
     padding: 15px;
     margin: 10px;
     margin-left: 0;
+    max-height: 300px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+}
+
+.note-book.type-image .note-book-content, .note-book.type-file .note-book-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.note-book-title {
+    flex-grow: 0;
+}
+
+.note-book-content {
+    flex-grow: 1;
 }

@@ -79,7 +79,7 @@ function getMime(fileName) {
 }
 
 function getType(importContext, mime) {
-    mime = mime.toLowerCase();
+    mime = mime ? mime.toLowerCase() : '';
 
     if (importContext.textImportedAsText && (mime === 'text/html' || ['text/markdown', 'text/x-markdown'].includes(mime))) {
         return 'text';
@@ -96,7 +96,7 @@ function getType(importContext, mime) {
 }
 
 function normalizeMimeType(mime) {
-    mime = mime.toLowerCase();
+    mime = mime ? mime.toLowerCase() : '';
 
     if (!(mime in CODE_MIME_TYPES) || CODE_MIME_TYPES[mime] === true) {
         return mime;

@@ -76,8 +76,3 @@
 .note-detail-relation-map .ui-contextmenu {
     z-index: 100;
 }
-
-.note-detail-relation-map .floating-button {
-    position: absolute !important;
-    z-index: 100;
-}
