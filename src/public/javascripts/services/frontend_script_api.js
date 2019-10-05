@@ -16,8 +16,11 @@ import StandardWidget from '../widgets/standard_widget.js';
  * @constructor
  * @hideconstructor
  */
-function FrontendScriptApi(startNote, currentNote, originEntity = null, tabContext = null) {
+function FrontendScriptApi(startNote, currentNote, originEntity = null, tabContext = null, $container = null) {
     const $pluginButtons = $("#plugin-buttons");
+
+    /** @property {jQuery} container of all the rendered script content */
+    this.$container = $container;
 
     /** @property {object} note where script started executing */
     this.startNote = startNote;

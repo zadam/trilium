@@ -848,10 +848,10 @@ a.external:not(.no-arrow):after, a[href^="http://"]:not(.no-arrow):after, a[href
 }
 
 .note-book-content {
-    max-height: 250px;
+    overflow: hidden;
 }
 
-.note-book.type-image .note-book-content, .note-book.type-file .note-book-content {
+.note-book-card.type-image .note-book-content, .note-book-card.type-file .note-book-content {
     display: flex;
     align-items: center;
     justify-content: center;

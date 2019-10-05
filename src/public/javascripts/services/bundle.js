@@ -8,8 +8,8 @@ async function getAndExecuteBundle(noteId, originEntity = null) {
     return await executeBundle(bundle, originEntity);
 }
 
-async function executeBundle(bundle, originEntity, tabContext) {
-    const apiContext = await ScriptContext(bundle.noteId, bundle.allNoteIds, originEntity, tabContext);
+async function executeBundle(bundle, originEntity, tabContext, $container) {
+    const apiContext = await ScriptContext(bundle.noteId, bundle.allNoteIds, originEntity, tabContext, $container);
 
     try {
         return await (function () {

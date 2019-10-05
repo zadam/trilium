@@ -2,17 +2,36 @@ import server from "./server.js";
 import linkService from "./link.js";
 import utils from "./utils.js";
 import treeCache from "./tree_cache.js";
+import renderService from "./render.js";
 
 const MIN_ZOOM_LEVEL = 1;
 const MAX_ZOOM_LEVEL = 6;
 
 const ZOOMS = {
-    1: 100,
-    2: 49,
-    3: 32,
-    4: 24,
-    5: 19,
-    6: 16
+    1: {
+        width: "100%",
+        height: "100%"
+    },
+    2: {
+        width: "49%",
+        height: "350px"
+    },
+    3: {
+        width: "32%",
+        height: "250px"
+    },
+    4: {
+        width: "24%",
+        height: "200px"
+    },
+    5: {
+        width: "19%",
+        height: "175px"
+    },
+    6: {
+        width: "16%",
+        height: "150px"
+    }
 };
 
 class NoteDetailBook {
@@ -57,7 +76,8 @@ class NoteDetailBook {
         this.$zoomInButton.prop("disabled", zoomLevel === MIN_ZOOM_LEVEL);
         this.$zoomOutButton.prop("disabled", zoomLevel === MAX_ZOOM_LEVEL);
 
-        this.$content.find('.note-book-card').css("flex-basis", ZOOMS[zoomLevel] + "%");
+        this.$content.find('.note-book-card').css("flex-basis", ZOOMS[zoomLevel].width);
+        this.$content.find('.note-book-content').css("max-height", ZOOMS[zoomLevel].height);
     }
 
     async render() {
@@ -70,10 +90,12 @@ class NoteDetailBook {
         for (const childNote of await note.getChildNotes()) {
             const $card = $('<div class="note-book-card">')
                 .attr('data-note-id', childNote.noteId)
-                .css("flex-basis", ZOOMS[this.zoomLevel] + "%")
+                .css("flex-basis", ZOOMS[this.zoomLevel].width)
                 .addClass("type-" + childNote.type)
                 .append($('<h5 class="note-book-title">').append(await linkService.createNoteLink(childNote.noteId, null, false)))
-                .append($('<div class="note-book-content">').append(await this.getNoteContent(childNote)));
+                .append($('<div class="note-book-content">')
+                    .css("max-height", ZOOMS[this.zoomLevel].height)
+                    .append(await this.getNoteContent(childNote)));
 
             const childCount = childNote.getChildNoteIds().length;
 
@@ -81,8 +103,8 @@ class NoteDetailBook {
                 const label = `${childCount} child${childCount > 1 ? 'ren' : ''}`;
 
                 $card.append($('<div class="note-book-children">')
-                    .append($(`<a class="note-book-open-children-button" href="javascript:">Show ${label}</a>`))
-                    .append($(`<a class="note-book-hide-children-button" href="javascript:">Hide ${label}</a>`).hide())
+                    .append($(`<a class="note-book-open-children-button" href="javascript:">+ Show ${label}</a>`))
+                    .append($(`<a class="note-book-hide-children-button" href="javascript:">- Hide ${label}</a>`).hide())
                     .append($('<div class="note-book-children-content">'))
                 );
             }
@@ -144,6 +166,13 @@ class NoteDetailBook {
                 .append($downloadButton)
                 .append(' &nbsp; ')
                 .append($openButton);
+        }
+        else if (note.type === 'render') {
+            const $el = $('<div>');
+
+            await renderService.render(note, $el, this.ctx);
+
+            return $el;
         }
         else {
             return "<em>Content of this note cannot be displayed in the book format</em>";

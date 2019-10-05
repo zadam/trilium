@@ -1,5 +1,4 @@
-import bundleService from "./bundle.js";
-import server from "./server.js";
+import renderService from "./render.js";
 
 class NoteDetailRender {
     /**
@@ -16,29 +15,10 @@ class NoteDetailRender {
     }
 
     async render() {
-        const attributes = await this.ctx.attributes.getAttributes();
-        const renderNotes = attributes.filter(attr =>
-            attr.type === 'relation'
-            && attr.name === 'renderNote'
-            && !!attr.value);
-
         this.$component.show();
+        this.$noteDetailRenderHelp.hide();
 
-        this.$noteDetailRenderContent.empty();
-        this.$noteDetailRenderContent.toggle(renderNotes.length > 0);
-        this.$noteDetailRenderHelp.toggle(renderNotes.length === 0);
-
-        for (const renderNote of renderNotes) {
-            const bundle = await server.get('script/bundle/' + renderNote.value);
-
-            this.$noteDetailRenderContent.append(bundle.html);
-
-            const $result = await bundleService.executeBundle(bundle, this.ctx.note, this.ctx);
-
-            if ($result) {
-                this.$noteDetailRenderContent.append($result);
-            }
-        }
+        await renderService.render(this.ctx.note, this.$noteDetailRenderContent, this.ctx);
     }
 
     getContent() {}
