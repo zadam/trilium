@@ -1,6 +1,7 @@
 import server from "./server.js";
 import linkService from "./link.js";
 import utils from "./utils.js";
+import treeCache from "./tree_cache.js";
 
 const MIN_ZOOM_LEVEL = 1;
 const MAX_ZOOM_LEVEL = 6;
@@ -28,6 +29,26 @@ class NoteDetailBook {
 
         this.$zoomInButton.click(() => this.setZoom(this.zoomLevel - 1));
         this.$zoomOutButton.click(() => this.setZoom(this.zoomLevel + 1));
+
+        this.$content.on('click', '.note-book-open-children-button', async ev => {
+            const $card = $(ev.target).closest('.note-book-card');
+            const noteId = $card.attr('data-note-id');
+            const note = await treeCache.getNote(noteId);
+
+            $card.find('.note-book-open-children-button').hide();
+            $card.find('.note-book-hide-children-button').show();
+
+            await this.renderIntoElement(note, $card.find('.note-book-children-content'));
+        });
+
+        this.$content.on('click', '.note-book-hide-children-button', async ev => {
+            const $card = $(ev.target).closest('.note-book-card');
+
+            $card.find('.note-book-open-children-button').show();
+            $card.find('.note-book-hide-children-button').hide();
+
+            $card.find('.note-book-children-content').empty();
+        });
     }
 
     setZoom(zoomLevel) {
@@ -36,20 +57,37 @@ class NoteDetailBook {
         this.$zoomInButton.prop("disabled", zoomLevel === MIN_ZOOM_LEVEL);
         this.$zoomOutButton.prop("disabled", zoomLevel === MAX_ZOOM_LEVEL);
 
-        this.$content.find('.note-book').css("flex-basis", ZOOMS[zoomLevel] + "%");
+        this.$content.find('.note-book-card').css("flex-basis", ZOOMS[zoomLevel] + "%");
     }
 
     async render() {
         this.$content.empty();
 
-        for (const childNote of await this.ctx.note.getChildNotes()) {
-            this.$content.append(
-                $('<div class="note-book">')
-                    .css("flex-basis", ZOOMS[this.zoomLevel] + "%")
-                    .addClass("type-" + childNote.type)
-                    .append($('<h5 class="note-book-title">').append(await linkService.createNoteLink(childNote.noteId, null, false)))
-                    .append($('<div class="note-book-content">').append(await this.getNoteContent(childNote)))
-            );
+        await this.renderIntoElement(this.ctx.note, this.$content);
+    }
+
+    async renderIntoElement(note, $container) {
+        for (const childNote of await note.getChildNotes()) {
+            const $card = $('<div class="note-book-card">')
+                .attr('data-note-id', childNote.noteId)
+                .css("flex-basis", ZOOMS[this.zoomLevel] + "%")
+                .addClass("type-" + childNote.type)
+                .append($('<h5 class="note-book-title">').append(await linkService.createNoteLink(childNote.noteId, null, false)))
+                .append($('<div class="note-book-content">').append(await this.getNoteContent(childNote)));
+
+            const childCount = childNote.getChildNoteIds().length;
+
+            if (childCount > 0) {
+                const label = `${childCount} child${childCount > 1 ? 'ren' : ''}`;
+
+                $card.append($('<div class="note-book-children">')
+                    .append($(`<a class="note-book-open-children-button" href="javascript:">Show ${label}</a>`))
+                    .append($(`<a class="note-book-hide-children-button" href="javascript:">Hide ${label}</a>`).hide())
+                    .append($('<div class="note-book-children-content">'))
+                );
+            }
+
+            $container.append($card);
         }
     }
 
