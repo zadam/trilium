@@ -42,22 +42,34 @@ class NoteDetailBook {
         this.ctx = ctx;
         this.$component = ctx.$tabContent.find('.note-detail-book');
         this.$content = this.$component.find('.note-detail-book-content');
-        this.$zoomInButton = this.$component.find('.book-zoom-in');
-        this.$zoomOutButton = this.$component.find('.book-zoom-out');
+        this.$zoomInButton = this.$component.find('.book-zoom-in-button');
+        this.$zoomOutButton = this.$component.find('.book-zoom-out-button');
+        this.$expandChildrenButton = this.$component.find('.expand-children-button');
         this.setZoom(1);
 
         this.$zoomInButton.click(() => this.setZoom(this.zoomLevel - 1));
         this.$zoomOutButton.click(() => this.setZoom(this.zoomLevel + 1));
 
+        this.$expandChildrenButton.click(async () => {
+            for (let i = 1; i < 30; i++) { // protection against infinite cycle
+                const $unexpandedLinks = this.$content.find('.note-book-open-children-button:visible');
+
+                if ($unexpandedLinks.length === 0) {
+                    break;
+                }
+
+                for (const link of $unexpandedLinks) {
+                    const $card = $(link).closest(".note-book-card");
+
+                    await this.expandCard($card);
+                }
+            }
+        });
+
         this.$content.on('click', '.note-book-open-children-button', async ev => {
             const $card = $(ev.target).closest('.note-book-card');
-            const noteId = $card.attr('data-note-id');
-            const note = await treeCache.getNote(noteId);
 
-            $card.find('.note-book-open-children-button').hide();
-            $card.find('.note-book-hide-children-button').show();
-
-            await this.renderIntoElement(note, $card.find('.note-book-children-content'));
+            await this.expandCard($card);
         });
 
         this.$content.on('click', '.note-book-hide-children-button', async ev => {
@@ -68,6 +80,16 @@ class NoteDetailBook {
 
             $card.find('.note-book-children-content').empty();
         });
+    }
+
+    async expandCard($card) {
+        const noteId = $card.attr('data-note-id');
+        const note = await treeCache.getNote(noteId);
+
+        $card.find('.note-book-open-children-button').hide();
+        $card.find('.note-book-hide-children-button').show();
+
+        await this.renderIntoElement(note, $card.find('.note-book-children-content'));
     }
 
     setZoom(zoomLevel) {
