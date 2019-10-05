@@ -824,10 +824,15 @@ a.external:not(.no-arrow):after, a[href^="http://"]:not(.no-arrow):after, a[href
     z-index: 100;
 }
 
+.note-detail-book {
+    height: 100%;
+}
+
 .note-detail-book-content {
     display: flex;
     flex-wrap: wrap;
     overflow: auto;
+    height: 100%;
     align-content: start;
 }
 

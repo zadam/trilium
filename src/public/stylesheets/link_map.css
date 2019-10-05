@@ -31,11 +31,6 @@
     font-weight: 600;
 }
 
-.link-map-container .floating-button {
-    position: absolute !important;
-    z-index: 100;
-}
-
 .link-map-active-note {
     background-color: var(--accented-background-color) !important;
 }

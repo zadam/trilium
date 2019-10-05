@@ -3,6 +3,7 @@ import linkService from "./link.js";
 import utils from "./utils.js";
 import treeCache from "./tree_cache.js";
 import renderService from "./render.js";
+import zoom from "./zoom.js";
 
 const MIN_ZOOM_LEVEL = 1;
 const MAX_ZOOM_LEVEL = 6;
@@ -45,7 +46,6 @@ class NoteDetailBook {
         this.$zoomInButton = this.$component.find('.book-zoom-in-button');
         this.$zoomOutButton = this.$component.find('.book-zoom-out-button');
         this.$expandChildrenButton = this.$component.find('.expand-children-button');
-        this.setZoom(1);
 
         this.$zoomInButton.click(() => this.setZoom(this.zoomLevel - 1));
         this.$zoomOutButton.click(() => this.setZoom(this.zoomLevel + 1));
@@ -93,6 +93,10 @@ class NoteDetailBook {
     }
 
     setZoom(zoomLevel) {
+        if (!(zoomLevel in ZOOMS)) {
+            zoomLevel = 1;
+        }
+
         this.zoomLevel = zoomLevel;
 
         this.$zoomInButton.prop("disabled", zoomLevel === MIN_ZOOM_LEVEL);
@@ -104,6 +108,9 @@ class NoteDetailBook {
 
     async render() {
         this.$content.empty();
+
+        const zoomLevel = parseInt(await this.ctx.note.getLabelValue('bookZoomLevel')) || 1;
+        this.setZoom(zoomLevel);
 
         await this.renderIntoElement(this.ctx.note, this.$content);
     }
