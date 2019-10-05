@@ -838,3 +838,12 @@ a.external:not(.no-arrow):after, a[href^="http://"]:not(.no-arrow):after, a[href
 .note-book-content {
     flex-grow: 1;
 }
+
+.note-book-auto-message {
+    background-color: var(--more-accented-background-color);
+    text-align: center;
+    width: 100%;
+    border-radius: 10px;
+    padding: 5px;
+    margin-top: 5px;
+}

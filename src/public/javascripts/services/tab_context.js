@@ -115,13 +115,13 @@ class TabContext {
         await this.initComponent();
     }
 
-    async initComponent() {
-        const type = this.getComponentType();
+    async initComponent(disableAutoBook = false) {
+        this.type = this.getComponentType(disableAutoBook);
 
-        if (!(type in this.components)) {
-            const clazz = await import(componentClasses[type]);
+        if (!(this.type in this.components)) {
+            const clazz = await import(componentClasses[this.type]);
 
-            this.components[type] = new clazz.default(this);
+            this.components[this.type] = new clazz.default(this);
         }
     }
 
@@ -208,11 +208,11 @@ class TabContext {
         this.setTitleBar();
     }
 
-    async renderComponent() {
-        await this.initComponent();
+    async renderComponent(disableAutoBook = false) {
+        await this.initComponent(disableAutoBook);
 
         for (const componentType in this.components) {
-            if (componentType !== this.getComponentType()) {
+            if (componentType !== this.type) {
                 this.components[componentType].cleanup();
             }
         }
@@ -281,17 +281,19 @@ class TabContext {
     }
 
     getComponent() {
-        const type = this.getComponentType();
-
-        return this.components[type];
+        return this.components[this.type];
     }
 
-    getComponentType() {
+    getComponentType(disableAutoBook) {
         if (!this.note) {
             return "empty";
         }
 
         let type = this.note.type;
+
+        if (type === 'text' && !disableAutoBook && utils.isHtmlEmpty(this.note.content) && this.note.hasChildren()) {
+            type = 'book';
+        }
 
         if (this.note.isProtected) {
             if (protectedSessionHolder.isProtectedSessionAvailable()) {

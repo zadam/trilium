@@ -1,6 +1,6 @@
 'use strict';
 
-const electron = require('electron');
+const {app, globalShortcut, BrowserWindow} = require('electron');
 const path = require('path');
 const log = require('./src/services/log');
 const sqlInit = require('./src/services/sql_init');
@@ -11,9 +11,6 @@ const env = require('./src/services/env');
 const appIconService = require('./src/services/app_icon');
 const windowStateKeeper = require('electron-window-state');
 const contextMenu = require('electron-context-menu');
-
-const app = electron.app;
-const globalShortcut = electron.globalShortcut;
 
 // Adds debug features like hotkeys for triggering dev tools and reload
 require('electron-debug')();
@@ -66,7 +63,7 @@ async function createMainWindow() {
         defaultHeight: 800
     });
 
-    const win = new electron.BrowserWindow({
+    const win = new BrowserWindow({
         x: mainWindowState.x,
         y: mainWindowState.y,
         width: mainWindowState.width,

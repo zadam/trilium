@@ -94,7 +94,7 @@ class NoteDetailBook {
 
     setZoom(zoomLevel) {
         if (!(zoomLevel in ZOOMS)) {
-            zoomLevel = 1;
+            zoomLevel = this.getDefaultZoomLevel();
         }
 
         this.zoomLevel = zoomLevel;
@@ -109,7 +109,18 @@ class NoteDetailBook {
     async render() {
         this.$content.empty();
 
-        const zoomLevel = parseInt(await this.ctx.note.getLabelValue('bookZoomLevel')) || 1;
+        if (this.isAutoBook()) {
+            const $addTextLink = $('<a href="javascript:">here</a>').click(() => {
+                this.ctx.renderComponent(true);
+            });
+
+            this.$content.append($('<div class="note-book-auto-message"></div>')
+                .append(`This note doesn't have any content so we display it's children. Click `)
+                .append($addTextLink)
+                .append(' if you want to add some text.'))
+        }
+
+        const zoomLevel = parseInt(await this.ctx.note.getLabelValue('bookZoomLevel')) || this.getDefaultZoomLevel();
         this.setZoom(zoomLevel);
 
         await this.renderIntoElement(this.ctx.note, this.$content);
@@ -148,7 +159,7 @@ class NoteDetailBook {
 
             const $content = $("<div>").html(fullNote.content);
 
-            if (!fullNote.content.toLowerCase().includes("<img") && $content.text().trim() === "") {
+            if (utils.isHtmlEmpty(fullNote.content)) {
                 return "";
             }
             else {
@@ -206,6 +217,15 @@ class NoteDetailBook {
         else {
             return "<em>Content of this note cannot be displayed in the book format</em>";
         }
+    }
+
+    /** @return {boolean} true if this is "auto book" activated (empty text note) and not explicit book note */
+    isAutoBook() {
+        return this.ctx.note.type !== 'book';
+    }
+
+    getDefaultZoomLevel() {
+        return this.isAutoBook() ? 3 : 1;
     }
 
     getContent() {}

@@ -201,6 +201,10 @@ function closeActiveDialog() {
     }
 }
 
+function isHtmlEmpty(html) {
+    return $(html).text().trim().length === 0 && !html.toLowerCase().includes('<img');
+}
+
 export default {
     reloadApp,
     parseDate,
@@ -231,5 +235,6 @@ export default {
     getCookie,
     getNoteTypeClass,
     getMimeTypeClass,
-    closeActiveDialog
+    closeActiveDialog,
+    isHtmlEmpty
 };

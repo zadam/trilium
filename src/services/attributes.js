@@ -22,6 +22,7 @@ const BUILTIN_ATTRIBUTES = [
     { type: 'label', name: 'run', isDangerous: true },
     { type: 'label', name: 'customRequestHandler', isDangerous: true },
     { type: 'label', name: 'customResourceProvider', isDangerous: true },
+    { type: 'label', name: 'bookZoomLevel', isDangerous: false },
 
     // relation names
     { type: 'relation', name: 'runOnNoteView', isDangerous: true },
