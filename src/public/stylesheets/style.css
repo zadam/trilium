@@ -108,7 +108,7 @@ ul.fancytree-container {
     height: 100%;
     display: flex;
     flex-direction: column;
-    min-height: 200px;
+    min-height: 500px;
     overflow-wrap: break-word; /* otherwise CKEditor fails miserably on super long lines */
     font-family: var(--detail-font-family);
     font-size: var(--detail-font-size);
@@ -136,7 +136,7 @@ ul.fancytree-container {
     border: 0 !important;
     box-shadow: none !important;
     /* This is because with empty content height of editor is 0 and it's impossible to click into it */
-    min-height: 200px;
+    min-height: 500px;
 }
 
 .note-detail-text p:first-child, .note-detail-text::before {
@@ -353,11 +353,11 @@ div.ui-tooltip {
 }
 
 .note-detail-code-editor {
-    min-height: 200px;
+    min-height: 500px;
 }
 
 .note-detail-render {
-    min-height: 200px;
+    min-height: 500px;
 }
 
 .CodeMirror {
@@ -367,7 +367,7 @@ div.ui-tooltip {
 }
 
 .CodeMirror-scroll {
-    min-height: 200px;
+    min-height: 500px;
 }
 
 .CodeMirror-gutters {
@@ -388,37 +388,6 @@ div.ui-tooltip {
 .file-table th, .file-table td {
     padding: 10px;
     font-size: larger;
-}
-
-.children-overview {
-    flex-grow: 1000;
-    flex-shrink: 1000;
-    flex-basis: 0;
-    display: flex;
-    flex-wrap: wrap;
-    align-content: flex-start;
-    height: 110px;
-    overflow: auto;
-}
-
-.child-overview-item {
-    font-weight: bold;
-    padding: 10px;
-    background: var(--accented-background-color);
-    width: 150px;
-    height: 85px;
-    line-height: 2em;
-    margin-right: 20px;
-    border-radius: 15px;
-    overflow: hidden;
-    text-align: center;
-    margin-top: 15px;
-    text-overflow: ellipsis;
-    overflow-wrap: break-word;
-}
-
-.child-overview-item a {
-    color: var(--muted-text-color);
 }
 
 #sql-console-query {

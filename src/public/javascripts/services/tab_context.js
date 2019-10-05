@@ -65,7 +65,6 @@ class TabContext {
         this.$notePathList = this.$tabContent.find(".note-path-list");
         this.$notePathCount = this.$tabContent.find(".note-path-count");
         this.$noteDetailComponents = this.$tabContent.find(".note-detail-component");
-        this.$childrenOverview = this.$tabContent.find(".children-overview");
         this.$scriptArea = this.$tabContent.find(".note-detail-script-area");
         this.$savedIndicator = this.$tabContent.find(".saved-indicator");
         this.noteChangeDisabled = false;
@@ -180,8 +179,6 @@ class TabContext {
 
         if (utils.isDesktop()) {
             this.noteType.update();
-
-            this.showChildrenOverview();
         }
 
         if (this.sidebar) {
@@ -363,31 +360,6 @@ class TabContext {
         this.isNoteChanged = true;
 
         this.$savedIndicator.fadeOut();
-    }
-
-    async showChildrenOverview() {
-        const attributes = await this.attributes.getAttributes();
-        const hideChildrenOverview = attributes.some(attr => attr.type === 'label' && attr.name === 'hideChildrenOverview')
-            || ['relation-map', 'image', 'file', 'book'].includes(this.note.type);
-
-        if (hideChildrenOverview) {
-            this.$childrenOverview.hide();
-            return;
-        }
-
-        this.$childrenOverview.empty();
-
-        for (const childBranch of await this.note.getChildBranches()) {
-            const link = $('<a>', {
-                href: 'javascript:',
-                text: await treeUtils.getNoteTitle(childBranch.noteId, childBranch.parentNoteId)
-            }).attr('data-action', 'note').attr('data-note-path', this.notePath + '/' + childBranch.noteId);
-
-            const childEl = $('<div class="child-overview-item">').html(link);
-            this.$childrenOverview.append(childEl);
-        }
-
-        this.$childrenOverview.show();
     }
 
     async addPath(notePath, isCurrent) {

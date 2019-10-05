@@ -46,8 +46,7 @@ async function setupProtectedSession(password) {
 
     await treeService.reload();
 
-    // it's important that tree has been already reloaded at this point since detail also uses tree cache (for children overview)
-    // children overview is the reason why we need to reload all tabs
+    // it's important that tree has been already reloaded at this point since detail also uses tree cache (for book)
     await noteDetailService.reloadAllTabs();
 
     if (protectedSessionDeferred !== null) {
