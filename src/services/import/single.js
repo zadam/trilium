@@ -42,12 +42,13 @@ async function importImage(file, parentNote, importContext) {
 async function importFile(importContext, file, parentNote) {
     const originalName = file.originalname;
     const size = file.size;
+    const mime = mimeService.getMime(originalName);
 
     const {note} = await noteService.createNote(parentNote.noteId, originalName, file.buffer, {
         target: 'into',
         isProtected: parentNote.isProtected && protectedSessionService.isProtectedSessionAvailable(),
         type: 'file',
-        mime: mimeService.getMime(originalName),
+        mime: mime === false ? file.mimetype : mime,
         attributes: [
             { type: "label", name: "originalFileName", value: originalName },
             { type: "label", name: "fileSize", value: size }
