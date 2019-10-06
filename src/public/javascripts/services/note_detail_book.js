@@ -116,7 +116,7 @@ class NoteDetailBook {
             });
 
             this.$content.append($('<div class="note-book-auto-message"></div>')
-                .append(`This note doesn't have any content so we display it's children. Click `)
+                .append(`This note doesn't have any content so we display its children. Click `)
                 .append($addTextLink)
                 .append(' if you want to add some text.'))
         }
