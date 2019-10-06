@@ -202,7 +202,7 @@ function closeActiveDialog() {
 }
 
 function isHtmlEmpty(html) {
-    return $(html).text().trim().length === 0 && !html.toLowerCase().includes('<img');
+    return $("<div>").html(html).text().trim().length === 0 && !html.toLowerCase().includes('<img');
 }
 
 export default {

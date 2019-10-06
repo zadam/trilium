@@ -825,10 +825,16 @@ a.external:not(.no-arrow):after, a[href^="http://"]:not(.no-arrow):after, a[href
     overflow: hidden;
 }
 
-.note-book-card.type-image .note-book-content, .note-book-card.type-file .note-book-content {
+.note-book-card.type-image .note-book-content, .note-book-card.type-file .note-book-content, .note-book-card.type-protected-session .note-book-content {
     display: flex;
     align-items: center;
     justify-content: center;
+    text-align: center;
+}
+
+.note-book-card.type-image .note-book-content img {
+    max-width: 100%;
+    max-height: 100%;
 }
 
 .note-book-title {

@@ -3,7 +3,8 @@ import linkService from "./link.js";
 import utils from "./utils.js";
 import treeCache from "./tree_cache.js";
 import renderService from "./render.js";
-import zoom from "./zoom.js";
+import protectedSessionHolder from "./protected_session_holder.js";
+import protectedSessionService from "./protected_session.js";
 
 const MIN_ZOOM_LEVEL = 1;
 const MAX_ZOOM_LEVEL = 6;
@@ -128,14 +129,16 @@ class NoteDetailBook {
 
     async renderIntoElement(note, $container) {
         for (const childNote of await note.getChildNotes()) {
+            const type = this.getRenderingType(childNote);
+
             const $card = $('<div class="note-book-card">')
                 .attr('data-note-id', childNote.noteId)
                 .css("flex-basis", ZOOMS[this.zoomLevel].width)
-                .addClass("type-" + childNote.type)
+                .addClass("type-" + type)
                 .append($('<h5 class="note-book-title">').append(await linkService.createNoteLink(childNote.noteId, null, false)))
                 .append($('<div class="note-book-content">')
                     .css("max-height", ZOOMS[this.zoomLevel].height)
-                    .append(await this.getNoteContent(childNote)));
+                    .append(await this.getNoteContent(type, childNote)));
 
             const childCount = childNote.getChildNoteIds().length;
 
@@ -153,8 +156,8 @@ class NoteDetailBook {
         }
     }
 
-    async getNoteContent(note) {
-        if (note.type === 'text') {
+    async getNoteContent(type, note) {
+        if (type === 'text') {
             const fullNote = await server.get('notes/' + note.noteId);
 
             const $content = $("<div>").html(fullNote.content);
@@ -166,7 +169,7 @@ class NoteDetailBook {
                 return $content;
             }
         }
-        else if (note.type === 'code') {
+        else if (type === 'code') {
             const fullNote = await server.get('notes/' + note.noteId);
 
             if (fullNote.content.trim() === "") {
@@ -175,10 +178,10 @@ class NoteDetailBook {
 
             return $("<pre>").text(fullNote.content);
         }
-        else if (note.type === 'image') {
+        else if (type === 'image') {
             return $("<img>").attr("src", `api/images/${note.noteId}/${note.title}`);
         }
-        else if (note.type === 'file') {
+        else if (type === 'file') {
             function getFileUrl() {
                 // electron needs absolute URL so we extract current host, port, protocol
                 return utils.getHost() + "/api/notes/" + note.noteId + "/download";
@@ -207,12 +210,21 @@ class NoteDetailBook {
                 .append(' &nbsp; ')
                 .append($openButton);
         }
-        else if (note.type === 'render') {
+        else if (type === 'render') {
             const $el = $('<div>');
 
             await renderService.render(note, $el, this.ctx);
 
             return $el;
+        }
+        else if (type === 'protected-session') {
+            const $button = $(`<button class="btn btn-sm"><span class="jam jam-door"></span> Enter protected session</button>`)
+                .click(protectedSessionService.enterProtectedSession);
+
+            return $("<div>")
+                .append("<div>This note is protected and to access it you need to enter password.</div>")
+                .append("<br/>")
+                .append($button);
         }
         else {
             return "<em>Content of this note cannot be displayed in the book format</em>";
@@ -226,6 +238,21 @@ class NoteDetailBook {
 
     getDefaultZoomLevel() {
         return this.isAutoBook() ? 3 : 1;
+    }
+
+    getRenderingType(childNote) {
+        let type = childNote.type;
+
+        if (childNote.isProtected) {
+            if (protectedSessionHolder.isProtectedSessionAvailable()) {
+                protectedSessionHolder.touchProtectedSession();
+            }
+            else {
+                type = 'protected-session';
+            }
+        }
+
+        return type;
     }
 
     getContent() {}
