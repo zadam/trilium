@@ -14,6 +14,7 @@ const commonmark = require('commonmark');
 const ImportContext = require('../import_context');
 const protectedSessionService = require('../protected_session');
 const mimeService = require("./mime");
+const treeService = require("../tree");
 
 /**
  * @param {ImportContext} importContext
@@ -425,6 +426,12 @@ async function importTar(importContext, fileBuffer, importRootNote) {
 
             for (const noteId in createdNoteIds) { // now the noteIds are unique
                 await noteService.scanForLinks(noteId);
+
+                if (!metaFile) {
+                    // if there's no meta file then the notes are created based on the order in that tar file but that
+                    // is usually quite random so we sort the notes in the way they would appear in the file manager
+                    await treeService.sortNotesAlphabetically(noteId, true);
+                }
 
                 importContext.increaseProgressCount();
             }

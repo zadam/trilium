@@ -840,7 +840,7 @@ a.external:not(.no-arrow):after, a[href^="http://"]:not(.no-arrow):after, a[href
 }
 
 .note-book-auto-message {
-    background-color: var(--more-accented-background-color);
+    background-color: var(--accented-background-color);
     text-align: center;
     width: 100%;
     border-radius: 10px;

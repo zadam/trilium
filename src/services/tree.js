@@ -87,15 +87,28 @@ async function loadSubtreeNoteIds(parentNoteId, subtreeNoteIds) {
     }
 }
 
-async function sortNotesAlphabetically(parentNoteId) {
+async function sortNotesAlphabetically(parentNoteId, directoriesFirst = false) {
     await sql.transactional(async () => {
-        const notes = await sql.getRows(`SELECT branchId, noteId, title, isProtected 
-                                       FROM notes JOIN branches USING(noteId) 
-                                       WHERE branches.isDeleted = 0 AND parentNoteId = ?`, [parentNoteId]);
+        const notes = await sql.getRows(
+            `SELECT branches.branchId, notes.noteId, title, isProtected, 
+                          CASE WHEN COUNT(childBranches.noteId) > 0 THEN 1 ELSE 0 END AS hasChildren 
+                   FROM notes 
+                   JOIN branches ON branches.noteId = notes.noteId
+                   LEFT JOIN branches childBranches ON childBranches.parentNoteId = notes.noteId AND childBranches.isDeleted = 0
+                   WHERE branches.isDeleted = 0 AND branches.parentNoteId = ?
+                   GROUP BY notes.noteId`, [parentNoteId]);
 
         protectedSessionService.decryptNotes(notes);
 
-        notes.sort((a, b) => a.title.toLowerCase() < b.title.toLowerCase() ? -1 : 1);
+        notes.sort((a, b) => {
+            if (directoriesFirst && ((a.hasChildren && !b.hasChildren) || (!a.hasChildren && b.hasChildren))) {
+                // exactly one note of the two is a directory so the sorting will be done based on this status
+                return a.hasChildren ? -1 : 1;
+            }
+            else {
+                return a.title.toLowerCase() < b.title.toLowerCase() ? -1 : 1;
+            }
+        });
 
         let position = 1;
 
