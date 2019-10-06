@@ -51,7 +51,11 @@ function reloadOptions() {
     return optionsReady;
 }
 
-/** just waits for some options without triggering reload */
+/**
+ * just waits for some options without triggering reload
+ *
+ * @return {Options}
+ */
 async function waitForOptions() {
     return await optionsReady;
 }

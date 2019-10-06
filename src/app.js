@@ -88,7 +88,10 @@ app.use((req, res, next) => {
 
 // error handler
 app.use((err, req, res, next) => {
-    if (err && err.message && err.message.includes("Invalid package")) {
+    if (err && err.message && (
+        err.message.includes("Invalid package")
+        || (err.message.includes("Router not found for request") && err.message.includes("node_modules"))
+    )) {
         // electron 6 outputs a lot of such errors which do not seem important
     }
     else {

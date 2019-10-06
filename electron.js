@@ -10,7 +10,6 @@ const port = require('./src/services/port');
 const env = require('./src/services/env');
 const appIconService = require('./src/services/app_icon');
 const windowStateKeeper = require('electron-window-state');
-const contextMenu = require('electron-context-menu');
 
 // Adds debug features like hotkeys for triggering dev tools and reload
 require('electron-debug')();
@@ -22,25 +21,25 @@ let mainWindow;
 
 require('electron-dl')({ saveAs: true });
 
-contextMenu({
-    menu: (actions, params, browserWindow) => [
-        actions.cut(),
-        actions.copy(),
-        actions.copyLink(),
-        actions.paste(),
-        {
-            label: 'Search DuckDuckGo for “{selection}”',
-            // Only show it when right-clicking text
-            visible: params.selectionText.trim().length > 0,
-            click: () => {
-                const {shell} = require('electron');
-
-                shell.openExternal(`https://duckduckgo.com?q=${encodeURIComponent(params.selectionText)}`);
-            }
-        },
-        actions.inspect()
-    ]
-});
+// contextMenu({
+//     menu: (actions, params, browserWindow) => [
+//         actions.cut(),
+//         actions.copy(),
+//         actions.copyLink(),
+//         actions.paste(),
+//         {
+//             label: 'Search DuckDuckGo for “{selection}”',
+//             // Only show it when right-clicking text
+//             visible: params.selectionText.trim().length > 0,
+//             click: () => {
+//                 const {shell} = require('electron');
+//
+//                 shell.openExternal(`https://duckduckgo.com?q=${encodeURIComponent(params.selectionText)}`);
+//             }
+//         },
+//         actions.inspect()
+//     ]
+// });
 
 function onClosed() {
     // Dereference the window

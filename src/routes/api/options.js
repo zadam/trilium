@@ -32,7 +32,9 @@ const ALLOWED_OPTIONS = [
     'similarNotesWidget',
     'editedNotesWidget',
     'calendarWidget',
-    'codeNotesMimeTypes'
+    'codeNotesMimeTypes',
+    'spellCheckEnabled',
+    'spellCheckLanguageCode'
 ];
 
 async function getOptions() {

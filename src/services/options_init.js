@@ -79,6 +79,9 @@ async function initNotSyncedOptions(initialized, startNotePath = 'root', opts = 
     await optionService.createOption('similarNotesWidget', '{"enabled":true,"expanded":true,"position":600}', false);
 
     await optionService.createOption('initialized', initialized ? 'true' : 'false', false);
+
+    await optionService.createOption('spellCheckEnabled', 'true', false);
+    await optionService.createOption('spellCheckLanguageCode', 'en-US', false);
 }
 
 module.exports = {

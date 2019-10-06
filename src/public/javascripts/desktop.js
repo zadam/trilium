@@ -177,3 +177,7 @@ entrypoints.registerEntrypoints();
 noteTooltipService.setupGlobalTooltip();
 
 noteAutocompleteService.init();
+
+if (utils.isElectron()) {
+    import("./services/spell_check.js").then(spellCheckService => spellCheckService.initSpellCheck());
+}
