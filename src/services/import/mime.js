@@ -64,6 +64,7 @@ const EXTENSION_TO_MIME = {
     ".swift": "text/x-swift"
 };
 
+/** @returns false if MIME is not detected */
 function getMime(fileName) {
     if (fileName.toLowerCase() === 'dockerfile') {
         return "text/x-dockerfile";

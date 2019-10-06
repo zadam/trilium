@@ -86,9 +86,12 @@ async function findNotes(query) {
         return [];
     }
 
-    // trim is necessary because even with .split() trailing spaces are tokens which causes havoc
-    // filtering '/' because it's used as separator
-    const allTokens = query.trim().toLowerCase().split(" ").filter(token => token !== '/');
+    const allTokens = query
+        .trim() // necessary because even with .split() trailing spaces are tokens which causes havoc
+        .toLowerCase()
+        .split(/[ -]/)
+        .filter(token => token !== '/'); // '/' is used as separator
+
     const tokens = allTokens.slice();
     let results = [];
 

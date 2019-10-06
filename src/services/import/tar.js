@@ -132,7 +132,7 @@ async function importTar(importContext, fileBuffer, importRootNote) {
     }
 
     function detectFileTypeAndMime(importContext, filePath) {
-        const mime = mimeService.getMime(filePath);
+        const mime = mimeService.getMime(filePath) || "application/octet-stream";
         const type = mimeService.getType(importContext, mime);
 
         return { mime, type };

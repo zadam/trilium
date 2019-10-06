@@ -8,7 +8,7 @@ const path = require('path');
 const mimeService = require('./mime');
 
 async function importSingleFile(importContext, file, parentNote) {
-    const mime = mimeService.getMime(file.originalname);
+    const mime = mimeService.getMime(file.originalname) || file.mimetype;
 
     if (importContext.textImportedAsText) {
         if (mime === 'text/html') {
@@ -42,13 +42,12 @@ async function importImage(file, parentNote, importContext) {
 async function importFile(importContext, file, parentNote) {
     const originalName = file.originalname;
     const size = file.size;
-    const mime = mimeService.getMime(originalName);
 
     const {note} = await noteService.createNote(parentNote.noteId, originalName, file.buffer, {
         target: 'into',
         isProtected: parentNote.isProtected && protectedSessionService.isProtectedSessionAvailable(),
         type: 'file',
-        mime: mime === false ? file.mimetype : mime,
+        mime: mimeService.getMime(originalName) || file.mimetype,
         attributes: [
             { type: "label", name: "originalFileName", value: originalName },
             { type: "label", name: "fileSize", value: size }
@@ -63,7 +62,7 @@ async function importFile(importContext, file, parentNote) {
 async function importCodeNote(importContext, file, parentNote) {
     const title = getFileNameWithoutExtension(file.originalname);
     const content = file.buffer.toString("UTF-8");
-    const detectedMime = mimeService.getMime(file.originalname);
+    const detectedMime = mimeService.getMime(file.originalname) || file.mimetype;
     const mime = mimeService.normalizeMimeType(detectedMime);
 
     const {note} = await noteService.createNote(parentNote.noteId, title, content, {

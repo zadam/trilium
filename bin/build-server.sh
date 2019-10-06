@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 PKG_DIR=dist/trilium-linux-x64-server
-NODE_VERSION=12.10.0
+NODE_VERSION=12.11.1
 
 rm -r $PKG_DIR
 mkdir $PKG_DIR
