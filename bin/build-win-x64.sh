@@ -9,11 +9,13 @@ rm -r node_modules/sqlite3/lib/binding/*
 rm -r node_modules/mozjpeg/vendor/*
 rm -r node_modules/pngquant-bin/vendor/*
 rm -r node_modules/giflossy/vendor/*
+rm -r node_modules/@felixrieseberg/spellchecker/build/Release/*
 
 cp -r bin/deps/win-x64/sqlite/* node_modules/sqlite3/lib/binding/
 cp bin/deps/win-x64/image/cjpeg.exe node_modules/mozjpeg/vendor/
 cp bin/deps/win-x64/image/pngquant.exe node_modules/pngquant-bin/vendor/
 cp bin/deps/win-x64/image/gifsicle.exe node_modules/giflossy/vendor/
+cp bin/deps/win-x64/spellchecker/* node_modules/@felixrieseberg/spellchecker/build/Release/
 
 ./node_modules/.bin/electron-packager . --asar --out=dist --executable-name=trilium --platform=win32  --arch=x64 --overwrite --icon=images/app-icons/win/icon.ico
 
