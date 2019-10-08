@@ -16,7 +16,7 @@
   border: 0;
   color: inherit;
   cursor: pointer;
-  font: inherit;
+  font-size: x-large;
   line-height: normal;
   min-width: 27px;
   outline: none;
@@ -61,7 +61,7 @@
 
 .calendar-widget .calendar-date {
   align-items: center;
-  background-color: #fff;
+  background-color: var(--main-background-color);
   display: flex;
   flex-direction: column;
   flex: 0 0 14.28%;
