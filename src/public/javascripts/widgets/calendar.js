@@ -8,21 +8,13 @@ import server from "../services/server.js";
 const TPL = `
 <div class="calendar-widget">
   <div class="calendar-header">
-    <button class="calendar-btn" data-calendar-toggle="previous">
-      <svg height="24" version="1.1" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
-        <path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"></path>
-      </svg>
-    </button>
+    <button class="calendar-btn jam jam-arrow-left" data-calendar-toggle="previous"></button>
 
     <div class="calendar-header__label" data-calendar-label="month">
       March 2017
     </div>
 
-    <button class="calendar-btn" data-calendar-toggle="next">
-      <svg height="24" version="1.1" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
-        <path d="M4,11V13H16L10.5,18.5L11.92,19.92L19.84,12L11.92,4.08L10.5,5.5L16,11H4Z"></path>
-      </svg>
-    </button>
+    <button class="calendar-btn jam jam-arrow-right" data-calendar-toggle="next"></button>
   </div>
 
   <div class="calendar-week">
