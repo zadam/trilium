@@ -122,7 +122,7 @@ class NoteDetailRelationMap {
         this.clipboard = null;
 
         this.$createChildNote.click(async () => {
-            const promptDialog = await import('"../dialogs/prompt.js"');
+            const promptDialog = await import('../dialogs/prompt.js');
             const title = await promptDialog.ask({ message: "Enter title of new note",  defaultValue: "new note" });
 
             if (!title.trim()) {

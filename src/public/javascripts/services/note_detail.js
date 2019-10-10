@@ -385,6 +385,8 @@ tabRow.addListener('tabRemove', async ({ detail }) => {
 });
 
 $(tabRow.el).on('contextmenu', '.note-tab', e => {
+    e.preventDefault();
+
     const tab = $(e.target).closest(".note-tab");
 
     contextMenuService.initContextMenu(e, {
