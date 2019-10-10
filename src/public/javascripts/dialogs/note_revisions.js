@@ -63,13 +63,3 @@ $list.on('change', () => {
         $content.text("Preview isn't available for this note type.");
     }
 });
-
-$(document).on('click', "a[data-action='note-revision']", event => {
-    const linkEl = $(event.target);
-    const noteId = linkEl.attr('data-note-path');
-    const noteRevisionId = linkEl.attr('data-note-revision-id');
-
-    showNoteRevisionsDialog(noteId, noteRevisionId);
-
-    return false;
-});

@@ -172,6 +172,19 @@ function registerEntrypoints() {
         utils.bindGlobalShortcut('ctrl+-', zoomService.decreaseZoomFactor);
         utils.bindGlobalShortcut('ctrl+=', zoomService.increaseZoomFactor);
     }
+
+    $(document).on('click', "a[data-action='note-revision']", async event => {
+        const linkEl = $(event.target);
+        const noteId = linkEl.attr('data-note-path');
+        const noteRevisionId = linkEl.attr('data-note-revision-id');
+
+        const attributesDialog = await import("../dialogs/note_revisions.js");
+
+        attributesDialog.showNoteRevisionsDialog(noteId, noteRevisionId);
+
+        return false;
+    });
+
 }
 
 export default {
