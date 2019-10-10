@@ -13,9 +13,6 @@ cp -r bin/deps/linux-x64/sqlite/* node_modules/sqlite3/lib/binding/
 cp bin/deps/linux-x64/image/pngquant node_modules/pngquant-bin/vendor/
 cp bin/deps/linux-x64/spellchecker/* node_modules/@felixrieseberg/spellchecker/build/Release/
 
-# rebuild binaries for image operations (pngquant ...)
-npm rebuild
-
 ./node_modules/.bin/electron-packager . --asar --out=dist --executable-name=trilium --platform=linux --arch=x64 --overwrite
 
 mv "./dist/Trilium Notes-linux-x64" $BUILD_DIR
