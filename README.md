@@ -46,5 +46,5 @@ Use a browser based dev environment
 Or clone locally and run
 ```
 npm install
-npm run start
+npm run start-server
 ```
