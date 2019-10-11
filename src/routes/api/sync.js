@@ -75,6 +75,7 @@ async function forceNoteSync(req) {
     const noteId = req.params.noteId;
 
     await syncTableService.addNoteSync(noteId);
+    await syncTableService.addNoteContentSync(noteId);
 
     for (const branchId of await sql.getColumn("SELECT branchId FROM branches WHERE isDeleted = 0 AND noteId = ?", [noteId])) {
         await syncTableService.addBranchSync(branchId);
