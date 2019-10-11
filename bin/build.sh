@@ -1,21 +1,23 @@
 #!/usr/bin/env bash
 
-rm -r node_modules
-
-npm install
-
 echo "Deleting existing builds"
 
 rm -r dist/*
 
-bin/build-win-x64.sh
+SRC_DIR=dist/trilium-src
 
-bin/build-mac-x64.sh
+bin/copy-trilium.sh $SRC_DIR
 
-# building X64 linux as the last so electron-rebuild will prepare X64 binaries for local development
-bin/build-linux-x64.sh
+# we'll just copy the same SRC dir to all the builds so we don't have to do npm install in each separately
+cp -r $SRC_DIR ./dist/trilium-linux-x64-src
+cp -r $SRC_DIR ./dist/trilium-linux-x64-server-src
+cp -r $SRC_DIR ./dist/trilium-windows-x64-src
+cp -r $SRC_DIR ./dist/trilium-mac-x64-src
 
-# this needs to be run after linux build
-bin/build-debian.sh
+bin/build-win-x64.sh DONTCOPY
 
-bin/build-server.sh
+bin/build-mac-x64.sh DONTCOPY
+
+bin/build-linux-x64.sh DONTCOPY
+
+bin/build-server.sh DONTCOPY

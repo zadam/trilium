@@ -1,28 +1,33 @@
 #!/usr/bin/env bash
 
-BUILD_DIR=./dist/trilium-mac-x64
-rm -rf $BUILD_DIR
+SRC_DIR=./dist/trilium-mac-x64-src
+
+if [ "$1" != "DONTCOPY" ]
+then
+    ./bin/copy-trilium.sh $SRC_DIR
+fi
 
 echo "Copying required mac binaries"
 
-rm -r node_modules/sqlite3/lib/binding/*
-rm -r node_modules/mozjpeg/vendor/*
-rm -r node_modules/pngquant-bin/vendor/*
-rm -r node_modules/giflossy/vendor/*
-rm -r node_modules/@felixrieseberg/spellchecker/build/Release/*
+rm -r $SRC_DIR/node_modules/sqlite3/lib/binding/*
+rm -r $SRC_DIR/node_modules/mozjpeg/vendor/*
+rm -r $SRC_DIR/node_modules/pngquant-bin/vendor/*
+rm -r $SRC_DIR/node_modules/giflossy/vendor/*
+rm -r $SRC_DIR/node_modules/@felixrieseberg/spellchecker/build/Release/*
 
-cp -r bin/deps/mac-x64/sqlite/* node_modules/sqlite3/lib/binding/
-cp bin/deps/mac-x64/image/cjpeg node_modules/mozjpeg/vendor/
-cp bin/deps/mac-x64/image/pngquant node_modules/pngquant-bin/vendor/
-cp bin/deps/mac-x64/image/gifsicle node_modules/giflossy/vendor/
-cp bin/deps/mac-x64/spellchecker/* node_modules/@felixrieseberg/spellchecker/build/Release/
+cp -r bin/deps/mac-x64/sqlite/* $SRC_DIR/node_modules/sqlite3/lib/binding/
+cp bin/deps/mac-x64/image/cjpeg $SRC_DIR/node_modules/mozjpeg/vendor/
+cp bin/deps/mac-x64/image/pngquant $SRC_DIR/node_modules/pngquant-bin/vendor/
+cp bin/deps/mac-x64/image/gifsicle $SRC_DIR/node_modules/giflossy/vendor/
+cp bin/deps/mac-x64/spellchecker/* $SRC_DIR/node_modules/@felixrieseberg/spellchecker/build/Release/
 
-./node_modules/.bin/electron-packager . --asar --out=dist --executable-name=trilium --platform=darwin --arch=x64 --overwrite --icon=images/app-icons/mac/icon.icns
+./node_modules/.bin/electron-packager $SRC_DIR --asar --out=dist --executable-name=trilium --platform=darwin --arch=x64 --overwrite --icon=images/app-icons/mac/icon.icns
+
+BUILD_DIR=./dist/trilium-mac-x64
+rm -rf $BUILD_DIR
 
 # Mac build has by default useless directory level
 mv "./dist/Trilium Notes-darwin-x64" $BUILD_DIR
-
-./bin/reset-local.sh
 
 echo "Zipping mac x64 electron distribution..."
 
