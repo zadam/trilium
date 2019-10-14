@@ -809,7 +809,8 @@ a.external:not(.no-arrow):after, a[href^="http://"]:not(.no-arrow):after, a[href
     border-radius: 10px;
     background-color: var(--accented-background-color);
     padding: 15px;
-    margin: 10px;
+    padding-bottom: 5px;
+    margin: 5px;
     margin-left: 0;
     overflow: hidden;
     display: flex;

@@ -237,7 +237,22 @@ class NoteDetailBook {
     }
 
     getDefaultZoomLevel() {
-        return this.isAutoBook() ? 3 : 1;
+        if (this.isAutoBook()) {
+            const w = this.$component.width();
+
+            if (w <= 600) {
+                return 1;
+            } else if (w <= 900) {
+                return 2;
+            } else if (w <= 1300) {
+                return 3;
+            } else {
+                return 4;
+            }
+        }
+        else {
+            return 1;
+        }
     }
 
     getRenderingType(childNote) {
