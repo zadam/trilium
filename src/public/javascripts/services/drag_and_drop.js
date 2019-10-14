@@ -30,9 +30,9 @@ const dragAndDropSetup = {
         if (dataTransfer && dataTransfer.files && dataTransfer.files.length > 0) {
             const files = [...dataTransfer.files]; // chrome has issue that dataTransfer.files empties after async operation
 
-            const importDialog = await import('../dialogs/import.js');
+            const importService = await import('./import.js');
 
-            importDialog.uploadFiles(node.data.noteId, files, {
+            importService.uploadFiles(node.data.noteId, files, {
                 safeImport: true,
                 shrinkImages: true,
                 textImportedAsText: true,

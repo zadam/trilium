@@ -1,5 +1,6 @@
 import utils from './utils.js';
 import infoService from "./info.js";
+import treeService from "./tree.js";
 
 const $outstandingSyncsCount = $("#outstanding-syncs-count");
 

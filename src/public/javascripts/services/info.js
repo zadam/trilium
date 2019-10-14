@@ -1,13 +1,13 @@
 import ws from "./ws.js";
 import utils from "./utils.js";
 
-function showMessage(message) {
+function showMessage(message, delay = 3000) {
     console.debug(utils.now(), "message: ", message);
 
     $.notify({
         icon: 'jam jam-check',
         message: message
-    }, getNotifySettings('success', 3000));
+    }, getNotifySettings('success', delay));
 }
 
 function showAndLogError(message, delay = 10000) {

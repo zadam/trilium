@@ -116,11 +116,7 @@ async function importTar(importContext, fileBuffer, importRootNote) {
     function getNoteId(noteMeta, filePath) {
         const filePathNoExt = getTextFileWithoutExtension(filePath);
 
-        console.log(`Searching for noteId of filePath ${filePath} with meta: ${!!noteMeta}`);
-
         if (filePathNoExt in createdPaths) {
-            console.log("Found existing path", filePathNoExt, createdPaths[filePathNoExt]);
-
             return createdPaths[filePathNoExt];
         }
 

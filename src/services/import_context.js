@@ -33,7 +33,7 @@ class ImportContext {
     async increaseProgressCount() {
         this.progressCount++;
 
-        if (Date.now() - this.lastSentCountTs >= 500) {
+        if (Date.now() - this.lastSentCountTs >= 1000) {
             this.lastSentCountTs = Date.now();
 
             await ws.sendMessageToAllClients({
@@ -49,6 +49,15 @@ class ImportContext {
         await ws.sendMessageToAllClients({
             type: 'import-error',
             message: message
+        });
+    }
+
+    // must remaing non-static
+    async importSucceeded(parentNoteId, importedNoteId) {
+        await ws.sendMessageToAllClients({
+            type: 'import-succeeded',
+            parentNoteId: parentNoteId,
+            importedNoteId: importedNoteId
         });
     }
 }

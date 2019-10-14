@@ -13,7 +13,7 @@ const ImportContext = require('../../services/import_context');
 
 async function importToBranch(req) {
     const {parentNoteId} = req.params;
-    const {importId} = req.body;
+    const {importId, last} = req.body;
 
     const options = {
         safeImport: req.body.safeImport !== 'false',
@@ -63,6 +63,11 @@ async function importToBranch(req) {
         log.error(message + e.stack);
 
         return [500, message];
+    }
+
+    if (last === "true") {
+        // small timeout to avoid race condition (message is received before the transaction is committed)
+        setTimeout(() => importContext.importSucceeded(parentNoteId, note.noteId), 1000);
     }
 
     // import has deactivated note events so note cache is not updated

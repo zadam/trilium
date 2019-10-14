@@ -345,9 +345,9 @@ $tabContentsContainer.on("drop", async e => {
 
     const files = [...e.originalEvent.dataTransfer.files]; // chrome has issue that dataTransfer.files empties after async operation
 
-    const importDialog = await import("../dialogs/import.js");
+    const importService = await import("./import.js");
 
-    importDialog.uploadFiles(activeNote.noteId, files, {
+    importService.uploadFiles(activeNote.noteId, files, {
         safeImport: true,
         shrinkImages: true,
         textImportedAsText: true,
