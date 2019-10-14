@@ -17,6 +17,11 @@ export async function initSpellCheck() {
 
     spellCheckHandler.currentSpellcheckerChanged.subscribe(() => {
         console.debug(`Detected language is ${spellCheckHandler.currentSpellcheckerLanguage}`);
+
+        spellCheckHandler.currentSpellchecker.add("trilium");
+        spellCheckHandler.currentSpellchecker.add("https");
+        spellCheckHandler.currentSpellchecker.add("github");
+        spellCheckHandler.currentSpellchecker.add("unordered");
     });
 
     const contextMenuBuilder = new ContextMenuBuilder(spellCheckHandler, null, true, (menu, menuInfo) => {
