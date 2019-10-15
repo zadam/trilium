@@ -7,3 +7,4 @@ yarn-error.log
 config.ini
 cert.key
 cert.crt
+server-package.json

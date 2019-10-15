@@ -3,9 +3,7 @@ FROM node:12.12.0-alpine
 # Create app directory
 WORKDIR /usr/src/app
 
-# Copy both package.json and package-lock.json
-# where available (npm@5+)
-COPY package.json package-lock.json ./
+COPY server-package.json package.json
 
 # Install app dependencies
 RUN set -x \
