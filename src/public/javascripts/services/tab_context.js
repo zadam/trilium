@@ -419,7 +419,7 @@ class TabContext {
     }
 
     cleanup() {
-        if (utils.isDesktop()) {
+        if (this.$tabContent && utils.isDesktop()) {
             this.$tabContent.find('.aa-input').autocomplete('close');
 
             $('.note-tooltip').remove();
