@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-PKG_DIR=dist/trilium-linux-x64-server-src
+PKG_DIR=dist/trilium-linux-x64-server
 NODE_VERSION=12.12.0
 
 if [ "$1" != "DONTCOPY" ]
@@ -29,4 +29,4 @@ VERSION=`jq -r ".version" package.json`
 
 cd dist
 
-tar cJf trilium-linux-x64-server-${VERSION}.tar.xz trilium-linux-x64-server-src
+tar cJf trilium-linux-x64-server-${VERSION}.tar.xz trilium-linux-x64-server
