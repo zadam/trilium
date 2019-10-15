@@ -36,7 +36,7 @@
     "electron-spellchecker": "2.2.0",
     "electron-window-state": "5.0.3",
     "express": "4.17.1",
-    "express-session": "1.16.2",
+    "express-session": "1.17.0",
     "file-type": "12.3.0",
     "fs-extra": "8.1.0",
     "helmet": "3.21.1",

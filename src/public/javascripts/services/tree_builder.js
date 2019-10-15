@@ -156,6 +156,10 @@ async function getExtraClasses(note) {
         extraClasses.push(utils.getMimeTypeClass(note.mime));
     }
 
+    if (note.archived) {
+        extraClasses.push("archived");
+    }
+
     return extraClasses.join(" ");
 }
 

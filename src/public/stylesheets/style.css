@@ -213,6 +213,10 @@ span.fancytree-node:hover span.fancytree-title {
     border-radius: 5px;
 }
 
+span.fancytree-node.archived {
+    opacity: 0.6;
+}
+
 .ui-autocomplete {
     max-height: 300px;
     overflow-y: auto;

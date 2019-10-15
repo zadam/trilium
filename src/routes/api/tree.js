@@ -3,6 +3,7 @@
 const sql = require('../../services/sql');
 const optionService = require('../../services/options');
 const protectedSessionService = require('../../services/protected_session');
+const noteCacheService = require('../../services/note_cache');
 
 async function getNotes(noteIds) {
     const notes = await sql.getManyRows(`
@@ -31,7 +32,11 @@ async function getNotes(noteIds) {
 
     protectedSessionService.decryptNotes(notes);
 
-    notes.forEach(note => note.isProtected = !!note.isProtected);
+    notes.forEach(note => {
+        note.isProtected = !!note.isProtected;
+        note.archived = noteCacheService.isArchived(note.noteId)
+    });
+
     return notes;
 }
 
