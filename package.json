@@ -55,7 +55,7 @@
     "moment": "2.24.0",
     "multer": "1.4.2",
     "node-abi": "2.11.0",
-    "open": "6.4.0",
+    "open": "7.0.0",
     "pngjs": "3.4.0",
     "portscanner": "2.2.0",
     "rand-token": "0.4.0",

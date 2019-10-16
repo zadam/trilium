@@ -23,7 +23,7 @@ class NoteDetailFile {
             if (utils.isElectron()) {
                 const open = require("open");
 
-                open(this.getFileUrl());
+                open(this.getFileUrl(), {url: true});
             }
             else {
                 window.location.href = this.getFileUrl();

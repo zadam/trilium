@@ -195,7 +195,7 @@ class NoteDetailBook {
                 if (utils.isElectron()) {
                     const open = require("open");
 
-                    open(getFileUrl());
+                    open(getFileUrl(), {url: true});
                 }
                 else {
                     window.location.href = getFileUrl();
