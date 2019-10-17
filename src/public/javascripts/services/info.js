@@ -14,11 +14,43 @@ function toast(options) {
     </div>
 </div>`);
 
+    if (options.id) {
+        $toast.attr("id", "toast-" + options.id);
+    }
+
     $("#toast-container").append($toast);
 
     $toast.toast({
-        delay: options.delay
-    }).toast("show");
+        delay: options.delay || 3000,
+        autohide: !!options.autohide
+    });
+
+    $toast.on('hidden.bs.toast', e => e.target.remove());
+
+    $toast.toast("show");
+
+    return $toast;
+}
+
+function showPersistent(options) {
+    let $toast = $("#toast-" + options.id);
+
+    if ($toast.length > 0) {
+        $toast.find('.toast-body').html(options.message);
+    }
+    else {
+        options.autohide = false;
+
+        $toast = toast(options);
+    }
+
+    if (options.closeAfter) {
+        setTimeout(() => $toast.toast('dispose'), options.closeAfter);
+    }
+}
+
+function closePersistent(id) {
+    $("#toast-persistent-" + id).toast("dispose");
 }
 
 function showMessage(message, delay = 3000) {
@@ -28,6 +60,7 @@ function showMessage(message, delay = 3000) {
         title: "Info",
         icon: "check",
         message: message,
+        autohide: true,
         delay
     });
 }
@@ -45,6 +78,7 @@ function showError(message, delay = 10000) {
         title: "Error",
         icon: 'alert',
         message: message,
+        autohide: true,
         delay
     });
 }
@@ -59,5 +93,7 @@ export default {
     showMessage,
     showError,
     showAndLogError,
-    throwError
+    throwError,
+    showPersistent,
+    closePersistent
 }

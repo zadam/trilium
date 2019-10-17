@@ -39,17 +39,29 @@ export async function uploadFiles(parentNoteId, files, options) {
 }
 
 ws.subscribeToMessages(async message => {
+    const toast = {
+        id: "import",
+        title: "Import",
+        icon: "plus"
+    };
+
     if (message.type === 'import-error') {
+        infoService.closePersistent(toast.id);
         infoService.showError(message.message);
         return;
     }
 
     if (message.type === 'import-progress-count') {
-        infoService.showMessage("Import in progress: " + message.progressCount, 1000);
+        toast.message = "Import in progress: " + message.progressCount;
+
+        infoService.showPersistent(toast);
     }
 
     if (message.type === 'import-succeeded') {
-        infoService.showMessage("Import finished successfully.", 5000);
+        toast.message = "Import finished successfully.";
+        toast.closeAfter = 5000;
+
+        infoService.showPersistent(toast);
 
         await treeService.reloadNote(message.parentNoteId);
 

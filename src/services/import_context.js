@@ -33,7 +33,7 @@ class ImportContext {
     async increaseProgressCount() {
         this.progressCount++;
 
-        if (Date.now() - this.lastSentCountTs >= 1000) {
+        if (Date.now() - this.lastSentCountTs >= 300) {
             this.lastSentCountTs = Date.now();
 
             await ws.sendMessageToAllClients({
