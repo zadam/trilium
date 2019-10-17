@@ -1,13 +1,35 @@
 import ws from "./ws.js";
 import utils from "./utils.js";
 
+function toast(options) {
+    const $toast = $(`<div class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="toast-header">
+        <strong class="mr-auto"><span class="jam jam-${options.icon}"></span> ${options.title}</strong>
+        <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="toast-body">
+        ${options.message}
+    </div>
+</div>`);
+
+    $("#toast-container").append($toast);
+
+    $toast.toast({
+        delay: options.delay
+    }).toast("show");
+}
+
 function showMessage(message, delay = 3000) {
     console.debug(utils.now(), "message: ", message);
 
-    $.notify({
-        icon: 'jam jam-check',
-        message: message
-    }, getNotifySettings('success', delay));
+    toast({
+        title: "Info",
+        icon: "check",
+        message: message,
+        delay
+    });
 }
 
 function showAndLogError(message, delay = 10000) {
@@ -19,28 +41,12 @@ function showAndLogError(message, delay = 10000) {
 function showError(message, delay = 10000) {
     console.log(utils.now(), "error: ", message);
 
-    $.notify({
-        // options
-        icon: 'jam jam-alert',
-        message: message
-    }, getNotifySettings('danger', delay));
-}
-
-function getNotifySettings(type, delay) {
-    return {
-        element: 'body',
-        type: type,
-        z_index: 90000,
-        placement: {
-            from: "top",
-            align: "center"
-        },
-        animate: {
-            enter: 'animated fadeInDown',
-            exit: 'animated fadeOutUp'
-        },
-        delay: delay
-    };
+    toast({
+        title: "Error",
+        icon: 'alert',
+        message: message,
+        delay
+    });
 }
 
 function throwError(message) {

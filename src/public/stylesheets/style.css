@@ -858,3 +858,10 @@ a.external:not(.no-arrow):after, a[href^="http://"]:not(.no-arrow):after, a[href
     padding: 5px;
     margin-top: 5px;
 }
+
+#toast-container {
+    position: absolute;
+    width: 100%;
+    top: 20px;
+    z-index: 10000;
+}
