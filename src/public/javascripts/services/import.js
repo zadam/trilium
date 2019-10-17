@@ -38,27 +38,28 @@ export async function uploadFiles(parentNoteId, files, options) {
     }
 }
 
-ws.subscribeToMessages(async message => {
-    const toast = {
-        id: "import",
+function makeToast(id, message) {
+    return {
+        id: id,
         title: "Import status",
+        message: message,
         icon: "plus"
     };
+}
 
+ws.subscribeToMessages(async message => {
     if (message.type === 'task-error' && message.taskType === 'import') {
-        infoService.closePersistent(toast.id);
+        infoService.closePersistent(message.taskId);
         infoService.showError(message.message);
         return;
     }
 
     if (message.type === 'task-progress-count' && message.taskType === 'import') {
-        toast.message = "Import in progress: " + message.progressCount;
-
-        infoService.showPersistent(toast);
+        infoService.showPersistent(makeToast(message.taskId, "Import in progress: " + message.progressCount));
     }
 
     if (message.type === 'task-succeeded' && message.taskType === 'import') {
-        toast.message = "Import finished successfully.";
+        const toast = makeToast(message.taskId, "Import finished successfully.");
         toast.closeAfter = 5000;
 
         infoService.showPersistent(toast);
