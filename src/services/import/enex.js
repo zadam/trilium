@@ -20,7 +20,7 @@ function parseDate(text) {
 let note = {};
 let resource;
 
-async function importEnex(importContext, file, parentNote) {
+async function importEnex(taskContext, file, parentNote) {
     const saxStream = sax.createStream(true);
     const xmlBuilder = new xml2js.Builder({ headless: true });
     const parser = new xml2js.Parser({ explicitArray: true });
@@ -221,7 +221,7 @@ async function importEnex(importContext, file, parentNote) {
             isProtected: parentNote.isProtected && protectedSessionService.isProtectedSessionAvailable(),
         })).note;
 
-        importContext.increaseProgressCount();
+        taskContext.increaseProgressCount();
 
         let noteContent = await noteEntity.getContent();
 
@@ -244,7 +244,7 @@ async function importEnex(importContext, file, parentNote) {
                     isProtected: parentNote.isProtected && protectedSessionService.isProtectedSessionAvailable(),
                 })).note;
 
-                importContext.increaseProgressCount();
+                taskContext.increaseProgressCount();
 
                 const resourceLink = `<a href="#root/${resourceNote.noteId}">${utils.escapeHtml(resource.title)}</a>`;
 
@@ -255,7 +255,7 @@ async function importEnex(importContext, file, parentNote) {
                 try {
                     const originalName = "image." + resource.mime.substr(6);
 
-                    const {url} = await imageService.saveImage(resource.content, originalName, noteEntity.noteId, importContext.shrinkImages);
+                    const {url} = await imageService.saveImage(resource.content, originalName, noteEntity.noteId, taskContext.data.shrinkImages);
 
                     const imageLink = `<img src="${url}">`;
 

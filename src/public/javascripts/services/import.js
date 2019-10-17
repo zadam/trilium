@@ -9,7 +9,7 @@ export async function uploadFiles(parentNoteId, files, options) {
         return;
     }
 
-    const importId = utils.randomString(10);
+    const taskId = utils.randomString(10);
     let noteId;
     let counter = 0;
 
@@ -18,7 +18,7 @@ export async function uploadFiles(parentNoteId, files, options) {
 
         const formData = new FormData();
         formData.append('upload', file);
-        formData.append('importId', importId);
+        formData.append('taskId', taskId);
         formData.append('last', counter === files.length ? "true" : "false");
 
         for (const key in options) {
@@ -41,23 +41,23 @@ export async function uploadFiles(parentNoteId, files, options) {
 ws.subscribeToMessages(async message => {
     const toast = {
         id: "import",
-        title: "Import",
+        title: "Import status",
         icon: "plus"
     };
 
-    if (message.type === 'import-error') {
+    if (message.type === 'task-error' && message.taskType === 'import') {
         infoService.closePersistent(toast.id);
         infoService.showError(message.message);
         return;
     }
 
-    if (message.type === 'import-progress-count') {
+    if (message.type === 'task-progress-count' && message.taskType === 'import') {
         toast.message = "Import in progress: " + message.progressCount;
 
         infoService.showPersistent(toast);
     }
 
-    if (message.type === 'import-succeeded') {
+    if (message.type === 'task-succeeded' && message.taskType === 'import') {
         toast.message = "Import finished successfully.";
         toast.closeAfter = 5000;
 

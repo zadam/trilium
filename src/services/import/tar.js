@@ -11,18 +11,18 @@ const tar = require('tar-stream');
 const stream = require('stream');
 const path = require('path');
 const commonmark = require('commonmark');
-const ImportContext = require('../import_context');
+const TaskContext = require('../task_context.js');
 const protectedSessionService = require('../protected_session');
 const mimeService = require("./mime");
 const treeService = require("../tree");
 
 /**
- * @param {ImportContext} importContext
+ * @param {TaskContext} taskContext
  * @param {Buffer} fileBuffer
  * @param {Note} importRootNote
  * @return {Promise<*>}
  */
-async function importTar(importContext, fileBuffer, importRootNote) {
+async function importTar(taskContext, fileBuffer, importRootNote) {
     // maps from original noteId (in tar file) to newly generated noteId
     const noteIdMap = {};
     const attributes = [];
@@ -127,9 +127,9 @@ async function importTar(importContext, fileBuffer, importRootNote) {
         return noteId;
     }
 
-    function detectFileTypeAndMime(importContext, filePath) {
+    function detectFileTypeAndMime(taskContext, filePath) {
         const mime = mimeService.getMime(filePath) || "application/octet-stream";
-        const type = mimeService.getType(importContext, mime);
+        const type = mimeService.getType(taskContext.data, mime);
 
         return { mime, type };
     }
@@ -156,7 +156,7 @@ async function importTar(importContext, fileBuffer, importRootNote) {
                 attr.value = getNewNoteId(attr.value);
             }
 
-            if (importContext.safeImport && attributeService.isAttributeDangerous(attr.type, attr.name)) {
+            if (taskContext.data.safeImport && attributeService.isAttributeDangerous(attr.type, attr.name)) {
                 attr.name = 'disabled-' + attr.name;
             }
 
@@ -248,7 +248,7 @@ async function importTar(importContext, fileBuffer, importRootNote) {
             return;
         }
 
-        const {type, mime} = noteMeta ? noteMeta : detectFileTypeAndMime(importContext, filePath);
+        const {type, mime} = noteMeta ? noteMeta : detectFileTypeAndMime(taskContext, filePath);
 
         if (type !== 'file' && type !== 'image') {
             content = content.toString("UTF-8");
@@ -402,7 +402,7 @@ async function importTar(importContext, fileBuffer, importRootNote) {
                 log.info("Ignoring tar import entry with type " + header.type);
             }
 
-            importContext.increaseProgressCount();
+            taskContext.increaseProgressCount();
 
             next(); // ready for next entry
         });
@@ -429,7 +429,7 @@ async function importTar(importContext, fileBuffer, importRootNote) {
                     await treeService.sortNotesAlphabetically(noteId, true);
                 }
 
-                importContext.increaseProgressCount();
+                taskContext.increaseProgressCount();
             }
 
             // we're saving attributes and links only now so that all relation and link target notes

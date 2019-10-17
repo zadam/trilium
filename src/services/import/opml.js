@@ -5,12 +5,12 @@ const parseString = require('xml2js').parseString;
 const protectedSessionService = require('../protected_session');
 
 /**
- * @param {ImportContext} importContext
+ * @param {TaskContext} taskContext
  * @param {Buffer} fileBuffer
  * @param {Note} parentNote
  * @return {Promise<*[]|*>}
  */
-async function importOpml(importContext, fileBuffer, parentNote) {
+async function importOpml(taskContext, fileBuffer, parentNote) {
     const xml = await new Promise(function(resolve, reject)
     {
         parseString(fileBuffer, function (err, result) {
@@ -48,7 +48,7 @@ async function importOpml(importContext, fileBuffer, parentNote) {
             isProtected: parentNote.isProtected && protectedSessionService.isProtectedSessionAvailable(),
         });
 
-        importContext.increaseProgressCount();
+        taskContext.increaseProgressCount();
 
         for (const childOutline of (outline.outline || [])) {
             await importOutline(childOutline, note.noteId);

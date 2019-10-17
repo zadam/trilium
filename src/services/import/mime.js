@@ -79,13 +79,13 @@ function getMime(fileName) {
     return mimeTypes.lookup(fileName);
 }
 
-function getType(importContext, mime) {
+function getType(options, mime) {
     mime = mime ? mime.toLowerCase() : '';
 
-    if (importContext.textImportedAsText && (mime === 'text/html' || ['text/markdown', 'text/x-markdown'].includes(mime))) {
+    if (options.textImportedAsText && (mime === 'text/html' || ['text/markdown', 'text/x-markdown'].includes(mime))) {
         return 'text';
     }
-    else if (importContext.codeImportedAsCode && mime in CODE_MIME_TYPES) {
+    else if (options.codeImportedAsCode && mime in CODE_MIME_TYPES) {
         return 'code';
     }
     else if (mime.startsWith("image/")) {

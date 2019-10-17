@@ -7,39 +7,39 @@ const commonmark = require('commonmark');
 const path = require('path');
 const mimeService = require('./mime');
 
-async function importSingleFile(importContext, file, parentNote) {
+async function importSingleFile(taskContext, file, parentNote) {
     const mime = mimeService.getMime(file.originalname) || file.mimetype;
 
-    if (importContext.textImportedAsText) {
+    if (taskContext.data.textImportedAsText) {
         if (mime === 'text/html') {
-            return await importHtml(importContext, file, parentNote);
+            return await importHtml(taskContext, file, parentNote);
         } else if (['text/markdown', 'text/x-markdown'].includes(mime)) {
-            return await importMarkdown(importContext, file, parentNote);
+            return await importMarkdown(taskContext, file, parentNote);
         } else if (mime === 'text/plain') {
-            return await importPlainText(importContext, file, parentNote);
+            return await importPlainText(taskContext, file, parentNote);
         }
     }
 
-    if (importContext.codeImportedAsCode && mimeService.getType(importContext, mime) === 'code') {
-        return await importCodeNote(importContext, file, parentNote);
+    if (taskContext.data.codeImportedAsCode && mimeService.getType(taskContext.data, mime) === 'code') {
+        return await importCodeNote(taskContext, file, parentNote);
     }
 
     if (["image/jpeg", "image/gif", "image/png", "image/webp"].includes(mime)) {
-        return await importImage(file, parentNote, importContext);
+        return await importImage(file, parentNote, taskContext);
     }
 
-    return await importFile(importContext, file, parentNote);
+    return await importFile(taskContext, file, parentNote);
 }
 
-async function importImage(file, parentNote, importContext) {
-    const {note} = await imageService.saveImage(file.buffer, file.originalname, parentNote.noteId, importContext.shrinkImages);
+async function importImage(file, parentNote, taskContext) {
+    const {note} = await imageService.saveImage(file.buffer, file.originalname, parentNote.noteId, taskContext.data.shrinkImages);
 
-    importContext.increaseProgressCount();
+    taskContext.increaseProgressCount();
 
     return note;
 }
 
-async function importFile(importContext, file, parentNote) {
+async function importFile(taskContext, file, parentNote) {
     const originalName = file.originalname;
     const size = file.size;
 
@@ -54,12 +54,12 @@ async function importFile(importContext, file, parentNote) {
         ]
     });
 
-    importContext.increaseProgressCount();
+    taskContext.increaseProgressCount();
 
     return note;
 }
 
-async function importCodeNote(importContext, file, parentNote) {
+async function importCodeNote(taskContext, file, parentNote) {
     const title = getFileNameWithoutExtension(file.originalname);
     const content = file.buffer.toString("UTF-8");
     const detectedMime = mimeService.getMime(file.originalname) || file.mimetype;
@@ -71,12 +71,12 @@ async function importCodeNote(importContext, file, parentNote) {
         isProtected: parentNote.isProtected && protectedSessionService.isProtectedSessionAvailable()
     });
 
-    importContext.increaseProgressCount();
+    taskContext.increaseProgressCount();
 
     return note;
 }
 
-async function importPlainText(importContext, file, parentNote) {
+async function importPlainText(taskContext, file, parentNote) {
     const title = getFileNameWithoutExtension(file.originalname);
     const plainTextContent = file.buffer.toString("UTF-8");
     const htmlContent = convertTextToHtml(plainTextContent);
@@ -87,7 +87,7 @@ async function importPlainText(importContext, file, parentNote) {
         isProtected: parentNote.isProtected && protectedSessionService.isProtectedSessionAvailable(),
     });
 
-    importContext.increaseProgressCount();
+    taskContext.increaseProgressCount();
 
     return note;
 }
@@ -110,7 +110,7 @@ function convertTextToHtml(text) {
     return text;
 }
 
-async function importMarkdown(importContext, file, parentNote) {
+async function importMarkdown(taskContext, file, parentNote) {
     const markdownContent = file.buffer.toString("UTF-8");
 
     const reader = new commonmark.Parser();
@@ -127,12 +127,12 @@ async function importMarkdown(importContext, file, parentNote) {
         isProtected: parentNote.isProtected && protectedSessionService.isProtectedSessionAvailable(),
     });
 
-    importContext.increaseProgressCount();
+    taskContext.increaseProgressCount();
 
     return note;
 }
 
-async function importHtml(importContext, file, parentNote) {
+async function importHtml(taskContext, file, parentNote) {
     const title = getFileNameWithoutExtension(file.originalname);
     const content = file.buffer.toString("UTF-8");
 
@@ -142,7 +142,7 @@ async function importHtml(importContext, file, parentNote) {
         isProtected: parentNote.isProtected && protectedSessionService.isProtectedSessionAvailable(),
     });
 
-    importContext.increaseProgressCount();
+    taskContext.increaseProgressCount();
 
     return note;
 }

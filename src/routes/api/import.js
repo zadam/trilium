@@ -9,11 +9,11 @@ const cls = require('../../services/cls');
 const path = require('path');
 const noteCacheService = require('../../services/note_cache');
 const log = require('../../services/log');
-const ImportContext = require('../../services/import_context');
+const TaskContext = require('../../services/task_context.js');
 
 async function importToBranch(req) {
     const {parentNoteId} = req.params;
-    const {importId, last} = req.body;
+    const {taskId, last} = req.body;
 
     const options = {
         safeImport: req.body.safeImport !== 'false',
@@ -43,22 +43,22 @@ async function importToBranch(req) {
 
     let note; // typically root of the import - client can show it after finishing the import
 
-    const importContext = ImportContext.getInstance(importId, options);
+    const taskContext = TaskContext.getInstance(taskId, options);
 
     try {
         if (extension === '.tar' && options.explodeArchives) {
-            note = await tarImportService.importTar(importContext, file.buffer, parentNote);
+            note = await tarImportService.importTar(taskContext, file.buffer, parentNote);
         } else if (extension === '.opml' && options.explodeArchives) {
-            note = await opmlImportService.importOpml(importContext, file.buffer, parentNote);
+            note = await opmlImportService.importOpml(taskContext, file.buffer, parentNote);
         } else if (extension === '.enex' && options.explodeArchives) {
-            note = await enexImportService.importEnex(importContext, file, parentNote);
+            note = await enexImportService.importEnex(taskContext, file, parentNote);
         } else {
-            note = await singleImportService.importSingleFile(importContext, file, parentNote);
+            note = await singleImportService.importSingleFile(taskContext, file, parentNote);
         }
     }
     catch (e) {
         const message = "Import failed with following error: '" + e.message + "'. More details might be in the logs.";
-        importContext.reportError(message);
+        taskContext.reportError(message);
 
         log.error(message + e.stack);
 
@@ -67,7 +67,7 @@ async function importToBranch(req) {
 
     if (last === "true") {
         // small timeout to avoid race condition (message is received before the transaction is committed)
-        setTimeout(() => importContext.importSucceeded(parentNoteId, note.noteId), 1000);
+        setTimeout(() => taskContext.taskSucceeded(parentNoteId, note.noteId), 1000);
     }
 
     // import has deactivated note events so note cache is not updated
