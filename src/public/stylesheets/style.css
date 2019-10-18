@@ -865,3 +865,13 @@ a.external:not(.no-arrow):after, a[href^="http://"]:not(.no-arrow):after, a[href
     top: 20px;
     z-index: 10000;
 }
+
+.toast {
+    background-color: var(--accented-background-color) !important;
+    color: var(--main-text-color) !important;
+}
+
+.toast-header {
+    background-color: var(--more-accented-background-color) !important;
+    color: var(--main-text-color) !important;
+}

@@ -101,11 +101,18 @@ async function setExpanded(req) {
 }
 
 async function deleteBranch(req) {
+    const last = req.query.last === 'true';
     const branch = await repository.getBranch(req.params.branchId);
     const taskContext = TaskContext.getInstance(req.query.taskId, 'delete-notes');
 
+    const noteDeleted = await notes.deleteBranch(branch, taskContext);
+
+    if (last) {
+        taskContext.taskSucceeded();
+    }
+
     return {
-        noteDeleted: await notes.deleteBranch(branch, taskContext)
+        noteDeleted: noteDeleted
     };
 }
 

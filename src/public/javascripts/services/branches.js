@@ -108,14 +108,21 @@ async function deleteNodes(nodes) {
 
     const taskId = utils.randomString(10);
 
+    let counter = 0;
+
     for (const node of nodes) {
+        counter++;
+
+        const last = counter === nodes.length;
+        const query = `?taskId=${taskId}&last=${last ? 'true' : 'false'}`;
+
         if (deleteClones) {
-            await server.remove('notes/' + node.data.noteId + '?taskId=' + taskId);
+            await server.remove(`notes/${node.data.noteId}` + query);
 
             noteDetailService.noteDeleted(node.data.noteId);
         }
         else {
-            const {noteDeleted} = await server.remove('branches/' + node.data.branchId + '?taskId=' + taskId);
+            const {noteDeleted} = await server.remove(`branches/${node.data.branchId}` + query);
 
             if (noteDeleted) {
                 noteDetailService.noteDeleted(node.data.noteId);
@@ -166,8 +173,6 @@ async function deleteNodes(nodes) {
         const node = await treeService.activateNote(activeNotePath);
         node.setFocus(true);
     }
-
-    infoService.showMessage("Note(s) has been deleted.");
 
     return true;
 }

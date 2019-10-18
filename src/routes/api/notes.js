@@ -75,13 +75,19 @@ async function updateNote(req) {
 
 async function deleteNote(req) {
     const noteId = req.params.noteId;
+    const taskId = req.query.taskId;
+    const last = req.query.last === 'true';
 
     const note = await repository.getNote(noteId);
 
-    const taskContext = TaskContext.getInstance(req.query.taskId, 'delete-notes');
+    const taskContext = TaskContext.getInstance(taskId, 'delete-notes');
 
     for (const branch of await note.getBranches()) {
         await noteService.deleteBranch(branch, taskContext);
+    }
+
+    if (last) {
+        await taskContext.taskSucceeded();
     }
 }
 

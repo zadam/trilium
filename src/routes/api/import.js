@@ -67,7 +67,10 @@ async function importToBranch(req) {
 
     if (last === "true") {
         // small timeout to avoid race condition (message is received before the transaction is committed)
-        setTimeout(() => taskContext.taskSucceeded(parentNoteId, note.noteId), 1000);
+        setTimeout(() => taskContext.taskSucceeded({
+            parentNoteId: parentNoteId,
+            importedNoteId: note.noteId
+        }), 1000);
     }
 
     // import has deactivated note events so note cache is not updated

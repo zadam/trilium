@@ -65,8 +65,8 @@ ws.subscribeToMessages(async message => {
 
         await treeService.reloadNote(message.parentNoteId);
 
-        if (message.importedNoteId) {
-            const node = await treeService.activateNote(message.importedNoteId);
+        if (message.result.importedNoteId) {
+            const node = await treeService.activateNote(message.result.importedNoteId);
 
             node.setExpanded(true);
         }

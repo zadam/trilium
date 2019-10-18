@@ -40,7 +40,6 @@ class TaskContext {
         }
     }
 
-    // must remaing non-static
     async reportError(message) {
         await ws.sendMessageToAllClients({
             type: 'task-error',
@@ -50,14 +49,12 @@ class TaskContext {
         });
     }
 
-    // must remaing non-static
-    async taskSucceeded(parentNoteId, importedNoteId) {
+    async taskSucceeded(result) {
         await ws.sendMessageToAllClients({
             type: 'task-succeeded',
             taskId: this.taskId,
             taskType: this.taskType,
-            parentNoteId: parentNoteId,
-            importedNoteId: importedNoteId
+            result: result
         });
     }
 }

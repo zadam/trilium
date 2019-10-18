@@ -98,7 +98,14 @@ async function getNodeFromPath(notePath, expand = false, expandOpts = {}) {
     const hoistedNoteId = await hoistedNoteService.getHoistedNoteId();
     let parentNode = null;
 
-    for (const childNoteId of await getRunPath(notePath)) {
+    const runPath = await getRunPath(notePath);
+
+    if (!runPath) {
+        console.error("Could not find run path for notePath:", notePath);
+        return;
+    }
+
+    for (const childNoteId of runPath) {
         if (childNoteId === hoistedNoteId) {
             // there must be exactly one node with given hoistedNoteId
             parentNode = getNodesByNoteId(childNoteId)[0];
