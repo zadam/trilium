@@ -6,6 +6,7 @@ import treeCache from "./tree_cache.js";
 import treeUtils from "./tree_utils.js";
 import hoistedNoteService from "./hoisted_note.js";
 import noteDetailService from "./note_detail.js";
+import ws from "./ws.js";
 
 async function moveBeforeNode(nodesToMove, beforeNode) {
     nodesToMove = await filterRootNote(nodesToMove);
@@ -105,14 +106,16 @@ async function deleteNodes(nodes) {
 
     const deleteClones = $deleteClonesCheckbox.find("input").is(":checked");
 
+    const taskId = utils.randomString(10);
+
     for (const node of nodes) {
         if (deleteClones) {
-            await server.remove('notes/' + node.data.noteId);
+            await server.remove('notes/' + node.data.noteId + '?taskId=' + taskId);
 
             noteDetailService.noteDeleted(node.data.noteId);
         }
         else {
-            const {noteDeleted} = await server.remove('branches/' + node.data.branchId);
+            const {noteDeleted} = await server.remove('branches/' + node.data.branchId + '?taskId=' + taskId);
 
             if (noteDeleted) {
                 noteDetailService.noteDeleted(node.data.noteId);
@@ -248,6 +251,33 @@ async function filterRootNote(nodes) {
         node.data.noteId !== 'root'
         && node.data.noteId !== hoistedNoteId);
 }
+
+function makeToast(id, message) {
+    return {
+        id: id,
+        title: "Delete status",
+        message: message,
+        icon: "trash"
+    };
+}
+
+ws.subscribeToMessages(async message => {
+    if (message.taskType !== 'delete-notes') {
+        return;
+    }
+
+    if (message.type === 'task-error') {
+        infoService.closePersistent(message.taskId);
+        infoService.showError(message.message);
+    } else if (message.type === 'task-progress-count') {
+        infoService.showPersistent(makeToast(message.taskId, "Delete notes in progress: " + message.progressCount));
+    } else if (message.type === 'task-succeeded') {
+        const toast = makeToast(message.taskId, "Delete finished successfully.");
+        toast.closeAfter = 5000;
+
+        infoService.showPersistent(toast);
+    }
+});
 
 export default {
     moveBeforeNode,

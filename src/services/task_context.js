@@ -17,9 +17,9 @@ class TaskContext {
     }
 
     /** @return {TaskContext} */
-    static getInstance(taskId, data) {
+    static getInstance(taskId, taskType, data) {
         if (!taskContexts[taskId]) {
-            taskContexts[taskId] = new TaskContext(taskId, 'import', data);
+            taskContexts[taskId] = new TaskContext(taskId, taskType, data);
         }
 
         return taskContexts[taskId];

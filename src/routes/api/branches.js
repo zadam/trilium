@@ -6,6 +6,7 @@ const sync_table = require('../../services/sync_table');
 const tree = require('../../services/tree');
 const notes = require('../../services/notes');
 const repository = require('../../services/repository');
+const TaskContext = require('../../services/task_context');
 
 /**
  * Code in this file deals with moving and cloning branches. Relationship between note and parent note is unique
@@ -101,9 +102,10 @@ async function setExpanded(req) {
 
 async function deleteBranch(req) {
     const branch = await repository.getBranch(req.params.branchId);
+    const taskContext = TaskContext.getInstance(req.query.taskId, 'delete-notes');
 
     return {
-        noteDeleted: await notes.deleteBranch(branch)
+        noteDeleted: await notes.deleteBranch(branch, taskContext)
     };
 }
 
