@@ -82,6 +82,8 @@ async function initNotSyncedOptions(initialized, startNotePath = 'root', opts = 
 
     await optionService.createOption('spellCheckEnabled', 'true', false);
     await optionService.createOption('spellCheckLanguageCode', 'en-US', false);
+
+    await optionService.createOption('hideTabRowForOneTab', 'false', false);
 }
 
 module.exports = {
