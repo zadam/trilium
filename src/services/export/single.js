@@ -5,7 +5,7 @@ const html = require('html');
 const utils = require('../utils');
 const mdService = require('./md');
 
-async function exportSingleNote(exportContext, branch, format, res) {
+async function exportSingleNote(taskContext, branch, format, res) {
     const note = await branch.getNote();
 
     if (note.type === 'image' || note.type === 'file') {
@@ -54,8 +54,8 @@ async function exportSingleNote(exportContext, branch, format, res) {
 
     res.send(payload);
 
-    exportContext.increaseProgressCount();
-    exportContext.exportFinished();
+    taskContext.increaseProgressCount();
+    taskContext.taskSucceeded();
 }
 
 module.exports = {

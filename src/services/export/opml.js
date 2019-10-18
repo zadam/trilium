@@ -3,7 +3,7 @@
 const repository = require("../repository");
 const utils = require('../utils');
 
-async function exportToOpml(exportContext, branch, version, res) {
+async function exportToOpml(taskContext, branch, version, res) {
     if (!['1.0', '2.0'].includes(version)) {
         throw new Error("Unrecognized OPML version " + version);
     }
@@ -38,7 +38,7 @@ async function exportToOpml(exportContext, branch, version, res) {
             throw new Error("Unrecognized OPML version " + opmlVersion);
         }
 
-        exportContext.increaseProgressCount();
+        taskContext.increaseProgressCount();
 
         for (const child of await note.getChildBranches()) {
             await exportNoteInner(child.branchId);
@@ -66,7 +66,7 @@ async function exportToOpml(exportContext, branch, version, res) {
 </opml>`);
     res.end();
 
-    exportContext.exportFinished();
+    taskContext.taskSucceeded();
 }
 
 function prepareText(text) {

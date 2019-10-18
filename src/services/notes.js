@@ -390,7 +390,9 @@ async function updateNote(noteId, noteUpdates) {
 }
 
 /** @return {boolean} - true if note has been deleted, false otherwise */
-async function deleteBranch(branch) {
+async function deleteBranch(branch, taskContext) {
+    taskContext.increaseProgressCount();
+
     if (!branch || branch.isDeleted) {
         return false;
     }
@@ -413,7 +415,7 @@ async function deleteBranch(branch) {
         await note.save();
 
         for (const childBranch of await note.getChildBranches()) {
-            await deleteBranch(childBranch);
+            await deleteBranch(childBranch, taskContext);
         }
 
         for (const attribute of await note.getOwnedAttributes()) {

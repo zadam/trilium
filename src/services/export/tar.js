@@ -12,11 +12,11 @@ const protectedSessionService = require('../protected_session');
 const sanitize = require("sanitize-filename");
 
 /**
- * @param {ExportContext} exportContext
+ * @param {TaskContext} taskContext
  * @param {Branch} branch
  * @param {string} format - 'html' or 'markdown'
  */
-async function exportToTar(exportContext, branch, format, res) {
+async function exportToTar(taskContext, branch, format, res) {
     const pack = tar.pack();
 
     const noteIdToMeta = {};
@@ -124,7 +124,7 @@ async function exportToTar(exportContext, branch, format, res) {
             })
         };
 
-        exportContext.increaseProgressCount();
+        taskContext.increaseProgressCount();
 
         if (note.type === 'text') {
             meta.format = format;
@@ -268,7 +268,7 @@ ${content}
             pack.entry({name: filePathPrefix + noteMeta.dataFileName, size: content.length}, content);
         }
 
-        exportContext.increaseProgressCount();
+        taskContext.increaseProgressCount();
 
         if (noteMeta.children && noteMeta.children.length > 0) {
             const directoryPath = filePathPrefix + noteMeta.dirFileName;
@@ -315,7 +315,7 @@ ${content}
 
     pack.pipe(res);
 
-    exportContext.exportFinished();
+    taskContext.taskSucceeded();
 }
 
 module.exports = {

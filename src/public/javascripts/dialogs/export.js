@@ -15,14 +15,14 @@ const $exportProgressCount = $("#export-progress-count");
 const $exportButton = $("#export-button");
 const $opmlVersions = $("#opml-versions");
 
-let exportId = '';
+let taskId = '';
 let branchId = null;
 
 export async function showDialog(node, defaultType) {
     utils.closeActiveDialog();
 
-    // each opening of the dialog resets the exportId so we don't associate it with previous exports anymore
-    exportId = '';
+    // each opening of the dialog resets the taskId so we don't associate it with previous exports anymore
+    taskId = '';
     $exportButton.removeAttr("disabled");
     $exportProgressWrapper.hide();
     $exportProgressCount.text('0');
@@ -77,9 +77,9 @@ $form.submit(() => {
 });
 
 function exportBranch(branchId, type, format, version) {
-    exportId = utils.randomString(10);
+    taskId = utils.randomString(10);
 
-    const url = utils.getHost() + `/api/notes/${branchId}/export/${type}/${format}/${version}/${exportId}`;
+    const url = utils.getHost() + `/api/notes/${branchId}/export/${type}/${format}/${version}/${taskId}`;
 
     utils.download(url);
 }
@@ -113,23 +113,23 @@ $('input[name=export-subtree-format]').change(function () {
 });
 
 ws.subscribeToMessages(async message => {
-    if (message.type === 'export-error') {
+    if (message.type === 'task-error' && message.taskType === 'export') {
         infoService.showError(message.message);
         $dialog.modal('hide');
         return;
     }
 
-    if (!message.exportId || message.exportId !== exportId) {
+    if (!message.taskId || message.taskId !== taskId) {
         // incoming messages must correspond to this export instance
         return;
     }
 
-    if (message.type === 'export-progress-count') {
+    if (message.type === 'task-progress-count' && message.taskType === 'export') {
         $exportProgressWrapper.slideDown();
 
         $exportProgressCount.text(message.progressCount);
     }
-    else if (message.type === 'export-finished') {
+    else if (message.type === 'task-succeeded' && message.taskType === 'export') {
         $dialog.modal('hide');
 
         infoService.showMessage("Export finished successfully.");

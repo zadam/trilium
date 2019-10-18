@@ -3,6 +3,8 @@
 const noteService = require('../../services/notes');
 const treeService = require('../../services/tree');
 const repository = require('../../services/repository');
+const utils = require('../../services/utils');
+const TaskContext = require('../../services/task_context');
 
 async function getNote(req) {
     const noteId = req.params.noteId;
@@ -76,8 +78,10 @@ async function deleteNote(req) {
 
     const note = await repository.getNote(noteId);
 
+    const taskContext = new TaskContext(utils.randomString(10), 'delete-note');
+
     for (const branch of await note.getBranches()) {
-        await noteService.deleteBranch(branch);
+        await noteService.deleteBranch(branch, taskContext);
     }
 }
 
