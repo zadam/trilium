@@ -10,8 +10,6 @@ const $subtreeFormats = $("#export-subtree-formats");
 const $singleFormats = $("#export-single-formats");
 const $subtreeType = $("#export-type-subtree");
 const $singleType = $("#export-type-single");
-const $exportProgressWrapper = $("#export-progress-count-wrapper");
-const $exportProgressCount = $("#export-progress-count");
 const $exportButton = $("#export-button");
 const $opmlVersions = $("#opml-versions");
 
@@ -24,8 +22,6 @@ export async function showDialog(node, defaultType) {
     // each opening of the dialog resets the taskId so we don't associate it with previous exports anymore
     taskId = '';
     $exportButton.removeAttr("disabled");
-    $exportProgressWrapper.hide();
-    $exportProgressCount.text('0');
 
     if (defaultType === 'subtree') {
         $subtreeType.prop("checked", true).change();
@@ -54,8 +50,7 @@ export async function showDialog(node, defaultType) {
 }
 
 $form.submit(() => {
-    // disabling so export can't be triggered again
-    $exportButton.attr("disabled", "disabled");
+    $dialog.modal('hide');
 
     const exportType = $dialog.find("input[name='export-type']:checked").val();
 
@@ -112,26 +107,27 @@ $('input[name=export-subtree-format]').change(function () {
     }
 });
 
+function makeToast(id, message) {
+    return {
+        id: id,
+        title: "Export status",
+        message: message,
+        icon: "arrow-square-up-right"
+    };
+}
+
 ws.subscribeToMessages(async message => {
     if (message.type === 'task-error' && message.taskType === 'export') {
+        infoService.closePersistent(message.taskId);
         infoService.showError(message.message);
-        $dialog.modal('hide');
-        return;
     }
-
-    if (!message.taskId || message.taskId !== taskId) {
-        // incoming messages must correspond to this export instance
-        return;
-    }
-
-    if (message.type === 'task-progress-count' && message.taskType === 'export') {
-        $exportProgressWrapper.slideDown();
-
-        $exportProgressCount.text(message.progressCount);
+    else if (message.type === 'task-progress-count' && message.taskType === 'export') {
+        infoService.showPersistent(makeToast(message.taskId, "Export in progress: " + message.progressCount));
     }
     else if (message.type === 'task-succeeded' && message.taskType === 'export') {
-        $dialog.modal('hide');
+        const toast = makeToast(message.taskId, "Import finished successfully.");
+        toast.closeAfter = 5000;
 
-        infoService.showMessage("Export finished successfully.");
+        infoService.showPersistent(toast);
     }
 });

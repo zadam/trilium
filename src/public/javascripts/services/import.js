@@ -51,14 +51,11 @@ ws.subscribeToMessages(async message => {
     if (message.type === 'task-error' && message.taskType === 'import') {
         infoService.closePersistent(message.taskId);
         infoService.showError(message.message);
-        return;
     }
-
-    if (message.type === 'task-progress-count' && message.taskType === 'import') {
+    else if (message.type === 'task-progress-count' && message.taskType === 'import') {
         infoService.showPersistent(makeToast(message.taskId, "Import in progress: " + message.progressCount));
     }
-
-    if (message.type === 'task-succeeded' && message.taskType === 'import') {
+    else if (message.type === 'task-succeeded' && message.taskType === 'import') {
         const toast = makeToast(message.taskId, "Import finished successfully.");
         toast.closeAfter = 5000;
 
