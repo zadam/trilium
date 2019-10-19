@@ -110,13 +110,13 @@ async function sortNotesAlphabetically(parentNoteId, directoriesFirst = false) {
             }
         });
 
-        let position = 1;
+        let position = 10;
 
         for (const note of notes) {
             await sql.execute("UPDATE branches SET notePosition = ? WHERE branchId = ?",
                 [position, note.branchId]);
 
-            position++;
+            position += 10;
         }
 
         await syncTableService.addNoteReorderingSync(parentNoteId);

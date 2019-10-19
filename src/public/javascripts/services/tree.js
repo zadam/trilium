@@ -845,6 +845,18 @@ $tree.on('mousedown', '.fancytree-title', e => {
     }
 });
 
+async function duplicateNote(noteId, parentNoteId) {
+    const {note} = await server.post(`notes/${noteId}/duplicate/${parentNoteId}`);
+
+    await reload();
+
+    await activateNote(note.noteId);
+
+    const origNote = await treeCache.getNote(noteId);
+    infoService.showMessage(`Note "${origNote.title}" has been duplicated`);
+}
+
+
 utils.bindGlobalShortcut('alt+c', () => collapseTree()); // don't use shortened form since collapseTree() accepts argument
 $collapseTreeButton.click(() => collapseTree());
 
@@ -882,5 +894,6 @@ export default {
     resolveNotePath,
     getSomeNotePath,
     focusTree,
-    scrollToActiveNote
+    scrollToActiveNote,
+    duplicateNote
 };

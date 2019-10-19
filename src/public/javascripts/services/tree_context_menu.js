@@ -8,6 +8,7 @@ import syncService from "./sync.js";
 import hoistedNoteService from './hoisted_note.js';
 import noteDetailService from './note_detail.js';
 import clipboard from './clipboard.js';
+import protectedSessionHolder from "./protected_session_holder.js";
 
 class TreeContextMenu {
     constructor(node) {
@@ -68,6 +69,8 @@ class TreeContextMenu {
                 enabled: !clipboard.isEmpty() && note.type !== 'search' && noSelectedNotes },
             { title: "Paste after", cmd: "pasteAfter", uiIcon: "clipboard",
                 enabled: !clipboard.isEmpty() && isNotRoot && parentNote.type !== 'search' && noSelectedNotes },
+            { title: "Duplicate note here", cmd: "duplicateNote", uiIcon: "empty",
+                enabled: noSelectedNotes && (!note.isProtected || protectedSessionHolder.isProtectedSessionAvailable()) },
             { title: "----" },
             { title: "Export", cmd: "export", uiIcon: "empty",
                 enabled: note.type !== 'search' && noSelectedNotes },
@@ -151,6 +154,11 @@ class TreeContextMenu {
         }
         else if (cmd === "unhoist") {
             hoistedNoteService.unhoist();
+        }
+        else if (cmd === "duplicateNote") {
+            const branch = await treeCache.getBranch(this.node.data.branchId);
+
+            treeService.duplicateNote(this.node.data.noteId, branch.parentNoteId);
         }
         else {
             ws.logError("Unknown command: " + cmd);

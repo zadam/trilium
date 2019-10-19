@@ -180,6 +180,12 @@ async function changeTitle(req) {
     await note.save();
 }
 
+async function duplicateNote(req) {
+    const {noteId, parentNoteId} = req.params;
+
+    return await noteService.duplicateNote(noteId, parentNoteId);
+}
+
 module.exports = {
     getNote,
     updateNote,
@@ -190,5 +196,6 @@ module.exports = {
     setNoteTypeMime,
     getChildren,
     getRelationMap,
-    changeTitle
+    changeTitle,
+    duplicateNote
 };

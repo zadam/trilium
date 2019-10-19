@@ -109,7 +109,7 @@ async function createInitialDatabase(username, password, theme) {
             noteId: 'root',
             parentNoteId: 'none',
             isExpanded: true,
-            notePosition: 0
+            notePosition: 10
         }).save();
 
         const dummyTaskContext = new TaskContext("1", 'import', false);

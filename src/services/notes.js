@@ -21,15 +21,15 @@ async function getNewNotePosition(parentNoteId, noteData) {
     if (noteData.target === 'into') {
         const maxNotePos = await sql.getValue('SELECT MAX(notePosition) FROM branches WHERE parentNoteId = ? AND isDeleted = 0', [parentNoteId]);
 
-        newNotePos = maxNotePos === null ? 0 : maxNotePos + 1;
+        newNotePos = maxNotePos === null ? 0 : maxNotePos + 10;
     }
     else if (noteData.target === 'after') {
         const afterNote = await sql.getRow('SELECT notePosition FROM branches WHERE branchId = ?', [noteData.target_branchId]);
 
-        newNotePos = afterNote.notePosition + 1;
+        newNotePos = afterNote.notePosition + 10;
 
         // not updating utcDateModified to avoig having to sync whole rows
-        await sql.execute('UPDATE branches SET notePosition = notePosition + 1 WHERE parentNoteId = ? AND notePosition > ? AND isDeleted = 0',
+        await sql.execute('UPDATE branches SET notePosition = notePosition + 10 WHERE parentNoteId = ? AND notePosition > ? AND isDeleted = 0',
             [parentNoteId, afterNote.notePosition]);
 
         await syncTableService.addNoteReorderingSync(parentNoteId);
@@ -465,6 +465,44 @@ async function cleanupDeletedNotes() {
     await sql.execute("UPDATE note_revisions SET content = NULL WHERE note_revisions.content IS NOT NULL AND noteId IN (SELECT noteId FROM notes WHERE isDeleted = 1 AND notes.utcDateModified <= ?)", [dateUtils.utcDateStr(cutoffDate)]);
 }
 
+async function duplicateNote(noteId, parentNoteId) {
+    const origNote = await repository.getNote(noteId);
+
+    if (origNote.isProtected && !protectedSessionService.isProtectedSessionAvailable()) {
+        throw new Error(`Cannot duplicate note=${origNote.noteId} because it is protected and protected session is not available`);
+    }
+
+    // might be null if orig note is not in the target parentNoteId
+    const origBranch = (await origNote.getBranches()).find(branch => branch.parentNoteId === parentNoteId);
+
+    const newNote = new Note(origNote);
+    newNote.noteId = undefined; // force creation of new note
+    newNote.title += " (dup)";
+
+    await newNote.save();
+    await newNote.setContent(await origNote.getContent());
+
+    const newBranch = await new Branch({
+        noteId: newNote.noteId,
+        parentNoteId: parentNoteId,
+        // here increasing just by 1 to make sure it's directly after original
+        notePosition: origBranch ? origBranch.notePosition + 1 : null
+    }).save();
+
+    for (const attribute of await origNote.getAttributes()) {
+        const attr = new Attribute(attribute);
+        attr.attributeId = undefined; // force creation of new attribute
+        attr.noteId = newNote.noteId;
+
+        await attr.save();
+    }
+
+    return {
+        note: newNote,
+        branch: newBranch
+    };
+}
+
 sqlInit.dbReady.then(() => {
     // first cleanup kickoff 5 minutes after startup
     setTimeout(cls.wrap(cleanupDeletedNotes), 5 * 60 * 1000);
@@ -478,5 +516,6 @@ module.exports = {
     updateNote,
     deleteBranch,
     protectNoteRecursively,
-    scanForLinks
+    scanForLinks,
+    duplicateNote
 };

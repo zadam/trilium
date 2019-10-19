@@ -198,7 +198,7 @@ async function findExistencyIssues() {
         const branches = await repository.getEntities(`SELECT * FROM branches WHERE noteId = ? and parentNoteId = ? and isDeleted = 1`, [noteId, parentNoteId]);
 
         // it's not necessarily "original" branch, it's just the only one which will survive
-        const origBranch = branches.get(0);
+        const origBranch = branches[0];
 
         // delete all but the first branch
         for (const branch of branches.slice(1)) {

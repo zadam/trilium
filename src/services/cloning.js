@@ -81,7 +81,7 @@ async function cloneNoteAfter(noteId, afterBranchId) {
 
     // we don't change utcDateModified so other changes are prioritized in case of conflict
     // also we would have to sync all those modified branches otherwise hash checks would fail
-    await sql.execute("UPDATE branches SET notePosition = notePosition + 1 WHERE parentNoteId = ? AND notePosition > ? AND isDeleted = 0",
+    await sql.execute("UPDATE branches SET notePosition = notePosition + 10 WHERE parentNoteId = ? AND notePosition > ? AND isDeleted = 0",
         [afterNote.parentNoteId, afterNote.notePosition]);
 
     await syncTable.addNoteReorderingSync(afterNote.parentNoteId);
@@ -89,7 +89,7 @@ async function cloneNoteAfter(noteId, afterBranchId) {
     const branch = await new Branch({
         noteId: noteId,
         parentNoteId: afterNote.parentNoteId,
-        notePosition: afterNote.notePosition + 1,
+        notePosition: afterNote.notePosition + 10,
         isExpanded: 0
     }).save();
 

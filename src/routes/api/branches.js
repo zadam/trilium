@@ -14,8 +14,7 @@ const TaskContext = require('../../services/task_context');
  */
 
 async function moveBranchToParent(req) {
-    const branchId = req.params.branchId;
-    const parentNoteId = req.params.parentNoteId;
+    const {branchId, parentNoteId} = req.params;
 
     const noteToMove = await tree.getBranch(branchId);
 
@@ -26,7 +25,7 @@ async function moveBranchToParent(req) {
     }
 
     const maxNotePos = await sql.getValue('SELECT MAX(notePosition) FROM branches WHERE parentNoteId = ? AND isDeleted = 0', [parentNoteId]);
-    const newNotePos = maxNotePos === null ? 0 : maxNotePos + 1;
+    const newNotePos = maxNotePos === null ? 0 : maxNotePos + 10;
 
     const branch = await repository.getBranch(branchId);
     branch.parentNoteId = parentNoteId;
@@ -37,8 +36,7 @@ async function moveBranchToParent(req) {
 }
 
 async function moveBranchBeforeNote(req) {
-    const branchId = req.params.branchId;
-    const beforeBranchId = req.params.beforeBranchId;
+    const {branchId, beforeBranchId} = req.params;
 
     const noteToMove = await tree.getBranch(branchId);
     const beforeNote = await tree.getBranch(beforeBranchId);
@@ -51,7 +49,7 @@ async function moveBranchBeforeNote(req) {
 
     // we don't change utcDateModified so other changes are prioritized in case of conflict
     // also we would have to sync all those modified branches otherwise hash checks would fail
-    await sql.execute("UPDATE branches SET notePosition = notePosition + 1 WHERE parentNoteId = ? AND notePosition >= ? AND isDeleted = 0",
+    await sql.execute("UPDATE branches SET notePosition = notePosition + 10 WHERE parentNoteId = ? AND notePosition >= ? AND isDeleted = 0",
         [beforeNote.parentNoteId, beforeNote.notePosition]);
 
     await sync_table.addNoteReorderingSync(beforeNote.parentNoteId);
@@ -65,8 +63,7 @@ async function moveBranchBeforeNote(req) {
 }
 
 async function moveBranchAfterNote(req) {
-    const branchId = req.params.branchId;
-    const afterBranchId = req.params.afterBranchId;
+    const {branchId, afterBranchId} = req.params;
 
     const noteToMove = await tree.getBranch(branchId);
     const afterNote = await tree.getBranch(afterBranchId);
@@ -79,22 +76,21 @@ async function moveBranchAfterNote(req) {
 
     // we don't change utcDateModified so other changes are prioritized in case of conflict
     // also we would have to sync all those modified branches otherwise hash checks would fail
-    await sql.execute("UPDATE branches SET notePosition = notePosition + 1 WHERE parentNoteId = ? AND notePosition > ? AND isDeleted = 0",
+    await sql.execute("UPDATE branches SET notePosition = notePosition + 10 WHERE parentNoteId = ? AND notePosition > ? AND isDeleted = 0",
         [afterNote.parentNoteId, afterNote.notePosition]);
 
     await sync_table.addNoteReorderingSync(afterNote.parentNoteId);
 
     const branch = await repository.getBranch(branchId);
     branch.parentNoteId = afterNote.parentNoteId;
-    branch.notePosition = afterNote.notePosition + 1;
+    branch.notePosition = afterNote.notePosition + 10;
     await branch.save();
 
     return { success: true };
 }
 
 async function setExpanded(req) {
-    const branchId = req.params.branchId;
-    const expanded = req.params.expanded;
+    const {branchId, expanded} = req.params;
 
     await sql.execute("UPDATE branches SET isExpanded = ? WHERE branchId = ?", [expanded, branchId]);
     // we don't sync expanded label

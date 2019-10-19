@@ -47,14 +47,15 @@ function AttributesModel() {
     };
 
     this.updateAttributePositions = function() {
-        let position = 0;
+        let position = 10;
 
         // we need to update positions by searching in the DOM, because order of the
         // attributes in the viewmodel (self.ownedAttributes()) stays the same
         $ownedAttributesBody.find('input[name="position"]').each(function() {
             const attribute = self.getTargetAttribute(this);
 
-            attribute().position = position++;
+            attribute().position = position;
+            position += 10;
         });
     };
 
