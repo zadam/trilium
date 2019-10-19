@@ -142,6 +142,8 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
             currentNoteId: currentNote.noteId,
             originEntityName: "notes", // currently there's no other entity on frontend which can trigger event
             originEntityId: originEntity ? originEntity.noteId : null
+        }, {
+            'trilium-source-id': "script"
         });
 
         if (ret.success) {

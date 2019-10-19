@@ -167,7 +167,7 @@ span.fancytree-title {
 }
 
 span.fancytree-node.protected > span.fancytree-custom-icon {
-    filter: drop-shadow(2px 2px 2px black);
+    filter: drop-shadow(2px 2px 2px var(--main-text-color));
 }
 
 span.fancytree-node.multiple-parents .fancytree-title::after {
@@ -863,7 +863,7 @@ a.external:not(.no-arrow):after, a[href^="http://"]:not(.no-arrow):after, a[href
     position: absolute;
     width: 100%;
     top: 20px;
-    z-index: 10000;
+    z-index: -100;
 }
 
 .toast {

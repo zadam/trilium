@@ -3,43 +3,46 @@ import infoService from "./info.js";
 
 const REQUEST_LOGGING_ENABLED = false;
 
-function getHeaders() {
+function getHeaders(headers) {
     // headers need to be lowercase because node.js automatically converts them to lower case
     // so hypothetical protectedSessionId becomes protectedsessionid on the backend
     // also avoiding using underscores instead of dashes since nginx filters them out by default
-    const headers = {
-        'trilium-source-id': glob.sourceId,
-        'x-csrf-token': glob.csrfToken
+    const allHeaders = {
+        ...{
+            'trilium-source-id': glob.sourceId,
+            'x-csrf-token': glob.csrfToken
+        },
+        ...headers
     };
 
     if (utils.isElectron()) {
         // passing it explicitely here because of the electron HTTP bypass
-        headers.cookie = document.cookie;
+        allHeaders.cookie = document.cookie;
     }
 
-    return headers;
+    return allHeaders;
 }
 
-async function get(url) {
-    return await call('GET', url);
+async function get(url, headers = {}) {
+    return await call('GET', url, null, headers);
 }
 
-async function post(url, data) {
-    return await call('POST', url, data);
+async function post(url, data, headers = {}) {
+    return await call('POST', url, data, headers);
 }
 
-async function put(url, data) {
-    return await call('PUT', url, data);
+async function put(url, data, headers = {}) {
+    return await call('PUT', url, data, headers);
 }
 
-async function remove(url) {
-    return await call('DELETE', url);
+async function remove(url, headers = {}) {
+    return await call('DELETE', url, null, headers);
 }
 
 let i = 1;
 const reqResolves = {};
 
-async function call(method, url, data) {
+async function call(method, url, data, headers = {}) {
     if (utils.isElectron()) {
         const ipc = require('electron').ipcRenderer;
         const requestId = i++;
@@ -53,7 +56,7 @@ async function call(method, url, data) {
 
             ipc.send('server-request', {
                 requestId: requestId,
-                headers: getHeaders(),
+                headers: getHeaders(headers),
                 method: method,
                 url: "/" + baseApiUrl + url,
                 data: data
