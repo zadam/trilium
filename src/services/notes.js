@@ -177,11 +177,13 @@ async function createNote(parentNoteId, title, content = "", extraOptions = {}) 
     return {note, branch};
 }
 
-async function protectNoteRecursively(note, protect) {
+async function protectNoteRecursively(note, protect, taskContext) {
     await protectNote(note, protect);
 
+    taskContext.increaseProgressCount();
+
     for (const child of await note.getChildNotes()) {
-        await protectNoteRecursively(child, protect);
+        await protectNoteRecursively(child, protect, taskContext);
     }
 }
 

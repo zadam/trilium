@@ -35,6 +35,7 @@ class TaskContext {
                 type: 'task-progress-count',
                 taskId: this.taskId,
                 taskType: this.taskType,
+                data: this.data,
                 progressCount: this.progressCount
             });
         }
@@ -45,6 +46,7 @@ class TaskContext {
             type: 'task-error',
             taskId: this.taskId,
             taskType: this.taskType,
+            data: this.data,
             message: message
         });
     }
@@ -54,6 +56,7 @@ class TaskContext {
             type: 'task-succeeded',
             taskId: this.taskId,
             taskType: this.taskType,
+            data: this.data,
             result: result
         });
     }

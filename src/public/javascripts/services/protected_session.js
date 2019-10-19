@@ -4,6 +4,7 @@ import utils from './utils.js';
 import server from './server.js';
 import protectedSessionHolder from './protected_session_holder.js';
 import infoService from "./info.js";
+import ws from "./ws.js";
 
 const $enterProtectedSessionButton = $("#enter-protected-session-button");
 const $leaveProtectedSessionButton = $("#leave-protected-session-button");
@@ -117,11 +118,38 @@ async function protectSubtree(noteId, protect) {
 
     await server.put('notes/' + noteId + "/protect/" + (protect ? 1 : 0));
 
-    infoService.showMessage("Request to un/protect sub tree has finished successfully");
-
     treeService.reload();
     noteDetailService.reload();
 }
+
+function makeToast(message, protectingLabel, text) {
+    return {
+        id: message.taskId,
+        title: protectingLabel + " status",
+        message: text,
+        icon: message.data.protect ? "shield-check" : "shield-close"
+    };
+}
+
+ws.subscribeToMessages(async message => {
+    if (message.taskType !== 'protect-notes') {
+        return;
+    }
+
+    const protectingLabel = message.data.protect ? "Protecting" : "Unprotecting";
+
+    if (message.type === 'task-error') {
+        infoService.closePersistent(message.taskId);
+        infoService.showError(message.message);
+    } else if (message.type === 'task-progress-count') {
+        infoService.showPersistent(makeToast(message, protectingLabel,protectingLabel + " in progress: " + message.progressCount));
+    } else if (message.type === 'task-succeeded') {
+        const toast = makeToast(message, protectingLabel, protectingLabel + " finished successfully.");
+        toast.closeAfter = 3000;
+
+        infoService.showPersistent(toast);
+    }
+});
 
 export default {
     protectSubtree,

@@ -102,7 +102,11 @@ async function protectSubtree(req) {
     const note = await repository.getNote(noteId);
     const protect = !!parseInt(req.params.isProtected);
 
-    await noteService.protectNoteRecursively(note, protect);
+    const taskContext = new TaskContext(utils.randomString(10), 'protect-notes', {protect});
+
+    await noteService.protectNoteRecursively(note, protect, taskContext);
+
+    taskContext.taskSucceeded();
 }
 
 async function setNoteTypeMime(req) {
