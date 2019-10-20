@@ -7,7 +7,7 @@ import treeUtils from './tree_utils.js';
 import utils from './utils.js';
 import server from './server.js';
 import treeCache from './tree_cache.js';
-import infoService from "./info.js";
+import toastService from "./toast.js";
 import treeBuilder from "./tree_builder.js";
 import treeKeyBindings from "./tree_keybindings.js";
 import Branch from '../entities/branch.js';
@@ -295,7 +295,7 @@ async function getSomeNotePath(note) {
         const parents = await cur.getParentNotes();
 
         if (!parents.length) {
-            infoService.throwError(`Can't find parents for note ${cur.noteId}`);
+            toastService.throwError(`Can't find parents for note ${cur.noteId}`);
             return;
         }
 
@@ -695,7 +695,7 @@ async function createNote(node, parentNoteId, target, extraOptions = {}) {
         node.renderTitle();
     }
     else {
-        infoService.throwError("Unrecognized target: " + target);
+        toastService.throwError("Unrecognized target: " + target);
     }
 
     clearSelectedNodes(); // to unmark previously active node
@@ -853,7 +853,7 @@ async function duplicateNote(noteId, parentNoteId) {
     await activateNote(note.noteId);
 
     const origNote = await treeCache.getNote(noteId);
-    infoService.showMessage(`Note "${origNote.title}" has been duplicated`);
+    toastService.showMessage(`Note "${origNote.title}" has been duplicated`);
 }
 
 

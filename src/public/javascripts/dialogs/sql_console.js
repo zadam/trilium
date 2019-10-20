@@ -1,6 +1,6 @@
 import libraryLoader from '../services/library_loader.js';
 import server from '../services/server.js';
-import infoService from "../services/info.js";
+import toastService from "../services/toast.js";
 import utils from "../services/utils.js";
 
 const $dialog = $("#sql-console-dialog");
@@ -63,11 +63,11 @@ async function execute() {
     });
 
     if (!result.success) {
-        infoService.showError(result.error);
+        toastService.showError(result.error);
         return;
     }
     else {
-        infoService.showMessage("Query was executed successfully.");
+        toastService.showMessage("Query was executed successfully.");
     }
 
     const rows = result.rows;

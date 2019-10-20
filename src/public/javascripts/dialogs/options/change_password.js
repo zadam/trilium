@@ -1,6 +1,6 @@
 import server from "../../services/server.js";
 import protectedSessionHolder from "../../services/protected_session_holder.js";
-import infoService from "../../services/info.js";
+import toastService from "../../services/toast.js";
 
 export default class ChangePasswordOptions {
     constructor() {
@@ -39,7 +39,7 @@ export default class ChangePasswordOptions {
                 protectedSessionHolder.resetProtectedSession();
             }
             else {
-                infoService.showError(result.message);
+                toastService.showError(result.message);
             }
         });
 

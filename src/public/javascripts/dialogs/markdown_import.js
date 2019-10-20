@@ -1,5 +1,5 @@
 import libraryLoader from "../services/library_loader.js";
-import infoService from "../services/info.js";
+import toastService from "../services/toast.js";
 import utils from "../services/utils.js";
 import noteDetailService from "../services/note_detail.js";
 
@@ -22,7 +22,7 @@ async function convertMarkdownToHtml(text) {
 
     textEditor.model.insertContent(modelFragment, textEditor.model.document.selection);
 
-    infoService.showMessage("Markdown content has been imported into the document.");
+    toastService.showMessage("Markdown content has been imported into the document.");
 }
 
 export async function importMarkdownInline() {

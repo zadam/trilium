@@ -1,6 +1,6 @@
 import libraryLoader from "./library_loader.js";
 import bundleService from "./bundle.js";
-import infoService from "./info.js";
+import toastService from "./toast.js";
 import server from "./server.js";
 import noteDetailService from "./note_detail.js";
 import utils from "./utils.js";
@@ -102,7 +102,7 @@ class NoteDetailCode {
             await server.post('script/run/' + this.ctx.note.noteId);
         }
 
-        infoService.showMessage("Note executed");
+        toastService.showMessage("Note executed");
     }
 
     onNoteChange(func) {

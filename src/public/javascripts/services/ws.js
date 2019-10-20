@@ -1,5 +1,5 @@
 import utils from './utils.js';
-import infoService from "./info.js";
+import toastService from "./toast.js";
 import treeService from "./tree.js";
 
 const $outstandingSyncsCount = $("#outstanding-syncs-count");
@@ -65,10 +65,10 @@ function handleMessage(event) {
         $outstandingSyncsCount.html(message.outstandingSyncs);
     }
     else if (message.type === 'sync-hash-check-failed') {
-        infoService.showError("Sync check failed!", 60000);
+        toastService.showError("Sync check failed!", 60000);
     }
     else if (message.type === 'consistency-checks-failed') {
-        infoService.showError("Consistency checks failed! See logs for details.", 50 * 60000);
+        toastService.showError("Consistency checks failed! See logs for details.", 50 * 60000);
     }
 }
 

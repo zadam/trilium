@@ -1,7 +1,7 @@
 import treeService from './tree.js';
 import server from './server.js';
 import utils from './utils.js';
-import infoService from './info.js';
+import toastService from './toast.js';
 import linkService from './link.js';
 import treeCache from './tree_cache.js';
 import noteDetailService from './note_detail.js';
@@ -246,7 +246,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
      * @method
      * @param {string} message
      */
-    this.showMessage = infoService.showMessage;
+    this.showMessage = toastService.showMessage;
 
     /**
      * Show error message to the user.
@@ -254,7 +254,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
      * @method
      * @param {string} message
      */
-    this.showError = infoService.showError;
+    this.showError = toastService.showError;
 
     /**
      * Refresh tree

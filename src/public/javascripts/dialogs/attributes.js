@@ -1,6 +1,6 @@
 import noteDetailService from '../services/note_detail.js';
 import server from '../services/server.js';
-import infoService from "../services/info.js";
+import toastService from "../services/toast.js";
 import treeUtils from "../services/tree_utils.js";
 import attributeAutocompleteService from "../services/attribute_autocomplete.js";
 import utils from "../services/utils.js";
@@ -168,7 +168,7 @@ function AttributesModel() {
 
         await showAttributes(attributes);
 
-        infoService.showMessage("Attributes have been saved.");
+        toastService.showMessage("Attributes have been saved.");
 
         const ctx = noteDetailService.getActiveTabContext();
 

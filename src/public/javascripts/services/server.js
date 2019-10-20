@@ -1,5 +1,5 @@
 import utils from './utils.js';
-import infoService from "./info.js";
+import toastService from "./toast.js";
 
 const REQUEST_LOGGING_ENABLED = false;
 
@@ -87,8 +87,8 @@ async function ajax(url, method, data) {
 
     return await $.ajax(options).catch(e => {
         const message = "Error when calling " + method + " " + url + ": " + e.status + " - " + e.statusText;
-        infoService.showError(message);
-        infoService.throwError(message);
+        toastService.showError(message);
+        toastService.throwError(message);
     });
 }
 

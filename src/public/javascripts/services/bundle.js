@@ -1,6 +1,6 @@
 import ScriptContext from "./script_context.js";
 import server from "./server.js";
-import infoService from "./info.js";
+import toastService from "./toast.js";
 
 async function getAndExecuteBundle(noteId, originEntity = null) {
     const bundle = await server.get('script/bundle/' + noteId);
@@ -17,7 +17,7 @@ async function executeBundle(bundle, originEntity, tabContext, $container) {
         }.call(apiContext));
     }
     catch (e) {
-        infoService.showAndLogError(`Execution of ${bundle.noteId} failed with error: ${e.message}`);
+        toastService.showAndLogError(`Execution of ${bundle.noteId} failed with error: ${e.message}`);
     }
 }
 

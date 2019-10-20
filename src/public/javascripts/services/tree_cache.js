@@ -1,7 +1,7 @@
 import utils from "./utils.js";
 import Branch from "../entities/branch.js";
 import NoteShort from "../entities/note_short.js";
-import infoService from "./info.js";
+import toastService from "./toast.js";
 import ws from "./ws.js";
 import server from "./server.js";
 
@@ -197,7 +197,7 @@ class TreeCache {
         const branchId = this.childParentToBranch[key];
 
         if (!branchId) {
-            infoService.throwError("Cannot find branch for child-parent=" + key);
+            toastService.throwError("Cannot find branch for child-parent=" + key);
         }
 
         return branchId;

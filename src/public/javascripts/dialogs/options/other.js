@@ -1,6 +1,6 @@
 import optionsService from "../../services/options.js";
 import server from "../../services/server.js";
-import infoService from "../../services/info.js";
+import toastService from "../../services/toast.js";
 
 export default class ProtectedSessionOptions {
     constructor() {
@@ -12,14 +12,14 @@ export default class ProtectedSessionOptions {
 
         this.$spellCheckEnabled.change(() => {
             const opts = { 'spellCheckEnabled': this.$spellCheckEnabled.is(":checked") ? "true" : "false" };
-            server.put('options', opts).then(() => infoService.showMessage("Options change have been saved."));
+            server.put('options', opts).then(() => toastService.showMessage("Options change have been saved."));
 
             return false;
         });
 
         this.$spellCheckLanguageCode.change(() => {
             const opts = { 'spellCheckLanguageCode': this.$spellCheckLanguageCode.val() };
-            server.put('options', opts).then(() => infoService.showMessage("Options change have been saved."));
+            server.put('options', opts).then(() => toastService.showMessage("Options change have been saved."));
 
             return false;
         });
@@ -30,7 +30,7 @@ export default class ProtectedSessionOptions {
             server.put('options', { 'protectedSessionTimeout': protectedSessionTimeout }).then(() => {
                 optionsService.reloadOptions();
 
-                infoService.showMessage("Options change have been saved.");
+                toastService.showMessage("Options change have been saved.");
             });
 
             return false;
@@ -38,7 +38,7 @@ export default class ProtectedSessionOptions {
 
         this.$noteRevisionsTimeInterval.change(() => {
             const opts = { 'noteRevisionSnapshotTimeInterval': this.$noteRevisionsTimeInterval.val() };
-            server.put('options', opts).then(() => infoService.showMessage("Options change have been saved."));
+            server.put('options', opts).then(() => toastService.showMessage("Options change have been saved."));
 
             return false;
         });

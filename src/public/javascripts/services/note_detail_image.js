@@ -1,5 +1,5 @@
 import utils from "./utils.js";
-import infoService from "./info.js";
+import toastService from "./toast.js";
 import server from "./server.js";
 
 class NoteDetailImage {
@@ -28,10 +28,10 @@ class NoteDetailImage {
                 const success = document.execCommand('copy');
 
                 if (success) {
-                    infoService.showMessage("Image copied to the clipboard");
+                    toastService.showMessage("Image copied to the clipboard");
                 }
                 else {
-                    infoService.showAndLogError("Could not copy the image to clipboard.");
+                    toastService.showAndLogError("Could not copy the image to clipboard.");
                 }
             }
             finally {

@@ -2,7 +2,7 @@ import treeService from '../services/tree.js';
 import server from '../services/server.js';
 import treeCache from "../services/tree_cache.js";
 import treeUtils from "../services/tree_utils.js";
-import infoService from "../services/info.js";
+import toastService from "../services/toast.js";
 import utils from "../services/utils.js";
 
 const $dialog = $("#branch-prefix-dialog");
@@ -38,7 +38,7 @@ async function savePrefix() {
 
     $dialog.modal('hide');
 
-    infoService.showMessage("Branch prefix has been saved.");
+    toastService.showMessage("Branch prefix has been saved.");
 }
 
 $form.submit(() => {

@@ -1,5 +1,5 @@
 import server from "../../services/server.js";
-import infoService from "../../services/info.js";
+import toastService from "../../services/toast.js";
 
 export default class SyncOptions {
     constructor() {
@@ -15,10 +15,10 @@ export default class SyncOptions {
             const result = await server.post('sync/test');
 
             if (result.success) {
-                infoService.showMessage(result.message);
+                toastService.showMessage(result.message);
             }
             else {
-                infoService.showError("Sync server handshake failed, error: " + result.message);
+                toastService.showError("Sync server handshake failed, error: " + result.message);
             }
         });
     }
@@ -36,7 +36,7 @@ export default class SyncOptions {
             'syncProxy': this.$syncProxy.val()
         };
 
-        server.put('options', opts).then(()  => infoService.showMessage("Options change have been saved."));
+        server.put('options', opts).then(()  => toastService.showMessage("Options change have been saved."));
 
         return false;
     }

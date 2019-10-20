@@ -1,7 +1,7 @@
 import treeUtils from "./tree_utils.js";
 import treeChangesService from "./branches.js";
 import cloningService from "./cloning.js";
-import infoService from "./info.js";
+import toastService from "./toast.js";
 
 let clipboardIds = [];
 let clipboardMode = null;
@@ -26,7 +26,7 @@ async function pasteAfter(node) {
         // just do nothing
     }
     else {
-        infoService.throwError("Unrecognized clipboard mode=" + clipboardMode);
+        toastService.throwError("Unrecognized clipboard mode=" + clipboardMode);
     }
 }
 
@@ -54,7 +54,7 @@ async function pasteInto(node) {
         // just do nothing
     }
     else {
-        infoService.throwError("Unrecognized clipboard mode=" + mode);
+        toastService.throwError("Unrecognized clipboard mode=" + mode);
     }
 }
 
@@ -62,14 +62,14 @@ function copy(nodes) {
     clipboardIds = nodes.map(node => node.data.noteId);
     clipboardMode = 'copy';
 
-    infoService.showMessage("Note(s) have been copied into clipboard.");
+    toastService.showMessage("Note(s) have been copied into clipboard.");
 }
 
 function cut(nodes) {
     clipboardIds = nodes.map(node => node.key);
     clipboardMode = 'cut';
 
-    infoService.showMessage("Note(s) have been cut into clipboard.");
+    toastService.showMessage("Note(s) have been cut into clipboard.");
 }
 
 function isEmpty() {

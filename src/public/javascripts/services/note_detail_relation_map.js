@@ -4,7 +4,7 @@ import linkService from "./link.js";
 import libraryLoader from "./library_loader.js";
 import treeService from "./tree.js";
 import contextMenuWidget from "./context_menu.js";
-import infoService from "./info.js";
+import toastService from "./toast.js";
 import attributeAutocompleteService from "./attribute_autocomplete.js";
 
 const uniDirectionalOverlays = [
@@ -134,7 +134,7 @@ class NoteDetailRelationMap {
                 target: 'into'
             });
 
-            infoService.showMessage("Click on canvas to place new note");
+            toastService.showMessage("Click on canvas to place new note");
 
             // reloading tree so that the new note appears there
             // no need to wait for it to finish
@@ -576,7 +576,7 @@ class NoteDetailRelationMap {
             const exists = this.mapData.notes.some(n => n.noteId === note.noteId);
 
             if (exists) {
-                infoService.showError(`Note "${note.title}" is already in the diagram.`);
+                toastService.showError(`Note "${note.title}" is already in the diagram.`);
 
                 continue;
             }

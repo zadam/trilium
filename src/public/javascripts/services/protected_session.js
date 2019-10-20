@@ -3,7 +3,7 @@ import noteDetailService from './note_detail.js';
 import utils from './utils.js';
 import server from './server.js';
 import protectedSessionHolder from './protected_session_holder.js';
-import infoService from "./info.js";
+import toastService from "./toast.js";
 import ws from "./ws.js";
 
 const $enterProtectedSessionButton = $("#enter-protected-session-button");
@@ -38,7 +38,7 @@ async function setupProtectedSession(password) {
     const response = await enterProtectedSessionOnServer(password);
 
     if (!response.success) {
-        infoService.showError("Wrong password.", 3000);
+        toastService.showError("Wrong password.", 3000);
         return;
     }
 
@@ -60,7 +60,7 @@ async function setupProtectedSession(password) {
     $enterProtectedSessionButton.hide();
     $leaveProtectedSessionButton.show();
 
-    infoService.showMessage("Protected session has been started.");
+    toastService.showMessage("Protected session has been started.");
 }
 
 async function enterProtectedSessionOnServer(password) {
@@ -90,7 +90,7 @@ async function unprotectNoteAndSendToServer() {
     const activeNote = noteDetailService.getActiveNote();
 
     if (!activeNote.isProtected) {
-        infoService.showAndLogError(`Note ${activeNote.noteId} is not protected`);
+        toastService.showAndLogError(`Note ${activeNote.noteId} is not protected`);
 
         return;
     }
@@ -139,15 +139,15 @@ ws.subscribeToMessages(async message => {
     const protectingLabel = message.data.protect ? "Protecting" : "Unprotecting";
 
     if (message.type === 'task-error') {
-        infoService.closePersistent(message.taskId);
-        infoService.showError(message.message);
+        toastService.closePersistent(message.taskId);
+        toastService.showError(message.message);
     } else if (message.type === 'task-progress-count') {
-        infoService.showPersistent(makeToast(message, protectingLabel,protectingLabel + " in progress: " + message.progressCount));
+        toastService.showPersistent(makeToast(message, protectingLabel,protectingLabel + " in progress: " + message.progressCount));
     } else if (message.type === 'task-succeeded') {
         const toast = makeToast(message, protectingLabel, protectingLabel + " finished successfully.");
         toast.closeAfter = 3000;
 
-        infoService.showPersistent(toast);
+        toastService.showPersistent(toast);
     }
 });
 

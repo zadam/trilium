@@ -1,7 +1,7 @@
 import treeService from './tree.js';
 import treeCache from "./tree_cache.js";
 import server from './server.js';
-import infoService from "./info.js";
+import toastService from "./toast.js";
 
 const $searchInput = $("input[name='search-text']");
 const $resetSearchButton = $("#reset-search-button");
@@ -73,7 +73,7 @@ async function doSearch(searchText) {
     }
 
     if (searchText.trim().length === 0) {
-        infoService.showMessage("Please enter search criteria first.");
+        toastService.showMessage("Please enter search criteria first.");
 
         $searchInput.focus();
 
@@ -85,7 +85,7 @@ async function doSearch(searchText) {
     const response = await server.get('search/' + encodeURIComponent(searchText));
 
     if (!response.success) {
-        infoService.showError("Search failed.", 3000);
+        toastService.showError("Search failed.", 3000);
         return;
     }
 
@@ -105,7 +105,7 @@ async function doSearch(searchText) {
 
     // have at least some feedback which is good especially in situations
     // when the result list does not change with a query
-    infoService.showMessage("Search finished successfully.");
+    toastService.showMessage("Search finished successfully.");
 }
 
 async function saveSearch() {
@@ -139,7 +139,7 @@ async function refreshSearch() {
     activeNode.load(true);
     activeNode.setExpanded(true);
 
-    infoService.showMessage("Saved search note refreshed.");
+    toastService.showMessage("Saved search note refreshed.");
 }
 
 function init() {

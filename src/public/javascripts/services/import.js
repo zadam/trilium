@@ -1,4 +1,4 @@
-import infoService from "./info.js";
+import toastService from "./toast.js";
 import treeService from "./tree.js";
 import server from "./server.js";
 import ws from "./ws.js";
@@ -53,15 +53,15 @@ ws.subscribeToMessages(async message => {
     }
 
     if (message.type === 'task-error') {
-        infoService.closePersistent(message.taskId);
-        infoService.showError(message.message);
+        toastService.closePersistent(message.taskId);
+        toastService.showError(message.message);
     } else if (message.type === 'task-progress-count') {
-        infoService.showPersistent(makeToast(message.taskId, "Import in progress: " + message.progressCount));
+        toastService.showPersistent(makeToast(message.taskId, "Import in progress: " + message.progressCount));
     } else if (message.type === 'task-succeeded') {
         const toast = makeToast(message.taskId, "Import finished successfully.");
         toast.closeAfter = 5000;
 
-        infoService.showPersistent(toast);
+        toastService.showPersistent(toast);
 
         await treeService.reloadNote(message.parentNoteId);
 

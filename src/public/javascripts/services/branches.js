@@ -1,7 +1,7 @@
 import treeService from './tree.js';
 import utils from './utils.js';
 import server from './server.js';
-import infoService from "./info.js";
+import toastService from "./toast.js";
 import treeCache from "./tree_cache.js";
 import treeUtils from "./tree_utils.js";
 import hoistedNoteService from "./hoisted_note.js";
@@ -272,15 +272,15 @@ ws.subscribeToMessages(async message => {
     }
 
     if (message.type === 'task-error') {
-        infoService.closePersistent(message.taskId);
-        infoService.showError(message.message);
+        toastService.closePersistent(message.taskId);
+        toastService.showError(message.message);
     } else if (message.type === 'task-progress-count') {
-        infoService.showPersistent(makeToast(message.taskId, "Delete notes in progress: " + message.progressCount));
+        toastService.showPersistent(makeToast(message.taskId, "Delete notes in progress: " + message.progressCount));
     } else if (message.type === 'task-succeeded') {
         const toast = makeToast(message.taskId, "Delete finished successfully.");
         toast.closeAfter = 5000;
 
-        infoService.showPersistent(toast);
+        toastService.showPersistent(toast);
     }
 });
 
