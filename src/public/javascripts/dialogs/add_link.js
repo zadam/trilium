@@ -33,7 +33,7 @@ export async function showDialog(linkType) {
 
     glob.activeDialog = $dialog;
 
-    if (noteDetailService.getActiveNoteType() === 'text') {
+    if (noteDetailService.getActiveTabNoteType() === 'text') {
         $linkTypeHtml.prop('disabled', false);
 
         setLinkType('html');
@@ -110,14 +110,14 @@ $form.submit(() => {
         else if (linkType === 'selected-to-active') {
             const prefix = $clonePrefix.val();
 
-            cloningService.cloneNoteTo(noteId, noteDetailService.getActiveNoteId(), prefix);
+            cloningService.cloneNoteTo(noteId, noteDetailService.getActiveTabNoteId(), prefix);
 
             $dialog.modal('hide');
         }
         else if (linkType === 'active-to-selected') {
             const prefix = $clonePrefix.val();
 
-            cloningService.cloneNoteTo(noteDetailService.getActiveNoteId(), noteId, prefix);
+            cloningService.cloneNoteTo(noteDetailService.getActiveTabNoteId(), noteId, prefix);
 
             $dialog.modal('hide');
         }

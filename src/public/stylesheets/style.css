@@ -863,12 +863,14 @@ a.external:not(.no-arrow):after, a[href^="http://"]:not(.no-arrow):after, a[href
     position: absolute;
     width: 100%;
     top: 20px;
-    z-index: -100;
+    pointer-events: none;
 }
 
 .toast {
     background-color: var(--accented-background-color) !important;
     color: var(--main-text-color) !important;
+    z-index: 9999999999 !important;
+    pointer-events: all;
 }
 
 .toast-header {

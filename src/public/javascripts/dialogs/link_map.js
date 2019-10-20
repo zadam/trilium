@@ -23,7 +23,7 @@ export async function showDialog() {
     // set default settings
     $maxNotesInput.val(20);
 
-    const note = noteDetailService.getActiveNote();
+    const note = noteDetailService.getActiveTabNote();
 
     if (!note) {
         return;

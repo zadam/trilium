@@ -70,13 +70,13 @@ async function enterProtectedSessionOnServer(password) {
 }
 
 async function protectNoteAndSendToServer() {
-    if (!noteDetailService.getActiveNote() || noteDetailService.getActiveNote().isProtected) {
+    if (!noteDetailService.getActiveTabNote() || noteDetailService.getActiveTabNote().isProtected) {
         return;
     }
 
     await enterProtectedSession();
 
-    const note = noteDetailService.getActiveNote();
+    const note = noteDetailService.getActiveTabNote();
     note.isProtected = true;
 
     await noteDetailService.getActiveTabContext().saveNote();
@@ -87,7 +87,7 @@ async function protectNoteAndSendToServer() {
 }
 
 async function unprotectNoteAndSendToServer() {
-    const activeNote = noteDetailService.getActiveNote();
+    const activeNote = noteDetailService.getActiveTabNote();
 
     if (!activeNote.isProtected) {
         toastService.showAndLogError(`Note ${activeNote.noteId} is not protected`);

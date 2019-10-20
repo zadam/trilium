@@ -580,14 +580,11 @@ async function scrollToActiveNote() {
     }
 }
 
-function setBranchBackgroundBasedOnProtectedStatus(noteId) {
-    getNodesByNoteId(noteId).map(node => node.toggleClass("protected", node.data.isProtected));
-}
-
 function setProtected(noteId, isProtected) {
-    getNodesByNoteId(noteId).map(node => node.data.isProtected = isProtected);
-
-    setBranchBackgroundBasedOnProtectedStatus(noteId);
+    getNodesByNoteId(noteId).map(node => {
+        node.data.isProtected = isProtected;
+        node.toggleClass("protected", isProtected);
+    });
 }
 
 async function setNoteTitle(noteId, title) {
@@ -619,7 +616,7 @@ async function createNote(node, parentNoteId, target, extraOptions = {}) {
         extraOptions.isProtected = false;
     }
 
-    if (noteDetailService.getActiveNoteType() !== 'text') {
+    if (noteDetailService.getActiveTabNoteType() !== 'text') {
         extraOptions.saveSelection = false;
     }
     else {
@@ -762,13 +759,27 @@ ws.subscribeToMessages(message => {
 });
 
 ws.subscribeToOutsideSyncMessages(syncData => {
-    if (syncData.some(sync => sync.entityName === 'branches')
-        || syncData.some(sync => sync.entityName === 'notes')) {
+    const noteIdsToRefresh = [];
 
-        console.log(utils.now(), "Reloading tree because of background changes");
-
-        reload();
+    for (const sync of syncData.filter(sync => sync.entityName === 'branches')) {
+        if (!noteIdsToRefresh.includes(sync.parentNoteId)) {
+            noteIdsToRefresh.push(sync.parentNoteId);
+        }
     }
+
+    for (const sync of syncData.filter(sync => sync.entityName === 'notes')) {
+        if (!noteIdsToRefresh.includes(sync.noteId)) {
+            noteIdsToRefresh.push(sync.noteId);
+        }
+    }
+
+    for (const sync of syncData.filter(sync => sync.entityName === 'note_reordering')) {
+        if (!noteIdsToRefresh.includes(sync.entityId)) {
+            noteIdsToRefresh.push(sync.entityId);
+        }
+    }
+
+    reloadNotes(noteIdsToRefresh);
 });
 
 utils.bindGlobalShortcut('ctrl+o', async () => {
@@ -805,13 +816,25 @@ async function checkFolderStatus(node) {
     node.renderTitle();
 }
 
-async function reloadNote(noteId) {
-    await treeCache.reloadChildren(noteId);
+async function reloadNotes(noteIds) {
+    await treeCache.reloadNotesAndTheirChildren(noteIds);
 
-    for (const node of getNodesByNoteId(noteId)) {
-        await node.load(true);
+    const activeNotePath = noteDetailService.getActiveTabNotePath();
 
-        await checkFolderStatus(node);
+    for (const noteId of noteIds) {
+        for (const node of getNodesByNoteId(noteId)) {
+            await node.load(true);
+
+            await checkFolderStatus(node);
+        }
+    }
+
+    if (activeNotePath) {
+        const node = await getNodeFromPath(activeNotePath);
+
+        if (node) {
+            node.setActive(true, {noEvents: true}); // this node has been already active so no need to fire events again
+        }
     }
 }
 
@@ -868,7 +891,6 @@ frontendLoaded.then(bundle.executeStartupBundles);
 export default {
     reload,
     collapseTree,
-    setBranchBackgroundBasedOnProtectedStatus,
     setProtected,
     activateNote,
     getFocusedNode,
@@ -887,7 +909,7 @@ export default {
     setExpandedToServer,
     getNodesByNoteId,
     checkFolderStatus,
-    reloadNote,
+    reloadNotes,
     loadTreeCache,
     expandToNote,
     getNodeFromPath,

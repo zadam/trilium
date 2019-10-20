@@ -67,11 +67,18 @@ async function sendPing(client, lastSentSyncId) {
     const syncData = await sql.getRows("SELECT * FROM sync WHERE id > ?", [lastSentSyncId]);
 
     for (const sync of syncData) {
+        // fill in some extra data needed by the frontend
         if (sync.entityName === 'attributes') {
             sync.noteId = await sql.getValue(`SELECT noteId FROM attributes WHERE attributeId = ?`, [sync.entityId]);
         }
         else if (sync.entityName === 'note_revisions') {
             sync.noteId = await sql.getValue(`SELECT noteId FROM note_revisions WHERE noteRevisionId = ?`, [sync.entityId]);
+        }
+        else if (sync.entityName === 'branches') {
+            const {noteId, parentNoteId} = await sql.getRow(`SELECT noteId, parentNoteId FROM branches WHERE branchId = ?`, [sync.entityId]);
+
+            sync.noteId = noteId;
+            sync.parentNoteId = parentNoteId;
         }
     }
 

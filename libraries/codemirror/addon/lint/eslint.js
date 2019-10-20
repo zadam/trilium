@@ -29,8 +29,8 @@
 
     async function validatorJavaScript(text, options) {
         if (glob.isMobile()
-            || glob.getActiveNote() == null
-            || glob.getActiveNote().mime === 'application/json') {
+            || glob.getActiveTabNote() == null
+            || glob.getActiveTabNote().mime === 'application/json') {
             // eslint doesn't seem to validate pure JSON well
             return [];
         }

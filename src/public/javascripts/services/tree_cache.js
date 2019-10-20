@@ -54,23 +54,26 @@ class TreeCache {
     }
 
     /**
-     * Reload children of given noteId.
+     * Reload notes and their children.
      */
-    async reloadChildren(noteId) {
-        const resp = await server.post('tree/load', { noteIds: [noteId] });
+    async reloadNotesAndTheirChildren(noteIds) {
+        // first load the data before clearing the cache
+        const resp = await server.post('tree/load', { noteIds });
 
-        for (const childNoteId of this.children[noteId] || []) {
-            this.parents[childNoteId] = this.parents[childNoteId].filter(p => p !== noteId);
+        for (const noteId of noteIds) {
+            for (const childNoteId of this.children[noteId] || []) {
+                this.parents[childNoteId] = this.parents[childNoteId].filter(p => p !== noteId);
 
-            const branchId = this.getBranchIdByChildParent(childNoteId, noteId);
+                const branchId = this.getBranchIdByChildParent(childNoteId, noteId);
 
-            delete this.branches[branchId];
-            delete this.childParentToBranch[childNoteId + '-' + noteId];
+                delete this.branches[branchId];
+                delete this.childParentToBranch[childNoteId + '-' + noteId];
+            }
+
+            this.children[noteId] = [];
+
+            delete this.notes[noteId];
         }
-
-        this.children[noteId] = [];
-
-        delete this.notes[noteId];
 
         this.addResp(resp.notes, resp.branches, resp.relations);
     }
@@ -83,12 +86,10 @@ class TreeCache {
         // to be able to find parents we need first to make sure it is actually loaded
         await this.getNote(noteId);
 
-        for (const parentNoteId of this.parents[noteId] || []) {
-            await this.reloadChildren(parentNoteId);
-        }
+        await this.reloadNotesAndTheirChildren(this.parents[noteId] || []);
 
         // this is done to load the new parents for the noteId
-        await this.reloadChildren(noteId);
+        await this.reloadNotesAndTheirChildren([noteId]);
     }
 
     /** @return {Promise<NoteShort[]>} */

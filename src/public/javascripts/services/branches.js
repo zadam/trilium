@@ -162,9 +162,7 @@ async function deleteNodes(nodes) {
         node.remove();
     }
 
-    for (const parentNoteId of parentNoteIds) {
-        await treeService.reloadNote(parentNoteId);
-    }
+    await treeService.reloadNotes(parentNoteIds);
 
     // activate after all the reloading
     if (activeNotePath) {

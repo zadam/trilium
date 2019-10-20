@@ -92,7 +92,7 @@ function AttributesModel() {
     }
 
     this.loadAttributes = async function() {
-        const noteId = noteDetailService.getActiveNoteId();
+        const noteId = noteDetailService.getActiveTabNoteId();
 
         const attributes = await server.get('notes/' + noteId + '/attributes');
 
@@ -138,7 +138,7 @@ function AttributesModel() {
 
         self.updateAttributePositions();
 
-        const noteId = noteDetailService.getActiveNoteId();
+        const noteId = noteDetailService.getActiveTabNoteId();
 
         const attributesToSave = self.ownedAttributes()
             .map(attribute => attribute())

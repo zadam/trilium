@@ -107,20 +107,26 @@ function getActiveTabContext() {
     return tabContexts.find(tc => tc.tabId === tabId);
 }
 
+/** @returns {string|null} */
+function getActiveTabNotePath() {
+    const activeContext = getActiveTabContext();
+    return activeContext ? activeContext.notePath : null;
+}
+
 /** @return {NoteFull} */
-function getActiveNote() {
+function getActiveTabNote() {
     const activeContext = getActiveTabContext();
     return activeContext ? activeContext.note : null;
 }
 
-function getActiveNoteId() {
-    const activeNote = getActiveNote();
+function getActiveTabNoteId() {
+    const activeNote = getActiveTabNote();
 
     return activeNote ? activeNote.noteId : null;
 }
 
-function getActiveNoteType() {
-    const activeNote = getActiveNote();
+function getActiveTabNoteType() {
+    const activeNote = getActiveTabNote();
 
     return activeNote ? activeNote.type : null;
 }
@@ -300,7 +306,7 @@ function addDetailLoadedListener(noteId, callback) {
 
 function fireDetailLoaded() {
     for (const {noteId, callback} of detailLoadedListeners) {
-        if (noteId === getActiveNoteId()) {
+        if (noteId === getActiveTabNoteId()) {
             callback();
         }
     }
@@ -337,7 +343,7 @@ $tabContentsContainer.on("dragover", e => e.preventDefault());
 $tabContentsContainer.on("dragleave", e => e.preventDefault());
 
 $tabContentsContainer.on("drop", async e => {
-    const activeNote = getActiveNote();
+    const activeNote = getActiveTabNote();
 
     if (!activeNote) {
         return;
@@ -497,9 +503,6 @@ export default {
     switchToNote,
     loadNote,
     loadNoteDetail,
-    getActiveNote,
-    getActiveNoteType,
-    getActiveNoteId,
     focusOnTitle,
     focusAndSelectTitle,
     saveNotesIfChanged,
@@ -508,6 +511,10 @@ export default {
     switchToTab,
     getTabContexts,
     getActiveTabContext,
+    getActiveTabNotePath,
+    getActiveTabNote,
+    getActiveTabNoteType,
+    getActiveTabNoteId,
     getActiveEditor,
     activateOrOpenNote,
     clearOpenTabsTask,

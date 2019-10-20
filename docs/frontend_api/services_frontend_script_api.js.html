@@ -236,7 +236,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
      * @param {string} noteId
      * @method
      */
-    this.reloadChildren = async noteId => await treeCache.reloadChildren(noteId);
+    this.reloadChildren = async noteId => await treeCache.reloadNotesAndTheirChildren(noteId);
 
     /**
      * @param {string} noteId
@@ -303,13 +303,13 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
      * @method
      * @returns {NoteFull} active note (loaded into right pane)
      */
-    this.getActiveNote = noteDetailService.getActiveNote;
+    this.getActiveTabNote = noteDetailService.getActiveTabNote;
 
     /**
      * @method
      * @returns {Promise&lt;string|null>} returns note path of active note or null if there isn't active note
      */
-    this.getActiveNotePath = () => {
+    this.getActiveTabNotePath = () => {
         const activeTabContext = noteDetailService.getActiveTabContext();
 
         return activeTabContext ? activeTabContext.notePath : null;

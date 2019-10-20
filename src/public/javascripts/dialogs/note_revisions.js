@@ -11,7 +11,7 @@ let revisionItems = [];
 let note;
 
 export async function showCurrentNoteRevisions() {
-    await showNoteRevisionsDialog(noteDetailService.getActiveNoteId());
+    await showNoteRevisionsDialog(noteDetailService.getActiveTabNoteId());
 }
 
 export async function showNoteRevisionsDialog(noteId, noteRevisionId) {
@@ -24,7 +24,7 @@ export async function showNoteRevisionsDialog(noteId, noteRevisionId) {
     $list.empty();
     $content.empty();
 
-    note = noteDetailService.getActiveNote();
+    note = noteDetailService.getActiveTabNote();
     revisionItems = await server.get('notes/' + noteId + '/revisions');
 
     for (const item of revisionItems) {

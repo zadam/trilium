@@ -210,7 +210,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
      * @param {string} noteId
      * @method
      */
-    this.reloadChildren = async noteId => await treeCache.reloadChildren(noteId);
+    this.reloadNotesAndTheirChildren = async noteId => await treeCache.reloadNotesAndTheirChildren(noteId);
 
     /**
      * @param {string} noteId
@@ -277,17 +277,13 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
      * @method
      * @returns {NoteFull} active note (loaded into right pane)
      */
-    this.getActiveNote = noteDetailService.getActiveNote;
+    this.getActiveTabNote = noteDetailService.getActiveTabNote;
 
     /**
      * @method
      * @returns {Promise<string|null>} returns note path of active note or null if there isn't active note
      */
-    this.getActiveNotePath = () => {
-        const activeTabContext = noteDetailService.getActiveTabContext();
-
-        return activeTabContext ? activeTabContext.notePath : null;
-    };
+    this.getActiveTabNotePath = noteDetailService.getActiveTabNotePath;
 
     /**
      * This method checks whether user navigated away from the note from which the scripts has been started.
