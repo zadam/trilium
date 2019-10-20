@@ -90,6 +90,7 @@ async function activateOrOpenNote(noteId) {
     });
 }
 
+/** @return {TabContext[]} */
 function getTabContexts() {
     return tabContexts;
 }
@@ -119,12 +120,14 @@ function getActiveTabNote() {
     return activeContext ? activeContext.note : null;
 }
 
+/** @return {string|null} */
 function getActiveTabNoteId() {
     const activeNote = getActiveTabNote();
 
     return activeNote ? activeNote.noteId : null;
 }
 
+/** @return {string|null} */
 function getActiveTabNoteType() {
     const activeNote = getActiveTabNote();
 

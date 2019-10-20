@@ -25,19 +25,26 @@ const $scrollToActiveNoteButton = $("#scroll-to-active-note-button");
 let setFrontendAsLoaded;
 const frontendLoaded = new Promise(resolve => { setFrontendAsLoaded = resolve; });
 
-// focused & not active node can happen during multiselection where the node is selected but not activated
-// (its content is not displayed in the detail)
+/**
+ * focused & not active node can happen during multiselection where the node is selected but not activated
+ * (its content is not displayed in the detail)
+ * @return {FancytreeNode|null}
+ */
 function getFocusedNode() {
     const tree = $tree.fancytree("getTree");
 
     return tree.getFocusNode();
 }
 
-// note that if you want to access data like noteId or isProtected, you need to go into "data" property
+/**
+ * note that if you want to access data like noteId or isProtected, you need to go into "data" property
+ * @return {FancytreeNode|null}
+ */
 function getActiveNode() {
     return $tree.fancytree("getActiveNode");
 }
 
+/** @return {FancytreeNode[]} */
 async function getNodesByBranchId(branchId) {
     utils.assertArguments(branchId);
 
@@ -46,6 +53,7 @@ async function getNodesByBranchId(branchId) {
     return getNodesByNoteId(branch.noteId).filter(node => node.data.branchId === branchId);
 }
 
+/** @return {FancytreeNode[]} */
 function getNodesByNoteId(noteId) {
     utils.assertArguments(noteId);
 
@@ -76,10 +84,12 @@ async function setNodeTitleWithPrefix(node) {
     node.setTitle(utils.escapeHtml(title));
 }
 
+/** @return {FancytreeNode} */
 async function expandToNote(notePath, expandOpts) {
     return await getNodeFromPath(notePath, true, expandOpts);
 }
 
+/** @return {FancytreeNode} */
 function findChildNode(parentNode, childNoteId) {
     let foundChildNode = null;
 
@@ -89,13 +99,16 @@ function findChildNode(parentNode, childNoteId) {
             break;
         }
     }
+
     return foundChildNode;
 }
 
+/** @return {FancytreeNode} */
 async function getNodeFromPath(notePath, expand = false, expandOpts = {}) {
     utils.assertArguments(notePath);
 
     const hoistedNoteId = await hoistedNoteService.getHoistedNoteId();
+    /** @var {FancytreeNode} */
     let parentNode = null;
 
     const runPath = await getRunPath(notePath);
@@ -145,6 +158,7 @@ async function getNodeFromPath(notePath, expand = false, expandOpts = {}) {
     return parentNode;
 }
 
+/** @return {FancytreeNode} */
 async function activateNote(notePath, noteLoadedListener) {
     utils.assertArguments(notePath);
 
@@ -190,6 +204,7 @@ async function activateNote(notePath, noteLoadedListener) {
 /**
  * Accepts notePath which might or might not be valid and returns an existing path as close to the original
  * notePath as possible.
+ * @return {string|null}
  */
 async function resolveNotePath(notePath) {
     const runPath = await getRunPath(notePath);
@@ -200,6 +215,8 @@ async function resolveNotePath(notePath) {
 /**
  * Accepts notePath and tries to resolve it. Part of the path might not be valid because of note moving (which causes
  * path change) or other corruption, in that case this will try to get some other valid path to the correct note.
+ *
+ * @return {string[]}
  */
 async function getRunPath(notePath) {
     utils.assertArguments(notePath);
@@ -313,10 +330,12 @@ async function setExpandedToServer(branchId, isExpanded) {
     await server.put('branches/' + branchId + '/expanded/' + expandedNum);
 }
 
+/** @return {FancytreeNode[]} */
 function getSelectedNodes(stopOnParents = false) {
     return getTree().getSelectedNodes(stopOnParents);
 }
 
+/** @return {FancytreeNode[]} */
 function getSelectedOrActiveNodes(node) {
     let notes = getSelectedNodes(true);
 
@@ -506,6 +525,7 @@ function initFancyTree(tree) {
     });
 }
 
+/** @return {Fancytree} */
 function getTree() {
     return $tree.fancytree('getTree');
 }
@@ -759,27 +779,17 @@ ws.subscribeToMessages(message => {
 });
 
 ws.subscribeToOutsideSyncMessages(syncData => {
-    const noteIdsToRefresh = [];
+    const noteIdsToRefresh = new Set();
 
-    for (const sync of syncData.filter(sync => sync.entityName === 'branches')) {
-        if (!noteIdsToRefresh.includes(sync.parentNoteId)) {
-            noteIdsToRefresh.push(sync.parentNoteId);
-        }
-    }
+    // this has the problem that the former parentNoteId might not be invalidated
+    // and the former location of the branch/note won't be removed.
+    syncData.filter(sync => sync.entityName === 'branches').forEach(sync => noteIdsToRefresh.add(sync.parentNoteId));
 
-    for (const sync of syncData.filter(sync => sync.entityName === 'notes')) {
-        if (!noteIdsToRefresh.includes(sync.noteId)) {
-            noteIdsToRefresh.push(sync.noteId);
-        }
-    }
+    syncData.filter(sync => sync.entityName === 'notes').forEach(sync => noteIdsToRefresh.add(sync.noteId));
 
-    for (const sync of syncData.filter(sync => sync.entityName === 'note_reordering')) {
-        if (!noteIdsToRefresh.includes(sync.entityId)) {
-            noteIdsToRefresh.push(sync.entityId);
-        }
-    }
+    syncData.filter(sync => sync.entityName === 'note_reordering').forEach(sync => noteIdsToRefresh.add(sync.entityId));
 
-    reloadNotes(noteIdsToRefresh);
+    reloadNotes(Array.from(noteIdsToRefresh));
 });
 
 utils.bindGlobalShortcut('ctrl+o', async () => {

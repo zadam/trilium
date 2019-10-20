@@ -1,4 +1,3 @@
-import noteDetailService from "./note_detail.js";
 import utils from "./utils.js";
 import Branch from "../entities/branch.js";
 import server from "./server.js";

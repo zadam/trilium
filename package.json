@@ -74,7 +74,7 @@
     "turndown": "5.0.3",
     "turndown-plugin-gfm": "1.0.2",
     "unescape": "1.0.1",
-    "ws": "7.1.2",
+    "ws": "7.2.0",
     "xml2js": "0.4.22"
   },
   "devDependencies": {
