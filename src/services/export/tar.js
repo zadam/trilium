@@ -281,11 +281,53 @@ ${content}
         }
     }
 
+    function saveNavigation(rootMeta) {
+        function saveNavigationInner(meta) {
+            let html = '<li>';
+
+            const escapedTitle = utils.escapeHtml((meta.prefix ? `${meta.prefix} - ` : '') + meta.title);
+
+            if (meta.dataFileName) {
+                const targetUrl = getTargetUrl(meta.noteId, rootMeta);
+
+                html += `<a href="${targetUrl}">${escapedTitle}</a>`;
+            }
+            else {
+                html += escapedTitle;
+            }
+
+            if (meta.children && meta.children.length > 0) {
+                html += '<ul>';
+
+                for (const child of meta.children) {
+                    html += saveNavigationInner(child);
+                }
+
+                html += '</ul>'
+            }
+
+            return html + '</li>';
+        }
+
+        const fullHtml = '<html><head><meta charset="utf-8"></head><body><ul>' + saveNavigationInner(rootMeta) + '</ul></body></html>'
+        const prettyHtml = html.prettyPrint(fullHtml, {indent_size: 2});
+
+        pack.entry({name: navigationMeta.dataFileName, size: prettyHtml.length}, prettyHtml);
+    }
+
+    const rootMeta = await getNoteMeta(branch, { notePath: [] }, ['navigation']);
+
+    const navigationMeta = {
+        noImport: true,
+        dataFileName: "navigation." + (format === 'html' ? 'html' : 'md')
+    };
+
     const metaFile = {
         formatVersion: 1,
         appVersion: packageInfo.version,
         files: [
-            await getNoteMeta(branch, { notePath: [] }, [])
+            rootMeta,
+            navigationMeta
         ]
     };
 
@@ -294,7 +336,7 @@ ${content}
         noteMeta.attributes = noteMeta.attributes.filter(attr => attr.type !== 'relation' || attr.value in noteIdToMeta);
     }
 
-    if (!metaFile.files[0]) { // corner case of disabled export for exported note
+    if (!rootMeta) { // corner case of disabled export for exported note
         res.sendStatus(400);
         return;
     }
@@ -303,7 +345,9 @@ ${content}
 
     pack.entry({name: "!!!meta.json", size: metaFileJson.length}, metaFileJson);
 
-    await saveNote(metaFile.files[0], '');
+    await saveNote(rootMeta, '');
+
+    await saveNavigation(rootMeta, navigationMeta);
 
     pack.finalize();
 
