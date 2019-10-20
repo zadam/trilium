@@ -9,6 +9,7 @@ import noteTooltipService from './note_tooltip.js';
 import protectedSessionService from './protected_session.js';
 import dateNotesService from './date_notes.js';
 import StandardWidget from '../widgets/standard_widget.js';
+import ws from "./ws.js";
 
 /**
  * This is the main frontend API interface for scripts. It's published in the local "api" object.
@@ -147,6 +148,9 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
         });
 
         if (ret.success) {
+            // wait until all the changes done in the script has been synced to frontend before continuing
+            await ws.waitForSyncId(ret.maxSyncId);
+
             return ret.executionResult;
         }
         else {

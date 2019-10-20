@@ -778,18 +778,21 @@ ws.subscribeToMessages(message => {
    }
 });
 
-ws.subscribeToOutsideSyncMessages(syncData => {
+// this is a synchronous handler - it returns only once the data has been updated
+ws.subscribeToOutsideSyncMessages(async syncData => {
     const noteIdsToRefresh = new Set();
 
     // this has the problem that the former parentNoteId might not be invalidated
     // and the former location of the branch/note won't be removed.
     syncData.filter(sync => sync.entityName === 'branches').forEach(sync => noteIdsToRefresh.add(sync.parentNoteId));
 
-    syncData.filter(sync => sync.entityName === 'notes').forEach(sync => noteIdsToRefresh.add(sync.noteId));
+    syncData.filter(sync => sync.entityName === 'notes').forEach(sync => noteIdsToRefresh.add(sync.entityId));
 
     syncData.filter(sync => sync.entityName === 'note_reordering').forEach(sync => noteIdsToRefresh.add(sync.entityId));
 
-    reloadNotes(Array.from(noteIdsToRefresh));
+    if (noteIdsToRefresh.size > 0) {
+        await reloadNotes(Array.from(noteIdsToRefresh));
+    }
 });
 
 utils.bindGlobalShortcut('ctrl+o', async () => {
@@ -827,6 +830,12 @@ async function checkFolderStatus(node) {
 }
 
 async function reloadNotes(noteIds) {
+    if (noteIds.length === 0) {
+        return;
+    }
+
+    console.debug("Reloading notes", noteIds);
+
     await treeCache.reloadNotesAndTheirChildren(noteIds);
 
     const activeNotePath = noteDetailService.getActiveTabNotePath();
@@ -843,7 +852,7 @@ async function reloadNotes(noteIds) {
         const node = await getNodeFromPath(activeNotePath);
 
         if (node) {
-            node.setActive(true, {noEvents: true}); // this node has been already active so no need to fire events again
+            await node.setActive(true, {noEvents: true}); // this node has been already active so no need to fire events again
         }
     }
 }

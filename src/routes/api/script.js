@@ -3,13 +3,18 @@
 const scriptService = require('../../services/script');
 const attributeService = require('../../services/attributes');
 const repository = require('../../services/repository');
+const syncService = require('../../services/sync');
 
 async function exec(req) {
     try {
         const result = await scriptService.executeScript(req.body.script, req.body.params, req.body.startNoteId,
             req.body.currentNoteId, req.body.originEntityName, req.body.originEntityId);
 
-        return { success: true, executionResult: result };
+        return {
+            success: true,
+            executionResult: result,
+            maxSyncId: await syncService.getMaxSyncId()
+        };
     }
     catch (e) {
         return { success: false, error: e.message };

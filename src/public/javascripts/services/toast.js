@@ -53,7 +53,7 @@ function closePersistent(id) {
     $("#toast-persistent-" + id).toast("dispose");
 }
 
-function showMessage(message, delay = 3000) {
+function showMessage(message, delay = 2000) {
     console.debug(utils.now(), "message: ", message);
 
     toast({

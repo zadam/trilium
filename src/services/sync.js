@@ -327,6 +327,10 @@ async function updatePushStats() {
     }
 }
 
+async function getMaxSyncId() {
+    return await sql.getValue('SELECT MAX(id) FROM sync');
+}
+
 sqlInit.dbReady.then(async () => {
     setInterval(cls.wrap(sync), 60000);
 
@@ -340,5 +344,6 @@ module.exports = {
     sync,
     login,
     getSyncRecords,
-    stats
+    stats,
+    getMaxSyncId
 };
