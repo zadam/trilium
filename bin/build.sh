@@ -2,7 +2,7 @@
 
 echo "Deleting existing builds"
 
-rm -r dist/*
+rm -rf dist/*
 
 SRC_DIR=dist/trilium-src
 

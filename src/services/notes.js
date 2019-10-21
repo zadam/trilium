@@ -370,7 +370,7 @@ async function updateNote(noteId, noteUpdates) {
     note.isProtected = noteUpdates.isProtected;
     await note.save();
 
-    if (!['file', 'image'].includes(note.type)) {
+    if (!['file', 'image', 'render'].includes(note.type)) {
         noteUpdates.content = await saveLinks(note, noteUpdates.content);
 
         await note.setContent(noteUpdates.content);

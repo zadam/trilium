@@ -82,8 +82,6 @@ async function handleMessage(event) {
 let syncIdReachedListeners = [];
 
 function waitForSyncId(desiredSyncId) {
-    console.log("Waiting for ", desiredSyncId);
-
     if (desiredSyncId <= lastSyncId) {
         return Promise.resolve();
     }
