@@ -37,6 +37,8 @@ import noteTooltipService from './note_tooltip.js';
 import protectedSessionService from './protected_session.js';
 import dateNotesService from './date_notes.js';
 import StandardWidget from '../widgets/standard_widget.js';
+import ws from "./ws.js";
+import hoistedNoteService from "./hoisted_note.js";
 
 /**
  * This is the main frontend API interface for scripts. It's published in the local "api" object.
@@ -170,9 +172,14 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
             currentNoteId: currentNote.noteId,
             originEntityName: "notes", // currently there's no other entity on frontend which can trigger event
             originEntityId: originEntity ? originEntity.noteId : null
+        }, {
+            'trilium-source-id': "script"
         });
 
         if (ret.success) {
+            // wait until all the changes done in the script has been synced to frontend before continuing
+            await ws.waitForSyncId(ret.maxSyncId);
+
             return ret.executionResult;
         }
         else {
@@ -236,7 +243,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
      * @param {string} noteId
      * @method
      */
-    this.reloadChildren = async noteId => await treeCache.reloadNotesAndTheirChildren(noteId);
+    this.reloadNotesAndTheirChildren = async noteId => await treeCache.reloadNotesAndTheirChildren(noteId);
 
     /**
      * @param {string} noteId
@@ -309,11 +316,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
      * @method
      * @returns {Promise&lt;string|null>} returns note path of active note or null if there isn't active note
      */
-    this.getActiveTabNotePath = () => {
-        const activeTabContext = noteDetailService.getActiveTabContext();
-
-        return activeTabContext ? activeTabContext.notePath : null;
-    };
+    this.getActiveTabNotePath = noteDetailService.getActiveTabNotePath;
 
     /**
      * This method checks whether user navigated away from the note from which the scripts has been started.
@@ -379,6 +382,15 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
      * @return {Promise&lt;NoteShort>}
      */
     this.getYearNote = dateNotesService.getYearNote;
+
+    /**
+     * Hoist note. See https://github.com/zadam/trilium/wiki/Note-hoisting
+     *
+     * @method
+     * @param {string} noteId - set hoisted note. 'root' will effectively unhoist
+     * @return {Promise}
+     */
+    this.setHoistedNoteId = hoistedNoteService.setHoistedNoteId;
 }
 
 export default FrontendScriptApi;</code></pre>

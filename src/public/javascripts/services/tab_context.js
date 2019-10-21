@@ -411,11 +411,13 @@ class TabContext {
     }
 
     async remove() {
-        // sometimes there are orphan autocompletes after closing the tab
-        this.cleanup();
+        if (this.$tabContent) {
+            // sometimes there are orphan autocompletes after closing the tab
+            this.cleanup();
 
-        await this.saveNoteIfChanged();
-        this.$tabContent.remove();
+            await this.saveNoteIfChanged();
+            this.$tabContent.remove();
+        }
     }
 
     cleanup() {

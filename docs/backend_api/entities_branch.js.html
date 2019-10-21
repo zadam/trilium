@@ -70,7 +70,7 @@ class Branch extends Entity {
     async beforeSaving() {
         if (this.notePosition === undefined) {
             const maxNotePos = await sql.getValue('SELECT MAX(notePosition) FROM branches WHERE parentNoteId = ? AND isDeleted = 0', [this.parentNoteId]);
-            this.notePosition = maxNotePos === null ? 0 : maxNotePos + 1;
+            this.notePosition = maxNotePos === null ? 0 : maxNotePos + 10;
         }
 
         if (!this.isDeleted) {

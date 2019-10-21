@@ -10,6 +10,7 @@ import protectedSessionService from './protected_session.js';
 import dateNotesService from './date_notes.js';
 import StandardWidget from '../widgets/standard_widget.js';
 import ws from "./ws.js";
+import hoistedNoteService from "./hoisted_note.js";
 
 /**
  * This is the main frontend API interface for scripts. It's published in the local "api" object.
@@ -353,6 +354,15 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
      * @return {Promise<NoteShort>}
      */
     this.getYearNote = dateNotesService.getYearNote;
+
+    /**
+     * Hoist note. See https://github.com/zadam/trilium/wiki/Note-hoisting
+     *
+     * @method
+     * @param {string} noteId - set hoisted note. 'root' will effectively unhoist
+     * @return {Promise}
+     */
+    this.setHoistedNoteId = hoistedNoteService.setHoistedNoteId;
 }
 
 export default FrontendScriptApi;
