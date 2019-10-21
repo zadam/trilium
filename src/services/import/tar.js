@@ -233,6 +233,10 @@ async function importTar(taskContext, fileBuffer, importRootNote) {
     async function saveNote(filePath, content) {
         const {parentNoteMeta, noteMeta} = getMeta(filePath);
 
+        if (noteMeta && noteMeta.noImport) {
+            return;
+        }
+
         const noteId = getNoteId(noteMeta, filePath);
         const parentNoteId = await getParentNoteId(filePath, parentNoteMeta);
 

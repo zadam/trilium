@@ -281,7 +281,7 @@ ${content}
         }
     }
 
-    function saveNavigation(rootMeta) {
+    function saveNavigation(rootMeta, navigationMeta) {
         function saveNavigationInner(meta) {
             let html = '<li>';
 
@@ -290,7 +290,7 @@ ${content}
             if (meta.dataFileName) {
                 const targetUrl = getTargetUrl(meta.noteId, rootMeta);
 
-                html += `<a href="${targetUrl}">${escapedTitle}</a>`;
+                html += `<a href="${targetUrl}" target="detail">${escapedTitle}</a>`;
             }
             else {
                 html += escapedTitle;
@@ -315,21 +315,63 @@ ${content}
         pack.entry({name: navigationMeta.dataFileName, size: prettyHtml.length}, prettyHtml);
     }
 
-    const rootMeta = await getNoteMeta(branch, { notePath: [] }, ['navigation']);
+    function saveIndex(rootMeta, indexMeta) {
+        let firstNonEmptyNote;
+        let curMeta = rootMeta;
 
-    const navigationMeta = {
-        noImport: true,
-        dataFileName: "navigation." + (format === 'html' ? 'html' : 'md')
-    };
+        while (!firstNonEmptyNote) {
+            if (curMeta.dataFileName) {
+                firstNonEmptyNote = getTargetUrl(curMeta.noteId, rootMeta);
+            }
+
+            if (curMeta.children && curMeta.children.length > 0) {
+                curMeta = curMeta.children[0];
+            }
+            else {
+                break;
+            }
+        }
+
+        const fullHtml = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+    <meta charset="utf-8">
+</head>
+<frameset cols="25%,75%">
+    <frame name="navigation" src="navigation.html">
+    <frame name="detail" src="${firstNonEmptyNote}">
+</frameset>
+</html>`;
+
+        pack.entry({name: indexMeta.dataFileName, size: fullHtml.length}, fullHtml);
+    }
+
+    const existingFileNames = format === 'html' ? ['navigation', 'index'] : [];
+    const rootMeta = await getNoteMeta(branch, { notePath: [] }, existingFileNames);
 
     const metaFile = {
         formatVersion: 1,
         appVersion: packageInfo.version,
-        files: [
-            rootMeta,
-            navigationMeta
-        ]
+        files: [ rootMeta ]
     };
+
+    let navigationMeta, indexMeta;
+
+    if (format === 'html') {
+        navigationMeta = {
+            noImport: true,
+            dataFileName: "navigation.html"
+        };
+
+        metaFile.files.push(navigationMeta);
+
+        indexMeta = {
+            noImport: true,
+            dataFileName: "index.html"
+        };
+
+        metaFile.files.push(indexMeta);
+    }
 
     for (const noteMeta of Object.values(noteIdToMeta)) {
         // filter out relations which are not inside this export
@@ -347,7 +389,10 @@ ${content}
 
     await saveNote(rootMeta, '');
 
-    await saveNavigation(rootMeta, navigationMeta);
+    if (format === 'html') {
+        saveNavigation(rootMeta, navigationMeta);
+        saveIndex(rootMeta, indexMeta);
+    }
 
     pack.finalize();
 
