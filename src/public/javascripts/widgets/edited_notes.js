@@ -32,17 +32,16 @@ class EditedNotesWidget extends StandardWidget {
             return;
         }
 
-        const noteIds = editedNotes.flatMap(note => note.notePath);
+        const noteIds = editedNotes.flatMap(note => note.noteId);
 
         await treeCache.getNotes(noteIds, true); // preload all at once
 
         const $list = $('<ul>');
 
         for (const editedNote of editedNotes) {
-            const note = await treeCache.getNote(editedNote.noteId, true);
             const $item = $("<li>");
 
-            if (!note) {
+            if (editedNote.isDeleted) {
                 $item.append($("<i>").text(editedNote.title + " (deleted)"));
             }
             else {

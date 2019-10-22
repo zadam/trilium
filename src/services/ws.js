@@ -2,8 +2,10 @@ const WebSocket = require('ws');
 const utils = require('./utils');
 const log = require('./log');
 const sql = require('./sql');
+const syncMutexService = require('./sync_mutex');
 
 let webSocketServer;
+let lastSyncId = 0;
 
 function init(httpServer, sessionParser) {
     webSocketServer = new WebSocket.Server({
@@ -27,11 +29,13 @@ function init(httpServer, sessionParser) {
         ws.on('message', messageJson => {
             const message = JSON.parse(messageJson);
 
+            lastSyncId = Math.max(lastSyncId, message.lastSyncId);
+
             if (message.type === 'log-error') {
                 log.error('JS Error: ' + message.error);
             }
             else if (message.type === 'ping') {
-                sendPing(ws, message.lastSyncId);
+                syncMutexService.doExclusively(async () => await sendPing(ws, lastSyncId));
             }
             else {
                 log.error('Unrecognized message: ');
