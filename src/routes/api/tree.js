@@ -96,7 +96,11 @@ async function load(req) {
             .map(note => note.noteId);
     }
 
-    const branches = await sql.getManyRows(`SELECT * FROM branches WHERE isDeleted = 0 AND noteId IN (???)`, noteIds);
+    const branches = (await sql.getManyRows(`SELECT * FROM branches WHERE isDeleted = 0 AND noteId IN (???)`, noteIds))
+        .concat((await sql.getManyRows(`SELECT * FROM branches WHERE isDeleted = 0 AND parentNoteId IN (???)`, noteIds)));
+
+    // sort branches so they are filled sorted in the cache as well
+    branches.sort((a, b) => a.notePosition < b.notePosition ? -1 : 1);
 
     const notes = await getNotes(noteIds);
 
