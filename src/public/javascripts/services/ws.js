@@ -89,7 +89,8 @@ function waitForSyncId(desiredSyncId) {
     return new Promise((res, rej) => {
         syncIdReachedListeners.push({
             desiredSyncId,
-            resolvePromise: res
+            resolvePromise: res,
+            start: Date.now()
         })
     });
 }
@@ -116,6 +117,9 @@ async function consumeSyncData() {
 
     syncIdReachedListeners = syncIdReachedListeners
         .filter(l => l.desiredSyncId > lastSyncId);
+
+    syncIdReachedListeners.filter(l => Date.now() > l.start - 60000)
+        .forEach(l => console.log(`Waiting for syncId ${l.desiredSyncId} for ${Date.now() - l.start}`));
 }
 
 function connectWebSocket() {
@@ -138,7 +142,7 @@ setTimeout(() => {
 
     setInterval(async () => {
         if (Date.now() - lastPingTs > 30000) {
-            console.log("Lost connection to server");
+            console.log(utils.now(), "Lost connection to server");
         }
 
         if (ws.readyState === ws.OPEN) {
@@ -148,7 +152,7 @@ setTimeout(() => {
             }));
         }
         else if (ws.readyState === ws.CLOSED || ws.readyState === ws.CLOSING) {
-            console.log("WS closed or closing, trying to reconnect");
+            console.log(utils.now(), "WS closed or closing, trying to reconnect");
 
             ws = connectWebSocket();
         }

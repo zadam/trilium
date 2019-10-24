@@ -15,6 +15,7 @@ rm -r $SRC_DIR/node_modules/pngquant-bin/vendor/*
 rm -r $SRC_DIR/node_modules/giflossy/vendor/*
 rm -r $SRC_DIR/node_modules/@felixrieseberg/spellchecker/build/Release/*
 rm -r $SRC_DIR/node_modules/keyboard-layout/build/Release/*
+rm -r $SRC_DIR/node_modules/cld/build/Release/*
 
 cp -r bin/deps/win-x64/sqlite/* $SRC_DIR/node_modules/sqlite3/lib/binding/
 cp bin/deps/win-x64/image/cjpeg.exe $SRC_DIR/node_modules/mozjpeg/vendor/

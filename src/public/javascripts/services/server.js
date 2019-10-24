@@ -72,7 +72,8 @@ async function ajax(url, method, data) {
     const options = {
         url: baseApiUrl + url,
         type: method,
-        headers: getHeaders()
+        headers: getHeaders(),
+        timeout: 60000
     };
 
     if (data) {

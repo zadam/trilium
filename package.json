@@ -43,7 +43,7 @@
     "html": "1.0.0",
     "html2plaintext": "2.1.2",
     "http-proxy-agent": "2.1.0",
-    "https-proxy-agent": "3.0.0",
+    "https-proxy-agent": "3.0.1",
     "image-type": "4.1.0",
     "imagemin": "7.0.0",
     "imagemin-giflossy": "5.1.10",

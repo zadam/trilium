@@ -97,8 +97,6 @@ class TreeCache {
         const missingNoteIds = noteIds.filter(noteId => this.notes[noteId] === undefined);
 
         if (missingNoteIds.length > 0) {
-            console.trace("Refreshing", missingNoteIds);
-
             const resp = await server.post('tree/load', { noteIds: missingNoteIds });
 
             this.addResp(resp.notes, resp.branches, resp.relations);
