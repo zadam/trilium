@@ -13,12 +13,6 @@ class TreeCache {
         this.init();
     }
 
-    load(noteRows, branchRows, relations) {
-        this.init();
-
-        this.addResp(noteRows, branchRows, relations);
-    }
-
     init() {
         /** @type {Object.<string, string>} */
         this.parents = {};
@@ -35,7 +29,13 @@ class TreeCache {
         this.branches = {};
     }
 
-    addResp(noteRows, branchRows, relations) {
+    load(noteRows, branchRows) {
+        this.init();
+
+        this.addResp(noteRows, branchRows);
+    }
+
+    addResp(noteRows, branchRows) {
         for (const noteRow of noteRows) {
             const note = new NoteShort(this, noteRow);
 
@@ -46,10 +46,6 @@ class TreeCache {
             const branch = new Branch(this, branchRow);
 
             this.addBranch(branch);
-        }
-
-        for (const relation of relations) {
-            this.addBranchRelationship(relation.branchId, relation.childNoteId, relation.parentNoteId);
         }
     }
 
@@ -75,7 +71,7 @@ class TreeCache {
             delete this.notes[noteId];
         }
 
-        this.addResp(resp.notes, resp.branches, resp.relations);
+        this.addResp(resp.notes, resp.branches);
     }
 
     /**
@@ -99,7 +95,7 @@ class TreeCache {
         if (missingNoteIds.length > 0) {
             const resp = await server.post('tree/load', { noteIds: missingNoteIds });
 
-            this.addResp(resp.notes, resp.branches, resp.relations);
+            this.addResp(resp.notes, resp.branches);
         }
 
         return noteIds.map(noteId => {
@@ -168,7 +164,7 @@ class TreeCache {
         if (missingBranchIds.length > 0) {
             const resp = await server.post('tree/load', { branchIds: branchIds });
 
-            this.addResp(resp.notes, resp.branches, resp.relations);
+            this.addResp(resp.notes, resp.branches);
         }
 
         return branchIds.map(branchId => {

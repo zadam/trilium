@@ -562,7 +562,7 @@ function getHashValueFromAddress() {
 async function loadTreeCache() {
     const resp = await server.get('tree');
 
-    treeCache.load(resp.notes, resp.branches, resp.relations);
+    treeCache.load(resp.notes, resp.branches);
 }
 
 async function loadTree() {
