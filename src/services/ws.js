@@ -99,8 +99,18 @@ async function refreshTree() {
     await sendMessageToAllClients({ type: 'refresh-tree' });
 }
 
+async function syncPullInProgress() {
+    await sendMessageToAllClients({ type: 'sync-pull-in-progress' });
+}
+
+async function syncPullFinished() {
+    await sendMessageToAllClients({ type: 'sync-pull-finished' });
+}
+
 module.exports = {
     init,
     sendMessageToAllClients,
-    refreshTree
+    refreshTree,
+    syncPullInProgress,
+    syncPullFinished
 };

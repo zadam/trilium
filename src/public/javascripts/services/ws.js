@@ -1,6 +1,5 @@
 import utils from './utils.js';
 import toastService from "./toast.js";
-import treeService from "./tree.js";
 
 const $outstandingSyncsCount = $("#outstanding-syncs-count");
 
@@ -158,6 +157,21 @@ setTimeout(() => {
         }
     }, 1000);
 }, 0);
+
+subscribeToMessages(message => {
+    if (message.type === 'sync-pull-in-progress') {
+        toastService.showPersistent({
+            id: 'sync',
+            title: "Sync status",
+            message: "Sync update in progress",
+            icon: "refresh"
+        });
+    }
+
+    if (message.type === 'sync-pull-finished') {
+        toastService.closePersistent('sync');
+    }
+});
 
 export default {
     logError,

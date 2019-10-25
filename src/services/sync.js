@@ -138,6 +138,8 @@ async function pullSync(syncContext) {
         log.info("Pulled " + rows.length + " changes from " + changesUri + " in "
             + (Date.now() - startDate.getTime()) + "ms");
 
+        ws.syncPullInProgress();
+
         for (const {sync, entity} of rows) {
             if (!sourceIdService.isLocalSourceId(sync.sourceId)) {
                 await syncUpdateService.updateEntity(sync, entity, syncContext.sourceId);
@@ -149,6 +151,8 @@ async function pullSync(syncContext) {
 
         await setLastSyncedPull(rows[rows.length - 1].sync.id);
     }
+
+    ws.syncPullFinished();
 
     log.info("Finished pull");
 }
@@ -167,9 +171,6 @@ async function pushSync(syncContext) {
 
         const filteredSyncs = syncs.filter(sync => {
             if (sync.sourceId === syncContext.sourceId) {
-                // too noisy
-                //log.info(`Skipping push #${sync.id} ${sync.entityName} ${sync.entityId} because it originates from sync target`);
-
                 // this may set lastSyncedPush beyond what's actually sent (because of size limit)
                 // so this is applied to the database only if there's no actual update
                 // TODO: it would be better to simplify this somehow
