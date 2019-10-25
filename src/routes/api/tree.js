@@ -40,6 +40,8 @@ async function getNotes(noteIds) {
 
     protectedSessionService.decryptNotes(notes);
 
+    await noteCacheService.loadedPromise;
+
     notes.forEach(note => {
         note.isProtected = !!note.isProtected;
         note.archived = noteCacheService.isArchived(note.noteId)

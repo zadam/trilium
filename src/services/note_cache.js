@@ -8,6 +8,12 @@ const hoistedNoteService = require('./hoisted_note');
 const stringSimilarity = require('string-similarity');
 
 let loaded = false;
+let loadedPromiseResolve;
+/** Is resolved after the initial load */
+let loadedPromise = new Promise(res => {
+    loadedPromiseResolve = res;
+});
+
 let noteTitles = {};
 let protectedNoteTitles = {};
 let noteIds;
@@ -43,6 +49,7 @@ async function load() {
     }
 
     loaded = true;
+    loadedPromiseResolve();
 }
 
 async function loadProtectedNotes() {
@@ -499,9 +506,10 @@ eventService.subscribe(eventService.ENTER_PROTECTED_SESSION, () => {
     }
 });
 
-sqlInit.dbReady.then(() => utils.stopWatch("Autocomplete load", load));
+sqlInit.dbReady.then(() => utils.stopWatch("Note cache load", load));
 
 module.exports = {
+    loadedPromise,
     findNotes,
     getNotePath,
     getNoteTitleForPath,
