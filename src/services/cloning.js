@@ -75,7 +75,7 @@ async function cloneNoteAfter(noteId, afterBranchId) {
 
     const validationResult = await treeService.validateParentChild(afterNote.parentNoteId, noteId);
 
-    if (!validationResult.result) {
+    if (!validationResult.success) {
         return validationResult;
     }
 
