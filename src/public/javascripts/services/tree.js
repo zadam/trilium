@@ -824,6 +824,7 @@ async function checkFolderStatus(node) {
 
     node.folder = note.type === 'search' || note.getChildNoteIds().length > 0;
     node.icon = await treeBuilder.getIcon(note);
+    node.extraClasses = await treeBuilder.getExtraClasses(note);
     node.renderTitle();
 }
 

@@ -80,7 +80,7 @@ class NoteShort {
         const branchIdPos = {};
 
         for (const branchId of Object.values(this.childToBranch)) {
-            branchIdPos[branchId] = this.treeCache.branches[branchId].notePosition;
+            branchIdPos[branchId] = this.treeCache.getBranch(branchId).notePosition;
         }
 
         this.children.sort((a, b) => branchIdPos[this.childToBranch[a]] < branchIdPos[this.childToBranch[b]] ? -1 : 1);

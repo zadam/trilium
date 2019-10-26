@@ -31,8 +31,6 @@ class TreeCache {
         for (const branchRow of branchRows) {
             const branch = new Branch(this, branchRow);
 
-            this.addBranch(branch);
-
             branchesByNotes[branch.noteId] = branchesByNotes[branch.noteId] || [];
             branchesByNotes[branch.noteId].push(branch);
 
@@ -79,6 +77,10 @@ class TreeCache {
                 }
             }
 
+            for (const branch of branchesByNotes[noteId]) {
+                this.addBranch(branch);
+            }
+
             const note = new NoteShort(this, noteRow, branchesByNotes[noteId]);
 
             this.notes[note.noteId] = note;
@@ -102,7 +104,6 @@ class TreeCache {
     }
 
     async reloadNotes(noteIds) {
-        // first load the data before clearing the cache
         const resp = await server.post('tree/load', { noteIds });
 
         this.addResp(resp.notes, resp.branches);
@@ -161,8 +162,9 @@ class TreeCache {
         if (!(branchId in this.branches)) {
             console.error(`Not existing branch ${branchId}`);
         }
-
-        return this.branches[branchId];
+        else {
+            return this.branches[branchId];
+        }
     }
 }
 
