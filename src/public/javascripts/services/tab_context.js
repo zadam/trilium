@@ -5,6 +5,7 @@ import bundleService from "./bundle.js";
 import Attributes from "./attributes.js";
 import treeUtils from "./tree_utils.js";
 import utils from "./utils.js";
+import keys from "../services/keybindings.js";
 import NoteTypeContext from "./note_type.js";
 import noteDetailService from "./note_detail.js";
 import protectedSessionService from "./protected_session.js";
@@ -99,7 +100,7 @@ class TabContext {
 
         if (utils.isDesktop()) {
             // keyboard plugin is not loaded in mobile
-            utils.bindElShortcut(this.$noteTitle, 'return', () => {
+            keys.bindTo(this.$noteTitle, keys.actions.FocusNote, () => {
                 this.getComponent().focus();
 
                 return false; // to not propagate the enter into the editor (causes issues with codemirror)

@@ -129,26 +129,6 @@ function randomString(len) {
     return text;
 }
 
-function bindGlobalShortcut(keyboardShortcut, handler) {
-    bindElShortcut($(document), keyboardShortcut, handler);
-}
-
-function bindElShortcut($el, keyboardShortcut, handler) {
-    if (isDesktop()) {
-        if (isMac()) {
-            // use CMD (meta) instead of CTRL for all shortcuts
-            keyboardShortcut = keyboardShortcut.replace("ctrl", "meta");
-        }
-
-        $el.bind('keydown', keyboardShortcut, e => {
-            handler(e);
-
-            e.preventDefault();
-            e.stopPropagation();
-        });
-    }
-}
-
 function isMobile() {
     return window.device === "mobile"
         // window.device is not available in setup
@@ -226,8 +206,6 @@ export default {
     download,
     toObject,
     randomString,
-    bindGlobalShortcut,
-    bindElShortcut,
     isMobile,
     isDesktop,
     setCookie,

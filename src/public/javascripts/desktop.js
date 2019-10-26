@@ -25,7 +25,6 @@ import hoistedNoteService from './services/hoisted_note.js';
 import noteTypeService from './services/note_type.js';
 import linkService from './services/link.js';
 import noteAutocompleteService from './services/note_autocomplete.js';
-import macInit from './services/mac_init.js';
 import cssLoader from './services/css_loader.js';
 import dateNoteService from './services/date_notes.js';
 import sidebarService from './services/sidebar.js';
@@ -166,8 +165,6 @@ window.glob.importMarkdownInline = async () => {
 
     dialog.importMarkdownInline();
 };
-
-macInit.init();
 
 searchNotesService.init(); // should be in front of treeService since that one manipulates address bar hash
 

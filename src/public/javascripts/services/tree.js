@@ -5,6 +5,7 @@ import noteDetailService from './note_detail.js';
 import protectedSessionHolder from './protected_session_holder.js';
 import treeUtils from './tree_utils.js';
 import utils from './utils.js';
+import keys from "../services/keybindings.js";
 import server from './server.js';
 import treeCache from './tree_cache.js';
 import toastService from "./toast.js";
@@ -795,7 +796,7 @@ ws.subscribeToOutsideSyncMessages(async syncData => {
     }
 });
 
-utils.bindGlobalShortcut('ctrl+o', async () => {
+keys.bind(keys.actions.CreateChild, async () => {
     const node = getActiveNode();
     const parentNoteId = node.data.parentNoteId;
     const isProtected = await treeUtils.getParentProtectedStatus(node);
@@ -859,9 +860,9 @@ async function reloadNotes(noteIds) {
 
 window.glob.createNoteInto = createNoteInto;
 
-utils.bindGlobalShortcut('ctrl+p', createNoteInto);
+keys.bind(keys.actions.CreateNoteInto, createNoteInto);
 
-utils.bindGlobalShortcut('ctrl+.', scrollToActiveNote);
+keys.bind(keys.actions.ScrollToActiveNote, scrollToActiveNote);
 
 $(window).bind('hashchange', async function() {
     if (isNotePathInAddress()) {
@@ -899,7 +900,7 @@ async function duplicateNote(noteId, parentNoteId) {
 }
 
 
-utils.bindGlobalShortcut('alt+c', () => collapseTree()); // don't use shortened form since collapseTree() accepts argument
+keys.bind(keys.actions.CollapseTree, () => collapseTree()); // don't use shortened form since collapseTree() accepts argument
 $collapseTreeButton.click(() => collapseTree());
 
 $createTopLevelNoteButton.click(createNewTopLevelNote);

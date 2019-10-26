@@ -2,6 +2,7 @@ import libraryLoader from '../services/library_loader.js';
 import server from '../services/server.js';
 import toastService from "../services/toast.js";
 import utils from "../services/utils.js";
+import keys from "../services/keybindings.js";
 
 const $dialog = $("#sql-console-dialog");
 const $query = $('#sql-console-query');
@@ -123,6 +124,6 @@ async function showTables() {
     }
 }
 
-utils.bindElShortcut($query, 'ctrl+return', execute);
+keys.bindTo($query, keys.actions.RunSQL, execute);
 
 $executeButton.click(execute);

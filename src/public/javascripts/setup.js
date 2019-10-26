@@ -1,7 +1,4 @@
 import utils from "./services/utils.js";
-import macInit from './services/mac_init.js';
-
-macInit.init();
 
 function SetupModel() {
     if (syncInProgress) {

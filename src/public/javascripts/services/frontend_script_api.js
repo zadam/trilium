@@ -103,7 +103,8 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
         }
 
         if (opts.shortcut) {
-            utils.bindGlobalShortcut(opts.shortcut, opts.action);
+            // TODO: This whole function is not in use, no sure how how to refactor this.
+            // utils.bindGlobalShortcut(opts.shortcut, opts.action);
 
             button.attr("title", "Shortcut " + opts.shortcut);
         }

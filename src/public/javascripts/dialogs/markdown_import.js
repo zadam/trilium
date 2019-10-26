@@ -1,6 +1,7 @@
 import libraryLoader from "../services/library_loader.js";
 import toastService from "../services/toast.js";
 import utils from "../services/utils.js";
+import keys from "../services/keybindings.js";
 import noteDetailService from "../services/note_detail.js";
 
 const $dialog = $('#markdown-import-dialog');
@@ -53,4 +54,4 @@ $importButton.click(sendForm);
 
 $dialog.on('shown.bs.modal', () => $importTextarea.focus());
 
-utils.bindElShortcut($dialog, 'ctrl+return', sendForm);
+keys.bindTo($dialog, keys.actions.MarkdownToHTML, sendForm);

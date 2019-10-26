@@ -6,6 +6,7 @@ import treeCache from "./tree_cache.js";
 import NoteFull from "../entities/note_full.js";
 import bundleService from "./bundle.js";
 import utils from "./utils.js";
+import keys from "../services/keybindings.js";
 import contextMenuService from "./context_menu.js";
 import treeUtils from "./tree_utils.js";
 import tabRow from "./tab_row.js";
@@ -231,7 +232,7 @@ async function loadNoteDetail(origNotePath, options = {}) {
     if (!newTab && currentTreeNode && currentTreeNode.data.noteId !== loadedNote.noteId) {
         return;
     }
-    
+
     const loadPromise = loadNoteDetailToContext(ctx, loadedNote, notePath).then(() => {
         if (activate) {
             // will also trigger showTab via event
@@ -416,17 +417,17 @@ $(tabRow.el).on('contextmenu', '.note-tab', e => {
 });
 
 if (utils.isElectron()) {
-    utils.bindGlobalShortcut('ctrl+t', () => {
+    keys.bind(keys.actions.NewTab, () => {
         openEmptyTab();
     });
 
-    utils.bindGlobalShortcut('ctrl+w', () => {
+    keys.bind(keys.actions.CloseTab, () => {
         if (tabRow.activeTabEl) {
             tabRow.removeTab(tabRow.activeTabEl);
         }
     });
 
-    utils.bindGlobalShortcut('ctrl+tab', () => {
+    keys.bind(keys.actions.NextTab, () => {
         const nextTab = tabRow.nextTabEl;
 
         if (nextTab) {
@@ -434,7 +435,7 @@ if (utils.isElectron()) {
         }
     });
 
-    utils.bindGlobalShortcut('ctrl+shift+tab', () => {
+    keys.bind(keys.actions.PrevTab, () => {
         const prevTab = tabRow.previousTabEl;
 
         if (prevTab) {

@@ -4,6 +4,7 @@ import toastService from "./toast.js";
 import server from "./server.js";
 import noteDetailService from "./note_detail.js";
 import utils from "./utils.js";
+import keys from "../services/keybindings.js";
 
 class NoteDetailCode {
 
@@ -17,7 +18,7 @@ class NoteDetailCode {
         this.$editorEl = this.$component.find('.note-detail-code-editor');
         this.$executeScriptButton = ctx.$tabContent.find(".execute-script-button");
 
-        utils.bindElShortcut(ctx.$tabContent, "ctrl+return", () => this.executeCurrentNote());
+        keys.bindTo(ctx.$tabContent, keys.actions.RunCurrentNote, () => this.executeCurrentNote());
 
         this.$executeScriptButton.click(() => this.executeCurrentNote());
     }
