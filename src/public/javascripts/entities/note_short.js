@@ -1,5 +1,6 @@
 import server from '../services/server.js';
 import Attribute from './attribute.js';
+import branches from "../services/branches.js";
 
 const LABEL = 'label';
 const LABEL_DEFINITION = 'label-definition';
@@ -13,7 +14,12 @@ const RELATION_DEFINITION = 'relation-definition';
  * This note's representation is used in note tree and is kept in TreeCache.
  */
 class NoteShort {
-    constructor(treeCache, row) {
+    /**
+     * @param {TreeCache} treeCache
+     * @param {Object.<string, Object>} row
+     * @param {Branch[]} branches - all relevant branches, i.e. where this note is either child or parent
+     */
+    constructor(treeCache, row, branches) {
         this.treeCache = treeCache;
         /** @param {string} */
         this.noteId = row.noteId;
@@ -29,6 +35,55 @@ class NoteShort {
         this.archived = row.archived;
         /** @param {string} */
         this.cssClass = row.cssClass;
+
+        /** @type {string[]} */
+        this.parents = [];
+        /** @type {string[]} */
+        this.children = [];
+
+        /** @type {Object.<string, string>} */
+        this.parentToBranch = {};
+
+        /** @type {Object.<string, string>} */
+        this.childToBranch = {};
+
+        for (const branch of branches) {
+            if (this.noteId === branch.noteId) {
+                this.parents.push(branch.parentNoteId);
+                this.parentToBranch[branch.parentNoteId] = branch.branchId;
+            }
+            else if (this.noteId === branch.parentNoteId) {
+                this.children.push(branch.noteId);
+                this.childToBranch[branch.noteId] = branch.branchId;
+            }
+            else {
+                throw new Error(`Unknown branch ${branch.branchId} for note ${this.noteId}`);
+            }
+        }
+    }
+
+    addParent(parentNoteId, branchId) {
+        if (!this.parents.includes(parentNoteId)) {
+            this.parents.push(parentNoteId);
+        }
+
+        this.parentToBranch[parentNoteId] = branchId;
+    }
+
+    addChild(childNoteId, branchId) {
+        if (!this.children.includes(childNoteId)) {
+            this.children.push(childNoteId);
+        }
+
+        this.childToBranch[childNoteId] = branchId;
+
+        const branchIdPos = {};
+
+        for (const branchId of Object.values(this.childToBranch)) {
+            branchIdPos[branchId] = this.treeCache.branches[branchId].notePosition;
+        }
+
+        this.children.sort((a, b) => branchIdPos[this.childToBranch[a]] < branchIdPos[this.childToBranch[b]] ? -1 : 1);
     }
 
     /** @returns {boolean} */
@@ -58,48 +113,41 @@ class NoteShort {
 
     /** @returns {Promise<Branch[]>} */
     async getBranches() {
-        const branchIds = this.treeCache.parents[this.noteId].map(
-            parentNoteId => this.treeCache.getBranchIdByChildParent(this.noteId, parentNoteId));
+        const branchIds = Object.values(this.parentToBranch);
 
         return this.treeCache.getBranches(branchIds);
     }
 
     /** @returns {boolean} */
     hasChildren() {
-        return this.treeCache.children[this.noteId]
-            && this.treeCache.children[this.noteId].length > 0;
+        return this.children.length > 0;
     }
 
     /** @returns {Promise<Branch[]>} */
     async getChildBranches() {
-        if (!this.treeCache.children[this.noteId]) {
-            return [];
-        }
-
-        const branchIds = this.treeCache.children[this.noteId].map(
-            childNoteId => this.treeCache.getBranchIdByChildParent(childNoteId, this.noteId));
+        const branchIds = Object.values(this.childToBranch);
 
         return await this.treeCache.getBranches(branchIds);
     }
 
     /** @returns {string[]} */
     getParentNoteIds() {
-        return this.treeCache.parents[this.noteId] || [];
+        return this.parents;
     }
 
     /** @returns {Promise<NoteShort[]>} */
     async getParentNotes() {
-        return await this.treeCache.getNotes(this.getParentNoteIds());
+        return await this.treeCache.getNotes(this.parents);
     }
 
     /** @returns {string[]} */
     getChildNoteIds() {
-        return this.treeCache.children[this.noteId] || [];
+        return this.children;
     }
 
     /** @returns {Promise<NoteShort[]>} */
     async getChildNotes() {
-        return await this.treeCache.getNotes(this.getChildNoteIds());
+        return await this.treeCache.getNotes(this.children);
     }
 
     /**

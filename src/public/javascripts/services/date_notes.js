@@ -10,7 +10,7 @@ async function getTodayNote() {
 async function getDateNote(date) {
     const note = await server.get('date-notes/date/' + date);
 
-    await treeCache.reloadParents(note.noteId);
+    await treeCache.reloadNotes([note.noteId]);
 
     return await treeCache.getNote(note.noteId);
 }
@@ -19,7 +19,7 @@ async function getDateNote(date) {
 async function getMonthNote(month) {
     const note = await server.get('date-notes/month/' + month);
 
-    await treeCache.reloadParents(note.noteId);
+    await treeCache.reloadNotes([note.noteId]);
 
     return await treeCache.getNote(note.noteId);
 }
@@ -28,7 +28,7 @@ async function getMonthNote(month) {
 async function getYearNote(year) {
     const note = await server.get('date-notes/year/' + year);
 
-    await treeCache.reloadParents(note.noteId);
+    await treeCache.reloadNotes([note.noteId]);
 
     return await treeCache.getNote(note.noteId);
 }

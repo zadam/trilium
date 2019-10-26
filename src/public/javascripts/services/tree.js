@@ -670,10 +670,8 @@ async function createNote(node, parentNoteId, target, extraOptions = {}) {
 
     noteDetailService.addDetailLoadedListener(note.noteId, noteDetailService.focusAndSelectTitle);
 
-    const noteEntity = new NoteShort(treeCache, note);
-    const branchEntity = new Branch(treeCache, branch);
-
-    treeCache.add(noteEntity, branchEntity);
+    const noteEntity = await treeCache.getNote(note.noteId);
+    const branchEntity = await treeCache.getBranch(branch.branchId);
 
     let newNode = {
         title: newNoteName,
@@ -836,7 +834,7 @@ async function reloadNotes(noteIds) {
 
     console.debug("Reloading notes", noteIds);
 
-    await treeCache.reloadNotesAndTheirChildren(noteIds);
+    await treeCache.reloadNotes(noteIds);
 
     const activeNotePath = noteDetailService.getActiveTabNotePath();
 

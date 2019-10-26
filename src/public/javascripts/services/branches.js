@@ -214,7 +214,7 @@ async function changeNode(func, node, beforeNoteId = null, afterNoteId = null) {
 
     node.data.parentNoteId = thisNewParentNode.data.noteId;
 
-    await treeCache.moveNote(childNoteId, thisOldParentNode.data.noteId, thisNewParentNode.data.noteId, beforeNoteId, afterNoteId);
+    await treeCache.reloadNotes([childNoteId]);
 
     await treeService.checkFolderStatus(thisOldParentNode);
     await treeService.checkFolderStatus(thisNewParentNode);

@@ -250,7 +250,9 @@ async function loadNoteDetail(origNotePath, options = {}) {
 async function loadNote(noteId) {
     const row = await server.get('notes/' + noteId);
 
-    return new NoteFull(treeCache, row);
+    const noteShort = await treeCache.getNote(noteId);
+
+    return new NoteFull(treeCache, row, noteShort);
 }
 
 async function filterTabs(noteId) {

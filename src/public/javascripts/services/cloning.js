@@ -12,9 +12,7 @@ async function cloneNoteTo(childNoteId, parentNoteId, prefix) {
         return;
     }
 
-    treeCache.addBranchRelationship(resp.branchId, childNoteId, parentNoteId);
-
-    await treeService.reloadNotes([parentNoteId]);
+    await treeService.reloadNotes([childNoteId, parentNoteId]);
 }
 
 // beware that first arg is noteId and second is branchId!
@@ -28,9 +26,7 @@ async function cloneNoteAfter(noteId, afterBranchId) {
 
     const afterBranch = await treeCache.getBranch(afterBranchId);
 
-    treeCache.addBranchRelationship(resp.branchId, noteId, afterBranch.parentNoteId);
-
-    await treeService.reloadNotes([afterBranch.parentNoteId]);
+    await treeService.reloadNotes([noteId, afterBranch.parentNoteId]);
 }
 
 export default {
