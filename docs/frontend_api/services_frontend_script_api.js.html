@@ -240,16 +240,10 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
     this.getNotes = async (noteIds, silentNotFoundError = false) => await treeCache.getNotes(noteIds, silentNotFoundError);
 
     /**
-     * @param {string} noteId
+     * @param {string[]} noteIds
      * @method
      */
-    this.reloadNotesAndTheirChildren = async noteId => await treeCache.reloadNotesAndTheirChildren(noteId);
-
-    /**
-     * @param {string} noteId
-     * @method
-     */
-    this.reloadParents = async noteId => await treeCache.reloadParents(noteId);
+    this.reloadNotes = async noteIds => await treeCache.reloadNotes(noteIds);
 
     /**
      * Instance name identifies particular Trilium instance. It can be useful for scripts

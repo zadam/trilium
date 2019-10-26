@@ -832,8 +832,6 @@ async function reloadNotes(noteIds) {
         return;
     }
 
-    console.debug("Reloading notes", noteIds);
-
     await treeCache.reloadNotes(noteIds);
 
     const activeNotePath = noteDetailService.getActiveTabNotePath();

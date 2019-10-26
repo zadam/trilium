@@ -28,7 +28,7 @@
 
 <header>
     
-        <h2><span class="attribs"><span class="type-signature"></span></span>NoteShort<span class="signature">()</span><span class="type-signature"></span></h2>
+        <h2><span class="attribs"><span class="type-signature"></span></span>NoteShort<span class="signature">(treeCache, row, branches)</span><span class="type-signature"></span></h2>
         
             <div class="class-description">FIXME: rethink how attributes are cached in Note entities since they are long lived inside the cache.
 Attribute cache should be limited to "transaction".
@@ -48,7 +48,7 @@ This note's representation is used in note tree and is kept in TreeCache.</div>
     
 
     
-    <h4 class="name" id="NoteShort"><span class="type-signature"></span>new NoteShort<span class="signature">()</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="NoteShort"><span class="type-signature"></span>new NoteShort<span class="signature">(treeCache, row, branches)</span><span class="type-signature"></span></h4>
     
 
     
@@ -61,6 +61,101 @@ This note's representation is used in note tree and is kept in TreeCache.</div>
 
 
 
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>treeCache</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">TreeCache</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>row</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object.&lt;string, Object></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>branches</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;<a href="Branch.html">Branch</a>></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">all relevant branches, i.e. where this note is either child or parent</td>
+        </tr>
+
+    
+    </tbody>
+</table>
 
 
 
@@ -96,7 +191,7 @@ This note's representation is used in note tree and is kept in TreeCache.</div>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line16">line 16</a>
+        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line22">line 22</a>
     </li></ul></dd>
     
 
@@ -186,7 +281,143 @@ This note's representation is used in note tree and is kept in TreeCache.</div>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line29">line 29</a>
+        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line35">line 35</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="children"><span class="type-signature"></span>children<span class="type-signature"> :Array.&lt;string></span></h4>
+
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Array.&lt;string></span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line42">line 42</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="childToBranch"><span class="type-signature"></span>childToBranch<span class="type-signature"> :Object.&lt;string, string></span></h4>
+
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Object.&lt;string, string></span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line48">line 48</a>
     </li></ul></dd>
     
 
@@ -244,7 +475,7 @@ This note's representation is used in note tree and is kept in TreeCache.</div>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line31">line 31</a>
+        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line37">line 37</a>
     </li></ul></dd>
     
 
@@ -302,7 +533,7 @@ This note's representation is used in note tree and is kept in TreeCache.</div>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line23">line 23</a>
+        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line29">line 29</a>
     </li></ul></dd>
     
 
@@ -360,7 +591,7 @@ This note's representation is used in note tree and is kept in TreeCache.</div>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line27">line 27</a>
+        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line33">line 33</a>
     </li></ul></dd>
     
 
@@ -418,7 +649,143 @@ This note's representation is used in note tree and is kept in TreeCache.</div>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line19">line 19</a>
+        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line25">line 25</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="parents"><span class="type-signature"></span>parents<span class="type-signature"> :Array.&lt;string></span></h4>
+
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Array.&lt;string></span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line40">line 40</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="parentToBranch"><span class="type-signature"></span>parentToBranch<span class="type-signature"> :Object.&lt;string, string></span></h4>
+
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Object.&lt;string, string></span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line45">line 45</a>
     </li></ul></dd>
     
 
@@ -476,7 +843,7 @@ This note's representation is used in note tree and is kept in TreeCache.</div>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line21">line 21</a>
+        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line27">line 27</a>
     </li></ul></dd>
     
 
@@ -534,7 +901,7 @@ This note's representation is used in note tree and is kept in TreeCache.</div>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line25">line 25</a>
+        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line31">line 31</a>
     </li></ul></dd>
     
 
@@ -682,7 +1049,7 @@ This note's representation is used in note tree and is kept in TreeCache.</div>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line169">line 169</a>
+        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line217">line 217</a>
     </li></ul></dd>
     
 
@@ -849,7 +1216,7 @@ This note's representation is used in note tree and is kept in TreeCache.</div>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line109">line 109</a>
+        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line157">line 157</a>
     </li></ul></dd>
     
 
@@ -1023,7 +1390,7 @@ This note's representation is used in note tree and is kept in TreeCache.</div>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line180">line 180</a>
+        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line228">line 228</a>
     </li></ul></dd>
     
 
@@ -1129,7 +1496,7 @@ This note's representation is used in note tree and is kept in TreeCache.</div>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line60">line 60</a>
+        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line115">line 115</a>
     </li></ul></dd>
     
 
@@ -1231,7 +1598,7 @@ This note's representation is used in note tree and is kept in TreeCache.</div>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line74">line 74</a>
+        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line127">line 127</a>
     </li></ul></dd>
     
 
@@ -1333,7 +1700,7 @@ This note's representation is used in note tree and is kept in TreeCache.</div>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line96">line 96</a>
+        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line144">line 144</a>
     </li></ul></dd>
     
 
@@ -1435,7 +1802,7 @@ This note's representation is used in note tree and is kept in TreeCache.</div>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line101">line 101</a>
+        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line149">line 149</a>
     </li></ul></dd>
     
 
@@ -1586,7 +1953,7 @@ This note's representation is used in note tree and is kept in TreeCache.</div>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line202">line 202</a>
+        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line250">line 250</a>
     </li></ul></dd>
     
 
@@ -1753,7 +2120,7 @@ This note's representation is used in note tree and is kept in TreeCache.</div>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line135">line 135</a>
+        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line183">line 183</a>
     </li></ul></dd>
     
 
@@ -1920,7 +2287,7 @@ This note's representation is used in note tree and is kept in TreeCache.</div>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line127">line 127</a>
+        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line175">line 175</a>
     </li></ul></dd>
     
 
@@ -2075,7 +2442,7 @@ This note's representation is used in note tree and is kept in TreeCache.</div>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line214">line 214</a>
+        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line262">line 262</a>
     </li></ul></dd>
     
 
@@ -2181,7 +2548,7 @@ This note's representation is used in note tree and is kept in TreeCache.</div>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line86">line 86</a>
+        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line134">line 134</a>
     </li></ul></dd>
     
 
@@ -2283,7 +2650,7 @@ This note's representation is used in note tree and is kept in TreeCache.</div>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line91">line 91</a>
+        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line139">line 139</a>
     </li></ul></dd>
     
 
@@ -2434,7 +2801,7 @@ This note's representation is used in note tree and is kept in TreeCache.</div>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line208">line 208</a>
+        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line256">line 256</a>
     </li></ul></dd>
     
 
@@ -2601,7 +2968,7 @@ This note's representation is used in note tree and is kept in TreeCache.</div>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line151">line 151</a>
+        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line199">line 199</a>
     </li></ul></dd>
     
 
@@ -2768,7 +3135,7 @@ This note's representation is used in note tree and is kept in TreeCache.</div>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line143">line 143</a>
+        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line191">line 191</a>
     </li></ul></dd>
     
 
@@ -2923,7 +3290,7 @@ This note's representation is used in note tree and is kept in TreeCache.</div>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line226">line 226</a>
+        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line274">line 274</a>
     </li></ul></dd>
     
 
@@ -3093,7 +3460,7 @@ This note's representation is used in note tree and is kept in TreeCache.</div>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line236">line 236</a>
+        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line284">line 284</a>
     </li></ul></dd>
     
 
@@ -3244,7 +3611,7 @@ This note's representation is used in note tree and is kept in TreeCache.</div>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line220">line 220</a>
+        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line268">line 268</a>
     </li></ul></dd>
     
 
@@ -3354,7 +3721,7 @@ This note's representation is used in note tree and is kept in TreeCache.</div>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line260">line 260</a>
+        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line308">line 308</a>
     </li></ul></dd>
     
 
@@ -3528,7 +3895,7 @@ This note's representation is used in note tree and is kept in TreeCache.</div>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line160">line 160</a>
+        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line208">line 208</a>
     </li></ul></dd>
     
 
@@ -3634,7 +4001,7 @@ This note's representation is used in note tree and is kept in TreeCache.</div>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line68">line 68</a>
+        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line122">line 122</a>
     </li></ul></dd>
     
 
@@ -3785,7 +4152,7 @@ This note's representation is used in note tree and is kept in TreeCache.</div>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line190">line 190</a>
+        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line238">line 238</a>
     </li></ul></dd>
     
 
@@ -3940,7 +4307,7 @@ This note's representation is used in note tree and is kept in TreeCache.</div>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line196">line 196</a>
+        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line244">line 244</a>
     </li></ul></dd>
     
 
@@ -4051,7 +4418,7 @@ Cache is note instance scoped.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line251">line 251</a>
+        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line299">line 299</a>
     </li></ul></dd>
     
 
@@ -4135,7 +4502,7 @@ Cache is note instance scoped.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line35">line 35</a>
+        <a href="entities_note_short.js.html">entities/note_short.js</a>, <a href="entities_note_short.js.html#line90">line 90</a>
     </li></ul></dd>
     
 
