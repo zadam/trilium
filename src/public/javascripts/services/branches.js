@@ -80,6 +80,22 @@ async function moveToNode(nodesToMove, toNode) {
     }
 }
 
+async function getNextNode(nodes) {
+    // following code assumes that nodes contain only top-most selected nodes - getSelectedNodes has been
+    // called with stopOnParent=true
+    let next = nodes[nodes.length - 1].getNextSibling();
+
+    if (!next) {
+        next = nodes[0].getPrevSibling();
+    }
+
+    if (!next && !await hoistedNoteService.isRootNode(nodes[0])) {
+        next = nodes[0].getParent();
+    }
+
+    return treeUtils.getNotePath(next);
+}
+
 async function deleteNodes(nodes) {
     nodes = await filterRootNote(nodes);
 
@@ -130,47 +146,11 @@ async function deleteNodes(nodes) {
         }
     }
 
-    if (deleteClones) {
-        // if clones are also deleted we give up with targeted cleanup of the tree
-        treeService.reload();
-        return true;
-    }
+    const nextNotePath = await getNextNode(nodes);
 
-    // following code assumes that nodes contain only top-most selected nodes - getSelectedNodes has been
-    // called with stopOnParent=true
-    let next = nodes[nodes.length - 1].getNextSibling();
+    const noteIds = Array.from(new Set(nodes.map(node => node.data.noteId)));
 
-    if (!next) {
-        next = nodes[0].getPrevSibling();
-    }
-
-    if (!next && !await hoistedNoteService.isRootNode(nodes[0])) {
-        next = nodes[0].getParent();
-    }
-
-    let activeNotePath = null;
-
-    if (next) {
-        activeNotePath = await treeUtils.getNotePath(next);
-    }
-
-    await treeService.loadTreeCache();
-
-    const parentNoteIds = Array.from(new Set(nodes.map(node => node.getParent().data.noteId)));
-
-    for (const node of nodes) {
-        node.remove();
-    }
-
-    await treeService.reloadNotes(parentNoteIds);
-
-    // activate after all the reloading
-    if (activeNotePath) {
-        treeService.focusTree();
-
-        const node = await treeService.activateNote(activeNotePath);
-        node.setFocus(true);
-    }
+    await treeService.reloadNotes(noteIds, nextNotePath);
 
     return true;
 }

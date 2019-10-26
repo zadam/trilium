@@ -6,17 +6,17 @@ const protectedSessionService = require('../../services/protected_session');
 const noteCacheService = require('../../services/note_cache');
 
 async function getNotes(noteIds) {
+    // we return also deleted notes which have been specifically asked for
     const notes = await sql.getManyRows(`
       SELECT 
              noteId, 
              title, 
              isProtected, 
              type, 
-             mime
-      FROM 
-           notes 
-      WHERE isDeleted = 0 
-        AND noteId IN (???)`, noteIds);
+             mime,
+             isDeleted
+      FROM notes 
+      WHERE noteId IN (???)`, noteIds);
 
     const cssClassLabels = await sql.getManyRows(`
       SELECT noteId, value FROM attributes WHERE isDeleted = 0 AND type = 'label' 

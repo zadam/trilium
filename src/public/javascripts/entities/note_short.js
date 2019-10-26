@@ -32,6 +32,8 @@ class NoteShort {
         /** @param {string} content-type, e.g. "application/json" */
         this.mime = row.mime;
         /** @param {boolean} */
+        this.isDeleted = row.isDeleted;
+        /** @param {boolean} */
         this.archived = row.archived;
         /** @param {string} */
         this.cssClass = row.cssClass;

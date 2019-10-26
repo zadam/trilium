@@ -77,11 +77,11 @@ class TreeCache {
                 }
             }
 
-            for (const branch of branchesByNotes[noteId]) {
+            for (const branch of branchesByNotes[noteId] || []) { // can be empty for deleted notes
                 this.addBranch(branch);
             }
 
-            const note = new NoteShort(this, noteRow, branchesByNotes[noteId]);
+            const note = new NoteShort(this, noteRow, branchesByNotes[noteId] || []);
 
             this.notes[note.noteId] = note;
 
@@ -158,9 +158,11 @@ class TreeCache {
     }
 
     /** @return {Branch} */
-    getBranch(branchId) {
+    getBranch(branchId, silentNotFoundError = false) {
         if (!(branchId in this.branches)) {
-            console.error(`Not existing branch ${branchId}`);
+            if (!silentNotFoundError) {
+                console.error(`Not existing branch ${branchId}`);
+            }
         }
         else {
             return this.branches[branchId];

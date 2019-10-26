@@ -559,14 +559,10 @@ function getHashValueFromAddress() {
     return str.split("-");
 }
 
-async function loadTreeCache() {
+async function loadTree() {
     const resp = await server.get('tree');
 
     treeCache.load(resp.notes, resp.branches);
-}
-
-async function loadTree() {
-    await loadTreeCache();
 
     return await treeBuilder.prepareTree();
 }
@@ -828,25 +824,34 @@ async function checkFolderStatus(node) {
     node.renderTitle();
 }
 
-async function reloadNotes(noteIds) {
+async function reloadNotes(noteIds, activateNotePath = null) {
     if (noteIds.length === 0) {
         return;
     }
 
     await treeCache.reloadNotes(noteIds);
 
-    const activeNotePath = noteDetailService.getActiveTabNotePath();
+    if (!activateNotePath) {
+        activateNotePath = noteDetailService.getActiveTabNotePath();
+    }
 
     for (const noteId of noteIds) {
         for (const node of getNodesByNoteId(noteId)) {
-            await node.load(true);
+            const branch = treeCache.getBranch(node.data.branchId, true);
 
-            await checkFolderStatus(node);
+            if (!branch) {
+                node.remove();
+            }
+            else {
+                await node.load(true);
+
+                await checkFolderStatus(node);
+            }
         }
     }
 
-    if (activeNotePath) {
-        const node = await getNodeFromPath(activeNotePath);
+    if (activateNotePath) {
+        const node = await getNodeFromPath(activateNotePath);
 
         if (node) {
             await node.setActive(true, {noEvents: true}); // this node has been already active so no need to fire events again
@@ -926,7 +931,6 @@ export default {
     getNodesByNoteId,
     checkFolderStatus,
     reloadNotes,
-    loadTreeCache,
     expandToNote,
     getNodeFromPath,
     resolveNotePath,
