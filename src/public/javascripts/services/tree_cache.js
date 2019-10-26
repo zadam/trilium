@@ -1,4 +1,3 @@
-import utils from "./utils.js";
 import Branch from "../entities/branch.js";
 import NoteShort from "../entities/note_short.js";
 import ws from "./ws.js";
@@ -151,28 +150,19 @@ class TreeCache {
         this.branches[branch.branchId] = branch;
     }
 
-    async getBranches(branchIds) {
-        const missingBranchIds = branchIds.filter(branchId => this.branches[branchId] === undefined);
-
-        if (missingBranchIds.length > 0) {
-            const resp = await server.post('tree/load', { branchIds: branchIds });
-
-            this.addResp(resp.notes, resp.branches);
-        }
-
-        return branchIds.map(branchId => {
-            if (!this.branches[branchId]) {
-                throw new Error(`Can't find branch ${branchId}`);
-            }
-            else {
-                return this.branches[branchId];
-            }
-        });
+    getBranches(branchIds) {
+        return branchIds
+            .map(branchId => this.getBranch(branchId))
+            .filter(b => b !== null);
     }
 
-    /** @return Branch */
-    async getBranch(branchId) {
-        return (await this.getBranches([branchId]))[0];
+    /** @return {Branch} */
+    getBranch(branchId) {
+        if (!(branchId in this.branches)) {
+            console.error(`Not existing branch ${branchId}`);
+        }
+
+        return this.branches[branchId];
     }
 }
 

@@ -48,7 +48,7 @@ function getActiveNode() {
 async function getNodesByBranchId(branchId) {
     utils.assertArguments(branchId);
 
-    const branch = await treeCache.getBranch(branchId);
+    const branch = treeCache.getBranch(branchId);
 
     return getNodesByNoteId(branch.noteId).filter(node => node.data.branchId === branchId);
 }
@@ -64,7 +64,7 @@ function getNodesByNoteId(noteId) {
 async function setPrefix(branchId, prefix) {
     utils.assertArguments(branchId);
 
-    const branch = await treeCache.getBranch(branchId);
+    const branch = treeCache.getBranch(branchId);
 
     branch.prefix = prefix;
 
@@ -75,7 +75,7 @@ async function setPrefix(branchId, prefix) {
 
 async function setNodeTitleWithPrefix(node) {
     const noteTitle = await treeUtils.getNoteTitle(node.data.noteId);
-    const branch = await treeCache.getBranch(node.data.branchId);
+    const branch = treeCache.getBranch(node.data.branchId);
 
     const prefix = branch.prefix;
 
@@ -671,7 +671,7 @@ async function createNote(node, parentNoteId, target, extraOptions = {}) {
     noteDetailService.addDetailLoadedListener(note.noteId, noteDetailService.focusAndSelectTitle);
 
     const noteEntity = await treeCache.getNote(note.noteId);
-    const branchEntity = await treeCache.getBranch(branch.branchId);
+    const branchEntity = treeCache.getBranch(branch.branchId);
 
     let newNode = {
         title: newNoteName,

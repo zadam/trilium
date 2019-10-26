@@ -99,15 +99,7 @@ async function getTree() {
 }
 
 async function load(req) {
-    let noteIds = req.body.noteIds;
-    const branchIds = req.body.branchIds;
-
-    if (branchIds && branchIds.length > 0) {
-        noteIds = (await sql.getManyRows(`SELECT noteId FROM branches WHERE isDeleted = 0 AND branchId IN(???)`, branchIds))
-            .map(note => note.noteId);
-    }
-
-    return await getNotesAndBranches(noteIds);
+    return await getNotesAndBranches(req.body.noteIds);
 }
 
 module.exports = {

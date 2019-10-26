@@ -24,7 +24,7 @@ async function cloneNoteAfter(noteId, afterBranchId) {
         return;
     }
 
-    const afterBranch = await treeCache.getBranch(afterBranchId);
+    const afterBranch = treeCache.getBranch(afterBranchId);
 
     await treeService.reloadNotes([noteId, afterBranch.parentNoteId]);
 }

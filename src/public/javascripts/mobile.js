@@ -91,7 +91,7 @@ async function showTree() {
 
 $detail.on("click", ".note-menu-button", async e => {
     const node = treeService.getActiveNode();
-    const branch = await treeCache.getBranch(node.data.branchId);
+    const branch = treeCache.getBranch(node.data.branchId);
     const note = await treeCache.getNote(node.data.noteId);
     const parentNote = await treeCache.getNote(branch.parentNoteId);
     const isNotRoot = note.noteId !== 'root';

@@ -62,7 +62,7 @@ async function getNoteTitle(noteId, parentNoteId = null) {
         const branchId = note.parentToBranch[parentNoteId];
 
         if (branchId) {
-            const branch = await treeCache.getBranch(branchId);
+            const branch = treeCache.getBranch(branchId);
 
             if (branch && branch.prefix) {
                 title = branch.prefix + ' - ' + title;

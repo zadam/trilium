@@ -11,7 +11,7 @@ async function prepareTree() {
     let hoistedBranch;
 
     if (hoistedNoteId === 'root') {
-        hoistedBranch = await treeCache.getBranch('root');
+        hoistedBranch = treeCache.getBranch('root');
     }
     else {
         const hoistedNote = await treeCache.getNote(hoistedNoteId);
@@ -116,7 +116,7 @@ async function prepareSearchBranch(note) {
     await treeCache.getNotes(results.map(res => res.noteId));
 
     for (const result of results) {
-        const origBranch = await treeCache.getBranch(result.branchId);
+        const origBranch = treeCache.getBranch(result.branchId);
 
         const branch = new Branch(treeCache, {
             branchId: "virt" + utils.randomString(10),

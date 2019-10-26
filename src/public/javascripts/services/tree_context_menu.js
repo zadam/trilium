@@ -26,7 +26,7 @@ class TreeContextMenu {
     }
 
     async getContextMenuItems() {
-        const branch = await treeCache.getBranch(this.node.data.branchId);
+        const branch = treeCache.getBranch(this.node.data.branchId);
         const note = await treeCache.getNote(this.node.data.noteId);
         const parentNote = await treeCache.getNote(branch.parentNoteId);
         const isNotRoot = note.noteId !== 'root';
@@ -156,7 +156,7 @@ class TreeContextMenu {
             hoistedNoteService.unhoist();
         }
         else if (cmd === "duplicateNote") {
-            const branch = await treeCache.getBranch(this.node.data.branchId);
+            const branch = treeCache.getBranch(this.node.data.branchId);
 
             treeService.duplicateNote(this.node.data.noteId, branch.parentNoteId);
         }

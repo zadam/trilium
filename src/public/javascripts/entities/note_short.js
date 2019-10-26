@@ -127,7 +127,7 @@ class NoteShort {
     async getChildBranches() {
         const branchIds = Object.values(this.childToBranch);
 
-        return await this.treeCache.getBranches(branchIds);
+        return this.treeCache.getBranches(branchIds);
     }
 
     /** @returns {string[]} */

@@ -20,7 +20,7 @@ export async function showDialog(node) {
     $dialog.modal();
 
     branchId = node.data.branchId;
-    const branch = await treeCache.getBranch(branchId);
+    const branch = treeCache.getBranch(branchId);
 
     $treePrefixInput.val(branch.prefix);
 
