@@ -5,6 +5,11 @@ import server from "./server.js";
 
 /**
  * TreeCache keeps a read only cache of note tree structure in frontend's memory.
+ * - notes are loaded lazily when unknown noteId is requested
+ * - when note is loaded, all its parent and child branches are loaded as well. For a branch to be used, it's not must be loaded before
+ * - deleted notes are present in the cache as well, but they don't have any branches. As a result check for deleted branch is done by presence check - if the branch is not there even though the corresponding note has been loaded, we can infer it is deleted.
+ *
+ * Note and branch deletions are corner cases and usually not needed.
  */
 class TreeCache {
     constructor() {
@@ -50,12 +55,9 @@ class TreeCache {
                     if (childNote) {
                         childNote.parents = childNote.parents.filter(p => p !== noteId);
 
-                        const branchId = childNote.parentToBranch[noteId];
+                        console.log("Cleaning up", childNote.parentToBranch[noteId]);
 
-                        if (branchId in this.branches) {
-                            delete this.branches[branchId];
-                        }
-
+                        delete this.branches[childNote.parentToBranch[noteId]];
                         delete childNote.parentToBranch[noteId];
                     }
                 }
@@ -66,19 +68,18 @@ class TreeCache {
                     if (parentNote) {
                         parentNote.children = parentNote.children.filter(p => p !== noteId);
 
-                        const branchId = parentNote.childToBranch[noteId];
-
-                        if (branchId in this.branches) {
-                            delete this.branches[branchId];
-                        }
-
+                        delete this.branches[parentNote.childToBranch[noteId]];
                         delete parentNote.childToBranch[noteId];
                     }
                 }
             }
 
             for (const branch of branchesByNotes[noteId] || []) { // can be empty for deleted notes
-                this.addBranch(branch);
+                if (noteId === '2Ndfjyv3EbEQ') {
+                    console.log("Adding", branch.branchId);
+                }
+
+                this.branches[branch.branchId] = branch;
             }
 
             const note = new NoteShort(this, noteRow, branchesByNotes[noteId] || []);
@@ -145,10 +146,6 @@ class TreeCache {
         }
 
         return (await this.getNotes([noteId], silentNotFoundError))[0];
-    }
-
-    addBranch(branch) {
-        this.branches[branch.branchId] = branch;
     }
 
     getBranches(branchIds) {

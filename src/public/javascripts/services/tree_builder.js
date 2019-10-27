@@ -115,21 +115,22 @@ async function prepareSearchBranch(note) {
     // force to load all the notes at once instead of one by one
     await treeCache.getNotes(results.map(res => res.noteId));
 
-    for (const result of results) {
-        const origBranch = treeCache.getBranch(result.branchId);
+    const {notes, branches} = await server.post('tree/load', { noteIds: [note.noteId] });
 
-        const branch = new Branch(treeCache, {
-            branchId: "virt" + utils.randomString(10),
-            noteId: result.noteId,
-            parentNoteId: note.noteId,
-            prefix: origBranch.prefix,
-            virtual: true
-        });
+    results.forEach((result, index) => branches.push({
+        branchId: "virt" + utils.randomString(10),
+        noteId: result.noteId,
+        parentNoteId: note.noteId,
+        prefix: treeCache.getBranch(result.branchId).prefix,
+        notePosition: (index + 1) * 10
+    }));
 
-        treeCache.addBranch(branch);
-    }
+    treeCache.addResp(notes, branches);
 
-    return await prepareRealBranch(note);
+    // note in cache changed
+    const newNote = await treeCache.getNote(note.noteId);
+
+    return await prepareRealBranch(newNote);
 }
 
 async function getExtraClasses(note) {

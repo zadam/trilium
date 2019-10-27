@@ -854,7 +854,7 @@ async function reloadNotes(noteIds, activateNotePath = null) {
         const node = await getNodeFromPath(activateNotePath);
 
         if (node) {
-            await node.setActive(true, {noEvents: true}); // this node has been already active so no need to fire events again
+            await node.setActive(true);
         }
     }
 }
