@@ -14,6 +14,7 @@ const syncOptions = require('./sync_options');
 const syncMutexService = require('./sync_mutex');
 const cls = require('./cls');
 const request = require('./request');
+const ws = require('./ws');
 
 let proxyToggle = true;
 

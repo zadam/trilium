@@ -64,15 +64,15 @@ async function call(method, url, data, headers = {}) {
         });
     }
     else {
-        return await ajax(url, method, data);
+        return await ajax(url, method, data, headers);
     }
 }
 
-async function ajax(url, method, data) {
+async function ajax(url, method, data, headers) {
     const options = {
         url: baseApiUrl + url,
         type: method,
-        headers: getHeaders(),
+        headers: getHeaders(headers),
         timeout: 60000
     };
 

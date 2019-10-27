@@ -55,8 +55,6 @@ class TreeCache {
                     if (childNote) {
                         childNote.parents = childNote.parents.filter(p => p !== noteId);
 
-                        console.log("Cleaning up", childNote.parentToBranch[noteId]);
-
                         delete this.branches[childNote.parentToBranch[noteId]];
                         delete childNote.parentToBranch[noteId];
                     }
@@ -75,10 +73,6 @@ class TreeCache {
             }
 
             for (const branch of branchesByNotes[noteId] || []) { // can be empty for deleted notes
-                if (noteId === '2Ndfjyv3EbEQ') {
-                    console.log("Adding", branch.branchId);
-                }
-
                 this.branches[branch.branchId] = branch;
             }
 
