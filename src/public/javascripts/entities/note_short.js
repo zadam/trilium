@@ -127,7 +127,8 @@ class NoteShort {
 
     /** @returns {Promise<Branch[]>} */
     async getChildBranches() {
-        const branchIds = Object.values(this.childToBranch);
+        // don't use Object.values() to guarantee order
+        const branchIds = this.children.map(childNoteId => this.childToBranch[childNoteId]);
 
         return this.treeCache.getBranches(branchIds);
     }
