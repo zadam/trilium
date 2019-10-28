@@ -33,7 +33,7 @@ function toast(options) {
 }
 
 function showPersistent(options) {
-    let $toast = $("#toast-" + options.id);
+    let $toast = $("#toast-persistent-" + options.id);
 
     if ($toast.length > 0) {
         $toast.find('.toast-body').html(options.message);

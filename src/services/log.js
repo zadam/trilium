@@ -42,6 +42,10 @@ function request(req) {
         }
     }
 
+    if (req.url.includes(".js.map") || req.url.includes(".css.map")) {
+        return;
+    }
+
     logger.info(req.method + " " + req.url);
 }
 

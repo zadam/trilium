@@ -173,7 +173,8 @@ subscribeToMessages(message => {
         });
     }
     else if (message.type === 'sync-pull-finished') {
-        toastService.closePersistent('sync');
+        // this gives user a chance to see the toast in case of fast sync finish
+        setTimeout(() => toastService.closePersistent('sync'), 1000);
     }
 });
 

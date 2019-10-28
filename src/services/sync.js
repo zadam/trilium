@@ -117,6 +117,8 @@ async function doLogin() {
 }
 
 async function pullSync(syncContext) {
+    let appliedPulls = 0;
+
     while (true) {
         const lastSyncedPull = await getLastSyncedPull();
         const changesUri = '/api/sync/changed?lastSyncId=' + lastSyncedPull;
@@ -150,9 +152,13 @@ async function pullSync(syncContext) {
         }
 
         await setLastSyncedPull(rows[rows.length - 1].sync.id);
+
+        appliedPulls += rows.length;
     }
 
-    ws.syncPullFinished();
+    if (appliedPulls > 0) {
+        ws.syncPullFinished();
+    }
 
     log.info("Finished pull");
 }
