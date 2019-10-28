@@ -141,10 +141,14 @@ async function pullSync(syncContext) {
         log.info("Pulled " + rows.length + " changes from " + changesUri + " in "
             + (Date.now() - startDate.getTime()) + "ms");
 
-        ws.syncPullInProgress();
-
         for (const {sync, entity} of rows) {
             if (!sourceIdService.isLocalSourceId(sync.sourceId)) {
+                if (appliedPulls === 0 && sync.entity !== 'recent_notes') { // send only for first
+                    ws.syncPullInProgress();
+
+                    appliedPulls++;
+                }
+
                 await syncUpdateService.updateEntity(sync, entity, syncContext.sourceId);
             }
 
@@ -152,8 +156,6 @@ async function pullSync(syncContext) {
         }
 
         await setLastSyncedPull(rows[rows.length - 1].sync.id);
-
-        appliedPulls += rows.length;
     }
 
     if (appliedPulls > 0) {

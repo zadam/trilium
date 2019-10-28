@@ -33,7 +33,7 @@ function toast(options) {
 }
 
 function showPersistent(options) {
-    let $toast = $("#toast-persistent-" + options.id);
+    let $toast = $("#toast-" + options.id);
 
     if ($toast.length > 0) {
         $toast.find('.toast-body').html(options.message);
@@ -50,7 +50,7 @@ function showPersistent(options) {
 }
 
 function closePersistent(id) {
-    $("#toast-persistent-" + id).toast("dispose");
+    $("#toast-" + id).toast("dispose");
 }
 
 function showMessage(message, delay = 2000) {
