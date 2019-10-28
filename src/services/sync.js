@@ -147,7 +147,6 @@ async function pullSync(syncContext) {
             }
 
             stats.outstandingPulls = resp.maxSyncId - sync.id;
-
         }
 
         await setLastSyncedPull(rows[rows.length - 1].sync.id);

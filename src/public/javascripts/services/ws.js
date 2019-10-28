@@ -47,14 +47,15 @@ async function handleMessage(event) {
     }
 
     if (message.type === 'sync') {
+        const syncRows = message.data;
         lastPingTs = Date.now();
 
         $outstandingSyncsCount.html(message.outstandingSyncs);
 
-        if (message.data.length > 0) {
-            console.debug(utils.now(), "Sync data: ", message.data);
+        if (syncRows.length > 0) {
+            console.debug(utils.now(), "Sync data: ", syncRows);
 
-            syncDataQueue.push(...message.data);
+            syncDataQueue.push(...syncRows);
 
             // first wait for all the preceding consumers to finish
             while (consumeQueuePromise) {
@@ -69,6 +70,8 @@ async function handleMessage(event) {
             // finish and set to null to signal somebody else can pick it up
             consumeQueuePromise = null;
         }
+
+        checkSyncIdListeners();
     }
     else if (message.type === 'sync-hash-check-failed') {
         toastService.showError("Sync check failed!", 60000);
@@ -94,6 +97,18 @@ function waitForSyncId(desiredSyncId) {
     });
 }
 
+function checkSyncIdListeners() {
+    syncIdReachedListeners
+        .filter(l => l.desiredSyncId <= lastSyncId)
+        .forEach(l => l.resolvePromise());
+
+    syncIdReachedListeners = syncIdReachedListeners
+        .filter(l => l.desiredSyncId > lastSyncId);
+
+    syncIdReachedListeners.filter(l => Date.now() > l.start - 60000)
+        .forEach(l => console.log(`Waiting for syncId ${l.desiredSyncId} while current is ${lastSyncId} for ${Date.now() - l.start}`));
+}
+
 async function consumeSyncData() {
     if (syncDataQueue.length >= 0) {
         const allSyncData = syncDataQueue;
@@ -109,16 +124,6 @@ async function consumeSyncData() {
 
         lastSyncId = allSyncData[allSyncData.length - 1].id;
     }
-
-    syncIdReachedListeners
-        .filter(l => l.desiredSyncId <= lastSyncId)
-        .forEach(l => l.resolvePromise());
-
-    syncIdReachedListeners = syncIdReachedListeners
-        .filter(l => l.desiredSyncId > lastSyncId);
-
-    syncIdReachedListeners.filter(l => Date.now() > l.start - 60000)
-        .forEach(l => console.log(`Waiting for syncId ${l.desiredSyncId} for ${Date.now() - l.start}`));
 }
 
 function connectWebSocket() {
@@ -167,8 +172,7 @@ subscribeToMessages(message => {
             icon: "refresh"
         });
     }
-
-    if (message.type === 'sync-pull-finished') {
+    else if (message.type === 'sync-pull-finished') {
         toastService.closePersistent('sync');
     }
 });

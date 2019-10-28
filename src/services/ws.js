@@ -103,7 +103,7 @@ function syncPullInProgress() {
     sendMessageToAllClients({ type: 'sync-pull-in-progress' });
 }
 
-async function syncPullFinished() {
+function syncPullFinished() {
     sendMessageToAllClients({ type: 'sync-pull-finished' });
 }
 
