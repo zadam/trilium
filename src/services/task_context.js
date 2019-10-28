@@ -25,13 +25,13 @@ class TaskContext {
         return taskContexts[taskId];
     }
 
-    async increaseProgressCount() {
+    increaseProgressCount() {
         this.progressCount++;
 
         if (Date.now() - this.lastSentCountTs >= 300) {
             this.lastSentCountTs = Date.now();
 
-            await ws.sendMessageToAllClients({
+            ws.sendMessageToAllClients({
                 type: 'task-progress-count',
                 taskId: this.taskId,
                 taskType: this.taskType,
@@ -41,8 +41,8 @@ class TaskContext {
         }
     }
 
-    async reportError(message) {
-        await ws.sendMessageToAllClients({
+    reportError(message) {
+        ws.sendMessageToAllClients({
             type: 'task-error',
             taskId: this.taskId,
             taskType: this.taskType,
@@ -51,8 +51,8 @@ class TaskContext {
         });
     }
 
-    async taskSucceeded(result) {
-        await ws.sendMessageToAllClients({
+    taskSucceeded(result) {
+        ws.sendMessageToAllClients({
             type: 'task-succeeded',
             taskId: this.taskId,
             taskType: this.taskType,

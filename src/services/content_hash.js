@@ -57,7 +57,7 @@ async function checkContentHashes(otherHashes) {
 
             if (key !== 'recent_notes') {
                 // let's not get alarmed about recent notes which get updated often and can cause failures in race conditions
-                await ws.sendMessageToAllClients({type: 'sync-hash-check-failed'});
+                ws.sendMessageToAllClients({type: 'sync-hash-check-failed'});
             }
         }
     }

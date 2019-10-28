@@ -45,7 +45,7 @@ function init(httpServer, sessionParser) {
     });
 }
 
-async function sendMessage(client, message) {
+function sendMessage(client, message) {
     const jsonStr = JSON.stringify(message);
 
     if (client.readyState === WebSocket.OPEN) {
@@ -53,7 +53,7 @@ async function sendMessage(client, message) {
     }
 }
 
-async function sendMessageToAllClients(message) {
+function sendMessageToAllClients(message) {
     const jsonStr = JSON.stringify(message);
 
     if (webSocketServer) {
@@ -88,23 +88,23 @@ async function sendPing(client, lastSentSyncId) {
 
     const stats = require('./sync').stats;
 
-    await sendMessage(client, {
+    sendMessage(client, {
         type: 'sync',
         data: syncData,
         outstandingSyncs: stats.outstandingPushes + stats.outstandingPulls
     });
 }
 
-async function refreshTree() {
-    await sendMessageToAllClients({ type: 'refresh-tree' });
+function refreshTree() {
+    sendMessageToAllClients({ type: 'refresh-tree' });
 }
 
-async function syncPullInProgress() {
-    await sendMessageToAllClients({ type: 'sync-pull-in-progress' });
+function syncPullInProgress() {
+    sendMessageToAllClients({ type: 'sync-pull-in-progress' });
 }
 
 async function syncPullFinished() {
-    await sendMessageToAllClients({ type: 'sync-pull-finished' });
+    sendMessageToAllClients({ type: 'sync-pull-finished' });
 }
 
 module.exports = {
