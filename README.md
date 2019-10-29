@@ -48,3 +48,10 @@ Or clone locally and run
 npm install
 npm run start-server
 ```
+
+## Shoutouts
+
+* [CKEditor 5](https://github.com/ckeditor/ckeditor5) - best WYSIWYG editor on the market, very interactive and listening team
+* [FancyTree](https://github.com/mar10/fancytree) - very feature rich tree library without real competition. Trilium Notes would not be the same without it.
+* [CodeMirror](https://github.com/codemirror/CodeMirror) - code editor with support for huge amount of languages
+* [jsPlumb](https://github.com/jsplumb/jsplumb) - visual connectivity library without competition. Used in [relation maps](https://github.com/zadam/trilium/wiki/Relation-map) and [link maps](https://github.com/zadam/trilium/wiki/Link-map)
