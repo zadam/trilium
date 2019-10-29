@@ -10,9 +10,7 @@ const stringSimilarity = require('string-similarity');
 let loaded = false;
 let loadedPromiseResolve;
 /** Is resolved after the initial load */
-let loadedPromise = new Promise(res => {
-    loadedPromiseResolve = res;
-});
+let loadedPromise = new Promise(res => loadedPromiseResolve = res);
 
 let noteTitles = {};
 let protectedNoteTitles = {};
@@ -30,9 +28,9 @@ async function load() {
 
     prefixes = await sql.getMap(`SELECT noteId || '-' || parentNoteId, prefix FROM branches WHERE prefix IS NOT NULL AND prefix != ''`);
 
-    const relations = await sql.getRows(`SELECT branchId, noteId, parentNoteId FROM branches WHERE isDeleted = 0`);
+    const branches = await sql.getRows(`SELECT branchId, noteId, parentNoteId FROM branches WHERE isDeleted = 0`);
 
-    for (const rel of relations) {
+    for (const rel of branches) {
         childToParent[rel.noteId] = childToParent[rel.noteId] || [];
         childToParent[rel.noteId].push(rel.parentNoteId);
         childParentToBranchId[`${rel.noteId}-${rel.parentNoteId}`] = rel.branchId;
@@ -105,7 +103,7 @@ async function findNotes(query) {
     let noteIds = Object.keys(noteTitles);
 
     if (protectedSessionService.isProtectedSessionAvailable()) {
-        noteIds = noteIds.concat(Object.keys(protectedNoteTitles));
+        noteIds = [...new Set(noteIds.concat(Object.keys(protectedNoteTitles)))];
     }
 
     for (const noteId of noteIds) {
@@ -176,34 +174,6 @@ async function findNotes(query) {
     return apiResults;
 }
 
-function isNotePathArchived(notePath) {
-    // if the note is archived directly
-    if (archived[notePath[notePath.length - 1]] !== undefined) {
-        return true;
-    }
-
-    for (let i = 0; i < notePath.length - 1; i++) {
-        // this is going through parents so archived must be inheritable
-        if (archived[notePath[i]] === 1) {
-            return true;
-        }
-    }
-
-    return false;
-}
-
-/**
- * This assumes that note is available. "archived" note means that there isn't a single non-archived note-path
- * leading to this note.
- *
- * @param noteId
- */
-function isArchived(noteId) {
-    const notePath = getSomePath(noteId);
-
-    return isNotePathArchived(notePath);
-}
-
 function search(noteId, tokens, path, results) {
     if (tokens.length === 0) {
         const retPath = getSomePath(noteId, path);
@@ -252,6 +222,34 @@ function search(noteId, tokens, path, results) {
             search(parentNoteId, tokens, path.concat([noteId]), results);
         }
     }
+}
+
+function isNotePathArchived(notePath) {
+    // if the note is archived directly
+    if (archived[notePath[notePath.length - 1]] !== undefined) {
+        return true;
+    }
+
+    for (let i = 0; i < notePath.length - 1; i++) {
+        // this is going through parents so archived must be inheritable
+        if (archived[notePath[i]] === 1) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/**
+ * This assumes that note is available. "archived" note means that there isn't a single non-archived note-path
+ * leading to this note.
+ *
+ * @param noteId
+ */
+function isArchived(noteId) {
+    const notePath = getSomePath(noteId);
+
+    return isNotePathArchived(notePath);
 }
 
 function getNoteTitle(noteId, parentNoteId) {
@@ -456,7 +454,10 @@ eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED
                 prefixes[branch.noteId + '-' + branch.parentNoteId] = branch.prefix;
             }
 
-            childToParent[branch.noteId].push(branch.parentNoteId);
+            if (!childToParent[branch.noteId].includes(branch.parentNoteId)) {
+                childToParent[branch.noteId].push(branch.parentNoteId);
+            }
+
             resortChildToParent(branch.noteId);
 
             childParentToBranchId[branch.noteId + '-' + branch.parentNoteId] = branch.branchId;
@@ -483,7 +484,7 @@ eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED
 // will sort the childs so that non-archived are first and archived at the end
 // this is done so that non-archived paths are always explored as first when searching for note path
 function resortChildToParent(noteId) {
-    if (!childToParent[noteId]) {
+    if (!(noteId in childToParent)) {
         return;
     }
 
@@ -501,9 +502,7 @@ function isAvailable(noteId) {
 }
 
 eventService.subscribe(eventService.ENTER_PROTECTED_SESSION, () => {
-    if (loaded) {
-        loadProtectedNotes();
-    }
+    loadedPromise.then(() => loadProtectedNotes());
 });
 
 sqlInit.dbReady.then(() => utils.stopWatch("Note cache load", load));
