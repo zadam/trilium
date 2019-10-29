@@ -13,8 +13,8 @@
  * Released under the MIT license
  * https://github.com/mar10/fancytree/wiki/LicenseInfo
  *
- * @version 2.32.0
- * @date 2019-09-10T07:42:12Z
+ * @version 2.33.0
+ * @date 2019-10-29T08:00:07Z
 ******************************************************************************/
 /*------------------------------------------------------------------------------
  * Helpers
@@ -121,7 +121,6 @@ span.fancytree-drag-helper-img,
   display: inline-block;
   vertical-align: top;
   background-repeat: no-repeat;
-  background-position: left;
   background-image: url("../skin-win8/icons.gif");
   background-position: 0px 0px;
 }
