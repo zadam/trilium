@@ -106,7 +106,7 @@ function checkSyncIdListeners() {
         .filter(l => l.desiredSyncId > lastSyncId);
 
     syncIdReachedListeners.filter(l => Date.now() > l.start - 60000)
-        .forEach(l => console.log(`Waiting for syncId ${l.desiredSyncId} while current is ${lastSyncId} for ${Date.now() - l.start}`));
+        .forEach(l => console.log(`Waiting for syncId ${l.desiredSyncId} while current is ${lastSyncId} for ${Math.floor((Date.now() - l.start) / 1000)}s`));
 }
 
 async function consumeSyncData() {
