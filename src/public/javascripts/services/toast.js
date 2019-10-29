@@ -45,12 +45,12 @@ function showPersistent(options) {
     }
 
     if (options.closeAfter) {
-        setTimeout(() => $toast.toast('dispose'), options.closeAfter);
+        setTimeout(() => $toast.remove(), options.closeAfter);
     }
 }
 
 function closePersistent(id) {
-    $("#toast-" + id).toast("dispose");
+    $("#toast-" + id).remove();
 }
 
 function showMessage(message, delay = 2000) {
