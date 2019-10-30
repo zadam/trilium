@@ -79,10 +79,10 @@
   },
   "devDependencies": {
     "electron": "6.0.12",
-    "electron-builder": "21.2.0",
+    "electron-builder": "22.1.0",
     "electron-compile": "6.4.4",
     "electron-installer-debian": "2.0.1",
-    "electron-packager": "14.0.6",
+    "electron-packager": "14.1.0",
     "electron-rebuild": "1.8.6",
     "jsdoc": "3.6.3",
     "lorem-ipsum": "2.0.3",

@@ -110,8 +110,8 @@ function checkSyncIdListeners() {
 }
 
 async function consumeSyncData() {
-    if (syncDataQueue.length >= 0) {
-        const allSyncData = syncDataQueue.slice();
+    if (syncDataQueue.length > 0) {
+        const allSyncData = syncDataQueue;
         syncDataQueue = [];
 
         const outsideSyncData = allSyncData.filter(sync => sync.sourceId !== glob.sourceId);
