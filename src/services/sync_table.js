@@ -4,42 +4,6 @@ const dateUtils = require('./date_utils');
 const log = require('./log');
 const cls = require('./cls');
 
-async function addNoteSync(noteId, sourceId) {
-    await addEntitySync("notes", noteId, sourceId)
-}
-
-async function addNoteContentSync(noteId, sourceId) {
-    await addEntitySync("note_contents", noteId, sourceId)
-}
-
-async function addBranchSync(branchId, sourceId) {
-    await addEntitySync("branches", branchId, sourceId)
-}
-
-async function addNoteReorderingSync(parentNoteId, sourceId) {
-    await addEntitySync("note_reordering", parentNoteId, sourceId)
-}
-
-async function addNoteRevisionSync(noteRevisionId, sourceId) {
-    await addEntitySync("note_revisions", noteRevisionId, sourceId);
-}
-
-async function addOptionsSync(name, sourceId) {
-    await addEntitySync("options", name, sourceId);
-}
-
-async function addRecentNoteSync(noteId, sourceId) {
-    await addEntitySync("recent_notes", noteId, sourceId);
-}
-
-async function addAttributeSync(attributeId, sourceId) {
-    await addEntitySync("attributes", attributeId, sourceId);
-}
-
-async function addApiTokenSync(apiTokenId, sourceId) {
-    await addEntitySync("api_tokens", apiTokenId, sourceId);
-}
-
 async function addEntitySync(entityName, entityId, sourceId) {
     await sql.replace("sync", {
         entityName: entityName,
@@ -107,15 +71,15 @@ async function fillAllSyncRows() {
 }
 
 module.exports = {
-    addNoteSync,
-    addNoteContentSync,
-    addBranchSync,
-    addNoteReorderingSync,
-    addNoteRevisionSync,
-    addOptionsSync,
-    addRecentNoteSync,
-    addAttributeSync,
-    addApiTokenSync,
+    addNoteSync: async (noteId, sourceId) => await addEntitySync("notes", noteId, sourceId),
+    addNoteContentSync: async (noteId, sourceId) => await addEntitySync("note_contents", noteId, sourceId),
+    addBranchSync: async (branchId, sourceId) => await addEntitySync("branches", branchId, sourceId),
+    addNoteReorderingSync: async (parentNoteId, sourceId) => await addEntitySync("note_reordering", parentNoteId, sourceId),
+    addNoteRevisionSync: async (noteRevisionId, sourceId) => await addEntitySync("note_revisions", noteRevisionId, sourceId),
+    addOptionsSync: async (name, sourceId) => await addEntitySync("options", name, sourceId),
+    addRecentNoteSync: async (noteId, sourceId) => await addEntitySync("recent_notes", noteId, sourceId),
+    addAttributeSync: async (attributeId, sourceId) => await addEntitySync("attributes", attributeId, sourceId),
+    addApiTokenSync: async (apiTokenId, sourceId) => await addEntitySync("api_tokens", apiTokenId, sourceId),
     addEntitySync,
     fillAllSyncRows
 };

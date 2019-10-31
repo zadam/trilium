@@ -14,8 +14,6 @@ const LABEL_DEFINITION = 'label-definition';
 const RELATION = 'relation';
 const RELATION_DEFINITION = 'relation-definition';
 
-const STRING_MIME_TYPES = ["application/x-javascript"];
-
 /**
  * This represents a Note which is a central object in the Trilium Notes project.
  *
@@ -44,7 +42,7 @@ class Note extends Entity {
         super(row);
 
         this.isProtected = !!this.isProtected;
-        /* true if content (meaning any kind of potentially encrypted content) is either not encrypted
+        /* true if content is either not encrypted
          * or encrypted, but with available protected session (so effectively decrypted) */
         this.isContentAvailable = true;
 
@@ -53,7 +51,7 @@ class Note extends Entity {
             this.isContentAvailable = protectedSessionService.isProtectedSessionAvailable();
 
             if (this.isContentAvailable) {
-                protectedSessionService.decryptNote(this);
+                this.title = protectedSessionService.decrypt(this.title);
             }
             else {
                 this.title = "[protected]";
@@ -88,7 +86,7 @@ class Note extends Entity {
 
             if (this.isProtected) {
                 if (this.isContentAvailable) {
-                    protectedSessionService.decryptNoteContent(this);
+                    this.content = this.content === null ? null : protectedSessionService.decrypt(this.content);
                 }
                 else {
                     this.content = "";
@@ -129,7 +127,7 @@ class Note extends Entity {
 
         if (this.isProtected) {
             if (this.isContentAvailable) {
-                protectedSessionService.encryptNoteContent(pojo);
+                pojo.content = protectedSessionService.encrypt(pojo.content);
             }
             else {
                 throw new Error(`Cannot update content of noteId=${this.noteId} since we're out of protected session.`);
@@ -171,9 +169,7 @@ class Note extends Entity {
 
     /** @returns {boolean} true if the note has string content (not binary) */
     isStringNote() {
-        return ["text", "code", "relation-map", "search"].includes(this.type)
-            || this.mime.startsWith('text/')
-            || STRING_MIME_TYPES.includes(this.mime);
+        return utils.isStringNote(this.type, this.mime);
     }
 
     /** @returns {string} JS script environment - either "frontend" or "backend" */
@@ -746,7 +742,7 @@ class Note extends Entity {
     updatePojo(pojo) {
         if (pojo.isProtected) {
             if (this.isContentAvailable) {
-                protectedSessionService.encryptNote(pojo);
+                pojo.title = protectedSessionService.encrypt(pojo.title);
             }
             else {
                 // updating protected note outside of protected session means we will keep original ciphertexts

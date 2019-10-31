@@ -34,93 +34,28 @@ function isProtectedSessionAvailable() {
     return !!dataKeyMap[protectedSessionId];
 }
 
-function decryptNoteTitle(noteId, encryptedTitle) {
-    const dataKey = getDataKey();
-
-    try {
-        return dataEncryptionService.decryptString(dataKey, encryptedTitle);
-    }
-    catch (e) {
-        e.message = `Cannot decrypt note title for noteId=${noteId}: ` + e.message;
-        throw e;
-    }
-}
-
-function decryptNote(note) {
-    if (!note.isProtected) {
-        return;
-    }
-
-    if (note.title) {
-        note.title = decryptNoteTitle(note.noteId, note.title);
-    }
-}
-
-function decryptNoteContent(note) {
-    try {
-        if (note.content != null) {
-            note.content = dataEncryptionService.decrypt(getDataKey(), note.content);
-        }
-    }
-    catch (e) {
-        e.message = `Cannot decrypt content for noteId=${note.noteId}: ` + e.message;
-        throw e;
-    }
-}
-
 function decryptNotes(notes) {
     for (const note of notes) {
-        decryptNote(note);
-    }
-}
-
-function decryptNoteRevision(hist) {
-    const dataKey = getDataKey();
-
-    if (!hist.isProtected) {
-        return;
-    }
-
-    try {
-        if (hist.title) {
-            hist.title = dataEncryptionService.decryptString(dataKey, hist.title.toString());
-        }
-
-        if (hist.content) {
-            hist.content = dataEncryptionService.decryptString(dataKey, hist.content.toString());
+        if (note.isProtected) {
+            note.title = decrypt(note.title);
         }
     }
-    catch (e) {
-        throw new Error(`Decryption failed for note ${hist.noteId}, revision ${hist.noteRevisionId}: ` + e.message + " " + e.stack);
-    }
 }
 
-function encryptNote(note) {
-    note.title = dataEncryptionService.encrypt(getDataKey(), note.title);
+function encrypt(plainText) {
+    return dataEncryptionService.encrypt(getDataKey(), plainText);
 }
 
-function encryptNoteContent(note) {
-    note.content = dataEncryptionService.encrypt(getDataKey(), note.content);
-}
-
-function encryptNoteRevision(revision) {
-    const dataKey = getDataKey();
-
-    revision.title = dataEncryptionService.encrypt(dataKey, revision.title);
-    revision.content = dataEncryptionService.encrypt(dataKey, revision.content);
+function decrypt(cipherText) {
+    return dataEncryptionService.encrypt(getDataKey(), cipherText);
 }
 
 module.exports = {
     setDataKey,
     getDataKey,
     isProtectedSessionAvailable,
-    decryptNoteTitle,
-    decryptNote,
-    decryptNoteContent,
+    encrypt,
+    decrypt,
     decryptNotes,
-    decryptNoteRevision,
-    encryptNote,
-    encryptNoteContent,
-    encryptNoteRevision,
     setProtectedSessionId
 };

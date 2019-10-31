@@ -154,6 +154,14 @@ function getContentDisposition(filename) {
     return `file; filename="${sanitizedFilename}"; filename*=UTF-8''${sanitizedFilename}`;
 }
 
+const STRING_MIME_TYPES = ["application/x-javascript"];
+
+function isStringNote(type, mime) {
+    return ["text", "code", "relation-map", "search"].includes(type)
+        || mime.startsWith('text/')
+        || STRING_MIME_TYPES.includes(mime);
+}
+
 module.exports = {
     randomSecureToken,
     randomString,
@@ -177,5 +185,6 @@ module.exports = {
     escapeRegExp,
     crash,
     sanitizeFilenameForHeader,
-    getContentDisposition
+    getContentDisposition,
+    isStringNote
 };

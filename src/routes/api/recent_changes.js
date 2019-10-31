@@ -41,8 +41,8 @@ async function getRecentChanges() {
     for (const change of recentChanges) {
         if (change.current_isProtected) {
             if (protectedSessionService.isProtectedSessionAvailable()) {
-                change.title = protectedSessionService.decryptNoteTitle(change.noteId, change.title);
-                change.current_title = protectedSessionService.decryptNoteTitle(change.noteId, change.current_title);
+                change.title = protectedSessionService.decrypt(change.title);
+                change.current_title = protectedSessionService.decrypt(change.current_title);
             }
             else {
                 change.title = change.current_title = "[Protected]";

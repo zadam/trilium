@@ -117,9 +117,9 @@ async function updateNoteRevision(entity, sourceId) {
 
 async function updateNoteReordering(entityId, entity, sourceId) {
     await sql.transactional(async () => {
-        Object.keys(entity).forEach(async key => {
+        for (const key in entity) {
             await sql.execute("UPDATE branches SET notePosition = ? WHERE branchId = ?", [entity[key], key]);
-        });
+        }
 
         await syncTableService.addNoteReorderingSync(entityId, sourceId);
     });
