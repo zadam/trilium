@@ -457,15 +457,35 @@ async function scanForLinks(noteId) {
     }
 }
 
-async function cleanupDeletedNotes() {
+async function eraseDeletedNotes() {
     const cutoffDate = new Date(Date.now() - 48 * 3600 * 1000);
+
+    const noteIdsToErase = await sql.getColumn("SELECT noteId FROM notes WHERE isDeleted = 1 AND isErased = 0 AND notes.utcDateModified <= ?", [dateUtils.utcDateStr(cutoffDate)]);
+
+    const utcNowDateTime = dateUtils.utcNowDateTime();
+    const localNowDateTime = dateUtils.localNowDateTime();
 
     // it's better to not use repository for this because it will complain about saving protected notes
     // out of protected session
 
-    await sql.execute("UPDATE note_contents SET content = NULL WHERE content IS NOT NULL AND noteId IN (SELECT noteId FROM notes WHERE isDeleted = 1 AND notes.utcDateModified <= ?)", [dateUtils.utcDateStr(cutoffDate)]);
+    await sql.executeMany(`
+        UPDATE notes 
+        SET isErased = 1, 
+            utcDateModified = '${utcNowDateTime}',
+            dateModified = '${localNowDateTime}'
+        WHERE noteId IN (???)`, noteIdsToErase);
 
-    await sql.execute("UPDATE note_revisions SET content = NULL WHERE note_revisions.content IS NOT NULL AND noteId IN (SELECT noteId FROM notes WHERE isDeleted = 1 AND notes.utcDateModified <= ?)", [dateUtils.utcDateStr(cutoffDate)]);
+    await sql.executeMany(`
+        UPDATE note_contents 
+        SET content = NULL,
+            utcDateModified = '${utcNowDateTime}' 
+        WHERE noteId IN (???)`, noteIdsToErase);
+
+    await sql.executeMany(`
+        UPDATE note_revisions 
+        SET content = NULL,
+            utcDateModified = '${utcNowDateTime}'
+        WHERE noteId IN (???)`, noteIdsToErase);
 }
 
 async function duplicateNote(noteId, parentNoteId) {
@@ -508,9 +528,9 @@ async function duplicateNote(noteId, parentNoteId) {
 
 sqlInit.dbReady.then(() => {
     // first cleanup kickoff 5 minutes after startup
-    setTimeout(cls.wrap(cleanupDeletedNotes), 5 * 60 * 1000);
+    setTimeout(cls.wrap(eraseDeletedNotes), 5 * 60 * 1000);
 
-    setInterval(cls.wrap(cleanupDeletedNotes), 4 * 3600 * 1000);
+    setInterval(cls.wrap(eraseDeletedNotes), 4 * 3600 * 1000);
 });
 
 module.exports = {

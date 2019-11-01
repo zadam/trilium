@@ -23,6 +23,7 @@ const RELATION_DEFINITION = 'relation-definition';
  * @property {string} title - note title
  * @property {boolean} isProtected - true if note is protected
  * @property {boolean} isDeleted - true if note is deleted
+ * @property {boolean} isErased - true if note's content is erased after it has been deleted
  * @property {string} dateCreated - local date time (with offset)
  * @property {string} dateModified - local date time (with offset)
  * @property {string} utcDateCreated

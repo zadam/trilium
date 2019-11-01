@@ -152,6 +152,11 @@ async function execute(query, params = []) {
     return result;
 }
 
+async function executeMany(query, params) {
+    // essentially just alias
+    await getManyRows(query, params);
+}
+
 async function executeScript(query) {
     return await wrap(async db => db.exec(query));
 }
@@ -235,6 +240,7 @@ module.exports = {
     getMap,
     getColumn,
     execute,
+    executeMany,
     executeScript,
     transactional,
     upsert

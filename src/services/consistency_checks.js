@@ -229,6 +229,23 @@ async function findLogicIssues() {
         ({noteId}) => `Note ${noteId} content is null even though it is not deleted`);
 
     await findIssues(`
+          SELECT noteId
+          FROM notes
+          JOIN note_contents USING(noteId)
+          WHERE
+            isErased = 1
+            AND content IS NOT NULL`,
+        ({noteId}) => `Note ${noteId} content is not null even though the note is erased`);
+
+    await findIssues(`
+        SELECT noteId
+        FROM notes
+        WHERE
+            isErased = 1
+            AND isDeleted = 0`,
+        ({noteId}) => `Note ${noteId} is not deleted even though it is erased`);
+
+    await findIssues(`
           SELECT parentNoteId
           FROM 
             branches
