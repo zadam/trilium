@@ -31,3 +31,6 @@ CREATE INDEX `IDX_note_revisions_utcDateCreated` ON `note_revisions` (`utcDateCr
 CREATE INDEX `IDX_note_revisions_utcDateLastEdited` ON `note_revisions` (`utcDateLastEdited`);
 CREATE INDEX `IDX_note_revisions_dateCreated` ON `note_revisions` (`dateCreated`);
 CREATE INDEX `IDX_note_revisions_dateLastEdited` ON `note_revisions` (`dateLastEdited`);
+
+INSERT INTO sync (entityName, entityId, sourceId, utcSyncDate)
+SELECT 'note_revision_contents', entityId, sourceId, utcSyncDate FROM sync WHERE entityName = 'note_revisions';

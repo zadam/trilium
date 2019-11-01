@@ -141,6 +141,7 @@ module.exports = {
     getEntity,
     getNote,
     getNotes,
+    getNoteRevision,
     getBranch,
     getAttribute,
     getOption,

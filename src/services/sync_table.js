@@ -64,6 +64,7 @@ async function fillAllSyncRows() {
     await fillSyncRows("note_contents", "noteId");
     await fillSyncRows("branches", "branchId");
     await fillSyncRows("note_revisions", "noteRevisionId");
+    await fillSyncRows("note_revision_contents", "noteRevisionId");
     await fillSyncRows("recent_notes", "noteId");
     await fillSyncRows("attributes", "attributeId");
     await fillSyncRows("api_tokens", "apiTokenId");
@@ -76,6 +77,7 @@ module.exports = {
     addBranchSync: async (branchId, sourceId) => await addEntitySync("branches", branchId, sourceId),
     addNoteReorderingSync: async (parentNoteId, sourceId) => await addEntitySync("note_reordering", parentNoteId, sourceId),
     addNoteRevisionSync: async (noteRevisionId, sourceId) => await addEntitySync("note_revisions", noteRevisionId, sourceId),
+    addNoteRevisionContentSync: async (noteRevisionId, sourceId) => await addEntitySync("note_revision_contents", noteRevisionId, sourceId),
     addOptionsSync: async (name, sourceId) => await addEntitySync("options", name, sourceId),
     addRecentNoteSync: async (noteId, sourceId) => await addEntitySync("recent_notes", noteId, sourceId),
     addAttributeSync: async (attributeId, sourceId) => await addEntitySync("attributes", attributeId, sourceId),

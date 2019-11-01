@@ -125,7 +125,7 @@ class NoteRevision extends Entity {
 
         await sql.upsert("note_revision_contents", "noteRevisionId", pojo);
 
-        await syncTableService.addNoteContentSync(this.noteId);
+        await syncTableService.addNoteRevisionContentSync(this.noteRevisionId);
     }
 
     // cannot be static!

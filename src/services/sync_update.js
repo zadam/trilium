@@ -39,7 +39,7 @@ async function updateEntity(sync, entity, sourceId) {
 
     // currently making exception for protected notes and note revisions because here
     // the title and content are not available decrypted as listeners would expect
-    if ((entityName !== 'notes' && entityName !== 'note_revisions') || !entity.isProtected) {
+    if (!['notes', 'note_contents', 'note_revisions', 'note_revision_contents'].includes(entityName) || !entity.isProtected) {
         await eventService.emit(eventService.ENTITY_SYNCED, {
             entityName,
             entity
@@ -101,16 +101,28 @@ async function updateNoteRevision(entity, sourceId) {
     const orig = await sql.getRowOrNull("SELECT * FROM note_revisions WHERE noteRevisionId = ?", [entity.noteRevisionId]);
 
     await sql.transactional(async () => {
-        // we update note revision even if date modified to is the same because the only thing which might have changed
-        // is the protected status (and correnspondingly title and content) which doesn't affect the utcDateCreated
-        if (orig === null || orig.utcDateCreated <= entity.utcDateCreated) {
-            entity.content = entity.content === null ? null : Buffer.from(entity.content, 'base64');
-
+        if (orig === null || orig.utcDateModified < entity.utcDateModified) {
             await sql.replace('note_revisions', entity);
 
             await syncTableService.addNoteRevisionSync(entity.noteRevisionId, sourceId);
 
             log.info("Update/sync note revision " + entity.noteRevisionId);
+        }
+    });
+}
+
+async function updateNoteRevisionContent(entity, sourceId) {
+    const orig = await sql.getRowOrNull("SELECT * FROM note_revision_contents WHERE noteRevisionId = ?", [entity.noteRevisionId]);
+
+    await sql.transactional(async () => {
+        if (orig === null || orig.utcDateModified < entity.utcDateModified) {
+            entity.content = entity.content === null ? null : Buffer.from(entity.content, 'base64');
+
+            await sql.replace('note_revision_contents', entity);
+
+            await syncTableService.addNoteRevisionContentSync(entity.noteRevisionId, sourceId);
+
+            log.info("Update/sync note revision content " + entity.noteRevisionId);
         }
     });
 }

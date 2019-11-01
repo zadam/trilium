@@ -14,11 +14,11 @@ async function getNoteRevisions(req) {
 }
 
 async function getNoteRevision(req) {
-    const {noteRevisionId} = req.params;
+    const noteRevision = await repository.getNoteRevision(req.params.noteRevisionId);
 
-    return await repository.getNote(`SELECT *
-        FROM note_revisions 
-        WHERE noteRevisionId = ?`, [noteId]);
+    await noteRevision.getContent();
+
+    return noteRevision;
 }
 
 async function getEditedNotesOnDate(req) {

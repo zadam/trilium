@@ -9,19 +9,6 @@ CREATE TABLE IF NOT EXISTS "source_ids" (
                                           `utcDateCreated`	TEXT NOT NULL,
                                           PRIMARY KEY(`sourceId`)
 );
-CREATE TABLE IF NOT EXISTS "note_revisions" (
-                                              `noteRevisionId`	TEXT NOT NULL PRIMARY KEY,
-                                              `noteId`	TEXT NOT NULL,
-                                              `title`	TEXT,
-                                              `content`	TEXT,
-                                              `isProtected`	INT NOT NULL DEFAULT 0,
-                                              `utcDateModifiedFrom` TEXT NOT NULL,
-                                              `utcDateModifiedTo` TEXT NOT NULL,
-                                              `dateModifiedFrom` TEXT NOT NULL,
-                                              `dateModifiedTo` TEXT NOT NULL,
-                                              type TEXT DEFAULT '' NOT NULL,
-                                              mime TEXT DEFAULT '' NOT NULL,
-                                              hash TEXT DEFAULT "" NOT NULL);
 CREATE TABLE IF NOT EXISTS "api_tokens"
 (
   apiTokenId TEXT PRIMARY KEY NOT NULL,
@@ -72,15 +59,6 @@ CREATE UNIQUE INDEX `IDX_sync_entityName_entityId` ON `sync` (
 CREATE INDEX `IDX_sync_utcSyncDate` ON `sync` (
                                             `utcSyncDate`
   );
-CREATE INDEX `IDX_note_revisions_noteId` ON `note_revisions` (
-                                                              `noteId`
-  );
-CREATE INDEX `IDX_note_revisions_dateModifiedFrom` ON `note_revisions` (
-                                                                        `utcDateModifiedFrom`
-  );
-CREATE INDEX `IDX_note_revisions_dateModifiedTo` ON `note_revisions` (
-                                                                      `utcDateModifiedTo`
-  );
 CREATE INDEX IDX_attributes_name_value
   on attributes (name, value);
 CREATE INDEX IDX_attributes_name_index
@@ -119,3 +97,25 @@ CREATE TABLE IF NOT EXISTS "branches" (
 CREATE INDEX `IDX_branches_noteId` ON `branches` (`noteId`);
 CREATE INDEX `IDX_branches_noteId_parentNoteId` ON `branches` (`noteId`,`parentNoteId`);
 CREATE INDEX IDX_branches_parentNoteId ON branches (parentNoteId);
+CREATE TABLE IF NOT EXISTS "note_revisions" (`noteRevisionId`	TEXT NOT NULL PRIMARY KEY,
+                                                `noteId`	TEXT NOT NULL,
+                                                `title`	TEXT,
+                                                `contentLength`	INT NOT NULL,
+                                                `isProtected`	INT NOT NULL DEFAULT 0,
+                                                `utcDateLastEdited` TEXT NOT NULL,
+                                                `utcDateCreated` TEXT NOT NULL,
+                                                `utcDateModified` TEXT NOT NULL,
+                                                `dateLastEdited` TEXT NOT NULL,
+                                                `dateCreated` TEXT NOT NULL,
+                                                type TEXT DEFAULT '' NOT NULL,
+                                                mime TEXT DEFAULT '' NOT NULL,
+                                                hash TEXT DEFAULT '' NOT NULL);
+CREATE TABLE IF NOT EXISTS "note_revision_contents" (`noteRevisionId`	TEXT NOT NULL PRIMARY KEY,
+                                                 `content`	TEXT,
+                                                 hash TEXT DEFAULT '' NOT NULL,
+                                                 `utcDateModified` TEXT NOT NULL);
+CREATE INDEX `IDX_note_revisions_noteId` ON `note_revisions` (`noteId`);
+CREATE INDEX `IDX_note_revisions_utcDateCreated` ON `note_revisions` (`utcDateCreated`);
+CREATE INDEX `IDX_note_revisions_utcDateLastEdited` ON `note_revisions` (`utcDateLastEdited`);
+CREATE INDEX `IDX_note_revisions_dateCreated` ON `note_revisions` (`dateCreated`);
+CREATE INDEX `IDX_note_revisions_dateLastEdited` ON `note_revisions` (`dateLastEdited`);
