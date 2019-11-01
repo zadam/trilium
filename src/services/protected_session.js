@@ -37,7 +37,7 @@ function isProtectedSessionAvailable() {
 function decryptNotes(notes) {
     for (const note of notes) {
         if (note.isProtected) {
-            note.title = decrypt(note.title);
+            note.title = decrypt(note.title).toString();
         }
     }
 }
@@ -47,7 +47,7 @@ function encrypt(plainText) {
 }
 
 function decrypt(cipherText) {
-    return dataEncryptionService.encrypt(getDataKey(), cipherText);
+    return dataEncryptionService.decrypt(getDataKey(), cipherText);
 }
 
 module.exports = {

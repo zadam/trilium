@@ -4,7 +4,7 @@ async function getOption(name) {
     const option = await require('./repository').getOption(name);
 
     if (!option) {
-        throw new Error("Option " + name + " doesn't exist");
+        throw new Error(`Option ${name} doesn't exist`);
     }
 
     return option.value;

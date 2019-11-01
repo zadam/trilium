@@ -37,7 +37,7 @@ class NoteRevision extends Entity {
 
         if (this.isProtected) {
             if (protectedSessionService.isProtectedSessionAvailable()) {
-                this.title = protectedSessionService.decrypt(this.title);
+                this.title = protectedSessionService.decrypt(this.title).toString();
             }
             else {
                 this.title = "[Protected]";

@@ -54,7 +54,7 @@ async function loadProtectedNotes() {
     protectedNoteTitles = await sql.getMap(`SELECT noteId, title FROM notes WHERE isDeleted = 0 AND isProtected = 1`);
 
     for (const noteId in protectedNoteTitles) {
-        protectedNoteTitles[noteId] = protectedSessionService.decrypt(protectedNoteTitles[noteId]);
+        protectedNoteTitles[noteId] = protectedSessionService.decrypt(protectedNoteTitles[noteId]).toString();
     }
 }
 

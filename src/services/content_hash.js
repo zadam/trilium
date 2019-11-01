@@ -34,6 +34,7 @@ async function getHashes() {
         note_contents: await getHash("note_contents", "noteId"),
         branches: await getHash(Branch.entityName, Branch.primaryKeyName),
         note_revisions: await getHash(NoteRevision.entityName, NoteRevision.primaryKeyName),
+        note_revision_contents: await getHash("note_revision_contents", "noteRevisionId"),
         recent_notes: await getHash(RecentNote.entityName, RecentNote.primaryKeyName),
         options: await getHash(Option.entityName, Option.primaryKeyName, "isSynced = 1"),
         attributes: await getHash(Attribute.entityName, Attribute.primaryKeyName),
