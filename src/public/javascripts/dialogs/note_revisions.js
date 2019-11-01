@@ -25,12 +25,12 @@ export async function showNoteRevisionsDialog(noteId, noteRevisionId) {
     $content.empty();
 
     note = noteDetailService.getActiveTabNote();
-    revisionItems = await server.get('notes/' + noteId + '/revisions');
+    revisionItems = await server.get(`notes/${noteId}/revisions`);
 
     for (const item of revisionItems) {
         $list.append($('<option>', {
             value: item.noteRevisionId,
-            text: item.dateModifiedFrom
+            text: item.dateLastEdited
         }));
     }
 
@@ -46,18 +46,20 @@ export async function showNoteRevisionsDialog(noteId, noteRevisionId) {
     }
 }
 
-$list.on('change', () => {
+$list.on('change', async () => {
     const optVal = $list.find(":selected").val();
 
     const revisionItem = revisionItems.find(r => r.noteRevisionId === optVal);
 
     $title.html(revisionItem.title);
 
+    const fullNoteRevision = await server.get(`notes/${revisionItem.noteId}/revisions/${revisionItem.noteRevisionId}`);
+
     if (note.type === 'text') {
-        $content.html(revisionItem.content);
+        $content.html(fullNoteRevision.content);
     }
     else if (note.type === 'code') {
-        $content.html($("<pre>").text(revisionItem.content));
+        $content.html($("<pre>").text(fullNoteRevision.content));
     }
     else {
         $content.text("Preview isn't available for this note type.");

@@ -112,7 +112,7 @@ class Note extends Entity {
 
     /** @returns {Promise} */
     async setContent(content) {
-        // force updating note itself so that dateChanged is represented correctly even for the content
+        // force updating note itself so that dateModified is represented correctly even for the content
         this.forcedChange = true;
         await this.save();
 

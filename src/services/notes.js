@@ -329,24 +329,27 @@ async function saveNoteRevision(note) {
     const revisionCutoff = dateUtils.utcDateStr(new Date(now.getTime() - noteRevisionSnapshotTimeInterval * 1000));
 
     const existingNoteRevisionId = await sql.getValue(
-        "SELECT noteRevisionId FROM note_revisions WHERE noteId = ? AND utcDateModifiedTo >= ?", [note.noteId, revisionCutoff]);
+        "SELECT noteRevisionId FROM note_revisions WHERE noteId = ? AND utcDateCreated >= ?", [note.noteId, revisionCutoff]);
 
     const msSinceDateCreated = now.getTime() - dateUtils.parseDateTime(note.utcDateCreated).getTime();
 
     if (!existingNoteRevisionId && msSinceDateCreated >= noteRevisionSnapshotTimeInterval * 1000) {
-        await new NoteRevision({
+        const noteRevision = await new NoteRevision({
             noteId: note.noteId,
             // title and text should be decrypted now
             title: note.title,
-            content: await note.getContent(),
+            contentLength: -1, // will be updated in .setContent()
             type: note.type,
             mime: note.mime,
             isProtected: false, // will be fixed in the protectNoteRevisions() call
-            utcDateModifiedFrom: note.utcDateModified,
-            utcDateModifiedTo: dateUtils.utcNowDateTime(),
-            dateModifiedFrom: note.dateModified,
-            dateModifiedTo: dateUtils.localNowDateTime()
+            utcDateLastEdited: note.utcDateModified,
+            utcDateCreated: dateUtils.utcNowDateTime(),
+            utcDateModified: dateUtils.utcNowDateTime(),
+            dateLastEdited: note.dateModified,
+            dateCreated: dateUtils.localNowDateTime()
         }).save();
+
+        await noteRevision.setContent(await note.getContent());
     }
 }
 

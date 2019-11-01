@@ -4,6 +4,7 @@ const Entity = require('./entity');
 const protectedSessionService = require('../services/protected_session');
 const repository = require('../services/repository');
 const utils = require('../services/utils');
+const sql = require('../services/sql');
 const dateUtils = require('../services/date_utils');
 const syncTableService = require('../services/sync_table');
 
@@ -16,17 +17,18 @@ const syncTableService = require('../services/sync_table');
  * @param {string} mime
  * @param {string} title
  * @param {string} isProtected
- * @param {string} dateModifiedFrom
- * @param {string} dateModifiedTo
- * @param {string} utcDateModifiedFrom
- * @param {string} utcDateModifiedTo
+ * @param {string} dateLastEdited
+ * @param {string} dateCreated
+ * @param {string} utcDateLastEdited
+ * @param {string} utcDateCreated
+ * @param {string} utcDateModified
  *
  * @extends Entity
  */
 class NoteRevision extends Entity {
     static get entityName() { return "note_revisions"; }
     static get primaryKeyName() { return "noteRevisionId"; }
-    static get hashedProperties() { return ["noteRevisionId", "noteId", "title", "isProtected", "dateModifiedFrom", "dateModifiedTo", "utcDateModifiedFrom", "utcDateModifiedTo"]; }
+    static get hashedProperties() { return ["noteRevisionId", "noteId", "title", "contentLength", "isProtected", "dateLastEdited", "dateCreated", "utcDateLastEdited", "utcDateCreated", "utcDateModified"]; }
 
     constructor(row) {
         super(row);
@@ -98,8 +100,9 @@ class NoteRevision extends Entity {
 
     /** @returns {Promise} */
     async setContent(content) {
-        // force updating note itself so that dateChanged is represented correctly even for the content
+        // force updating note itself so that utcDateModified is represented correctly even for the content
         this.forcedChange = true;
+        this.contentLength = content.length;
         await this.save();
 
         this.content = content;

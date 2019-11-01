@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS "note_revisions_mig" (`noteRevisionId`	TEXT NOT NULL PRIMARY KEY,
                                                 `noteId`	TEXT NOT NULL,
                                                 `title`	TEXT,
-                                                `content`	TEXT,
+                                                `contentLength`	INT NOT NULL,
                                                 `isProtected`	INT NOT NULL DEFAULT 0,
                                                 `utcDateLastEdited` TEXT NOT NULL,
                                                 `utcDateCreated` TEXT NOT NULL,
@@ -18,10 +18,10 @@ CREATE TABLE IF NOT EXISTS "note_revision_contents" (`noteRevisionId`	TEXT NOT N
                                                  `utcDateModified` TEXT NOT NULL);
 
 INSERT INTO note_revision_contents (noteRevisionId, content, hash, utcDateModified)
-SELECT noteRevisionId, content, hash, utcDateModified FROM note_revisions;
+SELECT noteRevisionId, content, hash, utcDateModifiedTo FROM note_revisions;
 
-INSERT INTO note_revisions_mig (noteRevisionId, noteId, title, isProtected, utcDateLastEdited, utcDateCreated, utcDateModified, dateLastEdited, dateCreated, type, mime, hash)
-SELECT noteRevisionId, noteId, title, isProtected, utcDateModifiedFrom, utcDateModifiedTo, utcDateModifiedTo, dateModifiedFrom, dateModifiedTo, type, mime, hash FROM note_revisions;
+INSERT INTO note_revisions_mig (noteRevisionId, noteId, title, contentLength, isProtected, utcDateLastEdited, utcDateCreated, utcDateModified, dateLastEdited, dateCreated, type, mime, hash)
+SELECT noteRevisionId, noteId, title, LENGTH(content), isProtected, utcDateModifiedFrom, utcDateModifiedTo, utcDateModifiedTo, dateModifiedFrom, dateModifiedTo, type, mime, hash FROM note_revisions;
 
 DROP TABLE note_revisions;
 ALTER TABLE note_revisions_mig RENAME TO note_revisions;

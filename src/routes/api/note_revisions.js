@@ -4,33 +4,21 @@ const repository = require('../../services/repository');
 const noteCacheService = require('../../services/note_cache');
 
 async function getNoteRevisions(req) {
-    const noteId = req.params.noteId;
+    const {noteId} = req.params;
 
     return await repository.getEntities(`
         SELECT note_revisions.*
         FROM note_revisions 
         WHERE noteId = ? 
-        ORDER BY utcDateModifiedTo DESC`, [noteId]);
+        ORDER BY utcDateCreated DESC`, [noteId]);
 }
 
-async function getNoteRevisionList(req) {
-    const noteId = req.params.noteId;
+async function getNoteRevision(req) {
+    const {noteRevisionId} = req.params;
 
-    return await repository.getEntities(`
-        SELECT noteRevisionId,
-               noteId,
-               title,
-               isProtected,
-               utcDateModifiedFrom,
-               utcDateModifiedTo,
-               dateModifiedFrom,
-               dateModifiedTo,
-               type,
-               mime,
-               CASE isProtected WHEN 1 THEN null ELSE LENGTH(content) END AS contentLength
+    return await repository.getNote(`SELECT *
         FROM note_revisions 
-        WHERE noteId = ? 
-        ORDER BY utcDateModifiedTo DESC`, [noteId]);
+        WHERE noteRevisionId = ?`, [noteId]);
 }
 
 async function getEditedNotesOnDate(req) {
@@ -42,7 +30,7 @@ async function getEditedNotesOnDate(req) {
         left join note_revisions using (noteId)
         where substr(notes.dateCreated, 0, 11) = ?
            or substr(notes.dateModified, 0, 11) = ?
-           or substr(note_revisions.dateModifiedFrom, 0, 11) = ?`, [date, date, date]);
+           or substr(note_revisions.dateLastEdited, 0, 11) = ?`, [date, date, date]);
 
     for (const note of notes) {
         const notePath = noteCacheService.getNotePath(note.noteId);
@@ -55,6 +43,6 @@ async function getEditedNotesOnDate(req) {
 
 module.exports = {
     getNoteRevisions,
-    getNoteRevisionList,
+    getNoteRevision,
     getEditedNotesOnDate
 };

@@ -102,8 +102,8 @@ async function updateNoteRevision(entity, sourceId) {
 
     await sql.transactional(async () => {
         // we update note revision even if date modified to is the same because the only thing which might have changed
-        // is the protected status (and correnspondingly title and content) which doesn't affect the utcDateModifiedTo
-        if (orig === null || orig.utcDateModifiedTo <= entity.utcDateModifiedTo) {
+        // is the protected status (and correnspondingly title and content) which doesn't affect the utcDateCreated
+        if (orig === null || orig.utcDateCreated <= entity.utcDateCreated) {
             entity.content = entity.content === null ? null : Buffer.from(entity.content, 'base64');
 
             await sql.replace('note_revisions', entity);

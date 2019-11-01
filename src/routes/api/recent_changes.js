@@ -13,12 +13,12 @@ async function getRecentChanges() {
                 notes.title AS current_title,
                 notes.isProtected AS current_isProtected,
                 note_revisions.title,
-                note_revisions.utcDateModifiedTo AS date
+                note_revisions.utcDateCreated AS date
             FROM 
                 note_revisions
                 JOIN notes USING(noteId)
             ORDER BY 
-                utcDateModifiedTo DESC
+                utcDateCreated DESC
             LIMIT 1000
         )
         UNION ALL SELECT * FROM (

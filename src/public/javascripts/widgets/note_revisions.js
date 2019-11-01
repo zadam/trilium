@@ -27,7 +27,7 @@ class NoteRevisionsWidget extends StandardWidget {
     }
 
     async doRenderBody() {
-        const revisionItems = await server.get(`notes/${this.ctx.note.noteId}/revision-list`);
+        const revisionItems = await server.get(`notes/${this.ctx.note.noteId}/revisions`);
 
         if (revisionItems.length === 0) {
             this.$body.text("No revisions yet...");
@@ -44,7 +44,7 @@ class NoteRevisionsWidget extends StandardWidget {
                 'data-note-path': this.ctx.note.noteId,
                 'data-note-revision-id': item.noteRevisionId,
                 href: 'javascript:'
-            }).text(item.dateModifiedFrom.substr(0, 16)));
+            }).text(item.dateLastEdited.substr(0, 16)));
 
             if (item.contentLength !== null) {
                 $listItem.append($("<span>").text(` (${item.contentLength} characters)`))

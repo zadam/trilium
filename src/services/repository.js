@@ -57,6 +57,11 @@ async function getNotes(noteIds) {
     return notes;
 }
 
+/** @returns {Promise<NoteRevision|null>} */
+async function getNoteRevision(noteRevisionId) {
+    return await getEntity("SELECT * FROM note_revisions WHERE noteRevisionId = ?", [noteRevisionId]);
+}
+
 /** @returns {Promise<Branch|null>} */
 async function getBranch(branchId) {
     return await getEntity("SELECT * FROM branches WHERE branchId = ?", [branchId]);
