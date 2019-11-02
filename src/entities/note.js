@@ -52,7 +52,7 @@ class Note extends Entity {
             this.isContentAvailable = protectedSessionService.isProtectedSessionAvailable();
 
             if (this.isContentAvailable) {
-                this.title = protectedSessionService.decrypt(this.title).toString();
+                this.title = protectedSessionService.decryptString(this.title);
             }
             else {
                 this.title = "[protected]";
