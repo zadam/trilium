@@ -784,6 +784,14 @@ ws.subscribeToOutsideSyncMessages(async syncData => {
 
     syncData.filter(sync => sync.entityName === 'note_reordering').forEach(sync => noteIdsToRefresh.add(sync.entityId));
 
+    syncData.filter(sync => sync.entityName === 'attributes').forEach(sync => {
+        const note = treeCache.notes[sync.noteId];
+
+        if (note && note.attributeCache) {
+            noteIdsToRefresh.add(sync.entityId);
+        }
+    });
+
     if (noteIdsToRefresh.size > 0) {
         await reloadNotes(Array.from(noteIdsToRefresh));
     }
