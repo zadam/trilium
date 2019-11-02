@@ -48,20 +48,19 @@ ul.fancytree-container {
 
 .fancytree-node:not(.fancytree-loading) .fancytree-expander {
     background: none;
-    width: auto;
+    width: 18px;
     height: auto;
+    text-align: center;
+    position: relative;
+    top: -8px;
 }
 
 .fancytree-node:not(.fancytree-loading) .fancytree-expander:before {
     font-family: 'boxicons' !important;
     speak: none;
-    font-style: normal;
-    font-weight: normal;
-    font-variant: normal;
+    font-size: x-large;
     text-transform: none;
     line-height: 1;
-    padding-left: 5px;
-    padding-right: 5px;
     content: "\203A";
 }
 
