@@ -4,7 +4,7 @@ import utils from "./utils.js";
 function toast(options) {
     const $toast = $(`<div class="toast" role="alert" aria-live="assertive" aria-atomic="true">
     <div class="toast-header">
-        <strong class="mr-auto"><span class="jam jam-${options.icon}"></span> ${options.title}</strong>
+        <strong class="mr-auto"><span class="bx bx-${options.icon}"></span> ${options.title}</strong>
         <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
             <span aria-hidden="true">&times;</span>
         </button>

@@ -499,7 +499,7 @@ function initFancyTree(tree) {
             const note = await treeCache.getNote(node.data.noteId);
 
             if (note.type === 'search' && $span.find('.refresh-search-button').length === 0) {
-                const refreshSearchButton = $('<span>&nbsp; <span class="refresh-search-button jam jam-refresh" title="Refresh saved search results"></span></span>');
+                const refreshSearchButton = $('<span>&nbsp; <span class="refresh-search-button bx bx-recycle" title="Refresh saved search results"></span></span>');
 
                 $span.append(refreshSearchButton);
             }

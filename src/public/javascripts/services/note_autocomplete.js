@@ -49,15 +49,15 @@ function initNoteAutocomplete($el, options) {
     $el.addClass("note-autocomplete-input");
 
     const $clearTextButton = $("<a>")
-            .addClass("input-group-text input-clearer-button jam jam-close")
+            .addClass("input-group-text input-clearer-button bx bx-x")
             .prop("title", "Clear text field");
 
     const $showRecentNotesButton = $("<a>")
-            .addClass("input-group-text show-recent-notes-button jam jam-clock")
+            .addClass("input-group-text show-recent-notes-button bx bx-time")
             .prop("title", "Show recent notes");
 
     const $goToSelectedNoteButton = $("<a>")
-        .addClass("input-group-text go-to-selected-note-button jam jam-arrow-right")
+        .addClass("input-group-text go-to-selected-note-button bx bx-right-arrow")
         .attr("data-action", "note");
 
     const $sideButtons = $("<div>")

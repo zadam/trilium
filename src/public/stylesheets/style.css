@@ -53,7 +53,7 @@ ul.fancytree-container {
 }
 
 .fancytree-node:not(.fancytree-loading) .fancytree-expander:before {
-    font-family: 'jam-icons' !important;
+    font-family: 'boxicons' !important;
     speak: none;
     font-style: normal;
     font-weight: normal;
@@ -62,7 +62,7 @@ ul.fancytree-container {
     line-height: 1;
     padding-left: 5px;
     padding-right: 5px;
-    content: "\e9bc";
+    content: "\203A";
 }
 
 /* this is done to preserve correct indentation. Better solution would be preferable */
@@ -71,7 +71,7 @@ ul.fancytree-container {
 }
 
 .fancytree-node.fancytree-expanded .fancytree-expander:before {
-    content: "\e9ba";
+    content: "\2304";
 }
 
 .note-title[readonly] {
@@ -774,7 +774,7 @@ a.external:not(.no-arrow):after, a[href^="http://"]:not(.no-arrow):after, a[href
     border-color: var(--main-border-color) !important;
 }
 
-.jam-empty {
+.bx-empty {
     width: 1em;
     display: inline-block;
 }

@@ -31,30 +31,30 @@ async function prepareBranch(note) {
 }
 
 const NOTE_TYPE_ICONS = {
-    "file": "jam jam-attachment",
-    "image": "jam jam-picture",
-    "code": "jam jam-terminal",
-    "render": "jam jam-play",
-    "search": "jam jam-search-folder",
-    "relation-map": "jam jam-map",
-    "book": "jam jam-book"
+    "file": "bx bx-file",
+    "image": "bx bx-image",
+    "code": "bx bx-code",
+    "render": "bx bx-extension",
+    "search": "bx bx-file-find",
+    "relation-map": "bx bx-map-alt",
+    "book": "bx bx-book"
 };
 
 async function getIcon(note) {
     const hoistedNoteId = await hoistedNoteService.getHoistedNoteId();
 
     if (note.noteId === 'root') {
-        return "jam jam-chevrons-right";
+        return "bx bx-chevrons-right";
     }
     else if (note.noteId === hoistedNoteId) {
-        return "jam jam-arrow-up";
+        return "bx bxs-arrow-from-bottom";
     }
     else if (note.type === 'text') {
         if (note.hasChildren()) {
-            return "jam jam-folder";
+            return "bx bx-folder";
         }
         else {
-            return "jam jam-file";
+            return "bx bx-note";
         }
     }
     else {

@@ -218,7 +218,7 @@ class NoteDetailBook {
             return $el;
         }
         else if (type === 'protected-session') {
-            const $button = $(`<button class="btn btn-sm"><span class="jam jam-door"></span> Enter protected session</button>`)
+            const $button = $(`<button class="btn btn-sm"><span class="bx bx-log-in"></span> Enter protected session</button>`)
                 .click(protectedSessionService.enterProtectedSession);
 
             return $("<div>")

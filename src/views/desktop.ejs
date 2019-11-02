@@ -12,33 +12,33 @@
 <div id="container" style="display: none; grid-template-columns: minmax(<%= leftPaneMinWidth %>px, <%= leftPaneWidthPercent %>fr) minmax(0, <%= rightPaneWidthPercent %>fr)">
     <div id="header" class="hide-toggle">
         <div id="history-navigation" style="display: none;">
-            <a id="history-back-button" title="Go to previous note." class="icon-action jam jam-arrow-square-left"></a>
+            <a id="history-back-button" title="Go to previous note." class="icon-action bx bx-left-arrow-circle"></a>
 
             &nbsp;
 
-            <a id="history-forward-button" title="Go to next note." class="icon-action jam jam-arrow-square-right"></a>
+            <a id="history-forward-button" title="Go to next note." class="icon-action bx bx-right-arrow-circle"></a>
         </div>
 
         <div style="flex-grow: 100; display: flex;">
             <button class="btn btn-sm" id="jump-to-note-dialog-button" title="CTRL+J">
-                <span class="jam jam-direction"></span>
+                <span class="bx bx-crosshair"></span>
                 Jump to note
             </button>
 
             <button class="btn btn-sm" id="recent-changes-button">
-                <span class="jam jam-history"></span>
+                <span class="bx bx-history"></span>
 
                 Recent changes
             </button>
 
             <button class="btn btn-sm" id="enter-protected-session-button" title="Enter protected session to be able to find and view protected notes">
-                <span class="jam jam-door"></span>
+                <span class="bx bx-log-in"></span>
 
                 Enter protected session
             </button>
 
             <button class="btn btn-sm" id="leave-protected-session-button" title="Leave protected session so that protected notes are not accessible any more." style="display: none;">
-                <span class="jam jam-log-out"></span>
+                <span class="bx bx-log-out"></span>
 
                 Leave protected session
             </button>
@@ -50,58 +50,58 @@
         <div>
             <div class="dropdown" id="global-menu">
                 <button type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-sm dropdown-toggle">
-                    <span class="jam jam-align-justify"></span>
+                    <span class="bx bx-menu"></span>
                     Menu
                     <span class="caret"></span>
                 </button>
                 <div class="dropdown-menu dropdown-menu-right">
                     <a class="dropdown-item" id="options-button">
-                        <span class="jam jam-settings-alt"></span>
+                        <span class="bx bx-slider"></span>
                         Options
                     </a>
 
                     <a class="dropdown-item" id="sync-now-button" title="Trigger sync">
-                        <span class="jam jam-refresh"></span>
+                        <span class="bx bx-recycle"></span>
                         Sync (<span id="outstanding-syncs-count">0</span>)
                     </a>
 
                     <a class="dropdown-item" id="open-dev-tools-button">
-                        <span class="jam jam-terminal"></span>
+                        <span class="bx bx-terminal"></span>
                         Open Dev Tools
                         <kbd>CTRL+SHIFT+I</kbd>
                     </a>
 
                     <a class="dropdown-item" id="open-sql-console-button">
-                        <span class="jam jam-database"></span>
+                        <span class="bx bx-data"></span>
                         Open SQL Console
                         <kbd>ALT+O</kbd>
                     </a>
 
                     <a class="dropdown-item" id="reload-frontend-button" title="Reload can help with some visual glitches without restarting the whole app.">
-                        <span class="jam jam-empty"></span>
+                        <span class="bx bx-empty"></span>
                         Reload frontend
                         <kbd>CTRL-R</kbd>
                     </a>
 
                     <a class="dropdown-item" id="toggle-fullscreen-button">
-                        <span class="jam jam-empty"></span>
+                        <span class="bx bx-empty"></span>
                         Toggle fullscreen
                         <kbd>F11</kbd>
                     </a>
 
                     <a class="dropdown-item" id="show-help-button">
-                        <span class="jam jam-help"></span>
+                        <span class="bx bx-info-circle"></span>
                         Show Help
                         <kbd>F1</kbd>
                     </a>
 
                     <a class="dropdown-item" id="show-about-dialog-button">
-                        <span class="jam jam-empty"></span>
+                        <span class="bx bx-empty"></span>
                         About Trilium Notes
                     </a>
 
                     <a class="dropdown-item" id="logout-button">
-                        <span class="jam jam-log-out"></span>
+                        <span class="bx bx-log-out"></span>
                         Logout
                     </a>
                 </div>
@@ -111,13 +111,13 @@
 
     <div id="left-pane" class="hide-toggle">
         <div id="global-buttons">
-            <a id="create-top-level-note-button" title="Create new top level note" class="icon-action jam jam-plus-circle"></a>
+            <a id="create-top-level-note-button" title="Create new top level note" class="icon-action bx bx-folder-plus"></a>
 
-            <a id="collapse-tree-button" title="Collapse note tree. Shortcut ALT+C" class="icon-action jam jam-layers"></a>
+            <a id="collapse-tree-button" title="Collapse note tree. Shortcut ALT+C" class="icon-action bx bx-layer-minus"></a>
 
-            <a id="scroll-to-active-note-button" title="Scroll to active note. Shortcut CTRL+." class="icon-action jam jam-download"></a>
+            <a id="scroll-to-active-note-button" title="Scroll to active note. Shortcut CTRL+." class="icon-action bx bx-crosshair"></a>
 
-            <a id="toggle-search-button" title="Search in notes. Shortcut CTRL+S" class="icon-action jam jam-search"></a>
+            <a id="toggle-search-button" title="Search in notes. Shortcut CTRL+S" class="icon-action bx bx-search"></a>
         </div>
 
         <div id="search-box">
@@ -127,7 +127,7 @@
                            placeholder="Search text, labels" autocomplete="off">
 
                     <div class="input-group-append">
-                        <button id="do-search-button" class="btn btn-sm icon-button jam jam-search" title="Search (enter)"></button>
+                        <button id="do-search-button" class="btn btn-sm icon-button bx bx-search" title="Search (enter)"></button>
                     </div>
                 </div>
             </div>
@@ -136,9 +136,9 @@
             <div style="display: flex; align-items: center; justify-content: space-evenly; flex-wrap: wrap;">
                 <button id="save-search-button" class="btn btn-sm"
                     title="This will create new saved search note under active note.">
-                    <span class="jam jam-save"></span> Save search</button>
+                    <span class="bx bx-save"></span> Save search</button>
 
-                <button id="close-search-button" class="btn btn-sm"><span class="jam jam-close"></span> Close search</button>
+                <button id="close-search-button" class="btn btn-sm"><span class="bx bx-x"></span> Close search</button>
             </div>
         </div>
 
@@ -215,7 +215,7 @@
 
 <script src="javascripts/desktop.js" crossorigin type="module"></script>
 
-<link rel="stylesheet" type="text/css" href="libraries/jam/css/jam.min.css">
+<link rel="stylesheet" type="text/css" href="libraries/boxicons/css/boxicons.min.css">
 
 <script type="text/javascript">
     // we hide container initally because otherwise it is rendered first without CSS and then flickers into

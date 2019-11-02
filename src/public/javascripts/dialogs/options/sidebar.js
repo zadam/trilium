@@ -70,7 +70,7 @@ export default class SidebarOptions {
         for (const {name, title, option} of widgets) {
             const $widgetTitle = $('<div class="widget-title">')
                 .attr('data-widget-name', name)
-                .append($("<span>").addClass("handle jam jam-move"))
+                .append($("<span>").addClass("handle bx bx-move"))
                 .append($("<span>").text(title));
 
             const $expandedCheckbox = $('<div class="expansion-conf">')

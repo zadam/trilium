@@ -8,7 +8,7 @@ const WIDGET_TPL = `
                 Collapsible Group Item
             </button>
             
-            <a class="widget-help external no-arrow jam jam-help"></a>
+            <a class="widget-help external no-arrow bx bx-info-circle"></a>
         </div>
         
         <div class="widget-header-actions"></div>

@@ -168,7 +168,7 @@ class Attributes {
                 $input.prop("placeholder", "http://website...");
 
                 const $openButton = $("<span>")
-                    .addClass("input-group-text open-external-link-button jam jam-arrow-up-right")
+                    .addClass("input-group-text open-external-link-button bx bx-trending-up")
                     .prop("title", "Open external link")
                     .click(() => window.open($input.val(), '_blank'));
 
@@ -201,7 +201,7 @@ class Attributes {
 
         if (definition.multiplicityType === "multivalue") {
             const addButton = $("<span>")
-                .addClass("jam jam-plus pointer")
+                .addClass("bx bx-plus pointer")
                 .prop("title", "Add new attribute")
                 .click(async () => {
                     const $new = await this.createPromotedAttributeRow(definitionAttr, {
@@ -217,7 +217,7 @@ class Attributes {
                 });
 
             const removeButton = $("<span>")
-                .addClass("jam jam-trash-alt pointer")
+                .addClass("bx bx-trash pointer")
                 .prop("title", "Remove this attribute")
                 .click(async () => {
                     if (valueAttr.attributeId) {

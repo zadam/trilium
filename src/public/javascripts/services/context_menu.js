@@ -19,7 +19,7 @@ async function initContextMenu(event, contextMenu) {
                 const $icon = $("<span>");
 
                 if (item.uiIcon) {
-                    $icon.addClass("jam jam-" + item.uiIcon);
+                    $icon.addClass("bx bx-" + item.uiIcon);
                 } else {
                     $icon.append("&nbsp;");
                 }

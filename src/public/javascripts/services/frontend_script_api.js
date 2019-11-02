@@ -72,7 +72,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
     /**
      * @typedef {Object} ToolbarButtonOptions
      * @property {string} title
-     * @property {string} [icon] - name of the JAM icon to be used (e.g. "clock" for "jam-clock" icon)
+     * @property {string} [icon] - name of the boxicon to be used (e.g. "time" for "bx-time" icon)
      * @property {function} action - callback handling the click on the button
      * @property {string} [shortcut] - keyboard shortcut for the button, e.g. "alt+t"
      */
@@ -90,7 +90,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
             .click(opts.action);
 
         if (opts.icon) {
-            button.append($("<span>").addClass("jam jam-" + opts.icon))
+            button.append($("<span>").addClass("bx bx-" + opts.icon))
                   .append("&nbsp;");
         }
 
