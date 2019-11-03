@@ -1,8 +1,35 @@
 import server from "../../services/server.js";
 import toastService from "../../services/toast.js";
 
+const TPL = `
+<h4 style="margin-top: 0;">Sync</h4>
+<button id="force-full-sync-button" class="btn btn-secondary">Force full sync</button>
+
+<br/>
+<br/>
+
+<button id="fill-sync-rows-button" class="btn btn-secondary">Fill sync rows</button>
+
+<br/>
+<br/>
+
+<h4>Debugging</h4>
+
+<button id="anonymize-button" class="btn btn-secondary">Save anonymized database</button><br/><br/>
+
+<p>This action will create a new copy of the database and anonymise it (remove all note content and leave only structure and metadata)
+    for sharing online for debugging purposes without fear of leaking your personal data.</p>
+
+<h4>Vacuum database</h4>
+
+<p>This will rebuild database which will typically result in smaller database file. No data will be actually changed.</p>
+
+<button id="vacuum-database-button" class="btn btn-secondary">Vacuum database</button>`;
+
 export default class AdvancedOptions {
     constructor() {
+        $("#options-advanced").html(TPL);
+
         this.$forceFullSyncButton = $("#force-full-sync-button");
         this.$fillSyncRowsButton = $("#fill-sync-rows-button");
         this.$anonymizeButton = $("#anonymize-button");

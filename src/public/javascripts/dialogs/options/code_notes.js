@@ -2,8 +2,15 @@ import server from "../../services/server.js";
 import mimeTypesService from "../../services/mime_types.js";
 import optionsService from "../../services/options.js";
 
+const TPL = `
+<h4>Available MIME types in the dropdown</h4>
+
+<ul id="options-mime-types" style="max-height: 500px; overflow: auto; list-style-type: none;"></ul>`;
+
 export default class CodeNotesOptions {
     constructor() {
+        $("#options-code-notes").html(TPL);
+
         this.$mimeTypes = $("#options-mime-types");
     }
 
