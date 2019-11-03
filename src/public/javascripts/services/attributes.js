@@ -221,7 +221,7 @@ class Attributes {
                 .prop("title", "Remove this attribute")
                 .click(async () => {
                     if (valueAttr.attributeId) {
-                        await server.remove("notes/" + noteId + "/attributes/" + valueAttr.attributeId);
+                        await server.remove("notes/" + this.ctx.note.noteId + "/attributes/" + valueAttr.attributeId);
                     }
 
                     $tr.remove();
