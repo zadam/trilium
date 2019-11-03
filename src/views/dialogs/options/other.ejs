@@ -20,6 +20,20 @@
     </div>
 
     <div>
+        <h4>Image compression</h4>
+
+        <div class="form-group">
+            <label for="image-max-width-height">Max width / height of an image in pixels (if image will be resized if it exceeds this setting).</label>
+            <input class="form-control" id="image-max-width-height" type="number">
+        </div>
+
+        <div class="form-group">
+            <label for="image-jpeg-quality">JPEG quality (0 - worst quality, 100 best quality)</label>
+            <input class="form-control" id="image-jpeg-quality" min="0" max="100" type="number">
+        </div>
+    </div>
+
+    <div>
         <h4>Protected session timeout</h4>
 
         <p>Protected session timeout is a time period after which the protected session is wiped out from

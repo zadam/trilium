@@ -34,7 +34,9 @@ const ALLOWED_OPTIONS = [
     'calendarWidget',
     'codeNotesMimeTypes',
     'spellCheckEnabled',
-    'spellCheckLanguageCode'
+    'spellCheckLanguageCode',
+    'imageMaxWidthHeight',
+    'imageJpegQuality'
 ];
 
 async function getOptions() {
