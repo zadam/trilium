@@ -10,6 +10,18 @@ async function getOption(name) {
     return option.value;
 }
 
+async function getOptionInt(name) {
+    const val = await getOption(name);
+
+    const intVal = parseInt(val);
+
+    if (isNaN(intVal)) {
+        throw new Error(`Could not parse "${val}" into integer for option "${name}"`);
+    }
+
+    return intVal;
+}
+
 async function setOption(name, value) {
     const option = await require('./repository').getOption(name);
 
@@ -51,6 +63,7 @@ async function getOptionsMap(allowedOptions) {
 
 module.exports = {
     getOption,
+    getOptionInt,
     setOption,
     createOption,
     getOptions,

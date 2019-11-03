@@ -3,6 +3,7 @@ const passwordEncryptionService = require('./password_encryption');
 const myScryptService = require('./my_scrypt');
 const appInfo = require('./app_info');
 const utils = require('./utils');
+const log = require('./log');
 const dateUtils = require('./date_utils');
 
 async function initDocumentOptions() {
@@ -75,7 +76,9 @@ const defaultOptions = [
     { name: 'similarNotesWidget', value: '{"enabled":true,"expanded":true,"position":600}', isSynced: false },
     { name: 'spellCheckEnabled', value: 'true', isSynced: false },
     { name: 'spellCheckLanguageCode', value: 'en-US', isSynced: false },
-    { name: 'hideTabRowForOneTab', value: 'false', isSynced: false }
+    { name: 'hideTabRowForOneTab', value: 'false', isSynced: false },
+    { name: 'imageMaxWidthHeight', value: '1200', isSynced: true },
+    { name: 'imageJpegQuality', value: '75', isSynced: true }
 ];
 
 async function initStartupOptions() {
@@ -84,6 +87,8 @@ async function initStartupOptions() {
     for (const {name, value, isSynced} of defaultOptions) {
         if (!(name in optionsMap)) {
             await optionService.createOption(name, value, isSynced);
+
+            log.info(`Created missing option "${name}" with default value "${value}"`);
         }
     }
 }

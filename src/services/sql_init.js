@@ -20,8 +20,6 @@ const dbConnection = new Promise(async (resolve, reject) => {
     const db = await createConnection();
     sql.setDbConnection(db);
 
-    await require('./options_init').initStartupOptions();
-
     resolve();
 });
 
@@ -75,6 +73,8 @@ async function initDbConnection() {
 
             await migrationService.migrate();
         }
+
+        await require('./options_init').initStartupOptions();
 
         log.info("DB ready.");
         dbReadyResolve();

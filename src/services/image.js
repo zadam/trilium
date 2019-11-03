@@ -4,6 +4,7 @@ const repository = require('./repository');
 const log = require('./log');
 const protectedSessionService = require('./protected_session');
 const noteService = require('./notes');
+const optionService = require('./options');
 const imagemin = require('imagemin');
 const imageminMozJpeg = require('imagemin-mozjpeg');
 const imageminPngQuant = require('imagemin-pngquant');
@@ -67,20 +68,16 @@ async function shrinkImage(buffer, originalName) {
     return finalImageBuffer;
 }
 
-const MAX_SIZE = 1000;
-const MAX_BYTE_SIZE = 200000; // images should have under 100 KBs
-
 async function resize(buffer) {
+    const imageMaxWidthHeight = await optionService.getOptionInt('imageMaxWidthHeight');
+
     const image = await jimp.read(buffer);
 
-    if (image.bitmap.width > image.bitmap.height && image.bitmap.width > MAX_SIZE) {
-        image.resize(MAX_SIZE, jimp.AUTO);
+    if (image.bitmap.width > image.bitmap.height && image.bitmap.width > imageMaxWidthHeight) {
+        image.resize(imageMaxWidthHeight, jimp.AUTO);
     }
-    else if (image.bitmap.height > MAX_SIZE) {
-        image.resize(jimp.AUTO, MAX_SIZE);
-    }
-    else if (buffer.byteLength <= MAX_BYTE_SIZE) {
-        return buffer;
+    else if (image.bitmap.height > imageMaxWidthHeight) {
+        image.resize(jimp.AUTO, imageMaxWidthHeight);
     }
 
     // we do resizing with max quality which will be trimmed during optimization step next
@@ -96,7 +93,7 @@ async function optimize(buffer) {
     return await imagemin.buffer(buffer, {
         plugins: [
             imageminMozJpeg({
-                quality: 50
+                quality: await optionService.getOptionInt('imageJpegQuality')
             }),
             imageminPngQuant({
                 quality: [0, 0.7]
