@@ -11,9 +11,6 @@ async function initDocumentOptions() {
 }
 
 async function initSyncedOptions(username, password) {
-    await optionService.createOption('protectedSessionTimeout', 600, true);
-    await optionService.createOption('noteRevisionSnapshotTimeInterval', 600, true);
-
     await optionService.createOption('username', username, true);
 
     await optionService.createOption('passwordVerificationSalt', utils.randomSecureToken(32), true);
@@ -24,8 +21,6 @@ async function initSyncedOptions(username, password) {
 
     // passwordEncryptionService expects these options to already exist
     await optionService.createOption('encryptedDataKey', '', true);
-
-    await optionService.createOption('codeNotesMimeTypes', '["text/x-csrc","text/x-c++src","text/x-csharp","text/css","text/x-go","text/x-groovy","text/x-haskell","text/html","message/http","text/x-java","application/javascript;env=frontend","application/javascript;env=backend","application/json","text/x-kotlin","text/x-markdown","text/x-perl","text/x-php","text/x-python","text/x-ruby",null,"text/x-sql","text/x-swift","text/xml","text/x-yaml"]', true);
 
     await passwordEncryptionService.setDataKey(password, utils.randomSecureToken(16), true);
 }
@@ -41,53 +36,61 @@ async function initNotSyncedOptions(initialized, startNotePath = 'root', opts = 
             }
         }
     ]), false);
-    await optionService.createOption('hoistedNoteId', 'root', false);
+
     await optionService.createOption('lastDailyBackupDate', dateUtils.utcNowDateTime(), false);
     await optionService.createOption('lastWeeklyBackupDate', dateUtils.utcNowDateTime(), false);
     await optionService.createOption('lastMonthlyBackupDate', dateUtils.utcNowDateTime(), false);
     await optionService.createOption('dbVersion', appInfo.dbVersion, false);
 
-    await optionService.createOption('lastSyncedPull', 0, false);
-    await optionService.createOption('lastSyncedPush', 0, false);
-
-    await optionService.createOption('zoomFactor', 1.0, false);
-    await optionService.createOption('theme', opts.theme || 'white', false);
-
-    await optionService.createOption('leftPaneMinWidth', '350', false);
-    await optionService.createOption('leftPaneWidthPercent', '20', false);
-
-    await optionService.createOption('syncServerHost', opts.syncServerHost || '', false);
-    await optionService.createOption('syncServerTimeout', 5000, false);
-    await optionService.createOption('syncProxy', opts.syncProxy || '', false);
-
-    await optionService.createOption('mainFontSize', '100', false);
-    await optionService.createOption('treeFontSize', '100', false);
-    await optionService.createOption('detailFontSize', '110', false);
-
-    await optionService.createOption('sidebarMinWidth', '350', false);
-    await optionService.createOption('sidebarWidthPercent', '25', false);
-
-    await optionService.createOption('showSidebarInNewTab', 'true', false);
-
-    await optionService.createOption('calendarWidget', '{"enabled":true,"expanded":true,"position":20}', false);
-    await optionService.createOption('editedNotesWidget', '{"enabled":true,"expanded":true,"position":50}', false);
-    await optionService.createOption('noteInfoWidget', '{"enabled":true,"expanded":true,"position":100}', false);
-    await optionService.createOption('attributesWidget', '{"enabled":true,"expanded":true,"position":200}', false);
-    await optionService.createOption('linkMapWidget', '{"enabled":true,"expanded":true,"position":300}', false);
-    await optionService.createOption('noteRevisionsWidget', '{"enabled":true,"expanded":true,"position":400}', false);
-    await optionService.createOption('whatLinksHereWidget', '{"enabled":false,"expanded":true,"position":500}', false);
-    await optionService.createOption('similarNotesWidget', '{"enabled":true,"expanded":true,"position":600}', false);
-
     await optionService.createOption('initialized', initialized ? 'true' : 'false', false);
 
-    await optionService.createOption('spellCheckEnabled', 'true', false);
-    await optionService.createOption('spellCheckLanguageCode', 'en-US', false);
+    await optionService.createOption('lastSyncedPull', '0', false);
+    await optionService.createOption('lastSyncedPush', '0', false);
 
-    await optionService.createOption('hideTabRowForOneTab', 'false', false);
+    await optionService.createOption('theme', opts.theme || 'white', false);
+
+    await optionService.createOption('syncServerHost', opts.syncServerHost || '', false);
+    await optionService.createOption('syncServerTimeout', '5000', false);
+    await optionService.createOption('syncProxy', opts.syncProxy || '', false);
+}
+
+const defaultOptions = [
+    { name: 'hoistedNoteId', value: 'root', isSynced: false },
+    { name: 'zoomFactor', value: '1.0', isSynced: false },
+    { name: 'leftPaneMinWidth', value: '350', isSynced: false },
+    { name: 'leftPaneWidthPercent', value: '20', isSynced: false },
+    { name: 'mainFontSize', value: '100', isSynced: false },
+    { name: 'treeFontSize', value: '100', isSynced: false },
+    { name: 'detailFontSize', value: '110', isSynced: false },
+    { name: 'sidebarMinWidth', value: '350', isSynced: false },
+    { name: 'sidebarWidthPercent', value: '25', isSynced: false },
+    { name: 'showSidebarInNewTab', value: 'true', isSynced: false },
+    { name: 'calendarWidget', value: '{"enabled":true,"expanded":true,"position":20}', isSynced: false },
+    { name: 'editedNotesWidget', value: '{"enabled":true,"expanded":true,"position":50}', isSynced: false },
+    { name: 'noteInfoWidget', value: '{"enabled":true,"expanded":true,"position":100}', isSynced: false },
+    { name: 'attributesWidget', value: '{"enabled":true,"expanded":true,"position":200}', isSynced: false },
+    { name: 'linkMapWidget', value: '{"enabled":true,"expanded":true,"position":300}', isSynced: false },
+    { name: 'noteRevisionsWidget', value: '{"enabled":true,"expanded":true,"position":400}', isSynced: false },
+    { name: 'whatLinksHereWidget', value: '{"enabled":false,"expanded":true,"position":500}', isSynced: false },
+    { name: 'similarNotesWidget', value: '{"enabled":true,"expanded":true,"position":600}', isSynced: false },
+    { name: 'spellCheckEnabled', value: 'true', isSynced: false },
+    { name: 'spellCheckLanguageCode', value: 'en-US', isSynced: false },
+    { name: 'hideTabRowForOneTab', value: 'false', isSynced: false }
+];
+
+async function initStartupOptions() {
+    const optionsMap = await optionService.getOptionsMap();
+
+    for (const {name, value, isSynced} of defaultOptions) {
+        if (!(name in optionsMap)) {
+            await optionService.createOption(name, value, isSynced);
+        }
+    }
 }
 
 module.exports = {
     initDocumentOptions,
     initSyncedOptions,
-    initNotSyncedOptions
+    initNotSyncedOptions,
+    initStartupOptions
 };

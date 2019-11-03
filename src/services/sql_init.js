@@ -20,6 +20,8 @@ const dbConnection = new Promise(async (resolve, reject) => {
     const db = await createConnection();
     sql.setDbConnection(db);
 
+    await require('./options_init').initStartupOptions();
+
     resolve();
 });
 
