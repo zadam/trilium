@@ -63,7 +63,7 @@ ws.subscribeToMessages(async message => {
 
         toastService.showPersistent(toast);
 
-        await treeService.reloadNotes([message.parentNoteId]);
+        await treeService.reloadNotes([message.result.parentNoteId]);
 
         if (message.result.importedNoteId) {
             const node = await treeService.activateNote(message.result.importedNoteId);

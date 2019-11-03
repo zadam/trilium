@@ -148,7 +148,7 @@ async function deleteNodes(nodes) {
 
     const nextNotePath = await getNextNode(nodes);
 
-    const noteIds = Array.from(new Set(nodes.map(node => node.data.noteId)));
+    const noteIds = Array.from(new Set(nodes.map(node => node.getParent().data.noteId)));
 
     await treeService.reloadNotes(noteIds, nextNotePath);
 
