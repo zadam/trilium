@@ -26,9 +26,7 @@ async function moveBeforeNode(nodesToMove, beforeNode) {
 
         await changeNode(
             node => node.moveTo(beforeNode, 'before'),
-            nodeToMove,
-            beforeNode.data.noteId,
-            null);
+            nodeToMove);
     }
 }
 
@@ -52,9 +50,7 @@ async function moveAfterNode(nodesToMove, afterNode) {
 
         await changeNode(
             node => node.moveTo(afterNode, 'after'),
-            nodeToMove,
-            null,
-            afterNode.data.noteId);
+            nodeToMove);
     }
 }
 
@@ -177,7 +173,7 @@ async function moveNodeUpInHierarchy(node) {
         node);
 }
 
-async function changeNode(func, node, beforeNoteId = null, afterNoteId = null) {
+async function changeNode(func, node) {
     utils.assertArguments(func, node);
 
     const childNoteId = node.data.noteId;

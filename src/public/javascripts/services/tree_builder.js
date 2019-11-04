@@ -1,6 +1,4 @@
 import utils from "./utils.js";
-import Branch from "../entities/branch.js";
-import server from "./server.js";
 import treeCache from "./tree_cache.js";
 import ws from "./ws.js";
 import hoistedNoteService from "./hoisted_note.js";
@@ -110,24 +108,8 @@ async function prepareRealBranch(parentNote) {
 }
 
 async function prepareSearchBranch(note) {
-    const results = await server.get('search-note/' + note.noteId);
+    await treeCache.reloadNotes([note.noteId]);
 
-    // force to load all the notes at once instead of one by one
-    await treeCache.getNotes(results.map(res => res.noteId));
-
-    const {notes, branches} = await server.post('tree/load', { noteIds: [note.noteId] });
-
-    results.forEach((result, index) => branches.push({
-        branchId: "virt" + utils.randomString(10),
-        noteId: result.noteId,
-        parentNoteId: note.noteId,
-        prefix: treeCache.getBranch(result.branchId).prefix,
-        notePosition: (index + 1) * 10
-    }));
-
-    treeCache.addResp(notes, branches);
-
-    // note in cache changed
     const newNote = await treeCache.getNote(note.noteId);
 
     return await prepareRealBranch(newNote);

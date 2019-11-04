@@ -102,6 +102,35 @@ class TreeCache {
         const resp = await server.post('tree/load', { noteIds });
 
         this.addResp(resp.notes, resp.branches);
+
+        for (const note of resp.notes) {
+            if (note.type === 'search') {
+                const someExpanded = resp.branches.find(b => b.noteId === note.noteId && b.isExpanded);
+
+                if (!someExpanded) {
+                    continue;
+                }
+
+                const searchResults = await server.get('search-note/' + note.noteId);
+
+                // force to load all the notes at once instead of one by one
+                await treeCache.getNotes(searchResults.map(res => res.noteId));
+
+                const branches = resp.branches.filter(b => b.noteId === note.noteId || b.parentNoteId === note.noteId);
+
+                searchResults.forEach((result, index) => branches.push({
+                    // branchId should be repeatable since sometimes we reload some notes without rerendering the tree
+                    branchId: "virt" + result.noteId + '-' + note.noteId,
+                    noteId: result.noteId,
+                    parentNoteId: note.noteId,
+                    prefix: treeCache.getBranch(result.branchId).prefix,
+                    notePosition: (index + 1) * 10
+                }));
+
+                // update this note with standard (parent) branches + virtual (children) branches
+                treeCache.addResp([note], branches);
+            }
+        }
     }
 
     /** @return {Promise<NoteShort[]>} */
@@ -109,9 +138,7 @@ class TreeCache {
         const missingNoteIds = noteIds.filter(noteId => this.notes[noteId] === undefined);
 
         if (missingNoteIds.length > 0) {
-            const resp = await server.post('tree/load', { noteIds: missingNoteIds });
-
-            this.addResp(resp.notes, resp.branches);
+            await this.reloadNotes(missingNoteIds);
         }
 
         return noteIds.map(noteId => {

@@ -26,8 +26,8 @@ class TreeContextMenu {
     }
 
     async getContextMenuItems() {
-        const branch = treeCache.getBranch(this.node.data.branchId);
         const note = await treeCache.getNote(this.node.data.noteId);
+        const branch = treeCache.getBranch(this.node.data.branchId);
         const parentNote = await treeCache.getNote(branch.parentNoteId);
         const isNotRoot = note.noteId !== 'root';
         const isHoisted = note.noteId === await hoistedNoteService.getHoistedNoteId();
@@ -39,9 +39,9 @@ class TreeContextMenu {
         const noSelectedNotes = selNodes.length === 0
                 || (selNodes.length === 1 && selNodes[0] === this.node);
 
+        const notSearch = note.type !== 'search';
         const parentNotSearch = parentNote.type !== 'search';
         const insertNoteAfterEnabled = isNotRoot && !isHoisted && parentNotSearch;
-        const notSearch = note.type !== 'search';
 
         return [
             { title: "Open in new tab", cmd: "openInTab", uiIcon: "empty", enabled: noSelectedNotes },
