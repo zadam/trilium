@@ -676,6 +676,7 @@ async function createNote(node, parentNoteId, target, extraOptions = {}) {
         refKey: branchEntity.noteId,
         branchId: branchEntity.branchId,
         isProtected: extraOptions.isProtected,
+        type: noteEntity.type,
         extraClasses: await treeBuilder.getExtraClasses(noteEntity),
         icon: await treeBuilder.getIcon(noteEntity),
         folder: extraOptions.type === 'search',

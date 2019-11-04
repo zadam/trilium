@@ -70,6 +70,7 @@ async function prepareNode(branch) {
         parentNoteId: branch.parentNoteId,
         branchId: branch.branchId,
         isProtected: note.isProtected,
+        noteType: note.type,
         title: utils.escapeHtml(title),
         extraClasses: await getExtraClasses(note),
         icon: await getIcon(note),

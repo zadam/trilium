@@ -65,7 +65,7 @@ class TreeContextMenu {
             { title: "Copy / clone <kbd>Ctrl+C</kbd>", cmd: "copy", uiIcon: "files",
                 enabled: isNotRoot },
             { title: "Cut <kbd>Ctrl+X</kbd>", cmd: "cut", uiIcon: "scissors",
-                enabled: isNotRoot },
+                enabled: isNotRoot && !isHoisted && parentNotSearch },
             { title: "Paste into <kbd>Ctrl+V</kbd>", cmd: "pasteInto", uiIcon: "clipboard",
                 enabled: !clipboard.isEmpty() && notSearch && noSelectedNotes },
             { title: "Paste after", cmd: "pasteAfter", uiIcon: "clipboard",
