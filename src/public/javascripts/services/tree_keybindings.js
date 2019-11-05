@@ -3,6 +3,7 @@ import treeChangesService from "./branches.js";
 import treeService from "./tree.js";
 import hoistedNoteService from "./hoisted_note.js";
 import clipboard from "./clipboard.js";
+import treeCache from "./tree_cache.js";
 
 const keyBindings = {
     "del": node => {
@@ -130,12 +131,16 @@ const keyBindings = {
         }
     },
     "ctrl+h": node => {
-        hoistedNoteService.getHoistedNoteId().then(hoistedNoteId => {
+        hoistedNoteService.getHoistedNoteId().then(async hoistedNoteId => {
             if (node.data.noteId === hoistedNoteId) {
                 hoistedNoteService.unhoist();
             }
             else {
-                hoistedNoteService.setHoistedNoteId(node.data.noteId);
+                const note = await treeCache.getNote(node.data.noteId);
+
+                if (note.type !== 'search') {
+                    hoistedNoteService.setHoistedNoteId(node.data.noteId);
+                }
             }
         });
 

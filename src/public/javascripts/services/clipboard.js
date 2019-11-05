@@ -2,6 +2,7 @@ import treeUtils from "./tree_utils.js";
 import treeChangesService from "./branches.js";
 import cloningService from "./cloning.js";
 import toastService from "./toast.js";
+import hoistedNoteService from "./hoisted_note.js";
 
 let clipboardIds = [];
 let clipboardMode = null;
@@ -66,10 +67,16 @@ function copy(nodes) {
 }
 
 function cut(nodes) {
-    clipboardIds = nodes.map(node => node.key);
-    clipboardMode = 'cut';
+    clipboardIds = nodes
+        .filter(node => node.data.noteId !== hoistedNoteService.getHoistedNoteNoPromise())
+        .filter(node => node.getParent().data.noteType !== 'search')
+        .map(node => node.data.noteId);
 
-    toastService.showMessage("Note(s) have been cut into clipboard.");
+    if (clipboardIds.length > 0) {
+        clipboardMode = 'cut';
+
+        toastService.showMessage("Note(s) have been cut into clipboard.");
+    }
 }
 
 function isEmpty() {

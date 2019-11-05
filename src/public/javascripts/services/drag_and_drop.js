@@ -1,11 +1,13 @@
 import treeService from './tree.js';
 import treeChangesService from './branches.js';
+import hoistedNoteService from './hoisted_note.js';
 
 const dragAndDropSetup = {
     autoExpandMS: 600,
     dragStart: (node, data) => {
         // don't allow dragging root node
-        if (node.data.noteId === 'root') {
+        if (node.data.noteId === hoistedNoteService.getHoistedNoteNoPromise()
+            || node.getParent().data.noteType === 'search') {
             return false;
         }
 
@@ -25,6 +27,17 @@ const dragAndDropSetup = {
     dragEnter: (node, data) => true, // allow drop on any node
     dragOver: (node, data) => true,
     dragDrop: async (node, data) => {
+        if ((data.hitMode === 'over' && node.data.noteType === 'search') ||
+            (['after', 'before'].includes(data.hitMode)
+                && (node.data.noteId === hoistedNoteService.getHoistedNoteNoPromise() || node.getParent().data.noteType === 'search'))) {
+
+            const infoDialog = await import('../dialogs/info.js');
+
+            await infoDialog.info("Dropping notes into this location is not allowed.");
+
+            return;
+        }
+
         const dataTransfer = data.dataTransfer;
 
         if (dataTransfer && dataTransfer.files && dataTransfer.files.length > 0) {

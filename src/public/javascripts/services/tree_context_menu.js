@@ -26,8 +26,8 @@ class TreeContextMenu {
     }
 
     async getContextMenuItems() {
-        const branch = treeCache.getBranch(this.node.data.branchId);
         const note = await treeCache.getNote(this.node.data.noteId);
+        const branch = treeCache.getBranch(this.node.data.branchId);
         const parentNote = await treeCache.getNote(branch.parentNoteId);
         const isNotRoot = note.noteId !== 'root';
         const isHoisted = note.noteId === await hoistedNoteService.getHoistedNoteId();
@@ -39,8 +39,9 @@ class TreeContextMenu {
         const noSelectedNotes = selNodes.length === 0
                 || (selNodes.length === 1 && selNodes[0] === this.node);
 
-        const insertNoteAfterEnabled = isNotRoot && !isHoisted && parentNote.type !== 'search';
-        const insertChildNoteEnabled = note.type !== 'search';
+        const notSearch = note.type !== 'search';
+        const parentNotSearch = parentNote.type !== 'search';
+        const insertNoteAfterEnabled = isNotRoot && !isHoisted && parentNotSearch;
 
         return [
             { title: "Open in new tab", cmd: "openInTab", uiIcon: "empty", enabled: noSelectedNotes },
@@ -48,15 +49,15 @@ class TreeContextMenu {
                 items: insertNoteAfterEnabled ? this.getNoteTypeItems("insertNoteAfter") : null,
                 enabled: insertNoteAfterEnabled && noSelectedNotes },
             { title: "Insert child note <kbd>Ctrl+P</kbd>", cmd: "insertChildNote", uiIcon: "plus",
-                items: insertChildNoteEnabled ? this.getNoteTypeItems("insertChildNote") : null,
-                enabled: insertChildNoteEnabled && noSelectedNotes },
+                items: notSearch ? this.getNoteTypeItems("insertChildNote") : null,
+                enabled: notSearch && noSelectedNotes },
             { title: "Delete <kbd>Delete</kbd>", cmd: "delete", uiIcon: "trash",
-                enabled: isNotRoot && !isHoisted && parentNote.type !== 'search' },
+                enabled: isNotRoot && !isHoisted && parentNotSearch },
             { title: "----" },
-            isHoisted ? null : { title: "Hoist note <kbd>Ctrl-H</kbd>", cmd: "hoist", uiIcon: "empty", enabled: noSelectedNotes },
+            isHoisted ? null : { title: "Hoist note <kbd>Ctrl-H</kbd>", cmd: "hoist", uiIcon: "empty", enabled: noSelectedNotes && notSearch },
             !isHoisted || !isNotRoot ? null : { title: "Unhoist note <kbd>Ctrl-H</kbd>", cmd: "unhoist", uiIcon: "arrow-up" },
             { title: "Edit branch prefix <kbd>F2</kbd>", cmd: "editBranchPrefix", uiIcon: "empty",
-                enabled: isNotRoot && parentNote.type !== 'search' && noSelectedNotes},
+                enabled: isNotRoot && parentNotSearch && noSelectedNotes},
             { title: "----" },
             { title: "Protect subtree", cmd: "protectSubtree", uiIcon: "shield-check", enabled: noSelectedNotes },
             { title: "Unprotect subtree", cmd: "unprotectSubtree", uiIcon: "shield-close", enabled: noSelectedNotes },
@@ -64,22 +65,22 @@ class TreeContextMenu {
             { title: "Copy / clone <kbd>Ctrl+C</kbd>", cmd: "copy", uiIcon: "files",
                 enabled: isNotRoot },
             { title: "Cut <kbd>Ctrl+X</kbd>", cmd: "cut", uiIcon: "scissors",
-                enabled: isNotRoot },
+                enabled: isNotRoot && !isHoisted && parentNotSearch },
             { title: "Paste into <kbd>Ctrl+V</kbd>", cmd: "pasteInto", uiIcon: "clipboard",
-                enabled: !clipboard.isEmpty() && note.type !== 'search' && noSelectedNotes },
+                enabled: !clipboard.isEmpty() && notSearch && noSelectedNotes },
             { title: "Paste after", cmd: "pasteAfter", uiIcon: "clipboard",
-                enabled: !clipboard.isEmpty() && isNotRoot && parentNote.type !== 'search' && noSelectedNotes },
+                enabled: !clipboard.isEmpty() && isNotRoot && parentNotSearch && noSelectedNotes },
             { title: "Duplicate note here", cmd: "duplicateNote", uiIcon: "empty",
-                enabled: noSelectedNotes && (!note.isProtected || protectedSessionHolder.isProtectedSessionAvailable()) },
+                enabled: noSelectedNotes && parentNotSearch && (!note.isProtected || protectedSessionHolder.isProtectedSessionAvailable()) },
             { title: "----" },
             { title: "Export", cmd: "export", uiIcon: "empty",
-                enabled: note.type !== 'search' && noSelectedNotes },
+                enabled: notSearch && noSelectedNotes },
             { title: "Import into note", cmd: "importIntoNote", uiIcon: "empty",
-                enabled: note.type !== 'search' && noSelectedNotes },
+                enabled: notSearch && noSelectedNotes },
             { title: "----" },
             { title: "Collapse subtree <kbd>Alt+-</kbd>", cmd: "collapseSubtree", uiIcon: "align-justify", enabled: noSelectedNotes },
             { title: "Force note sync", cmd: "forceNoteSync", uiIcon: "refresh", enabled: noSelectedNotes },
-            { title: "Sort alphabetically <kbd>Alt+S</kbd>", cmd: "sortAlphabetically", uiIcon: "empty", enabled: noSelectedNotes }
+            { title: "Sort alphabetically <kbd>Alt+S</kbd>", cmd: "sortAlphabetically", uiIcon: "empty", enabled: noSelectedNotes && notSearch }
         ].filter(row => row !== null);
     }
 

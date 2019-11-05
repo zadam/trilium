@@ -3,11 +3,15 @@ import server from "./server.js";
 import tree from "./tree.js";
 import noteDetailService from "./note_detail.js";
 
-let hoistedNoteId;
+let hoistedNoteId = 'root';
 
 optionsService.waitForOptions().then(options => {
     hoistedNoteId = options.get('hoistedNoteId');
 });
+
+function getHoistedNoteNoPromise() {
+    return hoistedNoteId;
+}
 
 async function getHoistedNoteId() {
     await optionsService.waitForOptions();
@@ -49,6 +53,7 @@ async function isRootNode(node) {
 
 export default {
     getHoistedNoteId,
+    getHoistedNoteNoPromise,
     setHoistedNoteId,
     unhoist,
     isTopLevelNode,

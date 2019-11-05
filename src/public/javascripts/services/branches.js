@@ -26,9 +26,7 @@ async function moveBeforeNode(nodesToMove, beforeNode) {
 
         await changeNode(
             node => node.moveTo(beforeNode, 'before'),
-            nodeToMove,
-            beforeNode.data.noteId,
-            null);
+            nodeToMove);
     }
 }
 
@@ -52,9 +50,7 @@ async function moveAfterNode(nodesToMove, afterNode) {
 
         await changeNode(
             node => node.moveTo(afterNode, 'after'),
-            nodeToMove,
-            null,
-            afterNode.data.noteId);
+            nodeToMove);
     }
 }
 
@@ -62,6 +58,11 @@ async function moveToNode(nodesToMove, toNode) {
     nodesToMove = await filterRootNote(nodesToMove);
 
     for (const nodeToMove of nodesToMove) {
+        if (nodeToMove.data.noteId === await hoistedNoteService.getHoistedNoteId()
+            || nodeToMove.getParent().data.noteType === 'search') {
+            continue;
+        }
+
         const resp = await server.put('branches/' + nodeToMove.data.branchId + '/move-to/' + toNode.data.noteId);
 
         if (!resp.success) {
@@ -156,7 +157,9 @@ async function deleteNodes(nodes) {
 }
 
 async function moveNodeUpInHierarchy(node) {
-    if (await hoistedNoteService.isRootNode(node) || await hoistedNoteService.isTopLevelNode(node)) {
+    if (await hoistedNoteService.isRootNode(node)
+        || await hoistedNoteService.isTopLevelNode(node)
+        || node.getParent().data.noteType === 'search') {
         return;
     }
 
@@ -177,7 +180,7 @@ async function moveNodeUpInHierarchy(node) {
         node);
 }
 
-async function changeNode(func, node, beforeNoteId = null, afterNoteId = null) {
+async function changeNode(func, node) {
     utils.assertArguments(func, node);
 
     const childNoteId = node.data.noteId;

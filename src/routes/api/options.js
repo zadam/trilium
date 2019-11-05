@@ -66,7 +66,9 @@ async function update(name, value) {
         return false;
     }
 
-    log.info(`Updating option ${name} to ${value}`);
+    if (name !== 'openTabs') {
+        log.info(`Updating option ${name} to ${value}`);
+    }
 
     await optionService.setOption(name, value);
 

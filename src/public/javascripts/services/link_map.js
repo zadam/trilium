@@ -119,60 +119,54 @@ export default class LinkMap {
                 stop: params => {}
             });
 
-
             return $noteBox;
         };
 
-        this.renderer = new Springy.Renderer(
-            layout,
-            () => {},
-            (edge, p1, p2) => {
-                const connectionId = this.linkMapContainerId + '-' + edge.source.id + '-' + edge.target.id;
+        this.renderer = new Springy.Renderer(layout);
+        await this.renderer.start(500);
 
-                if ($("#" + connectionId).length > 0) {
-                    return;
-                }
+        layout.eachNode((node, point) => {
+            const $noteBox = getNoteBox(node.id);
+            const middleW = this.$linkMapContainer.width() / 2;
+            const middleH = this.$linkMapContainer.height() / 2;
 
-                getNoteBox(edge.source.id);
-                getNoteBox(edge.target.id);
+            $noteBox
+                .css("left", (middleW + point.p.x * 100) + "px")
+                .css("top", (middleH + point.p.y * 100) + "px");
 
-                const connection = this.jsPlumbInstance.connect({
-                    source: this.noteIdToId(edge.source.id),
-                    target: this.noteIdToId(edge.target.id),
-                    type: 'link'
-                });
-
-                if (connection) {
-                    $(connection.canvas)
-                        .prop("id", connectionId)
-                        .addClass('link-' + edge.source.id)
-                        .addClass('link-' + edge.target.id);
-                }
-                else {
-                    console.log(`connection not created for`, edge);
-                }
-            },
-            (node, p) => {
-                const $noteBox = getNoteBox(node.id);
-                const middleW = this.$linkMapContainer.width() / 2;
-                const middleH = this.$linkMapContainer.height() / 2;
-
-                $noteBox
-                    .css("left", (middleW + p.x * 100) + "px")
-                    .css("top", (middleH + p.y * 100) + "px");
-
-                if ($noteBox.hasClass("link-map-active-note")) {
-                    this.moveToCenterOfElement($noteBox[0]);
-                }
-            },
-            () => {},
-            () => {},
-            () => {
-                this.jsPlumbInstance.repaintEverything();
+            if ($noteBox.hasClass("link-map-active-note")) {
+                this.moveToCenterOfElement($noteBox[0]);
             }
-        );
+        });
 
-        this.renderer.start();
+        layout.eachEdge(edge => {
+            const connectionId = this.linkMapContainerId + '-' + edge.source.id + '-' + edge.target.id;
+
+            if ($("#" + connectionId).length > 0) {
+                return;
+            }
+
+            getNoteBox(edge.source.id);
+            getNoteBox(edge.target.id);
+
+            const connection = this.jsPlumbInstance.connect({
+                source: this.noteIdToId(edge.source.id),
+                target: this.noteIdToId(edge.target.id),
+                type: 'link'
+            });
+
+            if (connection) {
+                $(connection.canvas)
+                    .prop("id", connectionId)
+                    .addClass('link-' + edge.source.id)
+                    .addClass('link-' + edge.target.id);
+            }
+            else {
+                console.log(`connection not created for`, edge);
+            }
+        });
+
+        this.jsPlumbInstance.repaintEverything();
     }
 
     moveToCenterOfElement(element) {

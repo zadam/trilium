@@ -191,7 +191,7 @@
 			this.addNodes.apply(this, json['nodes']);
 			this.addEdges.apply(this, json['edges']);
 		}
-	}
+	};
 
 
 	// find the edges from node1 to node2
@@ -479,51 +479,35 @@
 		return energy;
 	};
 
-	var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }; // stolen from coffeescript, thanks jashkenas! ;-)
-
-	Springy.requestAnimationFrame = __bind(this.requestAnimationFrame ||
-		this.webkitRequestAnimationFrame ||
-		this.mozRequestAnimationFrame ||
-		this.oRequestAnimationFrame ||
-		this.msRequestAnimationFrame ||
-		(function(callback, element) {
-			this.setTimeout(callback, 10);
-		}), this);
-
-
 	/**
 	 * Start simulation if it's not running already.
 	 * In case it's running then the call is ignored, and none of the callbacks passed is ever executed.
 	 */
-	Layout.ForceDirected.prototype.start = function(render, onRenderStop, onRenderStart) {
+	Layout.ForceDirected.prototype.start = function(onRenderStop) {
 		var t = this;
 
 		if (this._started) return;
 		this._started = true;
 		this._stop = false;
 
-		if (onRenderStart !== undefined) { onRenderStart(); }
-
-		Springy.requestAnimationFrame(function step() {
+		function step() {
 			t.tick(0.03);
-
-			if (!t._stop && render !== undefined) {
-				render();
-			}
 
 			// stop simulation when energy of the system goes below a threshold
 			if (t._stop || t.totalEnergy() < t.minEnergyThreshold) {
 				t._started = false;
-				if (onRenderStop !== undefined) { onRenderStop(); }
+				onRenderStop();
 			} else {
-				Springy.requestAnimationFrame(step);
+				setImmediate(step);
 			}
-		});
+		}
+
+		step();
 	};
 
 	Layout.ForceDirected.prototype.stop = function() {
 		this._stop = true;
-	}
+	};
 
 	Layout.ForceDirected.prototype.tick = function(timestep) {
 		this.applyCoulombsLaw();
@@ -644,84 +628,34 @@
 
 	/**
 	 * Renderer handles the layout rendering loop
-	 * @param onRenderStop optional callback function that gets executed whenever rendering stops.
-	 * @param onRenderStart optional callback function that gets executed whenever rendering starts.
-	 * @param onRenderFrame optional callback function that gets executed after each frame is rendered.
 	 */
-	var Renderer = Springy.Renderer = function(layout, clear, drawEdge, drawNode, onRenderStop, onRenderStart, onRenderFrame) {
+	var Renderer = Springy.Renderer = function(layout, onRenderStop) {
 		this.layout = layout;
-		this.clear = clear;
-		this.drawEdge = drawEdge;
-		this.drawNode = drawNode;
 		this.onRenderStop = onRenderStop;
-		this.onRenderStart = onRenderStart;
-		this.onRenderFrame = onRenderFrame;
 
 		this.layout.graph.addGraphListener(this);
-	}
+	};
 
-	Renderer.prototype.graphChanged = function(e) {
+	Renderer.prototype.graphChanged = function() {
 		this.start();
 	};
 
 	/**
 	 * Starts the simulation of the layout in use.
-	 *
-	 * Note that in case the algorithm is still or already running then the layout that's in use
-	 * might silently ignore the call, and your optional <code>done</code> callback is never executed.
-	 * At least the built-in ForceDirected layout behaves in this way.
-	 *
-	 * @param done An optional callback function that gets executed when the springy algorithm stops,
-	 * either because it ended or because stop() was called.
 	 */
-	Renderer.prototype.start = function(done) {
-		var t = this;
-		this.layout.start(function render() {
-			t.clear();
+	Renderer.prototype.start = function(maxTime) {
+		if (maxTime) {
+			setTimeout(() => this.stop(), maxTime);
+		}
 
-			t.layout.eachEdge(function(edge, spring) {
-				t.drawEdge(edge, spring.point1.p, spring.point2.p);
-			});
-
-			t.layout.eachNode(function(node, point) {
-				t.drawNode(node, point.p);
-			});
-			
-			if (t.onRenderFrame !== undefined) { t.onRenderFrame(); }
-		}, this.onRenderStop, this.onRenderStart);
+		return new Promise((res, rej) => {
+			this.layout.start(res);
+		});
 	};
 
 	Renderer.prototype.stop = function() {
 		this.layout.stop();
 	};
-
-	// Array.forEach implementation for IE support..
-	//https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array/forEach
-	if ( !Array.prototype.forEach ) {
-		Array.prototype.forEach = function( callback, thisArg ) {
-			var T, k;
-			if ( this == null ) {
-				throw new TypeError( " this is null or not defined" );
-			}
-			var O = Object(this);
-			var len = O.length >>> 0; // Hack to convert O.length to a UInt32
-			if ( {}.toString.call(callback) != "[object Function]" ) {
-				throw new TypeError( callback + " is not a function" );
-			}
-			if ( thisArg ) {
-				T = thisArg;
-			}
-			k = 0;
-			while( k < len ) {
-				var kValue;
-				if ( k in O ) {
-					kValue = O[ k ];
-					callback.call( T, kValue, k, O );
-				}
-				k++;
-			}
-		};
-	}
 
 	var isEmpty = function(obj) {
 		for (var k in obj) {
