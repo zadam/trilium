@@ -105,12 +105,6 @@ class TreeCache {
 
         for (const note of resp.notes) {
             if (note.type === 'search') {
-                const someExpanded = resp.branches.find(b => b.noteId === note.noteId && b.isExpanded);
-
-                if (!someExpanded) {
-                    continue;
-                }
-
                 const searchResults = await server.get('search-note/' + note.noteId);
 
                 // force to load all the notes at once instead of one by one
