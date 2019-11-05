@@ -240,6 +240,8 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
     this.getNotes = async (noteIds, silentNotFoundError = false) => await treeCache.getNotes(noteIds, silentNotFoundError);
 
     /**
+     * Update frontend tree (note) cache from the backend.
+     *
      * @param {string[]} noteIds
      * @method
      */
@@ -385,6 +387,13 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
      * @return {Promise}
      */
     this.setHoistedNoteId = hoistedNoteService.setHoistedNoteId;
+
+    /**
+     * @method
+     * @param {string} keyboardShortcut - e.g. "ctrl+shift+a"
+     * @param {function} handler
+     */
+    this.bindGlobalShortcut = utils.bindGlobalShortcut;
 }
 
 export default FrontendScriptApi;</code></pre>

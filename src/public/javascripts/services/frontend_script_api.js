@@ -359,6 +359,13 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
      * @return {Promise}
      */
     this.setHoistedNoteId = hoistedNoteService.setHoistedNoteId;
+
+    /**
+     * @method
+     * @param {string} keyboardShortcut - e.g. "ctrl+shift+a"
+     * @param {function} handler
+     */
+    this.bindGlobalShortcut = utils.bindGlobalShortcut;
 }
 
 export default FrontendScriptApi;

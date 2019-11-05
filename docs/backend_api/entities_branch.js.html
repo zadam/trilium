@@ -73,6 +73,10 @@ class Branch extends Entity {
             this.notePosition = maxNotePos === null ? 0 : maxNotePos + 10;
         }
 
+        if (!this.isExpanded) {
+            this.isExpanded = false;
+        }
+
         if (!this.isDeleted) {
             this.isDeleted = false;
         }

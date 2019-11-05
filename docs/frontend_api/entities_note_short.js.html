@@ -60,6 +60,8 @@ class NoteShort {
         /** @param {string} content-type, e.g. "application/json" */
         this.mime = row.mime;
         /** @param {boolean} */
+        this.isDeleted = row.isDeleted;
+        /** @param {boolean} */
         this.archived = row.archived;
         /** @param {string} */
         this.cssClass = row.cssClass;
@@ -108,7 +110,7 @@ class NoteShort {
         const branchIdPos = {};
 
         for (const branchId of Object.values(this.childToBranch)) {
-            branchIdPos[branchId] = this.treeCache.branches[branchId].notePosition;
+            branchIdPos[branchId] = this.treeCache.getBranch(branchId).notePosition;
         }
 
         this.children.sort((a, b) => branchIdPos[this.childToBranch[a]] &lt; branchIdPos[this.childToBranch[b]] ? -1 : 1);
@@ -153,7 +155,8 @@ class NoteShort {
 
     /** @returns {Promise&lt;Branch[]>} */
     async getChildBranches() {
-        const branchIds = Object.values(this.childToBranch);
+        // don't use Object.values() to guarantee order
+        const branchIds = this.children.map(childNoteId => this.childToBranch[childNoteId]);
 
         return this.treeCache.getBranches(branchIds);
     }
