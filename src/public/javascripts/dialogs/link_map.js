@@ -23,19 +23,18 @@ export async function showDialog() {
     // set default settings
     $maxNotesInput.val(20);
 
-    const note = noteDetailService.getActiveTabNote();
-
-    if (!note) {
-        return;
-    }
-
     $linkMapContainer.css("height", $("body").height() - 150);
 
-    linkMapService = new LinkMapService(note, $linkMapContainer, getOptions());
-
-    linkMapService.render();
+    $linkMapContainer.empty();
 
     $dialog.modal();
 }
+
+$dialog.on('shown.bs.modal', () => {
+    const note = noteDetailService.getActiveTabNote();
+
+    linkMapService = new LinkMapService(note, $linkMapContainer, getOptions());
+    linkMapService.render();
+});
 
 $maxNotesInput.on("input", () => linkMapService.loadNotesAndRelations(getOptions()));

@@ -29,6 +29,7 @@ class LinkMapWidget extends StandardWidget {
     }
 
     async doRenderBody() {
+        this.$body.css('opacity', 0);
         this.$body.html(TPL);
 
         const $linkMapContainer = this.$body.find('.link-map-container');
@@ -43,6 +44,8 @@ class LinkMapWidget extends StandardWidget {
         });
 
         await this.linkMapService.render();
+
+        this.$body.animate({opacity: 1}, 300);
     }
 
     cleanup() {
