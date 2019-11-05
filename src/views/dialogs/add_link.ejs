@@ -12,20 +12,6 @@
             </div>
             <form id="add-link-form">
                 <div class="modal-body">
-                    <div id="add-link-type-div" class="radio">
-                        <label title="Add HTML link to the selected note at cursor in active note">
-                            <input type="radio" name="add-link-type" value="html"/>
-                            add normal HTML link</label>
-
-                        <label title="Add selected note as a child of active note">
-                            <input type="radio" name="add-link-type" value="selected-to-active"/>
-                            add selected note to active note</label>
-
-                        <label title="Add active note as a child of the selected note">
-                            <input type="radio" name="add-link-type" value="active-to-selected"/>
-                            add active note to selected note</label>
-                    </div>
-
                     <div class="form-group">
                         <label for="note-autocomplete">Note</label>
 
@@ -37,11 +23,6 @@
                     <div class="form-group" id="add-link-title-form-group">
                         <label for="link-title">Link title</label>
                         <input id="link-title" class="form-control" style="width: 100%;">
-                    </div>
-
-                    <div class="form-group" id="add-link-prefix-form-group" title="Cloned note will be shown in note tree with given prefix">
-                        <label for="clone-prefix">Prefix (optional)</label>
-                        <input id="clone-prefix" class="form-control" style="width: 100%;">
                     </div>
                 </div>
                 <div class="modal-footer" style="display: flex; justify-content: space-between;">
