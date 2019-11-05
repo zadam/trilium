@@ -487,6 +487,10 @@ pre:not(.CodeMirror-line) {
     cursor: pointer;
 }
 
+.show-recent-notes-button, .input-clearer-button, .go-to-selected-note-button {
+    padding-top: 8px;
+}
+
 .show-recent-notes-button {
     cursor: pointer;
     font-size: 1.3em;

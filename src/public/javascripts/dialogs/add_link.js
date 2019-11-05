@@ -6,7 +6,7 @@ import utils from "../services/utils.js";
 
 const $dialog = $("#add-link-dialog");
 const $form = $("#add-link-form");
-const $autoComplete = $("#note-autocomplete");
+const $autoComplete = $("#add-link-note-autocomplete");
 const $linkTitle = $("#link-title");
 const $addLinkTitleFormGroup = $("#add-link-title-form-group");
 
