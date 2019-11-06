@@ -21,7 +21,7 @@ INSERT INTO note_revision_contents (noteRevisionId, content, hash, utcDateModifi
 SELECT noteRevisionId, content, hash, utcDateModifiedTo FROM note_revisions;
 
 INSERT INTO note_revisions_mig (noteRevisionId, noteId, title, contentLength, isProtected, utcDateLastEdited, utcDateCreated, utcDateModified, dateLastEdited, dateCreated, type, mime, hash)
-SELECT noteRevisionId, noteId, title, LENGTH(content), isProtected, utcDateModifiedFrom, utcDateModifiedTo, utcDateModifiedTo, dateModifiedFrom, dateModifiedTo, type, mime, hash FROM note_revisions;
+SELECT noteRevisionId, noteId, title, COALESCE(LENGTH(content), 0), isProtected, utcDateModifiedFrom, utcDateModifiedTo, utcDateModifiedTo, dateModifiedFrom, dateModifiedTo, type, mime, hash FROM note_revisions;
 
 DROP TABLE note_revisions;
 ALTER TABLE note_revisions_mig RENAME TO note_revisions;

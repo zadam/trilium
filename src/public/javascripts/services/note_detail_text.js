@@ -1,5 +1,6 @@
 import libraryLoader from "./library_loader.js";
 import treeService from './tree.js';
+import noteAutocompleteService from './note_autocomplete.js';
 
 class NoteDetailText {
     /**
@@ -41,7 +42,44 @@ class NoteDetailText {
             // looks like double initialization can freeze CKEditor pretty badly
             if (!this.textEditor) {
                 this.textEditor = await BalloonEditor.create(this.$editorEl[0], {
-                    placeholder: "Type the content of your note here ..."
+                    placeholder: "Type the content of your note here ...",
+                    mention: {
+                        feeds: [
+                            {
+                                marker: '@',
+                                feed: queryText => {
+                                    return new Promise((res, rej) => {
+                                        noteAutocompleteService.autocompleteSource(queryText, rows => {
+                                            rows = rows.slice(0, 10);
+
+                                            for (const row of rows) {
+                                                row.name = row.title;
+                                            }
+
+                                            res(rows);
+                                        });
+                                    });
+                                },
+                                itemRenderer: item => {
+                                    const itemElement = document.createElement( 'span' );
+
+                                    itemElement.classList.add( 'custom-item' );
+                                    itemElement.id = `mention-list-item-id-${ item.userId }`;
+                                    itemElement.textContent = `${ item.name } `;
+
+                                    const usernameElement = document.createElement( 'span' );
+
+                                    usernameElement.classList.add( 'custom-item-username' );
+                                    usernameElement.textContent = item.id;
+
+                                    itemElement.appendChild( usernameElement );
+
+                                    return itemElement;
+                                },
+                                minimumCharacters: 0
+                            }
+                        ]
+                    }
                 });
 
                 this.onNoteChange(() => this.ctx.noteChanged());
