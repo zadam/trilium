@@ -270,7 +270,10 @@ class NoteDetailBook {
         return type;
     }
 
-    getContent() {}
+    getContent() {
+        // for auto-book cases when renaming title there should be content
+        return "";
+    }
 
     show() {
         this.$component.show();
