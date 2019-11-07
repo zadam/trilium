@@ -8,13 +8,13 @@ import server from "../services/server.js";
 const TPL = `
 <div class="calendar-widget">
   <div class="calendar-header">
-    <button class="calendar-btn bx bx-left-arrow" data-calendar-toggle="previous"></button>
+    <button class="calendar-btn bx bx-left-arrow-alt" data-calendar-toggle="previous"></button>
 
     <div class="calendar-header__label" data-calendar-label="month">
       March 2017
     </div>
 
-    <button class="calendar-btn bx bx-right-arrow" data-calendar-toggle="next"></button>
+    <button class="calendar-btn bx bx-right-arrow-alt" data-calendar-toggle="next"></button>
   </div>
 
   <div class="calendar-week">

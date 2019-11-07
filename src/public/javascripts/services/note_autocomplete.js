@@ -135,6 +135,7 @@ function init() {
 }
 
 export default {
+    autocompleteSource,
     initNoteAutocomplete,
     showRecentNotes,
     init
