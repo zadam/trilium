@@ -50,29 +50,27 @@ class NoteDetailText {
                                 feed: queryText => {
                                     return new Promise((res, rej) => {
                                         noteAutocompleteService.autocompleteSource(queryText, rows => {
-                                            rows = rows.slice(0, 10);
+                                            if (rows.length === 1 && rows[0].title === 'No results') {
+                                                rows = [];
+                                            }
 
                                             for (const row of rows) {
-                                                row.name = row.title;
+                                                row.text = row.name = row.noteTitle;
+                                                row.id = '@' + row.text;
+                                                row.link = '#' + row.path;
                                             }
+
+                                            console.log(rows.slice(0, Math.min(5, rows.length)));
 
                                             res(rows);
                                         });
                                     });
                                 },
                                 itemRenderer: item => {
-                                    const itemElement = document.createElement( 'span' );
+                                    const itemElement = document.createElement('span');
 
-                                    itemElement.classList.add( 'custom-item' );
-                                    itemElement.id = `mention-list-item-id-${ item.userId }`;
-                                    itemElement.textContent = `${ item.name } `;
-
-                                    const usernameElement = document.createElement( 'span' );
-
-                                    usernameElement.classList.add( 'custom-item-username' );
-                                    usernameElement.textContent = item.id;
-
-                                    itemElement.appendChild( usernameElement );
+                                    itemElement.classList.add('mentions-item');
+                                    itemElement.innerHTML = `${item.highlightedTitle} `;
 
                                     return itemElement;
                                 },

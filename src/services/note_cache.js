@@ -68,19 +68,19 @@ function highlightResults(results, allTokens) {
     allTokens.sort((a, b) => a.length > b.length ? -1 : 1);
 
     for (const result of results) {
-        result.highlighted = result.title;
+        result.highlightedTitle = result.pathTitle;
     }
 
     for (const token of allTokens) {
         const tokenRegex = new RegExp("(" + utils.escapeRegExp(token) + ")", "gi");
 
         for (const result of results) {
-            result.highlighted = result.highlighted.replace(tokenRegex, "{$1}");
+            result.highlightedTitle = result.highlightedTitle.replace(tokenRegex, "{$1}");
         }
     }
 
     for (const result of results) {
-        result.highlighted = result.highlighted
+        result.highlightedTitle = result.highlightedTitle
             .replace(/{/g, "<b>")
             .replace(/}/g, "</b>");
     }
@@ -161,11 +161,14 @@ async function findNotes(query) {
     });
 
     const apiResults = results.slice(0, 200).map(res => {
+        const notePath = res.pathArray.join('/');
+
         return {
             noteId: res.noteId,
             branchId: res.branchId,
-            path: res.pathArray.join('/'),
-            title: res.titleArray.join(' / ')
+            path: notePath,
+            pathTitle: res.titleArray.join(' / '),
+            noteTitle: getNoteTitleFromPath(notePath)
         };
     });
 
@@ -250,6 +253,17 @@ function isArchived(noteId) {
     const notePath = getSomePath(noteId);
 
     return isNotePathArchived(notePath);
+}
+
+function getNoteTitleFromPath(notePath) {
+    const pathArr = notePath.split("/");
+
+    if (pathArr.length === 1) {
+        return getNoteTitle(pathArr[0], 'root');
+    }
+    else {
+        return getNoteTitle(pathArr[pathArr.length - 1], pathArr[pathArr.length - 2]);
+    }
 }
 
 function getNoteTitle(noteId, parentNoteId) {
@@ -512,6 +526,7 @@ module.exports = {
     findNotes,
     getNotePath,
     getNoteTitleForPath,
+    getNoteTitleFromPath,
     isAvailable,
     isArchived,
     load,

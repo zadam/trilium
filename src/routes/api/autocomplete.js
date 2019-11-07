@@ -58,8 +58,9 @@ async function getRecentNotes(activeNoteId) {
 
         return {
             path: rn.notePath,
-            title: title,
-            highlighted: title
+            pathTitle: title,
+            highlightedTitle: title,
+            noteTitle: noteCacheService.getNoteTitleFromPath(rn.notePath)
         };
     });
 }

@@ -880,3 +880,18 @@ a.external:not(.no-arrow):after, a[href^="http://"]:not(.no-arrow):after, a[href
     background-color: var(--more-accented-background-color) !important;
     color: var(--main-text-color) !important;
 }
+
+.mentions-item {
+    font-size: var(--main-font-size) !important;
+}
+
+.mentions-item.ck-on {
+    background-color: var(--active-item-background-color) !important;
+    color: var(--active-item-text-color) !important;
+}
+
+.mentions-item b {
+    font-weight: bold !important;
+    color: inherit !important;
+    vertical-align: baseline !important;
+}

@@ -12,7 +12,7 @@ async function autocompleteSource(term, cb) {
 
     if (result.length === 0) {
         result.push({
-            title: "No results",
+            pathTitle: "No results",
             path: ""
         });
     }
@@ -91,10 +91,10 @@ function initNoteAutocomplete($el, options) {
     }, [
         {
             source: autocompleteSource,
-            displayKey: 'title',
+            displayKey: 'pathTitle',
             templates: {
                 suggestion: function(suggestion) {
-                    return suggestion.highlighted;
+                    return suggestion.highlightedTitle;
                 }
             },
             // we can't cache identical searches because notes can be created / renamed, new recent notes can be added
