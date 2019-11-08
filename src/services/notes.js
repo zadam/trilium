@@ -537,5 +537,6 @@ module.exports = {
     deleteBranch,
     protectNoteRecursively,
     scanForLinks,
-    duplicateNote
+    duplicateNote,
+    protectNoteRevisions
 };

@@ -205,6 +205,13 @@ function isHtmlEmpty(html) {
     return $("<div>").html(html).text().trim().length === 0 && !html.toLowerCase().includes('<img');
 }
 
+async function clearBrowserCache() {
+    if (isElectron()) {
+        const win = require('electron').remote.getCurrentWindow();
+        await win.webContents.session.clearCache();
+    }
+}
+
 export default {
     reloadApp,
     parseDate,
@@ -236,5 +243,6 @@ export default {
     getNoteTypeClass,
     getMimeTypeClass,
     closeActiveDialog,
-    isHtmlEmpty
+    isHtmlEmpty,
+    clearBrowserCache
 };

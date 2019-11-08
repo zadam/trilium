@@ -64,6 +64,8 @@ class NoteDetailImage {
             if (result.uploaded) {
                 toastService.showMessage("New revision of the image has been uploaded.")
 
+                await utils.clearBrowserCache();
+
                 await noteDetailService.reload();
             }
             else {

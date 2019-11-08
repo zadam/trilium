@@ -18,6 +18,10 @@ async function getNoteRevision(req) {
 
     await noteRevision.getContent();
 
+    if (noteRevision.content && ['file', 'image'].includes(noteRevision.type)) {
+        noteRevision.content = noteRevision.content.toString('base64');
+    }
+
     return noteRevision;
 }
 

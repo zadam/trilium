@@ -61,6 +61,11 @@ $list.on('change', async () => {
     else if (note.type === 'code') {
         $content.html($("<pre>").text(fullNoteRevision.content));
     }
+    else if (note.type === 'image') {
+        $content.html($("<img>")
+            .attr("src", `data:${note.mime};base64,` + fullNoteRevision.content)
+            .css("width", "100%"));
+    }
     else {
         $content.text("Preview isn't available for this note type.");
     }
