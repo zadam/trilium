@@ -1,6 +1,5 @@
 import server from '../services/server.js';
 import Attribute from './attribute.js';
-import branches from "../services/branches.js";
 
 const LABEL = 'label';
 const LABEL_DEFINITION = 'label-definition';

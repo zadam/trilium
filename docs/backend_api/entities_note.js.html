@@ -42,8 +42,6 @@ const LABEL_DEFINITION = 'label-definition';
 const RELATION = 'relation';
 const RELATION_DEFINITION = 'relation-definition';
 
-const STRING_MIME_TYPES = ["application/x-javascript"];
-
 /**
  * This represents a Note which is a central object in the Trilium Notes project.
  *
@@ -53,6 +51,7 @@ const STRING_MIME_TYPES = ["application/x-javascript"];
  * @property {string} title - note title
  * @property {boolean} isProtected - true if note is protected
  * @property {boolean} isDeleted - true if note is deleted
+ * @property {boolean} isErased - true if note's content is erased after it has been deleted
  * @property {string} dateCreated - local date time (with offset)
  * @property {string} dateModified - local date time (with offset)
  * @property {string} utcDateCreated
@@ -72,7 +71,7 @@ class Note extends Entity {
         super(row);
 
         this.isProtected = !!this.isProtected;
-        /* true if content (meaning any kind of potentially encrypted content) is either not encrypted
+        /* true if content is either not encrypted
          * or encrypted, but with available protected session (so effectively decrypted) */
         this.isContentAvailable = true;
 
@@ -81,7 +80,7 @@ class Note extends Entity {
             this.isContentAvailable = protectedSessionService.isProtectedSessionAvailable();
 
             if (this.isContentAvailable) {
-                protectedSessionService.decryptNote(this);
+                this.title = protectedSessionService.decryptString(this.title);
             }
             else {
                 this.title = "[protected]";
@@ -116,7 +115,7 @@ class Note extends Entity {
 
             if (this.isProtected) {
                 if (this.isContentAvailable) {
-                    protectedSessionService.decryptNoteContent(this);
+                    this.content = this.content === null ? null : protectedSessionService.decrypt(this.content);
                 }
                 else {
                     this.content = "";
@@ -142,7 +141,7 @@ class Note extends Entity {
 
     /** @returns {Promise} */
     async setContent(content) {
-        // force updating note itself so that dateChanged is represented correctly even for the content
+        // force updating note itself so that dateModified is represented correctly even for the content
         this.forcedChange = true;
         await this.save();
 
@@ -157,7 +156,7 @@ class Note extends Entity {
 
         if (this.isProtected) {
             if (this.isContentAvailable) {
-                protectedSessionService.encryptNoteContent(pojo);
+                pojo.content = protectedSessionService.encrypt(pojo.content);
             }
             else {
                 throw new Error(`Cannot update content of noteId=${this.noteId} since we're out of protected session.`);
@@ -199,9 +198,7 @@ class Note extends Entity {
 
     /** @returns {boolean} true if the note has string content (not binary) */
     isStringNote() {
-        return ["text", "code", "relation-map", "search"].includes(this.type)
-            || this.mime.startsWith('text/')
-            || STRING_MIME_TYPES.includes(this.mime);
+        return utils.isStringNote(this.type, this.mime);
     }
 
     /** @returns {string} JS script environment - either "frontend" or "backend" */
@@ -447,7 +444,7 @@ class Note extends Entity {
     }
 
     /**
-     * Creates given attribute name-value pair if it doesn't exist.
+     * Update's given attribute's value or creates it if it doesn't exist
      *
      * @param {string} type - attribute type (label, relation, etc.)
      * @param {string} name - attribute name
@@ -456,9 +453,17 @@ class Note extends Entity {
      */
     async setAttribute(type, name, value) {
         const attributes = await this.getOwnedAttributes();
-        let attr = attributes.find(attr => attr.type === type &amp;&amp; (value === undefined || attr.value === value));
+        let attr = attributes.find(attr => attr.type === type &amp;&amp; attr.name === name);
 
-        if (!attr) {
+        if (attr) {
+            if (attr.value !== value) {
+                attr.value = value;
+                await attr.save();
+
+                this.invalidateAttributeCache();
+            }
+        }
+        else {
             attr = new Attribute({
                 noteId: this.noteId,
                 type: type,
@@ -560,7 +565,7 @@ class Note extends Entity {
     async toggleRelation(enabled, name, value) { return await this.toggleAttribute(RELATION, enabled, name, value); }
 
     /**
-     * Create label name-value pair if it doesn't exist yet.
+     * Update's given label's value or creates it if it doesn't exist
      *
      * @param {string} name - label name
      * @param {string} [value] - label value
@@ -569,7 +574,7 @@ class Note extends Entity {
     async setLabel(name, value) { return await this.setAttribute(LABEL, name, value); }
 
     /**
-     * Create relation name-value pair if it doesn't exist yet.
+     * Update's given relation's value or creates it if it doesn't exist
      *
      * @param {string} name - relation name
      * @param {string} [value] - relation value (noteId)
@@ -774,7 +779,7 @@ class Note extends Entity {
     updatePojo(pojo) {
         if (pojo.isProtected) {
             if (this.isContentAvailable) {
-                protectedSessionService.encryptNote(pojo);
+                pojo.title = protectedSessionService.encrypt(pojo.title);
             }
             else {
                 // updating protected note outside of protected session means we will keep original ciphertexts

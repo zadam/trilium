@@ -13,38 +13,62 @@ const jimp = require('jimp');
 const imageType = require('image-type');
 const sanitizeFilename = require('sanitize-filename');
 
-async function saveImage(buffer, originalName, parentNoteId, shrinkImageSwitch) {
-    const origImageFormat = imageType(buffer);
+async function processImage(uploadBuffer, originalName, shrinkImageSwitch) {
+    const origImageFormat = imageType(uploadBuffer);
 
     if (origImageFormat.ext === "webp") {
         // JIMP does not support webp at the moment: https://github.com/oliver-moran/jimp/issues/144
         shrinkImageSwitch = false;
     }
 
-    const finalImageBuffer = shrinkImageSwitch ? await shrinkImage(buffer, originalName) : buffer;
+    const finalImageBuffer = shrinkImageSwitch ? await shrinkImage(uploadBuffer, originalName) : uploadBuffer;
 
     const imageFormat = imageType(finalImageBuffer);
 
-    const parentNote = await repository.getNote(parentNoteId);
+    return {
+        buffer: finalImageBuffer,
+        imageFormat
+    };
+}
+
+async function updateImage(noteId, uploadBuffer, originalName) {
+    const {buffer, imageFormat} = await processImage(uploadBuffer, originalName, true);
+
+    const note = await repository.getNote(noteId);
+
+    note.mime = 'image/' + imageFormat.ext.toLowerCase();
+
+    await note.setContent(buffer);
+
+    await note.setLabel('originalFileName', originalName);
+    await note.setLabel('fileSize', buffer.byteLength);
+}
+
+async function saveImage(parentNoteId, uploadBuffer, originalName, shrinkImageSwitch) {
+    const {buffer, imageFormat} = await processImage(uploadBuffer, originalName, shrinkImageSwitch);
 
     const fileName = sanitizeFilename(originalName);
 
-    const {note} = await noteService.createNote(parentNoteId, fileName, finalImageBuffer, {
+    const parentNote = await repository.getNote(parentNoteId);
+
+    const {note} = await noteService.createNote(parentNoteId, fileName, buffer, {
         target: 'into',
         type: 'image',
         isProtected: parentNote.isProtected && protectedSessionService.isProtectedSessionAvailable(),
         mime: 'image/' + imageFormat.ext.toLowerCase(),
         attributes: [
             { type: 'label', name: 'originalFileName', value: originalName },
-            { type: 'label', name: 'fileSize', value: finalImageBuffer.byteLength }
+            { type: 'label', name: 'fileSize', value: buffer.byteLength }
         ]
     });
+
+    const imageHash = note.utcDateModified.replace(" ", "_");
 
     return {
         fileName,
         note,
         noteId: note.noteId,
-        url: `api/images/${note.noteId}/${fileName}`
+        url: `api/images/${note.noteId}/${fileName}?${imageHash}`
     };
 }
 
@@ -107,5 +131,6 @@ async function optimize(buffer) {
 }
 
 module.exports = {
-    saveImage
+    saveImage,
+    updateImage
 };

@@ -28,7 +28,7 @@
 
 <header>
     
-        <h2><span class="attribs"><span class="type-signature"></span></span>NoteRevision<span class="signature">(noteRevisionId, noteId, type, mime, title, content, isProtected, dateModifiedFrom, dateModifiedTo, utcDateModifiedFrom, utcDateModifiedTo)</span><span class="type-signature"></span></h2>
+        <h2><span class="attribs"><span class="type-signature"></span></span>NoteRevision<span class="signature">(noteRevisionId, noteId, type, mime, title, isProtected, dateLastEdited, dateCreated, utcDateLastEdited, utcDateCreated, utcDateModified)</span><span class="type-signature"></span></h2>
         
             <div class="class-description">NoteRevision represents snapshot of note's title and content at some point in the past. It's used for seamless note versioning.</div>
         
@@ -45,7 +45,7 @@
     
 
     
-    <h4 class="name" id="NoteRevision"><span class="type-signature"></span>new NoteRevision<span class="signature">(noteRevisionId, noteId, type, mime, title, content, isProtected, dateModifiedFrom, dateModifiedTo, utcDateModifiedFrom, utcDateModifiedTo)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="NoteRevision"><span class="type-signature"></span>new NoteRevision<span class="signature">(noteRevisionId, noteId, type, mime, title, isProtected, dateLastEdited, dateCreated, utcDateLastEdited, utcDateCreated, utcDateModified)</span><span class="type-signature"></span></h4>
     
 
     
@@ -200,29 +200,6 @@
 
         <tr>
             
-                <td class="name"><code>content</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-
-        <tr>
-            
                 <td class="name"><code>isProtected</code></td>
             
 
@@ -246,7 +223,7 @@
 
         <tr>
             
-                <td class="name"><code>dateModifiedFrom</code></td>
+                <td class="name"><code>dateLastEdited</code></td>
             
 
             <td class="type">
@@ -269,7 +246,7 @@
 
         <tr>
             
-                <td class="name"><code>dateModifiedTo</code></td>
+                <td class="name"><code>dateCreated</code></td>
             
 
             <td class="type">
@@ -292,7 +269,7 @@
 
         <tr>
             
-                <td class="name"><code>utcDateModifiedFrom</code></td>
+                <td class="name"><code>utcDateLastEdited</code></td>
             
 
             <td class="type">
@@ -315,7 +292,30 @@
 
         <tr>
             
-                <td class="name"><code>utcDateModifiedTo</code></td>
+                <td class="name"><code>utcDateCreated</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>utcDateModified</code></td>
             
 
             <td class="type">
@@ -372,7 +372,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="entities_note_revision.js.html">entities/note_revision.js</a>, <a href="entities_note_revision.js.html#line29">line 29</a>
+        <a href="entities_note_revision.js.html">entities/note_revision.js</a>, <a href="entities_note_revision.js.html#line33">line 33</a>
     </li></ul></dd>
     
 
@@ -430,6 +430,320 @@
 
     
 
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getContent"><span class="type-signature">(async) </span>getContent<span class="signature">()</span><span class="type-signature"> &rarr; {Promise.&lt;*>}</span></h4>
+    
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="entities_note_revision.js.html">entities/note_revision.js</a>, <a href="entities_note_revision.js.html#line67">line 67</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise.&lt;*></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="isStringNote"><span class="type-signature"></span>isStringNote<span class="signature">()</span><span class="type-signature"> &rarr; {boolean}</span></h4>
+    
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="entities_note_revision.js.html">entities/note_revision.js</a>, <a href="entities_note_revision.js.html#line53">line 53</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    true if the note has string content (not binary)
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">boolean</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="setContent"><span class="type-signature">(async) </span>setContent<span class="signature">()</span><span class="type-signature"> &rarr; {Promise}</span></h4>
+    
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="entities_note_revision.js.html">entities/note_revision.js</a>, <a href="entities_note_revision.js.html#line102">line 102</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
     
 
     

@@ -1,28 +1,32 @@
 <div class="note-detail-image note-detail-component">
-    <strong>Original file name:</strong>
-    <span class="image-filename"></span>
+    <div style="display: flex; justify-content: space-evenly; margin: 10px;">
+        <button class="image-download btn btn-primary" type="button">Download</button>
 
-    &nbsp; &nbsp;
+        <button class="image-copy-to-clipboard btn btn-primary" type="button">Copy to clipboard</button>
 
-    <strong>File type:</strong>
-    <span class="image-filetype"></span>
-
-    &nbsp; &nbsp;
-
-    <strong>File size:</strong>
-    <span class="image-filesize"></span>
-
-    <br/><br/>
-
-    <button class="image-download btn btn-primary" type="button">Download</button>
-
-    &nbsp; &nbsp;
-
-    <button class="image-copy-to-clipboard btn btn-primary" type="button">Copy to clipboard</button>
-
-    <br/><br/>
+        <button class="image-upload-new-revision btn btn-primary" type="button">Upload new revision</button>
+    </div>
 
     <div class="note-detail-image-wrapper">
         <img class="note-detail-image-view" />
     </div>
+
+    <div style="display: flex; justify-content: space-evenly; margin: 10px;">
+        <span>
+            <strong>Original file name:</strong>
+            <span class="image-filename"></span>
+        </span>
+
+        <span>
+            <strong>File type:</strong>
+            <span class="image-filetype"></span>
+        </span>
+
+        <span>
+            <strong>File size:</strong>
+            <span class="image-filesize"></span>
+        </span>
+    </div>
 </div>
+
+<input type="file" class="image-upload-new-revision-input" style="display: none">

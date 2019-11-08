@@ -82,7 +82,7 @@ async function addImagesToNote(images, note, content) {
 
             const buffer = Buffer.from(dataUrl.split(",")[1], 'base64');
 
-            const {note: imageNote, url} = await imageService.saveImage(buffer, filename, note.noteId, true);
+            const {note: imageNote, url} = await imageService.saveImage(note.noteId, buffer, filename, true);
 
             await new Attribute({
                 noteId: note.noteId,

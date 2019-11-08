@@ -32,7 +32,7 @@ async function importSingleFile(taskContext, file, parentNote) {
 }
 
 async function importImage(file, parentNote, taskContext) {
-    const {note} = await imageService.saveImage(file.buffer, file.originalname, parentNote.noteId, taskContext.data.shrinkImages);
+    const {note} = await imageService.saveImage(parentNote.noteId, file.buffer, file.originalname, taskContext.data.shrinkImages);
 
     taskContext.increaseProgressCount();
 

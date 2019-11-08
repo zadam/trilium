@@ -1,6 +1,7 @@
 import utils from "./utils.js";
 import toastService from "./toast.js";
 import server from "./server.js";
+import noteDetailService from "./note_detail.js";
 
 class NoteDetailImage {
     /**
@@ -12,14 +13,16 @@ class NoteDetailImage {
         this.$imageWrapper = ctx.$tabContent.find('.note-detail-image-wrapper');
         this.$imageView = ctx.$tabContent.find('.note-detail-image-view');
         this.$copyToClipboardButton = ctx.$tabContent.find(".image-copy-to-clipboard");
+        this.$uploadNewRevisionButton = ctx.$tabContent.find(".image-upload-new-revision");
+        this.$uploadNewRevisionInput = ctx.$tabContent.find(".image-upload-new-revision-input");
         this.$fileName = ctx.$tabContent.find(".image-filename");
         this.$fileType = ctx.$tabContent.find(".image-filetype");
         this.$fileSize = ctx.$tabContent.find(".image-filesize");
 
         this.$imageDownloadButton = ctx.$tabContent.find(".image-download");
-        this.$imageDownloadButton.click(() => utils.download(this.getFileUrl()));
+        this.$imageDownloadButton.on('click', () => utils.download(this.getFileUrl()));
 
-        this.$copyToClipboardButton.click(() => {
+        this.$copyToClipboardButton.on('click',() => {
             this.$imageWrapper.attr('contenteditable','true');
 
             try {
@@ -39,6 +42,34 @@ class NoteDetailImage {
                 this.$imageWrapper.removeAttr('contenteditable');
             }
         });
+
+        this.$uploadNewRevisionButton.on("click", () => {
+            this.$uploadNewRevisionInput.trigger("click");
+        });
+
+        this.$uploadNewRevisionInput.on('change', async () => {
+            const formData = new FormData();
+            formData.append('upload', this.$uploadNewRevisionInput[0].files[0]);
+
+            const result = await $.ajax({
+                url: baseApiUrl + 'images/' + this.ctx.note.noteId,
+                headers: server.getHeaders(),
+                data: formData,
+                type: 'PUT',
+                timeout: 60 * 60 * 1000,
+                contentType: false, // NEEDED, DON'T REMOVE THIS
+                processData: false, // NEEDED, DON'T REMOVE THIS
+            });
+
+            if (result.uploaded) {
+                toastService.showMessage("New revision of the image has been uploaded.")
+
+                await noteDetailService.reload();
+            }
+            else {
+                toastService.showError("Could not upload new revision of the image: " + result.message);
+            }
+        });
     }
 
     async render() {
@@ -51,7 +82,9 @@ class NoteDetailImage {
         this.$fileSize.text((attributeMap.fileSize || "?") + " bytes");
         this.$fileType.text(this.ctx.note.mime);
 
-        this.$imageView.prop("src", `api/images/${this.ctx.note.noteId}/${this.ctx.note.title}`);
+        const imageHash = this.ctx.note.utcDateModified.replace(" ", "_");
+
+        this.$imageView.prop("src", `api/images/${this.ctx.note.noteId}/${this.ctx.note.title}?${imageHash}`);
     }
 
     selectImage(element) {

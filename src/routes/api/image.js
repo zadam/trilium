@@ -25,8 +25,8 @@ async function returnImage(req, res) {
 }
 
 async function uploadImage(req) {
-    const noteId = req.query.noteId;
-    const file = req.file;
+    const {noteId} = req.query;
+    const {file} = req;
 
     const note = await repository.getNote(noteId);
 
@@ -38,7 +38,7 @@ async function uploadImage(req) {
         return [400, "Unknown image type: " + file.mimetype];
     }
 
-    const {url} = await imageService.saveImage(file.buffer, file.originalname, noteId, true);
+    const {url} = await imageService.saveImage(noteId, file.buffer, file.originalname, true);
 
     return {
         uploaded: true,
@@ -46,7 +46,30 @@ async function uploadImage(req) {
     };
 }
 
+async function updateImage(req) {
+    const {noteId} = req.params;
+    const {file} = req;
+
+    const note = await repository.getNote(noteId);
+
+    if (!note) {
+        return [404, `Note ${noteId} doesn't exist.`];
+    }
+
+    if (!["image/png", "image/jpeg", "image/gif", "image/webp"].includes(file.mimetype)) {
+        return {
+            uploaded: false,
+            message: "Unknown image type: " + file.mimetype
+        };
+    }
+
+    await imageService.updateImage(noteId, file.buffer, file.originalname);
+
+    return { uploaded: true };
+}
+
 module.exports = {
     returnImage,
-    uploadImage
+    uploadImage,
+    updateImage
 };
