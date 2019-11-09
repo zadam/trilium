@@ -48,10 +48,7 @@ async function importFile(taskContext, file, parentNote) {
         isProtected: parentNote.isProtected && protectedSessionService.isProtectedSessionAvailable(),
         type: 'file',
         mime: mimeService.getMime(originalName) || file.mimetype,
-        attributes: [
-            { type: "label", name: "originalFileName", value: originalName },
-            { type: "label", name: "fileSize", value: size }
-        ]
+        attributes: [{ type: "label", name: "originalFileName", value: originalName }]
     });
 
     taskContext.increaseProgressCount();

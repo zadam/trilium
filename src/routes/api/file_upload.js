@@ -23,10 +23,7 @@ async function uploadFile(req) {
         isProtected: parentNote.isProtected && protectedSessionService.isProtectedSessionAvailable(),
         type: mime.startsWith("image/") ? 'image' : 'file',
         mime: file.mimetype,
-        attributes: [
-            { type: "label", name: "originalFileName", value: originalName },
-            { type: "label", name: "fileSize", value: size }
-        ]
+        attributes: [{ type: "label", name: "originalFileName", value: originalName }]
     });
 
     return {

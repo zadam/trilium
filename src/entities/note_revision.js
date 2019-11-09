@@ -11,17 +11,18 @@ const syncTableService = require('../services/sync_table');
 /**
  * NoteRevision represents snapshot of note's title and content at some point in the past. It's used for seamless note versioning.
  *
- * @param {string} noteRevisionId
- * @param {string} noteId
- * @param {string} type
- * @param {string} mime
- * @param {string} title
- * @param {string} isProtected
- * @param {string} dateLastEdited
- * @param {string} dateCreated
- * @param {string} utcDateLastEdited
- * @param {string} utcDateCreated
- * @param {string} utcDateModified
+ * @property {string} noteRevisionId
+ * @property {string} noteId
+ * @property {string} type
+ * @property {string} mime
+ * @property {string} title
+ * @property {int} contentLength - length of content
+ * @property {string} isProtected
+ * @property {string} dateLastEdited
+ * @property {string} dateCreated
+ * @property {string} utcDateLastEdited
+ * @property {string} utcDateCreated
+ * @property {string} utcDateModified
  *
  * @extends Entity
  */

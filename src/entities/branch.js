@@ -9,15 +9,15 @@ const sql = require('../services/sql');
  * Branch represents note's placement in the tree - it's essentially pair of noteId and parentNoteId.
  * Each note can have multiple (at least one) branches, meaning it can be placed into multiple places in the tree.
  *
- * @param {string} branchId - primary key
- * @param {string} noteId
- * @param {string} parentNoteId
- * @param {int} notePosition
- * @param {string} prefix
- * @param {boolean} isExpanded
- * @param {boolean} isDeleted
- * @param {string} utcDateModified
- * @param {string} utcDateCreated
+ * @property {string} branchId - primary key
+ * @property {string} noteId
+ * @property {string} parentNoteId
+ * @property {int} notePosition
+ * @property {string} prefix
+ * @property {boolean} isExpanded
+ * @property {boolean} isDeleted
+ * @property {string} utcDateModified
+ * @property {string} utcDateCreated
  *
  * @extends Entity
  */

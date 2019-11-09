@@ -81,7 +81,7 @@ class NoteDetailImage {
         this.$component.show();
 
         this.$fileName.text(attributeMap.originalFileName || "?");
-        this.$fileSize.text((attributeMap.fileSize || "?") + " bytes");
+        this.$fileSize.text(this.ctx.note.contentLength + " bytes");
         this.$fileType.text(this.ctx.note.mime);
 
         const imageHash = this.ctx.note.utcDateModified.replace(" ", "_");

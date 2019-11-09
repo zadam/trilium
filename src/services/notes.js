@@ -465,9 +465,10 @@ async function eraseDeletedNotes() {
     // it's better to not use repository for this because it will complain about saving protected notes
     // out of protected session
 
+    // setting contentLength to zero would serve no benefit and it leaves potentially useful trail
     await sql.executeMany(`
         UPDATE notes 
-        SET isErased = 1, 
+        SET isErased = 1,
             utcDateModified = '${utcNowDateTime}',
             dateModified = '${localNowDateTime}'
         WHERE noteId IN (???)`, noteIdsToErase);

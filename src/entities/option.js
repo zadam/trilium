@@ -6,11 +6,11 @@ const dateUtils = require('../services/date_utils');
 /**
  * Option represents name-value pair, either directly configurable by the user or some system property.
  *
- * @param {string} name
- * @param {string} value
- * @param {boolean} isSynced
- * @param {string} utcDateModified
- * @param {string} utcDateCreated
+ * @property {string} name
+ * @property {string} value
+ * @property {boolean} isSynced
+ * @property {string} utcDateModified
+ * @property {string} utcDateCreated
  *
  * @extends Entity
  */

@@ -139,12 +139,6 @@ async function importEnex(taskContext, file, parentNote) {
                 text = text.replace(/\s/g, '');
 
                 resource.content = utils.fromBase64(text);
-
-                resource.attributes.push({
-                    type: 'label',
-                    name: 'fileSize',
-                    value: resource.content.length
-                });
             }
             else if (currentTag === 'mime') {
                 resource.mime = text.toLowerCase();

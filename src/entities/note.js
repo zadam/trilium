@@ -21,6 +21,7 @@ const RELATION_DEFINITION = 'relation-definition';
  * @property {string} type - one of "text", "code", "file" or "render"
  * @property {string} mime - MIME type, e.g. "text/html"
  * @property {string} title - note title
+ * @property {int} contentLength - length of content
  * @property {boolean} isProtected - true if note is protected
  * @property {boolean} isDeleted - true if note is deleted
  * @property {boolean} isErased - true if note's content is erased after it has been deleted
@@ -115,6 +116,7 @@ class Note extends Entity {
     async setContent(content) {
         // force updating note itself so that dateModified is represented correctly even for the content
         this.forcedChange = true;
+        this.contentLength = content.length;
         await this.save();
 
         this.content = content;
@@ -737,6 +739,10 @@ class Note extends Entity {
 
         if (!this.utcDateCreated) {
             this.utcDateCreated = dateUtils.utcNowDateTime();
+        }
+
+        if (this.contentLength === undefined) {
+            this.contentLength = -1;
         }
 
         super.beforeSaving();

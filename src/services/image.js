@@ -60,7 +60,6 @@ async function updateImage(noteId, uploadBuffer, originalName) {
     await note.setContent(buffer);
 
     await note.setLabel('originalFileName', originalName);
-    await note.setLabel('fileSize', buffer.byteLength);
 
     await noteService.protectNoteRevisions(note);
 }
@@ -77,10 +76,7 @@ async function saveImage(parentNoteId, uploadBuffer, originalName, shrinkImageSw
         type: 'image',
         isProtected: parentNote.isProtected && protectedSessionService.isProtectedSessionAvailable(),
         mime: 'image/' + imageFormat.ext.toLowerCase(),
-        attributes: [
-            { type: 'label', name: 'originalFileName', value: originalName },
-            { type: 'label', name: 'fileSize', value: buffer.byteLength }
-        ]
+        attributes: [{ type: 'label', name: 'originalFileName', value: originalName }]
     });
 
     return {

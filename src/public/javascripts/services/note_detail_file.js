@@ -39,7 +39,7 @@ class NoteDetailFile {
 
         this.$fileNoteId.text(this.ctx.note.noteId);
         this.$fileName.text(attributeMap.originalFileName || "?");
-        this.$fileSize.text((attributeMap.fileSize || "?") + " bytes");
+        this.$fileSize.text(this.ctx.note.contentLength + " bytes");
         this.$fileType.text(this.ctx.note.mime);
 
         if (this.ctx.note.content) {

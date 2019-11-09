@@ -352,13 +352,6 @@ async function importTar(taskContext, fileBuffer, importRootNote) {
                 name: 'originalFileName',
                 value: path.basename(filePath)
             });
-
-            attributes.push({
-                noteId,
-                type: 'label',
-                name: 'fileSize',
-                value: content.byteLength
-            });
         }
     }
 
