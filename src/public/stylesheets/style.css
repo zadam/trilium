@@ -351,6 +351,11 @@ div.ui-tooltip {
     color: #aaa !important;
 }
 
+.dropdown-item.active {
+    color: var(--active-item-text-color) !important;
+    background-color: var(--active-item-background-color) !important;
+}
+
 .note-detail-code {
     overflow: auto;
 }

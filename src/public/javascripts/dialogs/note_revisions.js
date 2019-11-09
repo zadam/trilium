@@ -5,13 +5,24 @@ import toastService from "../services/toast.js";
 
 const $dialog = $("#note-revisions-dialog");
 const $list = $("#note-revision-list");
+const $listDropdown = $("#note-revision-list-dropdown");
 const $content = $("#note-revision-content");
 const $title = $("#note-revision-title");
 const $titleButtons = $("#note-revision-title-buttons");
 const $eraseAllRevisionsButton = $("#note-revisions-erase-all-revisions-button");
 
+$listDropdown.dropdown();
+
+$listDropdown.parent().on('hide.bs.dropdown', e => {
+    // prevent closing dropdown by clicking outside
+    if (e.clickEvent) {
+        e.preventDefault();
+    }
+});
+
 let revisionItems = [];
 let note;
+let noteRevisionId;
 
 export async function showCurrentNoteRevisions() {
     await showNoteRevisionsDialog(noteDetailService.getActiveTabNoteId());
@@ -27,7 +38,7 @@ export async function showNoteRevisionsDialog(noteId, noteRevisionId) {
     await loadNoteRevisions(noteId, noteRevisionId);
 }
 
-async function loadNoteRevisions(noteId, noteRevisionId) {
+async function loadNoteRevisions(noteId, noteRevId) {
     $list.empty();
     $content.empty();
 
@@ -35,27 +46,34 @@ async function loadNoteRevisions(noteId, noteRevisionId) {
     revisionItems = await server.get(`notes/${noteId}/revisions`);
 
     for (const item of revisionItems) {
-        $list.append($('<option>', {
-            value: item.noteRevisionId,
-            text: item.dateLastEdited.substr(0, 16) + ` (${item.contentLength} bytes)`
-        }));
+        $list.append($('<a class="dropdown-item" tabindex="0">')
+            .text(item.dateLastEdited.substr(0, 16) + ` (${item.contentLength} bytes)`)
+            .attr('data-note-revision-id', item.noteRevisionId));
     }
+
+    $listDropdown.dropdown('show');
+
+    noteRevisionId = noteRevId;
 
     if (revisionItems.length > 0) {
         if (!noteRevisionId) {
-            noteRevisionId = $list.find("option:first").val();
+            noteRevisionId = revisionItems[0].noteRevisionId;
         }
-
-        $list.val(noteRevisionId).trigger('change');
     } else {
         $title.text("No revisions for this note yet...");
+        noteRevisionId = null;
     }
 }
 
-$list.on('change', async () => {
-    const optVal = $list.find(":selected").val();
+$dialog.on('shown.bs.modal', () => {
+    $list.find(`[data-note-revision-id="${noteRevisionId}"]`)
+        .trigger('focus');
+});
 
-    const revisionItem = revisionItems.find(r => r.noteRevisionId === optVal);
+async function setContentPane() {
+    const noteRevisionId = $list.find(".active").attr('data-note-revision-id');
+
+    const revisionItem = revisionItems.find(r => r.noteRevisionId === noteRevisionId);
 
     $titleButtons.empty();
     $content.empty();
@@ -102,7 +120,8 @@ $list.on('change', async () => {
             // reason why we put this inline as base64 is that we do not want to let user to copy this
             // as a URL to be used in a note. Instead if they copy and paste it into a note, it will be a uploaded as a new note
             .attr("src", `data:${note.mime};base64,` + fullNoteRevision.content)
-            .css("width", "100%"));
+            .css("max-width", "100%")
+            .css("max-height", "100%"));
     }
     else if (revisionItem.type === 'file') {
         const $table = $("<table cellpadding='10'>")
@@ -130,7 +149,7 @@ $list.on('change', async () => {
     else {
         $content.text("Preview isn't available for this note type.");
     }
-});
+}
 
 $eraseAllRevisionsButton.on('click', async () => {
     const confirmDialog = await import('../dialogs/confirm.js');
@@ -143,4 +162,17 @@ $eraseAllRevisionsButton.on('click', async () => {
 
         toastService.showMessage('Note revisions has been deleted.');
     }
+});
+
+$list.on('click', '.dropdown-item', e => {
+   e.preventDefault();
+   return false;
+});
+
+$list.on('focus', '.dropdown-item', e => {
+    $list.find('.dropdown-item').each((i, el) => {
+        $(el).toggleClass('active', el === e.target);
+    });
+
+    setContentPane();
 });

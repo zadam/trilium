@@ -15,18 +15,21 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <div class="modal-body" style="display: flex;">
-                <select id="note-revision-list" size="25" style="min-width: 230px; height: 630px;">
-                </select>
+            <div class="modal-body" style="display: flex; height: 80vh;">
+                <div class="dropdown">
+                    <button id="note-revision-list-dropdown" type="button" style="display: none;" data-toggle="dropdown">Dropdown trigger</button>
 
-                <div id="note-revision-content-wrapper" style="flex-grow: 1; margin-left: 20px;">
-                    <div style="display: flex; justify-content: space-between;">
+                    <div id="note-revision-list" style="position: static; height: 100%; overflow: auto;" class="dropdown-menu"></div>
+                </div>
+
+                <div id="note-revision-content-wrapper" style="flex-grow: 1; margin-left: 20px; display: flex; flex-direction: column;">
+                    <div style="flex-grow: 0; display: flex; justify-content: space-between;">
                         <h3 id="note-revision-title" style="margin: 3px; flex-grow: 100;"></h3>
 
                         <div id="note-revision-title-buttons"></div>
                     </div>
 
-                    <div id="note-revision-content" style="height: 600px; overflow: auto;"></div>
+                    <div id="note-revision-content" style="overflow: auto;"></div>
                 </div>
             </div>
         </div>
