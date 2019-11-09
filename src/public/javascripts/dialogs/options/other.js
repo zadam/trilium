@@ -27,12 +27,12 @@ const TPL = `
     <h4>Image compression</h4>
 
     <div class="form-group">
-        <label for="image-max-width-height">Max width / height of an image in pixels (if image will be resized if it exceeds this setting).</label>
+        <label for="image-max-width-height">Max width / height of an image in pixels (image will be resized if it exceeds this setting).</label>
         <input class="form-control" id="image-max-width-height" type="number">
     </div>
 
     <div class="form-group">
-        <label for="image-jpeg-quality">JPEG quality (0 - worst quality, 100 best quality)</label>
+        <label for="image-jpeg-quality">JPEG quality (0 - worst quality, 100 best quality, 50 - 85 is recommended)</label>
         <input class="form-control" id="image-jpeg-quality" min="0" max="100" type="number">
     </div>
 </div>
@@ -67,14 +67,14 @@ export default class ProtectedSessionOptions {
         this.$spellCheckEnabled = $("#spell-check-enabled");
         this.$spellCheckLanguageCode = $("#spell-check-language-code");
 
-        this.$spellCheckEnabled.change(() => {
+        this.$spellCheckEnabled.on('change', () => {
             const opts = { 'spellCheckEnabled': this.$spellCheckEnabled.is(":checked") ? "true" : "false" };
             server.put('options', opts).then(() => toastService.showMessage("Options change have been saved."));
 
             return false;
         });
 
-        this.$spellCheckLanguageCode.change(() => {
+        this.$spellCheckLanguageCode.on('change', () => {
             const opts = { 'spellCheckLanguageCode': this.$spellCheckLanguageCode.val() };
             server.put('options', opts).then(() => toastService.showMessage("Options change have been saved."));
 
@@ -83,7 +83,7 @@ export default class ProtectedSessionOptions {
 
         this.$protectedSessionTimeout = $("#protected-session-timeout-in-seconds");
 
-        this.$protectedSessionTimeout.change(() => {
+        this.$protectedSessionTimeout.on('change', () => {
             const protectedSessionTimeout = this.$protectedSessionTimeout.val();
 
             server.put('options', { 'protectedSessionTimeout': protectedSessionTimeout }).then(() => {
@@ -97,7 +97,7 @@ export default class ProtectedSessionOptions {
 
         this.$noteRevisionsTimeInterval = $("#note-revision-snapshot-time-interval-in-seconds");
 
-        this.$noteRevisionsTimeInterval.change(() => {
+        this.$noteRevisionsTimeInterval.on('change', () => {
             const opts = { 'noteRevisionSnapshotTimeInterval': this.$noteRevisionsTimeInterval.val() };
             server.put('options', opts).then(() => toastService.showMessage("Options change have been saved."));
 
@@ -107,14 +107,14 @@ export default class ProtectedSessionOptions {
         this.$imageMaxWidthHeight = $("#image-max-width-height");
         this.$imageJpegQuality = $("#image-jpeg-quality");
 
-        this.$imageMaxWidthHeight.change(() => {
+        this.$imageMaxWidthHeight.on('change', () => {
             const opts = { 'imageMaxWidthHeight': this.$imageMaxWidthHeight.val() };
             server.put('options', opts).then(() => toastService.showMessage("Options change have been saved."));
 
             return false;
         });
 
-        this.$imageJpegQuality.change(() => {
+        this.$imageJpegQuality.on('change', () => {
             const opts = { 'imageJpegQuality': this.$imageJpegQuality.val() };
             server.put('options', opts).then(() => toastService.showMessage("Options change have been saved."));
 

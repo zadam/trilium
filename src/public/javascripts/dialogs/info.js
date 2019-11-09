@@ -34,4 +34,4 @@ $dialog.on("hidden.bs.modal", () => {
     }
 });
 
-$okButton.click(() => $dialog.modal("hide"));
+$okButton.on('click', () => $dialog.modal("hide"));

@@ -24,13 +24,13 @@ export async function showDialog(node, defaultType) {
     $exportButton.removeAttr("disabled");
 
     if (defaultType === 'subtree') {
-        $subtreeType.prop("checked", true).change();
+        $subtreeType.prop("checked", true).trigger('change');
 
         // to show/hide OPML versions
-        $("input[name=export-subtree-format]:checked").change();
+        $("input[name=export-subtree-format]:checked").trigger('change');
     }
     else if (defaultType === 'single') {
-        $singleType.prop("checked", true).change();
+        $singleType.prop("checked", true).trigger('change');
     }
     else {
         throw new Error("Unrecognized type " + defaultType);
@@ -79,7 +79,7 @@ function exportBranch(branchId, type, format, version) {
     utils.download(url);
 }
 
-$('input[name=export-type]').change(function () {
+$('input[name=export-type]').on('change', function () {
     if (this.value === 'subtree') {
         if ($("input[name=export-subtree-format]:checked").length === 0) {
             $("input[name=export-subtree-format]:first").prop("checked", true);
@@ -98,7 +98,7 @@ $('input[name=export-type]').change(function () {
     }
 });
 
-$('input[name=export-subtree-format]').change(function () {
+$('input[name=export-subtree-format]').on('change', function () {
     if (this.value === 'opml') {
         $opmlVersions.slideDown();
     }

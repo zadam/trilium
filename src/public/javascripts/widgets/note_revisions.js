@@ -18,7 +18,7 @@ class NoteRevisionsWidget extends StandardWidget {
 
     getHeaderActions() {
         const $showFullButton = $("<a>").append("show dialog").addClass('widget-header-action');
-        $showFullButton.click(async () => {
+        $showFullButton.on('click', async () => {
             const attributesDialog = await import("../dialogs/note_revisions.js");
             attributesDialog.showCurrentNoteRevisions(this.ctx.note.noteId);
         });

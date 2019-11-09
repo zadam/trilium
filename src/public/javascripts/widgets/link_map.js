@@ -20,7 +20,7 @@ class LinkMapWidget extends StandardWidget {
 
     getHeaderActions() {
         const $showFullButton = $("<a>").append("show full").addClass('widget-header-action');
-        $showFullButton.click(async () => {
+        $showFullButton.on('click', async () => {
             const linkMapDialog = await import("../dialogs/link_map.js");
             linkMapDialog.showDialog();
         });

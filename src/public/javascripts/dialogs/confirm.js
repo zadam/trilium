@@ -76,5 +76,5 @@ function doResolve(ret) {
     $dialog.modal("hide");
 }
 
-$cancelButton.click(() => doResolve(false));
-$okButton.click(() => doResolve(true));
+$cancelButton.on('click', () => doResolve(false));
+$okButton.on('click', () => doResolve(true));

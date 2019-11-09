@@ -97,7 +97,7 @@ class Attributes {
             .prop("value", valueAttr.value)
             .addClass("form-control")
             .addClass("promoted-attribute-input")
-            .change(event => this.promotedAttributeChanged(event));
+            .on('change', event => this.promotedAttributeChanged(event));
 
         const $inputCell = $("<td>").append($("<div>").addClass("input-group").append($input));
 
@@ -170,7 +170,7 @@ class Attributes {
                 const $openButton = $("<span>")
                     .addClass("input-group-text open-external-link-button bx bx-trending-up")
                     .prop("title", "Open external link")
-                    .click(() => window.open($input.val(), '_blank'));
+                    .on('click', () => window.open($input.val(), '_blank'));
 
                 $input.after($("<div>")
                     .addClass("input-group-append")
@@ -203,7 +203,7 @@ class Attributes {
             const addButton = $("<span>")
                 .addClass("bx bx-plus pointer")
                 .prop("title", "Add new attribute")
-                .click(async () => {
+                .on('click', async () => {
                     const $new = await this.createPromotedAttributeRow(definitionAttr, {
                         attributeId: "",
                         type: valueAttr.type,
@@ -219,7 +219,7 @@ class Attributes {
             const removeButton = $("<span>")
                 .addClass("bx bx-trash pointer")
                 .prop("title", "Remove this attribute")
-                .click(async () => {
+                .on('click', async () => {
                     if (valueAttr.attributeId) {
                         await server.remove("notes/" + this.ctx.note.noteId + "/attributes/" + valueAttr.attributeId);
                     }

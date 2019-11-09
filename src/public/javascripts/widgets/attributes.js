@@ -15,7 +15,7 @@ class AttributesWidget extends StandardWidget {
 
     getHeaderActions() {
         const $showFullButton = $("<a>").append("show dialog").addClass('widget-header-action');
-        $showFullButton.click(async () => {
+        $showFullButton.on('click', async () => {
             const attributesDialog = await import("../dialogs/attributes.js");
             attributesDialog.showDialog();
         });
@@ -43,7 +43,7 @@ class AttributesWidget extends StandardWidget {
             const $showInheritedAttributes = $("<a>")
                 .attr("href", "javascript:")
                 .text("+show inherited")
-                .click(() => {
+                .on('click', () => {
                     $showInheritedAttributes.hide();
                     $inheritedAttrs.show();
                 });
@@ -51,7 +51,7 @@ class AttributesWidget extends StandardWidget {
             const $hideInheritedAttributes = $("<a>")
                 .attr("href", "javascript:")
                 .text("-hide inherited")
-                .click(() => {
+                .on('click', () => {
                     $showInheritedAttributes.show();
                     $inheritedAttrs.hide();
                 });

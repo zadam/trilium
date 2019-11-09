@@ -19,13 +19,13 @@ class Sidebar {
         this.$showSideBarButton = this.ctx.$tabContent.find(".show-sidebar-button");
         this.$hideSidebarButton = this.$sidebar.find(".hide-sidebar-button");
 
-        this.$hideSidebarButton.click(() => {
+        this.$hideSidebarButton.on('click', () => {
             this.$sidebar.hide();
             this.$showSideBarButton.show();
             this.ctx.stateChanged();
         });
 
-        this.$showSideBarButton.click(() => {
+        this.$showSideBarButton.on('click', () => {
             this.$sidebar.show();
             this.$showSideBarButton.hide();
             this.ctx.stateChanged();

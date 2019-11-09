@@ -48,10 +48,10 @@ class NoteDetailBook {
         this.$zoomOutButton = this.$component.find('.book-zoom-out-button');
         this.$expandChildrenButton = this.$component.find('.expand-children-button');
 
-        this.$zoomInButton.click(() => this.setZoom(this.zoomLevel - 1));
-        this.$zoomOutButton.click(() => this.setZoom(this.zoomLevel + 1));
+        this.$zoomInButton.on('click', () => this.setZoom(this.zoomLevel - 1));
+        this.$zoomOutButton.on('click', () => this.setZoom(this.zoomLevel + 1));
 
-        this.$expandChildrenButton.click(async () => {
+        this.$expandChildrenButton.on('click', async () => {
             for (let i = 1; i < 30; i++) { // protection against infinite cycle
                 const $unexpandedLinks = this.$content.find('.note-book-open-children-button:visible');
 
@@ -111,7 +111,7 @@ class NoteDetailBook {
         this.$content.empty();
 
         if (this.isAutoBook()) {
-            const $addTextLink = $('<a href="javascript:">here</a>').click(() => {
+            const $addTextLink = $('<a href="javascript:">here</a>').on('click', () => {
                 this.ctx.renderComponent(true);
             });
 
@@ -192,8 +192,8 @@ class NoteDetailBook {
             const $downloadButton = $('<button class="file-download btn btn-primary" type="button">Download</button>');
             const $openButton = $('<button class="file-open btn btn-primary" type="button">Open</button>');
 
-            $downloadButton.click(() => utils.download(getFileUrl()));
-            $openButton.click(() => {
+            $downloadButton.on('click', () => utils.download(getFileUrl()));
+            $openButton.on('click', () => {
                 if (utils.isElectron()) {
                     const open = require("open");
 
@@ -221,7 +221,7 @@ class NoteDetailBook {
         }
         else if (type === 'protected-session') {
             const $button = $(`<button class="btn btn-sm"><span class="bx bx-log-in"></span> Enter protected session</button>`)
-                .click(protectedSessionService.enterProtectedSession);
+                .on('click', protectedSessionService.enterProtectedSession);
 
             return $("<div>")
                 .append("<div>This note is protected and to access it you need to enter password.</div>")

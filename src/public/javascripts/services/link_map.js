@@ -89,7 +89,7 @@ export default class LinkMap {
                 .prop("id", noteBoxId);
 
             linkService.createNoteLink(noteId, note.title).then($link => {
-                $link.click(e => {
+                $link.on('click', e => {
                     try {
                         $link.tooltip('dispose');
                     }

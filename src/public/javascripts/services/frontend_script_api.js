@@ -87,7 +87,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
 
         const button = $('<button>')
             .addClass("btn btn-sm")
-            .click(opts.action);
+            .on('click', opts.action);
 
         if (opts.icon) {
             button.append($("<span>").addClass("bx bx-" + opts.icon))

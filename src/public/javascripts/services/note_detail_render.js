@@ -11,7 +11,7 @@ class NoteDetailRender {
         this.$noteDetailRenderContent = ctx.$tabContent.find('.note-detail-render-content');
         this.$renderButton = ctx.$tabContent.find('.render-button');
 
-        this.$renderButton.click(() => this.render()); // long form!
+        this.$renderButton.on('click', () => this.render()); // long form!
     }
 
     async render() {

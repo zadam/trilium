@@ -155,7 +155,7 @@ $searchInput.keyup(e => {
     const searchText = $searchInput.val();
 
     if (e && e.which === $.ui.keyCode.ESCAPE || $.trim(searchText) === "") {
-        $resetSearchButton.click();
+        $resetSearchButton.trigger('click');
         return;
     }
 
@@ -164,12 +164,12 @@ $searchInput.keyup(e => {
     }
 });
 
-$doSearchButton.click(() => doSearch()); // keep long form because of argument
-$resetSearchButton.click(resetSearch);
+$doSearchButton.on('click', () => doSearch()); // keep long form because of argument
+$resetSearchButton.on('click', resetSearch);
 
-$saveSearchButton.click(saveSearch);
+$saveSearchButton.on('click', saveSearch);
 
-$closeSearchButton.click(hideSearch);
+$closeSearchButton.on('click', hideSearch);
 
 export default {
     toggleSearch,

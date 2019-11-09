@@ -43,6 +43,6 @@ function showInFullText(e) {
 }
 
 
-$showInFullTextButton.click(showInFullText);
+$showInFullTextButton.on('click', showInFullText);
 
 utils.bindElShortcut($dialog, 'ctrl+return', showInFullText);

@@ -26,7 +26,7 @@ function clearText($el) {
     }
 
     $el.setSelectedPath("");
-    $el.autocomplete("val", "").change();
+    $el.autocomplete("val", "").trigger('change');
 }
 
 function showRecentNotes($el) {
@@ -71,9 +71,9 @@ function initNoteAutocomplete($el, options) {
 
     $el.after($sideButtons);
 
-    $clearTextButton.click(() => clearText($el));
+    $clearTextButton.on('click', () => clearText($el));
 
-    $showRecentNotesButton.click(e => {
+    $showRecentNotesButton.on('click', e => {
         showRecentNotes($el);
 
         // this will cause the click not give focus to the "show recent notes" button

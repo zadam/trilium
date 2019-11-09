@@ -119,10 +119,10 @@ async function showTables() {
 
         $tableLink
             .tooltip({html: true, title: $columns.html()})
-            .click(() => codeEditor.setValue("SELECT * FROM " + table.name + " LIMIT 100"));
+            .on('click', () => codeEditor.setValue("SELECT * FROM " + table.name + " LIMIT 100"));
     }
 }
 
 utils.bindElShortcut($query, 'ctrl+return', execute);
 
-$executeButton.click(execute);
+$executeButton.on('click', execute);

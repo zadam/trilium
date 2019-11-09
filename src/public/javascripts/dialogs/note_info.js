@@ -25,4 +25,4 @@ export function showDialog() {
     $mime.text(activeNote.mime);
 }
 
-$okButton.click(() => $dialog.modal('hide'));
+$okButton.on('click', () => $dialog.modal('hide'));

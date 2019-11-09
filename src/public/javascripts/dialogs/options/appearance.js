@@ -117,7 +117,7 @@ export default class ApperanceOptions {
         this.$body = $("body");
         this.$container = $("#container");
 
-        this.$themeSelect.change(() => {
+        this.$themeSelect.on('change', () => {
             const newTheme = this.$themeSelect.val();
 
             for (const clazz of Array.from(this.$body[0].classList)) { // create copy to safely iterate over while removing classes
@@ -139,40 +139,40 @@ export default class ApperanceOptions {
             server.put('options/theme/' + newTheme);
         });
 
-        this.$zoomFactorSelect.change(() => { zoomService.setZoomFactorAndSave(this.$zoomFactorSelect.val()); });
+        this.$zoomFactorSelect.on('change', () => { zoomService.setZoomFactorAndSave(this.$zoomFactorSelect.val()); });
 
-        this.$oneTabDisplaySelect.change(() => {
+        this.$oneTabDisplaySelect.on('change', () => {
             const hideTabRowForOneTab = this.$oneTabDisplaySelect.val() === 'hide' ? 'true' : 'false';
 
             server.put('options/hideTabRowForOneTab/' + hideTabRowForOneTab)
                 .then(optionsService.reloadOptions);
         });
 
-        this.$leftPaneMinWidth.change(async () => {
+        this.$leftPaneMinWidth.on('change', async () => {
             await server.put('options/leftPaneMinWidth/' + this.$leftPaneMinWidth.val());
 
             this.resizeLeftPanel();
         });
 
-        this.$leftPaneWidthPercent.change(async () => {
+        this.$leftPaneWidthPercent.on('change', async () => {
             await server.put('options/leftPaneWidthPercent/' + this.$leftPaneWidthPercent.val());
 
             this.resizeLeftPanel();
         });
 
-        this.$mainFontSize.change(async () => {
+        this.$mainFontSize.on('change', async () => {
             await server.put('options/mainFontSize/' + this.$mainFontSize.val());
 
             this.applyFontSizes();
         });
 
-        this.$treeFontSize.change(async () => {
+        this.$treeFontSize.on('change', async () => {
             await server.put('options/treeFontSize/' + this.$treeFontSize.val());
 
             this.applyFontSizes();
         });
 
-        this.$detailFontSize.change(async () => {
+        this.$detailFontSize.on('change', async () => {
             await server.put('options/detailFontSize/' + this.$detailFontSize.val());
 
             this.applyFontSizes();

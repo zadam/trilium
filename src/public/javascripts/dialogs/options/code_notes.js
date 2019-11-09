@@ -27,7 +27,7 @@ export default class CodeNotesOptions {
                     .attr("id", id)
                     .attr("data-mime-type", mimeType.mime)
                     .prop("checked", mimeType.enabled))
-                    .change(() => this.save())
+                    .on('change', () => this.save())
                 .append(" &nbsp; ")
                 .append($('<label>')
                     .attr("for", id)

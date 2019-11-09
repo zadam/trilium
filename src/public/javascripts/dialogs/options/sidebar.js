@@ -65,19 +65,19 @@ export default class SidebarOptions {
         this.$widgetsEnabled = $("#widgets-enabled");
         this.$widgetsDisabled = $("#widgets-disabled");
 
-        this.$sidebarMinWidth.change(async () => {
+        this.$sidebarMinWidth.on('change', async () => {
             await server.put('options/sidebarMinWidth/' + this.$sidebarMinWidth.val());
 
             this.resizeSidebar();
         });
 
-        this.$sidebarWidthPercent.change(async () => {
+        this.$sidebarWidthPercent.on('change', async () => {
             await server.put('options/sidebarWidthPercent/' + this.$sidebarWidthPercent.val());
 
             this.resizeSidebar();
         });
 
-        this.$showSidebarInNewTab.change(async () => {
+        this.$showSidebarInNewTab.on('change', async () => {
             const flag = this.$showSidebarInNewTab.is(":checked") ? 'true' : 'false';
 
             await server.put('options/showSidebarInNewTab/' + flag);
@@ -131,7 +131,7 @@ export default class SidebarOptions {
                 .attr("title", "If checked, the widget will be by default expanded (opened)")
                 .append($(`<input type="checkbox"${option.expanded ? ' checked' : ''}>`)
                     .attr('id', 'widget-exp-' + name)
-                    .change(() => this.save()))
+                    .on('change', () => this.save()))
                 .append("&nbsp;")
                 .append($("<label>")
                     .attr("for", 'widget-exp-' + name)

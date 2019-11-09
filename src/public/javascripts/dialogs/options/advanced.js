@@ -37,25 +37,25 @@ export default class AdvancedOptions {
         this.$cleanupUnusedImagesButton = $("#cleanup-unused-images-button");
         this.$vacuumDatabaseButton = $("#vacuum-database-button");
 
-        this.$forceFullSyncButton.click(async () => {
+        this.$forceFullSyncButton.on('click', async () => {
             await server.post('sync/force-full-sync');
 
             toastService.showMessage("Full sync triggered");
         });
 
-        this.$fillSyncRowsButton.click(async () => {
+        this.$fillSyncRowsButton.on('click', async () => {
             await server.post('sync/fill-sync-rows');
 
             toastService.showMessage("Sync rows filled successfully");
         });
 
-        this.$anonymizeButton.click(async () => {
+        this.$anonymizeButton.on('click', async () => {
             await server.post('anonymization/anonymize');
 
             toastService.showMessage("Created anonymized database");
         });
 
-        this.$cleanupSoftDeletedButton.click(async () => {
+        this.$cleanupSoftDeletedButton.on('click', async () => {
             if (confirm("Do you really want to clean up soft-deleted items?")) {
                 await server.post('cleanup/cleanup-soft-deleted-items');
 
@@ -63,7 +63,7 @@ export default class AdvancedOptions {
             }
         });
 
-        this.$cleanupUnusedImagesButton.click(async () => {
+        this.$cleanupUnusedImagesButton.on('click', async () => {
             if (confirm("Do you really want to clean up unused images?")) {
                 await server.post('cleanup/cleanup-unused-images');
 
@@ -71,7 +71,7 @@ export default class AdvancedOptions {
             }
         });
 
-        this.$vacuumDatabaseButton.click(async () => {
+        this.$vacuumDatabaseButton.on('click', async () => {
             await server.post('cleanup/vacuum-database');
 
             toastService.showMessage("Database has been vacuumed");

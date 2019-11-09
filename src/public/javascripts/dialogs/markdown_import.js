@@ -49,7 +49,7 @@ async function sendForm() {
     $importTextarea.val('');
 }
 
-$importButton.click(sendForm);
+$importButton.on('click', sendForm);
 
 $dialog.on('shown.bs.modal', () => $importTextarea.focus());
 

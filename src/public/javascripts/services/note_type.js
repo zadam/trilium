@@ -50,7 +50,7 @@ export default class NoteTypeContext {
                 .attr("data-note-type", noteType.type)
                 .append('<span class="check">&check;</span> ')
                 .append($('<strong>').text(noteType.title))
-                .click(e => {
+                .on('click', e => {
                     const type = $typeLink.attr('data-note-type');
                     const noteType = NOTE_TYPES.find(nt => nt.type === type);
 
@@ -77,7 +77,7 @@ export default class NoteTypeContext {
                 .attr("data-mime-type", mimeType.mime)
                 .append('<span class="check">&check;</span> ')
                 .append($('<span>').text(mimeType.title))
-                .click(e => {
+                .on('click', e => {
                     const $link = $(e.target).closest('.dropdown-item');
 
                     this.save('code', $link.attr('data-mime-type'))

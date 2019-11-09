@@ -107,10 +107,10 @@ class TabContext {
         }
 
         this.$protectButton = this.$tabContent.find(".protect-button");
-        this.$protectButton.click(protectedSessionService.protectNoteAndSendToServer);
+        this.$protectButton.on('click', protectedSessionService.protectNoteAndSendToServer);
 
         this.$unprotectButton = this.$tabContent.find(".unprotect-button");
-        this.$unprotectButton.click(protectedSessionService.unprotectNoteAndSendToServer);
+        this.$unprotectButton.on('click', protectedSessionService.unprotectNoteAndSendToServer);
 
         await this.initComponent();
     }

@@ -911,10 +911,10 @@ async function duplicateNote(noteId, parentNoteId) {
 
 
 utils.bindGlobalShortcut('alt+c', () => collapseTree()); // don't use shortened form since collapseTree() accepts argument
-$collapseTreeButton.click(() => collapseTree());
+$collapseTreeButton.on('click', () => collapseTree());
 
-$createTopLevelNoteButton.click(createNewTopLevelNote);
-$scrollToActiveNoteButton.click(scrollToActiveNote);
+$createTopLevelNoteButton.on('click', createNewTopLevelNote);
+$scrollToActiveNoteButton.on('click', scrollToActiveNote);
 
 frontendLoaded.then(bundle.executeStartupBundles);
 

@@ -33,7 +33,7 @@ async function initContextMenu(event, contextMenu) {
                     .addClass("dropdown-item")
                     .append($link)
                     .attr("data-cmd", item.cmd)
-                    .click(function (e) {
+                    .on('click', function (e) {
                         const cmd = $(e.target).closest(".dropdown-item").attr("data-cmd");
 
                         e.originalTarget = event.target;
@@ -92,7 +92,7 @@ async function initContextMenu(event, contextMenu) {
     }).addClass("show");
 }
 
-$(document).click(() => hideContextMenu());
+$(document).on('click', () => hideContextMenu());
 
 function hideContextMenu() {
     // this date checking comes from change in FF66 - https://github.com/zadam/trilium/issues/468

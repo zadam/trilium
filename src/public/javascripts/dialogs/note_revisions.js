@@ -37,7 +37,7 @@ async function loadNoteRevisions(noteId, noteRevisionId) {
     for (const item of revisionItems) {
         $list.append($('<option>', {
             value: item.noteRevisionId,
-            text: item.dateLastEdited.substr(0, 16)
+            text: item.dateLastEdited.substr(0, 16) + ` (${item.contentLength} bytes)`
         }));
     }
 

@@ -19,7 +19,7 @@ class NoteDetailCode {
 
         utils.bindElShortcut(ctx.$tabContent, "ctrl+return", () => this.executeCurrentNote());
 
-        this.$executeScriptButton.click(() => this.executeCurrentNote());
+        this.$executeScriptButton.on('click', () => this.executeCurrentNote());
     }
 
     async render() {

@@ -18,7 +18,7 @@ let parentNoteId = null;
 export async function showDialog(node) {
     utils.closeActiveDialog();
 
-    $fileUploadInput.val('').change(); // to trigger Import button disabling listener below
+    $fileUploadInput.val('').trigger('change'); // to trigger Import button disabling listener below
 
     $safeImportCheckbox.prop("checked", true);
     $shrinkImagesCheckbox.prop("checked", true);
@@ -64,7 +64,7 @@ function boolToString($el) {
     return $el.is(":checked") ? "true" : "false";
 }
 
-$fileUploadInput.change(() => {
+$fileUploadInput.on('change', () => {
     if ($fileUploadInput.val()) {
         $importButton.removeAttr("disabled");
     }

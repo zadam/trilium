@@ -83,7 +83,7 @@ class NoteDetailRelationMap {
         this.pzInstance = null;
 
         this.$relationMapWrapper = ctx.$tabContent.find('.relation-map-wrapper');
-        this.$relationMapWrapper.click(event => {
+        this.$relationMapWrapper.on('click', event => {
             if (this.clipboard) {
                 let {x, y} = this.getMousePosition(event);
 
@@ -121,7 +121,7 @@ class NoteDetailRelationMap {
 
         this.clipboard = null;
 
-        this.$createChildNote.click(async () => {
+        this.$createChildNote.on('click', async () => {
             const promptDialog = await import('../dialogs/prompt.js');
             const title = await promptDialog.ask({ message: "Enter title of new note",  defaultValue: "new note" });
 
@@ -143,7 +143,7 @@ class NoteDetailRelationMap {
             this.clipboard = { noteId: note.noteId, title };
         });
 
-        this.$resetPanZoomButton.click(() => {
+        this.$resetPanZoomButton.on('click', () => {
             // reset to initial pan & zoom state
             this.pzInstance.zoomTo(0, 0, 1 / this.getZoom());
             this.pzInstance.moveTo(0, 0);
@@ -351,8 +351,8 @@ class NoteDetailRelationMap {
             this.pzInstance.moveTo(0, 0);
         }
 
-        this.$zoomInButton.click(() => this.pzInstance.zoomTo(0, 0, 1.2));
-        this.$zoomOutButton.click(() => this.pzInstance.zoomTo(0, 0, 0.8));
+        this.$zoomInButton.on('click', () => this.pzInstance.zoomTo(0, 0, 1.2));
+        this.$zoomOutButton.on('click', () => this.pzInstance.zoomTo(0, 0, 0.8));
     }
 
     saveCurrentTransform() {

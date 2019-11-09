@@ -49,7 +49,7 @@ export default class SyncOptions {
 
         this.$form.submit(() => this.save());
 
-        this.$testSyncButton.click(async () => {
+        this.$testSyncButton.on('click', async () => {
             const result = await server.post('sync/test');
 
             if (result.success) {

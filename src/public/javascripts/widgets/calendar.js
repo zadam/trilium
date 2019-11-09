@@ -49,13 +49,13 @@ class CalendarWidget extends StandardWidget {
         this.$next = $el.find('[data-calendar-toggle="next"]');
         this.$previous = $el.find('[data-calendar-toggle="previous"]');
 
-        this.$next.click(() => {
+        this.$next.on('click', () => {
             this.clearCalendar();
             this.date.setMonth(this.date.getMonth() + 1);
             this.createMonth();
         });
 
-        this.$previous.click(() => {
+        this.$previous.on('click', () => {
             this.clearCalendar();
             this.date.setMonth(this.date.getMonth() - 1);
             this.createMonth();
