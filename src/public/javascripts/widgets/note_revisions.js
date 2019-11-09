@@ -47,7 +47,7 @@ class NoteRevisionsWidget extends StandardWidget {
             }).text(item.dateLastEdited.substr(0, 16)));
 
             if (item.contentLength !== null) {
-                $listItem.append($("<span>").text(` (${item.contentLength} characters)`))
+                $listItem.append($("<span>").text(` (${item.contentLength} bytes)`))
             }
 
             $list.append($listItem);

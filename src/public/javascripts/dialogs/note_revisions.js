@@ -6,6 +6,7 @@ const $dialog = $("#note-revisions-dialog");
 const $list = $("#note-revision-list");
 const $content = $("#note-revision-content");
 const $title = $("#note-revision-title");
+const $titleButtons = $("#note-revision-title-buttons");
 
 let revisionItems = [];
 let note;
@@ -53,6 +54,14 @@ $list.on('change', async () => {
 
     $title.html(revisionItem.title);
 
+    const $downloadButton = $('<button class="btn btn-sm btn-primary" type="button">Download</button>');
+
+    $downloadButton.on('click', () => {
+        utils.download(utils.getHost() + `/api/notes/${revisionItem.noteId}/revisions/${revisionItem.noteRevisionId}/download`);
+    });
+
+    $titleButtons.html($downloadButton);
+
     const fullNoteRevision = await server.get(`notes/${revisionItem.noteId}/revisions/${revisionItem.noteRevisionId}`);
 
     if (note.type === 'text') {
@@ -63,6 +72,8 @@ $list.on('change', async () => {
     }
     else if (note.type === 'image') {
         $content.html($("<img>")
+            // reason why we put this inline as base64 is that we do not want to let user to copy this
+            // as a URL to be used in a note. Instead if they copy and paste it into a note, it will be a uploaded as a new note
             .attr("src", `data:${note.mime};base64,` + fullNoteRevision.content)
             .css("width", "100%"));
     }

@@ -45,10 +45,9 @@ async function downloadNoteFile(noteId, res) {
         return res.status(401).send("Protected session not available");
     }
 
-    const originalFileName = await note.getLabel('originalFileName');
-    const fileName = originalFileName ? originalFileName.value : note.title;
-
-    res.setHeader('Content-Disposition', utils.getContentDisposition(fileName));
+    // (one) reason we're not using the originFileName (available as label) is that it's not
+    // available for older note revisions and thus would be inconsistent
+    res.setHeader('Content-Disposition', utils.getContentDisposition(note.title || "untitled"));
     res.setHeader('Content-Type', note.mime);
 
     res.send(await note.getContent());
