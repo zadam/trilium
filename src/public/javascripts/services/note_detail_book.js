@@ -131,11 +131,13 @@ class NoteDetailBook {
         for (const childNote of await note.getChildNotes()) {
             const type = this.getRenderingType(childNote);
 
+            const childNotePath = this.ctx.notePath + '/' + childNote.noteId;
+
             const $card = $('<div class="note-book-card">')
                 .attr('data-note-id', childNote.noteId)
                 .css("flex-basis", ZOOMS[this.zoomLevel].width)
                 .addClass("type-" + type)
-                .append($('<h5 class="note-book-title">').append(await linkService.createNoteLink(childNote.noteId, null, false)))
+                .append($('<h5 class="note-book-title">').append(await linkService.createNoteLink(childNotePath, null, false)))
                 .append($('<div class="note-book-content">')
                     .css("max-height", ZOOMS[this.zoomLevel].height)
                     .append(await this.getNoteContent(type, childNote)));
