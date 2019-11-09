@@ -7,13 +7,10 @@ const utils = require('../../services/utils');
 const path = require('path');
 
 async function getNoteRevisions(req) {
-    const {noteId} = req.params;
-
     return await repository.getEntities(`
-        SELECT note_revisions.*
-        FROM note_revisions 
-        WHERE noteId = ? 
-        ORDER BY utcDateCreated DESC`, [noteId]);
+        SELECT * FROM note_revisions 
+        WHERE noteId = ? AND isErased = 0
+        ORDER BY utcDateCreated DESC`, [req.params.noteId]);
 }
 
 async function getNoteRevision(req) {
@@ -86,6 +83,31 @@ async function downloadNoteRevision(req, res) {
     res.send(await noteRevision.getContent());
 }
 
+async function eraseOneNoteRevision(noteRevision) {
+    noteRevision.isErased = true;
+    noteRevision.title = null;
+    await noteRevision.setContent(null);
+    await noteRevision.save();
+}
+
+async function eraseAllNoteRevisions(req) {
+    const noteRevisionsToErase = await repository.getEntities(
+        'SELECT * FROM note_revisions WHERE isErased = 0 AND noteId = ?',
+        [req.params.noteId]);
+
+    for (const noteRevision of noteRevisionsToErase) {
+        await eraseOneNoteRevision(noteRevision);
+    }
+}
+
+async function eraseNoteRevision(req) {
+    const noteRevision = await repository.getNoteRevision(req.params.noteRevisionId);
+
+    if (noteRevision && !noteRevision.isErased) {
+        await eraseOneNoteRevision(noteRevision);
+    }
+}
+
 async function getEditedNotesOnDate(req) {
     const date = req.params.date;
 
@@ -110,5 +132,7 @@ module.exports = {
     getNoteRevisions,
     getNoteRevision,
     downloadNoteRevision,
-    getEditedNotesOnDate
+    getEditedNotesOnDate,
+    eraseAllNoteRevisions,
+    eraseNoteRevision
 };

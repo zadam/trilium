@@ -1,12 +1,14 @@
 import noteDetailService from '../services/note_detail.js';
 import utils from '../services/utils.js';
 import server from '../services/server.js';
+import toastService from "../services/toast.js";
 
 const $dialog = $("#note-revisions-dialog");
 const $list = $("#note-revision-list");
 const $content = $("#note-revision-content");
 const $title = $("#note-revision-title");
 const $titleButtons = $("#note-revision-title-buttons");
+const $eraseAllRevisionsButton = $("#note-revisions-erase-all-revisions-button");
 
 let revisionItems = [];
 let note;
@@ -22,6 +24,10 @@ export async function showNoteRevisionsDialog(noteId, noteRevisionId) {
 
     $dialog.modal();
 
+    await loadNoteRevisions(noteId, noteRevisionId);
+}
+
+async function loadNoteRevisions(noteId, noteRevisionId) {
     $list.empty();
     $content.empty();
 
@@ -31,7 +37,7 @@ export async function showNoteRevisionsDialog(noteId, noteRevisionId) {
     for (const item of revisionItems) {
         $list.append($('<option>', {
             value: item.noteRevisionId,
-            text: item.dateLastEdited
+            text: item.dateLastEdited.substr(0, 16) + (item.isErased ? ' (erased)' : '')
         }));
     }
 
@@ -41,8 +47,7 @@ export async function showNoteRevisionsDialog(noteId, noteRevisionId) {
         }
 
         $list.val(noteRevisionId).trigger('change');
-    }
-    else {
+    } else {
         $title.text("No revisions for this note yet...");
     }
 }
@@ -52,7 +57,34 @@ $list.on('change', async () => {
 
     const revisionItem = revisionItems.find(r => r.noteRevisionId === optVal);
 
+    $titleButtons.empty();
+    $content.empty();
+
+    if (revisionItem.isErased) {
+        $title.text('This revision has been erased');
+        return;
+    }
+
     $title.html(revisionItem.title);
+
+    const $eraseRevisionButton = $('<button class="btn btn-sm" type="button">Erase this revision</button>');
+
+    $eraseRevisionButton.on('click', async () => {
+        const confirmDialog = await import('../dialogs/confirm.js');
+        const text = 'Do you want to erase this revision? This action will erase revision title and content, but still preserve revision metadata.';
+
+        if (await confirmDialog.confirm(text)) {
+            await server.remove(`notes/${revisionItem.noteId}/revisions/${revisionItem.noteRevisionId}`);
+
+            loadNoteRevisions(revisionItem.noteId);
+
+            toastService.showMessage('Note revision has been erased.');
+        }
+    });
+
+    $titleButtons
+        .append($eraseRevisionButton)
+        .append(' &nbsp; ');
 
     const $downloadButton = $('<button class="btn btn-sm btn-primary" type="button">Download</button>');
 
@@ -60,7 +92,7 @@ $list.on('change', async () => {
         utils.download(utils.getHost() + `/api/notes/${revisionItem.noteId}/revisions/${revisionItem.noteRevisionId}/download`);
     });
 
-    $titleButtons.html($downloadButton);
+    $titleButtons.append($downloadButton);
 
     const fullNoteRevision = await server.get(`notes/${revisionItem.noteId}/revisions/${revisionItem.noteRevisionId}`);
 
@@ -102,5 +134,18 @@ $list.on('change', async () => {
     }
     else {
         $content.text("Preview isn't available for this note type.");
+    }
+});
+
+$eraseAllRevisionsButton.on('click', async () => {
+    const confirmDialog = await import('../dialogs/confirm.js');
+    const text = 'Do you want to erase all revision of this note? This action will erase revision title and content, but still preserve revision metadata.';
+
+    if (await confirmDialog.confirm(text)) {
+        await server.remove(`notes/${note.noteId}/revisions`);
+
+        $dialog.modal('hide');
+
+        toastService.showMessage('Note revisions has been erased.');
     }
 });

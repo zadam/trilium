@@ -470,11 +470,20 @@ async function eraseDeletedNotes() {
             utcDateModified = '${utcNowDateTime}' 
         WHERE noteId IN (???)`, noteIdsToErase);
 
+    // deleting first contents since the WHERE relies on isErased = 0
     await sql.executeMany(`
-        UPDATE note_revisions 
+        UPDATE note_revision_contents
         SET content = NULL,
             utcDateModified = '${utcNowDateTime}'
-        WHERE noteId IN (???)`, noteIdsToErase);
+        WHERE noteRevisionId IN 
+            (SELECT noteRevisionId FROM note_revisions WHERE isErased = 0 AND noteId IN ((???)))`, noteIdsToErase);
+
+    await sql.executeMany(`
+        UPDATE note_revisions 
+        SET isErased = 1,
+            title = NULL,
+            utcDateModified = '${utcNowDateTime}'
+        WHERE isErased = 0 AND noteId IN (???)`, noteIdsToErase);
 }
 
 async function duplicateNote(noteId, parentNoteId) {

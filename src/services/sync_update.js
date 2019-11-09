@@ -18,6 +18,9 @@ async function updateEntity(sync, entity, sourceId) {
     else if (entityName === 'note_revisions') {
         await updateNoteRevision(entity, sourceId);
     }
+    else if (entityName === 'note_revision_contents') {
+        await updateNoteRevisionContent(entity, sourceId);
+    }
     else if (entityName === 'note_reordering') {
         await updateNoteReordering(sync.entityId, entity, sourceId);
     }

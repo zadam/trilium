@@ -16,8 +16,9 @@ const syncTableService = require('../services/sync_table');
  * @property {string} type
  * @property {string} mime
  * @property {string} title
- * @property {int} contentLength - length of content
- * @property {string} isProtected
+ * @property {int} contentLength
+ * @property {boolean} isErased
+ * @property {boolean} isProtected
  * @property {string} dateLastEdited
  * @property {string} dateCreated
  * @property {string} utcDateLastEdited
@@ -29,7 +30,7 @@ const syncTableService = require('../services/sync_table');
 class NoteRevision extends Entity {
     static get entityName() { return "note_revisions"; }
     static get primaryKeyName() { return "noteRevisionId"; }
-    static get hashedProperties() { return ["noteRevisionId", "noteId", "title", "contentLength", "isProtected", "dateLastEdited", "dateCreated", "utcDateLastEdited", "utcDateCreated", "utcDateModified"]; }
+    static get hashedProperties() { return ["noteRevisionId", "noteId", "title", "contentLength", "isErased", "isProtected", "dateLastEdited", "dateCreated", "utcDateLastEdited", "utcDateCreated", "utcDateModified"]; }
 
     constructor(row) {
         super(row);
@@ -103,7 +104,7 @@ class NoteRevision extends Entity {
     async setContent(content) {
         // force updating note itself so that utcDateModified is represented correctly even for the content
         this.forcedChange = true;
-        this.contentLength = content.length;
+        this.contentLength = content === null ? 0 : content.length;
         await this.save();
 
         this.content = content;
