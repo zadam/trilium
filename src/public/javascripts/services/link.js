@@ -16,9 +16,9 @@ function getNotePathFromUrl(url) {
 
 async function createNoteLink(notePath, noteTitle = null, tooltip = true) {
     if (!noteTitle) {
-        const noteId = treeUtils.getNoteIdFromNotePath(notePath);
+        const {noteId, parentNoteId} = treeUtils.getNoteIdAndParentIdFromNotePath(notePath);
 
-        noteTitle = await treeUtils.getNoteTitle(noteId);
+        noteTitle = await treeUtils.getNoteTitle(noteId, parentNoteId);
     }
 
     const $noteLink = $("<a>", {

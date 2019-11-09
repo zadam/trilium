@@ -25,6 +25,29 @@ function getNoteIdFromNotePath(notePath) {
     return lastSegment.split("-")[0];
 }
 
+function getNoteIdAndParentIdFromNotePath(notePath) {
+    let parentNoteId = 'root';
+    let noteId = '';
+
+    if (notePath) {
+        const path = notePath.split("/");
+
+        const lastSegment = path[path.length - 1];
+
+        // path could have also tabId suffix
+        noteId = lastSegment.split("-")[0];
+
+        if (path.length > 1) {
+            parentNoteId = path[path.length - 2];
+        }
+    }
+
+    return {
+        parentNoteId,
+        noteId
+    }
+}
+
 async function getNotePath(node) {
     if (!node) {
         console.error("Node is null");
@@ -103,6 +126,7 @@ export default {
     getNodeByKey,
     getNotePath,
     getNoteIdFromNotePath,
+    getNoteIdAndParentIdFromNotePath,
     getNoteTitle,
     getNotePathTitle,
 };
