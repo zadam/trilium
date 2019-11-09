@@ -1,6 +1,6 @@
 const repository = require('../services/repository');
 const log = require('../services/log');
-const fileUploadService = require('./api/file_upload');
+const fileUploadService = require('./api/files.js');
 const scriptService = require('../services/script');
 
 function register(router) {

@@ -77,6 +77,19 @@ $list.on('change', async () => {
             .attr("src", `data:${note.mime};base64,` + fullNoteRevision.content)
             .css("width", "100%"));
     }
+    else if (note.type === 'file') {
+        $content.html(
+            $("<table cellpadding='10'>")
+                .append($("<tr>").append(
+                    $("<th>").text("MIME: "),
+                    $("<td>").text(revisionItem.mime)
+                ))
+                .append($("<tr>").append(
+                    $("<th>").text("File size:"),
+                    $("<td>").text(revisionItem.contentLength + " bytes")
+                ))
+        );
+    }
     else {
         $content.text("Preview isn't available for this note type.");
     }

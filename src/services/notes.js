@@ -14,6 +14,7 @@ const Attribute = require('../entities/attribute');
 const hoistedNoteService = require('../services/hoisted_note');
 const protectedSessionService = require('../services/protected_session');
 const log = require('../services/log');
+const noteRevisionService = require('../services/note_revisions');
 
 async function getNewNotePosition(parentNoteId, noteData) {
     let newNotePos = 0;
@@ -199,17 +200,7 @@ async function protectNote(note, protect) {
         await note.save();
     }
 
-    await protectNoteRevisions(note);
-}
-
-async function protectNoteRevisions(note) {
-    for (const revision of await note.getRevisions()) {
-        if (note.isProtected !== revision.isProtected) {
-            revision.isProtected = note.isProtected;
-
-            await revision.save();
-        }
-    }
+    await noteRevisionService.protectNoteRevisions(note);
 }
 
 function findImageLinks(content, foundLinks) {
@@ -383,7 +374,7 @@ async function updateNote(noteId, noteUpdates) {
         await triggerNoteTitleChanged(note);
     }
 
-    await protectNoteRevisions(note);
+    await noteRevisionService.protectNoteRevisions(note);
 
     return {
         dateModified: note.dateModified,
@@ -538,6 +529,5 @@ module.exports = {
     deleteBranch,
     protectNoteRecursively,
     scanForLinks,
-    duplicateNote,
-    protectNoteRevisions
+    duplicateNote
 };

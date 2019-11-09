@@ -13,6 +13,7 @@ const jimp = require('jimp');
 const imageType = require('image-type');
 const sanitizeFilename = require('sanitize-filename');
 const dateUtils = require('./date_utils');
+const noteRevisionService = require('./note_revisions.js');
 const NoteRevision = require("../entities/note_revision");
 
 async function processImage(uploadBuffer, originalName, shrinkImageSwitch) {
@@ -38,22 +39,7 @@ async function updateImage(noteId, uploadBuffer, originalName) {
 
     const note = await repository.getNote(noteId);
 
-    const noteRevision = await new NoteRevision({
-        noteId: note.noteId,
-        // title and text should be decrypted now
-        title: note.title,
-        contentLength: -1, // will be updated in .setContent()
-        type: note.type,
-        mime: note.mime,
-        isProtected: false, // will be fixed in the protectNoteRevisions() call
-        utcDateLastEdited: note.utcDateModified,
-        utcDateCreated: dateUtils.utcNowDateTime(),
-        utcDateModified: dateUtils.utcNowDateTime(),
-        dateLastEdited: note.dateModified,
-        dateCreated: dateUtils.localNowDateTime()
-    }).save();
-
-    await noteRevision.setContent(await note.getContent());
+    await noteRevisionService.createNoteRevision(note);
 
     note.mime = 'image/' + imageFormat.ext.toLowerCase();
 
@@ -61,7 +47,7 @@ async function updateImage(noteId, uploadBuffer, originalName) {
 
     await note.setLabel('originalFileName', originalName);
 
-    await noteService.protectNoteRevisions(note);
+    await noteRevisionService.protectNoteRevisions(note);
 }
 
 async function saveImage(parentNoteId, uploadBuffer, originalName, shrinkImageSwitch) {

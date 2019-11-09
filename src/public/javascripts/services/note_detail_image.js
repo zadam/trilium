@@ -62,14 +62,14 @@ class NoteDetailImage {
             });
 
             if (result.uploaded) {
-                toastService.showMessage("New revision of the image has been uploaded.")
+                toastService.showMessage("New image revision has been uploaded.");
 
                 await utils.clearBrowserCache();
 
                 await noteDetailService.reload();
             }
             else {
-                toastService.showError("Could not upload new revision of the image: " + result.message);
+                toastService.showError("Upload of a new image revision failed: " + result.message);
             }
         });
     }

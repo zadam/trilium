@@ -1,5 +1,7 @@
 import utils from "./utils.js";
 import server from "./server.js";
+import toastService from "./toast.js";
+import noteDetailService from "./note_detail.js";
 
 class NoteDetailFile {
     /**
@@ -16,10 +18,12 @@ class NoteDetailFile {
         this.$previewContent = ctx.$tabContent.find(".file-preview-content");
         this.$downloadButton = ctx.$tabContent.find(".file-download");
         this.$openButton = ctx.$tabContent.find(".file-open");
+        this.$uploadNewRevisionButton = ctx.$tabContent.find(".file-upload-new-revision");
+        this.$uploadNewRevisionInput = ctx.$tabContent.find(".file-upload-new-revision-input");
 
-        this.$downloadButton.click(() => utils.download(this.getFileUrl()));
+        this.$downloadButton.on('click', () => utils.download(this.getFileUrl()));
 
-        this.$openButton.click(() => {
+        this.$openButton.on('click', () => {
             if (utils.isElectron()) {
                 const open = require("open");
 
@@ -27,6 +31,34 @@ class NoteDetailFile {
             }
             else {
                 window.location.href = this.getFileUrl();
+            }
+        });
+
+        this.$uploadNewRevisionButton.on("click", () => {
+            this.$uploadNewRevisionInput.trigger("click");
+        });
+
+        this.$uploadNewRevisionInput.on('change', async () => {
+            const formData = new FormData();
+            formData.append('upload', this.$uploadNewRevisionInput[0].files[0]);
+
+            const result = await $.ajax({
+                url: baseApiUrl + 'notes/' + this.ctx.note.noteId + '/file',
+                headers: server.getHeaders(),
+                data: formData,
+                type: 'PUT',
+                timeout: 60 * 60 * 1000,
+                contentType: false, // NEEDED, DON'T REMOVE THIS
+                processData: false, // NEEDED, DON'T REMOVE THIS
+            });
+
+            if (result.uploaded) {
+                toastService.showMessage("New file revision has been uploaded.");
+
+                await noteDetailService.reload();
+            }
+            else {
+                toastService.showError("Upload of a new file revision failed.");
             }
         });
     }

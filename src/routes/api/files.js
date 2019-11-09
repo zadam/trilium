@@ -4,30 +4,30 @@ const noteService = require('../../services/notes');
 const protectedSessionService = require('../../services/protected_session');
 const repository = require('../../services/repository');
 const utils = require('../../services/utils');
+const noteRevisionService = require('../../services/note_revisions');
 
-async function uploadFile(req) {
-    const parentNoteId = req.params.parentNoteId;
+async function updateFile(req) {
+    const {noteId} = req.params;
     const file = req.file;
-    const originalName = file.originalname;
-    const size = file.size;
-    const mime = file.mimetype.toLowerCase();
 
-    const parentNote = await repository.getNote(parentNoteId);
+    const note = await repository.getNote(noteId);
 
-    if (!parentNote) {
-        return [404, `Note ${parentNoteId} doesn't exist.`];
+    if (!note) {
+        return [404, `Note ${noteId} doesn't exist.`];
     }
 
-    const {note} = await noteService.createNote(parentNoteId, originalName, file.buffer, {
-        target: 'into',
-        isProtected: parentNote.isProtected && protectedSessionService.isProtectedSessionAvailable(),
-        type: mime.startsWith("image/") ? 'image' : 'file',
-        mime: file.mimetype,
-        attributes: [{ type: "label", name: "originalFileName", value: originalName }]
-    });
+    await noteRevisionService.createNoteRevision(note);
+
+    note.mime = file.mimetype.toLowerCase();
+
+    await note.setContent(file.buffer);
+
+    await note.setLabel('originalFileName', file.originalname);
+
+    await noteRevisionService.protectNoteRevisions(note);
 
     return {
-        noteId: note.noteId
+        uploaded: true
     };
 }
 
@@ -58,7 +58,7 @@ async function downloadFile(req, res) {
 }
 
 module.exports = {
-    uploadFile,
+    updateFile,
     downloadFile,
     downloadNoteFile
 };

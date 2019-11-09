@@ -28,7 +28,7 @@ const imageRoute = require('./api/image');
 const attributesRoute = require('./api/attributes');
 const scriptRoute = require('./api/script');
 const senderRoute = require('./api/sender');
-const filesRoute = require('./api/file_upload');
+const filesRoute = require('./api/files');
 const searchRoute = require('./api/search');
 const dateNotesRoute = require('./api/date_notes');
 const linkMapRoute = require('./api/link_map');
@@ -146,8 +146,8 @@ function register(app) {
     route(GET, '/api/notes/:branchId/export/:type/:format/:version/:taskId', [auth.checkApiAuthOrElectron], exportRoute.exportBranch);
     route(POST, '/api/notes/:parentNoteId/import', [auth.checkApiAuthOrElectron, uploadMiddleware, csrfMiddleware], importRoute.importToBranch, apiResultHandler);
 
-    route(POST, '/api/notes/:parentNoteId/upload', [auth.checkApiAuthOrElectron, uploadMiddleware, csrfMiddleware],
-        filesRoute.uploadFile, apiResultHandler);
+    route(PUT, '/api/notes/:noteId/file', [auth.checkApiAuthOrElectron, uploadMiddleware, csrfMiddleware],
+        filesRoute.updateFile, apiResultHandler);
 
     route(GET, '/api/notes/:noteId/download', [auth.checkApiAuthOrElectron], filesRoute.downloadFile);
     // this "hacky" path is used for easier referencing of CSS resources
