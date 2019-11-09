@@ -127,7 +127,7 @@ function makeToast(message, protectingLabel, text) {
         id: message.taskId,
         title: protectingLabel + " status",
         message: text,
-        icon: message.data.protect ? "shield-check" : "shield-close"
+        icon: message.data.protect ? "check-shield" : "shield"
     };
 }
 
