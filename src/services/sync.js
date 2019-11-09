@@ -255,6 +255,7 @@ const primaryKeys = {
     "note_contents": "noteId",
     "branches": "branchId",
     "note_revisions": "noteRevisionId",
+    "note_revision_contents": "noteRevisionId",
     "recent_notes": "noteId",
     "api_tokens": "apiTokenId",
     "options": "name",
@@ -278,7 +279,7 @@ async function getEntityRow(entityName, entityId) {
             throw new Error(`Entity ${entityName} ${entityId} not found.`);
         }
 
-        if (['note_contents', 'note_revisions'].includes(entityName) && entity.content !== null) {
+        if (['note_contents', 'note_revision_contents'].includes(entityName) && entity.content !== null) {
             if (typeof entity.content === 'string') {
                 entity.content = Buffer.from(entity.content, 'UTF-8');
             }

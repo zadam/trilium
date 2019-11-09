@@ -83,6 +83,9 @@ async function downloadNoteRevision(req, res) {
     res.send(await noteRevision.getContent());
 }
 
+/**
+ * @param {NoteRevision} noteRevision
+ */
 async function eraseOneNoteRevision(noteRevision) {
     noteRevision.isErased = true;
     noteRevision.title = null;

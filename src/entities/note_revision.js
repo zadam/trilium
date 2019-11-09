@@ -130,6 +130,14 @@ class NoteRevision extends Entity {
         await syncTableService.addNoteRevisionContentSync(this.noteRevisionId);
     }
 
+    beforeSaving() {
+        super.beforeSaving();
+
+        if (this.isChanged) {
+            this.utcDateModified = dateUtils.utcNowDateTime();
+        }
+    }
+
     // cannot be static!
     updatePojo(pojo) {
         if (pojo.isProtected) {

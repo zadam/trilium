@@ -37,7 +37,7 @@ async function loadNoteRevisions(noteId, noteRevisionId) {
     for (const item of revisionItems) {
         $list.append($('<option>', {
             value: item.noteRevisionId,
-            text: item.dateLastEdited.substr(0, 16) + (item.isErased ? ' (erased)' : '')
+            text: item.dateLastEdited.substr(0, 16)
         }));
     }
 
@@ -60,25 +60,20 @@ $list.on('change', async () => {
     $titleButtons.empty();
     $content.empty();
 
-    if (revisionItem.isErased) {
-        $title.text('This revision has been erased');
-        return;
-    }
-
     $title.html(revisionItem.title);
 
-    const $eraseRevisionButton = $('<button class="btn btn-sm" type="button">Erase this revision</button>');
+    const $eraseRevisionButton = $('<button class="btn btn-sm" type="button">Delete this revision</button>');
 
     $eraseRevisionButton.on('click', async () => {
         const confirmDialog = await import('../dialogs/confirm.js');
-        const text = 'Do you want to erase this revision? This action will erase revision title and content, but still preserve revision metadata.';
+        const text = 'Do you want to delete this revision? This action will delete revision title and content, but still preserve revision metadata.';
 
         if (await confirmDialog.confirm(text)) {
             await server.remove(`notes/${revisionItem.noteId}/revisions/${revisionItem.noteRevisionId}`);
 
             loadNoteRevisions(revisionItem.noteId);
 
-            toastService.showMessage('Note revision has been erased.');
+            toastService.showMessage('Note revision has been deleted.');
         }
     });
 
@@ -139,13 +134,13 @@ $list.on('change', async () => {
 
 $eraseAllRevisionsButton.on('click', async () => {
     const confirmDialog = await import('../dialogs/confirm.js');
-    const text = 'Do you want to erase all revision of this note? This action will erase revision title and content, but still preserve revision metadata.';
+    const text = 'Do you want to delete all revisions of this note? This action will erase revision title and content, but still preserve revision metadata.';
 
     if (await confirmDialog.confirm(text)) {
         await server.remove(`notes/${note.noteId}/revisions`);
 
         $dialog.modal('hide');
 
-        toastService.showMessage('Note revisions has been erased.');
+        toastService.showMessage('Note revisions has been deleted.');
     }
 });
