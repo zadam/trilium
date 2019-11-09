@@ -96,7 +96,7 @@ $("#logout-button").on('click', () => {
                             .append($(`<input type="hidden" name="_csrf" value="${glob.csrfToken}"/>`));
 
     $("body").append($logoutForm);
-    $logoutForm.submit();
+    $logoutForm.trigger('submit');
 });
 
 $("#tree").on("click", ".unhoist-button", hoistedNoteService.unhoist);

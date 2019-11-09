@@ -99,7 +99,7 @@ function AttributesModel() {
         await showAttributes(attributes);
 
         // attribute might not be rendered immediatelly so could not focus
-        setTimeout(() => $(".attribute-type-select:last").focus(), 1000);
+        setTimeout(() => $(".attribute-type-select:last").trigger('focus'), 1000);
     };
 
     this.deleteAttribute = function(data, event) {
@@ -129,7 +129,7 @@ function AttributesModel() {
         // we need to defocus from input (in case of enter-triggered save) because value is updated
         // on blur event (because of conflict with jQuery UI Autocomplete). Without this, input would
         // stay in focus, blur wouldn't be triggered and change wouldn't be updated in the viewmodel.
-        $saveAttributesButton.focus();
+        $saveAttributesButton.trigger('focus');
 
         if (!isValid()) {
             alert("Please fix all validation errors and try saving again.");

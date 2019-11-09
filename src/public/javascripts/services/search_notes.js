@@ -41,7 +41,7 @@ function showSearch() {
         }
     });
 
-    $searchInput.focus();
+    $searchInput.trigger('focus');
 }
 
 function hideSearch() {
@@ -75,7 +75,7 @@ async function doSearch(searchText) {
     if (searchText.trim().length === 0) {
         toastService.showMessage("Please enter search criteria first.");
 
-        $searchInput.focus();
+        $searchInput.trigger('focus');
 
         return;
     }
@@ -151,7 +151,7 @@ function init() {
     }
 }
 
-$searchInput.keyup(e => {
+$searchInput.on('keyup',e => {
     const searchText = $searchInput.val();
 
     if (e && e.which === $.ui.keyCode.ESCAPE || $.trim(searchText) === "") {

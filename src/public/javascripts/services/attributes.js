@@ -213,7 +213,7 @@ class Attributes {
 
                     $tr.after($new);
 
-                    $new.find('input').focus();
+                    $new.find('input').trigger('focus');
                 });
 
             const removeButton = $("<span>")

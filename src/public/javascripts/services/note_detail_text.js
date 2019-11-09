@@ -110,7 +110,7 @@ class NoteDetailText {
     }
 
     focus() {
-        this.$editorEl.focus();
+        this.$editorEl.trigger('focus');
     }
 
     show() {}

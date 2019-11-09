@@ -35,7 +35,7 @@ export async function showDialog(node) {
     $dialog.modal();
 }
 
-$form.submit(() => {
+$form.on('submit', () => {
     // disabling so that import is not triggered again.
     $importButton.attr("disabled", "disabled");
 

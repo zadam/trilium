@@ -25,7 +25,7 @@ class NoteDetailEmpty {
             });
 
         noteAutocompleteService.showRecentNotes(this.$autoComplete);
-        this.$autoComplete.focus();
+        this.$autoComplete.trigger('focus');
     }
 
     show() {}

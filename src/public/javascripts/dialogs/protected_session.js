@@ -7,7 +7,7 @@ const $passwordInput = $dialog.find(".protected-session-password");
 export function show() {
     $dialog.modal();
 
-    $passwordInput.focus();
+    $passwordInput.trigger('focus');
 }
 
 export function close() {
@@ -18,7 +18,7 @@ export function close() {
     catch (e) {}
 }
 
-$passwordForm.submit(() => {
+$passwordForm.on('submit', () => {
     const password = $passwordInput.val();
     $passwordInput.val("");
 

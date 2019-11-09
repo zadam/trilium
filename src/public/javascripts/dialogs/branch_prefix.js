@@ -41,10 +41,10 @@ async function savePrefix() {
     toastService.showMessage("Branch prefix has been saved.");
 }
 
-$form.submit(() => {
+$form.on('submit', () => {
     savePrefix();
 
     return false;
 });
 
-$dialog.on('shown.bs.modal', () => $treePrefixInput.focus());
+$dialog.on('shown.bs.modal', () => $treePrefixInput.trigger('focus'));

@@ -47,7 +47,7 @@ export default class SyncOptions {
         this.$syncProxy = $("#sync-proxy");
         this.$testSyncButton = $("#test-sync-button");
 
-        this.$form.submit(() => this.save());
+        this.$form.on('submit', () => this.save());
 
         this.$testSyncButton.on('click', async () => {
             const result = await server.post('sync/test');

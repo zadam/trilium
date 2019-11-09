@@ -29,7 +29,7 @@ $dialog.on("hidden.bs.modal", () => {
     }
 
     if ($originallyFocused) {
-        $originallyFocused.focus();
+        $originallyFocused.trigger('focus');
         $originallyFocused = null;
     }
 });

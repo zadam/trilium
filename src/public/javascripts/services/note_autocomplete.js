@@ -36,7 +36,7 @@ function showRecentNotes($el) {
 
     $el.setSelectedPath("");
     $el.autocomplete("val", "");
-    $el.focus();
+    $el.trigger('focus');
 }
 
 function initNoteAutocomplete($el, options) {

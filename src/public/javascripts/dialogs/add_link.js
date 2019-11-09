@@ -19,7 +19,7 @@ export async function showDialog() {
 
     $dialog.modal();
 
-    $autoComplete.val('').focus();
+    $autoComplete.val('').trigger('focus');
     $linkTitle.val('');
 
     async function setDefaultLinkTitle(noteId) {
@@ -51,7 +51,7 @@ export async function showDialog() {
     noteAutocompleteService.showRecentNotes($autoComplete);
 }
 
-$form.submit(() => {
+$form.on('submit', () => {
     const notePath = $autoComplete.getSelectedPath();
 
     if (notePath) {

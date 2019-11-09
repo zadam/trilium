@@ -289,11 +289,14 @@ async function refreshTabs(sourceTabId, noteId) {
 }
 
 function focusOnTitle() {
-    getActiveTabContext().$noteTitle.focus();
+    getActiveTabContext().$noteTitle.trigger('focus');
 }
 
 function focusAndSelectTitle() {
-    getActiveTabContext().$noteTitle.focus().select();
+    getActiveTabContext()
+        .$noteTitle
+            .trigger('focus')
+            .trigger('select');
 }
 
 /**

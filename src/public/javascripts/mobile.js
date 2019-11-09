@@ -137,7 +137,7 @@ $("#switch-to-desktop-button").on('click', () => {
 });
 
 $("#log-out-button").on('click', () => {
-    $("#logout-form").submit();
+    $("#logout-form").trigger('submit');
 });
 
 // this is done so that startNotePath is not used

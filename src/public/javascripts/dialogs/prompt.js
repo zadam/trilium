@@ -44,7 +44,7 @@ $dialog.on('shown.bs.modal', () => {
         shownCb({ $dialog, $question, $answer, $form });
     }
 
-    $answer.focus().select();
+    $answer.trigger('focus').select();
 });
 
 $dialog.on("hidden.bs.modal", () => {
@@ -53,7 +53,7 @@ $dialog.on("hidden.bs.modal", () => {
     }
 });
 
-$form.submit(() => {
+$form.on('submit', () => {
     resolve($answer.val());
 
     $dialog.modal('hide');

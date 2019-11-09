@@ -49,7 +49,7 @@ export async function showDialog(node, defaultType) {
     $noteTitle.html(noteTitle);
 }
 
-$form.submit(() => {
+$form.on('submit', () => {
     $dialog.modal('hide');
 
     const exportType = $dialog.find("input[name='export-type']:checked").val();

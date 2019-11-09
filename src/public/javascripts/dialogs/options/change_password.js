@@ -31,7 +31,7 @@ export default class ChangePasswordOptions {
         this.$newPassword1 = $("#new-password1");
         this.$newPassword2 = $("#new-password2");
 
-        this.$form.submit(() => this.save());
+        this.$form.on('submit', () => this.save());
     }
 
     optionsLoaded(options) {}

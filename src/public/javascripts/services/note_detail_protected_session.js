@@ -10,7 +10,7 @@ class NoteDetailProtectedSession {
         this.$passwordForm = ctx.$tabContent.find(".protected-session-password-form");
         this.$passwordInput = ctx.$tabContent.find(".protected-session-password");
 
-        this.$passwordForm.submit(() => {
+        this.$passwordForm.on('submit', () => {
             const password = this.$passwordInput.val();
             this.$passwordInput.val("");
 

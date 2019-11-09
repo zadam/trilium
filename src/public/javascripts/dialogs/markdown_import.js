@@ -51,6 +51,6 @@ async function sendForm() {
 
 $importButton.on('click', sendForm);
 
-$dialog.on('shown.bs.modal', () => $importTextarea.focus());
+$dialog.on('shown.bs.modal', () => $importTextarea.trigger('focus'));
 
 utils.bindElShortcut($dialog, 'ctrl+return', sendForm);

@@ -26,13 +26,13 @@ export async function showDialog(noteId) {
 
     $dialog.modal();
 
-    $noteAutoComplete.val('').focus();
+    $noteAutoComplete.val('').trigger('focus');
 
     noteAutocompleteService.initNoteAutocomplete($noteAutoComplete);
     noteAutocompleteService.showRecentNotes($noteAutoComplete);
 }
 
-$form.submit(() => {
+$form.on('submit', () => {
     const notePath = $noteAutoComplete.getSelectedPath();
 
     if (notePath) {
