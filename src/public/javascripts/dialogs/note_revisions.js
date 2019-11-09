@@ -64,31 +64,41 @@ $list.on('change', async () => {
 
     const fullNoteRevision = await server.get(`notes/${revisionItem.noteId}/revisions/${revisionItem.noteRevisionId}`);
 
-    if (note.type === 'text') {
+    if (revisionItem.type === 'text') {
         $content.html(fullNoteRevision.content);
     }
-    else if (note.type === 'code') {
+    else if (revisionItem.type === 'code') {
         $content.html($("<pre>").text(fullNoteRevision.content));
     }
-    else if (note.type === 'image') {
+    else if (revisionItem.type === 'image') {
         $content.html($("<img>")
             // reason why we put this inline as base64 is that we do not want to let user to copy this
             // as a URL to be used in a note. Instead if they copy and paste it into a note, it will be a uploaded as a new note
             .attr("src", `data:${note.mime};base64,` + fullNoteRevision.content)
             .css("width", "100%"));
     }
-    else if (note.type === 'file') {
-        $content.html(
-            $("<table cellpadding='10'>")
-                .append($("<tr>").append(
-                    $("<th>").text("MIME: "),
-                    $("<td>").text(revisionItem.mime)
-                ))
-                .append($("<tr>").append(
-                    $("<th>").text("File size:"),
-                    $("<td>").text(revisionItem.contentLength + " bytes")
-                ))
-        );
+    else if (revisionItem.type === 'file') {
+        const $table = $("<table cellpadding='10'>")
+            .append($("<tr>").append(
+                $("<th>").text("MIME: "),
+                $("<td>").text(revisionItem.mime)
+            ))
+            .append($("<tr>").append(
+                $("<th>").text("File size:"),
+                $("<td>").text(revisionItem.contentLength + " bytes")
+            ));
+
+        if (fullNoteRevision.content) {
+            $table.append($("<tr>").append(
+                $("<th>").text("Preview:"),
+                $("<td>").append(
+                    $('<pre class="file-preview-content"></pre>')
+                        .text(fullNoteRevision.content)
+                )
+            ));
+        }
+
+        $content.html($table);
     }
     else {
         $content.text("Preview isn't available for this note type.");

@@ -96,6 +96,8 @@ function getHost() {
 }
 
 function download(url) {
+    url += '?' + Date.now(); // don't use cache
+
     if (isElectron()) {
         const remote = require('electron').remote;
 
@@ -227,7 +229,6 @@ export default {
     assertArguments,
     escapeHtml,
     stopWatch,
-    formatValueWithWhitespace,
     formatLabel,
     getHost,
     download,

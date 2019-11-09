@@ -9,7 +9,12 @@ const dateUtils = require('../services/date_utils');
 async function protectNoteRevisions(note) {
     for (const revision of await note.getRevisions()) {
         if (note.isProtected !== revision.isProtected) {
+            const content = await revision.getContent();
+
             revision.isProtected = note.isProtected;
+
+            // this will force de/encryption
+            await revision.setContent(content);
 
             await revision.save();
         }

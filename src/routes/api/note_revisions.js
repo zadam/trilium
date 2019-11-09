@@ -19,7 +19,14 @@ async function getNoteRevisions(req) {
 async function getNoteRevision(req) {
     const noteRevision = await repository.getNoteRevision(req.params.noteRevisionId);
 
-    if (noteRevision.type !== 'file') {
+    if (noteRevision.type === 'file') {
+        if (noteRevision.isStringNote()) {
+            await noteRevision.getContent();
+
+            noteRevision.content = noteRevision.content.substr(0, 10000);
+        }
+    }
+    else {
         await noteRevision.getContent();
 
         if (noteRevision.content && noteRevision.type === 'image') {
