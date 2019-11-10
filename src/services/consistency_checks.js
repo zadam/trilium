@@ -30,7 +30,7 @@ async function findAndFixIssues(query, fixerCb) {
     const results = await sql.getRows(query);
 
     for (const res of results) {
-        const autoFix = await optionsService.getOptionInt('autoFixConsistencyIssues');
+        const autoFix = await optionsService.getOptionBool('autoFixConsistencyIssues');
 
         await fixerCb(res, autoFix);
 
@@ -97,33 +97,76 @@ async function checkTreeCycles() {
 }
 
 async function findBrokenReferenceIssues() {
-    await findIssues(`
+    await findAndFixIssues(`
           SELECT branchId, branches.noteId
           FROM branches LEFT JOIN notes USING(noteId)
           WHERE branches.isDeleted = 0 AND notes.noteId IS NULL`,
-        ({branchId, noteId}) => `Branch ${branchId} references missing note ${noteId}`);
+        async ({branchId, noteId}, autoFix) => {
+        if (autoFix) {
+            const branch = await repository.getBranch(branchId);
+            branch.isDeleted = true;
+            await branch.save();
 
-    await findIssues(`
+            logFix(`Branch ${branchId} has been deleted since it references missing note ${noteId}`);
+        }
+        else {
+            logError(`Branch ${branchId} references missing note ${noteId}`);
+        }
+    });
+
+    await findAndFixIssues(`
           SELECT branchId, branches.noteId AS parentNoteId
           FROM branches LEFT JOIN notes ON notes.noteId = branches.parentNoteId
           WHERE branches.isDeleted = 0 AND branches.branchId != 'root' AND notes.noteId IS NULL`,
-        ({branchId, noteId}) => `Branch ${branchId} references missing parent note ${noteId}`);
+        async ({branchId, parentNoteId}, autoFix) => {
+            if (autoFix) {
+                const branch = await repository.getBranch(branchId);
+                branch.parentNoteId = 'root';
+                await branch.save();
 
-    await findIssues(`
+                logFix(`Branch ${branchId} was set to root parent since it was referencing missing parent note ${parentNoteId}`);
+            }
+            else {
+                logError(`Branch ${branchId} references missing parent note ${parentNoteId}`);
+            }
+        });
+
+    await findAndFixIssues(`
           SELECT attributeId, attributes.noteId
           FROM attributes LEFT JOIN notes USING(noteId)
           WHERE attributes.isDeleted = 0 AND notes.noteId IS NULL`,
-        ({attributeId, noteId}) => `Attribute ${attributeId} references missing source note ${noteId}`);
+        async ({attributeId, noteId}, autoFix) => {
+            if (autoFix) {
+                const attribute = await repository.getAttribute(attributeId);
+                attribute.isDeleted = true;
+                await attribute.save();
 
-    // empty targetNoteId for relations is a special fixable case so not covered here
-    await findIssues(`
+                logFix(`Attribute ${attributeId} has been deleted since it references missing source note ${noteId}`);
+            }
+            else {
+                logError(`Attribute ${attributeId} references missing source note ${noteId}`);
+            }
+        });
+
+    await findAndFixIssues(`
           SELECT attributeId, attributes.value AS noteId
           FROM attributes LEFT JOIN notes ON notes.noteId = attributes.value
           WHERE attributes.isDeleted = 0 AND attributes.type = 'relation' 
-            AND attributes.value != '' AND notes.noteId IS NULL`,
-        ({attributeId, noteId}) => `Relation ${attributeId} references missing note ${noteId}`);
+            AND notes.noteId IS NULL`,
+        async ({attributeId, noteId}, autoFix) => {
+            if (autoFix) {
+                const attribute = await repository.getAttribute(attributeId);
+                attribute.isDeleted = true;
+                await attribute.save();
 
-    await findIssues(`
+                logFix(`Relation ${attributeId} has been deleted since it references missing note ${noteId}`)
+            }
+            else {
+                logError(`Relation ${attributeId} references missing note ${noteId}`)
+            }
+        });
+
+    await findAndFixIssues(`
           SELECT noteRevisionId, note_revisions.noteId
           FROM note_revisions LEFT JOIN notes USING(noteId)
           WHERE notes.noteId IS NULL`,
@@ -244,22 +287,43 @@ async function findExistencyIssues() {
 }
 
 async function findLogicIssues() {
-    await findIssues( `
+    await findAndFixIssues( `
           SELECT noteId, type 
           FROM notes 
           WHERE
             isDeleted = 0    
             AND type NOT IN ('text', 'code', 'render', 'file', 'image', 'search', 'relation-map', 'book')`,
-        ({noteId, type}) => `Note ${noteId} has invalid type=${type}`);
+        async ({noteId, type}, autoFix) => {
+            if (autoFix) {
+                const note = await repository.getNote(noteId);
+                note.type = 'file'; // file is a safe option to recover notes if type is not known
+                await note.save();
 
-    await findIssues(`
+                logFix(`Note ${noteId} type has been change to file since it had invalid type=${type}`)
+            }
+            else {
+                logError(`Note ${noteId} has invalid type=${type}`);
+            }
+        });
+
+    await findAndFixIssues(`
           SELECT noteId
           FROM notes
           JOIN note_contents USING(noteId)
           WHERE
             isDeleted = 0
             AND content IS NULL`,
-        ({noteId}) => `Note ${noteId} content is null even though it is not deleted`);
+        async ({noteId}, autoFix) => {
+            if (autoFix) {
+                const note = await repository.getNote(noteId);
+                await note.setContent('');
+
+                logFix(`Note ${noteId} content was set to empty string since it was null even though it is not deleted`);
+            }
+            else {
+                logError(`Note ${noteId} content is null even though it is not deleted`);
+            }
+        });
 
     await findIssues(`
           SELECT noteId
@@ -270,6 +334,34 @@ async function findLogicIssues() {
             AND content IS NOT NULL`,
         ({noteId}) => `Note ${noteId} content is not null even though the note is erased`);
 
+    await findAndFixIssues(`
+          SELECT noteRevisionId
+          FROM note_revisions
+          JOIN note_revision_contents USING(noteRevisionId)
+          WHERE
+            isErased = 0
+            AND content IS NULL`,
+        async ({noteRevisionId}, autoFix) => {
+            if (autoFix) {
+                const noteRevision = await repository.getNote(noteRevisionId);
+                await noteRevision.setContent('');
+
+                logFix(`Note revision ${noteRevisionId} content was set to empty string since it was null even though it is not erased`);
+            }
+            else {
+                logError(`Note revision ${noteRevisionId} content is null even though it is not erased`);
+            }
+        });
+
+    await findIssues(`
+          SELECT noteRevisionId
+          FROM note_revisions
+          JOIN note_revision_contents USING(noteRevisionId)
+          WHERE
+            isErased = 1
+            AND content IS NOT NULL`,
+        ({noteRevisionId}) => `Note revision ${noteRevisionId} content is not null even though the note revision is erased`);
+
     await findIssues(`
         SELECT noteId
         FROM notes
@@ -278,7 +370,7 @@ async function findLogicIssues() {
             AND isDeleted = 0`,
         ({noteId}) => `Note ${noteId} is not deleted even though it is erased`);
 
-    await findIssues(`
+    await findAndFixIssues(`
           SELECT parentNoteId
           FROM 
             branches
@@ -287,7 +379,21 @@ async function findLogicIssues() {
             notes.isDeleted = 0
             AND notes.type == 'search'
             AND branches.isDeleted = 0`,
-        ({parentNoteId}) => `Search note ${parentNoteId} has children`);
+        async ({parentNoteId}, autoFix) => {
+            if (autoFix) {
+                const branches = await repository.getEntities(`SELECT * FROM branches WHERE isDeleted = 0 AND parentNoteId = ?`, [parentNoteId]);
+
+                for (const branch of branches) {
+                    branch.parentNoteId = 'root';
+                    await branch.save();
+
+                    logFix(`Child branch ${branch.branchId} has been moved to root since it was a child of a search note ${parentNoteId}`)
+                }
+            }
+            else {
+                logError(`Search note ${parentNoteId} has children`);
+            }
+        });
 
     await findAndFixIssues(`
           SELECT attributeId 
@@ -309,7 +415,7 @@ async function findLogicIssues() {
             }
         });
 
-    await findIssues(`
+    await findAndFixIssues(`
           SELECT 
             attributeId,
             type
@@ -320,7 +426,18 @@ async function findLogicIssues() {
             AND type != 'label-definition' 
             AND type != 'relation'
             AND type != 'relation-definition'`,
-        ({attributeId, type}) => `Attribute ${attributeId} has invalid type '${type}'`);
+        async ({attributeId, type}, autoFix) => {
+            if (autoFix) {
+                const attribute = await repository.getAttribute(attributeId);
+                attribute.type = 'label';
+                await attribute.save();
+
+                logFix(`Attribute ${attributeId} type was changed to label since it had invalid type '${type}'`);
+            }
+            else {
+                logError(`Attribute ${attributeId} has invalid type '${type}'`);
+            }
+        });
 
     await findAndFixIssues(`
           SELECT
