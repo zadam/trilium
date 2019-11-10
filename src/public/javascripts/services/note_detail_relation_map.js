@@ -184,7 +184,7 @@ class NoteDetailRelationMap {
             this.saveData();
         }
         else if (cmd === "edit-title") {
-            const promptDialog = await import('"../dialogs/prompt.js"');
+            const promptDialog = await import("../dialogs/prompt.js");
             const title = await promptDialog.ask({
                 message: "Enter new note title:",
                 defaultValue: $title.text()
@@ -446,7 +446,7 @@ class NoteDetailRelationMap {
             return;
         }
 
-        const promptDialog = await import('"../dialogs/prompt.js"');
+        const promptDialog = await import("../dialogs/prompt.js");
         const name = await promptDialog.ask({
             message: "Specify new relation name:",
             shown: ({ $answer }) =>
