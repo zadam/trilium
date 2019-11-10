@@ -8,9 +8,10 @@ const syncMutexService = require('./sync_mutex');
 const repository = require('./repository');
 const cls = require('./cls');
 const syncTableService = require('./sync_table');
+const optionsService = require('./options');
 const Branch = require('../entities/branch');
 
-let unrecoverableConsistencyErrors = false;
+let unrecoveredConsistencyErrors = false;
 let fixedIssues = false;
 
 async function findIssues(query, errorCb) {
@@ -19,7 +20,7 @@ async function findIssues(query, errorCb) {
     for (const res of results) {
         logError(errorCb(res));
 
-        unrecoverableConsistencyErrors = true;
+        unrecoveredConsistencyErrors = true;
     }
 
     return results;
@@ -29,9 +30,14 @@ async function findAndFixIssues(query, fixerCb) {
     const results = await sql.getRows(query);
 
     for (const res of results) {
-        await fixerCb(res);
+        if (await optionsService.getOptionInt('autoFixConsistencyIssues')) {
+            await fixerCb(res);
 
-        fixedIssues = true;
+            fixedIssues = true;
+        }
+        else {
+            unrecoveredConsistencyErrors = true;
+        }
     }
 
     return results;
@@ -57,7 +63,7 @@ async function checkTreeCycles() {
         if (!childToParents[noteId] || childToParents[noteId].length === 0) {
             logError(`No parents found for note ${noteId}`);
 
-            unrecoverableConsistencyErrors = true;
+            unrecoveredConsistencyErrors = true;
             return;
         }
 
@@ -65,7 +71,7 @@ async function checkTreeCycles() {
             if (path.includes(parentNoteId)) {
                 logError(`Tree cycle detected at parent-child relationship: ${parentNoteId} - ${noteId}, whole path: ${path}`);
 
-                unrecoverableConsistencyErrors = true;
+                unrecoveredConsistencyErrors = true;
             }
             else {
                 const newPath = path.slice();
@@ -84,7 +90,7 @@ async function checkTreeCycles() {
 
     if (childToParents['root'].length !== 1 || childToParents['root'][0] !== 'none') {
         logError('Incorrect root parent: ' + JSON.stringify(childToParents['root']));
-        unrecoverableConsistencyErrors = true;
+        unrecoveredConsistencyErrors = true;
     }
 }
 
@@ -366,7 +372,7 @@ async function findSyncRowsIssues() {
 }
 
 async function runAllChecks() {
-    unrecoverableConsistencyErrors = false;
+    unrecoveredConsistencyErrors = false;
     fixedIssues = false;
 
     await findBrokenReferenceIssues();
@@ -377,13 +383,13 @@ async function runAllChecks() {
 
     await findSyncRowsIssues();
 
-    if (unrecoverableConsistencyErrors) {
+    if (unrecoveredConsistencyErrors) {
         // we run this only if basic checks passed since this assumes basic data consistency
 
         await checkTreeCycles();
     }
 
-    return !unrecoverableConsistencyErrors;
+    return !unrecoveredConsistencyErrors;
 }
 
 async function runChecks() {
@@ -401,7 +407,7 @@ async function runChecks() {
         ws.refreshTree();
     }
 
-    if (unrecoverableConsistencyErrors) {
+    if (unrecoveredConsistencyErrors) {
         log.info(`Consistency checks failed (took ${elapsedTimeMs}ms)`);
 
         ws.sendMessageToAllClients({type: 'consistency-checks-failed'});

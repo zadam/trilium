@@ -10,6 +10,9 @@ async function getOption(name) {
     return option.value;
 }
 
+/**
+ * @return {Promise<number>}
+ */
 async function getOptionInt(name) {
     const val = await getOption(name);
 
@@ -20,6 +23,19 @@ async function getOptionInt(name) {
     }
 
     return intVal;
+}
+
+/**
+ * @return {Promise<boolean>}
+ */
+async function getOptionBool(name) {
+    const val = await getOption(name);
+
+    if (!['true', 'false'].includes(val)) {
+        throw new Error(`Could not parse "${val}" into boolean for option "${name}"`);
+    }
+
+    return val === 'true';
 }
 
 async function setOption(name, value) {
@@ -64,6 +80,7 @@ async function getOptionsMap(allowedOptions) {
 module.exports = {
     getOption,
     getOptionInt,
+    getOptionBool,
     setOption,
     createOption,
     getOptions,
