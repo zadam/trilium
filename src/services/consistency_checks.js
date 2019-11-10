@@ -30,9 +30,11 @@ async function findAndFixIssues(query, fixerCb) {
     const results = await sql.getRows(query);
 
     for (const res of results) {
-        if (await optionsService.getOptionInt('autoFixConsistencyIssues')) {
-            await fixerCb(res);
+        const autoFix = await optionsService.getOptionInt('autoFixConsistencyIssues');
 
+        await fixerCb(res, autoFix);
+
+        if (autoFix) {
             fixedIssues = true;
         }
         else {
@@ -143,12 +145,17 @@ async function findExistencyIssues() {
           WHERE
             notes.isDeleted = 1
             AND branches.isDeleted = 0`,
-        async ({branchId, noteId}) => {
-            const branch = await repository.getBranch(branchId);
-            branch.isDeleted = true;
-            await branch.save();
+        async ({branchId, noteId}, autoFix) => {
+            if (autoFix) {
+                const branch = await repository.getBranch(branchId);
+                branch.isDeleted = true;
+                await branch.save();
 
-            logFix(`Branch ${branchId} has been deleted since associated note ${noteId} is deleted.`);
+                logFix(`Branch ${branchId} has been deleted since associated note ${noteId} is deleted.`);
+            }
+            else {
+                logError(`Branch ${branchId} is not deleted even though associated note ${noteId} is deleted.`)
+            }
         });
 
     await findAndFixIssues(`
@@ -160,12 +167,17 @@ async function findExistencyIssues() {
       WHERE
         parentNote.isDeleted = 1
         AND branches.isDeleted = 0
-    `, async ({branchId, parentNoteId}) => {
-        const branch = await repository.getBranch(branchId);
-        branch.isDeleted = true;
-        await branch.save();
+    `, async ({branchId, parentNoteId}, autoFix) => {
+        if (autoFix) {
+            const branch = await repository.getBranch(branchId);
+            branch.isDeleted = true;
+            await branch.save();
 
-        logFix(`Branch ${branchId} has been deleted since associated parent note ${parentNoteId} is deleted.`);
+            logFix(`Branch ${branchId} has been deleted since associated parent note ${parentNoteId} is deleted.`);
+        }
+        else {
+            logError(`Branch ${branchId} is not deleted even though associated parent note ${parentNoteId} is deleted.`)
+        }
     });
 
     await findAndFixIssues(`
@@ -177,14 +189,19 @@ async function findExistencyIssues() {
       WHERE
         notes.isDeleted = 0
         AND branches.branchId IS NULL
-    `, async ({noteId}) => {
-        const branch = await new Branch({
-            parentNoteId: 'root',
-            noteId: noteId,
-            prefix: 'recovered'
-        }).save();
+    `, async ({noteId}, autoFix) => {
+        if (autoFix) {
+            const branch = await new Branch({
+                parentNoteId: 'root',
+                noteId: noteId,
+                prefix: 'recovered'
+            }).save();
 
-        logFix(`Created missing branch ${branch.branchId} for note ${noteId}`);
+            logFix(`Created missing branch ${branch.branchId} for note ${noteId}`);
+        }
+        else {
+            logError(`No undeleted branch found for note ${noteId}`);
+        }
     });
 
     // there should be a unique relationship between note and its parent
@@ -200,18 +217,28 @@ async function findExistencyIssues() {
         branches.noteId
       HAVING
         COUNT(*) > 1`,
-    async ({noteId, parentNoteId}) => {
-        const branches = await repository.getEntities(`SELECT * FROM branches WHERE noteId = ? and parentNoteId = ? and isDeleted = 1`, [noteId, parentNoteId]);
+    async ({noteId, parentNoteId}, autoFix) => {
+        if (autoFix) {
+            const branches = await repository.getEntities(
+                `SELECT *
+                       FROM branches
+                       WHERE noteId = ?
+                         and parentNoteId = ?
+                         and isDeleted = 1`, [noteId, parentNoteId]);
 
-        // it's not necessarily "original" branch, it's just the only one which will survive
-        const origBranch = branches[0];
+            // it's not necessarily "original" branch, it's just the only one which will survive
+            const origBranch = branches[0];
 
-        // delete all but the first branch
-        for (const branch of branches.slice(1)) {
-            branch.isDeleted = true;
-            await branch.save();
+            // delete all but the first branch
+            for (const branch of branches.slice(1)) {
+                branch.isDeleted = true;
+                await branch.save();
 
-            logFix(`Removing branch ${branch.branchId} since it's parent-child duplicate of branch ${origBranch.branchId}`);
+                logFix(`Removing branch ${branch.branchId} since it's parent-child duplicate of branch ${origBranch.branchId}`);
+            }
+        }
+        else {
+            logError(`Duplicate branches for note ${noteId} and parent ${parentNoteId}`);
         }
     });
 }
@@ -269,12 +296,17 @@ async function findLogicIssues() {
             isDeleted = 0 
             AND type = 'relation' 
             AND value = ''`,
-        async ({attributeId}) => {
-            const relation = await repository.getAttribute(attributeId);
-            relation.isDeleted = true;
-            await relation.save();
+        async ({attributeId}, autoFix) => {
+            if (autoFix) {
+                const relation = await repository.getAttribute(attributeId);
+                relation.isDeleted = true;
+                await relation.save();
 
-            logFix(`Removed relation ${relation.attributeId} of name "${relation.name} with empty target.`);
+                logFix(`Removed relation ${relation.attributeId} of name "${relation.name} with empty target.`);
+            }
+            else {
+                logError(`Relation ${attributeId} has empty target.`);
+            }
         });
 
     await findIssues(`
@@ -300,12 +332,17 @@ async function findLogicIssues() {
           WHERE
             attributes.isDeleted = 0
             AND notes.isDeleted = 1`,
-        async ({attributeId, noteId}) => {
-            const attribute = await repository.getAttribute(attributeId);
-            attribute.isDeleted = true;
-            await attribute.save();
+        async ({attributeId, noteId}, autoFix) => {
+            if (autoFix) {
+                const attribute = await repository.getAttribute(attributeId);
+                attribute.isDeleted = true;
+                await attribute.save();
 
-            logFix(`Removed attribute ${attributeId} because owning note ${noteId} is also deleted.`);
+                logFix(`Removed attribute ${attributeId} because owning note ${noteId} is also deleted.`);
+            }
+            else {
+                logError(`Attribute ${attributeId} is not deleted even though owning note ${noteId} is deleted.`);
+            }
         });
 
     await findAndFixIssues(`
@@ -319,12 +356,17 @@ async function findLogicIssues() {
             attributes.type = 'relation'
             AND attributes.isDeleted = 0
             AND notes.isDeleted = 1`,
-        async ({attributeId, targetNoteId}) => {
-            const attribute = await repository.getAttribute(attributeId);
-            attribute.isDeleted = true;
-            await attribute.save();
+        async ({attributeId, targetNoteId}, autoFix) => {
+            if (autoFix) {
+                const attribute = await repository.getAttribute(attributeId);
+                attribute.isDeleted = true;
+                await attribute.save();
 
-            logFix(`Removed attribute ${attributeId} because target note ${targetNoteId} is also deleted.`);
+                logFix(`Removed attribute ${attributeId} because target note ${targetNoteId} is also deleted.`);
+            }
+            else {
+                logError(`Attribute ${attributeId} is not deleted even though target note ${targetNoteId} is deleted.`);
+            }
         });
 }
 
@@ -337,10 +379,15 @@ async function runSyncRowChecks(entityName, key) {
           LEFT JOIN sync ON sync.entityName = '${entityName}' AND entityId = ${key} 
         WHERE 
           sync.id IS NULL AND ` + (entityName === 'options' ? 'isSynced = 1' : '1'),
-        async ({entityId}) => {
-            await syncTableService.addEntitySync(entityName, entityId);
+        async ({entityId}, autoFix) => {
+            if (autoFix) {
+                await syncTableService.addEntitySync(entityName, entityId);
 
-            logFix(`Created missing sync record entityName=${entityName}, entityId=${entityId}`);
+                logFix(`Created missing sync record for entityName=${entityName}, entityId=${entityId}`);
+            }
+            else {
+                logError(`Missing sync record for entityName=${entityName}, entityId=${entityId}`);
+            }
         });
 
     await findAndFixIssues(`
@@ -352,11 +399,15 @@ async function runSyncRowChecks(entityName, key) {
         WHERE 
           sync.entityName = '${entityName}' 
           AND ${key} IS NULL`,
-        async ({id, entityId}) => {
+        async ({id, entityId}, autoFix) => {
+            if (autoFix) {
+                await sql.execute("DELETE FROM sync WHERE entityName = ? AND entityId = ?", [entityName, entityId]);
 
-            await sql.execute("DELETE FROM sync WHERE entityName = ? AND entityId = ?", [entityName, entityId]);
-
-            logFix(`Deleted extra sync record id=${id}, entityName=${entityName}, entityId=${entityId}`);
+                logFix(`Deleted extra sync record id=${id}, entityName=${entityName}, entityId=${entityId}`);
+            }
+            else {
+                logError(`Unrecognized sync record id=${id}, entityName=${entityName}, entityId=${entityId}`);
+            }
         });
 }
 
