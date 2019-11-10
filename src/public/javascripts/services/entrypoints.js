@@ -3,6 +3,7 @@ import linkService from "./link.js";
 import zoomService from "./zoom.js";
 import protectedSessionService from "./protected_session.js";
 import searchNotesService from "./search_notes.js";
+import treeService from "./tree.js";
 
 const NOTE_REVISIONS = "../dialogs/note_revisions.js";
 const OPTIONS = "../dialogs/options.js";
@@ -16,6 +17,7 @@ const HELP = "../dialogs/help.js";
 const NOTE_INFO = "../dialogs/note_info.js";
 const ABOUT = "../dialogs/about.js";
 const LINK_MAP = "../dialogs/link_map.js";
+const CLONE_TO = "../dialogs/clone_to.js";
 
 function registerEntrypoints() {
     // hot keys are active also inside inputs and content editables
@@ -184,6 +186,17 @@ function registerEntrypoints() {
 
         return false;
     });
+
+    utils.bindGlobalShortcut('ctrl+shift+c', () => import(CLONE_TO).then(d => {
+        const activeNode = treeService.getActiveNode();
+        console.log("activeNode", activeNode);
+        const selectedOrActiveNodes = treeService.getSelectedOrActiveNodes(activeNode);
+        console.log("selectedOrActiveNodes", selectedOrActiveNodes);
+
+        const noteIds = selectedOrActiveNodes.map(node => node.data.noteId);
+
+        d.showDialog(noteIds);
+    }));
 }
 
 export default {
