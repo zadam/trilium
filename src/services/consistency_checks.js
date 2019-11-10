@@ -267,7 +267,7 @@ async function findExistencyIssues() {
                        FROM branches
                        WHERE noteId = ?
                          and parentNoteId = ?
-                         and isDeleted = 1`, [noteId, parentNoteId]);
+                         and isDeleted = 0`, [noteId, parentNoteId]);
 
             // it's not necessarily "original" branch, it's just the only one which will survive
             const origBranch = branches[0];

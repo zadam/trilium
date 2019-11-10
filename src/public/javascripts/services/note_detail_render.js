@@ -18,7 +18,11 @@ class NoteDetailRender {
         this.$component.show();
         this.$noteDetailRenderHelp.hide();
 
-        await renderService.render(this.ctx.note, this.$noteDetailRenderContent, this.ctx);
+        const renderNotesFound = await renderService.render(this.ctx.note, this.$noteDetailRenderContent, this.ctx);
+
+        if (!renderNotesFound) {
+            this.$noteDetailRenderHelp.show();
+        }
     }
 
     getContent() {}
