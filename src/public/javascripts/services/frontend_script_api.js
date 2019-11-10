@@ -266,6 +266,22 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
     this.refreshTree = treeService.reload;
 
     /**
+     * Refresh active tab
+     *
+     * @method
+     * @returns {Promise<void>}
+     */
+    this.refreshActiveTab = noteDetailService.reload;
+
+    /**
+     * Refresh current tab
+     *
+     * @method
+     * @returns {Promise<void>}
+     */
+    this.refreshAllTabs = noteDetailService.reloadAllTabs;
+
+    /**
      * Create note link (jQuery object) for given note.
      *
      * @method

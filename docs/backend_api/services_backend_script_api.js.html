@@ -310,9 +310,10 @@ function BackendScriptApi(currentNote, apiParams) {
      * This method looks similar to toggleNoteInParent() but differs because we're looking up branch by prefix.
      *
      * @method
+     * @deprecated - this method is pretty confusing and serves specialized purpose only
      * @param {string} noteId
      * @param {string} prefix
-     * @param {string} [parentNoteId]
+     * @param {string|null} parentNoteId
      */
     this.setNoteToParent = treeService.setNoteToParent;
 
