@@ -2,7 +2,7 @@
     <div class="modal-dialog modal-lg" style="max-width: 1000px" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title mr-auto">Clone note to ...</h5>
+                <h5 class="modal-title mr-auto">Clone notes to ...</h5>
 
                 <button type="button" class="help-button" title="Help on links" data-help-page="Cloning-notes">?</button>
 
@@ -12,6 +12,10 @@
             </div>
             <form id="clone-to-form">
                 <div class="modal-body">
+                    <h5>Notes to clone</h5>
+
+                    <ul id="clone-to-note-list" style="max-height: 200px; overflow: auto;"></ul>
+
                     <div class="form-group">
                         <label for="clone-to-note-autocomplete">Target parent note</label>
 

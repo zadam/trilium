@@ -342,6 +342,7 @@ function getSelectedOrActiveNodes(node) {
     if (notes.length === 0) {
         notes.push(node);
     }
+
     return notes;
 }
 

@@ -16,7 +16,6 @@ const HELP = "../dialogs/help.js";
 const NOTE_INFO = "../dialogs/note_info.js";
 const ABOUT = "../dialogs/about.js";
 const LINK_MAP = "../dialogs/link_map.js";
-const CLONE_TO = "../dialogs/clone_to.js";
 
 function registerEntrypoints() {
     // hot keys are active also inside inputs and content editables
@@ -185,8 +184,6 @@ function registerEntrypoints() {
 
         return false;
     });
-
-    utils.bindGlobalShortcut('ctrl+e', () => import(CLONE_TO).then(d => d.showDialog()));
 }
 
 export default {

@@ -64,6 +64,8 @@ class TreeContextMenu {
             { title: "----" },
             { title: "Copy / clone <kbd>Ctrl+C</kbd>", cmd: "copy", uiIcon: "copy",
                 enabled: isNotRoot },
+            { title: "Clone to ...", cmd: "cloneTo", uiIcon: "empty",
+                enabled: isNotRoot },
             { title: "Cut <kbd>Ctrl+X</kbd>", cmd: "cut", uiIcon: "cut",
                 enabled: isNotRoot && !isHoisted && parentNotSearch },
             { title: "Paste into <kbd>Ctrl+V</kbd>", cmd: "pasteInto", uiIcon: "paste",
@@ -120,6 +122,12 @@ class TreeContextMenu {
         }
         else if (cmd === "copy") {
             clipboard.copy(treeService.getSelectedOrActiveNodes(this.node));
+        }
+        else if (cmd === "cloneTo") {
+            const nodes = treeService.getSelectedOrActiveNodes(this.node);
+            const noteIds = nodes.map(node => node.data.noteId);
+
+            import("../dialogs/clone_to.js").then(d => d.showDialog(noteIds))
         }
         else if (cmd === "cut") {
             clipboard.cut(treeService.getSelectedOrActiveNodes(this.node));
