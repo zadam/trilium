@@ -36,7 +36,7 @@ async function validateParentChild(parentNoteId, childNoteId, branchId = null) {
 }
 
 async function getExistingBranch(parentNoteId, childNoteId) {
-    return await sql.getRow('SELECT * FROM branches WHERE noteId = ? AND parentNoteId = ? AND isDeleted = 0', [childNoteId, parentNoteId]);
+    return await repository.getEntity('SELECT * FROM branches WHERE noteId = ? AND parentNoteId = ? AND isDeleted = 0', [childNoteId, parentNoteId]);
 }
 
 /**
@@ -123,6 +123,9 @@ async function sortNotesAlphabetically(parentNoteId, directoriesFirst = false) {
     });
 }
 
+/**
+ * @deprecated - this will be removed in the future
+ */
 async function setNoteToParent(noteId, prefix, parentNoteId) {
     const parentNote = await repository.getNote(parentNoteId);
 
@@ -151,11 +154,19 @@ async function setNoteToParent(noteId, prefix, parentNoteId) {
             throw new Error(`Cannot create a branch for ${noteId} which is deleted.`);
         }
 
-        await new Branch({
-            noteId: noteId,
-            parentNoteId: parentNoteId,
-            prefix: prefix
-        }).save();
+        const branch = await repository.getEntity('SELECT * FROM branches WHERE isDeleted = 0 AND noteId = ? AND parentNoteId = ?', [noteId, parentNoteId]);
+
+        if (branch) {
+            branch.prefix = prefix;
+            await branch.save();
+        }
+        else {
+            await new Branch({
+                noteId: noteId,
+                parentNoteId: parentNoteId,
+                prefix: prefix
+            }).save();
+        }
     }
 }
 
