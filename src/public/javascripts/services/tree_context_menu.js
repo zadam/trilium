@@ -17,11 +17,12 @@ class TreeContextMenu {
 
     getNoteTypeItems(baseCmd) {
         return [
-            { title: "Text", cmd: baseCmd + "_text", uiIcon: "file" },
-            { title: "Code", cmd: baseCmd + "_code", uiIcon: "terminal" },
-            { title: "Saved search", cmd: baseCmd + "_search", uiIcon: "search-folder" },
-            { title: "Relation Map", cmd: baseCmd + "_relation-map", uiIcon: "map" },
-            { title: "Render HTML note", cmd: baseCmd + "_render", uiIcon: "play" }
+            { title: "Text", cmd: baseCmd + "_text", uiIcon: "note" },
+            { title: "Code", cmd: baseCmd + "_code", uiIcon: "code" },
+            { title: "Saved search", cmd: baseCmd + "_search", uiIcon: "file-find" },
+            { title: "Relation Map", cmd: baseCmd + "_relation-map", uiIcon: "map-alt" },
+            { title: "Render HTML note", cmd: baseCmd + "_render", uiIcon: "extension" },
+            { title: "Book", cmd: baseCmd + "_book", uiIcon: "book" }
         ];
     }
 
@@ -63,10 +64,12 @@ class TreeContextMenu {
             { title: "Unprotect subtree", cmd: "unprotectSubtree", uiIcon: "shield", enabled: noSelectedNotes },
             { title: "----" },
             { title: "Copy / clone <kbd>Ctrl+C</kbd>", cmd: "copy", uiIcon: "copy",
-                enabled: isNotRoot },
+                enabled: isNotRoot && !isHoisted },
             { title: "Clone to ... <kbd>Ctrl+Shift+C</kbd>", cmd: "cloneTo", uiIcon: "empty",
-                enabled: isNotRoot },
+                enabled: isNotRoot && !isHoisted },
             { title: "Cut <kbd>Ctrl+X</kbd>", cmd: "cut", uiIcon: "cut",
+                enabled: isNotRoot && !isHoisted && parentNotSearch },
+            { title: "Move to ... <kbd>Ctrl+Shift+X</kbd>", cmd: "moveTo", uiIcon: "empty",
                 enabled: isNotRoot && !isHoisted && parentNotSearch },
             { title: "Paste into <kbd>Ctrl+V</kbd>", cmd: "pasteInto", uiIcon: "paste",
                 enabled: !clipboard.isEmpty() && notSearch && noSelectedNotes },
@@ -127,10 +130,15 @@ class TreeContextMenu {
             const nodes = treeService.getSelectedOrActiveNodes(this.node);
             const noteIds = nodes.map(node => node.data.noteId);
 
-            import("../dialogs/clone_to.js").then(d => d.showDialog(noteIds))
+            import("../dialogs/clone_to.js").then(d => d.showDialog(noteIds));
         }
         else if (cmd === "cut") {
             clipboard.cut(treeService.getSelectedOrActiveNodes(this.node));
+        }
+        else if (cmd === "moveTo") {
+            const nodes = treeService.getSelectedOrActiveNodes(this.node);
+
+            import("../dialogs/move_to.js").then(d => d.showDialog(nodes));
         }
         else if (cmd === "pasteAfter") {
             clipboard.pasteAfter(this.node);

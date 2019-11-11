@@ -18,6 +18,7 @@ const NOTE_INFO = "../dialogs/note_info.js";
 const ABOUT = "../dialogs/about.js";
 const LINK_MAP = "../dialogs/link_map.js";
 const CLONE_TO = "../dialogs/clone_to.js";
+const MOVE_TO = "../dialogs/move_to.js";
 
 function registerEntrypoints() {
     // hot keys are active also inside inputs and content editables
@@ -189,14 +190,22 @@ function registerEntrypoints() {
 
     utils.bindGlobalShortcut('ctrl+shift+c', () => import(CLONE_TO).then(d => {
         const activeNode = treeService.getActiveNode();
-        console.log("activeNode", activeNode);
+
         const selectedOrActiveNodes = treeService.getSelectedOrActiveNodes(activeNode);
-        console.log("selectedOrActiveNodes", selectedOrActiveNodes);
 
         const noteIds = selectedOrActiveNodes.map(node => node.data.noteId);
 
         d.showDialog(noteIds);
     }));
+
+    utils.bindGlobalShortcut('ctrl+shift+x', () => import(MOVE_TO).then(d => {
+        const activeNode = treeService.getActiveNode();
+
+        const selectedOrActiveNodes = treeService.getSelectedOrActiveNodes(activeNode);
+
+        d.showDialog(selectedOrActiveNodes);
+    }));
+
 }
 
 export default {

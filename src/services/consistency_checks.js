@@ -166,7 +166,7 @@ async function findBrokenReferenceIssues() {
             }
         });
 
-    await findAndFixIssues(`
+    await findIssues(`
           SELECT noteRevisionId, note_revisions.noteId
           FROM note_revisions LEFT JOIN notes USING(noteId)
           WHERE notes.noteId IS NULL`,
