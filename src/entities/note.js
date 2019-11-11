@@ -419,7 +419,7 @@ class Note extends Entity {
     }
 
     /**
-     * Creates given attribute name-value pair if it doesn't exist.
+     * Update's given attribute's value or creates it if it doesn't exist
      *
      * @param {string} type - attribute type (label, relation, etc.)
      * @param {string} name - attribute name
@@ -428,9 +428,17 @@ class Note extends Entity {
      */
     async setAttribute(type, name, value) {
         const attributes = await this.getOwnedAttributes();
-        let attr = attributes.find(attr => attr.type === type && (value === undefined || attr.value === value));
+        let attr = attributes.find(attr => attr.type === type && attr.name === name);
 
-        if (!attr) {
+        if (attr) {
+            if (attr.value !== value) {
+                attr.value = value;
+                await attr.save();
+
+                this.invalidateAttributeCache();
+            }
+        }
+        else {
             attr = new Attribute({
                 noteId: this.noteId,
                 type: type,
@@ -532,7 +540,7 @@ class Note extends Entity {
     async toggleRelation(enabled, name, value) { return await this.toggleAttribute(RELATION, enabled, name, value); }
 
     /**
-     * Create label name-value pair if it doesn't exist yet.
+     * Update's given label's value or creates it if it doesn't exist
      *
      * @param {string} name - label name
      * @param {string} [value] - label value
@@ -541,7 +549,7 @@ class Note extends Entity {
     async setLabel(name, value) { return await this.setAttribute(LABEL, name, value); }
 
     /**
-     * Create relation name-value pair if it doesn't exist yet.
+     * Update's given relation's value or creates it if it doesn't exist
      *
      * @param {string} name - relation name
      * @param {string} [value] - relation value (noteId)
