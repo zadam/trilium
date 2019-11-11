@@ -335,6 +335,27 @@ async function findLogicIssues() {
         ({noteId}) => `Note ${noteId} content is not null even though the note is erased`);
 
     await findAndFixIssues(`
+          SELECT noteId, noteRevisionId
+          FROM notes
+          JOIN note_revisions USING(noteId)
+          WHERE
+            notes.isErased = 1
+            AND note_revisions.isErased = 0`,
+        async ({noteId, noteRevisionId}, autoFix) => {
+            if (autoFix) {
+                const noteRevision = await repository.getNoteRevision(noteRevisionId);
+                noteRevision.isErased = true;
+                await noteRevision.setContent(null);
+                await noteRevision.save();
+
+                logFix(`Note revision ${noteRevisionId} has been erased since its note ${noteId} is also erased.`);
+            }
+            else {
+                logError(`Note revision ${noteRevisionId} is not erased even though note ${noteId} is erased.`);
+            }
+        });
+
+    await findAndFixIssues(`
           SELECT noteRevisionId
           FROM note_revisions
           JOIN note_revision_contents USING(noteRevisionId)

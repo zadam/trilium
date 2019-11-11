@@ -19,6 +19,8 @@ SELECT noteRevisionId, noteId, title, contentLength, 0, isProtected, utcDateLast
 DROP TABLE note_revisions;
 ALTER TABLE note_revisions_mig RENAME TO note_revisions;
 
+UPDATE note_revisions SET isErased = (SELECT isErased FROM notes WHERE notes.noteId = note_revisions.noteId);
+
 CREATE INDEX `IDX_note_revisions_noteId` ON `note_revisions` (`noteId`);
 CREATE INDEX `IDX_note_revisions_utcDateCreated` ON `note_revisions` (`utcDateCreated`);
 CREATE INDEX `IDX_note_revisions_utcDateLastEdited` ON `note_revisions` (`utcDateLastEdited`);
