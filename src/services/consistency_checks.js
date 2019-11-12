@@ -32,12 +32,17 @@ async function findAndFixIssues(query, fixerCb) {
     for (const res of results) {
         const autoFix = await optionsService.getOptionBool('autoFixConsistencyIssues');
 
-        await fixerCb(res, autoFix);
+        try {
+            await fixerCb(res, autoFix);
 
-        if (autoFix) {
-            fixedIssues = true;
+            if (autoFix) {
+                fixedIssues = true;
+            } else {
+                unrecoveredConsistencyErrors = true;
+            }
         }
-        else {
+        catch (e) {
+            logError(`Fixer failed with ${e.message} ${e.stack}`);
             unrecoveredConsistencyErrors = true;
         }
     }

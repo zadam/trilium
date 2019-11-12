@@ -20,7 +20,7 @@ DROP TABLE notes;
 ALTER TABLE notes_mig RENAME TO notes;
 
 UPDATE notes SET isErased = 1 WHERE isDeleted = 1
-AND 1=(SELECT CASE content WHEN NULL THEN 1 ELSE 0 END FROM note_contents WHERE note_contents.noteId = notes.noteId);
+AND 1=(SELECT CASE WHEN content IS NULL THEN 1 ELSE 0 END FROM note_contents WHERE note_contents.noteId = notes.noteId);
 
 CREATE INDEX `IDX_notes_isDeleted` ON `notes` (`isDeleted`);
 CREATE INDEX `IDX_notes_title` ON `notes` (`title`);
