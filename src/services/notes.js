@@ -450,6 +450,10 @@ async function eraseDeletedNotes() {
 
     const noteIdsToErase = await sql.getColumn("SELECT noteId FROM notes WHERE isDeleted = 1 AND isErased = 0 AND notes.utcDateModified <= ?", [dateUtils.utcDateStr(cutoffDate)]);
 
+    if (noteIdsToErase.length === 0) {
+        return;
+    }
+
     const utcNowDateTime = dateUtils.utcNowDateTime();
     const localNowDateTime = dateUtils.localNowDateTime();
 
