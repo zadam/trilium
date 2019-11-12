@@ -478,6 +478,7 @@ button.icon-button {
 
 pre:not(.CodeMirror-line) {
     color: var(--main-text-color) !important;
+    white-space: pre-wrap;
 }
 
 .file-preview-content {
