@@ -52,7 +52,7 @@ ul.fancytree-container {
     height: auto;
     text-align: center;
     position: relative;
-    top: -8px;
+    top: -5px;
 }
 
 .fancytree-node:not(.fancytree-loading) .fancytree-expander:before {
@@ -71,6 +71,8 @@ ul.fancytree-container {
 
 .fancytree-node.fancytree-expanded .fancytree-expander:before {
     content: "\2304";
+    position: relative;
+    top: -10px;
 }
 
 .note-title[readonly] {
@@ -728,7 +730,7 @@ div[data-notify="container"] {
     display: inline-block;
 }
 
-.fancytree-loading  span.fancytree-expander:after {
+.fancytree-loading span.fancytree-expander:after {
     content: " ";
     display: block;
     border-radius: 50%;

@@ -122,13 +122,14 @@ li.dropdown-submenu:hover > ul.dropdown-menu {
 .fancytree-loading span.fancytree-expander {
     width: 16px;
     height: 16px;
-    margin-left: 6px;
+    margin-left: 2px;
 }
 
-.fancytree-loading  span.fancytree-expander:after {
+.fancytree-loading span.fancytree-expander:after {
     width: 12px;
     height: 12px;
-    margin-top: 2px;
+    margin-top: 4px;
+    margin-left: 1px;
     border-width: 1px;
     border-style: solid;
 }
