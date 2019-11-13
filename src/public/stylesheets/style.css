@@ -48,11 +48,9 @@ ul.fancytree-container {
 
 .fancytree-node:not(.fancytree-loading) .fancytree-expander {
     background: none;
-    width: 18px;
+    width: 21px;
     height: auto;
     text-align: center;
-    position: relative;
-    top: -5px;
 }
 
 .fancytree-node:not(.fancytree-loading) .fancytree-expander:before {
@@ -61,7 +59,10 @@ ul.fancytree-container {
     font-size: x-large;
     text-transform: none;
     line-height: 1;
-    content: "\203A";
+    content: "\e9fa";
+    position: relative;
+    top: -2px;
+    margin-right: 5px;
 }
 
 /* this is done to preserve correct indentation. Better solution would be preferable */
@@ -70,9 +71,8 @@ ul.fancytree-container {
 }
 
 .fancytree-node.fancytree-expanded .fancytree-expander:before {
-    content: "\2304";
-    position: relative;
-    top: -10px;
+    font-family: 'boxicons' !important;
+    content: "\e9f8";
 }
 
 .note-title[readonly] {
