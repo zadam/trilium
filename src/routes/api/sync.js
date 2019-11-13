@@ -9,6 +9,7 @@ const optionService = require('../../services/options');
 const contentHashService = require('../../services/content_hash');
 const log = require('../../services/log');
 const syncOptions = require('../../services/sync_options');
+const dateUtils = require('../../services/date_utils');
 
 async function testSync() {
     try {
@@ -74,19 +75,31 @@ async function forceFullSync() {
 async function forceNoteSync(req) {
     const noteId = req.params.noteId;
 
+    const now = dateUtils.utcNowDateTime();
+
+    await sql.execute(`UPDATE notes SET utcDateModified = ? WHERE noteId = ?`, [now, noteId]);
     await syncTableService.addNoteSync(noteId);
+
+    await sql.execute(`UPDATE note_contents SET utcDateModified = ? WHERE noteId = ?`, [now, noteId]);
     await syncTableService.addNoteContentSync(noteId);
 
     for (const branchId of await sql.getColumn("SELECT branchId FROM branches WHERE noteId = ?", [noteId])) {
+        await sql.execute(`UPDATE branches SET utcDateModified = ? WHERE branchId = ?`, [now, branchId]);
+
         await syncTableService.addBranchSync(branchId);
     }
 
     for (const attributeId of await sql.getColumn("SELECT attributeId FROM attributes WHERE noteId = ?", [noteId])) {
+        await sql.execute(`UPDATE attributes SET utcDateModified = ? WHERE attributeId = ?`, [now, attributeId]);
+
         await syncTableService.addAttributeSync(attributeId);
     }
 
     for (const noteRevisionId of await sql.getColumn("SELECT noteRevisionId FROM note_revisions WHERE noteId = ?", [noteId])) {
+        await sql.execute(`UPDATE note_revisions SET utcDateModified = ? WHERE noteRevisionId = ?`, [now, noteRevisionId]);
         await syncTableService.addNoteRevisionSync(noteRevisionId);
+
+        await sql.execute(`UPDATE note_revision_contents SET utcDateModified = ? WHERE noteRevisionId = ?`, [now, noteRevisionId]);
         await syncTableService.addNoteRevisionContentSync(noteRevisionId);
     }
 
