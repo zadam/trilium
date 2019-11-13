@@ -78,7 +78,7 @@ html, body {
 }
 
 .fancytree-node .fancytree-expander:before {
-    font-size: 2em;
+    font-size: 2em !important;
 }
 
 kbd {
@@ -89,16 +89,19 @@ kbd {
     font-size: larger;
 }
 
+span.fancytree-expander {
+    width: 24px !important;
+}
+
 .fancytree-loading span.fancytree-expander {
-    width: 32px;
+    width: 24px;
     height: 32px;
-    margin-left: 4px;
 }
 
 .fancytree-loading  span.fancytree-expander:after {
     width: 20px;
     height: 20px;
-    margin: 4px;
+    margin-top: 4px;
     border-width: 2px;
     border-style: solid;
 }
