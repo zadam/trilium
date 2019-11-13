@@ -53,7 +53,7 @@ async function updateEntity(sync, entity, sourceId) {
 async function updateNote(entity, sourceId) {
     const origNote = await sql.getRow("SELECT * FROM notes WHERE noteId = ?", [entity.noteId]);
 
-    if (!origNote || origNote.utcDateModified <= entity.utcDateModified) {
+    if (!origNote || origNote.utcDateModified < entity.utcDateModified) {
         await sql.transactional(async () => {
             await sql.replace("notes", entity);
 
@@ -67,7 +67,7 @@ async function updateNote(entity, sourceId) {
 async function updateNoteContent(entity, sourceId) {
     const origNoteContent = await sql.getRow("SELECT * FROM note_contents WHERE noteId = ?", [entity.noteId]);
 
-    if (!origNoteContent || origNoteContent.utcDateModified <= entity.utcDateModified) {
+    if (!origNoteContent || origNoteContent.utcDateModified < entity.utcDateModified) {
         entity.content = entity.content === null ? null : Buffer.from(entity.content, 'base64');
 
         await sql.transactional(async () => {
