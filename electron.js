@@ -21,26 +21,6 @@ let mainWindow;
 
 require('electron-dl')({ saveAs: true });
 
-// contextMenu({
-//     menu: (actions, params, browserWindow) => [
-//         actions.cut(),
-//         actions.copy(),
-//         actions.copyLink(),
-//         actions.paste(),
-//         {
-//             label: 'Search DuckDuckGo for “{selection}”',
-//             // Only show it when right-clicking text
-//             visible: params.selectionText.trim().length > 0,
-//             click: () => {
-//                 const {shell} = require('electron');
-//
-//                 shell.openExternal(`https://duckduckgo.com?q=${encodeURIComponent(params.selectionText)}`);
-//             }
-//         },
-//         actions.inspect()
-//     ]
-// });
-
 function onClosed() {
     // Dereference the window
     // For multiple windows store them in an array
@@ -103,6 +83,9 @@ async function createMainWindow() {
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
         app.quit();
+    }
+    else if (process.platform === 'win32') {
+        app.exit(0); // attempt to fix the issue when app.quite() won't terminate processes on windows
     }
 });
 

@@ -732,6 +732,7 @@ div[data-notify="container"] {
 
 .fancytree-loading span.fancytree-expander:after {
     content: " ";
+    color: inherit !important;
     display: block;
     border-radius: 50%;
     border-color: #000 transparent #000 transparent;

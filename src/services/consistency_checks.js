@@ -370,7 +370,8 @@ async function findLogicIssues() {
         async ({noteRevisionId}, autoFix) => {
             if (autoFix) {
                 const noteRevision = await repository.getNoteRevision(noteRevisionId);
-                await noteRevision.setContent('');
+                noteRevision.isErased = true;
+                await noteRevision.save();
 
                 logFix(`Note revision ${noteRevisionId} content was set to empty string since it was null even though it is not erased`);
             }
