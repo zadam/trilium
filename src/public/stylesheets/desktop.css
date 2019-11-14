@@ -145,7 +145,7 @@ body {
 
 ::-webkit-scrollbar-thumb {
     border-radius: 3px;
-    border: 1px solid var(--main-border-color);
+    border: 1px solid var(--scrollbar-border-color);
 }
 
 ::-webkit-scrollbar-corner {
@@ -256,11 +256,14 @@ body {
     border-top-right-radius: 8px;
     overflow: hidden;
     pointer-events: all;
-    background-image: linear-gradient(to bottom, var(--accented-background-color), var(--main-background-color));
+    background-color: var(--accented-background-color);
+    border-bottom: 1px solid var(--button-border-color);
 }
 
 .note-tab-row .note-tab[active] .note-tab-wrapper {
-    background-image: linear-gradient(to bottom, var(--more-accented-background-color), var(--main-background-color));
+    background-color: var(--main-background-color);
+    border: 1px solid var(--button-border-color);
+    border-bottom: 0;
     font-weight: bold;
 }
 
@@ -380,6 +383,8 @@ body {
     border: 0;
     background: inherit;
     font-weight: bold;
+    text-transform: uppercase;
+    color: var(--muted-text-color) !important;
 }
 
 .note-detail-sidebar .widget-header-action {
@@ -388,7 +393,9 @@ body {
 }
 
 .note-detail-sidebar .widget-help {
-    color: var(--main-text-color);
+    color: var(--muted-text-color);
+    position: relative;
+    top: 2px;
 }
 
 .note-detail-sidebar .widget-help.no-link:hover {
