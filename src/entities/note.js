@@ -473,6 +473,32 @@ class Note extends Entity {
     }
 
     /**
+     * @return {Promise<Attribute>}
+     */
+    async createAttribute(type, name, value = "") {
+        const attr = new Attribute({
+            noteId: this.noteId,
+            type: type,
+            name: name,
+            value: value
+        });
+
+        await attr.save();
+
+        this.invalidateAttributeCache();
+
+        return attr;
+    }
+
+    async createLabel(name, value = "") {
+        return await this.createAttribute(LABEL, name, value);
+    }
+
+    async createRelation(name, targetNoteId) {
+        return await this.createAttribute(RELATION, name, targetNoteId);
+    }
+
+    /**
      * @param {string} name - label name
      * @returns {Promise<boolean>} true if label exists (including inherited)
      */

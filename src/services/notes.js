@@ -16,29 +16,14 @@ const protectedSessionService = require('../services/protected_session');
 const log = require('../services/log');
 const noteRevisionService = require('../services/note_revisions');
 
-async function getNewNotePosition(parentNoteId, noteData) {
-    let newNotePos = 0;
+async function getNewNotePosition(parentNoteId) {
+    const maxNotePos = await sql.getValue(`
+            SELECT MAX(notePosition) 
+            FROM branches 
+            WHERE parentNoteId = ? 
+              AND isDeleted = 0`, [parentNoteId]);
 
-    if (noteData.target === 'into') {
-        const maxNotePos = await sql.getValue('SELECT MAX(notePosition) FROM branches WHERE parentNoteId = ? AND isDeleted = 0', [parentNoteId]);
-
-        newNotePos = maxNotePos === null ? 0 : maxNotePos + 10;
-    }
-    else if (noteData.target === 'after') {
-        const afterNote = await sql.getRow('SELECT notePosition FROM branches WHERE branchId = ?', [noteData.target_branchId]);
-
-        newNotePos = afterNote.notePosition + 10;
-
-        // not updating utcDateModified to avoig having to sync whole rows
-        await sql.execute('UPDATE branches SET notePosition = notePosition + 10 WHERE parentNoteId = ? AND notePosition > ? AND isDeleted = 0',
-            [parentNoteId, afterNote.notePosition]);
-
-        await syncTableService.addNoteReorderingSync(parentNoteId);
-    }
-    else {
-        throw new Error('Unknown target: ' + noteData.target);
-    }
-    return newNotePos;
+    return maxNotePos === null ? 0 : maxNotePos + 10;
 }
 
 async function triggerChildNoteCreated(childNote, parentNote) {
@@ -49,31 +34,12 @@ async function triggerNoteTitleChanged(note) {
     await eventService.emit(eventService.NOTE_TITLE_CHANGED, note);
 }
 
-/**
- * FIXME: noteData has mandatory property "target", it might be better to add it as parameter to reflect this
- */
-async function createNewNote(parentNoteId, noteData) {
-    let newNotePos;
-
-    if (noteData.notePosition !== undefined) {
-        newNotePos = noteData.notePosition;
-    }
-    else {
-        newNotePos = await getNewNotePosition(parentNoteId, noteData);
-    }
-
-    const parentNote = await repository.getNote(parentNoteId);
-
-    if (!parentNote) {
-        throw new Error(`Parent note ${parentNoteId} not found.`);
-    }
-
+function deriveTypeAndMime(noteData, parentNote) {
     if (!noteData.type) {
         if (parentNote.type === 'text' || parentNote.type === 'code') {
             noteData.type = parentNote.type;
             noteData.mime = parentNote.mime;
-        }
-        else {
+        } else {
             // inheriting note type makes sense only for text and code
             noteData.type = 'text';
             noteData.mime = 'text/html';
@@ -83,54 +49,83 @@ async function createNewNote(parentNoteId, noteData) {
     if (!noteData.mime) {
         if (noteData.type === 'text') {
             noteData.mime = 'text/html';
-        }
-        else if (noteData.type === 'code') {
+        } else if (noteData.type === 'code') {
             noteData.mime = 'text/plain';
-        }
-        else if (noteData.type === 'relation-map' || noteData.type === 'search') {
+        } else if (noteData.type === 'relation-map' || noteData.type === 'search') {
             noteData.mime = 'application/json';
         }
     }
 
     noteData.type = noteData.type || parentNote.type;
     noteData.mime = noteData.mime || parentNote.mime;
+}
 
-    const note = await new Note({
-        noteId: noteData.noteId, // optionally can force specific noteId
-        title: noteData.title,
-        isProtected: noteData.isProtected,
-        type: noteData.type || 'text',
-        mime: noteData.mime || 'text/html'
-    }).save();
-
-    if (note.isStringNote() || this.type === 'render') { // render to just make sure it's not null
-        noteData.content = noteData.content || "";
-    }
-
-    await note.setContent(noteData.content);
-
-    const branch = await new Branch({
-        noteId: note.noteId,
-        parentNoteId: parentNoteId,
-        notePosition: newNotePos,
-        prefix: noteData.prefix,
-        isExpanded: !!noteData.isExpanded
-    }).save();
-
+async function copyChildAttributes(parentNote, childNote) {
     for (const attr of await parentNote.getAttributes()) {
         if (attr.name.startsWith("child:")) {
             await new Attribute({
-               noteId: note.noteId,
-               type: attr.type,
-               name: attr.name.substr(6),
-               value: attr.value,
-               position: attr.position,
-               isInheritable: attr.isInheritable
+                noteId: childNote.noteId,
+                type: attr.type,
+                name: attr.name.substr(6),
+                value: attr.value,
+                position: attr.position,
+                isInheritable: attr.isInheritable
             }).save();
 
-            note.invalidateAttributeCache();
+            childNote.invalidateAttributeCache();
         }
     }
+}
+
+/**
+ * Following object properties are mandatory:
+ * - {string} parentNoteId
+ * - {string} title
+ * - {*} content
+ * - {string} type
+ *
+ * Following are optional (have defaults)
+ * - {string} mime - value is derived from default mimes for type
+ * - {boolean} isProtected - default is false
+ * - {boolean} isExpanded - default is false
+ * - {string} prefix - default is empty string
+ * - {integer} notePosition - default is last existing notePosition in a parent + 10
+ *
+ * @param params
+ * @return {Promise<{note: Entity, branch: Entity}>}
+ */
+async function createNewNote(params) {
+    const parentNote = await repository.getNote(params.parentNoteId);
+
+    if (!parentNote) {
+        throw new Error(`Parent note ${params.parentNoteId} not found.`);
+    }
+
+    if (!params.title || params.title.trim().length === 0) {
+        throw new Error(`Note title must not be empty`);
+    }
+
+    deriveTypeAndMime(params, parentNote);
+
+    const note = await new Note({
+        noteId: params.noteId, // optionally can force specific noteId
+        title: params.title,
+        isProtected: !!params.isProtected,
+        type: params.type,
+        mime: params.mime
+    }).save();
+
+    await note.setContent(params.content);
+
+    const branch = await new Branch({
+        noteId: note.noteId,
+        parentNoteId: params.parentNoteId,
+        notePosition: params.notePosition !== undefined ? params.notePosition : await getNewNotePosition(params.parentNoteId),
+        prefix: params.prefix,
+        isExpanded: !!params.isExpanded
+    }).save();
+
+    await copyChildAttributes(parentNote, note);
 
     await triggerNoteTitleChanged(note);
     await triggerChildNoteCreated(note, parentNote);
@@ -141,13 +136,41 @@ async function createNewNote(parentNoteId, noteData) {
     };
 }
 
+// methods below should be probably just backend API methods
+async function createJsonNote(parentNoteId, title, content = {}, params = {}) {
+    params.parentNoteId = parentNoteId;
+    params.title = title;
+
+    params.type = "code";
+    params.mime = "application/json";
+
+    params.content = JSON.stringify(content, null, '\t');
+
+    return await createNewNote(params);
+}
+
+async function createTextNote(parentNoteId, title, content = "", params = {}) {
+    params.parentNoteId = parentNoteId;
+    params.title = title;
+
+    params.type = "text";
+    params.mime = "text/html";
+
+    params.content = content;
+
+    return await createNewNote(params);
+}
+
+/**
+ * @deprecated
+ */
 async function createNote(parentNoteId, title, content = "", extraOptions = {}) {
     if (!parentNoteId) throw new Error("Empty parentNoteId");
     if (!title) throw new Error("Empty title");
 
     const noteData = {
         title: title,
-        content: extraOptions.json ? JSON.stringify(content, null, '\t') : content,
+        content: content,
         target: 'into',
         noteId: extraOptions.noteId,
         isProtected: !!extraOptions.isProtected,
@@ -158,12 +181,7 @@ async function createNote(parentNoteId, title, content = "", extraOptions = {}) 
         notePosition: extraOptions.notePosition
     };
 
-    if (extraOptions.json && !noteData.type) {
-        noteData.type = "code";
-        noteData.mime = "application/json";
-    }
-
-    const {note, branch} = await createNewNote(parentNoteId, noteData);
+    const {note, branch} = await createNewNote(parentNoteId, title, noteData);
 
     for (const attr of extraOptions.attributes || []) {
         await attributeService.createAttribute({
