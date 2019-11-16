@@ -7,6 +7,10 @@ const dateUtils = require('../services/date_utils');
  * @param {Note} note
  */
 async function protectNoteRevisions(note) {
+    if (await note.hasLabel('disableVersioning')) {
+        return;
+    }
+
     for (const revision of await note.getRevisions()) {
         if (note.isProtected !== revision.isProtected) {
             const content = await revision.getContent();

@@ -19,6 +19,8 @@ const BUILTIN_ATTRIBUTES = [
     { type: 'label', name: 'appTheme' },
     { type: 'label', name: 'hidePromotedAttributes' },
     { type: 'label', name: 'readOnly' },
+    { type: 'label', name: 'cssClass' },
+    { type: 'label', name: 'iconClass' },
     { type: 'label', name: 'run', isDangerous: true },
     { type: 'label', name: 'customRequestHandler', isDangerous: true },
     { type: 'label', name: 'customResourceProvider', isDangerous: true },
