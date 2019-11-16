@@ -56,7 +56,9 @@ async function createNote(req) {
     const params = Object.assign({}, req.body); // clone
     params.parentNoteId = req.params.parentNoteId;
 
-    const { note, branch } = await noteService.createNewNote(params);
+    const { target, targetBranchId } = req.query;
+
+    const { note, branch } = await noteService.createNewNoteWithTarget(target, targetBranchId, params);
 
     note.cssClass = (await note.getLabels("cssClass")).map(label => label.value).join(" ");
 

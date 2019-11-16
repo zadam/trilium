@@ -76,7 +76,7 @@ async function copyChildAttributes(parentNote, childNote) {
  * - {string} parentNoteId
  * - {string} title
  * - {*} content
- * - {string} type
+ * - {string} type - text, code, file, image, search, book, relation-map
  *
  * Following are optional (have defaults)
  * - {string} mime - value is derived from default mimes for type
@@ -126,6 +126,28 @@ async function createNewNote(params) {
         note,
         branch
     };
+}
+
+async function createNewNoteWithTarget(target, targetBranchId, params) {
+    if (target === 'into') {
+        return await createNewNote(params);
+    }
+    else if (target === 'after') {
+        const afterNote = await sql.getRow('SELECT notePosition FROM branches WHERE branchId = ?', [noteData.target_branchId]);
+
+        // not updating utcDateModified to avoig having to sync whole rows
+        await sql.execute('UPDATE branches SET notePosition = notePosition + 10 WHERE parentNoteId = ? AND notePosition > ? AND isDeleted = 0',
+            [params.parentNoteId, afterNote.notePosition]);
+
+        params.notePosition = afterNote.notePosition + 10;
+
+        await createNewNote(params);
+
+        await syncTableService.addNoteReorderingSync(params.parentNoteId);
+    }
+    else {
+        throw new Error(`Unknown target ${target}`);
+    }
 }
 
 // methods below should be probably just backend API methods
@@ -512,6 +534,7 @@ sqlInit.dbReady.then(() => {
 
 module.exports = {
     createNewNote,
+    createNewNoteWithTarget,
     updateNote,
     deleteBranch,
     protectNoteRecursively,
