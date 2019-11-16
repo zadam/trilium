@@ -728,6 +728,26 @@ class Note extends Entity {
                 AND parent_notes.isDeleted = 0`, [this.noteId]);
     }
 
+    /**
+     * @return {Promise<string[][]>} - array of notePaths (each represented by array of noteIds constituting the particular note path)
+     */
+    async getAllNotePaths() {
+        if (this.noteId === 'root') {
+            return [['root']];
+        }
+
+        const notePaths = [];
+
+        for (const parentNote of await this.getParentNotes()) {
+            for (const parentPath of await parentNote.getAllNotePaths()) {
+                parentPath.push(this.noteId);
+                notePaths.push(parentPath);
+            }
+        }
+
+        return notePaths;
+    }
+
     beforeSaving() {
         if (!this.isDeleted) {
             this.isDeleted = false;

@@ -34,10 +34,10 @@ const dateUtils = require('../services/date_utils');
 /**
  * ApiToken is an entity representing token used to authenticate against Trilium API from client applications. Currently used only by Trilium Sender.
  *
- * @param {string} apiTokenId - primary key
- * @param {string} token
- * @param {boolean} isDeleted - true if API token is deleted
- * @param {string} utcDateCreated
+ * @property {string} apiTokenId - primary key
+ * @property {string} token
+ * @property {boolean} isDeleted - true if API token is deleted
+ * @property {string} utcDateCreated
  *
  * @extends Entity
  */

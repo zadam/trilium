@@ -4,7 +4,6 @@ import server from './server.js';
 import ws from "./ws.js";
 import treeCache from "./tree_cache.js";
 import NoteFull from "../entities/note_full.js";
-import bundleService from "./bundle.js";
 import utils from "./utils.js";
 import contextMenuService from "./context_menu.js";
 import treeUtils from "./tree_utils.js";
