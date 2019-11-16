@@ -22,7 +22,7 @@ async function getNote(req) {
         }
     }
 
-    note.cssClass = (await note.getLabels("cssClass")).map(label => label.value).join(" ");
+    await treeService.setCssClassesToNotes([note]);
 
     return note;
 }
@@ -58,7 +58,7 @@ async function createNote(req) {
 
     const { note, branch } = await noteService.createNewNote(parentNoteId, newNote, req);
 
-    note.cssClass = (await note.getLabels("cssClass")).map(label => label.value).join(" ");
+    await treeService.setCssClassesToNotes([note]);
 
     return {
         note,

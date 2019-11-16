@@ -7,6 +7,7 @@ import utils from "../services/utils.js";
 import linkService from "../services/link.js";
 import libraryLoader from "../services/library_loader.js";
 import noteAutocompleteService from "../services/note_autocomplete.js";
+import treeService from "../services/tree.js";
 
 const $dialog = $("#attributes-dialog");
 const $saveAttributesButton = $("#save-attributes-button");
@@ -175,6 +176,7 @@ function AttributesModel() {
         ctx.attributes.refreshAttributes();
 
         noteDetailService.reload();
+        treeService.reload();
     };
 
     function addLastEmptyRow() {

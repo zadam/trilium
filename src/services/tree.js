@@ -4,7 +4,85 @@ const sql = require('./sql');
 const repository = require('./repository');
 const Branch = require('../entities/branch');
 const syncTableService = require('./sync_table');
+const log = require('./log');
 const protectedSessionService = require('./protected_session');
+const noteCacheService = require('./note_cache');
+
+async function setCssClassesToNotes(notes) {
+    const noteIds = notes.map(note => note.noteId);
+    const noteMap = new Map(notes.map(note => [note.noteId, note]));
+
+    const templateClassLabels = await sql.getManyRows(`
+        SELECT 
+          templAttr.noteId, 
+          attr.name, 
+          attr.value 
+        FROM attributes templAttr
+        JOIN attributes attr ON attr.noteId = templAttr.value
+        WHERE 
+          templAttr.isDeleted = 0 
+          AND templAttr.type = 'relation'
+          AND templAttr.name = 'template'
+          AND templAttr.noteId IN (???)
+          AND attr.isDeleted = 0
+          AND attr.type = 'label'
+          AND attr.name IN ('cssClass', 'iconClass')`, noteIds);
+
+    const noteClassLabels = await sql.getManyRows(`
+        SELECT 
+           noteId, name, value 
+        FROM attributes 
+        WHERE 
+           isDeleted = 0 
+           AND type = 'label' 
+           AND name IN ('cssClass', 'iconClass') 
+           AND noteId IN (???)`, noteIds);
+
+    // first template ones, then on the note itself so that note class label have priority
+    // over template ones for iconClass (which can be only one)
+    const allClassLabels = templateClassLabels.concat(noteClassLabels);
+
+    for (const label of allClassLabels) {
+        const note = noteMap.get(label.noteId);
+
+        if (note) {
+            if (label.name === 'cssClass') {
+                note.cssClass = note.cssClass ? `${note.cssClass} ${label.value}` : label.value;
+            } else if (label.name === 'iconClass') {
+                note.iconClass = label.value;
+            } else {
+                log.error(`Unrecognized label name ${label.name}`);
+            }
+        }
+    }
+}
+
+async function getNotes(noteIds) {
+    // we return also deleted notes which have been specifically asked for
+    const notes = await sql.getManyRows(`
+        SELECT 
+          noteId,
+          title,
+          isProtected, 
+          type,
+          mime,
+          isDeleted
+        FROM notes
+        WHERE noteId IN (???)`, noteIds);
+
+    await setCssClassesToNotes(notes);
+
+    protectedSessionService.decryptNotes(notes);
+
+    await noteCacheService.loadedPromise;
+
+    notes.forEach(note => {
+        note.isProtected = !!note.isProtected;
+        note.archived = noteCacheService.isArchived(note.noteId)
+    });
+
+    return notes;
+}
 
 async function validateParentChild(parentNoteId, childNoteId, branchId = null) {
     if (childNoteId === 'root') {
@@ -171,8 +249,10 @@ async function setNoteToParent(noteId, prefix, parentNoteId) {
 }
 
 module.exports = {
+    getNotes,
     validateParentChild,
     getBranch,
     sortNotesAlphabetically,
-    setNoteToParent
+    setNoteToParent,
+    setCssClassesToNotes
 };
