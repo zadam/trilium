@@ -48,6 +48,7 @@ async function importOpml(taskContext, fileBuffer, parentNote) {
             parentNoteId,
             title,
             content,
+            type: 'text',
             isProtected: parentNote.isProtected && protectedSessionService.isProtectedSessionAvailable()
         });
 
