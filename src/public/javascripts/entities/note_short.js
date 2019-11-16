@@ -35,6 +35,8 @@ class NoteShort {
         this.archived = row.archived;
         /** @param {string} */
         this.cssClass = row.cssClass;
+        /** @param {string} */
+        this.iconClass = row.iconClass;
 
         /** @type {string[]} */
         this.parents = [];

@@ -41,7 +41,10 @@ const NOTE_TYPE_ICONS = {
 async function getIcon(note) {
     const hoistedNoteId = await hoistedNoteService.getHoistedNoteId();
 
-    if (note.noteId === 'root') {
+    if (note.iconClass) {
+        return note.iconClass;
+    }
+    else if (note.noteId === 'root') {
         return "bx bx-chevrons-right";
     }
     else if (note.noteId === hoistedNoteId) {
