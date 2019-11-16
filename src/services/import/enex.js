@@ -1,7 +1,6 @@
 const sax = require("sax");
 const fileType = require('file-type');
 const stream = require('stream');
-const xml2js = require('xml2js');
 const log = require("../log");
 const utils = require("../utils");
 const noteService = require("../notes");
@@ -22,8 +21,6 @@ let resource;
 
 async function importEnex(taskContext, file, parentNote) {
     const saxStream = sax.createStream(true);
-    const xmlBuilder = new xml2js.Builder({ headless: true });
-    const parser = new xml2js.Parser({ explicitArray: true });
 
     const rootNoteTitle = file.originalname.toLowerCase().endsWith(".enex")
         ? file.originalname.substr(0, file.originalname.length - 5)
@@ -43,28 +40,20 @@ async function importEnex(taskContext, file, parentNote) {
     // when we finish parsing. We use this to be sure that all saving has been finished before returning successfully.
     const saveNotePromises = [];
 
-    async function parseXml(text) {
-        return new Promise(function(resolve, reject)
-        {
-            parser.parseString(text, function (err, result) {
-                if (err) {
-                    reject(err);
-                }
-                else {
-                    resolve(result);
-                }
-            });
-        });
-    }
+    function extractContent(content) {
+        const openingNoteIndex = content.indexOf('<en-note>');
 
-    function extractContent(enNote) {
-        // [] thing is workaround for https://github.com/Leonidas-from-XIV/node-xml2js/issues/484
-        let content = xmlBuilder.buildObject([enNote]);
+        if (openingNoteIndex !== -1) {
+            content = content.substr(openingNoteIndex + 9);
+        }
 
-        const endOfFirstTagIndex = content.indexOf('>');
+        const closingNoteIndex = content.lastIndexOf('</en-note>');
 
-        // strip the <0> and </0> tags
-        content = content.substr(endOfFirstTagIndex + 1, content.length - endOfFirstTagIndex - 5).trim();
+        if (closingNoteIndex !== -1) {
+            content = content.substr(0, closingNoteIndex);
+        }
+
+        content = content.trim();
 
         // workaround for https://github.com/ckeditor/ckeditor5-list/issues/116
         content = content.replace(/<li>\s+<div>/g, "<li>");
@@ -205,10 +194,7 @@ async function importEnex(taskContext, file, parentNote) {
         // make a copy because stream continues with the next async call and note gets overwritten
         let {title, content, attributes, resources, utcDateCreated} = note;
 
-        const xmlObject = await parseXml(content);
-
-        // following is workaround for this issue: https://github.com/Leonidas-from-XIV/node-xml2js/issues/484
-        content = extractContent(xmlObject['en-note']);
+        content = extractContent(content);
 
         const noteEntity = (await noteService.createNewNote({
             parentNoteId: rootNote.noteId,
@@ -220,8 +206,8 @@ async function importEnex(taskContext, file, parentNote) {
             isProtected: parentNote.isProtected && protectedSessionService.isProtectedSessionAvailable(),
         })).note;
 
-        for (const attr of resource.attributes) {
-            await note.addAttribute(attr.type, attr.name, attr.value);
+        for (const attr of attributes) {
+            await noteEntity.addAttribute(attr.type, attr.name, attr.value);
         }
 
         taskContext.increaseProgressCount();
@@ -250,7 +236,7 @@ async function importEnex(taskContext, file, parentNote) {
                 })).note;
 
                 for (const attr of resource.attributes) {
-                    await note.addAttribute(attr.type, attr.name, attr.value);
+                    await noteEntity.addAttribute(attr.type, attr.name, attr.value);
                 }
 
                 taskContext.increaseProgressCount();
