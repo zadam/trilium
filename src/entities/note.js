@@ -475,7 +475,7 @@ class Note extends Entity {
     /**
      * @return {Promise<Attribute>}
      */
-    async createAttribute(type, name, value = "") {
+    async addAttribute(type, name, value = "") {
         const attr = new Attribute({
             noteId: this.noteId,
             type: type,
@@ -490,12 +490,12 @@ class Note extends Entity {
         return attr;
     }
 
-    async createLabel(name, value = "") {
-        return await this.createAttribute(LABEL, name, value);
+    async addLabel(name, value = "") {
+        return await this.addAttribute(LABEL, name, value);
     }
 
-    async createRelation(name, targetNoteId) {
-        return await this.createAttribute(RELATION, name, targetNoteId);
+    async addRelation(name, targetNoteId) {
+        return await this.addAttribute(RELATION, name, targetNoteId);
     }
 
     /**

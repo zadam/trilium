@@ -41,15 +41,17 @@ async function importImage(file, parentNote, taskContext) {
 
 async function importFile(taskContext, file, parentNote) {
     const originalName = file.originalname;
-    const size = file.size;
 
-    const {note} = await noteService.createNote(parentNote.noteId, originalName, file.buffer, {
-        target: 'into',
+    const {note} = await noteService.createNewNote({
+        parentNoteId: parentNote.noteId,
+        title: originalName,
+        content: file.buffer,
         isProtected: parentNote.isProtected && protectedSessionService.isProtectedSessionAvailable(),
         type: 'file',
-        mime: mimeService.getMime(originalName) || file.mimetype,
-        attributes: [{ type: "label", name: "originalFileName", value: originalName }]
+        mime: mimeService.getMime(originalName) || file.mimetype
     });
+
+    await note.addLabel("originalFileName", originalName);
 
     taskContext.increaseProgressCount();
 
@@ -62,7 +64,10 @@ async function importCodeNote(taskContext, file, parentNote) {
     const detectedMime = mimeService.getMime(file.originalname) || file.mimetype;
     const mime = mimeService.normalizeMimeType(detectedMime);
 
-    const {note} = await noteService.createNote(parentNote.noteId, title, content, {
+    const {note} = await noteService.createNewNote({
+        parentNoteId: parentNote.noteId,
+        title,
+        content,
         type: 'code',
         mime: mime,
         isProtected: parentNote.isProtected && protectedSessionService.isProtectedSessionAvailable()
@@ -78,7 +83,10 @@ async function importPlainText(taskContext, file, parentNote) {
     const plainTextContent = file.buffer.toString("UTF-8");
     const htmlContent = convertTextToHtml(plainTextContent);
 
-    const {note} = await noteService.createNote(parentNote.noteId, title, htmlContent, {
+    const {note} = await noteService.createNewNote({
+        parentNoteId: parentNote.noteId,
+        title,
+        content: htmlContent,
         type: 'text',
         mime: 'text/html',
         isProtected: parentNote.isProtected && protectedSessionService.isProtectedSessionAvailable(),
@@ -118,7 +126,10 @@ async function importMarkdown(taskContext, file, parentNote) {
 
     const title = getFileNameWithoutExtension(file.originalname);
 
-    const {note} = await noteService.createNote(parentNote.noteId, title, htmlContent, {
+    const {note} = await noteService.createNewNote({
+        parentNoteId: parentNote.noteId,
+        title,
+        content: htmlContent,
         type: 'text',
         mime: 'text/html',
         isProtected: parentNote.isProtected && protectedSessionService.isProtectedSessionAvailable(),
@@ -133,7 +144,10 @@ async function importHtml(taskContext, file, parentNote) {
     const title = getFileNameWithoutExtension(file.originalname);
     const content = file.buffer.toString("UTF-8");
 
-    const {note} = await noteService.createNote(parentNote.noteId, title, content, {
+    const {note} = await noteService.createNewNote({
+        parentNoteId: parentNote.noteId,
+        title,
+        content,
         type: 'text',
         mime: 'text/html',
         isProtected: parentNote.isProtected && protectedSessionService.isProtectedSessionAvailable(),

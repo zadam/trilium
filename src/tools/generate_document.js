@@ -50,7 +50,12 @@ async function start() {
         const content = loremIpsum({ count: paragraphCount, units: 'paragraphs', sentenceLowerBound: 1, sentenceUpperBound: 15,
             paragraphLowerBound: 3, paragraphUpperBound: 10, format: 'html' });
 
-        const {note} = await noteService.createNote(getRandomParentNoteId(), title, content);
+        const {note} = await noteService.createNewNote({
+            parentNoteId: getRandomParentNoteId(),
+            title,
+            content,
+            type: 'text'
+        });
 
         console.log(`Created note ${i}: ${title}`);
 

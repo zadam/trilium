@@ -178,7 +178,7 @@ function BackendScriptApi(currentNote, apiParams) {
      */
 
     /**
-     * @typedef {object} CreateNoteExtraOptions
+     * @typedef {object} CreateNoteParams
      * @property {boolean} [json=false] - should the note be JSON
      * @property {boolean} [isProtected=false] - should the note be protected
      * @property {string} [type='text'] - note type
@@ -189,13 +189,10 @@ function BackendScriptApi(currentNote, apiParams) {
     /**
      * @method
      *
-     * @param {string} parentNoteId - create new note under this parent
-     * @param {string} title
-     * @param {string} [content=""]
-     * @param {CreateNoteExtraOptions} [extraOptions={}]
+     * @param {CreateNoteParams} [extraOptions={}]
      * @returns {Promise<{note: Note, branch: Branch}>} object contains newly created entities note and branch
      */
-    this.createNote = noteService.createNote;
+    this.createNote = noteService.createNewNote;
 
     /**
      * Creates new note according to given params and force all connected clients to refresh their tree.
@@ -205,11 +202,11 @@ function BackendScriptApi(currentNote, apiParams) {
      * @param {string} parentNoteId - create new note under this parent
      * @param {string} title
      * @param {string} [content=""]
-     * @param {CreateNoteExtraOptions} [extraOptions={}]
+     * @param {CreateNoteParams} [extraOptions={}]
      * @returns {Promise<{note: Note, branch: Branch}>} object contains newly created entities note and branch
      */
     this.createNoteAndRefresh = async function(parentNoteId, title, content, extraOptions) {
-        const ret = await noteService.createNote(parentNoteId, title, content, extraOptions);
+        const ret = await noteService.createNewNote(parentNoteId, title, content, extraOptions);
 
         ws.refreshTree();
         

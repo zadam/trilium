@@ -34,30 +34,24 @@ async function triggerNoteTitleChanged(note) {
     await eventService.emit(eventService.NOTE_TITLE_CHANGED, note);
 }
 
-function deriveTypeAndMime(noteData, parentNote) {
-    if (!noteData.type) {
-        if (parentNote.type === 'text' || parentNote.type === 'code') {
-            noteData.type = parentNote.type;
-            noteData.mime = parentNote.mime;
-        } else {
-            // inheriting note type makes sense only for text and code
-            noteData.type = 'text';
-            noteData.mime = 'text/html';
-        }
+function deriveMime(type, mime) {
+    if (!type) {
+        throw new Error(`Note type is a required param`);
     }
 
-    if (!noteData.mime) {
-        if (noteData.type === 'text') {
-            noteData.mime = 'text/html';
-        } else if (noteData.type === 'code') {
-            noteData.mime = 'text/plain';
-        } else if (noteData.type === 'relation-map' || noteData.type === 'search') {
-            noteData.mime = 'application/json';
-        }
+    if (mime) {
+        return mime;
     }
 
-    noteData.type = noteData.type || parentNote.type;
-    noteData.mime = noteData.mime || parentNote.mime;
+    if (type === 'text') {
+        mime = 'text/html';
+    } else if (type === 'code') {
+        mime = 'text/plain';
+    } else if (['relation-map', 'search'].includes(type)) {
+        mime = 'application/json';
+    }
+
+    return mime;
 }
 
 async function copyChildAttributes(parentNote, childNote) {
@@ -92,7 +86,7 @@ async function copyChildAttributes(parentNote, childNote) {
  * - {integer} notePosition - default is last existing notePosition in a parent + 10
  *
  * @param params
- * @return {Promise<{note: Entity, branch: Entity}>}
+ * @return {Promise<{note: Note, branch: Branch}>}
  */
 async function createNewNote(params) {
     const parentNote = await repository.getNote(params.parentNoteId);
@@ -105,14 +99,12 @@ async function createNewNote(params) {
         throw new Error(`Note title must not be empty`);
     }
 
-    deriveTypeAndMime(params, parentNote);
-
     const note = await new Note({
         noteId: params.noteId, // optionally can force specific noteId
         title: params.title,
         isProtected: !!params.isProtected,
         type: params.type,
-        mime: params.mime
+        mime: deriveMime(params.type, params.mime)
     }).save();
 
     await note.setContent(params.content);
@@ -159,41 +151,6 @@ async function createTextNote(parentNoteId, title, content = "", params = {}) {
     params.content = content;
 
     return await createNewNote(params);
-}
-
-/**
- * @deprecated
- */
-async function createNote(parentNoteId, title, content = "", extraOptions = {}) {
-    if (!parentNoteId) throw new Error("Empty parentNoteId");
-    if (!title) throw new Error("Empty title");
-
-    const noteData = {
-        title: title,
-        content: content,
-        target: 'into',
-        noteId: extraOptions.noteId,
-        isProtected: !!extraOptions.isProtected,
-        type: extraOptions.type,
-        mime: extraOptions.mime,
-        dateCreated: extraOptions.dateCreated,
-        isExpanded: extraOptions.isExpanded,
-        notePosition: extraOptions.notePosition
-    };
-
-    const {note, branch} = await createNewNote(parentNoteId, title, noteData);
-
-    for (const attr of extraOptions.attributes || []) {
-        await attributeService.createAttribute({
-            noteId: note.noteId,
-            type: attr.type,
-            name: attr.name,
-            value: attr.value,
-            isInheritable: !!attr.isInheritable
-        });
-    }
-
-    return {note, branch};
 }
 
 async function protectNoteRecursively(note, protect, taskContext) {
@@ -555,7 +512,6 @@ sqlInit.dbReady.then(() => {
 
 module.exports = {
     createNewNote,
-    createNote,
     updateNote,
     deleteBranch,
     protectNoteRecursively,

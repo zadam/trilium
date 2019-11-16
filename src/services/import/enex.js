@@ -30,7 +30,10 @@ async function importEnex(taskContext, file, parentNote) {
         : file.originalname;
 
     // root note is new note into all ENEX/notebook's notes will be imported
-    const rootNote = (await noteService.createNote(parentNote.noteId, rootNoteTitle, "", {
+    const rootNote = (await noteService.createNewNote({
+        parentNoteId: parentNote.noteId,
+        title: rootNoteTitle,
+        content: "",
         type: 'text',
         mime: 'text/html',
         isProtected: parentNote.isProtected && protectedSessionService.isProtectedSessionAvailable(),
@@ -207,13 +210,19 @@ async function importEnex(taskContext, file, parentNote) {
         // following is workaround for this issue: https://github.com/Leonidas-from-XIV/node-xml2js/issues/484
         content = extractContent(xmlObject['en-note']);
 
-        const noteEntity = (await noteService.createNote(rootNote.noteId, title, content, {
-            attributes,
+        const noteEntity = (await noteService.createNewNote({
+            parentNoteId: rootNote.noteId,
+            title,
+            content,
             utcDateCreated,
             type: 'text',
             mime: 'text/html',
             isProtected: parentNote.isProtected && protectedSessionService.isProtectedSessionAvailable(),
         })).note;
+
+        for (const attr of resource.attributes) {
+            await note.addAttribute(attr.type, attr.name, attr.value);
+        }
 
         taskContext.increaseProgressCount();
 
@@ -231,12 +240,18 @@ async function importEnex(taskContext, file, parentNote) {
             }
 
             const createFileNote = async () => {
-                const resourceNote = (await noteService.createNote(noteEntity.noteId, resource.title, resource.content, {
-                    attributes: resource.attributes,
+                const resourceNote = (await noteService.createNewNote({
+                    parentNoteId: noteEntity.noteId,
+                    title: resource.title,
+                    content: resource.content,
                     type: 'file',
                     mime: resource.mime,
                     isProtected: parentNote.isProtected && protectedSessionService.isProtectedSessionAvailable(),
                 })).note;
+
+                for (const attr of resource.attributes) {
+                    await note.addAttribute(attr.type, attr.name, attr.value);
+                }
 
                 taskContext.increaseProgressCount();
 

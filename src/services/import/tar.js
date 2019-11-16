@@ -177,8 +177,11 @@ async function importTar(taskContext, fileBuffer, importRootNote) {
             return;
         }
 
-        ({note} = await noteService.createNote(parentNoteId, noteTitle, '', {
-            noteId,
+        ({note} = await noteService.createNewNote({
+            parentNoteId: parentNoteId,
+            title: noteTitle,
+            content: '',
+            noteId: noteId,
             type: noteMeta ? noteMeta.type : 'text',
             mime: noteMeta ? noteMeta.mime : 'text/html',
             prefix: noteMeta ? noteMeta.prefix : '',
@@ -324,7 +327,10 @@ async function importTar(taskContext, fileBuffer, importRootNote) {
             await note.setContent(content);
         }
         else {
-            ({note} = await noteService.createNote(parentNoteId, noteTitle, content, {
+            ({note} = await noteService.createNewNote({
+                parentNoteId: parentNoteId,
+                title: noteTitle,
+                content: content,
                 noteId,
                 type,
                 mime,
