@@ -651,7 +651,7 @@ async function createNote(node, parentNoteId, target, extraOptions = {}) {
 
     const {note, branch} = await server.post(`notes/${parentNoteId}/children?target=${target}&targetBranchId=${node.data.branchId}`, {
         title: newNoteName,
-        content: extraOptions.content,
+        content: extraOptions.content || "",
         isProtected: extraOptions.isProtected,
         type: extraOptions.type
     });

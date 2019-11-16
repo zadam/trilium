@@ -114,6 +114,10 @@ class Note extends Entity {
 
     /** @returns {Promise} */
     async setContent(content) {
+        if (content === null || content === undefined) {
+            throw new Error(`Cannot set null content to note ${this.noteId}`);
+        }
+
         // force updating note itself so that dateModified is represented correctly even for the content
         this.forcedChange = true;
         this.contentLength = content.length;

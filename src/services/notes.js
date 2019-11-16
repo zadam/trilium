@@ -129,6 +129,14 @@ async function createNewNote(params) {
 }
 
 async function createNewNoteWithTarget(target, targetBranchId, params) {
+    if (!params.type) {
+        const parentNote = await repository.getNote(params.parentNoteId);
+
+        // code note type can be inherited, otherwise text is default
+        params.type = parentNote.type === 'code' ? 'code' : 'text';
+        params.mime = parentNote.type === 'code' ? parentNote.mime : 'text/html';
+    }
+
     if (target === 'into') {
         return await createNewNote(params);
     }
