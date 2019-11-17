@@ -381,6 +381,14 @@ body {
 
 .hide-sidebar-button {
     color: var(--main-text-color);
+    background: none;
+    border: 1px solid transparent;
+    padding: 2px 8px 2px 8px;
+    border-radius: 2px;
+}
+
+.hide-sidebar-button:hover {
+    border-color: var(--button-border-color);
 }
 
 .note-detail-sidebar {
