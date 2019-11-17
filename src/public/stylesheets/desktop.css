@@ -59,7 +59,7 @@ body {
     background-color: var(--header-background-color);
     display: flex;
     align-items: center;
-    padding: 4px;
+    padding-top: 4px;
 }
 
 #header button {
@@ -71,14 +71,17 @@ body {
     border-color: transparent !important;
 }
 
+#header button.btn-sm .bx {
+    position: relative;
+    top: 1px;
+}
+
 #header button:hover {
     border-color: var(--button-border-color) !important;
 }
 
 #history-navigation {
     margin: 0 15px 0 5px;
-    position: relative;
-    top: 2px;
 }
 
 #global-buttons {
@@ -170,6 +173,13 @@ body {
     cursor: pointer;
     position: relative;
     top: -1px;
+    border: 1px solid transparent;
+    padding: 2px;
+    border-radius: 2px;
+}
+
+.refresh-search-button:hover {
+    border-color: var(--button-border-color);
 }
 
 .note-title-row {
