@@ -84,7 +84,7 @@ body {
 #global-buttons {
     display: flex;
     justify-content: space-around;
-    padding: 10px 0 10px 0;
+    padding: 3px 0 3px 0;
     border: 1px solid var(--main-border-color);
     border-radius: 7px;
     margin: 5px 15px 5px 5px;

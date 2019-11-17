@@ -227,9 +227,13 @@ span.fancytree-node.archived {
 
 .icon-action:hover {
     text-decoration: none;
+    border-color: var(--button-border-color);
 }
 
 .icon-action {
+    border: 1px solid transparent;
+    border-radius: 3px;
+    padding: 5px;
     cursor: pointer;
     font-size: 1.5em;
 }
