@@ -67,7 +67,7 @@ module.exports = function(filters, selectedColumns = 'notes.*') {
     const params = [];
 
     for (const filter of filters) {
-        if (['isarchived', 'orderby', 'limit'].includes(filter.name.toLowerCase())) {
+        if (['isarchived', 'in', 'orderby', 'limit'].includes(filter.name.toLowerCase())) {
             continue; // these are not real filters
         }
 

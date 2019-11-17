@@ -35,6 +35,20 @@ async function searchForNoteIds(searchString) {
             }
         }
 
+        const isInFilter = filters.find(filter => filter.name.toLowerCase() === 'in');
+
+        if (isInFilter) {
+            if (isInFilter.operator === '=') {
+                noteIds = noteIds.filter(noteId => noteCacheService.isInAncestor(noteId, isInFilter.value));
+            }
+            else if (isInFilter.operator === '!=') {
+                noteIds = noteIds.filter(noteId => !noteCacheService.isInAncestor(noteId, isInFilter.value));
+            }
+            else {
+                throw new Error(`Unrecognized isIn operator ${isInFilter.operator}`);
+            }
+        }
+
         const limitFilter = filters.find(filter => filter.name.toLowerCase() === 'limit');
 
         if (limitFilter) {

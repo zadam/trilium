@@ -255,6 +255,25 @@ function isArchived(noteId) {
     return isNotePathArchived(notePath);
 }
 
+/**
+ * @param {string} noteId
+ * @param {string} ancestorNoteId
+ * @return {boolean} - true if given noteId has ancestorNoteId in any of its paths (even archived)
+ */
+function isInAncestor(noteId, ancestorNoteId) {
+    if (ancestorNoteId === noteId) { // special case
+        return true;
+    }
+
+    for (const parentNoteId of childToParent[noteId] || []) {
+        if (isInAncestor(parentNoteId, ancestorNoteId)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 function getNoteTitleFromPath(notePath) {
     const pathArr = notePath.split("/");
 
@@ -529,6 +548,7 @@ module.exports = {
     getNoteTitleFromPath,
     isAvailable,
     isArchived,
+    isInAncestor,
     load,
     findSimilarNotes
 };
