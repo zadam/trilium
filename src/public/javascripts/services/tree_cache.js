@@ -144,7 +144,7 @@ class TreeCache {
             else {
                 return this.notes[noteId];
             }
-        }).filter(note => note !== null);
+        }).filter(note => !!note);
     }
 
     /** @return {Promise<boolean>} */

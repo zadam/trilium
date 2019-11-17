@@ -368,7 +368,7 @@ async function treeInitialized() {
         const notePath = location.hash.substr(1);
         const noteId = treeUtils.getNoteIdFromNotePath(notePath);
 
-        if (await treeCache.noteExists(noteId)) {
+        if (noteId && await treeCache.noteExists(noteId)) {
             for (const tab of openTabs) {
                 tab.active = false;
             }

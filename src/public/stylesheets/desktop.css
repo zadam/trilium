@@ -68,6 +68,11 @@ body {
     margin-bottom: 2px;
     margin-top: 2px;
     margin-right: 8px;
+    border-color: transparent !important;
+}
+
+#header button:hover {
+    border-color: var(--button-border-color) !important;
 }
 
 #history-navigation {
@@ -215,7 +220,7 @@ body {
 .note-new-tab {
     position: absolute;
     left: 0;
-    height: 32px;
+    height: 33px;
     width: 32px;
     border: 0;
     margin: 0;
@@ -223,11 +228,20 @@ body {
     text-align: center;
     font-size: 24px;
     cursor: pointer;
+    border-bottom: 1px solid var(--button-border-color);
 }
 
 .note-new-tab:hover {
     background-color: var(--accented-background-color);
     border-radius: 5px;
+}
+
+.tab-row-filler {
+    position: absolute;
+    left: 0;
+    background: linear-gradient(to right, var(--button-border-color), transparent);
+    height: 1px;
+    margin-top: 32px;
 }
 
 .note-tab-row .note-tab[active] {
@@ -244,6 +258,7 @@ body {
     top: 10px;
     animation: note-tab-was-just-added 120ms forwards ease-in-out;
 }
+
 .note-tab-row .note-tab .note-tab-wrapper {
     position: absolute;
     display: flex;
@@ -271,6 +286,7 @@ body {
     padding-left: 2px;
     padding-right: 2px;
 }
+
 .note-tab-row .note-tab .note-tab-title {
     flex: 1;
     vertical-align: top;
@@ -278,12 +294,15 @@ body {
     white-space: nowrap;
     color: var(--muted-text-color);
 }
+
 .note-tab-row .note-tab[is-small] .note-tab-title {
     margin-left: 0;
 }
+
 .note-tab-row .note-tab[active] .note-tab-title {
     color: var(--main-text-color);
 }
+
 .note-tab-row .note-tab .note-tab-drag-handle {
     position: absolute;
     top: 0;
@@ -293,6 +312,7 @@ body {
     border-top-left-radius: 8px;
     border-top-right-radius: 8px;
 }
+
 .note-tab-row .note-tab .note-tab-close {
     flex-grow: 0;
     flex-shrink: 0;
