@@ -16,7 +16,7 @@
     "start-server": "TRILIUM_ENV=dev node ./src/www",
     "start-electron": "TRILIUM_ENV=dev electron . --disable-gpu",
     "build-backend-docs": "./node_modules/.bin/jsdoc -c jsdoc-conf.json -d ./docs/backend_api src/entities/*.js src/services/backend_script_api.js",
-    "build-frontend-docs": "./node_modules/.bin/jsdoc -c jsdoc-conf.json -d ./docs/frontend_api src/public/javascripts/entities/*.js src/public/javascripts/services/frontend_script_api.js",
+    "build-frontend-docs": "./node_modules/.bin/jsdoc -c jsdoc-conf.json -d ./docs/frontend_api src/public/javascripts/entities/*.js src/public/javascripts/services/keyboard_action.js src/public/javascripts/services/frontend_script_api.js",
     "build-docs": "npm run build-backend-docs && npm run build-frontend-docs"
   },
   "dependencies": {

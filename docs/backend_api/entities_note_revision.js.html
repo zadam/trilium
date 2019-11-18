@@ -39,24 +39,26 @@ const syncTableService = require('../services/sync_table');
 /**
  * NoteRevision represents snapshot of note's title and content at some point in the past. It's used for seamless note versioning.
  *
- * @param {string} noteRevisionId
- * @param {string} noteId
- * @param {string} type
- * @param {string} mime
- * @param {string} title
- * @param {string} isProtected
- * @param {string} dateLastEdited
- * @param {string} dateCreated
- * @param {string} utcDateLastEdited
- * @param {string} utcDateCreated
- * @param {string} utcDateModified
+ * @property {string} noteRevisionId
+ * @property {string} noteId
+ * @property {string} type
+ * @property {string} mime
+ * @property {string} title
+ * @property {int} contentLength
+ * @property {boolean} isErased
+ * @property {boolean} isProtected
+ * @property {string} dateLastEdited
+ * @property {string} dateCreated
+ * @property {string} utcDateLastEdited
+ * @property {string} utcDateCreated
+ * @property {string} utcDateModified
  *
  * @extends Entity
  */
 class NoteRevision extends Entity {
     static get entityName() { return "note_revisions"; }
     static get primaryKeyName() { return "noteRevisionId"; }
-    static get hashedProperties() { return ["noteRevisionId", "noteId", "title", "contentLength", "isProtected", "dateLastEdited", "dateCreated", "utcDateLastEdited", "utcDateCreated", "utcDateModified"]; }
+    static get hashedProperties() { return ["noteRevisionId", "noteId", "title", "contentLength", "isErased", "isProtected", "dateLastEdited", "dateCreated", "utcDateLastEdited", "utcDateCreated", "utcDateModified"]; }
 
     constructor(row) {
         super(row);
@@ -130,7 +132,7 @@ class NoteRevision extends Entity {
     async setContent(content) {
         // force updating note itself so that utcDateModified is represented correctly even for the content
         this.forcedChange = true;
-        this.contentLength = content.length;
+        this.contentLength = content === null ? 0 : content.length;
         await this.save();
 
         this.content = content;
@@ -154,6 +156,14 @@ class NoteRevision extends Entity {
         await sql.upsert("note_revision_contents", "noteRevisionId", pojo);
 
         await syncTableService.addNoteRevisionContentSync(this.noteRevisionId);
+    }
+
+    beforeSaving() {
+        super.beforeSaving();
+
+        if (this.isChanged) {
+            this.utcDateModified = dateUtils.utcNowDateTime();
+        }
     }
 
     // cannot be static!
