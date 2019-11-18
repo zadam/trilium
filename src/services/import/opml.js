@@ -44,8 +44,12 @@ async function importOpml(taskContext, fileBuffer, parentNote) {
             throw new Error("Unrecognized OPML version " + opmlVersion);
         }
 
-        const {note} = await noteService.createNote(parentNoteId, title, content, {
-            isProtected: parentNote.isProtected && protectedSessionService.isProtectedSessionAvailable(),
+        const {note} = await noteService.createNewNote({
+            parentNoteId,
+            title,
+            content,
+            type: 'text',
+            isProtected: parentNote.isProtected && protectedSessionService.isProtectedSessionAvailable()
         });
 
         taskContext.increaseProgressCount();

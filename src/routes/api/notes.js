@@ -53,10 +53,12 @@ async function getChildren(req) {
 }
 
 async function createNote(req) {
-    const parentNoteId = req.params.parentNoteId;
-    const newNote = req.body;
+    const params = Object.assign({}, req.body); // clone
+    params.parentNoteId = req.params.parentNoteId;
 
-    const { note, branch } = await noteService.createNewNote(parentNoteId, newNote, req);
+    const { target, targetBranchId } = req.query;
+
+    const { note, branch } = await noteService.createNewNoteWithTarget(target, targetBranchId, params);
 
     await treeService.setCssClassesToNotes([note]);
 

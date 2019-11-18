@@ -5,6 +5,7 @@ const appInfo = require('./app_info');
 const utils = require('./utils');
 const log = require('./log');
 const dateUtils = require('./date_utils');
+const keyboardActions = require('./keyboard_actions');
 
 async function initDocumentOptions() {
     await optionService.createOption('documentId', utils.randomSecureToken(16), false);
@@ -87,13 +88,25 @@ const defaultOptions = [
 async function initStartupOptions() {
     const optionsMap = await optionService.getOptionsMap();
 
-    for (const {name, value, isSynced} of defaultOptions) {
+    const allDefaultOptions = defaultOptions.concat(getKeyboardDefaultOptions());
+
+    for (const {name, value, isSynced} of allDefaultOptions) {
         if (!(name in optionsMap)) {
             await optionService.createOption(name, value, isSynced);
 
             log.info(`Created missing option "${name}" with default value "${value}"`);
         }
     }
+}
+
+function getKeyboardDefaultOptions() {
+    return keyboardActions.KEYBOARD_ACTIONS.map(ka => {
+        return {
+            name: "keyboardShortcuts" + ka.optionName,
+            value: JSON.stringify(ka.defaultShortcuts),
+            isSynced: false
+        };
+    });
 }
 
 module.exports = {

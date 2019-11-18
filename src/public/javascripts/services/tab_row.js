@@ -29,6 +29,7 @@ const tabTemplate = `
 </div>`;
 
 const newTabButtonTemplate = `<div class="note-new-tab" title="Add new tab">+</div>`;
+const fillerTemplate = `<div class="tab-row-filler"></div>`;
 
 class TabRow {
     constructor(el) {
@@ -40,9 +41,10 @@ class TabRow {
 
         this.setupStyleEl();
         this.setupEvents();
-        this.layoutTabs();
         this.setupDraggabilly();
         this.setupNewButton();
+        this.setupFiller();
+        this.layoutTabs();
         this.setVisibility();
     }
 
@@ -109,10 +111,15 @@ class TabRow {
 
         const widths = [];
         let extraWidthRemaining = totalExtraWidthDueToFlooring;
+
         for (let i = 0; i < numberOfTabs; i += 1) {
             const extraWidth = flooredClampedTargetWidth < TAB_CONTENT_MAX_WIDTH && extraWidthRemaining > 0 ? 1 : 0;
             widths.push(flooredClampedTargetWidth + extraWidth);
             if (extraWidthRemaining > 0) extraWidthRemaining -= 1;
+        }
+
+        if (this.fillerEl) {
+            this.fillerEl.style.width = extraWidthRemaining + "px";
         }
 
         return widths;
@@ -129,8 +136,9 @@ class TabRow {
         });
 
         const newTabPosition = position;
+        const fillerPosition = position + 32;
 
-        return {tabPositions, newTabPosition};
+        return {tabPositions, newTabPosition, fillerPosition};
     }
 
     layoutTabs() {
@@ -151,13 +159,14 @@ class TabRow {
 
         let styleHTML = '';
 
-        const {tabPositions, newTabPosition} = this.getTabPositions();
+        const {tabPositions, newTabPosition, fillerPosition} = this.getTabPositions();
 
         tabPositions.forEach((position, i) => {
             styleHTML += `.note-tab:nth-child(${ i + 1 }) { transform: translate3d(${ position }px, 0, 0)} `;
         });
 
         styleHTML += `.note-new-tab { transform: translate3d(${ newTabPosition }px, 0, 0) } `;
+        styleHTML += `.tab-row-filler { transform: translate3d(${ fillerPosition }px, 0, 0) } `;
 
         this.styleEl.innerHTML = styleHTML;
     }
@@ -387,9 +396,16 @@ class TabRow {
         this.newTabEl = div.firstElementChild;
 
         this.tabContentEl.appendChild(this.newTabEl);
-        this.layoutTabs();
 
         this.newTabEl.addEventListener('click', _ => this.emit('newTab'));
+    }
+
+    setupFiller() {
+        const div = document.createElement('div');
+        div.innerHTML = fillerTemplate;
+        this.fillerEl = div.firstElementChild;
+
+        this.tabContentEl.appendChild(this.fillerEl);
     }
 
     closest(value, array) {

@@ -14,10 +14,10 @@ const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Satur
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
 async function createNote(parentNoteId, noteTitle, noteText) {
-    return (await noteService.createNewNote(parentNoteId, {
+    return (await noteService.createNewNote({
+        parentNoteId: parentNoteId,
         title: noteTitle,
         content: noteText,
-        target: 'into',
         isProtected: false
     })).note;
 }
@@ -35,7 +35,8 @@ async function getRootCalendarNote() {
     let rootNote = await attributeService.getNoteWithLabel(CALENDAR_ROOT_LABEL);
 
     if (!rootNote) {
-        rootNote = (await noteService.createNewNote('root', {
+        rootNote = (await noteService.createNewNote({
+            parentNoteId: 'root',
             title: 'Calendar',
             target: 'into',
             isProtected: false

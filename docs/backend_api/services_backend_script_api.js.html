@@ -206,7 +206,7 @@ function BackendScriptApi(currentNote, apiParams) {
      */
 
     /**
-     * @typedef {object} CreateNoteExtraOptions
+     * @typedef {object} CreateNoteParams
      * @property {boolean} [json=false] - should the note be JSON
      * @property {boolean} [isProtected=false] - should the note be protected
      * @property {string} [type='text'] - note type
@@ -217,32 +217,10 @@ function BackendScriptApi(currentNote, apiParams) {
     /**
      * @method
      *
-     * @param {string} parentNoteId - create new note under this parent
-     * @param {string} title
-     * @param {string} [content=""]
-     * @param {CreateNoteExtraOptions} [extraOptions={}]
+     * @param {CreateNoteParams} [extraOptions={}]
      * @returns {Promise&lt;{note: Note, branch: Branch}>} object contains newly created entities note and branch
      */
-    this.createNote = noteService.createNote;
-
-    /**
-     * Creates new note according to given params and force all connected clients to refresh their tree.
-     *
-     * @method
-     *
-     * @param {string} parentNoteId - create new note under this parent
-     * @param {string} title
-     * @param {string} [content=""]
-     * @param {CreateNoteExtraOptions} [extraOptions={}]
-     * @returns {Promise&lt;{note: Note, branch: Branch}>} object contains newly created entities note and branch
-     */
-    this.createNoteAndRefresh = async function(parentNoteId, title, content, extraOptions) {
-        const ret = await noteService.createNote(parentNoteId, title, content, extraOptions);
-
-        ws.refreshTree();
-        
-        return ret;
-    };
+    this.createNote = noteService.createNewNote;
 
     /**
      * Log given message to trilium logs.

@@ -31,7 +31,11 @@ async function addClipping(req) {
     let clippingNote = await findClippingNote(todayNote, pageUrl);
 
     if (!clippingNote) {
-        clippingNote = (await noteService.createNote(todayNote.noteId, title, '')).note;
+        clippingNote = (await noteService.createNewNote({
+            parentNoteId: todayNote.noteId,
+            title: title,
+            content: ''
+        })).note;
 
         await clippingNote.setLabel('clipType', 'clippings');
         await clippingNote.setLabel('pageUrl', pageUrl);
@@ -51,7 +55,11 @@ async function createNote(req) {
 
     const todayNote = await dateNoteService.getDateNote(dateUtils.localNowDate());
 
-    const {note} = await noteService.createNote(todayNote.noteId, title, content);
+    const {note} = await noteService.createNewNote({
+        parentNoteId: todayNote.noteId,
+        title,
+        content
+    });
 
     await note.setLabel('clipType', clipType);
 

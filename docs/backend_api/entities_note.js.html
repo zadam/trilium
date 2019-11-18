@@ -142,6 +142,10 @@ class Note extends Entity {
 
     /** @returns {Promise} */
     async setContent(content) {
+        if (content === null || content === undefined) {
+            throw new Error(`Cannot set null content to note ${this.noteId}`);
+        }
+
         // force updating note itself so that dateModified is represented correctly even for the content
         this.forcedChange = true;
         this.contentLength = content.length;
@@ -498,6 +502,32 @@ class Note extends Entity {
                 this.invalidateAttributeCache();
             }
         }
+    }
+
+    /**
+     * @return {Promise&lt;Attribute>}
+     */
+    async addAttribute(type, name, value = "") {
+        const attr = new Attribute({
+            noteId: this.noteId,
+            type: type,
+            name: name,
+            value: value
+        });
+
+        await attr.save();
+
+        this.invalidateAttributeCache();
+
+        return attr;
+    }
+
+    async addLabel(name, value = "") {
+        return await this.addAttribute(LABEL, name, value);
+    }
+
+    async addRelation(name, targetNoteId) {
+        return await this.addAttribute(RELATION, name, targetNoteId);
     }
 
     /**
