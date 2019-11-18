@@ -144,9 +144,9 @@ ul.fancytree-container {
     margin-top: 0;
 }
 
-/** we disable shield background when in distraction free mode because I couldn't get it to stay static
+/** we disable shield background when in zen mode because I couldn't get it to stay static
     (it kept growing with content) */
-#container:not(.distraction-free-mode) .note-tab-content.protected {
+#container:not(.zen-mode) .note-tab-content.protected {
     /* DON'T COLLAPSE THE RULES INTO SINGLE ONE, BACKGROUND WON'T DISPLAY */
     background: url('../images/shield.svg') no-repeat;
     background-size: contain;

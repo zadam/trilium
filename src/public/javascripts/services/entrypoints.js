@@ -92,12 +92,12 @@ function registerEntrypoints() {
         }
     }
 
+    // hide (toggle) everything except for the note content for zen mode
     utils.bindGlobalShortcut('alt+m', e => {
-        $(".hide-toggle").toggle();
-        $("#container").toggleClass("distraction-free-mode");
+        $(".hide-in-zen-mode").toggle();
+        $("#container").toggleClass("zen-mode");
     });
 
-    // hide (toggle) everything except for the note content for distraction free writing
     utils.bindGlobalShortcut('alt+t', e => {
         const date = new Date();
         const dateString = utils.formatDateTime(date);

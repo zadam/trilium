@@ -18,7 +18,7 @@ body {
     grid-gap: 0;
 }
 
-#container.distraction-free-mode {
+#container.zen-mode {
     grid-template-areas:
     "tab-container" !important;
     grid-template-rows: auto
