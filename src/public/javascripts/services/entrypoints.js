@@ -108,7 +108,7 @@ function registerEntrypoints() {
         $("#container").toggleClass("zen-mode");
     };
 
-    utils.bindGlobalShortcut('alt+m', toggleZenMode);
+    $("#toggle-zen-mode-button").on('click', toggleZenMode);
     setActionHandler("ToggleZenMode", toggleZenMode);
 
     setActionHandler("InsertDateTime", () => {
