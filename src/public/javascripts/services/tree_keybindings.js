@@ -4,6 +4,7 @@ import treeService from "./tree.js";
 import hoistedNoteService from "./hoisted_note.js";
 import clipboard from "./clipboard.js";
 import treeCache from "./tree_cache.js";
+import searchNoteService from "./search_notes.js";
 
 const keyBindings = {
     "del": node => {
@@ -166,6 +167,11 @@ const keyBindings = {
     },
     "down": node => {
         node.navigate($.ui.keyCode.DOWN, true).then(treeService.clearSelectedNodes);
+
+        return false;
+    },
+    "ctrl+shift+f": node => {
+        searchNoteService.searchInSubtree(node.data.noteId);
 
         return false;
     }

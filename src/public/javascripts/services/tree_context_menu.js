@@ -9,6 +9,7 @@ import hoistedNoteService from './hoisted_note.js';
 import noteDetailService from './note_detail.js';
 import clipboard from './clipboard.js';
 import protectedSessionHolder from "./protected_session_holder.js";
+import searchNotesService from "./search_notes.js";
 
 class TreeContextMenu {
     constructor(node) {
@@ -55,6 +56,8 @@ class TreeContextMenu {
             { title: "Delete <kbd>Delete</kbd>", cmd: "delete", uiIcon: "trash",
                 enabled: isNotRoot && !isHoisted && parentNotSearch },
             { title: "----" },
+            { title: "Search in subtree <kbd>Ctrl+Shift+F</kbd>", cmd: "searchInSubtree", uiIcon: "search",
+                enabled: notSearch && noSelectedNotes },
             isHoisted ? null : { title: "Hoist note <kbd>Ctrl-H</kbd>", cmd: "hoist", uiIcon: "empty", enabled: noSelectedNotes && notSearch },
             !isHoisted || !isNotRoot ? null : { title: "Unhoist note <kbd>Ctrl-H</kbd>", cmd: "unhoist", uiIcon: "arrow-up" },
             { title: "Edit branch prefix <kbd>F2</kbd>", cmd: "editBranchPrefix", uiIcon: "empty",
@@ -176,6 +179,9 @@ class TreeContextMenu {
             const branch = treeCache.getBranch(this.node.data.branchId);
 
             treeService.duplicateNote(this.node.data.noteId, branch.parentNoteId);
+        }
+        else if (cmd === "searchInSubtree") {
+            searchNotesService.searchInSubtree(this.node.data.noteId);
         }
         else {
             ws.logError("Unknown command: " + cmd);
