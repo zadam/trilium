@@ -56,6 +56,8 @@ async function checkContentHashes(otherHashes) {
         if (hashes[key] !== otherHashes[key]) {
             allChecksPassed = false;
 
+            log.info(`Content hash check for ${key} FAILED. Local is ${hashes[key]}, remote is ${otherHashes[key]}`);
+
             if (key !== 'recent_notes') {
                 // let's not get alarmed about recent notes which get updated often and can cause failures in race conditions
                 ws.sendMessageToAllClients({type: 'sync-hash-check-failed'});

@@ -17,8 +17,8 @@ async function getRecentChanges() {
             FROM 
                 note_revisions
                 JOIN notes USING(noteId)
-            ORDER BY 
-                utcDateCreated DESC
+            ORDER BY
+                note_revisions.utcDateCreated DESC
             LIMIT 1000
         )
         UNION ALL SELECT * FROM (
