@@ -56,7 +56,7 @@ class TreeContextMenu {
             { title: "Delete <kbd>Delete</kbd>", cmd: "delete", uiIcon: "trash",
                 enabled: isNotRoot && !isHoisted && parentNotSearch },
             { title: "----" },
-            { title: "Search in subtree <kbd>Ctrl+Shift+F</kbd>", cmd: "searchInSubtree", uiIcon: "search",
+            { title: "Search in subtree <kbd>Ctrl+Shift+S</kbd>", cmd: "searchInSubtree", uiIcon: "search",
                 enabled: notSearch && noSelectedNotes },
             isHoisted ? null : { title: "Hoist note <kbd>Ctrl-H</kbd>", cmd: "hoist", uiIcon: "empty", enabled: noSelectedNotes && notSearch },
             !isHoisted || !isNotRoot ? null : { title: "Unhoist note <kbd>Ctrl-H</kbd>", cmd: "unhoist", uiIcon: "arrow-up" },

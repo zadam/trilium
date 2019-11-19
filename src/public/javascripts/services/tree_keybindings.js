@@ -170,7 +170,7 @@ const keyBindings = {
 
         return false;
     },
-    "ctrl+shift+f": node => {
+    "ctrl+shift+s": node => {
         searchNoteService.searchInSubtree(node.data.noteId);
 
         return false;
