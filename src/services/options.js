@@ -61,18 +61,12 @@ async function createOption(name, value, isSynced) {
     }).save();
 }
 
-async function getOptions(allowedOptions) {
-    let options = await require('./repository').getEntities("SELECT * FROM options ORDER BY name");
-
-    if (allowedOptions) {
-        options = options.filter(opt => allowedOptions.includes(opt.name));
-    }
-
-    return options;
+async function getOptions() {
+    return await require('./repository').getEntities("SELECT * FROM options ORDER BY name");
 }
 
-async function getOptionsMap(allowedOptions) {
-    const options = await getOptions(allowedOptions);
+async function getOptionsMap() {
+    const options = await getOptions();
 
     return utils.toObject(options, opt => [opt.name, opt.value]);
 }

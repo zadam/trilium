@@ -29,7 +29,7 @@
     "csurf": "1.10.0",
     "dayjs": "1.8.17",
     "debug": "4.1.1",
-    "ejs": "2.7.2",
+    "ejs": "2.7.3",
     "electron-debug": "3.0.1",
     "electron-dl": "1.14.0",
     "electron-find": "1.0.6",

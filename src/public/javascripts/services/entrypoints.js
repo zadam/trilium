@@ -4,6 +4,7 @@ import zoomService from "./zoom.js";
 import protectedSessionService from "./protected_session.js";
 import searchNotesService from "./search_notes.js";
 import treeService from "./tree.js";
+import server from "./server.js";
 
 const NOTE_REVISIONS = "../dialogs/note_revisions.js";
 const OPTIONS = "../dialogs/options.js";
@@ -207,6 +208,43 @@ function registerEntrypoints() {
     }));
 
 }
+
+class KeyboardAction {
+    constructor(params) {
+        /** @property {string} */
+        this.optionName = params.optionName;
+        /** @property {string[]} */
+        this.defaultShortcuts = Array.isArray(params.defaultShortcuts) ? params.defaultShortcuts : [params.defaultShortcuts];
+        /** @property {string[]} */
+        this.activeShortcuts = this.defaultShortcuts.slice();
+        /** @property {string} */
+        this.description = params.description;
+    }
+
+    addShortcut(shortcut) {
+        this.activeShortcuts.push(shortcut);
+    }
+
+    /**
+     * @param {string|string[]} shortcuts
+     */
+    replaceShortcuts(shortcuts) {
+        this.activeShortcuts = Array.isArray(shortcuts) ? shortcuts : [shortcuts];
+    }
+
+    /** @return {KeyboardAction[]} */
+    static get allActions() {
+        return Object.keys(KeyboardAction)
+            .map(key => KeyboardAction[key])
+            .filter(obj => obj instanceof KeyboardAction);
+    }
+}
+
+server.get('keyboard-actions').then(actions => {
+    for (const action of actions) {
+
+    }
+});
 
 export default {
     registerEntrypoints

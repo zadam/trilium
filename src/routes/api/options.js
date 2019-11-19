@@ -5,7 +5,7 @@ const log = require('../../services/log');
 const attributes = require('../../services/attributes');
 
 // options allowed to be updated directly in options dialog
-const ALLOWED_OPTIONS = [
+const ALLOWED_OPTIONS = new Set([
     'protectedSessionTimeout',
     'noteRevisionSnapshotTimeInterval',
     'zoomFactor',
@@ -37,23 +37,32 @@ const ALLOWED_OPTIONS = [
     'spellCheckLanguageCode',
     'imageMaxWidthHeight',
     'imageJpegQuality'
-];
+]);
 
 async function getOptions() {
-    return await optionService.getOptionsMap(ALLOWED_OPTIONS);
+    const optionMap = await optionService.getOptionsMap();
+    const resultMap = {};
+
+    for (const optionName in optionMap) {
+        if (isAllowed(optionName)) {
+            resultMap[optionName] = optionMap[optionName];
+        }
+    }
+
+    return resultMap;
 }
 
 async function updateOption(req) {
     const {name, value} = req.params;
 
-    if (!update(name, value)) {
+    if (!await update(name, value)) {
         return [400, "not allowed option to change"];
     }
 }
 
 async function updateOptions(req) {
     for (const optionName in req.body) {
-        if (!update(optionName, req.body[optionName])) {
+        if (!await update(optionName, req.body[optionName])) {
             // this should be improved
             // it should return 400 instead of current 500, but at least it now rollbacks transaction
             throw new Error(`${optionName} is not allowed to change`);
@@ -62,7 +71,7 @@ async function updateOptions(req) {
 }
 
 async function update(name, value) {
-    if (!ALLOWED_OPTIONS.includes(name)) {
+    if (!isAllowed(name)) {
         return false;
     }
 
@@ -95,6 +104,10 @@ async function getUserThemes() {
     }
 
     return ret;
+}
+
+function isAllowed(name) {
+    return ALLOWED_OPTIONS.has(name) || name.startsWith("keyboardShortcuts");
 }
 
 module.exports = {

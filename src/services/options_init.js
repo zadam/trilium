@@ -100,7 +100,7 @@ async function initStartupOptions() {
 }
 
 function getKeyboardDefaultOptions() {
-    return keyboardActions.KEYBOARD_ACTIONS.map(ka => {
+    return keyboardActions.DEFAULT_KEYBOARD_ACTIONS.map(ka => {
         return {
             name: "keyboardShortcuts" + ka.optionName,
             value: JSON.stringify(ka.defaultShortcuts),

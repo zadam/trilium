@@ -1,157 +1,191 @@
+"use strict";
+
+const optionService = require('./options');
+const log = require('./log');
+
 const ELECTRON = "electron";
 
-const KEYBOARD_ACTIONS = [
+const DEFAULT_KEYBOARD_ACTIONS = [
     {
-        optionName: "JumpToNote",
+        actionName: "JumpToNote",
         defaultShortcuts: ["mod+j"],
         description: 'Open "Jump to note" dialog'
     },
     {
-        optionName: "MarkdownToHTML",
+        actionName: "MarkdownToHTML",
         defaultShortcuts: ["mod+return"]
     },
     {
-        optionName: "NewTab",
+        actionName: "NewTab",
         defaultShortcuts: ["mod+t"],
         only: ELECTRON
     },
     {
-        optionName: "CloseTab",
+        actionName: "CloseTab",
         defaultShortcuts: ["mod+w"],
         only: ELECTRON
     },
     {
-        optionName: "NextTab",
+        actionName: "NextTab",
         defaultShortcuts: ["mod+tab"],
         only: ELECTRON
     },
     {
-        optionName: "PreviousTab",
+        actionName: "PreviousTab",
         defaultShortcuts: ["mod+shift+tab"],
         only: ELECTRON
     },
     {
-        optionName: "CreateNoteAfter",
+        actionName: "CreateNoteAfter",
         defaultShortcuts: ["mod+o"]
     },
     {
-        optionName: "CreateNoteInto",
+        actionName: "CreateNoteInto",
         defaultShortcuts: ["mod+p"]
     },
     {
-        optionName: "ScrollToActiveNote",
+        actionName: "ScrollToActiveNote",
         defaultShortcuts: ["mod+."]
     },
     {
-        optionName: "CollapseTree",
+        actionName: "CollapseTree",
         defaultShortcuts: ["alt+c"]
     },
     {
-        optionName: "RunSQL",
+        actionName: "RunSQL",
         defaultShortcuts: ["mod+return"]
     },
     {
-        optionName: "FocusNote",
+        actionName: "FocusNote",
         defaultShortcuts: ["return"]
     },
     {
-        optionName: "RunCurrentNote",
+        actionName: "RunCurrentNote",
         defaultShortcuts: ["mod+return"]
     },
     {
-        optionName: "ClipboardCopy",
+        actionName: "ClipboardCopy",
         defaultShortcuts: ["mod+c"]
     },
     {
-        optionName: "ClipboardPaste",
+        actionName: "ClipboardPaste",
         defaultShortcuts: ["mod+v"]
     },
     {
-        optionName: "ClipboardCut",
+        actionName: "ClipboardCut",
         defaultShortcuts: ["mod+x"]
     },
     {
-        optionName: "SelectAllNotesInParent",
+        actionName: "SelectAllNotesInParent",
         defaultShortcuts: ["mod+a"]
     },
     {
-        optionName: "Undo",
+        actionName: "Undo",
         defaultShortcuts: ["mod+z"]
     },
     {
-        optionName: "Redo",
+        actionName: "Redo",
         defaultShortcuts: ["mod+y"]
     },
     {
-        optionName: "AddLinkToText",
+        actionName: "AddLinkToText",
         defaultShortcuts: ["mod+l"]
     },
     {
-        optionName: "CloneNotesTo",
+        actionName: "CloneNotesTo",
         defaultShortcuts: ["mod+shift+c"]
     },
     {
-        optionName: "MoveNotesTo",
+        actionName: "MoveNotesTo",
         defaultShortcuts: ["mod+shift+c"]
     },
     {
-        optionName: "SearchNotes",
+        actionName: "SearchNotes",
         defaultShortcuts: ["mod+s"]
     },
     {
-        optionName: "ShowAttributes",
+        actionName: "ShowAttributes",
         defaultShortcuts: ["alt+a"]
     },
     {
-        optionName: "ShowHelp",
+        actionName: "ShowHelp",
         defaultShortcuts: ["f1"]
     },
     {
-        optionName: "OpenSQLConsole",
+        actionName: "OpenSQLConsole",
         defaultShortcuts: ["alt+o"]
     },
     {
-        optionName: "BackInNoteHistory",
+        actionName: "BackInNoteHistory",
         defaultShortcuts: ["alt+left"]
     },
     {
-        optionName: "ForwardInNoteHistory",
+        actionName: "ForwardInNoteHistory",
         defaultShortcuts: ["alt+right"]
     },
     {
-        optionName: "ToggleZenMode",
+        actionName: "ToggleZenMode",
         defaultShortcuts: ["alt+m"]
     },
     {
-        optionName: "InsertDateTime",
+        actionName: "InsertDateTime",
         defaultShortcuts: ["alt+t"]
     },
     {
-        optionName: "ReloadApp",
+        actionName: "ReloadApp",
         defaultShortcuts: ["f5", "mod+r"]
     },
     {
-        optionName: "OpenDevTools",
+        actionName: "OpenDevTools",
         defaultShortcuts: ["mod+shift+i"]
     },
     {
-        optionName: "FindInText",
+        actionName: "FindInText",
         defaultShortcuts: ["mod+f"]
     },
     {
-        optionName: "ToggleFullscreen",
+        actionName: "ToggleFullscreen",
         defaultShortcuts: ["f11"]
     },
     {
-        optionName: "ZoomOut",
+        actionName: "ZoomOut",
         defaultShortcuts: ["mod+-"]
     },
     {
-        optionName: "ZoomIn",
+        actionName: "ZoomIn",
         defaultShortcuts: ["mod+="]
     }
 ];
 
+async function getKeyboardActions() {
+    const actions = JSON.parse(JSON.stringify(DEFAULT_KEYBOARD_ACTIONS));
+
+    for (const action of actions) {
+        action.effectiveShortcuts = action.defaultShortcuts.slice();
+    }
+
+    for (const option of await optionService.getOptions()) {
+        if (option.name.startsWith('keyboardShortcuts')) {
+            const actionName = option.name.substr(17);
+
+            const action = actions.find(ea => ea.actionName === actionName);
+
+            if (action) {
+                try {
+                    action.effectiveShortcuts = JSON.parse(option.value);
+                }
+                catch (e) {
+                    log.error(`Could not parse shortcuts for action ${actionName}`);
+                }
+            }
+            else {
+                log.info(`Keyboard action ${actionName} not found.`);
+            }
+        }
+    }
+}
+
 module.exports = {
-    KEYBOARD_ACTIONS
+    DEFAULT_KEYBOARD_ACTIONS,
+    getKeyboardActions
 };

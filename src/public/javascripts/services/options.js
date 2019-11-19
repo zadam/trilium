@@ -13,6 +13,10 @@ class Options {
         return this.arr[key];
     }
 
+    getNames() {
+        return Object.keys(this.arr);
+    }
+
     getJson(key) {
         try {
             return JSON.parse(this.arr[key]);
