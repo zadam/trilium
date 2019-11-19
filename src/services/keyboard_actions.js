@@ -1,6 +1,7 @@
 "use strict";
 
 const optionService = require('./options');
+const utils = require('./utils');
 const log = require('./log');
 
 const ELECTRON = "electron";
@@ -108,11 +109,35 @@ const DEFAULT_KEYBOARD_ACTIONS = [
         defaultShortcuts: ["alt+a"]
     },
     {
+        actionName: "ShowNoteInfo",
+        defaultShortcuts: []
+    },
+    {
+        actionName: "ShowNoteSource",
+        defaultShortcuts: []
+    },
+    {
+        actionName: "ShowLinkMap",
+        defaultShortcuts: []
+    },
+    {
+        actionName: "ShowOptions",
+        defaultShortcuts: []
+    },
+    {
+        actionName: "ShowNoteRevisions",
+        defaultShortcuts: []
+    },
+    {
+        actionName: "ShowRecentChanges",
+        defaultShortcuts: []
+    },
+    {
         actionName: "ShowHelp",
         defaultShortcuts: ["f1"]
     },
     {
-        actionName: "OpenSQLConsole",
+        actionName: "ShowSQLConsole",
         defaultShortcuts: ["alt+o"]
     },
     {
@@ -157,6 +182,12 @@ const DEFAULT_KEYBOARD_ACTIONS = [
     }
 ];
 
+if (process.platform === "darwin") {
+    // Mac has a different history navigation shortcuts - https://github.com/zadam/trilium/issues/376
+    DEFAULT_KEYBOARD_ACTIONS.find(ka => ka.actionName === 'BackInNoteHistory').defaultShortcuts = ["meta+left"];
+    DEFAULT_KEYBOARD_ACTIONS.find(ka => ka.actionName === 'ForwardInNoteHistory').defaultShortcuts = ["meta+right"];
+}
+
 async function getKeyboardActions() {
     const actions = JSON.parse(JSON.stringify(DEFAULT_KEYBOARD_ACTIONS));
 
@@ -183,6 +214,8 @@ async function getKeyboardActions() {
             }
         }
     }
+
+    return actions;
 }
 
 module.exports = {

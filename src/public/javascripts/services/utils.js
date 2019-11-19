@@ -137,10 +137,7 @@ function bindGlobalShortcut(keyboardShortcut, handler) {
 
 function bindElShortcut($el, keyboardShortcut, handler) {
     if (isDesktop()) {
-        if (isMac()) {
-            // use CMD (meta) instead of CTRL for all shortcuts
-            keyboardShortcut = keyboardShortcut.replace("ctrl", "meta");
-        }
+        keyboardShortcut = keyboardShortcut.replace("mod", isMac() ? "meta" : "ctrl");
 
         $el.bind('keydown', keyboardShortcut, e => {
             handler(e);

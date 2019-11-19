@@ -27,89 +27,99 @@ function registerEntrypoints() {
     jQuery.hotkeys.options.filterContentEditable = false;
     jQuery.hotkeys.options.filterTextInputs = false;
 
-    utils.bindGlobalShortcut('ctrl+l', () => import(ADD_LINK).then(d => d.showDialog()));
-    utils.bindGlobalShortcut('ctrl+shift+l', () => import(ADD_LINK).then(d => d.showDialogForClone()));
+    setActionHandler("AddLinkToText", () => import(ADD_LINK).then(d => d.showDialog()));
 
-    $("#jump-to-note-dialog-button").on('click', () => import(JUMP_TO_NOTE).then(d => d.showDialog()));
-    utils.bindGlobalShortcut('ctrl+j', () => import(JUMP_TO_NOTE).then(d => d.showDialog()));
+    const showJumpToNoteDialog = () => import(JUMP_TO_NOTE).then(d => d.showDialog());
+    $("#jump-to-note-dialog-button").on('click', showJumpToNoteDialog);
+    setActionHandler("JumpToNote", showJumpToNoteDialog);
 
-    $("#recent-changes-button").on('click', () => import(RECENT_CHANGES).then(d => d.showDialog()));
+    const showRecentChanges = () => import(RECENT_CHANGES).then(d => d.showDialog());
+    $("#recent-changes-button").on('click', showRecentChanges);
+    setActionHandler("ShowRecentChanges", showRecentChanges);
 
     $("#enter-protected-session-button").on('click', protectedSessionService.enterProtectedSession);
     $("#leave-protected-session-button").on('click', protectedSessionService.leaveProtectedSession);
 
     $("#toggle-search-button").on('click', searchNotesService.toggleSearch);
-    utils.bindGlobalShortcut('ctrl+s', searchNotesService.toggleSearch);
+    setActionHandler('SearchNotes', searchNotesService.toggleSearch);
 
     const $noteTabContainer = $("#note-tab-container");
-    $noteTabContainer.on("click", ".show-attributes-button", () => import(ATTRIBUTES).then(d => d.showDialog()));
-    utils.bindGlobalShortcut('alt+a', () => import(ATTRIBUTES).then(d => d.showDialog()));
 
-    $noteTabContainer.on("click", ".show-note-info-button", () => import(NOTE_INFO).then(d => d.showDialog()));
+    const showAttributesDialog = () => import(ATTRIBUTES).then(d => d.showDialog());
+    $noteTabContainer.on("click", ".show-attributes-button", showAttributesDialog);
+    setActionHandler("ShowAttributes", showAttributesDialog);
 
-    $noteTabContainer.on("click", ".show-note-revisions-button", function() {
+    const showNoteInfoDialog = () => import(NOTE_INFO).then(d => d.showDialog());
+    $noteTabContainer.on("click", ".show-note-info-button", showNoteInfoDialog);
+    setActionHandler("ShowNoteInfo", showNoteInfoDialog);
+
+    const showNoteRevisionsDialog = function() {
         if ($(this).hasClass("disabled")) {
             return;
         }
 
         import(NOTE_REVISIONS).then(d => d.showCurrentNoteRevisions());
-    });
+    };
 
-    $noteTabContainer.on("click", ".show-source-button", function() {
+    $noteTabContainer.on("click", ".show-note-revisions-button", showNoteRevisionsDialog);
+    setActionHandler("ShowNoteRevisions", showNoteRevisionsDialog);
+
+    const showNoteSourceDialog = function() {
         if ($(this).hasClass("disabled")) {
             return;
         }
 
         import(NOTE_SOURCE).then(d => d.showDialog());
-    });
+    };
 
-    $noteTabContainer.on("click", ".show-link-map-button", function() {
-        import(LINK_MAP).then(d => d.showDialog());
-    });
+    $noteTabContainer.on("click", ".show-source-button", showNoteSourceDialog);
+    setActionHandler("ShowNoteSource", showNoteSourceDialog);
 
-    $("#options-button").on('click', () => import(OPTIONS).then(d => d.showDialog()));
+    const showLinkMapDialog = () => import(LINK_MAP).then(d => d.showDialog());
+    $noteTabContainer.on("click", ".show-link-map-button", showLinkMapDialog);
+    setActionHandler("ShowLinkMap", showLinkMapDialog);
 
-    $("#show-help-button").on('click', () => import(HELP).then(d => d.showDialog()));
-    utils.bindGlobalShortcut('f1', () => import(HELP).then(d => d.showDialog()));
+    const showOptionsDialog = () => import(OPTIONS).then(d => d.showDialog());
+    $("#options-button").on('click', showOptionsDialog);
+    setActionHandler("ShowOptions", showOptionsDialog);
 
-    $("#open-sql-console-button").on('click', () => import(SQL_CONSOLE).then(d => d.showDialog()));
-    utils.bindGlobalShortcut('alt+o', () => import(SQL_CONSOLE).then(d => d.showDialog()));
+    const showHelpDialog = () => import(HELP).then(d => d.showDialog());
+    $("#show-help-button").on('click', showHelpDialog);
+    setActionHandler("ShowHelp", showHelpDialog);
+
+    const showSqlConsoleDialog = () => import(SQL_CONSOLE).then(d => d.showDialog());
+    $("#open-sql-console-button").on('click', showSqlConsoleDialog);
+    setActionHandler("ShowSQLConsole", showSqlConsoleDialog);
 
     $("#show-about-dialog-button").on('click', () => import(ABOUT).then(d => d.showDialog()));
 
     if (utils.isElectron()) {
         $("#history-navigation").show();
         $("#history-back-button").on('click', window.history.back);
-        $("#history-forward-button").on('click', window.history.forward);
+        setActionHandler("BackInNoteHistory", window.history.back);
 
-        if (utils.isMac()) {
-            // Mac has a different history navigation shortcuts - https://github.com/zadam/trilium/issues/376
-            utils.bindGlobalShortcut('meta+left', window.history.back);
-            utils.bindGlobalShortcut('meta+right', window.history.forward);
-        }
-        else {
-            utils.bindGlobalShortcut('alt+left', window.history.back);
-            utils.bindGlobalShortcut('alt+right', window.history.forward);
-        }
+        $("#history-forward-button").on('click', window.history.forward);
+        setActionHandler("ForwardInNoteHistory", window.history.forward);
     }
 
     // hide (toggle) everything except for the note content for zen mode
-    utils.bindGlobalShortcut('alt+m', e => {
+    const toggleZenMode = () => {
         $(".hide-in-zen-mode").toggle();
         $("#container").toggleClass("zen-mode");
-    });
+    };
 
-    utils.bindGlobalShortcut('alt+t', e => {
+    utils.bindGlobalShortcut('alt+m', toggleZenMode);
+    setActionHandler("ToggleZenMode", toggleZenMode);
+
+    setActionHandler("InsertDateTime", () => {
         const date = new Date();
         const dateString = utils.formatDateTime(date);
 
         linkService.addTextToEditor(dateString);
     });
 
-    utils.bindGlobalShortcut('f5', utils.reloadApp);
-
     $("#reload-frontend-button").on('click', utils.reloadApp);
-    utils.bindGlobalShortcut('ctrl+r', utils.reloadApp);
+    setActionHandler("ReloadApp", utils.reloadApp);
 
     $("#open-dev-tools-button").toggle(utils.isElectron());
 
@@ -120,8 +130,8 @@ function registerEntrypoints() {
             return false;
         };
 
-        utils.bindGlobalShortcut('ctrl+shift+i', openDevTools);
         $("#open-dev-tools-button").on('click', openDevTools);
+        setActionHandler("OpenDevTools", openDevTools);
     }
 
     let findInPage;
@@ -142,18 +152,12 @@ function registerEntrypoints() {
             textHoverBgColor: '#555',
             caseSelectedColor: 'var(--main-border-color)'
         });
+
+        setActionHandler("FindInText", () => findInPage.openFindWindow());
     }
 
     if (utils.isElectron()) {
-        utils.bindGlobalShortcut('ctrl+f', () => {
-            findInPage.openFindWindow();
-
-            return false;
-        });
-    }
-
-    if (utils.isElectron()) {
-        const toggleFullscreen = function() {
+        const toggleFullscreen = () => {
             const win = require('electron').remote.getCurrentWindow();
 
             if (win.isFullScreenable()) {
@@ -165,7 +169,7 @@ function registerEntrypoints() {
 
         $("#toggle-fullscreen-button").on('click', toggleFullscreen);
 
-        utils.bindGlobalShortcut('f11', toggleFullscreen);
+        setActionHandler("ToggleFullscreen", toggleFullscreen);
     }
     else {
         // outside of electron this is handled by the browser
@@ -173,8 +177,8 @@ function registerEntrypoints() {
     }
 
     if (utils.isElectron()) {
-        utils.bindGlobalShortcut('ctrl+-', zoomService.decreaseZoomFactor);
-        utils.bindGlobalShortcut('ctrl+=', zoomService.increaseZoomFactor);
+        setActionHandler("ZoomOut", zoomService.decreaseZoomFactor);
+        setActionHandler("ZoomIn", zoomService.increaseZoomFactor);
     }
 
     $(document).on('click', "a[data-action='note-revision']", async event => {
@@ -189,7 +193,7 @@ function registerEntrypoints() {
         return false;
     });
 
-    utils.bindGlobalShortcut('ctrl+shift+c', () => import(CLONE_TO).then(d => {
+    setActionHandler("CloneNotesTo", () => import(CLONE_TO).then(d => {
         const activeNode = treeService.getActiveNode();
 
         const selectedOrActiveNodes = treeService.getSelectedOrActiveNodes(activeNode);
@@ -199,52 +203,62 @@ function registerEntrypoints() {
         d.showDialog(noteIds);
     }));
 
-    utils.bindGlobalShortcut('ctrl+shift+x', () => import(MOVE_TO).then(d => {
+    setActionHandler("MoveNotesTo", () => import(MOVE_TO).then(d => {
         const activeNode = treeService.getActiveNode();
 
         const selectedOrActiveNodes = treeService.getSelectedOrActiveNodes(activeNode);
 
         d.showDialog(selectedOrActiveNodes);
     }));
-
 }
 
 class KeyboardAction {
     constructor(params) {
         /** @property {string} */
-        this.optionName = params.optionName;
+        this.actionName = params.actionName;
         /** @property {string[]} */
-        this.defaultShortcuts = Array.isArray(params.defaultShortcuts) ? params.defaultShortcuts : [params.defaultShortcuts];
+        this.defaultShortcuts = params.defaultShortcuts;
         /** @property {string[]} */
-        this.activeShortcuts = this.defaultShortcuts.slice();
+        this.effectiveShortcuts = params.effectiveShortcuts;
         /** @property {string} */
         this.description = params.description;
     }
 
     addShortcut(shortcut) {
-        this.activeShortcuts.push(shortcut);
+        this.effectiveShortcuts.push(shortcut);
     }
 
     /**
      * @param {string|string[]} shortcuts
      */
     replaceShortcuts(shortcuts) {
-        this.activeShortcuts = Array.isArray(shortcuts) ? shortcuts : [shortcuts];
-    }
-
-    /** @return {KeyboardAction[]} */
-    static get allActions() {
-        return Object.keys(KeyboardAction)
-            .map(key => KeyboardAction[key])
-            .filter(obj => obj instanceof KeyboardAction);
+        this.effectiveShortcuts = Array.isArray(shortcuts) ? shortcuts : [shortcuts];
     }
 }
 
-server.get('keyboard-actions').then(actions => {
-    for (const action of actions) {
+const keyboardActionRepo = {};
 
+const keyboardActionsLoaded = server.get('keyboard-actions').then(actions => {
+    for (const action of actions) {
+        keyboardActionRepo[action.actionName] = new KeyboardAction(action);
     }
 });
+
+function setActionHandler(actionName, handler) {
+    keyboardActionsLoaded.then(() => {
+        const action = keyboardActionRepo[actionName];
+
+        if (!action) {
+            throw new Error(`Cannot find keyboard action '${actionName}'`);
+        }
+
+        action.handler = handler;
+
+        for (const shortcut of action.effectiveShortcuts) {
+            utils.bindGlobalShortcut(shortcut, handler);
+        }
+    });
+}
 
 export default {
     registerEntrypoints

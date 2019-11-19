@@ -33,7 +33,7 @@ const searchRoute = require('./api/search');
 const dateNotesRoute = require('./api/date_notes');
 const linkMapRoute = require('./api/link_map');
 const clipperRoute = require('./api/clipper');
-const similarNotesRoute = require('./api/similar-notes');
+const similarNotesRoute = require('./api/similar_notes');
 const keysRoute = require('./api/keys');
 
 const log = require('../services/log');
