@@ -7,13 +7,25 @@ const ELECTRON = "electron";
 
 const DEFAULT_KEYBOARD_ACTIONS = [
     {
+        separator: "Note navigation"
+    },
+    {
+        actionName: "BackInNoteHistory",
+        defaultShortcuts: ["Alt+Left"]
+    },
+    {
+        actionName: "ForwardInNoteHistory",
+        defaultShortcuts: ["Alt+Right"]
+    },
+    {
         actionName: "JumpToNote",
         defaultShortcuts: ["Mod+J"],
         description: 'Open "Jump to note" dialog'
     },
+
+
     {
-        actionName: "MarkdownToHTML",
-        defaultShortcuts: ["Mod+Return"]
+        separator: "Tabs"
     },
     {
         actionName: "NewTab",
@@ -32,76 +44,13 @@ const DEFAULT_KEYBOARD_ACTIONS = [
     },
     {
         actionName: "PreviousTab",
-        defaultShortcuts: ["Mod+SHIFT+Tab"],
+        defaultShortcuts: ["Mod+Shift+Tab"],
         only: ELECTRON
     },
+
+
     {
-        actionName: "CreateNoteAfter",
-        defaultShortcuts: ["Mod+O"]
-    },
-    {
-        actionName: "CreateNoteInto",
-        defaultShortcuts: ["Mod+P"]
-    },
-    {
-        actionName: "ScrollToActiveNote",
-        defaultShortcuts: ["Mod+."]
-    },
-    {
-        actionName: "CollapseTree",
-        defaultShortcuts: ["Alt+C"]
-    },
-    {
-        actionName: "RunSQL",
-        defaultShortcuts: ["Mod+return"]
-    },
-    {
-        actionName: "FocusNote",
-        defaultShortcuts: ["return"]
-    },
-    {
-        actionName: "RunCurrentNote",
-        defaultShortcuts: ["Mod+return"]
-    },
-    {
-        actionName: "ClipboardCopy",
-        defaultShortcuts: ["Mod+C"]
-    },
-    {
-        actionName: "ClipboardPaste",
-        defaultShortcuts: ["Mod+V"]
-    },
-    {
-        actionName: "ClipboardCut",
-        defaultShortcuts: ["Mod+X"]
-    },
-    {
-        actionName: "SelectAllNotesInParent",
-        defaultShortcuts: ["Mod+A"]
-    },
-    {
-        actionName: "Undo",
-        defaultShortcuts: ["Mod+Z"]
-    },
-    {
-        actionName: "Redo",
-        defaultShortcuts: ["Mod+Y"]
-    },
-    {
-        actionName: "AddLinkToText",
-        defaultShortcuts: ["Mod+L"]
-    },
-    {
-        actionName: "CloneNotesTo",
-        defaultShortcuts: ["Mod+Shift+C"]
-    },
-    {
-        actionName: "MoveNotesTo",
-        defaultShortcuts: ["Mod+Shift+C"]
-    },
-    {
-        actionName: "SearchNotes",
-        defaultShortcuts: ["Mod+S"]
+        separator: "Dialogs"
     },
     {
         actionName: "ShowAttributes",
@@ -136,20 +85,86 @@ const DEFAULT_KEYBOARD_ACTIONS = [
         defaultShortcuts: ["F1"]
     },
     {
+        actionName: "CreateNoteAfter",
+        defaultShortcuts: ["Mod+O"]
+    },
+    {
+        actionName: "CreateNoteInto",
+        defaultShortcuts: ["Mod+P"]
+    },
+    {
+        actionName: "ScrollToActiveNote",
+        defaultShortcuts: ["Mod+."]
+    },
+    {
+        actionName: "CollapseTree",
+        defaultShortcuts: ["Alt+C"]
+    },
+    {
+        actionName: "FocusNote",
+        defaultShortcuts: ["return"]
+    },
+    {
+        actionName: "RunCurrentNote",
+        defaultShortcuts: ["Mod+return"]
+    },
+    {
+        actionName: "ClipboardCopy",
+        defaultShortcuts: ["Mod+C"],
+        description: "Copy selected notes to the clipboard"
+    },
+    {
+        actionName: "ClipboardPaste",
+        defaultShortcuts: ["Mod+V"],
+        description: "Paste notes from the clipboard into active note"
+    },
+    {
+        actionName: "ClipboardCut",
+        defaultShortcuts: ["Mod+X"],
+        description: "Copy selected notes to the clipboard"
+    },
+    {
+        actionName: "SelectAllNotesInParent",
+        defaultShortcuts: ["Mod+A"],
+        description: "Select all notes from the current note level"
+    },
+    {
+        separator: "Text note operations"
+    },
+    {
+        actionName: "Undo",
+        defaultShortcuts: ["Mod+Z"],
+        description: "Undo last text operation (applicable on MacOS only)"
+    },
+    {
+        actionName: "Redo",
+        defaultShortcuts: ["Mod+Y"],
+        description: "Undo last text operation (applicable on MacOS only)"
+    },
+    {
+        actionName: "AddLinkToText",
+        defaultShortcuts: ["Mod+L"],
+        description: "Open dialog to add link to the text"
+    },
+    {
+        actionName: "CloneNotesTo",
+        defaultShortcuts: ["Mod+Shift+C"]
+    },
+    {
+        actionName: "MoveNotesTo",
+        defaultShortcuts: ["Mod+Shift+C"]
+    },
+    {
+        actionName: "SearchNotes",
+        defaultShortcuts: ["Mod+S"]
+    },
+    {
         actionName: "ShowSQLConsole",
         defaultShortcuts: ["Alt+O"]
     },
     {
-        actionName: "BackInNoteHistory",
-        defaultShortcuts: ["Alt+Left"]
-    },
-    {
-        actionName: "ForwardInNoteHistory",
-        defaultShortcuts: ["Alt+Right"]
-    },
-    {
-        actionName: "ToggleZenMode",
-        defaultShortcuts: ["Alt+M"]
+        actionName: "RunSQL",
+        defaultShortcuts: ["Mod+return"]
     },
     {
         actionName: "InsertDateTime",
@@ -161,7 +176,7 @@ const DEFAULT_KEYBOARD_ACTIONS = [
     },
     {
         actionName: "OpenDevTools",
-        defaultShortcuts: ["Mod+SHIFT+I"]
+        defaultShortcuts: ["Mod+Shift+I"]
     },
     {
         actionName: "FindInText",
@@ -172,18 +187,28 @@ const DEFAULT_KEYBOARD_ACTIONS = [
         defaultShortcuts: ["F11"]
     },
     {
+        actionName: "ToggleZenMode",
+        defaultShortcuts: ["Alt+M"]
+    },
+    {
         actionName: "ZoomOut",
         defaultShortcuts: ["Mod+-"]
     },
     {
         actionName: "ZoomIn",
         defaultShortcuts: ["Mod+="]
-    }
+    },
+    {
+        actionName: "MarkdownToHTML",
+        defaultShortcuts: ["Mod+Return"]
+    },
 ];
 
 if (process.platform === "darwin") {
     for (const action of DEFAULT_KEYBOARD_ACTIONS) {
-        action.defaultShortcuts = action.defaultShortcuts.map(shortcut => shortcut.replace("Mod", "Meta"));
+        if (action.defaultShortcuts) {
+            action.defaultShortcuts = action.defaultShortcuts.map(shortcut => shortcut.replace("Mod", "Meta"));
+        }
     }
 
     // Mac has a different history navigation shortcuts - https://github.com/zadam/trilium/issues/376
@@ -192,7 +217,9 @@ if (process.platform === "darwin") {
 }
 else {
     for (const action of DEFAULT_KEYBOARD_ACTIONS) {
-        action.defaultShortcuts = action.defaultShortcuts.map(shortcut => shortcut.replace("Mod", "Ctrl"));
+        if (action.defaultShortcuts) {
+            action.defaultShortcuts = action.defaultShortcuts.map(shortcut => shortcut.replace("Mod", "Ctrl"));
+        }
     }
 }
 
@@ -200,7 +227,9 @@ async function getKeyboardActions() {
     const actions = JSON.parse(JSON.stringify(DEFAULT_KEYBOARD_ACTIONS));
 
     for (const action of actions) {
-        action.effectiveShortcuts = action.defaultShortcuts.slice();
+        if (action.defaultShortcuts) {
+            action.effectiveShortcuts = action.defaultShortcuts.slice();
+        }
     }
 
     for (const option of await optionService.getOptions()) {

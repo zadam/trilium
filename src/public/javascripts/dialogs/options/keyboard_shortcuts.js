@@ -35,17 +35,27 @@ export default class KeyboardShortcutsOptions {
 
         server.get('keyboard-actions').then(actions => {
             for (const action of actions) {
-                const $tr = $("<tr>")
-                    .append($("<td>").text(action.actionName))
-                    .append($("<td>").append(
-                        $(`<input type="text" class="form-control">`)
-                            .val(action.effectiveShortcuts.join(", "))
-                            .attr('data-keyboard-action-name', action.actionName)
-                            .attr('data-default-keyboard-shortcuts', action.defaultShortcuts.join(", "))
-                        )
+                const $tr = $("<tr>");
+
+                if (action.separator) {
+                    $tr.append(
+                        $('<td colspan="4">')
+                            .attr("style","background-color: var(--accented-background-color); font-weight: bold;")
+                            .text(action.separator)
                     )
-                    .append($("<td>").text(action.defaultShortcuts.join(", ")))
-                    .append($("<td>").text(action.description));
+                }
+                else {
+                    $tr.append($("<td>").text(action.actionName))
+                        .append($("<td>").append(
+                            $(`<input type="text" class="form-control">`)
+                                .val(action.effectiveShortcuts.join(", "))
+                                .attr('data-keyboard-action-name', action.actionName)
+                                .attr('data-default-keyboard-shortcuts', action.defaultShortcuts.join(", "))
+                            )
+                        )
+                        .append($("<td>").text(action.defaultShortcuts.join(", ")))
+                        .append($("<td>").text(action.description));
+                }
 
                 $table.append($tr);
             }
@@ -57,7 +67,8 @@ export default class KeyboardShortcutsOptions {
             const shortcuts = $input.val()
                               .replace('+,', "+Comma")
                               .split(",")
-                              .map(shortcut => shortcut.replace("+Comma", "+,"));
+                              .map(shortcut => shortcut.replace("+Comma", "+,"))
+                              .filter(shortcut => !!shortcut);
 
             const opts = {};
             opts['keyboardShortcuts' + actionName] = JSON.stringify(shortcuts);

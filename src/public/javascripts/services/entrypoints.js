@@ -259,7 +259,9 @@ function setActionHandler(actionName, handler) {
         action.handler = handler;
 
         for (const shortcut of action.effectiveShortcuts) {
-            utils.bindGlobalShortcut(shortcut, handler);
+            if (shortcut) {
+                utils.bindGlobalShortcut(shortcut, handler);
+            }
         }
     });
 }
