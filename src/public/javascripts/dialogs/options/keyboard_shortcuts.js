@@ -1,5 +1,5 @@
 import server from "../../services/server.js";
-import optionsService from "../../services/options.js";
+import utils from "../../services/utils.js";
 
 const TPL = `
 <h4>Keyboard shortcuts</h4>
@@ -19,15 +19,17 @@ const TPL = `
 </div>
 
 <div style="display: flex; justify-content: space-between">
-    <button class="btn btn-primary">Reload app to apply changes</button>
+    <button class="btn btn-primary" id="options-keyboard-shortcuts-reload-app">Reload app to apply changes</button>
     
-    <button class="btn">Set all shortcuts to the default</button>
+    <button class="btn" id="options-keyboard-shortcuts-set-all-to-default">Set all shortcuts to the default</button>
 </div>
 `;
 
 export default class KeyboardShortcutsOptions {
     constructor() {
         $("#options-keyboard-shortcuts").html(TPL);
+
+        $("#options-keyboard-shortcuts-reload-app").on("click", () => utils.reloadApp());
 
         const $table = $("#keyboard-shortcut-table tbody");
 
@@ -36,7 +38,11 @@ export default class KeyboardShortcutsOptions {
                 const $tr = $("<tr>")
                     .append($("<td>").text(action.actionName))
                     .append($("<td>").append(
-                        $(`<input type="text" class="form-control">`).val(action.effectiveShortcuts.join(", ")))
+                        $(`<input type="text" class="form-control">`)
+                            .val(action.effectiveShortcuts.join(", "))
+                            .attr('data-keyboard-action-name', action.actionName)
+                            .attr('data-default-keyboard-shortcuts', action.defaultShortcuts.join(", "))
+                        )
                     )
                     .append($("<td>").text(action.defaultShortcuts.join(", ")))
                     .append($("<td>").text(action.description));
@@ -44,18 +50,37 @@ export default class KeyboardShortcutsOptions {
                 $table.append($tr);
             }
         });
-    }
 
-    async save() {
-        const enabledMimeTypes = [];
+        $table.on('change', 'input.form-control', e => {
+            const $input = $(e.target);
+            const actionName = $input.attr('data-keyboard-action-name');
+            const shortcuts = $input.val()
+                              .replace('+,', "+Comma")
+                              .split(",")
+                              .map(shortcut => shortcut.replace("+Comma", "+,"));
 
-        this.$mimeTypes.find("input:checked").each(
-            (i, el) => enabledMimeTypes.push($(el).attr("data-mime-type")));
+            const opts = {};
+            opts['keyboardShortcuts' + actionName] = JSON.stringify(shortcuts);
 
-        const opts = { codeNotesMimeTypes: JSON.stringify(enabledMimeTypes) };
+            server.put('options', opts);
+        });
 
-        await server.put('options', opts);
+        $("#options-keyboard-shortcuts-set-all-to-default").on('click', async () => {
+            const confirmDialog = await import('../confirm.js');
 
-        await optionsService.reloadOptions();
+            if (!await confirmDialog.confirm("Do you really want to reset all keyboard shortcuts to the default?")) {
+                return;
+            }
+
+            $table.find('input.form-control').each(function() {
+                const defaultShortcuts = $(this).attr('data-default-keyboard-shortcuts');
+
+                if ($(this).val() !== defaultShortcuts) {
+                    $(this)
+                        .val(defaultShortcuts)
+                        .trigger('change');
+                }
+            });
+        });
     }
 }

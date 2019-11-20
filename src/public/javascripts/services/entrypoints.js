@@ -153,7 +153,11 @@ function registerEntrypoints() {
             caseSelectedColor: 'var(--main-border-color)'
         });
 
-        setActionHandler("FindInText", () => findInPage.openFindWindow());
+        setActionHandler("FindInText", () => {
+            if (!glob.activeDialog || !glob.activeDialog.is(":visible")) {
+                findInPage.openFindWindow();
+            }
+        });
     }
 
     if (utils.isElectron()) {
