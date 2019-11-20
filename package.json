@@ -29,7 +29,7 @@
     "csurf": "1.10.0",
     "dayjs": "1.8.17",
     "debug": "4.1.1",
-    "ejs": "2.7.3",
+    "ejs": "2.7.4",
     "electron-debug": "3.0.1",
     "electron-dl": "1.14.0",
     "electron-find": "1.0.6",
@@ -82,7 +82,7 @@
     "electron-compile": "6.4.4",
     "electron-installer-debian": "2.0.1",
     "electron-packager": "14.1.0",
-    "electron-rebuild": "1.8.6",
+    "electron-rebuild": "1.8.8",
     "jsdoc": "3.6.3",
     "lorem-ipsum": "2.0.3",
     "xo": "0.25.3"

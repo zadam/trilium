@@ -25,7 +25,7 @@ const TPL = `
     <div style="display: flex; justify-content: space-between;">
         <button class="btn btn-primary">Save</button>
 
-        <button class="btn btn-secondary" type="button" data-help-page="Synchronization">Help</button>
+        <button class="btn" type="button" data-help-page="Synchronization">Help</button>
     </div>
 </form>
 
@@ -35,7 +35,7 @@ const TPL = `
 
 <p>This will test connection and handshake to the sync server. If sync server isn't initialized, this will set it up to sync with local document.</p>
 
-<button id="test-sync-button" class="btn btn-secondary">Test sync</button>`;
+<button id="test-sync-button" class="btn">Test sync</button>`;
 
 export default class SyncOptions {
     constructor() {

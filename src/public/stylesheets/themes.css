@@ -17,6 +17,9 @@
     --button-border-color: #ddd;
     --button-text-color: black;
     --button-border-radius: 5px;
+    --primary-button-background-color: #6c757d;
+    --primary-button-text-color: white;
+    --primary-button-border-color: #6c757d;
     --muted-text-color: #666;
     --input-text-color: black;
     --input-background-color: white;
@@ -44,6 +47,9 @@ body.theme-black {
     --button-border-color: #444;
     --button-text-color: white;
     --button-border-radius: 5px;
+    --primary-button-background-color: #888;
+    --primary-button-text-color: white;
+    --primary-button-border-color: #999;
     --muted-text-color: #ccc;
     --input-text-color: white;
     --input-background-color: black;
@@ -75,6 +81,9 @@ body.theme-dark {
     --button-border-color: #444;
     --button-text-color: white;
     --button-border-radius: 5px;
+    --primary-button-background-color: #888;
+    --primary-button-text-color: white;
+    --primary-button-border-color: #999;
     --muted-text-color: #ccc;
     --input-text-color: white;
     --input-background-color: #333;

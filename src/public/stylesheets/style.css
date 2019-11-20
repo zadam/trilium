@@ -419,7 +419,17 @@ div.ui-tooltip {
     border-radius: var(--button-border-radius);
 }
 
-.btn:not(.btn-primary):not(.btn-secondary):not(.btn-danger) {
+.btn.btn-primary {
+    border-color: var(--primary-button-border-color);
+    background-color: var(--primary-button-background-color);
+    color: var(--primary-button-text-color);
+}
+
+.btn.btn-primary kbd {
+    color: var(--primary-button-text-color);
+}
+
+.btn:not(.btn-primary) {
     border-color: var(--button-border-color);
     background-color: var(--button-background-color);
     color: var(--button-text-color);
