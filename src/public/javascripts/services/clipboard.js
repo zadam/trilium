@@ -4,55 +4,67 @@ import cloningService from "./cloning.js";
 import toastService from "./toast.js";
 import hoistedNoteService from "./hoisted_note.js";
 
-let clipboardIds = [];
+/*
+ * Clipboard contains node keys which are not stable. If a (part of the) tree is reloaded,
+ * node keys in the clipboard might not exist anymore. Code here should then be ready to deal
+ * with this.
+ */
+
+let clipboardNodeKeys = [];
 let clipboardMode = null;
 
-async function pasteAfter(node) {
+async function pasteAfter(afterNode) {
+    if (isClipboardEmpty()) {
+        return;
+    }
+
     if (clipboardMode === 'cut') {
-        const nodes = clipboardIds.map(nodeKey => treeUtils.getNodeByKey(nodeKey));
+        const nodes = clipboardNodeKeys.map(nodeKey => treeUtils.getNodeByKey(nodeKey));
 
-        await treeChangesService.moveAfterNode(nodes, node);
+        await treeChangesService.moveAfterNode(nodes, afterNode);
 
-        clipboardIds = [];
+        clipboardNodeKeys = [];
         clipboardMode = null;
     }
     else if (clipboardMode === 'copy') {
-        for (const noteId of clipboardIds) {
-            await cloningService.cloneNoteAfter(noteId, node.data.branchId);
+        for (const nodeKey of clipboardNodeKeys) {
+            const clipNode = treeUtils.getNodeByKey(nodeKey);
+
+            await cloningService.cloneNoteAfter(clipNode.data.noteId, afterNode.data.branchId);
         }
 
         // copy will keep clipboardIds and clipboardMode so it's possible to paste into multiple places
-    }
-    else if (clipboardIds.length === 0) {
-        // just do nothing
     }
     else {
         toastService.throwError("Unrecognized clipboard mode=" + clipboardMode);
     }
 }
 
-async function pasteInto(node) {
+async function pasteInto(parentNode) {
+    if (isClipboardEmpty()) {
+        return;
+    }
+
     if (clipboardMode === 'cut') {
-        const nodes = clipboardIds.map(nodeKey => treeUtils.getNodeByKey(nodeKey));
+        const nodes = clipboardNodeKeys.map(nodeKey => treeUtils.getNodeByKey(nodeKey));
 
-        await treeChangesService.moveToNode(nodes, node);
+        await treeChangesService.moveToNode(nodes, parentNode);
 
-        await node.setExpanded(true);
+        await parentNode.setExpanded(true);
 
-        clipboardIds = [];
+        clipboardNodeKeys = [];
         clipboardMode = null;
     }
     else if (clipboardMode === 'copy') {
-        for (const noteId of clipboardIds) {
-            await cloningService.cloneNoteTo(noteId, node.data.noteId);
+        for (const nodeKey of clipboardNodeKeys) {
+            const clipNode = treeUtils.getNodeByKey(nodeKey);
+
+            await cloningService.cloneNoteTo(clipNode.data.noteId, parentNode.data.noteId);
         }
 
-        await node.setExpanded(true);
+        await parentNode.setExpanded(true);
 
         // copy will keep clipboardIds and clipboardMode so it's possible to paste into multiple places
-    }
-    else if (clipboardIds.length === 0) {
-        // just do nothing
     }
     else {
         toastService.throwError("Unrecognized clipboard mode=" + mode);
@@ -60,27 +72,29 @@ async function pasteInto(node) {
 }
 
 function copy(nodes) {
-    clipboardIds = nodes.map(node => node.data.noteId);
+    clipboardNodeKeys = nodes.map(node => node.key);
     clipboardMode = 'copy';
 
     toastService.showMessage("Note(s) have been copied into clipboard.");
 }
 
 function cut(nodes) {
-    clipboardIds = nodes
+    clipboardNodeKeys = nodes
         .filter(node => node.data.noteId !== hoistedNoteService.getHoistedNoteNoPromise())
         .filter(node => node.getParent().data.noteType !== 'search')
-        .map(node => node.data.noteId);
+        .map(node => node.key);
 
-    if (clipboardIds.length > 0) {
+    if (clipboardNodeKeys.length > 0) {
         clipboardMode = 'cut';
 
         toastService.showMessage("Note(s) have been cut into clipboard.");
     }
 }
 
-function isEmpty() {
-    return clipboardIds.length === 0;
+function isClipboardEmpty() {
+    clipboardNodeKeys = clipboardNodeKeys.filter(key => !!treeUtils.getNodeByKey(key));
+
+    return clipboardNodeKeys.length === 0;
 }
 
 export default {
@@ -88,5 +102,5 @@ export default {
     pasteInto,
     cut,
     copy,
-    isEmpty
+    isClipboardEmpty
 }
