@@ -9,9 +9,7 @@ import server from './server.js';
 import treeCache from './tree_cache.js';
 import toastService from "./toast.js";
 import treeBuilder from "./tree_builder.js";
-import treeKeyBindings from "./tree_keybindings.js";
-import Branch from '../entities/branch.js';
-import NoteShort from '../entities/note_short.js';
+import treeKeyBindingService from "./tree_keybindings.js";
 import hoistedNoteService from '../services/hoisted_note.js';
 import optionsService from "../services/options.js";
 import TreeContextMenu from "./tree_context_menu.js";
@@ -430,7 +428,7 @@ async function treeInitialized() {
     setFrontendAsLoaded();
 }
 
-function initFancyTree(tree) {
+async function initFancyTree(tree) {
     utils.assertArguments(tree);
 
     $tree.fancytree({
@@ -473,7 +471,7 @@ function initFancyTree(tree) {
         collapse: (event, data) => setExpandedToServer(data.node.data.branchId, false),
         init: (event, data) => treeInitialized(), // don't collapse to short form
         hotkeys: {
-            keydown: treeKeyBindings
+            keydown: await treeKeyBindingService.getKeyboardBindings()
         },
         dnd5: dragAndDropSetup,
         lazyLoad: function(event, data) {
@@ -754,7 +752,7 @@ async function sortAlphabetically(noteId) {
 async function showTree() {
     const tree = await loadTree();
 
-    initFancyTree(tree);
+    await initFancyTree(tree);
 }
 
 ws.subscribeToMessages(message => {

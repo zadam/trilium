@@ -52,13 +52,7 @@ function setActionHandler(actionName, handler) {
 }
 
 async function triggerAction(actionName) {
-	await keyboardActionsLoaded;
-
-	const action = keyboardActionRepo[actionName];
-
-	if (!action) {
-		throw new Error(`Cannot find action ${actionName}`);
-	}
+	const action = getAction(actionName);
 
 	if (!action.handler) {
 		throw new Error(`Action ${actionName} has no handler`);
@@ -67,7 +61,20 @@ async function triggerAction(actionName) {
 	await action.handler();
 }
 
+async function getAction(actionName) {
+	await keyboardActionsLoaded;
+
+	const action = keyboardActionRepo[actionName];
+
+	if (!action) {
+		throw new Error(`Cannot find action ${actionName}`);
+	}
+
+	return action;
+}
+
 export default {
 	setActionHandler,
-	triggerAction
+	triggerAction,
+	getAction
 };

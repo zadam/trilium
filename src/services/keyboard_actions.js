@@ -114,19 +114,89 @@ const DEFAULT_KEYBOARD_ACTIONS = [
         defaultShortcuts: ["CommandOrControl+return"]
     },
     {
-        actionName: "ClipboardCopy",
+        actionName: "DeleteNote",
+        defaultShortcuts: ["Delete"],
+        description: "Delete note"
+    },
+    {
+        actionName: "MoveNoteUp",
+        defaultShortcuts: ["Ctrl+Up"],
+        description: "Move note up"
+    },
+    {
+        actionName: "MoveNoteDown",
+        defaultShortcuts: ["Ctrl+Down"],
+        description: "Move note down"
+    },
+    {
+        actionName: "MoveNoteUpInHierarchy",
+        defaultShortcuts: ["Ctrl+Left"],
+        description: "Move note up in hierarchy"
+    },
+    {
+        actionName: "MoveNoteDownInHierarchy",
+        defaultShortcuts: ["Ctrl+Right"],
+        description: "Move note down in hierarchy"
+    },
+    {
+        actionName: "AddNoteAboveToSelection",
+        defaultShortcuts: ["Shift+Up"],
+        description: "Add note above to the selection"
+    },
+    {
+        actionName: "AddNoteBelowToSelection",
+        defaultShortcuts: ["Shift+Down"],
+        description: "Add note above to the selection"
+    },
+    {
+        actionName: "CopyNotesToClipboard",
         defaultShortcuts: ["CommandOrControl+C"],
         description: "Copy selected notes to the clipboard"
     },
     {
-        actionName: "ClipboardPaste",
+        actionName: "PasteNotesFromClipboard",
         defaultShortcuts: ["CommandOrControl+V"],
         description: "Paste notes from the clipboard into active note"
     },
     {
-        actionName: "ClipboardCut",
+        actionName: "CutNotesToClipboard",
         defaultShortcuts: ["CommandOrControl+X"],
-        description: "Copy selected notes to the clipboard"
+        description: "Cut selected notes to the clipboard"
+    },
+    {
+        actionName: "EditBranchPrefix",
+        defaultShortcuts: ["F2"],
+        description: "Show Edit branch prefix dialog"
+    },
+    {
+        actionName: "CollapseSubtree",
+        defaultShortcuts: ["Alt+-"],
+        description: "Collapses subtree of current note"
+    },
+    {
+        actionName: "SortChildNotes",
+        defaultShortcuts: ["Alt+s"],
+        description: "Sort child notes"
+    },
+    {
+        actionName: "ActivateParentNote",
+        defaultShortcuts: ["Backspace"],
+        description: "Activates parent note of currently active note"
+    },
+    {
+        actionName: "ToggleNoteHoisting",
+        defaultShortcuts: ["Alt+h"],
+        description: "Toggles note hoisting of active note"
+    },
+    {
+        actionName: "SearchInSubtree",
+        defaultShortcuts: ["CommandOrControl+Shift+S"],
+        description: "Search for notes in the active note's subtree"
+    },
+    {
+        actionName: "EditNoteTitle",
+        defaultShortcuts: ["return"],
+        description: "Edit active note title"
     },
     {
         actionName: "SelectAllNotesInParent",
@@ -135,16 +205,6 @@ const DEFAULT_KEYBOARD_ACTIONS = [
     },
     {
         separator: "Text note operations"
-    },
-    {
-        actionName: "Undo",
-        defaultShortcuts: ["CommandOrControl+Z"],
-        description: "Undo last text operation (applicable on MacOS only)"
-    },
-    {
-        actionName: "Redo",
-        defaultShortcuts: ["CommandOrControl+Y"],
-        description: "Undo last text operation (applicable on MacOS only)"
     },
     {
         actionName: "AddLinkToText",
