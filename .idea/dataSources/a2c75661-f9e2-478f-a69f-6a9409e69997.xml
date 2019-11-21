@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <dataSource name="document.db">
-  <database-model serializer="dbm" dbms="SQLITE" family-id="SQLITE" format-version="4.16">
+  <database-model serializer="dbm" dbms="SQLITE" family-id="SQLITE" format-version="4.17">
     <root id="1">
       <ServerVersion>3.25.1</ServerVersion>
     </root>
