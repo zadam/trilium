@@ -19,7 +19,7 @@ const DEFAULT_KEYBOARD_ACTIONS = [
     },
     {
         actionName: "JumpToNote",
-        defaultShortcuts: ["Mod+J"],
+        defaultShortcuts: ["CommandOrControl+J"],
         description: 'Open "Jump to note" dialog'
     },
 
@@ -29,22 +29,22 @@ const DEFAULT_KEYBOARD_ACTIONS = [
     },
     {
         actionName: "NewTab",
-        defaultShortcuts: ["Mod+T"],
+        defaultShortcuts: ["CommandOrControl+T"],
         only: ELECTRON
     },
     {
         actionName: "CloseTab",
-        defaultShortcuts: ["Mod+W"],
+        defaultShortcuts: ["CommandOrControl+W"],
         only: ELECTRON
     },
     {
         actionName: "NextTab",
-        defaultShortcuts: ["Mod+Tab"],
+        defaultShortcuts: ["CommandOrControl+Tab"],
         only: ELECTRON
     },
     {
         actionName: "PreviousTab",
-        defaultShortcuts: ["Mod+Shift+Tab"],
+        defaultShortcuts: ["CommandOrControl+Shift+Tab"],
         only: ELECTRON
     },
 
@@ -86,15 +86,20 @@ const DEFAULT_KEYBOARD_ACTIONS = [
     },
     {
         actionName: "CreateNoteAfter",
-        defaultShortcuts: ["Mod+O"]
+        defaultShortcuts: ["CommandOrControl+O"]
     },
     {
         actionName: "CreateNoteInto",
-        defaultShortcuts: ["Mod+P"]
+        defaultShortcuts: ["CommandOrControl+P"]
+    },
+    {
+        actionName: "CreateNoteIntoDayNote",
+        defaultShortcuts: ["global:CommandOrControl+Alt+P"],
+        description: "Create and open subnote of a current day note"
     },
     {
         actionName: "ScrollToActiveNote",
-        defaultShortcuts: ["Mod+."]
+        defaultShortcuts: ["CommandOrControl+."]
     },
     {
         actionName: "CollapseTree",
@@ -106,26 +111,26 @@ const DEFAULT_KEYBOARD_ACTIONS = [
     },
     {
         actionName: "RunCurrentNote",
-        defaultShortcuts: ["Mod+return"]
+        defaultShortcuts: ["CommandOrControl+return"]
     },
     {
         actionName: "ClipboardCopy",
-        defaultShortcuts: ["Mod+C"],
+        defaultShortcuts: ["CommandOrControl+C"],
         description: "Copy selected notes to the clipboard"
     },
     {
         actionName: "ClipboardPaste",
-        defaultShortcuts: ["Mod+V"],
+        defaultShortcuts: ["CommandOrControl+V"],
         description: "Paste notes from the clipboard into active note"
     },
     {
         actionName: "ClipboardCut",
-        defaultShortcuts: ["Mod+X"],
+        defaultShortcuts: ["CommandOrControl+X"],
         description: "Copy selected notes to the clipboard"
     },
     {
         actionName: "SelectAllNotesInParent",
-        defaultShortcuts: ["Mod+A"],
+        defaultShortcuts: ["CommandOrControl+A"],
         description: "Select all notes from the current note level"
     },
     {
@@ -133,30 +138,30 @@ const DEFAULT_KEYBOARD_ACTIONS = [
     },
     {
         actionName: "Undo",
-        defaultShortcuts: ["Mod+Z"],
+        defaultShortcuts: ["CommandOrControl+Z"],
         description: "Undo last text operation (applicable on MacOS only)"
     },
     {
         actionName: "Redo",
-        defaultShortcuts: ["Mod+Y"],
+        defaultShortcuts: ["CommandOrControl+Y"],
         description: "Undo last text operation (applicable on MacOS only)"
     },
     {
         actionName: "AddLinkToText",
-        defaultShortcuts: ["Mod+L"],
+        defaultShortcuts: ["CommandOrControl+L"],
         description: "Open dialog to add link to the text"
     },
     {
         actionName: "CloneNotesTo",
-        defaultShortcuts: ["Mod+Shift+C"]
+        defaultShortcuts: ["CommandOrControl+Shift+C"]
     },
     {
         actionName: "MoveNotesTo",
-        defaultShortcuts: ["Mod+Shift+C"]
+        defaultShortcuts: ["CommandOrControl+Shift+C"]
     },
     {
         actionName: "SearchNotes",
-        defaultShortcuts: ["Mod+S"]
+        defaultShortcuts: ["CommandOrControl+S"]
     },
     {
         actionName: "ShowSQLConsole",
@@ -164,7 +169,7 @@ const DEFAULT_KEYBOARD_ACTIONS = [
     },
     {
         actionName: "RunSQL",
-        defaultShortcuts: ["Mod+return"]
+        defaultShortcuts: ["CommandOrControl+return"]
     },
     {
         actionName: "InsertDateTime",
@@ -172,15 +177,15 @@ const DEFAULT_KEYBOARD_ACTIONS = [
     },
     {
         actionName: "ReloadApp",
-        defaultShortcuts: ["F5", "Mod+R"]
+        defaultShortcuts: ["F5", "CommandOrControl+R"]
     },
     {
         actionName: "OpenDevTools",
-        defaultShortcuts: ["Mod+Shift+I"]
+        defaultShortcuts: ["CommandOrControl+Shift+I"]
     },
     {
         actionName: "FindInText",
-        defaultShortcuts: ["Mod+F"]
+        defaultShortcuts: ["CommandOrControl+F"]
     },
     {
         actionName: "ToggleFullscreen",
@@ -192,22 +197,22 @@ const DEFAULT_KEYBOARD_ACTIONS = [
     },
     {
         actionName: "ZoomOut",
-        defaultShortcuts: ["Mod+-"]
+        defaultShortcuts: ["CommandOrControl+-"]
     },
     {
         actionName: "ZoomIn",
-        defaultShortcuts: ["Mod+="]
+        defaultShortcuts: ["CommandOrControl+="]
     },
     {
         actionName: "MarkdownToHTML",
-        defaultShortcuts: ["Mod+Return"]
+        defaultShortcuts: ["CommandOrControl+Return"]
     },
 ];
 
 if (process.platform === "darwin") {
     for (const action of DEFAULT_KEYBOARD_ACTIONS) {
         if (action.defaultShortcuts) {
-            action.defaultShortcuts = action.defaultShortcuts.map(shortcut => shortcut.replace("Mod", "Meta"));
+            action.defaultShortcuts = action.defaultShortcuts.map(shortcut => shortcut.replace("CommandOrControl", "Meta"));
         }
     }
 
@@ -218,7 +223,7 @@ if (process.platform === "darwin") {
 else {
     for (const action of DEFAULT_KEYBOARD_ACTIONS) {
         if (action.defaultShortcuts) {
-            action.defaultShortcuts = action.defaultShortcuts.map(shortcut => shortcut.replace("Mod", "Ctrl"));
+            action.defaultShortcuts = action.defaultShortcuts.map(shortcut => shortcut.replace("CommandOrControl", "Ctrl"));
         }
     }
 }

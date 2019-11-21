@@ -11,7 +11,6 @@ import dateNotesService from './date_notes.js';
 import StandardWidget from '../widgets/standard_widget.js';
 import ws from "./ws.js";
 import hoistedNoteService from "./hoisted_note.js";
-import KeyboardAction from "./keyboard_action.js";
 
 /**
  * This is the main frontend API interface for scripts. It's published in the local "api" object.
@@ -40,9 +39,6 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
 
     /** @property {StandardWidget} */
     this.StandardWidget = StandardWidget;
-
-    /** @property {KeyboardAction} */
-    this.KeyboardAction = KeyboardAction;
 
     /**
      * Activates note in the tree and in the note detail.

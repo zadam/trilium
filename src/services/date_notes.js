@@ -13,12 +13,13 @@ const DATE_LABEL = 'dateNote';
 const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
-async function createNote(parentNoteId, noteTitle, noteText) {
+async function createNote(parentNoteId, noteTitle) {
     return (await noteService.createNewNote({
         parentNoteId: parentNoteId,
         title: noteTitle,
-        content: noteText,
-        isProtected: false
+        content: '',
+        isProtected: false,
+        type: 'text'
     })).note;
 }
 

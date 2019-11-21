@@ -100,13 +100,15 @@ async function initStartupOptions() {
 }
 
 function getKeyboardDefaultOptions() {
-    return keyboardActions.DEFAULT_KEYBOARD_ACTIONS.map(ka => {
-        return {
-            name: "keyboardShortcuts" + ka.actionName,
-            value: JSON.stringify(ka.defaultShortcuts),
-            isSynced: false
-        };
-    });
+    return keyboardActions.DEFAULT_KEYBOARD_ACTIONS
+        .filter(ka => !!ka.actionName)
+        .map(ka => {
+            return {
+                name: "keyboardShortcuts" + ka.actionName,
+                value: JSON.stringify(ka.defaultShortcuts),
+                isSynced: false
+            };
+        });
 }
 
 module.exports = {

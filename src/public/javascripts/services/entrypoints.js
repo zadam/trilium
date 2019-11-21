@@ -4,7 +4,9 @@ import zoomService from "./zoom.js";
 import protectedSessionService from "./protected_session.js";
 import searchNotesService from "./search_notes.js";
 import treeService from "./tree.js";
-import server from "./server.js";
+import dateNoteService from "./date_notes.js";
+import noteDetailService from "./note_detail.js";
+import keyboardActionService from "./keyboard_actions.js";
 
 const NOTE_REVISIONS = "../dialogs/note_revisions.js";
 const OPTIONS = "../dialogs/options.js";
@@ -27,31 +29,31 @@ function registerEntrypoints() {
     jQuery.hotkeys.options.filterContentEditable = false;
     jQuery.hotkeys.options.filterTextInputs = false;
 
-    setActionHandler("AddLinkToText", () => import(ADD_LINK).then(d => d.showDialog()));
+    keyboardActionService.setActionHandler("AddLinkToText", () => import(ADD_LINK).then(d => d.showDialog()));
 
     const showJumpToNoteDialog = () => import(JUMP_TO_NOTE).then(d => d.showDialog());
     $("#jump-to-note-dialog-button").on('click', showJumpToNoteDialog);
-    setActionHandler("JumpToNote", showJumpToNoteDialog);
+    keyboardActionService.setActionHandler("JumpToNote", showJumpToNoteDialog);
 
     const showRecentChanges = () => import(RECENT_CHANGES).then(d => d.showDialog());
     $("#recent-changes-button").on('click', showRecentChanges);
-    setActionHandler("ShowRecentChanges", showRecentChanges);
+    keyboardActionService.setActionHandler("ShowRecentChanges", showRecentChanges);
 
     $("#enter-protected-session-button").on('click', protectedSessionService.enterProtectedSession);
     $("#leave-protected-session-button").on('click', protectedSessionService.leaveProtectedSession);
 
     $("#toggle-search-button").on('click', searchNotesService.toggleSearch);
-    setActionHandler('SearchNotes', searchNotesService.toggleSearch);
+    keyboardActionService.setActionHandler('SearchNotes', searchNotesService.toggleSearch);
 
     const $noteTabContainer = $("#note-tab-container");
 
     const showAttributesDialog = () => import(ATTRIBUTES).then(d => d.showDialog());
     $noteTabContainer.on("click", ".show-attributes-button", showAttributesDialog);
-    setActionHandler("ShowAttributes", showAttributesDialog);
+    keyboardActionService.setActionHandler("ShowAttributes", showAttributesDialog);
 
     const showNoteInfoDialog = () => import(NOTE_INFO).then(d => d.showDialog());
     $noteTabContainer.on("click", ".show-note-info-button", showNoteInfoDialog);
-    setActionHandler("ShowNoteInfo", showNoteInfoDialog);
+    keyboardActionService.setActionHandler("ShowNoteInfo", showNoteInfoDialog);
 
     const showNoteRevisionsDialog = function() {
         if ($(this).hasClass("disabled")) {
@@ -62,7 +64,7 @@ function registerEntrypoints() {
     };
 
     $noteTabContainer.on("click", ".show-note-revisions-button", showNoteRevisionsDialog);
-    setActionHandler("ShowNoteRevisions", showNoteRevisionsDialog);
+    keyboardActionService.setActionHandler("ShowNoteRevisions", showNoteRevisionsDialog);
 
     const showNoteSourceDialog = function() {
         if ($(this).hasClass("disabled")) {
@@ -73,33 +75,33 @@ function registerEntrypoints() {
     };
 
     $noteTabContainer.on("click", ".show-source-button", showNoteSourceDialog);
-    setActionHandler("ShowNoteSource", showNoteSourceDialog);
+    keyboardActionService.setActionHandler("ShowNoteSource", showNoteSourceDialog);
 
     const showLinkMapDialog = () => import(LINK_MAP).then(d => d.showDialog());
     $noteTabContainer.on("click", ".show-link-map-button", showLinkMapDialog);
-    setActionHandler("ShowLinkMap", showLinkMapDialog);
+    keyboardActionService.setActionHandler("ShowLinkMap", showLinkMapDialog);
 
     const showOptionsDialog = () => import(OPTIONS).then(d => d.showDialog());
     $("#options-button").on('click', showOptionsDialog);
-    setActionHandler("ShowOptions", showOptionsDialog);
+    keyboardActionService.setActionHandler("ShowOptions", showOptionsDialog);
 
     const showHelpDialog = () => import(HELP).then(d => d.showDialog());
     $("#show-help-button").on('click', showHelpDialog);
-    setActionHandler("ShowHelp", showHelpDialog);
+    keyboardActionService.setActionHandler("ShowHelp", showHelpDialog);
 
     const showSqlConsoleDialog = () => import(SQL_CONSOLE).then(d => d.showDialog());
     $("#open-sql-console-button").on('click', showSqlConsoleDialog);
-    setActionHandler("ShowSQLConsole", showSqlConsoleDialog);
+    keyboardActionService.setActionHandler("ShowSQLConsole", showSqlConsoleDialog);
 
     $("#show-about-dialog-button").on('click', () => import(ABOUT).then(d => d.showDialog()));
 
     if (utils.isElectron()) {
         $("#history-navigation").show();
         $("#history-back-button").on('click', window.history.back);
-        setActionHandler("BackInNoteHistory", window.history.back);
+        keyboardActionService.setActionHandler("BackInNoteHistory", window.history.back);
 
         $("#history-forward-button").on('click', window.history.forward);
-        setActionHandler("ForwardInNoteHistory", window.history.forward);
+        keyboardActionService.setActionHandler("ForwardInNoteHistory", window.history.forward);
     }
 
     // hide (toggle) everything except for the note content for zen mode
@@ -109,9 +111,9 @@ function registerEntrypoints() {
     };
 
     $("#toggle-zen-mode-button").on('click', toggleZenMode);
-    setActionHandler("ToggleZenMode", toggleZenMode);
+    keyboardActionService.setActionHandler("ToggleZenMode", toggleZenMode);
 
-    setActionHandler("InsertDateTime", () => {
+    keyboardActionService.setActionHandler("InsertDateTime", () => {
         const date = new Date();
         const dateString = utils.formatDateTime(date);
 
@@ -119,7 +121,7 @@ function registerEntrypoints() {
     });
 
     $("#reload-frontend-button").on('click', utils.reloadApp);
-    setActionHandler("ReloadApp", utils.reloadApp);
+    keyboardActionService.setActionHandler("ReloadApp", utils.reloadApp);
 
     $("#open-dev-tools-button").toggle(utils.isElectron());
 
@@ -131,7 +133,7 @@ function registerEntrypoints() {
         };
 
         $("#open-dev-tools-button").on('click', openDevTools);
-        setActionHandler("OpenDevTools", openDevTools);
+        keyboardActionService.setActionHandler("OpenDevTools", openDevTools);
     }
 
     let findInPage;
@@ -153,7 +155,7 @@ function registerEntrypoints() {
             caseSelectedColor: 'var(--main-border-color)'
         });
 
-        setActionHandler("FindInText", () => {
+        keyboardActionService.setActionHandler("FindInText", () => {
             if (!glob.activeDialog || !glob.activeDialog.is(":visible")) {
                 findInPage.openFindWindow();
             }
@@ -173,7 +175,7 @@ function registerEntrypoints() {
 
         $("#toggle-fullscreen-button").on('click', toggleFullscreen);
 
-        setActionHandler("ToggleFullscreen", toggleFullscreen);
+        keyboardActionService.setActionHandler("ToggleFullscreen", toggleFullscreen);
     }
     else {
         // outside of electron this is handled by the browser
@@ -181,8 +183,8 @@ function registerEntrypoints() {
     }
 
     if (utils.isElectron()) {
-        setActionHandler("ZoomOut", zoomService.decreaseZoomFactor);
-        setActionHandler("ZoomIn", zoomService.increaseZoomFactor);
+        keyboardActionService.setActionHandler("ZoomOut", zoomService.decreaseZoomFactor);
+        keyboardActionService.setActionHandler("ZoomIn", zoomService.increaseZoomFactor);
     }
 
     $(document).on('click', "a[data-action='note-revision']", async event => {
@@ -197,7 +199,7 @@ function registerEntrypoints() {
         return false;
     });
 
-    setActionHandler("CloneNotesTo", () => import(CLONE_TO).then(d => {
+    keyboardActionService.setActionHandler("CloneNotesTo", () => import(CLONE_TO).then(d => {
         const activeNode = treeService.getActiveNode();
 
         const selectedOrActiveNodes = treeService.getSelectedOrActiveNodes(activeNode);
@@ -207,62 +209,26 @@ function registerEntrypoints() {
         d.showDialog(noteIds);
     }));
 
-    setActionHandler("MoveNotesTo", () => import(MOVE_TO).then(d => {
+    keyboardActionService.setActionHandler("MoveNotesTo", () => import(MOVE_TO).then(d => {
         const activeNode = treeService.getActiveNode();
 
         const selectedOrActiveNodes = treeService.getSelectedOrActiveNodes(activeNode);
 
         d.showDialog(selectedOrActiveNodes);
     }));
-}
+    
+    keyboardActionService.setActionHandler("CreateNoteIntoDayNote", async () => {
+        const todayNote = await dateNoteService.getTodayNote();console.log(todayNote);
+        const notePath = await treeService.getSomeNotePath(todayNote);
 
-class KeyboardAction {
-    constructor(params) {
-        /** @property {string} */
-        this.actionName = params.actionName;
-        /** @property {string[]} */
-        this.defaultShortcuts = params.defaultShortcuts;
-        /** @property {string[]} */
-        this.effectiveShortcuts = params.effectiveShortcuts;
-        /** @property {string} */
-        this.description = params.description;
-    }
+        const node = await treeService.expandToNote(notePath);
 
-    addShortcut(shortcut) {
-        this.effectiveShortcuts.push(shortcut);
-    }
+        await noteDetailService.openEmptyTab(false);
 
-    /**
-     * @param {string|string[]} shortcuts
-     */
-    replaceShortcuts(shortcuts) {
-        this.effectiveShortcuts = Array.isArray(shortcuts) ? shortcuts : [shortcuts];
-    }
-}
-
-const keyboardActionRepo = {};
-
-const keyboardActionsLoaded = server.get('keyboard-actions').then(actions => {
-    for (const action of actions) {
-        keyboardActionRepo[action.actionName] = new KeyboardAction(action);
-    }
-});
-
-function setActionHandler(actionName, handler) {
-    keyboardActionsLoaded.then(() => {
-        const action = keyboardActionRepo[actionName];
-
-        if (!action) {
-            throw new Error(`Cannot find keyboard action '${actionName}'`);
-        }
-
-        action.handler = handler;
-
-        for (const shortcut of action.effectiveShortcuts) {
-            if (shortcut) {
-                utils.bindGlobalShortcut(shortcut, handler);
-            }
-        }
+        await treeService.createNote(node, todayNote.noteId, 'into', {
+            type: "text",
+            isProtected: node.data.isProtected
+        });
     });
 }
 
