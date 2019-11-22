@@ -214,6 +214,20 @@ async function clearBrowserCache() {
     }
 }
 
+/**
+ * @param url - should be without initial slash!!!
+ */
+function getUrlForDownload(url) {
+    if (isElectron()) {
+        // electron needs absolute URL so we extract current host, port, protocol
+        return getHost() + '/' + url;
+    }
+    else {
+        // web server can be deployed on subdomain so we need to use relative path
+        return url;
+    }
+}
+
 export default {
     reloadApp,
     parseDate,
@@ -230,7 +244,6 @@ export default {
     escapeHtml,
     stopWatch,
     formatLabel,
-    getHost,
     download,
     toObject,
     randomString,
@@ -245,5 +258,6 @@ export default {
     getMimeTypeClass,
     closeActiveDialog,
     isHtmlEmpty,
-    clearBrowserCache
+    clearBrowserCache,
+    getUrlForDownload
 };
