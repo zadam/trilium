@@ -185,8 +185,7 @@ class NoteDetailBook {
         }
         else if (type === 'file') {
             function getFileUrl() {
-                // electron needs absolute URL so we extract current host, port, protocol
-                return utils.getHost() + "/api/notes/" + note.noteId + "/download";
+                return utils.getUrlForDownload("api/notes/" + note.noteId + "/download");
             }
 
             const $downloadButton = $('<button class="file-download btn btn-primary" type="button">Download</button>');

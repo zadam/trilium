@@ -102,7 +102,9 @@ async function setContentPane() {
     const $downloadButton = $('<button class="btn btn-sm btn-primary" type="button">Download</button>');
 
     $downloadButton.on('click', () => {
-        utils.download(utils.getHost() + `/api/notes/${revisionItem.noteId}/revisions/${revisionItem.noteRevisionId}/download`);
+        const url = utils.getUrlForDownload(`api/notes/${revisionItem.noteId}/revisions/${revisionItem.noteRevisionId}/download`);
+
+        utils.download(url);
     });
 
     $titleButtons.append($downloadButton);

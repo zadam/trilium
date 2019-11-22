@@ -74,7 +74,7 @@ $form.on('submit', () => {
 function exportBranch(branchId, type, format, version) {
     taskId = utils.randomString(10);
 
-    const url = utils.getHost() + `/api/notes/${branchId}/export/${type}/${format}/${version}/${taskId}`;
+    const url = utils.getUrlForDownload(`api/notes/${branchId}/export/${type}/${format}/${version}/${taskId}`);
 
     utils.download(url);
 }
