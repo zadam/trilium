@@ -35,9 +35,9 @@ async function searchForNoteIds(searchString) {
             }
         }
 
-        const isInFilter = filters.find(filter => filter.name.toLowerCase() === 'in');
+        const isInFilters = filters.filter(filter => filter.name.toLowerCase() === 'in');
 
-        if (isInFilter) {
+        for (const isInFilter of isInFilters) {
             if (isInFilter.operator === '=') {
                 noteIds = noteIds.filter(noteId => noteCacheService.isInAncestor(noteId, isInFilter.value));
             }
