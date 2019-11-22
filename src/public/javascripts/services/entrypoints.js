@@ -121,7 +121,7 @@ function registerEntrypoints() {
     });
 
     $("#reload-frontend-button").on('click', utils.reloadApp);
-    keyboardActionService.setActionHandler("ReloadApp", utils.reloadApp);
+    keyboardActionService.setActionHandler("ReloadFrontendApp", utils.reloadApp);
 
     $("#open-dev-tools-button").toggle(utils.isElectron());
 

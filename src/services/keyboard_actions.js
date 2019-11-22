@@ -114,7 +114,7 @@ const DEFAULT_KEYBOARD_ACTIONS = [
         defaultShortcuts: ["CommandOrControl+return"]
     },
     {
-        actionName: "DeleteNote",
+        actionName: "DeleteNotes",
         defaultShortcuts: ["Delete"],
         description: "Delete note"
     },
@@ -185,7 +185,7 @@ const DEFAULT_KEYBOARD_ACTIONS = [
     },
     {
         actionName: "ToggleNoteHoisting",
-        defaultShortcuts: ["Alt+h"],
+        defaultShortcuts: ["Alt+H"],
         description: "Toggles note hoisting of active note"
     },
     {
@@ -195,7 +195,7 @@ const DEFAULT_KEYBOARD_ACTIONS = [
     },
     {
         actionName: "EditNoteTitle",
-        defaultShortcuts: ["return"],
+        defaultShortcuts: ["Return"],
         description: "Edit active note title"
     },
     {
@@ -236,7 +236,7 @@ const DEFAULT_KEYBOARD_ACTIONS = [
         defaultShortcuts: ["Alt+T"]
     },
     {
-        actionName: "ReloadApp",
+        actionName: "ReloadFrontendApp",
         defaultShortcuts: ["F5", "CommandOrControl+R"]
     },
     {

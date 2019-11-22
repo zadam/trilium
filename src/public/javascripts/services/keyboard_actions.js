@@ -61,20 +61,39 @@ async function triggerAction(actionName) {
 	await action.handler();
 }
 
-async function getAction(actionName) {
+async function getAction(actionName, silent = false) {
 	await keyboardActionsLoaded;
 
 	const action = keyboardActionRepo[actionName];
 
 	if (!action) {
-		throw new Error(`Cannot find action ${actionName}`);
+		if (silent) {
+			console.log(`Cannot find action ${actionName}`);
+		}
+		else {
+			throw new Error(`Cannot find action ${actionName}`);
+		}
 	}
 
 	return action;
 }
 
+function updateKbdElements($container) {
+	$container.find('kbd[data-kb-action]').each(async (i, el) => {
+		const actionName = $(el).attr('data-kb-action');
+		const action = await getAction(actionName, true);
+
+		if (action) {
+			$(el).text(action.effectiveShortcuts.join(', '));
+		}
+	});
+}
+
+$(() => updateKbdElements($(document)));
+
 export default {
 	setActionHandler,
 	triggerAction,
-	getAction
+	getAction,
+	updateKbdElements
 };

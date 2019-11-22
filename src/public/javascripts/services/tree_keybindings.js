@@ -34,7 +34,7 @@ const fixedKeyBindings = {
 };
 
 const templates = {
-    "DeleteNote": node => {
+    "DeleteNotes": node => {
         treeChangesService.deleteNodes(treeService.getSelectedOrActiveNodes(node));
     },
     "MoveNoteUp": node => {
