@@ -76,12 +76,12 @@ function SetupModel() {
             }
 
             // not using server.js because it loads too many dependencies
-            $.post('/api/setup/new-document', {
+            $.post('api/setup/new-document', {
                 username: username,
                 password: password1,
                 theme: theme
             }).then(() => {
-                window.location.replace("/");
+                window.location.replace("./");
             });
         }
         else if (this.setupType() === 'sync-from-server') {
@@ -128,10 +128,10 @@ function SetupModel() {
 }
 
 async function checkOutstandingSyncs() {
-    const { stats, initialized } = await $.get('/api/sync/stats');
+    const { stats, initialized } = await $.get('api/sync/stats');
 
     if (initialized) {
-        window.location.replace("/");
+        window.location.replace("./");
     }
 
     const totalOutstandingSyncs = stats.outstandingPushes + stats.outstandingPulls;
