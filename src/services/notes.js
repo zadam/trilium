@@ -264,6 +264,7 @@ async function saveLinks(note, content) {
     if (note.type === 'text') {
         content = findImageLinks(content, foundLinks);
         content = findInternalLinks(content, foundLinks);
+        content = findExternalLinks(content, foundLinks);
     }
     else if (note.type === 'relation-map') {
         findRelationMapLinks(content, foundLinks);

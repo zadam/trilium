@@ -28,22 +28,22 @@ const DEFAULT_KEYBOARD_ACTIONS = [
         separator: "Tabs"
     },
     {
-        actionName: "NewTab",
+        actionName: "OpenNewTab",
         defaultShortcuts: ["CommandOrControl+T"],
         only: ELECTRON
     },
     {
-        actionName: "CloseTab",
+        actionName: "CloseActiveTab",
         defaultShortcuts: ["CommandOrControl+W"],
         only: ELECTRON
     },
     {
-        actionName: "NextTab",
+        actionName: "ActivateNextTab",
         defaultShortcuts: ["CommandOrControl+Tab"],
         only: ELECTRON
     },
     {
-        actionName: "PreviousTab",
+        actionName: "ActivatePreviousTab",
         defaultShortcuts: ["CommandOrControl+Shift+Tab"],
         only: ELECTRON
     },
@@ -120,22 +120,22 @@ const DEFAULT_KEYBOARD_ACTIONS = [
     },
     {
         actionName: "MoveNoteUp",
-        defaultShortcuts: ["Ctrl+Up"],
+        defaultShortcuts: ["CommandOrControl+Up"],
         description: "Move note up"
     },
     {
         actionName: "MoveNoteDown",
-        defaultShortcuts: ["Ctrl+Down"],
+        defaultShortcuts: ["CommandOrControl+Down"],
         description: "Move note down"
     },
     {
         actionName: "MoveNoteUpInHierarchy",
-        defaultShortcuts: ["Ctrl+Left"],
+        defaultShortcuts: ["CommandOrControl+Left"],
         description: "Move note up in hierarchy"
     },
     {
         actionName: "MoveNoteDownInHierarchy",
-        defaultShortcuts: ["Ctrl+Right"],
+        defaultShortcuts: ["CommandOrControl+Right"],
         description: "Move note down in hierarchy"
     },
     {
@@ -175,7 +175,7 @@ const DEFAULT_KEYBOARD_ACTIONS = [
     },
     {
         actionName: "SortChildNotes",
-        defaultShortcuts: ["Alt+s"],
+        defaultShortcuts: ["Alt+S"],
         description: "Sort child notes"
     },
     {
@@ -232,7 +232,7 @@ const DEFAULT_KEYBOARD_ACTIONS = [
         defaultShortcuts: ["CommandOrControl+return"]
     },
     {
-        actionName: "InsertDateTime",
+        actionName: "InsertDateTimeToText",
         defaultShortcuts: ["Alt+T"]
     },
     {
