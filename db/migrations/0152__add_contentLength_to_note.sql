@@ -20,7 +20,7 @@ SELECT noteId, title, -1, isProtected, type, mime, hash, isDeleted, isErased, da
 DROP TABLE notes;
 ALTER TABLE notes_mig RENAME TO notes;
 
-UPDATE notes SET contentLength = (SELECT COALESCE(LENGTH(content), 0) FROM note_contents WHERE note_contents.noteId = notes.noteId);
+UPDATE notes SET contentLength = COALESCE((SELECT COALESCE(LENGTH(content), 0) FROM note_contents WHERE note_contents.noteId = notes.noteId), -1);
 
 CREATE INDEX `IDX_notes_isDeleted` ON `notes` (`isDeleted`);
 CREATE INDEX `IDX_notes_title` ON `notes` (`title`);
