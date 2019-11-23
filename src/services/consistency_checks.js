@@ -312,6 +312,25 @@ async function findLogicIssues() {
         });
 
     await findAndFixIssues(`
+                SELECT notes.noteId
+                FROM notes
+                  LEFT JOIN note_contents USING(noteId)
+                WHERE
+                  note_contents.noteId IS NULL`,
+        async ({noteId}, autoFix) => {
+            if (autoFix) {
+                const note = await repository.getNote(noteId);
+                // empty string might be wrong choice for some note types (and protected notes) but it's a best guess
+                await note.setContent(note.isErased ? null : '');
+
+                logFix(`Note ${noteId} content was set to empty string since there was no corresponding row`);
+            }
+            else {
+                logError(`Note ${noteId} content row does not exist`);
+            }
+        });
+
+    await findAndFixIssues(`
           SELECT noteId
           FROM notes
           JOIN note_contents USING(noteId)
@@ -321,6 +340,7 @@ async function findLogicIssues() {
         async ({noteId}, autoFix) => {
             if (autoFix) {
                 const note = await repository.getNote(noteId);
+                // empty string might be wrong choice for some note types (and protected notes) but it's a best guess
                 await note.setContent('');
 
                 logFix(`Note ${noteId} content was set to empty string since it was null even though it is not deleted`);
@@ -357,6 +377,25 @@ async function findLogicIssues() {
             }
             else {
                 logError(`Note revision ${noteRevisionId} is not erased even though note ${noteId} is erased.`);
+            }
+        });
+
+    await findAndFixIssues(`
+                SELECT note_revisions.noteRevisionId
+                FROM note_revisions
+                LEFT JOIN note_revision_contents USING(noteRevisionId)
+                WHERE note_revision_contents.noteRevisionId IS NULL`,
+        async ({noteRevisionId}, autoFix) => {
+            if (autoFix) {
+                const noteRevision = await repository.getNoteRevision(noteRevisionId);
+                await noteRevision.setContent(null);
+                noteRevision.isErased = true;
+                await noteRevision.save();
+
+                logFix(`Note revision content ${noteRevisionId} was created and set to erased since it did not exist.`);
+            }
+            else {
+                logError(`Note revision content ${noteRevisionId} does not exist`);
             }
         });
 
