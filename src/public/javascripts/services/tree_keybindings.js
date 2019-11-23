@@ -114,11 +114,6 @@ const templates = {
 
         return false;
     },
-    // TODO: this shouldn't be tree specific shortcut
-    "EditBranchPrefix": async node => {
-        const editBranchPrefixDialog = await import("../dialogs/branch_prefix.js");
-        editBranchPrefixDialog.showDialog(node);
-    },
     "CollapseSubtree": node => {
         treeService.collapseTree(node);
     },
@@ -158,28 +153,6 @@ const templates = {
         if (!await hoistedNoteService.isRootNode(node)) {
             node.getParent().setActive().then(treeService.clearSelectedNodes);
         }
-    },
-    // TODO: this should probably be app-global shortcut
-    "ToggleNoteHoisting": node => {
-        hoistedNoteService.getHoistedNoteId().then(async hoistedNoteId => {
-            if (node.data.noteId === hoistedNoteId) {
-                hoistedNoteService.unhoist();
-            }
-            else {
-                const note = await treeCache.getNote(node.data.noteId);
-
-                if (note.type !== 'search') {
-                    hoistedNoteService.setHoistedNoteId(node.data.noteId);
-                }
-            }
-        });
-
-        return false;
-    },
-    "SearchInSubtree": node => {
-        searchNoteService.searchInSubtree(node.data.noteId);
-
-        return false;
     }
 };
 

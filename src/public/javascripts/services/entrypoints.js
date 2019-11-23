@@ -7,6 +7,8 @@ import treeService from "./tree.js";
 import dateNoteService from "./date_notes.js";
 import noteDetailService from "./note_detail.js";
 import keyboardActionService from "./keyboard_actions.js";
+import hoistedNoteService from "./hoisted_note.js";
+import treeCache from "./tree_cache.js";
 
 const NOTE_REVISIONS = "../dialogs/note_revisions.js";
 const OPTIONS = "../dialogs/options.js";
@@ -113,7 +115,7 @@ function registerEntrypoints() {
     $("#toggle-zen-mode-button").on('click', toggleZenMode);
     keyboardActionService.setActionHandler("ToggleZenMode", toggleZenMode);
 
-    keyboardActionService.setActionHandler("InsertDateTime", () => {
+    keyboardActionService.setActionHandler("InsertDateTimeToText", () => {
         const date = new Date();
         const dateString = utils.formatDateTime(date);
 
@@ -229,6 +231,36 @@ function registerEntrypoints() {
             type: "text",
             isProtected: node.data.isProtected
         });
+    });
+
+    keyboardActionService.setActionHandler("EditBranchPrefix", async () => {
+        const node = treeService.getActiveNode();
+
+        const editBranchPrefixDialog = await import("../dialogs/branch_prefix.js");
+        editBranchPrefixDialog.showDialog(node);
+    });
+
+    keyboardActionService.setActionHandler("ToggleNoteHoisting", async () => {
+        const node = treeService.getActiveNode();
+
+        hoistedNoteService.getHoistedNoteId().then(async hoistedNoteId => {
+            if (node.data.noteId === hoistedNoteId) {
+                hoistedNoteService.unhoist();
+            }
+            else {
+                const note = await treeCache.getNote(node.data.noteId);
+
+                if (note.type !== 'search') {
+                    hoistedNoteService.setHoistedNoteId(node.data.noteId);
+                }
+            }
+        });
+    });
+
+    keyboardActionService.setActionHandler("SearchInSubtree",  () => {
+        const node = treeService.getActiveNode();
+
+        searchNotesService.searchInSubtree(node.data.noteId);
     });
 }
 

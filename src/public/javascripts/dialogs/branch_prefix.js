@@ -17,10 +17,20 @@ export async function showDialog(node) {
 
     glob.activeDialog = $dialog;
 
-    $dialog.modal();
-
     branchId = node.data.branchId;
     const branch = treeCache.getBranch(branchId);
+
+    if (branch.noteId === 'root') {
+        return;
+    }
+
+    const parentNote = await treeCache.getNote(branch.parentNoteId);
+
+    if (parentNote.type === 'search') {
+        return;
+    }
+
+    $dialog.modal();
 
     $treePrefixInput.val(branch.prefix);
 
