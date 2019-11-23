@@ -85,6 +85,10 @@ const DEFAULT_KEYBOARD_ACTIONS = [
         defaultShortcuts: ["F1"]
     },
     {
+        actionName: "PrintActiveNote",
+        defaultShortcuts: []
+    },
+    {
         actionName: "CreateNoteAfter",
         defaultShortcuts: ["CommandOrControl+O"]
     },
@@ -262,11 +266,7 @@ const DEFAULT_KEYBOARD_ACTIONS = [
     {
         actionName: "ZoomIn",
         defaultShortcuts: ["CommandOrControl+="]
-    },
-    {
-        actionName: "MarkdownToHTML",
-        defaultShortcuts: ["CommandOrControl+Return"]
-    },
+    }
 ];
 
 if (process.platform === "darwin") {
@@ -312,7 +312,7 @@ async function getKeyboardActions() {
                 }
             }
             else {
-                log.info(`Keyboard action ${actionName} not found.`);
+                log.info(`Keyboard action ${actionName} found in database, but not in action definition.`);
             }
         }
     }
