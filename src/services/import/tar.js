@@ -147,7 +147,7 @@ async function importTar(taskContext, fileBuffer, importRootNote) {
                 continue;
             }
 
-            if (attr.type === 'relation' && ['internal-link', 'image-link', 'relation-map-link'].includes(attr.name)) {
+            if (attr.type === 'relation' && ['internalLink', 'imageLink', 'relationMapLink'].includes(attr.name)) {
                 // these relations are created automatically and as such don't need to be duplicated in the import
                 continue;
             }
@@ -312,7 +312,7 @@ async function importTar(taskContext, fileBuffer, importRootNote) {
 
         if (type === 'relation-map' && noteMeta) {
             const relationMapLinks = (noteMeta.attributes || [])
-                .filter(attr => attr.type === 'relation' && attr.name === 'relation-map-link');
+                .filter(attr => attr.type === 'relation' && attr.name === 'relationMapLink');
 
             // this will replace relation map links
             for (const link of relationMapLinks) {

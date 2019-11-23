@@ -80,7 +80,7 @@
     "electron": "6.0.12",
     "electron-builder": "22.1.0",
     "electron-installer-debian": "2.0.1",
-    "electron-packager": "14.1.0",
+    "electron-packager": "14.1.1",
     "electron-rebuild": "1.8.8",
     "jsdoc": "3.6.3",
     "lorem-ipsum": "2.0.3"

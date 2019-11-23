@@ -130,7 +130,9 @@ async function getRelationMap(req) {
         noteTitles: {},
         relations: [],
         // relation name => inverse relation name
-        inverseRelations: {}
+        inverseRelations: {
+            'internalLink': 'internalLink'
+        }
     };
 
     if (noteIds.length === 0) {

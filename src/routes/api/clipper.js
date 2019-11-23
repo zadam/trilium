@@ -96,7 +96,7 @@ async function addImagesToNote(images, note, content) {
                 noteId: note.noteId,
                 type: 'relation',
                 value: imageNote.noteId,
-                name: 'image-link'
+                name: 'imageLink'
             }).save();
 
             console.log(`Replacing ${imageId} with ${url}`);

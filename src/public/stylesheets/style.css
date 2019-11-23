@@ -437,6 +437,7 @@ div.ui-tooltip {
 
 .btn.active:not(.btn-primary) {
     background-color: var(--button-disabled-background-color) !important;
+    opacity: 0.4;
 }
 
 .note-path-list a.current {
