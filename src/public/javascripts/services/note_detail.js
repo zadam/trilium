@@ -420,17 +420,17 @@ $(tabRow.el).on('contextmenu', '.note-tab', e => {
     });
 });
 
-keyboardActionService.setActionHandler('OpenNewTab', () => {
+keyboardActionService.setGlobalActionHandler('OpenNewTab', () => {
     openEmptyTab();
 });
 
-keyboardActionService.setActionHandler('CloseActiveTab', () => {
+keyboardActionService.setGlobalActionHandler('CloseActiveTab', () => {
     if (tabRow.activeTabEl) {
         tabRow.removeTab(tabRow.activeTabEl);
     }
 });
 
-keyboardActionService.setActionHandler('ActivateNextTab', () => {
+keyboardActionService.setGlobalActionHandler('ActivateNextTab', () => {
     const nextTab = tabRow.nextTabEl;
 
     if (nextTab) {
@@ -438,7 +438,7 @@ keyboardActionService.setActionHandler('ActivateNextTab', () => {
     }
 });
 
-keyboardActionService.setActionHandler('ActivatePreviousTab', () => {
+keyboardActionService.setGlobalActionHandler('ActivatePreviousTab', () => {
     const prevTab = tabRow.previousTabEl;
 
     if (prevTab) {

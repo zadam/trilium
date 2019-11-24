@@ -4,6 +4,8 @@ import utils from "../../services/utils.js";
 const TPL = `
 <h4>Keyboard shortcuts</h4>
 
+<p>Multiple shortcuts for the same action can be separated by comma.</p>
+
 <div style="overflow: auto; height: 500px;">
     <table id="keyboard-shortcut-table" cellpadding="10">
     <thead>

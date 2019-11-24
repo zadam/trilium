@@ -3,7 +3,7 @@ import bundleService from "./bundle.js";
 import toastService from "./toast.js";
 import server from "./server.js";
 import noteDetailService from "./note_detail.js";
-import utils from "./utils.js";
+import keyboardActionService from "./keyboard_actions.js";
 
 class NoteDetailCode {
 
@@ -17,7 +17,7 @@ class NoteDetailCode {
         this.$editorEl = this.$component.find('.note-detail-code-editor');
         this.$executeScriptButton = ctx.$tabContent.find(".execute-script-button");
 
-        utils.bindElShortcut(ctx.$tabContent, "ctrl+return", () => this.executeCurrentNote());
+        keyboardActionService.setElementActionHandler(ctx.$tabContent, 'RunActiveNote', () => this.executeCurrentNote());
 
         this.$executeScriptButton.on('click', () => this.executeCurrentNote());
     }

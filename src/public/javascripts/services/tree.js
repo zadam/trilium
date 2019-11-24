@@ -796,7 +796,7 @@ ws.subscribeToOutsideSyncMessages(async syncData => {
     }
 });
 
-keyboardActionService.setActionHandler('CreateNoteAfter', async () => {
+keyboardActionService.setGlobalActionHandler('CreateNoteAfter', async () => {
     const node = getActiveNode();
     const parentNoteId = node.data.parentNoteId;
     const isProtected = await treeUtils.getParentProtectedStatus(node);
@@ -868,9 +868,9 @@ async function reloadNotes(noteIds, activateNotePath = null) {
 
 window.glob.createNoteInto = createNoteInto;
 
-keyboardActionService.setActionHandler('CreateNoteInto', createNoteInto);
+keyboardActionService.setGlobalActionHandler('CreateNoteInto', createNoteInto);
 
-keyboardActionService.setActionHandler('ScrollToActiveNote', scrollToActiveNote);
+keyboardActionService.setGlobalActionHandler('ScrollToActiveNote', scrollToActiveNote);
 
 $(window).bind('hashchange', async function() {
     if (isNotePathInAddress()) {
@@ -908,7 +908,7 @@ async function duplicateNote(noteId, parentNoteId) {
 }
 
 
-keyboardActionService.setActionHandler('CollapseTree', () => collapseTree()); // don't use shortened form since collapseTree() accepts argument
+keyboardActionService.setGlobalActionHandler('CollapseTree', () => collapseTree()); // don't use shortened form since collapseTree() accepts argument
 $collapseTreeButton.on('click', () => collapseTree());
 
 $createTopLevelNoteButton.on('click', createNewTopLevelNote);

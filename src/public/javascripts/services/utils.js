@@ -139,6 +139,7 @@ function bindElShortcut($el, keyboardShortcut, handler) {
     if (isDesktop()) {
         keyboardShortcut = keyboardShortcut
             .toLowerCase()
+            .replace("enter", "return")
             .replace("ctrl+alt", "alt+ctrl")
             .replace("meta+alt", "alt+meta"); // alt needs to be first
 

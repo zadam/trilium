@@ -26,6 +26,139 @@ const DEFAULT_KEYBOARD_ACTIONS = [
         defaultShortcuts: ["CommandOrControl+J"],
         description: 'Open "Jump to note" dialog'
     },
+    {
+        actionName: "ScrollToActiveNote",
+        defaultShortcuts: ["CommandOrControl+."]
+    },
+    {
+        actionName: "SearchNotes",
+        defaultShortcuts: ["CommandOrControl+S"]
+    },
+    {
+        actionName: "SearchInSubtree",
+        defaultShortcuts: ["CommandOrControl+Shift+S"],
+        description: "Search for notes in the active note's subtree"
+    },
+    {
+        actionName: "CollapseTree",
+        defaultShortcuts: ["Alt+C"]
+    },
+    {
+        actionName: "CollapseSubtree",
+        defaultShortcuts: ["Alt+-"],
+        description: "Collapses subtree of current note"
+    },
+    {
+        actionName: "FocusNote",
+        defaultShortcuts: ["Enter"]
+    },
+    {
+        actionName: "ActivateParentNote",
+        defaultShortcuts: ["Backspace"],
+        description: "Activates parent note of currently active note"
+    },
+    {
+        actionName: "SortChildNotes",
+        defaultShortcuts: ["Alt+S"],
+        description: "Sort child notes"
+    },
+
+
+    {
+        separator: "Creating and moving notes"
+    },
+    {
+        actionName: "CreateNoteAfter",
+        defaultShortcuts: ["CommandOrControl+O"]
+    },
+    {
+        actionName: "CreateNoteInto",
+        defaultShortcuts: ["CommandOrControl+P"]
+    },
+    {
+        actionName: "CreateNoteIntoDayNote",
+        defaultShortcuts: ["global:CommandOrControl+Alt+P"],
+        description: "Create and open subnote of a current day note"
+    },
+    {
+        actionName: "DeleteNotes",
+        defaultShortcuts: ["Delete"],
+        description: "Delete note"
+    },
+    {
+        actionName: "MoveNoteUp",
+        defaultShortcuts: ["CommandOrControl+Up"],
+        description: "Move note up"
+    },
+    {
+        actionName: "MoveNoteDown",
+        defaultShortcuts: ["CommandOrControl+Down"],
+        description: "Move note down"
+    },
+    {
+        actionName: "MoveNoteUpInHierarchy",
+        defaultShortcuts: ["CommandOrControl+Left"],
+        description: "Move note up in hierarchy"
+    },
+    {
+        actionName: "MoveNoteDownInHierarchy",
+        defaultShortcuts: ["CommandOrControl+Right"],
+        description: "Move note down in hierarchy"
+    },
+    {
+        actionName: "EditNoteTitle",
+        defaultShortcuts: ["Enter"],
+        description: "Edit active note title"
+    },
+    {
+        actionName: "EditBranchPrefix",
+        defaultShortcuts: ["F2"],
+        description: "Show Edit branch prefix dialog"
+    },
+    {
+        actionName: "CloneNotesTo",
+        defaultShortcuts: ["CommandOrControl+Shift+C"]
+    },
+    {
+        actionName: "MoveNotesTo",
+        defaultShortcuts: ["CommandOrControl+Shift+C"]
+    },
+
+    {
+        separator: "Note clipboard"
+    },
+
+
+    {
+        actionName: "CopyNotesToClipboard",
+        defaultShortcuts: ["CommandOrControl+C"],
+        description: "Copy selected notes to the clipboard"
+    },
+    {
+        actionName: "PasteNotesFromClipboard",
+        defaultShortcuts: ["CommandOrControl+V"],
+        description: "Paste notes from the clipboard into active note"
+    },
+    {
+        actionName: "CutNotesToClipboard",
+        defaultShortcuts: ["CommandOrControl+X"],
+        description: "Cut selected notes to the clipboard"
+    },
+    {
+        actionName: "SelectAllNotesInParent",
+        defaultShortcuts: ["CommandOrControl+A"],
+        description: "Select all notes from the current note level"
+    },
+    {
+        actionName: "AddNoteAboveToSelection",
+        defaultShortcuts: ["Shift+Up"],
+        description: "Add note above to the selection"
+    },
+    {
+        actionName: "AddNoteBelowToSelection",
+        defaultShortcuts: ["Shift+Down"],
+        description: "Add note above to the selection"
+    },
 
 
     {
@@ -81,111 +214,41 @@ const DEFAULT_KEYBOARD_ACTIONS = [
         defaultShortcuts: []
     },
     {
+        actionName: "ShowSQLConsole",
+        defaultShortcuts: ["Alt+O"]
+    },
+    {
         actionName: "ShowHelp",
         defaultShortcuts: ["F1"]
     },
+
+
+    {
+        separator: "Text note operations"
+    },
+
+    {
+        actionName: "AddLinkToText",
+        defaultShortcuts: ["CommandOrControl+L"],
+        description: "Open dialog to add link to the text"
+    },
+    {
+        actionName: "InsertDateTimeToText",
+        defaultShortcuts: ["Alt+T"]
+    },
+
+    {
+        separator: "Other"
+    },
+
     {
         actionName: "PrintActiveNote",
         defaultShortcuts: []
     },
     {
-        actionName: "CreateNoteAfter",
-        defaultShortcuts: ["CommandOrControl+O"]
-    },
-    {
-        actionName: "CreateNoteInto",
-        defaultShortcuts: ["CommandOrControl+P"]
-    },
-    {
-        actionName: "CreateNoteIntoDayNote",
-        defaultShortcuts: ["global:CommandOrControl+Alt+P"],
-        description: "Create and open subnote of a current day note"
-    },
-    {
-        actionName: "ScrollToActiveNote",
-        defaultShortcuts: ["CommandOrControl+."]
-    },
-    {
-        actionName: "CollapseTree",
-        defaultShortcuts: ["Alt+C"]
-    },
-    {
-        actionName: "FocusNote",
-        defaultShortcuts: ["return"]
-    },
-    {
-        actionName: "RunCurrentNote",
-        defaultShortcuts: ["CommandOrControl+return"]
-    },
-    {
-        actionName: "DeleteNotes",
-        defaultShortcuts: ["Delete"],
-        description: "Delete note"
-    },
-    {
-        actionName: "MoveNoteUp",
-        defaultShortcuts: ["CommandOrControl+Up"],
-        description: "Move note up"
-    },
-    {
-        actionName: "MoveNoteDown",
-        defaultShortcuts: ["CommandOrControl+Down"],
-        description: "Move note down"
-    },
-    {
-        actionName: "MoveNoteUpInHierarchy",
-        defaultShortcuts: ["CommandOrControl+Left"],
-        description: "Move note up in hierarchy"
-    },
-    {
-        actionName: "MoveNoteDownInHierarchy",
-        defaultShortcuts: ["CommandOrControl+Right"],
-        description: "Move note down in hierarchy"
-    },
-    {
-        actionName: "AddNoteAboveToSelection",
-        defaultShortcuts: ["Shift+Up"],
-        description: "Add note above to the selection"
-    },
-    {
-        actionName: "AddNoteBelowToSelection",
-        defaultShortcuts: ["Shift+Down"],
-        description: "Add note above to the selection"
-    },
-    {
-        actionName: "CopyNotesToClipboard",
-        defaultShortcuts: ["CommandOrControl+C"],
-        description: "Copy selected notes to the clipboard"
-    },
-    {
-        actionName: "PasteNotesFromClipboard",
-        defaultShortcuts: ["CommandOrControl+V"],
-        description: "Paste notes from the clipboard into active note"
-    },
-    {
-        actionName: "CutNotesToClipboard",
-        defaultShortcuts: ["CommandOrControl+X"],
-        description: "Cut selected notes to the clipboard"
-    },
-    {
-        actionName: "EditBranchPrefix",
-        defaultShortcuts: ["F2"],
-        description: "Show Edit branch prefix dialog"
-    },
-    {
-        actionName: "CollapseSubtree",
-        defaultShortcuts: ["Alt+-"],
-        description: "Collapses subtree of current note"
-    },
-    {
-        actionName: "SortChildNotes",
-        defaultShortcuts: ["Alt+S"],
-        description: "Sort child notes"
-    },
-    {
-        actionName: "ActivateParentNote",
-        defaultShortcuts: ["Backspace"],
-        description: "Activates parent note of currently active note"
+        actionName: "RunActiveNote",
+        defaultShortcuts: ["CommandOrControl+Enter"],
+        description: "Run active JavaScript (frontend/backend) code note"
     },
     {
         actionName: "ToggleNoteHoisting",
@@ -193,51 +256,8 @@ const DEFAULT_KEYBOARD_ACTIONS = [
         description: "Toggles note hoisting of active note"
     },
     {
-        actionName: "SearchInSubtree",
-        defaultShortcuts: ["CommandOrControl+Shift+S"],
-        description: "Search for notes in the active note's subtree"
-    },
-    {
-        actionName: "EditNoteTitle",
-        defaultShortcuts: ["Return"],
-        description: "Edit active note title"
-    },
-    {
-        actionName: "SelectAllNotesInParent",
-        defaultShortcuts: ["CommandOrControl+A"],
-        description: "Select all notes from the current note level"
-    },
-    {
-        separator: "Text note operations"
-    },
-    {
-        actionName: "AddLinkToText",
-        defaultShortcuts: ["CommandOrControl+L"],
-        description: "Open dialog to add link to the text"
-    },
-    {
-        actionName: "CloneNotesTo",
-        defaultShortcuts: ["CommandOrControl+Shift+C"]
-    },
-    {
-        actionName: "MoveNotesTo",
-        defaultShortcuts: ["CommandOrControl+Shift+C"]
-    },
-    {
-        actionName: "SearchNotes",
-        defaultShortcuts: ["CommandOrControl+S"]
-    },
-    {
-        actionName: "ShowSQLConsole",
-        defaultShortcuts: ["Alt+O"]
-    },
-    {
         actionName: "RunSQL",
-        defaultShortcuts: ["CommandOrControl+return"]
-    },
-    {
-        actionName: "InsertDateTimeToText",
-        defaultShortcuts: ["Alt+T"]
+        defaultShortcuts: ["CommandOrControl+Enter"]
     },
     {
         actionName: "ReloadFrontendApp",

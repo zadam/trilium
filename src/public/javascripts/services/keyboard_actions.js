@@ -33,7 +33,7 @@ const keyboardActionsLoaded = server.get('keyboard-actions').then(actions => {
 	}
 });
 
-function setActionHandler(actionName, handler) {
+function setGlobalActionHandler(actionName, handler) {
 	keyboardActionsLoaded.then(() => {
 		const action = keyboardActionRepo[actionName];
 
@@ -46,6 +46,24 @@ function setActionHandler(actionName, handler) {
 		for (const shortcut of action.effectiveShortcuts) {
 			if (shortcut) {
 				utils.bindGlobalShortcut(shortcut, handler);
+			}
+		}
+	});
+}
+
+function setElementActionHandler($el, actionName, handler) {
+	keyboardActionsLoaded.then(() => {
+		const action = keyboardActionRepo[actionName];
+
+		if (!action) {
+			throw new Error(`Cannot find keyboard action '${actionName}'`);
+		}
+
+		// not setting action.handler since this is not global
+
+		for (const shortcut of action.effectiveShortcuts) {
+			if (shortcut) {
+				utils.bindElShortcut($el, shortcut, handler);
 			}
 		}
 	});
@@ -105,7 +123,8 @@ function updateDisplayedShortcuts($container) {
 $(() => updateDisplayedShortcuts($(document)));
 
 export default {
-	setActionHandler,
+	setGlobalActionHandler,
+	setElementActionHandler,
 	triggerAction,
 	getAction,
 	updateDisplayedShortcuts
