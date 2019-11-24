@@ -119,6 +119,7 @@ li.dropdown-submenu:hover > ul.dropdown-menu {
     top: 0;
     left: 100%;
     margin-top: -6px;
+    min-width: 15rem;
 }
 
 /* rotate caret on hover */

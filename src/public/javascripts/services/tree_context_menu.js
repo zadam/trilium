@@ -85,10 +85,11 @@ class TreeContextMenu {
                 enabled: notSearch && noSelectedNotes },
             { title: "Import into note", cmd: "importIntoNote", uiIcon: "empty",
                 enabled: notSearch && noSelectedNotes },
-            { title: "----" },
-            { title: 'Collapse subtree <kbd data-kb-action="CollapseSubtree"></kbd>', cmd: "collapseSubtree", uiIcon: "align-justify", enabled: noSelectedNotes },
-            { title: "Force note sync", cmd: "forceNoteSync", uiIcon: "recycle", enabled: noSelectedNotes },
-            { title: 'Sort alphabetically <kbd data-kb-action="SortChildNotes"></kbd>', cmd: "sortAlphabetically", uiIcon: "empty", enabled: noSelectedNotes && notSearch }
+            { title: "Advanced", uiIcon: "empty", enabled: true, items: [
+                    { title: 'Collapse subtree <kbd data-kb-action="CollapseSubtree"></kbd>', cmd: "collapseSubtree", uiIcon: "align-justify", enabled: noSelectedNotes },
+                    { title: "Force note sync", cmd: "forceNoteSync", uiIcon: "recycle", enabled: noSelectedNotes },
+                    { title: 'Sort alphabetically <kbd data-kb-action="SortChildNotes"></kbd>', cmd: "sortAlphabetically", uiIcon: "empty", enabled: noSelectedNotes && notSearch }
+                ] },
         ].filter(row => row !== null);
     }
 

@@ -1,6 +1,5 @@
 import server from "./server.js";
 import utils from "./utils.js";
-import tree from "./tree.js";
 
 class KeyboardAction {
 	constructor(params) {
