@@ -141,7 +141,7 @@ async function createNewNoteWithTarget(target, targetBranchId, params) {
         return await createNewNote(params);
     }
     else if (target === 'after') {
-        const afterNote = await sql.getRow('SELECT notePosition FROM branches WHERE branchId = ?', [noteData.target_branchId]);
+        const afterNote = await sql.getRow('SELECT notePosition FROM branches WHERE branchId = ?', [targetBranchId]);
 
         // not updating utcDateModified to avoig having to sync whole rows
         await sql.execute('UPDATE branches SET notePosition = notePosition + 10 WHERE parentNoteId = ? AND notePosition > ? AND isDeleted = 0',
@@ -149,9 +149,11 @@ async function createNewNoteWithTarget(target, targetBranchId, params) {
 
         params.notePosition = afterNote.notePosition + 10;
 
-        await createNewNote(params);
+        const retObject = await createNewNote(params);
 
         await syncTableService.addNoteReorderingSync(params.parentNoteId);
+
+        return retObject;
     }
     else {
         throw new Error(`Unknown target ${target}`);

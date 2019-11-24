@@ -162,19 +162,23 @@ const DEFAULT_KEYBOARD_ACTIONS = [
     },
     {
         actionName: "OpenNewTab",
-        defaultShortcuts: isElectron ? ["CommandOrControl+T"] : []
+        defaultShortcuts: isElectron ? ["CommandOrControl+T"] : [],
+        description: "Opens new tab"
     },
     {
         actionName: "CloseActiveTab",
-        defaultShortcuts: isElectron ? ["CommandOrControl+W"] : []
+        defaultShortcuts: isElectron ? ["CommandOrControl+W"] : [],
+        description: "Closes active tab"
     },
     {
         actionName: "ActivateNextTab",
-        defaultShortcuts: isElectron ? ["CommandOrControl+Tab"] : []
+        defaultShortcuts: isElectron ? ["CommandOrControl+Tab"] : [],
+        description: "Activates tab on the right"
     },
     {
         actionName: "ActivatePreviousTab",
-        defaultShortcuts: isElectron ? ["CommandOrControl+Shift+Tab"] : []
+        defaultShortcuts: isElectron ? ["CommandOrControl+Shift+Tab"] : [],
+        description: "Activates tab on the left"
     },
 
 
@@ -183,39 +187,48 @@ const DEFAULT_KEYBOARD_ACTIONS = [
     },
     {
         actionName: "ShowAttributes",
-        defaultShortcuts: ["Alt+A"]
+        defaultShortcuts: ["Alt+A"],
+        description: "Shows Attributes dialog"
     },
     {
         actionName: "ShowNoteInfo",
-        defaultShortcuts: []
+        defaultShortcuts: [],
+        description: "Shows Note Info dialog"
     },
     {
         actionName: "ShowNoteSource",
-        defaultShortcuts: []
+        defaultShortcuts: [],
+        description: "Shows Note Source dialog"
     },
     {
         actionName: "ShowLinkMap",
-        defaultShortcuts: []
+        defaultShortcuts: [],
+        description: "Shows Link Map dialog"
     },
     {
         actionName: "ShowOptions",
-        defaultShortcuts: []
+        defaultShortcuts: [],
+        description: "Shows Options dialog"
     },
     {
         actionName: "ShowNoteRevisions",
-        defaultShortcuts: []
+        defaultShortcuts: [],
+        description: "Shows Note Revisions dialog"
     },
     {
         actionName: "ShowRecentChanges",
-        defaultShortcuts: []
+        defaultShortcuts: [],
+        description: "Shows Recent Changes dialog"
     },
     {
         actionName: "ShowSQLConsole",
-        defaultShortcuts: ["Alt+O"]
+        defaultShortcuts: ["Alt+O"],
+        description: "Shows SQL Console dialog"
     },
     {
         actionName: "ShowHelp",
-        defaultShortcuts: ["F1"]
+        defaultShortcuts: ["F1"],
+        description: "Shows built-in Help / cheatsheet"
     },
 
 
@@ -250,10 +263,6 @@ const DEFAULT_KEYBOARD_ACTIONS = [
         actionName: "ToggleNoteHoisting",
         defaultShortcuts: ["Alt+H"],
         description: "Toggles note hoisting of active note"
-    },
-    {
-        actionName: "RunSQL",
-        defaultShortcuts: ["CommandOrControl+Enter"]
     },
     {
         actionName: "ReloadFrontendApp",
