@@ -246,6 +246,7 @@ function register(app) {
     apiRoute(GET, '/api/similar-notes/:noteId', similarNotesRoute.getSimilarNotes);
 
     apiRoute(GET, '/api/keyboard-actions', keysRoute.getKeyboardActions);
+    apiRoute(GET, '/api/keyboard-shortcuts-for-notes', keysRoute.getShortcutsForNotes);
 
     app.use('', router);
 }

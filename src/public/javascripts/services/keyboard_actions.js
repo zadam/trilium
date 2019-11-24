@@ -1,5 +1,6 @@
 import server from "./server.js";
 import utils from "./utils.js";
+import tree from "./tree.js";
 
 class KeyboardAction {
 	constructor(params) {
@@ -30,6 +31,16 @@ const keyboardActionRepo = {};
 const keyboardActionsLoaded = server.get('keyboard-actions').then(actions => {
 	for (const action of actions) {
 		keyboardActionRepo[action.actionName] = new KeyboardAction(action);
+	}
+});
+
+server.get('keyboard-shortcuts-for-notes').then(shortcutForNotes => {
+	for (const shortcut in shortcutForNotes) {
+		utils.bindGlobalShortcut(shortcut, async () => {
+			const treeService = (await import("./tree.js")).default;
+
+			treeService.activateNote(shortcutForNotes[shortcut]);
+		});
 	}
 });
 
