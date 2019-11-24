@@ -17,7 +17,7 @@ const TPL = `
 
     <div class="form-group">
         <label for="spell-check-language-code">Language code</label>
-        <input type="email" class="form-control" id="spell-check-language-code" placeholder="for example &quot;en-US&quot;, &quot;de-AT&quot;">
+        <input type="text" class="form-control" id="spell-check-language-code" placeholder="for example &quot;en-US&quot;, &quot;de-AT&quot;">
     </div>
 
     <p>Changes to the spell check options will take effect after application restart.</p>
