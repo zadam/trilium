@@ -14,6 +14,7 @@ import hoistedNoteService from '../services/hoisted_note.js';
 import optionsService from "../services/options.js";
 import TreeContextMenu from "./tree_context_menu.js";
 import bundle from "./bundle.js";
+import keyboardActionService from "./keyboard_actions.js";
 
 const $tree = $("#tree");
 const $createTopLevelNoteButton = $("#create-top-level-note-button");
@@ -795,7 +796,7 @@ ws.subscribeToOutsideSyncMessages(async syncData => {
     }
 });
 
-utils.bindGlobalShortcut('ctrl+o', async () => {
+keyboardActionService.setActionHandler('CreateNoteAfter', async () => {
     const node = getActiveNode();
     const parentNoteId = node.data.parentNoteId;
     const isProtected = await treeUtils.getParentProtectedStatus(node);
@@ -867,9 +868,9 @@ async function reloadNotes(noteIds, activateNotePath = null) {
 
 window.glob.createNoteInto = createNoteInto;
 
-utils.bindGlobalShortcut('ctrl+p', createNoteInto);
+keyboardActionService.setActionHandler('CreateNoteInto', createNoteInto);
 
-utils.bindGlobalShortcut('ctrl+.', scrollToActiveNote);
+keyboardActionService.setActionHandler('ScrollToActiveNote', scrollToActiveNote);
 
 $(window).bind('hashchange', async function() {
     if (isNotePathInAddress()) {
@@ -907,7 +908,7 @@ async function duplicateNote(noteId, parentNoteId) {
 }
 
 
-utils.bindGlobalShortcut('alt+c', () => collapseTree()); // don't use shortened form since collapseTree() accepts argument
+keyboardActionService.setActionHandler('CollapseTree', () => collapseTree()); // don't use shortened form since collapseTree() accepts argument
 $collapseTreeButton.on('click', () => collapseTree());
 
 $createTopLevelNoteButton.on('click', createNewTopLevelNote);

@@ -2,8 +2,10 @@
 
 const optionService = require('./options');
 const log = require('./log');
+const utils = require('./utils');
 
-const ELECTRON = "electron";
+const isMac = process.platform === "darwin";
+const isElectron = utils.isElectron();
 
 const DEFAULT_KEYBOARD_ACTIONS = [
     {
@@ -11,11 +13,13 @@ const DEFAULT_KEYBOARD_ACTIONS = [
     },
     {
         actionName: "BackInNoteHistory",
-        defaultShortcuts: ["Alt+Left"]
+        // Mac has a different history navigation shortcuts - https://github.com/zadam/trilium/issues/376
+        defaultShortcuts: isMac ? ["Meta+Left"] : ["Alt+Left"]
     },
     {
         actionName: "ForwardInNoteHistory",
-        defaultShortcuts: ["Alt+Right"]
+        // Mac has a different history navigation shortcuts - https://github.com/zadam/trilium/issues/376
+        defaultShortcuts: isMac ? ["Meta+Right"] : ["Alt+Right"]
     },
     {
         actionName: "JumpToNote",
@@ -29,23 +33,19 @@ const DEFAULT_KEYBOARD_ACTIONS = [
     },
     {
         actionName: "OpenNewTab",
-        defaultShortcuts: ["CommandOrControl+T"],
-        only: ELECTRON
+        defaultShortcuts: isElectron ? ["CommandOrControl+T"] : []
     },
     {
         actionName: "CloseActiveTab",
-        defaultShortcuts: ["CommandOrControl+W"],
-        only: ELECTRON
+        defaultShortcuts: isElectron ? ["CommandOrControl+W"] : []
     },
     {
         actionName: "ActivateNextTab",
-        defaultShortcuts: ["CommandOrControl+Tab"],
-        only: ELECTRON
+        defaultShortcuts: isElectron ? ["CommandOrControl+Tab"] : []
     },
     {
         actionName: "ActivatePreviousTab",
-        defaultShortcuts: ["CommandOrControl+Shift+Tab"],
-        only: ELECTRON
+        defaultShortcuts: isElectron ? ["CommandOrControl+Shift+Tab"] : []
     },
 
 
@@ -269,22 +269,11 @@ const DEFAULT_KEYBOARD_ACTIONS = [
     }
 ];
 
-if (process.platform === "darwin") {
-    for (const action of DEFAULT_KEYBOARD_ACTIONS) {
-        if (action.defaultShortcuts) {
-            action.defaultShortcuts = action.defaultShortcuts.map(shortcut => shortcut.replace("CommandOrControl", "Meta"));
-        }
-    }
+const platformModifier = isMac ? 'Meta' : 'Ctrl';
 
-    // Mac has a different history navigation shortcuts - https://github.com/zadam/trilium/issues/376
-    DEFAULT_KEYBOARD_ACTIONS.find(ka => ka.actionName === 'BackInNoteHistory').defaultShortcuts = ["Meta+Left"];
-    DEFAULT_KEYBOARD_ACTIONS.find(ka => ka.actionName === 'ForwardInNoteHistory').defaultShortcuts = ["Meta+Right"];
-}
-else {
-    for (const action of DEFAULT_KEYBOARD_ACTIONS) {
-        if (action.defaultShortcuts) {
-            action.defaultShortcuts = action.defaultShortcuts.map(shortcut => shortcut.replace("CommandOrControl", "Ctrl"));
-        }
+for (const action of DEFAULT_KEYBOARD_ACTIONS) {
+    if (action.defaultShortcuts) {
+        action.defaultShortcuts = action.defaultShortcuts.map(shortcut => shortcut.replace("CommandOrControl", platformModifier));
     }
 }
 
