@@ -6,6 +6,10 @@ const TPL = `
 
 <p>Multiple shortcuts for the same action can be separated by comma.</p>
 
+<div class="form-group">
+    <input type="text" class="form-control" id="keyboard-shortcut-filter" placeholder="Type text to filter shortcuts...">
+</div>
+
 <div style="overflow: auto; height: 500px;">
     <table id="keyboard-shortcut-table" cellpadding="10">
     <thead>
@@ -27,6 +31,8 @@ const TPL = `
 </div>
 `;
 
+let globActions;
+
 export default class KeyboardShortcutsOptions {
     constructor() {
         $("#options-keyboard-shortcuts").html(TPL);
@@ -36,6 +42,8 @@ export default class KeyboardShortcutsOptions {
         const $table = $("#keyboard-shortcut-table tbody");
 
         server.get('keyboard-actions').then(actions => {
+            globActions = actions;
+
             for (const action of actions) {
                 const $tr = $("<tr>");
 
@@ -93,6 +101,40 @@ export default class KeyboardShortcutsOptions {
                         .val(defaultShortcuts)
                         .trigger('change');
                 }
+            });
+        });
+
+        const $filter = $("#keyboard-shortcut-filter");
+
+        $filter.on('keyup', () => {
+            const filter = $filter.val().trim().toLowerCase();
+
+            $table.find("tr").each((i, el) => {
+                if (!filter) {
+                    $(el).show();
+                    return;
+                }
+
+                const actionName = $(el).find('input').attr('data-keyboard-action-name');
+
+                if (!actionName) {
+                    $(el).hide();
+                    return;
+                }
+
+                const action = globActions.find(act => act.actionName === actionName);
+
+                if (!action) {
+                    $(el).hide();
+                    return;
+                }
+
+                $(el).toggle(!!( // !! to avoid toggle overloads with different behavior
+                    action.actionName.toLowerCase().includes(filter)
+                    || action.defaultShortcuts.some(shortcut => shortcut.toLowerCase().includes(filter))
+                    || action.effectiveShortcuts.some(shortcut => shortcut.toLowerCase().includes(filter))
+                    || (action.description && action.description.toLowerCase().includes(filter))
+                ));
             });
         });
     }
