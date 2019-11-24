@@ -97,6 +97,8 @@ app.on('activate', () => {
 });
 
 async function registerGlobalShortcuts() {
+    await sqlInit.dbReady;
+
     const allActions = await keyboardActionsService.getKeyboardActions();
 
     for (const action of allActions) {
