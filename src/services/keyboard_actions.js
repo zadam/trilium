@@ -104,7 +104,7 @@ const DEFAULT_KEYBOARD_ACTIONS = [
     {
         actionName: "EditNoteTitle",
         defaultShortcuts: ["Enter"],
-        description: "Edit active note title"
+        description: "Jump from tree to the note detail and edit title"
     },
     {
         actionName: "EditBranchPrefix",
@@ -117,7 +117,7 @@ const DEFAULT_KEYBOARD_ACTIONS = [
     },
     {
         actionName: "MoveNotesTo",
-        defaultShortcuts: ["CommandOrControl+Shift+C"]
+        defaultShortcuts: ["CommandOrControl+Shift+X"]
     },
 
     {

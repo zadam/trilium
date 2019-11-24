@@ -3,8 +3,7 @@ import treeChangesService from "./branches.js";
 import treeService from "./tree.js";
 import hoistedNoteService from "./hoisted_note.js";
 import clipboard from "./clipboard.js";
-import treeCache from "./tree_cache.js";
-import searchNoteService from "./search_notes.js";
+import utils from "./utils.js";
 import keyboardActionService from "./keyboard_actions.js";
 
 const fixedKeyBindings = {
@@ -79,15 +78,17 @@ const templates = {
             node.setSelected(true);
         }
 
-        node.navigate($.ui.keyCode.UP, false).then(() => {
-            const currentNode = treeService.getFocusedNode();
+        const prevSibling = node.getPrevSibling();
 
-            if (currentNode.isSelected()) {
+        if (prevSibling) {
+            prevSibling.setActive(true, {noEvents: true});
+
+            if (prevSibling.isSelected()) {
                 node.setSelected(false);
             }
 
-            currentNode.setSelected(true);
-        });
+            prevSibling.setSelected(true);
+        }
 
         return false;
     },
@@ -102,15 +103,17 @@ const templates = {
             node.setSelected(true);
         }
 
-        node.navigate($.ui.keyCode.DOWN, false).then(() => {
-            const currentNode = treeService.getFocusedNode();
+        const nextSibling = node.getNextSibling();
 
-            if (currentNode.isSelected()) {
+        if (nextSibling) {
+            nextSibling.setActive(true, {noEvents: true});
+
+            if (nextSibling.isSelected()) {
                 node.setSelected(false);
             }
 
-            currentNode.setSelected(true);
-        });
+            nextSibling.setSelected(true);
+        }
 
         return false;
     },
@@ -163,7 +166,9 @@ async function getKeyboardBindings() {
         const action = await keyboardActionService.getAction(actionName);
 
         for (const shortcut of action.effectiveShortcuts || []) {
-            bindings[shortcut] = templates[actionName];
+            const normalizedShortcut = utils.normalizeShortcut(shortcut);
+
+            bindings[normalizedShortcut] = templates[actionName];
         }
     }
 

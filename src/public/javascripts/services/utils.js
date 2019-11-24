@@ -137,11 +137,7 @@ function bindGlobalShortcut(keyboardShortcut, handler) {
 
 function bindElShortcut($el, keyboardShortcut, handler) {
     if (isDesktop()) {
-        keyboardShortcut = keyboardShortcut
-            .toLowerCase()
-            .replace("enter", "return")
-            .replace("ctrl+alt", "alt+ctrl")
-            .replace("meta+alt", "alt+meta"); // alt needs to be first
+        keyboardShortcut = normalizeShortcut(keyboardShortcut);
 
         $el.bind('keydown', keyboardShortcut, e => {
             handler(e);
@@ -150,6 +146,18 @@ function bindElShortcut($el, keyboardShortcut, handler) {
             e.stopPropagation();
         });
     }
+}
+
+/**
+ * Normalize to the form expected by the jquery.hotkeys.js
+ */
+function normalizeShortcut(shortcut) {
+    return shortcut
+        .toLowerCase()
+        .replace("enter", "return")
+        .replace("delete", "del")
+        .replace("ctrl+alt", "alt+ctrl")
+        .replace("meta+alt", "alt+meta"); // alt needs to be first;
 }
 
 function isMobile() {
@@ -260,5 +268,6 @@ export default {
     closeActiveDialog,
     isHtmlEmpty,
     clearBrowserCache,
-    getUrlForDownload
+    getUrlForDownload,
+    normalizeShortcut
 };
