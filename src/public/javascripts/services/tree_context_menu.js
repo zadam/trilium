@@ -72,9 +72,9 @@ class TreeContextMenu {
                 enabled: isNotRoot && !isHoisted },
             { title: 'Cut <kbd data-kb-action="CutNotesToClipboard"></kbd>', cmd: "cut", uiIcon: "cut",
                 enabled: isNotRoot && !isHoisted && parentNotSearch },
-            { title: 'Move to ... <kbd data-kb-action="MoveNotesTo">Ctrl+Shift+X</kbd>', cmd: "moveTo", uiIcon: "empty",
+            { title: 'Move to ... <kbd data-kb-action="MoveNotesTo"></kbd>', cmd: "moveTo", uiIcon: "empty",
                 enabled: isNotRoot && !isHoisted && parentNotSearch },
-            { title: 'Paste into <kbd data-kb-action="PasteNotesFromClipboard">Ctrl+V</kbd>', cmd: "pasteInto", uiIcon: "paste",
+            { title: 'Paste into <kbd data-kb-action="PasteNotesFromClipboard"></kbd>', cmd: "pasteInto", uiIcon: "paste",
                 enabled: !clipboard.isClipboardEmpty() && notSearch && noSelectedNotes },
             { title: 'Paste after', cmd: "pasteAfter", uiIcon: "paste",
                 enabled: !clipboard.isClipboardEmpty() && isNotRoot && !isHoisted && parentNotSearch && noSelectedNotes },
@@ -86,9 +86,9 @@ class TreeContextMenu {
             { title: "Import into note", cmd: "importIntoNote", uiIcon: "empty",
                 enabled: notSearch && noSelectedNotes },
             { title: "----" },
-            { title: 'Collapse subtree <kbd data-kb-action="CollapseSubtree">Alt+-</kbd>', cmd: "collapseSubtree", uiIcon: "align-justify", enabled: noSelectedNotes },
+            { title: 'Collapse subtree <kbd data-kb-action="CollapseSubtree"></kbd>', cmd: "collapseSubtree", uiIcon: "align-justify", enabled: noSelectedNotes },
             { title: "Force note sync", cmd: "forceNoteSync", uiIcon: "recycle", enabled: noSelectedNotes },
-            { title: 'Sort alphabetically <kbd data-kb-action="SortChildNotes">Alt+S</kbd>', cmd: "sortAlphabetically", uiIcon: "empty", enabled: noSelectedNotes && notSearch }
+            { title: 'Sort alphabetically <kbd data-kb-action="SortChildNotes"></kbd>', cmd: "sortAlphabetically", uiIcon: "empty", enabled: noSelectedNotes && notSearch }
         ].filter(row => row !== null);
     }
 

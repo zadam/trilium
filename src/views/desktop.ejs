@@ -18,24 +18,29 @@
         </div>
 
         <div style="flex-grow: 100; display: flex;">
-            <button class="btn btn-sm" id="jump-to-note-dialog-button" title="CTRL+J">
+            <button class="btn btn-sm" id="jump-to-note-dialog-button" data-kb-action="JumpToNote">
                 <span class="bx bx-crosshair"></span>
                 Jump to note
             </button>
 
-            <button class="btn btn-sm" id="recent-changes-button">
+            <button class="btn btn-sm" id="recent-changes-button" data-kb-action="ShowRecentChanges">
                 <span class="bx bx-history"></span>
 
                 Recent changes
             </button>
 
-            <button class="btn btn-sm" id="enter-protected-session-button" title="Enter protected session to be able to find and view protected notes">
+            <button class="btn btn-sm"
+                    id="enter-protected-session-button"
+                    title="Enter protected session to be able to find and view protected notes">
                 <span class="bx bx-log-in"></span>
 
                 Enter protected session
             </button>
 
-            <button class="btn btn-sm" id="leave-protected-session-button" title="Leave protected session so that protected notes are not accessible any more." style="display: none;">
+            <button class="btn btn-sm"
+                    id="leave-protected-session-button"
+                    title="Leave protected session so that protected notes are not accessible any more."
+                    style="display: none;">
                 <span class="bx bx-log-out"></span>
 
                 Leave protected session
@@ -117,11 +122,11 @@
         <div id="global-buttons">
             <a id="create-top-level-note-button" title="Create new top level note" class="icon-action bx bx-folder-plus"></a>
 
-            <a id="collapse-tree-button" title="Collapse note tree. Shortcut ALT+C" class="icon-action bx bx-layer-minus"></a>
+            <a id="collapse-tree-button" title="Collapse note tree" data-kb-action="CollapseTree" class="icon-action bx bx-layer-minus"></a>
 
-            <a id="scroll-to-active-note-button" title="Scroll to active note. Shortcut CTRL+." class="icon-action bx bx-crosshair"></a>
+            <a id="scroll-to-active-note-button" title="Scroll to active note" data-kb-action="ScrollToActiveNote" class="icon-action bx bx-crosshair"></a>
 
-            <a id="toggle-search-button" title="Search in notes. Shortcut CTRL+S" class="icon-action bx bx-search"></a>
+            <a id="toggle-search-button" title="Search in notes" data-kb-action="SearchNotes" class="icon-action bx bx-search"></a>
         </div>
 
         <div id="search-box">

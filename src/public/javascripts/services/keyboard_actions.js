@@ -78,7 +78,7 @@ async function getAction(actionName, silent = false) {
 	return action;
 }
 
-function updateKbdElements($container) {
+function updateDisplayedShortcuts($container) {
 	$container.find('kbd[data-kb-action]').each(async (i, el) => {
 		const actionName = $(el).attr('data-kb-action');
 		const action = await getAction(actionName, true);
@@ -87,13 +87,26 @@ function updateKbdElements($container) {
 			$(el).text(action.effectiveShortcuts.join(', '));
 		}
 	});
+
+	$container.find('button[data-kb-action],a.icon-action[data-kb-action]').each(async (i, el) => {
+		const actionName = $(el).attr('data-kb-action');
+		const action = await getAction(actionName, true);
+
+		if (action) {
+			const title = $(el).attr('title');
+			const shortcuts = action.effectiveShortcuts.join(', ');
+			const newTitle = !title || !title.trim() ? shortcuts : `${title} (${shortcuts})`;
+
+			$(el).attr('title', newTitle);
+		}
+	});
 }
 
-$(() => updateKbdElements($(document)));
+$(() => updateDisplayedShortcuts($(document)));
 
 export default {
 	setActionHandler,
 	triggerAction,
 	getAction,
-	updateKbdElements
+	updateDisplayedShortcuts
 };
