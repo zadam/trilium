@@ -159,7 +159,7 @@ class NoteDetailRelationMap {
         const noteId = this.idToNoteId($noteBox.prop("id"));
 
         if (cmd === "open-in-new-tab") {
-            noteDetailService.openInTab(noteId);
+            noteDetailService.openInTab(noteId, false);
         }
         else if (cmd === "remove") {
             const confirmDialog = await import('../dialogs/confirm.js');

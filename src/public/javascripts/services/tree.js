@@ -626,6 +626,8 @@ async function createNewTopLevelNote() {
 async function createNote(node, parentNoteId, target, extraOptions = {}) {
     utils.assertArguments(node, parentNoteId, target);
 
+    extraOptions.activate = extraOptions.activate === undefined ? true : !!extraOptions.activate;
+
     // if isProtected isn't available (user didn't enter password yet), then note is created as unencrypted
     // but this is quite weird since user doesn't see WHERE the note is being created so it shouldn't occur often
     if (!extraOptions.isProtected || !protectedSessionHolder.isProtectedSessionAvailable()) {
@@ -667,7 +669,7 @@ async function createNote(node, parentNoteId, target, extraOptions = {}) {
     const noteEntity = await treeCache.getNote(note.noteId);
     const branchEntity = treeCache.getBranch(branch.branchId);
 
-    let newNode = {
+    let newNodeData = {
         title: newNoteName,
         noteId: branchEntity.noteId,
         parentNoteId: parentNoteId,
@@ -682,8 +684,11 @@ async function createNote(node, parentNoteId, target, extraOptions = {}) {
         key: utils.randomString(12) // this should prevent some "duplicate key" errors
     };
 
+    /** @var {FancytreeNode} */
+    let newNode;
+
     if (target === 'after') {
-        await node.appendSibling(newNode).setActive(true);
+        newNode = node.appendSibling(newNodeData);
     }
     else if (target === 'into') {
         if (!node.getChildren() && node.isFolder()) {
@@ -693,10 +698,10 @@ async function createNote(node, parentNoteId, target, extraOptions = {}) {
             await node.setExpanded();
         }
         else {
-            node.addChildren(newNode);
+            node.addChildren(newNodeData);
         }
 
-        await node.getLastChild().setActive(true);
+        newNode = node.getLastChild();
 
         const parentNoteEntity = await treeCache.getNote(node.data.noteId);
 
@@ -708,14 +713,18 @@ async function createNote(node, parentNoteId, target, extraOptions = {}) {
         toastService.throwError("Unrecognized target: " + target);
     }
 
+    if (extraOptions.activate) {
+        await newNode.setActive(true);
+    }
+
     clearSelectedNodes(); // to unmark previously active node
 
     // need to refresh because original doesn't have methods like .getParent()
-    newNode = getNodesByNoteId(branchEntity.noteId)[0];
+    newNodeData = getNodesByNoteId(branchEntity.noteId)[0];
 
     // following for cycle will make sure that also clones of a parent are refreshed
     for (const newParentNode of getNodesByNoteId(parentNoteId)) {
-        if (newParentNode.key === newNode.getParent().key) {
+        if (newParentNode.key === newNodeData.getParent().key) {
             // we've added a note into this one so no need to refresh
             continue;
         }
@@ -887,7 +896,7 @@ $tree.on('mousedown', '.fancytree-title', e => {
 
         treeUtils.getNotePath(node).then(notePath => {
             if (notePath) {
-                noteDetailService.openInTab(notePath);
+                noteDetailService.openInTab(notePath, false);
             }
         });
 

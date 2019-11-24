@@ -35,8 +35,8 @@ async function reloadAllTabs() {
     }
 }
 
-async function openInTab(notePath) {
-    await loadNoteDetail(notePath, { newTab: true });
+async function openInTab(notePath, activate) {
+    await loadNoteDetail(notePath, { newTab: true, activate });
 }
 
 async function switchToNote(notePath) {

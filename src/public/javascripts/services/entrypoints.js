@@ -220,17 +220,17 @@ function registerEntrypoints() {
     }));
     
     keyboardActionService.setGlobalActionHandler("CreateNoteIntoDayNote", async () => {
-        const todayNote = await dateNoteService.getTodayNote();console.log(todayNote);
+        const todayNote = await dateNoteService.getTodayNote();
         const notePath = await treeService.getSomeNotePath(todayNote);
 
         const node = await treeService.expandToNote(notePath);
 
-        await noteDetailService.openEmptyTab(false);
-
-        await treeService.createNote(node, todayNote.noteId, 'into', {
+        const {note} = await treeService.createNote(node, todayNote.noteId, 'into', {
             type: "text",
             isProtected: node.data.isProtected
         });
+
+        await noteDetailService.openInTab(note.noteId, true);
     });
 
     keyboardActionService.setGlobalActionHandler("EditBranchPrefix", async () => {

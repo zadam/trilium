@@ -49,13 +49,9 @@ const DEFAULT_KEYBOARD_ACTIONS = [
         description: "Collapses subtree of current note"
     },
     {
-        actionName: "FocusNote",
-        defaultShortcuts: ["Enter"]
-    },
-    {
         actionName: "ActivateParentNote",
         defaultShortcuts: ["Backspace"],
-        description: "Activates parent note of currently active note"
+        description: "Activates the parent note of currently active note"
     },
     {
         actionName: "SortChildNotes",
