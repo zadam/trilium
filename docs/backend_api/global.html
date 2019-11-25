@@ -325,11 +325,7 @@
         <th>Type</th>
 
         
-        <th>Attributes</th>
-        
 
-        
-        <th>Default</th>
         
 
         <th class="last">Description</th>
@@ -341,74 +337,72 @@
 
         <tr>
             
-                <td class="name"><code>json</code></td>
+                <td class="name"><code>parentNoteId</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">boolean</span>
+<span class="param-type">string</span>
 
 
             
             </td>
 
             
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-                </td>
-            
 
             
-                <td class="default">
-                
-                    false
-                
-                </td>
-            
 
-            <td class="description last">should the note be JSON</td>
+            <td class="description last">MANDATORY</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>isProtected</code></td>
+                <td class="name"><code>title</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">boolean</span>
+<span class="param-type">string</span>
 
 
             
             </td>
 
             
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
 
+            
+
+            <td class="description last">MANDATORY</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>content</code></td>
+            
+
+            <td class="type">
+            
                 
-                </td>
+<span class="param-type">string</span>
+|
+
+<span class="param-type">buffer</span>
+
+
+            
+            </td>
+
             
 
             
-                <td class="default">
-                
-                    false
-                
-                </td>
-            
 
-            <td class="description last">should the note be protected</td>
+            <td class="description last">MANDATORY</td>
         </tr>
 
     
@@ -428,24 +422,10 @@
             </td>
 
             
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-                </td>
-            
 
             
-                <td class="default">
-                
-                    'text'
-                
-                </td>
-            
 
-            <td class="description last">note type</td>
+            <td class="description last">text, code, file, image, search, book, relation-map - MANDATORY</td>
         </tr>
 
     
@@ -465,61 +445,102 @@
             </td>
 
             
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-                </td>
-            
 
             
-                <td class="default">
-                
-                    'text/html'
-                
-                </td>
-            
 
-            <td class="description last">MIME type of the note</td>
+            <td class="description last">value is derived from default mimes for type</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>attributes</code></td>
+                <td class="name"><code>isProtected</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">Array.&lt;<a href="global.html#CreateNoteAttribute">CreateNoteAttribute</a>></span>
+<span class="param-type">boolean</span>
 
 
             
             </td>
 
             
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
 
+            
+
+            <td class="description last">default is false</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>isExpanded</code></td>
+            
+
+            <td class="type">
+            
                 
-                </td>
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
             
 
             
-                <td class="default">
-                
-                    []
-                
-                </td>
+
+            <td class="description last">default is false</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>prefix</code></td>
             
 
-            <td class="description last">attributes to be created for this note</td>
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">default is empty string</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>notePosition</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">int</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">default is last existing notePosition in a parent + 10</td>
         </tr>
 
     
@@ -558,7 +579,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line180">line 180</a>
+        <a href="services_backend_script_api.js.html">services/backend_script_api.js</a>, <a href="services_backend_script_api.js.html#line212">line 212</a>
     </li></ul></dd>
     
 
