@@ -178,18 +178,54 @@ function BackendScriptApi(currentNote, apiParams) {
      */
 
     /**
+     * Create text note. See also createNote() for more options.
+     *
+     * @param {string} parentNoteId
+     * @param {string} title
+     * @param {string} content
+     * @return {Promise<{note: Note, branch: Branch}>}
+     */
+    this.createTextNote = async (parentNoteId, title, content = '') => await noteService.createNewNote({
+        parentNoteId,
+        title,
+        content,
+        type: 'text'
+    });
+
+    /**
+     * Create data note - data in this context means object serializable to JSON. Created note will be of type 'code' and
+     * JSON MIME type. See also createNote() for more options.
+     *
+     * @param {string} parentNoteId
+     * @param {string} title
+     * @param {object} content
+     * @return {Promise<{note: Note, branch: Branch}>}
+     */
+    this.createDataNote = async (parentNoteId, title, content = {}) => await noteService.createNewNote({
+        parentNoteId,
+        title,
+        content: JSON.stringify(content),
+        type: 'code',
+        mime: 'application/json'
+    });
+
+    /**
      * @typedef {object} CreateNoteParams
-     * @property {boolean} [json=false] - should the note be JSON
-     * @property {boolean} [isProtected=false] - should the note be protected
-     * @property {string} [type='text'] - note type
-     * @property {string} [mime='text/html'] - MIME type of the note
-     * @property {CreateNoteAttribute[]} [attributes=[]] - attributes to be created for this note
+     * @property {string} parentNoteId - MANDATORY
+     * @property {string} title - MANDATORY
+     * @property {string|buffer} content - MANDATORY
+     * @property {string} type - text, code, file, image, search, book, relation-map - MANDATORY
+     * @property {string} mime - value is derived from default mimes for type
+     * @property {boolean} isProtected - default is false
+     * @property {boolean} isExpanded - default is false
+     * @property {string} prefix - default is empty string
+     * @property {int} notePosition - default is last existing notePosition in a parent + 10
      */
 
     /**
      * @method
      *
-     * @param {CreateNoteParams} [extraOptions={}]
+     * @param {CreateNoteParams} [params]
      * @returns {Promise<{note: Note, branch: Branch}>} object contains newly created entities note and branch
      */
     this.createNote = noteService.createNewNote;
