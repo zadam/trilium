@@ -37,7 +37,7 @@ function isProtectedSessionAvailable() {
 function decryptNotes(notes) {
     for (const note of notes) {
         if (note.isProtected) {
-            note.title = decrypt(note.title);
+            note.title = decryptString(note.title);
         }
     }
 }
