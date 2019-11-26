@@ -93,7 +93,7 @@ export default class SidebarOptions {
         this.$sidebarMinWidth.val(options.sidebarMinWidth);
         this.$sidebarWidthPercent.val(options.sidebarWidthPercent);
 
-        if (parseInt(options.showSidebarInNewTab)) {
+        if (options.showSidebarInNewTab === 'true') {
             this.$showSidebarInNewTab.attr("checked", "checked");
         }
         else {
