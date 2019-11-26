@@ -273,7 +273,9 @@ async function filterTabs(noteId) {
 
 async function noteDeleted(noteId) {
     for (const tc of tabContexts) {
-        if (tc.notePath && tc.notePath.split("/").includes(noteId)) {
+        // not removing active even if it contains deleted note since that one will move to another note (handled by deletion logic)
+        // and we would lose tab context state (e.g. sidebar visibility)
+        if (!tc.isActive() && tc.notePath && tc.notePath.split("/").includes(noteId)) {
             await tabRow.removeTab(tc.$tab[0]);
         }
     }
