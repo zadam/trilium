@@ -3,6 +3,7 @@ const fileType = require('file-type');
 const stream = require('stream');
 const log = require("../log");
 const utils = require("../utils");
+const sql = require("../sql");
 const noteService = require("../notes");
 const imageService = require("../image");
 const protectedSessionService = require('../protected_session');
@@ -11,7 +12,7 @@ const protectedSessionService = require('../protected_session');
 function parseDate(text) {
     // insert - and : to make it ISO format
     text = text.substr(0, 4) + "-" + text.substr(4, 2) + "-" + text.substr(6, 2)
-        + "T" + text.substr(9, 2) + ":" + text.substr(11, 2) + ":" + text.substr(13, 2) + "Z";
+        + " " + text.substr(9, 2) + ":" + text.substr(11, 2) + ":" + text.substr(13, 2) + ".000Z";
 
     return text;
 }
@@ -150,7 +151,7 @@ async function importEnex(taskContext, file, parentNote) {
             } else if (currentTag === 'created') {
                 note.utcDateCreated = parseDate(text);
             } else if (currentTag === 'updated') {
-                // updated is currently ignored since utcDateModified is updated automatically with each save
+                note.utcDateModified = parseDate(text);
             } else if (currentTag === 'tag') {
                 note.attributes.push({
                     type: 'label',
@@ -187,9 +188,27 @@ async function importEnex(taskContext, file, parentNote) {
         }
     });
 
+    async function updateDates(noteId, utcDateCreated, utcDateModified) {
+        // it's difficult to force custom dateCreated and dateModified to Note entity so we do it post-creation with SQL
+        await sql.execute(`
+                UPDATE notes 
+                SET dateCreated = ?, 
+                    utcDateCreated = ?,
+                    dateModified = ?,
+                    utcDateModified = ?
+                WHERE noteId = ?`,
+            [utcDateCreated, utcDateCreated, utcDateModified, utcDateModified, noteId]);
+
+        await sql.execute(`
+                UPDATE note_contents
+                SET utcDateModified = ?
+                WHERE noteId = ?`,
+            [utcDateModified, noteId]);
+    }
+
     async function saveNote() {
         // make a copy because stream continues with the next async call and note gets overwritten
-        let {title, content, attributes, resources, utcDateCreated} = note;
+        let {title, content, attributes, resources, utcDateCreated, utcDateModified} = note;
 
         content = extractContent(content);
 
@@ -200,6 +219,9 @@ async function importEnex(taskContext, file, parentNote) {
             mime: 'text/html',
             isProtected: parentNote.isProtected && protectedSessionService.isProtectedSessionAvailable(),
         })).note;
+
+        utcDateCreated = utcDateCreated || noteEntity.utcDateCreated;
+        utcDateModified = utcDateModified || noteEntity.utcDateModified;
 
         taskContext.increaseProgressCount();
 
@@ -224,6 +246,8 @@ async function importEnex(taskContext, file, parentNote) {
                     isProtected: parentNote.isProtected && protectedSessionService.isProtectedSessionAvailable(),
                 })).note;
 
+                await updateDates(resourceNote.noteId, utcDateCreated, utcDateModified);
+
                 taskContext.increaseProgressCount();
 
                 const resourceLink = `<a href="#root/${resourceNote.noteId}">${utils.escapeHtml(resource.title)}</a>`;
@@ -235,7 +259,9 @@ async function importEnex(taskContext, file, parentNote) {
                 try {
                     const originalName = "image." + resource.mime.substr(6);
 
-                    const {url} = await imageService.saveImage(noteEntity.noteId, resource.content, originalName, taskContext.data.shrinkImages);
+                    const {url, note: imageNote} = await imageService.saveImage(noteEntity.noteId, resource.content, originalName, taskContext.data.shrinkImages);
+
+                    await updateDates(imageNote.noteId, utcDateCreated, utcDateModified);
 
                     const imageLink = `<img src="${url}">`;
 
@@ -257,6 +283,10 @@ async function importEnex(taskContext, file, parentNote) {
 
         // save updated content with links to files/images
         await noteEntity.setContent(noteContent);
+
+        await noteService.scanForLinks(noteEntity.noteId);
+
+        await updateDates(noteEntity.noteId, utcDateCreated, utcDateModified);
     }
 
     saxStream.on("closetag", async tag => {
