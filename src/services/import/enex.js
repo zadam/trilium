@@ -221,7 +221,8 @@ async function importEnex(taskContext, file, parentNote) {
         })).note;
 
         utcDateCreated = utcDateCreated || noteEntity.utcDateCreated;
-        utcDateModified = utcDateModified || noteEntity.utcDateModified;
+        // sometime date modified is not present in ENEX, then use date created
+        utcDateModified = utcDateModified || utcDateCreated;
 
         taskContext.increaseProgressCount();
 
