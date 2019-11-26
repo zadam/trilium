@@ -42,7 +42,7 @@ class TreeContextMenu {
                 || (selNodes.length === 1 && selNodes[0] === this.node);
 
         const notSearch = note.type !== 'search';
-        const parentNotSearch = parentNote.type !== 'search';
+        const parentNotSearch = !parentNote || parentNote.type !== 'search';
         const insertNoteAfterEnabled = isNotRoot && !isHoisted && parentNotSearch;
 
         return [
@@ -79,7 +79,7 @@ class TreeContextMenu {
             { title: "Paste after", cmd: "pasteAfter", uiIcon: "paste",
                 enabled: !clipboard.isClipboardEmpty() && isNotRoot && !isHoisted && parentNotSearch && noSelectedNotes },
             { title: "Duplicate note here", cmd: "duplicateNote", uiIcon: "empty",
-                enabled: noSelectedNotes && parentNotSearch && (!note.isProtected || protectedSessionHolder.isProtectedSessionAvailable()) },
+                enabled: noSelectedNotes && parentNotSearch && isNotRoot && !isHoisted && (!note.isProtected || protectedSessionHolder.isProtectedSessionAvailable()) },
             { title: "----" },
             { title: "Export", cmd: "export", uiIcon: "empty",
                 enabled: notSearch && noSelectedNotes },
