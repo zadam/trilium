@@ -65,15 +65,15 @@ async function getYearNote(dateStr, rootNote) {
 
         if (!yearNote) {
             yearNote = await createNote(rootNote.noteId, yearStr);
-        }
 
-        await attributeService.createLabel(yearNote.noteId, YEAR_LABEL, yearStr);
-        await attributeService.createLabel(yearNote.noteId, 'sorted');
+            await attributeService.createLabel(yearNote.noteId, YEAR_LABEL, yearStr);
+            await attributeService.createLabel(yearNote.noteId, 'sorted');
 
-        const yearTemplateAttr = await rootNote.getOwnedAttribute('relation', 'yearTemplate');
+            const yearTemplateAttr = await rootNote.getOwnedAttribute('relation', 'yearTemplate');
 
-        if (yearTemplateAttr) {
-            await attributeService.createRelation(yearNote.noteId, 'template', yearTemplateAttr.value);
+            if (yearTemplateAttr) {
+                await attributeService.createRelation(yearNote.noteId, 'template', yearTemplateAttr.value);
+            }
         }
     }
 
@@ -111,15 +111,15 @@ async function getMonthNote(dateStr, rootNote) {
             const noteTitle = await getMonthNoteTitle(rootNote, monthNumber, dateObj);
 
             monthNote = await createNote(yearNote.noteId, noteTitle);
-        }
 
-        await attributeService.createLabel(monthNote.noteId, MONTH_LABEL, monthStr);
-        await attributeService.createLabel(monthNote.noteId, 'sorted');
+            await attributeService.createLabel(monthNote.noteId, MONTH_LABEL, monthStr);
+            await attributeService.createLabel(monthNote.noteId, 'sorted');
 
-        const monthTemplateAttr = await rootNote.getOwnedAttribute('relation', 'monthTemplate');
+            const monthTemplateAttr = await rootNote.getOwnedAttribute('relation', 'monthTemplate');
 
-        if (monthTemplateAttr) {
-            await attributeService.createRelation(monthNote.noteId, 'template', monthTemplateAttr.value);
+            if (monthTemplateAttr) {
+                await attributeService.createRelation(monthNote.noteId, 'template', monthTemplateAttr.value);
+            }
         }
     }
 
@@ -156,14 +156,14 @@ async function getDateNote(dateStr) {
             const noteTitle = await getDateNoteTitle(rootNote, dayNumber, dateObj);
 
             dateNote = await createNote(monthNote.noteId, noteTitle);
-        }
 
-        await attributeService.createLabel(dateNote.noteId, DATE_LABEL, dateStr.substr(0, 10));
+            await attributeService.createLabel(dateNote.noteId, DATE_LABEL, dateStr.substr(0, 10));
 
-        const dateTemplateAttr = await rootNote.getOwnedAttribute('relation', 'dateTemplate');
+            const dateTemplateAttr = await rootNote.getOwnedAttribute('relation', 'dateTemplate');
 
-        if (dateTemplateAttr) {
-            await attributeService.createRelation(dateNote.noteId, 'template', dateTemplateAttr.value);
+            if (dateTemplateAttr) {
+                await attributeService.createRelation(dateNote.noteId, 'template', dateTemplateAttr.value);
+            }
         }
     }
 
