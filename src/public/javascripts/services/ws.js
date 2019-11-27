@@ -127,11 +127,13 @@ async function consumeSyncData() {
 }
 
 function connectWebSocket() {
-    const protocol = document.location.protocol === 'https:' ? 'wss' : 'ws';
+    const loc = window.location;
+    const webSocketUri = (loc.protocol === "https:" ? "wss:" : "ws:")
+                       + "//" + loc.host + loc.pathname;
 
     // use wss for secure messaging
-    const ws = new WebSocket(protocol + "://" + location.host);
-    ws.onopen = () => console.debug(utils.now(), "Connected to server with WebSocket");
+    const ws = new WebSocket(webSocketUri);
+    ws.onopen = () => console.debug(utils.now(), `Connected to server ${webSocketUri} with WebSocket`);
     ws.onmessage = handleMessage;
     // we're not handling ws.onclose here because reconnection is done in sendPing()
 

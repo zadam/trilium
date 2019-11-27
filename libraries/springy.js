@@ -498,7 +498,7 @@
 				t._started = false;
 				onRenderStop();
 			} else {
-				setImmediate(step);
+				requestIdleCallback(step, { timeout: 10 });
 			}
 		}
 

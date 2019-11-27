@@ -246,9 +246,13 @@ class TabContext {
     }
 
     setCurrentNotePathToHash() {
-        if (this.$tab[0] === this.tabRow.activeTabEl) {
+        if (this.isActive()) {
             document.location.hash = (this.notePath || "") + "-" + this.tabId;
         }
+    }
+
+    isActive() {
+        return this.$tab[0] === this.tabRow.activeTabEl;
     }
 
     setupClasses() {
