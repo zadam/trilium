@@ -778,6 +778,16 @@ class Note extends Entity {
         return notePaths;
     }
 
+    /**
+     * @param ancestorNoteId
+     * @return {Promise<boolean>} - true if ancestorNoteId occurs in at least one of the note's paths
+     */
+    async isDescendantOfNote(ancestorNoteId) {
+        const notePaths = await this.getAllNotePaths();
+
+        return notePaths.some(path => path.includes(ancestorNoteId));
+    }
+
     beforeSaving() {
         if (!this.isDeleted) {
             this.isDeleted = false;

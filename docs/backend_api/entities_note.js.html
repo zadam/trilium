@@ -806,6 +806,16 @@ class Note extends Entity {
         return notePaths;
     }
 
+    /**
+     * @param ancestorNoteId
+     * @return {Promise&lt;boolean>} - true if ancestorNoteId occurs in at least one of the note's paths
+     */
+    async isDescendantOfNote(ancestorNoteId) {
+        const notePaths = await this.getAllNotePaths();
+
+        return notePaths.some(path => path.includes(ancestorNoteId));
+    }
+
     beforeSaving() {
         if (!this.isDeleted) {
             this.isDeleted = false;
@@ -846,6 +856,7 @@ class Note extends Entity {
         delete pojo.isContentAvailable;
         delete pojo.__attributeCache;
         delete pojo.content;
+        /** zero references to contentHash, probably can be removed */
         delete pojo.contentHash;
     }
 }

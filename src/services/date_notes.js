@@ -170,6 +170,10 @@ async function getDateNote(dateStr) {
     return dateNote;
 }
 
+async function getTodayNote() {
+    return await getDateNote(dateUtils.localNowDate());
+}
+
 function getStartOfTheWeek(date, startOfTheWeek) {
     const day = date.getDay();
     let diff;
@@ -202,5 +206,6 @@ module.exports = {
     getYearNote,
     getMonthNote,
     getWeekNote,
-    getDateNote
+    getDateNote,
+    getTodayNote
 };

@@ -283,6 +283,14 @@ function BackendScriptApi(currentNote, apiParams) {
     this.getDateNote = dateNoteService.getDateNote;
 
     /**
+     * Returns today's day note. If such note doesn't exist, it is created.
+     *
+     * @method
+     * @returns {Promise&lt;Note|null>}
+     */
+    this.getTodayNote = dateNoteService.getTodayNote;
+
+    /**
      * Returns note for the first date of the week of the given date.
      *
      * @method
