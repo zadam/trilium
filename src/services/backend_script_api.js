@@ -178,7 +178,7 @@ function BackendScriptApi(currentNote, apiParams) {
      */
 
     /**
-     * Create text note. See also createNote() for more options.
+     * Create text note. See also createNewNote() for more options.
      *
      * @param {string} parentNoteId
      * @param {string} title
@@ -194,7 +194,7 @@ function BackendScriptApi(currentNote, apiParams) {
 
     /**
      * Create data note - data in this context means object serializable to JSON. Created note will be of type 'code' and
-     * JSON MIME type. See also createNote() for more options.
+     * JSON MIME type. See also createNewNote() for more options.
      *
      * @param {string} parentNoteId
      * @param {string} title
@@ -210,7 +210,7 @@ function BackendScriptApi(currentNote, apiParams) {
     });
 
     /**
-     * @typedef {object} CreateNoteParams
+     * @typedef {object} CreateNewNoteParams
      * @property {string} parentNoteId - MANDATORY
      * @property {string} title - MANDATORY
      * @property {string|buffer} content - MANDATORY
@@ -225,10 +225,10 @@ function BackendScriptApi(currentNote, apiParams) {
     /**
      * @method
      *
-     * @param {CreateNoteParams} [params]
+     * @param {CreateNewNoteParams} [params]
      * @returns {Promise<{note: Note, branch: Branch}>} object contains newly created entities note and branch
      */
-    this.createNote = noteService.createNewNote;
+    this.createNewNote = noteService.createNewNote;
 
     /**
      * Log given message to trilium logs.
