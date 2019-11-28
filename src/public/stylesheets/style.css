@@ -75,6 +75,12 @@ ul.fancytree-container {
     content: "\e9f8";
 }
 
+/** some common text styling for cssClass label */
+span.fancytree-node.underline .fancytree-title { text-decoration: underline; }
+span.fancytree-node.dotted .fancytree-title { text-decoration: dotted; }
+span.fancytree-node.bold .fancytree-title { font-weight: bold; }
+span.fancytree-node.muted { opacity: 0.6; }
+
 .note-title[readonly] {
     background: inherit;
 }

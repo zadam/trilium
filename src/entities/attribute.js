@@ -113,6 +113,7 @@ class Attribute extends Entity {
     // cannot be static!
     updatePojo(pojo) {
         delete pojo.isOwned;
+        delete pojo.__note;
     }
 }
 
