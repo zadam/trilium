@@ -57,8 +57,6 @@ async function initDbConnection() {
             return;
         }
 
-        await sql.execute("PRAGMA foreign_keys = ON");
-
         const currentDbVersion = await getDbVersion();
 
         if (currentDbVersion > appInfo.dbVersion) {

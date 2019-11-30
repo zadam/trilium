@@ -43,9 +43,6 @@ async function migrate() {
         try {
             log.info("Attempting migration to version " + mig.dbVersion);
 
-            // needs to happen outside of the transaction (otherwise it's a NO-OP)
-            await sql.execute("PRAGMA foreign_keys = OFF");
-
             await sql.transactional(async () => {
                 if (mig.type === 'sql') {
                     const migrationSql = fs.readFileSync(resourceDir.MIGRATIONS_DIR + "/" + mig.file).toString('utf8');
@@ -75,10 +72,6 @@ async function migrate() {
             log.error("migration failed, crashing hard"); // this is not very user friendly :-/
 
             utils.crash();
-        }
-        finally {
-            // make sure foreign keys are enabled even if migration script disables them
-            await sql.execute("PRAGMA foreign_keys = ON");
         }
     }
 
