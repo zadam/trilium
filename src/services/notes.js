@@ -480,7 +480,7 @@ async function eraseDeletedNotes() {
         SET content = NULL,
             utcDateModified = '${utcNowDateTime}'
         WHERE noteRevisionId IN 
-            (SELECT noteRevisionId FROM note_revisions WHERE isErased = 0 AND noteId IN ((???)))`, noteIdsToErase);
+            (SELECT noteRevisionId FROM note_revisions WHERE isErased = 0 AND noteId IN (???))`, noteIdsToErase);
 
     await sql.executeMany(`
         UPDATE note_revisions 
@@ -530,7 +530,7 @@ async function duplicateNote(noteId, parentNoteId) {
 
 sqlInit.dbReady.then(() => {
     // first cleanup kickoff 5 minutes after startup
-    setTimeout(cls.wrap(eraseDeletedNotes), 5 * 60 * 1000);
+    setTimeout(cls.wrap(eraseDeletedNotes), 0 * 60 * 1000);
 
     setInterval(cls.wrap(eraseDeletedNotes), 4 * 3600 * 1000);
 });
