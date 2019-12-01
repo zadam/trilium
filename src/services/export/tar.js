@@ -84,7 +84,12 @@ async function exportToTar(taskContext, branch, format, res) {
         }
 
         const completeTitle = branch.prefix ? (branch.prefix + ' - ' + note.title) : note.title;
-        const baseFileName = sanitize(completeTitle);
+        let baseFileName = sanitize(completeTitle);
+
+        if (baseFileName.length > 200) { // actual limit is 256 bytes(!) but let's be conservative
+            baseFileName = baseFileName.substr(0, 200);
+        }
+
         const notePath = parentMeta.notePath.concat([note.noteId]);
 
         if (note.noteId in noteIdToMeta) {
