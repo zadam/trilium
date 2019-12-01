@@ -81,7 +81,7 @@ eventService.subscribe(eventService.CHILD_NOTE_CREATED, async ({ parentNote, chi
 async function processInverseRelations(entityName, entity, handler) {
     if (entityName === 'attributes' && entity.type === 'relation') {
         const note = await entity.getNote();
-        const attributes = (await note.getAttributes(entity.name)).filter(relation => relation.type === 'relation-definition');
+        const attributes = (await note.getOwnedAttributes(entity.name)).filter(relation => relation.type === 'relation-definition');
 
         for (const attribute of attributes) {
             const definition = attribute.value;

@@ -514,7 +514,7 @@ async function duplicateNote(noteId, parentNoteId) {
         notePosition: origBranch ? origBranch.notePosition + 1 : null
     }).save();
 
-    for (const attribute of await origNote.getAttributes()) {
+    for (const attribute of await origNote.getOwnedAttributes()) {
         const attr = new Attribute(attribute);
         attr.attributeId = undefined; // force creation of new attribute
         attr.noteId = newNote.noteId;
@@ -530,7 +530,7 @@ async function duplicateNote(noteId, parentNoteId) {
 
 sqlInit.dbReady.then(() => {
     // first cleanup kickoff 5 minutes after startup
-    setTimeout(cls.wrap(eraseDeletedNotes), 0 * 60 * 1000);
+    setTimeout(cls.wrap(eraseDeletedNotes), 5 * 60 * 1000);
 
     setInterval(cls.wrap(eraseDeletedNotes), 4 * 3600 * 1000);
 });
