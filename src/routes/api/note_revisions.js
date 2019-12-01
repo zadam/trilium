@@ -115,12 +115,17 @@ async function getEditedNotesOnDate(req) {
     const date = utils.sanitizeSql(req.params.date);
 
     const notes = await repository.getEntities(`
-        select distinct notes.*
-        from notes
-        left join note_revisions using (noteId)
-        where notes.dateCreated LIKE '${date}%'
-           OR notes.dateModified LIKE '${date}%'
-           OR note_revisions.dateLastEdited LIKE '${date}%'`);
+        SELECT notes.*
+        FROM notes
+        WHERE noteId IN (
+                SELECT noteId FROM notes 
+                WHERE notes.dateCreated LIKE '${date}%' 
+                   OR notes.dateModified LIKE '${date}%'
+            UNION ALL
+                SELECT noteId FROM note_revisions
+                WHERE note_revisions.dateLastEdited LIKE '${date}%'
+        )
+        ORDER BY isDeleted`);
 
     for (const note of notes) {
         const notePath = noteCacheService.getNotePath(note.noteId);
