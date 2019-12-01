@@ -261,7 +261,8 @@ async function importTar(taskContext, fileBuffer, importRootNote) {
             content = content.toString("UTF-8");
         }
 
-        if ((noteMeta && noteMeta.format === 'markdown') || (!noteMeta && ['text/markdown', 'text/x-markdown'].includes(mime))) {
+        if ((noteMeta && noteMeta.format === 'markdown')
+            || (!noteMeta && taskContext.data.textImportedAsText && ['text/markdown', 'text/x-markdown'].includes(mime))) {
             const parsed = mdReader.parse(content);
             content = mdWriter.render(parsed);
         }
