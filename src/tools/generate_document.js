@@ -6,6 +6,7 @@
 require('../entities/entity_constructor');
 const sqlInit = require('../services/sql_init');
 const noteService = require('../services/notes');
+const attributeService = require('../services/attributes');
 const cls = require('../services/cls');
 const cloningService = require('../services/cloning');
 const loremIpsum = require('lorem-ipsum').loremIpsum;
@@ -19,7 +20,7 @@ if (!noteCount) {
 
 const notes = ['root'];
 
-function getRandomParentNoteId() {
+function getRandomNoteId() {
     const index = Math.floor(Math.random() * notes.length);
 
     return notes[index];
@@ -33,22 +34,46 @@ async function start() {
         const content = loremIpsum({ count: paragraphCount, units: 'paragraphs', sentenceLowerBound: 1, sentenceUpperBound: 15,
             paragraphLowerBound: 3, paragraphUpperBound: 10, format: 'html' });
 
-        const {note} = await noteService.createNote(getRandomParentNoteId(), title, content);
+        const {note} = await noteService.createNote(getRandomNoteId(), title, content);
 
         console.log(`Created note ${i}: ${title}`);
 
         notes.push(note.noteId);
     }
 
-    // we'll create clones for 20% of notes
-    for (let i = 0; i < (noteCount / 50); i++) {
-        const noteIdToClone = getRandomParentNoteId();
-        const parentNoteId = getRandomParentNoteId();
+    // we'll create clones for 4% of notes
+    for (let i = 0; i < (noteCount / 25); i++) {
+        const noteIdToClone = getRandomNoteId();
+        const parentNoteId = getRandomNoteId();
         const prefix = Math.random() > 0.8 ? "prefix" : null;
 
         const result = await cloningService.cloneNoteToParent(noteIdToClone, parentNoteId, prefix);
 
         console.log(`Cloning ${i}:`, result.success ? "succeeded" : "FAILED");
+    }
+
+    for (let i = 0; i < noteCount; i++) {
+        await attributeService.createAttribute({
+            noteId: getRandomNoteId(),
+            type: 'label',
+            name: 'label',
+            value: 'value',
+            isInheritable: Math.random() > 0.1 // 10% are inheritable
+        });
+
+        console.log(`Creating label ${i}`);
+    }
+
+    for (let i = 0; i < noteCount; i++) {
+        await attributeService.createAttribute({
+            noteId: getRandomNoteId(),
+            type: 'relation',
+            name: 'relation',
+            value: getRandomNoteId(),
+            isInheritable: Math.random() > 0.1 // 10% are inheritable
+        });
+
+        console.log(`Creating relation ${i}`);
     }
 
     process.exit(0);

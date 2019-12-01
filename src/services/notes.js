@@ -117,7 +117,7 @@ async function createNewNote(parentNoteId, noteData) {
         isExpanded: !!noteData.isExpanded
     }).save();
 
-    for (const attr of await parentNote.getAttributes()) {
+    for (const attr of await parentNote.getOwnedAttributes()) {
         if (attr.name.startsWith("child:")) {
             await new Attribute({
                noteId: note.noteId,
