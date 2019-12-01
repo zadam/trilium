@@ -81,7 +81,7 @@ async function getYearNote(dateStr, rootNote) {
 }
 
 async function getMonthNoteTitle(rootNote, monthNumber, dateObj) {
-    const pattern = await rootNote.getLabelValue("monthPattern") || "{monthNumberPadded} - {month}";
+    const pattern = await rootNote.getOwnedLabelValue("monthPattern") || "{monthNumberPadded} - {month}";
     const monthName = MONTHS[dateObj.getMonth()];
 
     return pattern
@@ -127,7 +127,7 @@ async function getMonthNote(dateStr, rootNote) {
 }
 
 async function getDateNoteTitle(rootNote, dayNumber, dateObj) {
-    const pattern = await rootNote.getLabelValue("datePattern") || "{dayInMonthPadded} - {weekDay}";
+    const pattern = await rootNote.getOwnedLabelValue("datePattern") || "{dayInMonthPadded} - {weekDay}";
     const weekDay = DAYS[dateObj.getDay()];
 
     return pattern

@@ -40,7 +40,7 @@ async function executeBundle(bundle, apiParams = {}) {
     const ctx = new ScriptContext(bundle.allNotes, apiParams);
 
     try {
-        if (await bundle.note.hasLabel('manualTransactionHandling')) {
+        if (await bundle.note.hasOwnedLabel('manualTransactionHandling')) {
             return await execute(ctx, script);
         }
         else {
@@ -117,7 +117,7 @@ async function getScriptBundle(note, root = true, scriptEnv = null, includedNote
         return;
     }
 
-    if (!root && await note.hasLabel('disableInclusion')) {
+    if (!root && await note.hasOwnedLabel('disableInclusion')) {
         return;
     }
 

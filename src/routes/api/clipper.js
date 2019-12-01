@@ -15,7 +15,7 @@ async function findClippingNote(todayNote, pageUrl) {
     const notes = await todayNote.getDescendantNotesWithLabel('pageUrl', pageUrl);
 
     for (const note of notes) {
-        if (await note.getLabelValue('clipType') === 'clippings') {
+        if (await note.getOwnedLabelValue('clipType') === 'clippings') {
             return note;
         }
     }

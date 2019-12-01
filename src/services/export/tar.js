@@ -79,7 +79,7 @@ async function exportToTar(taskContext, branch, format, res) {
     async function getNoteMeta(branch, parentMeta, existingFileNames) {
         const note = await branch.getNote();
 
-        if (await note.hasLabel('excludeFromExport')) {
+        if (await note.hasOwnedLabel('excludeFromExport')) {
             return;
         }
 

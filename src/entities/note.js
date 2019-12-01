@@ -280,6 +280,14 @@ class Note extends Entity {
 
     /**
      * @param {string} [name] - label name to filter
+     * @returns {Promise<Attribute[]>} all note's labels (attributes with type label), excluding inherited ones
+     */
+    async getOwnedLabels(name) {
+        return await this.getOwnedAttributes(LABEL, name);
+    }
+
+    /**
+     * @param {string} [name] - label name to filter
      * @returns {Promise<Attribute[]>} all note's label definitions, including inherited ones
      */
     async getLabelDefinitions(name) {
@@ -292,6 +300,14 @@ class Note extends Entity {
      */
     async getRelations(name) {
         return await this.getAttributes(RELATION, name);
+    }
+
+    /**
+     * @param {string} [name] - relation name to filter
+     * @returns {Promise<Attribute[]>} all note's relations (attributes with type relation), excluding inherited ones
+     */
+    async getOwnedRelations(name) {
+        return await this.getOwnedAttributes(RELATION, name);
     }
 
     /**
