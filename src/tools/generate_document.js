@@ -1,37 +1,22 @@
-const fs = require('fs');
-const dataDir = require('../services/data_dir');
-
-fs.unlinkSync(dataDir.DOCUMENT_PATH);
+/**
+ * Usage: node src/tools/generate_document.js 1000
+ * will create 1000 new notes and some clones into a current document.db
+ */
 
 require('../entities/entity_constructor');
-const optionService = require('../services/options');
 const sqlInit = require('../services/sql_init');
-const myScryptService = require('../services/my_scrypt');
-const passwordEncryptionService = require('../services/password_encryption');
-const utils = require('../services/utils');
 const noteService = require('../services/notes');
 const cls = require('../services/cls');
 const cloningService = require('../services/cloning');
-const loremIpsum = require('lorem-ipsum');
-
-async function setUserNamePassword() {
-    const username = "test";
-    const password = "test";
-
-    await optionService.setOption('username', username);
-
-    await optionService.setOption('passwordVerificationSalt', utils.randomSecureToken(32));
-    await optionService.setOption('passwordDerivedKeySalt', utils.randomSecureToken(32));
-
-    const passwordVerificationKey = utils.toBase64(await myScryptService.getVerificationHash(password));
-    await optionService.setOption('passwordVerificationHash', passwordVerificationKey);
-
-    await passwordEncryptionService.setDataKey(password, utils.randomSecureToken(16));
-
-    await sqlInit.initDbConnection();
-}
+const loremIpsum = require('lorem-ipsum').loremIpsum;
 
 const noteCount = parseInt(process.argv[2]);
+
+if (!noteCount) {
+    console.error(`Please enter number of notes as program parameter.`);
+    process.exit(1);
+}
+
 const notes = ['root'];
 
 function getRandomParentNoteId() {
@@ -41,8 +26,6 @@ function getRandomParentNoteId() {
 }
 
 async function start() {
-    await setUserNamePassword();
-
     for (let i = 0; i < noteCount; i++) {
         const title = loremIpsum({ count: 1, units: 'sentences', sentenceLowerBound: 1, sentenceUpperBound: 10 });
 
