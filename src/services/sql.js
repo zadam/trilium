@@ -161,7 +161,7 @@ async function wrap(func, query) {
         const result = await func(dbConnection);
 
         const milliseconds = Date.now() - startTimestamp;
-        if (milliseconds >= 200) {
+        if (milliseconds >= 300) {
             if (query.includes("WITH RECURSIVE")) {
                 log.info(`Slow recursive query took ${milliseconds}ms.`);
             }

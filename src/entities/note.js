@@ -349,11 +349,10 @@ class Note extends Entity {
             tree(noteId, level) AS (
                 SELECT ?, 0
                 UNION
-                SELECT branches.parentNoteId, tree.level + 1 FROM branches
-                    JOIN tree ON branches.noteId = tree.noteId
-                    JOIN notes ON notes.noteId = branches.parentNoteId
-                WHERE notes.isDeleted = 0
-                  AND branches.isDeleted = 0
+                SELECT branches.noteId, tree.level + 1 
+                    FROM branches
+                    JOIN tree ON branches.parentNoteId = tree.noteId
+                WHERE branches.isDeleted = 0
             ),
             treeWithAttrs(noteId, level) AS (
                 SELECT * FROM tree
