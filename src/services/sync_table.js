@@ -31,7 +31,7 @@ async function fillSyncRows(entityName, entityKey, condition = '') {
         let createdCount = 0;
 
         for (const entityId of entityIds) {
-            const existingRows = await sql.getValue("SELECT COUNT(id) FROM sync WHERE entityName = ? AND entityId = ?", [entityName, entityId]);
+            const existingRows = await sql.getValue("SELECT COUNT(1) FROM sync WHERE entityName = ? AND entityId = ?", [entityName, entityId]);
 
             // we don't want to replace existing entities (which would effectively cause full resync)
             if (existingRows === 0) {

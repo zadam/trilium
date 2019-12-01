@@ -264,7 +264,7 @@ async function findExistencyIssues() {
         branches.parentNoteId,
         branches.noteId
       HAVING
-        COUNT(*) > 1`,
+        COUNT(1) > 1`,
     async ({noteId, parentNoteId}, autoFix) => {
         if (autoFix) {
             const branches = await repository.getEntities(
@@ -636,11 +636,11 @@ async function showEntityStat(name, query) {
 }
 
 async function runDbDiagnostics() {
-    await showEntityStat("Notes", `SELECT isDeleted, count(noteId) FROM notes GROUP BY isDeleted`);
-    await showEntityStat("Note revisions", `SELECT isErased, count(noteRevisionId) FROM note_revisions GROUP BY isErased`);
-    await showEntityStat("Branches", `SELECT isDeleted, count(branchId) FROM branches GROUP BY isDeleted`);
-    await showEntityStat("Attributes", `SELECT isDeleted, count(attributeId) FROM attributes GROUP BY isDeleted`);
-    await showEntityStat("API tokens", `SELECT isDeleted, count(apiTokenId) FROM api_tokens GROUP BY isDeleted`);
+    await showEntityStat("Notes", `SELECT isDeleted, count(1) FROM notes GROUP BY isDeleted`);
+    await showEntityStat("Note revisions", `SELECT isErased, count(1) FROM note_revisions GROUP BY isErased`);
+    await showEntityStat("Branches", `SELECT isDeleted, count(1) FROM branches GROUP BY isDeleted`);
+    await showEntityStat("Attributes", `SELECT isDeleted, count(1) FROM attributes GROUP BY isDeleted`);
+    await showEntityStat("API tokens", `SELECT isDeleted, count(1) FROM api_tokens GROUP BY isDeleted`);
 }
 
 async function runChecks() {
