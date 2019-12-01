@@ -9,6 +9,8 @@ CREATE TABLE IF NOT EXISTS "source_ids" (
                                           `utcDateCreated`	TEXT NOT NULL,
                                           PRIMARY KEY(`sourceId`)
 );
+CREATE INDEX IDX_source_ids_utcDateCreated
+    on source_ids (utcDateCreated);
 CREATE TABLE IF NOT EXISTS "api_tokens"
 (
   apiTokenId TEXT PRIMARY KEY NOT NULL,
