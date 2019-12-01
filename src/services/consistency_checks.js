@@ -626,11 +626,30 @@ async function runAllChecks() {
     return !unrecoveredConsistencyErrors;
 }
 
+async function showEntityStat(name, query) {
+    const map = await sql.getMap(query);
+
+    map[0] = map[0] || 0;
+    map[1] = map[1] || 0;
+
+    log.info(`${name} deleted: ${map[1]}, not deleted ${map[0]}`);
+}
+
+async function runDbDiagnostics() {
+    await showEntityStat("Notes", `SELECT isDeleted, count(noteId) FROM notes GROUP BY isDeleted`);
+    await showEntityStat("Note revisions", `SELECT isErased, count(noteRevisionId) FROM note_revisions GROUP BY isErased`);
+    await showEntityStat("Branches", `SELECT isDeleted, count(branchId) FROM branches GROUP BY isDeleted`);
+    await showEntityStat("Attributes", `SELECT isDeleted, count(attributeId) FROM attributes GROUP BY isDeleted`);
+    await showEntityStat("API tokens", `SELECT isDeleted, count(apiTokenId) FROM api_tokens GROUP BY isDeleted`);
+}
+
 async function runChecks() {
     let elapsedTimeMs;
 
     await syncMutexService.doExclusively(async () => {
         const startTime = new Date();
+
+        await runDbDiagnostics();
 
         await runAllChecks();
 
@@ -663,7 +682,7 @@ sqlInit.dbReady.then(() => {
     setInterval(cls.wrap(runChecks), 60 * 60 * 1000);
 
     // kickoff checks soon after startup (to not block the initial load)
-    setTimeout(cls.wrap(runChecks), 10 * 1000);
+    setTimeout(cls.wrap(runChecks), 20 * 1000);
 });
 
 module.exports = {};

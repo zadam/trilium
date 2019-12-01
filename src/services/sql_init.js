@@ -57,8 +57,6 @@ async function initDbConnection() {
             return;
         }
 
-        await sql.execute("PRAGMA foreign_keys = ON");
-
         const currentDbVersion = await getDbVersion();
 
         if (currentDbVersion > appInfo.dbVersion) {
@@ -175,9 +173,11 @@ async function isDbUpToDate() {
 }
 
 async function dbInitialized() {
-    await optionService.setOption('initialized', 'true');
+    if (!await isDbInitialized()) {
+        await optionService.setOption('initialized', 'true');
 
-    await initDbConnection();
+        await initDbConnection();
+    }
 }
 
 dbReady.then(async () => {

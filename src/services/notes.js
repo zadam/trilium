@@ -57,7 +57,7 @@ function deriveMime(type, mime) {
 }
 
 async function copyChildAttributes(parentNote, childNote) {
-    for (const attr of await parentNote.getAttributes()) {
+    for (const attr of await parentNote.getOwnedAttributes()) {
         if (attr.name.startsWith("child:")) {
             await new Attribute({
                 noteId: childNote.noteId,
@@ -489,7 +489,7 @@ async function eraseDeletedNotes() {
         SET content = NULL,
             utcDateModified = '${utcNowDateTime}'
         WHERE noteRevisionId IN 
-            (SELECT noteRevisionId FROM note_revisions WHERE isErased = 0 AND noteId IN ((???)))`, noteIdsToErase);
+            (SELECT noteRevisionId FROM note_revisions WHERE isErased = 0 AND noteId IN (???))`, noteIdsToErase);
 
     await sql.executeMany(`
         UPDATE note_revisions 
@@ -523,7 +523,7 @@ async function duplicateNote(noteId, parentNoteId) {
         notePosition: origBranch ? origBranch.notePosition + 1 : null
     }).save();
 
-    for (const attribute of await origNote.getAttributes()) {
+    for (const attribute of await origNote.getOwnedAttributes()) {
         const attr = new Attribute(attribute);
         attr.attributeId = undefined; // force creation of new attribute
         attr.noteId = newNote.noteId;
