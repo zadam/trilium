@@ -8,7 +8,8 @@ const outsideSyncMessageHandlers = [];
 const messageHandlers = [];
 
 let ws;
-let lastSyncId = window.glob.maxSyncIdAtLoad;
+let lastAcceptedSyncId = window.glob.maxSyncIdAtLoad;
+let lastProcessedSyncId = window.glob.maxSyncIdAtLoad;
 let lastPingTs;
 let syncDataQueue = [];
 
@@ -84,7 +85,7 @@ async function handleMessage(event) {
 let syncIdReachedListeners = [];
 
 function waitForSyncId(desiredSyncId) {
-    if (desiredSyncId <= lastSyncId) {
+    if (desiredSyncId <= lastProcessedSyncId) {
         return Promise.resolve();
     }
 
@@ -99,14 +100,14 @@ function waitForSyncId(desiredSyncId) {
 
 function checkSyncIdListeners() {
     syncIdReachedListeners
-        .filter(l => l.desiredSyncId <= lastSyncId)
+        .filter(l => l.desiredSyncId <= lastProcessedSyncId)
         .forEach(l => l.resolvePromise());
 
     syncIdReachedListeners = syncIdReachedListeners
-        .filter(l => l.desiredSyncId > lastSyncId);
+        .filter(l => l.desiredSyncId > lastProcessedSyncId);
 
     syncIdReachedListeners.filter(l => Date.now() > l.start - 60000)
-        .forEach(l => console.log(`Waiting for syncId ${l.desiredSyncId} while current is ${lastSyncId} for ${Math.floor((Date.now() - l.start) / 1000)}s`));
+        .forEach(l => console.log(`Waiting for syncId ${l.desiredSyncId} while current is ${lastProcessedSyncId} for ${Math.floor((Date.now() - l.start) / 1000)}s`));
 }
 
 async function consumeSyncData() {
@@ -116,13 +117,17 @@ async function consumeSyncData() {
 
         const outsideSyncData = allSyncData.filter(sync => sync.sourceId !== glob.sourceId);
 
+        // we set lastAcceptedSyncId even before sync processing and send ping so that backend can start sending more updates
+        lastAcceptedSyncId = Math.max(lastAcceptedSyncId, allSyncData[allSyncData.length - 1].id);
+        sendPing();
+
         // the update process should be synchronous as a whole but individual handlers can run in parallel
         await Promise.all([
             ...allSyncMessageHandlers.map(syncHandler => syncHandler(allSyncData)),
             ...outsideSyncMessageHandlers.map(syncHandler => syncHandler(outsideSyncData))
         ]);
 
-        lastSyncId = allSyncData[allSyncData.length - 1].id;
+        lastProcessedSyncId = Math.max(lastProcessedSyncId, allSyncData[allSyncData.length - 1].id);
     }
 }
 
@@ -140,29 +145,32 @@ function connectWebSocket() {
     return ws;
 }
 
+async function sendPing() {
+    if (Date.now() - lastPingTs > 30000) {
+        console.log(utils.now(), "Lost connection to server");
+    }
+
+    if (ws.readyState === ws.OPEN) {
+        ws.send(JSON.stringify({
+            type: 'ping',
+            lastSyncId: lastAcceptedSyncId
+        }));
+    }
+    else if (ws.readyState === ws.CLOSED || ws.readyState === ws.CLOSING) {
+        console.log(utils.now(), "WS closed or closing, trying to reconnect");
+
+        ws = connectWebSocket();
+    }
+}
+
 setTimeout(() => {
     ws = connectWebSocket();
 
-    lastSyncId = glob.maxSyncIdAtLoad;
+    lastAcceptedSyncId = glob.maxSyncIdAtLoad;
+    lastProcessedSyncId = glob.maxSyncIdAtLoad;
     lastPingTs = Date.now();
 
-    setInterval(async () => {
-        if (Date.now() - lastPingTs > 30000) {
-            console.log(utils.now(), "Lost connection to server");
-        }
-
-        if (ws.readyState === ws.OPEN) {
-            ws.send(JSON.stringify({
-                type: 'ping',
-                lastSyncId: lastSyncId
-            }));
-        }
-        else if (ws.readyState === ws.CLOSED || ws.readyState === ws.CLOSING) {
-            console.log(utils.now(), "WS closed or closing, trying to reconnect");
-
-            ws = connectWebSocket();
-        }
-    }, 1000);
+    setInterval(sendPing, 1000);
 }, 0);
 
 subscribeToMessages(message => {

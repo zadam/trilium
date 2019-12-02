@@ -4,13 +4,25 @@ const dateUtils = require('./date_utils');
 const log = require('./log');
 const cls = require('./cls');
 
+let syncs = [];
+
 async function addEntitySync(entityName, entityId, sourceId) {
-    await sql.replace("sync", {
+    const sync = {
         entityName: entityName,
         entityId: entityId,
         utcSyncDate: dateUtils.utcNowDateTime(),
         sourceId: sourceId || cls.getSourceId() || sourceIdService.getCurrentSourceId()
-    });
+    };
+
+    sync.id = await sql.replace("sync", sync);
+
+    syncs.push(sync);
+
+    setTimeout(() => require('./ws').sendPingToAllClients(), 50);
+}
+
+function getEntitySyncsNewerThan(syncId) {
+    return syncs.filter(s => s.id > syncId);
 }
 
 async function cleanupSyncRowsForMissingEntities(entityName, entityKey) {
@@ -83,5 +95,6 @@ module.exports = {
     addAttributeSync: async (attributeId, sourceId) => await addEntitySync("attributes", attributeId, sourceId),
     addApiTokenSync: async (apiTokenId, sourceId) => await addEntitySync("api_tokens", apiTokenId, sourceId),
     addEntitySync,
-    fillAllSyncRows
+    fillAllSyncRows,
+    getEntitySyncsNewerThan
 };

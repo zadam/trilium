@@ -795,7 +795,7 @@ ws.subscribeToOutsideSyncMessages(async syncData => {
     syncData.filter(sync => sync.entityName === 'attributes').forEach(sync => {
         const note = treeCache.notes[sync.noteId];
 
-        if (note && note.attributeCache) {
+        if (note && note.__attributeCache) {
             noteIdsToRefresh.add(sync.entityId);
         }
     });
@@ -869,7 +869,7 @@ async function reloadNotes(noteIds, activateNotePath = null) {
     if (activateNotePath) {
         const node = await getNodeFromPath(activateNotePath);
 
-        if (node) {
+        if (node && !node.isActive()) {
             await node.setActive(true);
         }
     }

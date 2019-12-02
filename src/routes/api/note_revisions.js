@@ -125,7 +125,8 @@ async function getEditedNotesOnDate(req) {
                 SELECT noteId FROM note_revisions
                 WHERE note_revisions.dateLastEdited LIKE '${date}%'
         )
-        ORDER BY isDeleted`);
+        ORDER BY isDeleted
+        LIMIT 50`);
 
     for (const note of notes) {
         const notePath = noteCacheService.getNotePath(note.noteId);

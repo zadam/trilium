@@ -5,6 +5,7 @@ const sql = require('./sql');
 const syncMutexService = require('./sync_mutex');
 
 let webSocketServer;
+let lastAcceptedSyncIds = {};
 
 function init(httpServer, sessionParser) {
     webSocketServer = new WebSocket.Server({
@@ -23,7 +24,11 @@ function init(httpServer, sessionParser) {
     });
 
     webSocketServer.on('connection', (ws, req) => {
-        console.log("websocket client connected");
+        ws.id = utils.randomString(10);
+
+        lastAcceptedSyncIds[ws.id] = 0;
+
+        console.log(`websocket client connected`);
 
         ws.on('message', messageJson => {
             const message = JSON.parse(messageJson);
@@ -32,7 +37,9 @@ function init(httpServer, sessionParser) {
                 log.error('JS Error: ' + message.error);
             }
             else if (message.type === 'ping') {
-                syncMutexService.doExclusively(async () => await sendPing(ws, message.lastSyncId));
+                lastAcceptedSyncIds[ws.id] = message.lastSyncId;
+
+                syncMutexService.doExclusively(async () => await sendPing(ws));
             }
             else {
                 log.error('Unrecognized message: ');
@@ -64,8 +71,8 @@ function sendMessageToAllClients(message) {
     }
 }
 
-async function sendPing(client, lastSentSyncId) {
-    const syncData = await sql.getRows("SELECT * FROM sync WHERE id > ?", [lastSentSyncId]);
+async function sendPing(client) {
+    const syncData = require('./sync_table').getEntitySyncsNewerThan(lastAcceptedSyncIds[client.id]);
 
     for (const sync of syncData) {
         // fill in some extra data needed by the frontend
@@ -92,6 +99,14 @@ async function sendPing(client, lastSentSyncId) {
     });
 }
 
+function sendPingToAllClients() {
+    if (webSocketServer) {
+        webSocketServer.clients.forEach(function each(client) {
+           sendPing(client);
+        });
+    }
+}
+
 function refreshTree() {
     sendMessageToAllClients({ type: 'refresh-tree' });
 }
@@ -109,5 +124,6 @@ module.exports = {
     sendMessageToAllClients,
     refreshTree,
     syncPullInProgress,
-    syncPullFinished
+    syncPullFinished,
+    sendPingToAllClients
 };
