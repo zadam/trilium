@@ -12,9 +12,7 @@ const imageminGifLossy = require('imagemin-giflossy');
 const jimp = require('jimp');
 const imageType = require('image-type');
 const sanitizeFilename = require('sanitize-filename');
-const dateUtils = require('./date_utils');
 const noteRevisionService = require('./note_revisions.js');
-const NoteRevision = require("../entities/note_revision");
 
 async function processImage(uploadBuffer, originalName, shrinkImageSwitch) {
     const origImageFormat = imageType(uploadBuffer);
