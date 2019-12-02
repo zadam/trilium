@@ -421,6 +421,10 @@ div.ui-tooltip {
     height: 150px;
 }
 
+#sql-console-query .CodeMirror-scroll {
+    min-height: inherit !important;
+}
+
 .btn {
     border-radius: var(--button-border-radius);
 }
