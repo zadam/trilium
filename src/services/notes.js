@@ -317,8 +317,7 @@ async function saveLinks(note, content) {
 }
 
 async function saveNoteRevision(note) {
-    // files and images are immutable, they can't be updated
-    // but we don't even version titles which is probably not correct
+    // files and images are versioned separately
     if (note.type === 'file' || note.type === 'image' || await note.hasLabel('disableVersioning')) {
         return;
     }

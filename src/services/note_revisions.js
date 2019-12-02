@@ -7,10 +7,6 @@ const dateUtils = require('../services/date_utils');
  * @param {Note} note
  */
 async function protectNoteRevisions(note) {
-    if (await note.hasLabel('disableVersioning')) {
-        return;
-    }
-
     for (const revision of await note.getRevisions()) {
         if (note.isProtected !== revision.isProtected) {
             const content = await revision.getContent();
@@ -30,6 +26,10 @@ async function protectNoteRevisions(note) {
  * @return {NoteRevision}
  */
 async function createNoteRevision(note) {
+    if (await note.hasLabel("disableVersioning")) {
+        return;
+    }
+
     const noteRevision = await new NoteRevision({
         noteId: note.noteId,
         // title and text should be decrypted now
