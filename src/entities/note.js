@@ -349,9 +349,9 @@ class Note extends Entity {
             tree(noteId, level) AS (
                 SELECT ?, 0
                 UNION
-                SELECT branches.noteId, tree.level + 1 
+                SELECT branches.parentNoteId, tree.level + 1 
                     FROM branches
-                    JOIN tree ON branches.parentNoteId = tree.noteId
+                    JOIN tree ON branches.noteId = tree.noteId
                 WHERE branches.isDeleted = 0
             ),
             treeWithAttrs(noteId, level) AS (
@@ -371,6 +371,11 @@ class Note extends Entity {
         // we order by noteId so that attributes from same note stay together. Actual noteId ordering doesn't matter.
 
         const filteredAttributes = attributes.filter((attr, index) => {
+            // if this exact attribute already appears then don't include it (can happen via cloning)
+            if (attributes.findIndex(it => it.attributeId === attr.attributeId) !== index) {
+                return false;
+            }
+
             if (attr.isDefinition()) {
                 const firstDefinitionIndex = attributes.findIndex(el => el.type === attr.type && el.name === attr.name);
 
