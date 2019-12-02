@@ -334,6 +334,11 @@ class Note extends Entity {
         // we order by noteId so that attributes from same note stay together. Actual noteId ordering doesn't matter.
 
         const filteredAttributes = attributes.filter((attr, index) => {
+            // if this exact attribute already appears then don't include it (can happen via cloning)
+            if (attributes.findIndex(it => it.attributeId === attr.attributeId) !== index) {
+                return false;
+            }
+
             if (attr.isDefinition()) {
                 const firstDefinitionIndex = attributes.findIndex(el => el.type === attr.type && el.name === attr.name);
 
