@@ -47,6 +47,7 @@ module.exports = function(filters, selectedColumns = 'notes.*') {
         else if (property === 'parentCount') {
             // need to cast as string for the equality operator to work
             // for >= etc. it is cast again to DECIMAL
+            // also cannot use COUNT() in WHERE so using subquery ...
             accessor = `CAST((SELECT COUNT(1) FROM branches WHERE branches.noteId = notes.noteId AND isDeleted = 0) AS STRING)`;
         }
         else {
