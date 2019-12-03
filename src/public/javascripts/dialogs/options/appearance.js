@@ -131,7 +131,7 @@ export default class ApperanceOptions {
             if (noteId) {
                 // make sure the CSS is loaded
                 // if the CSS has been loaded and then updated then the changes won't take effect though
-                cssLoader.requireCss(`/api/notes/download/${noteId}`);
+                cssLoader.requireCss(`api/notes/download/${noteId}`);
             }
 
             this.$body.addClass("theme-" + newTheme);
