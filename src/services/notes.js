@@ -462,39 +462,31 @@ async function eraseDeletedNotes() {
         return;
     }
 
-    const utcNowDateTime = dateUtils.utcNowDateTime();
-    const localNowDateTime = dateUtils.localNowDateTime();
-
     // it's better to not use repository for this because it will complain about saving protected notes
-    // out of protected session
+    // out of protected session, also we don't want these changes to be synced (since they are done on all instances anyway)
 
     // setting contentLength to zero would serve no benefit and it leaves potentially useful trail
     await sql.executeMany(`
         UPDATE notes 
-        SET isErased = 1,
-            utcDateModified = '${utcNowDateTime}',
-            dateModified = '${localNowDateTime}'
+        SET isErased = 1
         WHERE noteId IN (???)`, noteIdsToErase);
 
     await sql.executeMany(`
         UPDATE note_contents 
-        SET content = NULL,
-            utcDateModified = '${utcNowDateTime}' 
+        SET content = NULL 
         WHERE noteId IN (???)`, noteIdsToErase);
 
     // deleting first contents since the WHERE relies on isErased = 0
     await sql.executeMany(`
         UPDATE note_revision_contents
-        SET content = NULL,
-            utcDateModified = '${utcNowDateTime}'
+        SET content = NULL
         WHERE noteRevisionId IN 
             (SELECT noteRevisionId FROM note_revisions WHERE isErased = 0 AND noteId IN (???))`, noteIdsToErase);
 
     await sql.executeMany(`
         UPDATE note_revisions 
         SET isErased = 1,
-            title = NULL,
-            utcDateModified = '${utcNowDateTime}'
+            title = NULL
         WHERE isErased = 0 AND noteId IN (???)`, noteIdsToErase);
 }
 
