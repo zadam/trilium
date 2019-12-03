@@ -259,6 +259,65 @@ function BackendScriptApi(currentNote, apiParams) {
     this.createNewNote = noteService.createNewNote;
 
     /**
+     * @typedef {object} CreateNoteAttribute
+     * @property {string} type - attribute type - label, relation etc.
+     * @property {string} name - attribute name
+     * @property {string} [value] - attribute value
+     */
+
+    /**
+     * @typedef {object} CreateNoteExtraOptions
+     * @property {boolean} [json=false] - should the note be JSON
+     * @property {boolean} [isProtected=false] - should the note be protected
+     * @property {string} [type='text'] - note type
+     * @property {string} [mime='text/html'] - MIME type of the note
+     * @property {CreateNoteAttribute[]} [attributes=[]] - attributes to be created for this note
+     */
+
+    /**
+     * @method
+     *
+     * @param {string} parentNoteId - create new note under this parent
+     * @param {string} title
+     * @param {string} [content=""]
+     * @param {CreateNoteExtraOptions} [extraOptions={}]
+     * @returns {Promise&lt;{note: Note, branch: Branch}>} object contains newly created entities note and branch
+     */
+    this.createNote = async (parentNoteId, title, content = "", extraOptions= {}) => {
+        extraOptions.parentNoteId = parentNoteId;
+        extraOptions.title = title;
+
+        const parentNote = await repository.getNote(parentNoteId);
+
+        // code note type can be inherited, otherwise text is default
+        extraOptions.type = parentNote.type === 'code' ? 'code' : 'text';
+        extraOptions.mime = parentNote.type === 'code' ? parentNote.mime : 'text/html';
+
+        if (extraOptions.json) {
+            extraOptions.content = JSON.stringify(content || {}, null, '\t');
+            extraOptions.type = 'code';
+            extraOptions.mime = 'application/json';
+        }
+        else {
+            extraOptions.content = content;
+        }
+
+        const {note, branch} = await noteService.createNewNote(extraOptions);
+
+        for (const attr of extraOptions.attributes || []) {
+            await attributeService.createAttribute({
+                noteId: note.noteId,
+                type: attr.type,
+                name: attr.name,
+                value: attr.value,
+                isInheritable: !!attr.isInheritable
+            });
+        }
+
+        return {note, branch};
+    };
+
+    /**
      * Log given message to trilium logs.
      *
      * @param message
