@@ -11,7 +11,8 @@ const VIRTUAL_ATTRIBUTES = [
     "content",
     "type",
     "mime",
-    "text"
+    "text",
+    "parentCount"
 ];
 
 module.exports = function(filters, selectedColumns = 'notes.*') {
@@ -42,6 +43,11 @@ module.exports = function(filters, selectedColumns = 'notes.*') {
             }
 
             accessor = `${alias}.${property}`;
+        }
+        else if (property === 'parentCount') {
+            // need to cast as string for the equality operator to work
+            // for >= etc. it is cast again to DECIMAL
+            accessor = `CAST((SELECT COUNT(1) FROM branches WHERE branches.noteId = notes.noteId AND isDeleted = 0) AS STRING)`;
         }
         else {
             accessor = "notes." + property;
