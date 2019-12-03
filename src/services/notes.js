@@ -78,7 +78,7 @@ async function copyChildAttributes(parentNote, childNote) {
  * - {string} parentNoteId
  * - {string} title
  * - {*} content
- * - {string} type - text, code, file, image, search, book, relation-map
+ * - {string} type - text, code, file, image, search, book, relation-map, render
  *
  * Following are optional (have defaults)
  * - {string} mime - value is derived from default mimes for type
