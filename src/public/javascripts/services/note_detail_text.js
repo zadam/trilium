@@ -1,6 +1,7 @@
 import libraryLoader from "./library_loader.js";
 import treeService from './tree.js';
 import noteAutocompleteService from './note_autocomplete.js';
+import mimeTypesService from './mime_types.js';
 
 class NoteDetailText {
     /**
@@ -41,6 +42,16 @@ class NoteDetailText {
             // textEditor might have been initialized during previous await so checking again
             // looks like double initialization can freeze CKEditor pretty badly
             if (!this.textEditor) {
+                const codeBlockLanguages =
+                        (await mimeTypesService.getMimeTypes())
+                        .filter(mt => mt.enabled)
+                        .map(mt => {
+                            return {
+                                language: mt.mime.toLowerCase().replace(/[\W_]+/g,"-"),
+                                label: mt.title
+                            }
+                        });
+
                 this.textEditor = await BalloonEditor.create(this.$editorEl[0], {
                     placeholder: "Type the content of your note here ...",
                     mention: {
@@ -77,6 +88,9 @@ class NoteDetailText {
                                 minimumCharacters: 0
                             }
                         ]
+                    },
+                    codeBlock: {
+                        languages: codeBlockLanguages
                     }
                 });
 

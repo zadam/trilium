@@ -196,7 +196,7 @@ body {
 
     --ck-color-todo-list-checkmark-border: var(--main-border-color);
 
-    --ck-color-engine-placeholder-text: var(--main-text-color);
+    --ck-color-engine-placeholder-text: var(--muted-text-color);
 }
 
 body {
