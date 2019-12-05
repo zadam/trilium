@@ -226,6 +226,11 @@ const DEFAULT_KEYBOARD_ACTIONS = [
         description: "Shows SQL Console dialog"
     },
     {
+        actionName: "ShowBackendLog",
+        defaultShortcuts: [],
+        description: "Shows Backend Log dialog"
+    },
+    {
         actionName: "ShowHelp",
         defaultShortcuts: ["F1"],
         description: "Shows built-in Help / cheatsheet"

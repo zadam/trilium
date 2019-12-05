@@ -81,6 +81,12 @@
                         <kbd data-kb-action="ShowSQLConsole"></kbd>
                     </a>
 
+                    <a class="dropdown-item" id="show-backend-log-button">
+                        <span class="bx bx-empty"></span>
+                        Show backend log
+                        <kbd data-kb-action="ShowBackendLog"></kbd>
+                    </a>
+
                     <a class="dropdown-item" id="reload-frontend-button" title="Reload can help with some visual glitches without restarting the whole app.">
                         <span class="bx bx-empty"></span>
                         Reload frontend
@@ -187,6 +193,7 @@
     <% include dialogs/link_map.ejs %>
     <% include dialogs/clone_to.ejs %>
     <% include dialogs/move_to.ejs %>
+    <% include dialogs/backend_log.ejs %>
 </div>
 
 <script type="text/javascript">

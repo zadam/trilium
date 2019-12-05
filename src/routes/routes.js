@@ -35,6 +35,7 @@ const linkMapRoute = require('./api/link_map');
 const clipperRoute = require('./api/clipper');
 const similarNotesRoute = require('./api/similar_notes');
 const keysRoute = require('./api/keys');
+const backendLogRoute = require('./api/backend_log');
 
 const log = require('../services/log');
 const express = require('express');
@@ -246,6 +247,8 @@ function register(app) {
 
     apiRoute(GET, '/api/keyboard-actions', keysRoute.getKeyboardActions);
     apiRoute(GET, '/api/keyboard-shortcuts-for-notes', keysRoute.getShortcutsForNotes);
+
+    apiRoute(GET, '/api/backend-log', backendLogRoute.getBackendLog);
 
     app.use('', router);
 }

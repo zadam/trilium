@@ -17,6 +17,7 @@ const JUMP_TO_NOTE = "../dialogs/jump_to_note.js";
 const NOTE_SOURCE = "../dialogs/note_source.js";
 const RECENT_CHANGES = "../dialogs/recent_changes.js";
 const SQL_CONSOLE = "../dialogs/sql_console.js";
+const BACKEND_LOG = "../dialogs/backend_log.js";
 const ATTRIBUTES = "../dialogs/attributes.js";
 const HELP = "../dialogs/help.js";
 const NOTE_INFO = "../dialogs/note_info.js";
@@ -94,6 +95,10 @@ function registerEntrypoints() {
     const showSqlConsoleDialog = () => import(SQL_CONSOLE).then(d => d.showDialog());
     $("#open-sql-console-button").on('click', showSqlConsoleDialog);
     keyboardActionService.setGlobalActionHandler("ShowSQLConsole", showSqlConsoleDialog);
+
+    const showBackendLogDialog = () => import(BACKEND_LOG).then(d => d.showDialog());
+    $("#show-backend-log-button").on('click', showBackendLogDialog);
+    keyboardActionService.setGlobalActionHandler("ShowBackendLog", showBackendLogDialog);
 
     $("#show-about-dialog-button").on('click', () => import(ABOUT).then(d => d.showDialog()));
 
