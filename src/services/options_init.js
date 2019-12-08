@@ -81,7 +81,8 @@ const defaultOptions = [
     { name: 'hideTabRowForOneTab', value: 'false', isSynced: false },
     { name: 'imageMaxWidthHeight', value: '1200', isSynced: true },
     { name: 'imageJpegQuality', value: '75', isSynced: true },
-    { name: 'autoFixConsistencyIssues', value: 'true', isSynced: false }
+    { name: 'autoFixConsistencyIssues', value: 'true', isSynced: false },
+    { name: 'codeNotesMimeTypes', value: '["text/x-csrc","text/x-c++src","text/x-csharp","text/css","text/x-go","text/x-groovy","text/x-haskell","text/html","message/http","text/x-java","application/javascript;env=frontend","application/javascript;env=backend","application/json","text/x-kotlin","text/x-markdown","text/x-perl","text/x-php","text/x-python","text/x-ruby",null,"text/x-sql","text/x-swift","text/xml","text/x-yaml"]', isSynced: true }
 ];
 
 async function initStartupOptions() {
