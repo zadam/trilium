@@ -931,6 +931,7 @@ class Note extends Entity {
 
         delete pojo.isContentAvailable;
         delete pojo.__attributeCache;
+        delete pojo.__ownedAttributeCache;
         delete pojo.content;
         /** zero references to contentHash, probably can be removed */
         delete pojo.contentHash;

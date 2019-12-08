@@ -34,7 +34,8 @@ async function addClipping(req) {
         clippingNote = (await noteService.createNewNote({
             parentNoteId: todayNote.noteId,
             title: title,
-            content: ''
+            content: '',
+            type: 'text'
         })).note;
 
         await clippingNote.setLabel('clipType', 'clippings');
@@ -58,7 +59,8 @@ async function createNote(req) {
     const {note} = await noteService.createNewNote({
         parentNoteId: todayNote.noteId,
         title,
-        content
+        content,
+        type: 'text'
     });
 
     await note.setLabel('clipType', clipType);
