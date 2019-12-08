@@ -17,12 +17,18 @@ async function getSchema() {
 }
 
 async function execute(req) {
-    const query = req.body.query;
+    const queries = req.body.query.split("\n---");
 
     try {
+        const results = [];
+
+        for (const query of queries) {
+            results.push(await sql.getRows(query));
+        }
+
         return {
             success: true,
-            rows: await sql.getRows(query)
+            results
         };
     }
     catch (e) {
