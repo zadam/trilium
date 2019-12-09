@@ -3,6 +3,40 @@ import treeService from './tree.js';
 import noteAutocompleteService from './note_autocomplete.js';
 import mimeTypesService from './mime_types.js';
 
+const mentionSetup = {
+    feeds: [
+        {
+            marker: '@',
+            feed: queryText => {
+                return new Promise((res, rej) => {
+                    noteAutocompleteService.autocompleteSource(queryText, rows => {
+                        if (rows.length === 1 && rows[0].title === 'No results') {
+                            rows = [];
+                        }
+
+                        for (const row of rows) {
+                            row.text = row.name = row.noteTitle;
+                            row.id = '@' + row.text;
+                            row.link = '#' + row.path;
+                        }
+
+                        res(rows);
+                    });
+                });
+            },
+            itemRenderer: item => {
+                const itemElement = document.createElement('span');
+
+                itemElement.classList.add('mentions-item');
+                itemElement.innerHTML = `${item.highlightedTitle} `;
+
+                return itemElement;
+            },
+            minimumCharacters: 0
+        }
+    ]
+};
+
 class NoteDetailText {
     /**
      * @param {TabContext} ctx
@@ -54,41 +88,7 @@ class NoteDetailText {
             if (!this.textEditor) {
                 this.textEditor = await BalloonEditor.create(this.$editorEl[0], {
                     placeholder: "Type the content of your note here ...",
-                    mention: {
-                        feeds: [
-                            {
-                                marker: '@',
-                                feed: queryText => {
-                                    return new Promise((res, rej) => {
-                                        noteAutocompleteService.autocompleteSource(queryText, rows => {
-                                            if (rows.length === 1 && rows[0].title === 'No results') {
-                                                rows = [];
-                                            }
-
-                                            for (const row of rows) {
-                                                row.text = row.name = row.noteTitle;
-                                                row.id = '@' + row.text;
-                                                row.link = '#' + row.path;
-                                            }
-
-                                            console.log(rows.slice(0, Math.min(5, rows.length)));
-
-                                            res(rows);
-                                        });
-                                    });
-                                },
-                                itemRenderer: item => {
-                                    const itemElement = document.createElement('span');
-
-                                    itemElement.classList.add('mentions-item');
-                                    itemElement.innerHTML = `${item.highlightedTitle} `;
-
-                                    return itemElement;
-                                },
-                                minimumCharacters: 0
-                            }
-                        ]
-                    },
+                    mention: mentionSetup,
                     codeBlock: {
                         languages: codeBlockLanguages
                     }
