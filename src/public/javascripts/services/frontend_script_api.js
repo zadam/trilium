@@ -382,6 +382,11 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
      * @param {function} handler
      */
     this.bindGlobalShortcut = utils.bindGlobalShortcut;
+
+    /**
+     * @method
+     */
+    this.waitUntilSynced = ws.waitForMaxKnownSyncId;
 }
 
 export default FrontendScriptApi;

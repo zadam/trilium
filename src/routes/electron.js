@@ -12,10 +12,14 @@ function init(app) {
             }
         };
 
+        const respHeaders = {};
+
         const res = {
             statusCode: 200,
-            getHeader: () => {},
-            setHeader: () => {},
+            getHeader: name => respHeaders[name],
+            setHeader: (name, value) => {
+                respHeaders[name] = value.toString();
+            },
             status: statusCode => {
                 res.statusCode = statusCode;
                 return res;
@@ -24,6 +28,7 @@ function init(app) {
                 event.sender.send('server-response', {
                     requestId: arg.requestId,
                     statusCode: res.statusCode,
+                    headers: respHeaders,
                     body: obj
                 });
             }

@@ -42,12 +42,16 @@ async function remove(url, headers = {}) {
 let i = 1;
 const reqResolves = {};
 
+let maxKnownSyncId = 0;
+
 async function call(method, url, data, headers = {}) {
+    let resp;
+
     if (utils.isElectron()) {
         const ipc = require('electron').ipcRenderer;
         const requestId = i++;
 
-        return new Promise((resolve, reject) => {
+        resp = await new Promise((resolve, reject) => {
             reqResolves[requestId] = resolve;
 
             if (REQUEST_LOGGING_ENABLED) {
@@ -64,32 +68,58 @@ async function call(method, url, data, headers = {}) {
         });
     }
     else {
-        return await ajax(url, method, data, headers);
+        resp = await ajax(url, method, data, headers);
     }
+
+    const maxSyncIdStr = resp.headers['trilium-max-sync-id'];
+
+    if (maxSyncIdStr && maxSyncIdStr.trim()) {
+        maxKnownSyncId = Math.max(maxKnownSyncId, parseInt(maxSyncIdStr));
+    }
+
+    return resp.body;
 }
 
-async function ajax(url, method, data, headers) {
-    const options = {
-        url: baseApiUrl + url,
-        type: method,
-        headers: getHeaders(headers),
-        timeout: 60000
-    };
+function ajax(url, method, data, headers) {
+    return new Promise((res, rej) => {
+        const options = {
+            url: baseApiUrl + url,
+            type: method,
+            headers: getHeaders(headers),
+            timeout: 60000,
+            success: (body, textStatus, jqXhr) => {
+                const respHeaders = {};
 
-    if (data) {
-        try {
-            options.data = JSON.stringify(data);
-        }
-        catch (e) {
-            console.log("Can't stringify data: ", data, " because of error: ", e)
-        }
-        options.contentType = "application/json";
-    }
+                jqXhr.getAllResponseHeaders().trim().split(/[\r\n]+/).forEach(line => {
+                    const parts = line.split(': ');
+                    const header = parts.shift();
+                    respHeaders[header] = parts.join(': ');
+                });
 
-    return await $.ajax(options).catch(e => {
-        const message = "Error when calling " + method + " " + url + ": " + e.status + " - " + e.statusText;
-        toastService.showError(message);
-        toastService.throwError(message);
+                res({
+                    body,
+                    headers: respHeaders
+                });
+            },
+            error: (jqXhr, textStatus, error) => {
+                const message = "Error when calling " + method + " " + url + ": " + textStatus + " - " + error;
+                toastService.showError(message);
+                toastService.throwError(message);
+
+                rej(error);
+            }
+        };
+
+        if (data) {
+            try {
+                options.data = JSON.stringify(data);
+            } catch (e) {
+                console.log("Can't stringify data: ", data, " because of error: ", e)
+            }
+            options.contentType = "application/json";
+        }
+
+        $.ajax(options);
     });
 }
 
@@ -101,7 +131,10 @@ if (utils.isElectron()) {
             console.log(utils.now(), "Response #" + arg.requestId + ": " + arg.statusCode);
         }
 
-        reqResolves[arg.requestId](arg.body);
+        reqResolves[arg.requestId]({
+            body: arg.body,
+            headers: arg.headers
+        });
 
         delete reqResolves[arg.requestId];
     });
@@ -114,5 +147,6 @@ export default {
     remove,
     ajax,
     // don't remove, used from CKEditor image upload!
-    getHeaders
+    getHeaders,
+    getMaxKnownSyncId: () => maxKnownSyncId
 };

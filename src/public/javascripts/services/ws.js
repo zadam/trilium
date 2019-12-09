@@ -1,5 +1,6 @@
 import utils from './utils.js';
 import toastService from "./toast.js";
+import server from "./server.js";
 
 const $outstandingSyncsCount = $("#outstanding-syncs-count");
 
@@ -71,8 +72,6 @@ async function handleMessage(event) {
             // finish and set to null to signal somebody else can pick it up
             consumeQueuePromise = null;
         }
-
-        checkSyncIdListeners();
     }
     else if (message.type === 'sync-hash-check-failed') {
         toastService.showError("Sync check failed!", 60000);
@@ -96,6 +95,10 @@ function waitForSyncId(desiredSyncId) {
             start: Date.now()
         })
     });
+}
+
+function waitForMaxKnownSyncId() {
+    return waitForSyncId(server.getMaxKnownSyncId());
 }
 
 function checkSyncIdListeners() {
@@ -129,6 +132,8 @@ async function consumeSyncData() {
 
         lastProcessedSyncId = Math.max(lastProcessedSyncId, allSyncData[allSyncData.length - 1].id);
     }
+
+    checkSyncIdListeners();
 }
 
 function connectWebSocket() {
@@ -193,5 +198,6 @@ export default {
     subscribeToMessages,
     subscribeToAllSyncMessages,
     subscribeToOutsideSyncMessages,
-    waitForSyncId
+    waitForSyncId,
+    waitForMaxKnownSyncId
 };

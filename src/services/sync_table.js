@@ -21,6 +21,10 @@ async function addEntitySync(entityName, entityId, sourceId) {
     setTimeout(() => require('./ws').sendPingToAllClients(), 50);
 }
 
+function getMaxSyncId() {
+    return syncs.length === 0 ? 0 : syncs[syncs.length - 1].id;
+}
+
 function getEntitySyncsNewerThan(syncId) {
     return syncs.filter(s => s.id > syncId);
 }
@@ -96,5 +100,6 @@ module.exports = {
     addApiTokenSync: async (apiTokenId, sourceId) => await addEntitySync("api_tokens", apiTokenId, sourceId),
     addEntitySync,
     fillAllSyncRows,
-    getEntitySyncsNewerThan
+    getEntitySyncsNewerThan,
+    getMaxSyncId
 };
