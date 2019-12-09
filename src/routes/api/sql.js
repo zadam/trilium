@@ -23,6 +23,10 @@ async function execute(req) {
         const results = [];
 
         for (const query of queries) {
+            if (!query.trim()) {
+                continue;
+            }
+
             results.push(await sql.getRows(query));
         }
 

@@ -794,7 +794,7 @@ div[data-notify="container"] {
     padding: 2px;
 }
 
-#sql-console-tables button {
+#sql-console-table-schemas button {
     padding: 0.25rem 0.4rem;
     font-size: 0.875rem;
     line-height: 0.5;

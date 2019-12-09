@@ -6,7 +6,7 @@ import utils from "../services/utils.js";
 const $dialog = $("#sql-console-dialog");
 const $query = $('#sql-console-query');
 const $executeButton = $('#sql-console-execute');
-const $tables = $("#sql-console-tables");
+const $tableSchemas = $("#sql-console-table-schemas");
 const $resultContainer = $("#result-container");
 
 let codeEditor;
@@ -18,7 +18,7 @@ export async function showDialog() {
 
     glob.activeDialog = $dialog;
 
-    await showTables();
+    await showTableSchemas();
 
     $dialog.modal();
 }
@@ -106,28 +106,33 @@ async function execute() {
     }
 }
 
-async function showTables() {
+async function showTableSchemas() {
     const tables = await server.get('sql/schema');
 
-    $tables.empty();
+    $tableSchemas.empty();
 
     for (const table of tables) {
         const $tableLink = $('<button class="btn">').text(table.name);
 
-        const $columns = $("<table>");
+        const $columns = $("<ul>");
 
         for (const column of table.columns) {
             $columns.append(
-                $("<tr>")
-                    .append($("<td>").text(column.name))
-                    .append($("<td>").text(column.type))
+                $("<li>")
+                    .append($("<span>").text(column.name))
+                    .append($("<span>").text(column.type))
             );
         }
 
-        $tables.append($tableLink).append(" ");
+        $tableSchemas.append($tableLink).append(" ");
 
         $tableLink
-            .tooltip({html: true, title: $columns.html()})
+            .tooltip({
+                html: true,
+                placement: 'bottom',
+                boundary: 'window',
+                title: $columns[0].outerHTML
+            })
             .on('click', () => codeEditor.setValue("SELECT * FROM " + table.name + " LIMIT 100"));
     }
 }
