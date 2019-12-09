@@ -34,6 +34,16 @@ class NoteDetailText {
         if (!this.textEditor) {
             await libraryLoader.requireLibrary(libraryLoader.CKEDITOR);
 
+            const codeBlockLanguages =
+                (await mimeTypesService.getMimeTypes())
+                    .filter(mt => mt.enabled)
+                    .map(mt => {
+                        return {
+                            language: mt.mime.toLowerCase().replace(/[\W_]+/g,"-"),
+                            label: mt.title
+                        }
+                    });
+
             // CKEditor since version 12 needs the element to be visible before initialization. At the same time
             // we want to avoid flicker - i.e. show editor only once everything is ready. That's why we have separate
             // display of $component in both branches.
@@ -42,16 +52,6 @@ class NoteDetailText {
             // textEditor might have been initialized during previous await so checking again
             // looks like double initialization can freeze CKEditor pretty badly
             if (!this.textEditor) {
-                const codeBlockLanguages =
-                        (await mimeTypesService.getMimeTypes())
-                        .filter(mt => mt.enabled)
-                        .map(mt => {
-                            return {
-                                language: mt.mime.toLowerCase().replace(/[\W_]+/g,"-"),
-                                label: mt.title
-                            }
-                        });
-
                 this.textEditor = await BalloonEditor.create(this.$editorEl[0], {
                     placeholder: "Type the content of your note here ...",
                     mention: {
