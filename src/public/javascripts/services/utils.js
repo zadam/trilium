@@ -77,7 +77,7 @@ async function stopWatch(what, func) {
 }
 
 function formatValueWithWhitespace(val) {
-    return /[^\w_-]/.test(val) ? '"' + val + '"' : val;
+    return /[^\p{L}_-]/u.test(val) ? '"' + val + '"' : val;
 }
 
 function formatLabel(label) {
