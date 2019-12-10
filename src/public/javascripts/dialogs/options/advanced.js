@@ -13,6 +13,10 @@ const TPL = `
 <br/>
 <br/>
 
+<h4>Consistency checks</h4>
+
+<button id="find-and-fix-consistency-issues-button" class="btn">Find and fix consistency issues</button><br/><br/>
+
 <h4>Debugging</h4>
 
 <button id="anonymize-button" class="btn">Save anonymized database</button><br/><br/>
@@ -33,9 +37,8 @@ export default class AdvancedOptions {
         this.$forceFullSyncButton = $("#force-full-sync-button");
         this.$fillSyncRowsButton = $("#fill-sync-rows-button");
         this.$anonymizeButton = $("#anonymize-button");
-        this.$cleanupSoftDeletedButton = $("#cleanup-soft-deleted-items-button");
-        this.$cleanupUnusedImagesButton = $("#cleanup-unused-images-button");
         this.$vacuumDatabaseButton = $("#vacuum-database-button");
+        this.$findAndFixConsistencyIssuesButton = $("#find-and-fix-consistency-issues-button");
 
         this.$forceFullSyncButton.on('click', async () => {
             await server.post('sync/force-full-sync');
@@ -55,26 +58,16 @@ export default class AdvancedOptions {
             toastService.showMessage("Created anonymized database");
         });
 
-        this.$cleanupSoftDeletedButton.on('click', async () => {
-            if (confirm("Do you really want to clean up soft-deleted items?")) {
-                await server.post('cleanup/cleanup-soft-deleted-items');
-
-                toastService.showMessage("Soft deleted items have been cleaned up");
-            }
-        });
-
-        this.$cleanupUnusedImagesButton.on('click', async () => {
-            if (confirm("Do you really want to clean up unused images?")) {
-                await server.post('cleanup/cleanup-unused-images');
-
-                toastService.showMessage("Unused images have been cleaned up");
-            }
-        });
-
         this.$vacuumDatabaseButton.on('click', async () => {
             await server.post('cleanup/vacuum-database');
 
             toastService.showMessage("Database has been vacuumed");
+        });
+
+        this.$findAndFixConsistencyIssuesButton.on('click', async () => {
+            await server.post('cleanup/find-and-fix-consistency-issues');
+
+            toastService.showMessage("Consistency issues should be fixed.");
         });
     }
 }
