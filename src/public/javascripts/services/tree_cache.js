@@ -161,6 +161,11 @@ class TreeCache {
     /** @return {Promise<NoteShort>} */
     async getNote(noteId, silentNotFoundError = false) {
         if (noteId === 'none') {
+            console.log(`No 'none' note.`);
+            return null;
+        }
+        else if (!noteId) {
+            console.log(`Falsy noteId ${noteId}, returning null.`);
             return null;
         }
 

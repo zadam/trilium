@@ -19,7 +19,7 @@ class Branch {
 
     /** @returns {NoteShort} */
     async getNote() {
-        return await this.treeCache.getNote(this.noteId);
+        return this.treeCache.getNote(this.noteId);
     }
 
     /** @returns {boolean} true if it's top level, meaning its parent is root note */
