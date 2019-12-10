@@ -132,6 +132,12 @@ function registerEntrypoints() {
 
     $("#open-dev-tools-button").toggle(utils.isElectron());
 
+    keyboardActionService.setGlobalActionHandler("PasteMarkdownIntoText", async () => {
+        const dialog = await import("../dialogs/markdown_import.js");
+
+        dialog.importMarkdownInline();
+    });
+
     if (utils.isElectron()) {
         const openDevTools = () => {
             require('electron').remote.getCurrentWindow().toggleDevTools();

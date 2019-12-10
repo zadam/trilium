@@ -250,6 +250,11 @@ const DEFAULT_KEYBOARD_ACTIONS = [
         actionName: "InsertDateTimeToText",
         defaultShortcuts: ["Alt+T"]
     },
+    {
+        actionName: "PasteMarkdownIntoText",
+        defaultShortcuts: [],
+        description: "Pastes Markdown from clipboard into text note"
+    },
 
     {
         separator: "Other"
