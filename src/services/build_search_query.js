@@ -113,6 +113,11 @@ module.exports = function(filters, selectedColumns = 'notes.*') {
                 condition = "NOT(" + condition + ")";
             }
 
+            if (['text', 'title', 'content'].includes(filter.name)) {
+                // for title/content search does not make sense to search for protected notes
+                condition = `(${condition} AND notes.isProtected = 0)`;
+            }
+
             where += condition;
         }
         else if ([">", ">=", "<", "<="].includes(filter.operator)) {
