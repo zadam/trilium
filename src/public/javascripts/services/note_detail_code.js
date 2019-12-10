@@ -55,18 +55,21 @@ class NoteDetailCode {
             this.onNoteChange(() => this.ctx.noteChanged());
         }
 
-        // CodeMirror breaks pretty badly on null so even though it shouldn't happen (guarded by consistency check)
-        // we provide fallback
-        this.codeEditor.setValue(this.ctx.note.content || "");
+        // lazy loading above can take time and tab might have been already switched to another note
+        if (this.ctx.note && this.ctx.note.type === 'code') {
+            // CodeMirror breaks pretty badly on null so even though it shouldn't happen (guarded by consistency check)
+            // we provide fallback
+            this.codeEditor.setValue(this.ctx.note.content || "");
 
-        const info = CodeMirror.findModeByMIME(this.ctx.note.mime);
+            const info = CodeMirror.findModeByMIME(this.ctx.note.mime);
 
-        if (info) {
-            this.codeEditor.setOption("mode", info.mime);
-            CodeMirror.autoLoadMode(this.codeEditor, info.mode);
+            if (info) {
+                this.codeEditor.setOption("mode", info.mime);
+                CodeMirror.autoLoadMode(this.codeEditor, info.mode);
+            }
+
+            this.show();
         }
-
-        this.show();
     }
 
     show() {

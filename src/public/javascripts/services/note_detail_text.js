@@ -98,11 +98,14 @@ class NoteDetailText {
             }
         }
 
-        this.textEditor.isReadOnly = await this.isReadOnly();
+        // lazy loading above can take time and tab might have been already switched to another note
+        if (this.ctx.note && this.ctx.note.type === 'text') {
+            this.textEditor.isReadOnly = await this.isReadOnly();
 
-        this.$component.show();
+            this.$component.show();
 
-        this.textEditor.setData(this.ctx.note.content);
+            this.textEditor.setData(this.ctx.note.content);
+        }
     }
 
     getContent() {
