@@ -59,6 +59,10 @@ async function handleMessage(event) {
 
             syncDataQueue.push(...syncRows);
 
+            // we set lastAcceptedSyncId even before sync processing and send ping so that backend can start sending more updates
+            lastAcceptedSyncId = Math.max(lastAcceptedSyncId, syncRows[syncRows.length - 1].id);
+            sendPing();
+
             // first wait for all the preceding consumers to finish
             while (consumeQueuePromise) {
                 await consumeQueuePromise;
@@ -132,15 +136,19 @@ async function consumeSyncData() {
 
         const outsideSyncData = allSyncData.filter(sync => sync.sourceId !== glob.sourceId);
 
-        // we set lastAcceptedSyncId even before sync processing and send ping so that backend can start sending more updates
-        lastAcceptedSyncId = Math.max(lastAcceptedSyncId, allSyncData[allSyncData.length - 1].id);
-        sendPing();
+        try {
+            // the update process should be synchronous as a whole but individual handlers can run in parallel
+            await Promise.all([
+                ...allSyncMessageHandlers.map(syncHandler => runSafely(syncHandler, allSyncData)),
+                ...outsideSyncMessageHandlers.map(syncHandler => runSafely(syncHandler, outsideSyncData))
+            ]);
+        }
+        catch (e) {
+            logError(`Encountered error ${e.message}, reloading frontend.`);
 
-        // the update process should be synchronous as a whole but individual handlers can run in parallel
-        await Promise.all([
-            ...allSyncMessageHandlers.map(syncHandler => runSafely(syncHandler, allSyncData)),
-            ...outsideSyncMessageHandlers.map(syncHandler => runSafely(syncHandler, outsideSyncData))
-        ]);
+            // if there's an error in updating the frontend then the easy option to recover is to reload the frontend completely
+            utils.reloadApp();
+        }
 
         lastProcessedSyncId = Math.max(lastProcessedSyncId, allSyncData[allSyncData.length - 1].id);
     }

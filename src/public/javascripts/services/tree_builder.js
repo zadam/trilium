@@ -67,7 +67,7 @@ async function prepareNode(branch) {
     const note = await branch.getNote();
 
     if (!note) {
-        console.log(`Branch has no note: ${branch}`);
+        throw new Error(`Branch has no note ` + branch.noteId);
     }
 
     const title = (branch.prefix ? (branch.prefix + " - ") : "") + note.title;
