@@ -3,7 +3,6 @@ const sqlInit = require('./sql_init');
 const optionService = require('./options');
 const dateUtils = require('./date_utils');
 const syncTableService = require('./sync_table');
-const attributeService = require('./attributes');
 const eventService = require('./events');
 const repository = require('./repository');
 const cls = require('../services/cls');
@@ -462,8 +461,11 @@ async function eraseDeletedNotes() {
         return;
     }
 
-    // it's better to not use repository for this because it will complain about saving protected notes
-    // out of protected session, also we don't want these changes to be synced (since they are done on all instances anyway)
+    // it's better to not use repository for this because:
+    // - it would complain about saving protected notes out of protected session
+    // - we don't want these changes to be synced (since they are done on all instances anyway)
+    // - we don't want change the hash since this erasing happens on each instance separately
+    //   and changing the hash would fire up the sync errors temporarily
 
     // setting contentLength to zero would serve no benefit and it leaves potentially useful trail
     await sql.executeMany(`

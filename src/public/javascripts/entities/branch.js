@@ -6,7 +6,6 @@ class Branch {
         this.branchId = row.branchId;
         /** @param {string} */
         this.noteId = row.noteId;
-        this.note = null;
         /** @param {string} */
         this.parentNoteId = row.parentNoteId;
         /** @param {int} */

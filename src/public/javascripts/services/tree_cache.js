@@ -133,7 +133,7 @@ class TreeCache {
 
     /** @return {Promise<NoteShort[]>} */
     async getNotes(noteIds, silentNotFoundError = false) {
-        const missingNoteIds = noteIds.filter(noteId => this.notes[noteId] === undefined);
+        const missingNoteIds = noteIds.filter(noteId => !this.notes[noteId]);
 
         if (missingNoteIds.length > 0) {
             await this.reloadNotes(missingNoteIds);
