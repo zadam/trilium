@@ -10,6 +10,8 @@ async function getNotesAndBranches(noteIds) {
 
     noteIds = notes.map(n => n.noteId);
 
+    // joining child note to filter out not completely synchronised notes which would then cause errors later
+    // cannot do that with parent because of root note's 'none' parent
     const branches = await sql.getManyRows(` 
         SELECT 
             branches.branchId,
@@ -19,6 +21,7 @@ async function getNotesAndBranches(noteIds) {
             branches.prefix,
             branches.isExpanded
         FROM branches
+        JOIN notes AS child ON child.noteId = branches.noteId
         WHERE branches.isDeleted = 0
           AND (branches.noteId IN (???) OR parentNoteId IN (???))`, noteIds);
 
