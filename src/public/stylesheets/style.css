@@ -435,6 +435,12 @@ div.ui-tooltip {
     color: var(--primary-button-text-color);
 }
 
+.btn:not(:disabled):not(.disabled):active, .btn:not(:disabled):not(.disabled).active {
+    border-color: var(--primary-button-text-color);
+    background-color: var(--active-item-background-color);
+    color: var(--active-item-text-color);
+}
+
 .btn.btn-primary kbd {
     color: var(--primary-button-text-color);
 }
