@@ -26,6 +26,10 @@ async function convertMarkdownToHtml(text) {
 }
 
 export async function importMarkdownInline() {
+    if (noteDetailService.getActiveTabNoteType() !== 'text') {
+        return;
+    }
+
     if (utils.isElectron()) {
         const {clipboard} = require('electron');
         const text = clipboard.readText();

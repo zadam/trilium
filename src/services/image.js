@@ -55,13 +55,16 @@ async function saveImage(parentNoteId, uploadBuffer, originalName, shrinkImageSw
 
     const parentNote = await repository.getNote(parentNoteId);
 
-    const {note} = await noteService.createNote(parentNoteId, fileName, buffer, {
-        target: 'into',
+    const {note} = await noteService.createNewNote({
+        parentNoteId,
+        title: fileName,
+        content: buffer,
         type: 'image',
-        isProtected: parentNote.isProtected && protectedSessionService.isProtectedSessionAvailable(),
         mime: 'image/' + imageFormat.ext.toLowerCase(),
-        attributes: [{ type: 'label', name: 'originalFileName', value: originalName }]
+        isProtected: parentNote.isProtected && protectedSessionService.isProtectedSessionAvailable()
     });
+
+    await note.addLabel('originalFileName', originalName);
 
     return {
         fileName,

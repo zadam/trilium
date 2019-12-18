@@ -1,6 +1,7 @@
 import optionsService from "./options.js";
 
 const MIME_TYPES_DICT = [
+    { default: true, title: "Plain text", mime: "text/plain" },
     { title: "APL", mime: "text/apl" },
     { title: "PGP", mime: "application/pgp" },
     { title: "ASN.1", mime: "text/x-ttcn-asn" },
@@ -91,7 +92,6 @@ const MIME_TYPES_DICT = [
     { default: true, title: "Perl", mime: "text/x-perl" },
     { default: true, title: "PHP", mime: "text/x-php" },
     { title: "Pig", mime: "text/x-pig" },
-    { title: "Plain Text", mime: "text/plain" },
     { title: "PLSQL", mime: "text/x-plsql" },
     { title: "PostgreSQL", mime: "text/x-pgsql" },
     { title: "PowerShell", mime: "application/x-powershell" },
@@ -168,7 +168,7 @@ function loadMimeTypes(options) {
         || MIME_TYPES_DICT.filter(mt => mt.default).map(mt => mt.mime);
 
     for (const mt of mimeTypes) {
-        mt.enabled = enabledMimeTypes.includes(mt.mime);
+        mt.enabled = enabledMimeTypes.includes(mt.mime) || mt.mime === 'text/plain'; // text/plain is always enabled
     }
 }
 

@@ -72,7 +72,7 @@ function goToLink(e) {
 
     if (notePath) {
         if ((e.which === 1 && e.ctrlKey) || e.which === 2) {
-            noteDetailService.openInTab(notePath);
+            noteDetailService.openInTab(notePath, false);
         }
         else if (e.which === 1) {
             treeService.activateNote(notePath);

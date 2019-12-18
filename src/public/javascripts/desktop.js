@@ -30,6 +30,7 @@ import cssLoader from './services/css_loader.js';
 import dateNoteService from './services/date_notes.js';
 import sidebarService from './services/sidebar.js';
 import importService from './services/import.js';
+import keyboardActionService from "./services/keyboard_actions.js";
 
 window.glob.isDesktop = utils.isDesktop;
 window.glob.isMobile = utils.isMobile;
@@ -108,18 +109,8 @@ $("body").on("click", "a.external", function () {
 });
 
 if (utils.isElectron()) {
-    require('electron').ipcRenderer.on('create-day-sub-note', async function(event) {
-        const todayNote = await dateNoteService.getTodayNote();
-        const notePath = await treeService.getSomeNotePath(todayNote);
-
-        const node = await treeService.expandToNote(notePath);
-
-        await noteDetailService.openEmptyTab(false);
-
-        await treeService.createNote(node, todayNote.noteId, 'into', {
-            type: "text",
-            isProtected: node.data.isProtected
-        });
+    require('electron').ipcRenderer.on('globalShortcut', async function(event, actionName) {
+        keyboardActionService.triggerAction(actionName);
     });
 }
 
@@ -136,7 +127,7 @@ $noteTabContainer.on("click", ".export-note-button", function () {
 $noteTabContainer.on("click", ".import-files-button",
     () => import('./dialogs/import.js').then(d => d.showDialog(treeService.getActiveNode())));
 
-$noteTabContainer.on("click", ".print-note-button", async function () {
+async function printActiveNote() {
     if ($(this).hasClass("disabled")) {
         return;
     }
@@ -154,7 +145,11 @@ $noteTabContainer.on("click", ".print-note-button", async function () {
         loadCSS: "libraries/codemirror/codemirror.css",
         debug: true
     });
-});
+}
+
+keyboardActionService.setGlobalActionHandler("PrintActiveNote", printActiveNote);
+
+$noteTabContainer.on("click", ".print-note-button", printActiveNote);
 
 $('[data-toggle="tooltip"]').tooltip({
     html: true

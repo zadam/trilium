@@ -28,7 +28,10 @@ async function importEnex(taskContext, file, parentNote) {
         : file.originalname;
 
     // root note is new note into all ENEX/notebook's notes will be imported
-    const rootNote = (await noteService.createNote(parentNote.noteId, rootNoteTitle, "", {
+    const rootNote = (await noteService.createNewNote({
+        parentNoteId: parentNote.noteId,
+        title: rootNoteTitle,
+        content: "",
         type: 'text',
         mime: 'text/html',
         isProtected: parentNote.isProtected && protectedSessionService.isProtectedSessionAvailable(),
@@ -212,13 +215,19 @@ async function importEnex(taskContext, file, parentNote) {
 
         content = extractContent(content);
 
-        const noteEntity = (await noteService.createNote(rootNote.noteId, title, content, {
-            attributes,
+        const noteEntity = (await noteService.createNewNote({
+            parentNoteId: rootNote.noteId,
+            title,
+            content,
             utcDateCreated,
             type: 'text',
             mime: 'text/html',
             isProtected: parentNote.isProtected && protectedSessionService.isProtectedSessionAvailable(),
         })).note;
+
+        for (const attr of attributes) {
+            await noteEntity.addAttribute(attr.type, attr.name, attr.value);
+        }
 
         utcDateCreated = utcDateCreated || noteEntity.utcDateCreated;
         // sometime date modified is not present in ENEX, then use date created
@@ -240,12 +249,18 @@ async function importEnex(taskContext, file, parentNote) {
             }
 
             const createFileNote = async () => {
-                const resourceNote = (await noteService.createNote(noteEntity.noteId, resource.title, resource.content, {
-                    attributes: resource.attributes,
+                const resourceNote = (await noteService.createNewNote({
+                    parentNoteId: noteEntity.noteId,
+                    title: resource.title,
+                    content: resource.content,
                     type: 'file',
                     mime: resource.mime,
                     isProtected: parentNote.isProtected && protectedSessionService.isProtectedSessionAvailable(),
                 })).note;
+
+                for (const attr of resource.attributes) {
+                    await noteEntity.addAttribute(attr.type, attr.name, attr.value);
+                }
 
                 await updateDates(resourceNote.noteId, utcDateCreated, utcDateModified);
 

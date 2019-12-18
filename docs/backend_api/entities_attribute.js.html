@@ -107,6 +107,10 @@ class Attribute extends Entity {
 
     async beforeSaving() {
         if (!this.value) {
+            if (this.type === 'relation') {
+                throw new Error(`Cannot save relation ${this.name} since it does not target any note.`);
+            }
+
             // null value isn't allowed
             this.value = "";
         }
@@ -137,6 +141,7 @@ class Attribute extends Entity {
     // cannot be static!
     updatePojo(pojo) {
         delete pojo.isOwned;
+        delete pojo.__note;
     }
 }
 

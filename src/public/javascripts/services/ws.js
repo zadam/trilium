@@ -1,5 +1,6 @@
 import utils from './utils.js';
 import toastService from "./toast.js";
+import server from "./server.js";
 
 const $outstandingSyncsCount = $("#outstanding-syncs-count");
 
@@ -8,7 +9,8 @@ const outsideSyncMessageHandlers = [];
 const messageHandlers = [];
 
 let ws;
-let lastSyncId = window.glob.maxSyncIdAtLoad;
+let lastAcceptedSyncId = window.glob.maxSyncIdAtLoad;
+let lastProcessedSyncId = window.glob.maxSyncIdAtLoad;
 let lastPingTs;
 let syncDataQueue = [];
 
@@ -57,21 +59,26 @@ async function handleMessage(event) {
 
             syncDataQueue.push(...syncRows);
 
+            // we set lastAcceptedSyncId even before sync processing and send ping so that backend can start sending more updates
+            lastAcceptedSyncId = Math.max(lastAcceptedSyncId, syncRows[syncRows.length - 1].id);
+            sendPing();
+
             // first wait for all the preceding consumers to finish
             while (consumeQueuePromise) {
                 await consumeQueuePromise;
             }
 
-            // it's my turn so start it up
-            consumeQueuePromise = consumeSyncData();
+            try {
+                // it's my turn so start it up
+                consumeQueuePromise = consumeSyncData();
 
-            await consumeQueuePromise;
-
-            // finish and set to null to signal somebody else can pick it up
-            consumeQueuePromise = null;
+                await consumeQueuePromise;
+            }
+            finally {
+                // finish and set to null to signal somebody else can pick it up
+                consumeQueuePromise = null;
+            }
         }
-
-        checkSyncIdListeners();
     }
     else if (message.type === 'sync-hash-check-failed') {
         toastService.showError("Sync check failed!", 60000);
@@ -84,7 +91,7 @@ async function handleMessage(event) {
 let syncIdReachedListeners = [];
 
 function waitForSyncId(desiredSyncId) {
-    if (desiredSyncId <= lastSyncId) {
+    if (desiredSyncId <= lastProcessedSyncId) {
         return Promise.resolve();
     }
 
@@ -97,16 +104,29 @@ function waitForSyncId(desiredSyncId) {
     });
 }
 
+function waitForMaxKnownSyncId() {
+    return waitForSyncId(server.getMaxKnownSyncId());
+}
+
 function checkSyncIdListeners() {
     syncIdReachedListeners
-        .filter(l => l.desiredSyncId <= lastSyncId)
+        .filter(l => l.desiredSyncId <= lastProcessedSyncId)
         .forEach(l => l.resolvePromise());
 
     syncIdReachedListeners = syncIdReachedListeners
-        .filter(l => l.desiredSyncId > lastSyncId);
+        .filter(l => l.desiredSyncId > lastProcessedSyncId);
 
     syncIdReachedListeners.filter(l => Date.now() > l.start - 60000)
-        .forEach(l => console.log(`Waiting for syncId ${l.desiredSyncId} while current is ${lastSyncId} for ${Math.floor((Date.now() - l.start) / 1000)}s`));
+        .forEach(l => console.log(`Waiting for syncId ${l.desiredSyncId} while current is ${lastProcessedSyncId} for ${Math.floor((Date.now() - l.start) / 1000)}s`));
+}
+
+async function runSafely(syncHandler, syncData) {
+    try {
+        return await syncHandler(syncData);
+    }
+    catch (e) {
+        console.log(`Sync handler failed with ${e.message}: ${e.stack}`);
+    }
 }
 
 async function consumeSyncData() {
@@ -116,14 +136,24 @@ async function consumeSyncData() {
 
         const outsideSyncData = allSyncData.filter(sync => sync.sourceId !== glob.sourceId);
 
-        // the update process should be synchronous as a whole but individual handlers can run in parallel
-        await Promise.all([
-            ...allSyncMessageHandlers.map(syncHandler => syncHandler(allSyncData)),
-            ...outsideSyncMessageHandlers.map(syncHandler => syncHandler(outsideSyncData))
-        ]);
+        try {
+            // the update process should be synchronous as a whole but individual handlers can run in parallel
+            await Promise.all([
+                ...allSyncMessageHandlers.map(syncHandler => runSafely(syncHandler, allSyncData)),
+                ...outsideSyncMessageHandlers.map(syncHandler => runSafely(syncHandler, outsideSyncData))
+            ]);
+        }
+        catch (e) {
+            logError(`Encountered error ${e.message}, reloading frontend.`);
 
-        lastSyncId = allSyncData[allSyncData.length - 1].id;
+            // if there's an error in updating the frontend then the easy option to recover is to reload the frontend completely
+            utils.reloadApp();
+        }
+
+        lastProcessedSyncId = Math.max(lastProcessedSyncId, allSyncData[allSyncData.length - 1].id);
     }
+
+    checkSyncIdListeners();
 }
 
 function connectWebSocket() {
@@ -140,29 +170,30 @@ function connectWebSocket() {
     return ws;
 }
 
+async function sendPing() {
+    if (Date.now() - lastPingTs > 30000) {
+        console.log(utils.now(), "Lost connection to server");
+    }
+
+    if (ws.readyState === ws.OPEN) {
+        ws.send(JSON.stringify({
+            type: 'ping',
+            lastSyncId: lastAcceptedSyncId
+        }));
+    }
+    else if (ws.readyState === ws.CLOSED || ws.readyState === ws.CLOSING) {
+        console.log(utils.now(), "WS closed or closing, trying to reconnect");
+
+        ws = connectWebSocket();
+    }
+}
+
 setTimeout(() => {
     ws = connectWebSocket();
 
-    lastSyncId = glob.maxSyncIdAtLoad;
     lastPingTs = Date.now();
 
-    setInterval(async () => {
-        if (Date.now() - lastPingTs > 30000) {
-            console.log(utils.now(), "Lost connection to server");
-        }
-
-        if (ws.readyState === ws.OPEN) {
-            ws.send(JSON.stringify({
-                type: 'ping',
-                lastSyncId: lastSyncId
-            }));
-        }
-        else if (ws.readyState === ws.CLOSED || ws.readyState === ws.CLOSING) {
-            console.log(utils.now(), "WS closed or closing, trying to reconnect");
-
-            ws = connectWebSocket();
-        }
-    }, 1000);
+    setInterval(sendPing, 1000);
 }, 0);
 
 subscribeToMessages(message => {
@@ -185,5 +216,6 @@ export default {
     subscribeToMessages,
     subscribeToAllSyncMessages,
     subscribeToOutsideSyncMessages,
-    waitForSyncId
+    waitForSyncId,
+    waitForMaxKnownSyncId
 };

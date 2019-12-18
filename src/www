@@ -74,7 +74,28 @@ async function startTrilium() {
 
     httpServer.keepAliveTimeout = 120000 * 5;
     httpServer.listen(usedPort, usedHost);
-    httpServer.on('error', onError);
+    httpServer.on('error', error => {
+            if (error.syscall !== 'listen') {
+                throw error;
+            }
+
+            // handle specific listen errors with friendly messages
+            switch (error.code) {
+                case 'EACCES':
+                    console.error(`Port ${usedPort} requires elevated privileges`);
+                    process.exit(1);
+                    break;
+
+                case 'EADDRINUSE':
+                    console.error(`Port ${usedPort} is already in use`);
+                    process.exit(1);
+                    break;
+
+                default:
+                    throw error;
+            }
+        }
+    );
     httpServer.on('listening', () => debug('Listening on port' + httpServer.address().port));
 
     sqlInit.dbReady.then(() => ws.init(httpServer, sessionParser));
@@ -86,29 +107,3 @@ async function startTrilium() {
 }
 
 startTrilium();
-
-/**
- * Event listener for HTTP server "error" event.
- */
-
-function onError(error) {
-    if (error.syscall !== 'listen') {
-        throw error;
-    }
-
-    // handle specific listen errors with friendly messages
-    switch (error.code) {
-        case 'EACCES':
-            console.error('Port requires elevated privileges');
-            process.exit(1);
-        break;
-
-        case 'EADDRINUSE':
-            console.error('Port is already in use');
-            process.exit(1);
-        break;
-
-        default:
-            throw error;
-    }
-}

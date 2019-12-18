@@ -228,9 +228,9 @@ async function checkContentHash(syncContext) {
         return;
     }
 
-    const notPushedSyncs = await sql.getValue("SELECT COUNT(*) FROM sync WHERE id > ?", [await getLastSyncedPush()]);
+    const notPushedSyncs = await sql.getValue("SELECT EXISTS(SELECT 1 FROM sync WHERE id > ?)", [await getLastSyncedPush()]);
 
-    if (notPushedSyncs > 0) {
+    if (notPushedSyncs) {
         log.info(`There's ${notPushedSyncs} outstanding pushes, skipping content check.`);
 
         return;
@@ -333,7 +333,7 @@ async function updatePushStats() {
     if (await syncOptions.isSyncSetup()) {
         const lastSyncedPush = await optionService.getOption('lastSyncedPush');
 
-        stats.outstandingPushes = await sql.getValue("SELECT COUNT(*) FROM sync WHERE id > ?", [lastSyncedPush]);
+        stats.outstandingPushes = await sql.getValue("SELECT COUNT(1) FROM sync WHERE id > ?", [lastSyncedPush]);
     }
 }
 

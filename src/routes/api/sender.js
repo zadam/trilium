@@ -26,10 +26,10 @@ async function uploadImage(req) {
 async function saveNote(req) {
     const parentNote = await dateNoteService.getDateNote(req.headers['x-local-date']);
 
-    const {note, branch} = await noteService.createNewNote(parentNote.noteId, {
+    const {note, branch} = await noteService.createNewNote({
+        parentNoteId: parentNote.noteId,
         title: req.body.title,
         content: req.body.content,
-        target: 'into',
         isProtected: false,
         type: 'text',
         mime: 'text/html'

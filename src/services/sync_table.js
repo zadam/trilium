@@ -4,13 +4,29 @@ const dateUtils = require('./date_utils');
 const log = require('./log');
 const cls = require('./cls');
 
+let syncs = [];
+
 async function addEntitySync(entityName, entityId, sourceId) {
-    await sql.replace("sync", {
+    const sync = {
         entityName: entityName,
         entityId: entityId,
         utcSyncDate: dateUtils.utcNowDateTime(),
         sourceId: sourceId || cls.getSourceId() || sourceIdService.getCurrentSourceId()
-    });
+    };
+
+    sync.id = await sql.replace("sync", sync);
+
+    syncs.push(sync);
+
+    setTimeout(() => require('./ws').sendPingToAllClients(), 50);
+}
+
+function getMaxSyncId() {
+    return syncs.length === 0 ? 0 : syncs[syncs.length - 1].id;
+}
+
+function getEntitySyncsNewerThan(syncId) {
+    return syncs.filter(s => s.id > syncId);
 }
 
 async function cleanupSyncRowsForMissingEntities(entityName, entityKey) {
@@ -31,7 +47,7 @@ async function fillSyncRows(entityName, entityKey, condition = '') {
         let createdCount = 0;
 
         for (const entityId of entityIds) {
-            const existingRows = await sql.getValue("SELECT COUNT(id) FROM sync WHERE entityName = ? AND entityId = ?", [entityName, entityId]);
+            const existingRows = await sql.getValue("SELECT COUNT(1) FROM sync WHERE entityName = ? AND entityId = ?", [entityName, entityId]);
 
             // we don't want to replace existing entities (which would effectively cause full resync)
             if (existingRows === 0) {
@@ -83,5 +99,7 @@ module.exports = {
     addAttributeSync: async (attributeId, sourceId) => await addEntitySync("attributes", attributeId, sourceId),
     addApiTokenSync: async (apiTokenId, sourceId) => await addEntitySync("api_tokens", apiTokenId, sourceId),
     addEntitySync,
-    fillAllSyncRows
+    fillAllSyncRows,
+    getEntitySyncsNewerThan,
+    getMaxSyncId
 };

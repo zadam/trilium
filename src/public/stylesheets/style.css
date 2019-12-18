@@ -75,6 +75,12 @@ ul.fancytree-container {
     content: "\e9f8";
 }
 
+/** some common text styling for cssClass label */
+span.fancytree-node.underline .fancytree-title { text-decoration: underline; }
+span.fancytree-node.dotted .fancytree-title { text-decoration: dotted; }
+span.fancytree-node.bold .fancytree-title { font-weight: bold; }
+span.fancytree-node.muted { opacity: 0.6; }
+
 .note-title[readonly] {
     background: inherit;
 }
@@ -144,9 +150,9 @@ ul.fancytree-container {
     margin-top: 0;
 }
 
-/** we disable shield background when in distraction free mode because I couldn't get it to stay static
+/** we disable shield background when in zen mode because I couldn't get it to stay static
     (it kept growing with content) */
-#container:not(.distraction-free-mode) .note-tab-content.protected {
+#container:not(.zen-mode) .note-tab-content.protected {
     /* DON'T COLLAPSE THE RULES INTO SINGLE ONE, BACKGROUND WON'T DISPLAY */
     background: url('../images/shield.svg') no-repeat;
     background-size: contain;
@@ -227,9 +233,13 @@ span.fancytree-node.archived {
 
 .icon-action:hover {
     text-decoration: none;
+    border-color: var(--button-border-color);
 }
 
 .icon-action {
+    border: 1px solid transparent;
+    border-radius: 3px;
+    padding: 5px;
     cursor: pointer;
     font-size: 1.5em;
 }
@@ -419,7 +429,23 @@ div.ui-tooltip {
     border-radius: var(--button-border-radius);
 }
 
-.btn:not(.btn-primary):not(.btn-secondary):not(.btn-danger) {
+.btn.btn-primary {
+    border-color: var(--primary-button-border-color);
+    background-color: var(--primary-button-background-color);
+    color: var(--primary-button-text-color);
+}
+
+.btn:not(:disabled):not(.disabled):active, .btn:not(:disabled):not(.disabled).active {
+    border-color: var(--primary-button-text-color);
+    background-color: var(--active-item-background-color);
+    color: var(--active-item-text-color);
+}
+
+.btn.btn-primary kbd {
+    color: var(--primary-button-text-color);
+}
+
+.btn:not(.btn-primary) {
     border-color: var(--button-border-color);
     background-color: var(--button-background-color);
     color: var(--button-text-color);
@@ -427,6 +453,7 @@ div.ui-tooltip {
 
 .btn.active:not(.btn-primary) {
     background-color: var(--button-disabled-background-color) !important;
+    opacity: 0.4;
 }
 
 .note-path-list a.current {
@@ -773,7 +800,7 @@ div[data-notify="container"] {
     padding: 2px;
 }
 
-#sql-console-tables button {
+#sql-console-table-schemas button {
     padding: 0.25rem 0.4rem;
     font-size: 0.875rem;
     line-height: 0.5;

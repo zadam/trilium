@@ -1,3 +1,4 @@
+import keyboardActionService from './keyboard_actions.js';
 const $contextMenuContainer = $("#context-menu-container");
 
 let dateContextMenuOpenedMs = 0;
@@ -68,6 +69,8 @@ async function initContextMenu(event, contextMenu) {
     }
 
     addItems($contextMenuContainer, await contextMenu.getContextMenuItems());
+
+    keyboardActionService.updateDisplayedShortcuts($contextMenuContainer);
 
     // code below tries to detect when dropdown would overflow from page
     // in such case we'll position it above click coordinates so it will fit into client

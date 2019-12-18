@@ -147,7 +147,7 @@ async function importTar(taskContext, fileBuffer, importRootNote) {
                 continue;
             }
 
-            if (attr.type === 'relation' && ['internal-link', 'image-link', 'relation-map-link'].includes(attr.name)) {
+            if (attr.type === 'relation' && ['internalLink', 'imageLink', 'relationMapLink'].includes(attr.name)) {
                 // these relations are created automatically and as such don't need to be duplicated in the import
                 continue;
             }
@@ -177,8 +177,11 @@ async function importTar(taskContext, fileBuffer, importRootNote) {
             return;
         }
 
-        ({note} = await noteService.createNote(parentNoteId, noteTitle, '', {
-            noteId,
+        ({note} = await noteService.createNewNote({
+            parentNoteId: parentNoteId,
+            title: noteTitle,
+            content: '',
+            noteId: noteId,
             type: noteMeta ? noteMeta.type : 'text',
             mime: noteMeta ? noteMeta.mime : 'text/html',
             prefix: noteMeta ? noteMeta.prefix : '',
@@ -310,7 +313,7 @@ async function importTar(taskContext, fileBuffer, importRootNote) {
 
         if (type === 'relation-map' && noteMeta) {
             const relationMapLinks = (noteMeta.attributes || [])
-                .filter(attr => attr.type === 'relation' && attr.name === 'relation-map-link');
+                .filter(attr => attr.type === 'relation' && attr.name === 'relationMapLink');
 
             // this will replace relation map links
             for (const link of relationMapLinks) {
@@ -325,7 +328,10 @@ async function importTar(taskContext, fileBuffer, importRootNote) {
             await note.setContent(content);
         }
         else {
-            ({note} = await noteService.createNote(parentNoteId, noteTitle, content, {
+            ({note} = await noteService.createNewNote({
+                parentNoteId: parentNoteId,
+                title: noteTitle,
+                content: content,
                 noteId,
                 type,
                 mime,

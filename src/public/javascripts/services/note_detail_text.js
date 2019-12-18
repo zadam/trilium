@@ -1,6 +1,41 @@
 import libraryLoader from "./library_loader.js";
 import treeService from './tree.js';
 import noteAutocompleteService from './note_autocomplete.js';
+import mimeTypesService from './mime_types.js';
+
+const mentionSetup = {
+    feeds: [
+        {
+            marker: '@',
+            feed: queryText => {
+                return new Promise((res, rej) => {
+                    noteAutocompleteService.autocompleteSource(queryText, rows => {
+                        if (rows.length === 1 && rows[0].title === 'No results') {
+                            rows = [];
+                        }
+
+                        for (const row of rows) {
+                            row.text = row.name = row.noteTitle;
+                            row.id = '@' + row.text;
+                            row.link = '#' + row.path;
+                        }
+
+                        res(rows);
+                    });
+                });
+            },
+            itemRenderer: item => {
+                const itemElement = document.createElement('span');
+
+                itemElement.classList.add('mentions-item');
+                itemElement.innerHTML = `${item.highlightedTitle} `;
+
+                return itemElement;
+            },
+            minimumCharacters: 0
+        }
+    ]
+};
 
 class NoteDetailText {
     /**
@@ -33,6 +68,16 @@ class NoteDetailText {
         if (!this.textEditor) {
             await libraryLoader.requireLibrary(libraryLoader.CKEDITOR);
 
+            const codeBlockLanguages =
+                (await mimeTypesService.getMimeTypes())
+                    .filter(mt => mt.enabled)
+                    .map(mt => {
+                        return {
+                            language: mt.mime.toLowerCase().replace(/[\W_]+/g,"-"),
+                            label: mt.title
+                        }
+                    });
+
             // CKEditor since version 12 needs the element to be visible before initialization. At the same time
             // we want to avoid flicker - i.e. show editor only once everything is ready. That's why we have separate
             // display of $component in both branches.
@@ -43,40 +88,9 @@ class NoteDetailText {
             if (!this.textEditor) {
                 this.textEditor = await BalloonEditor.create(this.$editorEl[0], {
                     placeholder: "Type the content of your note here ...",
-                    mention: {
-                        feeds: [
-                            {
-                                marker: '@',
-                                feed: queryText => {
-                                    return new Promise((res, rej) => {
-                                        noteAutocompleteService.autocompleteSource(queryText, rows => {
-                                            if (rows.length === 1 && rows[0].title === 'No results') {
-                                                rows = [];
-                                            }
-
-                                            for (const row of rows) {
-                                                row.text = row.name = row.noteTitle;
-                                                row.id = '@' + row.text;
-                                                row.link = '#' + row.path;
-                                            }
-
-                                            console.log(rows.slice(0, Math.min(5, rows.length)));
-
-                                            res(rows);
-                                        });
-                                    });
-                                },
-                                itemRenderer: item => {
-                                    const itemElement = document.createElement('span');
-
-                                    itemElement.classList.add('mentions-item');
-                                    itemElement.innerHTML = `${item.highlightedTitle} `;
-
-                                    return itemElement;
-                                },
-                                minimumCharacters: 0
-                            }
-                        ]
+                    mention: mentionSetup,
+                    codeBlock: {
+                        languages: codeBlockLanguages
                     }
                 });
 
@@ -84,11 +98,14 @@ class NoteDetailText {
             }
         }
 
-        this.textEditor.isReadOnly = await this.isReadOnly();
+        // lazy loading above can take time and tab might have been already switched to another note
+        if (this.ctx.note && this.ctx.note.type === 'text') {
+            this.textEditor.isReadOnly = await this.isReadOnly();
 
-        this.$component.show();
+            this.$component.show();
 
-        this.textEditor.setData(this.ctx.note.content);
+            this.textEditor.setData(this.ctx.note.content);
+        }
     }
 
     getContent() {

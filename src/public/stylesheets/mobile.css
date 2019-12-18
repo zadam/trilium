@@ -19,7 +19,7 @@ html, body {
     display: flex;
     flex-shrink: 0;
     justify-content: space-around;
-    padding: 10px 0 10px 0;
+    padding: 3px 0 3px 0;
     margin: 0 10px 0 16px;
 }
 

@@ -11,34 +11,37 @@
 <div id="toast-container" class="d-flex flex-column justify-content-center align-items-center"></div>
 
 <div id="container" style="display: none; grid-template-columns: minmax(<%= leftPaneMinWidth %>px, <%= leftPaneWidthPercent %>fr) minmax(0, <%= rightPaneWidthPercent %>fr)">
-    <div id="header" class="hide-toggle">
+    <div id="header" class="hide-in-zen-mode">
         <div id="history-navigation" style="display: none;">
             <a id="history-back-button" title="Go to previous note." class="icon-action bx bx-left-arrow-circle"></a>
-
-            &nbsp;
 
             <a id="history-forward-button" title="Go to next note." class="icon-action bx bx-right-arrow-circle"></a>
         </div>
 
         <div style="flex-grow: 100; display: flex;">
-            <button class="btn btn-sm" id="jump-to-note-dialog-button" title="CTRL+J">
+            <button class="btn btn-sm" id="jump-to-note-dialog-button" data-kb-action="JumpToNote">
                 <span class="bx bx-crosshair"></span>
                 Jump to note
             </button>
 
-            <button class="btn btn-sm" id="recent-changes-button">
+            <button class="btn btn-sm" id="recent-changes-button" data-kb-action="ShowRecentChanges">
                 <span class="bx bx-history"></span>
 
                 Recent changes
             </button>
 
-            <button class="btn btn-sm" id="enter-protected-session-button" title="Enter protected session to be able to find and view protected notes">
+            <button class="btn btn-sm"
+                    id="enter-protected-session-button"
+                    title="Enter protected session to be able to find and view protected notes">
                 <span class="bx bx-log-in"></span>
 
                 Enter protected session
             </button>
 
-            <button class="btn btn-sm" id="leave-protected-session-button" title="Leave protected session so that protected notes are not accessible any more." style="display: none;">
+            <button class="btn btn-sm"
+                    id="leave-protected-session-button"
+                    title="Leave protected session so that protected notes are not accessible any more."
+                    style="display: none;">
                 <span class="bx bx-log-out"></span>
 
                 Leave protected session
@@ -69,31 +72,43 @@
                     <a class="dropdown-item" id="open-dev-tools-button">
                         <span class="bx bx-terminal"></span>
                         Open Dev Tools
-                        <kbd>CTRL+SHIFT+I</kbd>
+                        <kbd data-kb-action="OpenDevTools"></kbd>
                     </a>
 
                     <a class="dropdown-item" id="open-sql-console-button">
                         <span class="bx bx-data"></span>
                         Open SQL Console
-                        <kbd>ALT+O</kbd>
+                        <kbd data-kb-action="ShowSQLConsole"></kbd>
+                    </a>
+
+                    <a class="dropdown-item" id="show-backend-log-button">
+                        <span class="bx bx-empty"></span>
+                        Show backend log
+                        <kbd data-kb-action="ShowBackendLog"></kbd>
                     </a>
 
                     <a class="dropdown-item" id="reload-frontend-button" title="Reload can help with some visual glitches without restarting the whole app.">
                         <span class="bx bx-empty"></span>
                         Reload frontend
-                        <kbd>CTRL-R</kbd>
+                        <kbd data-kb-action="ReloadFrontendApp"></kbd>
+                    </a>
+
+                    <a class="dropdown-item" id="toggle-zen-mode-button">
+                        <span class="bx bx-empty"></span>
+                        Toggle Zen mode
+                        <kbd data-kb-action="ToggleZenMode"></kbd>
                     </a>
 
                     <a class="dropdown-item" id="toggle-fullscreen-button">
                         <span class="bx bx-empty"></span>
                         Toggle fullscreen
-                        <kbd>F11</kbd>
+                        <kbd data-kb-action="ToggleFullscreen"></kbd>
                     </a>
 
                     <a class="dropdown-item" id="show-help-button">
                         <span class="bx bx-info-circle"></span>
                         Show Help
-                        <kbd>F1</kbd>
+                        <kbd data-kb-action="ShowHelp"></kbd>
                     </a>
 
                     <a class="dropdown-item" id="show-about-dialog-button">
@@ -110,15 +125,15 @@
         </div>
     </div>
 
-    <div id="left-pane" class="hide-toggle">
+    <div id="left-pane" class="hide-in-zen-mode">
         <div id="global-buttons">
             <a id="create-top-level-note-button" title="Create new top level note" class="icon-action bx bx-folder-plus"></a>
 
-            <a id="collapse-tree-button" title="Collapse note tree. Shortcut ALT+C" class="icon-action bx bx-layer-minus"></a>
+            <a id="collapse-tree-button" title="Collapse note tree" data-kb-action="CollapseTree" class="icon-action bx bx-layer-minus"></a>
 
-            <a id="scroll-to-active-note-button" title="Scroll to active note. Shortcut CTRL+." class="icon-action bx bx-crosshair"></a>
+            <a id="scroll-to-active-note-button" title="Scroll to active note" data-kb-action="ScrollToActiveNote" class="icon-action bx bx-crosshair"></a>
 
-            <a id="toggle-search-button" title="Search in notes. Shortcut CTRL+S" class="icon-action bx bx-search"></a>
+            <a id="toggle-search-button" title="Search in notes" data-kb-action="SearchNotes" class="icon-action bx bx-search"></a>
         </div>
 
         <div id="search-box">
@@ -178,6 +193,7 @@
     <% include dialogs/link_map.ejs %>
     <% include dialogs/clone_to.ejs %>
     <% include dialogs/move_to.ejs %>
+    <% include dialogs/backend_log.ejs %>
 </div>
 
 <script type="text/javascript">

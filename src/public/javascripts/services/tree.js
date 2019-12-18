@@ -9,13 +9,12 @@ import server from './server.js';
 import treeCache from './tree_cache.js';
 import toastService from "./toast.js";
 import treeBuilder from "./tree_builder.js";
-import treeKeyBindings from "./tree_keybindings.js";
-import Branch from '../entities/branch.js';
-import NoteShort from '../entities/note_short.js';
+import treeKeyBindingService from "./tree_keybindings.js";
 import hoistedNoteService from '../services/hoisted_note.js';
 import optionsService from "../services/options.js";
 import TreeContextMenu from "./tree_context_menu.js";
 import bundle from "./bundle.js";
+import keyboardActionService from "./keyboard_actions.js";
 
 const $tree = $("#tree");
 const $createTopLevelNoteButton = $("#create-top-level-note-button");
@@ -368,7 +367,7 @@ async function treeInitialized() {
         const notePath = location.hash.substr(1);
         const noteId = treeUtils.getNoteIdFromNotePath(notePath);
 
-        if (await treeCache.noteExists(noteId)) {
+        if (noteId && await treeCache.noteExists(noteId)) {
             for (const tab of openTabs) {
                 tab.active = false;
             }
@@ -430,7 +429,7 @@ async function treeInitialized() {
     setFrontendAsLoaded();
 }
 
-function initFancyTree(tree) {
+async function initFancyTree(tree) {
     utils.assertArguments(tree);
 
     $tree.fancytree({
@@ -473,7 +472,7 @@ function initFancyTree(tree) {
         collapse: (event, data) => setExpandedToServer(data.node.data.branchId, false),
         init: (event, data) => treeInitialized(), // don't collapse to short form
         hotkeys: {
-            keydown: treeKeyBindings
+            keydown: await treeKeyBindingService.getKeyboardBindings()
         },
         dnd5: dragAndDropSetup,
         lazyLoad: function(event, data) {
@@ -627,6 +626,8 @@ async function createNewTopLevelNote() {
 async function createNote(node, parentNoteId, target, extraOptions = {}) {
     utils.assertArguments(node, parentNoteId, target);
 
+    extraOptions.activate = extraOptions.activate === undefined ? true : !!extraOptions.activate;
+
     // if isProtected isn't available (user didn't enter password yet), then note is created as unencrypted
     // but this is quite weird since user doesn't see WHERE the note is being created so it shouldn't occur often
     if (!extraOptions.isProtected || !protectedSessionHolder.isProtectedSessionAvailable()) {
@@ -649,11 +650,9 @@ async function createNote(node, parentNoteId, target, extraOptions = {}) {
 
     const newNoteName = extraOptions.title || "new note";
 
-    const {note, branch} = await server.post('notes/' + parentNoteId + '/children', {
+    const {note, branch} = await server.post(`notes/${parentNoteId}/children?target=${target}&targetBranchId=${node.data.branchId}`, {
         title: newNoteName,
-        content: extraOptions.content,
-        target: target,
-        target_branchId: node.data.branchId,
+        content: extraOptions.content || "",
         isProtected: extraOptions.isProtected,
         type: extraOptions.type
     });
@@ -670,7 +669,7 @@ async function createNote(node, parentNoteId, target, extraOptions = {}) {
     const noteEntity = await treeCache.getNote(note.noteId);
     const branchEntity = treeCache.getBranch(branch.branchId);
 
-    let newNode = {
+    let newNodeData = {
         title: newNoteName,
         noteId: branchEntity.noteId,
         parentNoteId: parentNoteId,
@@ -685,8 +684,11 @@ async function createNote(node, parentNoteId, target, extraOptions = {}) {
         key: utils.randomString(12) // this should prevent some "duplicate key" errors
     };
 
+    /** @var {FancytreeNode} */
+    let newNode;
+
     if (target === 'after') {
-        await node.appendSibling(newNode).setActive(true);
+        newNode = node.appendSibling(newNodeData);
     }
     else if (target === 'into') {
         if (!node.getChildren() && node.isFolder()) {
@@ -696,10 +698,10 @@ async function createNote(node, parentNoteId, target, extraOptions = {}) {
             await node.setExpanded();
         }
         else {
-            node.addChildren(newNode);
+            node.addChildren(newNodeData);
         }
 
-        await node.getLastChild().setActive(true);
+        newNode = node.getLastChild();
 
         const parentNoteEntity = await treeCache.getNote(node.data.noteId);
 
@@ -711,14 +713,18 @@ async function createNote(node, parentNoteId, target, extraOptions = {}) {
         toastService.throwError("Unrecognized target: " + target);
     }
 
+    if (extraOptions.activate) {
+        await newNode.setActive(true);
+    }
+
     clearSelectedNodes(); // to unmark previously active node
 
     // need to refresh because original doesn't have methods like .getParent()
-    newNode = getNodesByNoteId(branchEntity.noteId)[0];
+    newNodeData = getNodesByNoteId(branchEntity.noteId)[0];
 
     // following for cycle will make sure that also clones of a parent are refreshed
     for (const newParentNode of getNodesByNoteId(parentNoteId)) {
-        if (newParentNode.key === newNode.getParent().key) {
+        if (newParentNode.key === newNodeData.getParent().key) {
             // we've added a note into this one so no need to refresh
             continue;
         }
@@ -756,7 +762,7 @@ async function sortAlphabetically(noteId) {
 async function showTree() {
     const tree = await loadTree();
 
-    initFancyTree(tree);
+    await initFancyTree(tree);
 }
 
 ws.subscribeToMessages(message => {
@@ -789,7 +795,7 @@ ws.subscribeToOutsideSyncMessages(async syncData => {
     syncData.filter(sync => sync.entityName === 'attributes').forEach(sync => {
         const note = treeCache.notes[sync.noteId];
 
-        if (note && note.attributeCache) {
+        if (note && note.__attributeCache) {
             noteIdsToRefresh.add(sync.entityId);
         }
     });
@@ -799,7 +805,7 @@ ws.subscribeToOutsideSyncMessages(async syncData => {
     }
 });
 
-utils.bindGlobalShortcut('ctrl+o', async () => {
+keyboardActionService.setGlobalActionHandler('CreateNoteAfter', async () => {
     const node = getActiveNode();
     const parentNoteId = node.data.parentNoteId;
     const isProtected = await treeUtils.getParentProtectedStatus(node);
@@ -863,7 +869,7 @@ async function reloadNotes(noteIds, activateNotePath = null) {
     if (activateNotePath) {
         const node = await getNodeFromPath(activateNotePath);
 
-        if (node) {
+        if (node && !node.isActive()) {
             await node.setActive(true);
         }
     }
@@ -871,9 +877,9 @@ async function reloadNotes(noteIds, activateNotePath = null) {
 
 window.glob.createNoteInto = createNoteInto;
 
-utils.bindGlobalShortcut('ctrl+p', createNoteInto);
+keyboardActionService.setGlobalActionHandler('CreateNoteInto', createNoteInto);
 
-utils.bindGlobalShortcut('ctrl+.', scrollToActiveNote);
+keyboardActionService.setGlobalActionHandler('ScrollToActiveNote', scrollToActiveNote);
 
 $(window).bind('hashchange', async function() {
     if (isNotePathInAddress()) {
@@ -890,7 +896,7 @@ $tree.on('mousedown', '.fancytree-title', e => {
 
         treeUtils.getNotePath(node).then(notePath => {
             if (notePath) {
-                noteDetailService.openInTab(notePath);
+                noteDetailService.openInTab(notePath, false);
             }
         });
 
@@ -911,7 +917,7 @@ async function duplicateNote(noteId, parentNoteId) {
 }
 
 
-utils.bindGlobalShortcut('alt+c', () => collapseTree()); // don't use shortened form since collapseTree() accepts argument
+keyboardActionService.setGlobalActionHandler('CollapseTree', () => collapseTree()); // don't use shortened form since collapseTree() accepts argument
 $collapseTreeButton.on('click', () => collapseTree());
 
 $createTopLevelNoteButton.on('click', createNewTopLevelNote);

@@ -27,36 +27,13 @@ async function getNote(req) {
     return note;
 }
 
-async function getChildren(req) {
-    const parentNoteId = req.params.parentNoteId;
-    const parentNote = await repository.getNote(parentNoteId);
-
-    if (!parentNote) {
-        return [404, `Note ${parentNoteId} has not been found.`];
-    }
-
-    const ret = [];
-
-    for (const childNote of await parentNote.getChildNotes()) {
-        ret.push({
-            noteId: childNote.noteId,
-            title: childNote.title,
-            relations: (await childNote.getRelations()).map(relation => { return {
-                attributeId: relation.attributeId,
-                name: relation.name,
-                targetNoteId: relation.value
-            }; })
-        });
-    }
-
-    return ret;
-}
-
 async function createNote(req) {
-    const parentNoteId = req.params.parentNoteId;
-    const newNote = req.body;
+    const params = Object.assign({}, req.body); // clone
+    params.parentNoteId = req.params.parentNoteId;
 
-    const { note, branch } = await noteService.createNewNote(parentNoteId, newNote, req);
+    const { target, targetBranchId } = req.query;
+
+    const { note, branch } = await noteService.createNewNoteWithTarget(target, targetBranchId, params);
 
     await treeService.setCssClassesToNotes([note]);
 
@@ -128,7 +105,9 @@ async function getRelationMap(req) {
         noteTitles: {},
         relations: [],
         // relation name => inverse relation name
-        inverseRelations: {}
+        inverseRelations: {
+            'internalLink': 'internalLink'
+        }
     };
 
     if (noteIds.length === 0) {
@@ -194,7 +173,6 @@ module.exports = {
     sortNotes,
     protectSubtree,
     setNoteTypeMime,
-    getChildren,
     getRelationMap,
     changeTitle,
     duplicateNote

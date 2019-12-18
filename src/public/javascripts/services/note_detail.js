@@ -8,6 +8,7 @@ import utils from "./utils.js";
 import contextMenuService from "./context_menu.js";
 import treeUtils from "./tree_utils.js";
 import tabRow from "./tab_row.js";
+import keyboardActionService from "./keyboard_actions.js";
 
 const $tabContentsContainer = $("#note-tab-container");
 const $savedIndicator = $(".saved-indicator");
@@ -34,8 +35,8 @@ async function reloadAllTabs() {
     }
 }
 
-async function openInTab(notePath) {
-    await loadNoteDetail(notePath, { newTab: true });
+async function openInTab(notePath, activate) {
+    await loadNoteDetail(notePath, { newTab: true, activate });
 }
 
 async function switchToNote(notePath) {
@@ -421,33 +422,31 @@ $(tabRow.el).on('contextmenu', '.note-tab', e => {
     });
 });
 
-if (utils.isElectron()) {
-    utils.bindGlobalShortcut('ctrl+t', () => {
-        openEmptyTab();
-    });
+keyboardActionService.setGlobalActionHandler('OpenNewTab', () => {
+    openEmptyTab();
+});
 
-    utils.bindGlobalShortcut('ctrl+w', () => {
-        if (tabRow.activeTabEl) {
-            tabRow.removeTab(tabRow.activeTabEl);
-        }
-    });
+keyboardActionService.setGlobalActionHandler('CloseActiveTab', () => {
+    if (tabRow.activeTabEl) {
+        tabRow.removeTab(tabRow.activeTabEl);
+    }
+});
 
-    utils.bindGlobalShortcut('ctrl+tab', () => {
-        const nextTab = tabRow.nextTabEl;
+keyboardActionService.setGlobalActionHandler('ActivateNextTab', () => {
+    const nextTab = tabRow.nextTabEl;
 
-        if (nextTab) {
-            tabRow.activateTab(nextTab);
-        }
-    });
+    if (nextTab) {
+        tabRow.activateTab(nextTab);
+    }
+});
 
-    utils.bindGlobalShortcut('ctrl+shift+tab', () => {
-        const prevTab = tabRow.previousTabEl;
+keyboardActionService.setGlobalActionHandler('ActivatePreviousTab', () => {
+    const prevTab = tabRow.previousTabEl;
 
-        if (prevTab) {
-            tabRow.activateTab(prevTab);
-        }
-    });
-}
+    if (prevTab) {
+        tabRow.activateTab(prevTab);
+    }
+});
 
 tabRow.addListener('activeTabChange', openTabsChanged);
 tabRow.addListener('tabRemove', openTabsChanged);

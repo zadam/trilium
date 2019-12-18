@@ -9,6 +9,8 @@ CREATE TABLE IF NOT EXISTS "source_ids" (
                                           `utcDateCreated`	TEXT NOT NULL,
                                           PRIMARY KEY(`sourceId`)
 );
+CREATE INDEX IDX_source_ids_utcDateCreated
+    on source_ids (utcDateCreated);
 CREATE TABLE IF NOT EXISTS "api_tokens"
 (
   apiTokenId TEXT PRIMARY KEY NOT NULL,
@@ -47,8 +49,6 @@ CREATE INDEX `IDX_sync_utcSyncDate` ON `sync` (
   );
 CREATE INDEX IDX_attributes_name_value
   on attributes (name, value);
-CREATE INDEX IDX_attributes_name_index
-  on attributes (name);
 CREATE INDEX IDX_attributes_noteId_index
   on attributes (noteId);
 CREATE INDEX IDX_attributes_value_index
@@ -80,7 +80,6 @@ CREATE TABLE IF NOT EXISTS "branches" (
                                           utcDateCreated TEXT NOT NULL,
                                           hash TEXT DEFAULT "" NOT NULL,
                                           PRIMARY KEY(`branchId`));
-CREATE INDEX `IDX_branches_noteId` ON `branches` (`noteId`);
 CREATE INDEX `IDX_branches_noteId_parentNoteId` ON `branches` (`noteId`,`parentNoteId`);
 CREATE INDEX IDX_branches_parentNoteId ON branches (parentNoteId);
 CREATE TABLE IF NOT EXISTS "note_revision_contents" (`noteRevisionId`	TEXT NOT NULL PRIMARY KEY,

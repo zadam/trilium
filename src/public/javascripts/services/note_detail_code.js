@@ -3,7 +3,7 @@ import bundleService from "./bundle.js";
 import toastService from "./toast.js";
 import server from "./server.js";
 import noteDetailService from "./note_detail.js";
-import utils from "./utils.js";
+import keyboardActionService from "./keyboard_actions.js";
 
 class NoteDetailCode {
 
@@ -17,7 +17,7 @@ class NoteDetailCode {
         this.$editorEl = this.$component.find('.note-detail-code-editor');
         this.$executeScriptButton = ctx.$tabContent.find(".execute-script-button");
 
-        utils.bindElShortcut(ctx.$tabContent, "ctrl+return", () => this.executeCurrentNote());
+        keyboardActionService.setElementActionHandler(ctx.$tabContent, 'RunActiveNote', () => this.executeCurrentNote());
 
         this.$executeScriptButton.on('click', () => this.executeCurrentNote());
     }
@@ -55,18 +55,21 @@ class NoteDetailCode {
             this.onNoteChange(() => this.ctx.noteChanged());
         }
 
-        // CodeMirror breaks pretty badly on null so even though it shouldn't happen (guarded by consistency check)
-        // we provide fallback
-        this.codeEditor.setValue(this.ctx.note.content || "");
+        // lazy loading above can take time and tab might have been already switched to another note
+        if (this.ctx.note && this.ctx.note.type === 'code') {
+            // CodeMirror breaks pretty badly on null so even though it shouldn't happen (guarded by consistency check)
+            // we provide fallback
+            this.codeEditor.setValue(this.ctx.note.content || "");
 
-        const info = CodeMirror.findModeByMIME(this.ctx.note.mime);
+            const info = CodeMirror.findModeByMIME(this.ctx.note.mime);
 
-        if (info) {
-            this.codeEditor.setOption("mode", info.mime);
-            CodeMirror.autoLoadMode(this.codeEditor, info.mode);
+            if (info) {
+                this.codeEditor.setOption("mode", info.mime);
+                CodeMirror.autoLoadMode(this.codeEditor, info.mode);
+            }
+
+            this.show();
         }
-
-        this.show();
     }
 
     show() {

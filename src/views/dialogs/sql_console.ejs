@@ -1,5 +1,5 @@
 <div id="sql-console-dialog" class="modal fade mx-auto" tabindex="-1" role="dialog">
-    <div class="modal-dialog modal-lg" style="max-width: 1000px;" role="document">
+    <div class="modal-dialog modal-dialog-scrollable modal-xl" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">SQL console</h5>
@@ -10,7 +10,7 @@
             <div class="modal-body">
                 <div>
                     Tables:
-                    <span id="sql-console-tables"></span>
+                    <span id="sql-console-table-schemas"></span>
                 </div>
 
                 <div id="sql-console-query"></div>
@@ -19,11 +19,7 @@
                     <button class="btn btn-danger" id="sql-console-execute">Execute <kbd>CTRL+ENTER</kbd></button>
                 </div>
 
-                <div style="width: 100%; overflow: auto;"> <!-- This is necessary for the table to be scrollable -->
-                    <table id="sql-console-results" class="table table-striped">
-                        <thead></thead>
-                        <tbody></tbody>
-                    </table>
+                <div id="result-container" style="width: 100%; font-size: smaller; margin-top: 10px;">
                 </div>
             </div>
         </div>

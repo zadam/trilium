@@ -206,6 +206,66 @@ function BackendScriptApi(currentNote, apiParams) {
      */
 
     /**
+     * Create text note. See also createNewNote() for more options.
+     *
+     * @param {string} parentNoteId
+     * @param {string} title
+     * @param {string} content
+     * @return {Promise&lt;{note: Note, branch: Branch}>}
+     */
+    this.createTextNote = async (parentNoteId, title, content = '') => await noteService.createNewNote({
+        parentNoteId,
+        title,
+        content,
+        type: 'text'
+    });
+
+    /**
+     * Create data note - data in this context means object serializable to JSON. Created note will be of type 'code' and
+     * JSON MIME type. See also createNewNote() for more options.
+     *
+     * @param {string} parentNoteId
+     * @param {string} title
+     * @param {object} content
+     * @return {Promise&lt;{note: Note, branch: Branch}>}
+     */
+    this.createDataNote = async (parentNoteId, title, content = {}) => await noteService.createNewNote({
+        parentNoteId,
+        title,
+        content: JSON.stringify(content),
+        type: 'code',
+        mime: 'application/json'
+    });
+
+    /**
+     * @typedef {object} CreateNewNoteParams
+     * @property {string} parentNoteId - MANDATORY
+     * @property {string} title - MANDATORY
+     * @property {string|buffer} content - MANDATORY
+     * @property {string} type - text, code, file, image, search, book, relation-map - MANDATORY
+     * @property {string} mime - value is derived from default mimes for type
+     * @property {boolean} isProtected - default is false
+     * @property {boolean} isExpanded - default is false
+     * @property {string} prefix - default is empty string
+     * @property {int} notePosition - default is last existing notePosition in a parent + 10
+     */
+
+    /**
+     * @method
+     *
+     * @param {CreateNewNoteParams} [params]
+     * @returns {Promise&lt;{note: Note, branch: Branch}>} object contains newly created entities note and branch
+     */
+    this.createNewNote = noteService.createNewNote;
+
+    /**
+     * @typedef {object} CreateNoteAttribute
+     * @property {string} type - attribute type - label, relation etc.
+     * @property {string} name - attribute name
+     * @property {string} [value] - attribute value
+     */
+
+    /**
      * @typedef {object} CreateNoteExtraOptions
      * @property {boolean} [json=false] - should the note be JSON
      * @property {boolean} [isProtected=false] - should the note be protected
@@ -223,25 +283,38 @@ function BackendScriptApi(currentNote, apiParams) {
      * @param {CreateNoteExtraOptions} [extraOptions={}]
      * @returns {Promise&lt;{note: Note, branch: Branch}>} object contains newly created entities note and branch
      */
-    this.createNote = noteService.createNote;
+    this.createNote = async (parentNoteId, title, content = "", extraOptions= {}) => {
+        extraOptions.parentNoteId = parentNoteId;
+        extraOptions.title = title;
 
-    /**
-     * Creates new note according to given params and force all connected clients to refresh their tree.
-     *
-     * @method
-     *
-     * @param {string} parentNoteId - create new note under this parent
-     * @param {string} title
-     * @param {string} [content=""]
-     * @param {CreateNoteExtraOptions} [extraOptions={}]
-     * @returns {Promise&lt;{note: Note, branch: Branch}>} object contains newly created entities note and branch
-     */
-    this.createNoteAndRefresh = async function(parentNoteId, title, content, extraOptions) {
-        const ret = await noteService.createNote(parentNoteId, title, content, extraOptions);
+        const parentNote = await repository.getNote(parentNoteId);
 
-        ws.refreshTree();
-        
-        return ret;
+        // code note type can be inherited, otherwise text is default
+        extraOptions.type = parentNote.type === 'code' ? 'code' : 'text';
+        extraOptions.mime = parentNote.type === 'code' ? parentNote.mime : 'text/html';
+
+        if (extraOptions.json) {
+            extraOptions.content = JSON.stringify(content || {}, null, '\t');
+            extraOptions.type = 'code';
+            extraOptions.mime = 'application/json';
+        }
+        else {
+            extraOptions.content = content;
+        }
+
+        const {note, branch} = await noteService.createNewNote(extraOptions);
+
+        for (const attr of extraOptions.attributes || []) {
+            await attributeService.createAttribute({
+                noteId: note.noteId,
+                type: attr.type,
+                name: attr.name,
+                value: attr.value,
+                isInheritable: !!attr.isInheritable
+            });
+        }
+
+        return {note, branch};
     };
 
     /**
@@ -267,6 +340,14 @@ function BackendScriptApi(currentNote, apiParams) {
      * @returns {Promise&lt;Note|null>}
      */
     this.getDateNote = dateNoteService.getDateNote;
+
+    /**
+     * Returns today's day note. If such note doesn't exist, it is created.
+     *
+     * @method
+     * @returns {Promise&lt;Note|null>}
+     */
+    this.getTodayNote = dateNoteService.getTodayNote;
 
     /**
      * Returns note for the first date of the week of the given date.

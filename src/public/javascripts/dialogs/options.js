@@ -22,6 +22,7 @@ export async function showDialog() {
         import('./options/other.js'),
         import('./options/sidebar.js'),
         import('./options/sync.js'),
+        import('./options/keyboard_shortcuts.js'),
     ]))
         .map(m => new m.default)
         .forEach(tab => {

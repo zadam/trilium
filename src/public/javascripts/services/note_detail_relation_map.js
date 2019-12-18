@@ -159,7 +159,7 @@ class NoteDetailRelationMap {
         const noteId = this.idToNoteId($noteBox.prop("id"));
 
         if (cmd === "open-in-new-tab") {
-            noteDetailService.openInTab(noteId);
+            noteDetailService.openInTab(noteId, false);
         }
         else if (cmd === "remove") {
             const confirmDialog = await import('../dialogs/confirm.js');
@@ -238,14 +238,17 @@ class NoteDetailRelationMap {
 
         await libraryLoader.requireLibrary(libraryLoader.RELATION_MAP);
 
-        this.loadMapData();
-
         jsPlumb.ready(() => {
-            this.initJsPlumbInstance();
+            // lazy loading above can take time and tab might have been already switched to another note
+            if (this.ctx.note && this.ctx.note.type === 'relation-map') {
+                this.loadMapData();
 
-            this.initPanZoom();
+                this.initJsPlumbInstance();
 
-            this.loadNotesAndRelations();
+                this.initPanZoom();
+
+                this.loadNotesAndRelations();
+            }
         });
 
     }

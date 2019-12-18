@@ -154,20 +154,27 @@ class NoteShort {
     }
 
     /**
-     * @param {string} [name] - attribute name to filter
-     * @returns {Promise<Attribute[]>}
+     * @param {string} [type] - (optional) attribute type to filter
+     * @param {string} [name] - (optional) attribute name to filter
+     * @returns {Promise<Attribute[]>} all note's attributes, including inherited ones
      */
-    async getAttributes(name) {
-        if (!this.attributeCache) {
-            this.attributeCache = (await server.get('notes/' + this.noteId + '/attributes'))
+    async getAttributes(type, name) {
+        if (!this.__attributeCache) {
+            this.__attributeCache = (await server.get('notes/' + this.noteId + '/attributes'))
                 .map(attrRow => new Attribute(this.treeCache, attrRow));
         }
 
-        if (name) {
-            return this.attributeCache.filter(attr => attr.name === name);
+        if (type && name) {
+            return this.__attributeCache.filter(attr => attr.type === type && attr.name === name);
+        }
+        else if (type) {
+            return this.__attributeCache.filter(attr => attr.type === type);
+        }
+        else if (name) {
+            return this.__attributeCache.filter(attr => attr.name === name);
         }
         else {
-            return this.attributeCache;
+            return this.__attributeCache.slice();
         }
     }
 
@@ -176,7 +183,7 @@ class NoteShort {
      * @returns {Promise<Attribute[]>} all note's labels (attributes with type label), including inherited ones
      */
     async getLabels(name) {
-        return (await this.getAttributes(name)).filter(attr => attr.type === LABEL);
+        return await this.getAttributes(LABEL, name);
     }
 
     /**
@@ -184,7 +191,7 @@ class NoteShort {
      * @returns {Promise<Attribute[]>} all note's label definitions, including inherited ones
      */
     async getLabelDefinitions(name) {
-        return (await this.getAttributes(name)).filter(attr => attr.type === LABEL_DEFINITION);
+        return await this.getAttributes(LABEL_DEFINITION, name);
     }
 
     /**
@@ -192,7 +199,7 @@ class NoteShort {
      * @returns {Promise<Attribute[]>} all note's relations (attributes with type relation), including inherited ones
      */
     async getRelations(name) {
-        return (await this.getAttributes(name)).filter(attr => attr.type === RELATION);
+        return await this.getAttributes(RELATION, name);
     }
 
     /**
@@ -200,7 +207,7 @@ class NoteShort {
      * @returns {Promise<Attribute[]>} all note's relation definitions including inherited ones
      */
     async getRelationDefinitions(name) {
-        return (await this.getAttributes(name)).filter(attr => attr.type === RELATION_DEFINITION);
+        return await this.getAttributes(RELATION_DEFINITION, name);
     }
 
     /**
@@ -299,8 +306,8 @@ class NoteShort {
      * Clear note's attributes cache to force fresh reload for next attribute request.
      * Cache is note instance scoped.
      */
-    invalidateAttributeCache() {
-        this.attributeCache = null;
+    invalidate__attributeCache() {
+        this.__attributeCache = null;
     }
 
     /**
@@ -321,7 +328,7 @@ class NoteShort {
         const dto = Object.assign({}, this);
         delete dto.treeCache;
         delete dto.archived;
-        delete dto.attributeCache;
+        delete dto.__attributeCache;
 
         return dto;
     }

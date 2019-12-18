@@ -3,19 +3,23 @@ import toastService from "../../services/toast.js";
 
 const TPL = `
 <h4 style="margin-top: 0;">Sync</h4>
-<button id="force-full-sync-button" class="btn btn-secondary">Force full sync</button>
+<button id="force-full-sync-button" class="btn">Force full sync</button>
 
 <br/>
 <br/>
 
-<button id="fill-sync-rows-button" class="btn btn-secondary">Fill sync rows</button>
+<button id="fill-sync-rows-button" class="btn">Fill sync rows</button>
 
 <br/>
 <br/>
+
+<h4>Consistency checks</h4>
+
+<button id="find-and-fix-consistency-issues-button" class="btn">Find and fix consistency issues</button><br/><br/>
 
 <h4>Debugging</h4>
 
-<button id="anonymize-button" class="btn btn-secondary">Save anonymized database</button><br/><br/>
+<button id="anonymize-button" class="btn">Save anonymized database</button><br/><br/>
 
 <p>This action will create a new copy of the database and anonymise it (remove all note content and leave only structure and metadata)
     for sharing online for debugging purposes without fear of leaking your personal data.</p>
@@ -24,7 +28,7 @@ const TPL = `
 
 <p>This will rebuild database which will typically result in smaller database file. No data will be actually changed.</p>
 
-<button id="vacuum-database-button" class="btn btn-secondary">Vacuum database</button>`;
+<button id="vacuum-database-button" class="btn">Vacuum database</button>`;
 
 export default class AdvancedOptions {
     constructor() {
@@ -33,9 +37,8 @@ export default class AdvancedOptions {
         this.$forceFullSyncButton = $("#force-full-sync-button");
         this.$fillSyncRowsButton = $("#fill-sync-rows-button");
         this.$anonymizeButton = $("#anonymize-button");
-        this.$cleanupSoftDeletedButton = $("#cleanup-soft-deleted-items-button");
-        this.$cleanupUnusedImagesButton = $("#cleanup-unused-images-button");
         this.$vacuumDatabaseButton = $("#vacuum-database-button");
+        this.$findAndFixConsistencyIssuesButton = $("#find-and-fix-consistency-issues-button");
 
         this.$forceFullSyncButton.on('click', async () => {
             await server.post('sync/force-full-sync');
@@ -55,26 +58,16 @@ export default class AdvancedOptions {
             toastService.showMessage("Created anonymized database");
         });
 
-        this.$cleanupSoftDeletedButton.on('click', async () => {
-            if (confirm("Do you really want to clean up soft-deleted items?")) {
-                await server.post('cleanup/cleanup-soft-deleted-items');
-
-                toastService.showMessage("Soft deleted items have been cleaned up");
-            }
-        });
-
-        this.$cleanupUnusedImagesButton.on('click', async () => {
-            if (confirm("Do you really want to clean up unused images?")) {
-                await server.post('cleanup/cleanup-unused-images');
-
-                toastService.showMessage("Unused images have been cleaned up");
-            }
-        });
-
         this.$vacuumDatabaseButton.on('click', async () => {
             await server.post('cleanup/vacuum-database');
 
             toastService.showMessage("Database has been vacuumed");
+        });
+
+        this.$findAndFixConsistencyIssuesButton.on('click', async () => {
+            await server.post('cleanup/find-and-fix-consistency-issues');
+
+            toastService.showMessage("Consistency issues should be fixed.");
         });
     }
 }

@@ -8,6 +8,7 @@ const cls = require('./src/services/cls');
 const url = require("url");
 const port = require('./src/services/port');
 const env = require('./src/services/env');
+const keyboardActionsService = require('./src/services/keyboard_actions');
 const appIconService = require('./src/services/app_icon');
 const windowStateKeeper = require('electron-window-state');
 
@@ -95,21 +96,44 @@ app.on('activate', () => {
     }
 });
 
+async function registerGlobalShortcuts() {
+    await sqlInit.dbReady;
+
+    const allActions = await keyboardActionsService.getKeyboardActions();
+
+    for (const action of allActions) {
+        if (!action.effectiveShortcuts) {
+            continue;
+        }
+
+        for (const shortcut of action.effectiveShortcuts) {
+            if (shortcut.startsWith('global:')) {
+                const translatedShortcut = shortcut.substr(7);
+
+                const result = globalShortcut.register(translatedShortcut, cls.wrap(async () => {
+                    // window may be hidden / not in focus
+                    mainWindow.focus();
+
+                    mainWindow.webContents.send('globalShortcut', action.actionName);
+                }));
+
+                if (result) {
+                    log.info(`Registered global shortcut ${translatedShortcut} for action ${action.actionName}`);
+                }
+                else {
+                    log.info(`Could not register global shortcut ${translatedShortcut}`);
+                }
+            }
+        }
+    }
+}
+
 app.on('ready', async () => {
     app.setAppUserModelId('com.github.zadam.trilium');
 
     mainWindow = await createMainWindow();
 
-    const result = globalShortcut.register('CommandOrControl+Alt+P', cls.wrap(async () => {
-        // window may be hidden / not in focus
-        mainWindow.focus();
-
-        mainWindow.webContents.send('create-day-sub-note');
-    }));
-
-    if (!result) {
-        log.error("Could not register global shortcut CTRL+ALT+P");
-    }
+    registerGlobalShortcuts();
 });
 
 app.on('will-quit', () => {

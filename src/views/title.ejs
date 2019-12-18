@@ -1,6 +1,6 @@
 <div class="note-title-row">
     <div style="display: flex; align-items: center;">
-        <div class="dropdown hide-toggle">
+        <div class="dropdown hide-in-zen-mode">
             <button class="btn btn-sm dropdown-toggle note-path-list-button" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 <span class="note-path-count">1 path</span>
 
@@ -12,9 +12,9 @@
 
         <input autocomplete="off" value="" class="note-title" tabindex="1">
 
-        <span class="saved-indicator bx bx-check" title="All changes have been saved"></span>
+        <span class="saved-indicator hide-in-zen-mode bx bx-check" title="All changes have been saved"></span>
 
-        <div class="hide-toggle" style="display: flex; align-items: center;">
+        <div class="hide-in-zen-mode" style="display: flex; align-items: center;">
             <button class="btn btn-sm icon-button bx bx-play-circle render-button"
                     style="display: none; margin-right: 10px;"
                     title="Render"></button>
@@ -53,13 +53,16 @@
                     </button>
                     <div class="dropdown-menu dropdown-menu-right">
                         <a class="dropdown-item show-note-revisions-button" data-bind="css: { disabled: type() == 'file' || type() == 'image' }">Revisions</a>
-                        <a class="dropdown-item show-attributes-button"><kbd>Alt+A</kbd> Attributes</a>
-                        <a class="dropdown-item show-link-map-button">Link map</a>
-                        <a class="dropdown-item show-source-button" data-bind="css: { disabled: type() != 'text' && type() != 'code' && type() != 'relation-map' && type() != 'search' }">Note source</a>
+                        <a class="dropdown-item show-attributes-button"><kbd data-kb-action="ShowAttributes"></kbd> Attributes</a>
+                        <a class="dropdown-item show-link-map-button"><kbd data-kb-action="ShowLinkMap"></kbd> Link map</a>
+                        <a class="dropdown-item show-source-button" data-bind="css: { disabled: type() != 'text' && type() != 'code' && type() != 'relation-map' && type() != 'search' }">
+                            <kbd data-kb-action="ShowNoteSource"></kbd>
+                            Note source
+                        </a>
                         <a class="dropdown-item import-files-button">Import files</a>
                         <a class="dropdown-item export-note-button" data-bind="css: { disabled: type() != 'text' }">Export note</a>
-                        <a class="dropdown-item print-note-button">Print note</a>
-                        <a class="dropdown-item show-note-info-button">Note info</a>
+                        <a class="dropdown-item print-note-button"><kbd data-kb-action="PrintActiveNote"></kbd> Print note</a>
+                        <a class="dropdown-item show-note-info-button"><kbd data-kb-action="ShowNoteInfo"></kbd> Note info</a>
                     </div>
                 </div>
 

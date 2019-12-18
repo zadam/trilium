@@ -65,6 +65,11 @@ async function getIcon(note) {
 
 async function prepareNode(branch) {
     const note = await branch.getNote();
+
+    if (!note) {
+        throw new Error(`Branch has no note ` + branch.noteId);
+    }
+
     const title = (branch.prefix ? (branch.prefix + " - ") : "") + note.title;
     const hoistedNoteId = await hoistedNoteService.getHoistedNoteId();
 

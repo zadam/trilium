@@ -66,7 +66,7 @@ async function rollback() {
 }
 
 async function getRow(query, params = []) {
-    return await wrap(async db => db.get(query, ...params));
+    return await wrap(async db => db.get(query, ...params), query);
 }
 
 async function getRowOrNull(query, params = []) {
@@ -106,7 +106,7 @@ async function getManyRows(query, params) {
 }
 
 async function getRows(query, params = []) {
-    return await wrap(async db => db.all(query, ...params));
+    return await wrap(async db => db.all(query, ...params), query);
 }
 
 async function getMap(query, params = []) {
@@ -140,16 +140,7 @@ async function getColumn(query, params = []) {
 }
 
 async function execute(query, params = []) {
-    const startTimestamp = Date.now();
-
-    const result = await wrap(async db => db.run(query, ...params));
-
-    const milliseconds = Date.now() - startTimestamp;
-    if (milliseconds >= 200) {
-        log.info(`Slow query took ${milliseconds}ms: ${query}`);
-    }
-
-    return result;
+    return await wrap(async db => db.run(query, ...params), query);
 }
 
 async function executeMany(query, params) {
@@ -158,14 +149,28 @@ async function executeMany(query, params) {
 }
 
 async function executeScript(query) {
-    return await wrap(async db => db.exec(query));
+    return await wrap(async db => db.exec(query), query);
 }
 
-async function wrap(func) {
+async function wrap(func, query) {
     const thisError = new Error();
 
     try {
-        return await func(dbConnection);
+        const startTimestamp = Date.now();
+
+        const result = await func(dbConnection);
+
+        const milliseconds = Date.now() - startTimestamp;
+        if (milliseconds >= 300) {
+            if (query.includes("WITH RECURSIVE")) {
+                log.info(`Slow recursive query took ${milliseconds}ms.`);
+            }
+            else {
+                log.info(`Slow query took ${milliseconds}ms: ${query}`);
+            }
+        }
+
+        return result;
     }
     catch (e) {
         log.error("Error executing query. Inner exception: " + e.stack + thisError.stack);

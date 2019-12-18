@@ -11,7 +11,8 @@ const VIRTUAL_ATTRIBUTES = [
     "content",
     "type",
     "mime",
-    "text"
+    "text",
+    "parentCount"
 ];
 
 module.exports = function(filters, selectedColumns = 'notes.*') {
@@ -42,6 +43,12 @@ module.exports = function(filters, selectedColumns = 'notes.*') {
             }
 
             accessor = `${alias}.${property}`;
+        }
+        else if (property === 'parentCount') {
+            // need to cast as string for the equality operator to work
+            // for >= etc. it is cast again to DECIMAL
+            // also cannot use COUNT() in WHERE so using subquery ...
+            accessor = `CAST((SELECT COUNT(1) FROM branches WHERE branches.noteId = notes.noteId AND isDeleted = 0) AS STRING)`;
         }
         else {
             accessor = "notes." + property;
@@ -104,6 +111,11 @@ module.exports = function(filters, selectedColumns = 'notes.*') {
 
             if (filter.operator.includes('!')) {
                 condition = "NOT(" + condition + ")";
+            }
+
+            if (['text', 'title', 'content'].includes(filter.name)) {
+                // for title/content search does not make sense to search for protected notes
+                condition = `(${condition} AND notes.isProtected = 0)`;
             }
 
             where += condition;

@@ -382,6 +382,17 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
      * @param {function} handler
      */
     this.bindGlobalShortcut = utils.bindGlobalShortcut;
+
+    /**
+     * Trilium runs in backend and frontend process, when something is changed on the backend from script,
+     * frontend will get asynchronously synchronized.
+     *
+     * This method returns a promise which resolves once all the backend -> frontend synchronization is finished.
+     * Typical use case is when new note has been created, we should wait until it is synced into frontend and only then activate it.
+     *
+     * @method
+     */
+    this.waitUntilSynced = ws.waitForMaxKnownSyncId;
 }
 
 export default FrontendScriptApi;

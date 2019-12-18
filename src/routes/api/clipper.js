@@ -15,7 +15,7 @@ async function findClippingNote(todayNote, pageUrl) {
     const notes = await todayNote.getDescendantNotesWithLabel('pageUrl', pageUrl);
 
     for (const note of notes) {
-        if (await note.getLabelValue('clipType') === 'clippings') {
+        if (await note.getOwnedLabelValue('clipType') === 'clippings') {
             return note;
         }
     }
@@ -31,7 +31,12 @@ async function addClipping(req) {
     let clippingNote = await findClippingNote(todayNote, pageUrl);
 
     if (!clippingNote) {
-        clippingNote = (await noteService.createNote(todayNote.noteId, title, '')).note;
+        clippingNote = (await noteService.createNewNote({
+            parentNoteId: todayNote.noteId,
+            title: title,
+            content: '',
+            type: 'text'
+        })).note;
 
         await clippingNote.setLabel('clipType', 'clippings');
         await clippingNote.setLabel('pageUrl', pageUrl);
@@ -51,7 +56,12 @@ async function createNote(req) {
 
     const todayNote = await dateNoteService.getDateNote(dateUtils.localNowDate());
 
-    const {note} = await noteService.createNote(todayNote.noteId, title, content);
+    const {note} = await noteService.createNewNote({
+        parentNoteId: todayNote.noteId,
+        title,
+        content,
+        type: 'text'
+    });
 
     await note.setLabel('clipType', clipType);
 
@@ -88,7 +98,7 @@ async function addImagesToNote(images, note, content) {
                 noteId: note.noteId,
                 type: 'relation',
                 value: imageNote.noteId,
-                name: 'image-link'
+                name: 'imageLink'
             }).save();
 
             console.log(`Replacing ${imageId} with ${url}`);

@@ -10,26 +10,30 @@
     --main-text-color: black;
     --main-border-color: #ccc;
     --accented-background-color: #f5f5f5;
-    --more-accented-background-color: #ccc;
-    --header-background-color: #f8f8f8;
-    --button-background-color: #eee;
-    --button-disabled-background-color: #ccc;
+    --more-accented-background-color: #ddd;
+    --header-background-color: #fff;
+    --button-background-color: #fff;
+    --button-disabled-background-color: #ddd;
     --button-border-color: #ddd;
     --button-text-color: black;
     --button-border-radius: 5px;
-    --muted-text-color: #444;
+    --primary-button-background-color: #6c757d;
+    --primary-button-text-color: white;
+    --primary-button-border-color: #6c757d;
+    --muted-text-color: #666;
     --input-text-color: black;
     --input-background-color: white;
     --hover-item-text-color: black;
     --hover-item-background-color: #eee;
     --active-item-text-color: black;
-    --active-item-background-color: #ccc;
+    --active-item-background-color: #ddd;
     --menu-text-color: black;
     --menu-background-color: white;
     --tooltip-background-color: #f8f8f8;
     --link-color: blue;
     --modal-background-color: white;
     --modal-backdrop-color: black;
+    --scrollbar-border-color: #ddd;
 }
 
 body.theme-black {
@@ -43,6 +47,9 @@ body.theme-black {
     --button-border-color: #444;
     --button-text-color: white;
     --button-border-radius: 5px;
+    --primary-button-background-color: #888;
+    --primary-button-text-color: white;
+    --primary-button-border-color: #999;
     --muted-text-color: #ccc;
     --input-text-color: white;
     --input-background-color: black;
@@ -56,6 +63,7 @@ body.theme-black {
     --link-color: lightskyblue;
     --modal-background-color: black;
     --modal-backdrop-color: #444;
+    --scrollbar-border-color: #888;
 }
 
 body.theme-black .CodeMirror {
@@ -65,7 +73,7 @@ body.theme-black .CodeMirror {
 body.theme-dark {
     --main-background-color: #333;
     --main-text-color: white;
-    --main-border-color: #ddd;
+    --main-border-color: #aaa;
     --accented-background-color: #555;
     --more-accented-background-color: #777;
     --header-background-color: #333;
@@ -73,6 +81,9 @@ body.theme-dark {
     --button-border-color: #444;
     --button-text-color: white;
     --button-border-radius: 5px;
+    --primary-button-background-color: #888;
+    --primary-button-text-color: white;
+    --primary-button-border-color: #999;
     --muted-text-color: #ccc;
     --input-text-color: white;
     --input-background-color: #333;
@@ -86,6 +97,7 @@ body.theme-dark {
     --link-color: lightskyblue;
     --modal-background-color: #333;
     --modal-backdrop-color: #444;
+    --scrollbar-border-color: #888;
 }
 
 body.theme-dark .CodeMirror {
@@ -184,7 +196,7 @@ body {
 
     --ck-color-todo-list-checkmark-border: var(--main-border-color);
 
-    --ck-color-engine-placeholder-text: var(--main-text-color);
+    --ck-color-engine-placeholder-text: var(--muted-text-color);
 }
 
 body {

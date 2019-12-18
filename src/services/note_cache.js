@@ -26,7 +26,10 @@ async function load() {
     noteTitles = await sql.getMap(`SELECT noteId, title FROM notes WHERE isDeleted = 0 AND isProtected = 0`);
     noteIds = Object.keys(noteTitles);
 
-    prefixes = await sql.getMap(`SELECT noteId || '-' || parentNoteId, prefix FROM branches WHERE prefix IS NOT NULL AND prefix != ''`);
+    prefixes = await sql.getMap(`
+            SELECT noteId || '-' || parentNoteId, prefix 
+            FROM branches 
+            WHERE isDeleted = 0 AND prefix IS NOT NULL AND prefix != ''`);
 
     const branches = await sql.getRows(`SELECT branchId, noteId, parentNoteId FROM branches WHERE isDeleted = 0`);
 

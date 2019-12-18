@@ -34,6 +34,8 @@ const dateNotesRoute = require('./api/date_notes');
 const linkMapRoute = require('./api/link_map');
 const clipperRoute = require('./api/clipper');
 const similarNotesRoute = require('./api/similar_notes');
+const keysRoute = require('./api/keys');
+const backendLogRoute = require('./api/backend_log');
 
 const log = require('../services/log');
 const express = require('express');
@@ -42,6 +44,7 @@ const auth = require('../services/auth');
 const cls = require('../services/cls');
 const sql = require('../services/sql');
 const protectedSessionService = require('../services/protected_session');
+const syncTableService = require('../services/sync_table');
 const csurf = require('csurf');
 
 const csrfMiddleware = csurf({
@@ -50,6 +53,8 @@ const csrfMiddleware = csurf({
 });
 
 function apiResultHandler(req, res, result) {
+    res.setHeader('trilium-max-sync-id', syncTableService.getMaxSyncId());
+
     // if it's an array and first element is integer then we consider this to be [statusCode, response] format
     if (Array.isArray(result) && result.length > 0 && Number.isInteger(result[0])) {
         const [statusCode, response] = result;
@@ -127,7 +132,6 @@ function register(app) {
     apiRoute(PUT, '/api/notes/:noteId', notesApiRoute.updateNote);
     apiRoute(DELETE, '/api/notes/:noteId', notesApiRoute.deleteNote);
     apiRoute(POST, '/api/notes/:parentNoteId/children', notesApiRoute.createNote);
-    apiRoute(GET, '/api/notes/:parentNoteId/children', notesApiRoute.getChildren);
     apiRoute(PUT, '/api/notes/:noteId/sort', notesApiRoute.sortNotes);
     apiRoute(PUT, '/api/notes/:noteId/protect/:isProtected', notesApiRoute.protectSubtree);
     apiRoute(PUT, /\/api\/notes\/(.*)\/type\/(.*)\/mime\/(.*)/, notesApiRoute.setNoteTypeMime);
@@ -211,9 +215,10 @@ function register(app) {
     apiRoute(POST, '/api/sql/execute', sqlRoute.execute);
     apiRoute(POST, '/api/anonymization/anonymize', anonymizationRoute.anonymize);
 
-    apiRoute(POST, '/api/cleanup/cleanup-unused-images', cleanupRoute.cleanupUnusedImages);
     // VACUUM requires execution outside of transaction
     route(POST, '/api/cleanup/vacuum-database', [auth.checkApiAuthOrElectron, csrfMiddleware], cleanupRoute.vacuumDatabase, apiResultHandler, false);
+
+    route(POST, '/api/cleanup/find-and-fix-consistency-issues', [auth.checkApiAuthOrElectron, csrfMiddleware], cleanupRoute.findAndFixConsistencyIssues, apiResultHandler, false);
 
     apiRoute(POST, '/api/script/exec', scriptRoute.exec);
     apiRoute(POST, '/api/script/run/:noteId', scriptRoute.run);
@@ -242,7 +247,12 @@ function register(app) {
     route(POST, '/api/clipper/notes', clipperMiddleware, clipperRoute.createNote, apiResultHandler);
     route(POST, '/api/clipper/open/:noteId', clipperMiddleware, clipperRoute.openNote, apiResultHandler);
 
-    apiRoute(GET, '/api/similar_notes/:noteId', similarNotesRoute.getSimilarNotes);
+    apiRoute(GET, '/api/similar-notes/:noteId', similarNotesRoute.getSimilarNotes);
+
+    apiRoute(GET, '/api/keyboard-actions', keysRoute.getKeyboardActions);
+    apiRoute(GET, '/api/keyboard-shortcuts-for-notes', keysRoute.getShortcutsForNotes);
+
+    apiRoute(GET, '/api/backend-log', backendLogRoute.getBackendLog);
 
     app.use('', router);
 }

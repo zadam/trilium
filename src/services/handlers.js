@@ -27,7 +27,7 @@ eventService.subscribe(eventService.NOTE_TITLE_CHANGED, async note => {
         const parents = await note.getParentNotes();
 
         for (const parent of parents) {
-            if (await parent.hasLabel("sorted")) {
+            if (await parent.hasOwnedLabel("sorted")) {
                 await treeService.sortNotesAlphabetically(parent.noteId);
             }
         }
@@ -119,7 +119,7 @@ eventService.subscribe(eventService.ENTITY_CHANGED, async ({ entityName, entity 
 eventService.subscribe(eventService.ENTITY_DELETED, async ({ entityName, entity }) => {
     await processInverseRelations(entityName, entity, async (definition, note, targetNote) => {
         // if one inverse attribute is deleted then the other should be deleted as well
-        const relations = await targetNote.getRelations(definition.inverseRelation);
+        const relations = await targetNote.getOwnedRelations(definition.inverseRelation);
         let deletedSomething = false;
 
         for (const relation of relations) {

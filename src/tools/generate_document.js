@@ -9,6 +9,8 @@ const noteService = require('../services/notes');
 const attributeService = require('../services/attributes');
 const cls = require('../services/cls');
 const cloningService = require('../services/cloning');
+const repository = require('../services/repository');
+const noteRevisionService = require('../services/note_revisions');
 const loremIpsum = require('lorem-ipsum').loremIpsum;
 
 const noteCount = parseInt(process.argv[2]);
@@ -28,31 +30,44 @@ function getRandomNoteId() {
 
 async function start() {
     for (let i = 0; i < noteCount; i++) {
-        const title = loremIpsum({ count: 1, units: 'sentences', sentenceLowerBound: 1, sentenceUpperBound: 10 });
+        const title = loremIpsum({
+            count: 1,
+            units: 'sentences',
+            sentenceLowerBound: 1,
+            sentenceUpperBound: 10
+        });
 
         const paragraphCount = Math.floor(Math.random() * Math.random() * 100);
-        const content = loremIpsum({ count: paragraphCount, units: 'paragraphs', sentenceLowerBound: 1, sentenceUpperBound: 15,
-            paragraphLowerBound: 3, paragraphUpperBound: 10, format: 'html' });
+        const content = loremIpsum({
+            count: paragraphCount,
+            units: 'paragraphs',
+            sentenceLowerBound: 1,
+            sentenceUpperBound: 15,
+            paragraphLowerBound: 3,
+            paragraphUpperBound: 10,
+            format: 'html'
+        });
 
-        const {note} = await noteService.createNote(getRandomNoteId(), title, content);
+        const {note} = await noteService.createNewNote({
+            parentNoteId: getRandomNoteId(),
+            title,
+            content,
+            type: 'text'
+        });
 
         console.log(`Created note ${i}: ${title}`);
 
-        notes.push(note.noteId);
-    }
+        if (Math.random() < 0.04) {
+            const noteIdToClone = note.noteId;
+            const parentNoteId = getRandomNoteId();
+            const prefix = Math.random() > 0.8 ? "prefix" : null;
 
-    // we'll create clones for 4% of notes
-    for (let i = 0; i < (noteCount / 25); i++) {
-        const noteIdToClone = getRandomNoteId();
-        const parentNoteId = getRandomNoteId();
-        const prefix = Math.random() > 0.8 ? "prefix" : null;
+            const result = await cloningService.cloneNoteToParent(noteIdToClone, parentNoteId, prefix);
 
-        const result = await cloningService.cloneNoteToParent(noteIdToClone, parentNoteId, prefix);
+            console.log(`Cloning ${i}:`, result.success ? "succeeded" : "FAILED");
+        }
 
-        console.log(`Cloning ${i}:`, result.success ? "succeeded" : "FAILED");
-    }
-
-    for (let i = 0; i < noteCount; i++) {
+        // does not have to be for the current note
         await attributeService.createAttribute({
             noteId: getRandomNoteId(),
             type: 'label',
@@ -61,10 +76,6 @@ async function start() {
             isInheritable: Math.random() > 0.1 // 10% are inheritable
         });
 
-        console.log(`Creating label ${i}`);
-    }
-
-    for (let i = 0; i < noteCount; i++) {
         await attributeService.createAttribute({
             noteId: getRandomNoteId(),
             type: 'relation',
@@ -73,7 +84,9 @@ async function start() {
             isInheritable: Math.random() > 0.1 // 10% are inheritable
         });
 
-        console.log(`Creating relation ${i}`);
+        noteRevisionService.createNoteRevision(await repository.getNote(getRandomNoteId()));
+
+        notes.push(note.noteId);
     }
 
     process.exit(0);

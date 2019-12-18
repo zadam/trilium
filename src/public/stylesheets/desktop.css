@@ -18,7 +18,7 @@ body {
     grid-gap: 0;
 }
 
-#container.distraction-free-mode {
+#container.zen-mode {
     grid-template-areas:
     "tab-container" !important;
     grid-template-rows: auto
@@ -59,7 +59,7 @@ body {
     background-color: var(--header-background-color);
     display: flex;
     align-items: center;
-    padding: 4px;
+    padding-top: 4px;
 }
 
 #header button {
@@ -68,18 +68,26 @@ body {
     margin-bottom: 2px;
     margin-top: 2px;
     margin-right: 8px;
+    border-color: transparent !important;
+}
+
+#header button.btn-sm .bx {
+    position: relative;
+    top: 1px;
+}
+
+#header button:hover {
+    border-color: var(--button-border-color) !important;
 }
 
 #history-navigation {
     margin: 0 15px 0 5px;
-    position: relative;
-    top: 2px;
 }
 
 #global-buttons {
     display: flex;
     justify-content: space-around;
-    padding: 10px 0 10px 0;
+    padding: 3px 0 3px 0;
     border: 1px solid var(--main-border-color);
     border-radius: 7px;
     margin: 5px 15px 5px 5px;
@@ -116,6 +124,7 @@ li.dropdown-submenu:hover > ul.dropdown-menu {
     top: 0;
     left: 100%;
     margin-top: -6px;
+    min-width: 15rem;
 }
 
 /* rotate caret on hover */
@@ -150,7 +159,7 @@ body {
 
 ::-webkit-scrollbar-thumb {
     border-radius: 3px;
-    border: 1px solid var(--main-border-color);
+    border: 1px solid var(--scrollbar-border-color);
 }
 
 ::-webkit-scrollbar-corner {
@@ -170,6 +179,13 @@ body {
     cursor: pointer;
     position: relative;
     top: -1px;
+    border: 1px solid transparent;
+    padding: 2px;
+    border-radius: 2px;
+}
+
+.refresh-search-button:hover {
+    border-color: var(--button-border-color);
 }
 
 .note-title-row {
@@ -220,7 +236,7 @@ body {
 .note-new-tab {
     position: absolute;
     left: 0;
-    height: 32px;
+    height: 33px;
     width: 32px;
     border: 0;
     margin: 0;
@@ -228,11 +244,20 @@ body {
     text-align: center;
     font-size: 24px;
     cursor: pointer;
+    border-bottom: 1px solid var(--button-border-color);
 }
 
 .note-new-tab:hover {
     background-color: var(--accented-background-color);
     border-radius: 5px;
+}
+
+.tab-row-filler {
+    position: absolute;
+    left: 0;
+    background: linear-gradient(to right, var(--button-border-color), transparent);
+    height: 1px;
+    margin-top: 32px;
 }
 
 .note-tab-row .note-tab[active] {
@@ -249,6 +274,7 @@ body {
     top: 10px;
     animation: note-tab-was-just-added 120ms forwards ease-in-out;
 }
+
 .note-tab-row .note-tab .note-tab-wrapper {
     position: absolute;
     display: flex;
@@ -261,11 +287,14 @@ body {
     border-top-right-radius: 8px;
     overflow: hidden;
     pointer-events: all;
-    background-image: linear-gradient(to bottom, var(--accented-background-color), var(--main-background-color));
+    background-color: var(--accented-background-color);
+    border-bottom: 1px solid var(--button-border-color);
 }
 
 .note-tab-row .note-tab[active] .note-tab-wrapper {
-    background-image: linear-gradient(to bottom, var(--more-accented-background-color), var(--main-background-color));
+    background-color: var(--main-background-color);
+    border: 1px solid var(--button-border-color);
+    border-bottom: 0;
     font-weight: bold;
 }
 
@@ -273,6 +302,7 @@ body {
     padding-left: 2px;
     padding-right: 2px;
 }
+
 .note-tab-row .note-tab .note-tab-title {
     flex: 1;
     vertical-align: top;
@@ -280,12 +310,15 @@ body {
     white-space: nowrap;
     color: var(--muted-text-color);
 }
+
 .note-tab-row .note-tab[is-small] .note-tab-title {
     margin-left: 0;
 }
+
 .note-tab-row .note-tab[active] .note-tab-title {
     color: var(--main-text-color);
 }
+
 .note-tab-row .note-tab .note-tab-drag-handle {
     position: absolute;
     top: 0;
@@ -295,6 +328,7 @@ body {
     border-top-left-radius: 8px;
     border-top-right-radius: 8px;
 }
+
 .note-tab-row .note-tab .note-tab-close {
     flex-grow: 0;
     flex-shrink: 0;
@@ -353,6 +387,14 @@ body {
 
 .hide-sidebar-button {
     color: var(--main-text-color);
+    background: none;
+    border: 1px solid transparent;
+    padding: 2px 8px 2px 8px;
+    border-radius: 2px;
+}
+
+.hide-sidebar-button:hover {
+    border-color: var(--button-border-color);
 }
 
 .note-detail-sidebar {
@@ -385,6 +427,8 @@ body {
     border: 0;
     background: inherit;
     font-weight: bold;
+    text-transform: uppercase;
+    color: var(--muted-text-color) !important;
 }
 
 .note-detail-sidebar .widget-header-action {
@@ -393,7 +437,9 @@ body {
 }
 
 .note-detail-sidebar .widget-help {
-    color: var(--main-text-color);
+    color: var(--muted-text-color);
+    position: relative;
+    top: 2px;
 }
 
 .note-detail-sidebar .widget-help.no-link:hover {
