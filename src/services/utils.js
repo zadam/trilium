@@ -53,6 +53,10 @@ function sanitizeSql(str) {
     return str.replace(/'/g, "''");
 }
 
+function sanitizeSqlIdentifier(str) {
+    return str.replace(/[A-Za-z0-9_]/g, "");
+}
+
 function prepareSqlForLike(prefix, str, suffix) {
     const value = str
         .replace(/\\/g, "\\\\")
@@ -174,6 +178,7 @@ module.exports = {
     hash,
     isEmptyOrWhitespace,
     sanitizeSql,
+    sanitizeSqlIdentifier,
     prepareSqlForLike,
     stopWatch,
     escapeHtml,

@@ -15,6 +15,8 @@ const syncMutexService = require('./sync_mutex');
 const cls = require('./cls');
 const request = require('./request');
 const ws = require('./ws');
+const syncTableService = require('./sync_table');
+const entityConstructor = require('../entities/entity_constructor');
 
 let proxyToggle = true;
 
@@ -30,17 +32,22 @@ async function sync() {
                 return { success: false, message: 'Sync not configured' };
             }
 
-            const syncContext = await login();
+            let continueSync = false;
 
-            await pushSync(syncContext);
+            do {
+                const syncContext = await login();
 
-            await pullSync(syncContext);
+                await pushSync(syncContext);
 
-            await pushSync(syncContext);
+                await pullSync(syncContext);
 
-            await syncFinished(syncContext);
+                await pushSync(syncContext);
 
-            await checkContentHash(syncContext);
+                await syncFinished(syncContext);
+
+                continueSync = await checkContentHash(syncContext);
+            }
+            while (continueSync);
 
             return {
                 success: true
@@ -225,7 +232,7 @@ async function checkContentHash(syncContext) {
     if (await getLastSyncedPull() < resp.maxSyncId) {
         log.info("There are some outstanding pulls, skipping content check.");
 
-        return;
+        return true;
     }
 
     const notPushedSyncs = await sql.getValue("SELECT EXISTS(SELECT 1 FROM sync WHERE id > ?)", [await getLastSyncedPush()]);
@@ -233,10 +240,20 @@ async function checkContentHash(syncContext) {
     if (notPushedSyncs) {
         log.info(`There's ${notPushedSyncs} outstanding pushes, skipping content check.`);
 
-        return;
+        return true;
     }
 
-    await contentHashService.checkContentHashes(resp.hashes);
+    const failedChecks = await contentHashService.checkContentHashes(resp.entityHashes);
+
+    for (const {entityName, sector} of failedChecks) {
+        const entityPrimaryKey = entityConstructor.getEntityFromEntityName(entityName).primaryKeyName;
+
+        await syncTableService.addEntitySyncsForSector(entityName, entityPrimaryKey, sector);
+
+        await syncRequest(syncContext, 'POST', `/api/sync/queue-sector/${entityName}/${sector}`);
+    }
+
+    return failedChecks.length > 0;
 }
 
 async function syncRequest(syncContext, method, requestPath, body) {

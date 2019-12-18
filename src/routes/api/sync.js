@@ -10,6 +10,8 @@ const contentHashService = require('../../services/content_hash');
 const log = require('../../services/log');
 const syncOptions = require('../../services/sync_options');
 const dateUtils = require('../../services/date_utils');
+const entityConstructor = require('../../entities/entity_constructor');
+const utils = require('../../services/utils');
 
 async function testSync() {
     try {
@@ -47,7 +49,7 @@ async function getStats() {
 
 async function checkSync() {
     return {
-        hashes: await contentHashService.getHashes(),
+        entityHashes: await contentHashService.getEntityHashes(),
         maxSyncId: await sql.getValue('SELECT MAX(id) FROM sync')
     };
 }
@@ -137,6 +139,15 @@ async function syncFinished() {
     await sqlInit.dbInitialized();
 }
 
+async function queueSector(req) {
+    const entityName = utils.sanitizeSqlIdentifier(req.params.entityName);
+    const sector = utils.sanitizeSqlIdentifier(req.params.sector);
+
+    const entityPrimaryKey = entityConstructor.getEntityFromEntityName(entityName).primaryKeyName;
+
+    await syncTableService.addEntitySyncsForSector(entityName, entityPrimaryKey, sector);
+}
+
 module.exports = {
     testSync,
     checkSync,
@@ -147,5 +158,6 @@ module.exports = {
     getChanged,
     update,
     getStats,
-    syncFinished
+    syncFinished,
+    queueSector
 };

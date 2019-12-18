@@ -3,7 +3,6 @@
 const sql = require('./sql');
 const utils = require('./utils');
 const log = require('./log');
-const ws = require('./ws.js');
 const ApiToken = require('../entities/api_token');
 const Branch = require('../entities/branch');
 const Note = require('../entities/note');
@@ -70,9 +69,11 @@ async function checkContentHashes(otherHashes) {
     if (failedChecks.length === 0) {
         log.info("Content hash checks PASSED");
     }
+
+    return failedChecks;
 }
 
 module.exports = {
-    getHashes: getEntityHashes,
+    getEntityHashes,
     checkContentHashes
 };

@@ -199,6 +199,7 @@ function register(app) {
     route(GET, '/api/sync/changed', [auth.checkApiAuth], syncApiRoute.getChanged, apiResultHandler);
     route(PUT, '/api/sync/update', [auth.checkApiAuth], syncApiRoute.update, apiResultHandler);
     route(POST, '/api/sync/finished', [auth.checkApiAuth], syncApiRoute.syncFinished, apiResultHandler);
+    route(POST, '/api/sync/queue-sector/:entityName/:sector', [auth.checkApiAuth], syncApiRoute.queueSector, apiResultHandler);
     route(GET, '/api/sync/stats', [], syncApiRoute.getStats, apiResultHandler);
 
     apiRoute(POST, '/api/recent-notes', recentNotesRoute.addRecentNote);

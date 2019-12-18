@@ -6,7 +6,7 @@ const cls = require('./cls');
 
 let syncs = [];
 
-async function addEntitySync(entityName, entityId, sourceId) {
+async function insertEntitySync(entityName, entityId, sourceId) {
     const sync = {
         entityName: entityName,
         entityId: entityId,
@@ -16,9 +16,23 @@ async function addEntitySync(entityName, entityId, sourceId) {
 
     sync.id = await sql.replace("sync", sync);
 
+    return sync;
+}
+
+async function addEntitySync(entityName, entityId, sourceId) {
+    const sync = await insertEntitySync(entityName, entityId, sourceId);
+
     syncs.push(sync);
 
     setTimeout(() => require('./ws').sendPingToAllClients(), 50);
+}
+
+async function addEntitySyncsForSector(entityName, entityPrimaryKey, sector) {
+    const entityIds = await sql.getColumn(`SELECT ${entityPrimaryKey} FROM ${entityName} WHERE SUBSTR(${entityPrimaryKey}, 1, 1) = ?`, [sector]);
+
+    for (const entityId of entityIds) {
+        await insertEntitySync(entityName, entityId, 'content-check');
+    }
 }
 
 function getMaxSyncId() {
@@ -29,19 +43,19 @@ function getEntitySyncsNewerThan(syncId) {
     return syncs.filter(s => s.id > syncId);
 }
 
-async function cleanupSyncRowsForMissingEntities(entityName, entityKey) {
+async function cleanupSyncRowsForMissingEntities(entityName, entityPrimaryKey) {
     await sql.execute(`
       DELETE 
       FROM sync 
       WHERE sync.entityName = '${entityName}' 
-        AND sync.entityId NOT IN (SELECT ${entityKey} FROM ${entityName})`);
+        AND sync.entityId NOT IN (SELECT ${entityPrimaryKey} FROM ${entityName})`);
 }
 
-async function fillSyncRows(entityName, entityKey, condition = '') {
+async function fillSyncRows(entityName, entityPrimaryKey, condition = '') {
     try {
-        await cleanupSyncRowsForMissingEntities(entityName, entityKey);
+        await cleanupSyncRowsForMissingEntities(entityName, entityPrimaryKey);
 
-        const entityIds = await sql.getColumn(`SELECT ${entityKey} FROM ${entityName}`
+        const entityIds = await sql.getColumn(`SELECT ${entityPrimaryKey} FROM ${entityName}`
             + (condition ? ` WHERE ${condition}` : ''));
 
         let createdCount = 0;
@@ -69,7 +83,7 @@ async function fillSyncRows(entityName, entityKey, condition = '') {
     catch (e) {
         // this is to fix migration from 0.30 to 0.32, can be removed later
         // see https://github.com/zadam/trilium/issues/557
-        log.error(`Filling sync rows failed for ${entityName} ${entityKey} with error "${e.message}", continuing`);
+        log.error(`Filling sync rows failed for ${entityName} ${entityPrimaryKey} with error "${e.message}", continuing`);
     }
 }
 
@@ -101,5 +115,6 @@ module.exports = {
     addEntitySync,
     fillAllSyncRows,
     getEntitySyncsNewerThan,
-    getMaxSyncId
+    getMaxSyncId,
+    addEntitySyncsForSector
 };
