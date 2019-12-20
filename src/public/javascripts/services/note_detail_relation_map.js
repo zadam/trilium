@@ -129,9 +129,10 @@ class NoteDetailRelationMap {
                 return;
             }
 
-            const {note} = await server.post(`notes/${this.ctx.note.noteId}/children`, {
+            const {note} = await server.post(`notes/${this.ctx.note.noteId}/children?target=into`, {
                 title,
-                target: 'into'
+                content: '',
+                type: 'text'
             });
 
             toastService.showMessage("Click on canvas to place new note");
