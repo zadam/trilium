@@ -9,6 +9,7 @@ import noteDetailService from "./note_detail.js";
 import keyboardActionService from "./keyboard_actions.js";
 import hoistedNoteService from "./hoisted_note.js";
 import treeCache from "./tree_cache.js";
+import server from "./server.js";
 
 const NOTE_REVISIONS = "../dialogs/note_revisions.js";
 const OPTIONS = "../dialogs/options.js";
@@ -232,14 +233,15 @@ function registerEntrypoints() {
     
     keyboardActionService.setGlobalActionHandler("CreateNoteIntoDayNote", async () => {
         const todayNote = await dateNoteService.getTodayNote();
-        const notePath = await treeService.getSomeNotePath(todayNote);
 
-        const node = await treeService.expandToNote(notePath);
-
-        const {note} = await treeService.createNote(node, todayNote.noteId, 'into', {
-            type: "text",
-            isProtected: node.data.isProtected
+        const {note} = await server.post(`notes/${todayNote.noteId}/children?target=into`, {
+            title: 'new note',
+            content: '',
+            type: 'text',
+            isProtected: todayNote.isProtected
         });
+
+        await treeService.expandToNote(note.noteId);
 
         await noteDetailService.openInTab(note.noteId, true);
     });
