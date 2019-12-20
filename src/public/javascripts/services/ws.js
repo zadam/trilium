@@ -172,7 +172,7 @@ function connectWebSocket() {
 
 async function sendPing() {
     if (Date.now() - lastPingTs > 30000) {
-        console.log(utils.now(), "Lost connection to server");
+        console.log(utils.now(), "Lost websocket connection to the backend");
     }
 
     if (ws.readyState === ws.OPEN) {
