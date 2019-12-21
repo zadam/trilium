@@ -411,6 +411,16 @@ class TabContext {
 
                 await this.addPath(notePath, isCurrent);
             }
+
+            const cloneLink = $("<div>")
+                .addClass("dropdown-item")
+                .append(
+                    $('<button class="btn btn-sm">')
+                        .text('Clone note to new location...')
+                        .on('click', () => import("../dialogs/clone_to.js").then(d => d.showDialog([this.note.noteId])))
+                );
+
+            this.$notePathList.append(cloneLink);
         }
     }
 
