@@ -244,7 +244,7 @@ body {
     text-align: center;
     font-size: 24px;
     cursor: pointer;
-    border-bottom: 1px solid var(--button-border-color);
+    border-bottom: 1px solid var(--main-border-color);
 }
 
 .note-new-tab:hover {
@@ -255,7 +255,7 @@ body {
 .tab-row-filler {
     position: absolute;
     left: 0;
-    background: linear-gradient(to right, var(--button-border-color), transparent);
+    background: linear-gradient(to right, var(--main-border-color), transparent);
     height: 1px;
     margin-top: 32px;
 }
@@ -288,12 +288,12 @@ body {
     overflow: hidden;
     pointer-events: all;
     background-color: var(--accented-background-color);
-    border-bottom: 1px solid var(--button-border-color);
+    border-bottom: 1px solid var(--main-border-color);
 }
 
 .note-tab-row .note-tab[active] .note-tab-wrapper {
     background-color: var(--main-background-color);
-    border: 1px solid var(--button-border-color);
+    border: 1px solid var(--main-border-color);
     border-bottom: 0;
     font-weight: bold;
 }
