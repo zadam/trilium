@@ -2,6 +2,7 @@
 
 const html = require('html');
 const repository = require('../repository');
+const dateUtils = require('../date_utils');
 const tar = require('tar-stream');
 const path = require('path');
 const mimeTypes = require('mime-types');
@@ -270,7 +271,11 @@ ${content}
         if (noteMeta.dataFileName) {
             const content = prepareContent(noteMeta.title, await note.getContent(), noteMeta);
 
-            pack.entry({name: filePathPrefix + noteMeta.dataFileName, size: content.length}, content);
+            pack.entry({
+                name: filePathPrefix + noteMeta.dataFileName,
+                size: content.length,
+                mtime: dateUtils.parseDateTime(note.utcDateModified)
+            }, content);
         }
 
         taskContext.increaseProgressCount();
@@ -278,7 +283,11 @@ ${content}
         if (noteMeta.children && noteMeta.children.length > 0) {
             const directoryPath = filePathPrefix + noteMeta.dirFileName;
 
-            pack.entry({name: directoryPath, type: 'directory'});
+            pack.entry({
+                name: directoryPath,
+                type: 'directory',
+                mtime: dateUtils.parseDateTime(note.utcDateModified)
+            });
 
             for (const childMeta of noteMeta.children) {
                 await saveNote(childMeta, directoryPath + '/');
