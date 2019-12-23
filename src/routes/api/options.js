@@ -30,7 +30,10 @@ const ALLOWED_OPTIONS = new Set([
     'spellCheckEnabled',
     'spellCheckLanguageCode',
     'imageMaxWidthHeight',
-    'imageJpegQuality'
+    'imageJpegQuality',
+    'leftPaneWidth',
+    'rightPaneWidth',
+    'rightPaneVisible'
 ]);
 
 async function getOptions() {

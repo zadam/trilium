@@ -1,24 +1,47 @@
+import server from "./server.js";
+import optionService from "./options.js";
+
 let instance;
 
-function setupSplitWithSidebar() {
+async function getPaneWidths() {
+    const options = await optionService.waitForOptions();
+
+    return {
+        leftPaneWidth: options.getInt('leftPaneWidth'),
+        rightPaneWidth: options.getInt('rightPaneWidth')
+    };
+}
+
+async function setupSplitWithSidebar() {
     if (instance) {
         instance.destroy();
     }
 
+    const {leftPaneWidth, rightPaneWidth} = await getPaneWidths();
+
     instance = Split(['#left-pane', '#center-pane', '#right-pane'], {
-        sizes: [25, 50, 25],
-        gutterSize: 5
+        sizes: [leftPaneWidth, 100 - leftPaneWidth - rightPaneWidth, rightPaneWidth],
+        gutterSize: 5,
+        onDragEnd: sizes => {
+            server.put('options/leftPaneWidth/' + Math.round(sizes[0]));
+            server.put('options/rightPaneWidth/' + Math.round(sizes[2]));
+        }
     });
 }
 
-function setupSplitWithoutSidebar() {
+async function setupSplitWithoutSidebar() {
     if (instance) {
         instance.destroy();
     }
 
+    const {leftPaneWidth} = await getPaneWidths();
+
     instance = Split(['#left-pane', '#center-pane'], {
-        sizes: [25, 75],
-        gutterSize: 5
+        sizes: [leftPaneWidth, 100 - leftPaneWidth],
+        gutterSize: 5,
+        onDragEnd: sizes => {
+            server.put('options/leftPaneWidth/' + Math.round(sizes[0]));
+        }
     });
 }
 

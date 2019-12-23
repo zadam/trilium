@@ -175,8 +175,6 @@ noteTooltipService.setupGlobalTooltip();
 
 noteAutocompleteService.init();
 
-splitService.setupSplitWithSidebar();
-
 if (utils.isElectron()) {
     import("./services/spell_check.js").then(spellCheckService => spellCheckService.initSpellCheck());
 }

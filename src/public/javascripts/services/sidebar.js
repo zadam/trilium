@@ -2,30 +2,45 @@ import bundleService from "./bundle.js";
 import ws from "./ws.js";
 import optionsService from "./options.js";
 import splitService from "./split.js";
+import optionService from "./options.js";
+import server from "./server.js";
+import noteDetailService from "./note_detail.js";
 
 const $sidebar = $("#right-pane");
 const $sidebarContainer = $('#sidebar-container');
 
-const $showSideBarButton = $("#show-sidebar-button");
+const $showSidebarButton = $("#show-sidebar-button");
 const $hideSidebarButton = $("#hide-sidebar-button");
 
-$showSideBarButton.hide();
+optionService.waitForOptions().then(options => toggleSidebar(options.is('rightPaneVisible')));
+
+function toggleSidebar(show) {
+    $sidebar.toggle(show);
+    $showSidebarButton.toggle(!show);
+    $hideSidebarButton.toggle(show);
+
+    if (show) {
+        splitService.setupSplitWithSidebar();
+    }
+    else {
+        splitService.setupSplitWithoutSidebar();
+    }
+}
 
 $hideSidebarButton.on('click', () => {
-    $sidebar.hide();
-    $showSideBarButton.show();
-    $hideSidebarButton.hide();
+    toggleSidebar(false);
 
-    splitService.setupSplitWithoutSidebar();
+    server.put('options/rightPaneVisible/false');
 });
 
-// FIXME shoud run note loaded!
-$showSideBarButton.on('click', () => {
-    $sidebar.show();
-    $showSideBarButton.hide();
-    $hideSidebarButton.show();
+$showSidebarButton.on('click', async () => {
+    toggleSidebar(true);
 
-    splitService.setupSplitWithSidebar();
+    await server.put('options/rightPaneVisible/true');
+
+    const {sidebar} = noteDetailService.getActiveTabContext();
+    await sidebar.noteLoaded();
+    sidebar.show();
 });
 
 class Sidebar {
