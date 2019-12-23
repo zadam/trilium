@@ -61,37 +61,6 @@ const TPL = `
     </div>
 
     <p>Note that tree and detail font sizing is relative to the main font size setting.</p>
-
-    <h4>Left pane sizing</h4>
-
-    <div class="form-group row">
-        <div class="col-6">
-            <label for="left-pane-min-width">Left pane minimum width (in pixels)</label>
-
-            <div class="input-group">
-                <input type="number" class="form-control" id="left-pane-min-width" min="100" max="2000" step="1"/>
-
-                <div class="input-group-append">
-                    <span class="input-group-text">px</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-6">
-            <label for="left-pane-min-width">Left pane width percent of window size</label>
-
-            <div class="input-group">
-                <input type="number" class="form-control" id="left-pane-width-percent" min="0" max="99" step="1"/>
-
-                <div class="input-group-append">
-                    <span class="input-group-text">%</span>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <p>Left pane width is calculated from the percent of window size, if this is smaller than minimum width, then minimum width is used. If you want to have fixed width left pane, set minimum width to the desired width and set percent to 0.</p>
-
 </form>`;
 
 export default class ApperanceOptions {
@@ -100,8 +69,6 @@ export default class ApperanceOptions {
 
         this.$themeSelect = $("#theme-select");
         this.$zoomFactorSelect = $("#zoom-factor-select");
-        this.$leftPaneMinWidth = $("#left-pane-min-width");
-        this.$leftPaneWidthPercent = $("#left-pane-width-percent");
         this.$mainFontSize = $("#main-font-size");
         this.$treeFontSize = $("#tree-font-size");
         this.$detailFontSize = $("#detail-font-size");
@@ -131,18 +98,6 @@ export default class ApperanceOptions {
         });
 
         this.$zoomFactorSelect.on('change', () => { zoomService.setZoomFactorAndSave(this.$zoomFactorSelect.val()); });
-
-        this.$leftPaneMinWidth.on('change', async () => {
-            await server.put('options/leftPaneMinWidth/' + this.$leftPaneMinWidth.val());
-
-            this.resizeLeftPanel();
-        });
-
-        this.$leftPaneWidthPercent.on('change', async () => {
-            await server.put('options/leftPaneWidthPercent/' + this.$leftPaneWidthPercent.val());
-
-            this.resizeLeftPanel();
-        });
 
         this.$mainFontSize.on('change', async () => {
             await server.put('options/mainFontSize/' + this.$mainFontSize.val());
@@ -188,20 +143,9 @@ export default class ApperanceOptions {
             this.$zoomFactorSelect.prop('disabled', true);
         }
 
-        this.$leftPaneMinWidth.val(options.leftPaneMinWidth);
-        this.$leftPaneWidthPercent.val(options.leftPaneWidthPercent);
-
         this.$mainFontSize.val(options.mainFontSize);
         this.$treeFontSize.val(options.treeFontSize);
         this.$detailFontSize.val(options.detailFontSize);
-    }
-
-    resizeLeftPanel() {
-        const leftPanePercent = parseInt(this.$leftPaneWidthPercent.val());
-        const rightPanePercent = 100 - leftPanePercent;
-        const leftPaneMinWidth = this.$leftPaneMinWidth.val();
-
-        this.$container.css("grid-template-columns", `minmax(${leftPaneMinWidth}px, ${leftPanePercent}fr) ${rightPanePercent}fr`);
     }
 
     applyFontSizes() {

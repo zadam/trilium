@@ -33,7 +33,6 @@ async function initNotSyncedOptions(initialized, startNotePath = 'root', opts = 
             notePath: startNotePath,
             active: true,
             sidebar: {
-                visible: true,
                 widgets: []
             }
         }
@@ -61,14 +60,9 @@ const defaultOptions = [
     { name: 'protectedSessionTimeout', value: '600', isSynced: true },
     { name: 'hoistedNoteId', value: 'root', isSynced: false },
     { name: 'zoomFactor', value: '1.0', isSynced: false },
-    { name: 'leftPaneMinWidth', value: '350', isSynced: false },
-    { name: 'leftPaneWidthPercent', value: '20', isSynced: false },
     { name: 'mainFontSize', value: '100', isSynced: false },
     { name: 'treeFontSize', value: '100', isSynced: false },
     { name: 'detailFontSize', value: '110', isSynced: false },
-    { name: 'sidebarMinWidth', value: '350', isSynced: false },
-    { name: 'sidebarWidthPercent', value: '25', isSynced: false },
-    { name: 'showSidebarInNewTab', value: 'true', isSynced: false },
     { name: 'calendarWidget', value: '{"enabled":true,"expanded":true,"position":20}', isSynced: false },
     { name: 'editedNotesWidget', value: '{"enabled":true,"expanded":true,"position":50}', isSynced: false },
     { name: 'noteInfoWidget', value: '{"enabled":true,"expanded":true,"position":100}', isSynced: false },

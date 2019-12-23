@@ -18,12 +18,6 @@ async function index(req, res) {
     res.render(view, {
         csrfToken: csrfToken,
         theme: options.theme,
-        leftPaneMinWidth: parseInt(options.leftPaneMinWidth),
-        leftPaneWidthPercent: parseInt(options.leftPaneWidthPercent),
-        rightPaneWidthPercent: 100 - parseInt(options.leftPaneWidthPercent),
-        sidebarMinWidth: parseInt(options.sidebarMinWidth),
-        sidebarWidthPercent: parseInt(options.sidebarWidthPercent),
-        contentWidthPercent: 100 - parseInt(options.sidebarWidthPercent),
         mainFontSize: parseInt(options.mainFontSize),
         treeFontSize: parseInt(options.treeFontSize),
         detailFontSize: parseInt(options.detailFontSize),
