@@ -96,7 +96,7 @@ body {
     padding: 3px 0 3px 0;
     border: 1px solid var(--main-border-color);
     border-radius: 7px;
-    margin: 5px 15px 5px 5px;
+    margin: 3px 5px 5px 5px;
 }
 
 .dropdown-menu {
@@ -197,7 +197,7 @@ body {
 .note-title-row {
     flex-grow: 0;
     flex-shrink: 0;
-    margin-top: 10px;
+    padding-top: 2px;
 }
 
 .note-title {
@@ -407,7 +407,7 @@ body {
 
 #right-pane {
     overflow: auto;
-    padding-top: 12px;
+    padding-top: 4px;
     padding-left: 7px;
     font-size: 90%;
 }
