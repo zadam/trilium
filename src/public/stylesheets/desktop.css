@@ -410,6 +410,7 @@ body {
     padding-top: 4px;
     padding-left: 7px;
     font-size: 90%;
+    height: 100%;
 }
 
 #right-pane .card {
