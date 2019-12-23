@@ -182,11 +182,13 @@ if (utils.isElectron()) {
     $("#title-bar-buttons").show();
 
     $("#minimize-btn").on('click', () => {
+        $("#minimize-btn").trigger('blur');
         const { remote } = require('electron');
         remote.BrowserWindow.getFocusedWindow().minimize();
     });
 
     $("#maximize-btn").on('click', () => {
+        $("#maximize-btn").trigger('blur');
         const { remote } = require('electron');
         const focusedWindow = remote.BrowserWindow.getFocusedWindow();
 
@@ -199,6 +201,7 @@ if (utils.isElectron()) {
     });
 
     $("#close-btn").on('click', () => {
+        $("#close-btn").trigger('blur');
         const { remote } = require('electron');
         remote.BrowserWindow.getFocusedWindow().close();
     });
