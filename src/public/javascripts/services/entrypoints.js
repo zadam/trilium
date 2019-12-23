@@ -286,11 +286,6 @@ function registerEntrypoints() {
 
         searchNotesService.searchInSubtree(node.data.noteId);
     });
-
-    Split(['#left-pane', '#center-pane', '#right-pane'], {
-        sizes: [25, 50, 25],
-        gutterSize: 5
-    });
 }
 
 export default {

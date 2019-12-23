@@ -398,16 +398,11 @@ body {
     transition: transform 120ms ease-in-out;
 }
 
-.hide-sidebar-button {
-    color: var(--main-text-color);
-    background: none;
-    border: 1px solid transparent;
-    padding: 2px 8px 2px 8px;
-    border-radius: 2px;
-}
-
-.hide-sidebar-button:hover {
-    border-color: var(--button-border-color);
+#hide-sidebar-button, #show-sidebar-button {
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    z-index: 100000;
 }
 
 #right-pane {

@@ -1,22 +1,31 @@
 import bundleService from "./bundle.js";
 import ws from "./ws.js";
 import optionsService from "./options.js";
+import splitService from "./split.js";
 
 const $sidebar = $("#right-pane");
-const $sidebarContainer = $sidebar.find('.sidebar-container');
+const $sidebarContainer = $('#sidebar-container');
 
-const $showSideBarButton = $sidebar.find(".show-sidebar-button");
-const $hideSidebarButton = $sidebar.find(".hide-sidebar-button");
+const $showSideBarButton = $("#show-sidebar-button");
+const $hideSidebarButton = $("#hide-sidebar-button");
+
+$showSideBarButton.hide();
 
 $hideSidebarButton.on('click', () => {
     $sidebar.hide();
     $showSideBarButton.show();
+    $hideSidebarButton.hide();
+
+    splitService.setupSplitWithoutSidebar();
 });
 
 // FIXME shoud run note loaded!
 $showSideBarButton.on('click', () => {
     $sidebar.show();
     $showSideBarButton.hide();
+    $hideSidebarButton.show();
+
+    splitService.setupSplitWithSidebar();
 });
 
 class Sidebar {

@@ -31,6 +31,7 @@ import dateNoteService from './services/date_notes.js';
 import sidebarService from './services/sidebar.js';
 import importService from './services/import.js';
 import keyboardActionService from "./services/keyboard_actions.js";
+import splitService from "./services/split.js";
 
 window.glob.isDesktop = utils.isDesktop;
 window.glob.isMobile = utils.isMobile;
@@ -173,6 +174,8 @@ entrypoints.registerEntrypoints();
 noteTooltipService.setupGlobalTooltip();
 
 noteAutocompleteService.init();
+
+splitService.setupSplitWithSidebar();
 
 if (utils.isElectron()) {
     import("./services/spell_check.js").then(spellCheckService => spellCheckService.initSpellCheck());
