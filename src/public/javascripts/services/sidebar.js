@@ -2,6 +2,23 @@ import bundleService from "./bundle.js";
 import ws from "./ws.js";
 import optionsService from "./options.js";
 
+const $sidebar = $("#right-pane");
+const $sidebarContainer = $sidebar.find('.sidebar-container');
+
+const $showSideBarButton = $sidebar.find(".show-sidebar-button");
+const $hideSidebarButton = $sidebar.find(".hide-sidebar-button");
+
+$hideSidebarButton.on('click', () => {
+    $sidebar.hide();
+    $showSideBarButton.show();
+});
+
+// FIXME shoud run note loaded!
+$showSideBarButton.on('click', () => {
+    $sidebar.show();
+    $showSideBarButton.hide();
+});
+
 class Sidebar {
     /**
      * @param {TabContext} ctx
@@ -14,30 +31,18 @@ class Sidebar {
             widgets: []
         }, state);
         this.widgets = [];
-        this.$sidebar = ctx.$tabContent.find(".note-detail-sidebar");
-        this.$widgetContainer = this.$sidebar.find(".note-detail-widget-container");
-        this.$showSideBarButton = this.ctx.$tabContent.find(".show-sidebar-button");
-        this.$hideSidebarButton = this.$sidebar.find(".hide-sidebar-button");
 
-        this.$hideSidebarButton.on('click', () => {
-            this.$sidebar.hide();
-            this.$showSideBarButton.show();
-            this.ctx.stateChanged();
-        });
+        this.$widgetContainer = $sidebar.find(`.sidebar-widget-container[data-tab-id=${this.ctx.tabId}]`);
 
-        this.$showSideBarButton.on('click', () => {
-            this.$sidebar.show();
-            this.$showSideBarButton.hide();
-            this.ctx.stateChanged();
-            this.noteLoaded();
-        });
+        if (this.$widgetContainer.length === 0) {
+            this.$widgetContainer = $(`<div class="sidebar-widget-container">`).attr('data-tab-id', this.ctx.tabId);
 
-        this.$showSideBarButton.toggle(!state.visible);
-        this.$sidebar.toggle(state.visible);
+            $sidebarContainer.append(this.$widgetContainer);
+        }
     }
 
     isVisible() {
-        return this.$sidebar.css("display") !== "none";
+        return $sidebar.css("display") !== "none";
     }
 
     getSidebarState() {
@@ -89,6 +94,12 @@ class Sidebar {
         }
 
         this.renderWidgets(widgets);
+    }
+
+    show() {
+        $sidebarContainer.find('.sidebar-widget-container').each((i, el) => {
+            $(el).toggle($(el).attr('data-tab-id') === this.ctx.tabId);
+        });
     }
 
     // it's important that this method is sync so that the whole render-update is atomic

@@ -251,6 +251,10 @@ class TabContext {
 
         this.$tabContent.show();
 
+        if (this.sidebar) {
+            this.sidebar.show();
+        }
+
         this.setCurrentNotePathToHash();
         this.setTitleBar();
     }

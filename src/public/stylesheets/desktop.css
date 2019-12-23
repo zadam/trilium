@@ -410,18 +410,18 @@ body {
     border-color: var(--button-border-color);
 }
 
-.note-detail-sidebar {
+#right-pane {
     overflow: auto;
     padding-top: 12px;
     padding-left: 7px;
     font-size: 90%;
 }
 
-.note-detail-sidebar .card {
+#right-pane .card {
     border: 0;
 }
 
-.note-detail-sidebar .card-header {
+#right-pane .card-header {
     background: inherit;
     padding: 5px 10px 5px 10px;
     width: 99%; /* to give minimal right margin */
@@ -434,7 +434,7 @@ body {
     justify-content: space-between;
 }
 
-.note-detail-sidebar .widget-title {
+#right-pane .widget-title {
     border-radius: 0;
     padding: 0;
     border: 0;
@@ -444,29 +444,29 @@ body {
     color: var(--muted-text-color) !important;
 }
 
-.note-detail-sidebar .widget-header-action {
+#right-pane .widget-header-action {
     color: var(--link-color) !important;
     cursor: pointer;
 }
 
-.note-detail-sidebar .widget-help {
+#right-pane .widget-help {
     color: var(--muted-text-color);
     position: relative;
     top: 2px;
 }
 
-.note-detail-sidebar .widget-help.no-link:hover {
+#right-pane .widget-help.no-link:hover {
     cursor: default;
     text-decoration: none;
 }
 
-.note-detail-sidebar .card-body {
+#right-pane .card-body {
     width: 100%;
     padding: 8px;
     border: 0;
 }
 
-.note-detail-sidebar .card-body ul {
+#right-pane .card-body ul {
     padding-left: 25px;
     margin-bottom: 5px;
 }

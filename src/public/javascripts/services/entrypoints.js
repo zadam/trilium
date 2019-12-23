@@ -287,10 +287,10 @@ function registerEntrypoints() {
         searchNotesService.searchInSubtree(node.data.noteId);
     });
 
-    Split(['#left-pane', '#center-pane'], {
-        sizes: [25, 75],
+    Split(['#left-pane', '#center-pane', '#right-pane'], {
+        sizes: [25, 50, 25],
         gutterSize: 5
-    })
+    });
 }
 
 export default {

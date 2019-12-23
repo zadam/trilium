@@ -194,7 +194,7 @@ export default class SidebarOptions {
         const sidebarMinWidth = this.$sidebarMinWidth.val();
 
         // need to find them dynamically since they change
-        const $sidebar = $(".note-detail-sidebar");
+        const $sidebar = $("#right-pane");
 
         const $content = $(".note-detail-content");
 
