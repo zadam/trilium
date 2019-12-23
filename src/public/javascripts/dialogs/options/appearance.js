@@ -9,23 +9,15 @@ const TPL = `
 
 <form>
     <div class="form-group row">
-        <div class="col-4">
+        <div class="col-6">
             <label for="theme-select">Theme</label>
             <select class="form-control" id="theme-select"></select>
         </div>
 
-        <div class="col-4">
+        <div class="col-6">
             <label for="zoom-factor-select">Zoom factor (desktop build only)</label>
 
             <input type="number" class="form-control" id="zoom-factor-select" min="0.3" max="2.0" step="0.1"/>
-        </div>
-
-        <div class="col-4">
-            <label for="one-tab-display-select">If there's only one tab, then...</label>
-            <select class="form-control" id="one-tab-display-select">
-                <option value="show">show the tab bar</option>
-                <option value="hide">hide the tab bar</option>
-            </select>
         </div>
     </div>
 
@@ -108,7 +100,6 @@ export default class ApperanceOptions {
 
         this.$themeSelect = $("#theme-select");
         this.$zoomFactorSelect = $("#zoom-factor-select");
-        this.$oneTabDisplaySelect = $("#one-tab-display-select");
         this.$leftPaneMinWidth = $("#left-pane-min-width");
         this.$leftPaneWidthPercent = $("#left-pane-width-percent");
         this.$mainFontSize = $("#main-font-size");
@@ -140,13 +131,6 @@ export default class ApperanceOptions {
         });
 
         this.$zoomFactorSelect.on('change', () => { zoomService.setZoomFactorAndSave(this.$zoomFactorSelect.val()); });
-
-        this.$oneTabDisplaySelect.on('change', () => {
-            const hideTabRowForOneTab = this.$oneTabDisplaySelect.val() === 'hide' ? 'true' : 'false';
-
-            server.put('options/hideTabRowForOneTab/' + hideTabRowForOneTab)
-                .then(optionsService.reloadOptions);
-        });
 
         this.$leftPaneMinWidth.on('change', async () => {
             await server.put('options/leftPaneMinWidth/' + this.$leftPaneMinWidth.val());
@@ -203,8 +187,6 @@ export default class ApperanceOptions {
         else {
             this.$zoomFactorSelect.prop('disabled', true);
         }
-
-        this.$oneTabDisplaySelect.val(options.hideTabRowForOneTab === 'true' ? 'hide' : 'show');
 
         this.$leftPaneMinWidth.val(options.leftPaneMinWidth);
         this.$leftPaneWidthPercent.val(options.leftPaneWidthPercent);

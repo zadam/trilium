@@ -40,7 +40,6 @@ class TabRow {
         this.eventListeners = {};
 
         this.el = el;
-        this.hideTabRowForOneTab = false;
 
         this.setupStyleEl();
         this.setupEvents();
@@ -60,12 +59,6 @@ class TabRow {
         for (const listener of this.eventListeners[eventName]) {
             await listener({ detail: data });
         }
-    }
-
-    setHideTabRowForOneTab(hideTabRowForOneTab) {
-        this.hideTabRowForOneTab = hideTabRowForOneTab;
-
-        this.setVisibility();
     }
 
     setupStyleEl() {
@@ -92,7 +85,7 @@ class TabRow {
     }
 
     setVisibility() {
-        this.el.style.display = (this.tabEls.length > 1 || !this.hideTabRowForOneTab) ? "block" : "none";
+        this.el.style.display = "block";
     }
 
     get tabEls() {
@@ -428,7 +421,5 @@ class TabRow {
 
 const noteTabRowEl = document.querySelector('.note-tab-row');
 const tabRow = new TabRow(noteTabRowEl);
-
-optionsService.addLoadListener(options => tabRow.setHideTabRowForOneTab(options.is('hideTabRowForOneTab')));
 
 export default tabRow;

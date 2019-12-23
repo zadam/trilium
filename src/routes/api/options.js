@@ -23,7 +23,6 @@ const ALLOWED_OPTIONS = new Set([
     'treeFontSize',
     'detailFontSize',
     'openTabs',
-    'hideTabRowForOneTab',
     'noteInfoWidget',
     'attributesWidget',
     'linkMapWidget',

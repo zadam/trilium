@@ -79,7 +79,6 @@ const defaultOptions = [
     { name: 'similarNotesWidget', value: '{"enabled":true,"expanded":true,"position":600}', isSynced: false },
     { name: 'spellCheckEnabled', value: 'true', isSynced: false },
     { name: 'spellCheckLanguageCode', value: 'en-US', isSynced: false },
-    { name: 'hideTabRowForOneTab', value: 'false', isSynced: false },
     { name: 'imageMaxWidthHeight', value: '1200', isSynced: true },
     { name: 'imageJpegQuality', value: '75', isSynced: true },
     { name: 'autoFixConsistencyIssues', value: 'true', isSynced: false },
