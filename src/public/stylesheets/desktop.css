@@ -15,11 +15,11 @@ body {
 }
 
 .gutter {
-    background-color: var(--accented-background-color);
+    background: linear-gradient(to bottom, transparent, var(--accented-background-color), transparent);
 }
 
 .gutter:hover {
-    background-color: var(--main-border-color);
+    background: linear-gradient(to bottom, transparent, var(--main-border-color), transparent);
 }
 
 .gutter.gutter-horizontal {
@@ -218,7 +218,7 @@ body {
     background: var(--main-background-color);
     border-radius: 5px 5px 0 0;
     overflow: hidden;
-    margin-top: 5px;
+    margin-top: 2px;
 }
 .note-tab-row * {
     box-sizing: inherit;

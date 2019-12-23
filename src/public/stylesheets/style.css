@@ -474,9 +474,14 @@ button.icon-button {
     width: 15em;
 }
 
+#global-menu-wrapper {
+    border-bottom: 1px solid var(--main-border-color);
+}
+
 #global-menu button {
-    height: 38px;
     margin-right: 10px;
+    height: 34px;
+    border-bottom: none;
 }
 
 #global-menu .dropdown-menu {
