@@ -474,6 +474,11 @@ button.icon-button {
     width: 15em;
 }
 
+#global-menu button {
+    height: 38px;
+    margin-right: 10px;
+}
+
 #global-menu .dropdown-menu {
     width: 20em;
 }

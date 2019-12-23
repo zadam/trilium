@@ -177,3 +177,29 @@ noteAutocompleteService.init();
 if (utils.isElectron()) {
     import("./services/spell_check.js").then(spellCheckService => spellCheckService.initSpellCheck());
 }
+
+if (utils.isElectron()) {
+    $("#title-bar-buttons").show();
+
+    $("#minimize-btn").on('click', () => {
+        const { remote } = require('electron');
+        remote.BrowserWindow.getFocusedWindow().minimize();
+    });
+
+    $("#maximize-btn").on('click', () => {
+        const { remote } = require('electron');
+        const focusedWindow = remote.BrowserWindow.getFocusedWindow();
+
+        if (focusedWindow.isMaximized()) {
+            focusedWindow.unmaximize();
+        }
+        else {
+            focusedWindow.maximize();
+        }
+    });
+
+    $("#close-btn").on('click', () => {
+        const { remote } = require('electron');
+        remote.BrowserWindow.getFocusedWindow().close();
+    });
+}

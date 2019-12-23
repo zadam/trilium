@@ -499,3 +499,7 @@ body {
     text-overflow: ellipsis;
     white-space: nowrap;
 }
+
+#title-bar-buttons {
+    min-width: 100px;
+}
