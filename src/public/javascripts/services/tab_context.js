@@ -438,6 +438,10 @@ class TabContext {
             await this.saveNoteIfChanged();
             this.$tabContent.remove();
         }
+
+        if (this.sidebar) {
+            this.sidebar.remove();
+        }
     }
 
     cleanup() {

@@ -475,12 +475,13 @@ button.icon-button {
 }
 
 #global-menu-wrapper {
+    height: 35px;
     border-bottom: 1px solid var(--main-border-color);
 }
 
 #global-menu button {
     margin-right: 10px;
-    height: 34px;
+    height: 33px;
     border-bottom: none;
 }
 

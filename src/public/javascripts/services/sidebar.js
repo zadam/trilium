@@ -154,6 +154,12 @@ class Sidebar {
         this.$widgetContainer.empty().append(...widgetsToAppend);
     }
 
+    remove() {
+        if (this.$widgetContainer) {
+            this.$widgetContainer.remove();
+        }
+    }
+
     eventReceived(name, data) {
         for (const widget of this.widgets) {
             if (widget.eventReceived) {

@@ -212,8 +212,8 @@ body {
 .note-tab-row {
     box-sizing: border-box;
     position: relative;
-    height: 33px;
-    min-height: 33px;
+    height: 34px;
+    min-height: 34px;
     width: 100%;
     background: var(--main-background-color);
     border-radius: 5px 5px 0 0;
