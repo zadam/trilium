@@ -11,8 +11,44 @@ import protectedSessionService from "./protected_session.js";
 import optionsService from "./options.js";
 import linkService from "./link.js";
 import Sidebar from "./sidebar.js";
+import libraryLoader from "./library_loader.js";
+import noteAutocompleteService from "./note_autocomplete.js";
 
 const $tabContentsContainer = $("#note-tab-container");
+
+const mentionSetup = {
+    feeds: [
+        {
+            marker: '@',
+            feed: queryText => {
+                return new Promise((res, rej) => {
+                    noteAutocompleteService.autocompleteSource(queryText, rows => {
+                        if (rows.length === 1 && rows[0].title === 'No results') {
+                            rows = [];
+                        }
+
+                        for (const row of rows) {
+                            row.text = row.name = row.noteTitle;
+                            row.id = '@' + row.text;
+                            row.link = '#' + row.path;
+                        }
+
+                        res(rows);
+                    });
+                });
+            },
+            itemRenderer: item => {
+                const itemElement = document.createElement('span');
+
+                itemElement.classList.add('mentions-item');
+                itemElement.innerHTML = `${item.highlightedTitle} `;
+
+                return itemElement;
+            },
+            minimumCharacters: 0
+        }
+    ]
+};
 
 const componentClasses = {
     'empty': "./note_detail_empty.js",
@@ -67,6 +103,7 @@ class TabContext {
         this.$noteDetailComponents = this.$tabContent.find(".note-detail-component");
         this.$scriptArea = this.$tabContent.find(".note-detail-script-area");
         this.$savedIndicator = this.$tabContent.find(".saved-indicator");
+        this.$attributesEditor = this.$tabContent.find(".note-title-attributes");
         this.noteChangeDisabled = false;
         this.isNoteChanged = false;
         this.attributes = new Attributes(this);
@@ -113,6 +150,16 @@ class TabContext {
         this.$unprotectButton.on('click', protectedSessionService.unprotectNoteAndSendToServer);
 
         await this.initComponent();
+
+        await libraryLoader.requireLibrary(libraryLoader.CKEDITOR);
+
+        await BalloonEditor.create(this.$attributesEditor[0], {
+            placeholder: "type attributes here, e.g. @rock @year=2019",
+            mention: mentionSetup,
+            removePlugins: ['Autoformat'],
+            blockToolbar: [],
+            toolbar: []
+        });
     }
 
     async initComponent(disableAutoBook = false) {

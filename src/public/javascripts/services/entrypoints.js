@@ -112,10 +112,21 @@ function registerEntrypoints() {
         keyboardActionService.setGlobalActionHandler("ForwardInNoteHistory", window.history.forward);
     }
 
+    let zenModeActive = false;
+
     // hide (toggle) everything except for the note content for zen mode
     const toggleZenMode = () => {
-        $(".hide-in-zen-mode").toggle();
-        $("#container").toggleClass("zen-mode");
+        if (!zenModeActive) {
+            $(".hide-in-zen-mode").addClass("hidden-by-zen-mode");
+            $("#container").addClass("zen-mode");
+            zenModeActive = true;
+        }
+        else {
+            // not hiding / showing explicitly since element might be hidden also for other reasons
+            $(".hide-in-zen-mode").removeClass("hidden-by-zen-mode");
+            $("#container").removeClass("zen-mode");
+            zenModeActive = false;
+        }
     };
 
     $("#toggle-zen-mode-button").on('click', toggleZenMode);
