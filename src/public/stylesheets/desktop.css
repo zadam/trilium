@@ -14,13 +14,31 @@ body {
     display: none !important;
 }
 
+.gutter {
+    background-color: var(--accented-background-color);
+}
+
+.gutter:hover {
+    background-color: var(--main-border-color);
+}
+
+.gutter.gutter-horizontal {
+    cursor: col-resize;
+}
+
+.gutter.gutter-vertical {
+    cursor: row-resize;
+}
+
 #center-pane {
     display: flex;
+    flex-direction: column;
 }
 
 #note-tab-container {
     min-height: 0;
     padding-left: 10px;
+    width: 100%;
 }
 
 #search-box {
@@ -195,6 +213,8 @@ body {
     box-sizing: border-box;
     position: relative;
     height: 33px;
+    min-height: 33px;
+    width: 100%;
     background: var(--main-background-color);
     border-radius: 5px 5px 0 0;
     overflow: hidden;
@@ -240,8 +260,14 @@ body {
 }
 
 .tab-row-filler {
+    -webkit-app-region: drag;
     position: absolute;
     left: 0;
+    height: 33px;
+}
+
+.tab-row-filler .tab-row-border {
+    position: relative;
     background: linear-gradient(to right, var(--main-border-color), transparent);
     height: 1px;
     margin-top: 32px;

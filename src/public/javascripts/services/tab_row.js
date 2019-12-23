@@ -14,6 +14,7 @@ const Draggabilly = window.Draggabilly;
 const TAB_CONTENT_MIN_WIDTH = 24;
 const TAB_CONTENT_MAX_WIDTH = 240;
 const NEW_TAB_WIDTH = 32;
+const MIN_FILLER_WIDTH = 50;
 
 const TAB_SIZE_SMALL = 84;
 const TAB_SIZE_SMALLER = 60;
@@ -29,7 +30,9 @@ const tabTemplate = `
 </div>`;
 
 const newTabButtonTemplate = `<div class="note-new-tab" title="Add new tab">+</div>`;
-const fillerTemplate = `<div class="tab-row-filler"></div>`;
+const fillerTemplate = `<div class="tab-row-filler">
+    <div class="tab-row-border"></div>
+</div>`;
 
 class TabRow {
     constructor(el) {
@@ -102,7 +105,7 @@ class TabRow {
 
     get tabContentWidths() {
         const numberOfTabs = this.tabEls.length;
-        const tabsContentWidth = this.tabContentEl.clientWidth - NEW_TAB_WIDTH;
+        const tabsContentWidth = this.tabContentEl.clientWidth - NEW_TAB_WIDTH - MIN_FILLER_WIDTH;
         const targetWidth = tabsContentWidth / numberOfTabs;
         const clampedTargetWidth = Math.max(TAB_CONTENT_MIN_WIDTH, Math.min(TAB_CONTENT_MAX_WIDTH, targetWidth));
         const flooredClampedTargetWidth = Math.floor(clampedTargetWidth);
@@ -119,7 +122,7 @@ class TabRow {
         }
 
         if (this.fillerEl) {
-            this.fillerEl.style.width = extraWidthRemaining + "px";
+            this.fillerEl.style.width = (extraWidthRemaining + MIN_FILLER_WIDTH) + "px";
         }
 
         return widths;

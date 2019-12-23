@@ -52,6 +52,7 @@ async function createMainWindow() {
         webPreferences: {
             nodeIntegration: true
         },
+        frame: false,
         icon: path.join(__dirname, 'images/app-icons/png/256x256' + (env.isDev() ? '-dev' : '') + '.png')
     });
 
