@@ -81,7 +81,7 @@ function SetupModel() {
                 password: password1,
                 theme: theme
             }).then(() => {
-                window.location.replace("./");
+                window.location.replace("./setup");
             });
         }
         else if (this.setupType() === 'sync-from-server') {

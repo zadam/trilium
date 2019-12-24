@@ -114,7 +114,7 @@ function register(app) {
     route(GET, '/login', [auth.checkAppInitialized], loginRoute.loginPage);
     route(POST, '/login', [], loginRoute.login);
     route(POST, '/logout', [csrfMiddleware, auth.checkAuth], loginRoute.logout);
-    route(GET, '/setup', [auth.checkAppNotInitialized], setupRoute.setupPage);
+    route(GET, '/setup', [], setupRoute.setupPage);
 
     apiRoute(GET, '/api/tree', treeApiRoute.getTree);
     apiRoute(POST, '/api/tree/load', treeApiRoute.load);

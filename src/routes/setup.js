@@ -2,10 +2,18 @@
 
 const sqlInit = require('../services/sql_init');
 const setupService = require('../services/setup');
+const utils = require('../services/utils');
+const windowService = require('../services/window');
 
 async function setupPage(req, res) {
     if (await sqlInit.isDbInitialized()) {
-        res.redirect('/');
+        if (utils.isElectron()) {
+            await windowService.createMainWindow();
+            windowService.closeSetupWindow();
+        }
+        else {
+            res.redirect('/');
+        }
     }
 
     // we got here because DB is not completely initialized so if schema exists
