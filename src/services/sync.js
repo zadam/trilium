@@ -251,6 +251,8 @@ async function checkContentHash(syncContext) {
         await syncTableService.addEntitySyncsForSector(entityName, entityPrimaryKey, sector);
 
         await syncRequest(syncContext, 'POST', `/api/sync/queue-sector/${entityName}/${sector}`);
+
+        log.info(`Added sector ${sector} of ${entityName} to sync queue.`);
     }
 
     return failedChecks.length > 0;
