@@ -7,6 +7,7 @@ const sqlInit = require('./src/services/sql_init');
 const cls = require('./src/services/cls');
 const url = require("url");
 const port = require('./src/services/port');
+const optionService = require('./src/services/options');
 const env = require('./src/services/env');
 const keyboardActionsService = require('./src/services/keyboard_actions');
 const appIconService = require('./src/services/app_icon');
@@ -31,10 +32,14 @@ function onClosed() {
 async function createMainWindow() {
     await sqlInit.dbConnection;
 
+    let frame = true;
+
     // if schema doesn't exist -> setup process
     // if schema exists, then we need to wait until the migration process is finished
     if (await sqlInit.schemaExists()) {
         await sqlInit.dbReady;
+
+        frame = await optionService.getOptionBool('nativeTitleBarVisible')
     }
 
     const mainWindowState = windowStateKeeper({
@@ -52,7 +57,7 @@ async function createMainWindow() {
         webPreferences: {
             nodeIntegration: true
         },
-        frame: false,
+        frame: frame,
         icon: path.join(__dirname, 'images/app-icons/png/256x256' + (env.isDev() ? '-dev' : '') + '.png')
     });
 

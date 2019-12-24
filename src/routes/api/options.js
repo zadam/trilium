@@ -33,7 +33,8 @@ const ALLOWED_OPTIONS = new Set([
     'imageJpegQuality',
     'leftPaneWidth',
     'rightPaneWidth',
-    'rightPaneVisible'
+    'rightPaneVisible',
+    'nativeTitleBarVisible'
 ]);
 
 async function getOptions() {

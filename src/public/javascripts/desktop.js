@@ -32,6 +32,7 @@ import sidebarService from './services/sidebar.js';
 import importService from './services/import.js';
 import keyboardActionService from "./services/keyboard_actions.js";
 import splitService from "./services/split.js";
+import optionService from "./services/options.js";
 
 window.glob.isDesktop = utils.isDesktop;
 window.glob.isMobile = utils.isMobile;
@@ -179,31 +180,32 @@ if (utils.isElectron()) {
     import("./services/spell_check.js").then(spellCheckService => spellCheckService.initSpellCheck());
 }
 
-if (utils.isElectron()) {
-    $("#title-bar-buttons").show();
+optionService.waitForOptions().then(options => {
+    if (utils.isElectron() && !options.is('nativeTitleBarVisible')) {
+        $("#title-bar-buttons").show();
 
-    $("#minimize-btn").on('click', () => {
-        $("#minimize-btn").trigger('blur');
-        const { remote } = require('electron');
-        remote.BrowserWindow.getFocusedWindow().minimize();
-    });
+        $("#minimize-btn").on('click', () => {
+            $("#minimize-btn").trigger('blur');
+            const {remote} = require('electron');
+            remote.BrowserWindow.getFocusedWindow().minimize();
+        });
 
-    $("#maximize-btn").on('click', () => {
-        $("#maximize-btn").trigger('blur');
-        const { remote } = require('electron');
-        const focusedWindow = remote.BrowserWindow.getFocusedWindow();
+        $("#maximize-btn").on('click', () => {
+            $("#maximize-btn").trigger('blur');
+            const {remote} = require('electron');
+            const focusedWindow = remote.BrowserWindow.getFocusedWindow();
 
-        if (focusedWindow.isMaximized()) {
-            focusedWindow.unmaximize();
-        }
-        else {
-            focusedWindow.maximize();
-        }
-    });
+            if (focusedWindow.isMaximized()) {
+                focusedWindow.unmaximize();
+            } else {
+                focusedWindow.maximize();
+            }
+        });
 
-    $("#close-btn").on('click', () => {
-        $("#close-btn").trigger('blur');
-        const { remote } = require('electron');
-        remote.BrowserWindow.getFocusedWindow().close();
-    });
-}
+        $("#close-btn").on('click', () => {
+            $("#close-btn").trigger('blur');
+            const {remote} = require('electron');
+            remote.BrowserWindow.getFocusedWindow().close();
+        });
+    }
+});

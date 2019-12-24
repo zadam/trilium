@@ -9,15 +9,24 @@ const TPL = `
 
 <form>
     <div class="form-group row">
-        <div class="col-6">
+        <div class="col-4">
             <label for="theme-select">Theme</label>
             <select class="form-control" id="theme-select"></select>
         </div>
 
-        <div class="col-6">
+        <div class="col-4">
             <label for="zoom-factor-select">Zoom factor (desktop build only)</label>
 
             <input type="number" class="form-control" id="zoom-factor-select" min="0.3" max="2.0" step="0.1"/>
+        </div>
+        
+        <div class="col-4">
+            <label for="native-title-bar-select">Native title bar (requires app restart)</label>
+
+            <select class="form-control" id="native-title-bar-select">
+                <option value="show">enabled</option>
+                <option value="hide">disabled</option>
+            </select>
         </div>
     </div>
 
@@ -69,6 +78,7 @@ export default class ApperanceOptions {
 
         this.$themeSelect = $("#theme-select");
         this.$zoomFactorSelect = $("#zoom-factor-select");
+        this.$nativeTitleBarSelect = $("#native-title-bar-select");
         this.$mainFontSize = $("#main-font-size");
         this.$treeFontSize = $("#tree-font-size");
         this.$detailFontSize = $("#detail-font-size");
@@ -98,6 +108,12 @@ export default class ApperanceOptions {
         });
 
         this.$zoomFactorSelect.on('change', () => { zoomService.setZoomFactorAndSave(this.$zoomFactorSelect.val()); });
+
+        this.$nativeTitleBarSelect.on('change', () => {
+            const nativeTitleBarVisible = this.$nativeTitleBarSelect.val() === 'show' ? 'true' : 'false';
+
+            server.put('options/nativeTitleBarVisible/' + nativeTitleBarVisible);
+        });
 
         this.$mainFontSize.on('change', async () => {
             await server.put('options/mainFontSize/' + this.$mainFontSize.val());
@@ -142,6 +158,8 @@ export default class ApperanceOptions {
         else {
             this.$zoomFactorSelect.prop('disabled', true);
         }
+
+        this.$nativeTitleBarSelect.val(options.nativeTitleBarVisible === 'true' ? 'show' : 'hide');
 
         this.$mainFontSize.val(options.mainFontSize);
         this.$treeFontSize.val(options.treeFontSize);
