@@ -53,7 +53,7 @@ async function updateEntity(sync, entity, sourceId) {
 async function updateNote(entity, sourceId) {
     const origNote = await sql.getRow("SELECT * FROM notes WHERE noteId = ?", [entity.noteId]);
 
-    if (!origNote || origNote.utcDateModified < entity.utcDateModified) {
+    if (!origNote || origNote.utcDateModified < entity.utcDateModified || origNote.hash !== entity.hash) {
         await sql.transactional(async () => {
             await sql.replace("notes", entity);
 
@@ -67,7 +67,7 @@ async function updateNote(entity, sourceId) {
 async function updateNoteContent(entity, sourceId) {
     const origNoteContent = await sql.getRow("SELECT * FROM note_contents WHERE noteId = ?", [entity.noteId]);
 
-    if (!origNoteContent || origNoteContent.utcDateModified < entity.utcDateModified) {
+    if (!origNoteContent || origNoteContent.utcDateModified < entity.utcDateModified || origNoteContent.hash !== entity.hash) {
         entity.content = entity.content === null ? null : Buffer.from(entity.content, 'base64');
 
         await sql.transactional(async () => {
@@ -84,7 +84,7 @@ async function updateBranch(entity, sourceId) {
     const orig = await sql.getRowOrNull("SELECT * FROM branches WHERE branchId = ?", [entity.branchId]);
 
     await sql.transactional(async () => {
-        if (orig === null || orig.utcDateModified < entity.utcDateModified) {
+        if (orig === null || orig.utcDateModified < entity.utcDateModified || orig.hash !== entity.hash) {
             // isExpanded is not synced unless it's a new branch instance
             // otherwise in case of full new sync we'll get all branches (even root) collapsed.
             if (orig) {
@@ -104,7 +104,7 @@ async function updateNoteRevision(entity, sourceId) {
     const orig = await sql.getRowOrNull("SELECT * FROM note_revisions WHERE noteRevisionId = ?", [entity.noteRevisionId]);
 
     await sql.transactional(async () => {
-        if (orig === null || orig.utcDateModified < entity.utcDateModified) {
+        if (orig === null || orig.utcDateModified < entity.utcDateModified || orig.hash !== entity.hash) {
             await sql.replace('note_revisions', entity);
 
             await syncTableService.addNoteRevisionSync(entity.noteRevisionId, sourceId);
@@ -118,7 +118,7 @@ async function updateNoteRevisionContent(entity, sourceId) {
     const orig = await sql.getRowOrNull("SELECT * FROM note_revision_contents WHERE noteRevisionId = ?", [entity.noteRevisionId]);
 
     await sql.transactional(async () => {
-        if (orig === null || orig.utcDateModified < entity.utcDateModified) {
+        if (orig === null || orig.utcDateModified < entity.utcDateModified || orig.hash !== entity.hash) {
             entity.content = entity.content === null ? null : Buffer.from(entity.content, 'base64');
 
             await sql.replace('note_revision_contents', entity);
@@ -148,7 +148,7 @@ async function updateOptions(entity, sourceId) {
     }
 
     await sql.transactional(async () => {
-        if (orig === null || orig.utcDateModified < entity.utcDateModified) {
+        if (orig === null || orig.utcDateModified < entity.utcDateModified || orig.hash !== entity.hash) {
             await sql.replace('options', entity);
 
             await syncTableService.addOptionsSync(entity.name, sourceId);
@@ -159,7 +159,7 @@ async function updateOptions(entity, sourceId) {
 async function updateRecentNotes(entity, sourceId) {
     const orig = await sql.getRowOrNull("SELECT * FROM recent_notes WHERE noteId = ?", [entity.noteId]);
 
-    if (orig === null || orig.utcDateCreated < entity.utcDateCreated) {
+    if (orig === null || orig.utcDateCreated < entity.utcDateCreated || orig.hash !== entity.hash) {
         await sql.transactional(async () => {
             await sql.replace('recent_notes', entity);
 
@@ -171,7 +171,7 @@ async function updateRecentNotes(entity, sourceId) {
 async function updateAttribute(entity, sourceId) {
     const origAttribute = await sql.getRow("SELECT * FROM attributes WHERE attributeId = ?", [entity.attributeId]);
 
-    if (!origAttribute || origAttribute.utcDateModified <= entity.utcDateModified) {
+    if (!origAttribute || origAttribute.utcDateModified <= entity.utcDateModified || origAttribute.hash !== entity.hash) {
         await sql.transactional(async () => {
             await sql.replace("attributes", entity);
 

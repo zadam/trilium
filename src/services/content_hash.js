@@ -12,11 +12,15 @@ const RecentNote = require('../entities/recent_note');
 const Option = require('../entities/option');
 
 async function getSectorHashes(tableName, primaryKeyName, whereBranch) {
-    // subselect is necessary to have correct ordering in GROUP_CONCAT
-    const query = `SELECT SUBSTR(${primaryKeyName}, 1, 1), GROUP_CONCAT(hash) FROM ${tableName} `
-        + (whereBranch ? `WHERE ${whereBranch} ` : '') + `GROUP BY SUBSTR(${primaryKeyName}, 1, 1) ORDER BY ${primaryKeyName}`;
+    const hashes = await sql.getRows(`SELECT ${primaryKeyName} AS id, hash FROM ${tableName} `
+        + (whereBranch ? `WHERE ${whereBranch} ` : '')
+        + ` ORDER BY ${primaryKeyName}`);
 
-    const map = await sql.getMap(query);
+    const map = {};
+
+    for (const {id, hash} of hashes) {
+        map[id[0]] = (map[id[0]] || "") + hash;
+    }
 
     for (const key in map) {
         map[key] = utils.hash(map[key]);
@@ -55,7 +59,7 @@ async function checkContentHashes(otherHashes) {
         const thisSectorHashes = entityHashes[entityName];
         const otherSectorHashes = otherHashes[entityName];
 
-        const sectors = new Set(Object.keys(entityHashes).concat(Object.keys(otherHashes)));
+        const sectors = new Set(Object.keys(thisSectorHashes).concat(Object.keys(otherSectorHashes)));
 
         for (const sector of sectors) {
             if (thisSectorHashes[sector] !== otherSectorHashes[sector]) {
