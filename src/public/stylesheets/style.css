@@ -940,3 +940,8 @@ a.external:not(.no-arrow):after, a[href^="http://"]:not(.no-arrow):after, a[href
 .ck-content .todo-list .todo-list__label > input:before {
     border: 1px solid var(--muted-text-color) !important;
 }
+
+.ck-link-actions .ck-tooltip {
+    /* force hide the tooltip since it shows misleading "open link in new tab */
+    display: none !important;
+}

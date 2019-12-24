@@ -6,12 +6,7 @@ import noteDetailService from "./note_detail.js";
 function getNotePathFromUrl(url) {
     const notePathMatch = /#(root[A-Za-z0-9/]*)$/.exec(url);
 
-    if (notePathMatch === null) {
-        return null;
-    }
-    else {
-        return notePathMatch[1];
-    }
+    return notePathMatch === null ? null : notePathMatch[1];
 }
 
 async function createNoteLink(notePath, noteTitle = null, tooltip = true) {
@@ -66,7 +61,10 @@ function getNotePathFromLink($link) {
 }
 
 function goToLink(e) {
-    const $link = $(e.target);
+    e.preventDefault();
+    e.stopPropagation();
+
+    const $link = $(e.target).closest("a");
 
     const notePath = getNotePathFromLink($link);
 
@@ -88,9 +86,6 @@ function goToLink(e) {
             window.open(address, '_blank');
         }
     }
-
-    e.preventDefault();
-    e.stopPropagation();
 
     return true;
 }
@@ -118,7 +113,7 @@ function addTextToEditor(text) {
 }
 
 function newTabContextMenu(e) {
-    const $link = $(e.target);
+    const $link = $(e.target).closest("a");
 
     const notePath = getNotePathFromLink($link);
 
@@ -142,22 +137,27 @@ function newTabContextMenu(e) {
     });
 }
 
-$(document).on('contextmenu', '.note-detail-text a', newTabContextMenu);
-$(document).on('contextmenu', "a[data-action='note']", newTabContextMenu);
-$(document).on('contextmenu', ".note-detail-render a", newTabContextMenu);
-
 // when click on link popup, in case of internal link, just go the the referenced note instead of default behavior
 // of opening the link in new window/tab
 $(document).on('mousedown', "a[data-action='note']", goToLink);
 $(document).on('mousedown', 'div.popover-content a, div.ui-tooltip-content a', goToLink);
 $(document).on('dblclick', '.note-detail-text a', goToLink);
 $(document).on('mousedown', '.note-detail-text a', function (e) {
-    const notePath = getNotePathFromLink($(e.target));
-    if (notePath && ((e.which === 1 && e.ctrlKey) || e.which === 2)) {
+    const $link = $(e.target).closest("a");
+    const notePath = getNotePathFromLink($link);
+
+    if ((e.which === 1 && e.ctrlKey) || e.which === 2) {
         // if it's a ctrl-click, then we open on new tab, otherwise normal flow (CKEditor opens link-editing dialog)
         e.preventDefault();
 
-        noteDetailService.loadNoteDetail(notePath, { newTab: true });
+        if (notePath) {
+            noteDetailService.loadNoteDetail(notePath, {newTab: true});
+        }
+        else {
+            const address = $link.attr('href');
+
+            window.open(address, '_blank');
+        }
 
         return true;
     }
@@ -166,19 +166,16 @@ $(document).on('mousedown', '.note-detail-text a', function (e) {
 $(document).on('mousedown', '.note-detail-book a', goToLink);
 $(document).on('mousedown', '.note-detail-render a', goToLink);
 $(document).on('mousedown', '.note-detail-text.ck-read-only a', goToLink);
-$(document).on('mousedown', 'span.ck-button__label', e => {
-    // this is a link preview dialog from CKEditor link editing
-    // for some reason clicked element is span
-
-    const url = $(e.target).text();
-    const notePath = getNotePathFromUrl(url);
-
-    if (notePath) {
-        treeService.activateNote(notePath);
-
-        e.preventDefault();
-    }
+$(document).on('mousedown', 'a.ck-link-actions__preview', goToLink);
+$(document).on('click', 'a.ck-link-actions__preview', e => {
+    e.preventDefault();
+    e.stopPropagation();
 });
+
+$(document).on('contextmenu', 'a.ck-link-actions__preview', newTabContextMenu);
+$(document).on('contextmenu', '.note-detail-text a', newTabContextMenu);
+$(document).on('contextmenu', "a[data-action='note']", newTabContextMenu);
+$(document).on('contextmenu', ".note-detail-render a", newTabContextMenu);
 
 export default {
     getNotePathFromUrl,
