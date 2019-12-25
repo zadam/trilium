@@ -144,7 +144,10 @@ async function printActiveNote() {
     $tabContext.$tabContent.find('.note-detail-component:visible').printThis({
         header: $("<h2>").text($tabContext.note && $tabContext.note.title).prop('outerHTML') ,
         importCSS: false,
-        loadCSS: "libraries/codemirror/codemirror.css",
+        loadCSS: [
+            "libraries/codemirror/codemirror.css",
+            "libraries/ckeditor/ckeditor-print.css"
+        ],
         debug: true
     });
 }
