@@ -274,6 +274,9 @@ async function importTar(taskContext, fileBuffer, importRootNote) {
                 return /^(?:[a-z]+:)?\/\//i.test(url);
             }
 
+            content = content.replace(/<html.*<body[^>]*>/gis, "");
+            content = content.replace(/<\/body>.*<\/html>/gis, "");
+
             content = content.replace(/src="([^"]*)"/g, (match, url) => {
                 url = decodeURIComponent(url);
 
@@ -297,9 +300,6 @@ async function importTar(taskContext, fileBuffer, importRootNote) {
 
                 return `href="#root/${targetNoteId}"`;
             });
-
-            content = content.replace(/<html.*<body[^>]*>/gis, "");
-            content = content.replace(/<\/body>.*<\/html>/gis, "");
 
             content = content.replace(/<h1>([^<]*)<\/h1>/gi, (match, text) => {
                 if (noteTitle.trim() === text.trim()) {
