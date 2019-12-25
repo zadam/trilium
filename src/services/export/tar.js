@@ -11,6 +11,8 @@ const packageInfo = require('../../../package.json');
 const utils = require('../utils');
 const protectedSessionService = require('../protected_session');
 const sanitize = require("sanitize-filename");
+const fs = require("fs");
+const RESOURCE_DIR = require('../../services/resource_dir').RESOURCE_DIR;
 
 /**
  * @param {TaskContext} taskContext
@@ -224,8 +226,13 @@ async function exportToTar(taskContext, branch, format, res) {
 
         if (noteMeta.format === 'html') {
             if (!content.substr(0, 100).toLowerCase().includes("<html")) {
+                const cssUrl = "../".repeat(noteMeta.notePath.length - 1) + 'style.css';
+
                 content = `<html>
-<head><meta charset="utf-8"></head>
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="${cssUrl}">
+</head>
 <body>
   <h1>${utils.escapeHtml(title)}</h1>
 ${content}
@@ -323,7 +330,15 @@ ${content}
             return html + '</li>';
         }
 
-        const fullHtml = '<html><head><meta charset="utf-8"></head><body><ul>' + saveNavigationInner(rootMeta) + '</ul></body></html>'
+        const fullHtml = `<html>
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <ul>${saveNavigationInner(rootMeta)}</ul>
+</body>
+</html>`;
         const prettyHtml = html.prettyPrint(fullHtml, {indent_size: 2});
 
         pack.entry({name: navigationMeta.dataFileName, size: prettyHtml.length}, prettyHtml);
@@ -360,6 +375,12 @@ ${content}
         pack.entry({name: indexMeta.dataFileName, size: fullHtml.length}, fullHtml);
     }
 
+    function saveCss(rootMeta, cssMeta) {
+        const cssContent = fs.readFileSync(RESOURCE_DIR + '/libraries/ckeditor/ckeditor-content.css');
+
+        pack.entry({name: cssMeta.dataFileName, size: cssContent.length}, cssContent);
+    }
+
     const existingFileNames = format === 'html' ? ['navigation', 'index'] : [];
     const rootMeta = await getNoteMeta(branch, { notePath: [] }, existingFileNames);
 
@@ -369,7 +390,7 @@ ${content}
         files: [ rootMeta ]
     };
 
-    let navigationMeta, indexMeta;
+    let navigationMeta, indexMeta, cssMeta;
 
     if (format === 'html') {
         navigationMeta = {
@@ -385,6 +406,13 @@ ${content}
         };
 
         metaFile.files.push(indexMeta);
+
+        cssMeta = {
+            noImport: true,
+            dataFileName: "style.css"
+        };
+
+        metaFile.files.push(cssMeta);
     }
 
     for (const noteMeta of Object.values(noteIdToMeta)) {
@@ -406,6 +434,7 @@ ${content}
     if (format === 'html') {
         saveNavigation(rootMeta, navigationMeta);
         saveIndex(rootMeta, indexMeta);
+        saveCss(rootMeta, cssMeta);
     }
 
     pack.finalize();

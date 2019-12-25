@@ -146,7 +146,7 @@ async function printActiveNote() {
         importCSS: false,
         loadCSS: [
             "libraries/codemirror/codemirror.css",
-            "libraries/ckeditor/ckeditor-print.css"
+            "libraries/ckeditor/ckeditor-content.css"
         ],
         debug: true
     });
