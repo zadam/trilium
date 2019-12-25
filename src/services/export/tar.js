@@ -190,13 +190,13 @@ async function exportToTar(taskContext, branch, format, res) {
         for (let i = 0; i < targetPath.length - 1; i++) {
             const meta = noteIdToMeta[targetPath[i]];
 
-            url += meta.dirFileName + '/';
+            url += encodeURIComponent(meta.dirFileName) + '/';
         }
 
         const meta = noteIdToMeta[targetPath[targetPath.length - 1]];
 
         // link can target note which is only "folder-note" and as such will not have a file in an export
-        url += meta.dataFileName || meta.dirFileName;
+        url += encodeURIComponent(meta.dataFileName || meta.dirFileName);
 
         return url;
     }
@@ -205,13 +205,13 @@ async function exportToTar(taskContext, branch, format, res) {
         content = content.replace(/src="[^"]*api\/images\/([a-zA-Z0-9]+)\/[^"]*"/g, (match, targetNoteId) => {
             const url = getTargetUrl(targetNoteId, noteMeta);
 
-            return url ? `src="${encodeURIComponent(url)}"` : match;
+            return url ? `src="${url}"` : match;
         });
 
         content = content.replace(/href="[^"]*#root[a-zA-Z0-9\/]*\/([a-zA-Z0-9]+)\/?"/g, (match, targetNoteId) => {
             const url = getTargetUrl(targetNoteId, noteMeta);
 
-            return url ? `href="${encodeURIComponent(url)}"` : match;
+            return url ? `href="${url}"` : match;
         });
 
         return content;
@@ -263,7 +263,7 @@ ${content}
         if (noteMeta.isClone) {
             const targetUrl = getTargetUrl(noteMeta.noteId, noteMeta);
 
-            let content = `<p>This is a clone of a note. Go to its <a href="${encodeURIComponent(targetUrl)}">primary location</a>.</p>`;
+            let content = `<p>This is a clone of a note. Go to its <a href="${targetUrl}">primary location</a>.</p>`;
 
             content = prepareContent(noteMeta.title, content, noteMeta);
 
