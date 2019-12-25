@@ -1,10 +1,8 @@
-const {BrowserWindow} = require('electron');
 const path = require('path');
 const url = require("url");
 const port = require('./port');
 const optionService = require('./options');
 const env = require('./env');
-const windowStateKeeper = require('electron-window-state');
 
 // Prevent window being garbage collected
 /** @type {Electron.BrowserWindow} */
@@ -13,12 +11,15 @@ let mainWindow;
 let setupWindow;
 
 async function createMainWindow() {
+    const windowStateKeeper = require('electron-window-state'); // should not be statically imported
+
     const mainWindowState = windowStateKeeper({
         // default window width & height so it's usable on 1600 * 900 display (including some extra panels etc.)
         defaultWidth: 1200,
         defaultHeight: 800
     });
 
+    const {BrowserWindow} = require('electron'); // should not be statically imported
     mainWindow = new BrowserWindow({
         x: mainWindowState.x,
         y: mainWindowState.y,
@@ -61,6 +62,7 @@ function getIcon() {
 }
 
 async function createSetupWindow() {
+    const {BrowserWindow} = require('electron'); // should not be statically imported
     setupWindow = new BrowserWindow({
         width: 800,
         height: 800,
