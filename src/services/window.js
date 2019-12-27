@@ -67,7 +67,11 @@ async function createSetupWindow() {
         width: 800,
         height: 800,
         title: 'Trilium Notes Setup',
-        icon: getIcon()
+        icon: getIcon(),
+        webPreferences: {
+            // necessary for e.g. utils.isElectron()
+            nodeIntegration: true
+        }
     });
 
     setupWindow.setMenuBarVisibility(false);
