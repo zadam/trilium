@@ -3,6 +3,10 @@ const url = require("url");
 const port = require('./port');
 const optionService = require('./options');
 const env = require('./env');
+const log = require('./log');
+const sqlInit = require('./sql_init');
+const cls = require('./cls');
+const keyboardActionsService = require('./keyboard_actions');
 
 // Prevent window being garbage collected
 /** @type {Electron.BrowserWindow} */
@@ -85,8 +89,43 @@ function closeSetupWindow() {
     }
 }
 
+async function registerGlobalShortcuts() {
+    const {globalShortcut} = require('electron');
+
+    await sqlInit.dbReady;
+
+    const allActions = await keyboardActionsService.getKeyboardActions();
+
+    for (const action of allActions) {
+        if (!action.effectiveShortcuts) {
+            continue;
+        }
+
+        for (const shortcut of action.effectiveShortcuts) {
+            if (shortcut.startsWith('global:')) {
+                const translatedShortcut = shortcut.substr(7);
+
+                const result = globalShortcut.register(translatedShortcut, cls.wrap(async () => {
+                    // window may be hidden / not in focus
+                    mainWindow.focus();
+
+                    mainWindow.webContents.send('globalShortcut', action.actionName);
+                }));
+
+                if (result) {
+                    log.info(`Registered global shortcut ${translatedShortcut} for action ${action.actionName}`);
+                }
+                else {
+                    log.info(`Could not register global shortcut ${translatedShortcut}`);
+                }
+            }
+        }
+    }
+}
+
 module.exports = {
     createMainWindow,
     createSetupWindow,
-    closeSetupWindow
+    closeSetupWindow,
+    registerGlobalShortcuts
 };
