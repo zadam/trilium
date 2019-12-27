@@ -270,7 +270,14 @@ body {
     position: relative;
     background: linear-gradient(to right, var(--main-border-color), transparent);
     height: 1px;
-    margin-top: 32px;
+    margin-top: 31px;
+}
+
+/* hack for 1 pixel difference in handling between FF and chrome */
+@-moz-document url-prefix() {
+    .tab-row-filler .tab-row-border {
+        margin-top: 32px;
+    }
 }
 
 .note-tab-row .note-tab[active] {
