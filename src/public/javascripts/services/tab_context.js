@@ -11,8 +11,6 @@ import protectedSessionService from "./protected_session.js";
 import optionsService from "./options.js";
 import linkService from "./link.js";
 import Sidebar from "./sidebar.js";
-import libraryLoader from "./library_loader.js";
-import noteAutocompleteService from "./note_autocomplete.js";
 
 const $tabContentsContainer = $("#note-tab-container");
 
@@ -291,6 +289,10 @@ class TabContext {
     }
 
     getComponent() {
+        if (!this.components[this.type]) {
+            throw new Error("Could not find component for type: " + this.type);
+        }
+
         return this.components[this.type];
     }
 
