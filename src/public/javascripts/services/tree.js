@@ -127,15 +127,15 @@ async function getNodeFromPath(notePath, expand = false, expandOpts = {}) {
 
         // we expand only after hoisted note since before then nodes are not actually present in the tree
         if (parentNode) {
-            checkFolderStatus(parentNode);
-
             if (!parentNode.isLoaded()) {
                 await parentNode.load();
             }
 
             if (expand) {
-               parentNode.setExpanded(true, expandOpts);
+               await parentNode.setExpanded(true, expandOpts);
             }
+
+            await checkFolderStatus(parentNode);
 
             let foundChildNode = findChildNode(parentNode, childNoteId);
 
