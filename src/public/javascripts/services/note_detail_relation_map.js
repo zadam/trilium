@@ -494,7 +494,7 @@ class NoteDetailRelationMap {
     }
 
     async createNoteBox(noteId, title, x, y) {
-        const $link = await linkService.createNoteLink(noteId, title);
+        const $link = await linkService.createNoteLink(noteId, {title});
         $link.mousedown(e => {
             console.log(e);
 

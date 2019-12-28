@@ -45,7 +45,7 @@ class EditedNotesWidget extends StandardWidget {
                 $item.append($("<i>").text(editedNote.title + " (deleted)"));
             }
             else {
-                $item.append(editedNote.notePath ? await linkService.createNoteLinkWithPath(editedNote.notePath.join("/")) : editedNote.title);
+                $item.append(editedNote.notePath ? await linkService.createNoteLink(editedNote.notePath.join("/"), {showNotePath: true}) : editedNote.title);
             }
 
             $list.append($item);

@@ -379,7 +379,7 @@ class TabContext {
     async addPath(notePath, isCurrent) {
         const title = await treeUtils.getNotePathTitle(notePath);
 
-        const noteLink = await linkService.createNoteLink(notePath, title);
+        const noteLink = await linkService.createNoteLink(notePath, {title});
 
         noteLink
             .addClass("no-tooltip-preview")
