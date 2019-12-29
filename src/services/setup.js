@@ -71,7 +71,8 @@ async function setupSyncFromSyncServer(syncServerHost, syncProxy, username, pass
                 'user': username,
                 'pass': password
             },
-            proxy: syncProxy
+            proxy: syncProxy,
+            timeout: 30000 // seed request should not take long
         });
 
         if (resp.syncVersion !== appInfo.syncVersion) {
