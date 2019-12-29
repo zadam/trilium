@@ -125,14 +125,14 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
     }
 
     /**
-     * Executes given anonymous function on the server.
+     * Executes given anonymous function on the backend.
      * Internally this serializes the anonymous function into string and sends it to backend via AJAX.
      *
      * @param {string} script - script to be executed on the backend
      * @param {Array.<?>} params - list of parameters to the anonymous function to be send to backend
      * @return {Promise<*>} return value of the executed function on the backend
      */
-    this.runOnServer = async (script, params = []) => {
+    this.runOnBackend = async (script, params = []) => {
         if (typeof script === "function") {
             script = script.toString();
         }
@@ -158,6 +158,12 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
             throw new Error("server error: " + ret.error);
         }
     };
+
+    /**
+     * @deprecated new name of this API call is runOnBackend so use that
+     * @method
+     */
+    this.runOnServer = this.runOnBackend;
 
     /**
      * This is a powerful search method - you can search by attributes and their values, e.g.:

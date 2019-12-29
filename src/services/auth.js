@@ -83,7 +83,7 @@ async function checkBasicAuth(req, res, next) {
     const dbUsername = await optionService.getOption('username');
 
     if (dbUsername !== username || !await passwordEncryptionService.verifyPassword(password)) {
-        res.status(401).send("Not authorized");
+        res.status(401).send('Incorrect username and/or password');
     }
     else {
         next();

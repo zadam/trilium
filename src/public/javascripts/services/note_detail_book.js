@@ -137,7 +137,7 @@ class NoteDetailBook {
                 .attr('data-note-id', childNote.noteId)
                 .css("flex-basis", ZOOMS[this.zoomLevel].width)
                 .addClass("type-" + type)
-                .append($('<h5 class="note-book-title">').append(await linkService.createNoteLink(childNotePath, null, false)))
+                .append($('<h5 class="note-book-title">').append(await linkService.createNoteLink(childNotePath,  {showTooltip: false})))
                 .append($('<div class="note-book-content">')
                     .css("max-height", ZOOMS[this.zoomLevel].height)
                     .append(await this.getNoteContent(type, childNote)));

@@ -9,7 +9,11 @@ function getNotePathFromUrl(url) {
     return notePathMatch === null ? null : notePathMatch[1];
 }
 
-async function createNoteLink(notePath, noteTitle = null, tooltip = true) {
+async function createNoteLink(notePath, options = {}) {
+    let noteTitle = options.title;
+    const showTooltip = options.showTooltip === undefined ? true : options.showTooltip;
+    const showNotePath = options.showNotePath === undefined ? false : options.showNotePath;
+
     if (!noteTitle) {
         const {noteId, parentNoteId} = treeUtils.getNoteIdAndParentIdFromNotePath(notePath);
 
@@ -22,30 +26,26 @@ async function createNoteLink(notePath, noteTitle = null, tooltip = true) {
     }).attr('data-action', 'note')
         .attr('data-note-path', notePath);
 
-    if (!tooltip) {
+    if (!showTooltip) {
         $noteLink.addClass("no-tooltip-preview");
     }
 
-    return $noteLink;
-}
+    const $container = $("<span>").append($noteLink);
 
-async function createNoteLinkWithPath(notePath, noteTitle = null) {
-    const $link = await createNoteLink(notePath, noteTitle);
+    if (showNotePath) {
+        notePath = await treeService.resolveNotePath(notePath);
 
-    const $res = $("<span>").append($link);
-
-    if (notePath.includes("/")) {
         const noteIds = notePath.split("/");
         noteIds.pop(); // remove last element
 
         const parentNotePath = noteIds.join("/").trim();
 
         if (parentNotePath) {
-            $res.append($("<small>").text(" (" + await treeUtils.getNotePathTitle(parentNotePath) + ")"));
+            $container.append($("<small>").text(" (" + await treeUtils.getNotePathTitle(parentNotePath) + ")"));
         }
     }
 
-    return $res;
+    return $container;
 }
 
 function getNotePathFromLink($link) {
@@ -180,7 +180,6 @@ $(document).on('contextmenu', ".note-detail-render a", newTabContextMenu);
 export default {
     getNotePathFromUrl,
     createNoteLink,
-    createNoteLinkWithPath,
     addLinkToEditor,
     addTextToEditor,
     goToLink

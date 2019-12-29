@@ -48,8 +48,11 @@ class NoteDetailImage {
         });
 
         this.$uploadNewRevisionInput.on('change', async () => {
+            const fileToUpload = this.$uploadNewRevisionInput[0].files[0]; // copy to allow reset below
+            this.$uploadNewRevisionInput.val('');
+
             const formData = new FormData();
-            formData.append('upload', this.$uploadNewRevisionInput[0].files[0]);
+            formData.append('upload', fileToUpload);
 
             const result = await $.ajax({
                 url: baseApiUrl + 'images/' + this.ctx.note.noteId,

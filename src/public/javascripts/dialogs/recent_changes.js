@@ -44,7 +44,10 @@ export async function showDialog() {
                 const note = await treeCache.getNote(change.noteId);
                 const notePath = await treeService.getSomeNotePath(note);
 
-                noteLink = await linkService.createNoteLinkWithPath(notePath, change.title);
+                noteLink = await linkService.createNoteLink(notePath, {
+                    title: change.title,
+                    showNotePath: true
+                });
             }
 
             changesListEl.append($('<li>')

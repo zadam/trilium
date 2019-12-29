@@ -57,6 +57,7 @@ body {
 }
 
 #left-pane {
+    height: 100%;
     display: flex;
     flex-direction: column;
 }

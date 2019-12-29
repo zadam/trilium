@@ -131,12 +131,15 @@ async function checkOutstandingSyncs() {
     const { stats, initialized } = await $.get('api/sync/stats');
 
     if (initialized) {
-        window.location.replace("./");
+        const remote = require('electron').remote;
+        remote.app.relaunch();
+        remote.app.exit(0);
     }
+    else {
+        const totalOutstandingSyncs = stats.outstandingPushes + stats.outstandingPulls;
 
-    const totalOutstandingSyncs = stats.outstandingPushes + stats.outstandingPulls;
-
-    $("#outstanding-syncs").html(totalOutstandingSyncs);
+        $("#outstanding-syncs").html(totalOutstandingSyncs);
+    }
 }
 
 function showAlert(message) {

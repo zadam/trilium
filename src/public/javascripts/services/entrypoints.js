@@ -255,6 +255,8 @@ function registerEntrypoints() {
         await treeService.expandToNote(note.noteId);
 
         await noteDetailService.openInTab(note.noteId, true);
+
+        noteDetailService.focusAndSelectTitle();
     });
 
     keyboardActionService.setGlobalActionHandler("EditBranchPrefix", async () => {

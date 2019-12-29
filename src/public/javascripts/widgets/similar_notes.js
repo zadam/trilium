@@ -39,7 +39,7 @@ class SimilarNotesWidget extends StandardWidget {
             }
 
             const $item = $("<li>")
-                .append(await linkService.createNoteLinkWithPath(similarNote.notePath.join("/")));
+                .append(await linkService.createNoteLink(similarNote.notePath.join("/"), {showNotePath: true}));
 
             $list.append($item);
         }
