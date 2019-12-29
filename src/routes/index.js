@@ -6,6 +6,7 @@ const attributeService = require('../services/attributes');
 const config = require('../services/config');
 const optionService = require('../services/options');
 const log = require('../services/log');
+const env = require('../services/env');
 
 async function index(req, res) {
     const options = await optionService.getOptionsMap();
@@ -24,7 +25,8 @@ async function index(req, res) {
         sourceId: await sourceIdService.generateSourceId(),
         maxSyncIdAtLoad: await sql.getValue("SELECT MAX(id) FROM sync"),
         instanceName: config.General ? config.General.instanceName : null,
-        appCssNoteIds: await getAppCssNoteIds()
+        appCssNoteIds: await getAppCssNoteIds(),
+        isDev: env.isDev()
     });
 }
 

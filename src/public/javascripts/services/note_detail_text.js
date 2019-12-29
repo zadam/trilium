@@ -61,7 +61,7 @@ class NoteDetailText {
             else {
                 window.open(src, '_blank');
             }
-        })
+        });
     }
 
     async render() {
@@ -93,6 +93,11 @@ class NoteDetailText {
                         languages: codeBlockLanguages
                     }
                 });
+
+                if (glob.isDev) {
+                    await import('../../libraries/ckeditor/inspector.js');
+                    CKEditorInspector.attach(this.textEditor);
+                }
 
                 this.onNoteChange(() => this.ctx.noteChanged());
             }

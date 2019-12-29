@@ -210,6 +210,7 @@
     <% include dialogs/clone_to.ejs %>
     <% include dialogs/move_to.ejs %>
     <% include dialogs/backend_log.ejs %>
+    <% include dialogs/include_note.ejs %>
 </div>
 
 <script type="text/javascript">
@@ -220,7 +221,8 @@
         sourceId: '<%= sourceId %>',
         maxSyncIdAtLoad: <%= maxSyncIdAtLoad %>,
         instanceName: '<%= instanceName %>',
-        csrfToken: '<%= csrfToken %>'
+        csrfToken: '<%= csrfToken %>',
+        isDev: '<%= isDev %>'
     };
     window.appCssNoteIds = <%- JSON.stringify(appCssNoteIds) %>;
 </script>

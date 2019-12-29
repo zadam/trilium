@@ -41,6 +41,7 @@ window.glob.isMobile = utils.isMobile;
 window.glob.getActiveNode = treeService.getActiveNode;
 window.glob.getHeaders = server.getHeaders;
 window.glob.showAddLinkDialog = () => import('./dialogs/add_link.js').then(d => d.showDialog());
+window.glob.showIncludeNoteDialog = cb => import('./dialogs/include_note.js').then(d => d.showDialog(cb));
 // this is required by CKEditor when uploading images
 window.glob.noteChanged = noteDetailService.noteChanged;
 window.glob.refreshTree = treeService.reload;
