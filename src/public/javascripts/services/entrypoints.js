@@ -117,13 +117,13 @@ function registerEntrypoints() {
     // hide (toggle) everything except for the note content for zen mode
     const toggleZenMode = () => {
         if (!zenModeActive) {
-            $(".hide-in-zen-mode").addClass("hidden-by-zen-mode");
+            $(".hide-in-zen-mode,.gutter").addClass("hidden-by-zen-mode");
             $("#container").addClass("zen-mode");
             zenModeActive = true;
         }
         else {
             // not hiding / showing explicitly since element might be hidden also for other reasons
-            $(".hide-in-zen-mode").removeClass("hidden-by-zen-mode");
+            $(".hide-in-zen-mode,.gutter").removeClass("hidden-by-zen-mode");
             $("#container").removeClass("zen-mode");
             zenModeActive = false;
         }

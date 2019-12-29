@@ -160,6 +160,10 @@ span.fancytree-node.muted { opacity: 0.6; }
     background-position: center;
 }
 
+.zen-mode #center-pane {
+    width: 100% !important;
+}
+
 ul.fancytree-container {
     outline: none !important;
     background-color: inherit !important;
