@@ -1,10 +1,6 @@
-import server from "./server.js";
 import linkService from "./link.js";
-import utils from "./utils.js";
 import treeCache from "./tree_cache.js";
-import renderService from "./render.js";
-import protectedSessionHolder from "./protected_session_holder.js";
-import protectedSessionService from "./protected_session.js";
+import noteContentRenderer from "./note_content_renderer.js";
 
 const MIN_ZOOM_LEVEL = 1;
 const MAX_ZOOM_LEVEL = 6;
@@ -129,9 +125,9 @@ class NoteDetailBook {
 
     async renderIntoElement(note, $container) {
         for (const childNote of await note.getChildNotes()) {
-            const type = this.getRenderingType(childNote);
-
             const childNotePath = this.ctx.notePath + '/' + childNote.noteId;
+
+            const {type, renderedContent} = await noteContentRenderer.getRenderedContent(childNote);
 
             const $card = $('<div class="note-book-card">')
                 .attr('data-note-id', childNote.noteId)
@@ -140,7 +136,7 @@ class NoteDetailBook {
                 .append($('<h5 class="note-book-title">').append(await linkService.createNoteLink(childNotePath,  {showTooltip: false})))
                 .append($('<div class="note-book-content">')
                     .css("max-height", ZOOMS[this.zoomLevel].height)
-                    .append(await this.getNoteContent(type, childNote)));
+                    .append(renderedContent));
 
             const childCount = childNote.getChildNoteIds().length;
 
@@ -155,80 +151,6 @@ class NoteDetailBook {
             }
 
             $container.append($card);
-        }
-    }
-
-    async getNoteContent(type, note) {
-        if (type === 'text') {
-            const fullNote = await server.get('notes/' + note.noteId);
-
-            const $content = $("<div>").html(fullNote.content);
-
-            if (utils.isHtmlEmpty(fullNote.content)) {
-                return "";
-            }
-            else {
-                return $content;
-            }
-        }
-        else if (type === 'code') {
-            const fullNote = await server.get('notes/' + note.noteId);
-
-            if (fullNote.content.trim() === "") {
-                return "";
-            }
-
-            return $("<pre>").text(fullNote.content);
-        }
-        else if (type === 'image') {
-            return $("<img>").attr("src", `api/images/${note.noteId}/${note.title}`);
-        }
-        else if (type === 'file') {
-            function getFileUrl() {
-                return utils.getUrlForDownload("api/notes/" + note.noteId + "/download");
-            }
-
-            const $downloadButton = $('<button class="file-download btn btn-primary" type="button">Download</button>');
-            const $openButton = $('<button class="file-open btn btn-primary" type="button">Open</button>');
-
-            $downloadButton.on('click', () => utils.download(getFileUrl()));
-            $openButton.on('click', () => {
-                if (utils.isElectron()) {
-                    const open = require("open");
-
-                    open(getFileUrl(), {url: true});
-                }
-                else {
-                    window.location.href = getFileUrl();
-                }
-            });
-
-            // open doesn't work for protected notes since it works through browser which isn't in protected session
-            $openButton.toggle(!note.isProtected);
-
-            return $('<div>')
-                .append($downloadButton)
-                .append(' &nbsp; ')
-                .append($openButton);
-        }
-        else if (type === 'render') {
-            const $el = $('<div>');
-
-            await renderService.render(note, $el, this.ctx);
-
-            return $el;
-        }
-        else if (type === 'protected-session') {
-            const $button = $(`<button class="btn btn-sm"><span class="bx bx-log-in"></span> Enter protected session</button>`)
-                .on('click', protectedSessionService.enterProtectedSession);
-
-            return $("<div>")
-                .append("<div>This note is protected and to access it you need to enter password.</div>")
-                .append("<br/>")
-                .append($button);
-        }
-        else {
-            return "<em>Content of this note cannot be displayed in the book format</em>";
         }
     }
 
@@ -254,21 +176,6 @@ class NoteDetailBook {
         else {
             return 1;
         }
-    }
-
-    getRenderingType(childNote) {
-        let type = childNote.type;
-
-        if (childNote.isProtected) {
-            if (protectedSessionHolder.isProtectedSessionAvailable()) {
-                protectedSessionHolder.touchProtectedSession();
-            }
-            else {
-                type = 'protected-session';
-            }
-        }
-
-        return type;
     }
 
     getContent() {

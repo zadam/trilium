@@ -2,6 +2,7 @@ import libraryLoader from "./library_loader.js";
 import treeService from './tree.js';
 import noteAutocompleteService from './note_autocomplete.js';
 import mimeTypesService from './mime_types.js';
+import treeCache from "./tree_cache.js";
 
 const mentionSetup = {
     feeds: [

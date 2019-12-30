@@ -33,6 +33,7 @@ import importService from './services/import.js';
 import keyboardActionService from "./services/keyboard_actions.js";
 import splitService from "./services/split.js";
 import optionService from "./services/options.js";
+import noteContentRenderer from "./services/note_content_renderer.js";
 
 window.glob.isDesktop = utils.isDesktop;
 window.glob.isMobile = utils.isMobile;
@@ -42,6 +43,19 @@ window.glob.getActiveNode = treeService.getActiveNode;
 window.glob.getHeaders = server.getHeaders;
 window.glob.showAddLinkDialog = () => import('./dialogs/add_link.js').then(d => d.showDialog());
 window.glob.showIncludeNoteDialog = cb => import('./dialogs/include_note.js').then(d => d.showDialog(cb));
+window.glob.loadIncludedNote = async (noteId, el) => {
+    const note = await treeCache.getNote(noteId);
+
+    if (note) {
+        $(el).empty().append($("<h3>").append(await linkService.createNoteLink(note.noteId, {
+            showTooltip: false
+        })));
+
+        const {renderedContent} = await noteContentRenderer.getRenderedContent(note);
+
+        $(el).append(renderedContent);
+    }
+};
 // this is required by CKEditor when uploading images
 window.glob.noteChanged = noteDetailService.noteChanged;
 window.glob.refreshTree = treeService.reload;

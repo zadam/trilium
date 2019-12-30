@@ -63,7 +63,8 @@ async function getNotes(noteIds) {
         SELECT 
           noteId,
           title,
-          isProtected, 
+          contentLength,
+          isProtected,
           type,
           mime,
           isDeleted

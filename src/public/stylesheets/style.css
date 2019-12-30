@@ -961,3 +961,10 @@ a.external:not(.no-arrow):after, a[href^="http://"]:not(.no-arrow):after, a[href
     /* force hide the tooltip since it shows misleading "open link in new tab */
     display: none !important;
 }
+
+.include-note {
+    margin: 20px;
+    padding: 20px;
+    border-radius: 10px;
+    background-color: var(--accented-background-color);
+}
