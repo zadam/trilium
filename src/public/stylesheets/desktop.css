@@ -10,6 +10,10 @@ body {
     flex-direction: column;
 }
 
+#topbar {
+    display: flex;
+}
+
 .hidden-by-zen-mode {
     display: none !important;
 }
@@ -62,14 +66,14 @@ body {
     flex-direction: column;
 }
 
-#header {
+#toolbar {
     background-color: var(--header-background-color);
     display: flex;
     align-items: center;
     padding-top: 4px;
 }
 
-#header button {
+#toolbar button {
     padding: 1px 5px 1px 5px;
     font-size: smaller;
     margin-bottom: 2px;
@@ -78,12 +82,12 @@ body {
     border-color: transparent !important;
 }
 
-#header button.btn-sm .bx {
+#toolbar button.btn-sm .bx {
     position: relative;
     top: 1px;
 }
 
-#header button:hover {
+#toolbar button:hover {
     border-color: var(--button-border-color) !important;
 }
 
