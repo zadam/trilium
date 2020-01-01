@@ -174,7 +174,11 @@ async function showTab(tabId) {
     if (newActiveTabContext && newActiveTabContext.notePath) {
         const newActiveNode = await treeService.getNodeFromPath(newActiveTabContext.notePath);
 
-        if (newActiveNode && newActiveNode.isVisible()) {
+        if (newActiveNode) {
+            if (!newActiveNode.isVisible()) {
+                await treeService.expandToNote(newActiveTabContext.notePath);
+            }
+
             newActiveNode.setActive(true, {noEvents: true});
         }
     }
