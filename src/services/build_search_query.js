@@ -21,17 +21,19 @@ module.exports = function(filters, selectedColumns = 'notes.*') {
         "notes": null
     };
 
+    let attrFilterId = 1;
+
     function getAccessor(property) {
         let accessor;
 
         if (!VIRTUAL_ATTRIBUTES.includes(property)) {
-            const alias = "attr_" + property;
+            // not reusing existing filters to support multi-valued filters e.g. "@tag=christmas @tag=shopping"
+            // can match notes because @tag can be both "shopping" and "christmas"
+            const alias = "attr_" + property + "_" + attrFilterId++;
 
-            if (!(alias in joins)) {
-                joins[alias] = `LEFT JOIN attributes AS ${alias} `
-                    + `ON ${alias}.noteId = notes.noteId `
-                    + `AND ${alias}.name = '${property}' AND ${alias}.isDeleted = 0`;
-            }
+            joins[alias] = `LEFT JOIN attributes AS ${alias} `
+                + `ON ${alias}.noteId = notes.noteId `
+                + `AND ${alias}.name = '${property}' AND ${alias}.isDeleted = 0`;
 
             accessor = `${alias}.value`;
         }
