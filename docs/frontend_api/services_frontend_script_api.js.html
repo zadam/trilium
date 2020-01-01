@@ -153,14 +153,14 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
     }
 
     /**
-     * Executes given anonymous function on the server.
+     * Executes given anonymous function on the backend.
      * Internally this serializes the anonymous function into string and sends it to backend via AJAX.
      *
      * @param {string} script - script to be executed on the backend
      * @param {Array.&lt;?>} params - list of parameters to the anonymous function to be send to backend
      * @return {Promise&lt;*>} return value of the executed function on the backend
      */
-    this.runOnServer = async (script, params = []) => {
+    this.runOnBackend = async (script, params = []) => {
         if (typeof script === "function") {
             script = script.toString();
         }
@@ -186,6 +186,12 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
             throw new Error("server error: " + ret.error);
         }
     };
+
+    /**
+     * @deprecated new name of this API call is runOnBackend so use that
+     * @method
+     */
+    this.runOnServer = this.runOnBackend;
 
     /**
      * This is a powerful search method - you can search by attributes and their values, e.g.:
@@ -412,6 +418,12 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
     this.bindGlobalShortcut = utils.bindGlobalShortcut;
 
     /**
+     * Trilium runs in backend and frontend process, when something is changed on the backend from script,
+     * frontend will get asynchronously synchronized.
+     *
+     * This method returns a promise which resolves once all the backend -> frontend synchronization is finished.
+     * Typical use case is when new note has been created, we should wait until it is synced into frontend and only then activate it.
+     *
      * @method
      */
     this.waitUntilSynced = ws.waitForMaxKnownSyncId;
