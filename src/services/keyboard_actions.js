@@ -255,6 +255,11 @@ const DEFAULT_KEYBOARD_ACTIONS = [
         defaultShortcuts: [],
         description: "Pastes Markdown from clipboard into text note"
     },
+    {
+        actionName: "CutIntoNote",
+        defaultShortcuts: [],
+        description: "Cuts the selection from the current note and creates subnote with the selected text"
+    },
 
     {
         separator: "Other"

@@ -637,12 +637,6 @@ async function createNote(node, parentNoteId, target, extraOptions = {}) {
     if (noteDetailService.getActiveTabNoteType() !== 'text') {
         extraOptions.saveSelection = false;
     }
-    else {
-        // just disable this feature altogether - there's a problem that note containing image or table at the beginning
-        // of the content will be auto-selected by CKEditor and then CTRL-P with no user interaction will automatically save
-        // the selection - see https://github.com/ckeditor/ckeditor5/issues/1384
-        extraOptions.saveSelection = false;
-    }
 
     if (extraOptions.saveSelection) {
         [extraOptions.title, extraOptions.content] = parseSelectedHtml(window.cutToNote.getSelectedHtml());
@@ -820,13 +814,13 @@ keyboardActionService.setGlobalActionHandler('CreateNoteAfter', async () => {
     });
 });
 
-async function createNoteInto() {
+async function createNoteInto(saveSelection = false) {
     const node = getActiveNode();
 
     if (node) {
         await createNote(node, node.data.noteId, 'into', {
             isProtected: node.data.isProtected,
-            saveSelection: true
+            saveSelection: saveSelection
         });
     }
 }
@@ -875,7 +869,9 @@ async function reloadNotes(noteIds, activateNotePath = null) {
     }
 }
 
-window.glob.createNoteInto = createNoteInto;
+window.glob.cutIntoNote = () => createNoteInto(true);
+
+keyboardActionService.setGlobalActionHandler('CutIntoNote', () => createNoteInto(true));
 
 keyboardActionService.setGlobalActionHandler('CreateNoteInto', createNoteInto);
 
