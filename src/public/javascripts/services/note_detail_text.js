@@ -2,7 +2,8 @@ import libraryLoader from "./library_loader.js";
 import treeService from './tree.js';
 import noteAutocompleteService from './note_autocomplete.js';
 import mimeTypesService from './mime_types.js';
-import treeCache from "./tree_cache.js";
+
+const ENABLE_INSPECTOR = false;
 
 const mentionSetup = {
     feeds: [
@@ -95,7 +96,7 @@ class NoteDetailText {
                     }
                 });
 
-                if (glob.isDev) {
+                if (glob.isDev && ENABLE_INSPECTOR) {
                     await import('../../libraries/ckeditor/inspector.js');
                     CKEditorInspector.attach(this.textEditor);
                 }
