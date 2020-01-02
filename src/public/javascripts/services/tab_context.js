@@ -162,9 +162,6 @@ class TabContext {
             this.noteChangeDisabled = false;
         }
 
-        // after loading new note make sure editor is scrolled to the top
-        this.getComponent().scrollToTop();
-
         this.setTitleBar();
 
         this.cleanup(); // esp. on windows autocomplete is not getting closed automatically
@@ -186,6 +183,9 @@ class TabContext {
         }
 
         bundleService.executeRelationBundles(this.note, 'runOnNoteView', this);
+
+        // after loading new note make sure editor is scrolled to the top
+        this.getComponent().scrollToTop();
     }
 
     async show() {
