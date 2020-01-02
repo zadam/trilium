@@ -191,9 +191,7 @@ async function activateNote(notePath, noteLoadedListener) {
         noteDetailService.addDetailLoadedListener(node.data.noteId, noteLoadedListener);
     }
 
-    // we use noFocus because when we reload the tree because of background changes
-    // we don't want the reload event to steal focus from whatever was focused before
-    await node.setActive(true, { noFocus: true });
+    await node.setActive(true);
 
     clearSelectedNodes();
 
