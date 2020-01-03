@@ -74,7 +74,7 @@ async function deleteNote(req) {
 async function undeleteNote(req) {
     const note = await repository.getNote(req.params.noteId);
 
-    const taskContext = TaskContext.getInstance(utils.randomString(), 'undelete-notes');
+    const taskContext = TaskContext.getInstance(utils.randomString(10), 'undelete-notes');
 
     await noteService.undeleteNote(note, note.deleteId, taskContext);
 
