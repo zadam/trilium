@@ -445,6 +445,88 @@ async function deleteBranch(branch, deleteId, taskContext) {
     }
 }
 
+/**
+ * @param {Note} note
+ * @param {string} deleteId
+ * @param {TaskContext} taskContext
+ */
+async function undeleteNote(note, deleteId, taskContext) {
+    const undeletedParentBranches = await getUndeletedParentBranches(note.noteId, deleteId);
+
+    if (undeletedParentBranches.length === 0) {
+        // cannot undelete if there's no undeleted parent
+        return;
+    }
+
+    for (const parentBranch of undeletedParentBranches) {
+        await undeleteBranch(parentBranch, deleteId, taskContext);
+    }
+}
+
+/**
+ * @param {Branch} branch
+ * @param {string} deleteId
+ * @param {TaskContext} taskContext
+ */
+async function undeleteBranch(branch, deleteId, taskContext) {
+    if (!branch.isDeleted) {
+        return;
+    }
+
+    const note = await branch.getNote();
+
+    if (note.isDeleted && note.deleteId !== deleteId) {
+        return;
+    }
+
+    branch.isDeleted = false;
+    await branch.save();
+
+    taskContext.increaseProgressCount();
+
+    if (note.isDeleted && note.deleteId === deleteId) {
+        note.isDeleted = false;
+        await note.save();
+
+        const attrs = await repository.getEntities(`
+                SELECT * FROM attributes 
+                WHERE isDeleted = 1 
+                  AND deleteId = ? 
+                  AND (noteId = ? 
+                           OR (type = 'relation' AND value = ?))`, [deleteId, note.noteId, note.noteId]);
+
+        for (const attr of attrs) {
+            attr.isDeleted = false;
+            await attr.save();
+        }
+
+        const childBranches = await repository.getEntities(`
+            SELECT branches.*
+            FROM branches
+            WHERE branches.isDeleted = 1
+              AND branches.deleteId = ?
+              AND branches.parentNoteId = ?`, [deleteId, note.noteId]);
+
+        for (const childBranch of childBranches) {
+            await deleteBranch(childBranch, deleteId, taskContext);
+        }
+    }
+}
+
+/**
+ * @return return deleted branches of an undeleted parent note
+ */
+async function getUndeletedParentBranches(noteId, deleteId) {
+    return await repository.getEntities(`
+                    SELECT branches.*
+                    FROM branches
+                    JOIN notes AS parentNote ON parentNote.noteId = branches.parentNoteId
+                    WHERE branches.noteId = ?
+                      AND branches.isDeleted = 1
+                      AND branches.deleteId = ?
+                      AND parentNote.isDeleted = 0`, [noteId, deleteId]);
+}
+
 async function scanForLinks(noteId) {
     const note = await repository.getNote(noteId);
     if (!note || !['text', 'relation-map'].includes(note.type)) {
@@ -552,7 +634,9 @@ module.exports = {
     createNewNoteWithTarget,
     updateNote,
     deleteBranch,
+    undeleteNote,
     protectNoteRecursively,
     scanForLinks,
-    duplicateNote
+    duplicateNote,
+    getUndeletedParentBranches
 };

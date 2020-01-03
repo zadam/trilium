@@ -2,7 +2,7 @@
 <dataSource name="document.db">
   <database-model serializer="dbm" dbms="SQLITE" family-id="SQLITE" format-version="4.17">
     <root id="1">
-      <ServerVersion>3.16.1</ServerVersion>
+      <ServerVersion>3.25.1</ServerVersion>
     </root>
     <schema id="2" parent="1" name="main">
       <Current>1</Current>
@@ -57,6 +57,7 @@
     <index id="24" parent="6" name="sqlite_autoindex_api_tokens_1">
       <NameSurrogate>1</NameSurrogate>
       <ColNames>apiTokenId</ColNames>
+      <ColumnCollations></ColumnCollations>
       <Unique>1</Unique>
     </index>
     <key id="25" parent="6">
@@ -111,529 +112,573 @@
       <DataType>INT|0s</DataType>
       <NotNull>1</NotNull>
     </column>
-    <column id="35" parent="7" name="hash">
+    <column id="35" parent="7" name="deleteId">
       <Position>10</Position>
+      <DataType>TEXT|0s</DataType>
+      <DefaultExpression>NULL</DefaultExpression>
+    </column>
+    <column id="36" parent="7" name="hash">
+      <Position>11</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
       <DefaultExpression>&quot;&quot;</DefaultExpression>
     </column>
-    <column id="36" parent="7" name="isInheritable">
-      <Position>11</Position>
+    <column id="37" parent="7" name="isInheritable">
+      <Position>12</Position>
       <DataType>int|0s</DataType>
       <DefaultExpression>0</DefaultExpression>
     </column>
-    <index id="37" parent="7" name="sqlite_autoindex_attributes_1">
+    <index id="38" parent="7" name="sqlite_autoindex_attributes_1">
       <NameSurrogate>1</NameSurrogate>
       <ColNames>attributeId</ColNames>
+      <ColumnCollations></ColumnCollations>
       <Unique>1</Unique>
     </index>
-    <index id="38" parent="7" name="IDX_attributes_noteId_index">
+    <index id="39" parent="7" name="IDX_attributes_noteId_index">
       <ColNames>noteId</ColNames>
+      <ColumnCollations></ColumnCollations>
     </index>
-    <index id="39" parent="7" name="IDX_attributes_name_value">
+    <index id="40" parent="7" name="IDX_attributes_name_value">
       <ColNames>name
 value</ColNames>
+      <ColumnCollations></ColumnCollations>
     </index>
-    <index id="40" parent="7" name="IDX_attributes_value_index">
+    <index id="41" parent="7" name="IDX_attributes_value_index">
       <ColNames>value</ColNames>
+      <ColumnCollations></ColumnCollations>
     </index>
-    <key id="41" parent="7">
+    <key id="42" parent="7">
       <ColNames>attributeId</ColNames>
       <Primary>1</Primary>
       <UnderlyingIndexName>sqlite_autoindex_attributes_1</UnderlyingIndexName>
     </key>
-    <column id="42" parent="8" name="branchId">
+    <column id="43" parent="8" name="branchId">
       <Position>1</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
     </column>
-    <column id="43" parent="8" name="noteId">
+    <column id="44" parent="8" name="noteId">
       <Position>2</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
     </column>
-    <column id="44" parent="8" name="parentNoteId">
+    <column id="45" parent="8" name="parentNoteId">
       <Position>3</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
     </column>
-    <column id="45" parent="8" name="notePosition">
+    <column id="46" parent="8" name="notePosition">
       <Position>4</Position>
       <DataType>INTEGER|0s</DataType>
       <NotNull>1</NotNull>
     </column>
-    <column id="46" parent="8" name="prefix">
+    <column id="47" parent="8" name="prefix">
       <Position>5</Position>
       <DataType>TEXT|0s</DataType>
     </column>
-    <column id="47" parent="8" name="isExpanded">
+    <column id="48" parent="8" name="isExpanded">
       <Position>6</Position>
       <DataType>INTEGER|0s</DataType>
       <NotNull>1</NotNull>
       <DefaultExpression>0</DefaultExpression>
     </column>
-    <column id="48" parent="8" name="isDeleted">
+    <column id="49" parent="8" name="isDeleted">
       <Position>7</Position>
       <DataType>INTEGER|0s</DataType>
       <NotNull>1</NotNull>
       <DefaultExpression>0</DefaultExpression>
     </column>
-    <column id="49" parent="8" name="utcDateModified">
+    <column id="50" parent="8" name="deleteId">
       <Position>8</Position>
       <DataType>TEXT|0s</DataType>
-      <NotNull>1</NotNull>
+      <DefaultExpression>NULL</DefaultExpression>
     </column>
-    <column id="50" parent="8" name="utcDateCreated">
+    <column id="51" parent="8" name="utcDateModified">
       <Position>9</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
     </column>
-    <column id="51" parent="8" name="hash">
+    <column id="52" parent="8" name="utcDateCreated">
       <Position>10</Position>
+      <DataType>TEXT|0s</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="53" parent="8" name="hash">
+      <Position>11</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
       <DefaultExpression>&quot;&quot;</DefaultExpression>
     </column>
-    <index id="52" parent="8" name="sqlite_autoindex_branches_1">
+    <index id="54" parent="8" name="sqlite_autoindex_branches_1">
       <NameSurrogate>1</NameSurrogate>
       <ColNames>branchId</ColNames>
+      <ColumnCollations></ColumnCollations>
       <Unique>1</Unique>
     </index>
-    <index id="53" parent="8" name="IDX_branches_noteId_parentNoteId">
+    <index id="55" parent="8" name="IDX_branches_noteId_parentNoteId">
       <ColNames>noteId
 parentNoteId</ColNames>
+      <ColumnCollations></ColumnCollations>
     </index>
-    <index id="54" parent="8" name="IDX_branches_parentNoteId">
+    <index id="56" parent="8" name="IDX_branches_parentNoteId">
       <ColNames>parentNoteId</ColNames>
+      <ColumnCollations></ColumnCollations>
     </index>
-    <key id="55" parent="8">
+    <key id="57" parent="8">
       <ColNames>branchId</ColNames>
       <Primary>1</Primary>
       <UnderlyingIndexName>sqlite_autoindex_branches_1</UnderlyingIndexName>
     </key>
-    <column id="56" parent="9" name="noteId">
+    <column id="58" parent="9" name="noteId">
       <Position>1</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
     </column>
-    <column id="57" parent="9" name="content">
+    <column id="59" parent="9" name="content">
       <Position>2</Position>
       <DataType>TEXT|0s</DataType>
       <DefaultExpression>NULL</DefaultExpression>
     </column>
-    <column id="58" parent="9" name="hash">
+    <column id="60" parent="9" name="hash">
       <Position>3</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
       <DefaultExpression>&quot;&quot;</DefaultExpression>
     </column>
-    <column id="59" parent="9" name="utcDateModified">
+    <column id="61" parent="9" name="utcDateModified">
       <Position>4</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
     </column>
-    <index id="60" parent="9" name="sqlite_autoindex_note_contents_1">
+    <index id="62" parent="9" name="sqlite_autoindex_note_contents_1">
       <NameSurrogate>1</NameSurrogate>
       <ColNames>noteId</ColNames>
+      <ColumnCollations></ColumnCollations>
       <Unique>1</Unique>
     </index>
-    <key id="61" parent="9">
+    <key id="63" parent="9">
       <ColNames>noteId</ColNames>
       <Primary>1</Primary>
       <UnderlyingIndexName>sqlite_autoindex_note_contents_1</UnderlyingIndexName>
     </key>
-    <column id="62" parent="10" name="noteRevisionId">
+    <column id="64" parent="10" name="noteRevisionId">
       <Position>1</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
     </column>
-    <column id="63" parent="10" name="content">
+    <column id="65" parent="10" name="content">
       <Position>2</Position>
       <DataType>TEXT|0s</DataType>
     </column>
-    <column id="64" parent="10" name="hash">
+    <column id="66" parent="10" name="hash">
       <Position>3</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
       <DefaultExpression>&apos;&apos;</DefaultExpression>
     </column>
-    <column id="65" parent="10" name="utcDateModified">
+    <column id="67" parent="10" name="utcDateModified">
       <Position>4</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
     </column>
-    <index id="66" parent="10" name="sqlite_autoindex_note_revision_contents_1">
+    <index id="68" parent="10" name="sqlite_autoindex_note_revision_contents_1">
       <NameSurrogate>1</NameSurrogate>
       <ColNames>noteRevisionId</ColNames>
+      <ColumnCollations></ColumnCollations>
       <Unique>1</Unique>
     </index>
-    <key id="67" parent="10">
+    <key id="69" parent="10">
       <ColNames>noteRevisionId</ColNames>
       <Primary>1</Primary>
       <UnderlyingIndexName>sqlite_autoindex_note_revision_contents_1</UnderlyingIndexName>
     </key>
-    <column id="68" parent="11" name="noteRevisionId">
+    <column id="70" parent="11" name="noteRevisionId">
       <Position>1</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
     </column>
-    <column id="69" parent="11" name="noteId">
+    <column id="71" parent="11" name="noteId">
       <Position>2</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
     </column>
-    <column id="70" parent="11" name="title">
+    <column id="72" parent="11" name="title">
       <Position>3</Position>
       <DataType>TEXT|0s</DataType>
     </column>
-    <column id="71" parent="11" name="contentLength">
+    <column id="73" parent="11" name="contentLength">
       <Position>4</Position>
       <DataType>INT|0s</DataType>
       <NotNull>1</NotNull>
     </column>
-    <column id="72" parent="11" name="isErased">
+    <column id="74" parent="11" name="isErased">
       <Position>5</Position>
       <DataType>INT|0s</DataType>
       <NotNull>1</NotNull>
       <DefaultExpression>0</DefaultExpression>
     </column>
-    <column id="73" parent="11" name="isProtected">
+    <column id="75" parent="11" name="isProtected">
       <Position>6</Position>
       <DataType>INT|0s</DataType>
       <NotNull>1</NotNull>
       <DefaultExpression>0</DefaultExpression>
     </column>
-    <column id="74" parent="11" name="utcDateLastEdited">
+    <column id="76" parent="11" name="utcDateLastEdited">
       <Position>7</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
     </column>
-    <column id="75" parent="11" name="utcDateCreated">
+    <column id="77" parent="11" name="utcDateCreated">
       <Position>8</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
     </column>
-    <column id="76" parent="11" name="utcDateModified">
+    <column id="78" parent="11" name="utcDateModified">
       <Position>9</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
     </column>
-    <column id="77" parent="11" name="dateLastEdited">
+    <column id="79" parent="11" name="dateLastEdited">
       <Position>10</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
     </column>
-    <column id="78" parent="11" name="dateCreated">
+    <column id="80" parent="11" name="dateCreated">
       <Position>11</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
     </column>
-    <column id="79" parent="11" name="type">
+    <column id="81" parent="11" name="type">
       <Position>12</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
       <DefaultExpression>&apos;&apos;</DefaultExpression>
     </column>
-    <column id="80" parent="11" name="mime">
+    <column id="82" parent="11" name="mime">
       <Position>13</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
       <DefaultExpression>&apos;&apos;</DefaultExpression>
     </column>
-    <column id="81" parent="11" name="hash">
+    <column id="83" parent="11" name="hash">
       <Position>14</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
       <DefaultExpression>&apos;&apos;</DefaultExpression>
     </column>
-    <index id="82" parent="11" name="sqlite_autoindex_note_revisions_1">
+    <index id="84" parent="11" name="sqlite_autoindex_note_revisions_1">
       <NameSurrogate>1</NameSurrogate>
       <ColNames>noteRevisionId</ColNames>
+      <ColumnCollations></ColumnCollations>
       <Unique>1</Unique>
     </index>
-    <index id="83" parent="11" name="IDX_note_revisions_noteId">
+    <index id="85" parent="11" name="IDX_note_revisions_noteId">
       <ColNames>noteId</ColNames>
+      <ColumnCollations></ColumnCollations>
     </index>
-    <index id="84" parent="11" name="IDX_note_revisions_utcDateLastEdited">
+    <index id="86" parent="11" name="IDX_note_revisions_utcDateLastEdited">
       <ColNames>utcDateLastEdited</ColNames>
+      <ColumnCollations></ColumnCollations>
     </index>
-    <index id="85" parent="11" name="IDX_note_revisions_utcDateCreated">
+    <index id="87" parent="11" name="IDX_note_revisions_utcDateCreated">
       <ColNames>utcDateCreated</ColNames>
+      <ColumnCollations></ColumnCollations>
     </index>
-    <index id="86" parent="11" name="IDX_note_revisions_dateLastEdited">
+    <index id="88" parent="11" name="IDX_note_revisions_dateLastEdited">
       <ColNames>dateLastEdited</ColNames>
+      <ColumnCollations></ColumnCollations>
     </index>
-    <index id="87" parent="11" name="IDX_note_revisions_dateCreated">
+    <index id="89" parent="11" name="IDX_note_revisions_dateCreated">
       <ColNames>dateCreated</ColNames>
+      <ColumnCollations></ColumnCollations>
     </index>
-    <key id="88" parent="11">
+    <key id="90" parent="11">
       <ColNames>noteRevisionId</ColNames>
       <Primary>1</Primary>
       <UnderlyingIndexName>sqlite_autoindex_note_revisions_1</UnderlyingIndexName>
     </key>
-    <column id="89" parent="12" name="noteId">
+    <column id="91" parent="12" name="noteId">
       <Position>1</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
     </column>
-    <column id="90" parent="12" name="title">
+    <column id="92" parent="12" name="title">
       <Position>2</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
       <DefaultExpression>&quot;note&quot;</DefaultExpression>
     </column>
-    <column id="91" parent="12" name="contentLength">
+    <column id="93" parent="12" name="contentLength">
       <Position>3</Position>
       <DataType>INT|0s</DataType>
       <NotNull>1</NotNull>
     </column>
-    <column id="92" parent="12" name="isProtected">
+    <column id="94" parent="12" name="isProtected">
       <Position>4</Position>
       <DataType>INT|0s</DataType>
       <NotNull>1</NotNull>
       <DefaultExpression>0</DefaultExpression>
     </column>
-    <column id="93" parent="12" name="type">
+    <column id="95" parent="12" name="type">
       <Position>5</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
       <DefaultExpression>&apos;text&apos;</DefaultExpression>
     </column>
-    <column id="94" parent="12" name="mime">
+    <column id="96" parent="12" name="mime">
       <Position>6</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
       <DefaultExpression>&apos;text/html&apos;</DefaultExpression>
     </column>
-    <column id="95" parent="12" name="hash">
+    <column id="97" parent="12" name="hash">
       <Position>7</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
       <DefaultExpression>&quot;&quot;</DefaultExpression>
     </column>
-    <column id="96" parent="12" name="isDeleted">
+    <column id="98" parent="12" name="isDeleted">
       <Position>8</Position>
       <DataType>INT|0s</DataType>
       <NotNull>1</NotNull>
       <DefaultExpression>0</DefaultExpression>
     </column>
-    <column id="97" parent="12" name="isErased">
+    <column id="99" parent="12" name="deleteId">
       <Position>9</Position>
+      <DataType>TEXT|0s</DataType>
+      <DefaultExpression>NULL</DefaultExpression>
+    </column>
+    <column id="100" parent="12" name="isErased">
+      <Position>10</Position>
       <DataType>INT|0s</DataType>
       <NotNull>1</NotNull>
       <DefaultExpression>0</DefaultExpression>
     </column>
-    <column id="98" parent="12" name="dateCreated">
-      <Position>10</Position>
-      <DataType>TEXT|0s</DataType>
-      <NotNull>1</NotNull>
-    </column>
-    <column id="99" parent="12" name="dateModified">
+    <column id="101" parent="12" name="dateCreated">
       <Position>11</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
     </column>
-    <column id="100" parent="12" name="utcDateCreated">
+    <column id="102" parent="12" name="dateModified">
       <Position>12</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
     </column>
-    <column id="101" parent="12" name="utcDateModified">
+    <column id="103" parent="12" name="utcDateCreated">
       <Position>13</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
     </column>
-    <index id="102" parent="12" name="sqlite_autoindex_notes_1">
+    <column id="104" parent="12" name="utcDateModified">
+      <Position>14</Position>
+      <DataType>TEXT|0s</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <index id="105" parent="12" name="sqlite_autoindex_notes_1">
       <NameSurrogate>1</NameSurrogate>
       <ColNames>noteId</ColNames>
+      <ColumnCollations></ColumnCollations>
       <Unique>1</Unique>
     </index>
-    <index id="103" parent="12" name="IDX_notes_title">
+    <index id="106" parent="12" name="IDX_notes_title">
       <ColNames>title</ColNames>
+      <ColumnCollations></ColumnCollations>
     </index>
-    <index id="104" parent="12" name="IDX_notes_type">
+    <index id="107" parent="12" name="IDX_notes_type">
       <ColNames>type</ColNames>
+      <ColumnCollations></ColumnCollations>
     </index>
-    <index id="105" parent="12" name="IDX_notes_isDeleted">
+    <index id="108" parent="12" name="IDX_notes_isDeleted">
       <ColNames>isDeleted</ColNames>
+      <ColumnCollations></ColumnCollations>
     </index>
-    <index id="106" parent="12" name="IDX_notes_dateCreated">
+    <index id="109" parent="12" name="IDX_notes_dateCreated">
       <ColNames>dateCreated</ColNames>
+      <ColumnCollations></ColumnCollations>
     </index>
-    <index id="107" parent="12" name="IDX_notes_dateModified">
+    <index id="110" parent="12" name="IDX_notes_dateModified">
       <ColNames>dateModified</ColNames>
+      <ColumnCollations></ColumnCollations>
     </index>
-    <index id="108" parent="12" name="IDX_notes_utcDateCreated">
+    <index id="111" parent="12" name="IDX_notes_utcDateCreated">
       <ColNames>utcDateCreated</ColNames>
+      <ColumnCollations></ColumnCollations>
     </index>
-    <index id="109" parent="12" name="IDX_notes_utcDateModified">
+    <index id="112" parent="12" name="IDX_notes_utcDateModified">
       <ColNames>utcDateModified</ColNames>
+      <ColumnCollations></ColumnCollations>
     </index>
-    <key id="110" parent="12">
+    <key id="113" parent="12">
       <ColNames>noteId</ColNames>
       <Primary>1</Primary>
       <UnderlyingIndexName>sqlite_autoindex_notes_1</UnderlyingIndexName>
     </key>
-    <column id="111" parent="13" name="name">
+    <column id="114" parent="13" name="name">
       <Position>1</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
     </column>
-    <column id="112" parent="13" name="value">
+    <column id="115" parent="13" name="value">
       <Position>2</Position>
       <DataType>TEXT|0s</DataType>
     </column>
-    <column id="113" parent="13" name="isSynced">
+    <column id="116" parent="13" name="isSynced">
       <Position>3</Position>
       <DataType>INTEGER|0s</DataType>
       <NotNull>1</NotNull>
       <DefaultExpression>0</DefaultExpression>
     </column>
-    <column id="114" parent="13" name="hash">
+    <column id="117" parent="13" name="hash">
       <Position>4</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
       <DefaultExpression>&quot;&quot;</DefaultExpression>
     </column>
-    <column id="115" parent="13" name="utcDateCreated">
+    <column id="118" parent="13" name="utcDateCreated">
       <Position>5</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
     </column>
-    <column id="116" parent="13" name="utcDateModified">
+    <column id="119" parent="13" name="utcDateModified">
       <Position>6</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
     </column>
-    <index id="117" parent="13" name="sqlite_autoindex_options_1">
+    <index id="120" parent="13" name="sqlite_autoindex_options_1">
       <NameSurrogate>1</NameSurrogate>
       <ColNames>name</ColNames>
+      <ColumnCollations></ColumnCollations>
       <Unique>1</Unique>
     </index>
-    <key id="118" parent="13">
+    <key id="121" parent="13">
       <ColNames>name</ColNames>
       <Primary>1</Primary>
       <UnderlyingIndexName>sqlite_autoindex_options_1</UnderlyingIndexName>
     </key>
-    <column id="119" parent="14" name="noteId">
+    <column id="122" parent="14" name="noteId">
       <Position>1</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
     </column>
-    <column id="120" parent="14" name="notePath">
+    <column id="123" parent="14" name="notePath">
       <Position>2</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
     </column>
-    <column id="121" parent="14" name="hash">
+    <column id="124" parent="14" name="hash">
       <Position>3</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
       <DefaultExpression>&quot;&quot;</DefaultExpression>
     </column>
-    <column id="122" parent="14" name="utcDateCreated">
+    <column id="125" parent="14" name="utcDateCreated">
       <Position>4</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
     </column>
-    <column id="123" parent="14" name="isDeleted">
+    <column id="126" parent="14" name="isDeleted">
       <Position>5</Position>
       <DataType>INT|0s</DataType>
     </column>
-    <index id="124" parent="14" name="sqlite_autoindex_recent_notes_1">
+    <index id="127" parent="14" name="sqlite_autoindex_recent_notes_1">
       <NameSurrogate>1</NameSurrogate>
       <ColNames>noteId</ColNames>
+      <ColumnCollations></ColumnCollations>
       <Unique>1</Unique>
     </index>
-    <key id="125" parent="14">
+    <key id="128" parent="14">
       <ColNames>noteId</ColNames>
       <Primary>1</Primary>
       <UnderlyingIndexName>sqlite_autoindex_recent_notes_1</UnderlyingIndexName>
     </key>
-    <column id="126" parent="15" name="sourceId">
+    <column id="129" parent="15" name="sourceId">
       <Position>1</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
     </column>
-    <column id="127" parent="15" name="utcDateCreated">
+    <column id="130" parent="15" name="utcDateCreated">
       <Position>2</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
     </column>
-    <index id="128" parent="15" name="sqlite_autoindex_source_ids_1">
+    <index id="131" parent="15" name="sqlite_autoindex_source_ids_1">
       <NameSurrogate>1</NameSurrogate>
       <ColNames>sourceId</ColNames>
+      <ColumnCollations></ColumnCollations>
       <Unique>1</Unique>
     </index>
-    <index id="129" parent="15" name="IDX_source_ids_utcDateCreated">
+    <index id="132" parent="15" name="IDX_source_ids_utcDateCreated">
       <ColNames>utcDateCreated</ColNames>
+      <ColumnCollations></ColumnCollations>
     </index>
-    <key id="130" parent="15">
+    <key id="133" parent="15">
       <ColNames>sourceId</ColNames>
       <Primary>1</Primary>
       <UnderlyingIndexName>sqlite_autoindex_source_ids_1</UnderlyingIndexName>
     </key>
-    <column id="131" parent="16" name="type">
+    <column id="134" parent="16" name="type">
       <Position>1</Position>
       <DataType>text|0s</DataType>
     </column>
-    <column id="132" parent="16" name="name">
+    <column id="135" parent="16" name="name">
       <Position>2</Position>
       <DataType>text|0s</DataType>
     </column>
-    <column id="133" parent="16" name="tbl_name">
+    <column id="136" parent="16" name="tbl_name">
       <Position>3</Position>
       <DataType>text|0s</DataType>
     </column>
-    <column id="134" parent="16" name="rootpage">
+    <column id="137" parent="16" name="rootpage">
       <Position>4</Position>
-      <DataType>integer|0s</DataType>
+      <DataType>int|0s</DataType>
     </column>
-    <column id="135" parent="16" name="sql">
+    <column id="138" parent="16" name="sql">
       <Position>5</Position>
       <DataType>text|0s</DataType>
     </column>
-    <column id="136" parent="17" name="name">
+    <column id="139" parent="17" name="name">
       <Position>1</Position>
     </column>
-    <column id="137" parent="17" name="seq">
+    <column id="140" parent="17" name="seq">
       <Position>2</Position>
     </column>
-    <column id="138" parent="18" name="id">
+    <column id="141" parent="18" name="id">
       <Position>1</Position>
       <DataType>INTEGER|0s</DataType>
       <NotNull>1</NotNull>
       <SequenceIdentity>1</SequenceIdentity>
     </column>
-    <column id="139" parent="18" name="entityName">
+    <column id="142" parent="18" name="entityName">
       <Position>2</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
     </column>
-    <column id="140" parent="18" name="entityId">
+    <column id="143" parent="18" name="entityId">
       <Position>3</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
     </column>
-    <column id="141" parent="18" name="sourceId">
+    <column id="144" parent="18" name="sourceId">
       <Position>4</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
     </column>
-    <column id="142" parent="18" name="utcSyncDate">
+    <column id="145" parent="18" name="utcSyncDate">
       <Position>5</Position>
       <DataType>TEXT|0s</DataType>
       <NotNull>1</NotNull>
     </column>
-    <index id="143" parent="18" name="IDX_sync_entityName_entityId">
+    <index id="146" parent="18" name="IDX_sync_entityName_entityId">
       <ColNames>entityName
 entityId</ColNames>
+      <ColumnCollations></ColumnCollations>
       <Unique>1</Unique>
     </index>
-    <index id="144" parent="18" name="IDX_sync_utcSyncDate">
+    <index id="147" parent="18" name="IDX_sync_utcSyncDate">
       <ColNames>utcSyncDate</ColNames>
+      <ColumnCollations></ColumnCollations>
     </index>
-    <key id="145" parent="18">
+    <key id="148" parent="18">
       <ColNames>id</ColNames>
       <Primary>1</Primary>
     </key>

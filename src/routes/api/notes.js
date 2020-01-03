@@ -71,6 +71,16 @@ async function deleteNote(req) {
     }
 }
 
+async function undeleteNote(req) {
+    const note = await repository.getNote(req.params.noteId);
+
+    const taskContext = TaskContext.getInstance(utils.randomString(), 'undelete-notes');
+
+    await noteService.undeleteNote(note, note.deleteId, taskContext);
+
+    await taskContext.taskSucceeded();
+}
+
 async function sortNotes(req) {
     const noteId = req.params.noteId;
 
@@ -172,6 +182,7 @@ module.exports = {
     getNote,
     updateNote,
     deleteNote,
+    undeleteNote,
     createNote,
     sortNotes,
     protectSubtree,

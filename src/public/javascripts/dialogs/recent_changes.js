@@ -41,9 +41,26 @@ export async function showDialog() {
                 $noteLink = $("<span>").text(change.current_title);
 
                 if (change.canBeUndeleted) {
+                    const $undeleteLink = $(`<a href="javascript:">`)
+                        .text("undelete")
+                        .on('click', async () => {
+                            const confirmDialog = await import('../dialogs/confirm.js');
+                            const text = 'Do you want to undelete this note and its sub-notes?';
+
+                            if (await confirmDialog.confirm(text)) {
+                                await server.put(`notes/${change.noteId}/undelete`);
+
+                                $dialog.modal('hide');
+
+                                await treeCache.reloadNotes([change.noteId]);
+
+                                treeService.activateNote(change.noteId);
+                            }
+                        });
+
                     $noteLink
                         .append(' (')
-                        .append($(`<a href="">`).text("undelete"))
+                        .append($undeleteLink)
                         .append(')');
                 }
             }

@@ -265,6 +265,24 @@ ws.subscribeToMessages(async message => {
     }
 });
 
+ws.subscribeToMessages(async message => {
+    if (message.taskType !== 'undelete-notes') {
+        return;
+    }
+
+    if (message.type === 'task-error') {
+        toastService.closePersistent(message.taskId);
+        toastService.showError(message.message);
+    } else if (message.type === 'task-progress-count') {
+        toastService.showPersistent(makeToast(message.taskId, "Undeleting notes in progress: " + message.progressCount));
+    } else if (message.type === 'task-succeeded') {
+        const toast = makeToast(message.taskId, "Undeleting notes finished successfully.");
+        toast.closeAfter = 5000;
+
+        toastService.showPersistent(toast);
+    }
+});
+
 export default {
     moveBeforeNode,
     moveAfterNode,

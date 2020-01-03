@@ -2,6 +2,7 @@
 
 const sql = require('../../services/sql');
 const protectedSessionService = require('../../services/protected_session');
+const noteService = require('../../services/notes');
 
 async function getRecentChanges() {
     const recentChanges = await sql.getRows(
@@ -60,17 +61,10 @@ async function getRecentChanges() {
             else {
                 const deleteId = change.current_deleteId;
 
-                const undeletedParentCount = await sql.getValue(`
-                    SELECT COUNT(parentNote.noteId)
-                    FROM branches
-                    JOIN notes AS parentNote ON parentNote.noteId = branches.parentNoteId
-                    WHERE branches.noteId = ?
-                      AND branches.isDeleted = 1
-                      AND branches.deleteId = ?
-                      AND parentNote.isDeleted = 0`, [change.noteId, deleteId]);
+                const undeletedParentBranches = await noteService.getUndeletedParentBranches(change.noteId, deleteId);
 
                 // note (and the subtree) can be undeleted if there's at least one undeleted parent (whose branch would be undeleted by this op)
-                change.canBeUndeleted = undeletedParentCount > 0;
+                change.canBeUndeleted = undeletedParentBranches.length > 0;
             }
         }
     }
