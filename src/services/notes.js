@@ -547,7 +547,9 @@ async function scanForLinks(noteId) {
 }
 
 async function eraseDeletedNotes() {
-    const cutoffDate = new Date(Date.now() - 48 * 3600 * 1000);
+    const eraseNotesAfterTimeInSeconds = await optionService.getOptionInt('eraseNotesAfterTimeInSeconds');
+
+    const cutoffDate = new Date(Date.now() - eraseNotesAfterTimeInSeconds * 1000);
 
     const noteIdsToErase = await sql.getColumn("SELECT noteId FROM notes WHERE isDeleted = 1 AND isErased = 0 AND notes.utcDateModified <= ?", [dateUtils.utcDateStr(cutoffDate)]);
 
@@ -561,10 +563,11 @@ async function eraseDeletedNotes() {
     // - we don't want change the hash since this erasing happens on each instance separately
     //   and changing the hash would fire up the sync errors temporarily
 
-    // setting contentLength to zero would serve no benefit and it leaves potentially useful trail
     await sql.executeMany(`
         UPDATE notes 
-        SET isErased = 1
+        SET title = '[deleted]',
+            contentLength = 0,
+            isErased = 1
         WHERE noteId IN (???)`, noteIdsToErase);
 
     await sql.executeMany(`
@@ -582,8 +585,15 @@ async function eraseDeletedNotes() {
     await sql.executeMany(`
         UPDATE note_revisions 
         SET isErased = 1,
-            title = NULL
+            title = NULL,
+            contentLength = 0
         WHERE isErased = 0 AND noteId IN (???)`, noteIdsToErase);
+
+    await sql.executeMany(`
+        UPDATE attributes 
+        SET name = 'deleted',
+            value = ''
+        WHERE noteId IN (???)`, noteIdsToErase);
 }
 
 async function duplicateNote(noteId, parentNoteId) {

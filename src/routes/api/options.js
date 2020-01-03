@@ -6,6 +6,7 @@ const attributes = require('../../services/attributes');
 
 // options allowed to be updated directly in options dialog
 const ALLOWED_OPTIONS = new Set([
+    'eraseNotesAfterTimeInSeconds',
     'protectedSessionTimeout',
     'noteRevisionSnapshotTimeInterval',
     'zoomFactor',

@@ -80,7 +80,8 @@ const defaultOptions = [
     { name: 'leftPaneWidth', value: '25', isSynced: false },
     { name: 'rightPaneWidth', value: '25', isSynced: false },
     { name: 'rightPaneVisible', value: 'true', isSynced: false },
-    { name: 'nativeTitleBarVisible', value: 'false', isSynced: false }
+    { name: 'nativeTitleBarVisible', value: 'false', isSynced: false },
+    { name: 'eraseNotesAfterTimeInSeconds', value: '604800', isSynced: true } // default is 7 days
 ];
 
 async function initStartupOptions() {
