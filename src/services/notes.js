@@ -418,13 +418,15 @@ async function deleteBranch(branch, deleteId, taskContext) {
     const notDeletedBranches = await note.getBranches();
 
     if (notDeletedBranches.length === 0) {
-        note.isDeleted = true;
-        note.deleteId = deleteId;
-        await note.save();
-
         for (const childBranch of await note.getChildBranches()) {
             await deleteBranch(childBranch, deleteId, taskContext);
         }
+
+        // first delete children and then parent - this will show up better in recent changes
+
+        note.isDeleted = true;
+        note.deleteId = deleteId;
+        await note.save();
 
         for (const attribute of await note.getOwnedAttributes()) {
             attribute.isDeleted = true;
@@ -508,7 +510,7 @@ async function undeleteBranch(branch, deleteId, taskContext) {
               AND branches.parentNoteId = ?`, [deleteId, note.noteId]);
 
         for (const childBranch of childBranches) {
-            await deleteBranch(childBranch, deleteId, taskContext);
+            await undeleteBranch(childBranch, deleteId, taskContext);
         }
     }
 }

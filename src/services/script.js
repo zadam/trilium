@@ -2,7 +2,6 @@ const sql = require('./sql');
 const ScriptContext = require('./script_context');
 const repository = require('./repository');
 const cls = require('./cls');
-const sourceIdService = require('./source_id');
 const log = require('./log');
 
 async function executeNote(note, apiParams) {
