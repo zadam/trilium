@@ -35,13 +35,15 @@ async function createNoteLink(notePath, options = {}) {
     if (showNotePath) {
         notePath = await treeService.resolveNotePath(notePath);
 
-        const noteIds = notePath.split("/");
-        noteIds.pop(); // remove last element
+        if (notePath) {
+            const noteIds = notePath.split("/");
+            noteIds.pop(); // remove last element
 
-        const parentNotePath = noteIds.join("/").trim();
+            const parentNotePath = noteIds.join("/").trim();
 
-        if (parentNotePath) {
-            $container.append($("<small>").text(" (" + await treeUtils.getNotePathTitle(parentNotePath) + ")"));
+            if (parentNotePath) {
+                $container.append($("<small>").text(" (" + await treeUtils.getNotePathTitle(parentNotePath) + ")"));
+            }
         }
     }
 
