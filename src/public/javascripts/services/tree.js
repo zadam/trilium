@@ -16,6 +16,8 @@ import TreeContextMenu from "./tree_context_menu.js";
 import bundle from "./bundle.js";
 import keyboardActionService from "./keyboard_actions.js";
 
+let tree;
+
 const $tree = $("#tree");
 const $createTopLevelNoteButton = $("#create-top-level-note-button");
 const $collapseTreeButton = $("#collapse-tree-button");
@@ -30,8 +32,6 @@ const frontendLoaded = new Promise(resolve => { setFrontendAsLoaded = resolve; }
  * @return {FancytreeNode|null}
  */
 function getFocusedNode() {
-    const tree = $tree.fancytree("getTree");
-
     return tree.getFocusNode();
 }
 
@@ -40,7 +40,7 @@ function getFocusedNode() {
  * @return {FancytreeNode|null}
  */
 function getActiveNode() {
-    return $tree.fancytree("getActiveNode");
+    return tree.getActiveNode();
 }
 
 /** @return {FancytreeNode[]} */
@@ -56,7 +56,7 @@ async function getNodesByBranchId(branchId) {
 function getNodesByNoteId(noteId) {
     utils.assertArguments(noteId);
 
-    const list = getTree().getNodesByRef(noteId);
+    const list = tree.getNodesByRef(noteId);
     return list ? list : []; // if no nodes with this refKey are found, fancy tree returns null
 }
 
@@ -309,7 +309,7 @@ async function getSomeNotePath(note) {
         const parents = await cur.getParentNotes();
 
         if (!parents.length) {
-            toastService.throwError(`Can't find parents for note ${cur.noteId}`);
+            console.error(`Can't find parents for note ${cur.noteId}`);
             return;
         }
 
@@ -331,7 +331,7 @@ async function setExpandedToServer(branchId, isExpanded) {
 
 /** @return {FancytreeNode[]} */
 function getSelectedNodes(stopOnParents = false) {
-    return getTree().getSelectedNodes(stopOnParents);
+    return tree.getSelectedNodes(stopOnParents);
 }
 
 /** @return {FancytreeNode[]} */
@@ -429,14 +429,14 @@ async function treeInitialized() {
     setFrontendAsLoaded();
 }
 
-async function initFancyTree(tree) {
-    utils.assertArguments(tree);
+async function initFancyTree(treeData) {
+    utils.assertArguments(treeData);
 
     $tree.fancytree({
         autoScroll: true,
         keyboard: false, // we takover keyboard handling in the hotkeys plugin
         extensions: ["hotkeys", "dnd5", "clones"],
-        source: tree,
+        source: treeData,
         scrollParent: $tree,
         minExpandLevel: 2, // root can't be collapsed
         click: (event, data) => {
@@ -523,19 +523,16 @@ async function initFancyTree(tree) {
 
         return false; // blocks default browser right click menu
     });
-}
 
-/** @return {Fancytree} */
-function getTree() {
-    return $tree.fancytree('getTree');
+    tree = $.ui.fancytree.getTree("#tree");
 }
 
 async function reload() {
-    const notes = await loadTree();
+    const notes = await loadTreeData();
 
     const activeNotePath = getActiveNode() !== null ? await treeUtils.getNotePath(getActiveNode()) : null;
 
-    await getTree().reload(notes);
+    await tree.reload(notes);
 
     // reactivate originally activated node, but don't trigger note loading
     if (activeNotePath) {
@@ -559,7 +556,7 @@ function getHashValueFromAddress() {
     return str.split("-");
 }
 
-async function loadTree() {
+async function loadTreeData() {
     const resp = await server.get('tree');
 
     treeCache.load(resp.notes, resp.branches);
@@ -580,7 +577,7 @@ async function collapseTree(node = null) {
 }
 
 function focusTree() {
-    getTree().setFocus();
+    tree.setFocus();
 }
 
 async function scrollToActiveNote() {
@@ -754,9 +751,9 @@ async function sortAlphabetically(noteId) {
 }
 
 async function showTree() {
-    const tree = await loadTree();
+    const treeData = await loadTreeData();
 
-    await initFancyTree(tree);
+    await initFancyTree(treeData);
 }
 
 ws.subscribeToMessages(message => {
@@ -912,6 +909,9 @@ async function duplicateNote(noteId, parentNoteId) {
     toastService.showMessage(`Note "${origNote.title}" has been duplicated`);
 }
 
+function getNodeByKey(key) {
+    return tree.getNodeByKey(key);
+}
 
 keyboardActionService.setGlobalActionHandler('CollapseTree', () => collapseTree()); // don't use shortened form since collapseTree() accepts argument
 $collapseTreeButton.on('click', () => collapseTree());
@@ -931,13 +931,12 @@ export default {
     setNoteTitle,
     setPrefix,
     createNote,
-    createNoteInto,
     getSelectedNodes,
     getSelectedOrActiveNodes,
     clearSelectedNodes,
     sortAlphabetically,
     showTree,
-    loadTree,
+    loadTreeData,
     treeInitialized,
     setExpandedToServer,
     getNodesByNoteId,
@@ -949,5 +948,6 @@ export default {
     getSomeNotePath,
     focusTree,
     scrollToActiveNote,
-    duplicateNote
+    duplicateNote,
+    getNodeByKey
 };

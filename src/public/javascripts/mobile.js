@@ -37,12 +37,12 @@ $detail.on("click", ".close-detail-button",() => {
 });
 
 async function showTree() {
-    const tree = await treeService.loadTree();
+    const treeData = await treeService.loadTreeData();
 
     $tree.fancytree({
         autoScroll: true,
         extensions: ["dnd5", "clones"],
-        source: tree,
+        source: treeData,
         scrollParent: $tree,
         minExpandLevel: 2, // root can't be collapsed
         click: (event, data) => {

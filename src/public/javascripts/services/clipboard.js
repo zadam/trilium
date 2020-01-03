@@ -1,4 +1,4 @@
-import treeUtils from "./tree_utils.js";
+import treeService from "./tree.js";
 import treeChangesService from "./branches.js";
 import cloningService from "./cloning.js";
 import toastService from "./toast.js";
@@ -19,7 +19,7 @@ async function pasteAfter(afterNode) {
     }
 
     if (clipboardMode === 'cut') {
-        const nodes = clipboardNodeKeys.map(nodeKey => treeUtils.getNodeByKey(nodeKey));
+        const nodes = clipboardNodeKeys.map(nodeKey => treeService.getNodeByKey(nodeKey));
 
         await treeChangesService.moveAfterNode(nodes, afterNode);
 
@@ -28,7 +28,7 @@ async function pasteAfter(afterNode) {
     }
     else if (clipboardMode === 'copy') {
         for (const nodeKey of clipboardNodeKeys) {
-            const clipNode = treeUtils.getNodeByKey(nodeKey);
+            const clipNode = treeService.getNodeByKey(nodeKey);
 
             await cloningService.cloneNoteAfter(clipNode.data.noteId, afterNode.data.branchId);
         }
@@ -46,7 +46,7 @@ async function pasteInto(parentNode) {
     }
 
     if (clipboardMode === 'cut') {
-        const nodes = clipboardNodeKeys.map(nodeKey => treeUtils.getNodeByKey(nodeKey));
+        const nodes = clipboardNodeKeys.map(nodeKey => treeService.getNodeByKey(nodeKey));
 
         await treeChangesService.moveToNode(nodes, parentNode);
 
@@ -57,7 +57,7 @@ async function pasteInto(parentNode) {
     }
     else if (clipboardMode === 'copy') {
         for (const nodeKey of clipboardNodeKeys) {
-            const clipNode = treeUtils.getNodeByKey(nodeKey);
+            const clipNode = treeService.getNodeByKey(nodeKey);
 
             await cloningService.cloneNoteTo(clipNode.data.noteId, parentNode.data.noteId);
         }
@@ -92,7 +92,7 @@ function cut(nodes) {
 }
 
 function isClipboardEmpty() {
-    clipboardNodeKeys = clipboardNodeKeys.filter(key => !!treeUtils.getNodeByKey(key));
+    clipboardNodeKeys = clipboardNodeKeys.filter(key => !!treeService.getNodeByKey(key));
 
     return clipboardNodeKeys.length === 0;
 }

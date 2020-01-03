@@ -2,14 +2,8 @@ import utils from './utils.js';
 import hoistedNoteService from './hoisted_note.js';
 import treeCache from "./tree_cache.js";
 
-const $tree = $("#tree");
-
 async function getParentProtectedStatus(node) {
     return await hoistedNoteService.isRootNode(node) ? 0 : node.getParent().data.isProtected;
-}
-
-function getNodeByKey(key) {
-    return $tree.fancytree('getNodeByKey', key);
 }
 
 function getNoteIdFromNotePath(notePath) {
@@ -123,7 +117,6 @@ async function getNotePathTitle(notePath) {
 
 export default {
     getParentProtectedStatus,
-    getNodeByKey,
     getNotePath,
     getNoteIdFromNotePath,
     getNoteIdAndParentIdFromNotePath,
