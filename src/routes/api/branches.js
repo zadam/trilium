@@ -101,7 +101,8 @@ async function deleteBranch(req) {
     const branch = await repository.getBranch(req.params.branchId);
     const taskContext = TaskContext.getInstance(req.query.taskId, 'delete-notes');
 
-    const noteDeleted = await notes.deleteBranch(branch, taskContext);
+    const deleteId = utils.randomString(10);
+    const noteDeleted = await notes.deleteBranch(branch, deleteId, taskContext);
 
     if (last) {
         taskContext.taskSucceeded();

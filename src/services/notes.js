@@ -389,8 +389,14 @@ async function updateNote(noteId, noteUpdates) {
     };
 }
 
-/** @return {boolean} - true if note has been deleted, false otherwise */
-async function deleteBranch(branch, taskContext) {
+/**
+ * @param {Branch} branch
+ * @param {string} deleteId
+ * @param {TaskContext} taskContext
+ *
+ * @return {boolean} - true if note has been deleted, false otherwise
+ */
+async function deleteBranch(branch, deleteId, taskContext) {
     taskContext.increaseProgressCount();
 
     if (!branch || branch.isDeleted) {
@@ -405,6 +411,7 @@ async function deleteBranch(branch, taskContext) {
     }
 
     branch.isDeleted = true;
+    branch.deleteId = deleteId;
     await branch.save();
 
     const note = await branch.getNote();
@@ -412,19 +419,22 @@ async function deleteBranch(branch, taskContext) {
 
     if (notDeletedBranches.length === 0) {
         note.isDeleted = true;
+        note.deleteId = deleteId;
         await note.save();
 
         for (const childBranch of await note.getChildBranches()) {
-            await deleteBranch(childBranch, taskContext);
+            await deleteBranch(childBranch, deleteId, taskContext);
         }
 
         for (const attribute of await note.getOwnedAttributes()) {
             attribute.isDeleted = true;
+            attribute.deleteId = deleteId;
             await attribute.save();
         }
 
         for (const relation of await note.getTargetRelations()) {
             relation.isDeleted = true;
+            relation.deleteId = deleteId;
             await relation.save();
         }
 

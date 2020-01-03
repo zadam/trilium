@@ -10,6 +10,12 @@ function getNotePathFromUrl(url) {
 }
 
 async function createNoteLink(notePath, options = {}) {
+    if (!notePath || !notePath.trim()) {
+        console.error("Missing note path");
+
+        return $("<span>").text("[missing note]");
+    }
+
     let noteTitle = options.title;
     const showTooltip = options.showTooltip === undefined ? true : options.showTooltip;
     const showNotePath = options.showNotePath === undefined ? false : options.showNotePath;

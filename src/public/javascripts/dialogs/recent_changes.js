@@ -28,31 +28,38 @@ export async function showDialog() {
     const groupedByDate = groupByDate(result);
 
     for (const [dateDay, dayChanges] of groupedByDate) {
-        const changesListEl = $('<ul>');
+        const $changesList = $('<ul>');
 
-        const dayEl = $('<div>').append($('<b>').html(utils.formatDate(dateDay))).append(changesListEl);
+        const dayEl = $('<div>').append($('<b>').html(utils.formatDate(dateDay))).append($changesList);
 
         for (const change of dayChanges) {
             const formattedTime = utils.formatTime(utils.parseDate(change.date));
 
-            let noteLink;
+            let $noteLink;
 
             if (change.current_isDeleted) {
-                noteLink = change.current_title;
+                $noteLink = $("<span>").text(change.current_title);
+
+                if (change.canBeUndeleted) {
+                    $noteLink
+                        .append(' (')
+                        .append($(`<a href="">`).text("undelete"))
+                        .append(')');
+                }
             }
             else {
                 const note = await treeCache.getNote(change.noteId);
                 const notePath = await treeService.getSomeNotePath(note);
 
-                noteLink = await linkService.createNoteLink(notePath, {
+                $noteLink = await linkService.createNoteLink(notePath, {
                     title: change.title,
                     showNotePath: true
                 });
             }
 
-            changesListEl.append($('<li>')
+            $changesList.append($('<li>')
                 .append(formattedTime + ' - ')
-                .append(noteLink));
+                .append($noteLink));
         }
 
         $content.append(dayEl);
@@ -85,5 +92,6 @@ function groupByDate(result) {
 
         groupedByDate.get(dateDay).push(row);
     }
+
     return groupedByDate;
 }

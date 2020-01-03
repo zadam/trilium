@@ -316,6 +316,8 @@ async function getSomeNotePath(note) {
         cur = parents[0];
     }
 
+    path.push('root');
+
     return path.reverse().join('/');
 }
 

@@ -24,6 +24,7 @@ const RELATION_DEFINITION = 'relation-definition';
  * @property {int} contentLength - length of content
  * @property {boolean} isProtected - true if note is protected
  * @property {boolean} isDeleted - true if note is deleted
+ * @property {string|null} deleteId - ID identifying delete transaction
  * @property {boolean} isErased - true if note's content is erased after it has been deleted
  * @property {string} dateCreated - local date time (with offset)
  * @property {string} dateModified - local date time (with offset)
@@ -35,7 +36,7 @@ const RELATION_DEFINITION = 'relation-definition';
 class Note extends Entity {
     static get entityName() { return "notes"; }
     static get primaryKeyName() { return "noteId"; }
-    static get hashedProperties() { return ["noteId", "title", "type", "isProtected", "isDeleted"]; }
+    static get hashedProperties() { return ["noteId", "title", "type", "isProtected", "isDeleted", "deleteId"]; }
 
     /**
      * @param row - object containing database row from "notes" table

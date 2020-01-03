@@ -16,6 +16,7 @@ const sql = require('../services/sql');
  * @property {int} position
  * @property {boolean} isInheritable
  * @property {boolean} isDeleted
+ * @property {string|null} deleteId - ID identifying delete transaction
  * @property {string} utcDateCreated
  * @property {string} utcDateModified
  *
