@@ -31,7 +31,8 @@ module.exports = function(filters, selectedColumns = 'notes.*') {
             // can match notes because @tag can be both "shopping" and "christmas"
             const alias = "attr_" + property + "_" + attrFilterId++;
 
-            joins[alias] = `LEFT JOIN attributes AS ${alias} `
+            // forcing to use particular index since SQLite query planner would often choose something pretty bad
+            joins[alias] = `LEFT JOIN attributes AS ${alias} INDEXED BY IDX_attributes_noteId_index `
                 + `ON ${alias}.noteId = notes.noteId `
                 + `AND ${alias}.name = '${property}' AND ${alias}.isDeleted = 0`;
 
