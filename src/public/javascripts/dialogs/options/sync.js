@@ -12,7 +12,7 @@ const TPL = `
 
     <div class="form-group">
         <label for="sync-server-timeout">Sync timeout (milliseconds)</label>
-        <input class="form-control" id="sync-server-timeout" min="1" max="10000000" type="number">
+        <input class="form-control" id="sync-server-timeout" min="1" max="10000000" type="number" style="text-align: left;">
     </div>
 
     <div class="form-group">

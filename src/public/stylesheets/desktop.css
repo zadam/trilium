@@ -407,7 +407,7 @@ body {
     position: fixed;
     bottom: 10px;
     right: 10px;
-    z-index: 100000;
+    z-index: 1000;
 }
 
 #right-pane {
