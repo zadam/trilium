@@ -553,7 +553,7 @@ class Note extends Entity {
         const attributes = await this.loadOwnedAttributesToCache();
 
         for (const attribute of attributes) {
-            if (attribute.type === type &amp;&amp; (value === undefined || value === attribute.value)) {
+            if (attribute.type === type &amp;&amp; attribute.name === name &amp;&amp; (value === undefined || value === attribute.value)) {
                 attribute.isDeleted = true;
                 await attribute.save();
 

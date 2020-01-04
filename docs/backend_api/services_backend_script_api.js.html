@@ -232,7 +232,7 @@ function BackendScriptApi(currentNote, apiParams) {
     this.createDataNote = async (parentNoteId, title, content = {}) => await noteService.createNewNote({
         parentNoteId,
         title,
-        content: JSON.stringify(content),
+        content: JSON.stringify(content, null, '\t'),
         type: 'code',
         mime: 'application/json'
     });

@@ -58,13 +58,13 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
     };
 
     /**
-     * Activates newly created note. Compared to this.activateNote() also refreshes tree.
+     * Activates newly created note. Compared to this.activateNote() also makes sure that frontend has been fully synced.
      *
      * @param {string} notePath (or noteId)
      * @return {Promise<void>}
      */
     this.activateNewNote = async notePath => {
-        await treeService.reload();
+        await ws.waitForMaxKnownSyncId();
 
         await treeService.activateNote(notePath, noteDetailService.focusAndSelectTitle);
     };
