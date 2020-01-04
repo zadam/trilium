@@ -968,3 +968,7 @@ a.external:not(.no-arrow):after, a[href^="http://"]:not(.no-arrow):after, a[href
     border-radius: 10px;
     background-color: var(--accented-background-color);
 }
+
+.include-note.ck-placeholder::before { /* remove placeholder in otherwise empty note */
+    content: '' !important;
+}
