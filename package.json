@@ -78,7 +78,7 @@
   },
   "devDependencies": {
     "electron": "6.0.12",
-    "electron-builder": "22.1.0",
+    "electron-builder": "21.2.0",
     "electron-packager": "14.1.1",
     "electron-rebuild": "1.8.8",
     "jsdoc": "3.6.3",
