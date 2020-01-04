@@ -12,8 +12,8 @@ class TaskContext {
         this.data = data;
 
         // progressCount is meant to represent just some progress - to indicate the task is not stuck
-        this.progressCount = 0;
-        this.lastSentCountTs = Date.now();
+        this.progressCount = -1; // we're incrementing immediatelly
+        this.lastSentCountTs = 0; // 0 will guarantee first message will be sent
 
         // just the fact this has been initialized is a progress which should be sent to clients
         // this is esp. important when importing big files/images which take long time to upload/process
