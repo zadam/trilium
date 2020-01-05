@@ -75,14 +75,17 @@ async function saveImage(parentNoteId, uploadBuffer, originalName, shrinkImageSw
 }
 
 async function shrinkImage(buffer, originalName) {
-    const resizedImage = await resize(buffer);
+    // we do resizing with max (100) quality which will be trimmed during optimization step next
+    const resizedImage = await resize(buffer, 100);
     let finalImageBuffer;
 
+    const jpegQuality = await optionService.getOptionInt('imageJpegQuality');
+
     try {
-        finalImageBuffer = await optimize(resizedImage);
+        finalImageBuffer = await optimize(resizedImage, jpegQuality);
     } catch (e) {
         log.error("Failed to optimize image '" + originalName + "'\nStack: " + e.stack);
-        finalImageBuffer = resizedImage;
+        finalImageBuffer = await resize(buffer, jpegQuality);
     }
 
     // if resizing & shrinking did not help with size then save the original
@@ -94,7 +97,7 @@ async function shrinkImage(buffer, originalName) {
     return finalImageBuffer;
 }
 
-async function resize(buffer) {
+async function resize(buffer, quality) {
     const imageMaxWidthHeight = await optionService.getOptionInt('imageMaxWidthHeight');
 
     const image = await jimp.read(buffer);
@@ -106,8 +109,7 @@ async function resize(buffer) {
         image.resize(jimp.AUTO, imageMaxWidthHeight);
     }
 
-    // we do resizing with max quality which will be trimmed during optimization step next
-    image.quality(100);
+    image.quality(quality);
 
     // when converting PNG to JPG we lose alpha channel, this is replaced by white to match Trilium white background
     image.background(0xFFFFFFFF);
@@ -115,11 +117,11 @@ async function resize(buffer) {
     return image.getBufferAsync(jimp.MIME_JPEG);
 }
 
-async function optimize(buffer) {
+async function optimize(buffer, jpegQuality) {
     return await imagemin.buffer(buffer, {
         plugins: [
             imageminMozJpeg({
-                quality: await optionService.getOptionInt('imageJpegQuality')
+                quality: jpegQuality
             }),
             imageminPngQuant({
                 quality: [0, 0.7]

@@ -43,6 +43,7 @@ class NoteDetailBook {
         this.$zoomInButton = this.$component.find('.book-zoom-in-button');
         this.$zoomOutButton = this.$component.find('.book-zoom-out-button');
         this.$expandChildrenButton = this.$component.find('.expand-children-button');
+        this.$help = this.$component.find('.note-detail-book-help');
 
         this.$zoomInButton.on('click', () => this.setZoom(this.zoomLevel - 1));
         this.$zoomOutButton.on('click', () => this.setZoom(this.zoomLevel + 1));
@@ -105,6 +106,7 @@ class NoteDetailBook {
 
     async render() {
         this.$content.empty();
+        this.$help.hide();
 
         if (this.isAutoBook()) {
             const $addTextLink = $('<a href="javascript:">here</a>').on('click', () => {
@@ -124,7 +126,9 @@ class NoteDetailBook {
     }
 
     async renderIntoElement(note, $container) {
-        for (const childNote of await note.getChildNotes()) {
+        const childNotes = await note.getChildNotes();
+
+        for (const childNote of childNotes) {
             const childNotePath = this.ctx.notePath + '/' + childNote.noteId;
 
             const {type, renderedContent} = await noteContentRenderer.getRenderedContent(childNote);
@@ -151,6 +155,10 @@ class NoteDetailBook {
             }
 
             $container.append($card);
+        }
+
+        if (childNotes.length === 0) {
+            this.$help.show();
         }
     }
 

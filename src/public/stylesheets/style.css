@@ -594,7 +594,7 @@ table.promoted-attributes-in-tooltip td, table.promoted-attributes-in-tooltip th
     padding: 10px;
 }
 
-.note-detail-render-help {
+.note-detail-render-help, .note-detail-book-help {
     margin: 50px;
     padding: 20px;
 }
@@ -967,4 +967,14 @@ a.external:not(.no-arrow):after, a[href^="http://"]:not(.no-arrow):after, a[href
     padding: 20px;
     border-radius: 10px;
     background-color: var(--accented-background-color);
+}
+
+.include-note.ck-placeholder::before { /* remove placeholder in otherwise empty note */
+    content: '' !important;
+}
+
+.alert-warning {
+    color: var(--main-text-color) !important;
+    background-color: var(--accented-background-color) !important;
+    border-color: var(--main-border-color) !important;
 }

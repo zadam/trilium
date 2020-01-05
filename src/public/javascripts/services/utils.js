@@ -213,7 +213,11 @@ function closeActiveDialog() {
 }
 
 function isHtmlEmpty(html) {
-    return $("<div>").html(html).text().trim().length === 0 && !html.toLowerCase().includes('<img');
+    html = html.toLowerCase();
+
+    return $("<div>").html(html).text().trim().length === 0
+        && !html.includes('<img')
+        && !html.includes('<section');
 }
 
 async function clearBrowserCache() {
