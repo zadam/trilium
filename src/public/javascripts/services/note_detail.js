@@ -201,17 +201,13 @@ async function loadNoteDetail(origNotePath, options = {}) {
     const newTab = !!options.newTab;
     const activate = !!options.activate;
 
-    const notePath = await treeService.resolveNotePath(origNotePath);
+    let notePath = await treeService.resolveNotePath(origNotePath);
 
     if (!notePath) {
         console.error(`Cannot resolve note path ${origNotePath}`);
 
         // fallback to display something
-        if (tabContexts.length === 0) {
-            await openEmptyTab();
-        }
-
-        return;
+        notePath = 'root';
     }
 
     const noteId = treeUtils.getNoteIdFromNotePath(notePath);

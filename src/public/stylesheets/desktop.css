@@ -110,7 +110,7 @@ body {
 
 #context-menu-container {
     max-height: 100vh;
-    overflow: auto; /* make it scrollable when exceeding total height of the window */
+    /* !!! Cannot set overflow: auto, submenus will break !!! */
 }
 
 #context-menu-container, #context-menu-container .dropdown-menu {
