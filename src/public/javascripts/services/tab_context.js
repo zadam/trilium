@@ -350,8 +350,6 @@ class TabContext {
 
         this.$savedIndicator.fadeIn();
 
-        this.$scriptArea.empty();
-
         // run async
         bundleService.executeRelationBundles(this.note, 'runOnNoteChange', this);
 
