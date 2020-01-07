@@ -47,6 +47,7 @@ class NoteDetailText {
         this.ctx = ctx;
         this.$component = ctx.$tabContent.find('.note-detail-text');
         this.$editorEl = this.$component.find('.note-detail-text-editor');
+        this.textEditorPromise = null;
         this.textEditor = null;
 
         this.$component.on("dblclick", "img", e => {
@@ -67,43 +68,11 @@ class NoteDetailText {
     }
 
     async render() {
-        if (!this.textEditor) {
-            await libraryLoader.requireLibrary(libraryLoader.CKEDITOR);
-
-            const codeBlockLanguages =
-                (await mimeTypesService.getMimeTypes())
-                    .filter(mt => mt.enabled)
-                    .map(mt => {
-                        return {
-                            language: mt.mime.toLowerCase().replace(/[\W_]+/g,"-"),
-                            label: mt.title
-                        }
-                    });
-
-            // CKEditor since version 12 needs the element to be visible before initialization. At the same time
-            // we want to avoid flicker - i.e. show editor only once everything is ready. That's why we have separate
-            // display of $component in both branches.
-            this.$component.show();
-
-            // textEditor might have been initialized during previous await so checking again
-            // looks like double initialization can freeze CKEditor pretty badly
-            if (!this.textEditor) {
-                this.textEditor = await BalloonEditor.create(this.$editorEl[0], {
-                    placeholder: "Type the content of your note here ...",
-                    mention: mentionSetup,
-                    codeBlock: {
-                        languages: codeBlockLanguages
-                    }
-                });
-
-                if (glob.isDev && ENABLE_INSPECTOR) {
-                    await import('../../libraries/ckeditor/inspector.js');
-                    CKEditorInspector.attach(this.textEditor);
-                }
-
-                this.onNoteChange(() => this.ctx.noteChanged());
-            }
+        if (!this.textEditorPromise) {
+            this.textEditorPromise = this.initEditor();
         }
+
+        await this.textEditorPromise;
 
         // lazy loading above can take time and tab might have been already switched to another note
         if (this.ctx.note && this.ctx.note.type === 'text') {
@@ -113,6 +82,42 @@ class NoteDetailText {
 
             this.textEditor.setData(this.ctx.note.content);
         }
+    }
+
+    async initEditor() {
+        await libraryLoader.requireLibrary(libraryLoader.CKEDITOR);
+
+        const codeBlockLanguages =
+            (await mimeTypesService.getMimeTypes())
+                .filter(mt => mt.enabled)
+                .map(mt => {
+                    return {
+                        language: mt.mime.toLowerCase().replace(/[\W_]+/g,"-"),
+                        label: mt.title
+                    }
+                });
+
+        // CKEditor since version 12 needs the element to be visible before initialization. At the same time
+        // we want to avoid flicker - i.e. show editor only once everything is ready. That's why we have separate
+        // display of $component in both branches.
+        this.$component.show();
+
+        const textEditorInstance = await BalloonEditor.create(this.$editorEl[0], {
+            placeholder: "Type the content of your note here ...",
+            mention: mentionSetup,
+            codeBlock: {
+                languages: codeBlockLanguages
+            }
+        });
+
+        if (glob.isDev && ENABLE_INSPECTOR) {
+            await import('../../libraries/ckeditor/inspector.js');
+            CKEditorInspector.attach(textEditorInstance);
+        }
+
+        this.textEditor = textEditorInstance;
+
+        this.onNoteChange(() => this.ctx.noteChanged());
     }
 
     getContent() {
