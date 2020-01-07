@@ -490,6 +490,8 @@ async function eraseDeletedNotes() {
         SET isErased = 1,
             title = NULL
         WHERE isErased = 0 AND noteId IN (???)`, noteIdsToErase);
+
+    log.info(`Erased notes: ${JSON.stringify(noteIdsToErase)}`);
 }
 
 async function duplicateNote(noteId, parentNoteId) {

@@ -76,8 +76,7 @@ async function initContextMenu(event, contextMenu) {
     // in such case we'll position it above click coordinates so it will fit into client
     const clickPosition = event.pageY;
     const clientHeight = document.documentElement.clientHeight;
-    const contextMenuHeight = $contextMenuContainer.height();
-
+    const contextMenuHeight = $contextMenuContainer.outerHeight() + 30;
     let top;
 
     if (clickPosition + contextMenuHeight > clientHeight) {
