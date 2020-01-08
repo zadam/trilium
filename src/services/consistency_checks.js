@@ -18,18 +18,6 @@ class ConsistencyChecks {
         this.fixedIssues = false;
     }
 
-    async findIssues(query, errorCb) {
-        const results = await sql.getRows(query);
-
-        for (const res of results) {
-            logError(errorCb(res));
-
-            this.unrecoveredConsistencyErrors = true;
-        }
-
-        return results;
-    }
-
     async findAndFixIssues(query, fixerCb) {
         const results = await sql.getRows(query);
 
@@ -175,13 +163,6 @@ class ConsistencyChecks {
                     logError(`Relation ${attributeId} references missing note ${noteId}`)
                 }
             });
-
-        await this.findIssues(`
-                    SELECT noteRevisionId, note_revisions.noteId
-                    FROM note_revisions
-                             LEFT JOIN notes USING (noteId)
-                    WHERE notes.noteId IS NULL`,
-            ({noteRevisionId, noteId}) => `Note revision ${noteRevisionId} references missing note ${noteId}`);
     }
 
     async findExistencyIssues() {
@@ -335,13 +316,22 @@ class ConsistencyChecks {
                 }
             });
 
-        await this.findIssues(`
+        await this.findAndFixIssues(`
                     SELECT noteId
                     FROM notes
                              JOIN note_contents USING (noteId)
                     WHERE isErased = 1
                       AND content IS NOT NULL`,
-            ({noteId}) => `Note ${noteId} content is not null even though the note is erased`);
+            async ({noteId}) => {
+            if (this.autoFix) {
+                await sql.execute(`UPDATE note_contents SET content = NULL WHERE noteId = ?`, [noteId]);
+
+                logFix(`Note ${noteId} content has been set to null since the note is erased`);
+            }
+            else {
+                logError(`Note ${noteId} content is not null even though the note is erased`);
+            }
+        });
 
         await this.findAndFixIssues(`
                     SELECT noteId, noteRevisionId
@@ -398,20 +388,40 @@ class ConsistencyChecks {
                 }
             });
 
-        await this.findIssues(`
+        await this.findAndFixIssues(`
                     SELECT noteRevisionId
                     FROM note_revisions
                              JOIN note_revision_contents USING (noteRevisionId)
                     WHERE isErased = 1
                       AND content IS NOT NULL`,
-            ({noteRevisionId}) => `Note revision ${noteRevisionId} content is not null even though the note revision is erased`);
+            async ({noteRevisionId}) => {
+                if (this.autoFix) {
+                    await sql.execute(`UPDATE note_revision_contents SET content = NULL WHERE noteRevisionId = ?`, [noteRevisionId]);
 
-        await this.findIssues(`
+                    logFix(`Note revision ${noteRevisionId} content was set to null since the note revision is erased`);
+                }
+                else {
+                    logError(`Note revision ${noteRevisionId} content is not null even though the note revision is erased`);
+                }
+            });
+
+        await this.findAndFixIssues(`
                     SELECT noteId
                     FROM notes
                     WHERE isErased = 1
                       AND isDeleted = 0`,
-            ({noteId}) => `Note ${noteId} is not deleted even though it is erased`);
+            async ({noteId}) => {
+                if (this.autoFix) {
+                    const note = await repository.getNote(noteId);
+                    note.isDeleted = true;
+                    await note.save();
+
+                    logFix(`Note ${noteId} was set to deleted since it is erased`);
+                }
+                else {
+                    logError(`Note ${noteId} is not deleted even though it is erased`);
+                }
+            });
 
         await this.findAndFixIssues(`
                     SELECT parentNoteId

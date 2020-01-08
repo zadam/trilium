@@ -42,6 +42,8 @@ async function setupProtectedSession(password) {
         return;
     }
 
+    $("#container").addClass('protected-session-active');
+
     protectedSessionHolder.setProtectedSessionId(response.protectedSessionId);
     protectedSessionHolder.touchProtectedSession();
 
