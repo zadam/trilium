@@ -147,7 +147,7 @@ async function importTar(taskContext, fileBuffer, importRootNote) {
                 continue;
             }
 
-            if (attr.type === 'relation' && ['internalLink', 'imageLink', 'relationMapLink'].includes(attr.name)) {
+            if (attr.type === 'relation' && ['internalLink', 'imageLink', 'relationMapLink', 'includeNoteLink'].includes(attr.name)) {
                 // these relations are created automatically and as such don't need to be duplicated in the import
                 continue;
             }
