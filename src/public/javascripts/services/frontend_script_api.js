@@ -297,10 +297,26 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
     this.createNoteLink = linkService.createNoteLink;
 
     /**
+     * Adds given text to the editor cursor
+     *
+     * @param {string} text - this must be clear text, HTML is not supported.
+     * @method
+     */
+    this.addTextToActiveTabEditor = linkService.addTextToEditor;
+
+    /**
      * @method
      * @returns {NoteFull} active note (loaded into right pane)
      */
     this.getActiveTabNote = noteDetailService.getActiveTabNote;
+
+    /**
+     * See https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editor-Editor.html for a documentation on the returned instance.
+     *
+     * @method
+     * @returns {Editor|null} CKEditor instance or null (e.g. if active note is not a text note)
+     */
+    this.getActiveTabTextEditor = noteDetailService.getActiveEditor;
 
     /**
      * @method
