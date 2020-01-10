@@ -3,15 +3,16 @@ import optionsService from "./options.js";
 export async function initSpellCheck() {
     const options = await optionsService.waitForOptions();
 
-    if (!options.is('spellCheckEnabled')) {
-        return;
-    }
-
     const {SpellCheckHandler, ContextMenuListener, ContextMenuBuilder} = require('electron-spellchecker');
     const {remote, shell} = require('electron');
 
     const spellCheckHandler = new SpellCheckHandler();
-    spellCheckHandler.attachToInput();
+
+    // not fully disabling the spellcheck since we want to preserve the context menu
+    // this will just get rid of the "red squiggles"
+    if (options.is('spellCheckEnabled')) {
+        spellCheckHandler.attachToInput();
+    }
 
     spellCheckHandler.switchLanguage(options.get('spellCheckLanguageCode'));
 
