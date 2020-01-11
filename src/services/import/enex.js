@@ -1,5 +1,5 @@
 const sax = require("sax");
-const fileType = require('file-type');
+const FileType = require('file-type');
 const stream = require('stream');
 const log = require("../log");
 const utils = require("../utils");
@@ -242,7 +242,7 @@ async function importEnex(taskContext, file, parentNote) {
 
             const mediaRegex = new RegExp(`<en-media hash="${hash}"[^>]*>`, 'g');
 
-            const fileTypeFromBuffer = fileType(resource.content);
+            const fileTypeFromBuffer = await FileType.fromBuffer(resource.content);
             if (fileTypeFromBuffer) {
               // If fileType returns something for buffer, then set the mime given
               resource.mime = fileTypeFromBuffer.mime;
