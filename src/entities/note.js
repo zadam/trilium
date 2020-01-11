@@ -806,7 +806,7 @@ class Note extends Entity {
             WHERE noteId = ? AND 
                   isDeleted = 0 AND 
                   type = 'relation' AND 
-                  name IN ('internalLink', 'imageLink', 'relationMapLink')`, [this.noteId]);
+                  name IN ('internalLink', 'imageLink', 'relationMapLink', 'includeNoteLink')`, [this.noteId]);
     }
 
     /**

@@ -242,6 +242,20 @@ function findInternalLinks(content, foundLinks) {
     return content.replace(/href="[^"]*#root/g, 'href="#root');
 }
 
+function findIncludeNoteLinks(content, foundLinks) {
+    const re = /<section class="include-note" data-note-id="([a-zA-Z0-9]+)">/g;
+    let match;
+
+    while (match = re.exec(content)) {
+        foundLinks.push({
+            name: 'includeNoteLink',
+            value: match[1]
+        });
+    }
+
+    return content;
+}
+
 function findRelationMapLinks(content, foundLinks) {
     const obj = JSON.parse(content);
 
@@ -263,10 +277,11 @@ async function saveLinks(note, content) {
     }
 
     const foundLinks = [];
-
+console.log("Scanning", content);
     if (note.type === 'text') {
         content = findImageLinks(content, foundLinks);
         content = findInternalLinks(content, foundLinks);
+        content = findIncludeNoteLinks(content, foundLinks);
     }
     else if (note.type === 'relation-map') {
         findRelationMapLinks(content, foundLinks);

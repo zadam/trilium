@@ -1246,6 +1246,143 @@
     
 
     
+    <h4 class="name" id="addTextToActiveTabEditor"><span class="type-signature"></span>addTextToActiveTabEditor<span class="signature">(text)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Adds given text to the editor cursor
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>text</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line305">line 305</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
     <h4 class="name" id="bindGlobalShortcut"><span class="type-signature"></span>bindGlobalShortcut<span class="signature">(keyboardShortcut, handler)</span><span class="type-signature"></span></h4>
     
 
@@ -1366,7 +1503,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line390">line 390</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line406">line 406</a>
     </li></ul></dd>
     
 
@@ -1785,7 +1922,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line303">line 303</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line311">line 311</a>
     </li></ul></dd>
     
 
@@ -1891,7 +2028,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line309">line 309</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line325">line 325</a>
     </li></ul></dd>
     
 
@@ -1932,6 +2069,119 @@
     <dd>
         
 <span class="param-type">Promise.&lt;(string|null)></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getActiveTabTextEditor"><span class="type-signature"></span>getActiveTabTextEditor<span class="signature">()</span><span class="type-signature"> &rarr; {Editor|null}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    See https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editor-Editor.html for a documentation on the returned instance.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line319">line 319</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    CKEditor instance or null (e.g. if active note is not a text note)
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Editor</span>
+|
+
+<span class="param-type">null</span>
 
 
     </dd>
@@ -2050,7 +2300,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line356">line 356</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line372">line 372</a>
     </li></ul></dd>
     
 
@@ -2312,7 +2562,7 @@ if some action needs to happen on only one specific instance.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line365">line 365</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line381">line 381</a>
     </li></ul></dd>
     
 
@@ -2775,7 +3025,7 @@ otherwise (by e.g. createNoteLink())
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line347">line 347</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line363">line 363</a>
     </li></ul></dd>
     
 
@@ -2930,7 +3180,7 @@ otherwise (by e.g. createNoteLink())
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line374">line 374</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line390">line 390</a>
     </li></ul></dd>
     
 
@@ -3039,7 +3289,7 @@ note.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line320">line 320</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line336">line 336</a>
     </li></ul></dd>
     
 
@@ -3194,7 +3444,7 @@ note.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line328">line 328</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line344">line 344</a>
     </li></ul></dd>
     
 
@@ -3433,7 +3683,7 @@ note.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line339">line 339</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line355">line 355</a>
     </li></ul></dd>
     
 
@@ -4606,7 +4856,7 @@ Internally this serializes the anonymous function into string and sends it to ba
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line383">line 383</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line399">line 399</a>
     </li></ul></dd>
     
 
@@ -4757,7 +5007,7 @@ Internally this serializes the anonymous function into string and sends it to ba
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line334">line 334</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line350">line 350</a>
     </li></ul></dd>
     
 
@@ -5123,7 +5373,7 @@ Typical use case is when new note has been created, we should wait until it is s
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line401">line 401</a>
+        <a href="services_frontend_script_api.js.html">services/frontend_script_api.js</a>, <a href="services_frontend_script_api.js.html#line417">line 417</a>
     </li></ul></dd>
     
 
