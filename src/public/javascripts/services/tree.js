@@ -18,11 +18,6 @@ import keyboardActionService from "./keyboard_actions.js";
 
 let tree;
 
-const $tree = $("#tree");
-const $createTopLevelNoteButton = $("#create-top-level-note-button");
-const $collapseTreeButton = $("#collapse-tree-button");
-const $scrollToActiveNoteButton = $("#scroll-to-active-note-button");
-
 let setFrontendAsLoaded;
 const frontendLoaded = new Promise(resolve => { setFrontendAsLoaded = resolve; });
 
@@ -429,7 +424,7 @@ async function treeInitialized() {
     setFrontendAsLoaded();
 }
 
-async function initFancyTree(treeData) {
+async function initFancyTree($tree, treeData) {
     utils.assertArguments(treeData);
 
     $tree.fancytree({
@@ -750,10 +745,10 @@ async function sortAlphabetically(noteId) {
     await reload();
 }
 
-async function showTree() {
+async function showTree($tree) {
     const treeData = await loadTreeData();
 
-    await initFancyTree(treeData);
+    await initFancyTree($tree, treeData);
 }
 
 ws.subscribeToMessages(message => {
@@ -882,22 +877,6 @@ $(window).bind('hashchange', async function() {
     }
 });
 
-// fancytree doesn't support middle click so this is a way to support it
-$tree.on('mousedown', '.fancytree-title', e => {
-    if (e.which === 2) {
-        const node = $.ui.fancytree.getNode(e);
-
-        treeUtils.getNotePath(node).then(notePath => {
-            if (notePath) {
-                noteDetailService.openInTab(notePath, false);
-            }
-        });
-
-        e.stopPropagation();
-        e.preventDefault();
-    }
-});
-
 async function duplicateNote(noteId, parentNoteId) {
     const {note} = await server.post(`notes/${noteId}/duplicate/${parentNoteId}`);
 
@@ -912,12 +891,6 @@ async function duplicateNote(noteId, parentNoteId) {
 function getNodeByKey(key) {
     return tree.getNodeByKey(key);
 }
-
-keyboardActionService.setGlobalActionHandler('CollapseTree', () => collapseTree()); // don't use shortened form since collapseTree() accepts argument
-$collapseTreeButton.on('click', () => collapseTree());
-
-$createTopLevelNoteButton.on('click', createNewTopLevelNote);
-$scrollToActiveNoteButton.on('click', scrollToActiveNote);
 
 frontendLoaded.then(bundle.executeStartupBundles);
 
@@ -948,6 +921,7 @@ export default {
     getSomeNotePath,
     focusTree,
     scrollToActiveNote,
+    createNewTopLevelNote,
     duplicateNote,
     getNodeByKey
 };

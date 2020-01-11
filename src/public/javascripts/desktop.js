@@ -34,6 +34,7 @@ import keyboardActionService from "./services/keyboard_actions.js";
 import splitService from "./services/split.js";
 import optionService from "./services/options.js";
 import noteContentRenderer from "./services/note_content_renderer.js";
+import AppContext from "./services/app_context.js";
 
 window.glob.isDesktop = utils.isDesktop;
 window.glob.isMobile = utils.isMobile;
@@ -117,10 +118,6 @@ $("#logout-button").on('click', () => {
     $logoutForm.trigger('submit');
 });
 
-$("#tree").on("click", ".unhoist-button", hoistedNoteService.unhoist);
-
-$("#tree").on("click", ".refresh-search-button", searchNotesService.refreshSearch);
-
 $("body").on("click", "a.external", function () {
     window.open($(this).attr("href"), '_blank');
 });
@@ -186,7 +183,8 @@ macInit.init();
 
 searchNotesService.init(); // should be in front of treeService since that one manipulates address bar hash
 
-treeService.showTree();
+const appContext = new AppContext();
+appContext.showWidgets();
 
 entrypoints.registerEntrypoints();
 

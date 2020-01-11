@@ -45,21 +45,6 @@ body {
     width: 100%;
 }
 
-#search-box {
-    display: none;
-    padding: 10px;
-    margin-top: 10px;
-}
-
-#tree {
-    overflow: auto;
-    flex-grow: 1;
-    flex-shrink: 1;
-    flex-basis: 60%;
-    font-family: var(--tree-font-family);
-    font-size: var(--tree-font-size);
-}
-
 #left-pane {
     height: 100%;
     display: flex;
@@ -93,15 +78,6 @@ body {
 
 #history-navigation {
     margin: 0 15px 0 5px;
-}
-
-#global-buttons {
-    display: flex;
-    justify-content: space-around;
-    padding: 3px 0 3px 0;
-    border: 1px solid var(--main-border-color);
-    border-radius: 7px;
-    margin: 3px 5px 5px 5px;
 }
 
 .dropdown-menu {

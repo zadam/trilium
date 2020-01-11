@@ -46,7 +46,6 @@ function registerEntrypoints() {
     $("#enter-protected-session-button").on('click', protectedSessionService.enterProtectedSession);
     $("#leave-protected-session-button").on('click', protectedSessionService.leaveProtectedSession);
 
-    $("#toggle-search-button").on('click', searchNotesService.toggleSearch);
     keyboardActionService.setGlobalActionHandler('SearchNotes', searchNotesService.toggleSearch);
 
     const $noteTabContainer = $("#note-tab-container");

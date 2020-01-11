@@ -264,25 +264,6 @@ div.ui-tooltip {
     width: auto;
 }
 
-#search-results {
-    padding: 0 5px 5px 15px;
-    flex-basis: 40%;
-    flex-grow: 1;
-    flex-shrink: 1;
-    margin-top: 10px;
-    display: none;
-    overflow: auto;
-    border-bottom: 2px solid var(--main-border-color);
-}
-
-#search-results ul {
-    padding: 5px 5px 5px 15px;
-}
-
-#search-text {
-    border: 1px solid var(--main-border-color);
-}
-
 /*
 * .search-inactive is added to search window <webview> when the window
 * is inactive.
