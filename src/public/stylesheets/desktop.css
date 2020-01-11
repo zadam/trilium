@@ -10,7 +10,7 @@ body {
     flex-direction: column;
 }
 
-#topbar {
+#tab-pane {
     display: flex;
 }
 
@@ -66,14 +66,14 @@ body {
     flex-direction: column;
 }
 
-#toolbar {
+#top-pane {
     background-color: var(--header-background-color);
     display: flex;
     align-items: center;
     padding-top: 4px;
 }
 
-#toolbar button {
+#top-pane button {
     padding: 1px 5px 1px 5px;
     font-size: smaller;
     margin-bottom: 2px;
@@ -82,12 +82,12 @@ body {
     border-color: transparent !important;
 }
 
-#toolbar button.btn-sm .bx {
+#top-pane button.btn-sm .bx {
     position: relative;
     top: 1px;
 }
 
-#toolbar button:hover {
+#top-pane button:hover {
     border-color: var(--button-border-color) !important;
 }
 
@@ -502,5 +502,6 @@ body {
 }
 
 #title-bar-buttons {
+    margin-top: 4px;
     min-width: 100px;
 }
