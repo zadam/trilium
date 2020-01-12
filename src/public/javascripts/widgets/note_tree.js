@@ -8,10 +8,10 @@ import noteDetailService from "../services/note_detail.js";
 import utils from "../services/utils.js";
 import contextMenuWidget from "../services/context_menu.js";
 import treeKeyBindingService from "../services/tree_keybindings.js";
-import dragAndDropSetup from "../services/drag_and_drop.js";
 import treeCache from "../services/tree_cache.js";
 import treeBuilder from "../services/tree_builder.js";
 import TreeContextMenu from "../services/tree_context_menu.js";
+import treeChangesService from "../services/branches.js";
 
 const TPL = `
 <style>
@@ -110,9 +110,77 @@ export default class NoteTreeWidget extends BasicWidget {
             collapse: (event, data) => treeService.setExpandedToServer(data.node.data.branchId, false),
             init: (event, data) => treeService.treeInitialized(),
             hotkeys: {
-                keydown: await treeKeyBindingService.getKeyboardBindings()
+                keydown: await treeKeyBindingService.getKeyboardBindings(this)
             },
-            dnd5: dragAndDropSetup,
+            dnd5: {
+                autoExpandMS: 600,
+                dragStart: (node, data) => {
+                    // don't allow dragging root node
+                    if (node.data.noteId === hoistedNoteService.getHoistedNoteNoPromise()
+                        || node.getParent().data.noteType === 'search') {
+                        return false;
+                    }
+
+                    node.setSelected(true);
+
+                    const notes = this.getSelectedNodes().map(node => { return {
+                        noteId: node.data.noteId,
+                        title: node.title
+                    }});
+
+                    data.dataTransfer.setData("text", JSON.stringify(notes));
+
+                    // This function MUST be defined to enable dragging for the tree.
+                    // Return false to cancel dragging of node.
+                    return true;
+                },
+                dragEnter: (node, data) => true, // allow drop on any node
+                dragOver: (node, data) => true,
+                dragDrop: async (node, data) => {
+                    if ((data.hitMode === 'over' && node.data.noteType === 'search') ||
+                        (['after', 'before'].includes(data.hitMode)
+                            && (node.data.noteId === hoistedNoteService.getHoistedNoteNoPromise() || node.getParent().data.noteType === 'search'))) {
+
+                        const infoDialog = await import('../dialogs/info.js');
+
+                        await infoDialog.info("Dropping notes into this location is not allowed.");
+
+                        return;
+                    }
+
+                    const dataTransfer = data.dataTransfer;
+
+                    if (dataTransfer && dataTransfer.files && dataTransfer.files.length > 0) {
+                        const files = [...dataTransfer.files]; // chrome has issue that dataTransfer.files empties after async operation
+
+                        const importService = await import('./import.js');
+
+                        importService.uploadFiles(node.data.noteId, files, {
+                            safeImport: true,
+                            shrinkImages: true,
+                            textImportedAsText: true,
+                            codeImportedAsCode: true,
+                            explodeArchives: true
+                        });
+                    }
+                    else {
+                        // This function MUST be defined to enable dropping of items on the tree.
+                        // data.hitMode is 'before', 'after', or 'over'.
+
+                        const selectedBranchIds = this.getSelectedNodes().map(node => node.data.branchId);
+
+                        if (data.hitMode === "before") {
+                            treeChangesService.moveBeforeNode(selectedBranchIds, node.data.branchId);
+                        } else if (data.hitMode === "after") {
+                            treeChangesService.moveAfterNode(selectedBranchIds, node.data.branchId);
+                        } else if (data.hitMode === "over") {
+                            treeChangesService.moveToNode(selectedBranchIds, node.data.noteId);
+                        } else {
+                            throw new Error("Unknown hitMode=" + data.hitMode);
+                        }
+                    }
+                }
+            },
             lazyLoad: function(event, data) {
                 const noteId = data.node.data.noteId;
 
@@ -193,6 +261,21 @@ export default class NoteTreeWidget extends BasicWidget {
         node.setExpanded(false);
 
         node.visit(node => node.setExpanded(false));
+    }
+
+    /**
+     * focused & not active node can happen during multiselection where the node is selected but not activated
+     * (its content is not displayed in the detail)
+     * @return {FancytreeNode|null}
+     */
+    getFocusedNode() {
+        return this.tree.getFocusNode();
+    }
+
+    clearSelectedNodes() {
+        for (const selectedNode of this.getSelectedNodes()) {
+            selectedNode.setSelected(false);
+        }
     }
 
     createTopLevelNoteListener() { treeService.createNewTopLevelNote(); }

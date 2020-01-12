@@ -68,6 +68,7 @@ async function moveToNode(branchIdsToMove, newParentNoteId) {
     }
 }
 
+// FIXME used for finding a next note to activate after a delete
 async function getNextNode(nodes) {
     // following code assumes that nodes contain only top-most selected nodes - getSelectedNodes has been
     // called with stopOnParent=true
@@ -84,10 +85,10 @@ async function getNextNode(nodes) {
     return treeUtils.getNotePath(next);
 }
 
-async function deleteNodes(nodes) {
-    nodes = await filterRootNote(nodes);
+async function deleteNodes(branchIdsToDelete) {
+    branchIdsToDelete = await filterRootNote(branchIdsToDelete);
 
-    if (nodes.length === 0) {
+    if (branchIdsToDelete.length === 0) {
         return false;
     }
 
@@ -96,7 +97,15 @@ async function deleteNodes(nodes) {
         .append($('<label for="delete-clones-checkbox">')
                     .text("delete also all note clones")
                     .attr("title", "all clones of selected notes will be deleted and as such the whole note will be deleted."));
-    const $nodeTitles = $("<ul>").append(...nodes.map(node => $("<li>").text(node.title)));
+
+    const $nodeTitles = $("<ul>");
+
+    for (const branchId of branchIdsToDelete) {
+        const note = await treeCache.getBranch(branchId).getNote();
+
+        $nodeTitles.append($("<li>").text(note.title));
+    }
+
     const $confirmText = $("<div>")
         .append($("<p>").text('This will delete the following notes and their sub-notes: '))
         .append($nodeTitles)
@@ -114,31 +123,31 @@ async function deleteNodes(nodes) {
 
     let counter = 0;
 
-    for (const node of nodes) {
+    for (const branchIdToDelete of branchIdsToDelete) {
         counter++;
 
-        const last = counter === nodes.length;
+        const last = counter === branchIdsToDelete.length;
         const query = `?taskId=${taskId}&last=${last ? 'true' : 'false'}`;
 
-        if (deleteClones) {
-            await server.remove(`notes/${node.data.noteId}` + query);
+        const branch = treeCache.getBranch(branchIdToDelete);
 
-            noteDetailService.noteDeleted(node.data.noteId);
+        if (deleteClones) {
+            await server.remove(`notes/${branch.noteId}` + query);
+
+            noteDetailService.noteDeleted(branch.noteId);
         }
         else {
-            const {noteDeleted} = await server.remove(`branches/${node.data.branchId}` + query);
+            const {noteDeleted} = await server.remove(`branches/${branchIdToDelete}` + query);
 
             if (noteDeleted) {
-                noteDetailService.noteDeleted(node.data.noteId);
+                noteDetailService.noteDeleted(branch.noteId);
             }
         }
     }
 
-    const nextNotePath = await getNextNode(nodes);
-
     const noteIds = Array.from(new Set(nodes.map(node => node.getParent().data.noteId)));
 
-    await treeService.reloadNotes(noteIds, nextNotePath);
+    await treeService.reloadNotes(noteIds);
 
     return true;
 }

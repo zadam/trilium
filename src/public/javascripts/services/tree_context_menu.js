@@ -133,7 +133,7 @@ class TreeContextMenu {
             protectedSessionService.protectSubtree(this.node.data.noteId, false);
         }
         else if (cmd === "copy") {
-            clipboard.copy(this.treeWidget.getSelectedOrActiveNodes(this.node));
+            clipboard.copy(this.getSelectedOrActiveBranchIds());
         }
         else if (cmd === "cloneTo") {
             const nodes = this.treeWidget.getSelectedOrActiveNodes(this.node);
@@ -142,7 +142,7 @@ class TreeContextMenu {
             import("../dialogs/clone_to.js").then(d => d.showDialog(noteIds));
         }
         else if (cmd === "cut") {
-            clipboard.cut(this.treeWidget.getSelectedOrActiveNodes(this.node));
+            clipboard.cut(this.getSelectedOrActiveBranchIds());
         }
         else if (cmd === "moveTo") {
             const nodes = this.treeWidget.getSelectedOrActiveNodes(this.node);
@@ -150,13 +150,13 @@ class TreeContextMenu {
             import("../dialogs/move_to.js").then(d => d.showDialog(nodes));
         }
         else if (cmd === "pasteAfter") {
-            clipboard.pasteAfter(this.treeWidget, this.node);
+            clipboard.pasteAfter(this.node.data.branchId);
         }
         else if (cmd === "pasteInto") {
-            clipboard.pasteInto(this.node);
+            clipboard.pasteInto(this.node.data.noteId);
         }
         else if (cmd === "delete") {
-            treeChangesService.deleteNodes(this.treeWidget.getSelectedOrActiveNodes(this.node));
+            treeChangesService.deleteNodes(this.getSelectedOrActiveBranchIds());
         }
         else if (cmd === "export") {
             const exportDialog = await import('../dialogs/export.js');
@@ -192,6 +192,12 @@ class TreeContextMenu {
         else {
             ws.logError("Unknown command: " + cmd);
         }
+    }
+
+    getSelectedOrActiveBranchIds() {
+        const nodes = this.treeWidget.getSelectedOrActiveNodes(this.node);
+
+        return nodes.map(node => node.data.branchId);
     }
 }
 

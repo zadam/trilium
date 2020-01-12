@@ -1,6 +1,5 @@
 import treeService from "./services/tree.js";
 import noteDetailService from "./services/note_detail.js";
-import dragAndDropSetup from "./services/drag_and_drop.js";
 import treeCache from "./services/tree_cache.js";
 import treeBuilder from "./services/tree_builder.js";
 import contextMenuWidget from "./services/context_menu.js";

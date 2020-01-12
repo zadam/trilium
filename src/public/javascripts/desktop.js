@@ -1,6 +1,5 @@
 import cloning from './services/cloning.js';
 import contextMenu from './services/tree_context_menu.js';
-import dragAndDropSetup from './services/drag_and_drop.js';
 import link from './services/link.js';
 import ws from './services/ws.js';
 import noteDetailService from './services/note_detail.js';

@@ -1,5 +1,3 @@
-import contextMenuWidget from './context_menu.js';
-import dragAndDropSetup from './drag_and_drop.js';
 import ws from './ws.js';
 import noteDetailService from './note_detail.js';
 import protectedSessionHolder from './protected_session_holder.js';
@@ -9,10 +7,8 @@ import server from './server.js';
 import treeCache from './tree_cache.js';
 import toastService from "./toast.js";
 import treeBuilder from "./tree_builder.js";
-import treeKeyBindingService from "./tree_keybindings.js";
 import hoistedNoteService from '../services/hoisted_note.js';
 import optionsService from "../services/options.js";
-import TreeContextMenu from "./tree_context_menu.js";
 import bundle from "./bundle.js";
 import keyboardActionService from "./keyboard_actions.js";
 
