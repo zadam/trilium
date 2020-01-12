@@ -158,7 +158,7 @@ export default class NoteTitleWidget extends TabAwareWidget {
     }
 
     async showPaths() {
-        const note = this.tabContext.note;
+        const {note, notePath} = this.tabContext;
 
         if (note.noteId === 'root') {
             // root doesn't have any parent, but it's still technically 1 path
@@ -175,7 +175,7 @@ export default class NoteTitleWidget extends TabAwareWidget {
             this.$notePathCount.html(parents.length + " path" + (parents.length > 1 ? "s" : ""));
             this.$notePathList.empty();
 
-            const pathSegments = this.notePath.split("/");
+            const pathSegments = notePath.split("/");
             const activeNoteParentNoteId = pathSegments[pathSegments.length - 2]; // we know this is not root so there must be a parent
 
             for (const parentNote of parents) {
