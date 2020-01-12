@@ -21,6 +21,11 @@ class Branch {
         return this.treeCache.getNote(this.noteId);
     }
 
+    /** @returns {NoteShort} */
+    async getParentNote() {
+        return this.treeCache.getNote(this.parentNoteId);
+    }
+
     /** @returns {boolean} true if it's top level, meaning its parent is root note */
     isTopLevel() {
         return this.parentNoteId === 'root';

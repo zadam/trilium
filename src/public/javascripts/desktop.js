@@ -34,7 +34,7 @@ import keyboardActionService from "./services/keyboard_actions.js";
 import splitService from "./services/split.js";
 import optionService from "./services/options.js";
 import noteContentRenderer from "./services/note_content_renderer.js";
-import AppContext from "./services/app_context.js";
+import appContext from "./services/app_context.js";
 
 window.glob.isDesktop = utils.isDesktop;
 window.glob.isMobile = utils.isMobile;
@@ -183,7 +183,6 @@ macInit.init();
 
 searchNotesService.init(); // should be in front of treeService since that one manipulates address bar hash
 
-const appContext = new AppContext();
 appContext.showWidgets();
 
 entrypoints.registerEntrypoints();

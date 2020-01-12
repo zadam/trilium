@@ -157,7 +157,7 @@ export default class NoteTreeWidget extends BasicWidget {
         $tree.on('contextmenu', '.fancytree-node', e => {
             const node = $.ui.fancytree.getNode(e);
 
-            contextMenuWidget.initContextMenu(this, e, new TreeContextMenu(this, node));
+            contextMenuWidget.initContextMenu(e, new TreeContextMenu(this, node));
 
             return false; // blocks default browser right click menu
         });

@@ -8,76 +8,63 @@ import hoistedNoteService from "./hoisted_note.js";
 import noteDetailService from "./note_detail.js";
 import ws from "./ws.js";
 
-async function moveBeforeNode(nodesToMove, beforeNode) {
-    nodesToMove = await filterRootNote(nodesToMove);
+async function moveBeforeNode(branchIdsToMove, beforeBranchId) {
+    branchIdsToMove = await filterRootNote(branchIdsToMove);
 
-    if (beforeNode.data.noteId === 'root') {
+    if (beforeBranchId === 'root') {
         alert('Cannot move notes before root note.');
         return;
     }
 
-    for (const nodeToMove of nodesToMove) {
-        const resp = await server.put('branches/' + nodeToMove.data.branchId + '/move-before/' + beforeNode.data.branchId);
+    for (const branchIdToMove of branchIdsToMove) {
+        const resp = await server.put(`branches/${branchIdToMove}/move-before/${beforeBranchId}`);
 
         if (!resp.success) {
             alert(resp.message);
             return;
         }
-
-        await changeNode(
-            node => node.moveTo(beforeNode, 'before'),
-            nodeToMove);
     }
 }
 
-async function moveAfterNode(nodesToMove, afterNode) {
-    nodesToMove = await filterRootNote(nodesToMove);
+async function moveAfterNode(branchIdsToMove, afterBranchId) {
+    branchIdsToMove = await filterRootNote(branchIdsToMove);
 
-    if (afterNode.data.noteId === 'root' || afterNode.data.noteId === await hoistedNoteService.getHoistedNoteId()) {
+    const afterNote = await treeCache.getBranch(afterBranchId).getNote();
+
+    if (afterNote.noteId === 'root' || afterNote.noteId === await hoistedNoteService.getHoistedNoteId()) {
         alert('Cannot move notes after root note.');
         return;
     }
 
-    nodesToMove.reverse(); // need to reverse to keep the note order
+    branchIdsToMove.reverse(); // need to reverse to keep the note order
 
-    for (const nodeToMove of nodesToMove) {
-        const resp = await server.put('branches/' + nodeToMove.data.branchId + '/move-after/' + afterNode.data.branchId);
+    for (const branchIdToMove of branchIdsToMove) {
+        const resp = await server.put(`branches/${branchIdToMove}/move-after/${afterBranchId}`);
 
         if (!resp.success) {
             alert(resp.message);
             return;
         }
-
-        await changeNode(
-            node => node.moveTo(afterNode, 'after'),
-            nodeToMove);
     }
 }
 
-async function moveToNode(nodesToMove, toNode) {
-    nodesToMove = await filterRootNote(nodesToMove);
+async function moveToNode(branchIdsToMove, newParentNoteId) {
+    branchIdsToMove = await filterRootNote(branchIdsToMove);
 
-    for (const nodeToMove of nodesToMove) {
-        if (nodeToMove.data.noteId === await hoistedNoteService.getHoistedNoteId()
-            || nodeToMove.getParent().data.noteType === 'search') {
+    for (const branchIdToMove of branchIdsToMove) {
+        const branchToMove = treeCache.getBranch(branchIdToMove);
+
+        if (branchToMove.noteId === await hoistedNoteService.getHoistedNoteId()
+            || (await branchToMove.getParentNote()).type === 'search') {
             continue;
         }
 
-        const resp = await server.put('branches/' + nodeToMove.data.branchId + '/move-to/' + toNode.data.noteId);
+        const resp = await server.put(`branches/${branchIdToMove}/move-to/${newParentNoteId}`);
 
         if (!resp.success) {
             alert(resp.message);
             return;
         }
-
-        await changeNode(async node => {
-                // first expand which will force lazy load and only then move the node
-                // if this is not expanded before moving, then lazy load won't happen because it already contains node
-                // this doesn't work if this isn't a folder yet, that's why we expand second time below
-                await toNode.setExpanded(true);
-
-                node.moveTo(toNode);
-            }, nodeToMove);
     }
 }
 
@@ -170,72 +157,21 @@ async function moveNodeUpInHierarchy(node) {
         return;
     }
 
-    if (!hoistedNoteService.isTopLevelNode(node) && node.getParent().getChildren().length <= 1) {
+    if (!await hoistedNoteService.isTopLevelNode(node) && node.getParent().getChildren().length <= 1) {
         node.getParent().folder = false;
         node.getParent().renderTitle();
     }
-
-    await changeNode(
-        node => node.moveTo(node.getParent(), 'after'),
-        node);
 }
 
-async function changeNode(func, node) {
-    utils.assertArguments(func, node);
-
-    const childNoteId = node.data.noteId;
-    const thisOldParentNode = node.getParent();
-
-    // this will move the node the user is directly operating on to the desired location
-    // note that there might be other instances of this note in the tree and those are updated through
-    // force reloading. We could simplify our lives by just reloading this one as well, but that leads
-    // to flickering and not good user experience. Current solution leads to no-flicker experience in most
-    // cases (since cloning is not used that often) and correct for multi-clone use cases
-    await func(node);
-
-    const thisNewParentNode = node.getParent();
-
-    node.data.parentNoteId = thisNewParentNode.data.noteId;
-
-    await treeCache.reloadNotes([childNoteId]);
-
-    await treeService.checkFolderStatus(thisOldParentNode);
-    await treeService.checkFolderStatus(thisNewParentNode);
-
-    if (!thisNewParentNode.isExpanded()) {
-        // this expands the note in case it become the folder only after the move
-        await thisNewParentNode.setExpanded(true);
-    }
-
-    for (const newParentNode of treeService.getNodesByNoteId(thisNewParentNode.data.noteId)) {
-        if (newParentNode.key === thisNewParentNode.key) {
-            // this one has been handled above specifically
-            continue;
-        }
-
-        newParentNode.load(true); // force reload to show up new note
-
-        await treeService.checkFolderStatus(newParentNode);
-    }
-
-    for (const oldParentNode of treeService.getNodesByNoteId(thisOldParentNode.data.noteId)) {
-        if (oldParentNode.key === thisOldParentNode.key) {
-            // this one has been handled above specifically
-            continue;
-        }
-
-        await oldParentNode.load(true); // force reload to show up new note
-
-        await treeService.checkFolderStatus(oldParentNode);
-    }
-}
-
-async function filterRootNote(nodes) {
+async function filterRootNote(branchIds) {
     const hoistedNoteId = await hoistedNoteService.getHoistedNoteId();
 
-    return nodes.filter(node =>
-        node.data.noteId !== 'root'
-        && node.data.noteId !== hoistedNoteId);
+    return branchIds.filter(branchId => {
+       const branch = treeCache.getBranch(branchId);
+
+        return branch.noteId !== 'root'
+            && branch.noteId !== hoistedNoteId;
+    });
 }
 
 function makeToast(id, message) {

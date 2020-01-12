@@ -150,7 +150,7 @@ class TreeContextMenu {
             import("../dialogs/move_to.js").then(d => d.showDialog(nodes));
         }
         else if (cmd === "pasteAfter") {
-            clipboard.pasteAfter(this.node);
+            clipboard.pasteAfter(this.treeWidget, this.node);
         }
         else if (cmd === "pasteInto") {
             clipboard.pasteInto(this.node);

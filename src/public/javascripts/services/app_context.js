@@ -3,7 +3,7 @@ import SearchBoxWidget from "../widgets/search_box.js";
 import SearchResultsWidget from "../widgets/search_results.js";
 import NoteTreeWidget from "../widgets/note_tree.js";
 
-export default class AppContext {
+class AppContext {
     constructor() {
         this.widgets = [];
     }
@@ -31,3 +31,7 @@ export default class AppContext {
         }
     }
 }
+
+const appContext = new AppContext();
+
+export default appContext;
