@@ -39,7 +39,7 @@ window.glob.isDesktop = utils.isDesktop;
 window.glob.isMobile = utils.isMobile;
 
 // required for CKEditor image upload plugin
-window.glob.getActiveNode = treeService.getActiveNode;
+window.glob.getActiveNode = () => appContext.getMainNoteTree().getActiveNode();
 window.glob.getHeaders = server.getHeaders;
 window.glob.showAddLinkDialog = () => import('./dialogs/add_link.js').then(d => d.showDialog());
 window.glob.showIncludeNoteDialog = cb => import('./dialogs/include_note.js').then(d => d.showDialog(cb));
@@ -134,11 +134,11 @@ $noteTabContainer.on("click", ".export-note-button", function () {
         return;
     }
 
-    import('./dialogs/export.js').then(d => d.showDialog(treeService.getActiveNode(), 'single'));
+    import('./dialogs/export.js').then(d => d.showDialog(appContext.getMainNoteTree().getActiveNode(), 'single'));
 });
 
 $noteTabContainer.on("click", ".import-files-button",
-    () => import('./dialogs/import.js').then(d => d.showDialog(treeService.getActiveNode())));
+    () => import('./dialogs/import.js').then(d => d.showDialog(appContext.getMainNoteTree().getActiveNode())));
 
 async function printActiveNote() {
     if ($(this).hasClass("disabled")) {

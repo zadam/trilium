@@ -1,4 +1,5 @@
 import BasicWidget from "./basic_widget.js";
+import appContext from "../services/app_context.js";
 
 const WIDGET_TPL = `
 <style>
@@ -34,7 +35,7 @@ class GlobalButtonsWidget extends BasicWidget {
 
         $createTopLevelNoteButton.on('click', () => this.trigger('createTopLevelNote'));
         $collapseTreeButton.on('click', () => this.trigger('collapseTree'));
-        $scrollToActiveNoteButton.on('click', () => this.trigger('scrollToActiveNote'));
+        $scrollToActiveNoteButton.on('click', () => appContext.getMainNoteTree().scrollToActiveNote());
         $toggleSearchButton.on('click', () => this.trigger('toggleSearch'));
     }
 }

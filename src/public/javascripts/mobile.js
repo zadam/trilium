@@ -6,6 +6,7 @@ import contextMenuWidget from "./services/context_menu.js";
 import treeChangesService from "./services/branches.js";
 import utils from "./services/utils.js";
 import treeUtils from "./services/tree_utils.js";
+import appContext from "./services/app_context.js";
 
 window.glob.isDesktop = utils.isDesktop;
 window.glob.isMobile = utils.isMobile;
@@ -89,7 +90,7 @@ async function showTree() {
 }
 
 $detail.on("click", ".note-menu-button", async e => {
-    const node = treeService.getActiveNode();
+    const node = appContext.getMainNoteTree().getActiveNode();
     const branch = treeCache.getBranch(node.data.branchId);
     const note = await treeCache.getNote(node.data.noteId);
     const parentNote = await treeCache.getNote(branch.parentNoteId);

@@ -9,6 +9,7 @@ import contextMenuService from "./context_menu.js";
 import treeUtils from "./tree_utils.js";
 import tabRow from "./tab_row.js";
 import keyboardActionService from "./keyboard_actions.js";
+import appContext from "./app_context.js";
 
 const $tabContentsContainer = $("#note-tab-container");
 const $savedIndicator = $(".saved-indicator");
@@ -161,22 +162,20 @@ async function showTab(tabId) {
         }
     }
 
-    const oldActiveNode = treeService.getActiveNode();
+    const oldActiveNode = appContext.getMainNoteTree().getActiveNode();
 
     if (oldActiveNode) {
         oldActiveNode.setActive(false);
     }
 
-    treeService.clearSelectedNodes();
-
     const newActiveTabContext = getActiveTabContext();
 
     if (newActiveTabContext && newActiveTabContext.notePath) {
-        const newActiveNode = await treeService.getNodeFromPath(newActiveTabContext.notePath);
+        const newActiveNode = await appContext.getMainNoteTree().getNodeFromPath(newActiveTabContext.notePath);
 
         if (newActiveNode) {
             if (!newActiveNode.isVisible()) {
-                await treeService.expandToNote(newActiveTabContext.notePath);
+                await appContext.getMainNoteTree().expandToNote(newActiveTabContext.notePath);
             }
 
             newActiveNode.setActive(true, {noEvents: true});
@@ -227,7 +226,7 @@ async function loadNoteDetail(origNotePath, options = {}) {
     // this is useful when user quickly switches notes (by e.g. holding down arrow) so that we don't
     // try to render all those loaded notes one after each other. This only guarantees that correct note
     // will be displayed independent of timing
-    const currentTreeNode = treeService.getActiveNode();
+    const currentTreeNode = appContext.getMainNoteTree().getActiveNode();
     if (!newTab && currentTreeNode && currentTreeNode.data.noteId !== loadedNote.noteId) {
         return;
     }

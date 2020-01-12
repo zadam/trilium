@@ -2,9 +2,10 @@ import treeService from './tree.js';
 import treeCache from "./tree_cache.js";
 import server from './server.js';
 import toastService from "./toast.js";
+import appContext from "./app_context.js";
 
 async function refreshSearch() {
-    const activeNode = treeService.getActiveNode();
+    const activeNode = appContext.getMainNoteTree().getActiveNode();
 
     activeNode.load(true);
     activeNode.setExpanded(true);

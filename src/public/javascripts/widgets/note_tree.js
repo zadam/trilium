@@ -12,6 +12,7 @@ import treeCache from "../services/tree_cache.js";
 import treeBuilder from "../services/tree_builder.js";
 import TreeContextMenu from "../services/tree_context_menu.js";
 import treeChangesService from "../services/branches.js";
+import ws from "../services/ws.js";
 
 const TPL = `
 <style>
@@ -47,8 +48,8 @@ export default class NoteTreeWidget extends BasicWidget {
         $tree.on("click", ".unhoist-button", hoistedNoteService.unhoist);
         $tree.on("click", ".refresh-search-button", searchNotesService.refreshSearch);
 
-        // this does not belong here ...
-        keyboardActionService.setGlobalActionHandler('CollapseTree', () => treeService.collapseTree()); // don't use shortened form since collapseTree() accepts argument
+        // FIXME this does not belong here ...
+        keyboardActionService.setGlobalActionHandler('CollapseTree', () => this.collapseTree()); // don't use shortened form since collapseTree() accepts argument
 
         // fancytree doesn't support middle click so this is a way to support it
         $widget.on('mousedown', '.fancytree-title', e => {
@@ -92,7 +93,7 @@ export default class NoteTreeWidget extends BasicWidget {
                     else {
                         node.setActive();
 
-                        treeService.clearSelectedNodes();
+                        this.clearSelectedNodes();
                     }
 
                     return false;
@@ -231,8 +232,6 @@ export default class NoteTreeWidget extends BasicWidget {
         });
 
         this.tree = $.ui.fancytree.getTree("#tree");
-
-        treeService.setTree(this.tree);
     }
 
     /** @return {FancytreeNode[]} */
@@ -241,11 +240,11 @@ export default class NoteTreeWidget extends BasicWidget {
     }
 
     /** @return {FancytreeNode[]} */
-    getSelectedOrActiveNodes(node) {
+    getSelectedOrActiveNodes(node = null) {
         let notes = this.getSelectedNodes(true);
 
         if (notes.length === 0) {
-            notes.push(node);
+            notes.push(node ? node : this.getActiveNode());
         }
 
         return notes;
@@ -264,6 +263,13 @@ export default class NoteTreeWidget extends BasicWidget {
     }
 
     /**
+     * @return {FancytreeNode|null}
+     */
+    getActiveNode() {
+        return this.tree.getActiveNode();
+    }
+
+    /**
      * focused & not active node can happen during multiselection where the node is selected but not activated
      * (its content is not displayed in the detail)
      * @return {FancytreeNode|null}
@@ -278,9 +284,125 @@ export default class NoteTreeWidget extends BasicWidget {
         }
     }
 
+    // FIXME since this operates on note details tab context it seems it does not really belong here
+    async scrollToActiveNote() {
+        const activeContext = noteDetailService.getActiveTabContext();
+
+        if (activeContext && activeContext.notePath) {
+            this.tree.setFocus();
+
+            const node = await this.expandToNote(activeContext.notePath);
+
+            await node.makeVisible({scrollIntoView: true});
+            node.setFocus();
+        }
+    }
+
+    /** @return {FancytreeNode} */
+    async getNodeFromPath(notePath, expand = false, expandOpts = {}) {
+        utils.assertArguments(notePath);
+
+        const hoistedNoteId = await hoistedNoteService.getHoistedNoteId();
+        /** @var {FancytreeNode} */
+        let parentNode = null;
+
+        const runPath = await treeService.getRunPath(notePath);
+
+        if (!runPath) {
+            console.error("Could not find run path for notePath:", notePath);
+            return;
+        }
+
+        for (const childNoteId of runPath) {
+            if (childNoteId === hoistedNoteId) {
+                // there must be exactly one node with given hoistedNoteId
+                parentNode = this.getNodesByNoteId(childNoteId)[0];
+
+                continue;
+            }
+
+            // we expand only after hoisted note since before then nodes are not actually present in the tree
+            if (parentNode) {
+                if (!parentNode.isLoaded()) {
+                    await parentNode.load();
+                }
+
+                if (expand) {
+                    await parentNode.setExpanded(true, expandOpts);
+                }
+
+                await this.checkFolderStatus(parentNode);
+
+                let foundChildNode = this.findChildNode(parentNode, childNoteId);
+
+                if (!foundChildNode) { // note might be recently created so we'll force reload and try again
+                    await parentNode.load(true);
+
+                    foundChildNode = this.findChildNode(parentNode, childNoteId);
+
+                    if (!foundChildNode) {
+                        ws.logError(`Can't find node for child node of noteId=${childNoteId} for parent of noteId=${parentNode.data.noteId} and hoistedNoteId=${hoistedNoteId}, requested path is ${notePath}`);
+                        return;
+                    }
+                }
+
+                parentNode = foundChildNode;
+            }
+        }
+
+        return parentNode;
+    }
+
+    /** @return {FancytreeNode} */
+    findChildNode(parentNode, childNoteId) {
+        let foundChildNode = null;
+
+        for (const childNode of parentNode.getChildren()) {
+            if (childNode.data.noteId === childNoteId) {
+                foundChildNode = childNode;
+                break;
+            }
+        }
+
+        return foundChildNode;
+    }
+
+    /** @return {FancytreeNode} */
+    async expandToNote(notePath, expandOpts) {
+        return this.getNodeFromPath(notePath, true, expandOpts);
+    }
+
+    async checkFolderStatus(node) {
+        const note = await treeCache.getNote(node.data.noteId);
+
+        node.folder = note.type === 'search' || note.getChildNoteIds().length > 0;
+        node.icon = await treeBuilder.getIcon(note);
+        node.extraClasses = await treeBuilder.getExtraClasses(note);
+        node.renderTitle();
+    }
+
+    /** @return {FancytreeNode[]} */
+    async getNodesByBranchId(branchId) {
+        utils.assertArguments(branchId);
+
+        const branch = treeCache.getBranch(branchId);
+
+        return this.getNodesByNoteId(branch.noteId).filter(node => node.data.branchId === branchId);
+    }
+
+    /** @return {FancytreeNode[]} */
+    getNodesByNoteId(noteId) {
+        utils.assertArguments(noteId);
+
+        const list = this.tree.getNodesByRef(noteId);
+        return list ? list : []; // if no nodes with this refKey are found, fancy tree returns null
+    }
+
+    async reload(notes) {
+        await this.tree.reload(notes);
+    }
+
     createTopLevelNoteListener() { treeService.createNewTopLevelNote(); }
 
     collapseTreeListener() { this.collapseTree(); }
-
-    scrollToActiveNoteListener() { treeService.scrollToActiveNote(); }
 }

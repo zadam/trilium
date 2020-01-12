@@ -10,6 +10,7 @@ import keyboardActionService from "./keyboard_actions.js";
 import hoistedNoteService from "./hoisted_note.js";
 import treeCache from "./tree_cache.js";
 import server from "./server.js";
+import appContext from "./app_context.js";
 
 const NOTE_REVISIONS = "../dialogs/note_revisions.js";
 const OPTIONS = "../dialogs/options.js";
@@ -224,9 +225,7 @@ function registerEntrypoints() {
     });
 
     keyboardActionService.setGlobalActionHandler("CloneNotesTo", () => import(CLONE_TO).then(d => {
-        const activeNode = treeService.getActiveNode();
-
-        const selectedOrActiveNodes = treeService.getSelectedOrActiveNodes(activeNode);
+        const selectedOrActiveNodes = appContext.getMainNoteTree().getSelectedOrActiveNodes();
 
         const noteIds = selectedOrActiveNodes.map(node => node.data.noteId);
 
@@ -234,9 +233,7 @@ function registerEntrypoints() {
     }));
 
     keyboardActionService.setGlobalActionHandler("MoveNotesTo", () => import(MOVE_TO).then(d => {
-        const activeNode = treeService.getActiveNode();
-
-        const selectedOrActiveNodes = treeService.getSelectedOrActiveNodes(activeNode);
+        const selectedOrActiveNodes = appContext.getMainNoteTree().getSelectedOrActiveNodes();
 
         d.showDialog(selectedOrActiveNodes);
     }));
@@ -259,14 +256,14 @@ function registerEntrypoints() {
     });
 
     keyboardActionService.setGlobalActionHandler("EditBranchPrefix", async () => {
-        const node = treeService.getActiveNode();
+        const node = appContext.getMainNoteTree().getActiveNode();
 
         const editBranchPrefixDialog = await import("../dialogs/branch_prefix.js");
         editBranchPrefixDialog.showDialog(node);
     });
 
     keyboardActionService.setGlobalActionHandler("ToggleNoteHoisting", async () => {
-        const node = treeService.getActiveNode();
+        const node = appContext.getMainNoteTree().getActiveNode();
 
         hoistedNoteService.getHoistedNoteId().then(async hoistedNoteId => {
             if (node.data.noteId === hoistedNoteId) {
@@ -283,7 +280,7 @@ function registerEntrypoints() {
     });
 
     keyboardActionService.setGlobalActionHandler("SearchInSubtree",  () => {
-        const node = treeService.getActiveNode();
+        const node = appContext.getMainNoteTree().getActiveNode();
 
         searchNotesService.searchInSubtree(node.data.noteId);
     });

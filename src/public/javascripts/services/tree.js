@@ -11,49 +11,10 @@ import hoistedNoteService from '../services/hoisted_note.js';
 import optionsService from "../services/options.js";
 import bundle from "./bundle.js";
 import keyboardActionService from "./keyboard_actions.js";
-
-let tree;
-
-function setTree(treeInstance) {
-    tree = treeInstance;
-}
+import appContext from "./app_context.js";
 
 let setFrontendAsLoaded;
 const frontendLoaded = new Promise(resolve => { setFrontendAsLoaded = resolve; });
-
-/**
- * focused & not active node can happen during multiselection where the node is selected but not activated
- * (its content is not displayed in the detail)
- * @return {FancytreeNode|null}
- */
-function getFocusedNode() {
-    return tree.getFocusNode();
-}
-
-/**
- * note that if you want to access data like noteId or isProtected, you need to go into "data" property
- * @return {FancytreeNode|null}
- */
-function getActiveNode() {
-    return tree.getActiveNode();
-}
-
-/** @return {FancytreeNode[]} */
-async function getNodesByBranchId(branchId) {
-    utils.assertArguments(branchId);
-
-    const branch = treeCache.getBranch(branchId);
-
-    return getNodesByNoteId(branch.noteId).filter(node => node.data.branchId === branchId);
-}
-
-/** @return {FancytreeNode[]} */
-function getNodesByNoteId(noteId) {
-    utils.assertArguments(noteId);
-
-    const list = tree.getNodesByRef(noteId);
-    return list ? list : []; // if no nodes with this refKey are found, fancy tree returns null
-}
 
 async function setPrefix(branchId, prefix) {
     utils.assertArguments(branchId);
@@ -62,7 +23,7 @@ async function setPrefix(branchId, prefix) {
 
     branch.prefix = prefix;
 
-    for (const node of await getNodesByBranchId(branchId)) {
+    for (const node of await appContext.getMainNoteTree().getNodesByBranchId(branchId)) {
         await setNodeTitleWithPrefix(node);
     }
 }
@@ -76,80 +37,6 @@ async function setNodeTitleWithPrefix(node) {
     const title = (prefix ? (prefix + " - ") : "") + noteTitle;
 
     node.setTitle(utils.escapeHtml(title));
-}
-
-/** @return {FancytreeNode} */
-async function expandToNote(notePath, expandOpts) {
-    return await getNodeFromPath(notePath, true, expandOpts);
-}
-
-/** @return {FancytreeNode} */
-function findChildNode(parentNode, childNoteId) {
-    let foundChildNode = null;
-
-    for (const childNode of parentNode.getChildren()) {
-        if (childNode.data.noteId === childNoteId) {
-            foundChildNode = childNode;
-            break;
-        }
-    }
-
-    return foundChildNode;
-}
-
-/** @return {FancytreeNode} */
-async function getNodeFromPath(notePath, expand = false, expandOpts = {}) {
-    utils.assertArguments(notePath);
-
-    const hoistedNoteId = await hoistedNoteService.getHoistedNoteId();
-    /** @var {FancytreeNode} */
-    let parentNode = null;
-
-    const runPath = await getRunPath(notePath);
-
-    if (!runPath) {
-        console.error("Could not find run path for notePath:", notePath);
-        return;
-    }
-
-    for (const childNoteId of runPath) {
-        if (childNoteId === hoistedNoteId) {
-            // there must be exactly one node with given hoistedNoteId
-            parentNode = getNodesByNoteId(childNoteId)[0];
-
-            continue;
-        }
-
-        // we expand only after hoisted note since before then nodes are not actually present in the tree
-        if (parentNode) {
-            if (!parentNode.isLoaded()) {
-                await parentNode.load();
-            }
-
-            if (expand) {
-               await parentNode.setExpanded(true, expandOpts);
-            }
-
-            await checkFolderStatus(parentNode);
-
-            let foundChildNode = findChildNode(parentNode, childNoteId);
-
-            if (!foundChildNode) { // note might be recently created so we'll force reload and try again
-                await parentNode.load(true);
-
-                foundChildNode = findChildNode(parentNode, childNoteId);
-
-                if (!foundChildNode) {
-                    ws.logError(`Can't find node for child node of noteId=${childNoteId} for parent of noteId=${parentNode.data.noteId} and hoistedNoteId=${hoistedNoteId}, requested path is ${notePath}`);
-                    return;
-                }
-            }
-
-            parentNode = foundChildNode;
-        }
-    }
-
-    return parentNode;
 }
 
 /** @return {FancytreeNode} */
@@ -180,15 +67,13 @@ async function activateNote(notePath, noteLoadedListener) {
 
     utils.closeActiveDialog();
 
-    const node = await expandToNote(notePath);
+    const node = await appContext.getMainNoteTree().expandToNote(notePath);
 
     if (noteLoadedListener) {
         noteDetailService.addDetailLoadedListener(node.data.noteId, noteLoadedListener);
     }
 
     await node.setActive(true);
-
-    clearSelectedNodes();
 
     return node;
 }
@@ -329,23 +214,6 @@ function getSelectedNodes(stopOnParents = false) {
     return tree.getSelectedNodes(stopOnParents);
 }
 
-/** @return {FancytreeNode[]} */
-function getSelectedOrActiveNodes(node) {
-    let notes = getSelectedNodes(true);
-
-    if (notes.length === 0) {
-        notes.push(node);
-    }
-
-    return notes;
-}
-
-function clearSelectedNodes() {
-    for (const selectedNode of getSelectedNodes()) {
-        selectedNode.setSelected(false);
-    }
-}
-
 async function treeInitialized() {
     if (noteDetailService.getTabContexts().length > 0) {
         // this is just tree reload - tabs are already in place
@@ -427,13 +295,15 @@ async function treeInitialized() {
 async function reload() {
     const notes = await loadTreeData();
 
-    const activeNotePath = getActiveNode() !== null ? await treeUtils.getNotePath(getActiveNode()) : null;
+    const activeNode = appContext.getMainNoteTree().getActiveNode();
 
-    await tree.reload(notes);
+    const activeNotePath = activeNode !== null ? await treeUtils.getNotePath(activeNode) : null;
+
+    await appContext.getMainNoteTree().reload(notes);
 
     // reactivate originally activated node, but don't trigger note loading
     if (activeNotePath) {
-        const node = await getNodeFromPath(activeNotePath, true);
+        const node = await appContext.getMainNoteTree().getNodeFromPath(activeNotePath, true);
 
         await node.setActive(true, {noEvents: true});
     }
@@ -461,37 +331,8 @@ async function loadTreeData() {
     return await treeBuilder.prepareTree();
 }
 
-async function collapseTree(node = null) {
-    if (!node) {
-        const hoistedNoteId = await hoistedNoteService.getHoistedNoteId();
-
-        node = getNodesByNoteId(hoistedNoteId)[0];
-    }
-
-    node.setExpanded(false);
-
-    node.visit(node => node.setExpanded(false));
-}
-
-function focusTree() {
-    tree.setFocus();
-}
-
-async function scrollToActiveNote() {
-    const activeContext = noteDetailService.getActiveTabContext();
-
-    if (activeContext && activeContext.notePath) {
-        focusTree();
-
-        const node = await expandToNote(activeContext.notePath);
-
-        await node.makeVisible({scrollIntoView: true});
-        node.setFocus();
-    }
-}
-
 function setProtected(noteId, isProtected) {
-    getNodesByNoteId(noteId).map(node => {
+    appContext.getMainNoteTree().getNodesByNoteId(noteId).map(node => {
         node.data.isProtected = isProtected;
         node.toggleClass("protected", isProtected);
     });
@@ -504,7 +345,7 @@ async function setNoteTitle(noteId, title) {
 
     note.title = title;
 
-    for (const clone of getNodesByNoteId(noteId)) {
+    for (const clone of appContext.getMainNoteTree().getNodesByNoteId(noteId)) {
         await setNodeTitleWithPrefix(clone);
     }
 }
@@ -512,7 +353,7 @@ async function setNoteTitle(noteId, title) {
 async function createNewTopLevelNote() {
     const hoistedNoteId = await hoistedNoteService.getHoistedNoteId();
 
-    const rootNode = getNodesByNoteId(hoistedNoteId)[0];
+    const rootNode = appContext.getMainNoteTree().getNodesByNoteId(hoistedNoteId)[0];
 
     await createNote(rootNode, hoistedNoteId, "into");
 }
@@ -605,13 +446,11 @@ async function createNote(node, parentNoteId, target, extraOptions = {}) {
         await newNode.setActive(true);
     }
 
-    clearSelectedNodes(); // to unmark previously active node
-
     // need to refresh because original doesn't have methods like .getParent()
-    newNodeData = getNodesByNoteId(branchEntity.noteId)[0];
+    newNodeData = appContext.getMainNoteTree().getNodesByNoteId(branchEntity.noteId)[0];
 
     // following for cycle will make sure that also clones of a parent are refreshed
-    for (const newParentNode of getNodesByNoteId(parentNoteId)) {
+    for (const newParentNode of appContext.getMainNoteTree().getNodesByNoteId(parentNoteId)) {
         if (newParentNode.key === newNodeData.getParent().key) {
             // we've added a note into this one so no need to refresh
             continue;
@@ -619,7 +458,7 @@ async function createNote(node, parentNoteId, target, extraOptions = {}) {
 
         await newParentNode.load(true); // force reload to show up new note
 
-        await checkFolderStatus(newParentNode);
+        await appContext.getMainNoteTree().checkFolderStatus(newParentNode);
     }
 
     return {note, branch};
@@ -688,7 +527,7 @@ ws.subscribeToOutsideSyncMessages(async syncData => {
 });
 
 keyboardActionService.setGlobalActionHandler('CreateNoteAfter', async () => {
-    const node = getActiveNode();
+    const node = appContext.getMainNoteTree().getActiveNode();
     const parentNoteId = node.data.parentNoteId;
     const isProtected = await treeUtils.getParentProtectedStatus(node);
 
@@ -703,7 +542,7 @@ keyboardActionService.setGlobalActionHandler('CreateNoteAfter', async () => {
 });
 
 async function createNoteInto(saveSelection = false) {
-    const node = getActiveNode();
+    const node = appContext.getMainNoteTree().getActiveNode();
 
     if (node) {
         await createNote(node, node.data.noteId, 'into', {
@@ -711,15 +550,6 @@ async function createNoteInto(saveSelection = false) {
             saveSelection: saveSelection
         });
     }
-}
-
-async function checkFolderStatus(node) {
-    const note = await treeCache.getNote(node.data.noteId);
-
-    node.folder = note.type === 'search' || note.getChildNoteIds().length > 0;
-    node.icon = await treeBuilder.getIcon(note);
-    node.extraClasses = await treeBuilder.getExtraClasses(note);
-    node.renderTitle();
 }
 
 async function reloadNotes(noteIds, activateNotePath = null) {
@@ -734,7 +564,7 @@ async function reloadNotes(noteIds, activateNotePath = null) {
     }
 
     for (const noteId of noteIds) {
-        for (const node of getNodesByNoteId(noteId)) {
+        for (const node of appContext.getMainNoteTree().getNodesByNoteId(noteId)) {
             const branch = treeCache.getBranch(node.data.branchId, true);
 
             if (!branch) {
@@ -743,13 +573,13 @@ async function reloadNotes(noteIds, activateNotePath = null) {
             else {
                 await node.load(true);
 
-                await checkFolderStatus(node);
+                await appContext.getMainNoteTree().checkFolderStatus(node);
             }
         }
     }
 
     if (activateNotePath) {
-        const node = await getNodeFromPath(activateNotePath);
+        const node = await appContext.getMainNoteTree().getNodeFromPath(activateNotePath);
 
         if (node && !node.isActive()) {
             await node.setActive(true);
@@ -763,7 +593,7 @@ keyboardActionService.setGlobalActionHandler('CutIntoNote', () => createNoteInto
 
 keyboardActionService.setGlobalActionHandler('CreateNoteInto', createNoteInto);
 
-keyboardActionService.setGlobalActionHandler('ScrollToActiveNote', scrollToActiveNote);
+keyboardActionService.setGlobalActionHandler('ScrollToActiveNote', () => appContext.getMainNoteTree().scrollToActiveNote());
 
 $(window).bind('hashchange', async function() {
     if (isNotePathInAddress()) {
@@ -784,40 +614,23 @@ async function duplicateNote(noteId, parentNoteId) {
     toastService.showMessage(`Note "${origNote.title}" has been duplicated`);
 }
 
-function getNodeByKey(key) {
-    return tree.getNodeByKey(key);
-}
-
 frontendLoaded.then(bundle.executeStartupBundles);
 
 export default {
     reload,
-    collapseTree,
     setProtected,
     activateNote,
-    getFocusedNode,
-    getActiveNode,
     setNoteTitle,
     setPrefix,
     createNote,
-    getSelectedNodes,
-    getSelectedOrActiveNodes,
-    clearSelectedNodes,
     sortAlphabetically,
     loadTreeData,
     treeInitialized,
     setExpandedToServer,
-    getNodesByNoteId,
-    checkFolderStatus,
     reloadNotes,
-    expandToNote,
-    getNodeFromPath,
     resolveNotePath,
     getSomeNotePath,
-    focusTree,
-    scrollToActiveNote,
     createNewTopLevelNote,
     duplicateNote,
-    getNodeByKey,
-    setTree
+    getRunPath
 };

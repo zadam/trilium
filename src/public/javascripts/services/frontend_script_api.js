@@ -11,6 +11,7 @@ import dateNotesService from './date_notes.js';
 import StandardWidget from '../widgets/standard_widget.js';
 import ws from "./ws.js";
 import hoistedNoteService from "./hoisted_note.js";
+import appContext from "./app_context.js";
 
 /**
  * This is the main frontend API interface for scripts. It's published in the local "api" object.
@@ -49,7 +50,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
      */
     this.activateNote = async (notePath, noteLoadedListener) => {
         await treeService.activateNote(notePath, async () => {
-            await treeService.scrollToActiveNote();
+            await appContext.getMainNoteTree().scrollToActiveNote();
 
             if (noteLoadedListener) {
                 noteLoadedListener();

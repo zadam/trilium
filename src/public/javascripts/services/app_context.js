@@ -17,11 +17,13 @@ class AppContext {
     showWidgets() {
         const $leftPane = $("#left-pane");
 
+        this.noteTreeWidget = new NoteTreeWidget(this);
+
         this.widgets = [
             new GlobalButtonsWidget(this),
             new SearchBoxWidget(this),
             new SearchResultsWidget(this),
-            new NoteTreeWidget(this)
+            this.noteTreeWidget
         ];
 
         for (const widget of this.widgets) {
@@ -29,6 +31,13 @@ class AppContext {
 
             $leftPane.append($widget);
         }
+    }
+
+    /**
+     * @return {NoteTreeWidget}
+     */
+    getMainNoteTree() {
+        return this.noteTreeWidget;
     }
 }
 

@@ -87,7 +87,7 @@ function getTemplates(treeWidget) {
             return false;
         },
         "AddNoteAboveToSelection": () => {
-            const node = treeService.getFocusedNode();
+            const node = treeWidget.getFocusedNode();
 
             if (!node) {
                 return;
