@@ -40,7 +40,7 @@ async function switchToNote(notePath) {
 }
 
 function onNoteChange(func) {
-    return getActiveTabContext().getComponent().onNoteChange(func);
+    return appContext.getActiveTabContext().getComponent().onNoteChange(func);
 }
 
 async function saveNotesIfChanged() {
@@ -53,7 +53,7 @@ async function saveNotesIfChanged() {
 }
 
 function getActiveEditor() {
-    const activeTabContext = getActiveTabContext();
+    const activeTabContext = appContext.getActiveTabContext();
 
     if (activeTabContext && activeTabContext.note && activeTabContext.note.type === 'text') {
         return activeTabContext.getComponent().getEditor();
@@ -64,7 +64,7 @@ function getActiveEditor() {
 }
 
 async function activateOrOpenNote(noteId) {
-    for (const tabContext of tabContexts) {
+    for (const tabContext of appContext.getTabContexts()) {
         if (tabContext.note && tabContext.note.noteId === noteId) {
             await tabContext.activate();
             return;
@@ -142,13 +142,13 @@ async function loadNote(noteId) {
 }
 
 async function filterTabs(noteId) {
-    for (const tc of tabContexts) {
+    for (const tc of appContext.getTabContexts()) {
         if (tc.notePath && !tc.notePath.split("/").includes(noteId)) {
             await tabRow.removeTab(tc.$tab[0]);
         }
     }
 
-    if (tabContexts.length === 0) {
+    if (appContext.getTabContexts().length === 0) {
         await loadNoteDetail(noteId, {
             newTab: true,
             activate: true
@@ -159,7 +159,7 @@ async function filterTabs(noteId) {
 }
 
 async function noteDeleted(noteId) {
-    for (const tc of tabContexts) {
+    for (const tc of appContext.getTabContexts()) {
         // not removing active even if it contains deleted note since that one will move to another note (handled by deletion logic)
         // and we would lose tab context state (e.g. sidebar visibility)
         if (!tc.isActive() && tc.notePath && tc.notePath.split("/").includes(noteId)) {
@@ -169,11 +169,11 @@ async function noteDeleted(noteId) {
 }
 
 function focusOnTitle() {
-    getActiveTabContext().$noteTitle.trigger('focus');
+    appContext.getActiveTabContext().$noteTitle.trigger('focus');
 }
 
 function focusAndSelectTitle() {
-    getActiveTabContext()
+    appContext.getActiveTabContext()
         .$noteTitle
             .trigger('focus')
             .trigger('select');
@@ -194,7 +194,7 @@ function addDetailLoadedListener(noteId, callback) {
 
 function fireDetailLoaded() {
     for (const {noteId, callback} of detailLoadedListeners) {
-        if (noteId === getActiveTabNoteId()) {
+        if (noteId === appContext.getActiveTabNoteId()) {
             callback();
         }
     }
@@ -221,7 +221,7 @@ ws.subscribeToOutsideSyncMessages(syncData => {
 });
 
 ws.subscribeToAllSyncMessages(syncData => {
-    for (const tc of appContext.tabContexts) {
+    for (const tc of appContext.getTabContexts()) {
         tc.eventReceived('syncData', syncData);
     }
 });
@@ -231,7 +231,7 @@ $tabContentsContainer.on("dragover", e => e.preventDefault());
 $tabContentsContainer.on("dragleave", e => e.preventDefault());
 
 $tabContentsContainer.on("drop", async e => {
-    const activeNote = getActiveTabNote();
+    const activeNote = appContext.getActiveTabNote();
 
     if (!activeNote) {
         return;
@@ -341,7 +341,7 @@ async function saveOpenTabs() {
 }
 
 function noteChanged() {
-    const activeTabContext = getActiveTabContext();
+    const activeTabContext = appContext.getActiveTabContext();
 
     if (activeTabContext) {
         activeTabContext.noteChanged();
