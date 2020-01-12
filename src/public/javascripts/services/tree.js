@@ -18,6 +18,10 @@ import keyboardActionService from "./keyboard_actions.js";
 
 let tree;
 
+function setTree(treeInstance) {
+    tree = treeInstance;
+}
+
 let setFrontendAsLoaded;
 const frontendLoaded = new Promise(resolve => { setFrontendAsLoaded = resolve; });
 
@@ -424,104 +428,6 @@ async function treeInitialized() {
     setFrontendAsLoaded();
 }
 
-async function initFancyTree($tree, treeData) {
-    utils.assertArguments(treeData);
-
-    $tree.fancytree({
-        autoScroll: true,
-        keyboard: false, // we takover keyboard handling in the hotkeys plugin
-        extensions: ["hotkeys", "dnd5", "clones"],
-        source: treeData,
-        scrollParent: $tree,
-        minExpandLevel: 2, // root can't be collapsed
-        click: (event, data) => {
-            const targetType = data.targetType;
-            const node = data.node;
-
-            if (targetType === 'title' || targetType === 'icon') {
-                if (event.shiftKey) {
-                    node.setSelected(!node.isSelected());
-                    node.setFocus(true);
-                }
-                else if (event.ctrlKey) {
-                    noteDetailService.loadNoteDetail(node.data.noteId, { newTab: true });
-                }
-                else {
-                    node.setActive();
-
-                    clearSelectedNodes();
-                }
-
-                return false;
-            }
-        },
-        activate: async (event, data) => {
-            // click event won't propagate so let's close context menu manually
-            contextMenuWidget.hideContextMenu();
-
-            const notePath = await treeUtils.getNotePath(data.node);
-
-            noteDetailService.switchToNote(notePath);
-        },
-        expand: (event, data) => setExpandedToServer(data.node.data.branchId, true),
-        collapse: (event, data) => setExpandedToServer(data.node.data.branchId, false),
-        init: (event, data) => treeInitialized(), // don't collapse to short form
-        hotkeys: {
-            keydown: await treeKeyBindingService.getKeyboardBindings()
-        },
-        dnd5: dragAndDropSetup,
-        lazyLoad: function(event, data) {
-            const noteId = data.node.data.noteId;
-
-            data.result = treeCache.getNote(noteId).then(note => treeBuilder.prepareBranch(note));
-        },
-        clones: {
-            highlightActiveClones: true
-        },
-        enhanceTitle: async function (event, data) {
-            const node = data.node;
-            const $span = $(node.span);
-
-            if (node.data.noteId !== 'root'
-                && node.data.noteId === await hoistedNoteService.getHoistedNoteId()
-                && $span.find('.unhoist-button').length === 0) {
-
-                const unhoistButton = $('<span>&nbsp; (<a class="unhoist-button">unhoist</a>)</span>');
-
-                $span.append(unhoistButton);
-            }
-
-            const note = await treeCache.getNote(node.data.noteId);
-
-            if (note.type === 'search' && $span.find('.refresh-search-button').length === 0) {
-                const refreshSearchButton = $('<span>&nbsp; <span class="refresh-search-button bx bx-recycle" title="Refresh saved search results"></span></span>');
-
-                $span.append(refreshSearchButton);
-            }
-        },
-        // this is done to automatically lazy load all expanded search notes after tree load
-        loadChildren: (event, data) => {
-            data.node.visit((subNode) => {
-                // Load all lazy/unloaded child nodes
-                // (which will trigger `loadChildren` recursively)
-                if (subNode.isUndefined() && subNode.isExpanded()) {
-                    subNode.load();
-                }
-            });
-        }
-    });
-
-    $tree.on('contextmenu', '.fancytree-node', function(e) {
-        const node = $.ui.fancytree.getNode(e);
-
-        contextMenuWidget.initContextMenu(e, new TreeContextMenu(node));
-
-        return false; // blocks default browser right click menu
-    });
-
-    tree = $.ui.fancytree.getTree("#tree");
-}
-
 async function reload() {
     const notes = await loadTreeData();
 
@@ -745,12 +651,6 @@ async function sortAlphabetically(noteId) {
     await reload();
 }
 
-async function showTree($tree) {
-    const treeData = await loadTreeData();
-
-    await initFancyTree($tree, treeData);
-}
-
 ws.subscribeToMessages(message => {
    if (message.type === 'refresh-tree') {
        reload();
@@ -908,7 +808,6 @@ export default {
     getSelectedOrActiveNodes,
     clearSelectedNodes,
     sortAlphabetically,
-    showTree,
     loadTreeData,
     treeInitialized,
     setExpandedToServer,
@@ -923,5 +822,6 @@ export default {
     scrollToActiveNote,
     createNewTopLevelNote,
     duplicateNote,
-    getNodeByKey
+    getNodeByKey,
+    setTree
 };

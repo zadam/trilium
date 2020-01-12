@@ -12,7 +12,12 @@ import protectedSessionHolder from "./protected_session_holder.js";
 import searchNotesService from "./search_notes.js";
 
 class TreeContextMenu {
-    constructor(node) {
+    /**
+     * @param {NoteTreeWidget} treeWidget
+     * @param {FancytreeNode} node
+     */
+    constructor(treeWidget, node) {
+        this.treeWidget = treeWidget;
         this.node = node;
     }
 
@@ -37,7 +42,7 @@ class TreeContextMenu {
         // some actions don't support multi-note so they are disabled when notes are selected
         // the only exception is when the only selected note is the one that was right-clicked, then
         // it's clear what the user meant to do.
-        const selNodes = treeService.getSelectedNodes();
+        const selNodes = this.treeWidget.getSelectedNodes();
         const noSelectedNotes = selNodes.length === 0
                 || (selNodes.length === 1 && selNodes[0] === this.node);
 
@@ -128,19 +133,19 @@ class TreeContextMenu {
             protectedSessionService.protectSubtree(this.node.data.noteId, false);
         }
         else if (cmd === "copy") {
-            clipboard.copy(treeService.getSelectedOrActiveNodes(this.node));
+            clipboard.copy(this.treeWidget.getSelectedOrActiveNodes(this.node));
         }
         else if (cmd === "cloneTo") {
-            const nodes = treeService.getSelectedOrActiveNodes(this.node);
+            const nodes = this.treeWidget.getSelectedOrActiveNodes(this.node);
             const noteIds = nodes.map(node => node.data.noteId);
 
             import("../dialogs/clone_to.js").then(d => d.showDialog(noteIds));
         }
         else if (cmd === "cut") {
-            clipboard.cut(treeService.getSelectedOrActiveNodes(this.node));
+            clipboard.cut(this.treeWidget.getSelectedOrActiveNodes(this.node));
         }
         else if (cmd === "moveTo") {
-            const nodes = treeService.getSelectedOrActiveNodes(this.node);
+            const nodes = this.treeWidget.getSelectedOrActiveNodes(this.node);
 
             import("../dialogs/move_to.js").then(d => d.showDialog(nodes));
         }
@@ -151,7 +156,7 @@ class TreeContextMenu {
             clipboard.pasteInto(this.node);
         }
         else if (cmd === "delete") {
-            treeChangesService.deleteNodes(treeService.getSelectedOrActiveNodes(this.node));
+            treeChangesService.deleteNodes(this.treeWidget.getSelectedOrActiveNodes(this.node));
         }
         else if (cmd === "export") {
             const exportDialog = await import('../dialogs/export.js');
@@ -162,7 +167,7 @@ class TreeContextMenu {
             importDialog.showDialog(this.node);
         }
         else if (cmd === "collapseSubtree") {
-            treeService.collapseTree(this.node);
+            this.treeWidget.collapseTree(this.node);
         }
         else if (cmd === "forceNoteSync") {
             syncService.forceNoteSync(this.node.data.noteId);
