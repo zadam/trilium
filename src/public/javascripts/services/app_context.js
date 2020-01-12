@@ -8,6 +8,7 @@ import TabContext from "./tab_context.js";
 import server from "./server.js";
 import keyboardActionService from "./keyboard_actions.js";
 import TabRowWidget from "./tab_row.js";
+import NoteTitleWidget from "../widgets/note_title.js";
 
 class AppContext {
     constructor() {
@@ -27,6 +28,9 @@ class AppContext {
 
         $("#global-menu-wrapper").after(contents);
 
+        this.noteTitleWidget = new NoteTitleWidget(this);
+        $("#center-pane").prepend(this.noteTitleWidget.render());
+
         this.noteTreeWidget = new NoteTreeWidget(this);
 
         this.widgets = [
@@ -41,11 +45,23 @@ class AppContext {
 
             $leftPane.append($widget);
         }
+
+        this.widgets.push(this.noteTitleWidget);
     }
 
     trigger(name, data) {
+        this.eventReceived(name, data);
+
         for (const widget of this.widgets) {
             widget.eventReceived(name, data);
+        }
+    }
+
+    eventReceived(name, data) {
+        const fun = this[name + 'Listener'];
+
+        if (typeof fun === 'function') {
+            fun.call(this, data);
         }
     }
 

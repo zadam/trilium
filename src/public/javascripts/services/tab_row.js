@@ -380,8 +380,6 @@ export default class TabRowWidget extends BasicWidget {
     }
 
     addTab(tabId) {
-        console.log("Adding tab", tabId);
-
         const div = document.createElement('div');
         div.innerHTML = TAB_TPL;
         const tabEl = div.firstElementChild;

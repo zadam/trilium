@@ -138,6 +138,8 @@ class TabContext {
 
         // after loading new note make sure editor is scrolled to the top
         this.getComponent().scrollToTop();
+
+        appContext.trigger('activeNoteChanged');
     }
 
     async show() {
@@ -174,9 +176,6 @@ class TabContext {
         }
 
         this.$noteDetailComponents.hide();
-
-        this.$noteTitle.show(); // this can be hidden by empty detail
-        this.$noteTitle.removeAttr("readonly"); // this can be set by protected session service
 
         this.getComponent().show();
         await this.getComponent().render();

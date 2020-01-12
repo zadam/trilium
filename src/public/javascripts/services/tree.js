@@ -271,8 +271,6 @@ async function treeInitialized() {
         filteredTabs[0].active = true;
     }
 
-    console.log("filteredTabs", filteredTabs);
-
     for (const tab of filteredTabs) {
         await noteDetailService.loadNoteDetail(tab.notePath, {
             state: tab,

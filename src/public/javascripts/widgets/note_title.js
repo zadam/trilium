@@ -101,18 +101,18 @@ export default class NoteTitleWidget extends TabAwareWidget {
     doRender() {
         const $widget = $(TPL);
 
-        this.$noteTitle = this.$tabContent.find(".note-title");
-        this.$noteTitleRow = this.$tabContent.find(".note-title-row");
-        this.$notePathList = this.$tabContent.find(".note-path-list");
-        this.$notePathCount = this.$tabContent.find(".note-path-count");
+        this.$noteTitle = $widget.find(".note-title");
+        this.$noteTitleRow = $widget.find(".note-title-row");
+        this.$notePathList = $widget.find(".note-path-list");
+        this.$notePathCount = $widget.find(".note-path-count");
 
-        this.$protectButton = this.$tabContent.find(".protect-button");
+        this.$protectButton = $widget.find(".protect-button");
         this.$protectButton.on('click', protectedSessionService.protectNoteAndSendToServer);
 
-        this.$unprotectButton = this.$tabContent.find(".unprotect-button");
+        this.$unprotectButton = $widget.find(".unprotect-button");
         this.$unprotectButton.on('click', protectedSessionService.unprotectNoteAndSendToServer);
 
-        this.$savedIndicator = this.$tabContent.find(".saved-indicator");
+        this.$savedIndicator = $widget.find(".saved-indicator");
 
         this.noteType = new NoteTypeWidget(this);
 
@@ -147,7 +147,7 @@ export default class NoteTitleWidget extends TabAwareWidget {
     async activeTabChanged() {
         const note = this.tabContext.note;
 
-        this.$noteTitle.val(this.note.title);
+        this.$noteTitle.val(note.title);
 
         this.$protectButton.toggleClass("active", note.isProtected);
         this.$protectButton.prop("disabled", note.isProtected);
