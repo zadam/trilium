@@ -16,7 +16,7 @@ export function showDialog() {
 
     $dialog.modal();
 
-    const activeNote = noteDetailService.getActiveTabNote();
+    const activeNote = appContext.getActiveTabNote();
 
     $noteId.text(activeNote.noteId);
     $dateCreated.text(activeNote.dateCreated);

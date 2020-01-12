@@ -31,7 +31,7 @@ export async function showDialog() {
 }
 
 $dialog.on('shown.bs.modal', () => {
-    const note = noteDetailService.getActiveTabNote();
+    const note = appContext.getActiveTabNote();
 
     linkMapService = new LinkMapService(note, $linkMapContainer, getOptions());
     linkMapService.render();

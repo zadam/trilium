@@ -5,6 +5,7 @@ import server from './server.js';
 import protectedSessionHolder from './protected_session_holder.js';
 import toastService from "./toast.js";
 import ws from "./ws.js";
+import appContext from "./app_context.js";
 
 const $enterProtectedSessionButton = $("#enter-protected-session-button");
 const $leaveProtectedSessionButton = $("#leave-protected-session-button");
@@ -50,7 +51,7 @@ async function setupProtectedSession(password) {
     await treeService.reload();
 
     // it's important that tree has been already reloaded at this point since detail also uses tree cache (for book)
-    await noteDetailService.reloadAllTabs();
+    await appContext.reloadAllTabs();
 
     if (protectedSessionDeferred !== null) {
         import("../dialogs/protected_session.js").then(dialog => dialog.close());
@@ -72,16 +73,16 @@ async function enterProtectedSessionOnServer(password) {
 }
 
 async function protectNoteAndSendToServer() {
-    if (!noteDetailService.getActiveTabNote() || noteDetailService.getActiveTabNote().isProtected) {
+    if (!appContext.getActiveTabNote() || appContext.getActiveTabNote().isProtected) {
         return;
     }
 
     await enterProtectedSession();
 
-    const note = noteDetailService.getActiveTabNote();
+    const note = appContext.getActiveTabNote();
     note.isProtected = true;
 
-    await noteDetailService.getActiveTabContext().saveNote();
+    await appContext.getActiveTabContext().saveNote();
 
     treeService.setProtected(note.noteId, note.isProtected);
 
@@ -89,7 +90,7 @@ async function protectNoteAndSendToServer() {
 }
 
 async function unprotectNoteAndSendToServer() {
-    const activeNote = noteDetailService.getActiveTabNote();
+    const activeNote = appContext.getActiveTabNote();
 
     if (!activeNote.isProtected) {
         toastService.showAndLogError(`Note ${activeNote.noteId} is not protected`);
@@ -108,7 +109,7 @@ async function unprotectNoteAndSendToServer() {
 
     activeNote.isProtected = false;
 
-    await noteDetailService.getActiveTabContext().saveNote();
+    await appContext.getActiveTabContext().saveNote();
 
     treeService.setProtected(activeNote.noteId, activeNote.isProtected);
 

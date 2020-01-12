@@ -26,7 +26,7 @@ async function convertMarkdownToHtml(text) {
 }
 
 export async function importMarkdownInline() {
-    if (noteDetailService.getActiveTabNoteType() !== 'text') {
+    if (appContext.getActiveTabNoteType() !== 'text') {
         return;
     }
 

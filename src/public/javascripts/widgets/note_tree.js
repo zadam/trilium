@@ -1,7 +1,6 @@
 import BasicWidget from "./basic_widget.js";
 import hoistedNoteService from "../services/hoisted_note.js";
 import searchNotesService from "../services/search_notes.js";
-import keyboardActionService from "../services/keyboard_actions.js";
 import treeService from "../services/tree.js";
 import treeUtils from "../services/tree_utils.js";
 import noteDetailService from "../services/note_detail.js";
@@ -13,10 +12,11 @@ import treeBuilder from "../services/tree_builder.js";
 import TreeContextMenu from "../services/tree_context_menu.js";
 import treeChangesService from "../services/branches.js";
 import ws from "../services/ws.js";
+import appContext from "../services/app_context.js";
 
 const TPL = `
 <style>
-#tree {
+.tree {
     overflow: auto;
     flex-grow: 1;
     flex-shrink: 1;
@@ -26,7 +26,7 @@ const TPL = `
 }
 </style>
 
-<div id="tree"></div>
+<div class="tree"></div>
 `;
 
 export default class NoteTreeWidget extends BasicWidget {
@@ -39,7 +39,7 @@ export default class NoteTreeWidget extends BasicWidget {
     async doRender($widget) {
         $widget.append($(TPL));
 
-        const $tree = $widget.find('#tree');
+        const $tree = $widget.find('.tree');
 
         const treeData = await treeService.loadTreeData();
 
@@ -47,9 +47,6 @@ export default class NoteTreeWidget extends BasicWidget {
 
         $tree.on("click", ".unhoist-button", hoistedNoteService.unhoist);
         $tree.on("click", ".refresh-search-button", searchNotesService.refreshSearch);
-
-        // FIXME this does not belong here ...
-        keyboardActionService.setGlobalActionHandler('CollapseTree', () => this.collapseTree()); // don't use shortened form since collapseTree() accepts argument
 
         // fancytree doesn't support middle click so this is a way to support it
         $widget.on('mousedown', '.fancytree-title', e => {
@@ -154,7 +151,7 @@ export default class NoteTreeWidget extends BasicWidget {
                     if (dataTransfer && dataTransfer.files && dataTransfer.files.length > 0) {
                         const files = [...dataTransfer.files]; // chrome has issue that dataTransfer.files empties after async operation
 
-                        const importService = await import('./import.js');
+                        const importService = await import('../services/import.js');
 
                         importService.uploadFiles(node.data.noteId, files, {
                             safeImport: true,
@@ -231,7 +228,7 @@ export default class NoteTreeWidget extends BasicWidget {
             return false; // blocks default browser right click menu
         });
 
-        this.tree = $.ui.fancytree.getTree("#tree");
+        this.tree = $.ui.fancytree.getTree($tree);
     }
 
     /** @return {FancytreeNode[]} */
@@ -286,7 +283,7 @@ export default class NoteTreeWidget extends BasicWidget {
 
     // FIXME since this operates on note details tab context it seems it does not really belong here
     async scrollToActiveNote() {
-        const activeContext = noteDetailService.getActiveTabContext();
+        const activeContext = appContext.getActiveTabContext();
 
         if (activeContext && activeContext.notePath) {
             this.tree.setFocus();
@@ -405,4 +402,29 @@ export default class NoteTreeWidget extends BasicWidget {
     createTopLevelNoteListener() { treeService.createNewTopLevelNote(); }
 
     collapseTreeListener() { this.collapseTree(); }
+
+    async notesReloadedListener({ noteIds, activateNotePath }) {
+        for (const noteId of noteIds) {
+            for (const node of this.getNodesByNoteId(noteId)) {
+                const branch = treeCache.getBranch(node.data.branchId, true);
+
+                if (!branch) {
+                    node.remove();
+                }
+                else {
+                    await node.load(true);
+
+                    await this.checkFolderStatus(node);
+                }
+            }
+        }
+
+        if (activateNotePath) {
+            const node = await this.getNodeFromPath(activateNotePath);
+
+            if (node && !node.isActive()) {
+                await node.setActive(true);
+            }
+        }
+    }
 }

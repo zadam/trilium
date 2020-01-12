@@ -11,6 +11,7 @@ import protectedSessionService from "./protected_session.js";
 import optionsService from "./options.js";
 import linkService from "./link.js";
 import Sidebar from "./sidebar.js";
+import appContext from "./app_context.js";
 
 const $tabContentsContainer = $("#note-tab-container");
 
@@ -360,7 +361,7 @@ class TabContext {
         if (this.isNoteChanged) {
             await this.saveNote();
 
-            noteDetailService.refreshTabs(this.tabId, this.note.noteId);
+            appContext.refreshTabs(this.tabId, this.note.noteId);
         }
     }
 

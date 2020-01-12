@@ -93,7 +93,7 @@ function AttributesModel() {
     }
 
     this.loadAttributes = async function() {
-        const noteId = noteDetailService.getActiveTabNoteId();
+        const noteId = appContext.getActiveTabNoteId();
 
         const attributes = await server.get('notes/' + noteId + '/attributes');
 
@@ -139,7 +139,7 @@ function AttributesModel() {
 
         self.updateAttributePositions();
 
-        const noteId = noteDetailService.getActiveTabNoteId();
+        const noteId = appContext.getActiveTabNoteId();
 
         const attributesToSave = self.ownedAttributes()
             .map(attribute => attribute())
@@ -171,7 +171,7 @@ function AttributesModel() {
 
         toastService.showMessage("Attributes have been saved.");
 
-        const ctx = noteDetailService.getActiveTabContext();
+        const ctx = appContext.getActiveTabContext();
 
         ctx.attributes.refreshAttributes();
 

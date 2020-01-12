@@ -215,7 +215,7 @@ function getSelectedNodes(stopOnParents = false) {
 }
 
 async function treeInitialized() {
-    if (noteDetailService.getTabContexts().length > 0) {
+    if (appContext.getTabContexts().length > 0) {
         // this is just tree reload - tabs are already in place
         return;
     }
@@ -369,7 +369,7 @@ async function createNote(node, parentNoteId, target, extraOptions = {}) {
         extraOptions.isProtected = false;
     }
 
-    if (noteDetailService.getActiveTabNoteType() !== 'text') {
+    if (appContext.getActiveTabNoteType() !== 'text') {
         extraOptions.saveSelection = false;
     }
 
@@ -560,31 +560,10 @@ async function reloadNotes(noteIds, activateNotePath = null) {
     await treeCache.reloadNotes(noteIds);
 
     if (!activateNotePath) {
-        activateNotePath = noteDetailService.getActiveTabNotePath();
+        activateNotePath = appContext.getActiveTabNotePath();
     }
 
-    for (const noteId of noteIds) {
-        for (const node of appContext.getMainNoteTree().getNodesByNoteId(noteId)) {
-            const branch = treeCache.getBranch(node.data.branchId, true);
-
-            if (!branch) {
-                node.remove();
-            }
-            else {
-                await node.load(true);
-
-                await appContext.getMainNoteTree().checkFolderStatus(node);
-            }
-        }
-    }
-
-    if (activateNotePath) {
-        const node = await appContext.getMainNoteTree().getNodeFromPath(activateNotePath);
-
-        if (node && !node.isActive()) {
-            await node.setActive(true);
-        }
-    }
+    appContext.trigger('notesReloaded', { noteIds, activateNotePath });
 }
 
 window.glob.cutIntoNote = () => createNoteInto(true);
@@ -599,7 +578,7 @@ $(window).bind('hashchange', async function() {
     if (isNotePathInAddress()) {
         const [notePath, tabId] = getHashValueFromAddress();
 
-        noteDetailService.switchToTab(tabId, notePath);
+        appContext.switchToTab(tabId, notePath);
     }
 });
 

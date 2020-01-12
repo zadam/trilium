@@ -23,12 +23,12 @@ html, body {
     margin: 0 10px 0 16px;
 }
 
-#tree {
+.tree {
     width: 100%;
     overflow: auto;
 }
 
-#tree .action-button {
+.tree .action-button {
     position: relative;
     top: -5px;
     margin-left: 10px;

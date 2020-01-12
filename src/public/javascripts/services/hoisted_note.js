@@ -30,7 +30,7 @@ async function setHoistedNoteId(noteId) {
 
     await tree.reload();
 
-    const activeTabContext = noteDetailService.getActiveTabContext();
+    const activeTabContext = appContext.getActiveTabContext();
 
     if (activeTabContext) {
         await tree.activateNote(activeTabContext.notePath);

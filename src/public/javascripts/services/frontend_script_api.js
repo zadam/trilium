@@ -286,7 +286,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
      * @method
      * @returns {Promise<void>}
      */
-    this.refreshAllTabs = noteDetailService.reloadAllTabs;
+    this.refreshAllTabs = appContext.reloadAllTabs;
 
     /**
      * Create note link (jQuery object) for given note.
@@ -309,7 +309,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
      * @method
      * @returns {NoteFull} active note (loaded into right pane)
      */
-    this.getActiveTabNote = noteDetailService.getActiveTabNote;
+    this.getActiveTabNote = appContext.getActiveTabNote;
 
     /**
      * See https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editor-Editor.html for a documentation on the returned instance.
@@ -323,7 +323,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
      * @method
      * @returns {Promise<string|null>} returns note path of active note or null if there isn't active note
      */
-    this.getActiveTabNotePath = noteDetailService.getActiveTabNotePath;
+    this.getActiveTabNotePath = appContext.getActiveTabNotePath;
 
     /**
      * This method checks whether user navigated away from the note from which the scripts has been started.

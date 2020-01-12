@@ -4,7 +4,6 @@ import server from './server.js';
 import ws from "./ws.js";
 import treeCache from "./tree_cache.js";
 import NoteFull from "../entities/note_full.js";
-import utils from "./utils.js";
 import contextMenuService from "./context_menu.js";
 import treeUtils from "./tree_utils.js";
 import tabRow from "./tab_row.js";
@@ -19,21 +18,13 @@ let detailLoadedListeners = [];
 async function reload() {
     // no saving here
 
-    await loadNoteDetail(getActiveTabContext().notePath);
+    await loadNoteDetail(appContext.getActiveTabNotePath());
 }
 
-async function reloadTab(tabContext) {
-    if (tabContext.note) {
-        const note = await loadNote(tabContext.note.noteId);
+async function reloadNote(tabContext) {
+    const note = await loadNote(tabContext.note.noteId);
 
-        await loadNoteDetailToContext(tabContext, note, tabContext.notePath);
-    }
-}
-
-async function reloadAllTabs() {
-    for (const tabContext of tabContexts) {
-        await reloadTab(tabContext);
-    }
+    await loadNoteDetailToContext(tabContext, note, tabContext.notePath);
 }
 
 async function openInTab(notePath, activate) {
@@ -53,16 +44,13 @@ function onNoteChange(func) {
 }
 
 async function saveNotesIfChanged() {
-    for (const ctx of tabContexts) {
+    for (const ctx of appContext.getTabContexts()) {
         await ctx.saveNoteIfChanged();
     }
 
     // make sure indicator is visible in a case there was some race condition.
     $savedIndicator.fadeIn();
 }
-
-/** @type {TabContext[]} */
-let tabContexts = [];
 
 function getActiveEditor() {
     const activeTabContext = getActiveTabContext();
@@ -89,98 +77,6 @@ async function activateOrOpenNote(noteId) {
         newTab: true,
         activate: true
     });
-}
-
-/** @return {TabContext[]} */
-function getTabContexts() {
-    return tabContexts;
-}
-
-/** @returns {TabContext} */
-function getActiveTabContext() {
-    const activeTabEl = tabRow.activeTabEl;
-
-    if (!activeTabEl) {
-        return null;
-    }
-
-    const tabId = activeTabEl.getAttribute('data-tab-id');
-
-    return tabContexts.find(tc => tc.tabId === tabId);
-}
-
-/** @returns {string|null} */
-function getActiveTabNotePath() {
-    const activeContext = getActiveTabContext();
-    return activeContext ? activeContext.notePath : null;
-}
-
-/** @return {NoteFull} */
-function getActiveTabNote() {
-    const activeContext = getActiveTabContext();
-    return activeContext ? activeContext.note : null;
-}
-
-/** @return {string|null} */
-function getActiveTabNoteId() {
-    const activeNote = getActiveTabNote();
-
-    return activeNote ? activeNote.noteId : null;
-}
-
-/** @return {string|null} */
-function getActiveTabNoteType() {
-    const activeNote = getActiveTabNote();
-
-    return activeNote ? activeNote.type : null;
-}
-
-async function switchToTab(tabId, notePath) {
-    const tabContext = tabContexts.find(tc => tc.tabId === tabId);
-
-    if (!tabContext) {
-        await loadNoteDetail(notePath, {
-            newTab: true,
-            activate: true
-        });
-    } else {
-        await tabContext.activate();
-
-        if (notePath && tabContext.notePath !== notePath) {
-            await treeService.activateNote(notePath);
-        }
-    }
-}
-
-async function showTab(tabId) {
-    for (const ctx of tabContexts) {
-        if (ctx.tabId === tabId) {
-            await ctx.show();
-        }
-        else {
-            ctx.hide();
-        }
-    }
-
-    const oldActiveNode = appContext.getMainNoteTree().getActiveNode();
-
-    if (oldActiveNode) {
-        oldActiveNode.setActive(false);
-    }
-
-    const newActiveTabContext = getActiveTabContext();
-
-    if (newActiveTabContext && newActiveTabContext.notePath) {
-        const newActiveNode = await appContext.getMainNoteTree().getNodeFromPath(newActiveTabContext.notePath);
-
-        if (newActiveNode) {
-            if (!newActiveNode.isVisible()) {
-                await appContext.getMainNoteTree().expandToNote(newActiveTabContext.notePath);
-            }
-
-            newActiveNode.setActive(true, {noEvents: true});
-        }
-    }
 }
 
 /**
@@ -211,16 +107,7 @@ async function loadNoteDetail(origNotePath, options = {}) {
 
     const noteId = treeUtils.getNoteIdFromNotePath(notePath);
     const loadedNote = await loadNote(noteId);
-    let ctx;
-
-    if (!getActiveTabContext() || newTab) {
-        // if it's a new tab explicitly by user then it's in background
-        ctx = new TabContext(tabRow, options.state);
-        tabContexts.push(ctx);
-    }
-    else {
-        ctx = getActiveTabContext();
-    }
+    const ctx = appContext.getTab(newTab, options.state);
 
     // we will try to render the new note only if it's still the active one in the tree
     // this is useful when user quickly switches notes (by e.g. holding down arrow) so that we don't
@@ -281,14 +168,6 @@ async function noteDeleted(noteId) {
     }
 }
 
-async function refreshTabs(sourceTabId, noteId) {
-    for (const tc of tabContexts) {
-        if (tc.noteId === noteId && tc.tabId !== sourceTabId) {
-            await reloadTab(tc);
-        }
-    }
-}
-
 function focusOnTitle() {
     getActiveTabContext().$noteTitle.trigger('focus');
 }
@@ -337,12 +216,12 @@ ws.subscribeToOutsideSyncMessages(syncData => {
         .forEach(sync => noteIdsToRefresh.add(sync.noteId));
 
     for (const noteId of noteIdsToRefresh) {
-        refreshTabs(null, noteId);
+        appContext.refreshTabs(null, noteId);
     }
 });
 
 ws.subscribeToAllSyncMessages(syncData => {
-    for (const tc of tabContexts) {
+    for (const tc of appContext.tabContexts) {
         tc.eventReceived('syncData', syncData);
     }
 });
@@ -369,34 +248,6 @@ $tabContentsContainer.on("drop", async e => {
         codeImportedAsCode: true,
         explodeArchives: true
     });
-});
-
-async function openEmptyTab() {
-    const ctx = new TabContext(tabRow);
-    tabContexts.push(ctx);
-
-    await tabRow.activateTab(ctx.$tab[0]);
-}
-
-tabRow.addListener('newTab', openEmptyTab);
-
-tabRow.addListener('activeTabChange', async ({ detail }) => {
-    const tabId = detail.tabEl.getAttribute('data-tab-id');
-
-    await showTab(tabId);
-});
-
-tabRow.addListener('tabRemove', async ({ detail }) => {
-    const tabId = detail.tabEl.getAttribute('data-tab-id');
-
-    tabContexts.filter(nc => nc.tabId === tabId)
-        .forEach(tc => tc.remove());
-
-    tabContexts = tabContexts.filter(nc => nc.tabId !== tabId);
-
-    if (tabContexts.length === 0) {
-        openEmptyTab();
-    }
 });
 
 $(tabRow.el).on('contextmenu', '.note-tab', e => {
@@ -473,7 +324,7 @@ async function saveOpenTabs() {
 
     for (const tabEl of tabRow.tabEls) {
         const tabId = tabEl.getAttribute('data-tab-id');
-        const tabContext = tabContexts.find(tc => tc.tabId === tabId);
+        const tabContext = appContext.getTabContexts().find(tc => tc.tabId === tabId);
 
         if (tabContext) {
             const tabState = tabContext.getTabState();
@@ -505,7 +356,6 @@ setInterval(saveNotesIfChanged, 3000);
 
 export default {
     reload,
-    reloadAllTabs,
     openInTab,
     switchToNote,
     loadNote,
@@ -515,20 +365,12 @@ export default {
     saveNotesIfChanged,
     onNoteChange,
     addDetailLoadedListener,
-    switchToTab,
-    getTabContexts,
-    getActiveTabContext,
-    getActiveTabNotePath,
-    getActiveTabNote,
-    getActiveTabNoteType,
-    getActiveTabNoteId,
     getActiveEditor,
     activateOrOpenNote,
     clearOpenTabsTask,
     filterTabs,
-    openEmptyTab,
     noteDeleted,
-    refreshTabs,
     noteChanged,
-    openTabsChanged
+    openTabsChanged,
+    reloadNote
 };

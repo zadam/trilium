@@ -284,6 +284,8 @@ function registerEntrypoints() {
 
         searchNotesService.searchInSubtree(node.data.noteId);
     });
+
+    keyboardActionService.setGlobalActionHandler('CollapseTree', () => appContext.getMainNoteTree().collapseTree());
 }
 
 export default {

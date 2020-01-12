@@ -38,7 +38,7 @@ $showSidebarButton.on('click', async () => {
 
     await server.put('options/rightPaneVisible/true');
 
-    const {sidebar} = noteDetailService.getActiveTabContext();
+    const {sidebar} = appContext.getActiveTabContext();
     await sidebar.noteLoaded();
     sidebar.show();
 });
