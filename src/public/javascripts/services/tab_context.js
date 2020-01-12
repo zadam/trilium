@@ -479,7 +479,7 @@ class TabContext {
     }
 
     stateChanged() {
-        noteDetailService.openTabsChanged();
+        appContext.openTabsChanged();
     }
 }
 

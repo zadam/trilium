@@ -6,12 +6,16 @@ import tabRow from "./tab_row.js";
 import treeService from "./tree.js";
 import noteDetailService from "./note_detail.js";
 import TabContext from "./tab_context.js";
+import server from "./server.js";
+import keyboardActionService from "./keyboard_actions.js";
+import contextMenuService from "./context_menu.js";
 
 class AppContext {
     constructor() {
         this.widgets = [];
         /** @type {TabContext[]} */
         this.tabContexts = [];
+        this.tabsChangedTaskId = null;
     }
 
     trigger(name, data) {
@@ -175,6 +179,56 @@ class AppContext {
 
         await tabRow.activateTab(ctx.$tab[0]);
     }
+
+    async filterTabs(noteId) {
+        for (const tc of this.tabContexts) {
+            if (tc.notePath && !tc.notePath.split("/").includes(noteId)) {
+                await tabRow.removeTab(tc.$tab[0]);
+            }
+        }
+
+        if (this.tabContexts.length === 0) {
+            this.openEmptyTab()
+        }
+
+        await this.saveOpenTabs();
+    }
+
+    async saveOpenTabs() {
+        const openTabs = [];
+
+        for (const tabEl of tabRow.tabEls) {
+            const tabId = tabEl.getAttribute('data-tab-id');
+            const tabContext = appContext.getTabContexts().find(tc => tc.tabId === tabId);
+
+            if (tabContext) {
+                const tabState = tabContext.getTabState();
+
+                if (tabState) {
+                    openTabs.push(tabState);
+                }
+            }
+        }
+
+        await server.put('options', {
+            openTabs: JSON.stringify(openTabs)
+        });
+    }
+
+    clearOpenTabsTask() {
+        if (this.tabsChangedTaskId) {
+            clearTimeout(this.tabsChangedTaskId);
+        }
+    }
+
+    openTabsChanged() {
+        // we don't want to send too many requests with tab changes so we always schedule task to do this in 1 seconds,
+        // but if there's any change in between, we cancel the old one and schedule new one
+        // so effectively we kind of wait until user stopped e.g. quickly switching tabs
+        this.clearOpenTabsTask();
+
+        this.tabsChangedTaskId = setTimeout(() => this.saveOpenTabs(), 1000);
+    }
 }
 
 const appContext = new AppContext();
@@ -198,6 +252,58 @@ tabRow.addListener('tabRemove', async ({ detail }) => {
     if (appContext.tabContexts.length === 0) {
         appContext.openEmptyTab();
     }
+});
+
+tabRow.addListener('activeTabChange', () => appContext.openTabsChanged());
+tabRow.addListener('tabRemove', () => appContext.openTabsChanged());
+tabRow.addListener('tabReorder', () => appContext.openTabsChanged());
+
+keyboardActionService.setGlobalActionHandler('OpenNewTab', () => {
+    appContext.openEmptyTab();
+});
+
+keyboardActionService.setGlobalActionHandler('CloseActiveTab', () => {
+    if (tabRow.activeTabEl) {
+        tabRow.removeTab(tabRow.activeTabEl);
+    }
+});
+
+keyboardActionService.setGlobalActionHandler('ActivateNextTab', () => {
+    const nextTab = tabRow.nextTabEl;
+
+    if (nextTab) {
+        tabRow.activateTab(nextTab);
+    }
+});
+
+keyboardActionService.setGlobalActionHandler('ActivatePreviousTab', () => {
+    const prevTab = tabRow.previousTabEl;
+
+    if (prevTab) {
+        tabRow.activateTab(prevTab);
+    }
+});
+
+$(tabRow.el).on('contextmenu', '.note-tab', e => {
+    e.preventDefault();
+
+    const tab = $(e.target).closest(".note-tab");
+
+    contextMenuService.initContextMenu(e, {
+        getContextMenuItems: () => {
+            return [
+                {title: "Close all tabs", cmd: "removeAllTabs", uiIcon: "empty"},
+                {title: "Close all tabs except for this", cmd: "removeAllTabsExceptForThis", uiIcon: "empty"}
+            ];
+        },
+        selectContextMenuItem: (e, cmd) => {
+            if (cmd === 'removeAllTabs') {
+                tabRow.removeAllTabs();
+            } else if (cmd === 'removeAllTabsExceptForThis') {
+                tabRow.removeAllTabsExceptForThis(tab[0]);
+            }
+        }
+    });
 });
 
 export default appContext;

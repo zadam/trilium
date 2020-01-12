@@ -287,7 +287,7 @@ async function treeInitialized() {
 
     // previous opening triggered task to save tab changes but these are bogus changes (this is init)
     // so we'll cancel it
-    noteDetailService.clearOpenTabsTask();
+    appContext.clearOpenTabsTask();
 
     setFrontendAsLoaded();
 }

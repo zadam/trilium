@@ -21,7 +21,7 @@ async function getHoistedNoteId() {
 
 async function setHoistedNoteId(noteId) {
     if (noteId !== 'root') {
-        await noteDetailService.filterTabs(noteId);
+        await appContext.filterTabs(noteId);
     }
 
     hoistedNoteId = noteId;
