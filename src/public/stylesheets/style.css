@@ -381,12 +381,6 @@ div.ui-tooltip {
     border-right: none;
 }
 
-.note-type-dropdown {
-    max-height: 500px;
-    overflow-y: auto;
-    overflow-x: hidden;
-}
-
 .cm-matchhighlight {
     background-color: #eeeeee
 }

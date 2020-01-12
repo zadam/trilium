@@ -3,13 +3,8 @@ import protectedSessionHolder from "./protected_session_holder.js";
 import server from "./server.js";
 import bundleService from "./bundle.js";
 import Attributes from "./attributes.js";
-import treeUtils from "./tree_utils.js";
 import utils from "./utils.js";
-import NoteTypeContext from "./note_type.js";
-import noteDetailService from "./note_detail.js";
-import protectedSessionService from "./protected_session.js";
 import optionsService from "./options.js";
-import linkService from "./link.js";
 import Sidebar from "./sidebar.js";
 import appContext from "./app_context.js";
 
@@ -36,7 +31,7 @@ optionsService.addLoadListener(options => {
 
 class TabContext {
     /**
-     * @param {TabRow} tabRow
+     * @param {TabRowWidget} tabRow
      * @param {object} state
      */
     constructor(tabRow, state = {}) {
@@ -61,13 +56,8 @@ class TabContext {
 
         $tabContentsContainer.append(this.$tabContent);
 
-        this.$noteTitle = this.$tabContent.find(".note-title");
-        this.$noteTitleRow = this.$tabContent.find(".note-title-row");
-        this.$notePathList = this.$tabContent.find(".note-path-list");
-        this.$notePathCount = this.$tabContent.find(".note-path-count");
         this.$noteDetailComponents = this.$tabContent.find(".note-detail-component");
         this.$scriptArea = this.$tabContent.find(".note-detail-script-area");
-        this.$savedIndicator = this.$tabContent.find(".saved-indicator");
         this.noteChangeDisabled = false;
         this.isNoteChanged = false;
         this.attributes = new Attributes(this);
@@ -78,40 +68,9 @@ class TabContext {
             };
 
             this.sidebar = new Sidebar(this, sidebarState);
-            this.noteType = new NoteTypeContext(this);
         }
 
         this.components = {};
-
-        this.$noteTitle.on('input', () => {
-            if (!this.note) {
-                return;
-            }
-
-            this.noteChanged();
-
-            this.note.title = this.$noteTitle.val();
-
-            this.tabRow.updateTab(this.$tab[0], {title: this.note.title});
-            treeService.setNoteTitle(this.note.noteId, this.note.title);
-
-            this.setTitleBar();
-        });
-
-        if (utils.isDesktop()) {
-            // keyboard plugin is not loaded in mobile
-            utils.bindElShortcut(this.$noteTitle, 'return', () => {
-                this.getComponent().focus();
-
-                return false; // to not propagate the enter into the editor (causes issues with codemirror)
-            });
-        }
-
-        this.$protectButton = this.$tabContent.find(".protect-button");
-        this.$protectButton.on('click', protectedSessionService.protectNoteAndSendToServer);
-
-        this.$unprotectButton = this.$tabContent.find(".unprotect-button");
-        this.$unprotectButton.on('click', protectedSessionService.unprotectNoteAndSendToServer);
 
         await this.initComponent();
     }
@@ -156,8 +115,6 @@ class TabContext {
         this.noteChangeDisabled = true;
 
         try {
-            this.$noteTitle.val(this.note.title);
-
             await this.renderComponent();
         } finally {
             this.noteChangeDisabled = false;
@@ -176,12 +133,6 @@ class TabContext {
                 });
             }
         }, 5000);
-
-        this.showPaths();
-
-        if (utils.isDesktop()) {
-            this.noteType.update();
-        }
 
         bundleService.executeRelationBundles(this.note, 'runOnNoteView', this);
 
@@ -281,12 +232,7 @@ class TabContext {
         this.$tabContent.addClass(utils.getNoteTypeClass(this.note.type));
         this.$tabContent.addClass(utils.getMimeTypeClass(this.note.mime));
 
-        this.$noteTitleRow.show(); // might be hidden from empty detail
         this.$tabContent.toggleClass("protected", this.note.isProtected);
-        this.$protectButton.toggleClass("active", this.note.isProtected);
-        this.$protectButton.prop("disabled", this.note.isProtected);
-        this.$unprotectButton.toggleClass("active", !this.note.isProtected);
-        this.$unprotectButton.prop("disabled", !this.note.isProtected || !protectedSessionHolder.isProtectedSessionAvailable());
     }
 
     getComponent() {
@@ -349,12 +295,11 @@ class TabContext {
             protectedSessionHolder.touchProtectedSession();
         }
 
-        this.$savedIndicator.fadeIn();
+        // FIXME trigger "noteSaved" event so that title indicator is triggered
+        this.eventReceived('noteSaved');
 
         // run async
         bundleService.executeRelationBundles(this.note, 'runOnNoteChange', this);
-
-        this.eventReceived('noteSaved');
     }
 
     async saveNoteIfChanged() {
@@ -372,63 +317,8 @@ class TabContext {
 
         this.isNoteChanged = true;
 
+        // FIMXE: trigger noteChanged event
         this.$savedIndicator.fadeOut();
-    }
-
-    async addPath(notePath, isCurrent) {
-        const title = await treeUtils.getNotePathTitle(notePath);
-
-        const noteLink = await linkService.createNoteLink(notePath, {title});
-
-        noteLink
-            .addClass("no-tooltip-preview")
-            .addClass("dropdown-item");
-
-        if (isCurrent) {
-            noteLink.addClass("current");
-        }
-
-        this.$notePathList.append(noteLink);
-    }
-
-    async showPaths() {
-        if (this.note.noteId === 'root') {
-            // root doesn't have any parent, but it's still technically 1 path
-
-            this.$notePathCount.html("1 path");
-
-            this.$notePathList.empty();
-
-            await this.addPath('root', true);
-        }
-        else {
-            const parents = await this.note.getParentNotes();
-
-            this.$notePathCount.html(parents.length + " path" + (parents.length > 1 ? "s" : ""));
-            this.$notePathList.empty();
-
-            const pathSegments = this.notePath.split("/");
-            const activeNoteParentNoteId = pathSegments[pathSegments.length - 2]; // we know this is not root so there must be a parent
-
-            for (const parentNote of parents) {
-                const parentNotePath = await treeService.getSomeNotePath(parentNote);
-                // this is to avoid having root notes leading '/'
-                const notePath = parentNotePath ? (parentNotePath + '/' + this.note.noteId) : this.note.noteId;
-                const isCurrent = activeNoteParentNoteId === parentNote.noteId;
-
-                await this.addPath(notePath, isCurrent);
-            }
-
-            const cloneLink = $("<div>")
-                .addClass("dropdown-item")
-                .append(
-                    $('<button class="btn btn-sm">')
-                        .text('Clone note to new location...')
-                        .on('click', () => import("../dialogs/clone_to.js").then(d => d.showDialog([this.note.noteId])))
-                );
-
-            this.$notePathList.append(cloneLink);
-        }
     }
 
     async remove() {

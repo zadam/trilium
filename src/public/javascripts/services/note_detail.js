@@ -4,10 +4,8 @@ import server from './server.js';
 import ws from "./ws.js";
 import treeCache from "./tree_cache.js";
 import NoteFull from "../entities/note_full.js";
-import contextMenuService from "./context_menu.js";
 import treeUtils from "./tree_utils.js";
 import tabRow from "./tab_row.js";
-import keyboardActionService from "./keyboard_actions.js";
 import appContext from "./app_context.js";
 
 const $tabContentsContainer = $("#note-tab-container");

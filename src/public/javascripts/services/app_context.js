@@ -2,13 +2,12 @@ import GlobalButtonsWidget from "../widgets/global_buttons.js";
 import SearchBoxWidget from "../widgets/search_box.js";
 import SearchResultsWidget from "../widgets/search_results.js";
 import NoteTreeWidget from "../widgets/note_tree.js";
-import tabRow from "./tab_row.js";
 import treeService from "./tree.js";
 import noteDetailService from "./note_detail.js";
 import TabContext from "./tab_context.js";
 import server from "./server.js";
 import keyboardActionService from "./keyboard_actions.js";
-import contextMenuService from "./context_menu.js";
+import TabRowWidget from "./tab_row.js";
 
 class AppContext {
     constructor() {
@@ -16,6 +15,30 @@ class AppContext {
         /** @type {TabContext[]} */
         this.tabContexts = [];
         this.tabsChangedTaskId = null;
+        /** @type {TabRowWidget} */
+        this.tabRow = null;
+    }
+
+    showWidgets() {
+        const $leftPane = $("#left-pane");
+
+        this.tabRow = new TabRowWidget(this);
+        $("#tab-row-container").append(this.tabRow.render());
+
+        this.noteTreeWidget = new NoteTreeWidget(this);
+
+        this.widgets = [
+            new GlobalButtonsWidget(this),
+            new SearchBoxWidget(this),
+            new SearchResultsWidget(this),
+            this.noteTreeWidget
+        ];
+
+        for (const widget of this.widgets) {
+            const $widget = widget.render();
+
+            $leftPane.append($widget);
+        }
     }
 
     trigger(name, data) {
@@ -31,7 +54,7 @@ class AppContext {
 
     /** @returns {TabContext} */
     getActiveTabContext() {
-        const activeTabEl = tabRow.activeTabEl;
+        const activeTabEl = this.tabRow.activeTabEl;
 
         if (!activeTabEl) {
             return null;
@@ -115,25 +138,6 @@ class AppContext {
         }
     }
 
-    showWidgets() {
-        const $leftPane = $("#left-pane");
-
-        this.noteTreeWidget = new NoteTreeWidget(this);
-
-        this.widgets = [
-            new GlobalButtonsWidget(this),
-            new SearchBoxWidget(this),
-            new SearchResultsWidget(this),
-            this.noteTreeWidget
-        ];
-
-        for (const widget of this.widgets) {
-            const $widget = widget.render();
-
-            $leftPane.append($widget);
-        }
-    }
-
     /**
      * @return {NoteTreeWidget}
      */
@@ -144,7 +148,7 @@ class AppContext {
     getTab(newTab, state) {
         if (!this.getActiveTabContext() || newTab) {
             // if it's a new tab explicitly by user then it's in background
-            const ctx = new TabContext(tabRow, state);
+            const ctx = new TabContext(this.tabRow, state);
             this.tabContexts.push(ctx);
 
             return ctx;
@@ -174,16 +178,16 @@ class AppContext {
     }
 
     async openEmptyTab() {
-        const ctx = new TabContext(tabRow);
+        const ctx = new TabContext(this.tabRow);
         this.tabContexts.push(ctx);
 
-        await tabRow.activateTab(ctx.$tab[0]);
+        await this.tabRow.activateTab(ctx.$tab[0]);
     }
 
     async filterTabs(noteId) {
         for (const tc of this.tabContexts) {
             if (tc.notePath && !tc.notePath.split("/").includes(noteId)) {
-                await tabRow.removeTab(tc.$tab[0]);
+                await this.tabRow.removeTab(tc.$tab[0]);
             }
         }
 
@@ -197,7 +201,7 @@ class AppContext {
     async saveOpenTabs() {
         const openTabs = [];
 
-        for (const tabEl of tabRow.tabEls) {
+        for (const tabEl of this.tabRow.tabEls) {
             const tabId = tabEl.getAttribute('data-tab-id');
             const tabContext = appContext.getTabContexts().find(tc => tc.tabId === tabId);
 
@@ -229,81 +233,63 @@ class AppContext {
 
         this.tabsChangedTaskId = setTimeout(() => this.saveOpenTabs(), 1000);
     }
+
+    newTabListener() {
+        this.openEmptyTab();
+    }
+
+    async activeTabChangedListener({tabEl}) {
+        const tabId = tabEl.getAttribute('data-tab-id');
+
+        await this.showTab(tabId);
+    }
+
+    async tabRemoveListener({tabEl}) {
+        const tabId = tabEl.getAttribute('data-tab-id');
+
+        this.tabContexts.filter(nc => nc.tabId === tabId)
+            .forEach(tc => tc.remove());
+
+        this.tabContexts = this.tabContexts.filter(nc => nc.tabId !== tabId);
+
+        if (this.tabContexts.length === 0) {
+            this.openEmptyTab();
+        }
+
+        this.openTabsChanged();
+    }
+
+    tabReorderListener() {
+        this.openTabsChanged();
+    }
 }
 
 const appContext = new AppContext();
-
-tabRow.addListener('newTab', () => appContext.openEmptyTab());
-
-tabRow.addListener('activeTabChange', async ({ detail }) => {
-    const tabId = detail.tabEl.getAttribute('data-tab-id');
-
-    await appContext.showTab(tabId);
-});
-
-tabRow.addListener('tabRemove', async ({ detail }) => {
-    const tabId = detail.tabEl.getAttribute('data-tab-id');
-
-    appContext.tabContexts.filter(nc => nc.tabId === tabId)
-        .forEach(tc => tc.remove());
-
-    appContext.tabContexts = appContext.tabContexts.filter(nc => nc.tabId !== tabId);
-
-    if (appContext.tabContexts.length === 0) {
-        appContext.openEmptyTab();
-    }
-});
-
-tabRow.addListener('activeTabChange', () => appContext.openTabsChanged());
-tabRow.addListener('tabRemove', () => appContext.openTabsChanged());
-tabRow.addListener('tabReorder', () => appContext.openTabsChanged());
 
 keyboardActionService.setGlobalActionHandler('OpenNewTab', () => {
     appContext.openEmptyTab();
 });
 
 keyboardActionService.setGlobalActionHandler('CloseActiveTab', () => {
-    if (tabRow.activeTabEl) {
-        tabRow.removeTab(tabRow.activeTabEl);
+    if (this.tabRow.activeTabEl) {
+        this.tabRow.removeTab(this.tabRow.activeTabEl);
     }
 });
 
 keyboardActionService.setGlobalActionHandler('ActivateNextTab', () => {
-    const nextTab = tabRow.nextTabEl;
+    const nextTab = this.tabRow.nextTabEl;
 
     if (nextTab) {
-        tabRow.activateTab(nextTab);
+        this.tabRow.activateTab(nextTab);
     }
 });
 
 keyboardActionService.setGlobalActionHandler('ActivatePreviousTab', () => {
-    const prevTab = tabRow.previousTabEl;
+    const prevTab = this.tabRow.previousTabEl;
 
     if (prevTab) {
-        tabRow.activateTab(prevTab);
+        this.tabRow.activateTab(prevTab);
     }
-});
-
-$(tabRow.el).on('contextmenu', '.note-tab', e => {
-    e.preventDefault();
-
-    const tab = $(e.target).closest(".note-tab");
-
-    contextMenuService.initContextMenu(e, {
-        getContextMenuItems: () => {
-            return [
-                {title: "Close all tabs", cmd: "removeAllTabs", uiIcon: "empty"},
-                {title: "Close all tabs except for this", cmd: "removeAllTabsExceptForThis", uiIcon: "empty"}
-            ];
-        },
-        selectContextMenuItem: (e, cmd) => {
-            if (cmd === 'removeAllTabs') {
-                tabRow.removeAllTabs();
-            } else if (cmd === 'removeAllTabsExceptForThis') {
-                tabRow.removeAllTabsExceptForThis(tab[0]);
-            }
-        }
-    });
 });
 
 export default appContext;

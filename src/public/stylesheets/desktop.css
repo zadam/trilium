@@ -175,21 +175,6 @@ body {
     border-color: var(--button-border-color);
 }
 
-.note-title-row {
-    flex-grow: 0;
-    flex-shrink: 0;
-    padding-top: 2px;
-}
-
-.note-title {
-    margin-left: 15px;
-    margin-right: 10px;
-    font-size: 150%;
-    border: 0;
-    width: 5em;
-    flex-grow: 100;
-}
-
 .note-tab-row {
     box-sizing: border-box;
     position: relative;

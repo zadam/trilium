@@ -1,7 +1,8 @@
-import treeService from './tree.js';
-import noteDetailService from './note_detail.js';
-import server from './server.js';
-import mimeTypesService from './mime_types.js';
+import treeService from '../services/tree.js';
+import noteDetailService from '../services/note_detail.js';
+import server from '../services/server.js';
+import mimeTypesService from '../services/mime_types.js';
+import TabAwareWidget from "./tab_aware_widget.js";
 
 const NOTE_TYPES = [
     { type: "file", title: "File", selectable: false },
@@ -15,20 +16,37 @@ const NOTE_TYPES = [
     { type: "code", mime: 'text/plain', title: "Code", selectable: true }
 ];
 
-export default class NoteTypeContext {
-    /**
-     * @param {TabContext} ctx
-     */
-    constructor(ctx) {
-        this.ctx = ctx;
+const TPL = `
+<style>
+.note-type-dropdown {
+    max-height: 500px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+</style>
 
-        ctx.$tabContent.find('.note-type').on('show.bs.dropdown', () => this.renderDropdown());
+<div class="dropdown note-type">
+    <button type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-sm dropdown-toggle note-type-button">
+        Type: <span class="note-type-desc"></span>
+        <span class="caret"></span>
+    </button>
+    <div class="note-type-dropdown dropdown-menu dropdown-menu-right"></div>
+</div>
+`;
 
-        this.$noteTypeDropdown = ctx.$tabContent.find(".note-type-dropdown");
-        this.$noteTypeButton = ctx.$tabContent.find(".note-type-button");
-        this.$noteTypeDesc = ctx.$tabContent.find(".note-type-desc");
-        this.$executeScriptButton = ctx.$tabContent.find(".execute-script-button");
-        this.$renderButton = ctx.$tabContent.find('.render-button');
+export default class NoteTypeWidget extends TabAwareWidget {
+    async doRender($widget) {
+        $widget.append($(TPL));
+
+        $widget.find('.note-type').on('show.bs.dropdown', () => this.renderDropdown());
+
+        this.$noteTypeDropdown = $widget.find(".note-type-dropdown");
+        this.$noteTypeButton = $widget.find(".note-type-button");
+        this.$noteTypeDesc = $widget.find(".note-type-desc");
+        this.$executeScriptButton = $widget.find(".execute-script-button");
+        this.$renderButton = $widget.find('.render-button');
+
+        return $widget;
     }
 
     async update() {
@@ -39,6 +57,10 @@ export default class NoteTypeContext {
 
         this.$executeScriptButton.toggle(this.ctx.note.mime.startsWith('application/javascript'));
         this.$renderButton.toggle(this.ctx.note.type === 'render');
+    }
+
+    async activeTabChanged() {
+        this.update();
     }
 
     /** actual body is rendered lazily on note-type button click */
