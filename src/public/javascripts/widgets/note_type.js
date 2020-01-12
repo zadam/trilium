@@ -35,8 +35,8 @@ const TPL = `
 `;
 
 export default class NoteTypeWidget extends TabAwareWidget {
-    async doRender($widget) {
-        $widget.append($(TPL));
+    doRender() {
+        const $widget = $(TPL);
 
         $widget.find('.note-type').on('show.bs.dropdown', () => this.renderDropdown());
 

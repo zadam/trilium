@@ -25,8 +25,8 @@ const WIDGET_TPL = `
 `;
 
 class GlobalButtonsWidget extends BasicWidget {
-    async doRender($widget) {
-        $widget.append($(WIDGET_TPL));
+    doRender($widget) {
+        $widget = $(WIDGET_TPL);
 
         const $createTopLevelNoteButton = $widget.find(".create-top-level-note-button");
         const $collapseTreeButton = $widget.find(".collapse-tree-button");
@@ -37,6 +37,8 @@ class GlobalButtonsWidget extends BasicWidget {
         $collapseTreeButton.on('click', () => this.trigger('collapseTree'));
         $scrollToActiveNoteButton.on('click', () => appContext.getMainNoteTree().scrollToActiveNote());
         $toggleSearchButton.on('click', () => this.trigger('toggleSearch'));
+
+        return $widget;
     }
 }
 

@@ -98,8 +98,8 @@ export default class NoteTitleWidget extends TabAwareWidget {
         this.tree = null;
     }
 
-    async doRender($widget) {
-        $widget.append($(TPL));
+    doRender() {
+        const $widget = $(TPL);
 
         this.$noteTitle = this.$tabContent.find(".note-title");
         this.$noteTitleRow = this.$tabContent.find(".note-title-row");
@@ -140,6 +140,8 @@ export default class NoteTitleWidget extends TabAwareWidget {
                 return false; // to not propagate the enter into the editor (causes issues with codemirror)
             });
         }
+
+        return $widget;
     }
 
     async activeTabChanged() {

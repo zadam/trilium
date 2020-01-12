@@ -57,8 +57,8 @@ const TPL = `
 </div>`;
 
 export default class SearchBoxWidget extends BasicWidget {
-    async doRender($widget) {
-        $widget.append($(TPL));
+    doRender() {
+        const $widget = $(TPL);
 
         this.$searchBox = $widget.find(".search-box");
         this.$closeSearchButton = $widget.find(".close-search-button");
@@ -86,6 +86,8 @@ export default class SearchBoxWidget extends BasicWidget {
         this.$saveSearchButton.on('click', () => this.saveSearch());
 
         this.$closeSearchButton.on('click', () => this.hideSearchListener());
+
+        return $widget;
     }
 
     doSearch(searchText) {

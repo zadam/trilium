@@ -209,11 +209,6 @@ async function setExpandedToServer(branchId, isExpanded) {
     await server.put('branches/' + branchId + '/expanded/' + expandedNum);
 }
 
-/** @return {FancytreeNode[]} */
-function getSelectedNodes(stopOnParents = false) {
-    return tree.getSelectedNodes(stopOnParents);
-}
-
 async function treeInitialized() {
     if (appContext.getTabContexts().length > 0) {
         // this is just tree reload - tabs are already in place
@@ -275,6 +270,8 @@ async function treeInitialized() {
     if (!filteredTabs.find(tab => tab.active)) {
         filteredTabs[0].active = true;
     }
+
+    console.log("filteredTabs", filteredTabs);
 
     for (const tab of filteredTabs) {
         await noteDetailService.loadNoteDetail(tab.notePath, {

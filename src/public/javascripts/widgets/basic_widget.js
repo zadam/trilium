@@ -8,20 +8,18 @@ class BasicWidget {
     }
 
     render() {
-        const $widget = $('<div>').attr('id', this.widgetId);
-
         // actual rendering is async
-        this.doRender($widget);
+        const $widget = this.doRender();
+
+//        $widget.attr('id', this.widgetId);
 
         return $widget;
     }
 
     /**
      * for overriding
-     *
-     * @param {JQuery} $widget
      */
-    async doRender($widget) {}
+    doRender() {}
 
     eventReceived(name, data) {
         const fun = this[name + 'Listener'];

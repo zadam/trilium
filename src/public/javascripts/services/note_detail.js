@@ -118,8 +118,7 @@ async function loadNoteDetail(origNotePath, options = {}) {
     
     const loadPromise = loadNoteDetailToContext(ctx, loadedNote, notePath).then(() => {
         if (activate) {
-            // will also trigger showTab via event
-            return tabRow.activateTab(ctx.$tab[0]);
+            appContext.activateTab(ctx);
         }
         else {
             return Promise.resolve();

@@ -23,7 +23,9 @@ class AppContext {
         const $leftPane = $("#left-pane");
 
         this.tabRow = new TabRowWidget(this);
-        $("#tab-row-container").append(this.tabRow.render());
+        const contents = this.tabRow.render();
+
+        $("#global-menu-wrapper").after(contents);
 
         this.noteTreeWidget = new NoteTreeWidget(this);
 
@@ -232,6 +234,10 @@ class AppContext {
         this.clearOpenTabsTask();
 
         this.tabsChangedTaskId = setTimeout(() => this.saveOpenTabs(), 1000);
+    }
+
+    async activateTab(tabContext) {
+        return this.tabRow.activateTab(tabContext.$tab[0]);
     }
 
     newTabListener() {

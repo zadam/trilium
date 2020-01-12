@@ -21,7 +21,7 @@ const TAB_SIZE_SMALL = 84;
 const TAB_SIZE_SMALLER = 60;
 const TAB_SIZE_MINI = 48;
 
-const tabTemplate = `
+const TAB_TPL = `
 <div class="note-tab">
   <div class="note-tab-wrapper">
     <div class="note-tab-title"></div>
@@ -30,24 +30,215 @@ const tabTemplate = `
   </div>
 </div>`;
 
-const newTabButtonTemplate = `<div class="note-new-tab" title="Add new tab">+</div>`;
-const fillerTemplate = `<div class="tab-row-filler">
+const NEW_TAB_BUTTON_TPL = `<div class="note-new-tab" title="Add new tab">+</div>`;
+const FILLER_TPL = `<div class="tab-row-filler">
     <div class="tab-row-border"></div>
 </div>`;
 
-const TPL = `
+const TAB_ROW_TPL = `
 <div class="note-tab-row">
+    <style>
+    .note-tab-row {
+        box-sizing: border-box;
+        position: relative;
+        height: 34px;
+        min-height: 34px;
+        width: 100%;
+        background: var(--main-background-color);
+        border-radius: 5px 5px 0 0;
+        overflow: hidden;
+        margin-top: 2px;
+    }
+    .note-tab-row * {
+        box-sizing: inherit;
+        font: inherit;
+    }
+    .note-tab-row .note-tab-row-content {
+        position: relative;
+        width: 100%;
+        height: 100%;
+    }
+    .note-tab-row .note-tab {
+        position: absolute;
+        left: 0;
+        height: 33px;
+        width: 240px;
+        border: 0;
+        margin: 0;
+        z-index: 1;
+        pointer-events: none;
+    }
+    
+    .note-new-tab {
+        position: absolute;
+        left: 0;
+        height: 33px;
+        width: 32px;
+        border: 0;
+        margin: 0;
+        z-index: 1;
+        text-align: center;
+        font-size: 24px;
+        cursor: pointer;
+        border-bottom: 1px solid var(--main-border-color);
+    }
+    
+    .note-new-tab:hover {
+        background-color: var(--accented-background-color);
+        border-radius: 5px;
+    }
+    
+    .tab-row-filler {
+        -webkit-app-region: drag;
+        position: absolute;
+        left: 0;
+        height: 33px;
+    }
+    
+    .tab-row-filler .tab-row-border {
+        position: relative;
+        background: linear-gradient(to right, var(--main-border-color), transparent);
+        height: 1px;
+        margin-top: 32px;
+    }
+    
+    .note-tab-row .note-tab[active] {
+        z-index: 5;
+    }
+    
+    .note-tab-row .note-tab,
+    .note-tab-row .note-tab * {
+        user-select: none;
+        cursor: default;
+    }
+    
+    .note-tab-row .note-tab.note-tab-was-just-added {
+        top: 10px;
+        animation: note-tab-was-just-added 120ms forwards ease-in-out;
+    }
+    
+    .note-tab-row .note-tab .note-tab-wrapper {
+        position: absolute;
+        display: flex;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 5px 8px;
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+        overflow: hidden;
+        pointer-events: all;
+        background-color: var(--accented-background-color);
+        border-bottom: 1px solid var(--main-border-color);
+    }
+    
+    .note-tab-row .note-tab[active] .note-tab-wrapper {
+        background-color: var(--main-background-color);
+        border: 1px solid var(--main-border-color);
+        border-bottom: 0;
+        font-weight: bold;
+    }
+    
+    .note-tab-row .note-tab[is-mini] .note-tab-wrapper {
+        padding-left: 2px;
+        padding-right: 2px;
+    }
+    
+    .note-tab-row .note-tab .note-tab-title {
+        flex: 1;
+        vertical-align: top;
+        overflow: hidden;
+        white-space: nowrap;
+        color: var(--muted-text-color);
+    }
+    
+    .note-tab-row .note-tab[is-small] .note-tab-title {
+        margin-left: 0;
+    }
+    
+    .note-tab-row .note-tab[active] .note-tab-title {
+        color: var(--main-text-color);
+    }
+    
+    .note-tab-row .note-tab .note-tab-drag-handle {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        right: 0;
+        left: 0;
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+    }
+    
+    .note-tab-row .note-tab .note-tab-close {
+        flex-grow: 0;
+        flex-shrink: 0;
+        border-radius: 50%;
+        z-index: 100;
+        width: 24px;
+        height: 24px;
+        text-align: center;
+    }
+    
+    .note-tab-row .note-tab .note-tab-close span {
+        font-size: 24px;
+        position: relative;
+        top: -6px;
+    }
+    
+    .note-tab-row .note-tab .note-tab-close:hover {
+        background-color: var(--hover-item-background-color);
+        color: var(--hover-item-text-color);
+    }
+    
+    .note-tab-row .note-tab[is-smaller] .note-tab-close {
+        margin-left: auto;
+    }
+    .note-tab-row .note-tab[is-mini]:not([active]) .note-tab-close {
+        display: none;
+    }
+    .note-tab-row .note-tab[is-mini][active] .note-tab-close {
+        margin-left: auto;
+        margin-right: auto;
+    }
+    @-moz-keyframes note-tab-was-just-added {
+        to {
+            top: 0;
+        }
+    }
+    @-webkit-keyframes note-tab-was-just-added {
+        to {
+            top: 0;
+        }
+    }
+    @-o-keyframes note-tab-was-just-added {
+        to {
+            top: 0;
+        }
+    }
+    @keyframes note-tab-was-just-added {
+        to {
+            top: 0;
+        }
+    }
+    .note-tab-row.note-tab-row-is-sorting .note-tab:not(.note-tab-is-dragging),
+    .note-tab-row:not(.note-tab-row-is-sorting) .note-tab.note-tab-was-just-dragged {
+        transition: transform 120ms ease-in-out;
+    }
+    </style>
+
     <div class="note-tab-row-content"></div>
 </div>`;
 
 export default class TabRowWidget extends BasicWidget {
-    async doRender($widget) {
-        $widget.append($(TPL));
+    doRender() {
+        const $widget = $(TAB_ROW_TPL);
+
+        this.el = $widget[0];
 
         this.draggabillies = [];
         this.eventListeners = {};
-
-        this.el = $widget.find(".note-tab-row")[0];
 
         this.setupStyleEl();
         this.setupEvents();
@@ -77,7 +268,9 @@ export default class TabRowWidget extends BasicWidget {
                     }
                 }
             });
-        })
+        });
+
+        return $widget;
     }
 
     setupStyleEl() {
@@ -187,8 +380,10 @@ export default class TabRowWidget extends BasicWidget {
     }
 
     addTab(tabId) {
+        console.log("Adding tab", tabId);
+
         const div = document.createElement('div');
-        div.innerHTML = tabTemplate;
+        div.innerHTML = TAB_TPL;
         const tabEl = div.firstElementChild;
         tabEl.setAttribute('data-tab-id', tabId);
 
@@ -207,7 +402,8 @@ export default class TabRowWidget extends BasicWidget {
     }
 
     setTabCloseEventListener(tabEl) {
-        tabEl.querySelector('.note-tab-close').addEventListener('click', _ => this.removeTab(tabEl));
+        tabEl.querySelector('.note-tab-close')
+            .addEventListener('click', _ => this.removeTab(tabEl));
 
         tabEl.addEventListener('mousedown', e => {
             if (e.which === 2) {
@@ -407,7 +603,7 @@ export default class TabRowWidget extends BasicWidget {
 
     setupNewButton() {
         const div = document.createElement('div');
-        div.innerHTML = newTabButtonTemplate;
+        div.innerHTML = NEW_TAB_BUTTON_TPL;
         this.newTabEl = div.firstElementChild;
 
         this.tabContentEl.appendChild(this.newTabEl);
@@ -417,7 +613,7 @@ export default class TabRowWidget extends BasicWidget {
 
     setupFiller() {
         const div = document.createElement('div');
-        div.innerHTML = fillerTemplate;
+        div.innerHTML = FILLER_TPL;
         this.fillerEl = div.firstElementChild;
 
         this.tabContentEl.appendChild(this.fillerEl);

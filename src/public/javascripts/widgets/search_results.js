@@ -28,11 +28,13 @@ const TPL = `
 `;
 
 export default class SearchResultsWidget extends BasicWidget {
-    async doRender($widget) {
-        $widget.append($(TPL));
+    doRender() {
+        const $widget = $(TPL);
 
         this.$searchResults = $widget.find(".search-results");
         this.$searchResultsInner = $widget.find(".search-results-inner");
+
+        return $widget;
     }
 
     async searchForResultsListener({searchText}) {

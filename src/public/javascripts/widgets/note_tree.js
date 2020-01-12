@@ -15,18 +15,18 @@ import ws from "../services/ws.js";
 import appContext from "../services/app_context.js";
 
 const TPL = `
-<style>
-.tree {
-    overflow: auto;
-    flex-grow: 1;
-    flex-shrink: 1;
-    flex-basis: 60%;
-    font-family: var(--tree-font-family);
-    font-size: var(--tree-font-size);
-}
-</style>
-
-<div class="tree"></div>
+<div class="tree">
+    <style>
+    .tree {
+        overflow: auto;
+        flex-grow: 1;
+        flex-shrink: 1;
+        flex-basis: 60%;
+        font-family: var(--tree-font-family);
+        font-size: var(--tree-font-size);
+    }
+    </style>
+</div>
 `;
 
 export default class NoteTreeWidget extends BasicWidget {
@@ -36,14 +36,9 @@ export default class NoteTreeWidget extends BasicWidget {
         this.tree = null;
     }
 
-    async doRender($widget) {
-        $widget.append($(TPL));
-
-        const $tree = $widget.find('.tree');
-
-        const treeData = await treeService.loadTreeData();
-
-        await this.initFancyTree($tree, treeData);
+    doRender() {
+        const $widget = $(TPL);
+        const $tree = $widget;
 
         $tree.on("click", ".unhoist-button", hoistedNoteService.unhoist);
         $tree.on("click", ".refresh-search-button", searchNotesService.refreshSearch);
@@ -63,6 +58,10 @@ export default class NoteTreeWidget extends BasicWidget {
                 e.preventDefault();
             }
         });
+
+        treeService.loadTreeData().then(treeData => this.initFancyTree($tree, treeData));
+
+        return $widget;
     }
 
     async initFancyTree($tree, treeData) {
