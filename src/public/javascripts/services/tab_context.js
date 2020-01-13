@@ -8,21 +8,6 @@ import optionsService from "./options.js";
 import Sidebar from "./sidebar.js";
 import appContext from "./app_context.js";
 
-const $tabContentsContainer = $("#note-tab-container");
-
-const componentClasses = {
-    'empty': "./note_detail_empty.js",
-    'text': "./note_detail_text.js",
-    'code': "./note_detail_code.js",
-    'file': "./note_detail_file.js",
-    'image': "./note_detail_image.js",
-    'search': "./note_detail_search.js",
-    'render': "./note_detail_render.js",
-    'relation-map': "./note_detail_relation_map.js",
-    'protected-session': "./note_detail_protected_session.js",
-    'book': "./note_detail_book.js"
-};
-
 let showSidebarInNewTab = true;
 
 optionsService.addLoadListener(options => {
@@ -49,15 +34,8 @@ class TabContext {
 
         this.initialized = true;
 
-        this.$tabContent = $(".note-tab-content-template").clone();
-        this.$tabContent.removeClass('note-tab-content-template');
-        this.$tabContent.attr('data-tab-id', this.tabId);
-        this.$tabContent.hide();
+        this.$tabContent = $("<div>"); // FIXME
 
-        $tabContentsContainer.append(this.$tabContent);
-
-        this.$noteDetailComponents = this.$tabContent.find(".note-detail-component");
-        this.$scriptArea = this.$tabContent.find(".note-detail-script-area");
         this.noteChangeDisabled = false;
         this.isNoteChanged = false;
         this.attributes = new Attributes(this);
@@ -68,20 +46,6 @@ class TabContext {
             };
 
             this.sidebar = new Sidebar(this, sidebarState);
-        }
-
-        this.components = {};
-
-        await this.initComponent();
-    }
-
-    async initComponent(disableAutoBook = false) {
-        this.type = this.getComponentType(disableAutoBook);
-
-        if (!(this.type in this.components)) {
-            const clazz = await import(componentClasses[this.type]);
-
-            this.components[this.type] = new clazz.default(this);
         }
     }
 
@@ -94,8 +58,6 @@ class TabContext {
         if (!this.initialized) {
             return;
         }
-
-        this.$scriptArea.empty();
 
         if (utils.isDesktop()) {
             this.attributes.refreshAttributes();
@@ -115,7 +77,7 @@ class TabContext {
         this.noteChangeDisabled = true;
 
         try {
-            await this.renderComponent();
+
         } finally {
             this.noteChangeDisabled = false;
         }
@@ -137,7 +99,8 @@ class TabContext {
         bundleService.executeRelationBundles(this.note, 'runOnNoteView', this);
 
         // after loading new note make sure editor is scrolled to the top
-        this.getComponent().scrollToTop();
+        // FIXME
+        //this.getComponent().scrollToTop();
 
         appContext.trigger('activeNoteChanged');
     }
@@ -146,17 +109,14 @@ class TabContext {
         if (!this.initialized) {
             await this.initTabContent();
 
-            this.$tabContent.show(); // show immediately so that user can see something
-
             if (this.note) {
                 await this.setNote(this.note, this.notePath);
             }
             else {
+                // FIXME
                 await this.renderComponent(); // render empty page
             }
         }
-
-        this.$tabContent.show();
 
         if (this.sidebar) {
             this.sidebar.show();
@@ -167,18 +127,7 @@ class TabContext {
     }
 
     async renderComponent(disableAutoBook = false) {
-        await this.initComponent(disableAutoBook);
-
-        for (const componentType in this.components) {
-            if (componentType !== this.type) {
-                this.components[componentType].cleanup();
-            }
-        }
-
-        this.$noteDetailComponents.hide();
-
-        this.getComponent().show();
-        await this.getComponent().render();
+        // FIXME
     }
 
     setTitleBar() {
@@ -235,36 +184,11 @@ class TabContext {
     }
 
     getComponent() {
-        if (!this.components[this.type]) {
-            throw new Error("Could not find component for type: " + this.type);
-        }
-
-        return this.components[this.type];
+        // FIXME
     }
 
     getComponentType(disableAutoBook) {
-        if (!this.note) {
-            return "empty";
-        }
-
-        let type = this.note.type;
-
-        if (type === 'text' && !disableAutoBook && utils.isHtmlEmpty(this.note.content) && this.note.hasChildren()) {
-            type = 'book';
-        }
-
-        if (this.note.isProtected) {
-            if (protectedSessionHolder.isProtectedSessionAvailable()) {
-                protectedSessionHolder.touchProtectedSession();
-            } else {
-                type = 'protected-session';
-
-                // user shouldn't be able to edit note title
-                this.$noteTitle.prop("readonly", true);
-            }
-        }
-
-        return type;
+    // FIXME
     }
 
     async activate() {
@@ -272,6 +196,8 @@ class TabContext {
     }
 
     async saveNote() {
+        return; // FIXME
+
         if (this.note.isProtected && !protectedSessionHolder.isProtectedSessionAvailable()) {
             return;
         }
@@ -316,8 +242,8 @@ class TabContext {
 
         this.isNoteChanged = true;
 
-        // FIMXE: trigger noteChanged event
-        this.$savedIndicator.fadeOut();
+        // FIXME: trigger noteChanged event
+        //this.$savedIndicator.fadeOut();
     }
 
     async remove() {

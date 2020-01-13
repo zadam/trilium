@@ -100,14 +100,6 @@ span.fancytree-node.muted { opacity: 0.6; }
     width: 100%;
 }
 
-.note-detail-content {
-    display: flex;
-    flex-direction: column;
-    flex-grow: 100;
-    height: 100%;
-    width: 100%;
-}
-
 .note-detail-component-wrapper {
     flex-grow: 100;
     position: relative;
@@ -125,30 +117,6 @@ span.fancytree-node.muted { opacity: 0.6; }
 .note-detail-component {
     flex-grow: 100;
     display: none;
-}
-
-.note-detail-text h1 { font-size: 2.0em; }
-.note-detail-text h2 { font-size: 1.8em; }
-.note-detail-text h3 { font-size: 1.6em; }
-.note-detail-text h4 { font-size: 1.4em; }
-.note-detail-text h5 { font-size: 1.2em; }
-.note-detail-text h6 { font-size: 1.1em; }
-
-.note-detail-text {
-    overflow: auto;
-    font-family: var(--detail-text-font-family);
-}
-
-.note-detail-text-editor {
-    padding-top: 10px;
-    border: 0 !important;
-    box-shadow: none !important;
-    /* This is because with empty content height of editor is 0 and it's impossible to click into it */
-    min-height: 500px;
-}
-
-.note-detail-text p:first-child, .note-detail-text::before {
-    margin-top: 0;
 }
 
 /** we disable shield background when in zen mode because I couldn't get it to stay static

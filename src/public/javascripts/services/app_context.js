@@ -10,6 +10,7 @@ import keyboardActionService from "./keyboard_actions.js";
 import TabRowWidget from "./tab_row.js";
 import NoteTitleWidget from "../widgets/note_title.js";
 import PromotedAttributesWidget from "../widgets/promoted_attributes.js";
+import NoteDetailWidget from "../widgets/note_detail.js";
 
 class AppContext {
     constructor() {
@@ -29,29 +30,40 @@ class AppContext {
 
         $("#global-menu-wrapper").after(contents);
 
-        this.promotedAttributes = new PromotedAttributesWidget(this);
-        $("#center-pane").prepend(this.promotedAttributes.render());
-
-        this.noteTitleWidget = new NoteTitleWidget(this);
-        $("#center-pane").prepend(this.noteTitleWidget.render());
-
         this.noteTreeWidget = new NoteTreeWidget(this);
 
-        this.widgets = [
+        const leftPaneWidgets = [
             new GlobalButtonsWidget(this),
             new SearchBoxWidget(this),
             new SearchResultsWidget(this),
             this.noteTreeWidget
         ];
 
-        for (const widget of this.widgets) {
+        for (const widget of leftPaneWidgets) {
             const $widget = widget.render();
 
             $leftPane.append($widget);
         }
 
-        this.widgets.push(this.noteTitleWidget);
-        this.widgets.push(this.promotedAttributes);
+        const $centerPane = $("#center-pane");
+
+        const centerPaneWidgets = [
+            new NoteTitleWidget(this),
+            new PromotedAttributesWidget(this),
+            new NoteDetailWidget(this)
+        ];
+
+        for (const widget of centerPaneWidgets) {
+            const $widget = widget.render();
+
+            $centerPane.append($widget);
+        }
+
+        this.widgets = [
+            this.tabRow,
+            ...leftPaneWidgets,
+            ...centerPaneWidgets
+        ];
     }
 
     trigger(name, data) {

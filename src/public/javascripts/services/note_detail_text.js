@@ -39,13 +39,46 @@ const mentionSetup = {
     ]
 };
 
+const TPL = `
+<div class="note-detail-text note-detail-component">
+    <style>
+    .note-detail-text h1 { font-size: 2.0em; }
+    .note-detail-text h2 { font-size: 1.8em; }
+    .note-detail-text h3 { font-size: 1.6em; }
+    .note-detail-text h4 { font-size: 1.4em; }
+    .note-detail-text h5 { font-size: 1.2em; }
+    .note-detail-text h6 { font-size: 1.1em; }
+    
+    .note-detail-text {
+        overflow: auto;
+        font-family: var(--detail-text-font-family);
+    }
+    
+    .note-detail-text-editor {
+        padding-top: 10px;
+        border: 0 !important;
+        box-shadow: none !important;
+        /* This is because with empty content height of editor is 0 and it's impossible to click into it */
+        min-height: 500px;
+    }
+    
+    .note-detail-text p:first-child, .note-detail-text::before {
+        margin-top: 0;
+    }
+    </style>
+
+    <div class="note-detail-text-editor" tabindex="10000"></div>
+</div>
+`;
+
 class NoteDetailText {
     /**
      * @param {TabContext} ctx
      */
-    constructor(ctx) {
+    constructor(ctx, $parent) {
+        this.$component = $(TPL);
+        $parent.append(this.$component);
         this.ctx = ctx;
-        this.$component = ctx.$tabContent.find('.note-detail-text');
         this.$editorEl = this.$component.find('.note-detail-text-editor');
         this.textEditorPromise = null;
         this.textEditor = null;

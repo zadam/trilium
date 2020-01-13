@@ -5,6 +5,11 @@ import server from "./server.js";
 import noteDetailService from "./note_detail.js";
 import keyboardActionService from "./keyboard_actions.js";
 
+const TPL = `
+<div class="note-detail-code note-detail-component">
+    <div class="note-detail-code-editor"></div>
+</div>`;
+
 class NoteDetailCode {
 
     /**
