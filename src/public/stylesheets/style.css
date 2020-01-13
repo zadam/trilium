@@ -478,21 +478,6 @@ button.icon-button {
     padding: 0;
 }
 
-.note-detail-promoted-attributes {
-    margin: auto;
-    /* setting the display to block since "table" doesn't support scrolling */
-    display: block;
-    /** flex-basis: content; - use once "content" is implemented by chrome */
-    flex-shrink: 0;
-    flex-grow: 0;
-    max-height: 30%;
-    overflow: auto;
-}
-
-.note-detail-promoted-attributes td, .note-detail-promoted-attributes th {
-    padding: 5px;
-}
-
 .note-detail-image {
     text-align: center;
 }

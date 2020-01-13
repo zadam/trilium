@@ -9,6 +9,7 @@ import server from "./server.js";
 import keyboardActionService from "./keyboard_actions.js";
 import TabRowWidget from "./tab_row.js";
 import NoteTitleWidget from "../widgets/note_title.js";
+import PromotedAttributesWidget from "../widgets/promoted_attributes.js";
 
 class AppContext {
     constructor() {
@@ -27,6 +28,9 @@ class AppContext {
         const contents = this.tabRow.render();
 
         $("#global-menu-wrapper").after(contents);
+
+        this.promotedAttributes = new PromotedAttributesWidget(this);
+        $("#center-pane").prepend(this.promotedAttributes.render());
 
         this.noteTitleWidget = new NoteTitleWidget(this);
         $("#center-pane").prepend(this.noteTitleWidget.render());
@@ -47,6 +51,7 @@ class AppContext {
         }
 
         this.widgets.push(this.noteTitleWidget);
+        this.widgets.push(this.promotedAttributes);
     }
 
     trigger(name, data) {
