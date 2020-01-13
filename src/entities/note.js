@@ -110,6 +110,10 @@ class Note extends Entity {
     async getJsonContent() {
         const content = await this.getContent();
 
+        if (!content || !content.trim()) {
+            return null;
+        }
+
         return JSON.parse(content);
     }
 
