@@ -8,24 +8,24 @@ import protectedSessionHolder from "../services/protected_session_holder.js";
 import NoteTypeWidget from "./note_type.js";
 
 const TPL = `
-<style>
-.note-title-row {
-    flex-grow: 0;
-    flex-shrink: 0;
-    padding-top: 2px;
-}
-
-.note-title {
-    margin-left: 15px;
-    margin-right: 10px;
-    font-size: 150%;
-    border: 0;
-    width: 5em;
-    flex-grow: 100;
-}
-</style>
-
 <div class="note-title-row">
+    <style>
+    .note-title-row {
+        flex-grow: 0;
+        flex-shrink: 0;
+        padding-top: 2px;
+    }
+    
+    .note-title {
+        margin-left: 15px;
+        margin-right: 10px;
+        font-size: 150%;
+        border: 0;
+        width: 5em;
+        flex-grow: 100;
+    }
+    </style>
+
     <div style="display: flex; align-items: center;">
         <div class="dropdown hide-in-zen-mode">
             <button class="btn btn-sm dropdown-toggle note-path-list-button" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -99,20 +99,20 @@ export default class NoteTitleWidget extends TabAwareWidget {
     }
 
     doRender() {
-        const $widget = $(TPL);
+        this.$widget = $(TPL);
 
-        this.$noteTitle = $widget.find(".note-title");
-        this.$noteTitleRow = $widget.find(".note-title-row");
-        this.$notePathList = $widget.find(".note-path-list");
-        this.$notePathCount = $widget.find(".note-path-count");
+        this.$noteTitle = this.$widget.find(".note-title");
+        this.$noteTitleRow = this.$widget.find(".note-title-row");
+        this.$notePathList = this.$widget.find(".note-path-list");
+        this.$notePathCount = this.$widget.find(".note-path-count");
 
-        this.$protectButton = $widget.find(".protect-button");
+        this.$protectButton = this.$widget.find(".protect-button");
         this.$protectButton.on('click', protectedSessionService.protectNoteAndSendToServer);
 
-        this.$unprotectButton = $widget.find(".unprotect-button");
+        this.$unprotectButton = this.$widget.find(".unprotect-button");
         this.$unprotectButton.on('click', protectedSessionService.unprotectNoteAndSendToServer);
 
-        this.$savedIndicator = $widget.find(".saved-indicator");
+        this.$savedIndicator = this.$widget.find(".saved-indicator");
 
         this.noteType = new NoteTypeWidget(this);
 
@@ -141,7 +141,7 @@ export default class NoteTitleWidget extends TabAwareWidget {
             });
         }
 
-        return $widget;
+        return this.$widget;
     }
 
     async activeTabChanged() {

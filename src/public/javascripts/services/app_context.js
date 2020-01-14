@@ -11,6 +11,7 @@ import TabRowWidget from "./tab_row.js";
 import NoteTitleWidget from "../widgets/note_title.js";
 import PromotedAttributesWidget from "../widgets/promoted_attributes.js";
 import NoteDetailWidget from "../widgets/note_detail.js";
+import TabCachingWidget from "../widgets/tab_caching_widget.js";
 
 class AppContext {
     constructor() {
@@ -40,23 +41,19 @@ class AppContext {
         ];
 
         for (const widget of leftPaneWidgets) {
-            const $widget = widget.render();
-
-            $leftPane.append($widget);
+            widget.renderTo($leftPane);
         }
 
         const $centerPane = $("#center-pane");
 
         const centerPaneWidgets = [
-            new NoteTitleWidget(this),
-            new PromotedAttributesWidget(this),
-            new NoteDetailWidget(this)
+            new TabCachingWidget(this, () => new NoteTitleWidget(this)),
+            new TabCachingWidget(this, () => new PromotedAttributesWidget(this)),
+            new TabCachingWidget(this, () => new NoteDetailWidget(this))
         ];
 
         for (const widget of centerPaneWidgets) {
-            const $widget = widget.render();
-
-            $centerPane.append($widget);
+            widget.renderTo($centerPane);
         }
 
         this.widgets = [

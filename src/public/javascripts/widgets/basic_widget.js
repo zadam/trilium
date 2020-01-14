@@ -7,13 +7,17 @@ class BasicWidget {
         this.widgetId = `widget-${this.constructor.name}`;
     }
 
+    renderTo($parent) {
+        $parent.append(this.render());
+    }
+
     render() {
         // actual rendering is async
-        const $widget = this.doRender();
+        this.$widget = this.doRender();
 
 //        $widget.attr('id', this.widgetId);
 
-        return $widget;
+        return this.$widget;
     }
 
     /**
@@ -31,6 +35,10 @@ class BasicWidget {
 
     trigger(name, data) {
         this.appContext.trigger(name, data);
+    }
+
+    toggle(show) {
+        this.$widget.toggle(show);
     }
 
     cleanup() {}
