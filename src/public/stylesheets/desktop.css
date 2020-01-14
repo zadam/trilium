@@ -175,7 +175,7 @@ body {
     border-color: var(--button-border-color);
 }
 
-#hide-sidebar-button, #show-sidebar-button {
+#hide-right-pane-button, #show-right-pane-button {
     position: fixed;
     bottom: 10px;
     right: 10px;

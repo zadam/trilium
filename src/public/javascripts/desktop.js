@@ -27,7 +27,6 @@ import noteAutocompleteService from './services/note_autocomplete.js';
 import macInit from './services/mac_init.js';
 import cssLoader from './services/css_loader.js';
 import dateNoteService from './services/date_notes.js';
-import sidebarService from './services/sidebar.js';
 import importService from './services/import.js';
 import keyboardActionService from "./services/keyboard_actions.js";
 import splitService from "./services/split.js";
@@ -222,4 +221,40 @@ optionService.waitForOptions().then(options => {
             remote.BrowserWindow.getFocusedWindow().close();
         });
     }
+});
+
+const rightPane = $("#right-pane");
+
+const $showRightPaneButton = $("#show-right-pane-button");
+const $hideRightPaneButton = $("#hide-right-pane-button");
+
+optionService.waitForOptions().then(options => toggleSidebar(options.is('rightPaneVisible')));
+
+function toggleSidebar(show) {
+    rightPane.toggle(show);
+    $showRightPaneButton.toggle(!show);
+    $hideRightPaneButton.toggle(show);
+
+    if (show) {
+        splitService.setupSplitWithSidebar();
+    }
+    else {
+        splitService.setupSplitWithoutSidebar();
+    }
+}
+
+$hideRightPaneButton.on('click', () => {
+    toggleSidebar(false);
+
+    server.put('options/rightPaneVisible/false');
+});
+
+$showRightPaneButton.on('click', async () => {
+    toggleSidebar(true);
+
+    await server.put('options/rightPaneVisible/true');
+
+    const {sidebar} = appContext.getActiveTabContext();
+    await sidebar.noteLoaded();
+    sidebar.show();
 });
