@@ -17,16 +17,16 @@ const TPL = `
 `;
 
 const componentClasses = {
-    'empty': "../services/note_detail_empty.js",
-    'text': "../services/note_detail_text.js",
-    'code': "../services/note_detail_code.js",
-    'file': "../services/note_detail_file.js",
-    'image': "../services/note_detail_image.js",
-    'search': "../services/note_detail_search.js",
-    'render': "../services/note_detail_render.js",
-    'relation-map': "../services/note_detail_relation_map.js",
-    'protected-session': "../services/note_detail_protected_session.js",
-    'book': "../services/note_detail_book.js"
+    'empty': "./detail/note_detail_empty.js",
+    'text': "./detail/note_detail_text.js",
+    'code': "./detail/note_detail_code.js",
+    'file': "./detail/note_detail_file.js",
+    'image': "./detail/note_detail_image.js",
+    'search': "./detail/note_detail_search.js",
+    'render': "./detail/note_detail_render.js",
+    'relation-map': "./detail/note_detail_relation_map.js",
+    'protected-session': "./detail/note_detail_protected_session.js",
+    'book': "./detail/note_detail_book.js"
 };
 
 export default class NoteDetailWidget extends TabAwareWidget {

@@ -1,5 +1,5 @@
-import noteAutocompleteService from '../services/note_autocomplete.js';
-import treeService from "./tree.js";
+import noteAutocompleteService from '../../services/note_autocomplete.js';
+import treeService from "../../services/tree.js";
 
 class NoteDetailEmpty {
     /**

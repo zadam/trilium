@@ -1,7 +1,7 @@
-import utils from "./utils.js";
-import toastService from "./toast.js";
-import server from "./server.js";
-import noteDetailService from "./note_detail.js";
+import utils from "../../services/utils.js";
+import toastService from "../../services/toast.js";
+import server from "../../services/server.js";
+import noteDetailService from "../../services/note_detail.js";
 
 class NoteDetailImage {
     /**

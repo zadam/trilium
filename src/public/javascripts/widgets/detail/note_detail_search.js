@@ -1,5 +1,5 @@
-import noteDetailService from "./note_detail.js";
-import searchNotesService from "./search_notes.js";
+import noteDetailService from "../../services/note_detail.js";
+import searchNotesService from "../../services/search_notes.js";
 
 class NoteDetailSearch {
     /**

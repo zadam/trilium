@@ -1,4 +1,4 @@
-import renderService from "./render.js";
+import renderService from "../../services/render.js";
 
 class NoteDetailRender {
     /**

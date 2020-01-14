@@ -1,4 +1,4 @@
-import protectedSessionService from './protected_session.js';
+import protectedSessionService from '../../services/protected_session.js';
 
 class NoteDetailProtectedSession {
     /**

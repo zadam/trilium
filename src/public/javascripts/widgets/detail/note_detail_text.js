@@ -1,7 +1,7 @@
-import libraryLoader from "./library_loader.js";
-import treeService from './tree.js';
-import noteAutocompleteService from './note_autocomplete.js';
-import mimeTypesService from './mime_types.js';
+import libraryLoader from "../../services/library_loader.js";
+import treeService from '../../services/tree.js';
+import noteAutocompleteService from '../../services/note_autocomplete.js';
+import mimeTypesService from '../../services/mime_types.js';
 
 const ENABLE_INSPECTOR = false;
 

@@ -5,7 +5,7 @@ import ws from "./ws.js";
 import treeCache from "./tree_cache.js";
 import NoteFull from "../entities/note_full.js";
 import treeUtils from "./tree_utils.js";
-import tabRow from "./tab_row.js";
+import tabRow from "../widgets/tab_row.js";
 import appContext from "./app_context.js";
 
 const $tabContentsContainer = $("#note-tab-container");

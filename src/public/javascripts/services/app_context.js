@@ -7,7 +7,7 @@ import noteDetailService from "./note_detail.js";
 import TabContext from "./tab_context.js";
 import server from "./server.js";
 import keyboardActionService from "./keyboard_actions.js";
-import TabRowWidget from "./tab_row.js";
+import TabRowWidget from "../widgets/tab_row.js";
 import NoteTitleWidget from "../widgets/note_title.js";
 import PromotedAttributesWidget from "../widgets/promoted_attributes.js";
 import NoteDetailWidget from "../widgets/note_detail.js";

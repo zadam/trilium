@@ -1,6 +1,6 @@
-import linkService from "./link.js";
-import treeCache from "./tree_cache.js";
-import noteContentRenderer from "./note_content_renderer.js";
+import linkService from "../../services/link.js";
+import treeCache from "../../services/tree_cache.js";
+import noteContentRenderer from "../../services/note_content_renderer.js";
 
 const MIN_ZOOM_LEVEL = 1;
 const MAX_ZOOM_LEVEL = 6;

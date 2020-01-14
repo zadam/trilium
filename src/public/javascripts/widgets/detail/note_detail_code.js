@@ -1,9 +1,9 @@
-import libraryLoader from "./library_loader.js";
-import bundleService from "./bundle.js";
-import toastService from "./toast.js";
-import server from "./server.js";
-import noteDetailService from "./note_detail.js";
-import keyboardActionService from "./keyboard_actions.js";
+import libraryLoader from "../../services/library_loader.js";
+import bundleService from "../../services/bundle.js";
+import toastService from "../../services/toast.js";
+import server from "../../services/server.js";
+import noteDetailService from "../../services/note_detail.js";
+import keyboardActionService from "../../services/keyboard_actions.js";
 
 const TPL = `
 <div class="note-detail-code note-detail-component">
