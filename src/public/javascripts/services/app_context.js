@@ -12,6 +12,12 @@ import NoteTitleWidget from "../widgets/note_title.js";
 import PromotedAttributesWidget from "../widgets/promoted_attributes.js";
 import NoteDetailWidget from "../widgets/note_detail.js";
 import TabCachingWidget from "../widgets/tab_caching_widget.js";
+import NoteInfoWidget from "../widgets/note_info.js";
+import NoteRevisionsWidget from "../widgets/note_revisions.js";
+import LinkMapWidget from "../widgets/link_map.js";
+import SimilarNotesWidget from "../widgets/similar_notes.js";
+import WhatLinksHereWidget from "../widgets/what_links_here.js";
+import AttributesWidget from "../widgets/attributes.js";
 
 class AppContext {
     constructor() {
@@ -56,10 +62,26 @@ class AppContext {
             widget.renderTo($centerPane);
         }
 
+        const $rightPane = $("#right-pane");
+
+        const rightPaneWidgets = [
+            new NoteInfoWidget(this),
+            new TabCachingWidget(this, () => new AttributesWidget(this)),
+            new TabCachingWidget(this, () => new LinkMapWidget(this)),
+            new TabCachingWidget(this, () => new NoteRevisionsWidget(this)),
+            new TabCachingWidget(this, () => new SimilarNotesWidget(this)),
+            new TabCachingWidget(this, () => new WhatLinksHereWidget(this)),
+        ];
+
+        for (const widget of rightPaneWidgets) {
+            widget.renderTo($rightPane);
+        }
+
         this.widgets = [
             this.tabRow,
             ...leftPaneWidgets,
-            ...centerPaneWidgets
+            ...centerPaneWidgets,
+            ...rightPaneWidgets
         ];
     }
 

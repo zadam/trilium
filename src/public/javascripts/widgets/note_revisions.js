@@ -26,8 +26,9 @@ class NoteRevisionsWidget extends StandardWidget {
         return [$showFullButton];
     }
 
-    async doRenderBody() {
-        const revisionItems = await server.get(`notes/${this.ctx.note.noteId}/revisions`);
+    async activeTabChanged() {
+        const note = this.tabContext.note;
+        const revisionItems = await server.get(`notes/${note.noteId}/revisions`);
 
         if (revisionItems.length === 0) {
             this.$body.text("No revisions yet...");
@@ -41,7 +42,7 @@ class NoteRevisionsWidget extends StandardWidget {
         for (const item of revisionItems) {
             const $listItem = $('<li>').append($("<a>", {
                 'data-action': 'note-revision',
-                'data-note-path': this.ctx.note.noteId,
+                'data-note-path': note.noteId,
                 'data-note-revision-id': item.noteRevisionId,
                 href: 'javascript:'
             }).text(item.dateLastEdited.substr(0, 16)));
@@ -54,11 +55,9 @@ class NoteRevisionsWidget extends StandardWidget {
         }
     }
 
-    eventReceived(name, data) {
-        if (name === 'syncData') {
-            if (data.find(sd => sd.entityName === 'note_revisions' && sd.noteId === this.ctx.note.noteId)) {
-                this.doRenderBody();
-            }
+    syncDataListener({data}) {
+        if (data.find(sd => sd.entityName === 'note_revisions' && sd.noteId === this.tabContext.note.noteId)) {
+            this.activeTabChanged();
         }
     }
 }

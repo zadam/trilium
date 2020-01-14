@@ -23,9 +23,9 @@ class AttributesWidget extends StandardWidget {
         return [$showFullButton];
     }
 
-    async doRenderBody() {
-        const attributes = await this.ctx.attributes.getAttributes();
-        const ownedAttributes = attributes.filter(attr => attr.noteId === this.ctx.note.noteId);
+    async activeTabChanged() {
+        const attributes = await this.tabContext.attributes.getAttributes();
+        const ownedAttributes = attributes.filter(attr => attr.noteId === this.tabContext.note.noteId);
 
         if (attributes.length === 0) {
             this.$body.text("No attributes yet...");
@@ -36,7 +36,7 @@ class AttributesWidget extends StandardWidget {
 
         await this.renderAttributes(ownedAttributes, $attributesContainer);
 
-        const inheritedAttributes = attributes.filter(attr => attr.noteId !== this.ctx.note.noteId);
+        const inheritedAttributes = attributes.filter(attr => attr.noteId !== this.tabContext.note.noteId);
 
         if (inheritedAttributes.length > 0) {
             const $inheritedAttrs = $("<span>").append($("<strong>").text("Inherited: "));
@@ -88,13 +88,11 @@ class AttributesWidget extends StandardWidget {
         }
     }
 
-    eventReceived(name, data) {
-        if (name === 'syncData') {
-            if (data.find(sd => sd.entityName === 'attributes' && sd.noteId === this.ctx.note.noteId)) {
-                // no need to invalidate attributes since the Attribute class listens to this as well
-                // (and is guaranteed to run first)
-                this.doRenderBody();
-            }
+    syncDataListener({data}) {
+        if (data.find(sd => sd.entityName === 'attributes' && sd.noteId === this.tabContext.note.noteId)) {
+            // no need to invalidate attributes since the Attribute class listens to this as well
+            // (and is guaranteed to run first)
+            this.doRenderBody();
         }
     }
 }

@@ -16,23 +16,23 @@ class EditedNotesWidget extends StandardWidget {
 
     async isEnabled() {
         return await super.isEnabled()
-            && await this.ctx.note.hasLabel("dateNote");
+            && await this.tabContext.note.hasLabel("dateNote");
     }
 
     async doRenderBody() {
+        const note = this.tabContext.note;
         // remember which title was when we found the similar notes
-        this.title = this.ctx.note.title;
+        this.title = note.title;
+        let editedNotes = await server.get('edited-notes/' + await note.getLabelValue("dateNote"));
 
-        let editedNotes = await server.get('edited-notes/' + await this.ctx.note.getLabelValue("dateNote"));
-
-        editedNotes = editedNotes.filter(note => note.noteId !== this.ctx.note.noteId);
+        editedNotes = editedNotes.filter(n => n.noteId !== note.noteId);
 
         if (editedNotes.length === 0) {
             this.$body.text("No edited notes on this day yet ...");
             return;
         }
 
-        const noteIds = editedNotes.flatMap(note => note.noteId);
+        const noteIds = editedNotes.flatMap(n => n.noteId);
 
         await treeCache.getNotes(noteIds, true); // preload all at once
 

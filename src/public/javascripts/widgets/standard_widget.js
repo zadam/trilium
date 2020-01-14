@@ -1,4 +1,5 @@
-import optionsService from "../services/options.js";
+import utils from "../services/utils.js";
+import TabAwareWidget from "./tab_aware_widget.js";
 
 const WIDGET_TPL = `
 <div class="card widget">
@@ -20,25 +21,7 @@ const WIDGET_TPL = `
 </div>
 `;
 
-class StandardWidget {
-    /**
-     * @param {TabContext} ctx
-     * @param {Options} options
-     * @param {object} sidebarState
-     */
-    constructor(ctx, options, sidebarState) {
-        this.ctx = ctx;
-        // construct in camelCase
-        this.widgetName = this.constructor.name.substr(0, 1).toLowerCase() + this.constructor.name.substr(1);
-        this.widgetOptions = options.getJson(this.widgetName) || {
-            expanded: true
-        };
-
-        this.state = sidebarState.widgets.find(s => s.name === this.widgetName) || {
-            expanded: this.widgetOptions.expanded
-        };
-    }
-
+class StandardWidget extends TabAwareWidget {
     getWidgetTitle() { return "Untitled widget"; }
 
     getHeaderActions() { return []; }
@@ -47,20 +30,20 @@ class StandardWidget {
 
     getMaxHeight() { return null; }
 
-    getPosition() { return this.widgetOptions.position; }
+    //getPosition() { return this.widgetOptions.position; }
 
     render() {
-        const widgetId = `tab-${this.ctx.tabId}-widget-${this.widgetName}`;
+        const widgetInstanceId = this.widgetId + "-" + utils.randomString(10);
 
         this.$widget = $(WIDGET_TPL);
-        this.$widget.find('[data-target]').attr('data-target', "#" + widgetId);
+        this.$widget.find('[data-target]').attr('data-target', "#" + widgetInstanceId);
 
         this.$bodyWrapper = this.$widget.find('.body-wrapper');
-        this.$bodyWrapper.attr('id', widgetId);
+        this.$bodyWrapper.attr('id', widgetInstanceId);
 
-        if (this.state.expanded) {
+//        if (this.state.expanded) {
             this.$bodyWrapper.collapse("show");
-        }
+//        }
 
         this.$body = this.$bodyWrapper.find('.card-body');
 
@@ -71,9 +54,9 @@ class StandardWidget {
             this.$body.css("overflow", "auto");
         }
 
-        this.$widget.on('shown.bs.collapse', () => this.renderBody());
-        this.$widget.on('shown.bs.collapse', () => this.ctx.stateChanged());
-        this.$widget.on('hidden.bs.collapse', () => this.ctx.stateChanged());
+        // this.$widget.on('shown.bs.collapse', () => this.renderBody());
+        // this.$widget.on('shown.bs.collapse', () => this.ctx.stateChanged());
+        // this.$widget.on('hidden.bs.collapse', () => this.ctx.stateChanged());
 
         this.$title = this.$widget.find('.widget-title');
         this.$title.text(this.getWidgetTitle());
@@ -103,11 +86,11 @@ class StandardWidget {
     }
 
     async renderBody() {
-        if (!this.isExpanded() || this.rendered) {
-            return;
-        }
-
-        this.rendered = true;
+        // if (!this.isExpanded() || this.rendered) {
+        //     return;
+        // }
+        //
+        // this.rendered = true;
 
         await this.doRenderBody();
     }
@@ -138,8 +121,6 @@ class StandardWidget {
             expanded: this.isExpanded()
         };
     }
-
-    eventReceived(name, data) {}
 
     cleanup() {}
 }

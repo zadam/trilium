@@ -138,7 +138,12 @@
 
         <div id="center-pane"></div>
 
-        <% include sidebar.ejs %>
+        <button id="hide-sidebar-button" class="btn btn-sm icon-button bx bx-chevrons-right hide-in-zen-mode" title="Hide sidebar"></button>
+        <button id="show-sidebar-button" class="btn btn-sm icon-button bx bx-chevrons-left hide-in-zen-mode" title="Show sidebar"></button>
+
+        <div id="right-pane" class="hide-in-zen-mode">
+            <div id="sidebar-container"></div>
+        </div>
     </div>
 
     <div class="dropdown-menu dropdown-menu-sm" id="context-menu-container"></div>

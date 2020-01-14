@@ -28,7 +28,7 @@ class LinkMapWidget extends StandardWidget {
         return [$showFullButton];
     }
 
-    async doRenderBody() {
+    async activeTabChanged() {
         this.$body.css('opacity', 0);
         this.$body.html(TPL);
 
@@ -38,7 +38,7 @@ class LinkMapWidget extends StandardWidget {
 
         const LinkMapServiceClass = (await import('../services/link_map.js')).default;
 
-        this.linkMapService = new LinkMapServiceClass(this.ctx.note, $linkMapContainer, {
+        this.linkMapService = new LinkMapServiceClass(this.tabContext.note, $linkMapContainer, {
             maxDepth: 1,
             zoom: 0.6
         });
@@ -54,14 +54,12 @@ class LinkMapWidget extends StandardWidget {
         }
     }
 
-    eventReceived(name, data) {
-        if (name === 'syncData') {
-            if (data.find(sd => sd.entityName === 'attributes' && sd.noteId === this.ctx.note.noteId)) {
-                // no need to invalidate attributes since the Attribute class listens to this as well
-                // (and is guaranteed to run first)
-                if (this.linkMapService) {
-                    this.linkMapService.loadNotesAndRelations();
-                }
+    syncDataListener({data}) {
+        if (data.find(sd => sd.entityName === 'attributes' && sd.noteId === this.tabContext.note.noteId)) {
+            // no need to invalidate attributes since the Attribute class listens to this as well
+            // (and is guaranteed to run first)
+            if (this.linkMapService) {
+                this.linkMapService.loadNotesAndRelations();
             }
         }
     }

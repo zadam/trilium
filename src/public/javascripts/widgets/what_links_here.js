@@ -22,8 +22,8 @@ class WhatLinksHereWidget extends StandardWidget {
         return [$showFullButton];
     }
 
-    async doRenderBody() {
-        const targetRelations = await this.ctx.note.getTargetRelations();
+    async activeTabChanged() {
+        const targetRelations = await this.tabContext.note.getTargetRelations();
 
         if (targetRelations.length === 0) {
             this.$body.text("Nothing links here yet ...");

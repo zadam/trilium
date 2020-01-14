@@ -14,11 +14,11 @@ class SimilarNotesWidget extends StandardWidget {
 
     getMaxHeight() { return "200px"; }
 
-    async doRenderBody() {
+    async activeTabChanged() {
         // remember which title was when we found the similar notes
-        this.title = this.ctx.note.title;
+        this.title = this.tabContext.note.title;
 
-        const similarNotes = await server.get('similar-notes/' + this.ctx.note.noteId);
+        const similarNotes = await server.get('similar-notes/' + this.tabContext.note.noteId);
 
         if (similarNotes.length === 0) {
             this.$body.text("No similar notes found ...");
@@ -47,13 +47,11 @@ class SimilarNotesWidget extends StandardWidget {
         this.$body.empty().append($list);
     }
 
-    eventReceived(name, data) {
-        if (name === 'noteSaved') {
-            if (this.title !== this.ctx.note.title) {
-                this.rendered = false;
+    noteSavedListener({data}) {
+        if (this.title !== this.tabContext.note.title) {
+            this.rendered = false;
 
-                this.renderBody();
-            }
+            this.renderBody();
         }
     }
 }

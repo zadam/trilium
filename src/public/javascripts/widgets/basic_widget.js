@@ -26,6 +26,8 @@ class BasicWidget {
     doRender() {}
 
     eventReceived(name, data) {
+        console.log("received", name, "to", this.widgetId);
+
         const fun = this[name + 'Listener'];
 
         if (typeof fun === 'function') {

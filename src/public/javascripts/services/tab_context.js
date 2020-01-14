@@ -5,7 +5,6 @@ import bundleService from "./bundle.js";
 import Attributes from "./attributes.js";
 import utils from "./utils.js";
 import optionsService from "./options.js";
-import Sidebar from "./sidebar.js";
 import appContext from "./app_context.js";
 
 let showSidebarInNewTab = true;
@@ -39,14 +38,6 @@ class TabContext {
         this.noteChangeDisabled = false;
         this.isNoteChanged = false;
         this.attributes = new Attributes(this);
-
-        if (utils.isDesktop()) {
-            const sidebarState = this.state.sidebar || {
-                visible: showSidebarInNewTab
-            };
-
-            this.sidebar = new Sidebar(this, sidebarState);
-        }
     }
 
     async setNote(note, notePath) {
@@ -69,10 +60,6 @@ class TabContext {
         this.setupClasses();
 
         this.setCurrentNotePathToHash();
-
-        if (this.sidebar) {
-            this.sidebar.noteLoaded(); // load async
-        }
 
         this.noteChangeDisabled = true;
 
@@ -116,10 +103,6 @@ class TabContext {
                 // FIXME
                 await this.renderComponent(); // render empty page
             }
-        }
-
-        if (this.sidebar) {
-            this.sidebar.show();
         }
 
         this.setCurrentNotePathToHash();
@@ -254,10 +237,6 @@ class TabContext {
             await this.saveNoteIfChanged();
             this.$tabContent.remove();
         }
-
-        if (this.sidebar) {
-            this.sidebar.remove();
-        }
     }
 
     cleanup() {
@@ -274,10 +253,6 @@ class TabContext {
         }
 
         this.attributes.eventReceived(name, data);
-
-        if (this.sidebar) {
-            this.sidebar.eventReceived(name, data);
-        }
     }
 
     getTabState() {
@@ -288,8 +263,7 @@ class TabContext {
         return {
             tabId: this.tabId,
             notePath: this.notePath,
-            active: this.tabRow.activeTabEl === this.$tab[0],
-            sidebar: this.sidebar && this.sidebar.getSidebarState()
+            active: this.tabRow.activeTabEl === this.$tab[0]
         }
     }
 

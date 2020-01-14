@@ -29,15 +29,17 @@ class CalendarWidget extends StandardWidget {
 
     async isEnabled() {
         return await super.isEnabled()
-            && await this.ctx.note.hasLabel("dateNote");
+            && await this.tabContext.note.hasLabel("dateNote");
     }
 
     async doRenderBody() {
         await libraryLoader.requireLibrary(libraryLoader.CALENDAR_WIDGET);
 
         this.$body.html(TPL);
+    }
 
-        this.init(this.$body, await this.ctx.note.getLabelValue("dateNote"));
+    async activeTabChanged() {
+        this.init(this.$body, await this.tabContext.note.getLabelValue("dateNote"));
     }
 
     init($el, activeDate) {

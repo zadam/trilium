@@ -27,16 +27,18 @@ const TPL = `
 class NoteInfoWidget extends StandardWidget {
     getWidgetTitle() { return "Note info"; }
 
-    async doRenderBody() {
+    doRenderBody() {
         this.$body.html(TPL);
+    }
 
+    activeTabChanged() {
         const $noteId = this.$body.find(".note-info-note-id");
         const $dateCreated = this.$body.find(".note-info-date-created");
         const $dateModified = this.$body.find(".note-info-date-modified");
         const $type = this.$body.find(".note-info-type");
         const $mime = this.$body.find(".note-info-mime");
 
-        const note = this.ctx.note;
+        const note = this.tabContext.note;
 
         $noteId.text(note.noteId);
         $dateCreated
@@ -54,11 +56,9 @@ class NoteInfoWidget extends StandardWidget {
             .attr("title", note.mime);
     }
 
-    eventReceived(name, data) {
-        if (name === 'syncData') {
-            if (data.find(sd => sd.entityName === 'notes' && sd.entityId === this.ctx.note.noteId)) {
-                this.doRenderBody();
-            }
+    syncDataListener({data}) {
+        if (data.find(sd => sd.entityName === 'notes' && sd.entityId === this.tabContext.note.noteId)) {
+            this.activeTabChanged();
         }
     }
 }
