@@ -36,17 +36,6 @@ function registerEntrypoints() {
 
     keyboardActionService.setGlobalActionHandler("AddLinkToText", () => import(ADD_LINK).then(d => d.showDialog()));
 
-    const showJumpToNoteDialog = () => import(JUMP_TO_NOTE).then(d => d.showDialog());
-    $("#jump-to-note-dialog-button").on('click', showJumpToNoteDialog);
-    keyboardActionService.setGlobalActionHandler("JumpToNote", showJumpToNoteDialog);
-
-    const showRecentChanges = () => import(RECENT_CHANGES).then(d => d.showDialog());
-    $("#recent-changes-button").on('click', showRecentChanges);
-    keyboardActionService.setGlobalActionHandler("ShowRecentChanges", showRecentChanges);
-
-    $("#enter-protected-session-button").on('click', protectedSessionService.enterProtectedSession);
-    $("#leave-protected-session-button").on('click', protectedSessionService.leaveProtectedSession);
-
     keyboardActionService.setGlobalActionHandler('SearchNotes', searchNotesService.toggleSearch);
 
     const $noteTabContainer = $("#note-tab-container");
@@ -84,15 +73,6 @@ function registerEntrypoints() {
     const showLinkMapDialog = () => import(LINK_MAP).then(d => d.showDialog());
     $noteTabContainer.on("click", ".show-link-map-button", showLinkMapDialog);
     keyboardActionService.setGlobalActionHandler("ShowLinkMap", showLinkMapDialog);
-
-    if (utils.isElectron()) {
-        $("#history-navigation").show();
-        $("#history-back-button").on('click', window.history.back);
-        keyboardActionService.setGlobalActionHandler("BackInNoteHistory", window.history.back);
-
-        $("#history-forward-button").on('click', window.history.forward);
-        keyboardActionService.setGlobalActionHandler("ForwardInNoteHistory", window.history.forward);
-    }
 
     keyboardActionService.setGlobalActionHandler("InsertDateTimeToText", () => {
         const date = new Date();

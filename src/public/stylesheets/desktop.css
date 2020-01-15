@@ -51,35 +51,6 @@ body {
     flex-direction: column;
 }
 
-#top-pane {
-    background-color: var(--header-background-color);
-    display: flex;
-    align-items: center;
-    padding-top: 4px;
-}
-
-#top-pane button {
-    padding: 1px 5px 1px 5px;
-    font-size: smaller;
-    margin-bottom: 2px;
-    margin-top: 2px;
-    margin-right: 8px;
-    border-color: transparent !important;
-}
-
-#top-pane button.btn-sm .bx {
-    position: relative;
-    top: 1px;
-}
-
-#top-pane button:hover {
-    border-color: var(--button-border-color) !important;
-}
-
-#history-navigation {
-    margin: 0 15px 0 5px;
-}
-
 .dropdown-menu {
     font-size: inherit;
 }

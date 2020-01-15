@@ -20,6 +20,8 @@ import WhatLinksHereWidget from "../widgets/what_links_here.js";
 import AttributesWidget from "../widgets/attributes.js";
 import TitleBarButtonsWidget from "../widgets/title_bar_buttons.js";
 import GlobalMenuWidget from "../widgets/global_menu.js";
+import HorizontalFlexContainer from "../widgets/horizontal_flex_container.js";
+import StandardTopWidget from "../widgets/standard_top_widget.js";
 
 class AppContext {
     constructor() {
@@ -32,18 +34,22 @@ class AppContext {
     }
 
     showWidgets() {
-        const $tabPane = $("#tab-pane");
 
         this.tabRow = new TabRowWidget(this);
 
-        const tabPaneWidgets = [
-            new GlobalMenuWidget(this),
-            this.tabRow,
-            new TitleBarButtonsWidget(this)
+        const topPaneWidgets = [
+            new HorizontalFlexContainer(this, [
+                new GlobalMenuWidget(this),
+                this.tabRow,
+                new TitleBarButtonsWidget(this)
+            ]),
+            new StandardTopWidget(this)
         ];
 
-        for (const widget of tabPaneWidgets) {
-            widget.renderTo($tabPane);
+        const $topPane = $("#top-pane");
+
+        for (const widget of topPaneWidgets) {
+            widget.renderTo($topPane);
         }
 
         const $leftPane = $("#left-pane");
