@@ -43,7 +43,7 @@ async function mouseEnterHandler() {
     const noteId = treeUtils.getNoteIdFromNotePath(notePath);
 
     const notePromise = noteDetailService.loadNote(noteId);
-    const attributePromise = server.get('notes/' + noteId + '/attributes');
+    const attributePromise = server.get(`notes/${noteId}/attributes`);
 
     const [note, attributes] = await Promise.all([notePromise, attributePromise]);
 

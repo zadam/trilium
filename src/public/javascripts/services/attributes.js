@@ -2,13 +2,17 @@ import server from "./server.js";
 import ws from "./ws.js";
 import treeUtils from "./tree_utils.js";
 import noteAutocompleteService from "./note_autocomplete.js";
+import Component from "../widgets/component.js";
+import utils from "./utils.js";
 
-class Attributes {
+class Attributes extends Component {
     /**
-     * @param {TabContext} ctx
+     * @param {AppContext} appContext
+     * @param {TabContext} tabContext
      */
-    constructor(ctx) {
-        this.ctx = ctx;
+    constructor(appContext, tabContext) {
+        super(appContext);
+        this.tabContext = tabContext;
         this.attributePromise = null;
     }
 
@@ -17,7 +21,7 @@ class Attributes {
     }
 
     reloadAttributes() {
-        this.attributePromise = server.get(`notes/${this.ctx.note.noteId}/attributes`);
+        this.attributePromise = server.get(`notes/${this.tabContext.note.noteId}/attributes`);
     }
 
     async refreshAttributes() {
@@ -32,15 +36,18 @@ class Attributes {
         return this.attributePromise;
     }
 
-    eventReceived(name, data) {
-        if (!this.ctx.note) {
-            return;
+    syncDataListener({data}) {
+        if (this.tabContext.note && data.find(sd => sd.entityName === 'attributes' && sd.noteId === this.tabContext.note.noteId)) {
+            this.reloadAttributes();
         }
+    }
 
-        if (name === 'syncData') {
-            if (data.find(sd => sd.entityName === 'attributes' && sd.noteId === this.ctx.note.noteId)) {
-                this.reloadAttributes();
-            }
+    activeNoteChangedListener() {
+        if (utils.isDesktop()) {
+            this.attributes.refreshAttributes();
+        } else {
+            // mobile usually doesn't need attributes so we just invalidate
+            this.attributes.invalidateAttributes();
         }
     }
 }

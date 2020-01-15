@@ -101,7 +101,7 @@ export default class NoteTreeWidget extends BasicWidget {
 
                 const notePath = await treeUtils.getNotePath(data.node);
 
-                noteDetailService.switchToNote(notePath);
+                this.appContext.activateNote(notePath);
             },
             expand: (event, data) => treeService.setExpandedToServer(data.node.data.branchId, true),
             collapse: (event, data) => treeService.setExpandedToServer(data.node.data.branchId, false),

@@ -172,6 +172,10 @@ class TreeCache {
         return (await this.getNotes([noteId], silentNotFoundError))[0];
     }
 
+    getNoteFromCache(noteId) {
+        return this.notes[noteId];
+    }
+
     getBranches(branchIds) {
         return branchIds
             .map(branchId => this.getBranch(branchId))

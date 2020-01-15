@@ -1,9 +1,8 @@
-class BasicWidget {
-    /**
-     * @param {AppContext} appContext
-     */
+import Component from "./component.js";
+
+class BasicWidget extends Component {
     constructor(appContext) {
-        this.appContext = appContext;
+        super(appContext);
         this.widgetId = `widget-${this.constructor.name}`;
     }
 
@@ -24,20 +23,6 @@ class BasicWidget {
      * for overriding
      */
     doRender() {}
-
-    eventReceived(name, data) {
-        console.log("received", name, "to", this.widgetId);
-
-        const fun = this[name + 'Listener'];
-
-        if (typeof fun === 'function') {
-            fun.call(this, data);
-        }
-    }
-
-    trigger(name, data) {
-        this.appContext.trigger(name, data);
-    }
 
     toggle(show) {
         this.$widget.toggle(show);

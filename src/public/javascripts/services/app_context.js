@@ -20,8 +20,10 @@ import WhatLinksHereWidget from "../widgets/what_links_here.js";
 import AttributesWidget from "../widgets/attributes.js";
 import TitleBarButtonsWidget from "../widgets/title_bar_buttons.js";
 import GlobalMenuWidget from "../widgets/global_menu.js";
-import HorizontalFlexContainer from "../widgets/horizontal_flex_container.js";
+import RowFlexContainer from "../widgets/row_flex_container.js";
 import StandardTopWidget from "../widgets/standard_top_widget.js";
+import treeCache from "./tree_cache.js";
+import treeUtils from "./tree_utils.js";
 
 class AppContext {
     constructor() {
@@ -38,7 +40,7 @@ class AppContext {
         this.tabRow = new TabRowWidget(this);
 
         const topPaneWidgets = [
-            new HorizontalFlexContainer(this, [
+            new RowFlexContainer(this, [
                 new GlobalMenuWidget(this),
                 this.tabRow,
                 new TitleBarButtonsWidget(this)
@@ -105,6 +107,10 @@ class AppContext {
     trigger(name, data) {
         this.eventReceived(name, data);
 
+        for (const tabContext of this.tabContexts) {
+            tabContext.eventReceived(name, data);
+        }
+
         for (const widget of this.widgets) {
             widget.eventReceived(name, data);
         }
@@ -115,6 +121,36 @@ class AppContext {
 
         if (typeof fun === 'function') {
             fun.call(this, data);
+        }
+    }
+
+    activateNote(notePath) {
+        const activeTabContext = this.getActiveTabContext();
+
+        activeTabContext.setNote(notePath);
+
+        this._setTitleBar();
+        this._setCurrentNotePathToHash();
+    }
+
+    _setCurrentNotePathToHash() {
+        const activeTabContext = this.getActiveTabContext();
+
+        if (activeTabContext && activeTabContext.notePath) {
+            document.location.hash = (activeTabContext.notePath || "") + "-" + activeTabContext.tabId;
+        }
+    }
+
+    async _setTitleBar() {
+        document.title = "Trilium Notes";
+
+        const activeTabContext = this.getActiveTabContext();
+
+        if (activeTabContext && activeTabContext.notePath) {
+            const note = await treeCache.getNote(treeUtils.getNoteIdFromNotePath(activeTabContext.notePath));
+
+            // it helps navigating in history if note title is included in the title
+            document.title += " - " + note.title;
         }
     }
 
@@ -219,7 +255,7 @@ class AppContext {
     getTab(newTab, state) {
         if (!this.getActiveTabContext() || newTab) {
             // if it's a new tab explicitly by user then it's in background
-            const ctx = new TabContext(this.tabRow, state);
+            const ctx = new TabContext(this, this.tabRow, state);
             this.tabContexts.push(ctx);
 
             return ctx;
@@ -249,7 +285,7 @@ class AppContext {
     }
 
     async openEmptyTab() {
-        const ctx = new TabContext(this.tabRow);
+        const ctx = new TabContext(this, this.tabRow);
         this.tabContexts.push(ctx);
 
         await this.tabRow.activateTab(ctx.$tab[0]);

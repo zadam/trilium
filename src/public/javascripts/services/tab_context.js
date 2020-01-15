@@ -6,6 +6,9 @@ import Attributes from "./attributes.js";
 import utils from "./utils.js";
 import optionsService from "./options.js";
 import appContext from "./app_context.js";
+import treeUtils from "./tree_utils.js";
+import noteDetailService from "./note_detail.js";
+import Component from "../widgets/component.js";
 
 let showSidebarInNewTab = true;
 
@@ -13,12 +16,15 @@ optionsService.addLoadListener(options => {
     showSidebarInNewTab = options.is('showSidebarInNewTab');
 });
 
-class TabContext {
+class TabContext extends Component {
     /**
+     * @param {AppContext} appContext
      * @param {TabRowWidget} tabRow
      * @param {object} state
      */
-    constructor(tabRow, state = {}) {
+    constructor(appContext, tabRow, state = {}) {
+        super(appContext);
+
         this.tabRow = tabRow;
         this.tabId = state.tabId || utils.randomString(4);
         this.$tab = $(this.tabRow.addTab(this.tabId));
@@ -37,39 +43,25 @@ class TabContext {
 
         this.noteChangeDisabled = false;
         this.isNoteChanged = false;
-        this.attributes = new Attributes(this);
+        this.attributes = new Attributes(this.appContext, this);
+
+        this.children.push(this.attributes);
     }
 
-    async setNote(note, notePath) {
-        /** @property {NoteFull} */
-        this.note = note;
+    async setNote(notePath) {
         this.notePath = notePath;
+        const noteId = treeUtils.getNoteIdFromNotePath(notePath);
+
+        /** @property {NoteFull} */
+        this.note = await noteDetailService.loadNote(noteId);
+
         this.tabRow.updateTab(this.$tab[0], {title: this.note.title});
 
         if (!this.initialized) {
             return;
         }
 
-        if (utils.isDesktop()) {
-            this.attributes.refreshAttributes();
-        } else {
-            // mobile usually doesn't need attributes so we just invalidate
-            this.attributes.invalidateAttributes();
-        }
-
         this.setupClasses();
-
-        this.setCurrentNotePathToHash();
-
-        this.noteChangeDisabled = true;
-
-        try {
-
-        } finally {
-            this.noteChangeDisabled = false;
-        }
-
-        this.setTitleBar();
 
         this.cleanup(); // esp. on windows autocomplete is not getting closed automatically
 
@@ -96,8 +88,8 @@ class TabContext {
         if (!this.initialized) {
             await this.initTabContent();
 
-            if (this.note) {
-                await this.setNote(this.note, this.notePath);
+            if (this.notePath) {
+                await this.setNote(this.notePath);
             }
             else {
                 // FIXME
@@ -106,35 +98,15 @@ class TabContext {
         }
 
         this.setCurrentNotePathToHash();
-        this.setTitleBar();
     }
 
     async renderComponent(disableAutoBook = false) {
         // FIXME
     }
 
-    setTitleBar() {
-        if (!this.$tabContent.is(":visible")) {
-            return;
-        }
-
-        document.title = "Trilium Notes";
-
-        if (this.note) {
-            // it helps navigating in history if note title is included in the title
-            document.title += " - " + this.note.title;
-        }
-    }
-
     hide() {
         if (this.initialized) {
             this.$tabContent.hide();
-        }
-    }
-
-    setCurrentNotePathToHash() {
-        if (this.isActive()) {
-            document.location.hash = (this.notePath || "") + "-" + this.tabId;
         }
     }
 
@@ -149,21 +121,9 @@ class TabContext {
             }
         }
 
-        for (const clazz of Array.from(this.$tabContent[0].classList)) { // create copy to safely iterate over while removing classes
-            if (clazz !== 'note-tab-content') {
-                this.$tabContent.removeClass(clazz);
-            }
-        }
-
         this.$tab.addClass(this.note.cssClass);
         this.$tab.addClass(utils.getNoteTypeClass(this.note.type));
         this.$tab.addClass(utils.getMimeTypeClass(this.note.mime));
-
-        this.$tabContent.addClass(this.note.cssClass);
-        this.$tabContent.addClass(utils.getNoteTypeClass(this.note.type));
-        this.$tabContent.addClass(utils.getMimeTypeClass(this.note.mime));
-
-        this.$tabContent.toggleClass("protected", this.note.isProtected);
     }
 
     getComponent() {
@@ -245,14 +205,6 @@ class TabContext {
 
             $('.note-tooltip').remove();
         }
-    }
-
-    eventReceived(name, data) {
-        if (!this.initialized) {
-            return;
-        }
-
-        this.attributes.eventReceived(name, data);
     }
 
     getTabState() {

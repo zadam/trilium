@@ -1,6 +1,6 @@
 import BasicWidget from "./basic_widget.js";
 
-export default class HorizontalFlexContainer extends BasicWidget {
+export default class RowFlexContainer extends BasicWidget {
     constructor(appContext, widgets) {
         super(appContext);
 

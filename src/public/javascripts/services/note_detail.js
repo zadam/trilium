@@ -20,9 +20,7 @@ async function reload() {
 }
 
 async function reloadNote(tabContext) {
-    const note = await loadNote(tabContext.note.noteId);
-
-    await loadNoteDetailToContext(tabContext, note, tabContext.notePath);
+    await loadNoteDetailToContext(tabContext, tabContext.notePath);
 }
 
 async function openInTab(notePath, activate) {
@@ -79,11 +77,10 @@ async function activateOrOpenNote(noteId) {
 
 /**
  * @param {TabContext} ctx
- * @param {NoteFull} note
  * @param {string} notePath
  */
-async function loadNoteDetailToContext(ctx, note, notePath) {
-    await ctx.setNote(note, notePath);
+async function loadNoteDetailToContext(ctx, notePath) {
+    await ctx.setNote(notePath);
 
     appContext.openTabsChanged();
 
@@ -104,7 +101,6 @@ async function loadNoteDetail(origNotePath, options = {}) {
     }
 
     const noteId = treeUtils.getNoteIdFromNotePath(notePath);
-    const loadedNote = await loadNote(noteId);
     const ctx = appContext.getTab(newTab, options.state);
 
     // we will try to render the new note only if it's still the active one in the tree
@@ -112,11 +108,11 @@ async function loadNoteDetail(origNotePath, options = {}) {
     // try to render all those loaded notes one after each other. This only guarantees that correct note
     // will be displayed independent of timing
     const currentTreeNode = appContext.getMainNoteTree().getActiveNode();
-    if (!newTab && currentTreeNode && currentTreeNode.data.noteId !== loadedNote.noteId) {
+    if (!newTab && currentTreeNode && currentTreeNode.data.noteId !== noteId) {
         return;
     }
     
-    const loadPromise = loadNoteDetailToContext(ctx, loadedNote, notePath).then(() => {
+    const loadPromise = loadNoteDetailToContext(ctx, notePath).then(() => {
         if (activate) {
             return appContext.activateTab(ctx);
         }
@@ -201,9 +197,7 @@ ws.subscribeToOutsideSyncMessages(syncData => {
 });
 
 ws.subscribeToAllSyncMessages(syncData => {
-    for (const tc of appContext.getTabContexts()) {
-        tc.eventReceived('syncData', syncData);
-    }
+    appContext.trigger('syncData', {data: syncData});
 });
 
 $tabContentsContainer.on("dragover", e => e.preventDefault());
