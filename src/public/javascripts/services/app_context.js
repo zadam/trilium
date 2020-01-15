@@ -18,6 +18,8 @@ import LinkMapWidget from "../widgets/link_map.js";
 import SimilarNotesWidget from "../widgets/similar_notes.js";
 import WhatLinksHereWidget from "../widgets/what_links_here.js";
 import AttributesWidget from "../widgets/attributes.js";
+import TitleBarButtonsWidget from "../widgets/title_bar_buttons.js";
+import GlobalMenuWidget from "../widgets/global_menu.js";
 
 class AppContext {
     constructor() {
@@ -30,12 +32,21 @@ class AppContext {
     }
 
     showWidgets() {
-        const $leftPane = $("#left-pane");
+        const $tabPane = $("#tab-pane");
 
         this.tabRow = new TabRowWidget(this);
-        const contents = this.tabRow.render();
 
-        $("#global-menu-wrapper").after(contents);
+        const tabPaneWidgets = [
+            new GlobalMenuWidget(this),
+            this.tabRow,
+            new TitleBarButtonsWidget(this)
+        ];
+
+        for (const widget of tabPaneWidgets) {
+            widget.renderTo($tabPane);
+        }
+
+        const $leftPane = $("#left-pane");
 
         this.noteTreeWidget = new NoteTreeWidget(this);
 

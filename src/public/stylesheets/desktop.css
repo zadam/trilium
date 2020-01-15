@@ -272,8 +272,3 @@ body {
     text-overflow: ellipsis;
     white-space: nowrap;
 }
-
-#title-bar-buttons {
-    margin-top: 4px;
-    min-width: 100px;
-}

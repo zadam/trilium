@@ -422,21 +422,6 @@ button.icon-button {
     width: 15em;
 }
 
-#global-menu-wrapper {
-    height: 35px;
-    border-bottom: 1px solid var(--main-border-color);
-}
-
-#global-menu button {
-    margin-right: 10px;
-    height: 33px;
-    border-bottom: none;
-}
-
-#global-menu .dropdown-menu {
-    width: 20em;
-}
-
 .ck.ck-block-toolbar-button {
     transform: translateX(7px);
     color: var(--muted-text-color);

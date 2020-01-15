@@ -106,16 +106,6 @@ $(document).on("click", "button[data-help-page]", e => {
     window.open(wikiBaseUrl + $button.attr("data-help-page"), '_blank');
 });
 
-$("#logout-button").toggle(!utils.isElectron());
-
-$("#logout-button").on('click', () => {
-    const $logoutForm = $('<form action="logout" method="POST">')
-                            .append($(`<input type="hidden" name="_csrf" value="${glob.csrfToken}"/>`));
-
-    $("body").append($logoutForm);
-    $logoutForm.trigger('submit');
-});
-
 $("body").on("click", "a.external", function () {
     window.open($(this).attr("href"), '_blank');
 });
@@ -192,36 +182,6 @@ noteAutocompleteService.init();
 if (utils.isElectron()) {
     import("./services/spell_check.js").then(spellCheckService => spellCheckService.initSpellCheck());
 }
-
-optionService.waitForOptions().then(options => {
-    if (utils.isElectron() && !options.is('nativeTitleBarVisible')) {
-        $("#title-bar-buttons").show();
-
-        $("#minimize-btn").on('click', () => {
-            $("#minimize-btn").trigger('blur');
-            const {remote} = require('electron');
-            remote.BrowserWindow.getFocusedWindow().minimize();
-        });
-
-        $("#maximize-btn").on('click', () => {
-            $("#maximize-btn").trigger('blur');
-            const {remote} = require('electron');
-            const focusedWindow = remote.BrowserWindow.getFocusedWindow();
-
-            if (focusedWindow.isMaximized()) {
-                focusedWindow.unmaximize();
-            } else {
-                focusedWindow.maximize();
-            }
-        });
-
-        $("#close-btn").on('click', () => {
-            $("#close-btn").trigger('blur');
-            const {remote} = require('electron');
-            remote.BrowserWindow.getFocusedWindow().close();
-        });
-    }
-});
 
 const rightPane = $("#right-pane");
 

@@ -85,24 +85,6 @@ function registerEntrypoints() {
     $noteTabContainer.on("click", ".show-link-map-button", showLinkMapDialog);
     keyboardActionService.setGlobalActionHandler("ShowLinkMap", showLinkMapDialog);
 
-    const showOptionsDialog = () => import(OPTIONS).then(d => d.showDialog());
-    $("#options-button").on('click', showOptionsDialog);
-    keyboardActionService.setGlobalActionHandler("ShowOptions", showOptionsDialog);
-
-    const showHelpDialog = () => import(HELP).then(d => d.showDialog());
-    $("#show-help-button").on('click', showHelpDialog);
-    keyboardActionService.setGlobalActionHandler("ShowHelp", showHelpDialog);
-
-    const showSqlConsoleDialog = () => import(SQL_CONSOLE).then(d => d.showDialog());
-    $("#open-sql-console-button").on('click', showSqlConsoleDialog);
-    keyboardActionService.setGlobalActionHandler("ShowSQLConsole", showSqlConsoleDialog);
-
-    const showBackendLogDialog = () => import(BACKEND_LOG).then(d => d.showDialog());
-    $("#show-backend-log-button").on('click', showBackendLogDialog);
-    keyboardActionService.setGlobalActionHandler("ShowBackendLog", showBackendLogDialog);
-
-    $("#show-about-dialog-button").on('click', () => import(ABOUT).then(d => d.showDialog()));
-
     if (utils.isElectron()) {
         $("#history-navigation").show();
         $("#history-back-button").on('click', window.history.back);
@@ -112,37 +94,12 @@ function registerEntrypoints() {
         keyboardActionService.setGlobalActionHandler("ForwardInNoteHistory", window.history.forward);
     }
 
-    let zenModeActive = false;
-
-    // hide (toggle) everything except for the note content for zen mode
-    const toggleZenMode = () => {
-        if (!zenModeActive) {
-            $(".hide-in-zen-mode,.gutter").addClass("hidden-by-zen-mode");
-            $("#container").addClass("zen-mode");
-            zenModeActive = true;
-        }
-        else {
-            // not hiding / showing explicitly since element might be hidden also for other reasons
-            $(".hide-in-zen-mode,.gutter").removeClass("hidden-by-zen-mode");
-            $("#container").removeClass("zen-mode");
-            zenModeActive = false;
-        }
-    };
-
-    $("#toggle-zen-mode-button").on('click', toggleZenMode);
-    keyboardActionService.setGlobalActionHandler("ToggleZenMode", toggleZenMode);
-
     keyboardActionService.setGlobalActionHandler("InsertDateTimeToText", () => {
         const date = new Date();
         const dateString = utils.formatDateTime(date);
 
         linkService.addTextToEditor(dateString);
     });
-
-    $("#reload-frontend-button").on('click', utils.reloadApp);
-    keyboardActionService.setGlobalActionHandler("ReloadFrontendApp", utils.reloadApp);
-
-    $("#open-dev-tools-button").toggle(utils.isElectron());
 
     keyboardActionService.setGlobalActionHandler("PasteMarkdownIntoText", async () => {
         const dialog = await import("../dialogs/markdown_import.js");
@@ -185,26 +142,6 @@ function registerEntrypoints() {
                 findInPage.openFindWindow();
             }
         });
-    }
-
-    if (utils.isElectron()) {
-        const toggleFullscreen = () => {
-            const win = require('electron').remote.getCurrentWindow();
-
-            if (win.isFullScreenable()) {
-                win.setFullScreen(!win.isFullScreen());
-            }
-
-            return false;
-        };
-
-        $("#toggle-fullscreen-button").on('click', toggleFullscreen);
-
-        keyboardActionService.setGlobalActionHandler("ToggleFullscreen", toggleFullscreen);
-    }
-    else {
-        // outside of electron this is handled by the browser
-        $("#toggle-fullscreen-button").hide();
     }
 
     if (utils.isElectron()) {

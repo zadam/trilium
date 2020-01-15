@@ -37,7 +37,7 @@
     "electron-window-state": "5.0.3",
     "express": "4.17.1",
     "express-session": "1.17.0",
-    "file-type": "13.0.3",
+    "file-type": "13.1.0",
     "fs-extra": "8.1.0",
     "helmet": "3.21.2",
     "html": "1.0.0",
@@ -78,8 +78,8 @@
   },
   "devDependencies": {
     "electron": "6.0.12",
-    "electron-builder": "21.2.0",
-    "electron-packager": "14.1.1",
+    "electron-builder": "22.2.0",
+    "electron-packager": "14.2.0",
     "electron-rebuild": "1.8.8",
     "jsdoc": "3.6.3",
     "lorem-ipsum": "2.0.3"
