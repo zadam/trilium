@@ -302,13 +302,13 @@ export default class TabRowWidget extends BasicWidget {
         return Array.prototype.slice.call(this.$widget.find('.note-tab'));
     }
 
-    get tabContentEl() {
-        return this.$widget.find('.note-tab-row-content')[0];
+    get $tabContent() {
+        return this.$widget.find('.note-tab-row-content');
     }
 
     get tabContentWidths() {
         const numberOfTabs = this.tabEls.length;
-        const tabsContentWidth = this.tabContentEl.clientWidth - NEW_TAB_WIDTH - MIN_FILLER_WIDTH;
+        const tabsContentWidth = this.$tabContent[0].clientWidth - NEW_TAB_WIDTH - MIN_FILLER_WIDTH;
         const targetWidth = tabsContentWidth / numberOfTabs;
         const clampedTargetWidth = Math.max(TAB_CONTENT_MIN_WIDTH, Math.min(TAB_CONTENT_MAX_WIDTH, targetWidth));
         const flooredClampedTargetWidth = Math.floor(clampedTargetWidth);
@@ -324,8 +324,8 @@ export default class TabRowWidget extends BasicWidget {
             if (extraWidthRemaining > 0) extraWidthRemaining -= 1;
         }
 
-        if (this.fillerEl) {
-            this.fillerEl.style.width = (extraWidthRemaining + MIN_FILLER_WIDTH) + "px";
+        if (this.$filler) {
+            this.$filler.css("width", (extraWidthRemaining + MIN_FILLER_WIDTH) + "px");
         }
 
         return widths;
@@ -386,7 +386,7 @@ export default class TabRowWidget extends BasicWidget {
         tabEl.classList.add('note-tab-was-just-added');
         setTimeout(() => tabEl.classList.remove('note-tab-was-just-added'), 500);
 
-        this.newTabEl.before(tabEl);
+        this.$newTab.before(tabEl);
         this.setVisibility();
         this.setTabCloseEventListener(tabEl);
         this.updateTab(tabEl, {title: 'New tab'});
@@ -535,7 +535,7 @@ export default class TabRowWidget extends BasicWidget {
             const draggabilly = new Draggabilly(tabEl, {
                 axis: 'x',
                 handle: '.note-tab-drag-handle',
-                containment: this.tabContentEl
+                containment: this.$tabContent[0]
             });
 
             this.draggabillies.push(draggabilly);
@@ -597,7 +597,7 @@ export default class TabRowWidget extends BasicWidget {
         if (destinationIndex < originIndex) {
             tabEl.parentNode.insertBefore(tabEl, this.tabEls[destinationIndex]);
         } else {
-            const beforeEl = this.tabEls[destinationIndex + 1] || this.newTabEl;
+            const beforeEl = this.tabEls[destinationIndex + 1] || this.$newTab;
 
             tabEl.parentNode.insertBefore(tabEl, beforeEl);
         }
@@ -606,21 +606,17 @@ export default class TabRowWidget extends BasicWidget {
     }
 
     setupNewButton() {
-        const div = document.createElement('div');
-        div.innerHTML = NEW_TAB_BUTTON_TPL;
-        this.newTabEl = div.firstElementChild;
+        this.$newTab = $(NEW_TAB_BUTTON_TPL);
 
-        this.tabContentEl.appendChild(this.newTabEl);
+        this.$tabContent.append(this.$newTab);
 
-        this.newTabEl.addEventListener('click', _ => this.trigger('newTab'));
+        this.$newTab.on('click', _ => this.trigger('newTab'));
     }
 
     setupFiller() {
-        const div = document.createElement('div');
-        div.innerHTML = FILLER_TPL;
-        this.fillerEl = div.firstElementChild;
+        this.$filler = $(FILLER_TPL);
 
-        this.tabContentEl.appendChild(this.fillerEl);
+        this.$tabContent.append(this.$filler);
     }
 
     closest(value, array) {
