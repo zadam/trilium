@@ -44,10 +44,10 @@ class Attributes extends Component {
 
     activeNoteChangedListener() {
         if (utils.isDesktop()) {
-            this.attributes.refreshAttributes();
+            this.refreshAttributes();
         } else {
             // mobile usually doesn't need attributes so we just invalidate
-            this.attributes.invalidateAttributes();
+            this.invalidateAttributes();
         }
     }
 }

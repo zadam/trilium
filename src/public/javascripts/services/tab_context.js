@@ -96,8 +96,6 @@ class TabContext extends Component {
                 await this.renderComponent(); // render empty page
             }
         }
-
-        this.setCurrentNotePathToHash();
     }
 
     async renderComponent(disableAutoBook = false) {

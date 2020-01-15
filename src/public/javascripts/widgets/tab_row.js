@@ -233,14 +233,12 @@ const TAB_ROW_TPL = `
 
 export default class TabRowWidget extends BasicWidget {
     doRender() {
-        const $widget = $(TAB_ROW_TPL);
-
-        this.el = $widget[0];
+        this.$widget = $(TAB_ROW_TPL);
 
         this.draggabillies = [];
         this.eventListeners = {};
 
-        this.setupStyleEl();
+        this.setupStyle();
         this.setupEvents();
         this.setupDraggabilly();
         this.setupNewButton();
@@ -248,7 +246,7 @@ export default class TabRowWidget extends BasicWidget {
         this.layoutTabs();
         this.setVisibility();
 
-        $(this.el).on('contextmenu', '.note-tab', e => {
+        this.$widget.on('contextmenu', '.note-tab', e => {
             e.preventDefault();
 
             const tab = $(e.target).closest(".note-tab");
@@ -270,12 +268,12 @@ export default class TabRowWidget extends BasicWidget {
             });
         });
 
-        return $widget;
+        return this.$widget;
     }
 
-    setupStyleEl() {
-        this.styleEl = document.createElement('style');
-        this.el.appendChild(this.styleEl);
+    setupStyle() {
+        this.$style = $("<style>");
+        this.$widget.append(this.$style);
     }
 
     setupEvents() {
@@ -286,7 +284,7 @@ export default class TabRowWidget extends BasicWidget {
 
         // ResizeObserver exists only in FF69
         if (typeof ResizeObserver !== "undefined") {
-            new ResizeObserver(resizeListener).observe(this.el);
+            new ResizeObserver(resizeListener).observe(this.$widget[0]);
         }
         else {
             // for older firefox
@@ -297,15 +295,15 @@ export default class TabRowWidget extends BasicWidget {
     }
 
     setVisibility() {
-        this.el.style.display = "block";
+        this.$widget.show();
     }
 
     get tabEls() {
-        return Array.prototype.slice.call(this.el.querySelectorAll('.note-tab'));
+        return Array.prototype.slice.call(this.$widget.find('.note-tab'));
     }
 
     get tabContentEl() {
-        return this.el.querySelector('.note-tab-row-content');
+        return this.$widget.find('.note-tab-row-content')[0];
     }
 
     get tabContentWidths() {
@@ -376,7 +374,7 @@ export default class TabRowWidget extends BasicWidget {
         styleHTML += `.note-new-tab { transform: translate3d(${ newTabPosition }px, 0, 0) } `;
         styleHTML += `.tab-row-filler { transform: translate3d(${ fillerPosition }px, 0, 0) } `;
 
-        this.styleEl.innerHTML = styleHTML;
+        this.$style.html(styleHTML);
     }
 
     addTab(tabId) {
@@ -413,7 +411,7 @@ export default class TabRowWidget extends BasicWidget {
     }
 
     get activeTabEl() {
-        return this.el.querySelector('.note-tab[active]');
+        return this.$widget.find('.note-tab[active]')[0];
     }
 
     get previousTabEl() {
@@ -512,7 +510,7 @@ export default class TabRowWidget extends BasicWidget {
 
         if (this.isDragging) {
             this.isDragging = false;
-            this.el.classList.remove('note-tab-row-is-sorting');
+            this.$widget.removeClass('note-tab-row-is-sorting');
             this.draggabillyDragging.element.classList.remove('note-tab-is-dragging');
             this.draggabillyDragging.element.style.transform = '';
             this.draggabillyDragging.dragEnd();
@@ -542,7 +540,7 @@ export default class TabRowWidget extends BasicWidget {
                 this.isDragging = true;
                 this.draggabillyDragging = draggabilly;
                 tabEl.classList.add('note-tab-is-dragging');
-                this.el.classList.add('note-tab-row-is-sorting');
+                this.$widget.addClass('note-tab-row-is-sorting');
             });
 
             draggabilly.on('dragEnd', _ => {
@@ -557,7 +555,7 @@ export default class TabRowWidget extends BasicWidget {
 
                     requestAnimationFrame(_ => {
                         tabEl.classList.remove('note-tab-is-dragging');
-                        this.el.classList.remove('note-tab-row-is-sorting');
+                        this.$widget.removeClass('note-tab-row-is-sorting');
 
                         tabEl.classList.add('note-tab-was-just-dragged');
 
