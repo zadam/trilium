@@ -109,7 +109,7 @@ class TabContext extends Component {
     }
 
     isActive() {
-        return this.$tab[0] === this.tabRow.activeTabEl;
+        return this.tabId === this.tabRow.activeTabId;
     }
 
     setupClasses() {
@@ -213,7 +213,7 @@ class TabContext extends Component {
         return {
             tabId: this.tabId,
             notePath: this.notePath,
-            active: this.tabRow.activeTabEl === this.$tab[0]
+            active: this.tabRow.activeTabId === this.tabId
         }
     }
 

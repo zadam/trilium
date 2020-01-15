@@ -161,13 +161,7 @@ class AppContext {
 
     /** @returns {TabContext} */
     getActiveTabContext() {
-        const activeTabEl = this.tabRow.activeTabEl;
-
-        if (!activeTabEl) {
-            return null;
-        }
-
-        const tabId = activeTabEl.getAttribute('data-tab-id');
+        const tabId = this.tabRow.activeTabId;
 
         return this.tabContexts.find(tc => tc.tabId === tabId);
     }
@@ -294,7 +288,7 @@ class AppContext {
     async filterTabs(noteId) {
         for (const tc of this.tabContexts) {
             if (tc.notePath && !tc.notePath.split("/").includes(noteId)) {
-                await this.tabRow.removeTab(tc.$tab[0]);
+                this.tabRow.removeTab(tc.tabId);
             }
         }
 
@@ -349,15 +343,11 @@ class AppContext {
         this.openEmptyTab();
     }
 
-    async activeTabChangedListener({tabEl}) {
-        const tabId = tabEl.getAttribute('data-tab-id');
-
+    async activeTabChangedListener({tabId}) {
         await this.showTab(tabId);
     }
 
-    async tabRemoveListener({tabEl}) {
-        const tabId = tabEl.getAttribute('data-tab-id');
-
+    async tabRemoveListener({tabId}) {
         this.tabContexts.filter(nc => nc.tabId === tabId)
             .forEach(tc => tc.remove());
 
@@ -383,7 +373,7 @@ keyboardActionService.setGlobalActionHandler('OpenNewTab', () => {
 
 keyboardActionService.setGlobalActionHandler('CloseActiveTab', () => {
     if (this.tabRow.activeTabEl) {
-        this.tabRow.removeTab(this.tabRow.activeTabEl);
+        this.tabRow.removeTab(this.tabRow.activeTabId);
     }
 });
 

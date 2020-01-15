@@ -399,15 +399,21 @@ export default class TabRowWidget extends BasicWidget {
 
     setTabCloseEventListener(tabEl) {
         tabEl.querySelector('.note-tab-close')
-            .addEventListener('click', _ => this.removeTab(tabEl));
+            .addEventListener('click', _ => this.removeTab(tabEl.getAttribute('data-tab-id')));
 
         tabEl.addEventListener('mousedown', e => {
             if (e.which === 2) {
-                this.removeTab(tabEl);
+                this.removeTab(tabEl.getAttribute('data-tab-id'));
 
                 return true; // event has been handled
             }
         });
+    }
+
+    get activeTabId() {
+        const tabEl = this.activeTabEl;
+
+        return tabEl ? tabEl.getAttribute('data-tab-id') : null;
     }
 
     get activeTabEl() {
@@ -458,40 +464,42 @@ export default class TabRowWidget extends BasicWidget {
         return !!this.activeTabEl;
     }
 
-    async activateTab(tabEl) {
+    activateTab(tabEl) {
         const activeTabEl = this.activeTabEl;
         if (activeTabEl === tabEl) return;
         if (activeTabEl) activeTabEl.removeAttribute('active');
         tabEl.setAttribute('active', '');
-        await this.trigger('activeTabChanged', { tabEl });
+        this.trigger('activeTabChanged', { tabId: tabEl.getAttribute('data-tab-id') });
     }
 
-    async removeTab(tabEl) {
+    removeTab(tabId) {
+        const tabEl = this.$widget.find(`[data-tab-id='${tabId}']`)[0];
+
         if (tabEl === this.activeTabEl) {
             if (tabEl.nextElementSibling && tabEl.nextElementSibling.classList.contains("note-tab")) {
-                await this.activateTab(tabEl.nextElementSibling)
+                this.activateTab(tabEl.nextElementSibling)
             } else if (tabEl.previousElementSibling && tabEl.previousElementSibling.classList.contains("note-tab")) {
-                await this.activateTab(tabEl.previousElementSibling)
+                this.activateTab(tabEl.previousElementSibling)
             }
         }
         tabEl.parentNode.removeChild(tabEl);
-        await this.trigger('tabRemove', { tabEl });
+        this.trigger('tabRemove', { tabId: tabEl.getAttribute('data-tab-id') });
         this.cleanUpPreviouslyDraggedTabs();
         this.layoutTabs();
         this.setupDraggabilly();
         this.setVisibility();
     }
 
-    async removeAllTabs() {
+    removeAllTabs() {
         for (const tabEl of this.tabEls) {
-            await this.removeTab(tabEl);
+            this.removeTab(tabEl.getAttribute('data-tab-id'));
         }
     }
 
-    async removeAllTabsExceptForThis(remainingTabEl) {
+    removeAllTabsExceptForThis(remainingTabEl) {
         for (const tabEl of this.tabEls) {
             if (remainingTabEl !== tabEl) {
-                await this.removeTab(tabEl);
+                this.removeTab(tabEl.getAttribute('data-tab-id'));
             }
         }
     }
@@ -585,7 +593,7 @@ export default class TabRowWidget extends BasicWidget {
         })
     }
 
-    async animateTabMove(tabEl, originIndex, destinationIndex) {
+    animateTabMove(tabEl, originIndex, destinationIndex) {
         if (destinationIndex < originIndex) {
             tabEl.parentNode.insertBefore(tabEl, this.tabEls[destinationIndex]);
         } else {
@@ -593,7 +601,7 @@ export default class TabRowWidget extends BasicWidget {
 
             tabEl.parentNode.insertBefore(tabEl, beforeEl);
         }
-        await this.trigger('tabReorder', { tabEl, originIndex, destinationIndex });
+        this.trigger('tabReorder');
         this.layoutTabs();
     }
 
