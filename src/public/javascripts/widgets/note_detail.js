@@ -92,7 +92,10 @@ export default class NoteDetailWidget extends TabAwareWidget {
         if (!(this.type in this.components)) {
             const clazz = await import(componentClasses[this.type]);
 
-            this.components[this.type] = new clazz.default(this, this.$widget);
+            this.components[this.type] = new clazz.default(this);
+            this.children.push(this.components[this.type]);
+
+            this.$widget.append(this.components[this.type].render());
         }
     }
 

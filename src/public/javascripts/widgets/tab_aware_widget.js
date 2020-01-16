@@ -1,11 +1,11 @@
 import BasicWidget from "./basic_widget.js";
 
 export default class TabAwareWidget extends BasicWidget {
-    constructor(appContext) {
+    constructor(appContext, tabContext = null) {
         super(appContext);
 
         /** @var {TabContext} */
-        this.tabContext = null;
+        this.tabContext = tabContext;
     }
 
     // to override

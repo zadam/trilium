@@ -28,21 +28,8 @@ class TabContext extends Component {
         this.tabRow = tabRow;
         this.tabId = state.tabId || utils.randomString(4);
         this.$tab = $(this.tabRow.addTab(this.tabId));
-        this.initialized = false;
         this.state = state;
-    }
 
-    async initTabContent() {
-        if (this.initialized) {
-            return;
-        }
-
-        this.initialized = true;
-
-        this.$tabContent = $("<div>"); // FIXME
-
-        this.noteChangeDisabled = false;
-        this.isNoteChanged = false;
         this.attributes = new Attributes(this.appContext, this);
 
         this.children.push(this.attributes);
@@ -77,35 +64,15 @@ class TabContext extends Component {
 
         bundleService.executeRelationBundles(this.note, 'runOnNoteView', this);
 
-        // after loading new note make sure editor is scrolled to the top
-        // FIXME
-        //this.getComponent().scrollToTop();
-
         appContext.trigger('activeNoteChanged');
     }
 
     async show() {
-        if (!this.initialized) {
-            await this.initTabContent();
-
-            if (this.notePath) {
-                await this.setNote(this.notePath);
-            }
-            else {
-                // FIXME
-                await this.renderComponent(); // render empty page
-            }
-        }
-    }
-
-    async renderComponent(disableAutoBook = false) {
-        // FIXME
+        await this.setNote(this.notePath);
     }
 
     hide() {
-        if (this.initialized) {
-            this.$tabContent.hide();
-        }
+        // FIXME
     }
 
     isActive() {
@@ -122,14 +89,6 @@ class TabContext extends Component {
         this.$tab.addClass(this.note.cssClass);
         this.$tab.addClass(utils.getNoteTypeClass(this.note.type));
         this.$tab.addClass(utils.getMimeTypeClass(this.note.mime));
-    }
-
-    getComponent() {
-        // FIXME
-    }
-
-    getComponentType(disableAutoBook) {
-    // FIXME
     }
 
     async activate() {
@@ -173,35 +132,6 @@ class TabContext extends Component {
             await this.saveNote();
 
             appContext.refreshTabs(this.tabId, this.note.noteId);
-        }
-    }
-
-    noteChanged() {
-        if (this.noteChangeDisabled) {
-            return;
-        }
-
-        this.isNoteChanged = true;
-
-        // FIXME: trigger noteChanged event
-        //this.$savedIndicator.fadeOut();
-    }
-
-    async remove() {
-        if (this.$tabContent) {
-            // sometimes there are orphan autocompletes after closing the tab
-            this.cleanup();
-
-            await this.saveNoteIfChanged();
-            this.$tabContent.remove();
-        }
-    }
-
-    cleanup() {
-        if (this.$tabContent && utils.isDesktop()) {
-            this.$tabContent.find('.aa-input').autocomplete('close');
-
-            $('.note-tooltip').remove();
         }
     }
 

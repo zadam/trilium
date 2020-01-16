@@ -2,6 +2,7 @@ import libraryLoader from "../../services/library_loader.js";
 import treeService from '../../services/tree.js';
 import noteAutocompleteService from '../../services/note_autocomplete.js';
 import mimeTypesService from '../../services/mime_types.js';
+import TabAwareWidget from "../tab_aware_widget.js";
 
 const ENABLE_INSPECTOR = false;
 
@@ -71,19 +72,14 @@ const TPL = `
 </div>
 `;
 
-class NoteDetailText {
-    /**
-     * @param {TabContext} ctx
-     */
-    constructor(ctx, $parent) {
-        this.$component = $(TPL);
-        $parent.append(this.$component);
-        this.ctx = ctx;
-        this.$editorEl = this.$component.find('.note-detail-text-editor');
+class NoteDetailText extends TabAwareWidget {
+    render() {
+        this.$widget = $(TPL);
+        this.$editor = this.$widget.find('.note-detail-text-editor');
         this.textEditorPromise = null;
         this.textEditor = null;
 
-        this.$component.on("dblclick", "img", e => {
+        this.$widget.on("dblclick", "img", e => {
             const $img = $(e.target);
             const src = $img.prop("src");
 
@@ -98,22 +94,24 @@ class NoteDetailText {
                 window.open(src, '_blank');
             }
         });
-    }
 
-    async render() {
         if (!this.textEditorPromise) {
             this.textEditorPromise = this.initEditor();
         }
 
+        return this.$widget;
+    }
+
+    async activeNoteChanged() {
         await this.textEditorPromise;
 
         // lazy loading above can take time and tab might have been already switched to another note
-        if (this.ctx.note && this.ctx.note.type === 'text') {
+        if (this.tabContext.note && this.tabContext.note.type === 'text') {
             this.textEditor.isReadOnly = await this.isReadOnly();
 
-            this.$component.show();
+            this.$widget.show();
 
-            this.textEditor.setData(this.ctx.note.content);
+            this.textEditor.setData(this.tabContext.note.content);
         }
     }
 
@@ -132,10 +130,10 @@ class NoteDetailText {
 
         // CKEditor since version 12 needs the element to be visible before initialization. At the same time
         // we want to avoid flicker - i.e. show editor only once everything is ready. That's why we have separate
-        // display of $component in both branches.
-        this.$component.show();
+        // display of $widget in both branches.
+        this.$widget.show();
 
-        const textEditorInstance = await BalloonEditor.create(this.$editorEl[0], {
+        const textEditorInstance = await BalloonEditor.create(this.$editor[0], {
             placeholder: "Type the content of your note here ...",
             mention: mentionSetup,
             codeBlock: {
@@ -150,7 +148,7 @@ class NoteDetailText {
 
         this.textEditor = textEditorInstance;
 
-        this.onNoteChange(() => this.ctx.noteChanged());
+        //this.onNoteChange(() => this.tabContext.noteChanged());
     }
 
     getContent() {
@@ -170,13 +168,13 @@ class NoteDetailText {
     }
 
     async isReadOnly() {
-        const attributes = await this.ctx.attributes.getAttributes();
+        const attributes = await this.tabContext.attributes.getAttributes();
 
         return attributes.some(attr => attr.type === 'label' && attr.name === 'readOnly');
     }
 
     focus() {
-        this.$editorEl.trigger('focus');
+        this.$editor.trigger('focus');
     }
 
     show() {}
@@ -196,8 +194,8 @@ class NoteDetailText {
     }
 
     scrollToTop() {
-        this.$component.scrollTop(0);
+        this.$widget.scrollTop(0);
     }
 }
 
-export default NoteDetailText
+export default NoteDetailText;
