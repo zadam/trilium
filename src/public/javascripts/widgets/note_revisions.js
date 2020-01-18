@@ -26,7 +26,7 @@ class NoteRevisionsWidget extends StandardWidget {
         return [$showFullButton];
     }
 
-    async activeTabChanged() {
+    async refresh() {
         const note = this.tabContext.note;
         const revisionItems = await server.get(`notes/${note.noteId}/revisions`);
 
@@ -57,7 +57,7 @@ class NoteRevisionsWidget extends StandardWidget {
 
     syncDataListener({data}) {
         if (data.find(sd => sd.entityName === 'note_revisions' && sd.noteId === this.tabContext.note.noteId)) {
-            this.activeTabChanged();
+            this.refresh();
         }
     }
 }

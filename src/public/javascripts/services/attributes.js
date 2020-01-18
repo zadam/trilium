@@ -42,7 +42,7 @@ class Attributes extends Component {
         }
     }
 
-    activeNoteChangedListener() {
+    tabNoteSwitchedListener() {
         if (utils.isDesktop()) {
             this.refreshAttributes();
         } else {

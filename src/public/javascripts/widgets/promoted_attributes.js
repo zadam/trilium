@@ -35,7 +35,7 @@ export default class PromotedAttributesWidget extends TabAwareWidget {
         return this.$widget;
     }
 
-    async activeTabChanged() {
+    async refresh() {
         this.$container.empty();
 
         const attributes = await this.tabContext.attributes.getAttributes();

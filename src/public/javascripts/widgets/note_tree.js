@@ -403,7 +403,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
     collapseTreeListener() { this.collapseTree(); }
 
-    async activeTabChanged() {
+    async refresh() {
         const oldActiveNode = this.getActiveNode();
 
         if (oldActiveNode) {

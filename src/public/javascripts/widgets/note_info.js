@@ -31,7 +31,7 @@ class NoteInfoWidget extends StandardWidget {
         this.$body.html(TPL);
     }
 
-    activeTabChanged() {
+    refresh() {
         const $noteId = this.$body.find(".note-info-note-id");
         const $dateCreated = this.$body.find(".note-info-date-created");
         const $dateModified = this.$body.find(".note-info-date-modified");
@@ -58,7 +58,7 @@ class NoteInfoWidget extends StandardWidget {
 
     syncDataListener({data}) {
         if (data.find(sd => sd.entityName === 'notes' && sd.entityId === this.tabContext.note.noteId)) {
-            this.activeTabChanged();
+            this.refresh();
         }
     }
 }

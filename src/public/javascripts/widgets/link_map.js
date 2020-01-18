@@ -28,7 +28,7 @@ class LinkMapWidget extends StandardWidget {
         return [$showFullButton];
     }
 
-    async activeTabChanged() {
+    async refresh() {
         this.$body.css('opacity', 0);
         this.$body.html(TPL);
 

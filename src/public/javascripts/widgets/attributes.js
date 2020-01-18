@@ -23,8 +23,8 @@ class AttributesWidget extends StandardWidget {
         return [$showFullButton];
     }
 
-    async activeTabChanged() {
-        const attributes = await this.tabContext.attributes.getAttributes();
+    async refresh() {
+        const attributes = await this.tabContext.attributes.getAttributes();console.log("attributes", attributes);
         const ownedAttributes = attributes.filter(attr => attr.noteId === this.tabContext.note.noteId);
 
         if (attributes.length === 0) {
