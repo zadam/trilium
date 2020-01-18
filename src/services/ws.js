@@ -71,7 +71,7 @@ function sendMessageToAllClients(message) {
     }
 }
 
-async function fillInAdditionalProperties(sync) {throw new Error("AAA");
+async function fillInAdditionalProperties(sync) {
     // fill in some extra data needed by the frontend
     if (sync.entityName === 'attributes') {
         sync.noteId = await sql.getValue(`SELECT noteId

@@ -40,7 +40,9 @@ async function getRootCalendarNote() {
             parentNoteId: 'root',
             title: 'Calendar',
             target: 'into',
-            isProtected: false
+            isProtected: false,
+            type: 'text',
+            content: ''
         })).note;
 
         await attributeService.createLabel(rootNote.noteId, CALENDAR_ROOT_LABEL);
