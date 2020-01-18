@@ -277,7 +277,7 @@ async function saveLinks(note, content) {
     }
 
     const foundLinks = [];
-console.log("Scanning", content);
+
     if (note.type === 'text') {
         content = findImageLinks(content, foundLinks);
         content = findInternalLinks(content, foundLinks);
