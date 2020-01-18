@@ -241,6 +241,13 @@ function getUrlForDownload(url) {
     }
 }
 
+function copySelectionToClipboard() {
+    const text = window.getSelection().toString()
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(text)
+    }
+}
+
 export default {
     reloadApp,
     parseDate,
@@ -273,5 +280,6 @@ export default {
     isHtmlEmpty,
     clearBrowserCache,
     getUrlForDownload,
-    normalizeShortcut
+    normalizeShortcut,
+    copySelectionToClipboard
 };

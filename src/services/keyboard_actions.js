@@ -306,6 +306,10 @@ const DEFAULT_KEYBOARD_ACTIONS = [
     {
         actionName: "ZoomIn",
         defaultShortcuts: ["CommandOrControl+="]
+    },
+    {
+        actionName: "CopyWithoutFormating",
+        defaultShortcuts: ["Alt+Ctrl+C"]
     }
 ];
 
