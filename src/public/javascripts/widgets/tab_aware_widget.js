@@ -1,11 +1,11 @@
 import BasicWidget from "./basic_widget.js";
 
 export default class TabAwareWidget extends BasicWidget {
-    setTabContext(tabContext) {
+    setTabContextListener({tabContext}) {
         /** @var {TabContext} */
         this.tabContext = tabContext;
 
-        this.eventReceived('tabNoteSwitched', {tabId: this.tabContext.tabId});
+        this.noteSwitched();
     }
 
     tabNoteSwitchedListener({tabId}) {
@@ -14,10 +14,16 @@ export default class TabAwareWidget extends BasicWidget {
         }
     }
 
-    noteSwitched() {}
+    noteSwitched() {
+        this.refresh();
+    }
 
     // to override
-    activeTabChanged() {}
+    activeTabChanged() {
+        this.refresh();
+    }
+
+    refresh() {}
 
     activeTabChangedListener() {
         this.tabContext = this.appContext.getActiveTabContext();

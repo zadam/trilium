@@ -130,7 +130,7 @@ class NoteDetailText extends TabAwareWidget {
         }
     }
 
-    async noteSwitched() {
+    async refresh() {
         // lazy loading above can take time and tab might have been already switched to another note
         if (this.tabContext.note && this.tabContext.note.type === 'text') {
             this.textEditor.isReadOnly = await this.isReadOnly();

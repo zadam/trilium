@@ -101,9 +101,7 @@ export default class NoteDetailWidget extends TabAwareWidget {
 
         this.components[this.type].renderTo(this.$widget);
 
-        this.components[this.type].setTabContext(this.tabContext);
-
-        this.components[this.type].eventReceived('tabNoteSwitched', {tabId: this.tabContext.tabId});
+        this.components[this.type].eventReceived('setTabContext', {tabContext: this.tabContext});
     }
 
     getComponentType(disableAutoBook) {

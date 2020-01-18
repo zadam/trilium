@@ -14,7 +14,9 @@ export default class TabCachingWidget extends TabAwareWidget {
         this.$parent = $parent;
     }
 
-    activeTabChanged() {
+    activeTabChangedListener() {
+        super.activeTabChangedListener();
+
         for (const widget of Object.values(this.widgets)) {
             widget.toggle(false);
         }
@@ -26,9 +28,11 @@ export default class TabCachingWidget extends TabAwareWidget {
             this.children.push(widget);
             widget.renderTo(this.$parent);
 
-            widget.setTabContext(this.tabContext);
+            widget.eventReceived('setTabContext', {tabContext: this.tabContext});
         }
 
         widget.toggle(true);
+
+        return false; // stop propagation to children
     }
 }

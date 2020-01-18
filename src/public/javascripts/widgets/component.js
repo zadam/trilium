@@ -15,12 +15,16 @@ export default class Component {
 
         const fun = this[name + 'Listener'];
 
+        let propagateToChildren = true;
+
         if (typeof fun === 'function') {
-            await fun.call(this, data);
+            propagateToChildren = await fun.call(this, data) !== false;
         }
 
-        for (const child of this.children) {
-            child.eventReceived(name, data);
+        if (propagateToChildren) {
+            for (const child of this.children) {
+                child.eventReceived(name, data);
+            }
         }
     }
 

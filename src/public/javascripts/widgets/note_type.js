@@ -38,7 +38,7 @@ export default class NoteTypeWidget extends TabAwareWidget {
     doRender() {
         const $widget = $(TPL);
 
-        $widget.find('.note-type').on('show.bs.dropdown', () => this.renderDropdown());
+        $widget.on('show.bs.dropdown', () => this.renderDropdown());
 
         this.$noteTypeDropdown = $widget.find(".note-type-dropdown");
         this.$noteTypeButton = $widget.find(".note-type-button");
@@ -49,22 +49,18 @@ export default class NoteTypeWidget extends TabAwareWidget {
         return $widget;
     }
 
-    async update() {
+    async refresh() {
         this.$noteTypeButton.prop("disabled",
-            () => ["file", "image", "search"].includes(this.ctx.note.type));
+            () => ["file", "image", "search"].includes(this.tabContext.note.type));
 
-        this.$noteTypeDesc.text(await this.findTypeTitle(this.ctx.note.type, this.ctx.note.mime));
+        this.$noteTypeDesc.text(await this.findTypeTitle(this.tabContext.note.type, this.tabContext.note.mime));
 
-        this.$executeScriptButton.toggle(this.ctx.note.mime.startsWith('application/javascript'));
-        this.$renderButton.toggle(this.ctx.note.type === 'render');
-    }
-
-    async activeTabChanged() {
-        this.update();
+        this.$executeScriptButton.toggle(this.tabContext.note.mime.startsWith('application/javascript'));
+        this.$renderButton.toggle(this.tabContext.note.type === 'render');
     }
 
     /** actual body is rendered lazily on note-type button click */
-    async renderDropdown() {
+    async renderDropdown() {console.log("AAAAAAAAAAAAAAAAAAA");
         this.$noteTypeDropdown.empty();
 
         for (const noteType of NOTE_TYPES.filter(nt => nt.selectable)) {
@@ -79,7 +75,7 @@ export default class NoteTypeWidget extends TabAwareWidget {
                     this.save(noteType.type, noteType.mime);
                 });
 
-            if (this.ctx.note.type === noteType.type) {
+            if (this.tabContext.note.type === noteType.type) {
                 $typeLink.addClass("selected");
             }
 
@@ -105,7 +101,7 @@ export default class NoteTypeWidget extends TabAwareWidget {
                     this.save('code', $link.attr('data-mime-type'))
                 });
 
-            if (this.ctx.note.type === 'code' && this.ctx.note.mime === mimeType.mime) {
+            if (this.tabContext.note.type === 'code' && this.tabContext.note.mime === mimeType.mime) {
                 $mimeLink.addClass("selected");
 
                 this.$noteTypeDesc.text(mimeType.title);
@@ -130,11 +126,11 @@ export default class NoteTypeWidget extends TabAwareWidget {
     }
 
     async save(type, mime) {
-        if (type !== this.ctx.note.type && !await this.confirmChangeIfContent()) {
+        if (type !== this.tabContext.note.type && !await this.confirmChangeIfContent()) {
             return;
         }
 
-        await server.put('notes/' + this.ctx.note.noteId
+        await server.put('notes/' + this.tabContext.note.noteId
             + '/type/' + encodeURIComponent(type)
             + '/mime/' + encodeURIComponent(mime));
 
@@ -147,7 +143,7 @@ export default class NoteTypeWidget extends TabAwareWidget {
     }
 
     async confirmChangeIfContent() {
-        if (!this.ctx.getComponent().getContent()) {
+        if (!this.tabContext.getComponent().getContent()) {
             return true;
         }
 

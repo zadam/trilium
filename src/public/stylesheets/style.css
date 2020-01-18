@@ -404,10 +404,6 @@ div.ui-tooltip {
     opacity: 0.4;
 }
 
-.note-path-list a.current {
-    font-weight: bold;
-}
-
 button.icon-button {
     font-size: 1.5em;
     padding: 2px;
