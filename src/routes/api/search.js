@@ -29,8 +29,12 @@ async function searchFromNote(req) {
         return [404, `Note ${req.params.noteId} has not been found.`];
     }
 
+    if (note.isDeleted) {
+        return [400, `Note ${req.params.noteId} is deleted.`];
+    }
+
     if (note.type !== 'search') {
-        return [400, '`Note ${req.params.noteId} is not search note.`']
+        return [400, `Note ${req.params.noteId} is not search note.`]
     }
 
     const json = await note.getJsonContent();
@@ -41,17 +45,27 @@ async function searchFromNote(req) {
 
     let noteIds;
 
-    if (json.searchString.startsWith('=')) {
-        const relationName = json.searchString.substr(1).trim();
+    try {
+        if (json.searchString.startsWith('=')) {
+            const relationName = json.searchString.substr(1).trim();
 
-        noteIds = await searchFromRelation(note, relationName);
+            noteIds = await searchFromRelation(note, relationName);
+        } else {
+            noteIds = await searchService.searchForNoteIds(json.searchString);
+        }
     }
-    else {
-        noteIds = await searchService.searchForNoteIds(json.searchString);
+    catch (e) {
+        log.error(`Search failed for note ${note.noteId}: ` + e.message + ": " + e.stack);
+
+        throw new Error("Search failed, see logs for details.");
     }
 
     // we won't return search note's own noteId
     noteIds = noteIds.filter(noteId => noteId !== note.noteId);
+
+    if (noteIds.length > 200) {
+        noteIds = noteIds.slice(0, 200);
+    }
 
     return noteIds.map(noteCacheService.getNotePath).filter(res => !!res);
 }
