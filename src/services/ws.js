@@ -71,22 +71,36 @@ function sendMessageToAllClients(message) {
     }
 }
 
+async function fillInAdditionalProperties(sync) {
+    // fill in some extra data needed by the frontend
+    if (sync.entityName === 'attributes') {
+        sync.noteId = await sql.getValue(`SELECT noteId
+                                          FROM attributes
+                                          WHERE attributeId = ?`, [sync.entityId]);
+    } else if (sync.entityName === 'note_revisions') {
+        sync.noteId = await sql.getValue(`SELECT noteId
+                                          FROM note_revisions
+                                          WHERE noteRevisionId = ?`, [sync.entityId]);
+    } else if (sync.entityName === 'branches') {
+        const {noteId, parentNoteId} = await sql.getRow(`SELECT noteId, parentNoteId
+                                                         FROM branches
+                                                         WHERE branchId = ?`, [sync.entityId]);
+
+        sync.noteId = noteId;
+        sync.parentNoteId = parentNoteId;
+    }
+}
+
 async function sendPing(client) {
     const syncData = require('./sync_table').getEntitySyncsNewerThan(lastAcceptedSyncIds[client.id]);
 
     for (const sync of syncData) {
-        // fill in some extra data needed by the frontend
-        if (sync.entityName === 'attributes') {
-            sync.noteId = await sql.getValue(`SELECT noteId FROM attributes WHERE attributeId = ?`, [sync.entityId]);
+        try {
+            await fillInAdditionalProperties(sync);
         }
-        else if (sync.entityName === 'note_revisions') {
-            sync.noteId = await sql.getValue(`SELECT noteId FROM note_revisions WHERE noteRevisionId = ?`, [sync.entityId]);
-        }
-        else if (sync.entityName === 'branches') {
-            const {noteId, parentNoteId} = await sql.getRow(`SELECT noteId, parentNoteId FROM branches WHERE branchId = ?`, [sync.entityId]);
-
-            sync.noteId = noteId;
-            sync.parentNoteId = parentNoteId;
+        catch (e) {
+            log.error("Could not fill additional properties for sync " + JSON.stringify(sync)
+                + " because of error: " + e.message + ": " + e.stack);
         }
     }
 
