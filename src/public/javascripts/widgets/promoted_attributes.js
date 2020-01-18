@@ -28,11 +28,11 @@ const TPL = `
 
 export default class PromotedAttributesWidget extends TabAwareWidget {
     doRender() {
-        const $widget = $(TPL);
+        this.$widget = $(TPL);
 
-        this.$container = $widget.find(".promoted-attributes");
+        this.$container = this.$widget.find(".promoted-attributes");
 
-        return $widget;
+        return this.$widget;
     }
 
     async activeTabChanged() {

@@ -13,6 +13,7 @@ import TreeContextMenu from "../services/tree_context_menu.js";
 import treeChangesService from "../services/branches.js";
 import ws from "../services/ws.js";
 import appContext from "../services/app_context.js";
+import TabAwareWidget from "./tab_aware_widget.js";
 
 const TPL = `
 <div class="tree">
@@ -29,7 +30,7 @@ const TPL = `
 </div>
 `;
 
-export default class NoteTreeWidget extends BasicWidget {
+export default class NoteTreeWidget extends TabAwareWidget {
     constructor(appContext) {
         super(appContext);
 
@@ -401,6 +402,26 @@ export default class NoteTreeWidget extends BasicWidget {
     createTopLevelNoteListener() { treeService.createNewTopLevelNote(); }
 
     collapseTreeListener() { this.collapseTree(); }
+
+    async activeTabChanged() {
+        const oldActiveNode = this.getActiveNode();
+
+        if (oldActiveNode) {
+            oldActiveNode.setActive(false);
+        }
+
+        if (this.tabContext && this.tabContext.notePath) {
+            const newActiveNode = await this.getNodeFromPath(this.tabContext.notePath);
+
+            if (newActiveNode) {
+                if (!newActiveNode.isVisible()) {
+                    await this.expandToNote(this.tabContext.notePath);
+                }
+
+                newActiveNode.setActive(true, {noEvents: true});
+            }
+        }
+    }
 
     async notesReloadedListener({ noteIds, activateNotePath }) {
         for (const noteId of noteIds) {

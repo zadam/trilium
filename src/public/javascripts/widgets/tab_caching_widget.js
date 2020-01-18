@@ -23,8 +23,10 @@ export default class TabCachingWidget extends TabAwareWidget {
 
         if (!widget) {
             widget = this.widgets[this.tabContext.tabId] = this.widgetFactory();
+            this.children.push(widget);
             widget.renderTo(this.$parent);
-            widget.activeTabChangedListener();
+
+            widget.setTabContext(this.tabContext);
         }
 
         widget.toggle(true);

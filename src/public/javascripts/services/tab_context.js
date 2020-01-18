@@ -44,13 +44,9 @@ class TabContext extends Component {
 
         this.tabRow.updateTab(this.$tab[0], {title: this.note.title});
 
-        if (!this.initialized) {
-            return;
-        }
-
         this.setupClasses();
 
-        this.cleanup(); // esp. on windows autocomplete is not getting closed automatically
+        //this.cleanup(); // esp. on windows autocomplete is not getting closed automatically
 
         setTimeout(async () => {
             // we include the note into recent list only if the user stayed on the note at least 5 seconds
@@ -64,11 +60,10 @@ class TabContext extends Component {
 
         bundleService.executeRelationBundles(this.note, 'runOnNoteView', this);
 
-        appContext.trigger('activeNoteChanged');
+        this.trigger('tabNoteSwitched', {tabId: this.tabId});
     }
 
     async show() {
-        await this.setNote(this.notePath);
     }
 
     hide() {

@@ -33,7 +33,7 @@ class StandardWidget extends TabAwareWidget {
     //getPosition() { return this.widgetOptions.position; }
 
     render() {
-        const widgetInstanceId = this.widgetId + "-" + utils.randomString(10);
+        const widgetInstanceId = this.componentId + "-" + utils.randomString(10);
 
         this.$widget = $(WIDGET_TPL);
         this.$widget.find('[data-target]').attr('data-target', "#" + widgetInstanceId);

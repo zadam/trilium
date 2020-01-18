@@ -73,11 +73,9 @@ const TPL = `
 `;
 
 class NoteDetailText extends TabAwareWidget {
-    render() {
+    doRender() {
         this.$widget = $(TPL);
         this.$editor = this.$widget.find('.note-detail-text-editor');
-        this.textEditorPromise = null;
-        this.textEditor = null;
 
         this.$widget.on("dblclick", "img", e => {
             const $img = $(e.target);
@@ -95,24 +93,9 @@ class NoteDetailText extends TabAwareWidget {
             }
         });
 
-        if (!this.textEditorPromise) {
-            this.textEditorPromise = this.initEditor();
-        }
+        this.initialized = this.initEditor();
 
         return this.$widget;
-    }
-
-    async activeNoteChanged() {
-        await this.textEditorPromise;
-
-        // lazy loading above can take time and tab might have been already switched to another note
-        if (this.tabContext.note && this.tabContext.note.type === 'text') {
-            this.textEditor.isReadOnly = await this.isReadOnly();
-
-            this.$widget.show();
-
-            this.textEditor.setData(this.tabContext.note.content);
-        }
     }
 
     async initEditor() {
@@ -133,7 +116,7 @@ class NoteDetailText extends TabAwareWidget {
         // display of $widget in both branches.
         this.$widget.show();
 
-        const textEditorInstance = await BalloonEditor.create(this.$editor[0], {
+        this.textEditor = await BalloonEditor.create(this.$editor[0], {
             placeholder: "Type the content of your note here ...",
             mention: mentionSetup,
             codeBlock: {
@@ -143,12 +126,19 @@ class NoteDetailText extends TabAwareWidget {
 
         if (glob.isDev && ENABLE_INSPECTOR) {
             await import('../../libraries/ckeditor/inspector.js');
-            CKEditorInspector.attach(textEditorInstance);
+            CKEditorInspector.attach(this.textEditor);
         }
+    }
 
-        this.textEditor = textEditorInstance;
+    async noteSwitched() {
+        // lazy loading above can take time and tab might have been already switched to another note
+        if (this.tabContext.note && this.tabContext.note.type === 'text') {
+            this.textEditor.isReadOnly = await this.isReadOnly();
 
-        //this.onNoteChange(() => this.tabContext.noteChanged());
+            this.$widget.show();
+
+            this.textEditor.setData(this.tabContext.note.content);
+        }
     }
 
     getContent() {

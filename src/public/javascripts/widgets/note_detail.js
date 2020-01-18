@@ -34,6 +34,7 @@ export default class NoteDetailWidget extends TabAwareWidget {
         super(appContext);
 
         this.components = {};
+        this.componentPromises = {};
     }
 
     doRender() {
@@ -42,13 +43,10 @@ export default class NoteDetailWidget extends TabAwareWidget {
         return this.$widget;
     }
 
-    async activeTabChanged() {
+    async noteSwitched() {
         await this.initComponent(/**disableAutoBook*/);
 
         for (const componentType in this.components) {
-            // FIXME
-            this.components[componentType].ctx = this.tabContext;
-
             if (componentType !== this.type) {
                 this.components[componentType].cleanup();
             }
@@ -57,7 +55,6 @@ export default class NoteDetailWidget extends TabAwareWidget {
         this.$widget.find('.note-detail-component').hide();
 
         this.getComponent().show();
-        await this.getComponent().render();
 
         this.setupClasses();
     }
@@ -89,14 +86,24 @@ export default class NoteDetailWidget extends TabAwareWidget {
     async initComponent(disableAutoBook = false) {
         this.type = this.getComponentType(disableAutoBook);
 
-        if (!(this.type in this.components)) {
-            const clazz = await import(componentClasses[this.type]);
-
-            this.components[this.type] = new clazz.default(this);
-            this.children.push(this.components[this.type]);
-
-            this.$widget.append(this.components[this.type].render());
+        if (!(this.type in this.componentPromises)) {
+            this.componentPromises[this.type] = this.reallyInitComponent(this.type);
         }
+
+        await this.componentPromises[this.type];
+    }
+    
+    async reallyInitComponent(type) {
+        const clazz = await import(componentClasses[type]);
+
+        this.components[this.type] = new clazz.default(this.appContext);
+        this.children.push(this.components[this.type]);
+
+        this.components[this.type].renderTo(this.$widget);
+
+        this.components[this.type].setTabContext(this.tabContext);
+
+        this.components[this.type].eventReceived('tabNoteSwitched', {tabId: this.tabContext.tabId});
     }
 
     getComponentType(disableAutoBook) {

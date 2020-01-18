@@ -1,28 +1,20 @@
 import Component from "./component.js";
 
 class BasicWidget extends Component {
-    constructor(appContext) {
-        super(appContext);
-        this.widgetId = `widget-${this.constructor.name}`;
-    }
-
     renderTo($parent) {
+        this.$parent = $parent;
+
         $parent.append(this.render());
     }
 
     render() {
-        // actual rendering is async
-        this.$widget = this.doRender();
-
-//        $widget.attr('id', this.widgetId);
-
-        return this.$widget;
+        return this.doRender();
     }
 
     /**
      * for overriding
      */
-    doRender() {}
+    async doRender() {}
 
     toggle(show) {
         this.$widget.toggle(show);

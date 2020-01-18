@@ -127,6 +127,8 @@ class AppContext {
     activateNote(notePath) {
         const activeTabContext = this.getActiveTabContext();
 
+        console.log("Setting activeTabContext to " + notePath);
+
         activeTabContext.setNote(notePath);
 
         this._setTitleBar();
@@ -205,36 +207,6 @@ class AppContext {
 
             if (notePath && tabContext.notePath !== notePath) {
                 await treeService.activateNote(notePath);
-            }
-        }
-    }
-
-    async showTab(tabId) {
-        for (const ctx of this.tabContexts) {
-            if (ctx.tabId === tabId) {
-                await ctx.show();
-            } else {
-                ctx.hide();
-            }
-        }
-
-        const oldActiveNode = this.getMainNoteTree().getActiveNode();
-
-        if (oldActiveNode) {
-            oldActiveNode.setActive(false);
-        }
-
-        const newActiveTabContext = this.getActiveTabContext();
-
-        if (newActiveTabContext && newActiveTabContext.notePath) {
-            const newActiveNode = await this.getMainNoteTree().getNodeFromPath(newActiveTabContext.notePath);
-
-            if (newActiveNode) {
-                if (!newActiveNode.isVisible()) {
-                    await this.getMainNoteTree().expandToNote(newActiveTabContext.notePath);
-                }
-
-                newActiveNode.setActive(true, {noEvents: true});
             }
         }
     }
@@ -341,10 +313,6 @@ class AppContext {
 
     newTabListener() {
         this.openEmptyTab();
-    }
-
-    async activeTabChangedListener({tabId}) {
-        await this.showTab(tabId);
     }
 
     async tabRemoveListener({tabId}) {
