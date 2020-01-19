@@ -353,11 +353,6 @@ div.ui-tooltip {
     background-color: #eeeeee
 }
 
-.file-table th, .file-table td {
-    padding: 10px;
-    font-size: larger;
-}
-
 #sql-console-query {
     height: 150px;
     width: 100%;
@@ -438,14 +433,6 @@ button.icon-button {
 pre:not(.CodeMirror-line) {
     color: var(--main-text-color) !important;
     white-space: pre-wrap;
-}
-
-.file-preview-content {
-    background-color: var(--accented-background-color);
-    padding: 15px;
-    max-width: 600px;
-    max-height: 300px;
-    overflow: auto;
 }
 
 .pointer {

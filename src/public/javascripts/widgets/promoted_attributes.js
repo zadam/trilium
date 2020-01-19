@@ -79,6 +79,10 @@ export default class PromotedAttributesWidget extends TabAwareWidget {
             // we replace the whole content in one step so there can't be any race conditions
             // (previously we saw promoted attributes doubling)
             this.$container.empty().append($tbody);
+            this.$widget.show();
+        }
+        else {
+            this.$widget.hide();
         }
 
         return attributes;
