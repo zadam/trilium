@@ -5,13 +5,12 @@ export default class TabCachingWidget extends TabAwareWidget {
         super(appContext);
 
         this.widgetFactory = widgetFactory;
-        /** @type {JQuery} */
-        this.$parent = null;
         this.widgets = {};
     }
 
-    renderTo($parent) {
-        this.$parent = $parent;
+    doRender() {
+        this.$widget = $(`<div class="marker" style="display: none;">`);
+        return this.$widget;
     }
 
     activeTabChangedListener() {
@@ -26,7 +25,7 @@ export default class TabCachingWidget extends TabAwareWidget {
         if (!widget) {
             widget = this.widgets[this.tabContext.tabId] = this.widgetFactory();
             this.children.push(widget);
-            widget.renderTo(this.$parent);
+            this.$widget.after(widget.render());
 
             widget.eventReceived('setTabContext', {tabContext: this.tabContext});
         }

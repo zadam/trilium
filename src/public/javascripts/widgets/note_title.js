@@ -12,12 +12,8 @@ import ProtectedNoteSwitchWidget from "./protected_note_switch.js";
 import RunScriptButtonsWidget from "./run_script_buttons.js";
 
 const TPL = `
-<div class="note-title-row">
+<div>
     <style>
-    .note-title-row {
-        display: flex;
-    }
-    
     .note-title {
         margin-left: 15px;
         margin-right: 10px;
@@ -34,27 +30,7 @@ const TPL = `
 export default class NoteTitleWidget extends TabAwareWidget {
     doRender() {
         this.$widget = $(TPL);
-
         this.$noteTitle = this.$widget.find(".note-title");
-
-        this.$savedIndicator = this.$widget.find(".saved-indicator");
-
-        this.runScriptButtons = new RunScriptButtonsWidget(this.appContext);
-        this.$widget.append(this.runScriptButtons.render());
-
-        this.protectedNoteSwitch = new ProtectedNoteSwitchWidget(this.appContext);
-        this.$widget.append(this.protectedNoteSwitch.render());
-
-        this.noteType = new NoteTypeWidget(this.appContext);
-        this.$widget.append(this.noteType.render());
-
-        this.noteActions = new NoteActionsWidget(this.appContext);
-        this.$widget.append(this.noteActions.render());
-
-        this.notePaths = new NotePathsWidget(this.appContext);
-        this.$widget.prepend(this.notePaths.render());
-
-        this.children.push(this.noteType, this.notePaths);
 
         this.$noteTitle.on('input', () => {
             if (!this.note) {
@@ -84,17 +60,11 @@ export default class NoteTitleWidget extends TabAwareWidget {
         return this.$widget;
     }
 
-    async refreshWithNote() {
-        const note = this.tabContext.note;
-
+    async refreshWithNote(note) {
         this.$noteTitle.val(note.title);
 
         if (note.isProtected && !protectedSessionHolder.isProtectedSessionAvailable()) {
             this.$noteTitle.prop("readonly", true);
         }
-    }
-
-    noteSavedListener() {
-        this.$savedIndicator.fadeIn();
     }
 }

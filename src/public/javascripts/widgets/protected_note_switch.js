@@ -1,4 +1,6 @@
 import BasicWidget from "./basic_widget.js";
+import protectedSessionService from "../services/protected_session.js";
+import protectedSessionHolder from "../services/protected_session_holder.js";
 
 const TPL = `
 <div class="btn-group btn-group-xs">
@@ -17,6 +19,19 @@ export default class ProtectedNoteSwitchWidget extends BasicWidget {
     doRender() {
         this.$widget = $(TPL);
 
+        this.$protectButton = this.$widget.find(".protect-button");
+        this.$protectButton.on('click', protectedSessionService.protectNoteAndSendToServer);
+
+        this.$unprotectButton = this.$widget.find(".unprotect-button");
+        this.$unprotectButton.on('click', protectedSessionService.unprotectNoteAndSendToServer);
+
         return this.$widget;
+    }
+
+    refreshWithNote(note) {
+        this.$protectButton.toggleClass("active", note.isProtected);
+        this.$protectButton.prop("disabled", note.isProtected);
+        this.$unprotectButton.toggleClass("active", !note.isProtected);
+        this.$unprotectButton.prop("disabled", !note.isProtected || !protectedSessionHolder.isProtectedSessionAvailable());
     }
 }

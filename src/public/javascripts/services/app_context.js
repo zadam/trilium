@@ -24,6 +24,11 @@ import RowFlexContainer from "../widgets/row_flex_container.js";
 import StandardTopWidget from "../widgets/standard_top_widget.js";
 import treeCache from "./tree_cache.js";
 import treeUtils from "./tree_utils.js";
+import NotePathsWidget from "../widgets/note_paths.js";
+import RunScriptButtonsWidget from "../widgets/run_script_buttons.js";
+import ProtectedNoteSwitchWidget from "../widgets/protected_note_switch.js";
+import NoteTypeWidget from "../widgets/note_type.js";
+import NoteActionsWidget from "../widgets/note_actions.js";
 
 class AppContext {
     constructor() {
@@ -51,7 +56,7 @@ class AppContext {
         const $topPane = $("#top-pane");
 
         for (const widget of topPaneWidgets) {
-            widget.renderTo($topPane);
+            $topPane.append(widget.render());
         }
 
         const $leftPane = $("#left-pane");
@@ -66,19 +71,26 @@ class AppContext {
         ];
 
         for (const widget of leftPaneWidgets) {
-            widget.renderTo($leftPane);
+            $leftPane.append(widget.render());
         }
 
         const $centerPane = $("#center-pane");
 
         const centerPaneWidgets = [
-            new TabCachingWidget(this, () => new NoteTitleWidget(this)),
+            new RowFlexContainer(this, [
+                new TabCachingWidget(this, () => new NotePathsWidget(this)),
+                new NoteTitleWidget(this),
+                new RunScriptButtonsWidget(this),
+                new ProtectedNoteSwitchWidget(this),
+                new NoteTypeWidget(this),
+                new NoteActionsWidget(this)
+            ]),
             new TabCachingWidget(this, () => new PromotedAttributesWidget(this)),
             new TabCachingWidget(this, () => new NoteDetailWidget(this))
         ];
 
         for (const widget of centerPaneWidgets) {
-            widget.renderTo($centerPane);
+            $centerPane.append(widget.render());
         }
 
         const $rightPane = $("#right-pane");
@@ -93,7 +105,7 @@ class AppContext {
         ];
 
         for (const widget of rightPaneWidgets) {
-            widget.renderTo($rightPane);
+            $rightPane.append(widget.render());
         }
 
         this.widgets = [

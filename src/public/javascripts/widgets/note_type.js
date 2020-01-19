@@ -42,20 +42,15 @@ export default class NoteTypeWidget extends TabAwareWidget {
         this.$noteTypeDropdown = this.$widget.find(".note-type-dropdown");
         this.$noteTypeButton = this.$widget.find(".note-type-button");
         this.$noteTypeDesc = this.$widget.find(".note-type-desc");
-        this.$executeScriptButton = this.$widget.find(".execute-script-button");
-        this.$renderButton = this.$widget.find('.render-button');
 
         return this.$widget;
     }
 
-    async refreshWithNote() {
+    async refreshWithNote(note) {
         this.$noteTypeButton.prop("disabled",
-            () => ["file", "image", "search"].includes(this.tabContext.note.type));
+            () => ["file", "image", "search"].includes(note.type));
 
-        this.$noteTypeDesc.text(await this.findTypeTitle(this.tabContext.note.type, this.tabContext.note.mime));
-
-        this.$executeScriptButton.toggle(this.tabContext.note.mime.startsWith('application/javascript'));
-        this.$renderButton.toggle(this.tabContext.note.type === 'render');
+        this.$noteTypeDesc.text(await this.findTypeTitle(note.type, note.mime));
     }
 
     /** actual body is rendered lazily on note-type button click */

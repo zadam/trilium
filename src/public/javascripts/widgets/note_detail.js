@@ -92,7 +92,7 @@ export default class NoteDetailWidget extends TabAwareWidget {
         this.typeWidgets[this.type] = new clazz.default(this.appContext);
         this.children.push(this.typeWidgets[this.type]);
 
-        this.typeWidgets[this.type].renderTo(this.$widget);
+        this.$widget.append(this.typeWidgets[this.type].render());
 
         this.typeWidgets[this.type].eventReceived('setTabContext', {tabContext: this.tabContext});
     }
