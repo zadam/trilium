@@ -16,25 +16,25 @@ const TPL = `
 </div>
 `;
 
-const componentClasses = {
-    'empty': "./detail/note_detail_empty.js",
-    'text': "./detail/note_detail_text.js",
-    'code': "./detail/note_detail_code.js",
-    'file': "./detail/note_detail_file.js",
-    'image': "./detail/note_detail_image.js",
-    'search': "./detail/note_detail_search.js",
-    'render': "./detail/note_detail_render.js",
-    'relation-map': "./detail/note_detail_relation_map.js",
-    'protected-session': "./detail/note_detail_protected_session.js",
-    'book': "./detail/note_detail_book.js"
+const typeWidgetClasses = {
+    'empty': "./type_widgets/note_detail_empty.js",
+    'text': "./type_widgets/text.js",
+    'code': "./type_widgets/code.js",
+    'file': "./type_widgets/file.js",
+    'image': "./type_widgets/note_detail_image.js",
+    'search': "./type_widgets/note_detail_search.js",
+    'render': "./type_widgets/note_detail_render.js",
+    'relation-map': "./type_widgets/note_detail_relation_map.js",
+    'protected-session': "./type_widgets/note_detail_protected_session.js",
+    'book': "./type_widgets/note_detail_book.js"
 };
 
 export default class NoteDetailWidget extends TabAwareWidget {
     constructor(appContext) {
         super(appContext);
 
-        this.components = {};
-        this.componentPromises = {};
+        this.typeWidgets = {};
+        this.typeWidgetPromises = {};
     }
 
     doRender() {
@@ -43,18 +43,23 @@ export default class NoteDetailWidget extends TabAwareWidget {
         return this.$widget;
     }
 
-    async noteSwitched() {
-        await this.initComponent(/**disableAutoBook*/);
+    async refresh() {
+        this.type = this.getWidgetType(/*disableAutoBook*/);
 
-        for (const componentType in this.components) {
-            if (componentType !== this.type) {
-                this.components[componentType].cleanup();
+        if (!(this.type in this.typeWidgetPromises)) {
+            this.typeWidgetPromises[this.type] = this.initWidgetType(this.type);
+        }
+
+        await this.typeWidgetPromises[this.type];
+
+        for (const typeWidget of Object.values(this.typeWidgets)) {
+            if (typeWidget.constructor.getType() !== this.type) {
+                typeWidget.cleanup();
+                typeWidget.toggle(false);
             }
         }
 
-        this.$widget.find('.note-detail-component').hide();
-
-        this.getComponent().show();
+        this.getTypeWidget().toggle(true);
 
         this.setupClasses();
     }
@@ -75,36 +80,26 @@ export default class NoteDetailWidget extends TabAwareWidget {
         this.$widget.toggleClass("protected", note.isProtected);
     }
 
-    getComponent() {
-        if (!this.components[this.type]) {
-            throw new Error("Could not find component for type: " + this.type);
+    getTypeWidget() {
+        if (!this.typeWidgets[this.type]) {
+            throw new Error("Could not find typeWidget for type: " + this.type);
         }
 
-        return this.components[this.type];
-    }
-
-    async initComponent(disableAutoBook = false) {
-        this.type = this.getComponentType(disableAutoBook);
-
-        if (!(this.type in this.componentPromises)) {
-            this.componentPromises[this.type] = this.reallyInitComponent(this.type);
-        }
-
-        await this.componentPromises[this.type];
+        return this.typeWidgets[this.type];
     }
     
-    async reallyInitComponent(type) {
-        const clazz = await import(componentClasses[type]);
+    async initWidgetType(type) {
+        const clazz = await import(typeWidgetClasses[type]);
 
-        this.components[this.type] = new clazz.default(this.appContext);
-        this.children.push(this.components[this.type]);
+        this.typeWidgets[this.type] = new clazz.default(this.appContext);
+        this.children.push(this.typeWidgets[this.type]);
 
-        this.components[this.type].renderTo(this.$widget);
+        this.typeWidgets[this.type].renderTo(this.$widget);
 
-        this.components[this.type].eventReceived('setTabContext', {tabContext: this.tabContext});
+        this.typeWidgets[this.type].eventReceived('setTabContext', {tabContext: this.tabContext});
     }
 
-    getComponentType(disableAutoBook) {
+    getWidgetType(disableAutoBook) {
         const note = this.tabContext.note;
 
         if (!note) {
@@ -113,20 +108,15 @@ export default class NoteDetailWidget extends TabAwareWidget {
 
         let type = note.type;
 
-        if (type === 'text' && !disableAutoBook && utils.isHtmlEmpty(note.content) && note.hasChildren()) {
+        if (type === 'text' && !disableAutoBook
+            && utils.isHtmlEmpty(note.content)
+            && note.hasChildren()) {
+
             type = 'book';
         }
 
-        if (note.isProtected) {
-            if (protectedSessionHolder.isProtectedSessionAvailable()) {
-                protectedSessionHolder.touchProtectedSession();
-            } else {
-                type = 'protected-session';
-
-                // FIXME
-                // user shouldn't be able to edit note title
-                //this.$noteTitle.prop("readonly", true);
-            }
+        if (note.isProtected && !protectedSessionHolder.isProtectedSessionAvailable()) {
+            type = 'protected-session';
         }
 
         return type;

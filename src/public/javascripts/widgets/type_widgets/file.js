@@ -2,10 +2,10 @@ import utils from "../../services/utils.js";
 import server from "../../services/server.js";
 import toastService from "../../services/toast.js";
 import noteDetailService from "../../services/note_detail.js";
-import TabAwareWidget from "../tab_aware_widget.js";
+import TypeWidget from "./type_widget.js";
 
 const TPL = `
-<div class="note-detail-file note-detail-component">
+<div class="note-detail-file note-detail-printable">
     <style>
     .note-detail-file {
         padding: 10px;
@@ -55,7 +55,9 @@ const TPL = `
     <input type="file" class="file-upload-new-revision-input" style="display: none">
 </div>`;
 
-class NoteDetailFile extends TabAwareWidget{
+class FileTypeWidget extends TypeWidget {
+    static getType() { return "file"; }
+
     doRender() {
         this.$widget = $(TPL);
         this.$fileNoteId = this.$widget.find(".file-note-id");
@@ -115,7 +117,7 @@ class NoteDetailFile extends TabAwareWidget{
         return this.$widget;
     }
 
-    async refresh() {
+    async doRefresh() {
         const attributes = await server.get('notes/' + this.tabContext.note.noteId + '/attributes');
         const attributeMap = utils.toObject(attributes, l => [l.name, l.value]);
 
@@ -155,4 +157,4 @@ class NoteDetailFile extends TabAwareWidget{
     scrollToTop() {}
 }
 
-export default NoteDetailFile;
+export default FileTypeWidget;

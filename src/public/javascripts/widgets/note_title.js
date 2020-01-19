@@ -135,6 +135,10 @@ export default class NoteTitleWidget extends TabAwareWidget {
 
         this.$noteTitle.val(note.title);
 
+        if (note.isProtected && !protectedSessionHolder.isProtectedSessionAvailable()) {
+            this.$noteTitle.prop("readonly", true);
+        }
+
         this.$protectButton.toggleClass("active", note.isProtected);
         this.$protectButton.prop("disabled", note.isProtected);
         this.$unprotectButton.toggleClass("active", !note.isProtected);

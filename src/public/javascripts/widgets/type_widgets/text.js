@@ -3,6 +3,7 @@ import treeService from '../../services/tree.js';
 import noteAutocompleteService from '../../services/note_autocomplete.js';
 import mimeTypesService from '../../services/mime_types.js';
 import TabAwareWidget from "../tab_aware_widget.js";
+import TypeWidget from "./type_widget.js";
 
 const ENABLE_INSPECTOR = false;
 
@@ -41,7 +42,7 @@ const mentionSetup = {
 };
 
 const TPL = `
-<div class="note-detail-text note-detail-component">
+<div class="note-detail-text note-detail-printable">
     <style>
     .note-detail-text h1 { font-size: 2.0em; }
     .note-detail-text h2 { font-size: 1.8em; }
@@ -72,7 +73,9 @@ const TPL = `
 </div>
 `;
 
-class NoteDetailText extends TabAwareWidget {
+class TextTypeWidget extends TypeWidget {
+    static getType() { return "text"; }
+
     doRender() {
         this.$widget = $(TPL);
         this.$editor = this.$widget.find('.note-detail-text-editor');
@@ -130,15 +133,12 @@ class NoteDetailText extends TabAwareWidget {
         }
     }
 
-    async refresh() {
-        // lazy loading above can take time and tab might have been already switched to another note
-        if (this.tabContext.note && this.tabContext.note.type === 'text') {
-            this.textEditor.isReadOnly = await this.isReadOnly();
+    async doRefresh() {
+        this.textEditor.isReadOnly = await this.isReadOnly();
 
-            this.$widget.show();
+        this.$widget.show();
 
-            this.textEditor.setData(this.tabContext.note.content);
-        }
+        this.textEditor.setData(this.tabContext.note.content);
     }
 
     getContent() {
@@ -188,4 +188,4 @@ class NoteDetailText extends TabAwareWidget {
     }
 }
 
-export default NoteDetailText;
+export default TextTypeWidget;

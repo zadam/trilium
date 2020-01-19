@@ -4,14 +4,16 @@ import toastService from "../../services/toast.js";
 import server from "../../services/server.js";
 import noteDetailService from "../../services/note_detail.js";
 import keyboardActionService from "../../services/keyboard_actions.js";
-import TabAwareWidget from "../tab_aware_widget.js";
+import TypeWidget from "./type_widget.js";
 
 const TPL = `
-<div class="note-detail-code note-detail-component">
+<div class="note-detail-code note-detail-printable">
     <div class="note-detail-code-editor"></div>
 </div>`;
 
-class NoteDetailCode extends TabAwareWidget {
+class CodeTypeWidget extends TypeWidget {
+    static getType() { return "code"; }
+
     doRender() {
         this.$widget = $(TPL);
         this.$editor = this.$widget.find('.note-detail-code-editor');
@@ -58,22 +60,19 @@ class NoteDetailCode extends TabAwareWidget {
         //this.onNoteChange(() => this.tabContext.noteChanged());
     }
     
-    refresh() {
-        // lazy loading above can take time and tab might have been already switched to another note
-        if (this.tabContext.note && this.tabContext.note.type === 'code') {
-            // CodeMirror breaks pretty badly on null so even though it shouldn't happen (guarded by consistency check)
-            // we provide fallback
-            this.codeEditor.setValue(this.tabContext.note.content || "");
+    doRefresh() {
+        // CodeMirror breaks pretty badly on null so even though it shouldn't happen (guarded by consistency check)
+        // we provide fallback
+        this.codeEditor.setValue(this.tabContext.note.content || "");
 
-            const info = CodeMirror.findModeByMIME(this.tabContext.note.mime);
+        const info = CodeMirror.findModeByMIME(this.tabContext.note.mime);
 
-            if (info) {
-                this.codeEditor.setOption("mode", info.mime);
-                CodeMirror.autoLoadMode(this.codeEditor, info.mode);
-            }
-
-            this.show();
+        if (info) {
+            this.codeEditor.setOption("mode", info.mime);
+            CodeMirror.autoLoadMode(this.codeEditor, info.mode);
         }
+
+        this.show();
     }
 
     show() {
@@ -127,4 +126,4 @@ class NoteDetailCode extends TabAwareWidget {
     }
 }
 
-export default NoteDetailCode;
+export default CodeTypeWidget;

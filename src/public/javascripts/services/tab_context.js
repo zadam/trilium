@@ -60,6 +60,11 @@ class TabContext extends Component {
 
         bundleService.executeRelationBundles(this.note, 'runOnNoteView', this);
 
+        if (this.note.isProtected && protectedSessionHolder.isProtectedSessionAvailable()) {
+            // FIXME: there are probably more places where this should be done
+            protectedSessionHolder.touchProtectedSession();
+        }
+
         this.trigger('tabNoteSwitched', {tabId: this.tabId});
     }
 

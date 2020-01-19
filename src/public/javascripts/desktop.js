@@ -141,7 +141,7 @@ async function printActiveNote() {
 
     await libraryLoader.requireLibrary(libraryLoader.PRINT_THIS);
 
-    $tabContext.$tabContent.find('.note-detail-component:visible').printThis({
+    $tabContext.$tabContent.find('.note-detail-printable:visible').printThis({
         header: $("<h2>").text($tabContext.note && $tabContext.note.title).prop('outerHTML') ,
         importCSS: false,
         loadCSS: [
