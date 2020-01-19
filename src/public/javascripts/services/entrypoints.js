@@ -154,7 +154,7 @@ function registerEntrypoints() {
 
         d.showDialog(selectedOrActiveNodes);
     }));
-    
+
     keyboardActionService.setGlobalActionHandler("CreateNoteIntoDayNote", async () => {
         const todayNote = await dateNoteService.getTodayNote();
 
@@ -203,6 +203,8 @@ function registerEntrypoints() {
     });
 
     keyboardActionService.setGlobalActionHandler('CollapseTree', () => appContext.getMainNoteTree().collapseTree());
+
+    keyboardActionService.setGlobalActionHandler("CopyWithoutFormatting", utils.copySelectionToClipboard);
 }
 
 export default {
