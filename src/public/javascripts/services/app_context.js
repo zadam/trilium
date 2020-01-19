@@ -29,6 +29,7 @@ import RunScriptButtonsWidget from "../widgets/run_script_buttons.js";
 import ProtectedNoteSwitchWidget from "../widgets/protected_note_switch.js";
 import NoteTypeWidget from "../widgets/note_type.js";
 import NoteActionsWidget from "../widgets/note_actions.js";
+import protectedSessionHolder from "./protected_session_holder.js";
 
 class AppContext {
     constructor() {
@@ -116,23 +117,23 @@ class AppContext {
         ];
     }
 
-    trigger(name, data) {
+    trigger(name, data, sync = false) {
         this.eventReceived(name, data);
 
         for (const tabContext of this.tabContexts) {
-            tabContext.eventReceived(name, data);
+            tabContext.eventReceived(name, data, sync);
         }
 
         for (const widget of this.widgets) {
-            widget.eventReceived(name, data);
+            widget.eventReceived(name, data, sync);
         }
     }
 
-    eventReceived(name, data) {
+    async eventReceived(name, data, sync) {
         const fun = this[name + 'Listener'];
 
         if (typeof fun === 'function') {
-            fun.call(this, data);
+            await fun.call(this, data, sync);
         }
     }
 
@@ -346,6 +347,18 @@ class AppContext {
 
     tabReorderListener() {
         this.openTabsChanged();
+    }
+
+    noteChangesSavedListener() {
+        const activeTabContext = this.getActiveTabContext();
+
+        if (!activeTabContext || !activeTabContext.note) {
+            return;
+        }
+
+        if (activeTabContext.note.isProtected && protectedSessionHolder.isProtectedSessionAvailable()) {
+            protectedSessionHolder.touchProtectedSession();
+        }
     }
 }
 

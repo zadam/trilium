@@ -36,6 +36,8 @@ class TabContext extends Component {
     }
 
     async setNote(notePath) {
+        await this.trigger('beforeNoteSwitch', {tabId: this.tabId}, true);
+
         this.notePath = notePath;
         const noteId = treeUtils.getNoteIdFromNotePath(notePath);
 

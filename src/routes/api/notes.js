@@ -170,6 +170,8 @@ async function changeTitle(req) {
     note.title = title;
 
     await note.save();
+
+    return note;
 }
 
 async function duplicateNote(req) {

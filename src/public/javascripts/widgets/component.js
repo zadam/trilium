@@ -8,7 +8,7 @@ export default class Component {
         this.initialized = Promise.resolve();
     }
 
-    async eventReceived(name, data) {
+    async eventReceived(name, data, sync = false) {
         await this.initialized;
 
 //        console.log(`Received ${name} to ${this.componentId}`);
@@ -23,12 +23,16 @@ export default class Component {
 
         if (propagateToChildren) {
             for (const child of this.children) {
-                child.eventReceived(name, data);
+                let promise = child.eventReceived(name, data, sync);
+
+                if (sync) {
+                    await promise;
+                }
             }
         }
     }
 
-    trigger(name, data) {
-        this.appContext.trigger(name, data);
+    trigger(name, data, sync = false) {
+        this.appContext.trigger(name, data, sync);
     }
 }

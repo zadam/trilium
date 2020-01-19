@@ -8,8 +8,16 @@ export default class TabAwareWidget extends BasicWidget {
         this.noteSwitched();
     }
 
+    isTab(tabId) {
+        return this.tabContext && this.tabContext.tabId === tabId;
+    }
+
+    isNote(noteId) {
+        return this.tabContext && this.tabContext.note && this.tabContext.note.noteId === noteId;
+    }
+
     tabNoteSwitchedListener({tabId}) {
-        if (this.tabContext && tabId === this.tabContext.tabId) {
+        if (this.isTab(tabId)) {
             this.noteSwitched();
         }
     }

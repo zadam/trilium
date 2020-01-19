@@ -450,8 +450,6 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
     noteTitleChangedListener({noteId}) {
         for (const node of this.getNodesByNoteId(noteId)) {
-            console.log("Setting to", node);
-
             treeService.setNodeTitleWithPrefix(node);
         }
     }

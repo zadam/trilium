@@ -31,14 +31,12 @@ class NoteInfoWidget extends StandardWidget {
         this.$body.html(TPL);
     }
 
-    refreshWithNote() {
+    refreshWithNote(note) {
         const $noteId = this.$body.find(".note-info-note-id");
         const $dateCreated = this.$body.find(".note-info-date-created");
         const $dateModified = this.$body.find(".note-info-date-modified");
         const $type = this.$body.find(".note-info-type");
         const $mime = this.$body.find(".note-info-mime");
-
-        const note = this.tabContext.note;
 
         $noteId.text(note.noteId);
         $dateCreated
@@ -54,6 +52,15 @@ class NoteInfoWidget extends StandardWidget {
         $mime
             .text(note.mime)
             .attr("title", note.mime);
+    }
+
+    // this is interesting for this widget since dateModified had to change after update
+    noteChangesSavedListener({noteId}) {
+        const note = this.tabContext.note;
+
+        if (note && note.noteId === noteId) {
+            this.refreshWithNote(note);
+        }
     }
 
     syncDataListener({data}) {
