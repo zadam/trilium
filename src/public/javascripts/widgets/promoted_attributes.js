@@ -38,6 +38,11 @@ export default class PromotedAttributesWidget extends TabAwareWidget {
     async refresh() {
         this.$container.empty();
 
+        if (!this.tabContext.note) {
+            this.toggle(false);
+            return;
+        }
+
         const attributes = await this.tabContext.attributes.getAttributes();
 
         const promoted = attributes.filter(attr =>
@@ -79,10 +84,10 @@ export default class PromotedAttributesWidget extends TabAwareWidget {
             // we replace the whole content in one step so there can't be any race conditions
             // (previously we saw promoted attributes doubling)
             this.$container.empty().append($tbody);
-            this.$widget.show();
+            this.toggle(true);
         }
         else {
-            this.$widget.hide();
+            this.toggle(false);
         }
 
         return attributes;

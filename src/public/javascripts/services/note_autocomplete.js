@@ -1,5 +1,5 @@
 import server from "./server.js";
-import noteDetailService from "./note_detail.js";
+import appContext from "./app_context.js";
 import utils from './utils.js';
 
 // this key needs to have this value so it's hit by the tooltip

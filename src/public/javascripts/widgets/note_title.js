@@ -133,6 +133,14 @@ export default class NoteTitleWidget extends TabAwareWidget {
     async refresh() {
         const note = this.tabContext.note;
 
+        if (!note) {
+            this.toggle(false);
+            return;
+        }
+        else {
+            this.toggle(true);
+        }
+
         this.$noteTitle.val(note.title);
 
         if (note.isProtected && !protectedSessionHolder.isProtectedSessionAvailable()) {
