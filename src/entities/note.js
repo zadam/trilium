@@ -123,9 +123,11 @@ class Note extends Entity {
             throw new Error(`Cannot set null content to note ${this.noteId}`);
         }
 
+        content = Buffer.isBuffer(content) ? content : Buffer.from(content);
+
         // force updating note itself so that dateModified is represented correctly even for the content
         this.forcedChange = true;
-        this.contentLength = content.length;
+        this.contentLength = content.byteLength;
         await this.save();
 
         this.content = content;
@@ -134,7 +136,7 @@ class Note extends Entity {
             noteId: this.noteId,
             content: content,
             utcDateModified: dateUtils.utcNowDateTime(),
-            hash: utils.hash(this.noteId + "|" + content)
+            hash: utils.hash(this.noteId + "|" + content.toString())
         };
 
         if (this.isProtected) {
