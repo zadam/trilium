@@ -374,6 +374,7 @@ async function createNote(node, parentNoteId, target, extraOptions = {}) {
         window.cutToNote.removeSelection();
     }
 
+    // FIXME
     await noteDetailService.saveNotesIfChanged();
 
     noteDetailService.addDetailLoadedListener(note.noteId, noteDetailService.focusAndSelectTitle);

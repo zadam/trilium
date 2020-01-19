@@ -13,6 +13,7 @@ class NoteDetailSearch {
         this.$refreshButton = ctx.$tabContent.find('.note-detail-search-refresh-results-button');
 
         this.$refreshButton.on('click', async () => {
+            // FIXME
             await noteDetailService.saveNotesIfChanged();
 
             await searchNotesService.refreshSearch();

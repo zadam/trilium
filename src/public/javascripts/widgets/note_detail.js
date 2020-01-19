@@ -2,6 +2,8 @@ import TabAwareWidget from "./tab_aware_widget.js";
 import utils from "../services/utils.js";
 import protectedSessionHolder from "../services/protected_session_holder.js";
 import appContext from "../services/app_context.js";
+import SpacedUpdate from "../services/spaced_update.js";
+import server from "../services/server.js";
 
 const TPL = `
 <div class="note-detail">
@@ -32,6 +34,19 @@ export default class NoteDetailWidget extends TabAwareWidget {
 
         this.typeWidgets = {};
         this.typeWidgetPromises = {};
+
+        this.spacedUpdate = new SpacedUpdate(async () => {
+            const note = this.tabContext.note;
+            note.content = this.getTypeWidget().getContent();
+
+            const resp = await server.put('notes/' + note.noteId, note.dto);
+
+            // FIXME: minor - does not propagate to other tab contexts with this note though
+            note.dateModified = resp.dateModified;
+            note.utcDateModified = resp.utcDateModified;
+
+            this.trigger('noteChangesSaved', {noteId: note.noteId})
+        });
     }
 
     doRender() {
@@ -114,12 +129,14 @@ export default class NoteDetailWidget extends TabAwareWidget {
     async initWidgetType(type) {
         const clazz = await import(typeWidgetClasses[type]);
 
-        this.typeWidgets[this.type] = new clazz.default(this.appContext);
-        this.children.push(this.typeWidgets[this.type]);
+        const typeWidget = this.typeWidgets[this.type] = new clazz.default(this.appContext);
+        this.children.push(typeWidget);
 
-        this.$widget.append(this.typeWidgets[this.type].render());
+        this.$widget.append(typeWidget.render());
 
-        this.typeWidgets[this.type].eventReceived('setTabContext', {tabContext: this.tabContext});
+        typeWidget.onNoteChange(() => this.spacedUpdate.scheduleUpdate());
+
+        typeWidget.eventReceived('setTabContext', {tabContext: this.tabContext});
     }
 
     getWidgetType(disableAutoBook) {
@@ -151,6 +168,18 @@ export default class NoteDetailWidget extends TabAwareWidget {
 
             const widget = this.getTypeWidget();
             widget.focus();
+        }
+    }
+
+    async beforeNoteSwitchListener({tabId}) {
+        if (this.isTab(tabId)) {
+            await this.spacedUpdate.updateNowIfNecessary();
+        }
+    }
+
+    async beforeTabRemoveListener({tabId}) {
+        if (this.isTab(tabId)) {
+            await this.spacedUpdate.updateNowIfNecessary();
         }
     }
 }

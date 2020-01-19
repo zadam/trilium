@@ -109,6 +109,7 @@ class CodeTypeWidget extends TypeWidget {
         }
 
         // make sure note is saved so we load latest changes
+        // FIXME
         await noteDetailService.saveNotesIfChanged();
 
         if (this.tabContext.note.mime.endsWith("env=frontend")) {
@@ -122,7 +123,9 @@ class CodeTypeWidget extends TypeWidget {
         toastService.showMessage("Note executed");
     }
 
-    onNoteChange(func) {
+    async onNoteChange(func) {
+        await this.initialized;
+
         this.codeEditor.on('change', func);
     }
 

@@ -174,7 +174,9 @@ class TextTypeWidget extends TypeWidget {
         return this.textEditor;
     }
 
-    onNoteChange(func) {
+    async onNoteChange(func) {
+        await this.initialized;
+
         this.textEditor.model.document.on('change:data', func);
     }
 

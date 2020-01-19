@@ -26,7 +26,6 @@ class TabContext extends Component {
 
         this.tabRow = tabRow;
         this.tabId = state.tabId || utils.randomString(4);
-        this.$tab = $(this.tabRow.addTab(this.tabId));
         this.state = state;
 
         this.attributes = new Attributes(this.appContext, this);

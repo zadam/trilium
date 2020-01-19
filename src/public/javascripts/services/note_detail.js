@@ -27,8 +27,6 @@ async function openInTab(notePath, activate) {
 }
 
 async function switchToNote(notePath) {
-    await saveNotesIfChanged();
-
     await loadNoteDetail(notePath);
 
     appContext.openTabsChanged();
@@ -36,15 +34,6 @@ async function switchToNote(notePath) {
 
 function onNoteChange(func) {
     return appContext.getActiveTabContext().getComponent().onNoteChange(func);
-}
-
-async function saveNotesIfChanged() {
-    for (const ctx of appContext.getTabContexts()) {
-        await ctx.saveNoteIfChanged();
-    }
-
-    // make sure indicator is visible in a case there was some race condition.
-    $savedIndicator.fadeIn();
 }
 
 function getActiveEditor() {
@@ -210,9 +199,8 @@ function noteChanged() {
 
 // this makes sure that when user e.g. reloads the page or navigates away from the page, the note's content is saved
 // this sends the request asynchronously and doesn't wait for result
+// FIXME
 $(window).on('beforeunload', () => { saveNotesIfChanged(); }); // don't convert to short form, handler doesn't like returned promise
-
-setInterval(saveNotesIfChanged, 3000);
 
 export default {
     reload,
@@ -222,7 +210,6 @@ export default {
     loadNoteDetail,
     focusOnTitle,
     focusAndSelectTitle,
-    saveNotesIfChanged,
     onNoteChange,
     addDetailLoadedListener,
     getActiveEditor,
