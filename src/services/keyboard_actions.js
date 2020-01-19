@@ -308,8 +308,8 @@ const DEFAULT_KEYBOARD_ACTIONS = [
         defaultShortcuts: ["CommandOrControl+="]
     },
     {
-        actionName: "CopyWithoutFormating",
-        defaultShortcuts: ["Alt+Ctrl+C"]
+        actionName: "CopyWithoutFormatting",
+        defaultShortcuts: ["CommandOrControl+Alt+C"]
     }
 ];
 

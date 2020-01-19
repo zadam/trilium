@@ -289,8 +289,7 @@ function registerEntrypoints() {
         searchNotesService.searchInSubtree(node.data.noteId);
     });
 
-    $('document').on('copy', utils.copySelectionToClipboard)
-    keyboardActionService.setGlobalActionHandler("CopyWithoutFormating", utils.copySelectionToClipboard)
+    keyboardActionService.setGlobalActionHandler("CopyWithoutFormatting", utils.copySelectionToClipboard);
 }
 
 export default {

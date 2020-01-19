@@ -242,9 +242,9 @@ function getUrlForDownload(url) {
 }
 
 function copySelectionToClipboard() {
-    const text = window.getSelection().toString()
+    const text = window.getSelection().toString();
     if (navigator.clipboard) {
-        navigator.clipboard.writeText(text)
+        navigator.clipboard.writeText(text);
     }
 }
 
