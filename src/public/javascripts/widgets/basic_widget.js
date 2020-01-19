@@ -14,7 +14,7 @@ class BasicWidget extends Component {
     /**
      * for overriding
      */
-    async doRender() {}
+    doRender() {}
 
     toggle(show) {
         this.$widget.toggle(show);

@@ -21,7 +21,12 @@ class Attributes extends Component {
     }
 
     reloadAttributes() {
-        this.attributePromise = server.get(`notes/${this.tabContext.note.noteId}/attributes`);
+        if (this.tabContext.note) {
+            this.attributePromise = server.get(`notes/${this.tabContext.note.noteId}/attributes`);
+        }
+        else {
+            this.invalidateAttributes();
+        }
     }
 
     async refreshAttributes() {

@@ -4,69 +4,68 @@ import toastService from "../../services/toast.js";
 import server from "../../services/server.js";
 import noteDetailService from "../../services/note_detail.js";
 import keyboardActionService from "../../services/keyboard_actions.js";
+import TabAwareWidget from "../tab_aware_widget.js";
 
 const TPL = `
 <div class="note-detail-code note-detail-component">
     <div class="note-detail-code-editor"></div>
 </div>`;
 
-class NoteDetailCode {
+class NoteDetailCode extends TabAwareWidget {
+    doRender() {
+        this.$widget = $(TPL);
+        this.$editor = this.$widget.find('.note-detail-code-editor');
+        this.$executeScriptButton = this.$widget.find(".execute-script-button");
 
-    /**
-     * @param {TabContext} ctx
-     */
-    constructor(ctx) {
-        this.ctx = ctx;
-        this.codeEditor = null;
-        this.$component = ctx.$tabContent.find('.note-detail-code');
-        this.$editorEl = this.$component.find('.note-detail-code-editor');
-        this.$executeScriptButton = ctx.$tabContent.find(".execute-script-button");
-
-        keyboardActionService.setElementActionHandler(ctx.$tabContent, 'RunActiveNote', () => this.executeCurrentNote());
+        keyboardActionService.setElementActionHandler(this.$widget, 'RunActiveNote', () => this.executeCurrentNote());
 
         this.$executeScriptButton.on('click', () => this.executeCurrentNote());
+
+        this.initialized = this.initEditor();
+
+        return this.$widget;
     }
 
-    async render() {
+    async initEditor() {
         await libraryLoader.requireLibrary(libraryLoader.CODE_MIRROR);
+        
+        CodeMirror.keyMap.default["Shift-Tab"] = "indentLess";
+        CodeMirror.keyMap.default["Tab"] = "indentMore";
 
-        if (!this.codeEditor) {
-            CodeMirror.keyMap.default["Shift-Tab"] = "indentLess";
-            CodeMirror.keyMap.default["Tab"] = "indentMore";
+        // these conflict with backward/forward navigation shortcuts
+        delete CodeMirror.keyMap.default["Alt-Left"];
+        delete CodeMirror.keyMap.default["Alt-Right"];
 
-            // these conflict with backward/forward navigation shortcuts
-            delete CodeMirror.keyMap.default["Alt-Left"];
-            delete CodeMirror.keyMap.default["Alt-Right"];
+        CodeMirror.modeURL = 'libraries/codemirror/mode/%N/%N.js';
 
-            CodeMirror.modeURL = 'libraries/codemirror/mode/%N/%N.js';
+        this.codeEditor = CodeMirror(this.$editor[0], {
+            value: "",
+            viewportMargin: Infinity,
+            indentUnit: 4,
+            matchBrackets: true,
+            matchTags: {bothTags: true},
+            highlightSelectionMatches: {showToken: /\w/, annotateScrollbar: false},
+            lint: true,
+            gutters: ["CodeMirror-lint-markers"],
+            lineNumbers: true,
+            tabindex: 100,
+            // we linewrap partly also because without it horizontal scrollbar displays only when you scroll
+            // all the way to the bottom of the note. With line wrap there's no horizontal scrollbar so no problem
+            lineWrapping: true,
+            dragDrop: false // with true the editor inlines dropped files which is not what we expect
+        });
 
-            this.codeEditor = CodeMirror(this.$editorEl[0], {
-                value: "",
-                viewportMargin: Infinity,
-                indentUnit: 4,
-                matchBrackets: true,
-                matchTags: {bothTags: true},
-                highlightSelectionMatches: {showToken: /\w/, annotateScrollbar: false},
-                lint: true,
-                gutters: ["CodeMirror-lint-markers"],
-                lineNumbers: true,
-                tabindex: 100,
-                // we linewrap partly also because without it horizontal scrollbar displays only when you scroll
-                // all the way to the bottom of the note. With line wrap there's no horizontal scrollbar so no problem
-                lineWrapping: true,
-                dragDrop: false // with true the editor inlines dropped files which is not what we expect
-            });
-
-            this.onNoteChange(() => this.ctx.noteChanged());
-        }
-
+        //this.onNoteChange(() => this.tabContext.noteChanged());
+    }
+    
+    refresh() {
         // lazy loading above can take time and tab might have been already switched to another note
-        if (this.ctx.note && this.ctx.note.type === 'code') {
+        if (this.tabContext.note && this.tabContext.note.type === 'code') {
             // CodeMirror breaks pretty badly on null so even though it shouldn't happen (guarded by consistency check)
             // we provide fallback
-            this.codeEditor.setValue(this.ctx.note.content || "");
+            this.codeEditor.setValue(this.tabContext.note.content || "");
 
-            const info = CodeMirror.findModeByMIME(this.ctx.note.mime);
+            const info = CodeMirror.findModeByMIME(this.tabContext.note.mime);
 
             if (info) {
                 this.codeEditor.setOption("mode", info.mime);
@@ -78,7 +77,7 @@ class NoteDetailCode {
     }
 
     show() {
-        this.$component.show();
+        this.$widget.show();
 
         if (this.codeEditor) { // show can be called before render
             this.codeEditor.refresh();
@@ -95,19 +94,19 @@ class NoteDetailCode {
 
     async executeCurrentNote() {
         // ctrl+enter is also used elsewhere so make sure we're running only when appropriate
-        if (this.ctx.note.type !== 'code') {
+        if (this.tabContext.note.type !== 'code') {
             return;
         }
 
         // make sure note is saved so we load latest changes
         await noteDetailService.saveNotesIfChanged();
 
-        if (this.ctx.note.mime.endsWith("env=frontend")) {
-            await bundleService.getAndExecuteBundle(this.ctx.note.noteId);
+        if (this.tabContext.note.mime.endsWith("env=frontend")) {
+            await bundleService.getAndExecuteBundle(this.tabContext.note.noteId);
         }
 
-        if (this.ctx.note.mime.endsWith("env=backend")) {
-            await server.post('script/run/' + this.ctx.note.noteId);
+        if (this.tabContext.note.mime.endsWith("env=backend")) {
+            await server.post('script/run/' + this.tabContext.note.noteId);
         }
 
         toastService.showMessage("Note executed");
@@ -124,7 +123,7 @@ class NoteDetailCode {
     }
 
     scrollToTop() {
-        this.$component.scrollTop(0);
+        this.$widget.scrollTop(0);
     }
 }
 

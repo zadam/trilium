@@ -2,24 +2,60 @@ import utils from "../../services/utils.js";
 import server from "../../services/server.js";
 import toastService from "../../services/toast.js";
 import noteDetailService from "../../services/note_detail.js";
+import TabAwareWidget from "../tab_aware_widget.js";
 
-class NoteDetailFile {
-    /**
-     * @param {TabContext} ctx
-     */
-    constructor(ctx) {
-        this.ctx = ctx;
-        this.$component = ctx.$tabContent.find('.note-detail-file');
-        this.$fileNoteId = ctx.$tabContent.find(".file-note-id");
-        this.$fileName = ctx.$tabContent.find(".file-filename");
-        this.$fileType = ctx.$tabContent.find(".file-filetype");
-        this.$fileSize = ctx.$tabContent.find(".file-filesize");
-        this.$previewRow = ctx.$tabContent.find(".file-preview-row");
-        this.$previewContent = ctx.$tabContent.find(".file-preview-content");
-        this.$downloadButton = ctx.$tabContent.find(".file-download");
-        this.$openButton = ctx.$tabContent.find(".file-open");
-        this.$uploadNewRevisionButton = ctx.$tabContent.find(".file-upload-new-revision");
-        this.$uploadNewRevisionInput = ctx.$tabContent.find(".file-upload-new-revision-input");
+const TPL = `
+<div class="note-detail-file note-detail-component">
+    <table class="file-table">
+        <tr>
+            <th>Note ID:</th>
+            <td class="file-note-id"></td>
+        </tr>
+        <tr>
+            <th>Original file name:</th>
+            <td class="file-filename"></td>
+        </tr>
+        <tr>
+            <th>File type:</th>
+            <td class="file-filetype"></td>
+        </tr>
+        <tr>
+            <th>File size:</th>
+            <td class="file-filesize"></td>
+        </tr>
+        <tr class="file-preview-row">
+            <th>Preview:</th>
+            <td>
+                <pre class="file-preview-content"></pre>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <button class="file-download btn btn-sm btn-primary" type="button">Download</button>
+                &nbsp;
+                <button class="file-open btn btn-sm btn-primary" type="button">Open</button>
+                &nbsp;
+                <button class="file-upload-new-revision btn btn-sm btn-primary">Upload new revision</button>
+            </td>
+        </tr>
+    </table>
+
+    <input type="file" class="file-upload-new-revision-input" style="display: none">
+</div>`;
+
+class NoteDetailFile extends TabAwareWidget{
+    doRender() {
+        this.$widget = $(TPL);
+        this.$fileNoteId = this.$widget.find(".file-note-id");
+        this.$fileName = this.$widget.find(".file-filename");
+        this.$fileType = this.$widget.find(".file-filetype");
+        this.$fileSize = this.$widget.find(".file-filesize");
+        this.$previewRow = this.$widget.find(".file-preview-row");
+        this.$previewContent = this.$widget.find(".file-preview-content");
+        this.$downloadButton = this.$widget.find(".file-download");
+        this.$openButton = this.$widget.find(".file-open");
+        this.$uploadNewRevisionButton = this.$widget.find(".file-upload-new-revision");
+        this.$uploadNewRevisionInput = this.$widget.find(".file-upload-new-revision-input");
 
         this.$downloadButton.on('click', () => utils.download(this.getFileUrl()));
 
@@ -46,7 +82,7 @@ class NoteDetailFile {
             formData.append('upload', fileToUpload);
 
             const result = await $.ajax({
-                url: baseApiUrl + 'notes/' + this.ctx.note.noteId + '/file',
+                url: baseApiUrl + 'notes/' + this.tabContext.note.noteId + '/file',
                 headers: server.getHeaders(),
                 data: formData,
                 type: 'PUT',
@@ -64,33 +100,35 @@ class NoteDetailFile {
                 toastService.showError("Upload of a new file revision failed.");
             }
         });
+        
+        return this.$widget;
     }
 
-    async render() {
-        const attributes = await server.get('notes/' + this.ctx.note.noteId + '/attributes');
+    async refresh() {
+        const attributes = await server.get('notes/' + this.tabContext.note.noteId + '/attributes');
         const attributeMap = utils.toObject(attributes, l => [l.name, l.value]);
 
-        this.$component.show();
+        this.$widget.show();
 
-        this.$fileNoteId.text(this.ctx.note.noteId);
+        this.$fileNoteId.text(this.tabContext.note.noteId);
         this.$fileName.text(attributeMap.originalFileName || "?");
-        this.$fileSize.text(this.ctx.note.contentLength + " bytes");
-        this.$fileType.text(this.ctx.note.mime);
+        this.$fileSize.text(this.tabContext.note.contentLength + " bytes");
+        this.$fileType.text(this.tabContext.note.mime);
 
-        if (this.ctx.note.content) {
+        if (this.tabContext.note.content) {
             this.$previewRow.show();
-            this.$previewContent.text(this.ctx.note.content);
+            this.$previewContent.text(this.tabContext.note.content);
         }
         else {
             this.$previewRow.hide();
         }
 
         // open doesn't work for protected notes since it works through browser which isn't in protected session
-        this.$openButton.toggle(!this.ctx.note.isProtected);
+        this.$openButton.toggle(!this.tabContext.note.isProtected);
     }
 
     getFileUrl() {
-        return utils.getUrlForDownload("api/notes/" + this.ctx.note.noteId + "/download");
+        return utils.getUrlForDownload("api/notes/" + this.tabContext.note.noteId + "/download");
     }
 
     show() {}
