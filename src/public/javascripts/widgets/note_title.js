@@ -30,14 +30,9 @@ export default class NoteTitleWidget extends TabAwareWidget {
 
         this.$noteTitle.on('input', () => this.titleChanged());
 
-        if (utils.isDesktop()) {
-            // keyboard plugin is not loaded in mobile
-            utils.bindElShortcut(this.$noteTitle, 'return', () => {
-                this.getComponent().focus();
-
-                return false; // to not propagate the enter into the editor (causes issues with codemirror)
-            });
-        }
+        utils.bindElShortcut(this.$noteTitle, 'return', () => {
+            this.trigger('focusOnDetail', {tabId: this.tabContext.tabId});
+        });
 
         return this.$widget;
     }

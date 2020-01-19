@@ -144,4 +144,13 @@ export default class NoteDetailWidget extends TabAwareWidget {
 
         return type;
     }
+
+    async focusOnDetailListener({tabId}) {
+        if (this.tabContext.tabId === tabId) {
+            await this.refresh();
+
+            const widget = this.getTypeWidget();
+            widget.focus();
+        }
+    }
 }
