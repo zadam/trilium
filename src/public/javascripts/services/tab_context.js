@@ -81,6 +81,12 @@ class TabContext extends Component {
         return this.tabId === this.tabRow.activeTabId;
     }
 
+    async remove() {
+        await this.trigger('beforeTabRemove', {tabId: this.tabId}, true);
+
+        this.trigger('tabRemoved', {tabId: this.tabId});
+    }
+
     setupClasses() {
         for (const clazz of Array.from(this.$tab[0].classList)) { // create copy to safely iterate over while removing classes
             if (clazz !== 'note-tab') {
@@ -123,8 +129,7 @@ class TabContext extends Component {
         // FIXME trigger "noteSaved" event so that title indicator is triggered
         this.eventReceived('noteSaved');
 
-        // run async
-        bundleService.executeRelationBundles(this.note, 'runOnNoteChange', this);
+
     }
 
     async saveNoteIfChanged() {

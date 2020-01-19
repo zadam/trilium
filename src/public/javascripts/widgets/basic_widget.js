@@ -18,6 +18,12 @@ class BasicWidget extends Component {
         this.$widget.toggle(show);
     }
 
+    remove() {
+        if (this.$widget) {
+            this.$widget.remove();
+        }
+    }
+
     cleanup() {}
 }
 

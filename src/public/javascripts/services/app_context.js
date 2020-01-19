@@ -30,6 +30,7 @@ import ProtectedNoteSwitchWidget from "../widgets/protected_note_switch.js";
 import NoteTypeWidget from "../widgets/note_type.js";
 import NoteActionsWidget from "../widgets/note_actions.js";
 import protectedSessionHolder from "./protected_session_holder.js";
+import bundleService from "./bundle.js";
 
 class AppContext {
     constructor() {
@@ -39,6 +40,7 @@ class AppContext {
         this.tabsChangedTaskId = null;
         /** @type {TabRowWidget} */
         this.tabRow = null;
+        this.activeTabId = null;
     }
 
     showWidgets() {
@@ -180,9 +182,7 @@ class AppContext {
 
     /** @returns {TabContext} */
     getActiveTabContext() {
-        const tabId = this.tabRow.activeTabId;
-
-        return this.tabContexts.find(tc => tc.tabId === tabId);
+        return this.tabContexts.find(tc => tc.tabId === this.activeTabId);
     }
 
     /** @returns {string|null} */
@@ -268,10 +268,10 @@ class AppContext {
     }
 
     async openEmptyTab() {
-        const ctx = new TabContext(this, this.tabRow);
-        this.tabContexts.push(ctx);
+        const tabContext = new TabContext(this, this.tabRow);
+        this.tabContexts.push(tabContext);
 
-        await this.tabRow.activateTab(ctx.$tab[0]);
+        await this.activateTab(tabContext.tabId);
     }
 
     async filterTabs(noteId) {
@@ -291,8 +291,7 @@ class AppContext {
     async saveOpenTabs() {
         const openTabs = [];
 
-        for (const tabEl of this.tabRow.tabEls) {
-            const tabId = tabEl.getAttribute('data-tab-id');
+        for (const tabId of this.tabRow.getTabIdsInOrder()) {
             const tabContext = appContext.getTabContexts().find(tc => tc.tabId === tabId);
 
             if (tabContext) {
@@ -324,23 +323,42 @@ class AppContext {
         this.tabsChangedTaskId = setTimeout(() => this.saveOpenTabs(), 1000);
     }
 
-    async activateTab(tabContext) {
-        return this.tabRow.activateTab(tabContext.$tab[0]);
+    async activateTab(tabId) {
+        this.activeTabId = tabId;
+
+        this.trigger('activeTabChanged', { tabId: this.activeTabId });
     }
 
     newTabListener() {
         this.openEmptyTab();
     }
 
-    async tabRemoveListener({tabId}) {
-        this.tabContexts.filter(nc => nc.tabId === tabId)
-            .forEach(tc => tc.remove());
+    async removeTab(tabId) {
+        const tabContextToRemove = this.tabContexts.find(tc => tc.tabId === tabId);
+        const tabIdsInOrder = this.tabRow.getTabIdsInOrder();
 
-        this.tabContexts = this.tabContexts.filter(nc => nc.tabId !== tabId);
+        if (!tabContextToRemove) {
+            return;
+        }
 
         if (this.tabContexts.length === 0) {
             this.openEmptyTab();
         }
+        else {
+            const oldIdx = tabIdsInOrder.findIndex(tid => tid === tabId);
+            const newActiveTabId = tabIdsInOrder[oldIdx === tabIdsInOrder.length ? oldIdx - 1 : oldIdx + 1];
+
+            if (newActiveTabId) {
+                this.activateTab(newActiveTabId);
+            }
+            else {
+                console.log("Failed to find next tabcontext to activate");
+            }
+        }
+
+        await tabContextToRemove.remove();
+
+        this.tabContexts = this.tabContexts.filter(tc => tc.tabId === tabId);
 
         this.openTabsChanged();
     }
@@ -359,6 +377,9 @@ class AppContext {
         if (activeTabContext.note.isProtected && protectedSessionHolder.isProtectedSessionAvailable()) {
             protectedSessionHolder.touchProtectedSession();
         }
+
+        // run async
+        bundleService.executeRelationBundles(activeTabContext.note, 'runOnNoteChange', activeTabContext);
     }
 }
 
@@ -378,6 +399,7 @@ keyboardActionService.setGlobalActionHandler('ActivateNextTab', () => {
     const nextTab = this.tabRow.nextTabEl;
 
     if (nextTab) {
+        // FIXME
         this.tabRow.activateTab(nextTab);
     }
 });
@@ -386,6 +408,7 @@ keyboardActionService.setGlobalActionHandler('ActivatePreviousTab', () => {
     const prevTab = this.tabRow.previousTabEl;
 
     if (prevTab) {
+        // FIXME
         this.tabRow.activateTab(prevTab);
     }
 });

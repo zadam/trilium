@@ -132,7 +132,13 @@ export default class NoteTitleWidget extends TabAwareWidget {
         }
     }
 
-    async beforeNoteSwitch({tabId}) {
+    async beforeNoteSwitchListener({tabId}) {
+        if (this.isTab(tabId)) {
+            await this.spacedUpdate.updateNowIfNecessary();
+        }
+    }
+
+    async beforeTabRemoveListener({tabId}) {
         if (this.isTab(tabId)) {
             await this.spacedUpdate.updateNowIfNecessary();
         }
