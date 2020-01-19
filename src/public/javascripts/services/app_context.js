@@ -181,8 +181,13 @@ class AppContext {
     }
 
     /** @returns {TabContext} */
+    getTabContextById(tabId) {
+        return this.tabContexts.find(tc => tc.tabId === tabId);
+    }
+
+    /** @returns {TabContext} */
     getActiveTabContext() {
-        return this.tabContexts.find(tc => tc.tabId === this.activeTabId);
+        return this.getTabContextById(this.activeTabId);
     }
 
     /** @returns {string|null} */
@@ -250,14 +255,6 @@ class AppContext {
     async reloadAllTabs() {
         for (const tabContext of this.tabContexts) {
             await this.reloadTab(tabContext);
-        }
-    }
-
-    async refreshTabs(sourceTabId, noteId) {
-        for (const tc of this.tabContexts) {
-            if (tc.noteId === noteId && tc.tabId !== sourceTabId) {
-                await this.reloadTab(tc);
-            }
         }
     }
 

@@ -1,4 +1,3 @@
-import treeService from "./tree.js";
 import protectedSessionHolder from "./protected_session_holder.js";
 import server from "./server.js";
 import bundleService from "./bundle.js";
@@ -44,10 +43,6 @@ class TabContext extends Component {
         /** @property {NoteFull} */
         this.note = await noteDetailService.loadNote(noteId);
 
-        this.tabRow.updateTab(this.$tab[0], {title: this.note.title});
-
-        this.setupClasses();
-
         //this.cleanup(); // esp. on windows autocomplete is not getting closed automatically
 
         setTimeout(async () => {
@@ -70,37 +65,10 @@ class TabContext extends Component {
         this.trigger('tabNoteSwitched', {tabId: this.tabId});
     }
 
-    async show() {
-    }
-
-    hide() {
-        // FIXME
-    }
-
-    isActive() {
-        return this.tabId === this.tabRow.activeTabId;
-    }
-
     async remove() {
         await this.trigger('beforeTabRemove', {tabId: this.tabId}, true);
 
         this.trigger('tabRemoved', {tabId: this.tabId});
-    }
-
-    setupClasses() {
-        for (const clazz of Array.from(this.$tab[0].classList)) { // create copy to safely iterate over while removing classes
-            if (clazz !== 'note-tab') {
-                this.$tab.removeClass(clazz);
-            }
-        }
-
-        this.$tab.addClass(this.note.cssClass);
-        this.$tab.addClass(utils.getNoteTypeClass(this.note.type));
-        this.$tab.addClass(utils.getMimeTypeClass(this.note.mime));
-    }
-
-    async activate() {
-        await this.tabRow.activateTab(this.$tab[0]);
     }
 
     async saveNote() {
@@ -124,19 +92,6 @@ class TabContext extends Component {
 
         if (this.note.isProtected) {
             protectedSessionHolder.touchProtectedSession();
-        }
-
-        // FIXME trigger "noteSaved" event so that title indicator is triggered
-        this.eventReceived('noteSaved');
-
-
-    }
-
-    async saveNoteIfChanged() {
-        if (this.isNoteChanged) {
-            await this.saveNote();
-
-            appContext.refreshTabs(this.tabId, this.note.noteId);
         }
     }
 

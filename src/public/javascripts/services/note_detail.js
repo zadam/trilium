@@ -190,6 +190,7 @@ ws.subscribeToOutsideSyncMessages(syncData => {
         .filter(sync => sync.entityName === 'attributes')
         .forEach(sync => noteIdsToRefresh.add(sync.noteId));
 
+    // FIXME
     for (const noteId of noteIdsToRefresh) {
         appContext.refreshTabs(null, noteId);
     }
