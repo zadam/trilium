@@ -377,6 +377,7 @@ div.ui-tooltip {
 button.icon-button {
     font-size: 1.5em;
     padding: 2px;
+    max-height: 34px;
 }
 
 .note-actions {

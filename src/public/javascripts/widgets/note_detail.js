@@ -1,6 +1,7 @@
 import TabAwareWidget from "./tab_aware_widget.js";
 import utils from "../services/utils.js";
 import protectedSessionHolder from "../services/protected_session_holder.js";
+import appContext from "../services/app_context.js";
 
 const TPL = `
 <div class="note-detail">
@@ -35,6 +36,30 @@ export default class NoteDetailWidget extends TabAwareWidget {
 
     doRender() {
         this.$widget = $(TPL);
+
+        this.$widget.on("dragover", e => e.preventDefault());
+
+        this.$widget.on("dragleave", e => e.preventDefault());
+
+        this.$widget.on("drop", async e => {
+            const activeNote = this.appContext.getActiveTabNote();
+
+            if (!activeNote) {
+                return;
+            }
+
+            const files = [...e.originalEvent.dataTransfer.files]; // chrome has issue that dataTransfer.files empties after async operation
+
+            const importService = await import("../services/import.js");
+
+            importService.uploadFiles(activeNote.noteId, files, {
+                safeImport: true,
+                shrinkImages: true,
+                textImportedAsText: true,
+                codeImportedAsCode: true,
+                explodeArchives: true
+            });
+        });
 
         return this.$widget;
     }

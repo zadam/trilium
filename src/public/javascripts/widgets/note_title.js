@@ -1,15 +1,7 @@
 import TabAwareWidget from "./tab_aware_widget.js";
-import treeService from "../services/tree.js";
 import utils from "../services/utils.js";
-import protectedSessionService from "../services/protected_session.js";
-import treeUtils from "../services/tree_utils.js";
-import linkService from "../services/link.js";
 import protectedSessionHolder from "../services/protected_session_holder.js";
-import NoteTypeWidget from "./note_type.js";
-import NotePathsWidget from "./note_paths.js";
-import NoteActionsWidget from "./note_actions.js";
-import ProtectedNoteSwitchWidget from "./protected_note_switch.js";
-import RunScriptButtonsWidget from "./run_script_buttons.js";
+import treeCache from "../services/tree_cache.js";
 
 const TPL = `
 <div class="note-title-container">
@@ -23,7 +15,8 @@ const TPL = `
         margin-right: 10px;
         font-size: 150%;
         border: 0;
-        width: 5em;
+        min-width: 5em;
+        width: 100%;
     }
     </style>
 
@@ -35,21 +28,7 @@ export default class NoteTitleWidget extends TabAwareWidget {
         this.$widget = $(TPL);
         this.$noteTitle = this.$widget.find(".note-title");
 
-        this.$noteTitle.on('input', () => {
-            if (!this.note) {
-                return;
-            }
-
-            // FIXME event not used
-            this.trigger(`activeNoteChanged`);
-
-            this.note.title = this.$noteTitle.val();
-
-            this.tabRow.updateTab(this.$tab[0], {title: this.note.title});
-            treeService.setNoteTitle(this.note.noteId, this.note.title);
-
-            this.setTitleBar();
-        });
+        this.$noteTitle.on('input', () => this.titleChanged());
 
         if (utils.isDesktop()) {
             // keyboard plugin is not loaded in mobile
@@ -61,6 +40,36 @@ export default class NoteTitleWidget extends TabAwareWidget {
         }
 
         return this.$widget;
+    }
+
+    async titleChanged() {
+        const {note} = this.tabContext;
+
+        if (!note) {
+            return;
+        }
+
+        note.title = this.$noteTitle.val();
+
+        const noteFromCache = await treeCache.getNote(note.noteId);
+        noteFromCache.title = note.title;
+
+        this.trigger(`noteTitleChanged`, {
+            tabId: this.tabContext.tabId, // used to identify that the event comes from this tab so we should not update this tab's input
+            title: note.title,
+            noteId: note.noteId
+        });
+    }
+
+    noteTitleChangedListener({tabId, title, noteId}) {
+        if (tabId === this.tabContext.tabId
+            || !this.tabContext.note
+            || this.tabContext.note.noteId !== noteId) {
+
+            return;
+        }
+
+        this.$noteTitle.val(title);
     }
 
     async refreshWithNote(note) {

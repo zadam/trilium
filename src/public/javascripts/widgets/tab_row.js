@@ -508,6 +508,17 @@ export default class TabRowWidget extends BasicWidget {
         tabEl.querySelector('.note-tab-title').textContent = tabProperties.title;
     }
 
+    getTabById(tabId) {
+        return this.$widget.find(`[data-tab-id='${tabId}']`);
+    }
+
+    noteTitleChangedListener({title, noteId}) {
+        this.appContext.getTabContexts()
+            .filter(tc => tc.note && tc.note.noteId === noteId)
+            .map(tc => this.getTabById(tc.tabId))
+            .forEach($el => $el.find('.note-tab-title').text(title));
+    }
+
     cleanUpPreviouslyDraggedTabs() {
         this.tabEls.forEach((tabEl) => tabEl.classList.remove('note-tab-was-just-dragged'));
     }

@@ -333,18 +333,6 @@ function setProtected(noteId, isProtected) {
     });
 }
 
-async function setNoteTitle(noteId, title) {
-    utils.assertArguments(noteId);
-
-    const note = await treeCache.getNote(noteId);
-
-    note.title = title;
-
-    for (const clone of appContext.getMainNoteTree().getNodesByNoteId(noteId)) {
-        await setNodeTitleWithPrefix(clone);
-    }
-}
-
 async function createNewTopLevelNote() {
     const hoistedNoteId = await hoistedNoteService.getHoistedNoteId();
 
@@ -594,7 +582,6 @@ export default {
     reload,
     setProtected,
     activateNote,
-    setNoteTitle,
     setPrefix,
     createNote,
     sortAlphabetically,
@@ -606,5 +593,6 @@ export default {
     getSomeNotePath,
     createNewTopLevelNote,
     duplicateNote,
-    getRunPath
+    getRunPath,
+    setNodeTitleWithPrefix
 };

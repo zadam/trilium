@@ -3,7 +3,7 @@ import protectedSessionService from "../services/protected_session.js";
 import protectedSessionHolder from "../services/protected_session_holder.js";
 
 const TPL = `
-<div class="btn-group btn-group-xs">
+<div class="btn-group btn-group-xs" style="margin-left: 10px; margin-right: 10px;">
     <button type="button"
             class="btn btn-sm icon-button bx bx-check-shield protect-button"
             title="Protected note can be viewed and edited only after entering password">

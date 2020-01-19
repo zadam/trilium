@@ -155,6 +155,10 @@ class AppContext {
         }
     }
 
+    noteTitleChangedListener() {
+        this._setTitleBar();
+    }
+
     async _setTitleBar() {
         document.title = "Trilium Notes";
 

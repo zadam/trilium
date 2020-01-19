@@ -8,7 +8,6 @@ import treeUtils from "./tree_utils.js";
 import tabRow from "../widgets/tab_row.js";
 import appContext from "./app_context.js";
 
-const $tabContentsContainer = $("#note-tab-container");
 const $savedIndicator = $(".saved-indicator");
 
 let detailLoadedListeners = [];
@@ -198,30 +197,6 @@ ws.subscribeToOutsideSyncMessages(syncData => {
 
 ws.subscribeToAllSyncMessages(syncData => {
     appContext.trigger('syncData', {data: syncData});
-});
-
-$tabContentsContainer.on("dragover", e => e.preventDefault());
-
-$tabContentsContainer.on("dragleave", e => e.preventDefault());
-
-$tabContentsContainer.on("drop", async e => {
-    const activeNote = appContext.getActiveTabNote();
-
-    if (!activeNote) {
-        return;
-    }
-
-    const files = [...e.originalEvent.dataTransfer.files]; // chrome has issue that dataTransfer.files empties after async operation
-
-    const importService = await import("./import.js");
-
-    importService.uploadFiles(activeNote.noteId, files, {
-        safeImport: true,
-        shrinkImages: true,
-        textImportedAsText: true,
-        codeImportedAsCode: true,
-        explodeArchives: true
-    });
 });
 
 function noteChanged() {

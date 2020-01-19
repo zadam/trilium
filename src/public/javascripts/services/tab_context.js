@@ -109,8 +109,6 @@ class TabContext extends Component {
         // otherwise we might overwrite another change (especially async code)
         this.isNoteChanged = false;
 
-        treeService.setNoteTitle(this.note.noteId, this.note.title);
-
         const resp = await server.put('notes/' + this.note.noteId, this.note.dto);
 
         this.note.dateModified = resp.dateModified;
