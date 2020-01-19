@@ -30,7 +30,7 @@ export default class NotePathsWidget extends TabAwareWidget {
         return this.$widget;
     }
 
-    async refresh() {
+    async refreshWithNote() {
         const {note, notePath} = this.tabContext;
 
         if (note.noteId === 'root') {

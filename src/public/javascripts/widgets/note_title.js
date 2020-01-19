@@ -130,16 +130,8 @@ export default class NoteTitleWidget extends TabAwareWidget {
         return this.$widget;
     }
 
-    async refresh() {
+    async refreshWithNote() {
         const note = this.tabContext.note;
-
-        if (!note) {
-            this.toggle(false);
-            return;
-        }
-        else {
-            this.toggle(true);
-        }
 
         this.$noteTitle.val(note.title);
 

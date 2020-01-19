@@ -19,7 +19,7 @@ class EditedNotesWidget extends StandardWidget {
             && await this.tabContext.note.hasLabel("dateNote");
     }
 
-    async doRenderBody() {
+    async refreshWithNote() {
         const note = this.tabContext.note;
         // remember which title was when we found the similar notes
         this.title = note.title;

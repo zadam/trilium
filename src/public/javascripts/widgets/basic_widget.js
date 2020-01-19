@@ -17,6 +17,10 @@ class BasicWidget extends Component {
     doRender() {}
 
     toggle(show) {
+        if (!this.$widget) {
+            console.log(this.componentId);
+        }
+
         this.$widget.toggle(show);
     }
 

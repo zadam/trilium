@@ -60,7 +60,7 @@ window.glob.noteChanged = noteDetailService.noteChanged;
 window.glob.refreshTree = treeService.reload;
 
 // required for ESLint plugin
-window.glob.getActiveTabNote = appContext.getActiveTabNote;
+window.glob.getActiveTabNote = () => appContext.getActiveTabNote();
 window.glob.requireLibrary = libraryLoader.requireLibrary;
 window.glob.ESLINT = libraryLoader.ESLINT;
 

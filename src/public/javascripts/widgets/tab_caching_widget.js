@@ -35,4 +35,10 @@ export default class TabCachingWidget extends TabAwareWidget {
 
         return false; // stop propagation to children
     }
+
+    toggle(show) {
+        for (const tabId in this.widgets) {
+            this.widgets[tabId].toggle(show && this.tabContext && tabId === this.tabContext.tabId);
+        }
+    }
 }

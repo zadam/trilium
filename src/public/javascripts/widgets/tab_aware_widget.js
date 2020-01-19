@@ -18,12 +18,21 @@ export default class TabAwareWidget extends BasicWidget {
         this.refresh();
     }
 
-    // to override
     activeTabChanged() {
         this.refresh();
     }
 
-    refresh() {}
+    refresh() {
+        if (this.tabContext && this.tabContext.note) {
+            this.toggle(true);
+            this.refreshWithNote();
+        }
+        else {
+            this.toggle(false);
+        }
+    }
+
+    refreshWithNote() {}
 
     activeTabChangedListener() {
         this.tabContext = this.appContext.getActiveTabContext();

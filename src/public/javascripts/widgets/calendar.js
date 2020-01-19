@@ -38,7 +38,7 @@ class CalendarWidget extends StandardWidget {
         this.$body.html(TPL);
     }
 
-    async refresh() {
+    async refreshWithNote() {
         this.init(this.$body, await this.tabContext.note.getLabelValue("dateNote"));
     }
 

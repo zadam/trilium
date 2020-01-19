@@ -31,7 +31,7 @@ class NoteInfoWidget extends StandardWidget {
         this.$body.html(TPL);
     }
 
-    refresh() {
+    refreshWithNote() {
         const $noteId = this.$body.find(".note-info-note-id");
         const $dateCreated = this.$body.find(".note-info-date-created");
         const $dateModified = this.$body.find(".note-info-date-modified");

@@ -35,13 +35,8 @@ export default class PromotedAttributesWidget extends TabAwareWidget {
         return this.$widget;
     }
 
-    async refresh() {
+    async refreshWithNote() {
         this.$container.empty();
-
-        if (!this.tabContext.note) {
-            this.toggle(false);
-            return;
-        }
 
         const attributes = await this.tabContext.attributes.getAttributes();
 

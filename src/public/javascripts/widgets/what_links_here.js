@@ -22,7 +22,7 @@ class WhatLinksHereWidget extends StandardWidget {
         return [$showFullButton];
     }
 
-    async refresh() {
+    async refreshWithNote() {
         const targetRelations = await this.tabContext.note.getTargetRelations();
 
         if (targetRelations.length === 0) {

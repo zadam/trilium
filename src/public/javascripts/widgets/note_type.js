@@ -17,15 +17,14 @@ const NOTE_TYPES = [
 ];
 
 const TPL = `
-<style>
-.note-type-dropdown {
-    max-height: 500px;
-    overflow-y: auto;
-    overflow-x: hidden;
-}
-</style>
-
 <div class="dropdown note-type">
+    <style>
+    .note-type-dropdown {
+        max-height: 500px;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+    </style>
     <button type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-sm dropdown-toggle note-type-button">
         Type: <span class="note-type-desc"></span>
         <span class="caret"></span>
@@ -36,20 +35,20 @@ const TPL = `
 
 export default class NoteTypeWidget extends TabAwareWidget {
     doRender() {
-        const $widget = $(TPL);
+        this.$widget = $(TPL);
 
-        $widget.on('show.bs.dropdown', () => this.renderDropdown());
+        this.$widget.on('show.bs.dropdown', () => this.renderDropdown());
 
-        this.$noteTypeDropdown = $widget.find(".note-type-dropdown");
-        this.$noteTypeButton = $widget.find(".note-type-button");
-        this.$noteTypeDesc = $widget.find(".note-type-desc");
-        this.$executeScriptButton = $widget.find(".execute-script-button");
-        this.$renderButton = $widget.find('.render-button');
+        this.$noteTypeDropdown = this.$widget.find(".note-type-dropdown");
+        this.$noteTypeButton = this.$widget.find(".note-type-button");
+        this.$noteTypeDesc = this.$widget.find(".note-type-desc");
+        this.$executeScriptButton = this.$widget.find(".execute-script-button");
+        this.$renderButton = this.$widget.find('.render-button');
 
-        return $widget;
+        return this.$widget;
     }
 
-    async refresh() {
+    async refreshWithNote() {
         this.$noteTypeButton.prop("disabled",
             () => ["file", "image", "search"].includes(this.tabContext.note.type));
 

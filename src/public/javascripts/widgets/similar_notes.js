@@ -14,7 +14,7 @@ class SimilarNotesWidget extends StandardWidget {
 
     getMaxHeight() { return "200px"; }
 
-    async refresh() {
+    async refreshWithNote() {
         // remember which title was when we found the similar notes
         this.title = this.tabContext.note.title;
 

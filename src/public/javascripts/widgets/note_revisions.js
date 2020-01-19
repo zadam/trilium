@@ -26,7 +26,7 @@ class NoteRevisionsWidget extends StandardWidget {
         return [$showFullButton];
     }
 
-    async refresh() {
+    async refreshWithNote() {
         const note = this.tabContext.note;
         const revisionItems = await server.get(`notes/${note.noteId}/revisions`);
 
