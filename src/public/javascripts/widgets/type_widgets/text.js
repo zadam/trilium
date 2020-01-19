@@ -53,6 +53,7 @@ const TPL = `
     
     .note-detail-text {
         overflow: auto;
+        height: 100%;
         font-family: var(--detail-text-font-family);
     }
     

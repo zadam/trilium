@@ -5,12 +5,8 @@ import protectedSessionHolder from "../services/protected_session_holder.js";
 const TPL = `
 <div class="note-detail">
     <style>
-    .note-detail-content {
-        display: flex;
-        flex-direction: column;
-        flex-grow: 100;
+    .note-detail {
         height: 100%;
-        width: 100%;
     }  
     </style>
 </div>

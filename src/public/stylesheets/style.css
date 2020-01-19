@@ -303,13 +303,7 @@ div.ui-tooltip {
     background-color: var(--active-item-background-color) !important;
 }
 
-.note-detail-code {
-    overflow: auto;
-}
 
-.note-detail-code-editor {
-    min-height: 500px;
-}
 
 .note-detail-render {
     min-height: 500px;

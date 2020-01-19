@@ -8,6 +8,7 @@ import linkService from "../services/link.js";
 import libraryLoader from "../services/library_loader.js";
 import noteAutocompleteService from "../services/note_autocomplete.js";
 import treeService from "../services/tree.js";
+import appContext from "../services/app_context.js";
 
 const $dialog = $("#attributes-dialog");
 const $saveAttributesButton = $("#save-attributes-button");

@@ -8,6 +8,17 @@ import TypeWidget from "./type_widget.js";
 
 const TPL = `
 <div class="note-detail-code note-detail-printable">
+    <style>
+    .note-detail-code {
+        overflow: auto;
+        height: 100%;
+    }
+    
+    .note-detail-code-editor {
+        min-height: 500px;
+    }
+    </style>
+
     <div class="note-detail-code-editor"></div>
 </div>`;
 
