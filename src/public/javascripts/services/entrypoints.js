@@ -241,7 +241,7 @@ function registerEntrypoints() {
 
         d.showDialog(selectedOrActiveNodes);
     }));
-    
+
     keyboardActionService.setGlobalActionHandler("CreateNoteIntoDayNote", async () => {
         const todayNote = await dateNoteService.getTodayNote();
 
@@ -288,6 +288,9 @@ function registerEntrypoints() {
 
         searchNotesService.searchInSubtree(node.data.noteId);
     });
+
+    $('document').on('copy', utils.copySelectionToClipboard)
+    keyboardActionService.setGlobalActionHandler("CopyWithoutFormating", utils.copySelectionToClipboard)
 }
 
 export default {
