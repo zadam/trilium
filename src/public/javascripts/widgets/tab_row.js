@@ -636,7 +636,7 @@ export default class TabRowWidget extends BasicWidget {
 
         const {note} = this.appContext.getTabContextById(tabId);
 
-        if (!note) {
+        if (!note || !$tab.length) {
             return;
         }
 

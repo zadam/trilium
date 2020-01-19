@@ -1,11 +1,20 @@
 import server from "./server.js";
 import utils from "./utils.js";
+import appContext from "./app_context.js";
 
 const keyboardActionRepo = {};
 
 const keyboardActionsLoaded = server.get('keyboard-actions').then(actions => {
 	for (const action of actions) {
 		keyboardActionRepo[action.actionName] = action;
+
+		for (const shortcut of action.effectiveShortcuts || []) {
+			if (shortcut && !shortcut.startsWith("global:")) { // global shortcuts should be handled in the electron code
+				const eventName = action.actionName.charAt(0).toUpperCase() + action.actionName.slice(1);
+
+				utils.bindGlobalShortcut(shortcut, appContext.trigger(eventName));
+			}
+		}
 	}
 });
 
@@ -20,21 +29,7 @@ server.get('keyboard-shortcuts-for-notes').then(shortcutForNotes => {
 });
 
 function setGlobalActionHandler(actionName, handler) {
-	keyboardActionsLoaded.then(() => {
-		const action = keyboardActionRepo[actionName];
-
-		if (!action) {
-			throw new Error(`Cannot find keyboard action '${actionName}'`);
-		}
-
-		action.handler = handler;
-
-		for (const shortcut of action.effectiveShortcuts) {
-			if (shortcut && !shortcut.startsWith("global:")) { // global shortcuts should be handled in the electron code
-				utils.bindGlobalShortcut(shortcut, handler);
-			}
-		}
-	});
+	console.log("Useless handler for " + actionName);
 }
 
 function setElementActionHandler($el, actionName, handler) {
@@ -107,6 +102,34 @@ function updateDisplayedShortcuts($container) {
 }
 
 $(() => updateDisplayedShortcuts($(document)));
+
+setGlobalActionHandler('OpenNewTab', () => {
+	appContext.openEmptyTab();
+});
+
+setGlobalActionHandler('CloseActiveTab', () => {
+	if (this.tabRow.activeTabEl) {
+		this.tabRow.removeTab(this.tabRow.activeTabId);
+	}
+});
+
+setGlobalActionHandler('ActivateNextTab', () => {
+	const nextTab = this.tabRow.nextTabEl;
+
+	if (nextTab) {
+		// FIXME
+		this.tabRow.activateTab(nextTab);
+	}
+});
+
+setGlobalActionHandler('ActivatePreviousTab', () => {
+	const prevTab = this.tabRow.previousTabEl;
+
+	if (prevTab) {
+		// FIXME
+		this.tabRow.activateTab(prevTab);
+	}
+});
 
 export default {
 	setGlobalActionHandler,

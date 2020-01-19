@@ -382,32 +382,4 @@ class AppContext {
 
 const appContext = new AppContext();
 
-keyboardActionService.setGlobalActionHandler('OpenNewTab', () => {
-    appContext.openEmptyTab();
-});
-
-keyboardActionService.setGlobalActionHandler('CloseActiveTab', () => {
-    if (this.tabRow.activeTabEl) {
-        this.tabRow.removeTab(this.tabRow.activeTabId);
-    }
-});
-
-keyboardActionService.setGlobalActionHandler('ActivateNextTab', () => {
-    const nextTab = this.tabRow.nextTabEl;
-
-    if (nextTab) {
-        // FIXME
-        this.tabRow.activateTab(nextTab);
-    }
-});
-
-keyboardActionService.setGlobalActionHandler('ActivatePreviousTab', () => {
-    const prevTab = this.tabRow.previousTabEl;
-
-    if (prevTab) {
-        // FIXME
-        this.tabRow.activateTab(prevTab);
-    }
-});
-
 export default appContext;
