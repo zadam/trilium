@@ -12,15 +12,18 @@ import ProtectedNoteSwitchWidget from "./protected_note_switch.js";
 import RunScriptButtonsWidget from "./run_script_buttons.js";
 
 const TPL = `
-<div>
+<div class="note-title-container">
     <style>
-    .note-title {
+    .note-title-container {
+        flex-grow: 100;
+    }
+    
+    .note-title-container input.note-title {
         margin-left: 15px;
         margin-right: 10px;
         font-size: 150%;
         border: 0;
         width: 5em;
-        flex-grow: 100;
     }
     </style>
 
