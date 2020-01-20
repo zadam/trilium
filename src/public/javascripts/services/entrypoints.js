@@ -34,57 +34,15 @@ function registerEntrypoints() {
     jQuery.hotkeys.options.filterContentEditable = false;
     jQuery.hotkeys.options.filterTextInputs = false;
 
-    keyboardActionService.setGlobalActionHandler("AddLinkToText", () => import(ADD_LINK).then(d => d.showDialog()));
-
     keyboardActionService.setGlobalActionHandler('SearchNotes', searchNotesService.toggleSearch);
 
     const $noteTabContainer = $("#note-tab-container");
-
-    const showAttributesDialog = () => import(ATTRIBUTES).then(d => d.showDialog());
-    $noteTabContainer.on("click", ".show-attributes-button", showAttributesDialog);
-    keyboardActionService.setGlobalActionHandler("ShowAttributes", showAttributesDialog);
-
-    const showNoteInfoDialog = () => import(NOTE_INFO).then(d => d.showDialog());
-    $noteTabContainer.on("click", ".show-note-info-button", showNoteInfoDialog);
-    keyboardActionService.setGlobalActionHandler("ShowNoteInfo", showNoteInfoDialog);
-
-    const showNoteRevisionsDialog = function() {
-        if ($(this).hasClass("disabled")) {
-            return;
-        }
-
-        import(NOTE_REVISIONS).then(d => d.showCurrentNoteRevisions());
-    };
-
-    $noteTabContainer.on("click", ".show-note-revisions-button", showNoteRevisionsDialog);
-    keyboardActionService.setGlobalActionHandler("ShowNoteRevisions", showNoteRevisionsDialog);
-
-    const showNoteSourceDialog = function() {
-        if ($(this).hasClass("disabled")) {
-            return;
-        }
-
-        import(NOTE_SOURCE).then(d => d.showDialog());
-    };
-
-    $noteTabContainer.on("click", ".show-source-button", showNoteSourceDialog);
-    keyboardActionService.setGlobalActionHandler("ShowNoteSource", showNoteSourceDialog);
-
-    const showLinkMapDialog = () => import(LINK_MAP).then(d => d.showDialog());
-    $noteTabContainer.on("click", ".show-link-map-button", showLinkMapDialog);
-    keyboardActionService.setGlobalActionHandler("ShowLinkMap", showLinkMapDialog);
 
     keyboardActionService.setGlobalActionHandler("InsertDateTimeToText", () => {
         const date = new Date();
         const dateString = utils.formatDateTime(date);
 
         linkService.addTextToEditor(dateString);
-    });
-
-    keyboardActionService.setGlobalActionHandler("PasteMarkdownIntoText", async () => {
-        const dialog = await import("../dialogs/markdown_import.js");
-
-        dialog.importMarkdownInline();
     });
 
     if (utils.isElectron()) {
@@ -141,20 +99,6 @@ function registerEntrypoints() {
         return false;
     });
 
-    keyboardActionService.setGlobalActionHandler("CloneNotesTo", () => import(CLONE_TO).then(d => {
-        const selectedOrActiveNodes = appContext.getMainNoteTree().getSelectedOrActiveNodes();
-
-        const noteIds = selectedOrActiveNodes.map(node => node.data.noteId);
-
-        d.showDialog(noteIds);
-    }));
-
-    keyboardActionService.setGlobalActionHandler("MoveNotesTo", () => import(MOVE_TO).then(d => {
-        const selectedOrActiveNodes = appContext.getMainNoteTree().getSelectedOrActiveNodes();
-
-        d.showDialog(selectedOrActiveNodes);
-    }));
-
     keyboardActionService.setGlobalActionHandler("CreateNoteIntoDayNote", async () => {
         const todayNote = await dateNoteService.getTodayNote();
 
@@ -170,13 +114,6 @@ function registerEntrypoints() {
         await noteDetailService.openInTab(note.noteId, true);
 
         noteDetailService.focusAndSelectTitle();
-    });
-
-    keyboardActionService.setGlobalActionHandler("EditBranchPrefix", async () => {
-        const node = appContext.getMainNoteTree().getActiveNode();
-
-        const editBranchPrefixDialog = await import("../dialogs/branch_prefix.js");
-        editBranchPrefixDialog.showDialog(node);
     });
 
     keyboardActionService.setGlobalActionHandler("ToggleNoteHoisting", async () => {

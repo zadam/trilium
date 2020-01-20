@@ -1,8 +1,13 @@
 import Component from "./component.js";
+import keyboardActionsService from "../services/keyboard_actions.js";
 
 class BasicWidget extends Component {
     render() {
-        return this.doRender();
+        const $widget = this.doRender();
+
+        keyboardActionsService.updateDisplayedShortcuts($widget);
+
+        return $widget;
     }
 
     /**

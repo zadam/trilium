@@ -6,7 +6,6 @@ import treeService from "./tree.js";
 import noteDetailService from "./note_detail.js";
 import TabContext from "./tab_context.js";
 import server from "./server.js";
-import keyboardActionService from "./keyboard_actions.js";
 import TabRowWidget from "../widgets/tab_row.js";
 import NoteTitleWidget from "../widgets/note_title.js";
 import PromotedAttributesWidget from "../widgets/promoted_attributes.js";
@@ -31,10 +30,11 @@ import NoteTypeWidget from "../widgets/note_type.js";
 import NoteActionsWidget from "../widgets/note_actions.js";
 import protectedSessionHolder from "./protected_session_holder.js";
 import bundleService from "./bundle.js";
+import DialogEventComponent from "./dialog_events.js";
 
 class AppContext {
     constructor() {
-        this.widgets = [];
+        this.components = [];
         /** @type {TabContext[]} */
         this.tabContexts = [];
         this.tabsChangedTaskId = null;
@@ -111,8 +111,9 @@ class AppContext {
             $rightPane.append(widget.render());
         }
 
-        this.widgets = [
+        this.components = [
             this.tabRow,
+            new DialogEventComponent(this),
             ...leftPaneWidgets,
             ...centerPaneWidgets,
             ...rightPaneWidgets
@@ -122,12 +123,8 @@ class AppContext {
     trigger(name, data, sync = false) {
         this.eventReceived(name, data);
 
-        for (const tabContext of this.tabContexts) {
+        for (const tabContext of this.components) {
             tabContext.eventReceived(name, data, sync);
-        }
-
-        for (const widget of this.widgets) {
-            widget.eventReceived(name, data, sync);
         }
     }
 
@@ -225,10 +222,10 @@ class AppContext {
                 activate: true
             });
         } else {
-            await tabContext.activate();
+            await this.activateTab(tabContext.tabId);
 
             if (notePath && tabContext.notePath !== notePath) {
-                await treeService.activateNote(notePath);
+                await tabContext.setNote(notePath);
             }
         }
     }
@@ -245,6 +242,7 @@ class AppContext {
             // if it's a new tab explicitly by user then it's in background
             const ctx = new TabContext(this, this.tabRow, state);
             this.tabContexts.push(ctx);
+            this.components.push(ctx);
 
             return ctx;
         } else {
@@ -273,6 +271,7 @@ class AppContext {
     openEmptyTab() {
         const tabContext = new TabContext(this, this.tabRow);
         this.tabContexts.push(tabContext);
+        this.components.push(tabContext);
 
         return tabContext;
     }
@@ -407,6 +406,14 @@ class AppContext {
 
     openNewTabListener() {
         this.openAndActivateEmptyTab();
+    }
+
+    removeAllTabsListener() {
+        // TODO
+    }
+
+    removeAllTabsExceptForThis() {
+        // TODO
     }
 }
 

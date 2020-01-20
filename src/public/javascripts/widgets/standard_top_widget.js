@@ -3,9 +3,6 @@ import HistoryNavigationWidget from "./history_navigation.js";
 import keyboardActionService from "../services/keyboard_actions.js";
 import protectedSessionService from "../services/protected_session.js";
 
-const JUMP_TO_NOTE = "../dialogs/jump_to_note.js";
-const RECENT_CHANGES = "../dialogs/recent_changes.js";
-
 const TPL = `
 <div class="standard-top-widget">
     <style>
@@ -74,15 +71,8 @@ export default class StandardTopWidget extends BasicWidget {
 
         this.$widget.prepend(historyNavigationWidget.render());
 
-        const showJumpToNoteDialog = () => import(JUMP_TO_NOTE).then(d => d.showDialog());
-        this.$widget.find(".jump-to-note-dialog-button").on('click', showJumpToNoteDialog);
-
-        const showRecentChanges = () => import(RECENT_CHANGES).then(d => d.showDialog());
-        this.$widget.find(".recent-changes-button").on('click', showRecentChanges);
-
-        // FIXME
-        keyboardActionService.setGlobalActionHandler("JumpToNote", showJumpToNoteDialog);
-        keyboardActionService.setGlobalActionHandler("ShowRecentChanges", showRecentChanges);
+        this.$widget.find(".jump-to-note-dialog-button").on('click', () => this.trigger('jumpToNote'));
+        this.$widget.find(".recent-changes-button").on('click', () => this.trigger('showRecentChanges'));
 
         this.$widget.find(".enter-protected-session-button").on('click', protectedSessionService.enterProtectedSession);
         this.$widget.find(".leave-protected-session-button").on('click', protectedSessionService.leaveProtectedSession);

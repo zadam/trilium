@@ -87,7 +87,7 @@ function updateDisplayedShortcuts($container) {
 		}
 	});
 
-	$container.find('button[data-kb-action],a.icon-action[data-kb-action]').each(async (i, el) => {
+	$container.find('button[data-kb-action],a.icon-action[data-kb-action],.kb-in-title').each(async (i, el) => {
 		const actionName = $(el).attr('data-kb-action');
 		const action = await getAction(actionName, true);
 
@@ -100,8 +100,6 @@ function updateDisplayedShortcuts($container) {
 		}
 	});
 }
-
-$(() => updateDisplayedShortcuts($(document)));
 
 export default {
 	setGlobalActionHandler,
