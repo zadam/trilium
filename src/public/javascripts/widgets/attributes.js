@@ -24,7 +24,7 @@ class AttributesWidget extends StandardWidget {
     }
 
     async refreshWithNote() {
-        const attributes = await this.tabContext.attributes.getAttributes();console.log("attributes", attributes);
+        const attributes = await this.tabContext.attributes.getAttributes();
         const ownedAttributes = attributes.filter(attr => attr.noteId === this.tabContext.note.noteId);
 
         if (attributes.length === 0) {

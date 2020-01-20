@@ -64,7 +64,7 @@ class NoteInfoWidget extends StandardWidget {
     }
 
     syncDataListener({data}) {
-        if (data.find(sd => sd.entityName === 'notes' && sd.entityId === this.tabContext.note.noteId)) {
+        if (data.find(sd => sd.entityName === 'notes' && this.isNote(sd.entityId))) {
             this.refresh();
         }
     }

@@ -31,6 +31,8 @@ class TabContext extends Component {
         this.attributes = new Attributes(this.appContext, this);
 
         this.children.push(this.attributes);
+
+        this.trigger('tabOpened', {tabId: this.tabId});
     }
 
     async setNote(notePath) {

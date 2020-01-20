@@ -473,6 +473,10 @@ export default class TabRowWidget extends BasicWidget {
         tabEl.setAttribute('active', '');
     }
 
+    tabOpenedListener({tabId}) {
+        this.addTab(tabId);
+    }
+
     removeTab(tabId) {
         const tabEl = this.getTabById(tabId)[0];
 
@@ -595,7 +599,7 @@ export default class TabRowWidget extends BasicWidget {
         if (destinationIndex < originIndex) {
             tabEl.parentNode.insertBefore(tabEl, this.tabEls[destinationIndex]);
         } else {
-            const beforeEl = this.tabEls[destinationIndex + 1] || this.$newTab;
+            const beforeEl = this.tabEls[destinationIndex + 1] || this.$newTab[0];
 
             tabEl.parentNode.insertBefore(tabEl, beforeEl);
         }

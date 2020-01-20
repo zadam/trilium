@@ -264,11 +264,17 @@ class AppContext {
         }
     }
 
-    async openEmptyTab() {
+    async openAndActivateEmptyTab() {
+        const tabContext = this.openEmptyTab();
+
+        await this.activateTab(tabContext.tabId);
+    }
+
+    openEmptyTab() {
         const tabContext = new TabContext(this, this.tabRow);
         this.tabContexts.push(tabContext);
 
-        await this.activateTab(tabContext.tabId);
+        return tabContext;
     }
 
     async filterTabs(noteId) {
@@ -279,7 +285,7 @@ class AppContext {
         }
 
         if (this.tabContexts.length === 0) {
-            this.openEmptyTab()
+            this.openAndActivateEmptyTab()
         }
 
         await this.saveOpenTabs();
@@ -327,7 +333,7 @@ class AppContext {
     }
 
     newTabListener() {
-        this.openEmptyTab();
+        this.openAndActivateEmptyTab();
     }
 
     async removeTab(tabId) {
@@ -339,11 +345,11 @@ class AppContext {
         }
 
         if (this.tabContexts.length === 0) {
-            this.openEmptyTab();
+            this.openAndActivateEmptyTab();
         }
         else {
             const oldIdx = tabIdsInOrder.findIndex(tid => tid === tabId);
-            const newActiveTabId = tabIdsInOrder[oldIdx === tabIdsInOrder.length ? oldIdx - 1 : oldIdx + 1];
+            const newActiveTabId = tabIdsInOrder[oldIdx === tabIdsInOrder.length - 1 ? oldIdx - 1 : oldIdx + 1];
 
             if (newActiveTabId) {
                 this.activateTab(newActiveTabId);
@@ -377,6 +383,30 @@ class AppContext {
 
         // run async
         bundleService.executeRelationBundles(activeTabContext.note, 'runOnNoteChange', activeTabContext);
+    }
+
+    activateNextTabListener() {
+        const tabIdsInOrder = this.tabRow.getTabIdsInOrder();
+        const oldIdx = tabIdsInOrder.findIndex(tid => tid === this.activeTabId);
+        const newActiveTabId = tabIdsInOrder[oldIdx === tabIdsInOrder.length - 1 ? 0 : oldIdx + 1];
+
+        this.activateTab(newActiveTabId);
+    }
+
+    activatePreviousTabListener() {
+        const tabIdsInOrder = this.tabRow.getTabIdsInOrder();
+        const oldIdx = tabIdsInOrder.findIndex(tid => tid === this.activeTabId);
+        const newActiveTabId = tabIdsInOrder[oldIdx === 0 ? tabIdsInOrder.length - 1 : oldIdx - 1];
+
+        this.activateTab(newActiveTabId);
+    }
+
+    closeActiveTabListener() {
+        this.removeTab(this.activeTabId);
+    }
+
+    openNewTabListener() {
+        this.openAndActivateEmptyTab();
     }
 }
 
