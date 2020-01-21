@@ -251,7 +251,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
         if (!node) {
             const hoistedNoteId = await hoistedNoteService.getHoistedNoteId();
 
-            node = getNodesByNoteId(hoistedNoteId)[0];
+            node = this.getNodesByNoteId(hoistedNoteId)[0];
         }
 
         node.setExpanded(false);
@@ -281,8 +281,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
         }
     }
 
-    // FIXME since this operates on note details tab context it seems it does not really belong here
-    async scrollToActiveNote() {
+    async scrollToActiveNoteListener() {
         const activeContext = appContext.getActiveTabContext();
 
         if (activeContext && activeContext.notePath) {

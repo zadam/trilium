@@ -124,8 +124,8 @@ body {
     background-color: inherit;
 }
 
-.widget .note-info-table td, .widget .note-info-table th {
-    padding: 5px;
+#note-info-table td, #note-info-table th {
+    padding: 15px;
 }
 
 [data-toggle="tooltip"] span {

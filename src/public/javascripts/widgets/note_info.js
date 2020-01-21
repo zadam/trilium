@@ -1,7 +1,18 @@
 import StandardWidget from "./standard_widget.js";
 
 const TPL = `
-<table class="note-info-table" style="table-layout: fixed; width: 100%;">
+<table class="note-info-widget-table">
+    <style>
+        .note-info-widget-table {
+            table-layout: fixed; 
+            width: 100%;
+        } 
+   
+        .note-info-widget-table td, .note-info-widget-table th {
+            padding: 5px;
+        }
+    </style>
+
     <tr>
         <th nowrap>Note ID:</th>
         <td nowrap colspan="3" class="note-info-note-id"></td>

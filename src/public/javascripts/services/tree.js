@@ -556,8 +556,6 @@ keyboardActionService.setGlobalActionHandler('CutIntoNote', () => createNoteInto
 
 keyboardActionService.setGlobalActionHandler('CreateNoteInto', createNoteInto);
 
-keyboardActionService.setGlobalActionHandler('ScrollToActiveNote', () => appContext.getMainNoteTree().scrollToActiveNote());
-
 $(window).bind('hashchange', async function() {
     if (isNotePathInAddress()) {
         const [notePath, tabId] = getHashValueFromAddress();

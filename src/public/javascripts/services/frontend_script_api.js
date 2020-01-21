@@ -50,7 +50,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
      */
     this.activateNote = async (notePath, noteLoadedListener) => {
         await treeService.activateNote(notePath, async () => {
-            await appContext.getMainNoteTree().scrollToActiveNote();
+            await appContext.getMainNoteTree().scrollToActiveNoteListener();
 
             if (noteLoadedListener) {
                 noteLoadedListener();
