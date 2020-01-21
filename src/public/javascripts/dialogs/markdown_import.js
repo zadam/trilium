@@ -2,6 +2,7 @@ import libraryLoader from "../services/library_loader.js";
 import toastService from "../services/toast.js";
 import utils from "../services/utils.js";
 import noteDetailService from "../services/note_detail.js";
+import appContext from "../services/app_context.js";
 
 const $dialog = $('#markdown-import-dialog');
 const $importTextarea = $('#markdown-import-textarea');

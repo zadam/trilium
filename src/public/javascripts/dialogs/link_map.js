@@ -1,6 +1,6 @@
 import utils from "../services/utils.js";
 import LinkMapService from "../services/link_map.js";
-import noteDetailService from "../services/note_detail.js";
+import appContext from "../services/app_context.js";
 
 const $linkMapContainer = $("#link-map-container");
 

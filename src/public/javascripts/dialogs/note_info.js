@@ -1,5 +1,5 @@
-import noteDetailService from '../services/note_detail.js';
 import utils from "../services/utils.js";
+import appContext from "../services/app_context.js";
 
 const $dialog = $("#note-info-dialog");
 const $noteId = $("#note-info-note-id");

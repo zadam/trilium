@@ -32,7 +32,7 @@ export default class NoteActionsWidget extends TabAwareWidget {
         this.$showLinkMapButton.on('click', e => this.triggerEvent(e, 'showLinkMap'));
 
         this.$showSourceButton = this.$widget.find('.show-source-button');
-        this.$showSourceButton.on('click', e => this.triggerEvent(e, 'showSource'));
+        this.$showSourceButton.on('click', e => this.triggerEvent(e, 'showNoteSource'));
 
         this.$showNoteInfoButton = this.$widget.find('.show-note-info-button');
         this.$showNoteInfoButton.on('click', e => this.triggerEvent(e, 'showNoteInfo'));

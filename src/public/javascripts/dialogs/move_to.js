@@ -5,12 +5,11 @@ import treeUtils from "../services/tree_utils.js";
 import toastService from "../services/toast.js";
 import treeCache from "../services/tree_cache.js";
 import treeChangesService from "../services/branches.js";
-import treeService from "../services/tree.js";
+import appContext from "../services/app_context.js";
 
 const $dialog = $("#move-to-dialog");
 const $form = $("#move-to-form");
 const $noteAutoComplete = $("#move-to-note-autocomplete");
-const $movePrefix = $("#move-prefix");
 const $noteList = $("#move-to-note-list");
 
 let movedNodes;

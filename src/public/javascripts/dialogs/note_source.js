@@ -1,4 +1,4 @@
-import noteDetailService from '../services/note_detail.js';
+import appContext from "../services/app_context.js";
 import utils from "../services/utils.js";
 
 const $dialog = $("#note-source-dialog");
