@@ -96,6 +96,10 @@ class TabContext extends Component {
         }
     }
 
+    isActive() {
+        return this.appContext.activeTabId === this.tabId;
+    }
+
     getTabState() {
         if (!this.notePath) {
             return null;

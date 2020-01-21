@@ -15,7 +15,7 @@ const $explodeArchivesCheckbox = $("#explode-archives-checkbox");
 
 let parentNoteId = null;
 
-export async function showDialog(node) {
+export async function showDialog(noteId) {
     utils.closeActiveDialog();
 
     $fileUploadInput.val('').trigger('change'); // to trigger Import button disabling listener below
@@ -28,7 +28,7 @@ export async function showDialog(node) {
 
     glob.activeDialog = $dialog;
 
-    parentNoteId = node.data.noteId;
+    parentNoteId = noteId;
 
     $noteTitle.text(await treeUtils.getNoteTitle(parentNoteId));
 

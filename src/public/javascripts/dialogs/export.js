@@ -2,6 +2,7 @@ import treeUtils from "../services/tree_utils.js";
 import utils from "../services/utils.js";
 import ws from "../services/ws.js";
 import toastService from "../services/toast.js";
+import treeCache from "../services/tree_cache.js";
 
 const $dialog = $("#export-dialog");
 const $form = $("#export-form");
@@ -16,7 +17,7 @@ const $opmlVersions = $("#opml-versions");
 let taskId = '';
 let branchId = null;
 
-export async function showDialog(node, defaultType) {
+export async function showDialog(notePath, defaultType) {
     utils.closeActiveDialog();
 
     // each opening of the dialog resets the taskId so we don't associate it with previous exports anymore
@@ -42,9 +43,11 @@ export async function showDialog(node, defaultType) {
 
     $dialog.modal();
 
-    branchId = node.data.branchId;
+    const {noteId, parentNoteId} = treeUtils.getNoteIdAndParentIdFromNotePath(notePath);
 
-    const noteTitle = await treeUtils.getNoteTitle(node.data.noteId);
+    branchId = await treeCache.getBranchId(parentNoteId, noteId);
+
+    const noteTitle = await treeUtils.getNoteTitle(noteId);
 
     $noteTitle.html(noteTitle);
 }

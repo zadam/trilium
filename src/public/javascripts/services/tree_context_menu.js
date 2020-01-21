@@ -99,9 +99,9 @@ class TreeContextMenu {
     }
 
     async selectContextMenuItem(event, cmd) {
-        if (cmd === 'openInTab') {
-            const notePath = await treeUtils.getNotePath(this.node);
+        const notePath = await treeUtils.getNotePath(this.node);
 
+        if (cmd === 'openInTab') {
             noteDetailService.openInTab(notePath, false);
         }
         else if (cmd.startsWith("insertNoteAfter")) {
@@ -160,11 +160,11 @@ class TreeContextMenu {
         }
         else if (cmd === "export") {
             const exportDialog = await import('../dialogs/export.js');
-            exportDialog.showDialog(this.node,"subtree");
+            exportDialog.showDialog(notePath,"subtree");
         }
         else if (cmd === "importIntoNote") {
             const importDialog = await import('../dialogs/import.js');
-            importDialog.showDialog(this.node);
+            importDialog.showDialog(this.node.data.noteId);
         }
         else if (cmd === "collapseSubtree") {
             this.treeWidget.collapseTree(this.node);

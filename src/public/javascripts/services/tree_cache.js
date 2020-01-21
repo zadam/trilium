@@ -193,6 +193,12 @@ class TreeCache {
             return this.branches[branchId];
         }
     }
+
+    async getBranchId(parentNoteId, childNoteId) {
+        const child = await this.getNote(childNoteId);
+
+        return child.parentToBranch[parentNoteId];
+    }
 }
 
 const treeCache = new TreeCache();

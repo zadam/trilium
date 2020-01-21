@@ -116,46 +116,6 @@ if (utils.isElectron()) {
     });
 }
 
-const $noteTabContainer = $("#note-tab-container");
-
-$noteTabContainer.on("click", ".export-note-button", function () {
-    if ($(this).hasClass("disabled")) {
-        return;
-    }
-
-    import('./dialogs/export.js').then(d => d.showDialog(appContext.getMainNoteTree().getActiveNode(), 'single'));
-});
-
-$noteTabContainer.on("click", ".import-files-button",
-    () => import('./dialogs/import.js').then(d => d.showDialog(appContext.getMainNoteTree().getActiveNode())));
-
-async function printActiveNote() {
-    if ($(this).hasClass("disabled")) {
-        return;
-    }
-
-    const $tabContext = appContext.getActiveTabContext();
-    if (!$tabContext) {
-        return;
-    }
-
-    await libraryLoader.requireLibrary(libraryLoader.PRINT_THIS);
-
-    $tabContext.$tabContent.find('.note-detail-printable:visible').printThis({
-        header: $("<h2>").text($tabContext.note && $tabContext.note.title).prop('outerHTML') ,
-        importCSS: false,
-        loadCSS: [
-            "libraries/codemirror/codemirror.css",
-            "libraries/ckeditor/ckeditor-content.css"
-        ],
-        debug: true
-    });
-}
-
-keyboardActionService.setGlobalActionHandler("PrintActiveNote", printActiveNote);
-
-$noteTabContainer.on("click", ".print-note-button", printActiveNote);
-
 $('[data-toggle="tooltip"]').tooltip({
     html: true
 });

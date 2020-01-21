@@ -4,6 +4,7 @@ import protectedSessionHolder from "../services/protected_session_holder.js";
 import appContext from "../services/app_context.js";
 import SpacedUpdate from "../services/spaced_update.js";
 import server from "../services/server.js";
+import libraryLoader from "../services/library_loader.js";
 
 const TPL = `
 <div class="note-detail">
@@ -181,5 +182,23 @@ export default class NoteDetailWidget extends TabAwareWidget {
         if (this.isTab(tabId)) {
             await this.spacedUpdate.updateNowIfNecessary();
         }
+    }
+
+    async printActiveNoteListener() {
+        if (!this.tabContext.isActive()) {
+            return;
+        }
+
+        await libraryLoader.requireLibrary(libraryLoader.PRINT_THIS);
+
+        this.$widget.find('.note-detail-printable:visible').printThis({
+            header: $("<h2>").text(this.tabContext.note && this.tabContext.note.title).prop('outerHTML') ,
+            importCSS: false,
+            loadCSS: [
+                "libraries/codemirror/codemirror.css",
+                "libraries/ckeditor/ckeditor-content.css"
+            ],
+            debug: true
+        });
     }
 }

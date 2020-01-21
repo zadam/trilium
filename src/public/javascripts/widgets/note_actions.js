@@ -1,4 +1,7 @@
 import TabAwareWidget from "./tab_aware_widget.js";
+import appContext from "../services/app_context.js";
+import libraryLoader from "../services/library_loader.js";
+import keyboardActionService from "../services/keyboard_actions.js";
 
 const TPL = `
 <div class="dropdown note-actions">
@@ -37,7 +40,20 @@ export default class NoteActionsWidget extends TabAwareWidget {
         this.$showNoteInfoButton = this.$widget.find('.show-note-info-button');
         this.$showNoteInfoButton.on('click', e => this.triggerEvent(e, 'showNoteInfo'));
 
+        this.$printNoteButton = this.$widget.find('.print-note-button');
+        this.$printNoteButton.on('click', e => this.triggerEvent(e, 'printActiveNote'));
+
         this.$exportNoteButton = this.$widget.find('.export-note-button');
+        this.$exportNoteButton.on("click", () => {
+            if (this.$exportNoteButton.hasClass("disabled")) {
+                return;
+            }
+
+            import('../dialogs/export.js').then(d => d.showDialog(this.tabContext.notePath, 'single'));
+        });
+
+        this.$importNoteButton = this.$widget.find('.import-files-button');
+        this.$importNoteButton.on("click", () => import('../dialogs/import.js').then(d => d.showDialog(this.tabContext.note.noteId)));
 
         return this.$widget;
     }
