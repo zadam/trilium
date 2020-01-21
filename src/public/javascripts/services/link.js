@@ -2,6 +2,7 @@ import treeService from './tree.js';
 import treeUtils from './tree_utils.js';
 import contextMenuService from "./context_menu.js";
 import noteDetailService from "./note_detail.js";
+import appContext from "./app_context.js";
 
 function getNotePathFromUrl(url) {
     const notePathMatch = /#(root[A-Za-z0-9/]*)$/.exec(url);
@@ -98,28 +99,6 @@ function goToLink(e) {
     return true;
 }
 
-function addLinkToEditor(linkTitle, linkHref) {
-    const editor = noteDetailService.getActiveEditor();
-
-    if (editor) {
-        editor.model.change(writer => {
-            const insertPosition = editor.model.document.selection.getFirstPosition();
-            writer.insertText(linkTitle, {linkHref: linkHref}, insertPosition);
-        });
-    }
-}
-
-function addTextToEditor(text) {
-    const editor = noteDetailService.getActiveEditor();
-
-    if (editor) {
-        editor.model.change(writer => {
-            const insertPosition = editor.model.document.selection.getFirstPosition();
-            writer.insertText(text, insertPosition);
-        });
-    }
-}
-
 function newTabContextMenu(e) {
     const $link = $(e.target).closest("a");
 
@@ -188,7 +167,5 @@ $(document).on('contextmenu', ".note-detail-render a", newTabContextMenu);
 export default {
     getNotePathFromUrl,
     createNoteLink,
-    addLinkToEditor,
-    addTextToEditor,
     goToLink
 };

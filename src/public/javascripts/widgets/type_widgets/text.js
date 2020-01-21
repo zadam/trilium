@@ -2,8 +2,11 @@ import libraryLoader from "../../services/library_loader.js";
 import treeService from '../../services/tree.js';
 import noteAutocompleteService from '../../services/note_autocomplete.js';
 import mimeTypesService from '../../services/mime_types.js';
-import TabAwareWidget from "../tab_aware_widget.js";
 import TypeWidget from "./type_widget.js";
+import utils from "../../services/utils.js";
+import linkService from "../../services/link.js";
+import appContext from "../../services/app_context.js";
+import noteDetailService from "../../services/note_detail.js";
 
 const ENABLE_INSPECTOR = false;
 
@@ -188,6 +191,31 @@ class TextTypeWidget extends TypeWidget {
 
     scrollToTop() {
         this.$widget.scrollTop(0);
+    }
+
+    insertDateTimeToTextListener() {
+        const date = new Date();
+        const dateString = utils.formatDateTime(date);
+
+        this.addTextToEditor(dateString);
+    }
+
+    async addLinkToEditor(linkTitle, linkHref) {
+        await this.initialized;
+
+        this.textEditor.model.change(writer => {
+            const insertPosition = this.textEditor.model.document.selection.getFirstPosition();
+            writer.insertText(linkTitle, {linkHref: linkHref}, insertPosition);
+        });
+    }
+
+    async addTextToEditor(text) {
+        await this.initialized;
+
+        this.textEditor.model.change(writer => {
+            const insertPosition = this.textEditor.model.document.selection.getFirstPosition();
+            writer.insertText(text, insertPosition);
+        });
     }
 }
 

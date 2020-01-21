@@ -10,6 +10,7 @@ import noteDetailService from './note_detail.js';
 import clipboard from './clipboard.js';
 import protectedSessionHolder from "./protected_session_holder.js";
 import searchNotesService from "./search_notes.js";
+import appContext from "./app_context.js";
 
 class TreeContextMenu {
     /**
@@ -99,6 +100,7 @@ class TreeContextMenu {
     }
 
     async selectContextMenuItem(event, cmd) {
+        const noteId = this.node.data.noteId;
         const notePath = await treeUtils.getNotePath(this.node);
 
         if (cmd === 'openInTab') {
@@ -127,10 +129,10 @@ class TreeContextMenu {
             branchPrefixDialog.showDialog(this.node);
         }
         else if (cmd === "protectSubtree") {
-            protectedSessionService.protectSubtree(this.node.data.noteId, true);
+            protectedSessionService.protectSubtree(noteId, true);
         }
         else if (cmd === "unprotectSubtree") {
-            protectedSessionService.protectSubtree(this.node.data.noteId, false);
+            protectedSessionService.protectSubtree(noteId, false);
         }
         else if (cmd === "copy") {
             clipboard.copy(this.getSelectedOrActiveBranchIds());
@@ -153,7 +155,7 @@ class TreeContextMenu {
             clipboard.pasteAfter(this.node.data.branchId);
         }
         else if (cmd === "pasteInto") {
-            clipboard.pasteInto(this.node.data.noteId);
+            clipboard.pasteInto(noteId);
         }
         else if (cmd === "delete") {
             treeChangesService.deleteNodes(this.getSelectedOrActiveBranchIds());
@@ -164,19 +166,19 @@ class TreeContextMenu {
         }
         else if (cmd === "importIntoNote") {
             const importDialog = await import('../dialogs/import.js');
-            importDialog.showDialog(this.node.data.noteId);
+            importDialog.showDialog(noteId);
         }
         else if (cmd === "collapseSubtree") {
             this.treeWidget.collapseTree(this.node);
         }
         else if (cmd === "forceNoteSync") {
-            syncService.forceNoteSync(this.node.data.noteId);
+            syncService.forceNoteSync(noteId);
         }
         else if (cmd === "sortAlphabetically") {
-            treeService.sortAlphabetically(this.node.data.noteId);
+            treeService.sortAlphabetically(noteId);
         }
         else if (cmd === "hoist") {
-            hoistedNoteService.setHoistedNoteId(this.node.data.noteId);
+            hoistedNoteService.setHoistedNoteId(noteId);
         }
         else if (cmd === "unhoist") {
             hoistedNoteService.unhoist();
@@ -184,10 +186,10 @@ class TreeContextMenu {
         else if (cmd === "duplicateNote") {
             const branch = treeCache.getBranch(this.node.data.branchId);
 
-            treeService.duplicateNote(this.node.data.noteId, branch.parentNoteId);
+            treeService.duplicateNote(noteId, branch.parentNoteId);
         }
         else if (cmd === "searchInSubtree") {
-            searchNotesService.searchInSubtree(this.node.data.noteId);
+            appContext.trigger("searchInSubtree", {noteId});
         }
         else {
             ws.logError("Unknown command: " + cmd);

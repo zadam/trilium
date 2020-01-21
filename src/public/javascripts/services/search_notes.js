@@ -13,12 +13,6 @@ async function refreshSearch() {
     toastService.showMessage("Saved search note refreshed.");
 }
 
-function searchInSubtree(noteId) {
-    showSearch();
-
-    $searchInput.val(`@in=${noteId} @text*=*`);
-}
-
 function init() {
     const hashValue = document.location.hash ? document.location.hash.substr(1) : ""; // strip initial #
 
@@ -35,6 +29,5 @@ export default {
     // doSearch,
     refreshSearch,
     init,
-    searchInSubtree,
     getHelpText: () => helpText
 };

@@ -15,7 +15,7 @@ import treeChanges from './services/branches.js';
 import treeUtils from './services/tree_utils.js';
 import utils from './services/utils.js';
 import server from './services/server.js';
-import entrypoints from './services/entrypoints.js';
+import Entrypoints from './services/entrypoints.js';
 import noteTooltipService from './services/note_tooltip.js';
 import bundle from "./services/bundle.js";
 import treeCache from "./services/tree_cache.js";
@@ -132,8 +132,6 @@ macInit.init();
 searchNotesService.init(); // should be in front of treeService since that one manipulates address bar hash
 
 appContext.showWidgets();
-
-entrypoints.registerEntrypoints();
 
 noteTooltipService.setupGlobalTooltip();
 

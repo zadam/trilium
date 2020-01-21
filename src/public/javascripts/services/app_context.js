@@ -31,6 +31,7 @@ import NoteActionsWidget from "../widgets/note_actions.js";
 import protectedSessionHolder from "./protected_session_holder.js";
 import bundleService from "./bundle.js";
 import DialogEventComponent from "./dialog_events.js";
+import Entrypoints from "./entrypoints.js";
 
 class AppContext {
     constructor() {
@@ -112,6 +113,7 @@ class AppContext {
         }
 
         this.components = [
+            new Entrypoints(),
             this.tabRow,
             new DialogEventComponent(this),
             ...leftPaneWidgets,
@@ -123,8 +125,8 @@ class AppContext {
     trigger(name, data, sync = false) {
         this.eventReceived(name, data);
 
-        for (const tabContext of this.components) {
-            tabContext.eventReceived(name, data, sync);
+        for (const component of this.components) {
+            component.eventReceived(name, data, sync);
         }
     }
 

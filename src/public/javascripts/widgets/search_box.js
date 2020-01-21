@@ -20,19 +20,19 @@ const helpText = `
 </p>`;
 
 const TPL = `
-<style>
-.search-box {
-    display: none;
-    padding: 10px;
-    margin-top: 10px;
-}
-
-.search-text {
-    border: 1px solid var(--main-border-color);
-}
-</style>
-
 <div class="search-box">
+    <style>
+    .search-box {
+        display: none;
+        padding: 10px;
+        margin-top: 10px;
+    }
+    
+    .search-text {
+        border: 1px solid var(--main-border-color);
+    }
+    </style>
+
     <div class="form-group">
         <div class="input-group">
             <input name="search-text" class="search-text form-control"
@@ -58,14 +58,14 @@ const TPL = `
 
 export default class SearchBoxWidget extends BasicWidget {
     doRender() {
-        const $widget = $(TPL);
+        this.$widget = $(TPL);
 
-        this.$searchBox = $widget.find(".search-box");
-        this.$closeSearchButton = $widget.find(".close-search-button");
-        this.$searchInput = $widget.find("input[name='search-text']");
-        this.$resetSearchButton = $widget.find(".reset-search-button");
-        this.$doSearchButton = $widget.find(".do-search-button");
-        this.$saveSearchButton = $widget.find(".save-search-button");
+        this.$searchBox = this.$widget;
+        this.$closeSearchButton = this.$widget.find(".close-search-button");
+        this.$searchInput = this.$widget.find("input[name='search-text']");
+        this.$resetSearchButton = this.$widget.find(".reset-search-button");
+        this.$doSearchButton = this.$widget.find(".do-search-button");
+        this.$saveSearchButton = this.$widget.find(".save-search-button");
 
         this.$searchInput.on('keyup',e => {
             const searchText = this.$searchInput.val();
@@ -87,7 +87,7 @@ export default class SearchBoxWidget extends BasicWidget {
 
         this.$closeSearchButton.on('click', () => this.hideSearchListener());
 
-        return $widget;
+        return this.$widget;
     }
 
     doSearch(searchText) {
@@ -171,7 +171,19 @@ export default class SearchBoxWidget extends BasicWidget {
         }
     }
 
+    searchNotesListener() {
+        this.toggleSearchListener();
+    }
+
     resetSearchListener() {
         this.$searchInput.val("");
+    }
+
+    searchInSubtreeListener({noteId}) {
+        noteId = noteId || appContext.getActiveTabNoteId();
+
+        this.toggle(true);
+
+        this.$searchInput.val(`@in=${noteId} @text*=*`);
     }
 }

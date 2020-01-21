@@ -12,7 +12,8 @@ const keyboardActionsLoaded = server.get('keyboard-actions').then(actions => {
 			if (shortcut && !shortcut.startsWith("global:")) { // global shortcuts should be handled in the electron code
 				const eventName = action.actionName.charAt(0).toLowerCase() + action.actionName.slice(1);
 
-				utils.bindGlobalShortcut(shortcut, () => appContext.trigger(eventName));
+				// empty object param so that destructuring with optional params work
+				utils.bindGlobalShortcut(shortcut, () => appContext.trigger(eventName, {}));
 			}
 		}
 	}
