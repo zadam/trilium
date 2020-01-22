@@ -1,6 +1,7 @@
 import linkService from "../../services/link.js";
 import treeCache from "../../services/tree_cache.js";
 import noteContentRenderer from "../../services/note_content_renderer.js";
+import TypeWidget from "./type_widget.js";
 
 const MIN_ZOOM_LEVEL = 1;
 const MAX_ZOOM_LEVEL = 6;
@@ -32,18 +33,104 @@ const ZOOMS = {
     }
 };
 
-class NoteDetailBook {
-    /**
-     * @param {TabContext} ctx
-     */
-    constructor(ctx) {
-        this.ctx = ctx;
-        this.$component = ctx.$tabContent.find('.note-detail-book');
-        this.$content = this.$component.find('.note-detail-book-content');
-        this.$zoomInButton = this.$component.find('.book-zoom-in-button');
-        this.$zoomOutButton = this.$component.find('.book-zoom-out-button');
-        this.$expandChildrenButton = this.$component.find('.expand-children-button');
-        this.$help = this.$component.find('.note-detail-book-help');
+const TPL = `
+<div class="note-detail-book note-detail-printable">
+    <style>
+    .note-detail-book {
+        height: 100%;
+        padding: 10px;
+    }
+    
+    .note-detail-book-content {
+        display: flex;
+        flex-wrap: wrap;
+        overflow: auto;
+        height: 100%;
+        align-content: start;
+    }
+    
+    .note-book-card {
+        border-radius: 10px;
+        background-color: var(--accented-background-color);
+        padding: 15px;
+        padding-bottom: 5px;
+        margin: 5px;
+        margin-left: 0;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        flex-shrink: 0;
+    }
+    
+    .note-book-card .note-book-card {
+        border: 1px solid var(--main-border-color);
+    }
+    
+    .note-book-content {
+        overflow: hidden;
+    }
+    
+    .note-book-card.type-image .note-book-content, .note-book-card.type-file .note-book-content, .note-book-card.type-protected-session .note-book-content {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+    }
+    
+    .note-book-card.type-image .note-book-content img {
+        max-width: 100%;
+        max-height: 100%;
+    }
+    
+    .note-book-title {
+        flex-grow: 0;
+    }
+    
+    .note-book-content {
+        flex-grow: 1;
+    }
+    
+    .note-book-auto-message {
+        background-color: var(--accented-background-color);
+        text-align: center;
+        width: 100%;
+        border-radius: 10px;
+        padding: 5px;
+        margin-top: 5px;
+    }
+    </style>
+
+    <div class="btn-group floating-button" style="right: 20px; top: 20px;">
+        <button type="button"
+                class="expand-children-button btn icon-button bx bx-move-vertical"
+                title="Expand all children"></button>
+
+        <button type="button"
+                class="book-zoom-in-button btn icon-button bx bx-zoom-in"
+                title="Zoom In"></button>
+
+        <button type="button"
+                class="book-zoom-out-button btn icon-button bx bx-zoom-out"
+                title="Zoom Out"></button>
+    </div>
+
+    <div class="note-detail-book-help alert alert-warning">
+        This note of type Book doesn't have any child notes so there's nothing to display. See <a href="https://github.com/zadam/trilium/wiki/Book-note">wiki</a> for details.
+    </div>
+
+    <div class="note-detail-book-content"></div>
+</div>`;
+
+export default class BookTypeWidget extends TypeWidget {
+    static getType() { return "book"; }
+
+    doRender() {
+        this.$widget = $(TPL);
+        this.$content = this.$widget.find('.note-detail-book-content');
+        this.$zoomInButton = this.$widget.find('.book-zoom-in-button');
+        this.$zoomOutButton = this.$widget.find('.book-zoom-out-button');
+        this.$expandChildrenButton = this.$widget.find('.expand-children-button');
+        this.$help = this.$widget.find('.note-detail-book-help');
 
         this.$zoomInButton.on('click', () => this.setZoom(this.zoomLevel - 1));
         this.$zoomOutButton.on('click', () => this.setZoom(this.zoomLevel + 1));
@@ -78,6 +165,8 @@ class NoteDetailBook {
 
             $card.find('.note-book-children-content').empty();
         });
+        
+        return this.$widget;
     }
 
     async expandCard($card) {
@@ -104,13 +193,13 @@ class NoteDetailBook {
         this.$content.find('.note-book-content').css("max-height", ZOOMS[zoomLevel].height);
     }
 
-    async render() {
+    async doRefresh() {
         this.$content.empty();
         this.$help.hide();
 
         if (this.isAutoBook()) {
             const $addTextLink = $('<a href="javascript:">here</a>').on('click', () => {
-                this.ctx.renderComponent(true);
+                // FIXME
             });
 
             this.$content.append($('<div class="note-book-auto-message"></div>')
@@ -119,17 +208,17 @@ class NoteDetailBook {
                 .append(' if you want to add some text.'))
         }
 
-        const zoomLevel = parseInt(await this.ctx.note.getLabelValue('bookZoomLevel')) || this.getDefaultZoomLevel();
+        const zoomLevel = parseInt(await this.tabContext.note.getLabelValue('bookZoomLevel')) || this.getDefaultZoomLevel();
         this.setZoom(zoomLevel);
 
-        await this.renderIntoElement(this.ctx.note, this.$content);
+        await this.renderIntoElement(this.tabContext.note, this.$content);
     }
 
     async renderIntoElement(note, $container) {
         const childNotes = await note.getChildNotes();
 
         for (const childNote of childNotes) {
-            const childNotePath = this.ctx.notePath + '/' + childNote.noteId;
+            const childNotePath = this.tabContext.notePath + '/' + childNote.noteId;
 
             const {type, renderedContent} = await noteContentRenderer.getRenderedContent(childNote);
 
@@ -164,12 +253,12 @@ class NoteDetailBook {
 
     /** @return {boolean} true if this is "auto book" activated (empty text note) and not explicit book note */
     isAutoBook() {
-        return this.ctx.note.type !== 'book';
+        return this.tabContext.note.type !== 'book';
     }
 
     getDefaultZoomLevel() {
         if (this.isAutoBook()) {
-            const w = this.$component.width();
+            const w = this.$widget.width();
 
             if (w <= 600) {
                 return 1;
@@ -192,7 +281,7 @@ class NoteDetailBook {
     }
 
     show() {
-        this.$component.show();
+        this.$widget.show();
     }
 
     focus() {}
@@ -204,8 +293,6 @@ class NoteDetailBook {
     }
 
     scrollToTop() {
-        this.$component.scrollTop(0);
+        this.$widget.scrollTop(0);
     }
 }
-
-export default NoteDetailBook;

@@ -55,7 +55,7 @@ const TPL = `
     <input type="file" class="file-upload-new-revision-input" style="display: none">
 </div>`;
 
-class FileTypeWidget extends TypeWidget {
+export default class FileTypeWidget extends TypeWidget {
     static getType() { return "file"; }
 
     doRender() {
@@ -156,5 +156,3 @@ class FileTypeWidget extends TypeWidget {
 
     scrollToTop() {}
 }
-
-export default FileTypeWidget;

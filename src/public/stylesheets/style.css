@@ -398,14 +398,6 @@ button.icon-button {
     padding: 0;
 }
 
-.note-detail-image {
-    text-align: center;
-}
-
-.note-detail-image-view {
-    max-width: 100%;
-}
-
 pre:not(.CodeMirror-line) {
     color: var(--main-text-color) !important;
     white-space: pre-wrap;
@@ -625,12 +617,6 @@ div[data-notify="container"] {
     cursor: pointer !important;
 }
 
-#protected-session-password-component {
-    max-width: 450px;
-    margin: auto;
-    padding-top: 50px;
-}
-
 .ck-editor__is-empty.ck-content.ck-editor__editable::before {
     content: 'You can start writing note here ...';
     position: absolute;
@@ -711,10 +697,7 @@ a.external:not(.no-arrow):after, a[href^="http://"]:not(.no-arrow):after, a[href
     display: inline-block;
 }
 
-.protected-session-password-component {
-    width: 300px;
-    margin: 30px auto auto;
-}
+
 
 .note-detail-empty {
     margin: 50px;
@@ -727,68 +710,6 @@ a.external:not(.no-arrow):after, a[href^="http://"]:not(.no-arrow):after, a[href
 .floating-button {
     position: absolute !important;
     z-index: 100;
-}
-
-.note-detail-book {
-    height: 100%;
-}
-
-.note-detail-book-content {
-    display: flex;
-    flex-wrap: wrap;
-    overflow: auto;
-    height: 100%;
-    align-content: start;
-}
-
-.note-book-card {
-    border-radius: 10px;
-    background-color: var(--accented-background-color);
-    padding: 15px;
-    padding-bottom: 5px;
-    margin: 5px;
-    margin-left: 0;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    flex-shrink: 0;
-}
-
-.note-book-card .note-book-card {
-    border: 1px solid var(--main-border-color);
-}
-
-.note-book-content {
-    overflow: hidden;
-}
-
-.note-book-card.type-image .note-book-content, .note-book-card.type-file .note-book-content, .note-book-card.type-protected-session .note-book-content {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-}
-
-.note-book-card.type-image .note-book-content img {
-    max-width: 100%;
-    max-height: 100%;
-}
-
-.note-book-title {
-    flex-grow: 0;
-}
-
-.note-book-content {
-    flex-grow: 1;
-}
-
-.note-book-auto-message {
-    background-color: var(--accented-background-color);
-    text-align: center;
-    width: 100%;
-    border-radius: 10px;
-    padding: 5px;
-    margin-top: 5px;
 }
 
 #toast-container {

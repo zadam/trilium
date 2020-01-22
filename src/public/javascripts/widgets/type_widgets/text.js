@@ -4,9 +4,6 @@ import noteAutocompleteService from '../../services/note_autocomplete.js';
 import mimeTypesService from '../../services/mime_types.js';
 import TypeWidget from "./type_widget.js";
 import utils from "../../services/utils.js";
-import linkService from "../../services/link.js";
-import appContext from "../../services/app_context.js";
-import noteDetailService from "../../services/note_detail.js";
 
 const ENABLE_INSPECTOR = false;
 
@@ -77,7 +74,7 @@ const TPL = `
 </div>
 `;
 
-class TextTypeWidget extends TypeWidget {
+export default class TextTypeWidget extends TypeWidget {
     static getType() { return "text"; }
 
     doRender() {
@@ -218,5 +215,3 @@ class TextTypeWidget extends TypeWidget {
         });
     }
 }
-
-export default TextTypeWidget;

@@ -6,6 +6,7 @@ import treeService from "../../services/tree.js";
 import contextMenuWidget from "../../services/context_menu.js";
 import toastService from "../../services/toast.js";
 import attributeAutocompleteService from "../../services/attribute_autocomplete.js";
+import TypeWidget from "./type_widget.js";
 
 const uniDirectionalOverlays = [
     [ "Arrow", {
@@ -61,20 +62,47 @@ const linkOverlays = [
     } ]
 ];
 
+const TPL = `
+<div class="note-detail-relation-map note-detail-printable">
+    <button class="relation-map-create-child-note btn btn-sm floating-button" type="button"
+            title="Create new child note and add it into this relation map">
+        <span class="bx bx-folder-plus"></span>
+
+        Create child note
+    </button>
+
+    <button type="button"
+            class="relation-map-reset-pan-zoom btn icon-button floating-button bx bx-crop"
+            title="Reset pan & zoom to initial coordinates and magnification"
+            style="right: 70px;"></button>
+
+    <div class="btn-group floating-button" style="right: 10px;">
+        <button type="button"
+                class="relation-map-zoom-in btn icon-button bx bx-zoom-in"
+                title="Zoom In"></button>
+
+        <button type="button"
+                class="relation-map-zoom-out btn icon-button bx bx-zoom-out"
+                title="Zoom Out"></button>
+    </div>
+
+    <div class="relation-map-wrapper">
+       <div class="relation-map-container"></div>
+    </div>
+</div>`;
+
 let containerCounter = 1;
 
-class NoteDetailRelationMap {
-    /**
-     * @param {TabContext} ctx
-     */
-    constructor(ctx) {
-        this.ctx = ctx;
-        this.$component = ctx.$tabContent.find(".note-detail-relation-map");
-        this.$relationMapContainer = ctx.$tabContent.find(".relation-map-container");
-        this.$createChildNote = ctx.$tabContent.find(".relation-map-create-child-note");
-        this.$zoomInButton = ctx.$tabContent.find(".relation-map-zoom-in");
-        this.$zoomOutButton = ctx.$tabContent.find(".relation-map-zoom-out");
-        this.$resetPanZoomButton = ctx.$tabContent.find(".relation-map-reset-pan-zoom");
+export default class RelationMapTypeWidget extends TypeWidget {
+    static getType() { return "relation-map"; }
+
+    doRender() {
+        this.$widget = $(TPL);
+        this.$relationMapContainer = this.$widget.find(".relation-map-container");
+        this.$createChildNote = this.$widget.find(".relation-map-create-child-note");
+        this.$zoomInButton = this.$widget.find(".relation-map-zoom-in");
+        this.$zoomOutButton = this.$widget.find(".relation-map-zoom-out");
+        this.$resetPanZoomButton = this.$widget.find(".relation-map-reset-pan-zoom");
 
         this.mapData = null;
         this.jsPlumbInstance = null;
@@ -82,7 +110,7 @@ class NoteDetailRelationMap {
         this.relations = null;
         this.pzInstance = null;
 
-        this.$relationMapWrapper = ctx.$tabContent.find('.relation-map-wrapper');
+        this.$relationMapWrapper = this.$widget.find('.relation-map-wrapper');
         this.$relationMapWrapper.on('click', event => {
             if (this.clipboard) {
                 let {x, y} = this.getMousePosition(event);
@@ -129,7 +157,7 @@ class NoteDetailRelationMap {
                 return;
             }
 
-            const {note} = await server.post(`notes/${this.ctx.note.noteId}/children?target=into`, {
+            const {note} = await server.post(`notes/${this.tabContext.note.noteId}/children?target=into`, {
                 title,
                 content: '',
                 type: 'text'
@@ -150,8 +178,10 @@ class NoteDetailRelationMap {
             this.pzInstance.moveTo(0, 0);
         });
 
-        this.$component.on("drop", ev => this.dropNoteOntoRelationMapHandler(ev));
-        this.$component.on("dragover", ev => ev.preventDefault());
+        this.$widget.on("drop", ev => this.dropNoteOntoRelationMapHandler(ev));
+        this.$widget.on("dragover", ev => ev.preventDefault());
+
+        return this.$widget;
     }
 
     async tabContextMenuHandler(event, cmd) {
@@ -217,9 +247,9 @@ class NoteDetailRelationMap {
             }
         };
 
-        if (this.ctx.note.content) {
+        if (this.tabContext.note.content) {
             try {
-                this.mapData = JSON.parse(this.ctx.note.content);
+                this.mapData = JSON.parse(this.tabContext.note.content);
             } catch (e) {
                 console.log("Could not parse content: ", e);
             }
@@ -234,14 +264,14 @@ class NoteDetailRelationMap {
         return id.substr(13);
     }
 
-    async render() {
-        this.$component.show();
+    async doRefresh() {
+        this.$widget.show();
 
         await libraryLoader.requireLibrary(libraryLoader.RELATION_MAP);
 
         jsPlumb.ready(() => {
             // lazy loading above can take time and tab might have been already switched to another note
-            if (this.ctx.note && this.ctx.note.type === 'relation-map') {
+            if (this.tabContext.note && this.tabContext.note.type === 'relation-map') {
                 this.loadMapData();
 
                 this.initJsPlumbInstance();
@@ -490,7 +520,7 @@ class NoteDetailRelationMap {
     }
 
     saveData() {
-        this.ctx.noteChanged();
+        this.tabContext.noteChanged();
     }
 
     async createNoteBox(noteId, title, x, y) {
@@ -624,5 +654,3 @@ class NoteDetailRelationMap {
 
     scrollToTop() {}
 }
-
-export default NoteDetailRelationMap;

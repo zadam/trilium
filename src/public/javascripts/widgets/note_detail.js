@@ -21,12 +21,12 @@ const typeWidgetClasses = {
     'text': "./type_widgets/text.js",
     'code': "./type_widgets/code.js",
     'file': "./type_widgets/file.js",
-    'image': "./type_widgets/note_detail_image.js",
-    'search': "./type_widgets/note_detail_search.js",
-    'render': "./type_widgets/note_detail_render.js",
-    'relation-map': "./type_widgets/note_detail_relation_map.js",
-    'protected-session': "./type_widgets/note_detail_protected_session.js",
-    'book': "./type_widgets/note_detail_book.js"
+    'image': "./type_widgets/image.js",
+    'search': "./type_widgets/search.js",
+    'render': "./type_widgets/render.js",
+    'relation-map': "./type_widgets/relation_map.js",
+    'protected-session': "./type_widgets/protected_session.js",
+    'book': "./type_widgets/book.js"
 };
 
 export default class NoteDetailWidget extends TabAwareWidget {

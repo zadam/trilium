@@ -22,7 +22,7 @@ const TPL = `
     <div class="note-detail-code-editor"></div>
 </div>`;
 
-class CodeTypeWidget extends TypeWidget {
+export default class CodeTypeWidget extends TypeWidget {
     static getType() { return "code"; }
 
     doRender() {
@@ -139,5 +139,3 @@ class CodeTypeWidget extends TypeWidget {
         this.$widget.scrollTop(0);
     }
 }
-
-export default CodeTypeWidget;

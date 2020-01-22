@@ -12,7 +12,7 @@ const TPL = `
     </div>
 </div>`;
 
-class NoteDetailEmpty extends TypeWidget {
+export default class EmptyTypeWidget extends TypeWidget {
     static getType() { return "empty"; }
 
     doRender() {
@@ -57,5 +57,3 @@ class NoteDetailEmpty extends TypeWidget {
 
     scrollToTop() {}
 }
-
-export default NoteDetailEmpty;
