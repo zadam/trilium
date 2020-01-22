@@ -41,7 +41,6 @@ export default class Entrypoints extends Component {
         }
     }
 
-
     findInTextListener() {
         if (utils.isElectron()) {
             const {remote} = require('electron');
@@ -112,5 +111,69 @@ export default class Entrypoints extends Component {
 
     copyWithoutFormattingListener() {
         utils.copySelectionToClipboard();
+    }
+
+    toggleFullscreenListener() {
+        if (utils.isElectron()) {
+            const win = require('electron').remote.getCurrentWindow();
+
+            if (win.isFullScreenable()) {
+                win.setFullScreen(!win.isFullScreen());
+            }
+        }
+        else {
+            // outside of electron this is handled by the browser
+            this.$widget.find(".toggle-fullscreen-button").hide();
+        }
+    }
+
+    toggleZenModeListener() {
+        if (!this.zenModeActive) {
+            $(".hide-in-zen-mode,.gutter").addClass("hidden-by-zen-mode");
+            $("#container").addClass("zen-mode");
+            this.zenModeActive = true;
+        }
+        else {
+            // not hiding / showing explicitly since element might be hidden also for other reasons
+            $(".hide-in-zen-mode,.gutter").removeClass("hidden-by-zen-mode");
+            $("#container").removeClass("zen-mode");
+            this.zenModeActive = false;
+        }
+    }
+
+    reloadFrontendAppListener() {
+        utils.reloadApp();
+    }
+
+    logoutListener() {
+        const $logoutForm = $('<form action="logout" method="POST">')
+            .append($(`<input type="hidden" name="_csrf" value="${glob.csrfToken}"/>`));
+
+        $("body").append($logoutForm);
+        $logoutForm.trigger('submit');
+    }
+
+    showOptionsListener() {
+        import("../dialogs/options.js").then(d => d.showDialog())
+    }
+
+    showHelpListener() {
+        import("../dialogs/help.js").then(d => d.showDialog())
+    }
+
+    showSQLConsoleListener() {
+        import("../dialogs/sql_console.js").then(d => d.showDialog())
+    }
+
+    showBackendLogListener() {
+        import("../dialogs/backend_log.js").then(d => d.showDialog())
+    }
+
+    backInNoteHistoryListener() {
+        window.history.back();
+    }
+
+    forwardInNoteHistoryListener() {
+        window.history.forward();
     }
 }

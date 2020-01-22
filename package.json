@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "async-mutex": "0.1.4",
-    "axios": "0.19.1",
+    "axios": "0.19.2",
     "body-parser": "1.19.0",
     "cls-hooked": "4.2.2",
     "commonmark": "0.29.1",
@@ -37,7 +37,7 @@
     "electron-window-state": "5.0.3",
     "express": "4.17.1",
     "express-session": "1.17.0",
-    "file-type": "13.1.1",
+    "file-type": "13.1.2",
     "fs-extra": "8.1.0",
     "helmet": "3.21.2",
     "html": "1.0.0",

@@ -10,9 +10,9 @@ const TPL = `
     }
     </style>
 
-    <a title="Go to previous note." class="history-back-button icon-action bx bx-left-arrow-circle"></a>
+    <a title="Go to previous note." data-trigger-event="backInNoteHistory" class="icon-action bx bx-left-arrow-circle"></a>
 
-    <a title="Go to next note." class="history-forward-button icon-action bx bx-right-arrow-circle"></a>
+    <a title="Go to next note." data-trigger-event="forwardInNoteHistory" class="icon-action bx bx-right-arrow-circle"></a>
 </div>
 `;
 
@@ -23,13 +23,6 @@ export default class HistoryNavigationWidget extends BasicWidget {
         }
 
         this.$widget = $(TPL);
-
-        this.$widget.find(".history-back-button").on('click', window.history.back);
-        this.$widget.find(".history-forward-button").on('click', window.history.forward);
-
-        // FIXME: does not belong here
-        keyboardActionService.setGlobalActionHandler("BackInNoteHistory", window.history.back);
-        keyboardActionService.setGlobalActionHandler("ForwardInNoteHistory", window.history.forward);
 
         return this.$widget;
     }
