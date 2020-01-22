@@ -374,9 +374,6 @@ async function createNote(node, parentNoteId, target, extraOptions = {}) {
         window.cutToNote.removeSelection();
     }
 
-    // FIXME
-    await noteDetailService.saveNotesIfChanged();
-
     noteDetailService.addDetailLoadedListener(note.noteId, noteDetailService.focusAndSelectTitle);
 
     const noteEntity = await treeCache.getNote(note.noteId);
@@ -510,32 +507,6 @@ ws.subscribeToOutsideSyncMessages(async syncData => {
     }
 });
 
-keyboardActionService.setGlobalActionHandler('CreateNoteAfter', async () => {
-    const node = appContext.getMainNoteTree().getActiveNode();
-    const parentNoteId = node.data.parentNoteId;
-    const isProtected = await treeUtils.getParentProtectedStatus(node);
-
-    if (node.data.noteId === 'root' || node.data.noteId === await hoistedNoteService.getHoistedNoteId()) {
-        return;
-    }
-
-    await createNote(node, parentNoteId, 'after', {
-        isProtected: isProtected,
-        saveSelection: true
-    });
-});
-
-async function createNoteInto(saveSelection = false) {
-    const node = appContext.getMainNoteTree().getActiveNode();
-
-    if (node) {
-        await createNote(node, node.data.noteId, 'into', {
-            isProtected: node.data.isProtected,
-            saveSelection: saveSelection
-        });
-    }
-}
-
 async function reloadNotes(noteIds, activateNotePath = null) {
     if (noteIds.length === 0) {
         return;
@@ -549,12 +520,6 @@ async function reloadNotes(noteIds, activateNotePath = null) {
 
     appContext.trigger('notesReloaded', { noteIds, activateNotePath });
 }
-
-window.glob.cutIntoNote = () => createNoteInto(true);
-
-keyboardActionService.setGlobalActionHandler('CutIntoNote', () => createNoteInto(true));
-
-keyboardActionService.setGlobalActionHandler('CreateNoteInto', createNoteInto);
 
 $(window).bind('hashchange', async function() {
     if (isNotePathInAddress()) {

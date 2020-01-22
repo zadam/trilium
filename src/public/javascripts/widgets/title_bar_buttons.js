@@ -18,7 +18,7 @@ const TPL = `
 </div>`;
 
 export default class TitleBarButtonsWidget extends BasicWidget {
-    render() {
+    doRender() {
         if (!utils.isElectron()) {
             return;
         }

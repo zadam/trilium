@@ -1,4 +1,3 @@
-import BasicWidget from "./basic_widget.js";
 import hoistedNoteService from "../services/hoisted_note.js";
 import searchNotesService from "../services/search_notes.js";
 import treeService from "../services/tree.js";
@@ -33,6 +32,8 @@ const TPL = `
 export default class NoteTreeWidget extends TabAwareWidget {
     constructor(appContext) {
         super(appContext);
+
+        window.glob.cutIntoNote = () => this.cutIntoNoteListener();
 
         this.tree = null;
     }
@@ -451,6 +452,43 @@ export default class NoteTreeWidget extends TabAwareWidget {
     noteTitleChangedListener({noteId}) {
         for (const node of this.getNodesByNoteId(noteId)) {
             treeService.setNodeTitleWithPrefix(node);
+        }
+    }
+
+    async createNoteAfterListener() {
+        const node = this.getActiveNode();
+        const parentNoteId = node.data.parentNoteId;
+        const isProtected = await treeUtils.getParentProtectedStatus(node);
+
+        if (node.data.noteId === 'root' || node.data.noteId === await hoistedNoteService.getHoistedNoteId()) {
+            return;
+        }
+
+        await treeService.createNote(node, parentNoteId, 'after', {
+            isProtected: isProtected,
+            saveSelection: true
+        });
+    }
+
+    async createNoteIntoListener() {
+        const node = this.getActiveNode();
+
+        if (node) {
+            await treeService.createNote(node, node.data.noteId, 'into', {
+                isProtected: node.data.isProtected,
+                saveSelection: false
+            });
+        }
+    }
+
+    async cutIntoNoteListener() {
+        const node = this.getActiveNode();
+
+        if (node) {
+            await treeService.createNote(node, node.data.noteId, 'into', {
+                isProtected: node.data.isProtected,
+                saveSelection: true
+            });
         }
     }
 }

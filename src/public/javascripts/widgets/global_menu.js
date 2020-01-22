@@ -29,7 +29,7 @@ const TPL = `
             <span class="caret"></span>
         </button>
         <div class="dropdown-menu dropdown-menu-right">
-            <a class="dropdown-item options-button">
+            <a class="dropdown-item options-button" data-trigger-event="showOptions">
                 <span class="bx bx-slider"></span>
                 Options
             </a>
@@ -45,38 +45,38 @@ const TPL = `
                 <kbd data-kb-action="OpenDevTools"></kbd>
             </a>
 
-            <a class="dropdown-item open-sql-console-button" data-trigger-event="showSQLConsole">
+            <a class="dropdown-item" data-trigger-event="showSQLConsole">
                 <span class="bx bx-data"></span>
                 Open SQL Console
                 <kbd data-kb-action="ShowSQLConsole"></kbd>
             </a>
 
-            <a class="dropdown-item show-backend-log-button" data-trigger-event="showBackendLog">
+            <a class="dropdown-item" data-trigger-event="showBackendLog">
                 <span class="bx bx-empty"></span>
                 Show backend log
                 <kbd data-kb-action="ShowBackendLog"></kbd>
             </a>
 
-            <a class="dropdown-item reload-frontend-button" data-trigger-event="reloadFrontendApp" 
+            <a class="dropdown-item" data-trigger-event="reloadFrontendApp" 
                 title="Reload can help with some visual glitches without restarting the whole app.">
                 <span class="bx bx-empty"></span>
                 Reload frontend
                 <kbd data-kb-action="ReloadFrontendApp"></kbd>
             </a>
 
-            <a class="dropdown-item toggle-zen-mode-button" data-trigger-event="toggleZenMode">
+            <a class="dropdown-item" data-trigger-event="toggleZenMode">
                 <span class="bx bx-empty"></span>
                 Toggle Zen mode
                 <kbd data-kb-action="ToggleZenMode"></kbd>
             </a>
 
-            <a class="dropdown-item toggle-fullscreen-button" data-trigger-event="toggleFullscreen">
+            <a class="dropdown-item" data-trigger-event="toggleFullscreen">
                 <span class="bx bx-empty"></span>
                 Toggle fullscreen
                 <kbd data-kb-action="ToggleFullscreen"></kbd>
             </a>
 
-            <a class="dropdown-item show-help-button" data-trigger-event="showHelp">
+            <a class="dropdown-item" data-trigger-event="showHelp">
                 <span class="bx bx-info-circle"></span>
                 Show Help
                 <kbd data-kb-action="ShowHelp"></kbd>
@@ -97,7 +97,7 @@ const TPL = `
 `;
 
 export default class GlobalMenuWidget extends BasicWidget {
-    render() {
+    doRender() {
         this.$widget = $(TPL);
 
         this.$widget.find(".show-about-dialog-button").on('click',

@@ -17,7 +17,7 @@ const TPL = `
 `;
 
 export default class HistoryNavigationWidget extends BasicWidget {
-    render() {
+    doRender() {
         if (!utils.isElectron()) {
             return;
         }

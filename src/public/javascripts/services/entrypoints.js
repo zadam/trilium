@@ -1,12 +1,8 @@
 import utils from "./utils.js";
-import linkService from "./link.js";
 import zoomService from "./zoom.js";
-import protectedSessionService from "./protected_session.js";
-import searchNotesService from "./search_notes.js";
 import treeService from "./tree.js";
 import dateNoteService from "./date_notes.js";
 import noteDetailService from "./note_detail.js";
-import keyboardActionService from "./keyboard_actions.js";
 import hoistedNoteService from "./hoisted_note.js";
 import treeCache from "./tree_cache.js";
 import server from "./server.js";
@@ -42,29 +38,24 @@ export default class Entrypoints extends Component {
     }
 
     findInTextListener() {
-        if (utils.isElectron()) {
-            const {remote} = require('electron');
-            const {FindInPage} = require('electron-find');
-
-            const findInPage = new FindInPage(remote.getCurrentWebContents(), {
-                offsetTop: 10,
-                offsetRight: 10,
-                boxBgColor: 'var(--main-background-color)',
-                boxShadowColor: '#000',
-                inputColor: 'var(--input-text-color)',
-                inputBgColor: 'var(--input-background-color)',
-                inputFocusColor: '#555',
-                textColor: 'var(--main-text-color)',
-                textHoverBgColor: '#555',
-                caseSelectedColor: 'var(--main-border-color)'
-            });
-
-            keyboardActionService.setGlobalActionHandler("FindInText", () => {
-                if (!glob.activeDialog || !glob.activeDialog.is(":visible")) {
-                    findInPage.openFindWindow();
-                }
-            });
+        if (!utils.isElectron()) {
+            return;
         }
+
+        const {remote} = require('electron');
+        const {FindInPage} = require('electron-find');
+        const findInPage = new FindInPage(remote.getCurrentWebContents(), {
+            offsetTop: 10,
+            offsetRight: 10,
+            boxBgColor: 'var(--main-background-color)',
+            boxShadowColor: '#000',
+            inputColor: 'var(--input-text-color)',
+            inputBgColor: 'var(--input-background-color)',
+            inputFocusColor: '#555',
+            textColor: 'var(--main-text-color)',
+            textHoverBgColor: '#555',
+            caseSelectedColor: 'var(--main-border-color)'
+        });
     }
 
     zoomOutListener() {

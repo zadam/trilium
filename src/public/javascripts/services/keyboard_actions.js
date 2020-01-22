@@ -29,10 +29,6 @@ server.get('keyboard-shortcuts-for-notes').then(shortcutForNotes => {
 	}
 });
 
-function setGlobalActionHandler(actionName, handler) {
-	console.log("Useless handler for " + actionName);
-}
-
 function setElementActionHandler($el, actionName, handler) {
 	keyboardActionsLoaded.then(() => {
 		const action = keyboardActionRepo[actionName];
@@ -103,7 +99,6 @@ function updateDisplayedShortcuts($container) {
 }
 
 export default {
-	setGlobalActionHandler,
 	setElementActionHandler,
 	triggerAction,
 	getAction,

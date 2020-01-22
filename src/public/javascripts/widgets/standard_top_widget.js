@@ -64,7 +64,7 @@ const TPL = `
 </div>`;
 
 export default class StandardTopWidget extends BasicWidget {
-    render() {
+    doRender() {
         this.$widget = $(TPL);
 
         const historyNavigationWidget = new HistoryNavigationWidget(this.appContext);

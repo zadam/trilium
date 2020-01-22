@@ -10,6 +10,8 @@ class BasicWidget extends Component {
         $widget.find("[data-trigger-event]").on('click', e => {
             const eventName = $(e.target).attr('data-trigger-event');
 
+            console.log("Triggering " + eventName);
+
             this.appContext.trigger(eventName);
         });
 
