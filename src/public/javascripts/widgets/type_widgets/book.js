@@ -193,7 +193,7 @@ export default class BookTypeWidget extends TypeWidget {
         this.$content.find('.note-book-content').css("max-height", ZOOMS[zoomLevel].height);
     }
 
-    async doRefresh() {
+    async doRefresh(note) {
         this.$content.empty();
         this.$help.hide();
 
@@ -208,10 +208,10 @@ export default class BookTypeWidget extends TypeWidget {
                 .append(' if you want to add some text.'))
         }
 
-        const zoomLevel = parseInt(await this.tabContext.note.getLabelValue('bookZoomLevel')) || this.getDefaultZoomLevel();
+        const zoomLevel = parseInt(await note.getLabelValue('bookZoomLevel')) || this.getDefaultZoomLevel();
         this.setZoom(zoomLevel);
 
-        await this.renderIntoElement(this.tabContext.note, this.$content);
+        await this.renderIntoElement(note, this.$content);
     }
 
     async renderIntoElement(note, $container) {

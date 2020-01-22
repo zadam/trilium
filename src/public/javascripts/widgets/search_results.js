@@ -3,24 +3,24 @@ import toastService from "../services/toast.js";
 import server from "../services/server.js";
 
 const TPL = `
-<style>
-.search-results {
-    padding: 0 5px 5px 15px;
-    flex-basis: 40%;
-    flex-grow: 1;
-    flex-shrink: 1;
-    margin-top: 10px;
-    display: none;
-    overflow: auto;
-    border-bottom: 2px solid var(--main-border-color);
-}
+<div>
+    <style>
+    .search-results {
+        padding: 0 5px 5px 15px;
+        flex-basis: 40%;
+        flex-grow: 1;
+        flex-shrink: 1;
+        margin-top: 10px;
+        display: none;
+        overflow: auto;
+        border-bottom: 2px solid var(--main-border-color);
+    }
+    
+    .search-results ul {
+        padding: 5px 5px 5px 15px;
+    }
+    </style>
 
-.search-results ul {
-    padding: 5px 5px 5px 15px;
-}
-</style>
-
-<div class="search-results">
     <strong>Search results:</strong>
 
     <ul class="search-results-inner"></ul>
@@ -29,15 +29,17 @@ const TPL = `
 
 export default class SearchResultsWidget extends BasicWidget {
     doRender() {
-        const $widget = $(TPL);
+        this.$widget = $(TPL);
 
-        this.$searchResults = $widget.find(".search-results");
-        this.$searchResultsInner = $widget.find(".search-results-inner");
+        this.$searchResults = this.$widget;
+        this.$searchResultsInner = this.$widget.find(".search-results-inner");
 
-        return $widget;
+        return this.$widget;
     }
 
     async searchForResultsListener({searchText}) {
+        this.toggle(true);
+
         const response = await server.get('search/' + encodeURIComponent(searchText));
 
         if (!response.success) {
