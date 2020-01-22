@@ -12,5 +12,4 @@ fi
 mkdir -p "$DIR"
 cd "$DIR"
 
-openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 2000 -nodes
-
+openssl req -newkey rsa:4096 -x509 -sha256 -days 3650 -nodes -out cert.crt -keyout key.key
