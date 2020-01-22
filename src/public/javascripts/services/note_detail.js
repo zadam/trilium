@@ -8,8 +8,6 @@ import treeUtils from "./tree_utils.js";
 import tabRow from "../widgets/tab_row.js";
 import appContext from "./app_context.js";
 
-const $savedIndicator = $(".saved-indicator");
-
 let detailLoadedListeners = [];
 
 async function reload() {
@@ -30,10 +28,6 @@ async function switchToNote(notePath) {
     await loadNoteDetail(notePath);
 
     appContext.openTabsChanged();
-}
-
-function onNoteChange(func) {
-    return appContext.getActiveTabContext().getComponent().onNoteChange(func);
 }
 
 function getActiveEditor() {
@@ -212,7 +206,6 @@ export default {
     loadNoteDetail,
     focusOnTitle,
     focusAndSelectTitle,
-    onNoteChange,
     addDetailLoadedListener,
     getActiveEditor,
     activateOrOpenNote,

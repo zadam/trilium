@@ -181,6 +181,12 @@ export default class RelationMapTypeWidget extends TypeWidget {
         this.$widget.on("drop", ev => this.dropNoteOntoRelationMapHandler(ev));
         this.$widget.on("dragover", ev => ev.preventDefault());
 
+        this.initialized = new Promise(async res => {
+            await libraryLoader.requireLibrary(libraryLoader.RELATION_MAP);
+
+            jsPlumb.ready(res);
+        });
+
         return this.$widget;
     }
 
@@ -264,24 +270,14 @@ export default class RelationMapTypeWidget extends TypeWidget {
         return id.substr(13);
     }
 
-    async doRefresh() {
-        this.$widget.show();
+    async doRefresh(note) {
+        this.loadMapData();
 
-        await libraryLoader.requireLibrary(libraryLoader.RELATION_MAP);
+        this.initJsPlumbInstance();
 
-        jsPlumb.ready(() => {
-            // lazy loading above can take time and tab might have been already switched to another note
-            if (this.tabContext.note && this.tabContext.note.type === 'relation-map') {
-                this.loadMapData();
+        this.initPanZoom();
 
-                this.initJsPlumbInstance();
-
-                this.initPanZoom();
-
-                this.loadNotesAndRelations();
-            }
-        });
-
+        this.loadNotesAndRelations();
     }
 
     clearMap() {

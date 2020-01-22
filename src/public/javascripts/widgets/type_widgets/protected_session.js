@@ -40,10 +40,6 @@ export default class ProtectedSessionTypeWidget extends TypeWidget {
         return this.$widget;
     }
 
-    render() {
-        this.$widget.show();
-    }
-
     show() {}
 
     getContent() {}

@@ -122,8 +122,7 @@ class NoteDetailImage extends TypeWidget {
         return this.$widget;
     }
 
-    async doRefresh() {
-        const note = this.tabContext.note;
+    async doRefresh(note) {
         const attributes = await server.get('notes/' + note.noteId + '/attributes');
         const attributeMap = utils.toObject(attributes, l => [l.name, l.value]);
 

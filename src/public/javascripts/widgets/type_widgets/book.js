@@ -205,7 +205,7 @@ export default class BookTypeWidget extends TypeWidget {
             this.$content.append($('<div class="note-book-auto-message"></div>')
                 .append(`This note doesn't have any content so we display its children. Click `)
                 .append($addTextLink)
-                .append(' if you want to add some text.'))
+                .append(' if you want to add some text.'));
         }
 
         const zoomLevel = parseInt(await note.getLabelValue('bookZoomLevel')) || this.getDefaultZoomLevel();

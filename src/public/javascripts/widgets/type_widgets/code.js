@@ -71,12 +71,12 @@ export default class CodeTypeWidget extends TypeWidget {
         //this.onNoteChange(() => this.tabContext.noteChanged());
     }
     
-    doRefresh() {
+    doRefresh(note) {
         // CodeMirror breaks pretty badly on null so even though it shouldn't happen (guarded by consistency check)
         // we provide fallback
-        this.codeEditor.setValue(this.tabContext.note.content || "");
+        this.codeEditor.setValue(note.content || "");
 
-        const info = CodeMirror.findModeByMIME(this.tabContext.note.mime);
+        const info = CodeMirror.findModeByMIME(note.mime);
 
         if (info) {
             this.codeEditor.setOption("mode", info.mime);

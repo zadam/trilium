@@ -39,13 +39,13 @@ export default class SearchTypeWidget extends TypeWidget {
         return this.$widget;
     }
 
-    doRefresh() {
+    doRefresh(note) {
         this.$help.html(searchNotesService.getHelpText());
 
         this.$component.show();
 
         try {
-            const json = JSON.parse(this.ctx.note.content);
+            const json = JSON.parse(note.content);
 
             this.$searchString.val(json.searchString);
         }
@@ -54,7 +54,7 @@ export default class SearchTypeWidget extends TypeWidget {
             this.$searchString.val('');
         }
 
-        this.$searchString.on('input', () => this.ctx.noteChanged());
+        this.$searchString.on('input', () => this.noteChanged());
     }
 
     getContent() {

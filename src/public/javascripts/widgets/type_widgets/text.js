@@ -134,12 +134,12 @@ export default class TextTypeWidget extends TypeWidget {
         }
     }
 
-    async doRefresh() {
+    async doRefresh(note) {
         this.textEditor.isReadOnly = await this.isReadOnly();
 
         this.$widget.show();
 
-        this.textEditor.setData(this.tabContext.note.content);
+        this.textEditor.setData(note.content);
     }
 
     getContent() {

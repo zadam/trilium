@@ -26,11 +26,12 @@ export default class RenderTypeWidget extends TypeWidget {
         return this.$widget;
     }
 
-    async doRefresh() {
+    async doRefresh(note) {
         this.$widget.show();
         this.$noteDetailRenderHelp.hide();
 
-        const renderNotesFound = await renderService.render(this.ctx.note, this.$noteDetailRenderContent, this.ctx);
+        // FIXME this.ctx
+        const renderNotesFound = await renderService.render(note, this.$noteDetailRenderContent, this.ctx);
 
         if (!renderNotesFound) {
             this.$noteDetailRenderHelp.show();

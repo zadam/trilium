@@ -117,27 +117,27 @@ export default class FileTypeWidget extends TypeWidget {
         return this.$widget;
     }
 
-    async doRefresh() {
-        const attributes = await server.get('notes/' + this.tabContext.note.noteId + '/attributes');
+    async doRefresh(note) {
+        const attributes = await server.get('notes/' + note.noteId + '/attributes');
         const attributeMap = utils.toObject(attributes, l => [l.name, l.value]);
 
         this.$widget.show();
 
-        this.$fileNoteId.text(this.tabContext.note.noteId);
+        this.$fileNoteId.text(note.noteId);
         this.$fileName.text(attributeMap.originalFileName || "?");
-        this.$fileSize.text(this.tabContext.note.contentLength + " bytes");
-        this.$fileType.text(this.tabContext.note.mime);
+        this.$fileSize.text(note.contentLength + " bytes");
+        this.$fileType.text(note.mime);
 
-        if (this.tabContext.note.content) {
+        if (note.content) {
             this.$previewContent.show();
-            this.$previewContent.text(this.tabContext.note.content);
+            this.$previewContent.text(note.content);
         }
         else {
             this.$previewContent.empty().hide();
         }
 
         // open doesn't work for protected notes since it works through browser which isn't in protected session
-        this.$openButton.toggle(!this.tabContext.note.isProtected);
+        this.$openButton.toggle(!note.isProtected);
     }
 
     getFileUrl() {
