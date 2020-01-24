@@ -65,10 +65,6 @@ export default class SearchTypeWidget extends TypeWidget {
 
     focus() {}
 
-    show() {}
-
-    onNoteChange() {}
-
     cleanup() {}
 
     scrollToTop() {}

@@ -105,7 +105,7 @@ class AppContext {
             new TabCachingWidget(this, () => new LinkMapWidget(this)),
             new TabCachingWidget(this, () => new NoteRevisionsWidget(this)),
             new TabCachingWidget(this, () => new SimilarNotesWidget(this)),
-            new TabCachingWidget(this, () => new WhatLinksHereWidget(this)),
+            new TabCachingWidget(this, () => new WhatLinksHereWidget(this))
         ];
 
         for (const widget of rightPaneWidgets) {
@@ -320,7 +320,7 @@ class AppContext {
 
         this.activeTabId = tabId;
 
-        this.trigger('activeTabChanged', { oldActiveTabId });
+        this.trigger('activeTabChanged', { oldActiveTabId, newActiveTabId: tabId });
     }
 
     newTabListener() {

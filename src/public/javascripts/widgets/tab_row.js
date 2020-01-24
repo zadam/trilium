@@ -464,8 +464,8 @@ export default class TabRowWidget extends BasicWidget {
         return !!this.activeTabEl;
     }
 
-    activeTabChangedListener({tabId}) {
-        const tabEl = this.getTabById(tabId)[0];
+    activeTabChangedListener({newActiveTabId}) {
+        const tabEl = this.getTabById(newActiveTabId)[0];
         const activeTabEl = this.activeTabEl;
         if (activeTabEl === tabEl) return;
         if (activeTabEl) activeTabEl.removeAttribute('active');

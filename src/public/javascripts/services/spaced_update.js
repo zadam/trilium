@@ -7,8 +7,10 @@ export default class SpacedUpdate {
     }
 
     scheduleUpdate() {
-        this.changed = true;
-        setTimeout(() => this.triggerUpdate())
+        if (!this.changeForbidden) {
+            this.changed = true;
+            setTimeout(() => this.triggerUpdate());
+        }
     }
 
     async updateNowIfNecessary() {
@@ -31,6 +33,17 @@ export default class SpacedUpdate {
         else {
             // update not triggered but changes are still pending so we need to schedule another check
             this.scheduleUpdate();
+        }
+    }
+
+    allowUpdateWithoutChange(callback) {
+        this.changeForbidden = true;
+
+        try {
+            callback();
+        }
+        finally {
+            this.changeForbidden = false;
         }
     }
 }

@@ -68,20 +68,22 @@ export default class CodeTypeWidget extends TypeWidget {
             dragDrop: false // with true the editor inlines dropped files which is not what we expect
         });
 
-        //this.onNoteChange(() => this.tabContext.noteChanged());
+        this.codeEditor.on('change', () => this.spacedUpdate.scheduleUpdate());
     }
     
     doRefresh(note) {
-        // CodeMirror breaks pretty badly on null so even though it shouldn't happen (guarded by consistency check)
-        // we provide fallback
-        this.codeEditor.setValue(note.content || "");
+        this.spacedUpdate.allowUpdateWithoutChange(() => {
+            // CodeMirror breaks pretty badly on null so even though it shouldn't happen (guarded by consistency check)
+            // we provide fallback
+            this.codeEditor.setValue(note.content || "");
 
-        const info = CodeMirror.findModeByMIME(note.mime);
+            const info = CodeMirror.findModeByMIME(note.mime);
 
-        if (info) {
-            this.codeEditor.setOption("mode", info.mime);
-            CodeMirror.autoLoadMode(this.codeEditor, info.mode);
-        }
+            if (info) {
+                this.codeEditor.setOption("mode", info.mime);
+                CodeMirror.autoLoadMode(this.codeEditor, info.mode);
+            }
+        });
 
         this.show();
     }
@@ -121,12 +123,6 @@ export default class CodeTypeWidget extends TypeWidget {
         }
 
         toastService.showMessage("Note executed");
-    }
-
-    async onNoteChange(func) {
-        await this.initialized;
-
-        this.codeEditor.on('change', func);
     }
 
     cleanup() {

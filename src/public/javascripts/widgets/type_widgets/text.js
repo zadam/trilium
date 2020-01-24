@@ -128,6 +128,8 @@ export default class TextTypeWidget extends TypeWidget {
             }
         });
 
+        this.textEditor.model.document.on('change:data', () => this.spacedUpdate.scheduleUpdate());
+
         if (glob.isDev && ENABLE_INSPECTOR) {
             await import('../../libraries/ckeditor/inspector.js');
             CKEditorInspector.attach(this.textEditor);
@@ -137,9 +139,9 @@ export default class TextTypeWidget extends TypeWidget {
     async doRefresh(note) {
         this.textEditor.isReadOnly = await this.isReadOnly();
 
-        this.$widget.show();
-
-        this.textEditor.setData(note.content);
+        this.spacedUpdate.allowUpdateWithoutChange(() => {
+            this.textEditor.setData(note.content);
+        });
     }
 
     getContent() {
@@ -172,12 +174,6 @@ export default class TextTypeWidget extends TypeWidget {
 
     getEditor() {
         return this.textEditor;
-    }
-
-    async onNoteChange(func) {
-        await this.initialized;
-
-        this.textEditor.model.document.on('change:data', func);
     }
 
     cleanup() {

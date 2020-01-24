@@ -92,7 +92,9 @@ async function fillInAdditionalProperties(sync) {
 }
 
 async function sendPing(client) {
-    const syncData = require('./sync_table').getEntitySyncsNewerThan(lastAcceptedSyncIds[client.id]);
+    const syncData = require('./sync_table')
+        .getEntitySyncsNewerThan(lastAcceptedSyncIds[client.id])
+        .filter(r => r.entityName !== 'recent_notes'); // only noise ...
 
     for (const sync of syncData) {
         try {

@@ -40,11 +40,7 @@ export default class RenderTypeWidget extends TypeWidget {
 
     getContent() {}
 
-    show() {}
-
     focus() {}
-
-    onNoteChange() {}
 
     cleanup() {
         this.$noteDetailRenderContent.empty();

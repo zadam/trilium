@@ -39,6 +39,7 @@ const TPL = `
     .note-detail-book {
         height: 100%;
         padding: 10px;
+        position: relative;
     }
     
     .note-detail-book-content {
@@ -280,13 +281,7 @@ export default class BookTypeWidget extends TypeWidget {
         return "";
     }
 
-    show() {
-        this.$widget.show();
-    }
-
     focus() {}
-
-    onNoteChange() {}
 
     cleanup() {
         this.$content.empty();

@@ -40,13 +40,9 @@ export default class ProtectedSessionTypeWidget extends TypeWidget {
         return this.$widget;
     }
 
-    show() {}
-
     getContent() {}
 
     focus() {}
-
-    onNoteChange() {}
 
     cleanup() {}
 

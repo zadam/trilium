@@ -144,13 +144,9 @@ export default class FileTypeWidget extends TypeWidget {
         return utils.getUrlForDownload("api/notes/" + this.tabContext.note.noteId + "/download");
     }
 
-    show() {}
-
     getContent() {}
 
     focus() {}
-
-    onNoteChange() {}
 
     cleanup() {}
 

@@ -40,13 +40,9 @@ export default class EmptyTypeWidget extends TypeWidget {
         this.toggle(!this.tabContext.note);
     }
 
-    show() {}
-
     getContent() {}
 
     focus() {}
-
-    onNoteChange() {}
 
     cleanup() {}
 

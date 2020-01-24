@@ -11,7 +11,7 @@ export default class Component {
     async eventReceived(name, data, sync = false) {
         await this.initialized;
 
-//        console.log(`Received ${name} to ${this.componentId}`);
+        console.log(`Received ${name} to ${this.componentId}`);
 
         const fun = this[name + 'Listener'];
 

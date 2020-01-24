@@ -138,11 +138,10 @@ export default class NoteDetailWidget extends TabAwareWidget {
         const clazz = await import(typeWidgetClasses[type]);
 
         const typeWidget = this.typeWidgets[type] = new clazz.default(this.appContext);
+        typeWidget.spacedUpdate = this.spacedUpdate;
+
         this.children.push(typeWidget);
-
         this.$widget.append(typeWidget.render());
-
-        typeWidget.onNoteChange(() => this.spacedUpdate.scheduleUpdate());
 
         typeWidget.eventReceived('setTabContext', {tabContext: this.tabContext});
     }
