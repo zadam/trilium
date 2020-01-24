@@ -78,7 +78,9 @@ export default class Entrypoints extends Component {
 
         await treeService.expandToNote(note.noteId);
 
-        await noteDetailService.openInTab(note.noteId, true);
+        const tabContext = appContext.openEmptyTab();
+        appContext.activateTab(tabContext.tabId);
+        await tabContext.setNote(note.noteId);
 
         noteDetailService.focusAndSelectTitle();
     }

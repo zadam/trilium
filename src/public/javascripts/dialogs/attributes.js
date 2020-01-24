@@ -174,8 +174,7 @@ function AttributesModel() {
 
         appContext.getActiveTabContext().attributes.refreshAttributes();
 
-        // reload
-        noteDetailService.reload();
+        // FIXME detail should be also reloaded
         appContext.trigger('reloadTree');
     };
 

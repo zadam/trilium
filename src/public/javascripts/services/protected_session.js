@@ -109,17 +109,12 @@ async function unprotectNoteAndSendToServer() {
     await appContext.getActiveTabContext().saveNote();
 
     treeService.setProtected(activeNote.noteId, activeNote.isProtected);
-
-    await noteDetailService.reload();
 }
 
 async function protectSubtree(noteId, protect) {
     await enterProtectedSession();
 
     await server.put('notes/' + noteId + "/protect/" + (protect ? 1 : 0));
-
-    treeService.reload();
-    noteDetailService.reload();
 }
 
 function makeToast(message, protectingLabel, text) {

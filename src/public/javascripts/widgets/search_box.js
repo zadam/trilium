@@ -85,7 +85,7 @@ export default class SearchBoxWidget extends BasicWidget {
 
         this.$saveSearchButton.on('click', () => this.saveSearch());
 
-        this.$closeSearchButton.on('click', () => this.hideSearchListener());
+        this.$closeSearchButton.on('click', () => this.trigger('hideSearch'));
 
         return this.$widget;
     }
@@ -159,6 +159,8 @@ export default class SearchBoxWidget extends BasicWidget {
         this.resetSearchListener();
 
         this.$searchBox.slideUp();
+
+        this.trigger('hideSearchResults');
     }
 
     toggleSearchListener() {
@@ -167,7 +169,6 @@ export default class SearchBoxWidget extends BasicWidget {
         }
         else {
             this.hideSearchListener();
-            this.trigger('hideSearchResults');
         }
     }
 

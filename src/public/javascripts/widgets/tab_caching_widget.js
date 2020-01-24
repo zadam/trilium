@@ -20,6 +20,10 @@ export default class TabCachingWidget extends TabAwareWidget {
             widget.toggle(false);
         }
 
+        if (!this.tabContext) {
+            return;
+        }
+
         let widget = this.widgets[this.tabContext.tabId];
 
         if (!widget) {
@@ -31,8 +35,6 @@ export default class TabCachingWidget extends TabAwareWidget {
         }
 
         widget.toggle(true);
-
-        return false; // stop propagation to children
     }
 
     tabRemovedListener({tabId}) {

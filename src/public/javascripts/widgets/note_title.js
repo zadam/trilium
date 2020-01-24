@@ -4,6 +4,7 @@ import protectedSessionHolder from "../services/protected_session_holder.js";
 import treeCache from "../services/tree_cache.js";
 import server from "../services/server.js";
 import SpacedUpdate from "../services/spaced_update.js";
+import appContext from "../services/app_context.js";
 
 const TPL = `
 <div class="note-title-container">
@@ -105,6 +106,20 @@ export default class NoteTitleWidget extends TabAwareWidget {
     async beforeTabRemoveListener({tabId}) {
         if (this.isTab(tabId)) {
             await this.spacedUpdate.updateNowIfNecessary();
+        }
+    }
+
+    focusOnTitleListener() {
+        if (this.tabContext && this.tabContext.isActive()) {
+            this.$noteTitle.trigger('focus');
+        }
+    }
+
+    focusAndSelectTitleListener() {
+        if (this.tabContext && this.tabContext.isActive()) {
+            this.$noteTitle
+                .trigger('focus')
+                .trigger('select');
         }
     }
 }

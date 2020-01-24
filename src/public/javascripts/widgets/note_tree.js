@@ -53,7 +53,8 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
                 treeUtils.getNotePath(node).then(notePath => {
                     if (notePath) {
-                        noteDetailService.openInTab(notePath, false);
+                        const tabContext = appContext.openEmptyTab();
+                        tabContext.setNote(notePath);
                     }
                 });
 
@@ -87,7 +88,9 @@ export default class NoteTreeWidget extends TabAwareWidget {
                         node.setFocus(true);
                     }
                     else if (event.ctrlKey) {
-                        noteDetailService.loadNoteDetail(node.data.noteId, { newTab: true });
+                        const tabContext = appContext.openEmptyTab();
+                        treeUtils.getNotePath(node).then(notePath => tabContext.setNote(notePath));
+                        appContext.activateTab(tabContext.tabId);
                     }
                     else {
                         node.setActive();

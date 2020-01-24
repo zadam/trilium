@@ -216,20 +216,11 @@ class AppContext {
     }
 
     async switchToTab(tabId, notePath) {
-        const tabContext = this.tabContexts.find(tc => tc.tabId === tabId);
+        const tabContext = this.tabContexts.find(tc => tc.tabId === tabId)
+                         || this.openEmptyTab();
 
-        if (!tabContext) {
-            await noteDetailService.loadNoteDetail(notePath, {
-                newTab: true,
-                activate: true
-            });
-        } else {
-            await this.activateTab(tabContext.tabId);
-
-            if (notePath && tabContext.notePath !== notePath) {
-                await tabContext.setNote(notePath);
-            }
-        }
+        this.activateTab(tabContext.tabId);
+        await tabContext.setNote(notePath);
     }
 
     /**
@@ -252,18 +243,6 @@ class AppContext {
         }
     }
 
-    async reloadAllTabs() {
-        for (const tabContext of this.tabContexts) {
-            await this.reloadTab(tabContext);
-        }
-    }
-
-    async reloadTab(tc) {
-        if (tc.note) {
-            noteDetailService.reloadNote(tc);
-        }
-    }
-
     async openAndActivateEmptyTab() {
         const tabContext = this.openEmptyTab();
 
@@ -276,6 +255,20 @@ class AppContext {
         this.components.push(tabContext);
 
         return tabContext;
+    }
+
+    async activateOrOpenNote(noteId) {
+        for (const tabContext of this.getTabContexts()) {
+            if (tabContext.note && tabContext.note.noteId === noteId) {
+                await tabContext.activate();
+                return;
+            }
+        }
+
+        // if no tab with this note has been found we'll create new tab
+
+        const tabContext = this.openEmptyTab();
+        await tabContext.setNote(noteId);
     }
 
     async filterTabs(noteId) {
@@ -318,7 +311,7 @@ class AppContext {
         }
     }
 
-    openTabsChanged() {
+    openTabsChangedListener() {
         // we don't want to send too many requests with tab changes so we always schedule task to do this in 1 seconds,
         // but if there's any change in between, we cancel the old one and schedule new one
         // so effectively we kind of wait until user stopped e.g. quickly switching tabs
@@ -327,7 +320,7 @@ class AppContext {
         this.tabsChangedTaskId = setTimeout(() => this.saveOpenTabs(), 1000);
     }
 
-    async activateTab(tabId) {
+    activateTab(tabId) {
         this.activeTabId = tabId;
 
         this.trigger('activeTabChanged', { tabId: this.activeTabId });
@@ -364,11 +357,11 @@ class AppContext {
 
         this.tabContexts = this.tabContexts.filter(tc => tc.tabId === tabId);
 
-        this.openTabsChanged();
+        this.openTabsChangedListener();
     }
 
     tabReorderListener() {
-        this.openTabsChanged();
+        this.openTabsChangedListener();
     }
 
     noteChangesSavedListener() {

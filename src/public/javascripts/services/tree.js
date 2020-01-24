@@ -263,12 +263,12 @@ async function treeInitialized() {
     }
 
     for (const tab of filteredTabs) {
-        await noteDetailService.loadNoteDetail(tab.notePath, {
-            state: tab,
-            newTab: true,
-            activate: tab.active,
-            async: true // faster initial load
-        });
+        const tabContext = appContext.openEmptyTab();
+        tabContext.setNote(tab.notePath);
+
+        if (tab.active) {
+            appContext.activateTab(tabContext.tabId);
+        }
     }
 
     // previous opening triggered task to save tab changes but these are bogus changes (this is init)
@@ -446,7 +446,7 @@ ws.subscribeToMessages(message => {
        reload();
    }
    else if (message.type === 'open-note') {
-       noteDetailService.activateOrOpenNote(message.noteId);
+       appContext.activateOrOpenNote(message.noteId);
 
        if (utils.isElectron()) {
            const currentWindow = require("electron").remote.getCurrentWindow();

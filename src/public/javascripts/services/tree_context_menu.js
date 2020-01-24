@@ -104,7 +104,9 @@ class TreeContextMenu {
         const notePath = await treeUtils.getNotePath(this.node);
 
         if (cmd === 'openInTab') {
-            noteDetailService.openInTab(notePath, false);
+            const tabContext = appContext.openEmptyTab();
+            appContext.activateTab(tabContext.tabId);
+            tabContext.setNote(notePath);
         }
         else if (cmd.startsWith("insertNoteAfter")) {
             const parentNoteId = this.node.data.parentNoteId;

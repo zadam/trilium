@@ -130,9 +130,6 @@ export default class NoteTypeWidget extends TabAwareWidget {
 
         await noteDetailService.reload();
 
-        // for the note icon to be updated in the tree
-        await treeService.reload();
-
         this.update();
     }
 

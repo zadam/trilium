@@ -34,6 +34,8 @@ export default class SearchResultsWidget extends BasicWidget {
         this.$searchResults = this.$widget;
         this.$searchResultsInner = this.$widget.find(".search-results-inner");
 
+        this.toggle(false);
+
         return this.$widget;
     }
 

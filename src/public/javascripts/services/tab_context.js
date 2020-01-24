@@ -8,6 +8,7 @@ import appContext from "./app_context.js";
 import treeUtils from "./tree_utils.js";
 import noteDetailService from "./note_detail.js";
 import Component from "../widgets/component.js";
+import treeService from "./tree.js";
 
 let showSidebarInNewTab = true;
 
@@ -35,7 +36,19 @@ class TabContext extends Component {
         this.trigger('tabOpened', {tabId: this.tabId});
     }
 
-    async setNote(notePath) {
+    async setNote(inputNotePath) {
+        const notePath = await treeService.resolveNotePath(inputNotePath);
+
+        if (!notePath) {
+            console.error(`Cannot resolve note path ${inputNotePath}`);
+            return;
+        }
+
+        if (notePath === this.notePath) {
+            console.log(`Setting existing notePath ${notePath} so ignoring ...`);
+            return;
+        }
+
         await this.trigger('beforeNoteSwitch', {tabId: this.tabId}, true);
 
         this.notePath = notePath;
@@ -64,6 +77,7 @@ class TabContext extends Component {
         }
 
         this.trigger('tabNoteSwitched', {tabId: this.tabId});
+        this.trigger('openTabsChanged');
     }
 
     async remove() {
@@ -113,7 +127,16 @@ class TabContext extends Component {
     }
 
     stateChanged() {
-        appContext.openTabsChanged();
+        appContext.openTabsChangedListener();
+    }
+
+    noteDeletedListener({noteId}) {
+        if (this.note && noteId === this.note.noteId) {
+            this.note = null;
+            this.notePath = null;
+
+            this.trigger('tabNoteSwitched', {tabId: this.tabId});
+        }
     }
 }
 
