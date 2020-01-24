@@ -48,10 +48,7 @@ async function setupProtectedSession(password) {
     protectedSessionHolder.setProtectedSessionId(response.protectedSessionId);
     protectedSessionHolder.touchProtectedSession();
 
-    await treeService.reload();
-
-    // it's important that tree has been already reloaded at this point since detail also uses tree cache (for book)
-    await appContext.reloadAllTabs();
+    appContext.trigger('protectedSessionStarted');
 
     if (protectedSessionDeferred !== null) {
         import("../dialogs/protected_session.js").then(dialog => dialog.close());

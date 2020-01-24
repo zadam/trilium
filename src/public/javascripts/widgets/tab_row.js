@@ -655,4 +655,8 @@ export default class TabRowWidget extends BasicWidget {
         $tab.addClass(utils.getNoteTypeClass(note.type));
         $tab.addClass(utils.getMimeTypeClass(note.mime));
     }
+
+    protectedSessionStartedListener() {
+        // FIXME
+    }
 }

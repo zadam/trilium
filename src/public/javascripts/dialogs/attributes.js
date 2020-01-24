@@ -172,12 +172,11 @@ function AttributesModel() {
 
         toastService.showMessage("Attributes have been saved.");
 
-        const ctx = appContext.getActiveTabContext();
+        appContext.getActiveTabContext().attributes.refreshAttributes();
 
-        ctx.attributes.refreshAttributes();
-
+        // reload
         noteDetailService.reload();
-        treeService.reload();
+        appContext.trigger('reloadTree');
     };
 
     function addLastEmptyRow() {

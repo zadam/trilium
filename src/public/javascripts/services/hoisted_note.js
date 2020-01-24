@@ -2,6 +2,7 @@ import optionsService from './options.js';
 import server from "./server.js";
 import tree from "./tree.js";
 import noteDetailService from "./note_detail.js";
+import appContext from "./app_context.js";
 
 let hoistedNoteId = 'root';
 
@@ -28,13 +29,7 @@ async function setHoistedNoteId(noteId) {
 
     await server.put('options/hoistedNoteId/' + noteId);
 
-    await tree.reload();
-
-    const activeTabContext = appContext.getActiveTabContext();
-
-    if (activeTabContext) {
-        await tree.activateNote(activeTabContext.notePath);
-    }
+    appContext.trigger('hoistedNoteChanged');
 }
 
 async function unhoist() {

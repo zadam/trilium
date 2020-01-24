@@ -7,6 +7,7 @@ import treeUtils from "./tree_utils.js";
 import hoistedNoteService from "./hoisted_note.js";
 import noteDetailService from "./note_detail.js";
 import ws from "./ws.js";
+import appContext from "./app_context.js";
 
 async function moveBeforeNode(branchIdsToMove, beforeBranchId) {
     branchIdsToMove = await filterRootNote(branchIdsToMove);
@@ -147,7 +148,7 @@ async function deleteNodes(branchIdsToDelete) {
 
     const noteIds = Array.from(new Set(nodes.map(node => node.getParent().data.noteId)));
 
-    await treeService.reloadNotes(noteIds);
+    appContext.trigger('reloadNotes', {noteIds});
 
     return true;
 }

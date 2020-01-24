@@ -3,6 +3,7 @@ import treeService from "./tree.js";
 import server from "./server.js";
 import ws from "./ws.js";
 import utils from "./utils.js";
+import appContext from "./app_context.js";
 
 export async function uploadFiles(parentNoteId, files, options) {
     if (files.length === 0) {
@@ -63,7 +64,7 @@ ws.subscribeToMessages(async message => {
 
         toastService.showPersistent(toast);
 
-        await treeService.reloadNotes([message.result.parentNoteId]);
+        appContext.trigger('reloadNotes', {noteIds: [message.result.parentNoteId]});
 
         if (message.result.importedNoteId) {
             const node = await treeService.activateNote(message.result.importedNoteId);

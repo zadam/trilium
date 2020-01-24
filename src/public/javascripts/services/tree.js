@@ -10,7 +10,6 @@ import treeBuilder from "./tree_builder.js";
 import hoistedNoteService from '../services/hoisted_note.js';
 import optionsService from "../services/options.js";
 import bundle from "./bundle.js";
-import keyboardActionService from "./keyboard_actions.js";
 import appContext from "./app_context.js";
 
 let setFrontendAsLoaded;
@@ -201,14 +200,6 @@ async function getSomeNotePath(note) {
     return path.reverse().join('/');
 }
 
-async function setExpandedToServer(branchId, isExpanded) {
-    utils.assertArguments(branchId);
-
-    const expandedNum = isExpanded ? 1 : 0;
-
-    await server.put('branches/' + branchId + '/expanded/' + expandedNum);
-}
-
 async function treeInitialized() {
     if (appContext.getTabContexts().length > 0) {
         // this is just tree reload - tabs are already in place
@@ -285,23 +276,6 @@ async function treeInitialized() {
     appContext.clearOpenTabsTask();
 
     setFrontendAsLoaded();
-}
-
-async function reload() {
-    const notes = await loadTreeData();
-
-    const activeNode = appContext.getMainNoteTree().getActiveNode();
-
-    const activeNotePath = activeNode !== null ? await treeUtils.getNotePath(activeNode) : null;
-
-    await appContext.getMainNoteTree().reload(notes);
-
-    // reactivate originally activated node, but don't trigger note loading
-    if (activeNotePath) {
-        const node = await appContext.getMainNoteTree().getNodeFromPath(activeNotePath, true);
-
-        await node.setActive(true, {noEvents: true});
-    }
 }
 
 function isNotePathInAddress() {
@@ -503,23 +477,9 @@ ws.subscribeToOutsideSyncMessages(async syncData => {
     });
 
     if (noteIdsToRefresh.size > 0) {
-        await reloadNotes(Array.from(noteIdsToRefresh));
+        appContext.trigger('reloadNotes', {noteIds: Array.from(noteIdsToRefresh)});
     }
 });
-
-async function reloadNotes(noteIds, activateNotePath = null) {
-    if (noteIds.length === 0) {
-        return;
-    }
-
-    await treeCache.reloadNotes(noteIds);
-
-    if (!activateNotePath) {
-        activateNotePath = appContext.getActiveTabNotePath();
-    }
-
-    appContext.trigger('notesReloaded', { noteIds, activateNotePath });
-}
 
 $(window).bind('hashchange', async function() {
     if (isNotePathInAddress()) {
@@ -532,7 +492,7 @@ $(window).bind('hashchange', async function() {
 async function duplicateNote(noteId, parentNoteId) {
     const {note} = await server.post(`notes/${noteId}/duplicate/${parentNoteId}`);
 
-    await reload();
+    await ws.waitForMaxKnownSyncId();
 
     await activateNote(note.noteId);
 
@@ -543,7 +503,6 @@ async function duplicateNote(noteId, parentNoteId) {
 frontendLoaded.then(bundle.executeStartupBundles);
 
 export default {
-    reload,
     setProtected,
     activateNote,
     setPrefix,
@@ -551,8 +510,6 @@ export default {
     sortAlphabetically,
     loadTreeData,
     treeInitialized,
-    setExpandedToServer,
-    reloadNotes,
     resolveNotePath,
     getSomeNotePath,
     createNewTopLevelNote,

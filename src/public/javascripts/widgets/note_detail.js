@@ -201,4 +201,12 @@ export default class NoteDetailWidget extends TabAwareWidget {
             debug: true
         });
     }
+
+    hoistedNoteChangedListener() {
+        this.refresh();
+    }
+
+    protectedSessionStartedListener() {
+        this.refresh();
+    }
 }

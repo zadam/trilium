@@ -80,7 +80,7 @@
     "electron": "6.0.12",
     "electron-builder": "22.2.0",
     "electron-packager": "14.2.0",
-    "electron-rebuild": "1.8.8",
+    "electron-rebuild": "1.9.0",
     "jsdoc": "3.6.3",
     "lorem-ipsum": "2.0.3"
   },

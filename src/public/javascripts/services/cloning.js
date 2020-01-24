@@ -1,6 +1,6 @@
-import treeService from './tree.js';
 import treeCache from './tree_cache.js';
 import server from './server.js';
+import appContext from "./app_context.js";
 
 async function cloneNoteTo(childNoteId, parentNoteId, prefix) {
     const resp = await server.put('notes/' + childNoteId + '/clone-to/' + parentNoteId, {
@@ -12,7 +12,7 @@ async function cloneNoteTo(childNoteId, parentNoteId, prefix) {
         return;
     }
 
-    await treeService.reloadNotes([childNoteId, parentNoteId]);
+    appContext.trigger('reloadNotes', {noteIds: [childNoteId, parentNoteId]});
 }
 
 // beware that first arg is noteId and second is branchId!
@@ -26,7 +26,7 @@ async function cloneNoteAfter(noteId, afterBranchId) {
 
     const afterBranch = treeCache.getBranch(afterBranchId);
 
-    await treeService.reloadNotes([noteId, afterBranch.parentNoteId]);
+    appContext.trigger('reloadNotes', {noteIds: [noteId, afterBranch.parentNoteId]});
 }
 
 export default {

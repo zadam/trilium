@@ -13,6 +13,7 @@ import treeChangesService from "../services/branches.js";
 import ws from "../services/ws.js";
 import appContext from "../services/app_context.js";
 import TabAwareWidget from "./tab_aware_widget.js";
+import server from "../services/server.js";
 
 const TPL = `
 <div class="tree">
@@ -105,8 +106,8 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
                 this.appContext.activateNote(notePath);
             },
-            expand: (event, data) => treeService.setExpandedToServer(data.node.data.branchId, true),
-            collapse: (event, data) => treeService.setExpandedToServer(data.node.data.branchId, false),
+            expand: (event, data) => this.setExpandedToServer(data.node.data.branchId, true),
+            collapse: (event, data) => this.setExpandedToServer(data.node.data.branchId, false),
             init: (event, data) => treeService.treeInitialized(),
             hotkeys: {
                 keydown: await treeKeyBindingService.getKeyboardBindings(this)
@@ -490,5 +491,51 @@ export default class NoteTreeWidget extends TabAwareWidget {
                 saveSelection: true
             });
         }
+    }
+
+    async setExpandedToServer(branchId, isExpanded) {
+        utils.assertArguments(branchId);
+
+        const expandedNum = isExpanded ? 1 : 0;
+
+        await server.put('branches/' + branchId + '/expanded/' + expandedNum);
+    }
+
+    async reloadNotesListener({noteIds, activateNotePath = null}) {
+        if (noteIds.length === 0) {
+            return;
+        }
+
+        await treeCache.reloadNotes(noteIds);
+
+        if (!activateNotePath) {
+            activateNotePath = appContext.getActiveTabNotePath();
+        }
+
+        appContext.trigger('notesReloaded', { noteIds, activateNotePath });
+    }
+
+    async reloadTreeListener() {
+        const notes = await treeService.loadTreeData();
+
+        const activeNode = this.getActiveNode();
+
+        const activeNotePath = activeNode !== null ? await treeUtils.getNotePath(activeNode) : null;
+
+        await this.reload(notes);
+
+        if (activeNotePath) {
+            const node = await this.getNodeFromPath(activeNotePath, true);
+
+            await node.setActive(true, {noEvents: true});
+        }
+    }
+
+    hoistedNoteChangedListener() {
+        this.reloadTreeListener();
+    }
+
+    protectedSessionStartedListener() {
+        this.reloadTreeListener();
     }
 }
