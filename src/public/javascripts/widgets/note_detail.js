@@ -95,17 +95,17 @@ export default class NoteDetailWidget extends TabAwareWidget {
     }
 
     async initType() {
-        do {
-            this.type = this.getWidgetType();
+        let foundType;
 
-            console.log(`Note detail type = ${this.type} for ${this.tabContext.tabId}`);
+        do {
+            foundType = this.type = this.getWidgetType();
 
             if (!(this.type in this.typeWidgetPromises)) {
                 this.typeWidgetPromises[this.type] = this.initWidgetType(this.type);
             }
 
             await this.typeWidgetPromises[this.type];
-        } while (this.type !== this.getWidgetType());
+        } while (foundType !== this.getWidgetType());
     }
 
     setupClasses() {
@@ -215,11 +215,5 @@ export default class NoteDetailWidget extends TabAwareWidget {
 
     protectedSessionStartedListener() {
         this.refresh();
-    }
-
-    async eventReceived(name, data, sync = false) {
-        console.log("Received ", name, data);
-
-        super.eventReceived(name, data, sync);
     }
 }

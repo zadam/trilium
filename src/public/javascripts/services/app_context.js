@@ -138,15 +138,11 @@ class AppContext {
         }
     }
 
-    activateNote(notePath) {
-        const activeTabContext = this.getActiveTabContext();
-
-        console.log("Setting activeTabContext to " + notePath);
-
-        activeTabContext.setNote(notePath);
-
-        this._setTitleBar();
-        this._setCurrentNotePathToHash();
+    tabNoteSwitchedListener({tabId}) {
+        if (tabId === this.activeTabId) {
+            this._setTitleBar();
+            this._setCurrentNotePathToHash();
+        }
     }
 
     _setCurrentNotePathToHash() {

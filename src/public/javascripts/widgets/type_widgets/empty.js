@@ -36,12 +36,6 @@ export default class EmptyTypeWidget extends TypeWidget {
         return this.$widget;
     }
 
-    toggle(show) {
-        console.log("EMPTY TOGGLE", show);
-
-        super.toggle(show);
-    }
-
     refresh() {
         this.toggle(!this.tabContext.note);
     }
