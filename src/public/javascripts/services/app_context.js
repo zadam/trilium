@@ -253,7 +253,6 @@ class AppContext {
         const tabContext = new TabContext(this, this.tabRow);
         this.tabContexts.push(tabContext);
         this.components.push(tabContext);
-
         return tabContext;
     }
 
@@ -321,9 +320,11 @@ class AppContext {
     }
 
     activateTab(tabId) {
+        const oldActiveTabId = this.activeTabId;
+
         this.activeTabId = tabId;
 
-        this.trigger('activeTabChanged', { tabId: this.activeTabId });
+        this.trigger('activeTabChanged', { oldActiveTabId });
     }
 
     newTabListener() {

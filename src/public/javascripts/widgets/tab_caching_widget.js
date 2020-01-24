@@ -21,6 +21,8 @@ export default class TabCachingWidget extends TabAwareWidget {
         }
 
         if (!this.tabContext) {
+            console.log(`Received activeTabChanged to widget ${this.componentId} which does not have tabContext.`);
+
             return;
         }
 

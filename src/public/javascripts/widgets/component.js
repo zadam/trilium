@@ -22,17 +22,25 @@ export default class Component {
         }
 
         if (propagateToChildren) {
-            for (const child of this.children) {
-                let promise = child.eventReceived(name, data, sync);
+            const promise = this.triggerChildren(name, data, sync);
 
-                if (sync) {
-                    await promise;
-                }
+            if (sync) {
+                await promise;
             }
         }
     }
 
     trigger(name, data, sync = false) {
         this.appContext.trigger(name, data, sync);
+    }
+
+    async triggerChildren(name, data, sync = false) {
+        for (const child of this.children) {
+            let promise = child.eventReceived(name, data, sync);
+
+            if (sync) {
+                await promise;
+            }
+        }
     }
 }

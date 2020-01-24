@@ -1,7 +1,6 @@
 import TabAwareWidget from "./tab_aware_widget.js";
 import utils from "../services/utils.js";
 import protectedSessionHolder from "../services/protected_session_holder.js";
-import appContext from "../services/app_context.js";
 import SpacedUpdate from "../services/spaced_update.js";
 import server from "../services/server.js";
 import libraryLoader from "../services/library_loader.js";
@@ -81,13 +80,7 @@ export default class NoteDetailWidget extends TabAwareWidget {
     }
 
     async refresh() {
-        this.type = this.getWidgetType(/*disableAutoBook*/);
-
-        if (!(this.type in this.typeWidgetPromises)) {
-            this.typeWidgetPromises[this.type] = this.initWidgetType(this.type);
-        }
-
-        await this.typeWidgetPromises[this.type];
+        await this.initType();
 
         for (const typeWidget of Object.values(this.typeWidgets)) {
             if (typeWidget.constructor.getType() !== this.type) {
@@ -99,6 +92,20 @@ export default class NoteDetailWidget extends TabAwareWidget {
         this.getTypeWidget().toggle(true);
 
         this.setupClasses();
+    }
+
+    async initType() {
+        do {
+            this.type = this.getWidgetType();
+
+            console.log(`Note detail type = ${this.type} for ${this.tabContext.tabId}`);
+
+            if (!(this.type in this.typeWidgetPromises)) {
+                this.typeWidgetPromises[this.type] = this.initWidgetType(this.type);
+            }
+
+            await this.typeWidgetPromises[this.type];
+        } while (this.type !== this.getWidgetType());
     }
 
     setupClasses() {
@@ -130,7 +137,7 @@ export default class NoteDetailWidget extends TabAwareWidget {
     async initWidgetType(type) {
         const clazz = await import(typeWidgetClasses[type]);
 
-        const typeWidget = this.typeWidgets[this.type] = new clazz.default(this.appContext);
+        const typeWidget = this.typeWidgets[type] = new clazz.default(this.appContext);
         this.children.push(typeWidget);
 
         this.$widget.append(typeWidget.render());
@@ -208,5 +215,11 @@ export default class NoteDetailWidget extends TabAwareWidget {
 
     protectedSessionStartedListener() {
         this.refresh();
+    }
+
+    async eventReceived(name, data, sync = false) {
+        console.log("Received ", name, data);
+
+        super.eventReceived(name, data, sync);
     }
 }
