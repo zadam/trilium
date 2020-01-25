@@ -157,12 +157,6 @@ async function deleteRelation(req) {
     }
 }
 
-async function getTargetRelations(req) {
-    const note = await repository.getNote(req.params.noteId);
-
-    return await note.getTargetRelations();
-}
-
 module.exports = {
     updateNoteAttributes,
     updateNoteAttribute,
@@ -171,6 +165,5 @@ module.exports = {
     getValuesForAttribute,
     getEffectiveNoteAttributes,
     createRelation,
-    deleteRelation,
-    getTargetRelations
+    deleteRelation
 };

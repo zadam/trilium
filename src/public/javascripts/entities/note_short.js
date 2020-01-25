@@ -156,26 +156,71 @@ class NoteShort {
     /**
      * @param {string} [type] - (optional) attribute type to filter
      * @param {string} [name] - (optional) attribute name to filter
+     * @returns {Attribute[]} all note's attributes, including inherited ones
+     */
+    getOwnedAttributes(type, name) {
+        const attrs = this.attributes
+            .map(attributeId => this.treeCache.attributes[attributeId])
+            .filter(attr => !!attr);
+
+        return this.__filterAttrs(attrs, type, name)
+    }
+
+    /**
+     * @param {string} [type] - (optional) attribute type to filter
+     * @param {string} [name] - (optional) attribute name to filter
      * @returns {Promise<Attribute[]>} all note's attributes, including inherited ones
      */
     async getAttributes(type, name) {
-        if (!this.__attributeCache) {
-            this.__attributeCache = (await server.get('notes/' + this.noteId + '/attributes'))
-                .map(attrRow => new Attribute(this.treeCache, attrRow));
+        const ownedAttributes = this.getOwnedAttributes();
+
+        const attrArrs = [
+            ownedAttributes
+        ];
+
+        for (const templateAttr of ownedAttributes.filter(oa => oa.type === 'relation' && oa.name === 'template')) {
+            const templateNote = await this.treeCache.getNote(templateAttr.value);
+
+            if (templateNote) {
+                attrArrs.push(await templateNote.getAttributes());
+            }
         }
 
+        if (this.noteId !== 'root') {
+            for (const parentNote of await this.getParentNotes()) {
+                attrArrs.push(await parentNote.getInheritableAttributes());
+            }
+        }
+
+        const attributes = attrArrs.flat();
+
+        return this.__filterAttrs(attributes, type, name);
+    }
+
+    __filterAttrs(attributes, type, name) {
         if (type && name) {
-            return this.__attributeCache.filter(attr => attr.type === type && attr.name === name);
+            return attributes.filter(attr => attr.type === type && attr.name === name);
+        } else if (type) {
+            return attributes.filter(attr => attr.type === type);
+        } else if (name) {
+            return attributes.filter(attr => attr.name === name);
+        } else {
+            return attributes;
         }
-        else if (type) {
-            return this.__attributeCache.filter(attr => attr.type === type);
-        }
-        else if (name) {
-            return this.__attributeCache.filter(attr => attr.name === name);
-        }
-        else {
-            return this.__attributeCache.slice();
-        }
+    }
+
+    async getInheritableAttributes() {
+        const attrs = await this.getAttributes();
+
+        return attrs.filter(attr => attr.isInheritable);
+    }
+
+    /**
+     * @param {string} [name] - label name to filter
+     * @returns {Attribute[]} all note's labels (attributes with type label), including inherited ones
+     */
+    getOwnedLabels(name) {
+        return this.getOwnedAttributes(LABEL, name);
     }
 
     /**
@@ -192,6 +237,14 @@ class NoteShort {
      */
     async getLabelDefinitions(name) {
         return await this.getAttributes(LABEL_DEFINITION, name);
+    }
+
+    /**
+     * @param {string} [name] - relation name to filter
+     * @returns {Attribute[]} all note's relations (attributes with type relation), including inherited ones
+     */
+    getOwnedRelations(name) {
+        return this.getOwnedAttributes(RELATION, name);
     }
 
     /**
@@ -222,12 +275,43 @@ class NoteShort {
     /**
      * @param {string} type - attribute type (label, relation, etc.)
      * @param {string} name - attribute name
+     * @returns {boolean} true if note has an attribute with given type and name (including inherited)
+     */
+    hasOwnedAttribute(type, name) {
+        return !!this.getOwnedAttribute(type, name);
+    }
+
+    /**
+     * @param {string} type - attribute type (label, relation, etc.)
+     * @param {string} name - attribute name
+     * @returns {Attribute} attribute of given type and name. If there's more such attributes, first is  returned. Returns null if there's no such attribute belonging to this note.
+     */
+    getOwnedAttribute(type, name) {
+        const attributes = this.getOwnedAttributes(type, name);
+
+        return attributes.length > 0 ? attributes[0] : 0;
+    }
+
+    /**
+     * @param {string} type - attribute type (label, relation, etc.)
+     * @param {string} name - attribute name
      * @returns {Promise<Attribute>} attribute of given type and name. If there's more such attributes, first is  returned. Returns null if there's no such attribute belonging to this note.
      */
     async getAttribute(type, name) {
-        const attributes = await this.getAttributes();
+        const attributes = await this.getAttributes(type, name);
 
-        return attributes.find(attr => attr.type === type && attr.name === name);
+        return attributes.length > 0 ? attributes[0] : 0;
+    }
+
+    /**
+     * @param {string} type - attribute type (label, relation, etc.)
+     * @param {string} name - attribute name
+     * @returns {string} attribute value of given type and name or null if no such attribute exists.
+     */
+    getOwnedAttributeValue(type, name) {
+        const attr = this.getOwnedAttribute(type, name);
+
+        return attr ? attr.value : null;
     }
 
     /**
@@ -243,9 +327,21 @@ class NoteShort {
 
     /**
      * @param {string} name - label name
+     * @returns {boolean} true if label exists (excluding inherited)
+     */
+    hasOwnedLabel(name) { return this.hasOwnedAttribute(LABEL, name); }
+
+    /**
+     * @param {string} name - label name
      * @returns {Promise<boolean>} true if label exists (including inherited)
      */
     async hasLabel(name) { return await this.hasAttribute(LABEL, name); }
+
+    /**
+     * @param {string} name - relation name
+     * @returns {boolean} true if relation exists (excluding inherited)
+     */
+    hasOwnedRelation(name) { return this.hasOwnedAttribute(RELATION, name); }
 
     /**
      * @param {string} name - relation name
@@ -255,9 +351,21 @@ class NoteShort {
 
     /**
      * @param {string} name - label name
+     * @returns {Attribute} label if it exists, null otherwise
+     */
+    getOwnedLabel(name) { return this.getOwnedAttribute(LABEL, name); }
+
+    /**
+     * @param {string} name - label name
      * @returns {Promise<Attribute>} label if it exists, null otherwise
      */
     async getLabel(name) { return await this.getAttribute(LABEL, name); }
+
+    /**
+     * @param {string} name - relation name
+     * @returns {Attribute} relation if it exists, null otherwise
+     */
+    getOwnedRelation(name) { return this.getOwnedAttribute(RELATION, name); }
 
     /**
      * @param {string} name - relation name
@@ -267,9 +375,21 @@ class NoteShort {
 
     /**
      * @param {string} name - label name
+     * @returns {string} label value if label exists, null otherwise
+     */
+    getOwnedLabelValue(name) { return this.getOwnedAttributeValue(LABEL, name); }
+
+    /**
+     * @param {string} name - label name
      * @returns {Promise<string>} label value if label exists, null otherwise
      */
     async getLabelValue(name) { return await this.getAttributeValue(LABEL, name); }
+
+    /**
+     * @param {string} name - relation name
+     * @returns {string} relation value if relation exists, null otherwise
+     */
+    getOwnedRelationValue(name) { return this.getOwnedAttributeValue(RELATION, name); }
 
     /**
      * @param {string} name - relation name
@@ -313,11 +433,11 @@ class NoteShort {
     /**
      * Get relations which target this note
      *
-     * @returns {Promise<Attribute[]>}
+     * @returns {Attribute[]}
      */
-    async getTargetRelations() {
-        return (await server.get('notes/' + this.noteId + '/target-relations'))
-            .map(attrRow => new Attribute(this.treeCache, attrRow));
+    getTargetRelations() {
+        return this.targetRelations
+            .map(attributeId => this.treeCache.attributes[attributeId]);
     }
 
     get toString() {
@@ -327,8 +447,6 @@ class NoteShort {
     get dto() {
         const dto = Object.assign({}, this);
         delete dto.treeCache;
-        delete dto.archived;
-        delete dto.__attributeCache;
 
         return dto;
     }
