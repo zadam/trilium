@@ -23,7 +23,7 @@ class WhatLinksHereWidget extends StandardWidget {
     }
 
     async refreshWithNote() {
-        const targetRelations = await this.tabContext.note.getTargetRelations();
+        const targetRelations = this.tabContext.note.getTargetRelations();
 
         if (targetRelations.length === 0) {
             this.$body.text("Nothing links here yet ...");

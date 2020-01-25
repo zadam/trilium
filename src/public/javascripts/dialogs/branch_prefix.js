@@ -1,7 +1,6 @@
 import treeService from '../services/tree.js';
 import server from '../services/server.js';
 import treeCache from "../services/tree_cache.js";
-import treeService from "../services/tree.js";
 import toastService from "../services/toast.js";
 import utils from "../services/utils.js";
 

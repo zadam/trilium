@@ -1,7 +1,5 @@
 import noteAutocompleteService from "../services/note_autocomplete.js";
 import utils from "../services/utils.js";
-import cloningService from "../services/cloning.js";
-import treeService from "../services/tree.js";
 import toastService from "../services/toast.js";
 import treeCache from "../services/tree_cache.js";
 import treeChangesService from "../services/branches.js";

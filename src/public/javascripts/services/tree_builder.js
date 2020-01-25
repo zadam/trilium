@@ -38,11 +38,19 @@ const NOTE_TYPE_ICONS = {
     "book": "bx bx-book"
 };
 
+async function getIconClass(note) {
+    const labels = await note.getLabels('iconClass');
+
+    return labels.map(l => l.value).join(' ');
+}
+
 async function getIcon(note) {
     const hoistedNoteId = await hoistedNoteService.getHoistedNoteId();
 
-    if (note.iconClass) {
-        return note.iconClass;
+    const iconClass = await getIconClass(note);
+
+    if (iconClass) {
+        return iconClass;
     }
     else if (note.noteId === 'root') {
         return "bx bx-chevrons-right";
@@ -124,6 +132,11 @@ async function prepareSearchBranch(note) {
     return await prepareRealBranch(newNote);
 }
 
+async function getCssClass(note) {
+    const labels = await note.getLabels('cssClass');
+    return labels.map(l => l.value).join(' ');
+}
+
 async function getExtraClasses(note) {
     utils.assertArguments(note);
 
@@ -137,8 +150,10 @@ async function getExtraClasses(note) {
         extraClasses.push("multiple-parents");
     }
 
-    if (note.cssClass) {
-        extraClasses.push(note.cssClass);
+    const cssClass = await getCssClass(note);
+
+    if (cssClass) {
+        extraClasses.push(cssClass);
     }
 
     extraClasses.push(utils.getNoteTypeClass(note.type));
@@ -147,7 +162,7 @@ async function getExtraClasses(note) {
         extraClasses.push(utils.getMimeTypeClass(note.mime));
     }
 
-    if (note.archived) {
+    if (await note.hasLabel('archived')) {
         extraClasses.push("archived");
     }
 
