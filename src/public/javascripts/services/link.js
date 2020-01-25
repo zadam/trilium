@@ -1,7 +1,5 @@
 import treeService from './tree.js';
-import treeUtils from './tree_utils.js';
 import contextMenuService from "./context_menu.js";
-import noteDetailService from "./note_detail.js";
 import appContext from "./app_context.js";
 
 function getNotePathFromUrl(url) {
@@ -22,9 +20,9 @@ async function createNoteLink(notePath, options = {}) {
     const showNotePath = options.showNotePath === undefined ? false : options.showNotePath;
 
     if (!noteTitle) {
-        const {noteId, parentNoteId} = treeUtils.getNoteIdAndParentIdFromNotePath(notePath);
+        const {noteId, parentNoteId} = treeService.getNoteIdAndParentIdFromNotePath(notePath);
 
-        noteTitle = await treeUtils.getNoteTitle(noteId, parentNoteId);
+        noteTitle = await treeService.getNoteTitle(noteId, parentNoteId);
     }
 
     const $noteLink = $("<a>", {
@@ -49,7 +47,7 @@ async function createNoteLink(notePath, options = {}) {
             const parentNotePath = noteIds.join("/").trim();
 
             if (parentNotePath) {
-                $container.append($("<small>").text(" (" + await treeUtils.getNotePathTitle(parentNotePath) + ")"));
+                $container.append($("<small>").text(" (" + await treeService.getNotePathTitle(parentNotePath) + ")"));
             }
         }
     }

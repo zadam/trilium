@@ -1,6 +1,6 @@
 import server from "./server.js";
 import ws from "./ws.js";
-import treeUtils from "./tree_utils.js";
+import treeService from "./tree.js";
 import noteAutocompleteService from "./note_autocomplete.js";
 import Component from "../widgets/component.js";
 import utils from "./utils.js";

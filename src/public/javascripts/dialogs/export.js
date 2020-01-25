@@ -1,4 +1,4 @@
-import treeUtils from "../services/tree_utils.js";
+import treeService from "../services/tree.js";
 import utils from "../services/utils.js";
 import ws from "../services/ws.js";
 import toastService from "../services/toast.js";
@@ -43,11 +43,11 @@ export async function showDialog(notePath, defaultType) {
 
     $dialog.modal();
 
-    const {noteId, parentNoteId} = treeUtils.getNoteIdAndParentIdFromNotePath(notePath);
+    const {noteId, parentNoteId} = treeService.getNoteIdAndParentIdFromNotePath(notePath);
 
     branchId = await treeCache.getBranchId(parentNoteId, noteId);
 
-    const noteTitle = await treeUtils.getNoteTitle(noteId);
+    const noteTitle = await treeService.getNoteTitle(noteId);
 
     $noteTitle.html(noteTitle);
 }

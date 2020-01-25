@@ -1,6 +1,6 @@
 import linkService from '../services/link.js';
 import noteDetailService from '../services/note_detail.js';
-import treeUtils from '../services/tree_utils.js';
+import treeService from '../services/tree.js';
 import noteAutocompleteService from "../services/note_autocomplete.js";
 import utils from "../services/utils.js";
 
@@ -23,7 +23,7 @@ export async function showDialog() {
     $linkTitle.val('');
 
     async function setDefaultLinkTitle(noteId) {
-        const noteTitle = await treeUtils.getNoteTitle(noteId);
+        const noteTitle = await treeService.getNoteTitle(noteId);
 
         $linkTitle.val(noteTitle);
     }
@@ -35,7 +35,7 @@ export async function showDialog() {
             return false;
         }
 
-        const noteId = treeUtils.getNoteIdFromNotePath(suggestion.path);
+        const noteId = treeService.getNoteIdFromNotePath(suggestion.path);
 
         if (noteId) {
             setDefaultLinkTitle(noteId);
@@ -43,7 +43,7 @@ export async function showDialog() {
     });
 
     $autoComplete.on('autocomplete:cursorchanged', function(event, suggestion, dataset) {
-        const noteId = treeUtils.getNoteIdFromNotePath(suggestion.path);
+        const noteId = treeService.getNoteIdFromNotePath(suggestion.path);
 
         setDefaultLinkTitle(noteId);
     });

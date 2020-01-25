@@ -1,7 +1,7 @@
 import treeService from '../services/tree.js';
 import server from '../services/server.js';
 import treeCache from "../services/tree_cache.js";
-import treeUtils from "../services/tree_utils.js";
+import treeService from "../services/tree.js";
 import toastService from "../services/toast.js";
 import utils from "../services/utils.js";
 
@@ -34,7 +34,7 @@ export async function showDialog(node) {
 
     $treePrefixInput.val(branch.prefix);
 
-    const noteTitle = await treeUtils.getNoteTitle(node.data.noteId);
+    const noteTitle = await treeService.getNoteTitle(node.data.noteId);
 
     $noteTitle.text(" - " + noteTitle);
 }

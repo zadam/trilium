@@ -5,7 +5,7 @@ import treeBuilder from "./services/tree_builder.js";
 import contextMenuWidget from "./services/context_menu.js";
 import treeChangesService from "./services/branches.js";
 import utils from "./services/utils.js";
-import treeUtils from "./services/tree_utils.js";
+import treeService from "./services/tree.js";
 import appContext from "./services/app_context.js";
 
 window.glob.isDesktop = utils.isDesktop;
@@ -60,7 +60,7 @@ async function showTree() {
 
             showDetailPane();
 
-            const notePath = await treeUtils.getNotePath(node);
+            const notePath = await treeService.getNotePath(node);
 
         },
         expand: (event, data) => treeService.setExpandedToServer(data.node.data.branchId, true),
@@ -109,7 +109,7 @@ $detail.on("click", ".note-menu-button", async e => {
         selectContextMenuItem: async (event, cmd) => {
             if (cmd === "insertNoteAfter") {
                 const parentNoteId = node.data.parentNoteId;
-                const isProtected = await treeUtils.getParentProtectedStatus(node);
+                const isProtected = await treeService.getParentProtectedStatus(node);
 
                 treeService.createNote(node, parentNoteId, 'after', { isProtected: isProtected });
             }

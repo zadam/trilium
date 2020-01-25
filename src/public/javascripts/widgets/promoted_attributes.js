@@ -1,6 +1,6 @@
 import server from "../services/server.js";
 import ws from "../services/ws.js";
-import treeUtils from "../services/tree_utils.js";
+import treeService from "../services/tree.js";
 import noteAutocompleteService from "../services/note_autocomplete.js";
 import TabAwareWidget from "./tab_aware_widget.js";
 
@@ -185,7 +185,7 @@ export default class PromotedAttributesWidget extends TabAwareWidget {
         }
         else if (valueAttr.type === 'relation') {
             if (valueAttr.value) {
-                $input.val(await treeUtils.getNoteTitle(valueAttr.value));
+                $input.val(await treeService.getNoteTitle(valueAttr.value));
             }
 
             // no need to wait for this
@@ -247,7 +247,7 @@ export default class PromotedAttributesWidget extends TabAwareWidget {
         else if ($attr.prop("attribute-type") === "relation") {
             const selectedPath = $attr.getSelectedPath();
 
-            value = selectedPath ? treeUtils.getNoteIdFromNotePath(selectedPath) : "";
+            value = selectedPath ? treeService.getNoteIdFromNotePath(selectedPath) : "";
         }
         else {
             value = $attr.val();

@@ -2,8 +2,6 @@ import GlobalButtonsWidget from "../widgets/global_buttons.js";
 import SearchBoxWidget from "../widgets/search_box.js";
 import SearchResultsWidget from "../widgets/search_results.js";
 import NoteTreeWidget from "../widgets/note_tree.js";
-import treeService from "./tree.js";
-import noteDetailService from "./note_detail.js";
 import TabContext from "./tab_context.js";
 import server from "./server.js";
 import TabRowWidget from "../widgets/tab_row.js";
@@ -22,7 +20,7 @@ import GlobalMenuWidget from "../widgets/global_menu.js";
 import RowFlexContainer from "../widgets/row_flex_container.js";
 import StandardTopWidget from "../widgets/standard_top_widget.js";
 import treeCache from "./tree_cache.js";
-import treeUtils from "./tree_utils.js";
+import treeService from "./tree.js";
 import NotePathsWidget from "../widgets/note_paths.js";
 import RunScriptButtonsWidget from "../widgets/run_script_buttons.js";
 import ProtectedNoteSwitchWidget from "../widgets/protected_note_switch.js";
@@ -163,7 +161,7 @@ class AppContext {
         const activeTabContext = this.getActiveTabContext();
 
         if (activeTabContext && activeTabContext.notePath) {
-            const note = await treeCache.getNote(treeUtils.getNoteIdFromNotePath(activeTabContext.notePath));
+            const note = await treeCache.getNote(treeService.getNoteIdFromNotePath(activeTabContext.notePath));
 
             // it helps navigating in history if note title is included in the title
             document.title += " - " + note.title;

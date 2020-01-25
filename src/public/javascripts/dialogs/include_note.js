@@ -1,4 +1,4 @@
-import treeUtils from '../services/tree_utils.js';
+import treeService from '../services/tree.js';
 import noteAutocompleteService from '../services/note_autocomplete.js';
 import utils from "../services/utils.js";
 
@@ -29,7 +29,7 @@ $form.on('submit', () => {
         $dialog.modal('hide');
 
         if (callback) {
-            callback(treeUtils.getNoteIdFromNotePath(notePath));
+            callback(treeService.getNoteIdFromNotePath(notePath));
         }
     }
     else {

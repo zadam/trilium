@@ -1,5 +1,5 @@
 import noteDetailService from "./note_detail.js";
-import treeUtils from "./tree_utils.js";
+import treeService from "./tree.js";
 import linkService from "./link.js";
 import server from "./server.js";
 
@@ -40,7 +40,7 @@ async function mouseEnterHandler() {
         return;
     }
 
-    const noteId = treeUtils.getNoteIdFromNotePath(notePath);
+    const noteId = treeService.getNoteIdFromNotePath(notePath);
 
     const notePromise = noteDetailService.loadNote(noteId);
     const attributePromise = server.get(`notes/${noteId}/attributes`);

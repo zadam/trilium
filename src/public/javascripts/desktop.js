@@ -12,7 +12,6 @@ import ScriptContext from './services/script_context.js';
 import sync from './services/sync.js';
 import treeService from './services/tree.js';
 import treeChanges from './services/branches.js';
-import treeUtils from './services/tree_utils.js';
 import utils from './services/utils.js';
 import server from './services/server.js';
 import Entrypoints from './services/entrypoints.js';

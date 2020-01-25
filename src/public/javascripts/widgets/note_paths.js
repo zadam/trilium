@@ -1,6 +1,5 @@
 import TabAwareWidget from "./tab_aware_widget.js";
 import treeService from "../services/tree.js";
-import treeUtils from "../services/tree_utils.js";
 import linkService from "../services/link.js";
 
 const TPL = `
@@ -71,7 +70,7 @@ export default class NotePathsWidget extends TabAwareWidget {
     }
 
     async addPath(notePath, isCurrent) {
-        const title = await treeUtils.getNotePathTitle(notePath);
+        const title = await treeService.getNotePathTitle(notePath);
 
         const noteLink = await linkService.createNoteLink(notePath, {title});
 

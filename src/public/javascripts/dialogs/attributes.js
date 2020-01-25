@@ -1,7 +1,7 @@
 import noteDetailService from '../services/note_detail.js';
 import server from '../services/server.js';
 import toastService from "../services/toast.js";
-import treeUtils from "../services/tree_utils.js";
+import treeService from "../services/tree.js";
 import attributeAutocompleteService from "../services/attribute_autocomplete.js";
 import utils from "../services/utils.js";
 import linkService from "../services/link.js";
@@ -66,7 +66,7 @@ function AttributesModel() {
 
         for (const attr of ownedAttributes) {
             attr.labelValue = attr.type === 'label' ? attr.value : '';
-            attr.relationValue = attr.type === 'relation' ? (await treeUtils.getNoteTitle(attr.value)) : '';
+            attr.relationValue = attr.type === 'relation' ? (await treeService.getNoteTitle(attr.value)) : '';
             attr.selectedPath = attr.type === 'relation' ? attr.value : '';
             attr.labelDefinition = (attr.type === 'label-definition' && attr.value) ? attr.value : {
                 labelType: "text",
@@ -151,7 +151,7 @@ function AttributesModel() {
                 attr.value = attr.labelValue;
             }
             else if (attr.type === 'relation') {
-                attr.value = treeUtils.getNoteIdFromNotePath(attr.selectedPath);
+                attr.value = treeService.getNoteIdFromNotePath(attr.selectedPath);
             }
             else if (attr.type === 'label-definition') {
                 attr.value = attr.labelDefinition;

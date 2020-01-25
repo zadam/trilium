@@ -5,10 +5,9 @@ import Attributes from "./attributes.js";
 import utils from "./utils.js";
 import optionsService from "./options.js";
 import appContext from "./app_context.js";
-import treeUtils from "./tree_utils.js";
+import treeService from "./tree.js";
 import noteDetailService from "./note_detail.js";
 import Component from "../widgets/component.js";
-import treeService from "./tree.js";
 
 let showSidebarInNewTab = true;
 
@@ -52,7 +51,7 @@ class TabContext extends Component {
         await this.trigger('beforeNoteSwitch', {tabId: this.tabId}, true);
 
         this.notePath = notePath;
-        const noteId = treeUtils.getNoteIdFromNotePath(notePath);
+        const noteId = treeService.getNoteIdFromNotePath(notePath);
 
         /** @property {NoteFull} */
         this.note = await noteDetailService.loadNote(noteId);

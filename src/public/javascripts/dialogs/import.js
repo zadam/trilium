@@ -1,5 +1,5 @@
 import utils from '../services/utils.js';
-import treeUtils from "../services/tree_utils.js";
+import treeService from "../services/tree.js";
 import importService from "../services/import.js";
 
 const $dialog = $("#import-dialog");
@@ -30,7 +30,7 @@ export async function showDialog(noteId) {
 
     parentNoteId = noteId;
 
-    $noteTitle.text(await treeUtils.getNoteTitle(parentNoteId));
+    $noteTitle.text(await treeService.getNoteTitle(parentNoteId));
 
     $dialog.modal();
 }

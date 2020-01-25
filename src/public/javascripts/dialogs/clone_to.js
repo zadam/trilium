@@ -1,7 +1,7 @@
 import noteAutocompleteService from "../services/note_autocomplete.js";
 import utils from "../services/utils.js";
 import cloningService from "../services/cloning.js";
-import treeUtils from "../services/tree_utils.js";
+import treeService from "../services/tree.js";
 import toastService from "../services/toast.js";
 import treeCache from "../services/tree_cache.js";
 
@@ -43,7 +43,7 @@ export async function showDialog(noteIds) {
 }
 
 async function cloneNotesTo(notePath) {
-    const targetNoteId = treeUtils.getNoteIdFromNotePath(notePath);
+    const targetNoteId = treeService.getNoteIdFromNotePath(notePath);
 
     for (const cloneNoteId of clonedNoteIds) {
         await cloningService.cloneNoteTo(cloneNoteId, targetNoteId, $clonePrefix.val());

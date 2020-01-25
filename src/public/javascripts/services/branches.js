@@ -3,7 +3,6 @@ import utils from './utils.js';
 import server from './server.js';
 import toastService from "./toast.js";
 import treeCache from "./tree_cache.js";
-import treeUtils from "./tree_utils.js";
 import hoistedNoteService from "./hoisted_note.js";
 import noteDetailService from "./note_detail.js";
 import ws from "./ws.js";
@@ -83,7 +82,7 @@ async function getNextNode(nodes) {
         next = nodes[0].getParent();
     }
 
-    return treeUtils.getNotePath(next);
+    return treeService.getNotePath(next);
 }
 
 async function deleteNodes(branchIdsToDelete) {

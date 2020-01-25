@@ -1,7 +1,6 @@
 import ws from './ws.js';
 import noteDetailService from './note_detail.js';
 import protectedSessionHolder from './protected_session_holder.js';
-import treeUtils from './tree_utils.js';
 import utils from './utils.js';
 import server from './server.js';
 import treeCache from './tree_cache.js';
@@ -28,7 +27,7 @@ async function setPrefix(branchId, prefix) {
 }
 
 async function setNodeTitleWithPrefix(node) {
-    const noteTitle = await treeUtils.getNoteTitle(node.data.noteId);
+    const noteTitle = await getNoteTitle(node.data.noteId);
     const branch = treeCache.getBranch(node.data.branchId);
 
     const prefix = branch.prefix;
@@ -214,14 +213,14 @@ async function treeInitialized() {
     // (useful, among others, for opening clipped notes from clipper)
     if (location.hash) {
         const notePath = location.hash.substr(1);
-        const noteId = treeUtils.getNoteIdFromNotePath(notePath);
+        const noteId = getNoteIdFromNotePath(notePath);
 
         if (noteId && await treeCache.noteExists(noteId)) {
             for (const tab of openTabs) {
                 tab.active = false;
             }
 
-            const foundTab = openTabs.find(tab => noteId === treeUtils.getNoteIdFromNotePath(tab.notePath));
+            const foundTab = openTabs.find(tab => noteId === getNoteIdFromNotePath(tab.notePath));
 
             if (foundTab) {
                 foundTab.active = true;
@@ -238,7 +237,7 @@ async function treeInitialized() {
     let filteredTabs = [];
 
     for (const openTab of openTabs) {
-        const noteId = treeUtils.getNoteIdFromNotePath(openTab.notePath);
+        const noteId = getNoteIdFromNotePath(openTab.notePath);
 
         if (await treeCache.noteExists(noteId)) {
             // note doesn't exist so don't try to open tab for it
@@ -500,6 +499,119 @@ async function duplicateNote(noteId, parentNoteId) {
     toastService.showMessage(`Note "${origNote.title}" has been duplicated`);
 }
 
+async function getParentProtectedStatus(node) {
+    return await hoistedNoteService.isRootNode(node) ? 0 : node.getParent().data.isProtected;
+}
+
+function getNoteIdFromNotePath(notePath) {
+    if (!notePath) {
+        return null;
+    }
+
+    const path = notePath.split("/");
+
+    const lastSegment = path[path.length - 1];
+
+    // path could have also tabId suffix
+    return lastSegment.split("-")[0];
+}
+
+function getNoteIdAndParentIdFromNotePath(notePath) {
+    let parentNoteId = 'root';
+    let noteId = '';
+
+    if (notePath) {
+        const path = notePath.split("/");
+
+        const lastSegment = path[path.length - 1];
+
+        // path could have also tabId suffix
+        noteId = lastSegment.split("-")[0];
+
+        if (path.length > 1) {
+            parentNoteId = path[path.length - 2];
+        }
+    }
+
+    return {
+        parentNoteId,
+        noteId
+    }
+}
+
+async function getNotePath(node) {
+    if (!node) {
+        console.error("Node is null");
+        return "";
+    }
+
+    const path = [];
+
+    while (node && !await hoistedNoteService.isRootNode(node)) {
+        if (node.data.noteId) {
+            path.push(node.data.noteId);
+        }
+
+        node = node.getParent();
+    }
+
+    if (node) { // null node can happen directly after unhoisting when tree is still hoisted but option has been changed already
+        path.push(node.data.noteId); // root or hoisted noteId
+    }
+
+    return path.reverse().join("/");
+}
+
+async function getNoteTitle(noteId, parentNoteId = null) {
+    utils.assertArguments(noteId);
+
+    const note = await treeCache.getNote(noteId);
+    if (!note) {
+        return "[not found]";
+    }
+
+    let {title} = note;
+
+    if (parentNoteId !== null) {
+        const branchId = note.parentToBranch[parentNoteId];
+
+        if (branchId) {
+            const branch = treeCache.getBranch(branchId);
+
+            if (branch && branch.prefix) {
+                title = branch.prefix + ' - ' + title;
+            }
+        }
+    }
+
+    return title;
+}
+
+async function getNotePathTitle(notePath) {
+    utils.assertArguments(notePath);
+
+    const titlePath = [];
+
+    if (notePath.startsWith('root/')) {
+        notePath = notePath.substr(5);
+    }
+
+    // special case when we want just root's title
+    if (notePath === 'root') {
+        return await getNoteTitle(notePath);
+    }
+
+    let parentNoteId = 'root';
+
+    for (const noteId of notePath.split('/')) {
+        titlePath.push(await getNoteTitle(noteId, parentNoteId));
+
+        parentNoteId = noteId;
+    }
+
+    return titlePath.join(' / ');
+}
+
 frontendLoaded.then(bundle.executeStartupBundles);
 
 export default {
@@ -515,5 +627,11 @@ export default {
     createNewTopLevelNote,
     duplicateNote,
     getRunPath,
-    setNodeTitleWithPrefix
+    setNodeTitleWithPrefix,
+    getParentProtectedStatus,
+    getNotePath,
+    getNoteIdFromNotePath,
+    getNoteIdAndParentIdFromNotePath,
+    getNoteTitle,
+    getNotePathTitle
 };

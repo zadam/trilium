@@ -1,8 +1,6 @@
 import hoistedNoteService from "../services/hoisted_note.js";
 import searchNotesService from "../services/search_notes.js";
 import treeService from "../services/tree.js";
-import treeUtils from "../services/tree_utils.js";
-import noteDetailService from "../services/note_detail.js";
 import utils from "../services/utils.js";
 import contextMenuWidget from "../services/context_menu.js";
 import treeKeyBindingService from "../services/tree_keybindings.js";
@@ -51,7 +49,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
             if (e.which === 2) {
                 const node = $.ui.fancytree.getNode(e);
 
-                treeUtils.getNotePath(node).then(notePath => {
+                treeService.getNotePath(node).then(notePath => {
                     if (notePath) {
                         const tabContext = appContext.openEmptyTab();
                         tabContext.setNote(notePath);
@@ -89,7 +87,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
                     }
                     else if (event.ctrlKey) {
                         const tabContext = appContext.openEmptyTab();
-                        treeUtils.getNotePath(node).then(notePath => tabContext.setNote(notePath));
+                        treeService.getNotePath(node).then(notePath => tabContext.setNote(notePath));
                         appContext.activateTab(tabContext.tabId);
                     }
                     else {
@@ -105,7 +103,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
                 // click event won't propagate so let's close context menu manually
                 contextMenuWidget.hideContextMenu();
 
-                const notePath = await treeUtils.getNotePath(data.node);
+                const notePath = await treeService.getNotePath(data.node);
 
                 const activeTabContext = this.appContext.getActiveTabContext();
                 await activeTabContext.setNote(notePath);
@@ -463,7 +461,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
     async createNoteAfterListener() {
         const node = this.getActiveNode();
         const parentNoteId = node.data.parentNoteId;
-        const isProtected = await treeUtils.getParentProtectedStatus(node);
+        const isProtected = await treeService.getParentProtectedStatus(node);
 
         if (node.data.noteId === 'root' || node.data.noteId === await hoistedNoteService.getHoistedNoteId()) {
             return;
@@ -524,7 +522,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
         const activeNode = this.getActiveNode();
 
-        const activeNotePath = activeNode !== null ? await treeUtils.getNotePath(activeNode) : null;
+        const activeNotePath = activeNode !== null ? await treeService.getNotePath(activeNode) : null;
 
         await this.reload(notes);
 

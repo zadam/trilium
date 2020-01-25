@@ -2,14 +2,11 @@ import treeService from './tree.js';
 import ws from './ws.js';
 import protectedSessionService from './protected_session.js';
 import treeChangesService from './branches.js';
-import treeUtils from './tree_utils.js';
 import treeCache from "./tree_cache.js";
 import syncService from "./sync.js";
 import hoistedNoteService from './hoisted_note.js';
-import noteDetailService from './note_detail.js';
 import clipboard from './clipboard.js';
 import protectedSessionHolder from "./protected_session_holder.js";
-import searchNotesService from "./search_notes.js";
 import appContext from "./app_context.js";
 
 class TreeContextMenu {
@@ -101,7 +98,7 @@ class TreeContextMenu {
 
     async selectContextMenuItem(event, cmd) {
         const noteId = this.node.data.noteId;
-        const notePath = await treeUtils.getNotePath(this.node);
+        const notePath = await treeService.getNotePath(this.node);
 
         if (cmd === 'openInTab') {
             const tabContext = appContext.openEmptyTab();
@@ -110,7 +107,7 @@ class TreeContextMenu {
         }
         else if (cmd.startsWith("insertNoteAfter")) {
             const parentNoteId = this.node.data.parentNoteId;
-            const isProtected = await treeUtils.getParentProtectedStatus(this.node);
+            const isProtected = await treeService.getParentProtectedStatus(this.node);
             const type = cmd.split("_")[1];
 
             treeService.createNote(this.node, parentNoteId, 'after', {
