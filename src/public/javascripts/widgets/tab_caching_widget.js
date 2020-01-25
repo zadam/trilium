@@ -37,6 +37,10 @@ export default class TabCachingWidget extends TabAwareWidget {
         }
 
         widget.toggle(true);
+
+        // stop propagation of the event to the children, individual tab widget should not know about tab switching
+        // since they are per-tab
+        return false;
     }
 
     tabRemovedListener({tabId}) {

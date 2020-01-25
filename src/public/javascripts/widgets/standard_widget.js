@@ -79,19 +79,12 @@ class StandardWidget extends TabAwareWidget {
         this.$headerActions = this.$widget.find('.widget-header-actions');
         this.$headerActions.append(...this.getHeaderActions());
 
-        // actual rendering is async
-        this.renderBody();
+        this.initialized = this.renderBody();
 
         return this.$widget;
     }
 
     async renderBody() {
-        // if (!this.isExpanded() || this.rendered) {
-        //     return;
-        // }
-        //
-        // this.rendered = true;
-
         await this.doRenderBody();
     }
 

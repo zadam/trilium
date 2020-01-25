@@ -1,7 +1,7 @@
 import TabAwareWidget from "./tab_aware_widget.js";
 
 const TPL = `
-<div>
+<div style="display: inline-flex;">
     <button class="btn btn-sm icon-button bx bx-play-circle render-button"
             title="Render"></button>
     

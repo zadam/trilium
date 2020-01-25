@@ -36,9 +36,10 @@ export default class NoteDetailWidget extends TabAwareWidget {
         this.typeWidgetPromises = {};
 
         this.spacedUpdate = new SpacedUpdate(async () => {
-            const {noteFull} = this.tabContext;
-            const {noteId} = this.tabContext.note;
+            const {noteFull, note} = this.tabContext;
+            const {noteId} = note;
 
+            // FIXME hack
             const dto = note.dto;
             dto.content = noteFull.content = this.getTypeWidget().getContent();
 
