@@ -172,8 +172,6 @@ function AttributesModel() {
 
         toastService.showMessage("Attributes have been saved.");
 
-        appContext.getActiveTabContext().attributes.refreshAttributes();
-
         // FIXME detail should be also reloaded
         appContext.trigger('reloadTree');
     };

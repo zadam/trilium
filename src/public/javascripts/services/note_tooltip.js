@@ -2,6 +2,7 @@ import noteDetailService from "./note_detail.js";
 import treeService from "./tree.js";
 import linkService from "./link.js";
 import server from "./server.js";
+import treeCache from "./tree_cache.js";
 
 function setupGlobalTooltip() {
     $(document).on("mouseenter", "a", mouseEnterHandler);
@@ -42,12 +43,10 @@ async function mouseEnterHandler() {
 
     const noteId = treeService.getNoteIdFromNotePath(notePath);
 
-    const notePromise = noteDetailService.loadNote(noteId);
-    const attributePromise = server.get(`notes/${noteId}/attributes`);
+    const note = await treeCache.getNote(noteId);
+    const noteFull = await noteDetailService.loadNoteFull(noteId);
 
-    const [note, attributes] = await Promise.all([notePromise, attributePromise]);
-
-    const html = await renderTooltip(note, attributes);
+    const html = await renderTooltip(note, noteFull);
 
     // we need to check if we're still hovering over the element
     // since the operation to get tooltip content was async, it is possible that
@@ -72,7 +71,9 @@ function mouseLeaveHandler() {
     $(this).tooltip('dispose');
 }
 
-async function renderTooltip(note, attributes) {
+async function renderTooltip(note, noteFull) {
+    const attributes = await note.getAttributes();
+
     let content = '';
     const promoted = attributes.filter(attr =>
         (attr.type === 'label-definition' || attr.type === 'relation-definition')
@@ -116,11 +117,11 @@ async function renderTooltip(note, attributes) {
     if (note.type === 'text') {
         // surround with <div> for a case when note's content is pure text (e.g. "[protected]") which
         // then fails the jquery non-empty text test
-        content += '<div>' + note.content + '</div>';
+        content += '<div>' + noteFull.content + '</div>';
     }
     else if (note.type === 'code') {
         content += $("<pre>")
-            .text(note.content)
+            .text(noteFull.content)
             .prop('outerHTML');
     }
     else if (note.type === 'image') {

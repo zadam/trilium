@@ -5,7 +5,7 @@ export default class TypeWidget extends TabAwareWidget {
     static getType() {}
 
     /**
-     * @param {NoteFull} note
+     * @param {NoteShort} note
      */
     doRefresh(note) {}
 

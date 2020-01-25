@@ -36,16 +36,19 @@ export default class NoteDetailWidget extends TabAwareWidget {
         this.typeWidgetPromises = {};
 
         this.spacedUpdate = new SpacedUpdate(async () => {
-            const note = this.tabContext.note;
-            note.content = this.getTypeWidget().getContent();
+            const {noteFull} = this.tabContext;
+            const {noteId} = this.tabContext.note;
 
-            const resp = await server.put('notes/' + note.noteId, note.dto);
+            const dto = note.dto;
+            dto.content = noteFull.content = this.getTypeWidget().getContent();
+
+            const resp = await server.put('notes/' + noteId, dto);
 
             // FIXME: minor - does not propagate to other tab contexts with this note though
-            note.dateModified = resp.dateModified;
-            note.utcDateModified = resp.utcDateModified;
+            noteFull.dateModified = resp.dateModified;
+            noteFull.utcDateModified = resp.utcDateModified;
 
-            this.trigger('noteChangesSaved', {noteId: note.noteId})
+            this.trigger('noteChangesSaved', {noteId})
         });
     }
 
@@ -156,7 +159,7 @@ export default class NoteDetailWidget extends TabAwareWidget {
         let type = note.type;
 
         if (type === 'text' && !disableAutoBook
-            && utils.isHtmlEmpty(note.content)
+            && utils.isHtmlEmpty(this.tabContext.noteFull.content)
             && note.hasChildren()) {
 
             type = 'book';

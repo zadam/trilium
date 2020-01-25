@@ -15,12 +15,10 @@ function getActiveEditor() {
     }
 }
 
-async function loadNote(noteId) {
+async function loadNoteFull(noteId) {
     const row = await server.get('notes/' + noteId);
 
-    const noteShort = await treeCache.getNote(noteId);
-
-    return new NoteFull(treeCache, row, noteShort);
+    return new NoteFull(row);
 }
 
 function focusOnTitle() {
@@ -65,7 +63,7 @@ $(window).on('beforeunload', () => {
  });
 
 export default {
-    loadNote,
+    loadNoteFull,
     focusOnTitle,
     focusAndSelectTitle,
     getActiveEditor,

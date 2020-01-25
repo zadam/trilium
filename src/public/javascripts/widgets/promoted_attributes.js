@@ -35,10 +35,10 @@ export default class PromotedAttributesWidget extends TabAwareWidget {
         return this.$widget;
     }
 
-    async refreshWithNote() {
+    async refreshWithNote(note) {
         this.$container.empty();
 
-        const attributes = await this.tabContext.attributes.getAttributes();
+        const attributes = await note.getAttributes();
 
         const promoted = attributes.filter(attr =>
             (attr.type === 'label-definition' || attr.type === 'relation-definition')

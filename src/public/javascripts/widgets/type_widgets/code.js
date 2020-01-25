@@ -75,7 +75,7 @@ export default class CodeTypeWidget extends TypeWidget {
         this.spacedUpdate.allowUpdateWithoutChange(() => {
             // CodeMirror breaks pretty badly on null so even though it shouldn't happen (guarded by consistency check)
             // we provide fallback
-            this.codeEditor.setValue(note.content || "");
+            this.codeEditor.setValue(this.tabContext.noteFull.content || "");
 
             const info = CodeMirror.findModeByMIME(note.mime);
 

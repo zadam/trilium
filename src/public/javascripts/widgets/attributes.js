@@ -23,9 +23,9 @@ class AttributesWidget extends StandardWidget {
         return [$showFullButton];
     }
 
-    async refreshWithNote() {
-        const attributes = await this.tabContext.attributes.getAttributes();
-        const ownedAttributes = attributes.filter(attr => attr.noteId === this.tabContext.note.noteId);
+    async refreshWithNote(note) {
+        const attributes = await note.getAttributes();
+        const ownedAttributes = note.getOwnedAttributes();
 
         if (attributes.length === 0) {
             this.$body.text("No attributes yet...");

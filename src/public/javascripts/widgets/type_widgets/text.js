@@ -137,10 +137,10 @@ export default class TextTypeWidget extends TypeWidget {
     }
 
     async doRefresh(note) {
-        this.textEditor.isReadOnly = await this.isReadOnly();
+        this.textEditor.isReadOnly = await note.hasLabel('readOnly');
 
         this.spacedUpdate.allowUpdateWithoutChange(() => {
-            this.textEditor.setData(note.content);
+            this.textEditor.setData(this.tabContext.noteFull.content);
         });
     }
 
@@ -158,12 +158,6 @@ export default class TextTypeWidget extends TypeWidget {
         return jQuery(content).text().trim() === ''
             && !content.includes("<img")
             && !content.includes("<section")
-    }
-
-    async isReadOnly() {
-        const attributes = await this.tabContext.attributes.getAttributes();
-
-        return attributes.some(attr => attr.type === 'label' && attr.name === 'readOnly');
     }
 
     focus() {

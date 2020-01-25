@@ -16,13 +16,13 @@ export function showDialog() {
 
     $dialog.modal();
 
-    const activeNote = appContext.getActiveTabNote();
+    const {note, noteFull} = appContext.getActiveTabContext();
 
-    $noteId.text(activeNote.noteId);
-    $dateCreated.text(activeNote.dateCreated);
-    $dateModified.text(activeNote.dateModified);
-    $type.text(activeNote.type);
-    $mime.text(activeNote.mime);
+    $noteId.text(note.noteId);
+    $dateCreated.text(noteFull.dateCreated);
+    $dateModified.text(noteFull.dateModified);
+    $type.text(note.type);
+    $mime.text(note.mime);
 }
 
 $okButton.on('click', () => $dialog.modal('hide'));

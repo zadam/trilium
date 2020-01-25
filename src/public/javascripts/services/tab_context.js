@@ -1,13 +1,13 @@
 import protectedSessionHolder from "./protected_session_holder.js";
 import server from "./server.js";
 import bundleService from "./bundle.js";
-import Attributes from "./attributes.js";
 import utils from "./utils.js";
 import optionsService from "./options.js";
 import appContext from "./app_context.js";
 import treeService from "./tree.js";
 import noteDetailService from "./note_detail.js";
 import Component from "../widgets/component.js";
+import treeCache from "./tree_cache.js";
 
 let showSidebarInNewTab = true;
 
@@ -27,10 +27,6 @@ class TabContext extends Component {
         this.tabRow = tabRow;
         this.tabId = state.tabId || utils.randomString(4);
         this.state = state;
-
-        this.attributes = new Attributes(this.appContext, this);
-
-        this.children.push(this.attributes);
 
         this.trigger('tabOpened', {tabId: this.tabId});
     }
@@ -52,8 +48,11 @@ class TabContext extends Component {
         this.notePath = notePath;
         const noteId = treeService.getNoteIdFromNotePath(notePath);
 
+        /** @property {NoteShort} */
+        this.note = await treeCache.getNote(noteId);
+
         /** @property {NoteFull} */
-        this.note = await noteDetailService.loadNote(noteId);
+        this.noteFull = await noteDetailService.loadNoteFull(noteId);
 
         //this.cleanup(); // esp. on windows autocomplete is not getting closed automatically
 
@@ -83,30 +82,6 @@ class TabContext extends Component {
         await this.trigger('beforeTabRemove', {tabId: this.tabId}, true);
 
         this.trigger('tabRemoved', {tabId: this.tabId});
-    }
-
-    async saveNote() {
-        return; // FIXME
-
-        if (this.note.isProtected && !protectedSessionHolder.isProtectedSessionAvailable()) {
-            return;
-        }
-
-        this.note.title = this.$noteTitle.val();
-        this.note.content = this.getComponent().getContent();
-
-        // it's important to set the flag back to false immediatelly after retrieving title and content
-        // otherwise we might overwrite another change (especially async code)
-        this.isNoteChanged = false;
-
-        const resp = await server.put('notes/' + this.note.noteId, this.note.dto);
-
-        this.note.dateModified = resp.dateModified;
-        this.note.utcDateModified = resp.utcDateModified;
-
-        if (this.note.isProtected) {
-            protectedSessionHolder.touchProtectedSession();
-        }
     }
 
     isActive() {

@@ -118,7 +118,7 @@ export default class FileTypeWidget extends TypeWidget {
     }
 
     async doRefresh(note) {
-        const attributes = await server.get('notes/' + note.noteId + '/attributes');
+        const attributes = await note.getAttributes();
         const attributeMap = utils.toObject(attributes, l => [l.name, l.value]);
 
         this.$widget.show();
@@ -128,9 +128,9 @@ export default class FileTypeWidget extends TypeWidget {
         this.$fileSize.text(note.contentLength + " bytes");
         this.$fileType.text(note.mime);
 
-        if (note.content) {
+        if (this.tabContext.noteFull.content) {
             this.$previewContent.show();
-            this.$previewContent.text(note.content);
+            this.$previewContent.text(this.tabContext.noteFull.content);
         }
         else {
             this.$previewContent.empty().hide();

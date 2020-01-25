@@ -123,7 +123,7 @@ class NoteDetailImage extends TypeWidget {
     }
 
     async doRefresh(note) {
-        const attributes = await server.get('notes/' + note.noteId + '/attributes');
+        const attributes = await note.getAttributes();
         const attributeMap = utils.toObject(attributes, l => [l.name, l.value]);
 
         this.$widget.show();
@@ -132,7 +132,7 @@ class NoteDetailImage extends TypeWidget {
         this.$fileSize.text(note.contentLength + " bytes");
         this.$fileType.text(note.mime);
 
-        const imageHash = note.utcDateModified.replace(" ", "_");
+        const imageHash = this.tabContext.noteFull.utcDateModified.replace(" ", "_");
 
         this.$imageView.prop("src", `api/images/${note.noteId}/${note.title}?${imageHash}`);
     }
