@@ -4,7 +4,7 @@ const sql = require('../../services/sql');
 const optionService = require('../../services/options');
 const treeService = require('../../services/tree');
 
-async function getNotesAndBranches(noteIds) {
+async function getNotesAndBranchesAndAttributes(noteIds) {
     noteIds = Array.from(new Set(noteIds));
     const notes = await treeService.getNotes(noteIds);
 
@@ -45,20 +45,10 @@ async function getNotesAndBranches(noteIds) {
         FROM attributes
         WHERE isDeleted = 0 AND noteId IN (???)`, noteIds);
 
-    for (const {noteId, type, name, value, isInheritable} of attributes) {
-        const note = noteMap[noteId];
-
-        note.attributes.push({
-            type,
-            name,
-            value,
-            isInheritable
-        });
-    }
-
     return {
         branches,
-        notes
+        notes,
+        attributes
     };
 }
 
@@ -80,11 +70,11 @@ async function getTree() {
 
     noteIds.push('root');
 
-    return await getNotesAndBranches(noteIds);
+    return await getNotesAndBranchesAndAttributes(noteIds);
 }
 
 async function load(req) {
-    return await getNotesAndBranches(req.body.noteIds);
+    return await getNotesAndBranchesAndAttributes(req.body.noteIds);
 }
 
 module.exports = {

@@ -294,7 +294,7 @@ function getHashValueFromAddress() {
 async function loadTreeData() {
     const resp = await server.get('tree');
 
-    treeCache.load(resp.notes, resp.branches);
+    treeCache.load(resp.notes, resp.branches, resp.attributes);
 
     return await treeBuilder.prepareTree();
 }

@@ -1,7 +1,6 @@
 import utils from './utils.js';
 import toastService from "./toast.js";
 import server from "./server.js";
-import appContext from "./app_context.js";
 
 const $outstandingSyncsCount = $("#outstanding-syncs-count");
 
@@ -133,6 +132,8 @@ async function consumeSyncData() {
         const outsideSyncData = allSyncData.filter(sync => sync.sourceId !== glob.sourceId);
 
         try {
+            const appContext = (await import("./app_context.js")).default;
+
             // the update process should be synchronous as a whole but individual handlers can run in parallel
             await Promise.all([
                 () => appContext.trigger('syncData', {data: allSyncData}),

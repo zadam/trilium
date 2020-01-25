@@ -560,7 +560,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
         });
 
         if (noteIdsToRefresh.size > 0) {
-            appContext.trigger('reloadNotes', {noteIds: Array.from(noteIdsToRefresh)});
+            this.appContext.trigger('reloadNotes', {noteIds: Array.from(noteIdsToRefresh)});
         }
     }
 

@@ -1,8 +1,7 @@
 import Branch from "../entities/branch.js";
 import NoteShort from "../entities/note_short.js";
-import ws from "./ws.js";
-import server from "./server.js";
 import Attribute from "../entities/attribute.js";
+import server from "./server.js";
 
 /**
  * TreeCache keeps a read only cache of note tree structure in frontend's memory.
@@ -127,7 +126,7 @@ class TreeCache {
     async reloadNotes(noteIds) {
         const resp = await server.post('tree/load', { noteIds });
 
-        this.addResp(resp.notes, resp.branches);
+        this.addResp(resp.notes, resp.branches, resp.attributes);
 
         for (const note of resp.notes) {
             if (note.type === 'search') {
@@ -152,7 +151,7 @@ class TreeCache {
                 }));
 
                 // update this note with standard (parent) branches + virtual (children) branches
-                treeCache.addResp([note], branches);
+                treeCache.addResp([note], branches, []);
             }
         }
     }
@@ -167,7 +166,7 @@ class TreeCache {
 
         return noteIds.map(noteId => {
             if (!this.notes[noteId] && !silentNotFoundError) {
-                ws.logError(`Can't find note "${noteId}"`);
+                console.log(`Can't find note "${noteId}"`);
 
                 return null;
             }
