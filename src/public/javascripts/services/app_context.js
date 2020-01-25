@@ -314,6 +314,10 @@ class AppContext {
     }
 
     activateTab(tabId) {
+        if (tabId === this.activeTabId) {
+            return;
+        }
+
         const oldActiveTabId = this.activeTabId;
 
         this.activeTabId = tabId;

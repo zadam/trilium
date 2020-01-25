@@ -218,6 +218,10 @@ export default class BookTypeWidget extends TypeWidget {
     async renderIntoElement(note, $container) {
         const childNotes = await note.getChildNotes();
 
+        if (childNotes.length === 0) {
+            this.$help.show();
+        }
+
         for (const childNote of childNotes) {
             const childNotePath = this.tabContext.notePath + '/' + childNote.noteId;
 
@@ -246,10 +250,6 @@ export default class BookTypeWidget extends TypeWidget {
 
             $container.append($card);
         }
-
-        if (childNotes.length === 0) {
-            this.$help.show();
-        }
     }
 
     /** @return {boolean} true if this is "auto book" activated (empty text note) and not explicit book note */
@@ -276,10 +276,7 @@ export default class BookTypeWidget extends TypeWidget {
         }
     }
 
-    getContent() {
-        // for auto-book cases when renaming title there should be content
-        return "";
-    }
+    getContent() {}
 
     focus() {}
 

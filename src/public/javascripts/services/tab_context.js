@@ -44,7 +44,6 @@ class TabContext extends Component {
         }
 
         if (notePath === this.notePath) {
-            console.log(`Setting existing notePath ${notePath} so ignoring ...`);
             return;
         }
 
