@@ -2,6 +2,7 @@ import Branch from "../entities/branch.js";
 import NoteShort from "../entities/note_short.js";
 import ws from "./ws.js";
 import server from "./server.js";
+import Attribute from "../entities/attribute.js";
 
 /**
  * TreeCache keeps a read only cache of note tree structure in frontend's memory.
@@ -22,15 +23,18 @@ class TreeCache {
 
         /** @type {Object.<string, Branch>} */
         this.branches = {};
+
+        /** @type {Object.<string, Attribute>} */
+        this.attributes = {};
     }
 
-    load(noteRows, branchRows) {
+    load(noteRows, branchRows, attributeRows) {
         this.init();
 
-        this.addResp(noteRows, branchRows);
+        this.addResp(noteRows, branchRows, attributeRows);
     }
 
-    addResp(noteRows, branchRows) {
+    addResp(noteRows, branchRows, attributeRows) {
         const branchesByNotes = {};
 
         for (const branchRow of branchRows) {
@@ -93,6 +97,28 @@ class TreeCache {
 
                 if (parentNote) {
                     parentNote.addChild(noteId, note.parentToBranch[parentNoteId]);
+                }
+            }
+        }
+
+        for (const attributeRow of attributeRows) {
+            const {attributeId} = attributeRow;
+
+            this.attributes[attributeId] = new Attribute(this, attributeRow);
+
+            const note = this.notes[attributeRow.noteId];
+
+            if (!note.attributes.includes(attributeId)) {
+                note.attributes.push(attributeId);
+            }
+
+            if (attributeRow.type === 'relation') {
+                const targetNote = this.notes[attributeRow.value];
+
+                if (targetNote) {
+                    if (!note.targetRelations.includes(attributeId)) {
+                        note.targetRelations.push(attributeId);
+                    }
                 }
             }
         }

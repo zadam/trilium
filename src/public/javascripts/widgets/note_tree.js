@@ -533,6 +533,37 @@ export default class NoteTreeWidget extends TabAwareWidget {
         }
     }
 
+    syncDataListener({data}) {
+        const noteIdsToRefresh = new Set();
+
+        // this has the problem that the former parentNoteId might not be invalidated
+        // and the former location of the branch/note won't be removed.
+        data.filter(sync => sync.entityName === 'branches').forEach(sync => {
+            const branch = treeCache.getBranch(sync.entityId);
+            // we assume that the cache contains the old branch state and we add also the old parentNoteId
+            // so that the old parent can also be updated
+            noteIdsToRefresh.add(branch.parentNoteId);
+
+            noteIdsToRefresh.add(sync.parentNoteId);
+        });
+
+        data.filter(sync => sync.entityName === 'notes').forEach(sync => noteIdsToRefresh.add(sync.entityId));
+
+        data.filter(sync => sync.entityName === 'note_reordering').forEach(sync => noteIdsToRefresh.add(sync.entityId));
+
+        data.filter(sync => sync.entityName === 'attributes').forEach(sync => {
+            const note = treeCache.notes[sync.noteId];
+
+            if (note && note.__attributeCache) {
+                noteIdsToRefresh.add(sync.entityId);
+            }
+        });
+
+        if (noteIdsToRefresh.size > 0) {
+            appContext.trigger('reloadNotes', {noteIds: Array.from(noteIdsToRefresh)});
+        }
+    }
+
     hoistedNoteChangedListener() {
         this.reloadTreeListener();
     }

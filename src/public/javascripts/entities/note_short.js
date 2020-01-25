@@ -31,12 +31,12 @@ class NoteShort {
         this.mime = row.mime;
         /** @param {boolean} */
         this.isDeleted = row.isDeleted;
-        /** @param {boolean} */
-        this.archived = row.archived;
-        /** @param {string} */
-        this.cssClass = row.cssClass;
-        /** @param {string} */
-        this.iconClass = row.iconClass;
+
+        /** @type {string[]} */
+        this.attributes = [];
+
+        /** @type {string[]} */
+        this.targetRelations = [];
 
         /** @type {string[]} */
         this.parents = [];
@@ -306,7 +306,7 @@ class NoteShort {
      * Clear note's attributes cache to force fresh reload for next attribute request.
      * Cache is note instance scoped.
      */
-    invalidate__attributeCache() {
+    invalidateAttributeCache() {
         this.__attributeCache = null;
     }
 

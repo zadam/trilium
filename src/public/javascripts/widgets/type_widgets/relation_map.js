@@ -1,5 +1,4 @@
 import server from "../../services/server.js";
-import noteDetailService from "../../services/note_detail.js";
 import linkService from "../../services/link.js";
 import libraryLoader from "../../services/library_loader.js";
 import treeService from "../../services/tree.js";

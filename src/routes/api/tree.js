@@ -8,7 +8,14 @@ async function getNotesAndBranches(noteIds) {
     noteIds = Array.from(new Set(noteIds));
     const notes = await treeService.getNotes(noteIds);
 
-    noteIds = notes.map(n => n.noteId);
+    const noteMap = {};
+    noteIds = [];
+
+    for (const note of notes) {
+        note.attributes = [];
+        noteMap[note.noteId] = note;
+        noteIds.push(note.noteId);
+    }
 
     // joining child note to filter out not completely synchronised notes which would then cause errors later
     // cannot do that with parent because of root note's 'none' parent
@@ -27,6 +34,27 @@ async function getNotesAndBranches(noteIds) {
 
     // sorting in memory is faster
     branches.sort((a, b) => a.notePosition - b.notePosition < 0 ? -1 : 1);
+
+    const attributes = await sql.getManyRows(`
+        SELECT
+            noteId,
+            type,
+            name,
+            value,
+            isInheritable
+        FROM attributes
+        WHERE isDeleted = 0 AND noteId IN (???)`, noteIds);
+
+    for (const {noteId, type, name, value, isInheritable} of attributes) {
+        const note = noteMap[noteId];
+
+        note.attributes.push({
+            type,
+            name,
+            value,
+            isInheritable
+        });
+    }
 
     return {
         branches,

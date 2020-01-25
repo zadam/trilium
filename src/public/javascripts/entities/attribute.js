@@ -15,12 +15,6 @@ class Attribute {
         this.position = row.position;
         /** @param {boolean} isInheritable */
         this.isInheritable = row.isInheritable;
-        /** @param {boolean} isDeleted */
-        this.isDeleted = row.isDeleted;
-        /** @param {string} utcDateCreated */
-        this.utcDateCreated = row.utcDateCreated;
-        /** @param {string} utcDateModified */
-        this.utcDateModified = row.utcDateModified;
     }
 
     /** @returns {NoteShort} */
@@ -29,7 +23,7 @@ class Attribute {
     }
 
     get toString() {
-        return `Attribute(attributeId=${this.attributeId}, type=${this.type}, name=${this.name})`;
+        return `Attribute(attributeId=${this.attributeId}, type=${this.type}, name=${this.name}, value=${this.value})`;
     }
 }
 

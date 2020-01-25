@@ -1,10 +1,10 @@
 import utils from './utils.js';
 import toastService from "./toast.js";
 import server from "./server.js";
+import appContext from "./app_context.js";
 
 const $outstandingSyncsCount = $("#outstanding-syncs-count");
 
-const allSyncMessageHandlers = [];
 const outsideSyncMessageHandlers = [];
 const messageHandlers = [];
 
@@ -32,10 +32,6 @@ function subscribeToMessages(messageHandler) {
 
 function subscribeToOutsideSyncMessages(messageHandler) {
     outsideSyncMessageHandlers.push(messageHandler);
-}
-
-function subscribeToAllSyncMessages(messageHandler) {
-    allSyncMessageHandlers.push(messageHandler);
 }
 
 // used to serialize sync operations
@@ -139,7 +135,7 @@ async function consumeSyncData() {
         try {
             // the update process should be synchronous as a whole but individual handlers can run in parallel
             await Promise.all([
-                ...allSyncMessageHandlers.map(syncHandler => runSafely(syncHandler, allSyncData)),
+                () => appContext.trigger('syncData', {data: allSyncData}),
                 ...outsideSyncMessageHandlers.map(syncHandler => runSafely(syncHandler, outsideSyncData))
             ]);
         }
@@ -214,7 +210,6 @@ subscribeToMessages(message => {
 export default {
     logError,
     subscribeToMessages,
-    subscribeToAllSyncMessages,
     subscribeToOutsideSyncMessages,
     waitForSyncId,
     waitForMaxKnownSyncId

@@ -22,8 +22,6 @@ async function getNote(req) {
         }
     }
 
-    await treeService.setCssClassesToNotes([note]);
-
     return note;
 }
 
@@ -34,8 +32,6 @@ async function createNote(req) {
     const { target, targetBranchId } = req.query;
 
     const { note, branch } = await noteService.createNewNoteWithTarget(target, targetBranchId, params);
-
-    await treeService.setCssClassesToNotes([note]);
 
     return {
         note,

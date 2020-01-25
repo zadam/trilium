@@ -49,10 +49,6 @@ ws.subscribeToOutsideSyncMessages(syncData => {
     }
 });
 
-ws.subscribeToAllSyncMessages(syncData => {
-    appContext.trigger('syncData', {data: syncData});
-});
-
 function noteChanged() {
     const activeTabContext = appContext.getActiveTabContext();
 

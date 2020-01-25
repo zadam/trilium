@@ -455,32 +455,7 @@ ws.subscribeToMessages(message => {
    }
 });
 
-// this is a synchronous handler - it returns only once the data has been updated
-ws.subscribeToOutsideSyncMessages(async syncData => {
-    const noteIdsToRefresh = new Set();
-
-    // this has the problem that the former parentNoteId might not be invalidated
-    // and the former location of the branch/note won't be removed.
-    syncData.filter(sync => sync.entityName === 'branches').forEach(sync => noteIdsToRefresh.add(sync.parentNoteId));
-
-    syncData.filter(sync => sync.entityName === 'notes').forEach(sync => noteIdsToRefresh.add(sync.entityId));
-
-    syncData.filter(sync => sync.entityName === 'note_reordering').forEach(sync => noteIdsToRefresh.add(sync.entityId));
-
-    syncData.filter(sync => sync.entityName === 'attributes').forEach(sync => {
-        const note = treeCache.notes[sync.noteId];
-
-        if (note && note.__attributeCache) {
-            noteIdsToRefresh.add(sync.entityId);
-        }
-    });
-
-    if (noteIdsToRefresh.size > 0) {
-        appContext.trigger('reloadNotes', {noteIds: Array.from(noteIdsToRefresh)});
-    }
-});
-
-$(window).bind('hashchange', async function() {
+$(window).on('hashchange', function() {
     if (isNotePathInAddress()) {
         const [notePath, tabId] = getHashValueFromAddress();
 
