@@ -88,12 +88,6 @@ class AttributesWidget extends StandardWidget {
         }
     }
 
-    toggle(show) {
-        console.trace("attributes toggle", show);
-
-        super.toggle(show);
-    }
-
     syncDataListener({data}) {
         if (data.find(sd => sd.entityName === 'attributes' && sd.noteId === this.tabContext.note.noteId)) {
             // no need to invalidate attributes since the Attribute class listens to this as well

@@ -533,7 +533,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
         }
     }
 
-    syncDataListener({data}) {
+    syncDataListener({data}) {return;
         const noteIdsToRefresh = new Set();
 
         // this has the problem that the former parentNoteId might not be invalidated

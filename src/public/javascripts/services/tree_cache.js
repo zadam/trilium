@@ -123,7 +123,7 @@ class TreeCache {
         }
     }
 
-    async reloadNotes(noteIds) {
+    async reloadData(noteIds) {
         const resp = await server.post('tree/load', { noteIds });
 
         this.addResp(resp.notes, resp.branches, resp.attributes);
@@ -223,6 +223,36 @@ class TreeCache {
         const child = await this.getNote(childNoteId);
 
         return child.parentToBranch[parentNoteId];
+    }
+
+    syncDataListener({data}) {return;
+        const noteIdsToRefresh = new Set();
+
+        data.filter(sync => sync.entityName === 'branches').forEach(sync => {
+            const branch = this.branches[sync.entityId];
+            // we assume that the cache contains the old branch state and we add also the old parentNoteId
+            // so that the old parent can also be updated
+            noteIdsToRefresh.add(branch.parentNoteId);
+
+            // this should then contain new parentNoteId for which we should also update the cache
+            noteIdsToRefresh.add(sync.parentNoteId);
+        });
+
+        data.filter(sync => sync.entityName === 'notes').forEach(sync => noteIdsToRefresh.add(sync.entityId));
+
+        data.filter(sync => sync.entityName === 'note_reordering').forEach(sync => noteIdsToRefresh.add(sync.entityId));
+
+        data.filter(sync => sync.entityName === 'attributes').forEach(sync => {
+            const note = treeCache.notes[sync.noteId];
+
+            if (note && note.__attributeCache) {
+                noteIdsToRefresh.add(sync.entityId);
+            }
+        });
+
+        if (noteIdsToRefresh.size > 0) {
+            this.reloadNotes({noteIds: Array.from(noteIdsToRefresh)});
+        }
     }
 }
 
