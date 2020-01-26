@@ -8,7 +8,7 @@ import noteDetailService from "./note_detail.js";
 import ws from "./ws.js";
 import appContext from "./app_context.js";
 
-async function moveBeforeNode(branchIdsToMove, beforeBranchId) {
+async function moveBeforeBranch(branchIdsToMove, beforeBranchId) {
     branchIdsToMove = await filterRootNote(branchIdsToMove);
 
     if (beforeBranchId === 'root') {
@@ -26,7 +26,7 @@ async function moveBeforeNode(branchIdsToMove, beforeBranchId) {
     }
 }
 
-async function moveAfterNode(branchIdsToMove, afterBranchId) {
+async function moveAfterBranch(branchIdsToMove, afterBranchId) {
     branchIdsToMove = await filterRootNote(branchIdsToMove);
 
     const afterNote = await treeCache.getBranch(afterBranchId).getNote();
@@ -48,7 +48,7 @@ async function moveAfterNode(branchIdsToMove, afterBranchId) {
     }
 }
 
-async function moveToNode(branchIdsToMove, newParentNoteId) {
+async function moveToParentNote(branchIdsToMove, newParentNoteId) {
     branchIdsToMove = await filterRootNote(branchIdsToMove);
 
     for (const branchIdToMove of branchIdsToMove) {
@@ -229,9 +229,9 @@ ws.subscribeToMessages(async message => {
 });
 
 export default {
-    moveBeforeNode,
-    moveAfterNode,
-    moveToNode,
+    moveBeforeBranch,
+    moveAfterBranch,
+    moveToParentNote,
     deleteNodes,
     moveNodeUpInHierarchy
 };

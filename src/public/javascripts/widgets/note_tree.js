@@ -172,11 +172,11 @@ export default class NoteTreeWidget extends TabAwareWidget {
                         const selectedBranchIds = this.getSelectedNodes().map(node => node.data.branchId);
 
                         if (data.hitMode === "before") {
-                            treeChangesService.moveBeforeNode(selectedBranchIds, node.data.branchId);
+                            treeChangesService.moveBeforeBranch(selectedBranchIds, node.data.branchId);
                         } else if (data.hitMode === "after") {
-                            treeChangesService.moveAfterNode(selectedBranchIds, node.data.branchId);
+                            treeChangesService.moveAfterBranch(selectedBranchIds, node.data.branchId);
                         } else if (data.hitMode === "over") {
-                            treeChangesService.moveToNode(selectedBranchIds, node.data.noteId);
+                            treeChangesService.moveToParentNote(selectedBranchIds, node.data.noteId);
                         } else {
                             throw new Error("Unknown hitMode=" + data.hitMode);
                         }
@@ -428,6 +428,14 @@ export default class NoteTreeWidget extends TabAwareWidget {
     }
 
     async notesReloadedListener({ noteIds, activateNotePath }) {
+        if (!activateNotePath) {
+            const activeNode = this.getActiveNode();
+
+            if (activeNode) {
+                activateNotePath = await treeService.getNotePath(activeNode);
+            }
+        }
+
         for (const noteId of noteIds) {
             for (const node of this.getNodesByNoteId(noteId)) {
                 const branch = treeCache.getBranch(node.data.branchId, true);
@@ -503,19 +511,19 @@ export default class NoteTreeWidget extends TabAwareWidget {
         await server.put('branches/' + branchId + '/expanded/' + expandedNum);
     }
 
-    async reloadNotesListener({noteIds, activateNotePath = null}) {
-        if (noteIds.length === 0) {
-            return;
-        }
-
-        await treeCache.reloadNotes(noteIds);
-
-        if (!activateNotePath) {
-            activateNotePath = appContext.getActiveTabNotePath();
-        }
-
-        appContext.trigger('notesReloaded', { noteIds, activateNotePath });
-    }
+    // async reloadNotesListener({noteIds, activateNotePath = null}) {
+    //     if (noteIds.length === 0) {
+    //         return;
+    //     }
+    //
+    //     await treeCache.reloadNotes(noteIds);
+    //
+    //     if (!activateNotePath) {
+    //         activateNotePath = appContext.getActiveTabNotePath();
+    //     }
+    //
+    //     appContext.trigger('notesReloaded', { noteIds, activateNotePath });
+    // }
 
     async reloadTreeListener() {
         const notes = await treeService.loadTreeData();
@@ -530,37 +538,6 @@ export default class NoteTreeWidget extends TabAwareWidget {
             const node = await this.getNodeFromPath(activeNotePath, true);
 
             await node.setActive(true, {noEvents: true});
-        }
-    }
-
-    syncDataListener({data}) {return;
-        const noteIdsToRefresh = new Set();
-
-        // this has the problem that the former parentNoteId might not be invalidated
-        // and the former location of the branch/note won't be removed.
-        data.filter(sync => sync.entityName === 'branches').forEach(sync => {
-            const branch = treeCache.getBranch(sync.entityId);
-            // we assume that the cache contains the old branch state and we add also the old parentNoteId
-            // so that the old parent can also be updated
-            noteIdsToRefresh.add(branch.parentNoteId);
-
-            noteIdsToRefresh.add(sync.parentNoteId);
-        });
-
-        data.filter(sync => sync.entityName === 'notes').forEach(sync => noteIdsToRefresh.add(sync.entityId));
-
-        data.filter(sync => sync.entityName === 'note_reordering').forEach(sync => noteIdsToRefresh.add(sync.entityId));
-
-        data.filter(sync => sync.entityName === 'attributes').forEach(sync => {
-            const note = treeCache.notes[sync.noteId];
-
-            if (note && note.__attributeCache) {
-                noteIdsToRefresh.add(sync.entityId);
-            }
-        });
-
-        if (noteIdsToRefresh.size > 0) {
-            this.appContext.trigger('reloadNotes', {noteIds: Array.from(noteIdsToRefresh)});
         }
     }
 

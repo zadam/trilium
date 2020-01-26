@@ -133,10 +133,12 @@ async function consumeSyncData() {
 
         try {
             const appContext = (await import("./app_context.js")).default;
+            const treeCache = (await import("./tree_cache.js")).default;
 
             // the update process should be synchronous as a whole but individual handlers can run in parallel
             await Promise.all([
                 () => appContext.trigger('syncData', {data: allSyncData}),
+                () => treeCache.processSyncRows(allSyncData),
                 ...outsideSyncMessageHandlers.map(syncHandler => runSafely(syncHandler, outsideSyncData))
             ]);
         }

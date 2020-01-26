@@ -123,7 +123,11 @@ class TreeCache {
         }
     }
 
-    async reloadData(noteIds) {
+    async reloadNotes(noteIds) {
+        if (noteIds.length === 0) {
+            return;
+        }
+
         const resp = await server.post('tree/load', { noteIds });
 
         this.addResp(resp.notes, resp.branches, resp.attributes);
@@ -137,7 +141,7 @@ class TreeCache {
                 }
 
                 // force to load all the notes at once instead of one by one
-                await treeCache.getNotes(searchResults.map(res => res.noteId));
+                await this.getNotes(searchResults.map(res => res.noteId));
 
                 const branches = resp.branches.filter(b => b.noteId === note.noteId || b.parentNoteId === note.noteId);
 
@@ -146,23 +150,24 @@ class TreeCache {
                     branchId: "virt" + result.noteId + '-' + note.noteId,
                     noteId: result.noteId,
                     parentNoteId: note.noteId,
-                    prefix: treeCache.getBranch(result.branchId).prefix,
+                    prefix: this.getBranch(result.branchId).prefix,
                     notePosition: (index + 1) * 10
                 }));
 
                 // update this note with standard (parent) branches + virtual (children) branches
-                treeCache.addResp([note], branches, []);
+                this.addResp([note], branches, []);
             }
         }
+
+        const appContext = (await import('./app_context.js')).default;
+        appContext.trigger('notesReloaded', {noteIds})
     }
 
     /** @return {Promise<NoteShort[]>} */
     async getNotes(noteIds, silentNotFoundError = false) {
         const missingNoteIds = noteIds.filter(noteId => !this.notes[noteId]);
 
-        if (missingNoteIds.length > 0) {
-            await this.reloadNotes(missingNoteIds);
-        }
+        await this.reloadNotes(missingNoteIds);
 
         return noteIds.map(noteId => {
             if (!this.notes[noteId] && !silentNotFoundError) {
@@ -225,10 +230,10 @@ class TreeCache {
         return child.parentToBranch[parentNoteId];
     }
 
-    syncDataListener({data}) {return;
+    async processSyncRows(syncRows) {
         const noteIdsToRefresh = new Set();
 
-        data.filter(sync => sync.entityName === 'branches').forEach(sync => {
+        syncRows.filter(sync => sync.entityName === 'branches').forEach(sync => {
             const branch = this.branches[sync.entityId];
             // we assume that the cache contains the old branch state and we add also the old parentNoteId
             // so that the old parent can also be updated
@@ -238,21 +243,14 @@ class TreeCache {
             noteIdsToRefresh.add(sync.parentNoteId);
         });
 
-        data.filter(sync => sync.entityName === 'notes').forEach(sync => noteIdsToRefresh.add(sync.entityId));
+        syncRows.filter(sync => sync.entityName === 'notes').forEach(sync => noteIdsToRefresh.add(sync.entityId));
 
-        data.filter(sync => sync.entityName === 'note_reordering').forEach(sync => noteIdsToRefresh.add(sync.entityId));
+        syncRows.filter(sync => sync.entityName === 'note_reordering').forEach(sync => noteIdsToRefresh.add(sync.entityId));
 
-        data.filter(sync => sync.entityName === 'attributes').forEach(sync => {
-            const note = treeCache.notes[sync.noteId];
+        // missing reloading the relation target note
+        syncRows.filter(sync => sync.entityName === 'attributes').forEach(sync => noteIdsToRefresh.add(sync.noteId));
 
-            if (note && note.__attributeCache) {
-                noteIdsToRefresh.add(sync.entityId);
-            }
-        });
-
-        if (noteIdsToRefresh.size > 0) {
-            this.reloadNotes({noteIds: Array.from(noteIdsToRefresh)});
-        }
+        await this.reloadNotes(Array.from(noteIdsToRefresh));
     }
 }
 

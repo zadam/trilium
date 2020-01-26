@@ -13,7 +13,7 @@ async function pasteAfter(afterBranchId) {
     }
 
     if (clipboardMode === 'cut') {
-        await treeChangesService.moveAfterNode(clipboardBranchIds, afterBranchId);
+        await treeChangesService.moveAfterBranch(clipboardBranchIds, afterBranchId);
 
         clipboardBranchIds = [];
         clipboardMode = null;
@@ -40,7 +40,7 @@ async function pasteInto(parentNoteId) {
     }
 
     if (clipboardMode === 'cut') {
-        await treeChangesService.moveToNode(clipboardBranchIds, parentNoteId);
+        await treeChangesService.moveToParentNote(clipboardBranchIds, parentNoteId);
 
         clipboardBranchIds = [];
         clipboardMode = null;

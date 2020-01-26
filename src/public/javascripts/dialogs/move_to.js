@@ -38,7 +38,7 @@ export async function showDialog(nodes) {
 async function moveNotesTo(notePath) {
     const targetNode = await appContext.getMainNoteTree().getNodeFromPath(notePath);
 
-    await treeChangesService.moveToNode(movedNodes, targetNode);
+    await treeChangesService.moveToParentNote(movedNodes, targetNode);
 
     toastService.showMessage(`Selected notes have been moved into ${targetNode.title}`);
 }

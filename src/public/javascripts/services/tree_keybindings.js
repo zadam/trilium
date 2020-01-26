@@ -59,7 +59,7 @@ function getTemplates(treeWidget) {
             const beforeNode = node.getPrevSibling();
 
             if (beforeNode !== null) {
-                treeChangesService.moveBeforeNode([node], beforeNode);
+                treeChangesService.moveBeforeBranch([node.data.branchId], beforeNode.data.branchId);
             }
 
             return false;
@@ -67,7 +67,7 @@ function getTemplates(treeWidget) {
         "MoveNoteDown": node => {
             const afterNode = node.getNextSibling();
             if (afterNode !== null) {
-                treeChangesService.moveAfterNode([node], afterNode);
+                treeChangesService.moveAfterBranch([node.data.branchId], afterNode.data.branchId);
             }
 
             return false;
@@ -81,7 +81,7 @@ function getTemplates(treeWidget) {
             const toNode = node.getPrevSibling();
 
             if (toNode !== null) {
-                treeChangesService.moveToNode([node], toNode);
+                treeChangesService.moveToParentNote([node.data.branchId], toNode.data.noteId);
             }
 
             return false;
