@@ -29,24 +29,6 @@ function focusAndSelectTitle() {
     appContext.trigger('focusAndSelectTitle');
 }
 
-ws.subscribeToOutsideSyncMessages(syncData => {
-    const noteIdsToRefresh = new Set();
-
-    syncData
-        .filter(sync => sync.entityName === 'notes')
-        .forEach(sync => noteIdsToRefresh.add(sync.entityId));
-
-    // we need to reload because of promoted attributes
-    syncData
-        .filter(sync => sync.entityName === 'attributes')
-        .forEach(sync => noteIdsToRefresh.add(sync.noteId));
-
-    // FIXME
-    for (const noteId of noteIdsToRefresh) {
-        appContext.refreshTabs(null, noteId);
-    }
-});
-
 function noteChanged() {
     const activeTabContext = appContext.getActiveTabContext();
 

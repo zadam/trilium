@@ -42,7 +42,7 @@
     "helmet": "3.21.2",
     "html": "1.0.0",
     "html2plaintext": "2.1.2",
-    "http-proxy-agent": "3.0.0",
+    "http-proxy-agent": "4.0.0",
     "https-proxy-agent": "4.0.0",
     "image-type": "4.1.0",
     "imagemin": "7.0.1",
@@ -77,7 +77,7 @@
   },
   "devDependencies": {
     "electron": "6.0.12",
-    "electron-builder": "22.2.0",
+    "electron-builder": "22.3.2",
     "electron-packager": "14.2.0",
     "electron-rebuild": "1.9.0",
     "jsdoc": "3.6.3",

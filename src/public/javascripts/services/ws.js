@@ -4,7 +4,6 @@ import server from "./server.js";
 
 const $outstandingSyncsCount = $("#outstanding-syncs-count");
 
-const outsideSyncMessageHandlers = [];
 const messageHandlers = [];
 
 let ws;
@@ -27,10 +26,6 @@ function logError(message) {
 
 function subscribeToMessages(messageHandler) {
     messageHandlers.push(messageHandler);
-}
-
-function subscribeToOutsideSyncMessages(messageHandler) {
-    outsideSyncMessageHandlers.push(messageHandler);
 }
 
 // used to serialize sync operations
@@ -129,18 +124,10 @@ async function consumeSyncData() {
         const allSyncData = syncDataQueue;
         syncDataQueue = [];
 
-        const outsideSyncData = allSyncData.filter(sync => sync.sourceId !== glob.sourceId);
-
         try {
-            const appContext = (await import("./app_context.js")).default;
             const treeCache = (await import("./tree_cache.js")).default;
 
-            // the update process should be synchronous as a whole but individual handlers can run in parallel
-            await Promise.all([
-                () => appContext.trigger('syncData', {data: allSyncData}),
-                () => treeCache.processSyncRows(allSyncData),
-                ...outsideSyncMessageHandlers.map(syncHandler => runSafely(syncHandler, outsideSyncData))
-            ]);
+            await treeCache.processSyncRows(allSyncData);
         }
         catch (e) {
             logError(`Encountered error ${e.message}, reloading frontend.`);
@@ -213,7 +200,6 @@ subscribeToMessages(message => {
 export default {
     logError,
     subscribeToMessages,
-    subscribeToOutsideSyncMessages,
     waitForSyncId,
     waitForMaxKnownSyncId
 };
