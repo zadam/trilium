@@ -219,4 +219,10 @@ export default class NoteDetailWidget extends TabAwareWidget {
     protectedSessionStartedListener() {
         this.refresh();
     }
+
+    notesReloadedListener({loadResults}) {
+        if (loadResults.isNoteReloaded(this.noteId, this.componentId)) {
+            this.refresh();
+        }
+    }
 }

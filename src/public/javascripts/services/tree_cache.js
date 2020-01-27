@@ -2,6 +2,7 @@ import Branch from "../entities/branch.js";
 import NoteShort from "../entities/note_short.js";
 import Attribute from "../entities/attribute.js";
 import server from "./server.js";
+import {LoadResults} from "./load_results.js";
 
 /**
  * TreeCache keeps a read only cache of note tree structure in frontend's memory.
@@ -158,9 +159,6 @@ class TreeCache {
                 this.addResp([note], branches, []);
             }
         }
-
-        const appContext = (await import('./app_context.js')).default;
-        appContext.trigger('notesReloaded', {noteIds})
     }
 
     /** @return {Promise<NoteShort[]>} */
@@ -231,26 +229,31 @@ class TreeCache {
     }
 
     async processSyncRows(syncRows) {
-        const noteIdsToRefresh = new Set();
+        const loadResults = new LoadResults();
 
         syncRows.filter(sync => sync.entityName === 'branches').forEach(sync => {
             const branch = this.branches[sync.entityId];
             // we assume that the cache contains the old branch state and we add also the old parentNoteId
             // so that the old parent can also be updated
-            noteIdsToRefresh.add(branch.parentNoteId);
+            loadResults.add(branch.parentNoteId, sync.sourceId);
 
             // this should then contain new parentNoteId for which we should also update the cache
-            noteIdsToRefresh.add(sync.parentNoteId);
+            loadResults.add(sync.parentNoteId, sync.sourceId);
+
+            loadResults.add(sync.noteId, sync.sourceId);
         });
 
-        syncRows.filter(sync => sync.entityName === 'notes').forEach(sync => noteIdsToRefresh.add(sync.entityId));
+        syncRows.filter(sync => sync.entityName === 'notes').forEach(sync => loadResults.add(sync.entityId, sync.sourceId));
 
-        syncRows.filter(sync => sync.entityName === 'note_reordering').forEach(sync => noteIdsToRefresh.add(sync.entityId));
+        syncRows.filter(sync => sync.entityName === 'note_reordering').forEach(sync => loadResults.add(sync.entityId, sync.sourceId));
 
         // missing reloading the relation target note
-        syncRows.filter(sync => sync.entityName === 'attributes').forEach(sync => noteIdsToRefresh.add(sync.noteId));
+        syncRows.filter(sync => sync.entityName === 'attributes').forEach(sync => loadResults.add(sync.noteId, sync.sourceId));
 
-        await this.reloadNotes(Array.from(noteIdsToRefresh));
+        await this.reloadNotes(loadResults.getNoteIds());
+
+        const appContext = (await import('./app_context.js')).default;
+        appContext.trigger('notesReloaded', {loadResults});
     }
 }
 
