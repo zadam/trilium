@@ -427,16 +427,11 @@ export default class NoteTreeWidget extends TabAwareWidget {
         }
     }
 
-    async notesReloadedListener({ noteIds, activateNotePath }) {
-        if (!activateNotePath) {
-            const activeNode = this.getActiveNode();
+    async notesReloadedListener({loadResults}) {
+        const activeNode = this.getActiveNode();
+        const activateNotePath = activeNode ? await treeService.getNotePath(activeNode) : null;
 
-            if (activeNode) {
-                activateNotePath = await treeService.getNotePath(activeNode);
-            }
-        }
-
-        for (const noteId of noteIds) {
+        for (const noteId of loadResults.getNoteIds()) {
             for (const node of this.getNodesByNoteId(noteId)) {
                 const branch = treeCache.getBranch(node.data.branchId, true);
 
@@ -457,12 +452,6 @@ export default class NoteTreeWidget extends TabAwareWidget {
             if (node && !node.isActive()) {
                 await node.setActive(true);
             }
-        }
-    }
-
-    noteTitleChangedListener({noteId}) {
-        for (const node of this.getNodesByNoteId(noteId)) {
-            treeService.setNodeTitleWithPrefix(node);
         }
     }
 

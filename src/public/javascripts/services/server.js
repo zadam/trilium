@@ -8,12 +8,15 @@ function getHeaders(headers) {
     // so hypothetical protectedSessionId becomes protectedsessionid on the backend
     // also avoiding using underscores instead of dashes since nginx filters them out by default
     const allHeaders = {
-        ...{
-            'trilium-source-id': glob.sourceId,
-            'x-csrf-token': glob.csrfToken
-        },
-        ...headers
+        'trilium-source-id': glob.sourceId,
+        'x-csrf-token': glob.csrfToken
     };
+
+    for (const headerName in headers) {
+        if (headers[headerName]) {
+            allHeaders[headerName] = headers[headerName];
+        }
+    }
 
     if (utils.isElectron()) {
         // passing it explicitely here because of the electron HTTP bypass
@@ -23,20 +26,20 @@ function getHeaders(headers) {
     return allHeaders;
 }
 
-async function get(url, headers = {}) {
-    return await call('GET', url, null, headers);
+async function get(url, sourceId) {
+    return await call('GET', url, null, {'trilium-source-id': sourceId});
 }
 
-async function post(url, data, headers = {}) {
-    return await call('POST', url, data, headers);
+async function post(url, data, sourceId) {
+    return await call('POST', url, data, {'trilium-source-id': sourceId});
 }
 
-async function put(url, data, headers = {}) {
-    return await call('PUT', url, data, headers);
+async function put(url, data, sourceId) {
+    return await call('PUT', url, data, {'trilium-source-id': sourceId});
 }
 
-async function remove(url, headers = {}) {
-    return await call('DELETE', url, null, headers);
+async function remove(url, sourceId) {
+    return await call('DELETE', url, null, {'trilium-source-id': sourceId});
 }
 
 let i = 1;

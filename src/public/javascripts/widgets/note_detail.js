@@ -43,7 +43,7 @@ export default class NoteDetailWidget extends TabAwareWidget {
             const dto = note.dto;
             dto.content = noteFull.content = this.getTypeWidget().getContent();
 
-            const resp = await server.put('notes/' + noteId, dto);
+            const resp = await server.put('notes/' + noteId, dto, this.componentId);
 
             // FIXME: minor - does not propagate to other tab contexts with this note though
             noteFull.dateModified = resp.dateModified;
@@ -220,9 +220,9 @@ export default class NoteDetailWidget extends TabAwareWidget {
         this.refresh();
     }
 
-    notesReloadedListener({loadResults}) {
-        if (loadResults.isNoteReloaded(this.noteId, this.componentId)) {
-            this.refresh();
-        }
+    notesReloadedListener(data) {
+        super.notesReloadedListener(data);
+
+        return false; // stop propagation to children
     }
 }

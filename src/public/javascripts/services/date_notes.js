@@ -8,21 +8,21 @@ async function getTodayNote() {
 
 /** @return {NoteShort} */
 async function getDateNote(date) {
-    const note = await server.get('date-notes/date/' + date, {'trilium-source-id': "date-note"});
+    const note = await server.get('date-notes/date/' + date, "date-note");
 
     return await treeCache.getNote(note.noteId);
 }
 
 /** @return {NoteShort} */
 async function getMonthNote(month) {
-    const note = await server.get('date-notes/month/' + month, {'trilium-source-id': "date-note"});
+    const note = await server.get('date-notes/month/' + month, "date-note");
 
     return await treeCache.getNote(note.noteId);
 }
 
 /** @return {NoteShort} */
 async function getYearNote(year) {
-    const note = await server.get('date-notes/year/' + year, {'trilium-source-id': "date-note"});
+    const note = await server.get('date-notes/year/' + year, "date-note");
 
     return await treeCache.getNote(note.noteId);
 }

@@ -4,7 +4,7 @@ export class LoadResults {
         this.sourceIdToNoteIds = {};
     }
 
-    add(noteId, sourceId) {
+    addNote(noteId, sourceId) {
         this.noteIdToSync[noteId] = this.noteIdToSync[noteId] || [];
 
         if (!this.noteIdToSync[noteId].includes(sourceId)) {
@@ -23,6 +23,10 @@ export class LoadResults {
     }
 
     isNoteReloaded(noteId, sourceId) {
+        if (!noteId) {
+            return false;
+        }
+
         const sourceIds = this.noteIdToSync[noteId];
         return sourceIds && !!sourceIds.find(sId => sId !== sourceId);
     }

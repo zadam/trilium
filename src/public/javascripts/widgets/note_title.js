@@ -78,17 +78,6 @@ export default class NoteTitleWidget extends TabAwareWidget {
         });
     }
 
-    noteTitleChangedListener({tabId, title, noteId}) {
-        if (tabId === this.tabContext.tabId
-            || !this.tabContext.note
-            || this.tabContext.note.noteId !== noteId) {
-
-            return;
-        }
-
-        this.$noteTitle.val(title);
-    }
-
     async refreshWithNote(note) {
         this.$noteTitle.val(note.title);
 

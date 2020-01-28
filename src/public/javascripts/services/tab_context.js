@@ -112,6 +112,20 @@ class TabContext extends Component {
             this.trigger('tabNoteSwitched', {tabId: this.tabId});
         }
     }
+
+    // FIXME
+    async _setTitleBar() {
+        document.title = "Trilium Notes";
+
+        const activeTabContext = this.getActiveTabContext();
+
+        if (activeTabContext && activeTabContext.notePath) {
+            const note = await treeCache.getNote(treeService.getNoteIdFromNotePath(activeTabContext.notePath));
+
+            // it helps navigating in history if note title is included in the title
+            document.title += " - " + note.title;
+        }
+    }
 }
 
 export default TabContext;

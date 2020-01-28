@@ -69,10 +69,8 @@ class NoteInfoWidget extends StandardWidget {
 
     // this is interesting for this widget since dateModified had to change after update
     noteChangesSavedListener({noteId}) {
-        const note = this.tabContext.note;
-
-        if (note && note.noteId === noteId) {
-            this.refreshWithNote(note);
+        if (this.isNote(noteId)) {
+            this.refreshWithNote(this.note, this.notePath);
         }
     }
 

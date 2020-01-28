@@ -138,7 +138,6 @@ class AppContext {
 
     tabNoteSwitchedListener({tabId}) {
         if (tabId === this.activeTabId) {
-            this._setTitleBar();
             this._setCurrentNotePathToHash();
         }
     }
@@ -148,23 +147,6 @@ class AppContext {
 
         if (activeTabContext && activeTabContext.notePath) {
             document.location.hash = (activeTabContext.notePath || "") + "-" + activeTabContext.tabId;
-        }
-    }
-
-    noteTitleChangedListener() {
-        this._setTitleBar();
-    }
-
-    async _setTitleBar() {
-        document.title = "Trilium Notes";
-
-        const activeTabContext = this.getActiveTabContext();
-
-        if (activeTabContext && activeTabContext.notePath) {
-            const note = await treeCache.getNote(treeService.getNoteIdFromNotePath(activeTabContext.notePath));
-
-            // it helps navigating in history if note title is included in the title
-            document.title += " - " + note.title;
         }
     }
 

@@ -235,20 +235,20 @@ class TreeCache {
             const branch = this.branches[sync.entityId];
             // we assume that the cache contains the old branch state and we add also the old parentNoteId
             // so that the old parent can also be updated
-            loadResults.add(branch.parentNoteId, sync.sourceId);
+            loadResults.addNote(branch.parentNoteId, sync.sourceId);
 
             // this should then contain new parentNoteId for which we should also update the cache
-            loadResults.add(sync.parentNoteId, sync.sourceId);
+            loadResults.addNote(sync.parentNoteId, sync.sourceId);
 
-            loadResults.add(sync.noteId, sync.sourceId);
+            loadResults.addNote(sync.noteId, sync.sourceId);
         });
 
-        syncRows.filter(sync => sync.entityName === 'notes').forEach(sync => loadResults.add(sync.entityId, sync.sourceId));
+        syncRows.filter(sync => sync.entityName === 'notes').forEach(sync => loadResults.addNote(sync.entityId, sync.sourceId));
 
-        syncRows.filter(sync => sync.entityName === 'note_reordering').forEach(sync => loadResults.add(sync.entityId, sync.sourceId));
+        syncRows.filter(sync => sync.entityName === 'note_reordering').forEach(sync => loadResults.addNote(sync.entityId, sync.sourceId));
 
         // missing reloading the relation target note
-        syncRows.filter(sync => sync.entityName === 'attributes').forEach(sync => loadResults.add(sync.noteId, sync.sourceId));
+        syncRows.filter(sync => sync.entityName === 'attributes').forEach(sync => loadResults.addNote(sync.noteId, sync.sourceId));
 
         await this.reloadNotes(loadResults.getNoteIds());
 

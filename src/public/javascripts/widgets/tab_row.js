@@ -498,13 +498,6 @@ export default class TabRowWidget extends BasicWidget {
         return this.$widget.find(`[data-tab-id='${tabId}']`);
     }
 
-    noteTitleChangedListener({title, noteId}) {
-        this.appContext.getTabContexts()
-            .filter(tc => tc.note && tc.note.noteId === noteId)
-            .map(tc => this.getTabById(tc.tabId))
-            .forEach($el => $el.find('.note-tab-title').text(title));
-    }
-
     tabRemovedListener({tabId}) {
         this.removeTab(tabId);
     }

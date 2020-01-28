@@ -24,6 +24,10 @@ export default class TabAwareWidget extends BasicWidget {
         return this.note && this.note.noteId;
     }
 
+    get notePath() {
+        return this.tabContext && this.tabContext.notePath;
+    }
+
     tabNoteSwitchedListener({tabId}) {
         if (this.isTab(tabId)) {
             this.noteSwitched();
@@ -39,20 +43,26 @@ export default class TabAwareWidget extends BasicWidget {
     }
 
     refresh() {
-        if (this.tabContext && this.tabContext.note) {
+        if (this.note) {
             this.toggle(true);
-            this.refreshWithNote(this.tabContext.note, this.tabContext.notePath);
+            this.refreshWithNote(this.note, this.notePath);
         }
         else {
             this.toggle(false);
         }
     }
 
-    refreshWithNote(note) {}
+    refreshWithNote(note, notePath) {}
 
     activeTabChangedListener() {
         this.tabContext = this.appContext.getActiveTabContext();
 
         this.activeTabChanged();
+    }
+
+    notesReloadedListener({loadResults}) {
+        if (loadResults.isNoteReloaded(this.noteId, this.componentId)) {
+            this.refreshWithNote(this.note, this.notePath);
+        }
     }
 }
