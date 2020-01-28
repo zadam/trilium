@@ -2,7 +2,7 @@
 
 const sql = require('../../services/sql');
 const utils = require('../../services/utils');
-const sync_table = require('../../services/sync_table');
+const syncTableService = require('../../services/sync_table');
 const tree = require('../../services/tree');
 const notes = require('../../services/notes');
 const repository = require('../../services/repository');
@@ -18,6 +18,10 @@ async function moveBranchToParent(req) {
 
     const noteToMove = await tree.getBranch(branchId);
 
+    if (noteToMove.parentNoteId === parentNoteId) {
+        return { success: true }; // no-op
+    }
+
     const validationResult = await tree.validateParentChild(parentNoteId, noteToMove.noteId, branchId);
 
     if (!validationResult.success) {
@@ -27,10 +31,11 @@ async function moveBranchToParent(req) {
     const maxNotePos = await sql.getValue('SELECT MAX(notePosition) FROM branches WHERE parentNoteId = ? AND isDeleted = 0', [parentNoteId]);
     const newNotePos = maxNotePos === null ? 0 : maxNotePos + 10;
 
-    const branch = await repository.getBranch(branchId);
-    branch.parentNoteId = parentNoteId;
-    branch.notePosition = newNotePos;
-    await branch.save();
+    const newBranch = noteToMove.getClone(parentNoteId, newNotePos);
+    await newBranch.save();
+
+    noteToMove.isDeleted = true;
+    await noteToMove.save();
 
     return { success: true };
 }
@@ -52,12 +57,19 @@ async function moveBranchBeforeNote(req) {
     await sql.execute("UPDATE branches SET notePosition = notePosition + 10 WHERE parentNoteId = ? AND notePosition >= ? AND isDeleted = 0",
         [beforeNote.parentNoteId, beforeNote.notePosition]);
 
-    await sync_table.addNoteReorderingSync(beforeNote.parentNoteId);
+    await syncTableService.addNoteReorderingSync(beforeNote.parentNoteId);
 
-    const branch = await repository.getBranch(branchId);
-    branch.parentNoteId = beforeNote.parentNoteId;
-    branch.notePosition = beforeNote.notePosition;
-    await branch.save();
+    if (noteToMove.parentNoteId === beforeNote.parentNoteId) {
+        noteToMove.notePosition = beforeNote.notePosition;
+        await noteToMove.save();
+    }
+    else {
+        const newBranch = noteToMove.getClone(beforeNote.parentNoteId, beforeNote.notePosition);
+        await newBranch.save();
+
+        noteToMove.isDeleted = true;
+        await noteToMove.save();
+    }
 
     return { success: true };
 }
@@ -79,12 +91,21 @@ async function moveBranchAfterNote(req) {
     await sql.execute("UPDATE branches SET notePosition = notePosition + 10 WHERE parentNoteId = ? AND notePosition > ? AND isDeleted = 0",
         [afterNote.parentNoteId, afterNote.notePosition]);
 
-    await sync_table.addNoteReorderingSync(afterNote.parentNoteId);
+    await syncTableService.addNoteReorderingSync(afterNote.parentNoteId);
 
-    const branch = await repository.getBranch(branchId);
-    branch.parentNoteId = afterNote.parentNoteId;
-    branch.notePosition = afterNote.notePosition + 10;
-    await branch.save();
+    const movedNotePosition = afterNote.notePosition + 10;
+
+    if (noteToMove.parentNoteId === afterNote.parentNoteId) {
+        noteToMove.notePosition = movedNotePosition;
+        await noteToMove.save();
+    }
+    else {
+        const newBranch = noteToMove.getClone(afterNote.parentNoteId, movedNotePosition);
+        await newBranch.save();
+
+        noteToMove.isDeleted = true;
+        await noteToMove.save();
+    }
 
     return { success: true };
 }

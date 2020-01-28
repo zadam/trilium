@@ -67,7 +67,21 @@ class Branch extends Entity {
 
     // cannot be static!
     updatePojo(pojo) {
+        // FIXME remove
         delete pojo.origParentNoteId;
+    }
+
+    getClone(parentNoteId, notePosition) {
+        return new Branch({
+            noteId: this.noteId,
+            parentNoteId: parentNoteId,
+            notePosition: notePosition,
+            prefix: this.prefix,
+            isExpanded: this.isExpanded,
+            isDeleted: false,
+            utcDateCreated: this.utcDateCreated,
+            utcDateModified: this.utcDateModified
+        });
     }
 }
 
