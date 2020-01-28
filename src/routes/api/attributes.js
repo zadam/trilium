@@ -18,6 +18,27 @@ async function updateNoteAttribute(req) {
     let attribute;
     if (body.attributeId) {
         attribute = await repository.getAttribute(body.attributeId);
+
+        if (attribute.noteId !== noteId) {
+            return [400, `Attribute ${body.attributeId} is not owned by ${noteId}`];
+        }
+
+        if (body.type !== attribute.type
+            || body.name !== attribute.name
+            || (body.type === 'relation' && body.value !== attribute.value)) {
+
+            if (body.type !== 'relation' || !!body.value.trim()) {
+                const newAttribute = attribute.createClone(body.type, body.name, body.value);
+                await newAttribute.save();
+            }
+
+            attribute.isDeleted = true;
+            await attribute.save();
+
+            return {
+                attributeId: attribute.attributeId
+            };
+        }
     }
     else {
         if (body.type === 'relation' && !body.value.trim()) {
@@ -28,10 +49,6 @@ async function updateNoteAttribute(req) {
         attribute.noteId = noteId;
         attribute.name = body.name;
         attribute.type = body.type;
-    }
-
-    if (attribute.noteId !== noteId) {
-        return [400, `Attribute ${body.attributeId} is not owned by ${noteId}`];
     }
 
     if (body.value.trim()) {
@@ -77,6 +94,21 @@ async function updateNoteAttributes(req) {
 
             if (attributeEntity.noteId !== noteId) {
                 return [400, `Attribute ${attributeEntity.noteId} is not owned by ${noteId}`];
+            }
+
+            if (attribute.type !== attributeEntity.type
+                || attribute.name !== attributeEntity.name
+                || (attribute.type === 'relation' && attribute.value !== attributeEntity.value)) {
+
+                if (attribute.type !== 'relation' || !!attribute.value.trim()) {
+                    const newAttribute = attribute.createClone(attribute.type, attribute.name, attribute.value);
+                    await newAttribute.save();
+                }
+
+                attributeEntity.isDeleted = true;
+                await attributeEntity.save();
+
+                continue;
             }
         }
         else {

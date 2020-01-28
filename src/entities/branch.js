@@ -71,7 +71,7 @@ class Branch extends Entity {
         delete pojo.origParentNoteId;
     }
 
-    getClone(parentNoteId, notePosition) {
+    createClone(parentNoteId, notePosition) {
         return new Branch({
             noteId: this.noteId,
             parentNoteId: parentNoteId,

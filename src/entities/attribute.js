@@ -116,6 +116,20 @@ class Attribute extends Entity {
         delete pojo.isOwned;
         delete pojo.__note;
     }
+
+    createClone(type, name, value) {
+        return new Attribute({
+            noteId: this.noteId,
+            type: type,
+            name: name,
+            value: value,
+            position: this.position,
+            isInheritable: this.isInheritable,
+            isDeleted: false,
+            utcDateCreated: this.utcDateCreated,
+            utcDateModified: this.utcDateModified
+        });
+    }
 }
 
 module.exports = Attribute;
