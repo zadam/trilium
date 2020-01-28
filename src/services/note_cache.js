@@ -477,14 +477,14 @@ eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED
     else if (entityName === 'branches') {
         const branch = entity;
 
-        // first we remove records for original placement (if they exist)
-        childToParent[branch.noteId] = childToParent[branch.noteId] || [];
-        childToParent[branch.noteId] = childToParent[branch.noteId].filter(noteId => noteId !== branch.origParentNoteId);
+        if (branch.isDeleted) {
+            childToParent[branch.noteId] = childToParent[branch.noteId] || [];
+            childToParent[branch.noteId] = childToParent[branch.noteId].filter(noteId => noteId !== branch.parentNoteId);
 
-        delete prefixes[branch.noteId + '-' + branch.origParentNoteId];
-        delete childParentToBranchId[branch.noteId + '-' + branch.origParentNoteId];
-
-        if (!branch.isDeleted) {
+            delete prefixes[branch.noteId + '-' + branch.parentNoteId];
+            delete childParentToBranchId[branch.noteId + '-' + branch.parentNoteId];
+        }
+        else {
             // ... and then we create new records
             if (branch.prefix) {
                 prefixes[branch.noteId + '-' + branch.parentNoteId] = branch.prefix;

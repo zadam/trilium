@@ -28,13 +28,6 @@ class Branch extends Entity {
     // notePosition is not part of hash because it would produce a lot of updates in case of reordering
     static get hashedProperties() { return ["branchId", "noteId", "parentNoteId", "isDeleted", "deleteId", "prefix"]; }
 
-    constructor(row = {}) {
-        super(row);
-
-        // used to detect move in note tree
-        this.origParentNoteId = this.parentNoteId;
-    }
-
     /** @returns {Note|null} */
     async getNote() {
         return await repository.getEntity("SELECT * FROM notes WHERE noteId = ?", [this.noteId]);
@@ -63,12 +56,6 @@ class Branch extends Entity {
         if (this.isChanged) {
             this.utcDateModified = dateUtils.utcNowDateTime();
         }
-    }
-
-    // cannot be static!
-    updatePojo(pojo) {
-        // FIXME remove
-        delete pojo.origParentNoteId;
     }
 
     createClone(parentNoteId, notePosition) {
