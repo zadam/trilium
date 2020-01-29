@@ -55,6 +55,12 @@ class NoteRevisionsWidget extends StandardWidget {
         }
     }
 
+    entitiesReloadedListener({loadResults}) {
+        if (loadResults.hasNoteRevisionForNote(this.noteId)) {
+            this.refresh();
+        }
+    }
+
     syncDataListener({data}) {
         if (data.find(sd => sd.entityName === 'note_revisions' && sd.noteId === this.tabContext.note.noteId)) {
             this.refresh();

@@ -54,13 +54,9 @@ class LinkMapWidget extends StandardWidget {
         }
     }
 
-    syncDataListener({data}) {
-        if (data.find(sd => sd.entityName === 'attributes' && sd.noteId === this.tabContext.note.noteId)) {
-            // no need to invalidate attributes since the Attribute class listens to this as well
-            // (and is guaranteed to run first)
-            if (this.linkMapService) {
-                this.linkMapService.loadNotesAndRelations();
-            }
+    entitiesReloadedListener({loadResults}) {
+        if (loadResults.getAttributes().find(attr => attr.type === 'relation' && (attr.noteId === this.noteId || attr.value === this.noteId))) {
+            this.refresh();
         }
     }
 }

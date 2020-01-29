@@ -1,5 +1,7 @@
 export class LoadResults {
-    constructor() {
+    constructor(treeCache) {
+        this.treeCache = treeCache;
+
         this.noteIdToSourceId = {};
         this.sourceIdToNoteIds = {};
         
@@ -25,11 +27,31 @@ export class LoadResults {
         this.branchIdToSourceId[branchId].push(sourceId);
     }
 
+    getBranches() {
+
+    }
+
     addNoteReordering(parentNoteId, sourceId) {
 
     }
 
+    getNoteReorderings() {
+
+    }
+
     addAttribute(attributeId, sourceId) {
+
+    }
+
+    getAttributes() {
+
+    }
+
+    addNoteRevision(noteRevisionId, noteId, sourceId) {
+
+    }
+
+    hasNoteRevisionForNote(noteId) {
 
     }
 

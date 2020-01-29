@@ -220,9 +220,9 @@ export default class NoteDetailWidget extends TabAwareWidget {
         this.refresh();
     }
 
-    entitiesReloadedListener(data) {
-        super.entitiesReloadedListener(data);
-
-        return false; // stop propagation to children
+    entitiesReloadedListener({loadResults}) {
+        if (loadResults.isNoteReloaded(this.noteId, this.componentId)) {
+            this.refreshWithNote(this.note, this.notePath);
+        }
     }
 }

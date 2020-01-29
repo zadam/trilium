@@ -49,6 +49,12 @@ class WhatLinksHereWidget extends StandardWidget {
 
         this.$body.empty().append($list);
     }
+
+    entitiesReloadedListener({loadResults}) {
+        if (loadResults.getAttributes().find(attr => attr.type === 'relation' && attr.value === this.noteId)) {
+            this.refresh();
+        }
+    }
 }
 
 export default WhatLinksHereWidget;

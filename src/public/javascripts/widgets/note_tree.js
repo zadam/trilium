@@ -331,7 +331,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
                     await parentNode.setExpanded(true, expandOpts);
                 }
 
-                await this.checkFolderStatus(parentNode);
+                await this.updateNode(parentNode);
 
                 let foundChildNode = this.findChildNode(parentNode, childNoteId);
 
@@ -372,12 +372,16 @@ export default class NoteTreeWidget extends TabAwareWidget {
         return this.getNodeFromPath(notePath, true, expandOpts);
     }
 
-    async checkFolderStatus(node) {
+    async updateNode(node) {
         const note = await treeCache.getNote(node.data.noteId);
+        const branch = treeCache.getBranch(node.data.branchId);
 
+        node.data.isProtected = note.isProtected;
+        node.data.noteType = note.type;
         node.folder = note.type === 'search' || note.getChildNoteIds().length > 0;
         node.icon = await treeBuilder.getIcon(note);
         node.extraClasses = await treeBuilder.getExtraClasses(note);
+        node.title = (branch.prefix ? (branch.prefix + " - ") : "") + note.title;
         node.renderTitle();
     }
 
@@ -428,20 +432,93 @@ export default class NoteTreeWidget extends TabAwareWidget {
     }
 
     async entitiesReloadedListener({loadResults}) {
-        const activeNode = this.getActiveNode();
-        const activateNotePath = activeNode ? await treeService.getNotePath(activeNode) : null;
+        const noteIdsToUpdate = new Set();
+        const noteIdsToReload = new Set();
 
-        for (const noteId of loadResults.getNoteIds()) {
-            for (const node of this.getNodesByNoteId(noteId)) {
-                const branch = treeCache.getBranch(node.data.branchId, true);
+        for (const attr of loadResults.getAttributes()) {
+            if (attr.type === 'label' && ['iconClass', 'cssClass'].includes(attr.name)) {
+                if (attr.isInheritable) {
+                    noteIdsToReload.add(attr.noteId);
+                }
+                else {
+                    noteIdsToUpdate.add(attr.noteId);
+                }
+            }
+            else if (attr.type === 'relation' && attr.name === 'template') {
+                // missing handling of things inherited from template
+                noteIdsToReload.add(attr.noteId);
+            }
+        }
 
-                if (!branch) {
+        for (const branch of loadResults.getBranches()) {
+            for (const node of this.getNodesByBranchId(branch.branchId)) {
+                if (branch.isDeleted) {
+                    if (node.isActive()) {
+                        let newActive = node.getNextSibling();
+
+                        if (!newActive) {
+                            newActive = node.getPrevSibling();
+                        }
+
+                        if (!newActive) {
+                            newActive = node.getParent();
+                        }
+
+                        await newActive.setActive(true, {noEvents: true});
+                    }
+
                     node.remove();
                 }
                 else {
-                    await node.load(true);
+                    noteIdsToUpdate.add(branch.noteId);
+                }
+            }
 
-                    await this.checkFolderStatus(node);
+            if (!branch.isDeleted) {
+                for (const parentNode of this.getNodesByNoteId(branch.parentNoteId)) {
+                    if (!parentNode.isLoaded()) {
+                        continue;
+                    }
+
+                    const found = parentNode.getChildren().find(child => child.data.noteId === branch.noteId);
+
+                    if (!found) {
+                        noteIdsToReload.add(branch.parentNoteId);
+                    }
+                }
+            }
+        }
+
+        const activeNode = this.getActiveNode();
+        const activateNotePath = activeNode ? await treeService.getNotePath(activeNode) : null;
+
+        for (const noteId of noteIdsToReload) {
+            for (const node of this.getNodesByNoteId(noteId)) {
+                await node.load(true);
+
+                await this.updateNode(node);
+            }
+        }
+
+        for (const noteId of noteIdsToReload) {
+            for (const node of this.getNodesByNoteId(noteId)) {
+                await this.updateNode(node);
+            }
+        }
+
+        for (const {parentNoteId} of loadResults.getNoteReorderings()) {
+            for (const node of this.getNodesByNoteId(parentNoteId)) {
+                if (node.isLoaded()) {
+                    node.sortChildren((nodeA, nodeB) => {
+                        const branchA = treeCache.branches[nodeA.data.branchId];
+                        const branchB = treeCache.branches[nodeB.data.branchId];
+
+                        if (!branchA || !branchB) {
+                            return 0;
+                        }
+
+                        return branchA.notePosition - branchB.notePosition;
+                    });
                 }
             }
         }
@@ -499,20 +576,6 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
         await server.put('branches/' + branchId + '/expanded/' + expandedNum);
     }
-
-    // async reloadNotesListener({noteIds, activateNotePath = null}) {
-    //     if (noteIds.length === 0) {
-    //         return;
-    //     }
-    //
-    //     await treeCache.reloadNotes(noteIds);
-    //
-    //     if (!activateNotePath) {
-    //         activateNotePath = appContext.getActiveTabNotePath();
-    //     }
-    //
-    //     appContext.trigger('entitiesReloaded', { noteIds, activateNotePath });
-    // }
 
     async reloadTreeListener() {
         const notes = await treeService.loadTreeData();

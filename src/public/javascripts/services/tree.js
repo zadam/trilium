@@ -412,7 +412,7 @@ async function createNote(node, parentNoteId, target, extraOptions = {}) {
 
         await newParentNode.load(true); // force reload to show up new note
 
-        await appContext.getMainNoteTree().checkFolderStatus(newParentNode);
+        await appContext.getMainNoteTree().updateNode(newParentNode);
     }
 
     return {note, branch};

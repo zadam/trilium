@@ -88,11 +88,9 @@ class AttributesWidget extends StandardWidget {
         }
     }
 
-    syncDataListener({data}) {
-        if (data.find(sd => sd.entityName === 'attributes' && sd.noteId === this.tabContext.note.noteId)) {
-            // no need to invalidate attributes since the Attribute class listens to this as well
-            // (and is guaranteed to run first)
-            this.doRenderBody();
+    entitiesReloadedListener({loadResults}) {
+        if (loadResults.getAttributes().find(attr => attr.type === 'relation' && attr.noteId === this.noteId)) {
+            this.refresh();
         }
     }
 }

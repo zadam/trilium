@@ -59,10 +59,4 @@ export default class TabAwareWidget extends BasicWidget {
 
         this.activeTabChanged();
     }
-
-    entitiesReloadedListener({loadResults}) {
-        if (loadResults.isNoteReloaded(this.noteId, this.componentId)) {
-            this.refreshWithNote(this.note, this.notePath);
-        }
-    }
 }

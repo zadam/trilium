@@ -230,10 +230,11 @@ class TreeCache {
         return child.parentToBranch[parentNoteId];
     }
 
+    // FIXME does not actually belong here
     async processSyncRows(syncRows) {
         const noteIdsToReload = [];
 
-        const loadResults = new LoadResults();
+        const loadResults = new LoadResults(this);
 
         syncRows.filter(sync => sync.entityName === 'branches').forEach(sync => {
             noteIdsToReload.push(sync.parentNoteId);
@@ -259,6 +260,11 @@ class TreeCache {
             noteIdsToReload.push(sync.noteId);
 
             loadResults.addAttribute(sync.entityId, sync.sourceId);
+        });
+
+        // missing reloading the relation target note
+        syncRows.filter(sync => sync.entityName === 'note_revisions').forEach(sync => {
+            loadResults.addNoteRevision(sync.entityId, sync.noteId, sync.sourceId);
         });
 
         await this.reloadNotes(noteIdsToReload);
