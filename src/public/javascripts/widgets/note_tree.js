@@ -427,7 +427,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
         }
     }
 
-    async notesReloadedListener({loadResults}) {
+    async entitiesReloadedListener({loadResults}) {
         const activeNode = this.getActiveNode();
         const activateNotePath = activeNode ? await treeService.getNotePath(activeNode) : null;
 
@@ -511,7 +511,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
     //         activateNotePath = appContext.getActiveTabNotePath();
     //     }
     //
-    //     appContext.trigger('notesReloaded', { noteIds, activateNotePath });
+    //     appContext.trigger('entitiesReloaded', { noteIds, activateNotePath });
     // }
 
     async reloadTreeListener() {

@@ -1,14 +1,16 @@
 export class LoadResults {
     constructor() {
-        this.noteIdToSync = {};
+        this.noteIdToSourceId = {};
         this.sourceIdToNoteIds = {};
+        
+        this.branchIdToSourceId = {};
     }
 
     addNote(noteId, sourceId) {
-        this.noteIdToSync[noteId] = this.noteIdToSync[noteId] || [];
+        this.noteIdToSourceId[noteId] = this.noteIdToSourceId[noteId] || [];
 
-        if (!this.noteIdToSync[noteId].includes(sourceId)) {
-            this.noteIdToSync[noteId].push(sourceId);
+        if (!this.noteIdToSourceId[noteId].includes(sourceId)) {
+            this.noteIdToSourceId[noteId].push(sourceId);
         }
 
         this.sourceIdToNoteIds[sourceId] = this.sourceIdToNoteIds[sourceId] || [];
@@ -18,8 +20,21 @@ export class LoadResults {
         }
     }
 
+    addBranch(branchId, sourceId) {
+        this.branchIdToSourceId[branchId] = this.branchIdToSourceId[branchId] || [];
+        this.branchIdToSourceId[branchId].push(sourceId);
+    }
+
+    addNoteReordering(parentNoteId, sourceId) {
+
+    }
+
+    addAttribute(attributeId, sourceId) {
+
+    }
+
     getNoteIds() {
-        return Object.keys(this.noteIdToSync);
+        return Object.keys(this.noteIdToSourceId);
     }
 
     isNoteReloaded(noteId, sourceId) {
@@ -27,7 +42,7 @@ export class LoadResults {
             return false;
         }
 
-        const sourceIds = this.noteIdToSync[noteId];
+        const sourceIds = this.noteIdToSourceId[noteId];
         return sourceIds && !!sourceIds.find(sId => sId !== sourceId);
     }
 }
