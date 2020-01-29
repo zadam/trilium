@@ -17,6 +17,11 @@ class NoteShort {
      */
     constructor(treeCache, row, branches) {
         this.treeCache = treeCache;
+
+        this.update(row, branches);
+    }
+
+    update(row, branches) {
         /** @param {string} */
         this.noteId = row.noteId;
         /** @param {string} */

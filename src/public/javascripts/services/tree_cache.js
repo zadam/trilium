@@ -232,21 +232,19 @@ class TreeCache {
 
     // FIXME does not actually belong here
     async processSyncRows(syncRows) {
-        const noteIdsToReload = [];
-
         const loadResults = new LoadResults(this);
+
+        syncRows.filter(sync => sync.entityName === 'notes').forEach(sync => {
+
+
+            loadResults.addNote(sync.entityId, sync.sourceId);
+        });
 
         syncRows.filter(sync => sync.entityName === 'branches').forEach(sync => {
             noteIdsToReload.push(sync.parentNoteId);
             noteIdsToReload.push(sync.noteId);
 
             loadResults.addBranch(sync.entityId, sync.sourceId);
-        });
-
-        syncRows.filter(sync => sync.entityName === 'notes').forEach(sync => {
-            noteIdsToReload.push(sync.entityId);
-
-            loadResults.addNote(sync.entityId, sync.sourceId);
         });
 
         syncRows.filter(sync => sync.entityName === 'note_reordering').forEach(sync => {
@@ -266,8 +264,6 @@ class TreeCache {
         syncRows.filter(sync => sync.entityName === 'note_revisions').forEach(sync => {
             loadResults.addNoteRevision(sync.entityId, sync.noteId, sync.sourceId);
         });
-
-        await this.reloadNotes(noteIdsToReload);
 
         const appContext = (await import('./app_context.js')).default;
         appContext.trigger('entitiesReloaded', {loadResults});

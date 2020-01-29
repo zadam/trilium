@@ -2,6 +2,11 @@
 class Branch {
     constructor(treeCache, row) {
         this.treeCache = treeCache;
+
+        this.update(row);
+    }
+
+    update(row) {
         /** @param {string} primary key */
         this.branchId = row.branchId;
         /** @param {string} */

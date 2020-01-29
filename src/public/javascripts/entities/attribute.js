@@ -1,6 +1,11 @@
 class Attribute {
     constructor(treeCache, row) {
         this.treeCache = treeCache;
+
+        this.update(row);
+    }
+
+    update(row) {
         /** @param {string} attributeId */
         this.attributeId = row.attributeId;
         /** @param {string} noteId */

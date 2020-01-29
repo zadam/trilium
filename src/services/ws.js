@@ -74,20 +74,15 @@ function sendMessageToAllClients(message) {
 async function fillInAdditionalProperties(sync) {
     // fill in some extra data needed by the frontend
     if (sync.entityName === 'attributes') {
-        sync.noteId = await sql.getValue(`SELECT noteId
-                                          FROM attributes
-                                          WHERE attributeId = ?`, [sync.entityId]);
+        sync.entity = await sql.getRow(`SELECT * FROM attributes WHERE attributeId = ?`, [sync.entityId]);
+    } else if (sync.entityName === 'branches') {
+        sync.entity = await sql.getRow(`SELECT * FROM branches WHERE branchId = ?`, [sync.entityId]);
+    } else if (sync.entityName === 'notes') {
+        sync.entity = await sql.getRow(`SELECT * FROM notes WHERE noteId = ?`, [sync.entityId]);
     } else if (sync.entityName === 'note_revisions') {
         sync.noteId = await sql.getValue(`SELECT noteId
                                           FROM note_revisions
                                           WHERE noteRevisionId = ?`, [sync.entityId]);
-    } else if (sync.entityName === 'branches') {
-        const {noteId, parentNoteId} = await sql.getRow(`SELECT noteId, parentNoteId
-                                                         FROM branches
-                                                         WHERE branchId = ?`, [sync.entityId]);
-
-        sync.noteId = noteId;
-        sync.parentNoteId = parentNoteId;
     }
 }
 
