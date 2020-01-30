@@ -235,29 +235,43 @@ class TreeCache {
         const loadResults = new LoadResults(this);
 
         syncRows.filter(sync => sync.entityName === 'notes').forEach(sync => {
+            const note = this.notes[sync.entityId];
 
-
-            loadResults.addNote(sync.entityId, sync.sourceId);
+            if (note) {
+                note.update(sync.entity);
+                loadResults.addNote(sync.entityId, sync.sourceId);
+            }
         });
 
         syncRows.filter(sync => sync.entityName === 'branches').forEach(sync => {
-            noteIdsToReload.push(sync.parentNoteId);
-            noteIdsToReload.push(sync.noteId);
+            const branch = this.branches[sync.entityId];
 
-            loadResults.addBranch(sync.entityId, sync.sourceId);
+            if (branch) {
+                branch.update(sync.entity);
+                loadResults.addBranch(sync.entityId, sync.sourceId);
+            }
         });
 
         syncRows.filter(sync => sync.entityName === 'note_reordering').forEach(sync => {
-            noteIdsToReload.push(sync.entityId);
+            for (const branchId in sync.positions) {
+                const branch = this.branches[branchId];
+
+                if (branch) {
+                    branch.notePosition = sync.positions[branchId];
+                }
+            }
 
             loadResults.addNoteReordering(sync.entityId, sync.sourceId);
         });
 
         // missing reloading the relation target note
         syncRows.filter(sync => sync.entityName === 'attributes').forEach(sync => {
-            noteIdsToReload.push(sync.noteId);
+            const attribute = this.attributes[sync.entityId];
 
-            loadResults.addAttribute(sync.entityId, sync.sourceId);
+            if (attribute) {
+                attribute.update(sync.entity);
+                loadResults.addAttribute(sync.entityId, sync.sourceId);
+            }
         });
 
         // missing reloading the relation target note

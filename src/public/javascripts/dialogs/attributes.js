@@ -169,9 +169,6 @@ function AttributesModel() {
         await showAttributes(attributes);
 
         toastService.showMessage("Attributes have been saved.");
-
-        // FIXME detail should be also reloaded
-        appContext.trigger('reloadTree');
     };
 
     function addLastEmptyRow() {

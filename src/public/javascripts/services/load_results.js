@@ -5,7 +5,13 @@ export class LoadResults {
         this.noteIdToSourceId = {};
         this.sourceIdToNoteIds = {};
         
-        this.branchIdToSourceId = {};
+        this.branches = [];
+
+        this.attributes = [];
+
+        this.noteReorderings = [];
+
+        this.noteRevisions = [];
     }
 
     addNote(noteId, sourceId) {
@@ -23,36 +29,39 @@ export class LoadResults {
     }
 
     addBranch(branchId, sourceId) {
-        this.branchIdToSourceId[branchId] = this.branchIdToSourceId[branchId] || [];
-        this.branchIdToSourceId[branchId].push(sourceId);
+        this.branches.push({branchId, sourceId});
     }
 
     getBranches() {
-
+        return this.branches
+            .map(row => this.treeCache.branches[row.branchId])
+            .filter(branch => !!branch);
     }
 
     addNoteReordering(parentNoteId, sourceId) {
-
+        this.noteReorderings.push(parentNoteId);
     }
 
     getNoteReorderings() {
-
+        return this.noteReorderings;
     }
 
     addAttribute(attributeId, sourceId) {
-
+        this.attributes.push({attributeId, sourceId});
     }
 
     getAttributes() {
-
+        return this.attributes
+            .map(row => this.treeCache.attributes[row.attributeId])
+            .filter(attr => !!attr);
     }
 
     addNoteRevision(noteRevisionId, noteId, sourceId) {
-
+        this.noteRevisions.push({noteRevisionId, noteId, sourceId});
     }
 
     hasNoteRevisionForNote(noteId) {
-
+        return !!this.noteRevisions.find(nr => nr.noteId === noteId);
     }
 
     getNoteIds() {

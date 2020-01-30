@@ -83,6 +83,8 @@ async function fillInAdditionalProperties(sync) {
         sync.noteId = await sql.getValue(`SELECT noteId
                                           FROM note_revisions
                                           WHERE noteRevisionId = ?`, [sync.entityId]);
+    } else if (sync.entityName === 'note_reordering') {
+        sync.positions = await sql.getMap(`SELECT branchId, notePosition FROM branches WHERE isDeleted = 0 AND parentNoteId = ?`, [sync.entityId]);
     }
 }
 

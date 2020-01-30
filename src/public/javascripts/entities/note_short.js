@@ -18,25 +18,6 @@ class NoteShort {
     constructor(treeCache, row, branches) {
         this.treeCache = treeCache;
 
-        this.update(row, branches);
-    }
-
-    update(row, branches) {
-        /** @param {string} */
-        this.noteId = row.noteId;
-        /** @param {string} */
-        this.title = row.title;
-        /** @param {int} */
-        this.contentLength = row.contentLength;
-        /** @param {boolean} */
-        this.isProtected = row.isProtected;
-        /** @param {string} one of 'text', 'code', 'file' or 'render' */
-        this.type = row.type;
-        /** @param {string} content-type, e.g. "application/json" */
-        this.mime = row.mime;
-        /** @param {boolean} */
-        this.isDeleted = row.isDeleted;
-
         /** @type {string[]} */
         this.attributes = [];
 
@@ -53,6 +34,25 @@ class NoteShort {
 
         /** @type {Object.<string, string>} */
         this.childToBranch = {};
+
+        this.update(row, branches);
+    }
+
+    update(row, branches = []) {
+        /** @param {string} */
+        this.noteId = row.noteId;
+        /** @param {string} */
+        this.title = row.title;
+        /** @param {int} */
+        this.contentLength = row.contentLength;
+        /** @param {boolean} */
+        this.isProtected = row.isProtected;
+        /** @param {string} one of 'text', 'code', 'file' or 'render' */
+        this.type = row.type;
+        /** @param {string} content-type, e.g. "application/json" */
+        this.mime = row.mime;
+        /** @param {boolean} */
+        this.isDeleted = row.isDeleted;
 
         for (const branch of branches) {
             if (this.noteId === branch.noteId) {
