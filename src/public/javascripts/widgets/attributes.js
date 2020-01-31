@@ -89,11 +89,7 @@ class AttributesWidget extends StandardWidget {
     }
 
     entitiesReloadedListener({loadResults}) {
-        console.log("CHECK ATTRS", loadResults.getAttributes());
-
         if (loadResults.getAttributes().find(attr => attr.noteId === this.noteId)) {
-            console.log("JAAAJ");
-
             this.refresh();
         }
     }

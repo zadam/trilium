@@ -35,18 +35,6 @@ class TreeCache {
     }
 
     addResp(noteRows, branchRows, attributeRows) {
-        const branchesByNotes = {};
-
-        for (const branchRow of branchRows) {
-            const branch = new Branch(this, branchRow);
-
-            branchesByNotes[branch.noteId] = branchesByNotes[branch.noteId] || [];
-            branchesByNotes[branch.noteId].push(branch);
-
-            branchesByNotes[branch.parentNoteId] = branchesByNotes[branch.parentNoteId] || [];
-            branchesByNotes[branch.parentNoteId].push(branch);
-        }
-
         for (const noteRow of noteRows) {
             const {noteId} = noteRow;
 
@@ -76,28 +64,26 @@ class TreeCache {
                 }
             }
 
-            for (const branch of branchesByNotes[noteId] || []) { // can be empty for deleted notes
-                this.branches[branch.branchId] = branch;
-            }
-
-            const note = new NoteShort(this, noteRow, branchesByNotes[noteId] || []);
+            const note = new NoteShort(this, noteRow);
 
             this.notes[note.noteId] = note;
+        }
 
-            for (const childNoteId of note.children) {
-                const childNote = this.notes[childNoteId];
+        for (const branchRow of branchRows) {
+            const branch = new Branch(this, branchRow);
 
-                if (childNote) {
-                    childNote.addParent(noteId, note.childToBranch[childNoteId]);
-                }
+            this.branches[branch.branchId] = branch;
+
+            const childNote = this.notes[branch.noteId];
+
+            if (childNote) {
+                childNote.addParent(branch.parentNoteId, branch.branchId);
             }
 
-            for (const parentNoteId of note.parents) {
-                const parentNote = this.notes[parentNoteId];
+            const parentNote = this.notes[branch.parentNoteId];
 
-                if (parentNote) {
-                    parentNote.addChild(noteId, note.parentToBranch[parentNoteId]);
-                }
+            if (parentNote) {
+                parentNote.addChild(branch.noteId, branch.branchId);
             }
         }
 
@@ -244,11 +230,50 @@ class TreeCache {
         });
 
         syncRows.filter(sync => sync.entityName === 'branches').forEach(sync => {
-            const branch = this.branches[sync.entityId];
+            let branch = this.branches[sync.entityId];
+            const childNote = this.notes[sync.entity.noteId];
+            const parentNote = this.notes[sync.entity.parentNoteId];
 
             if (branch) {
-                branch.update(sync.entity);
-                loadResults.addBranch(sync.entityId, sync.sourceId);
+                if (sync.entity.isDeleted) {
+                    if (childNote) {
+                        childNote.parents = childNote.parents.filter(parentNoteId => parentNoteId !== sync.entity.parentNoteId);
+                        delete childNote.parentToBranch[sync.entity.parentNoteId];
+                    }
+
+                    if (parentNote) {
+                        parentNote.children = parentNote.children.filter(childNoteId => childNoteId !== sync.entity.noteId);
+                        delete parentNote.childToBranch[sync.entity.noteId];
+                    }
+                }
+                else {
+                    branch.update(sync.entity);
+                    loadResults.addBranch(sync.entityId, sync.sourceId);
+
+                    if (childNote) {
+                        childNote.addParent(branch.parentNoteId, branch.branchId);
+                    }
+
+                    if (parentNote) {
+                        parentNote.addChild(branch.noteId, branch.branchId);
+                    }
+                }
+            }
+            else if (!sync.entity.isDeleted) {
+                if (childNote || parentNote) {
+                    branch = new Branch(this, sync.entity);
+                    this.branches[branch.branchId] = branch;
+
+                    loadResults.addBranch(sync.entityId, sync.sourceId);
+
+                    if (childNote) {
+                        childNote.addParent(branch.parentNoteId, branch.branchId);
+                    }
+
+                    if (parentNote) {
+                        parentNote.addChild(branch.noteId, branch.branchId);
+                    }
+                }
             }
         });
 
@@ -266,11 +291,40 @@ class TreeCache {
 
         // missing reloading the relation target note
         syncRows.filter(sync => sync.entityName === 'attributes').forEach(sync => {
-            const attribute = this.attributes[sync.entityId];
+            let attribute = this.attributes[sync.entityId];
+            const sourceNote = this.notes[sync.entity.noteId];
+            const targetNote = sync.entity.type === 'relation' && this.notes[sync.entity.value];
 
             if (attribute) {
                 attribute.update(sync.entity);
                 loadResults.addAttribute(sync.entityId, sync.sourceId);
+
+                if (sync.entity.isDeleted) {
+                    if (sourceNote) {
+                        sourceNote.attributes = sourceNote.attributes.filter(attributeId => attributeId !== attribute.attributeId);
+                    }
+
+                    if (targetNote) {
+                        targetNote.targetRelations = targetNote.targetRelations.filter(attributeId => attributeId !== attribute.value);
+                    }
+                }
+            }
+            else if (!sync.entity.isDeleted) {
+                if (sourceNote || targetNote) {
+                    attribute = new Attribute(this, sync.entity);
+
+                    this.attributes[attribute.attributeId] = attribute;
+
+                    loadResults.addAttribute(sync.entityId, sync.sourceId);
+
+                    if (sourceNote && !sourceNote.attributes.includes(attribute.attributeId)) {
+                        sourceNote.attributes.push(attribute.attributeId);
+                    }
+
+                    if (targetNote && !targetNote.attributes.includes(attribute.attributeId)) {
+                        targetNote.attributes.push(attribute.attributeId);
+                    }
+                }
             }
         });
 

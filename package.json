@@ -62,7 +62,7 @@
     "rimraf": "3.0.1",
     "sanitize-filename": "1.6.3",
     "sax": "1.2.4",
-    "semver": "7.1.1",
+    "semver": "7.1.2",
     "serve-favicon": "2.5.0",
     "session-file-store": "1.4.0",
     "simple-node-logger": "18.12.24",

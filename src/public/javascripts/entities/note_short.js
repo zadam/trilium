@@ -13,9 +13,8 @@ class NoteShort {
     /**
      * @param {TreeCache} treeCache
      * @param {Object.<string, Object>} row
-     * @param {Branch[]} branches - all relevant branches, i.e. where this note is either child or parent
      */
-    constructor(treeCache, row, branches) {
+    constructor(treeCache, row) {
         this.treeCache = treeCache;
 
         /** @type {string[]} */
@@ -35,10 +34,10 @@ class NoteShort {
         /** @type {Object.<string, string>} */
         this.childToBranch = {};
 
-        this.update(row, branches);
+        this.update(row);
     }
 
-    update(row, branches = []) {
+    update(row) {
         /** @param {string} */
         this.noteId = row.noteId;
         /** @param {string} */
@@ -53,20 +52,6 @@ class NoteShort {
         this.mime = row.mime;
         /** @param {boolean} */
         this.isDeleted = row.isDeleted;
-
-        for (const branch of branches) {
-            if (this.noteId === branch.noteId) {
-                this.parents.push(branch.parentNoteId);
-                this.parentToBranch[branch.parentNoteId] = branch.branchId;
-            }
-            else if (this.noteId === branch.parentNoteId) {
-                this.children.push(branch.noteId);
-                this.childToBranch[branch.noteId] = branch.branchId;
-            }
-            else {
-                throw new Error(`Unknown branch ${branch.branchId} for note ${this.noteId}`);
-            }
-        }
     }
 
     addParent(parentNoteId, branchId) {
