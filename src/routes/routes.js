@@ -1,3 +1,5 @@
+import * as syncService from "../services/sync.js";
+
 const setupRoute = require('./setup');
 const loginRoute = require('./login');
 const indexRoute = require('./index');
@@ -53,7 +55,7 @@ const csrfMiddleware = csurf({
 });
 
 function apiResultHandler(req, res, result) {
-    res.setHeader('trilium-max-sync-id', syncTableService.getMaxSyncId());
+    res.setHeader('trilium-max-sync-id', syncService.getMaxSyncId());
 
     // if it's an array and first element is integer then we consider this to be [statusCode, response] format
     if (Array.isArray(result) && result.length > 0 && Number.isInteger(result[0])) {

@@ -21,6 +21,18 @@ function isEntityEventsDisabled() {
     return !!namespace.get('disableEntityEvents');
 }
 
+function getSyncRows() {
+    return namespace.get('syncRows') || [];
+}
+
+function addSyncRow(syncRow) {
+    const syncRows = getSyncRows();
+
+    syncRows.push(syncRow);
+
+    namespace.set('syncRows', syncRows);
+}
+
 function reset() {
     clsHooked.reset();
 }
@@ -32,5 +44,7 @@ module.exports = {
     getSourceId,
     disableEntityEvents,
     isEntityEventsDisabled,
-    reset
+    reset,
+    getSyncRows,
+    addSyncRow
 };

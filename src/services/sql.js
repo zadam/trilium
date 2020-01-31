@@ -207,6 +207,8 @@ async function transactional(func) {
 
             await commit();
 
+            require('./ws.js').sendPingToAllClients();
+
             transactionActive = false;
             resolve();
         }

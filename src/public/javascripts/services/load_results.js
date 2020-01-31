@@ -12,6 +12,8 @@ export class LoadResults {
         this.noteReorderings = [];
 
         this.noteRevisions = [];
+
+        this.contentNoteIdToSourceId = [];
     }
 
     addNote(noteId, sourceId) {
@@ -75,5 +77,17 @@ export class LoadResults {
 
         const sourceIds = this.noteIdToSourceId[noteId];
         return sourceIds && !!sourceIds.find(sId => sId !== sourceId);
+    }
+
+    addNoteContent(noteId, sourceId) {
+        this.contentNoteIdToSourceId.push({noteId, sourceId});
+    }
+
+    isNoteContentReloaded(noteId, sourceId) {
+        if (!noteId) {
+            return false;
+        }
+
+        return this.contentNoteIdToSourceId.find(l => l.noteId === noteId && l.sourceId !== sourceId);
     }
 }

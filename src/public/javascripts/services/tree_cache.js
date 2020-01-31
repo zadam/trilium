@@ -328,7 +328,10 @@ class TreeCache {
             }
         });
 
-        // missing reloading the relation target note
+        syncRows.filter(sync => sync.entityName === 'note_contents').forEach(sync => {
+            loadResults.addNoteContent(sync.entityId, sync.sourceId);
+        });
+
         syncRows.filter(sync => sync.entityName === 'note_revisions').forEach(sync => {
             loadResults.addNoteRevision(sync.entityId, sync.noteId, sync.sourceId);
         });

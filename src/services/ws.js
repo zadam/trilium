@@ -2,6 +2,7 @@ const WebSocket = require('ws');
 const utils = require('./utils');
 const log = require('./log');
 const sql = require('./sql');
+const cls = require('./cls');
 const syncMutexService = require('./sync_mutex');
 
 let webSocketServer;
@@ -89,11 +90,10 @@ async function fillInAdditionalProperties(sync) {
 }
 
 async function sendPing(client) {
-    const syncData = require('./sync_table')
-        .getEntitySyncsNewerThan(lastAcceptedSyncIds[client.id])
+    const syncRows = cls.getSyncRows()
         .filter(r => r.entityName !== 'recent_notes'); // only noise ...
 
-    for (const sync of syncData) {
+    for (const sync of syncRows) {
         try {
             await fillInAdditionalProperties(sync);
         }
@@ -107,7 +107,7 @@ async function sendPing(client) {
 
     sendMessage(client, {
         type: 'sync',
-        data: syncData,
+        data: syncRows,
         outstandingSyncs: stats.outstandingPushes + stats.outstandingPulls
     });
 }

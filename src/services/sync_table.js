@@ -4,8 +4,6 @@ const dateUtils = require('./date_utils');
 const log = require('./log');
 const cls = require('./cls');
 
-let syncs = [];
-
 async function insertEntitySync(entityName, entityId, sourceId) {
     const sync = {
         entityName: entityName,
@@ -22,9 +20,7 @@ async function insertEntitySync(entityName, entityId, sourceId) {
 async function addEntitySync(entityName, entityId, sourceId) {
     const sync = await insertEntitySync(entityName, entityId, sourceId);
 
-    syncs.push(sync);
-
-    setTimeout(() => require('./ws').sendPingToAllClients(), 50);
+    cls.addSyncRow(sync);
 }
 
 async function addEntitySyncsForSector(entityName, entityPrimaryKey, sector) {
@@ -33,14 +29,6 @@ async function addEntitySyncsForSector(entityName, entityPrimaryKey, sector) {
     for (const entityId of entityIds) {
         await insertEntitySync(entityName, entityId, 'content-check');
     }
-}
-
-function getMaxSyncId() {
-    return syncs.length === 0 ? 0 : syncs[syncs.length - 1].id;
-}
-
-function getEntitySyncsNewerThan(syncId) {
-    return syncs.filter(s => s.id > syncId);
 }
 
 async function cleanupSyncRowsForMissingEntities(entityName, entityPrimaryKey) {
@@ -114,7 +102,5 @@ module.exports = {
     addApiTokenSync: async (apiTokenId, sourceId) => await addEntitySync("api_tokens", apiTokenId, sourceId),
     addEntitySync,
     fillAllSyncRows,
-    getEntitySyncsNewerThan,
-    getMaxSyncId,
     addEntitySyncsForSector
 };
