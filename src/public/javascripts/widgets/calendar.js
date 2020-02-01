@@ -43,7 +43,7 @@ class CalendarWidget extends StandardWidget {
     }
 
     init($el, activeDate) {
-        this.activeDate = new Date(Date.parse(activeDate));
+        this.activeDate = new Date(activeDate + "T12:00:00"); // attaching time fixes local timezone handling
         this.todaysDate = new Date();
         this.date = new Date(this.activeDate.getTime());
 
