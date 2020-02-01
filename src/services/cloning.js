@@ -7,6 +7,7 @@ const noteService = require('./notes');
 const repository = require('./repository');
 const Branch = require('../entities/branch');
 const TaskContext = require("./task_context.js");
+const utils = require('./utils');
 
 async function cloneNoteToParent(noteId, parentNoteId, prefix) {
     if (await isNoteDeleted(noteId) || await isNoteDeleted(parentNoteId)) {
@@ -54,7 +55,8 @@ async function ensureNoteIsAbsentFromParent(noteId, parentNoteId) {
     const branch = await repository.getEntity(`SELECT * FROM branches WHERE noteId = ? AND parentNoteId = ? AND isDeleted = 0`, [noteId, parentNoteId]);
 
     if (branch) {
-        await noteService.deleteBranch(branch, new TaskContext());
+        const deleteId = utils.randomString(10);
+        await noteService.deleteBranch(branch, deleteId, new TaskContext());
     }
 }
 
