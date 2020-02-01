@@ -54,7 +54,7 @@
     "mime-types": "2.1.26",
     "multer": "1.4.2",
     "node-abi": "2.13.0",
-    "open": "7.0.1",
+    "open": "7.0.2",
     "pngjs": "3.4.0",
     "portscanner": "2.2.0",
     "rand-token": "0.4.0",

@@ -289,7 +289,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
 
     /**
      * @method
-     * @returns {NoteFull} active note (loaded into right pane)
+     * @returns {NoteShort} active note (loaded into right pane)
      */
     this.getActiveTabNote = appContext.getActiveTabNote;
 

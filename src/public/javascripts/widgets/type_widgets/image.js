@@ -132,7 +132,7 @@ class NoteDetailImage extends TypeWidget {
         this.$fileSize.text(note.contentLength + " bytes");
         this.$fileType.text(note.mime);
 
-        const imageHash = this.tabContext.noteFull.utcDateModified.replace(" ", "_");
+        const imageHash = this.tabContext.noteComplement.utcDateModified.replace(" ", "_");
 
         this.$imageView.prop("src", `api/images/${note.noteId}/${note.title}?${imageHash}`);
     }

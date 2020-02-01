@@ -1,7 +1,9 @@
+import utils from '../services/utils.js';
+
 export default class Component {
     /** @param {AppContext} appContext */
     constructor(appContext) {
-        this.componentId = `component-${this.constructor.name}`;
+        this.componentId = `comp-${this.constructor.name}-` + utils.randomString(10);
         this.appContext = appContext;
         /** @type Component[] */
         this.children = [];

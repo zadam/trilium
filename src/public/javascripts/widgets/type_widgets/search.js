@@ -45,7 +45,7 @@ export default class SearchTypeWidget extends TypeWidget {
         this.$component.show();
 
         try {
-            const json = JSON.parse(this.tabContext.noteFull.content);
+            const json = JSON.parse(this.tabContext.noteComplement.content);
 
             this.$searchString.val(json.searchString);
         }

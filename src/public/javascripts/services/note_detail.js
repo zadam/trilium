@@ -1,7 +1,7 @@
 import server from './server.js';
 import ws from "./ws.js";
 import treeCache from "./tree_cache.js";
-import NoteFull from "../entities/note_full.js";
+import NoteComplement from "../entities/note_full.js";
 import appContext from "./app_context.js";
 
 function getActiveEditor() {
@@ -15,10 +15,10 @@ function getActiveEditor() {
     }
 }
 
-async function loadNoteFull(noteId) {
+async function loadNoteComplement(noteId) {
     const row = await server.get('notes/' + noteId);
 
-    return new NoteFull(row);
+    return new NoteComplement(row);
 }
 
 function focusOnTitle() {
@@ -45,7 +45,7 @@ $(window).on('beforeunload', () => {
  });
 
 export default {
-    loadNoteFull,
+    loadNoteComplement,
     focusOnTitle,
     focusAndSelectTitle,
     getActiveEditor,

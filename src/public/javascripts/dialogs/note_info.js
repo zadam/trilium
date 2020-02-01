@@ -16,11 +16,11 @@ export function showDialog() {
 
     $dialog.modal();
 
-    const {note, noteFull} = appContext.getActiveTabContext();
+    const {note, noteComplement} = appContext.getActiveTabContext();
 
     $noteId.text(note.noteId);
-    $dateCreated.text(noteFull.dateCreated);
-    $dateModified.text(noteFull.dateModified);
+    $dateCreated.text(noteComplement.dateCreated);
+    $dateModified.text(noteComplement.dateModified);
     $type.text(note.type);
     $mime.text(note.mime);
 }

@@ -37,18 +37,17 @@ export default class NoteDetailWidget extends TabAwareWidget {
         this.typeWidgetPromises = {};
 
         this.spacedUpdate = new SpacedUpdate(async () => {
-            const {noteFull, note} = this.tabContext;
+            const {noteComplement, note} = this.tabContext;
             const {noteId} = note;
 
             // FIXME hack
             const dto = note.dto;
-            dto.content = noteFull.content = this.getTypeWidget().getContent();
+            dto.content = noteComplement.content = this.getTypeWidget().getContent();
 
             const resp = await server.put('notes/' + noteId, dto, this.componentId);
 
-            // FIXME: minor - does not propagate to other tab contexts with this note though
-            noteFull.dateModified = resp.dateModified;
-            noteFull.utcDateModified = resp.utcDateModified;
+            noteComplement.dateModified = resp.dateModified;
+            noteComplement.utcDateModified = resp.utcDateModified;
 
             this.trigger('noteChangesSaved', {noteId})
         });
@@ -161,7 +160,7 @@ export default class NoteDetailWidget extends TabAwareWidget {
         let type = note.type;
 
         if (type === 'text' && !disableAutoBook
-            && utils.isHtmlEmpty(this.tabContext.noteFull.content)
+            && utils.isHtmlEmpty(this.tabContext.noteComplement.content)
             && note.hasChildren()) {
 
             type = 'book';
@@ -223,9 +222,7 @@ export default class NoteDetailWidget extends TabAwareWidget {
 
     async entitiesReloadedListener({loadResults}) {
         if (loadResults.isNoteContentReloaded(this.noteId, this.componentId)) {
-            this.tabContext.noteFull = await noteDetailService.loadNoteFull(this.noteId);
-
-            console.log("Reloaded", this.tabContext.noteFull);
+            this.tabContext.noteComplement = await noteDetailService.loadNoteComplement(this.noteId);
 
             this.refreshWithNote(this.note, this.notePath);
         }

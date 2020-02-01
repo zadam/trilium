@@ -51,8 +51,8 @@ class TabContext extends Component {
         /** @property {NoteShort} */
         this.note = await treeCache.getNote(noteId);
 
-        /** @property {NoteFull} */
-        this.noteFull = await noteDetailService.loadNoteFull(noteId);
+        /** @property {NoteComplement} */
+        this.noteComplement = await noteDetailService.loadNoteComplement(noteId);
 
         //this.cleanup(); // esp. on windows autocomplete is not getting closed automatically
 

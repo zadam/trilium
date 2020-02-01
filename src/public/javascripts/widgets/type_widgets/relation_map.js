@@ -254,9 +254,9 @@ export default class RelationMapTypeWidget extends TypeWidget {
             }
         };
 
-        if (this.tabContext.noteFull.content) {
+        if (this.tabContext.noteComplement.content) {
             try {
-                this.mapData = JSON.parse(this.tabContext.noteFull.content);
+                this.mapData = JSON.parse(this.tabContext.noteComplement.content);
             } catch (e) {
                 console.log("Could not parse content: ", e);
             }

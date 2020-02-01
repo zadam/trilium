@@ -1,10 +1,11 @@
-import NoteShort from './note_short.js';
-
 /**
- * Represents full note, specifically including note's content.
+ * Complements the NoteShort with the main note content and other extra attributes
  */
-class NoteFull {
+class NoteComplement {
     constructor(row) {
+        /** @param {string} */
+        this.noteId = row.noteId;
+
         /** @param {string} */
         this.content = row.content;
 
@@ -22,4 +23,4 @@ class NoteFull {
     }
 }
 
-export default NoteFull;
+export default NoteComplement;

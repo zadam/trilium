@@ -1,5 +1,3 @@
-import * as syncService from "../services/sync.js";
-
 const setupRoute = require('./setup');
 const loginRoute = require('./login');
 const indexRoute = require('./index');
@@ -46,7 +44,7 @@ const auth = require('../services/auth');
 const cls = require('../services/cls');
 const sql = require('../services/sql');
 const protectedSessionService = require('../services/protected_session');
-const syncTableService = require('../services/sync_table');
+const syncService = require('../services/sync');
 const csurf = require('csurf');
 
 const csrfMiddleware = csurf({

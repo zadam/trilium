@@ -49,16 +49,16 @@ class NoteInfoWidget extends StandardWidget {
         const $type = this.$body.find(".note-info-type");
         const $mime = this.$body.find(".note-info-mime");
 
-        const {noteFull} = this.tabContext;
+        const {noteComplement} = this.tabContext;
 
         $noteId.text(note.noteId);
         $dateCreated
-            .text(noteFull.dateCreated)
-            .attr("title", noteFull.dateCreated);
+            .text(noteComplement.dateCreated)
+            .attr("title", noteComplement.dateCreated);
 
         $dateModified
-            .text(noteFull.dateModified)
-            .attr("title", noteFull.dateCreated);
+            .text(noteComplement.dateModified)
+            .attr("title", noteComplement.dateCreated);
 
         $type.text(note.type);
 

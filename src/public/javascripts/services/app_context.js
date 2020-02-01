@@ -171,7 +171,7 @@ class AppContext {
         return activeContext ? activeContext.notePath : null;
     }
 
-    /** @return {NoteFull} */
+    /** @return {NoteShort} */
     getActiveTabNote() {
         const activeContext = this.getActiveTabContext();
         return activeContext ? activeContext.note : null;

@@ -140,7 +140,7 @@ export default class TextTypeWidget extends TypeWidget {
         this.textEditor.isReadOnly = await note.hasLabel('readOnly');
 
         this.spacedUpdate.allowUpdateWithoutChange(() => {
-            this.textEditor.setData(this.tabContext.noteFull.content);
+            this.textEditor.setData(this.tabContext.noteComplement.content);
         });
     }
 

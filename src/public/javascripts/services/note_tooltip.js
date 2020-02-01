@@ -44,9 +44,9 @@ async function mouseEnterHandler() {
     const noteId = treeService.getNoteIdFromNotePath(notePath);
 
     const note = await treeCache.getNote(noteId);
-    const noteFull = await noteDetailService.loadNoteFull(noteId);
+    const noteComplement = await noteDetailService.loadNoteComplement(noteId);
 
-    const html = await renderTooltip(note, noteFull);
+    const html = await renderTooltip(note, noteComplement);
 
     // we need to check if we're still hovering over the element
     // since the operation to get tooltip content was async, it is possible that
@@ -71,7 +71,7 @@ function mouseLeaveHandler() {
     $(this).tooltip('dispose');
 }
 
-async function renderTooltip(note, noteFull) {
+async function renderTooltip(note, noteComplement) {
     const attributes = await note.getAttributes();
 
     let content = '';
@@ -117,11 +117,11 @@ async function renderTooltip(note, noteFull) {
     if (note.type === 'text') {
         // surround with <div> for a case when note's content is pure text (e.g. "[protected]") which
         // then fails the jquery non-empty text test
-        content += '<div>' + noteFull.content + '</div>';
+        content += '<div>' + noteComplement.content + '</div>';
     }
     else if (note.type === 'code') {
         content += $("<pre>")
-            .text(noteFull.content)
+            .text(noteComplement.content)
             .prop('outerHTML');
     }
     else if (note.type === 'image') {
