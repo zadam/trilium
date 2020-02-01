@@ -174,7 +174,9 @@ export default class TextTypeWidget extends TypeWidget {
 
     cleanup() {
         if (this.textEditor) {
-            this.textEditor.setData('');
+            this.spacedUpdate.allowUpdateWithoutChange(() => {
+                this.textEditor.setData('');
+            });
         }
     }
 

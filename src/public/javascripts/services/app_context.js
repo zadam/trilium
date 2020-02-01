@@ -20,7 +20,6 @@ import GlobalMenuWidget from "../widgets/global_menu.js";
 import RowFlexContainer from "../widgets/row_flex_container.js";
 import StandardTopWidget from "../widgets/standard_top_widget.js";
 import treeCache from "./tree_cache.js";
-import treeService from "./tree.js";
 import NotePathsWidget from "../widgets/note_paths.js";
 import RunScriptButtonsWidget from "../widgets/run_script_buttons.js";
 import ProtectedNoteSwitchWidget from "../widgets/protected_note_switch.js";
@@ -391,6 +390,12 @@ class AppContext {
 
     removeAllTabsExceptForThis() {
         // TODO
+    }
+
+    async protectedSessionStartedListener() {
+        await treeCache.loadInitialTree();
+
+        this.trigger('treeCacheReloaded');
     }
 }
 

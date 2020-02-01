@@ -582,8 +582,8 @@ export default class TabRowWidget extends BasicWidget {
                 if (currentIndex !== destinationIndex) {
                     this.animateTabMove(tabEl, currentIndex, destinationIndex);
                 }
-            })
-        })
+            });
+        });
     }
 
     animateTabMove(tabEl, originIndex, destinationIndex) {
@@ -619,7 +619,7 @@ export default class TabRowWidget extends BasicWidget {
         array.forEach((v, i) => {
             if (Math.abs(value - v) < closest) {
                 closest = Math.abs(value - v);
-                closestIndex = i
+                closestIndex = i;
             }
         });
 
@@ -662,7 +662,11 @@ export default class TabRowWidget extends BasicWidget {
         }
     }
 
-    protectedSessionStartedListener() {
-        // FIXME
+    treeCacheReloadedListener() {
+        for (const tabContext of this.appContext.getTabContexts()) {
+            const $tab = this.getTabById(tabContext.tabId);
+
+            this.updateTab($tab, tabContext.note);
+        }
     }
 }

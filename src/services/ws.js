@@ -4,6 +4,7 @@ const log = require('./log');
 const sql = require('./sql');
 const cls = require('./cls');
 const syncMutexService = require('./sync_mutex');
+const protectedSessionService = require('./protected_session');
 
 let webSocketServer;
 let lastAcceptedSyncIds = {};
@@ -80,6 +81,10 @@ async function fillInAdditionalProperties(sync) {
         sync.entity = await sql.getRow(`SELECT * FROM branches WHERE branchId = ?`, [sync.entityId]);
     } else if (sync.entityName === 'notes') {
         sync.entity = await sql.getRow(`SELECT * FROM notes WHERE noteId = ?`, [sync.entityId]);
+
+        if (sync.entity.isProtected) {
+            sync.entity.title = protectedSessionService.decryptString(sync.entity.title);
+        }
     } else if (sync.entityName === 'note_revisions') {
         sync.noteId = await sql.getValue(`SELECT noteId
                                           FROM note_revisions

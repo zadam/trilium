@@ -16,13 +16,13 @@ const TaskContext = require('../../services/task_context');
 async function moveBranchToParent(req) {
     const {branchId, parentNoteId} = req.params;
 
-    const noteToMove = await tree.getBranch(branchId);
+    const branchToMove = await tree.getBranch(branchId);
 
-    if (noteToMove.parentNoteId === parentNoteId) {
+    if (branchToMove.parentNoteId === parentNoteId) {
         return { success: true }; // no-op
     }
 
-    const validationResult = await tree.validateParentChild(parentNoteId, noteToMove.noteId, branchId);
+    const validationResult = await tree.validateParentChild(parentNoteId, branchToMove.noteId, branchId);
 
     if (!validationResult.success) {
         return [200, validationResult];
@@ -31,11 +31,11 @@ async function moveBranchToParent(req) {
     const maxNotePos = await sql.getValue('SELECT MAX(notePosition) FROM branches WHERE parentNoteId = ? AND isDeleted = 0', [parentNoteId]);
     const newNotePos = maxNotePos === null ? 0 : maxNotePos + 10;
 
-    const newBranch = noteToMove.getClone(parentNoteId, newNotePos);
+    const newBranch = branchToMove.createClone(parentNoteId, newNotePos);
     await newBranch.save();
 
-    noteToMove.isDeleted = true;
-    await noteToMove.save();
+    branchToMove.isDeleted = true;
+    await branchToMove.save();
 
     return { success: true };
 }
@@ -43,10 +43,10 @@ async function moveBranchToParent(req) {
 async function moveBranchBeforeNote(req) {
     const {branchId, beforeBranchId} = req.params;
 
-    const noteToMove = await tree.getBranch(branchId);
+    const branchToMove = await tree.getBranch(branchId);
     const beforeNote = await tree.getBranch(beforeBranchId);
 
-    const validationResult = await tree.validateParentChild(beforeNote.parentNoteId, noteToMove.noteId, branchId);
+    const validationResult = await tree.validateParentChild(beforeNote.parentNoteId, branchToMove.noteId, branchId);
 
     if (!validationResult.success) {
         return [200, validationResult];
@@ -59,16 +59,16 @@ async function moveBranchBeforeNote(req) {
 
     await syncTableService.addNoteReorderingSync(beforeNote.parentNoteId);
 
-    if (noteToMove.parentNoteId === beforeNote.parentNoteId) {
-        noteToMove.notePosition = beforeNote.notePosition;
-        await noteToMove.save();
+    if (branchToMove.parentNoteId === beforeNote.parentNoteId) {
+        branchToMove.notePosition = beforeNote.notePosition;
+        await branchToMove.save();
     }
     else {
-        const newBranch = noteToMove.getClone(beforeNote.parentNoteId, beforeNote.notePosition);
+        const newBranch = branchToMove.createClone(beforeNote.parentNoteId, beforeNote.notePosition);
         await newBranch.save();
 
-        noteToMove.isDeleted = true;
-        await noteToMove.save();
+        branchToMove.isDeleted = true;
+        await branchToMove.save();
     }
 
     return { success: true };
@@ -77,10 +77,10 @@ async function moveBranchBeforeNote(req) {
 async function moveBranchAfterNote(req) {
     const {branchId, afterBranchId} = req.params;
 
-    const noteToMove = await tree.getBranch(branchId);
+    const branchToMove = await tree.getBranch(branchId);
     const afterNote = await tree.getBranch(afterBranchId);
 
-    const validationResult = await tree.validateParentChild(afterNote.parentNoteId, noteToMove.noteId, branchId);
+    const validationResult = await tree.validateParentChild(afterNote.parentNoteId, branchToMove.noteId, branchId);
 
     if (!validationResult.success) {
         return [200, validationResult];
@@ -95,16 +95,16 @@ async function moveBranchAfterNote(req) {
 
     const movedNotePosition = afterNote.notePosition + 10;
 
-    if (noteToMove.parentNoteId === afterNote.parentNoteId) {
-        noteToMove.notePosition = movedNotePosition;
-        await noteToMove.save();
+    if (branchToMove.parentNoteId === afterNote.parentNoteId) {
+        branchToMove.notePosition = movedNotePosition;
+        await branchToMove.save();
     }
     else {
-        const newBranch = noteToMove.getClone(afterNote.parentNoteId, movedNotePosition);
+        const newBranch = branchToMove.createClone(afterNote.parentNoteId, movedNotePosition);
         await newBranch.save();
 
-        noteToMove.isDeleted = true;
-        await noteToMove.save();
+        branchToMove.isDeleted = true;
+        await branchToMove.save();
     }
 
     return { success: true };

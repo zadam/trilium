@@ -37,6 +37,7 @@ async function setNodeTitleWithPrefix(node) {
     node.setTitle(utils.escapeHtml(title));
 }
 
+// FIXME: unused?
 /** @return {FancytreeNode} */
 async function activateNote(notePath, noteLoadedListener) {
     utils.assertArguments(notePath);
@@ -289,14 +290,6 @@ function getHashValueFromAddress() {
     const str = document.location.hash ? document.location.hash.substr(1) : ""; // strip initial #
 
     return str.split("-");
-}
-
-async function loadTreeData() {
-    const resp = await server.get('tree');
-
-    treeCache.load(resp.notes, resp.branches, resp.attributes);
-
-    return await treeBuilder.prepareTree();
 }
 
 function setProtected(noteId, isProtected) {
@@ -595,7 +588,6 @@ export default {
     setPrefix,
     createNote,
     sortAlphabetically,
-    loadTreeData,
     treeInitialized,
     resolveNotePath,
     getSomeNotePath,

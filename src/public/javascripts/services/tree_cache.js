@@ -4,6 +4,7 @@ import Attribute from "../entities/attribute.js";
 import server from "./server.js";
 import {LoadResults} from "./load_results.js";
 import NoteComplement from "../entities/note_complement.js";
+import appContext from "./app_context.js";
 
 /**
  * TreeCache keeps a read only cache of note tree structure in frontend's memory.
@@ -15,10 +16,14 @@ import NoteComplement from "../entities/note_complement.js";
  */
 class TreeCache {
     constructor() {
-        this.init();
+        this.initializedPromise = this.loadInitialTree();
     }
 
-    init() {
+    async loadInitialTree() {
+        const {notes, branches, attributes} = await server.get('tree');
+
+        // clear the cache only directly before adding new content which is important for e.g. switching to protected session
+
         /** @type {Object.<string, NoteShort>} */
         this.notes = {};
 
@@ -30,12 +35,8 @@ class TreeCache {
 
         /** @type {Object.<string, Promise<NoteComplement>>} */
         this.noteComplementPromises = {};
-    }
 
-    load(noteRows, branchRows, attributeRows) {
-        this.init();
-
-        this.addResp(noteRows, branchRows, attributeRows);
+        this.addResp(notes, branches, attributes);
     }
 
     addResp(noteRows, branchRows, attributeRows) {
@@ -350,7 +351,6 @@ class TreeCache {
             loadResults.addNoteRevision(sync.entityId, sync.noteId, sync.sourceId);
         });
 
-        const appContext = (await import('./app_context.js')).default;
         appContext.trigger('entitiesReloaded', {loadResults});
     }
 }

@@ -576,10 +576,6 @@ export default class RelationMapTypeWidget extends TypeWidget {
         });
     }
 
-    async refresh() {
-        await this.loadNotesAndRelations();
-    }
-
     getZoom() {
         const matrixRegex = /matrix\((-?\d*\.?\d+),\s*0,\s*0,\s*-?\d*\.?\d+,\s*-?\d*\.?\d+,\s*-?\d*\.?\d+\)/;
 

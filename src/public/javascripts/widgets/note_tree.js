@@ -61,7 +61,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
             }
         });
 
-        treeService.loadTreeData().then(treeData => this.initFancyTree($tree, treeData));
+        treeBuilder.prepareTree().then(treeData => this.initFancyTree($tree, treeData));
 
         return $widget;
     }
@@ -577,8 +577,8 @@ export default class NoteTreeWidget extends TabAwareWidget {
         await server.put('branches/' + branchId + '/expanded/' + expandedNum);
     }
 
-    async reloadTreeListener() {
-        const notes = await treeService.loadTreeData();
+    async reloadTreeFromCache() {
+        const notes = await treeBuilder.prepareTree();
 
         const activeNode = this.getActiveNode();
 
@@ -594,10 +594,10 @@ export default class NoteTreeWidget extends TabAwareWidget {
     }
 
     hoistedNoteChangedListener() {
-        this.reloadTreeListener();
+        this.reloadTreeFromCache();
     }
 
-    protectedSessionStartedListener() {
-        this.reloadTreeListener();
+    treeCacheReloadedListener() {
+        this.reloadTreeFromCache();
     }
 }

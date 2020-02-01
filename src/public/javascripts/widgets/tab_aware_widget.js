@@ -59,4 +59,8 @@ export default class TabAwareWidget extends BasicWidget {
 
         this.activeTabChanged();
     }
+
+    treeCacheReloadedListener() {
+        this.refresh();
+    }
 }

@@ -1,11 +1,9 @@
 import treeService from "./services/tree.js";
-import noteDetailService from "./services/note_detail.js";
 import treeCache from "./services/tree_cache.js";
 import treeBuilder from "./services/tree_builder.js";
 import contextMenuWidget from "./services/context_menu.js";
 import treeChangesService from "./services/branches.js";
 import utils from "./services/utils.js";
-import treeService from "./services/tree.js";
 import appContext from "./services/app_context.js";
 
 window.glob.isDesktop = utils.isDesktop;
@@ -37,7 +35,7 @@ $detail.on("click", ".close-detail-button",() => {
 });
 
 async function showTree() {
-    const treeData = await treeService.loadTreeData();
+    const treeData = await treeBuilder.prepareTree();
 
     $tree.fancytree({
         autoScroll: true,

@@ -129,7 +129,9 @@ export default class CodeTypeWidget extends TypeWidget {
 
     cleanup() {
         if (this.codeEditor) {
-            this.codeEditor.setValue('');
+            this.spacedUpdate.allowUpdateWithoutChange(() => {
+                this.codeEditor.setValue('');
+            });
         }
     }
 

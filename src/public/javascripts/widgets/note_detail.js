@@ -214,10 +214,6 @@ export default class NoteDetailWidget extends TabAwareWidget {
         this.refresh();
     }
 
-    protectedSessionStartedListener() {
-        this.refresh();
-    }
-
     async entitiesReloadedListener({loadResults}) {
         // we should test what happens when the loaded note is deleted
 

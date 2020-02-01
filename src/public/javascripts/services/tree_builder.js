@@ -4,6 +4,8 @@ import ws from "./ws.js";
 import hoistedNoteService from "./hoisted_note.js";
 
 async function prepareTree() {
+    await treeCache.initializedPromise;
+
     const hoistedNoteId = await hoistedNoteService.getHoistedNoteId();
 
     let hoistedBranch;

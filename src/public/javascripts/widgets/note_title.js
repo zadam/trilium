@@ -4,7 +4,6 @@ import protectedSessionHolder from "../services/protected_session_holder.js";
 import treeCache from "../services/tree_cache.js";
 import server from "../services/server.js";
 import SpacedUpdate from "../services/spaced_update.js";
-import appContext from "../services/app_context.js";
 
 const TPL = `
 <div class="note-title-container">
@@ -75,9 +74,7 @@ export default class NoteTitleWidget extends TabAwareWidget {
     async refreshWithNote(note) {
         this.$noteTitle.val(note.title);
 
-        if (note.isProtected && !protectedSessionHolder.isProtectedSessionAvailable()) {
-            this.$noteTitle.prop("readonly", true);
-        }
+        this.$noteTitle.prop("readonly", note.isProtected && !protectedSessionHolder.isProtectedSessionAvailable());
     }
 
     async beforeNoteSwitchListener({tabId}) {
