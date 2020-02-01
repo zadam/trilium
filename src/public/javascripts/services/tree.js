@@ -913,6 +913,10 @@ function getNodeByKey(key) {
     return tree.getNodeByKey(key);
 }
 
+function setTree(treeInstance) {
+    tree = treeInstance;
+}
+
 keyboardActionService.setGlobalActionHandler('CollapseTree', () => collapseTree()); // don't use shortened form since collapseTree() accepts argument
 $collapseTreeButton.on('click', () => collapseTree());
 
@@ -949,5 +953,6 @@ export default {
     focusTree,
     scrollToActiveNote,
     duplicateNote,
-    getNodeByKey
+    getNodeByKey,
+    setTree
 };

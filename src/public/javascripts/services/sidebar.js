@@ -5,6 +5,7 @@ import splitService from "./split.js";
 import optionService from "./options.js";
 import server from "./server.js";
 import noteDetailService from "./note_detail.js";
+import utils from "./utils.js";
 
 const $sidebar = $("#right-pane");
 const $sidebarContainer = $('#sidebar-container');
@@ -15,6 +16,10 @@ const $hideSidebarButton = $("#hide-sidebar-button");
 optionService.waitForOptions().then(options => toggleSidebar(options.is('rightPaneVisible')));
 
 function toggleSidebar(show) {
+    if (utils.isMobile()) {
+        return;
+    }
+
     $sidebar.toggle(show);
     $showSidebarButton.toggle(!show);
     $hideSidebarButton.toggle(show);

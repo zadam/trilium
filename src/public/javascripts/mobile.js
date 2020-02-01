@@ -87,6 +87,8 @@ async function showTree() {
             });
         }
     });
+
+    treeService.setTree($.ui.fancytree.getTree("#tree"));
 }
 
 $detail.on("click", ".note-menu-button", async e => {
