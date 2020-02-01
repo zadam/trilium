@@ -3,6 +3,7 @@ import NoteShort from "../entities/note_short.js";
 import Attribute from "../entities/attribute.js";
 import server from "./server.js";
 import {LoadResults} from "./load_results.js";
+import NoteComplement from "../entities/note_complement.js";
 
 /**
  * TreeCache keeps a read only cache of note tree structure in frontend's memory.
@@ -26,6 +27,9 @@ class TreeCache {
 
         /** @type {Object.<string, Attribute>} */
         this.attributes = {};
+
+        /** @type {Object.<string, Promise<NoteComplement>>} */
+        this.noteComplementPromises = {};
     }
 
     load(noteRows, branchRows, attributeRows) {
@@ -216,6 +220,14 @@ class TreeCache {
         return child.parentToBranch[parentNoteId];
     }
 
+    async getNoteComplement(noteId) {
+        if (!this.noteComplementPromises[noteId]) {
+            this.noteComplementPromises[noteId] = server.get('notes/' + noteId).then(row => new NoteComplement(row));
+        }
+
+        return await this.noteComplementPromises[noteId];
+    }
+
     // FIXME does not actually belong here
     async processSyncRows(syncRows) {
         const loadResults = new LoadResults(this);
@@ -329,6 +341,8 @@ class TreeCache {
         });
 
         syncRows.filter(sync => sync.entityName === 'note_contents').forEach(sync => {
+            delete this.noteComplementPromises[sync.entityId];
+
             loadResults.addNoteContent(sync.entityId, sync.sourceId);
         });
 

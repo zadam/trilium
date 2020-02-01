@@ -39,18 +39,11 @@ export default class NoteDetailWidget extends TabAwareWidget {
         this.spacedUpdate = new SpacedUpdate(async () => {
             const {note} = this.tabContext;
             const {noteId} = note;
-            const noteComplement = await this.tabContext.getNoteComplement();
 
-            // FIXME hack
             const dto = note.dto;
-            dto.content = noteComplement.content = this.getTypeWidget().getContent();
+            dto.content = this.getTypeWidget().getContent();
 
-            const resp = await server.put('notes/' + noteId, dto, this.componentId);
-
-            noteComplement.dateModified = resp.dateModified;
-            noteComplement.utcDateModified = resp.utcDateModified;
-
-            this.trigger('noteChangesSaved', {noteId})
+            await server.put('notes/' + noteId, dto, this.componentId);
         });
     }
 
@@ -226,9 +219,9 @@ export default class NoteDetailWidget extends TabAwareWidget {
     }
 
     async entitiesReloadedListener({loadResults}) {
-        if (loadResults.isNoteContentReloaded(this.noteId, this.componentId)) {
-            this.tabContext.noteComplement = await noteDetailService.loadNoteComplement(this.noteId);
+        // we should test what happens when the loaded note is deleted
 
+        if (loadResults.isNoteContentReloaded(this.noteId, this.componentId)) {
             this.refreshWithNote(this.note, this.notePath);
         }
     }

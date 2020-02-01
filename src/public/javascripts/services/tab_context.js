@@ -85,11 +85,7 @@ class TabContext extends Component {
             return null;
         }
 
-        if (!this.noteComplementPromise) {
-            this.noteComplementPromise = noteDetailService.loadNoteComplement(this.noteId);
-        }
-
-        return await this.noteComplementPromise;
+        return await treeCache.getNoteComplement(this.noteId);
     }
 
     async remove() {

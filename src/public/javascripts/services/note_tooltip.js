@@ -44,7 +44,7 @@ async function mouseEnterHandler() {
     const noteId = treeService.getNoteIdFromNotePath(notePath);
 
     const note = await treeCache.getNote(noteId);
-    const noteComplement = await noteDetailService.loadNoteComplement(noteId);
+    const noteComplement = await treeCache.getNoteComplement(noteId);
 
     const html = await renderTooltip(note, noteComplement);
 

@@ -67,13 +67,6 @@ class NoteInfoWidget extends StandardWidget {
             .attr("title", note.mime);
     }
 
-    // this is interesting for this widget since dateModified had to change after update
-    noteChangesSavedListener({noteId}) {
-        if (this.isNote(noteId)) {
-            this.refreshWithNote(this.note, this.notePath);
-        }
-    }
-
     syncDataListener({data}) {
         if (data.find(sd => sd.entityName === 'notes' && this.isNote(sd.entityId))) {
             this.refresh();

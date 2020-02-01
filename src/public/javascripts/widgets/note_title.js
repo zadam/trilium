@@ -34,13 +34,7 @@ export default class NoteTitleWidget extends TabAwareWidget {
             const noteId = this.tabContext.note.noteId;
             const title = this.$noteTitle.val();
 
-            const resp = await server.put(`notes/${noteId}/change-title`, {title});
-
-            // FIXME: minor - does not propagate to other tab contexts with this note though
-            this.tabContext.note.dateModified = resp.dateModified;
-            this.tabContext.note.utcDateModified = resp.utcDateModified;
-
-            this.trigger('noteChangesSaved', {noteId})
+            await server.put(`notes/${noteId}/change-title`, {title});
         });
     }
 

@@ -1,5 +1,3 @@
-import server from './server.js';
-import NoteComplement from "../entities/note_complement.js";
 import appContext from "./app_context.js";
 
 function getActiveEditor() {
@@ -11,16 +9,6 @@ function getActiveEditor() {
     else {
         return null;
     }
-}
-
-async function loadNoteComplement(noteId) {
-    if (!noteId) {
-        return null;
-    }
-
-    const row = await server.get('notes/' + noteId);
-
-    return new NoteComplement(row);
 }
 
 function focusOnTitle() {
@@ -47,7 +35,6 @@ $(window).on('beforeunload', () => {
  });
 
 export default {
-    loadNoteComplement,
     focusOnTitle,
     focusAndSelectTitle,
     getActiveEditor,

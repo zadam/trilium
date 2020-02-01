@@ -345,6 +345,7 @@ class AppContext {
         this.openTabsChangedListener();
     }
 
+    // FIXME non existent event
     noteChangesSavedListener() {
         const activeTabContext = this.getActiveTabContext();
 
