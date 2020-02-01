@@ -14,8 +14,8 @@ import keyboardActionService from "../services/keyboard_actions.js";
 
 const Draggabilly = window.Draggabilly;
 
-const TAB_CONTENT_MIN_WIDTH = 24;
-const TAB_CONTENT_MAX_WIDTH = 240;
+const TAB_CONTAINER_MIN_WIDTH = 24;
+const TAB_CONTAINER_MAX_WIDTH = 240;
 const NEW_TAB_WIDTH = 32;
 const MIN_FILLER_WIDTH = 50;
 
@@ -55,7 +55,7 @@ const TAB_ROW_TPL = `
         box-sizing: inherit;
         font: inherit;
     }
-    .note-tab-row .note-tab-row-content {
+    .note-tab-row .note-tab-row-container {
         position: relative;
         width: 100%;
         height: 100%;
@@ -230,7 +230,7 @@ const TAB_ROW_TPL = `
     }
     </style>
 
-    <div class="note-tab-row-content"></div>
+    <div class="note-tab-row-container"></div>
 </div>`;
 
 export default class TabRowWidget extends BasicWidget {
@@ -304,24 +304,24 @@ export default class TabRowWidget extends BasicWidget {
         return Array.prototype.slice.call(this.$widget.find('.note-tab'));
     }
 
-    get $tabContent() {
-        return this.$widget.find('.note-tab-row-content');
+    get $tabContainer() {
+        return this.$widget.find('.note-tab-row-container');
     }
 
-    get tabContentWidths() {
+    get tabWidths() {
         const numberOfTabs = this.tabEls.length;
-        const tabsContentWidth = this.$tabContent[0].clientWidth - NEW_TAB_WIDTH - MIN_FILLER_WIDTH;
-        const targetWidth = tabsContentWidth / numberOfTabs;
-        const clampedTargetWidth = Math.max(TAB_CONTENT_MIN_WIDTH, Math.min(TAB_CONTENT_MAX_WIDTH, targetWidth));
+        const tabsContainerWidth = this.$tabContainer[0].clientWidth - NEW_TAB_WIDTH - MIN_FILLER_WIDTH;
+        const targetWidth = tabsContainerWidth / numberOfTabs;
+        const clampedTargetWidth = Math.max(TAB_CONTAINER_MIN_WIDTH, Math.min(TAB_CONTAINER_MAX_WIDTH, targetWidth));
         const flooredClampedTargetWidth = Math.floor(clampedTargetWidth);
         const totalTabsWidthUsingTarget = flooredClampedTargetWidth * numberOfTabs;
-        const totalExtraWidthDueToFlooring = tabsContentWidth - totalTabsWidthUsingTarget;
+        const totalExtraWidthDueToFlooring = tabsContainerWidth - totalTabsWidthUsingTarget;
 
         const widths = [];
         let extraWidthRemaining = totalExtraWidthDueToFlooring;
 
         for (let i = 0; i < numberOfTabs; i += 1) {
-            const extraWidth = flooredClampedTargetWidth < TAB_CONTENT_MAX_WIDTH && extraWidthRemaining > 0 ? 1 : 0;
+            const extraWidth = flooredClampedTargetWidth < TAB_CONTAINER_MAX_WIDTH && extraWidthRemaining > 0 ? 1 : 0;
             widths.push(flooredClampedTargetWidth + extraWidth);
             if (extraWidthRemaining > 0) extraWidthRemaining -= 1;
         }
@@ -335,10 +335,9 @@ export default class TabRowWidget extends BasicWidget {
 
     getTabPositions() {
         const tabPositions = [];
-        const tabContentWidths = this.tabContentWidths;
 
         let position = 0;
-        tabContentWidths.forEach(width => {
+        this.tabWidths.forEach(width => {
             tabPositions.push(position);
             position += width;
         });
@@ -350,10 +349,10 @@ export default class TabRowWidget extends BasicWidget {
     }
 
     layoutTabs() {
-        const tabContentWidths = this.tabContentWidths;
+        const tabContainerWidths = this.tabWidths;
 
         this.tabEls.forEach((tabEl, i) => {
-            const width = tabContentWidths[i];
+            const width = tabContainerWidths[i];
 
             tabEl.style.width = width + 'px';
             tabEl.removeAttribute('is-small');
@@ -529,7 +528,7 @@ export default class TabRowWidget extends BasicWidget {
             const draggabilly = new Draggabilly(tabEl, {
                 axis: 'x',
                 handle: '.note-tab-drag-handle',
-                containment: this.$tabContent[0]
+                containment: this.$tabContainer[0]
             });
 
             this.draggabillies.push(draggabilly);
@@ -602,7 +601,7 @@ export default class TabRowWidget extends BasicWidget {
     setupNewButton() {
         this.$newTab = $(NEW_TAB_BUTTON_TPL);
 
-        this.$tabContent.append(this.$newTab);
+        this.$tabContainer.append(this.$newTab);
 
         this.$newTab.on('click', _ => this.trigger('newTab'));
     }
@@ -610,7 +609,7 @@ export default class TabRowWidget extends BasicWidget {
     setupFiller() {
         this.$filler = $(FILLER_TPL);
 
-        this.$tabContent.append(this.$filler);
+        this.$tabContainer.append(this.$filler);
     }
 
     closest(value, array) {
@@ -632,6 +631,10 @@ export default class TabRowWidget extends BasicWidget {
 
         const {note} = this.appContext.getTabContextById(tabId);
 
+        this.updateTab($tab, note);
+    }
+
+    updateTab($tab, note) {
         if (!note || !$tab.length) {
             return;
         }
@@ -647,6 +650,16 @@ export default class TabRowWidget extends BasicWidget {
         $tab.addClass(note.cssClass);
         $tab.addClass(utils.getNoteTypeClass(note.type));
         $tab.addClass(utils.getMimeTypeClass(note.mime));
+    }
+
+    async entitiesReloadedListener({loadResults}) {
+        for (const tabContext of this.appContext.getTabContexts()) {
+            if (loadResults.isNoteReloaded(tabContext.noteId)) {
+                const $tab = this.getTabById(tabContext.tabId);
+
+                this.updateTab($tab, tabContext.note);
+            }
+        }
     }
 
     protectedSessionStartedListener() {

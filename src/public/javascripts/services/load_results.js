@@ -70,7 +70,7 @@ export class LoadResults {
         return Object.keys(this.noteIdToSourceId);
     }
 
-    isNoteReloaded(noteId, sourceId) {
+    isNoteReloaded(noteId, sourceId = null) {
         if (!noteId) {
             return false;
         }
