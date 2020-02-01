@@ -42,14 +42,14 @@ class NoteInfoWidget extends StandardWidget {
         this.$body.html(TPL);
     }
 
-    refreshWithNote(note) {
+    async refreshWithNote(note) {
         const $noteId = this.$body.find(".note-info-note-id");
         const $dateCreated = this.$body.find(".note-info-date-created");
         const $dateModified = this.$body.find(".note-info-date-modified");
         const $type = this.$body.find(".note-info-type");
         const $mime = this.$body.find(".note-info-mime");
 
-        const {noteComplement} = this.tabContext;
+        const noteComplement = await this.tabContext.getNoteComplement();
 
         $noteId.text(note.noteId);
         $dateCreated

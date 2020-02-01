@@ -128,9 +128,11 @@ export default class FileTypeWidget extends TypeWidget {
         this.$fileSize.text(note.contentLength + " bytes");
         this.$fileType.text(note.mime);
 
-        if (this.tabContext.noteComplement.content) {
+        const noteComplement = await this.tabContext.getNoteComplement();
+
+        if (noteComplement.content) {
             this.$previewContent.show();
-            this.$previewContent.text(this.tabContext.noteComplement.content);
+            this.$previewContent.text(noteComplement.content);
         }
         else {
             this.$previewContent.empty().hide();

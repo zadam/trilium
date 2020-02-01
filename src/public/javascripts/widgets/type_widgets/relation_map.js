@@ -240,7 +240,7 @@ export default class RelationMapTypeWidget extends TypeWidget {
         }
     }
 
-    loadMapData() {
+    async loadMapData() {
         this.mapData = {
             notes: [],
             // it is important to have this exact value here so that initial transform is same as this
@@ -254,9 +254,11 @@ export default class RelationMapTypeWidget extends TypeWidget {
             }
         };
 
-        if (this.tabContext.noteComplement.content) {
+        const noteComplement = await this.tabContext.getNoteComplement();
+
+        if (noteComplement.content) {
             try {
-                this.mapData = JSON.parse(this.tabContext.noteComplement.content);
+                this.mapData = JSON.parse(noteComplement.content);
             } catch (e) {
                 console.log("Could not parse content: ", e);
             }
@@ -272,7 +274,7 @@ export default class RelationMapTypeWidget extends TypeWidget {
     }
 
     async doRefresh(note) {
-        this.loadMapData();
+        await this.loadMapData();
 
         this.initJsPlumbInstance();
 

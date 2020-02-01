@@ -71,11 +71,13 @@ export default class CodeTypeWidget extends TypeWidget {
         this.codeEditor.on('change', () => this.spacedUpdate.scheduleUpdate());
     }
     
-    doRefresh(note) {
+    async doRefresh(note) {
+        const noteComplement = await this.tabContext.getNoteComplement();
+
         this.spacedUpdate.allowUpdateWithoutChange(() => {
             // CodeMirror breaks pretty badly on null so even though it shouldn't happen (guarded by consistency check)
             // we provide fallback
-            this.codeEditor.setValue(this.tabContext.noteComplement.content || "");
+            this.codeEditor.setValue(noteComplement.content || "");
 
             const info = CodeMirror.findModeByMIME(note.mime);
 

@@ -1,7 +1,5 @@
 import server from './server.js';
-import ws from "./ws.js";
-import treeCache from "./tree_cache.js";
-import NoteComplement from "../entities/note_full.js";
+import NoteComplement from "../entities/note_complement.js";
 import appContext from "./app_context.js";
 
 function getActiveEditor() {
@@ -16,6 +14,10 @@ function getActiveEditor() {
 }
 
 async function loadNoteComplement(noteId) {
+    if (!noteId) {
+        return null;
+    }
+
     const row = await server.get('notes/' + noteId);
 
     return new NoteComplement(row);

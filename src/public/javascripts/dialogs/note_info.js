@@ -9,14 +9,16 @@ const $type = $("#note-info-type");
 const $mime = $("#note-info-mime");
 const $okButton = $("#note-info-ok-button");
 
-export function showDialog() {
+export async function showDialog() {
     utils.closeActiveDialog();
 
     glob.activeDialog = $dialog;
 
     $dialog.modal();
 
-    const {note, noteComplement} = appContext.getActiveTabContext();
+    const activeTabContext = appContext.getActiveTabContext();
+    const {note} = activeTabContext;
+    const noteComplement = await activeTabContext.getNoteComplement();
 
     $noteId.text(note.noteId);
     $dateCreated.text(noteComplement.dateCreated);

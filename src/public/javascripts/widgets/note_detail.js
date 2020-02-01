@@ -37,8 +37,9 @@ export default class NoteDetailWidget extends TabAwareWidget {
         this.typeWidgetPromises = {};
 
         this.spacedUpdate = new SpacedUpdate(async () => {
-            const {noteComplement, note} = this.tabContext;
+            const {note} = this.tabContext;
             const {noteId} = note;
+            const noteComplement = await this.tabContext.getNoteComplement();
 
             // FIXME hack
             const dto = note.dto;
@@ -102,14 +103,14 @@ export default class NoteDetailWidget extends TabAwareWidget {
         let foundType;
 
         do {
-            foundType = this.type = this.getWidgetType();
+            foundType = this.type = await this.getWidgetType();
 
             if (!(this.type in this.typeWidgetPromises)) {
                 this.typeWidgetPromises[this.type] = this.initWidgetType(this.type);
             }
 
             await this.typeWidgetPromises[this.type];
-        } while (foundType !== this.getWidgetType());
+        } while (foundType !== await this.getWidgetType());
     }
 
     setupClasses() {
@@ -150,7 +151,7 @@ export default class NoteDetailWidget extends TabAwareWidget {
         typeWidget.eventReceived('setTabContext', {tabContext: this.tabContext});
     }
 
-    getWidgetType(disableAutoBook) {
+    async getWidgetType(disableAutoBook) {
         const note = this.tabContext.note;
 
         if (!note) {
@@ -160,10 +161,14 @@ export default class NoteDetailWidget extends TabAwareWidget {
         let type = note.type;
 
         if (type === 'text' && !disableAutoBook
-            && utils.isHtmlEmpty(this.tabContext.noteComplement.content)
-            && note.hasChildren()) {
+            && note.hasChildren()
+            && utils.isDesktop()) {
 
-            type = 'book';
+            const noteComplement = await this.tabContext.getNoteComplement();
+
+            if (utils.isHtmlEmpty(noteComplement.content)) {
+                type = 'book';
+            }
         }
 
         if (note.isProtected && !protectedSessionHolder.isProtectedSessionAvailable()) {

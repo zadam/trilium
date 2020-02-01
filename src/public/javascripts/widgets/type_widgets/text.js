@@ -139,8 +139,10 @@ export default class TextTypeWidget extends TypeWidget {
     async doRefresh(note) {
         this.textEditor.isReadOnly = await note.hasLabel('readOnly');
 
+        const noteComplement = await this.tabContext.getNoteComplement();
+
         this.spacedUpdate.allowUpdateWithoutChange(() => {
-            this.textEditor.setData(this.tabContext.noteComplement.content);
+            this.textEditor.setData(noteComplement.content);
         });
     }
 

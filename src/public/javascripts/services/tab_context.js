@@ -51,9 +51,6 @@ class TabContext extends Component {
         /** @property {NoteShort} */
         this.note = await treeCache.getNote(noteId);
 
-        /** @property {NoteComplement} */
-        this.noteComplement = await noteDetailService.loadNoteComplement(noteId);
-
         //this.cleanup(); // esp. on windows autocomplete is not getting closed automatically
 
         setTimeout(async () => {
@@ -76,6 +73,23 @@ class TabContext extends Component {
 
         this.trigger('tabNoteSwitched', {tabId: this.tabId});
         this.trigger('openTabsChanged');
+    }
+
+    get noteId() {
+        return this.note && this.note.noteId;
+    }
+
+    /** @return {NoteComplement} */
+    async getNoteComplement() {
+        if (!this.noteId) {
+            return null;
+        }
+
+        if (!this.noteComplementPromise) {
+            this.noteComplementPromise = noteDetailService.loadNoteComplement(this.noteId);
+        }
+
+        return await this.noteComplementPromise;
     }
 
     async remove() {

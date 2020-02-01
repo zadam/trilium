@@ -39,13 +39,14 @@ export default class SearchTypeWidget extends TypeWidget {
         return this.$widget;
     }
 
-    doRefresh(note) {
+    async doRefresh(note) {
         this.$help.html(searchNotesService.getHelpText());
 
         this.$component.show();
 
         try {
-            const json = JSON.parse(this.tabContext.noteComplement.content);
+            const noteComplement = await this.tabContext.getNoteComplement();
+            const json = JSON.parse(noteComplement.content);
 
             this.$searchString.val(json.searchString);
         }
