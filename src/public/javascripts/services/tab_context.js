@@ -303,7 +303,11 @@ class TabContext {
 
         let type = this.note.type;
 
-        if (type === 'text' && !disableAutoBook && utils.isHtmlEmpty(this.note.content) && this.note.hasChildren()) {
+        if (type === 'text'
+            && !disableAutoBook
+            && utils.isHtmlEmpty(this.note.content)
+            && this.note.hasChildren()
+            && utils.isDesktop()) {
             type = 'book';
         }
 
