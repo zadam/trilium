@@ -1,7 +1,6 @@
 import utils from "../../services/utils.js";
 import toastService from "../../services/toast.js";
 import server from "../../services/server.js";
-import noteDetailService from "../../services/note_detail.js";
 import TypeWidget from "./type_widget.js";
 
 const TPL = `
@@ -48,7 +47,7 @@ const TPL = `
     <input type="file" class="image-upload-new-revision-input" style="display: none">
 </div>`;
 
-class NoteDetailImage extends TypeWidget {
+class ImageTypeWidget extends TypeWidget {
     static getType() { return "image"; }
 
     doRender() {
@@ -112,6 +111,7 @@ class NoteDetailImage extends TypeWidget {
 
                 await utils.clearBrowserCache();
 
+                // FIXME
                 await noteDetailService.reload();
             }
             else {
@@ -160,4 +160,4 @@ class NoteDetailImage extends TypeWidget {
     }
 }
 
-export default NoteDetailImage
+export default ImageTypeWidget

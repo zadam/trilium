@@ -1,5 +1,4 @@
 import ws from './ws.js';
-import noteDetailService from './note_detail.js';
 import protectedSessionHolder from './protected_session_holder.js';
 import utils from './utils.js';
 import server from './server.js';
@@ -69,6 +68,7 @@ async function activateNote(notePath, noteLoadedListener) {
     const node = await appContext.getMainNoteTree().expandToNote(notePath);
 
     if (noteLoadedListener) {
+        // FIXME
         noteDetailService.addDetailLoadedListener(node.data.noteId, noteLoadedListener);
     }
 
@@ -340,7 +340,7 @@ async function createNote(node, parentNoteId, target, extraOptions = {}) {
         window.cutToNote.removeSelection();
     }
 
-    noteDetailService.addDetailLoadedListener(note.noteId, noteDetailService.focusAndSelectTitle);
+    noteDetailService.addDetailLoadedListener(note.noteId, () => appContext.trigger('focusAndSelectTitle'));
 
     const noteEntity = await treeCache.getNote(note.noteId);
     const branchEntity = treeCache.getBranch(branch.branchId);

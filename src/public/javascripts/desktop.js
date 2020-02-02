@@ -2,7 +2,6 @@ import cloning from './services/cloning.js';
 import contextMenu from './services/tree_context_menu.js';
 import link from './services/link.js';
 import ws from './services/ws.js';
-import noteDetailService from './services/note_detail.js';
 import noteType from './widgets/note_type.js';
 import protectedSessionService from './services/protected_session.js';
 import protectedSessionHolder from './services/protected_session_holder.js';
@@ -55,7 +54,13 @@ window.glob.loadIncludedNote = async (noteId, el) => {
     }
 };
 // this is required by CKEditor when uploading images
-window.glob.noteChanged = noteDetailService.noteChanged;
+window.glob.noteChanged = () => {
+    const activeTabContext = appContext.getActiveTabContext();
+
+    if (activeTabContext) {
+        activeTabContext.noteChanged();
+    }
+};
 window.glob.refreshTree = treeService.reload;
 
 // required for ESLint plugin

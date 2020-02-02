@@ -401,4 +401,9 @@ class AppContext {
 
 const appContext = new AppContext();
 
+// we should save all outstanding changes before the page/app is closed
+$(window).on('beforeunload', () => {
+    appContext.trigger('beforeUnload');
+});
+
 export default appContext;

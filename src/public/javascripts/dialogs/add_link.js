@@ -1,5 +1,3 @@
-import linkService from '../services/link.js';
-import noteDetailService from '../services/note_detail.js';
 import treeService from '../services/tree.js';
 import noteAutocompleteService from "../services/note_autocomplete.js";
 import utils from "../services/utils.js";
@@ -55,21 +53,12 @@ $form.on('submit', () => {
     const notePath = $autoComplete.getSelectedPath();
 
     if (notePath) {
-        const linkTitle = $linkTitle.val();
-
         $dialog.modal('hide');
 
-        const linkHref = '#' + notePath;
-        const editor = noteDetailService.getActiveEditor();
-
-        if (hasSelection()) {
-            editor.execute('link', linkHref);
-        }
-        else {
-            linkService.addLinkToEditor(linkTitle, linkHref);
-        }
-
-        editor.editing.view.focus();
+        appContext.trigger(`addLinkToActiveEditor`, {
+            linkTitle: $linkTitle.val(),
+            linkHref: '#' + notePath
+        });
     }
     else {
         console.error("No path to add link.");
@@ -77,11 +66,3 @@ $form.on('submit', () => {
 
     return false;
 });
-
-// returns true if user selected some text, false if there's no selection
-function hasSelection() {
-    const model = noteDetailService.getActiveEditor().model;
-    const selection = model.document.selection;
-
-    return !selection.isCollapsed;
-}

@@ -1,7 +1,5 @@
 import optionsService from './options.js';
 import server from "./server.js";
-import tree from "./tree.js";
-import noteDetailService from "./note_detail.js";
 import appContext from "./app_context.js";
 
 let hoistedNoteId = 'root';

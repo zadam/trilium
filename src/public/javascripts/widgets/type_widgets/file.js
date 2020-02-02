@@ -1,7 +1,6 @@
 import utils from "../../services/utils.js";
 import server from "../../services/server.js";
 import toastService from "../../services/toast.js";
-import noteDetailService from "../../services/note_detail.js";
 import TypeWidget from "./type_widget.js";
 
 const TPL = `
@@ -107,7 +106,7 @@ export default class FileTypeWidget extends TypeWidget {
             if (result.uploaded) {
                 toastService.showMessage("New file revision has been uploaded.");
 
-                await noteDetailService.reload();
+                // FIXME reload
             }
             else {
                 toastService.showError("Upload of a new file revision failed.");

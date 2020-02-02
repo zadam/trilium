@@ -2,7 +2,6 @@ import utils from "./utils.js";
 import zoomService from "./zoom.js";
 import treeService from "./tree.js";
 import dateNoteService from "./date_notes.js";
-import noteDetailService from "./note_detail.js";
 import hoistedNoteService from "./hoisted_note.js";
 import treeCache from "./tree_cache.js";
 import server from "./server.js";
@@ -82,7 +81,7 @@ export default class Entrypoints extends Component {
         appContext.activateTab(tabContext.tabId);
         await tabContext.setNote(note.noteId);
 
-        noteDetailService.focusAndSelectTitle();
+        appContext.trigger('focusAndSelectTitle');
     }
 
     toggleNoteHoistingListener() {

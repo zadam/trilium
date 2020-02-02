@@ -1,4 +1,3 @@
-import noteDetailService from "../../services/note_detail.js";
 import searchNotesService from "../../services/search_notes.js";
 import TypeWidget from "./type_widget.js";
 

@@ -1,10 +1,10 @@
-import noteDetailService from "./note_detail.js";
 import treeChangesService from "./branches.js";
 import treeService from "./tree.js";
 import hoistedNoteService from "./hoisted_note.js";
 import clipboard from "./clipboard.js";
 import utils from "./utils.js";
 import keyboardActionService from "./keyboard_actions.js";
+import appContext from "./app_context.js";
 
 /**
  * @param {NoteTreeWidget} treeWidget
@@ -167,7 +167,7 @@ function getTemplates(treeWidget) {
             return false;
         },
         "EditNoteTitle": node => {
-            noteDetailService.focusOnTitle();
+            appContext.trigger('focusOnTitle');
 
             return false;
         },

@@ -1,7 +1,5 @@
-import noteDetailService from "./note_detail.js";
 import treeService from "./tree.js";
 import linkService from "./link.js";
-import server from "./server.js";
 import treeCache from "./tree_cache.js";
 
 function setupGlobalTooltip() {

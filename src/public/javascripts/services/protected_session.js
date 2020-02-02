@@ -1,5 +1,4 @@
 import treeService from './tree.js';
-import noteDetailService from './note_detail.js';
 import utils from './utils.js';
 import server from './server.js';
 import protectedSessionHolder from './protected_session_holder.js';
@@ -82,8 +81,6 @@ async function protectNoteAndSendToServer() {
     await appContext.getActiveTabContext().saveNote();
 
     treeService.setProtected(note.noteId, note.isProtected);
-
-    await noteDetailService.reload();
 }
 
 async function unprotectNoteAndSendToServer() {

@@ -4,7 +4,6 @@ import protectedSessionHolder from "../services/protected_session_holder.js";
 import SpacedUpdate from "../services/spaced_update.js";
 import server from "../services/server.js";
 import libraryLoader from "../services/library_loader.js";
-import noteDetailService from "../services/note_detail.js";
 
 const TPL = `
 <div class="note-detail">
@@ -220,5 +219,9 @@ export default class NoteDetailWidget extends TabAwareWidget {
         if (loadResults.isNoteContentReloaded(this.noteId, this.componentId)) {
             this.refreshWithNote(this.note, this.notePath);
         }
+    }
+
+    beforeUnloadListener() {
+        this.spacedUpdate.updateNowIfNecessary();
     }
 }

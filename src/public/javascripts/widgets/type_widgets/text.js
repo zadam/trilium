@@ -185,6 +185,10 @@ export default class TextTypeWidget extends TypeWidget {
     }
 
     insertDateTimeToTextListener() {
+        if (!this.isActive()) {
+            return;
+        }
+
         const date = new Date();
         const dateString = utils.formatDateTime(date);
 
@@ -207,5 +211,48 @@ export default class TextTypeWidget extends TypeWidget {
             const insertPosition = this.textEditor.model.document.selection.getFirstPosition();
             writer.insertText(text, insertPosition);
         });
+    }
+
+    addTextToActiveEditorListener(text) {
+        if (!this.isActive()) {
+            return;
+        }
+
+        this.addTextToEditor(text);
+    }
+
+    async addLinkToActiveEditorListener({linkTitle, linkHref}) {
+        if (!this.isActive()) {
+            return;
+        }
+
+        await this.initialized;
+
+        if (this.hasSelection()) {
+            this.textEditor.execute('link', linkHref);
+        }
+        else {
+            await this.addLinkToEditor(linkTitle, linkHref);
+        }
+
+        this.textEditor.editing.view.focus();
+    }
+
+    // returns true if user selected some text, false if there's no selection
+    hasSelection() {
+        const model = this.textEditor.model;
+        const selection = model.document.selection;
+
+        return !selection.isCollapsed;
+    }
+
+    async executeInActiveEditorListener({callback}) {
+        if (!this.isActive()) {
+            return;
+        }
+
+        await this.initialized;
+
+        callback(this.textEditor);
     }
 }

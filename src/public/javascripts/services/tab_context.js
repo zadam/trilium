@@ -5,7 +5,6 @@ import utils from "./utils.js";
 import optionsService from "./options.js";
 import appContext from "./app_context.js";
 import treeService from "./tree.js";
-import noteDetailService from "./note_detail.js";
 import Component from "../widgets/component.js";
 import treeCache from "./tree_cache.js";
 

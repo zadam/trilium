@@ -4,7 +4,6 @@ import utils from './utils.js';
 import toastService from './toast.js';
 import linkService from './link.js';
 import treeCache from './tree_cache.js';
-import noteDetailService from './note_detail.js';
 import noteTooltipService from './note_tooltip.js';
 import protectedSessionService from './protected_session.js';
 import dateNotesService from './date_notes.js';
@@ -67,7 +66,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
     this.activateNewNote = async notePath => {
         await ws.waitForMaxKnownSyncId();
 
-        await treeService.activateNote(notePath, noteDetailService.focusAndSelectTitle);
+        await treeService.activateNote(notePath, () => appContext.trigger('focusAndSelectTitle'));
     };
 
     /**
@@ -285,7 +284,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
      * @param {string} text - this must be clear text, HTML is not supported.
      * @method
      */
-    this.addTextToActiveTabEditor = linkService.addTextToEditor;
+    this.addTextToActiveTabEditor = text => appContext.trigger('addTextToActiveEditor', {text});
 
     /**
      * @method
@@ -297,9 +296,9 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
      * See https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editor-Editor.html for a documentation on the returned instance.
      *
      * @method
-     * @returns {Editor|null} CKEditor instance or null (e.g. if active note is not a text note)
+     * @param callback - method receiving "textEditor" instance
      */
-    this.getActiveTabTextEditor = noteDetailService.getActiveEditor;
+    this.getActiveTabTextEditor = callback => appContext.trigger('executeInActiveEditor', {callback});
 
     /**
      * @method
@@ -319,12 +318,6 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
     this.isNoteStillActive = () => {
         return tabContext.note && this.originEntity.noteId === tabContext.note.noteId;
     };
-
-    /**
-     * @method
-     * @param {function} func - callback called on note change as user is typing (not necessarily tied to save event)
-     */
-    this.onNoteChange = noteDetailService.onNoteChange;
 
     /**
      * @method

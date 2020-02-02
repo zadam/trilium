@@ -1,5 +1,3 @@
-import treeService from '../services/tree.js';
-import noteDetailService from '../services/note_detail.js';
 import server from '../services/server.js';
 import mimeTypesService from '../services/mime_types.js';
 import TabAwareWidget from "./tab_aware_widget.js";
@@ -127,8 +125,6 @@ export default class NoteTypeWidget extends TabAwareWidget {
         await server.put('notes/' + this.tabContext.note.noteId
             + '/type/' + encodeURIComponent(type)
             + '/mime/' + encodeURIComponent(mime));
-
-        await noteDetailService.reload();
 
         this.update();
     }

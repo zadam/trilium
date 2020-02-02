@@ -102,4 +102,8 @@ export default class NoteTitleWidget extends TabAwareWidget {
                 .trigger('select');
         }
     }
+
+    beforeUnloadListener() {
+        this.spacedUpdate.updateNowIfNecessary();
+    }
 }

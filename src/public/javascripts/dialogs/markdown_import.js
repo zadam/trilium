@@ -1,7 +1,6 @@
 import libraryLoader from "../services/library_loader.js";
 import toastService from "../services/toast.js";
 import utils from "../services/utils.js";
-import noteDetailService from "../services/note_detail.js";
 import appContext from "../services/app_context.js";
 
 const $dialog = $('#markdown-import-dialog');
@@ -17,13 +16,16 @@ async function convertMarkdownToHtml(text) {
 
     const result = writer.render(parsed);
 
-    const textEditor = noteDetailService.getActiveEditor();
-    const viewFragment = textEditor.data.processor.toView(result);
-    const modelFragment = textEditor.data.toModel(viewFragment);
+    appContext.trigger('executeInActiveEditor', {
+        callback: textEditor => {
+            const viewFragment = textEditor.data.processor.toView(result);
+            const modelFragment = textEditor.data.toModel(viewFragment);
 
-    textEditor.model.insertContent(modelFragment, textEditor.model.document.selection);
+            textEditor.model.insertContent(modelFragment, textEditor.model.document.selection);
 
-    toastService.showMessage("Markdown content has been imported into the document.");
+            toastService.showMessage("Markdown content has been imported into the document.");
+        }
+    });
 }
 
 export async function importMarkdownInline() {

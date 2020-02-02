@@ -2,7 +2,6 @@ import libraryLoader from "../../services/library_loader.js";
 import bundleService from "../../services/bundle.js";
 import toastService from "../../services/toast.js";
 import server from "../../services/server.js";
-import noteDetailService from "../../services/note_detail.js";
 import keyboardActionService from "../../services/keyboard_actions.js";
 import TypeWidget from "./type_widget.js";
 

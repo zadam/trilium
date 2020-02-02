@@ -4,7 +4,6 @@ import server from './server.js';
 import toastService from "./toast.js";
 import treeCache from "./tree_cache.js";
 import hoistedNoteService from "./hoisted_note.js";
-import noteDetailService from "./note_detail.js";
 import ws from "./ws.js";
 import appContext from "./app_context.js";
 
@@ -134,12 +133,14 @@ async function deleteNodes(branchIdsToDelete) {
         if (deleteClones) {
             await server.remove(`notes/${branch.noteId}` + query);
 
+            // FIXME
             noteDetailService.noteDeleted(branch.noteId);
         }
         else {
             const {noteDeleted} = await server.remove(`branches/${branchIdToDelete}` + query);
 
             if (noteDeleted) {
+                // FIXME
                 noteDetailService.noteDeleted(branch.noteId);
             }
         }

@@ -24,4 +24,8 @@ export default class TypeWidget extends TabAwareWidget {
 
         this.doRefresh(note);
     }
+
+    isActive() {
+        return this.$widget.is(":visible");
+    }
 }
