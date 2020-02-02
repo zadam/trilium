@@ -635,7 +635,7 @@ async function createNote(node, parentNoteId, target, extraOptions = {}) {
         extraOptions.saveSelection = false;
     }
 
-    if (extraOptions.saveSelection && window.cutToNote) {
+    if (extraOptions.saveSelection && utils.isCKEditorInitialized()) {
         [extraOptions.title, extraOptions.content] = parseSelectedHtml(window.cutToNote.getSelectedHtml());
     }
 
@@ -648,7 +648,7 @@ async function createNote(node, parentNoteId, target, extraOptions = {}) {
         type: extraOptions.type
     });
 
-    if (extraOptions.saveSelection && window.cutToNote) {
+    if (extraOptions.saveSelection && utils.isCKEditorInitialized()) {
         // we remove the selection only after it was saved to server to make sure we don't lose anything
         window.cutToNote.removeSelection();
     }
