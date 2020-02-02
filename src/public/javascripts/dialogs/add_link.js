@@ -1,6 +1,7 @@
 import treeService from '../services/tree.js';
 import noteAutocompleteService from "../services/note_autocomplete.js";
 import utils from "../services/utils.js";
+import appContext from "../services/app_context.js";
 
 const $dialog = $("#add-link-dialog");
 const $form = $("#add-link-form");
@@ -11,7 +12,13 @@ const $addLinkTitleFormGroup = $("#add-link-title-form-group");
 export async function showDialog() {
     utils.closeActiveDialog();
 
-    $addLinkTitleFormGroup.toggle(!hasSelection());
+    appContext.trigger('executeInActiveEditor', {
+        callback: textEditor => {
+            const hasSelection = !textEditor.model.document.selection.isCollapsed;
+
+            $addLinkTitleFormGroup.toggle(!hasSelection);
+        }
+    });
 
     glob.activeDialog = $dialog;
 
