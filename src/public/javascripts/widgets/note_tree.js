@@ -491,7 +491,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
         }
 
         for (const noteId of loadResults.getNoteIds()) {
-            noteIdsToUpdate.push(noteId);
+            noteIdsToUpdate.add(noteId);
         }
 
         for (const noteId of noteIdsToReload) {
