@@ -37,26 +37,30 @@ const DEFAULT_KEYBOARD_ACTIONS = [
     {
         actionName: "SearchInSubtree",
         defaultShortcuts: ["CommandOrControl+Shift+S"],
-        description: "Search for notes in the active note's subtree"
+        description: "Search for notes in the active note's subtree",
+        scope: "note-tree"
     },
     {
         actionName: "CollapseTree",
-        defaultShortcuts: ["Alt+C"]
+        defaultShortcuts: ["Alt+C"],
     },
     {
         actionName: "CollapseSubtree",
         defaultShortcuts: ["Alt+-"],
-        description: "Collapses subtree of current note"
+        description: "Collapses subtree of current note",
+        scope: "note-tree"
     },
     {
         actionName: "ActivateParentNote",
         defaultShortcuts: ["Backspace"],
-        description: "Activates the parent note of currently active note"
+        description: "Activates the parent note of currently active note",
+        scope: "note-tree"
     },
     {
         actionName: "SortChildNotes",
         defaultShortcuts: ["Alt+S"],
-        description: "Sort child notes"
+        description: "Sort child notes",
+        scope: "note-tree"
     },
 
 
@@ -79,32 +83,38 @@ const DEFAULT_KEYBOARD_ACTIONS = [
     {
         actionName: "DeleteNotes",
         defaultShortcuts: ["Delete"],
-        description: "Delete note"
+        description: "Delete note",
+        scope: "note-tree"
     },
     {
         actionName: "MoveNoteUp",
         defaultShortcuts: ["CommandOrControl+Up"],
-        description: "Move note up"
+        description: "Move note up",
+        scope: "note-tree"
     },
     {
         actionName: "MoveNoteDown",
         defaultShortcuts: ["CommandOrControl+Down"],
-        description: "Move note down"
+        description: "Move note down",
+        scope: "note-tree"
     },
     {
         actionName: "MoveNoteUpInHierarchy",
         defaultShortcuts: ["CommandOrControl+Left"],
-        description: "Move note up in hierarchy"
+        description: "Move note up in hierarchy",
+        scope: "note-tree"
     },
     {
         actionName: "MoveNoteDownInHierarchy",
         defaultShortcuts: ["CommandOrControl+Right"],
-        description: "Move note down in hierarchy"
+        description: "Move note down in hierarchy",
+        scope: "note-tree"
     },
     {
         actionName: "EditNoteTitle",
         defaultShortcuts: ["Enter"],
-        description: "Jump from tree to the note detail and edit title"
+        description: "Jump from tree to the note detail and edit title",
+        scope: "note-tree"
     },
     {
         actionName: "EditBranchPrefix",
@@ -128,32 +138,38 @@ const DEFAULT_KEYBOARD_ACTIONS = [
     {
         actionName: "CopyNotesToClipboard",
         defaultShortcuts: ["CommandOrControl+C"],
-        description: "Copy selected notes to the clipboard"
+        description: "Copy selected notes to the clipboard",
+        scope: "note-tree"
     },
     {
         actionName: "PasteNotesFromClipboard",
         defaultShortcuts: ["CommandOrControl+V"],
-        description: "Paste notes from the clipboard into active note"
+        description: "Paste notes from the clipboard into active note",
+        scope: "note-tree"
     },
     {
         actionName: "CutNotesToClipboard",
         defaultShortcuts: ["CommandOrControl+X"],
-        description: "Cut selected notes to the clipboard"
+        description: "Cut selected notes to the clipboard",
+        scope: "note-tree"
     },
     {
         actionName: "SelectAllNotesInParent",
         defaultShortcuts: ["CommandOrControl+A"],
-        description: "Select all notes from the current note level"
+        description: "Select all notes from the current note level",
+        scope: "note-tree"
     },
     {
         actionName: "AddNoteAboveToSelection",
         defaultShortcuts: ["Shift+Up"],
-        description: "Add note above to the selection"
+        description: "Add note above to the selection",
+        scope: "note-tree"
     },
     {
         actionName: "AddNoteBelowToSelection",
         defaultShortcuts: ["Shift+Down"],
-        description: "Add note above to the selection"
+        description: "Add note above to the selection",
+        scope: "note-tree"
     },
 
 

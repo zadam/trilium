@@ -7,7 +7,7 @@ export default class SpacedUpdate {
     }
 
     scheduleUpdate() {
-        if (!this.changeForbidden) {console.trace();
+        if (!this.changeForbidden) {
             this.changed = true;
             setTimeout(() => this.triggerUpdate());
         }

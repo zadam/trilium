@@ -3,7 +3,7 @@ import toastService from "../services/toast.js";
 import server from "../services/server.js";
 
 const TPL = `
-<div>
+<div class="search-results">
     <style>
     .search-results {
         padding: 0 5px 5px 15px;
@@ -16,14 +16,14 @@ const TPL = `
         border-bottom: 2px solid var(--main-border-color);
     }
     
-    .search-results ul {
+    .search-results-list {
         padding: 5px 5px 5px 15px;
     }
     </style>
 
     <strong>Search results:</strong>
 
-    <ul class="search-results-inner"></ul>
+    <ul class="search-results-list"></ul>
 </div>
 `;
 
@@ -32,7 +32,7 @@ export default class SearchResultsWidget extends BasicWidget {
         this.$widget = $(TPL);
 
         this.$searchResults = this.$widget;
-        this.$searchResultsInner = this.$widget.find(".search-results-inner");
+        this.$searchResultsInner = this.$widget.find(".search-results-list");
 
         this.toggle(false);
 
