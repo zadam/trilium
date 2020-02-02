@@ -3,7 +3,7 @@ import utils from '../services/utils.js';
 export default class Component {
     /** @param {AppContext} appContext */
     constructor(appContext) {
-        this.componentId = `comp-${this.constructor.name}-` + utils.randomString(10);
+        this.componentId = `comp-${this.constructor.name}-` + utils.randomString(6);
         this.appContext = appContext;
         /** @type Component[] */
         this.children = [];
@@ -12,8 +12,6 @@ export default class Component {
 
     async eventReceived(name, data, sync = false) {
         await this.initialized;
-
-//        console.log(`Received ${name} to ${this.componentId}`);
 
         const fun = this[name + 'Listener'];
 

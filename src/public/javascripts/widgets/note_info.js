@@ -1,4 +1,4 @@
-import StandardWidget from "./standard_widget.js";
+import CollapsibleWidget from "./standard_widget.js";
 
 const TPL = `
 <table class="note-info-widget-table">
@@ -35,34 +35,34 @@ const TPL = `
 </table>
 `;
 
-class NoteInfoWidget extends StandardWidget {
+class NoteInfoWidget extends CollapsibleWidget {
     getWidgetTitle() { return "Note info"; }
 
     doRenderBody() {
         this.$body.html(TPL);
+
+        this.$noteId = this.$body.find(".note-info-note-id");
+        this.$dateCreated = this.$body.find(".note-info-date-created");
+        this.$dateModified = this.$body.find(".note-info-date-modified");
+        this.$type = this.$body.find(".note-info-type");
+        this.$mime = this.$body.find(".note-info-mime");
     }
 
     async refreshWithNote(note) {
-        const $noteId = this.$body.find(".note-info-note-id");
-        const $dateCreated = this.$body.find(".note-info-date-created");
-        const $dateModified = this.$body.find(".note-info-date-modified");
-        const $type = this.$body.find(".note-info-type");
-        const $mime = this.$body.find(".note-info-mime");
-
         const noteComplement = await this.tabContext.getNoteComplement();
 
-        $noteId.text(note.noteId);
-        $dateCreated
+        this.$noteId.text(note.noteId);
+        this.$dateCreated
             .text(noteComplement.dateCreated)
             .attr("title", noteComplement.dateCreated);
 
-        $dateModified
+        this.$dateModified
             .text(noteComplement.dateModified)
             .attr("title", noteComplement.dateCreated);
 
-        $type.text(note.type);
+        this.$type.text(note.type);
 
-        $mime
+        this.$mime
             .text(note.mime)
             .attr("title", note.mime);
     }

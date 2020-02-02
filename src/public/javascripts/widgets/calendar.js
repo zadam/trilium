@@ -1,4 +1,4 @@
-import StandardWidget from "./standard_widget.js";
+import CollapsibleWidget from "./standard_widget.js";
 import libraryLoader from "../services/library_loader.js";
 import utils from "../services/utils.js";
 import dateNoteService from "../services/date_notes.js";
@@ -24,7 +24,7 @@ const TPL = `
 </div>
 `;
 
-class CalendarWidget extends StandardWidget {
+class CalendarWidget extends CollapsibleWidget {
     getWidgetTitle() { return "Calendar"; }
 
     async isEnabled() {

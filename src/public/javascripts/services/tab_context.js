@@ -69,7 +69,10 @@ class TabContext extends Component {
             protectedSessionHolder.touchProtectedSession();
         }
 
-        this.trigger('tabNoteSwitched', {tabId: this.tabId});
+        this.trigger('tabNoteSwitched', {
+            tabId: this.tabId,
+            notePath: this.notePath
+        });
         this.trigger('openTabsChanged');
     }
 
@@ -114,11 +117,14 @@ class TabContext extends Component {
     }
 
     noteDeletedListener({noteId}) {
-        if (this.note && noteId === this.note.noteId) {
-            this.note = null;
+        if (this.noteId === noteId) {
+            this.noteId = null;
             this.notePath = null;
 
-            this.trigger('tabNoteSwitched', {tabId: this.tabId});
+            this.trigger('tabNoteSwitched', {
+                tabId: this.tabId,
+                notePath: this.notePath
+            });
         }
     }
 

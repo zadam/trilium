@@ -7,7 +7,7 @@ import treeCache from './tree_cache.js';
 import noteTooltipService from './note_tooltip.js';
 import protectedSessionService from './protected_session.js';
 import dateNotesService from './date_notes.js';
-import StandardWidget from '../widgets/standard_widget.js';
+import CollapsibleWidget from '../widgets/standard_widget.js';
 import ws from "./ws.js";
 import hoistedNoteService from "./hoisted_note.js";
 import appContext from "./app_context.js";
@@ -37,8 +37,8 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
     /** @property {TabContext|null} - experimental! */
     this.tabContext = tabContext;
 
-    /** @property {StandardWidget} */
-    this.StandardWidget = StandardWidget;
+    /** @property {CollapsibleWidget} */
+    this.StandardWidget = CollapsibleWidget;
 
     /**
      * Activates note in the tree and in the note detail.

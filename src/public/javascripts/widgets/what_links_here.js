@@ -1,7 +1,7 @@
-import StandardWidget from "./standard_widget.js";
+import CollapsibleWidget from "./standard_widget.js";
 import linkService from "../services/link.js";
 
-class WhatLinksHereWidget extends StandardWidget {
+class WhatLinksHereWidget extends CollapsibleWidget {
     getWidgetTitle() { return "What links here"; }
 
     getMaxHeight() { return "200px"; }

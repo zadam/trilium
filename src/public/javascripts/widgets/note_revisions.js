@@ -1,12 +1,12 @@
 import server from "../services/server.js";
-import StandardWidget from "./standard_widget.js";
+import CollapsibleWidget from "./standard_widget.js";
 
 const TPL = `
 <ul class="note-revision-list" style="max-height: 150px; overflow: auto;">
 </ul>
 `;
 
-class NoteRevisionsWidget extends StandardWidget {
+class NoteRevisionsWidget extends CollapsibleWidget {
     getWidgetTitle() { return "Note revisions"; }
 
     getHelp() {

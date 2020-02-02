@@ -1,4 +1,4 @@
-import StandardWidget from "./standard_widget.js";
+import CollapsibleWidget from "./standard_widget.js";
 
 let linkMapContainerIdCtr = 1;
 
@@ -8,7 +8,7 @@ const TPL = `
 </div>
 `;
 
-class LinkMapWidget extends StandardWidget {
+class LinkMapWidget extends CollapsibleWidget {
     getWidgetTitle() { return "Link map"; }
 
     getHelp() {

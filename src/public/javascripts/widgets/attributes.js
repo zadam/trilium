@@ -1,9 +1,9 @@
 import utils from "../services/utils.js";
 import linkService from "../services/link.js";
 import ws from "../services/ws.js";
-import StandardWidget from "./standard_widget.js";
+import CollapsibleWidget from "./standard_widget.js";
 
-class AttributesWidget extends StandardWidget {
+class AttributesWidget extends CollapsibleWidget {
     getWidgetTitle() { return "Attributes"; }
 
     getHelp() {

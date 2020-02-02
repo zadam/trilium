@@ -21,7 +21,7 @@ const WIDGET_TPL = `
 </div>
 `;
 
-class StandardWidget extends TabAwareWidget {
+class CollapsibleWidget extends TabAwareWidget {
     getWidgetTitle() { return "Untitled widget"; }
 
     getHeaderActions() { return []; }
@@ -30,20 +30,14 @@ class StandardWidget extends TabAwareWidget {
 
     getMaxHeight() { return null; }
 
-    //getPosition() { return this.widgetOptions.position; }
-
     render() {
-        const widgetInstanceId = this.componentId + "-" + utils.randomString(10);
-
         this.$widget = $(WIDGET_TPL);
-        this.$widget.find('[data-target]').attr('data-target', "#" + widgetInstanceId);
+        this.$widget.find('[data-target]').attr('data-target', "#" + this.componentId);
 
         this.$bodyWrapper = this.$widget.find('.body-wrapper');
-        this.$bodyWrapper.attr('id', widgetInstanceId);
+        this.$bodyWrapper.attr('id', this.componentId);
 
-//        if (this.state.expanded) {
-            this.$bodyWrapper.collapse("show");
-//        }
+        this.$bodyWrapper.collapse("show");
 
         this.$body = this.$bodyWrapper.find('.card-body');
 
@@ -53,10 +47,6 @@ class StandardWidget extends TabAwareWidget {
             this.$body.css("max-height", maxHeight);
             this.$body.css("overflow", "auto");
         }
-
-        // this.$widget.on('shown.bs.collapse', () => this.renderBody());
-        // this.$widget.on('shown.bs.collapse', () => this.ctx.stateChanged());
-        // this.$widget.on('hidden.bs.collapse', () => this.ctx.stateChanged());
 
         this.$title = this.$widget.find('.widget-title');
         this.$title.text(this.getWidgetTitle());
@@ -91,31 +81,11 @@ class StandardWidget extends TabAwareWidget {
     /** for overriding */
     async doRenderBody() {}
 
-    async isEnabled() {
-        const label = await this.ctx.note.getLabelValue(this.widgetName);
-
-        if (label === 'enabled') {
-            return true;
-        } else if (label === 'disabled') {
-            return false;
-        }
-        else {
-            return this.widgetOptions.enabled;
-        }
-    }
-
     isExpanded() {
         return this.$bodyWrapper.hasClass("show");
-    }
-
-    getWidgetState() {
-        return {
-            name: this.widgetName,
-            expanded: this.isExpanded()
-        };
     }
 
     cleanup() {}
 }
 
-export default StandardWidget;
+export default CollapsibleWidget;

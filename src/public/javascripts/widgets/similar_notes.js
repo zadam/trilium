@@ -1,9 +1,9 @@
-import StandardWidget from "./standard_widget.js";
+import CollapsibleWidget from "./standard_widget.js";
 import linkService from "../services/link.js";
 import server from "../services/server.js";
 import treeCache from "../services/tree_cache.js";
 
-class SimilarNotesWidget extends StandardWidget {
+class SimilarNotesWidget extends CollapsibleWidget {
     getWidgetTitle() { return "Similar notes"; }
 
     getHelp() {
