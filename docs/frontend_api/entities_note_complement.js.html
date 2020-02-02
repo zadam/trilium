@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: entities/branch.js</title>
+    <title>JSDoc: Source: entities/note_complement.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: entities/branch.js</h1>
+    <h1 class="page-title">Source: entities/note_complement.js</h1>
 
     
 
@@ -26,50 +26,32 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>/** Represents mapping between note and parent note */
-class Branch {
-    constructor(treeCache, row) {
-        this.treeCache = treeCache;
-
-        this.update(row);
-    }
-
-    update(row) {
-        /** @param {string} primary key */
-        this.branchId = row.branchId;
+            <pre class="prettyprint source linenums"><code>/**
+ * Complements the NoteShort with the main note content and other extra attributes
+ */
+class NoteComplement {
+    constructor(row) {
         /** @param {string} */
         this.noteId = row.noteId;
+
         /** @param {string} */
-        this.parentNoteId = row.parentNoteId;
-        /** @param {int} */
-        this.notePosition = row.notePosition;
+        this.content = row.content;
+
         /** @param {string} */
-        this.prefix = row.prefix;
-        /** @param {boolean} */
-        this.isExpanded = !!row.isExpanded;
-    }
+        this.dateCreated = row.dateCreated;
 
-    /** @returns {NoteShort} */
-    async getNote() {
-        return this.treeCache.getNote(this.noteId);
-    }
+        /** @param {string} */
+        this.dateModified = row.dateModified;
 
-    /** @returns {NoteShort} */
-    async getParentNote() {
-        return this.treeCache.getNote(this.parentNoteId);
-    }
+        /** @param {string} */
+        this.utcDateCreated = row.utcDateCreated;
 
-    /** @returns {boolean} true if it's top level, meaning its parent is root note */
-    isTopLevel() {
-        return this.parentNoteId === 'root';
-    }
-
-    get toString() {
-        return `Branch(branchId=${this.branchId})`;
+        /** @param {string} */
+        this.utcDateModified = row.utcDateModified;
     }
 }
 
-export default Branch;</code></pre>
+export default NoteComplement;</code></pre>
         </article>
     </section>
 

@@ -44,6 +44,7 @@ const sql = require('../services/sql');
  * @property {int} position
  * @property {boolean} isInheritable
  * @property {boolean} isDeleted
+ * @property {string|null} deleteId - ID identifying delete transaction
  * @property {string} utcDateCreated
  * @property {string} utcDateModified
  *
@@ -142,6 +143,20 @@ class Attribute extends Entity {
     updatePojo(pojo) {
         delete pojo.isOwned;
         delete pojo.__note;
+    }
+
+    createClone(type, name, value) {
+        return new Attribute({
+            noteId: this.noteId,
+            type: type,
+            name: name,
+            value: value,
+            position: this.position,
+            isInheritable: this.isInheritable,
+            isDeleted: false,
+            utcDateCreated: this.utcDateCreated,
+            utcDateModified: this.utcDateModified
+        });
     }
 }
 

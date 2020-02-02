@@ -44,6 +44,7 @@ const sql = require('../services/sql');
  * @property {string} prefix
  * @property {boolean} isExpanded
  * @property {boolean} isDeleted
+ * @property {string|null} deleteId - ID identifying delete transaction
  * @property {string} utcDateModified
  * @property {string} utcDateCreated
  *
@@ -53,14 +54,7 @@ class Branch extends Entity {
     static get entityName() { return "branches"; }
     static get primaryKeyName() { return "branchId"; }
     // notePosition is not part of hash because it would produce a lot of updates in case of reordering
-    static get hashedProperties() { return ["branchId", "noteId", "parentNoteId", "isDeleted", "prefix"]; }
-
-    constructor(row = {}) {
-        super(row);
-
-        // used to detect move in note tree
-        this.origParentNoteId = this.parentNoteId;
-    }
+    static get hashedProperties() { return ["branchId", "noteId", "parentNoteId", "isDeleted", "deleteId", "prefix"]; }
 
     /** @returns {Note|null} */
     async getNote() {
@@ -92,9 +86,17 @@ class Branch extends Entity {
         }
     }
 
-    // cannot be static!
-    updatePojo(pojo) {
-        delete pojo.origParentNoteId;
+    createClone(parentNoteId, notePosition) {
+        return new Branch({
+            noteId: this.noteId,
+            parentNoteId: parentNoteId,
+            notePosition: notePosition,
+            prefix: this.prefix,
+            isExpanded: this.isExpanded,
+            isDeleted: false,
+            utcDateCreated: this.utcDateCreated,
+            utcDateModified: this.utcDateModified
+        });
     }
 }
 

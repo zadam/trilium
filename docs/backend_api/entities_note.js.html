@@ -52,6 +52,7 @@ const RELATION_DEFINITION = 'relation-definition';
  * @property {int} contentLength - length of content
  * @property {boolean} isProtected - true if note is protected
  * @property {boolean} isDeleted - true if note is deleted
+ * @property {string|null} deleteId - ID identifying delete transaction
  * @property {boolean} isErased - true if note's content is erased after it has been deleted
  * @property {string} dateCreated - local date time (with offset)
  * @property {string} dateModified - local date time (with offset)
@@ -63,7 +64,7 @@ const RELATION_DEFINITION = 'relation-definition';
 class Note extends Entity {
     static get entityName() { return "notes"; }
     static get primaryKeyName() { return "noteId"; }
-    static get hashedProperties() { return ["noteId", "title", "type", "isProtected", "isDeleted"]; }
+    static get hashedProperties() { return ["noteId", "title", "type", "isProtected", "isDeleted", "deleteId"]; }
 
     /**
      * @param row - object containing database row from "notes" table
@@ -137,6 +138,10 @@ class Note extends Entity {
     async getJsonContent() {
         const content = await this.getContent();
 
+        if (!content || !content.trim()) {
+            return null;
+        }
+
         return JSON.parse(content);
     }
 
@@ -146,9 +151,11 @@ class Note extends Entity {
             throw new Error(`Cannot set null content to note ${this.noteId}`);
         }
 
+        content = Buffer.isBuffer(content) ? content : Buffer.from(content);
+
         // force updating note itself so that dateModified is represented correctly even for the content
         this.forcedChange = true;
-        this.contentLength = content.length;
+        this.contentLength = content.byteLength;
         await this.save();
 
         this.content = content;
@@ -157,7 +164,7 @@ class Note extends Entity {
             noteId: this.noteId,
             content: content,
             utcDateModified: dateUtils.utcNowDateTime(),
-            hash: utils.hash(this.noteId + "|" + content)
+            hash: utils.hash(this.noteId + "|" + content.toString())
         };
 
         if (this.isProtected) {
@@ -833,7 +840,7 @@ class Note extends Entity {
             WHERE noteId = ? AND 
                   isDeleted = 0 AND 
                   type = 'relation' AND 
-                  name IN ('internalLink', 'imageLink', 'relationMapLink')`, [this.noteId]);
+                  name IN ('internalLink', 'imageLink', 'relationMapLink', 'includeNoteLink')`, [this.noteId]);
     }
 
     /**

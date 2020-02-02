@@ -143,7 +143,7 @@ export default class NoteDetailWidget extends TabAwareWidget {
         typeWidget.eventReceived('setTabContext', {tabContext: this.tabContext});
     }
 
-    async getWidgetType(disableAutoBook) {
+    async getWidgetType() {
         const note = this.tabContext.note;
 
         if (!note) {
@@ -152,7 +152,7 @@ export default class NoteDetailWidget extends TabAwareWidget {
 
         let type = note.type;
 
-        if (type === 'text' && !disableAutoBook
+        if (type === 'text' && !this.tabContext.autoBookDisabled
             && note.hasChildren()
             && utils.isDesktop()) {
 
@@ -223,5 +223,9 @@ export default class NoteDetailWidget extends TabAwareWidget {
 
     beforeUnloadListener() {
         this.spacedUpdate.updateNowIfNecessary();
+    }
+
+    autoBookDisabledListener() {
+        this.refresh();
     }
 }

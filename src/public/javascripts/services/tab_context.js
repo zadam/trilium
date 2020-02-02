@@ -47,6 +47,8 @@ class TabContext extends Component {
         this.notePath = notePath;
         this.noteId = treeService.getNoteIdFromNotePath(notePath);
 
+        this.autoBookDisabled = false;
+
         //this.cleanup(); // esp. on windows autocomplete is not getting closed automatically
 
         setTimeout(async () => {

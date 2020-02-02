@@ -19,8 +19,16 @@ export default class Component {
 
         let propagateToChildren = true;
 
+        const start = Date.now();
+
         if (typeof fun === 'function') {
             propagateToChildren = await fun.call(this, data) !== false;
+        }
+
+        const end = Date.now();
+
+        if (end - start > 10) {
+            console.log(`Event ${name} in component ${this.componentId} took ${end-start}ms`);
         }
 
         if (propagateToChildren) {

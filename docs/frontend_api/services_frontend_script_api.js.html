@@ -32,13 +32,13 @@ import utils from './utils.js';
 import toastService from './toast.js';
 import linkService from './link.js';
 import treeCache from './tree_cache.js';
-import noteDetailService from './note_detail.js';
 import noteTooltipService from './note_tooltip.js';
 import protectedSessionService from './protected_session.js';
 import dateNotesService from './date_notes.js';
 import StandardWidget from '../widgets/standard_widget.js';
 import ws from "./ws.js";
 import hoistedNoteService from "./hoisted_note.js";
+import appContext from "./app_context.js";
 
 /**
  * This is the main frontend API interface for scripts. It's published in the local "api" object.
@@ -77,7 +77,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
      */
     this.activateNote = async (notePath, noteLoadedListener) => {
         await treeService.activateNote(notePath, async () => {
-            await treeService.scrollToActiveNote();
+            await appContext.getMainNoteTree().scrollToActiveNoteListener();
 
             if (noteLoadedListener) {
                 noteLoadedListener();
@@ -94,7 +94,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
     this.activateNewNote = async notePath => {
         await ws.waitForMaxKnownSyncId();
 
-        await treeService.activateNote(notePath, noteDetailService.focusAndSelectTitle);
+        await treeService.activateNote(notePath, () => appContext.trigger('focusAndSelectTitle'));
     };
 
     /**
@@ -172,9 +172,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
             currentNoteId: currentNote.noteId,
             originEntityName: "notes", // currently there's no other entity on frontend which can trigger event
             originEntityId: originEntity ? originEntity.noteId : null
-        }, {
-            'trilium-source-id': "script"
-        });
+        }, "script");
 
         if (ret.success) {
             // wait until all the changes done in the script has been synced to frontend before continuing
@@ -300,22 +298,6 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
     this.refreshTree = treeService.reload;
 
     /**
-     * Refresh active tab
-     *
-     * @method
-     * @returns {Promise&lt;void>}
-     */
-    this.refreshActiveTab = noteDetailService.reload;
-
-    /**
-     * Refresh current tab
-     *
-     * @method
-     * @returns {Promise&lt;void>}
-     */
-    this.refreshAllTabs = noteDetailService.reloadAllTabs;
-
-    /**
      * Create note link (jQuery object) for given note.
      *
      * @method
@@ -327,30 +309,30 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
     /**
      * Adds given text to the editor cursor
      *
-     * @param {string} text
+     * @param {string} text - this must be clear text, HTML is not supported.
      * @method
      */
-    this.addTextToActiveTabEditor = linkService.addTextToEditor;
+    this.addTextToActiveTabEditor = text => appContext.trigger('addTextToActiveEditor', {text});
 
     /**
      * @method
-     * @returns {NoteFull} active note (loaded into right pane)
+     * @returns {NoteShort} active note (loaded into right pane)
      */
-    this.getActiveTabNote = noteDetailService.getActiveTabNote;
+    this.getActiveTabNote = appContext.getActiveTabNote;
 
     /**
      * See https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editor-Editor.html for a documentation on the returned instance.
      *
      * @method
-     * @returns {Editor|null} CKEditor instance or null (e.g. if active note is not a text note)
+     * @param callback - method receiving "textEditor" instance
      */
-    this.getActiveTabTextEditor = noteDetailService.getActiveEditor;
+    this.getActiveTabTextEditor = callback => appContext.trigger('executeInActiveEditor', {callback});
 
     /**
      * @method
      * @returns {Promise&lt;string|null>} returns note path of active note or null if there isn't active note
      */
-    this.getActiveTabNotePath = noteDetailService.getActiveTabNotePath;
+    this.getActiveTabNotePath = appContext.getActiveTabNotePath;
 
     /**
      * This method checks whether user navigated away from the note from which the scripts has been started.
@@ -364,12 +346,6 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
     this.isNoteStillActive = () => {
         return tabContext.note &amp;&amp; this.originEntity.noteId === tabContext.note.noteId;
     };
-
-    /**
-     * @method
-     * @param {function} func - callback called on note change as user is typing (not necessarily tied to save event)
-     */
-    this.onNoteChange = noteDetailService.onNoteChange;
 
     /**
      * @method
@@ -455,7 +431,7 @@ export default FrontendScriptApi;</code></pre>
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Branch.html">Branch</a></li><li><a href="FrontendScriptApi.html">FrontendScriptApi</a></li><li><a href="NoteFull.html">NoteFull</a></li><li><a href="NoteShort.html">NoteShort</a></li></ul><h3><a href="global.html">Global</a></h3>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Branch.html">Branch</a></li><li><a href="FrontendScriptApi.html">FrontendScriptApi</a></li><li><a href="NoteComplement.html">NoteComplement</a></li><li><a href="NoteShort.html">NoteShort</a></li></ul><h3><a href="global.html">Global</a></h3>
 </nav>
 
 <br class="clear">
