@@ -3,7 +3,7 @@ import linkService from "../services/link.js";
 import ws from "../services/ws.js";
 import CollapsibleWidget from "./collapsible_widget.js";
 
-class AttributesWidget extends CollapsibleWidget {
+export default class AttributesWidget extends CollapsibleWidget {
     getWidgetTitle() { return "Attributes"; }
 
     getHelp() {
@@ -94,5 +94,3 @@ class AttributesWidget extends CollapsibleWidget {
         }
     }
 }
-
-export default AttributesWidget;

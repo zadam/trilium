@@ -26,12 +26,15 @@ class NoteRevisionsWidget extends CollapsibleWidget {
         return [$showFullButton];
     }
 
-    async refreshWithNote() {
-        const note = this.tabContext.note;
+    async refreshWithNote(note) {
         const revisionItems = await server.get(`notes/${note.noteId}/revisions`);
 
         if (revisionItems.length === 0) {
             this.$body.text("No revisions yet...");
+            return;
+        }
+
+        if (note.noteId !== this.noteId) {
             return;
         }
 
@@ -57,12 +60,6 @@ class NoteRevisionsWidget extends CollapsibleWidget {
 
     entitiesReloadedListener({loadResults}) {
         if (loadResults.hasNoteRevisionForNote(this.noteId)) {
-            this.refresh();
-        }
-    }
-
-    syncDataListener({data}) {
-        if (data.find(sd => sd.entityName === 'note_revisions' && sd.noteId === this.tabContext.note.noteId)) {
             this.refresh();
         }
     }

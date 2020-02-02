@@ -8,7 +8,7 @@ const TPL = `
 </div>
 `;
 
-class LinkMapWidget extends CollapsibleWidget {
+export default class LinkMapWidget extends CollapsibleWidget {
     getWidgetTitle() { return "Link map"; }
 
     getHelp() {
@@ -61,5 +61,3 @@ class LinkMapWidget extends CollapsibleWidget {
         }
     }
 }
-
-export default LinkMapWidget;

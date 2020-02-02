@@ -35,7 +35,7 @@ const TPL = `
 </table>
 `;
 
-class NoteInfoWidget extends CollapsibleWidget {
+export default class NoteInfoWidget extends CollapsibleWidget {
     getWidgetTitle() { return "Note info"; }
 
     doRenderBody() {
@@ -67,11 +67,9 @@ class NoteInfoWidget extends CollapsibleWidget {
             .attr("title", note.mime);
     }
 
-    syncDataListener({data}) {
-        if (data.find(sd => sd.entityName === 'notes' && this.isNote(sd.entityId))) {
+    entitiesReloadedListener({loadResults}) {
+        if (loadResults.isNoteReloaded(this.noteId)) {
             this.refresh();
         }
     }
 }
-
-export default NoteInfoWidget;

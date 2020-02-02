@@ -3,7 +3,7 @@ import linkService from "../services/link.js";
 import server from "../services/server.js";
 import treeCache from "../services/tree_cache.js";
 
-class SimilarNotesWidget extends CollapsibleWidget {
+export default class SimilarNotesWidget extends CollapsibleWidget {
     getWidgetTitle() { return "Similar notes"; }
 
     getHelp() {
@@ -14,9 +14,9 @@ class SimilarNotesWidget extends CollapsibleWidget {
 
     getMaxHeight() { return "200px"; }
 
-    async refreshWithNote() {
+    async refreshWithNote(note) {
         // remember which title was when we found the similar notes
-        this.title = this.tabContext.note.title;
+        this.title = note.title;
 
         const similarNotes = await server.get('similar-notes/' + this.tabContext.note.noteId);
 
@@ -47,13 +47,11 @@ class SimilarNotesWidget extends CollapsibleWidget {
         this.$body.empty().append($list);
     }
 
-    noteSavedListener({data}) {
-        if (this.title !== this.tabContext.note.title) {
+    entitiesReloadedListener({loadResults}) {
+        if (this.note && this.title !== this.note.title) {
             this.rendered = false;
 
-            this.renderBody();
+            this.refresh();
         }
     }
 }
-
-export default SimilarNotesWidget;

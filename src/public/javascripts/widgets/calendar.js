@@ -24,7 +24,7 @@ const TPL = `
 </div>
 `;
 
-class CalendarWidget extends CollapsibleWidget {
+export default class CalendarWidget extends CollapsibleWidget {
     getWidgetTitle() { return "Calendar"; }
 
     async isEnabled() {
@@ -162,5 +162,3 @@ class CalendarWidget extends CollapsibleWidget {
         ][monthIndex];
     }
 }
-
-export default CalendarWidget;

@@ -225,18 +225,33 @@ export default class BookTypeWidget extends TypeWidget {
         }
 
         for (const childNote of childNotes) {
+            if (note.noteId !== this.noteId) {
+                // rendering can take a long time and the note might be switched during the rendering
+                return;
+            }
+
             const childNotePath = this.tabContext.notePath + '/' + childNote.noteId;
 
-            const {type, renderedContent} = await noteContentRenderer.getRenderedContent(childNote);
+            const $content = $('<div class="note-book-content">')
+                .css("max-height", ZOOMS[this.zoomLevel].height);
 
             const $card = $('<div class="note-book-card">')
                 .attr('data-note-id', childNote.noteId)
                 .css("flex-basis", ZOOMS[this.zoomLevel].width)
-                .addClass("type-" + type)
                 .append($('<h5 class="note-book-title">').append(await linkService.createNoteLink(childNotePath,  {showTooltip: false})))
-                .append($('<div class="note-book-content">')
-                    .css("max-height", ZOOMS[this.zoomLevel].height)
-                    .append(renderedContent));
+                .append($content);
+
+            try {
+                const {type, renderedContent} = await noteContentRenderer.getRenderedContent(childNote);
+
+                $card.addClass("type-" + type);
+                $content.append(renderedContent);
+            }
+            catch (e) {
+                console.log(`Caught error while rendering note ${note.noteId} of type ${note.type}: ${e.message}, stack: ${e.stack}`);
+
+                $content.append("rendering error");
+            }
 
             const childCount = childNote.getChildNoteIds().length;
 
