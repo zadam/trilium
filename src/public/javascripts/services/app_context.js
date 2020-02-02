@@ -30,6 +30,9 @@ import bundleService from "./bundle.js";
 import DialogEventComponent from "./dialog_events.js";
 import Entrypoints from "./entrypoints.js";
 import CalendarWidget from "../widgets/calendar.js";
+import optionsService from "./options.js";
+import utils from "./utils.js";
+import treeService from "./tree.js";
 
 class AppContext {
     constructor() {
@@ -45,7 +48,82 @@ class AppContext {
     start() {
         this.showWidgets();
 
+        this.loadTabs();
+
         bundleService.executeStartupBundles();
+    }
+
+    async loadTabs() {
+        const options = await optionsService.waitForOptions();
+
+        const openTabs = options.getJson('openTabs') || [];
+
+        await treeCache.initializedPromise;
+
+        // if there's notePath in the URL, make sure it's open and active
+        // (useful, among others, for opening clipped notes from clipper)
+        if (window.location.hash) {
+            const notePath = window.location.hash.substr(1);
+            const noteId = treeService.getNoteIdFromNotePath(notePath);
+
+            if (noteId && await treeCache.noteExists(noteId)) {
+                for (const tab of openTabs) {
+                    tab.active = false;
+                }
+
+                const foundTab = openTabs.find(tab => noteId === treeService.getNoteIdFromNotePath(tab.notePath));
+
+                if (foundTab) {
+                    foundTab.active = true;
+                }
+                else {
+                    openTabs.push({
+                        notePath: notePath,
+                        active: true
+                    });
+                }
+            }
+        }
+
+        let filteredTabs = [];
+
+        for (const openTab of openTabs) {
+            const noteId = treeService.getNoteIdFromNotePath(openTab.notePath);
+
+            if (await treeCache.noteExists(noteId)) {
+                // note doesn't exist so don't try to open tab for it
+                filteredTabs.push(openTab);
+            }
+        }
+
+        if (utils.isMobile()) {
+            // mobile frontend doesn't have tabs so show only the active tab
+            filteredTabs = filteredTabs.filter(tab => tab.active);
+        }
+
+        if (filteredTabs.length === 0) {
+            filteredTabs.push({
+                notePath: 'root',
+                active: true
+            });
+        }
+
+        if (!filteredTabs.find(tab => tab.active)) {
+            filteredTabs[0].active = true;
+        }
+
+        for (const tab of filteredTabs) {
+            const tabContext = this.openEmptyTab();
+            tabContext.setNote(tab.notePath);
+
+            if (tab.active) {
+                this.activateTab(tabContext.tabId);
+            }
+        }
+
+        // previous opening triggered task to save tab changes but these are bogus changes (this is init)
+        // so we'll cancel it
+        this.clearOpenTabsTask();
     }
 
     showWidgets() {

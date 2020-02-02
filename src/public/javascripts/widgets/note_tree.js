@@ -110,7 +110,6 @@ export default class NoteTreeWidget extends TabAwareWidget {
             },
             expand: (event, data) => this.setExpandedToServer(data.node.data.branchId, true),
             collapse: (event, data) => this.setExpandedToServer(data.node.data.branchId, false),
-            init: (event, data) => treeService.treeInitialized(),
             hotkeys: {
                 keydown: await treeKeyBindingService.getKeyboardBindings(this)
             },
@@ -386,7 +385,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
     }
 
     /** @return {FancytreeNode[]} */
-    async getNodesByBranchId(branchId) {
+    getNodesByBranchId(branchId) {
         utils.assertArguments(branchId);
 
         const branch = treeCache.getBranch(branchId);
@@ -464,7 +463,9 @@ export default class NoteTreeWidget extends TabAwareWidget {
                             newActive = node.getParent();
                         }
 
-                        await newActive.setActive(true, {noEvents: true});
+                        const notePath = await treeService.getNotePath(newActive);
+
+                        appContext.getActiveTabContext().setNote(notePath);
                     }
 
                     node.remove();
@@ -489,8 +490,9 @@ export default class NoteTreeWidget extends TabAwareWidget {
             }
         }
 
-        const activeNode = this.getActiveNode();
-        const activateNotePath = activeNode ? await treeService.getNotePath(activeNode) : null;
+        for (const noteId of loadResults.getNoteIds()) {
+            noteIdsToUpdate.push(noteId);
+        }
 
         for (const noteId of noteIdsToReload) {
             for (const node of this.getNodesByNoteId(noteId)) {
@@ -500,7 +502,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
             }
         }
 
-        for (const noteId of noteIdsToReload) {
+        for (const noteId of noteIdsToUpdate) {
             for (const node of this.getNodesByNoteId(noteId)) {
                 await this.updateNode(node);
             }
@@ -522,6 +524,8 @@ export default class NoteTreeWidget extends TabAwareWidget {
                 }
             }
         }
+
+        const activateNotePath = appContext.getActiveTabNotePath();
 
         if (activateNotePath) {
             const node = await this.getNodeFromPath(activateNotePath);

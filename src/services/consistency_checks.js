@@ -638,10 +638,6 @@ class ConsistencyChecks {
             elapsedTimeMs = Date.now() - startTime.getTime();
         });
 
-        if (this.fixedIssues) {
-            ws.refreshTree();
-        }
-
         if (this.unrecoveredConsistencyErrors) {
             log.info(`Consistency checks failed (took ${elapsedTimeMs}ms)`);
 

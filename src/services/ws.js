@@ -125,10 +125,6 @@ function sendPingToAllClients() {
     }
 }
 
-function refreshTree() {
-    sendMessageToAllClients({ type: 'refresh-tree' });
-}
-
 function syncPullInProgress() {
     sendMessageToAllClients({ type: 'sync-pull-in-progress' });
 }
@@ -140,7 +136,6 @@ function syncPullFinished() {
 module.exports = {
     init,
     sendMessageToAllClients,
-    refreshTree,
     syncPullInProgress,
     syncPullFinished,
     sendPingToAllClients

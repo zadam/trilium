@@ -133,82 +133,6 @@ async function getSomeNotePath(note) {
     return path.reverse().join('/');
 }
 
-async function treeInitialized() {
-    if (appContext.getTabContexts().length > 0) {
-        // this is just tree reload - tabs are already in place
-        return;
-    }
-
-    const options = await optionsService.waitForOptions();
-
-    const openTabs = options.getJson('openTabs') || [];
-
-    // if there's notePath in the URL, make sure it's open and active
-    // (useful, among others, for opening clipped notes from clipper)
-    if (location.hash) {
-        const notePath = location.hash.substr(1);
-        const noteId = getNoteIdFromNotePath(notePath);
-
-        if (noteId && await treeCache.noteExists(noteId)) {
-            for (const tab of openTabs) {
-                tab.active = false;
-            }
-
-            const foundTab = openTabs.find(tab => noteId === getNoteIdFromNotePath(tab.notePath));
-
-            if (foundTab) {
-                foundTab.active = true;
-            }
-            else {
-                openTabs.push({
-                    notePath: notePath,
-                    active: true
-                });
-            }
-        }
-    }
-
-    let filteredTabs = [];
-
-    for (const openTab of openTabs) {
-        const noteId = getNoteIdFromNotePath(openTab.notePath);
-
-        if (await treeCache.noteExists(noteId)) {
-            // note doesn't exist so don't try to open tab for it
-            filteredTabs.push(openTab);
-        }
-    }
-
-    if (utils.isMobile()) {
-        // mobile frontend doesn't have tabs so show only the active tab
-        filteredTabs = filteredTabs.filter(tab => tab.active);
-    }
-
-    if (filteredTabs.length === 0) {
-        filteredTabs.push({
-            notePath: 'root',
-            active: true
-        });
-    }
-
-    if (!filteredTabs.find(tab => tab.active)) {
-        filteredTabs[0].active = true;
-    }
-
-    for (const tab of filteredTabs) {
-        const tabContext = appContext.openEmptyTab();
-        tabContext.setNote(tab.notePath);
-
-        if (tab.active) {
-            appContext.activateTab(tabContext.tabId);
-        }
-    }
-
-    // previous opening triggered task to save tab changes but these are bogus changes (this is init)
-    // so we'll cancel it
-    appContext.clearOpenTabsTask();
-}
-
 function isNotePathInAddress() {
     const [notePath, tabId] = getHashValueFromAddress();
 
@@ -264,72 +188,9 @@ async function createNote(node, parentNoteId, target, extraOptions = {}) {
         window.cutToNote.removeSelection();
     }
 
-    noteDetailService.addDetailLoadedListener(note.noteId, () => appContext.trigger('focusAndSelectTitle'));
-
-    const noteEntity = await treeCache.getNote(note.noteId);
-    const branchEntity = treeCache.getBranch(branch.branchId);
-
-    let newNodeData = {
-        title: newNoteName,
-        noteId: branchEntity.noteId,
-        parentNoteId: parentNoteId,
-        refKey: branchEntity.noteId,
-        branchId: branchEntity.branchId,
-        isProtected: extraOptions.isProtected,
-        type: noteEntity.type,
-        extraClasses: await treeBuilder.getExtraClasses(noteEntity),
-        icon: await treeBuilder.getIcon(noteEntity),
-        folder: extraOptions.type === 'search',
-        lazy: true,
-        key: utils.randomString(12) // this should prevent some "duplicate key" errors
-    };
-
-    /** @var {FancytreeNode} */
-    let newNode;
-
-    if (target === 'after') {
-        newNode = node.appendSibling(newNodeData);
-    }
-    else if (target === 'into') {
-        if (!node.getChildren() && node.isFolder()) {
-            // folder is not loaded - load will bring up the note since it was already put into cache
-            await node.load(true);
-
-            await node.setExpanded();
-        }
-        else {
-            node.addChildren(newNodeData);
-        }
-
-        newNode = node.getLastChild();
-
-        const parentNoteEntity = await treeCache.getNote(node.data.noteId);
-
-        node.folder = true;
-        node.icon = await treeBuilder.getIcon(parentNoteEntity); // icon might change into folder
-        node.renderTitle();
-    }
-    else {
-        toastService.throwError("Unrecognized target: " + target);
-    }
-
     if (extraOptions.activate) {
-        await newNode.setActive(true);
-    }
-
-    // need to refresh because original doesn't have methods like .getParent()
-    newNodeData = appContext.getMainNoteTree().getNodesByNoteId(branchEntity.noteId)[0];
-
-    // following for cycle will make sure that also clones of a parent are refreshed
-    for (const newParentNode of appContext.getMainNoteTree().getNodesByNoteId(parentNoteId)) {
-        if (newParentNode.key === newNodeData.getParent().key) {
-            // we've added a note into this one so no need to refresh
-            continue;
-        }
-
-        await newParentNode.load(true); // force reload to show up new note
-
-        await appContext.getMainNoteTree().updateNode(newParentNode);
+        const activeTabContext = appContext.getActiveTabContext();
+        activeTabContext.setNote(note.noteId);
     }
 
     return {note, branch};
@@ -353,15 +214,10 @@ function parseSelectedHtml(selectedHtml) {
 
 async function sortAlphabetically(noteId) {
     await server.put('notes/' + noteId + '/sort');
-
-    await reload();
 }
 
 ws.subscribeToMessages(message => {
-   if (message.type === 'refresh-tree') {
-       reload();
-   }
-   else if (message.type === 'open-note') {
+   if (message.type === 'open-note') {
        appContext.activateOrOpenNote(message.noteId);
 
        if (utils.isElectron()) {
@@ -507,7 +363,6 @@ async function getNotePathTitle(notePath) {
 export default {
     createNote,
     sortAlphabetically,
-    treeInitialized,
     resolveNotePath,
     getSomeNotePath,
     createNewTopLevelNote,
