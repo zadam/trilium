@@ -248,6 +248,10 @@ function copySelectionToClipboard() {
     }
 }
 
+function isCKEditorInitialized() {
+    return !!(window && window.cutToNote);
+}
+
 export default {
     reloadApp,
     parseDate,
@@ -281,5 +285,6 @@ export default {
     clearBrowserCache,
     getUrlForDownload,
     normalizeShortcut,
-    copySelectionToClipboard
+    copySelectionToClipboard,
+    isCKEditorInitialized
 };
