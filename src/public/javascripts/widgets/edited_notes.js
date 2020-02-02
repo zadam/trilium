@@ -1,9 +1,9 @@
-import CollapsibleWidget from "./standard_widget.js";
+import CollapsibleWidget from "./collapsible_widget.js";
 import linkService from "../services/link.js";
 import server from "../services/server.js";
 import treeCache from "../services/tree_cache.js";
 
-class EditedNotesWidget extends CollapsibleWidget {
+export default class EditedNotesWidget extends CollapsibleWidget {
     getWidgetTitle() { return "Edited notes on this day"; }
 
     getHelp() {
@@ -19,8 +19,7 @@ class EditedNotesWidget extends CollapsibleWidget {
             && await this.tabContext.note.hasLabel("dateNote");
     }
 
-    async refreshWithNote() {
-        const note = this.tabContext.note;
+    async refreshWithNote(note) {
         // remember which title was when we found the similar notes
         this.title = note.title;
         let editedNotes = await server.get('edited-notes/' + await note.getLabelValue("dateNote"));
@@ -54,5 +53,3 @@ class EditedNotesWidget extends CollapsibleWidget {
         this.$body.empty().append($list);
     }
 }
-
-export default EditedNotesWidget;

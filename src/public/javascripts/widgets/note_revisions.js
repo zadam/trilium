@@ -1,5 +1,5 @@
 import server from "../services/server.js";
-import CollapsibleWidget from "./standard_widget.js";
+import CollapsibleWidget from "./collapsible_widget.js";
 
 const TPL = `
 <ul class="note-revision-list" style="max-height: 150px; overflow: auto;">

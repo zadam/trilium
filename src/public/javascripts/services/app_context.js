@@ -29,6 +29,7 @@ import protectedSessionHolder from "./protected_session_holder.js";
 import bundleService from "./bundle.js";
 import DialogEventComponent from "./dialog_events.js";
 import Entrypoints from "./entrypoints.js";
+import CalendarWidget from "../widgets/calendar.js";
 
 class AppContext {
     constructor() {
@@ -98,6 +99,7 @@ class AppContext {
 
         const rightPaneWidgets = [
             new NoteInfoWidget(this),
+            new TabCachingWidget(this, () => new CalendarWidget(this)),
             new TabCachingWidget(this, () => new AttributesWidget(this)),
             new TabCachingWidget(this, () => new LinkMapWidget(this)),
             new TabCachingWidget(this, () => new NoteRevisionsWidget(this)),

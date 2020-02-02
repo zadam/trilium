@@ -7,7 +7,7 @@ import treeCache from './tree_cache.js';
 import noteTooltipService from './note_tooltip.js';
 import protectedSessionService from './protected_session.js';
 import dateNotesService from './date_notes.js';
-import CollapsibleWidget from '../widgets/standard_widget.js';
+import CollapsibleWidget from '../widgets/collapsible_widget.js';
 import ws from "./ws.js";
 import hoistedNoteService from "./hoisted_note.js";
 import appContext from "./app_context.js";

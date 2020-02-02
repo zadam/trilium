@@ -1,4 +1,3 @@
-import utils from "../services/utils.js";
 import TabAwareWidget from "./tab_aware_widget.js";
 
 const WIDGET_TPL = `
@@ -21,7 +20,7 @@ const WIDGET_TPL = `
 </div>
 `;
 
-class CollapsibleWidget extends TabAwareWidget {
+export default class CollapsibleWidget extends TabAwareWidget {
     getWidgetTitle() { return "Untitled widget"; }
 
     getHeaderActions() { return []; }
@@ -30,7 +29,7 @@ class CollapsibleWidget extends TabAwareWidget {
 
     getMaxHeight() { return null; }
 
-    render() {
+    doRender() {
         this.$widget = $(WIDGET_TPL);
         this.$widget.find('[data-target]').attr('data-target', "#" + this.componentId);
 
@@ -69,13 +68,9 @@ class CollapsibleWidget extends TabAwareWidget {
         this.$headerActions = this.$widget.find('.widget-header-actions');
         this.$headerActions.append(...this.getHeaderActions());
 
-        this.initialized = this.renderBody();
+        this.initialized = this.doRenderBody();
 
         return this.$widget;
-    }
-
-    async renderBody() {
-        await this.doRenderBody();
     }
 
     /** for overriding */
@@ -84,8 +79,4 @@ class CollapsibleWidget extends TabAwareWidget {
     isExpanded() {
         return this.$bodyWrapper.hasClass("show");
     }
-
-    cleanup() {}
 }
-
-export default CollapsibleWidget;

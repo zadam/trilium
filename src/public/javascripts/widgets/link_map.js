@@ -1,4 +1,4 @@
-import CollapsibleWidget from "./standard_widget.js";
+import CollapsibleWidget from "./collapsible_widget.js";
 
 let linkMapContainerIdCtr = 1;
 
@@ -28,7 +28,7 @@ class LinkMapWidget extends CollapsibleWidget {
         return [$showFullButton];
     }
 
-    async refreshWithNote() {
+    async refreshWithNote(note) {
         this.$body.css('opacity', 0);
         this.$body.html(TPL);
 
@@ -38,9 +38,10 @@ class LinkMapWidget extends CollapsibleWidget {
 
         const LinkMapServiceClass = (await import('../services/link_map.js')).default;
 
-        this.linkMapService = new LinkMapServiceClass(this.tabContext.note, $linkMapContainer, {
+        this.linkMapService = new LinkMapServiceClass(note, $linkMapContainer, {
             maxDepth: 1,
-            zoom: 0.6
+            zoom: 0.6,
+            stopCheckerCallback: () => this.noteId !== note.noteId // stop when current note is not what was originally requested
         });
 
         await this.linkMapService.render();

@@ -461,7 +461,7 @@ async function duplicateNote(noteId, parentNoteId) {
 
     await ws.waitForMaxKnownSyncId();
 
-    await activateNote(note.noteId);
+    await appContext.activateOrOpenNote(note.noteId);
 
     const origNote = await treeCache.getNote(noteId);
     toastService.showMessage(`Note "${origNote.title}" has been duplicated`);

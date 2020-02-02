@@ -1,4 +1,4 @@
-import CollapsibleWidget from "./standard_widget.js";
+import CollapsibleWidget from "./collapsible_widget.js";
 
 const TPL = `
 <table class="note-info-widget-table">

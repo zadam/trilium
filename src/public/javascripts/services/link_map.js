@@ -19,7 +19,8 @@ export default class LinkMap {
         this.options = Object.assign({
             maxDepth: 10,
             maxNotes: 30,
-            zoom: 1.0
+            zoom: 1.0,
+            stopCheckerCallback: () => false
         }, options);
 
         this.$linkMapContainer = $linkMapContainer;
@@ -30,6 +31,10 @@ export default class LinkMap {
         await libraryLoader.requireLibrary(libraryLoader.LINK_MAP);
 
         jsPlumb.ready(() => {
+            if (this.options.stopCheckerCallback()) {
+                return;
+            }
+
             this.initJsPlumbInstance();
 
             this.initPanZoom();
@@ -42,6 +47,10 @@ export default class LinkMap {
         this.options = Object.assign(this.options, options);
 
         this.cleanup();
+
+        if (this.options.stopCheckerCallback()) {
+            return;
+        }
 
         const links = await server.post(`notes/${this.note.noteId}/link-map`, {
             maxNotes: this.options.maxNotes,
@@ -63,6 +72,7 @@ export default class LinkMap {
 
         const layout = new Springy.Layout.ForceDirected(
             graph,
+            this.options.stopCheckerCallback,
             // param explanation here: https://github.com/dhotson/springy/issues/58
             400.0, // Spring stiffness
             600.0, // Node repulsion
@@ -121,6 +131,10 @@ export default class LinkMap {
 
             return $noteBox;
         };
+
+        if (this.options.stopCheckerCallback()) {
+            return;
+        }
 
         this.renderer = new Springy.Renderer(layout);
         await this.renderer.start(500);

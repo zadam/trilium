@@ -1,4 +1,4 @@
-import CollapsibleWidget from "./standard_widget.js";
+import CollapsibleWidget from "./collapsible_widget.js";
 import linkService from "../services/link.js";
 
 class WhatLinksHereWidget extends CollapsibleWidget {

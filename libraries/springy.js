@@ -24,26 +24,10 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-(function (root, factory) {
-    if (typeof define === 'function' && define.amd) {
-        // AMD. Register as an anonymous module.
-        define(function () {
-            return (root.returnExportsGlobal = factory());
-        });
-    } else if (typeof exports === 'object') {
-        // Node. Does not work with strict CommonJS, but
-        // only CommonJS-like enviroments that support module.exports,
-        // like Node.
-        module.exports = factory();
-    } else {
-        // Browser globals
-        root.Springy = factory();
-    }
-}(this, function() {
+window.Springy = function() {
+	const Springy = {};
 
-	var Springy = {};
-
-	var Graph = Springy.Graph = function() {
+	const Graph = Springy.Graph = function () {
 		this.nodeSet = {};
 		this.nodes = [];
 		this.edges = [];
@@ -54,25 +38,25 @@
 		this.eventListeners = [];
 	};
 
-	var Node = Springy.Node = function(id, data) {
+	const Node = Springy.Node = function (id, data) {
 		this.id = id;
 		this.data = (data !== undefined) ? data : {};
 
-	// Data fields used by layout algorithm in this file:
-	// this.data.mass
-	// Data used by default renderer in springyui.js
-	// this.data.label
+		// Data fields used by layout algorithm in this file:
+		// this.data.mass
+		// Data used by default renderer in springyui.js
+		// this.data.label
 	};
 
-	var Edge = Springy.Edge = function(id, source, target, data) {
+	const Edge = Springy.Edge = function (id, source, target, data) {
 		this.id = id;
 		this.source = source;
 		this.target = target;
 		this.data = (data !== undefined) ? data : {};
 
-	// Edge data field used by layout alorithm
-	// this.data.length
-	// this.data.type
+		// Edge data field used by layout alorithm
+		// this.data.length
+		// this.data.type
 	};
 
 	Graph.prototype.addNode = function(node) {
@@ -89,15 +73,15 @@
 	Graph.prototype.addNodes = function() {
 		// accepts variable number of arguments, where each argument
 		// is a string that becomes both node identifier and label
-		for (var i = 0; i < arguments.length; i++) {
-			var name = arguments[i];
-			var node = new Node(name, {label:name});
+		for (let i = 0; i < arguments.length; i++) {
+			const name = arguments[i];
+			const node = new Node(name, {label: name});
 			this.addNode(node);
 		}
 	};
 
 	Graph.prototype.addEdge = function(edge) {
-		var exists = false;
+		let exists = false;
 		this.edges.forEach(function(e) {
 			if (edge.id === e.id) { exists = true; }
 		});
@@ -129,30 +113,30 @@
 	Graph.prototype.addEdges = function() {
 		// accepts variable number of arguments, where each argument
 		// is a triple [nodeid1, nodeid2, attributes]
-		for (var i = 0; i < arguments.length; i++) {
-			var e = arguments[i];
-			var node1 = this.nodeSet[e[0]];
+		for (let i = 0; i < arguments.length; i++) {
+			const e = arguments[i];
+			const node1 = this.nodeSet[e[0]];
 			if (node1 == undefined) {
 				throw new TypeError("invalid node name: " + e[0]);
 			}
-			var node2 = this.nodeSet[e[1]];
+			const node2 = this.nodeSet[e[1]];
 			if (node2 == undefined) {
 				throw new TypeError("invalid node name: " + e[1]);
 			}
-			var attr = e[2];
+			const attr = e[2];
 
 			this.newEdge(node1, node2, attr);
 		}
 	};
 
 	Graph.prototype.newNode = function(data) {
-		var node = new Node(this.nextNodeId++, data);
+		const node = new Node(this.nextNodeId++, data);
 		this.addNode(node);
 		return node;
 	};
 
 	Graph.prototype.newEdge = function(source, target, data) {
-		var edge = new Edge(this.nextEdgeId++, source, target, data);
+		const edge = new Edge(this.nextEdgeId++, source, target, data);
 		this.addEdge(edge);
 		return edge;
 	};
@@ -210,7 +194,7 @@
 			delete this.nodeSet[node.id];
 		}
 
-		for (var i = this.nodes.length - 1; i >= 0; i--) {
+		for (let i = this.nodes.length - 1; i >= 0; i--) {
 			if (this.nodes[i].id === node.id) {
 				this.nodes.splice(i, 1);
 			}
@@ -221,7 +205,7 @@
 
 	// removes edges associated with a given node
 	Graph.prototype.detachNode = function(node) {
-		var tmpEdges = this.edges.slice();
+		const tmpEdges = this.edges.slice();
 		tmpEdges.forEach(function(e) {
 			if (e.source.id === node.id || e.target.id === node.id) {
 				this.removeEdge(e);
@@ -233,17 +217,17 @@
 
 	// remove a node and it's associated edges from the graph
 	Graph.prototype.removeEdge = function(edge) {
-		for (var i = this.edges.length - 1; i >= 0; i--) {
+		for (let i = this.edges.length - 1; i >= 0; i--) {
 			if (this.edges[i].id === edge.id) {
 				this.edges.splice(i, 1);
 			}
 		}
 
-		for (var x in this.adjacency) {
-			for (var y in this.adjacency[x]) {
-				var edges = this.adjacency[x][y];
+		for (const x in this.adjacency) {
+			for (const y in this.adjacency[x]) {
+				const edges = this.adjacency[x][y];
 
-				for (var j=edges.length - 1; j>=0; j--) {
+				for (let j = edges.length - 1; j >= 0; j--) {
 					if (this.adjacency[x][y][j].id === edge.id) {
 						this.adjacency[x][y].splice(j, 1);
 					}
@@ -276,28 +260,28 @@
 	}
 	*/
 	Graph.prototype.merge = function(data) {
-		var nodes = [];
+		const nodes = [];
 		data.nodes.forEach(function(n) {
 			nodes.push(this.addNode(new Node(n.id, n.data)));
 		}, this);
 
 		data.edges.forEach(function(e) {
-			var from = nodes[e.from];
-			var to = nodes[e.to];
+			const from = nodes[e.from];
+			const to = nodes[e.to];
 
-			var id = (e.directed)
-				? (id = e.type + "-" + from.id + "-" + to.id)
+			let id = (e.directed)
+				? (e.type + "-" + from.id + "-" + to.id)
 				: (from.id < to.id) // normalise id for non-directed edges
 					? e.type + "-" + from.id + "-" + to.id
 					: e.type + "-" + to.id + "-" + from.id;
 
-			var edge = this.addEdge(new Edge(id, from, to, e.data));
+			const edge = this.addEdge(new Edge(id, from, to, e.data));
 			edge.data.type = e.type;
 		}, this);
 	};
 
 	Graph.prototype.filterNodes = function(fn) {
-		var tmpNodes = this.nodes.slice();
+		const tmpNodes = this.nodes.slice();
 		tmpNodes.forEach(function(n) {
 			if (!fn(n)) {
 				this.removeNode(n);
@@ -306,7 +290,7 @@
 	};
 
 	Graph.prototype.filterEdges = function(fn) {
-		var tmpEdges = this.edges.slice();
+		const tmpEdges = this.edges.slice();
 		tmpEdges.forEach(function(e) {
 			if (!fn(e)) {
 				this.removeEdge(e);
@@ -326,9 +310,10 @@
 	};
 
 	// -----------
-	var Layout = Springy.Layout = {};
-	Layout.ForceDirected = function(graph, stiffness, repulsion, damping, minEnergyThreshold, maxSpeed) {
+	const Layout = Springy.Layout = {};
+	Layout.ForceDirected = function(graph, stopCheckerCallback, stiffness, repulsion, damping, minEnergyThreshold, maxSpeed) {
 		this.graph = graph;
+		this.stopCheckerCallback = stopCheckerCallback || (() => false);
 		this.stiffness = stiffness; // spring stiffness constant
 		this.repulsion = repulsion; // repulsion constant
 		this.damping = damping; // velocity damping factor
@@ -341,7 +326,7 @@
 
 	Layout.ForceDirected.prototype.point = function(node) {
 		if (!(node.id in this.nodePoints)) {
-			var mass = (node.data.mass !== undefined) ? node.data.mass : 1.0;
+			const mass = (node.data.mass !== undefined) ? node.data.mass : 1.0;
 			this.nodePoints[node.id] = new Layout.ForceDirected.Point(Vector.random(), mass);
 		}
 
@@ -350,11 +335,11 @@
 
 	Layout.ForceDirected.prototype.spring = function(edge) {
 		if (!(edge.id in this.edgeSprings)) {
-			var length = (edge.data.length !== undefined) ? edge.data.length : 1.0;
+			const length = (edge.data.length !== undefined) ? edge.data.length : 1.0;
 
-			var existingSpring = false;
+			let existingSpring = false;
 
-			var from = this.graph.getEdges(edge.source, edge.target);
+			const from = this.graph.getEdges(edge.source, edge.target);
 			from.forEach(function(e) {
 				if (existingSpring === false && e.id in this.edgeSprings) {
 					existingSpring = this.edgeSprings[e.id];
@@ -365,8 +350,8 @@
 				return new Layout.ForceDirected.Spring(existingSpring.point1, existingSpring.point2, 0.0, 0.0);
 			}
 
-			var to = this.graph.getEdges(edge.target, edge.source);
-			from.forEach(function(e){
+			const to = this.graph.getEdges(edge.target, edge.source);
+			to.forEach(function(e){
 				if (existingSpring === false && e.id in this.edgeSprings) {
 					existingSpring = this.edgeSprings[e.id];
 				}
@@ -386,7 +371,7 @@
 
 	// callback should accept two arguments: Node, Point
 	Layout.ForceDirected.prototype.eachNode = function(callback) {
-		var t = this;
+		const t = this;
 		this.graph.nodes.forEach(function(n){
 			callback.call(t, n, t.point(n));
 		});
@@ -394,7 +379,7 @@
 
 	// callback should accept two arguments: Edge, Spring
 	Layout.ForceDirected.prototype.eachEdge = function(callback) {
-		var t = this;
+		const t = this;
 		this.graph.edges.forEach(function(e){
 			callback.call(t, e, t.spring(e));
 		});
@@ -402,7 +387,7 @@
 
 	// callback should accept one argument: Spring
 	Layout.ForceDirected.prototype.eachSpring = function(callback) {
-		var t = this;
+		const t = this;
 		this.graph.edges.forEach(function(e){
 			callback.call(t, t.spring(e));
 		});
@@ -413,12 +398,11 @@
 	Layout.ForceDirected.prototype.applyCoulombsLaw = function() {
 		this.eachNode(function(n1, point1) {
 			this.eachNode(function(n2, point2) {
-				if (point1 !== point2)
-				{
-					var d = point1.p.subtract(point2.p);
-					var distance = d.magnitude() + 0.1; // avoid massive forces at small distances (and divide by zero)
+				if (point1 !== point2) {
+					const d = point1.p.subtract(point2.p);
+					const distance = d.magnitude() + 0.1; // avoid massive forces at small distances (and divide by zero)
 
-					var direction = d.normalise();
+					const direction = d.normalise();
 
 					// apply force to each end point
 					point1.applyForce(direction.multiply(this.repulsion).divide(distance * distance * distance * 0.5));
@@ -430,9 +414,9 @@
 
 	Layout.ForceDirected.prototype.applyHookesLaw = function() {
 		this.eachSpring(function(spring){
-			var d = spring.point2.p.subtract(spring.point1.p); // the direction of the spring
-			var displacement = spring.length - d.magnitude();
-			var direction = d.normalise();
+			const d = spring.point2.p.subtract(spring.point1.p); // the direction of the spring
+			const displacement = spring.length - d.magnitude();
+			const direction = d.normalise();
 
 			// apply force to each end point
 			spring.point1.applyForce(direction.multiply(spring.k * displacement * -0.5));
@@ -442,7 +426,7 @@
 
 	Layout.ForceDirected.prototype.attractToCentre = function() {
 		this.eachNode(function(node, point) {
-			var direction = point.p.multiply(-1.0);
+			const direction = point.p.multiply(-1.0);
 			point.applyForce(direction.multiply(this.repulsion / 50.0));
 		});
 	};
@@ -470,9 +454,9 @@
 
 	// Calculate the total kinetic energy of the system
 	Layout.ForceDirected.prototype.totalEnergy = function(timestep) {
-		var energy = 0.0;
+		let energy = 0.0;
 		this.eachNode(function(node, point) {
-			var speed = point.v.magnitude();
+			const speed = point.v.magnitude();
 			energy += 0.5 * point.m * speed * speed;
 		});
 
@@ -484,7 +468,7 @@
 	 * In case it's running then the call is ignored, and none of the callbacks passed is ever executed.
 	 */
 	Layout.ForceDirected.prototype.start = function(onRenderStop) {
-		var t = this;
+		const t = this;
 
 		if (this._started) return;
 		this._started = true;
@@ -492,6 +476,10 @@
 
 		function step() {
 			t.tick(0.03);
+
+			if (t.stopCheckerCallback()) {
+				onRenderStop();
+			}
 
 			// stop simulation when energy of the system goes below a threshold
 			if (t._stop || t.totalEnergy() < t.minEnergyThreshold) {
@@ -519,11 +507,11 @@
 
 	// Find the nearest point to a particular position
 	Layout.ForceDirected.prototype.nearest = function(pos) {
-		var min = {node: null, point: null, distance: null};
-		var t = this;
+		let min = {node: null, point: null, distance: null};
+		const t = this;
 		this.graph.nodes.forEach(function(n){
-			var point = t.point(n);
-			var distance = point.p.subtract(pos).magnitude();
+			const point = t.point(n);
+			const distance = point.p.subtract(pos).magnitude();
 
 			if (min.distance === null || distance < min.distance) {
 				min = {node: n, point: point, distance: distance};
@@ -535,8 +523,8 @@
 
 	// returns [bottomleft, topright]
 	Layout.ForceDirected.prototype.getBoundingBox = function() {
-		var bottomleft = new Vector(-2,-2);
-		var topright = new Vector(2,2);
+		const bottomleft = new Vector(-2, -2);
+		const topright = new Vector(2, 2);
 
 		this.eachNode(function(n, point) {
 			if (point.p.x < bottomleft.x) {
@@ -553,14 +541,14 @@
 			}
 		});
 
-		var padding = topright.subtract(bottomleft).multiply(0.07); // ~5% padding
+		const padding = topright.subtract(bottomleft).multiply(0.07); // ~5% padding
 
 		return {bottomleft: bottomleft.subtract(padding), topright: topright.add(padding)};
 	};
 
 
 	// Vector
-	var Vector = Springy.Vector = function(x, y) {
+	const Vector = Springy.Vector = function(x, y) {
 		this.x = x;
 		this.y = y;
 	};
@@ -629,10 +617,8 @@
 	/**
 	 * Renderer handles the layout rendering loop
 	 */
-	var Renderer = Springy.Renderer = function(layout, onRenderStop) {
+	const Renderer = Springy.Renderer = function (layout) {
 		this.layout = layout;
-		this.onRenderStop = onRenderStop;
-
 		this.layout.graph.addGraphListener(this);
 	};
 
@@ -657,8 +643,8 @@
 		this.layout.stop();
 	};
 
-	var isEmpty = function(obj) {
-		for (var k in obj) {
+	const isEmpty = function(obj) {
+		for (const k in obj) {
 			if (obj.hasOwnProperty(k)) {
 				return false;
 			}
@@ -667,4 +653,4 @@
 	};
 
   return Springy;
-}));
+}();

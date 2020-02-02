@@ -1,4 +1,4 @@
-import CollapsibleWidget from "./standard_widget.js";
+import CollapsibleWidget from "./collapsible_widget.js";
 import libraryLoader from "../services/library_loader.js";
 import utils from "../services/utils.js";
 import dateNoteService from "../services/date_notes.js";
@@ -10,7 +10,7 @@ const TPL = `
   <div class="calendar-header">
     <button class="calendar-btn bx bx-left-arrow-alt" data-calendar-toggle="previous"></button>
 
-    <div class="calendar-header__label" data-calendar-label="month">
+    <div class="calendar-header-label" data-calendar-label="month">
       March 2017
     </div>
 
@@ -29,44 +29,28 @@ class CalendarWidget extends CollapsibleWidget {
 
     async isEnabled() {
         return await super.isEnabled()
-            && await this.tabContext.note.hasLabel("dateNote");
+            && this.tabContext.note.hasOwnedLabel("dateNote");
     }
 
     async doRenderBody() {
         await libraryLoader.requireLibrary(libraryLoader.CALENDAR_WIDGET);
 
         this.$body.html(TPL);
-    }
 
-    async refreshWithNote() {
-        this.init(this.$body, await this.tabContext.note.getLabelValue("dateNote"));
-    }
-
-    init($el, activeDate) {
-        this.activeDate = new Date(activeDate + "T12:00:00"); // attaching time fixes local timezone handling
-        this.todaysDate = new Date();
-        this.date = new Date(this.activeDate.getTime());
-
-        this.$month = $el.find('[data-calendar-area="month"]');
-        this.$next = $el.find('[data-calendar-toggle="next"]');
-        this.$previous = $el.find('[data-calendar-toggle="previous"]');
+        this.$month = this.$body.find('[data-calendar-area="month"]');
+        this.$next = this.$body.find('[data-calendar-toggle="next"]');
+        this.$previous = this.$body.find('[data-calendar-toggle="previous"]');
+        this.$label = this.$body.find('[data-calendar-label="month"]');
 
         this.$next.on('click', () => {
-            this.clearCalendar();
             this.date.setMonth(this.date.getMonth() + 1);
             this.createMonth();
         });
 
         this.$previous.on('click', () => {
-            this.clearCalendar();
             this.date.setMonth(this.date.getMonth() - 1);
             this.createMonth();
         });
-
-        this.$label = $el.find('[data-calendar-label="month"]');
-
-        this.date.setDate(1);
-        this.createMonth();
 
         this.$body.on('click', '.calendar-date', async ev => {
             const date = $(ev.target).closest('.calendar-date').attr('data-calendar-date');
@@ -80,6 +64,19 @@ class CalendarWidget extends CollapsibleWidget {
                 alert("Cannot find day note");
             }
         });
+    }
+
+    async refreshWithNote(note) {
+        this.init(this.$body, note.getOwnedLabelValue("dateNote"));
+    }
+
+    init($el, activeDate) {
+        this.activeDate = new Date(activeDate + "T12:00:00"); // attaching time fixes local timezone handling
+        this.todaysDate = new Date();
+        this.date = new Date(this.activeDate.getTime());
+        this.date.setDate(1);
+
+        this.createMonth();
     }
 
     createDay(dateNotesForMonth, num, day) {
@@ -113,7 +110,7 @@ class CalendarWidget extends CollapsibleWidget {
         }
 
         $newDay.append($date);
-        this.$month.append($newDay);
+        return $newDay;
     }
 
     isEqual(a, b) {
@@ -126,14 +123,19 @@ class CalendarWidget extends CollapsibleWidget {
         const month = utils.formatDateISO(this.date).substr(0, 7);
         const dateNotesForMonth = await server.get('date-notes/notes-for-month/' + month);
 
+        this.$month.empty();
+
         const currentMonth = this.date.getMonth();
         while (this.date.getMonth() === currentMonth) {
-            this.createDay(
+            const $day = this.createDay(
                 dateNotesForMonth,
                 this.date.getDate(),
                 this.date.getDay(),
                 this.date.getFullYear()
             );
+
+            this.$month.append($day);
+
             this.date.setDate(this.date.getDate() + 1);
         }
         // while loop trips over and day is at 30/31, bring it back
@@ -158,10 +160,6 @@ class CalendarWidget extends CollapsibleWidget {
             'November',
             'December'
         ][monthIndex];
-    }
-
-    clearCalendar() {
-        this.$month.html('');
     }
 }
 

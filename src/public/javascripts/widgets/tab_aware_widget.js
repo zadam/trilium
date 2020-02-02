@@ -43,10 +43,22 @@ export default class TabAwareWidget extends BasicWidget {
         this.refresh();
     }
 
-    refresh() {
-        if (this.note) {
+    async isEnabled() {
+        return !!this.note;
+    }
+
+    async refresh() {
+        if (await this.isEnabled()) {
+            const start = Date.now();
+
             this.toggle(true);
-            this.refreshWithNote(this.note, this.notePath);
+            await this.refreshWithNote(this.note, this.notePath);
+
+            const end = Date.now();
+
+            if (end - start > 10) {
+                console.log(`Refresh of ${this.componentId} took ${end-start}ms`);
+            }
         }
         else {
             this.toggle(false);
