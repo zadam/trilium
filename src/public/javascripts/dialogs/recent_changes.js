@@ -3,6 +3,7 @@ import utils from '../services/utils.js';
 import server from '../services/server.js';
 import treeService from "../services/tree.js";
 import treeCache from "../services/tree_cache.js";
+import appContext from "../services/app_context.js";
 
 const $dialog = $("#recent-changes-dialog");
 const $content = $("#recent-changes-content");
@@ -54,7 +55,7 @@ export async function showDialog() {
 
                                 await treeCache.reloadNotes([change.noteId]);
 
-                                treeService.activateNote(change.noteId);
+                                appContext.getActiveTabContext().setNote(change.noteId);
                             }
                         });
 

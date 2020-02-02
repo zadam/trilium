@@ -1,6 +1,7 @@
 import noteAutocompleteService from '../../services/note_autocomplete.js';
 import treeService from "../../services/tree.js";
 import TypeWidget from "./type_widget.js";
+import appContext from "../../services/app_context.js";
 
 const TPL = `
 <div class="note-detail-empty note-detail-printable">
@@ -27,7 +28,7 @@ export default class EmptyTypeWidget extends TypeWidget {
                     return false;
                 }
 
-                treeService.activateNote(suggestion.path);
+                appContext.getActiveTabContext().setNote(suggestion.path);
             });
 
         noteAutocompleteService.showRecentNotes(this.$autoComplete);

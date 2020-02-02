@@ -79,8 +79,6 @@ async function protectNoteAndSendToServer() {
     note.isProtected = true;
 
     await appContext.getActiveTabContext().saveNote();
-
-    treeService.setProtected(note.noteId, note.isProtected);
 }
 
 async function unprotectNoteAndSendToServer() {
@@ -104,8 +102,6 @@ async function unprotectNoteAndSendToServer() {
     activeNote.isProtected = false;
 
     await appContext.getActiveTabContext().saveNote();
-
-    treeService.setProtected(activeNote.noteId, activeNote.isProtected);
 }
 
 async function protectSubtree(noteId, protect) {

@@ -42,8 +42,13 @@ class AppContext {
         this.activeTabId = null;
     }
 
-    showWidgets() {
+    start() {
+        this.showWidgets();
 
+        bundleService.executeStartupBundles();
+    }
+
+    showWidgets() {
         this.tabRow = new TabRowWidget(this);
 
         const topPaneWidgets = [
@@ -247,18 +252,22 @@ class AppContext {
         await tabContext.setNote(noteId);
     }
 
-    async filterTabs(noteId) {
+    hoistedNoteChangedListener({hoistedNoteId}) {
+        if (hoistedNoteId === 'root') {
+            return;
+        }
+
         for (const tc of this.tabContexts) {
-            if (tc.notePath && !tc.notePath.split("/").includes(noteId)) {
+            if (tc.notePath && !tc.notePath.split("/").includes(hoistedNoteId)) {
                 this.tabRow.removeTab(tc.tabId);
             }
         }
 
         if (this.tabContexts.length === 0) {
-            this.openAndActivateEmptyTab()
+            this.openAndActivateEmptyTab();
         }
 
-        await this.saveOpenTabs();
+        this.saveOpenTabs();
     }
 
     async saveOpenTabs() {

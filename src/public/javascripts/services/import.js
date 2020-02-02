@@ -67,9 +67,7 @@ ws.subscribeToMessages(async message => {
         appContext.trigger('reloadNotes', {noteIds: [message.result.parentNoteId]});
 
         if (message.result.importedNoteId) {
-            const node = await treeService.activateNote(message.result.importedNoteId);
-
-            node.setExpanded(true);
+            await appContext.getActiveTabContext.setNote(message.result.importedNoteId);
         }
     }
 });

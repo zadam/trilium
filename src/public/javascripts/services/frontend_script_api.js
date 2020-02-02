@@ -38,7 +38,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
     this.tabContext = tabContext;
 
     /** @property {CollapsibleWidget} */
-    this.StandardWidget = CollapsibleWidget;
+    this.CollapsibleWidget = CollapsibleWidget;
 
     /**
      * Activates note in the tree and in the note detail.
@@ -47,14 +47,8 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
      * @param {string} notePath (or noteId)
      * @returns {Promise<void>}
      */
-    this.activateNote = async (notePath, noteLoadedListener) => {
-        await treeService.activateNote(notePath, async () => {
-            await appContext.getMainNoteTree().scrollToActiveNoteListener();
-
-            if (noteLoadedListener) {
-                noteLoadedListener();
-            }
-        });
+    this.activateNote = async notePath => {
+        await appContext.getActiveTabContext().setNote(notePath);
     };
 
     /**
@@ -66,7 +60,8 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
     this.activateNewNote = async notePath => {
         await ws.waitForMaxKnownSyncId();
 
-        await treeService.activateNote(notePath, () => appContext.trigger('focusAndSelectTitle'));
+        await appContext.getActiveTabContext().setNote(notePath);
+        appContext.trigger('focusAndSelectTitle');
     };
 
     /**

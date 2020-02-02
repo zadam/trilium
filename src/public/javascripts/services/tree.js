@@ -10,73 +10,6 @@ import optionsService from "../services/options.js";
 import bundle from "./bundle.js";
 import appContext from "./app_context.js";
 
-let setFrontendAsLoaded;
-const frontendLoaded = new Promise(resolve => { setFrontendAsLoaded = resolve; });
-
-async function setPrefix(branchId, prefix) {
-    utils.assertArguments(branchId);
-
-    const branch = treeCache.getBranch(branchId);
-
-    branch.prefix = prefix;
-
-    for (const node of await appContext.getMainNoteTree().getNodesByBranchId(branchId)) {
-        await setNodeTitleWithPrefix(node);
-    }
-}
-
-async function setNodeTitleWithPrefix(node) {
-    const noteTitle = await getNoteTitle(node.data.noteId);
-    const branch = treeCache.getBranch(node.data.branchId);
-
-    const prefix = branch.prefix;
-
-    const title = (prefix ? (prefix + " - ") : "") + noteTitle;
-
-    node.setTitle(utils.escapeHtml(title));
-}
-
-// FIXME: unused?
-/** @return {FancytreeNode} */
-async function activateNote(notePath, noteLoadedListener) {
-    utils.assertArguments(notePath);
-
-    // notePath argument can contain only noteId which is not good when hoisted since
-    // then we need to check the whole note path
-    const runNotePath = await getRunPath(notePath);
-
-    if (!runNotePath) {
-        console.log("Cannot activate " + notePath);
-        return;
-    }
-
-    const hoistedNoteId = await hoistedNoteService.getHoistedNoteId();
-
-    if (hoistedNoteId !== 'root' && !runNotePath.includes(hoistedNoteId)) {
-        const confirmDialog = await import('../dialogs/confirm.js');
-
-        if (!await confirmDialog.confirm("Requested note is outside of hoisted note subtree. Do you want to unhoist?")) {
-            return;
-        }
-
-        // unhoist so we can activate the note
-        await hoistedNoteService.unhoist();
-    }
-
-    utils.closeActiveDialog();
-
-    const node = await appContext.getMainNoteTree().expandToNote(notePath);
-
-    if (noteLoadedListener) {
-        // FIXME
-        noteDetailService.addDetailLoadedListener(node.data.noteId, noteLoadedListener);
-    }
-
-    await node.setActive(true);
-
-    return node;
-}
-
 /**
  * Accepts notePath which might or might not be valid and returns an existing path as close to the original
  * notePath as possible.
@@ -274,8 +207,6 @@ async function treeInitialized() {
     // previous opening triggered task to save tab changes but these are bogus changes (this is init)
     // so we'll cancel it
     appContext.clearOpenTabsTask();
-
-    setFrontendAsLoaded();
 }
 
 function isNotePathInAddress() {
@@ -290,13 +221,6 @@ function getHashValueFromAddress() {
     const str = document.location.hash ? document.location.hash.substr(1) : ""; // strip initial #
 
     return str.split("-");
-}
-
-function setProtected(noteId, isProtected) {
-    appContext.getMainNoteTree().getNodesByNoteId(noteId).map(node => {
-        node.data.isProtected = isProtected;
-        node.toggleClass("protected", isProtected);
-    });
 }
 
 async function createNewTopLevelNote() {
@@ -580,12 +504,7 @@ async function getNotePathTitle(notePath) {
     return titlePath.join(' / ');
 }
 
-frontendLoaded.then(bundle.executeStartupBundles);
-
 export default {
-    setProtected,
-    activateNote,
-    setPrefix,
     createNote,
     sortAlphabetically,
     treeInitialized,
@@ -594,7 +513,6 @@ export default {
     createNewTopLevelNote,
     duplicateNote,
     getRunPath,
-    setNodeTitleWithPrefix,
     getParentProtectedStatus,
     getNotePath,
     getNoteIdFromNotePath,

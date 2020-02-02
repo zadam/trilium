@@ -4,6 +4,7 @@ import utils from "../services/utils.js";
 import dateNoteService from "../services/date_notes.js";
 import treeService from "../services/tree.js";
 import server from "../services/server.js";
+import appContext from "../services/app_context.js";
 
 const TPL = `
 <div class="calendar-widget">
@@ -58,7 +59,7 @@ export default class CalendarWidget extends CollapsibleWidget {
             const note = await dateNoteService.getDateNote(date);
 
             if (note) {
-                treeService.activateNote(note.noteId);
+                appContext.getActiveTabContext().setNote(note.noteId);
             }
             else {
                 alert("Cannot find day note");

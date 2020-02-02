@@ -4,6 +4,7 @@ import noteAutocompleteService from '../../services/note_autocomplete.js';
 import mimeTypesService from '../../services/mime_types.js';
 import TypeWidget from "./type_widget.js";
 import utils from "../../services/utils.js";
+import appContext from "../../services/app_context.js";
 
 const ENABLE_INSPECTOR = false;
 
@@ -90,7 +91,7 @@ export default class TextTypeWidget extends TypeWidget {
             if (match) {
                 const noteId = match[1];
 
-                treeService.activateNote(noteId);
+                appContext.getActiveTabContext().setNote(noteId);
             }
             else {
                 window.open(src, '_blank');

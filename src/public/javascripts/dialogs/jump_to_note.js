@@ -1,7 +1,7 @@
-import treeService from '../services/tree.js';
 import searchNotesService from '../services/search_notes.js';
 import noteAutocompleteService from '../services/note_autocomplete.js';
 import utils from "../services/utils.js";
+import appContext from "../services/app_context.js";
 
 const $dialog = $("#jump-to-note-dialog");
 const $autoComplete = $("#jump-to-note-autocomplete");
@@ -22,7 +22,7 @@ export async function showDialog() {
                 return false;
             }
 
-            treeService.activateNote(suggestion.path);
+            appContext.getActiveTabContext().setNote(suggestion.path);
         });
 
     noteAutocompleteService.showRecentNotes($autoComplete);

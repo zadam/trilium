@@ -26,7 +26,7 @@ server.get('keyboard-shortcuts-for-notes').then(shortcutForNotes => {
 		utils.bindGlobalShortcut(shortcut, async () => {
 			const treeService = (await import("./tree.js")).default;
 
-			treeService.activateNote(shortcutForNotes[shortcut]);
+			appContext.getActiveTabContext().setNote(shortcutForNotes[shortcut]);
 		});
 	}
 });

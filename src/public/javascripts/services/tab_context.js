@@ -7,6 +7,7 @@ import appContext from "./app_context.js";
 import treeService from "./tree.js";
 import Component from "../widgets/component.js";
 import treeCache from "./tree_cache.js";
+import hoistedNoteService from "./hoisted_note.js";
 
 let showSidebarInNewTab = true;
 
@@ -42,6 +43,10 @@ class TabContext extends Component {
             return;
         }
 
+        if (await hoistedNoteService.checkNoteAccess(notePath) === false) {
+            return; // note is outside of hoisted subtree and user chose not to unhoist
+        }
+
         await this.trigger('beforeNoteSwitch', {tabId: this.tabId}, true);
 
         this.notePath = notePath;
@@ -73,6 +78,7 @@ class TabContext extends Component {
             tabId: this.tabId,
             notePath: this.notePath
         });
+
         this.trigger('openTabsChanged');
     }
 
