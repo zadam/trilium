@@ -103,6 +103,11 @@ class NoteShort {
         }
     }
 
+    /** @returns {string[]} */
+    getBranchIds() {
+        return Object.values(this.parentToBranch);
+    }
+
     /** @returns {Promise<Branch[]>} */
     async getBranches() {
         const branchIds = Object.values(this.parentToBranch);

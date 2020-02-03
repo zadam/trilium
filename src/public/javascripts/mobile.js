@@ -5,6 +5,7 @@ import contextMenuWidget from "./services/context_menu.js";
 import treeChangesService from "./services/branches.js";
 import utils from "./services/utils.js";
 import appContext from "./services/app_context.js";
+import noteCreateService from "./services/note_create.js";
 
 window.glob.isDesktop = utils.isDesktop;
 window.glob.isMobile = utils.isMobile;
@@ -111,10 +112,14 @@ $detail.on("click", ".note-menu-button", async e => {
                 const parentNoteId = node.data.parentNoteId;
                 const isProtected = await treeService.getParentProtectedStatus(node);
 
-                treeService.createNote(node, parentNoteId, 'after', { isProtected: isProtected });
+                noteCreateService.createNote(parentNoteId, {
+                    isProtected: isProtected,
+                    target: 'after',
+                    targetBranchId: node.data.branchId
+                });
             }
             else if (cmd === "insertChildNote") {
-                treeService.createNote(node, node.data.noteId, 'into');
+                noteCreateService.createNote(node.data.noteId);
             }
             else if (cmd === "delete") {
                 if (await treeChangesService.deleteNodes([node])) {

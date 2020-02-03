@@ -12,6 +12,7 @@ import ws from "../services/ws.js";
 import appContext from "../services/app_context.js";
 import TabAwareWidget from "./tab_aware_widget.js";
 import server from "../services/server.js";
+import noteCreateService from "../services/note_create.js";
 
 const TPL = `
 <div class="tree">
@@ -545,7 +546,9 @@ export default class NoteTreeWidget extends TabAwareWidget {
             return;
         }
 
-        await treeService.createNote(node, parentNoteId, 'after', {
+        await noteCreateService.createNote(parentNoteId, {
+            target: 'after',
+            targetBranchId: node.data.branchId,
             isProtected: isProtected,
             saveSelection: true
         });
@@ -555,7 +558,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
         const node = this.getActiveNode();
 
         if (node) {
-            await treeService.createNote(node, node.data.noteId, 'into', {
+            await noteCreateService.createNote(node.data.noteId, {
                 isProtected: node.data.isProtected,
                 saveSelection: false
             });
@@ -566,7 +569,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
         const node = this.getActiveNode();
 
         if (node) {
-            await treeService.createNote(node, node.data.noteId, 'into', {
+            await noteCreateService.createNote(node.data.noteId, {
                 isProtected: node.data.isProtected,
                 saveSelection: true
             });

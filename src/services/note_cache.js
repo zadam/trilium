@@ -485,10 +485,11 @@ eventService.subscribe([eventService.ENTITY_CHANGED, eventService.ENTITY_DELETED
             delete childParentToBranchId[branch.noteId + '-' + branch.parentNoteId];
         }
         else {
-            // ... and then we create new records
             if (branch.prefix) {
                 prefixes[branch.noteId + '-' + branch.parentNoteId] = branch.prefix;
             }
+
+            childToParent[branch.noteId] = childToParent[branch.noteId] || [];
 
             if (!childToParent[branch.noteId].includes(branch.parentNoteId)) {
                 childToParent[branch.noteId].push(branch.parentNoteId);

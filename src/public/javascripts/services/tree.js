@@ -133,85 +133,6 @@ async function getSomeNotePath(note) {
     return path.reverse().join('/');
 }
 
-function isNotePathInAddress() {
-    const [notePath, tabId] = getHashValueFromAddress();
-
-    return notePath.startsWith("root")
-        // empty string is for empty/uninitialized tab
-        || (notePath === '' && !!tabId);
-}
-
-function getHashValueFromAddress() {
-    const str = document.location.hash ? document.location.hash.substr(1) : ""; // strip initial #
-
-    return str.split("-");
-}
-
-async function createNewTopLevelNote() {
-    const hoistedNoteId = await hoistedNoteService.getHoistedNoteId();
-
-    const rootNode = appContext.getMainNoteTree().getNodesByNoteId(hoistedNoteId)[0];
-
-    await createNote(rootNode, hoistedNoteId, "into");
-}
-
-async function createNote(node, parentNoteId, target, extraOptions = {}) {
-    utils.assertArguments(node, parentNoteId, target);
-
-    extraOptions.activate = extraOptions.activate === undefined ? true : !!extraOptions.activate;
-
-    // if isProtected isn't available (user didn't enter password yet), then note is created as unencrypted
-    // but this is quite weird since user doesn't see WHERE the note is being created so it shouldn't occur often
-    if (!extraOptions.isProtected || !protectedSessionHolder.isProtectedSessionAvailable()) {
-        extraOptions.isProtected = false;
-    }
-
-    if (appContext.getActiveTabNoteType() !== 'text') {
-        extraOptions.saveSelection = false;
-    }
-
-    if (extraOptions.saveSelection && utils.isCKEditorInitialized()) {
-        [extraOptions.title, extraOptions.content] = parseSelectedHtml(window.cutToNote.getSelectedHtml());
-    }
-
-    const newNoteName = extraOptions.title || "new note";
-
-    const {note, branch} = await server.post(`notes/${parentNoteId}/children?target=${target}&targetBranchId=${node.data.branchId}`, {
-        title: newNoteName,
-        content: extraOptions.content || "",
-        isProtected: extraOptions.isProtected,
-        type: extraOptions.type
-    });
-
-    if (extraOptions.saveSelection && utils.isCKEditorInitialized()) {
-        // we remove the selection only after it was saved to server to make sure we don't lose anything
-        window.cutToNote.removeSelection();
-    }
-
-    if (extraOptions.activate) {
-        const activeTabContext = appContext.getActiveTabContext();
-        activeTabContext.setNote(note.noteId);
-    }
-
-    return {note, branch};
-}
-
-/* If first element is heading, parse it out and use it as a new heading. */
-function parseSelectedHtml(selectedHtml) {
-    const dom = $.parseHTML(selectedHtml);
-
-    if (dom.length > 0 && dom[0].tagName && dom[0].tagName.match(/h[1-6]/i)) {
-        const title = $(dom[0]).text();
-        // remove the title from content (only first occurence)
-        const content = selectedHtml.replace(dom[0].outerHTML, "");
-
-        return [title, content];
-    }
-    else {
-        return [null, selectedHtml];
-    }
-}
-
 async function sortAlphabetically(noteId) {
     await server.put('notes/' + noteId + '/sort');
 }
@@ -227,25 +148,6 @@ ws.subscribeToMessages(message => {
        }
    }
 });
-
-$(window).on('hashchange', function() {
-    if (isNotePathInAddress()) {
-        const [notePath, tabId] = getHashValueFromAddress();
-
-        appContext.switchToTab(tabId, notePath);
-    }
-});
-
-async function duplicateNote(noteId, parentNoteId) {
-    const {note} = await server.post(`notes/${noteId}/duplicate/${parentNoteId}`);
-
-    await ws.waitForMaxKnownSyncId();
-
-    await appContext.activateOrOpenNote(note.noteId);
-
-    const origNote = await treeCache.getNote(noteId);
-    toastService.showMessage(`Note "${origNote.title}" has been duplicated`);
-}
 
 async function getParentProtectedStatus(node) {
     return await hoistedNoteService.isRootNode(node) ? 0 : node.getParent().data.isProtected;
@@ -361,12 +263,9 @@ async function getNotePathTitle(notePath) {
 }
 
 export default {
-    createNote,
     sortAlphabetically,
     resolveNotePath,
     getSomeNotePath,
-    createNewTopLevelNote,
-    duplicateNote,
     getRunPath,
     getParentProtectedStatus,
     getNotePath,

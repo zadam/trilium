@@ -3,6 +3,7 @@ import treeService from "../services/tree.js";
 import treeCache from "../services/tree_cache.js";
 import toastService from "../services/toast.js";
 import appContext from "../services/app_context.js";
+import noteCreateService from "../services/note_create.js";
 
 const helpText = `
 <strong>Search tips</strong> - also see <button class="btn btn-sm" type="button" data-help-page="Search">complete help on search</button>
@@ -128,7 +129,7 @@ export default class SearchBoxWidget extends BasicWidget {
             activeNode = activeNode.getParent();
         }
 
-        await treeService.createNote(activeNode, activeNode.data.noteId, 'into', {
+        await noteCreateService.createNote(activeNode.data.noteId, {
             type: "search",
             mime: "application/json",
             title: searchString,

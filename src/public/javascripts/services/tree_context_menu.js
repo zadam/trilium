@@ -8,6 +8,7 @@ import hoistedNoteService from './hoisted_note.js';
 import clipboard from './clipboard.js';
 import protectedSessionHolder from "./protected_session_holder.js";
 import appContext from "./app_context.js";
+import noteCreateService from "./note_create.js";
 
 class TreeContextMenu {
     /**
@@ -110,7 +111,9 @@ class TreeContextMenu {
             const isProtected = await treeService.getParentProtectedStatus(this.node);
             const type = cmd.split("_")[1];
 
-            treeService.createNote(this.node, parentNoteId, 'after', {
+            noteCreateService.createNote(parentNoteId, {
+                target: 'after',
+                targetBranchId: this.node.data.branchId,
                 type: type,
                 isProtected: isProtected
             });
@@ -118,7 +121,7 @@ class TreeContextMenu {
         else if (cmd.startsWith("insertChildNote")) {
             const type = cmd.split("_")[1];
 
-            treeService.createNote(this.node, this.node.data.noteId, 'into', {
+            noteCreateService.createNote(noteId, {
                 type: type,
                 isProtected: this.node.data.isProtected
             });

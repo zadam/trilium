@@ -495,4 +495,26 @@ $(window).on('beforeunload', () => {
     appContext.trigger('beforeUnload');
 });
 
+function isNotePathInAddress() {
+    const [notePath, tabId] = getHashValueFromAddress();
+
+    return notePath.startsWith("root")
+        // empty string is for empty/uninitialized tab
+        || (notePath === '' && !!tabId);
+}
+
+function getHashValueFromAddress() {
+    const str = document.location.hash ? document.location.hash.substr(1) : ""; // strip initial #
+
+    return str.split("-");
+}
+
+$(window).on('hashchange', function() {
+    if (isNotePathInAddress()) {
+        const [notePath, tabId] = getHashValueFromAddress();
+
+        appContext.switchToTab(tabId, notePath);
+    }
+});
+
 export default appContext;
