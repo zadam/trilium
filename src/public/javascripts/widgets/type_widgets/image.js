@@ -97,7 +97,7 @@ class ImageTypeWidget extends TypeWidget {
             formData.append('upload', fileToUpload);
 
             const result = await $.ajax({
-                url: baseApiUrl + 'images/' + this.tabContext.note.noteId,
+                url: baseApiUrl + 'images/' + this.noteId,
                 headers: server.getHeaders(),
                 data: formData,
                 type: 'PUT',
@@ -111,8 +111,7 @@ class ImageTypeWidget extends TypeWidget {
 
                 await utils.clearBrowserCache();
 
-                // FIXME
-                await noteDetailService.reload();
+                this.refresh();
             }
             else {
                 toastService.showError("Upload of a new image revision failed: " + result.message);
@@ -146,7 +145,7 @@ class ImageTypeWidget extends TypeWidget {
     }
 
     getFileUrl() {
-        return utils.getUrlForDownload(`api/notes/${this.tabContext.note.noteId}/download`);
+        return utils.getUrlForDownload(`api/notes/${this.noteId}/download`);
     }
 
     getContent() {}

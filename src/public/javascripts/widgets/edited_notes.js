@@ -16,7 +16,7 @@ export default class EditedNotesWidget extends CollapsibleWidget {
 
     async isEnabled() {
         return await super.isEnabled()
-            && await this.tabContext.note.hasLabel("dateNote");
+            && await this.note.hasOwnedLabel("dateNote");
     }
 
     async refreshWithNote(note) {

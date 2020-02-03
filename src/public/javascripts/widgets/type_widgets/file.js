@@ -94,7 +94,7 @@ export default class FileTypeWidget extends TypeWidget {
             formData.append('upload', fileToUpload);
 
             const result = await $.ajax({
-                url: baseApiUrl + 'notes/' + this.tabContext.note.noteId + '/file',
+                url: baseApiUrl + 'notes/' + this.noteId + '/file',
                 headers: server.getHeaders(),
                 data: formData,
                 type: 'PUT',
@@ -106,7 +106,7 @@ export default class FileTypeWidget extends TypeWidget {
             if (result.uploaded) {
                 toastService.showMessage("New file revision has been uploaded.");
 
-                // FIXME reload
+                this.refresh();
             }
             else {
                 toastService.showError("Upload of a new file revision failed.");
@@ -142,7 +142,7 @@ export default class FileTypeWidget extends TypeWidget {
     }
 
     getFileUrl() {
-        return utils.getUrlForDownload("api/notes/" + this.tabContext.note.noteId + "/download");
+        return utils.getUrlForDownload("api/notes/" + this.noteId + "/download");
     }
 
     getContent() {}

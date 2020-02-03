@@ -30,10 +30,9 @@ export default class NoteTitleWidget extends TabAwareWidget {
         super(appContext);
 
         this.spacedUpdate = new SpacedUpdate(async () => {
-            const noteId = this.tabContext.note.noteId;
             const title = this.$noteTitle.val();
 
-            await server.put(`notes/${noteId}/change-title`, {title});
+            await server.put(`notes/${this.noteId}/change-title`, {title});
         });
     }
 

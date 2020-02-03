@@ -67,23 +67,6 @@ async function moveToParentNote(branchIdsToMove, newParentNoteId) {
     }
 }
 
-// FIXME used for finding a next note to activate after a delete
-async function getNextNode(nodes) {
-    // following code assumes that nodes contain only top-most selected nodes - getSelectedNodes has been
-    // called with stopOnParent=true
-    let next = nodes[nodes.length - 1].getNextSibling();
-
-    if (!next) {
-        next = nodes[0].getPrevSibling();
-    }
-
-    if (!next && !await hoistedNoteService.isRootNode(nodes[0])) {
-        next = nodes[0].getParent();
-    }
-
-    return treeService.getNotePath(next);
-}
-
 async function deleteNodes(branchIdsToDelete) {
     branchIdsToDelete = await filterRootNote(branchIdsToDelete);
 
@@ -132,23 +115,13 @@ async function deleteNodes(branchIdsToDelete) {
 
         if (deleteClones) {
             await server.remove(`notes/${branch.noteId}` + query);
-
-            // FIXME
-            noteDetailService.noteDeleted(branch.noteId);
         }
         else {
-            const {noteDeleted} = await server.remove(`branches/${branchIdToDelete}` + query);
-
-            if (noteDeleted) {
-                // FIXME
-                noteDetailService.noteDeleted(branch.noteId);
-            }
+            await server.remove(`branches/${branchIdToDelete}` + query);
         }
     }
 
     const noteIds = Array.from(new Set(nodes.map(node => node.getParent().data.noteId)));
-
-    appContext.trigger('reloadNotes', {noteIds});
 
     return true;
 }

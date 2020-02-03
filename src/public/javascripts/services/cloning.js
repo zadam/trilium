@@ -9,10 +9,7 @@ async function cloneNoteTo(childNoteId, parentNoteId, prefix) {
 
     if (!resp.success) {
         alert(resp.message);
-        return;
     }
-
-    appContext.trigger('reloadNotes', {noteIds: [childNoteId, parentNoteId]});
 }
 
 // beware that first arg is noteId and second is branchId!
@@ -25,8 +22,6 @@ async function cloneNoteAfter(noteId, afterBranchId) {
     }
 
     const afterBranch = treeCache.getBranch(afterBranchId);
-
-    appContext.trigger('reloadNotes', {noteIds: [noteId, afterBranch.parentNoteId]});
 }
 
 export default {

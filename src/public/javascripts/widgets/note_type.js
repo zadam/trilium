@@ -67,7 +67,7 @@ export default class NoteTypeWidget extends TabAwareWidget {
                     this.save(noteType.type, noteType.mime);
                 });
 
-            if (this.tabContext.note.type === noteType.type) {
+            if (this.note.type === noteType.type) {
                 $typeLink.addClass("selected");
             }
 
@@ -93,7 +93,7 @@ export default class NoteTypeWidget extends TabAwareWidget {
                     this.save('code', $link.attr('data-mime-type'))
                 });
 
-            if (this.tabContext.note.type === 'code' && this.tabContext.note.mime === mimeType.mime) {
+            if (this.note.type === 'code' && this.note.mime === mimeType.mime) {
                 $mimeLink.addClass("selected");
 
                 this.$noteTypeDesc.text(mimeType.title);
@@ -118,11 +118,11 @@ export default class NoteTypeWidget extends TabAwareWidget {
     }
 
     async save(type, mime) {
-        if (type !== this.tabContext.note.type && !await this.confirmChangeIfContent()) {
+        if (type !== this.note.type && !await this.confirmChangeIfContent()) {
             return;
         }
 
-        await server.put('notes/' + this.tabContext.note.noteId
+        await server.put('notes/' + this.noteId
             + '/type/' + encodeURIComponent(type)
             + '/mime/' + encodeURIComponent(mime));
 

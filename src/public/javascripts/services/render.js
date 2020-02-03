@@ -1,7 +1,7 @@
 import server from "./server.js";
 import bundleService from "./bundle.js";
 
-async function render(note, $el, ctx) {
+async function render(note, $el, tabContext) {
     const relations = await note.getRelations('renderNote');
     const renderNoteIds = relations
         .map(rel => rel.value)
@@ -18,7 +18,7 @@ async function render(note, $el, ctx) {
         $scriptContainer.append(bundle.html);
 
         // async so that scripts cannot block trilium execution
-        bundleService.executeBundle(bundle, note, ctx, $scriptContainer);
+        bundleService.executeBundle(bundle, note, tabContext, $scriptContainer);
     }
 
     return renderNoteIds.length > 0;

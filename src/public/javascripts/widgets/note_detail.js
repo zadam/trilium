@@ -112,7 +112,7 @@ export default class NoteDetailWidget extends TabAwareWidget {
             }
         }
 
-        const note = this.tabContext.note;
+        const note = this.note;
 
         if (note) {
             this.$widget.addClass(note.cssClass);
@@ -144,7 +144,7 @@ export default class NoteDetailWidget extends TabAwareWidget {
     }
 
     async getWidgetType() {
-        const note = this.tabContext.note;
+        const note = this.note;
 
         if (!note) {
             return "empty";
@@ -199,7 +199,7 @@ export default class NoteDetailWidget extends TabAwareWidget {
         await libraryLoader.requireLibrary(libraryLoader.PRINT_THIS);
 
         this.$widget.find('.note-detail-printable:visible').printThis({
-            header: $("<h2>").text(this.tabContext.note && this.tabContext.note.title).prop('outerHTML') ,
+            header: $("<h2>").text(this.note && this.note.title).prop('outerHTML') ,
             importCSS: false,
             loadCSS: [
                 "libraries/codemirror/codemirror.css",

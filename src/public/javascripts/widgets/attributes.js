@@ -35,7 +35,7 @@ export default class AttributesWidget extends CollapsibleWidget {
             .text("+show inherited")
             .on('click', async () => {
                 const attributes = await note.getAttributes();
-                const inheritedAttributes = attributes.filter(attr => attr.noteId !== this.tabContext.note.noteId);
+                const inheritedAttributes = attributes.filter(attr => attr.noteId !== this.noteId);
 
                 if (inheritedAttributes.length === 0) {
                     $inheritedAttrs.text("No inherited attributes yet...");

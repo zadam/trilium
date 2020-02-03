@@ -34,7 +34,7 @@ export default class NoteActionsWidget extends TabAwareWidget {
         });
 
         this.$importNoteButton = this.$widget.find('.import-files-button');
-        this.$importNoteButton.on("click", () => import('../dialogs/import.js').then(d => d.showDialog(this.tabContext.note.noteId)));
+        this.$importNoteButton.on("click", () => import('../dialogs/import.js').then(d => d.showDialog(this.noteId)));
 
         return this.$widget;
     }

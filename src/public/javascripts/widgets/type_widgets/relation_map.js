@@ -157,7 +157,7 @@ export default class RelationMapTypeWidget extends TypeWidget {
                 return;
             }
 
-            const {note} = await server.post(`notes/${this.tabContext.note.noteId}/children?target=into`, {
+            const {note} = await server.post(`notes/${this.noteId}/children?target=into`, {
                 title,
                 content: '',
                 type: 'text'
@@ -519,7 +519,7 @@ export default class RelationMapTypeWidget extends TypeWidget {
     }
 
     saveData() {
-        this.tabContext.noteChanged();
+        this.spacedUpdate.scheduleUpdate();
     }
 
     async createNoteBox(noteId, title, x, y) {

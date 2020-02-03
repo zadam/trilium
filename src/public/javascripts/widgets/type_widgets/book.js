@@ -230,7 +230,7 @@ export default class BookTypeWidget extends TypeWidget {
                 return;
             }
 
-            const childNotePath = this.tabContext.notePath + '/' + childNote.noteId;
+            const childNotePath = this.notePath + '/' + childNote.noteId;
 
             const $content = $('<div class="note-book-content">')
                 .css("max-height", ZOOMS[this.zoomLevel].height);
@@ -271,7 +271,7 @@ export default class BookTypeWidget extends TypeWidget {
 
     /** @return {boolean} true if this is "auto book" activated (empty text note) and not explicit book note */
     isAutoBook() {
-        return this.tabContext.note.type !== 'book';
+        return this.note.type !== 'book';
     }
 
     getDefaultZoomLevel() {

@@ -29,8 +29,7 @@ export default class SearchTypeWidget extends TypeWidget {
         this.$refreshButton = this.$widget.find('.note-detail-search-refresh-results-button');
 
         this.$refreshButton.on('click', async () => {
-            // FIXME
-            await noteDetailService.saveNotesIfChanged();
+            await this.spacedUpdate.updateNowIfNecessary();
 
             await searchNotesService.refreshSearch();
         });

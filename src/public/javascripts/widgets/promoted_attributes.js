@@ -224,7 +224,7 @@ export default class PromotedAttributesWidget extends TabAwareWidget {
                 .prop("title", "Remove this attribute")
                 .on('click', async () => {
                     if (valueAttr.attributeId) {
-                        await server.remove("notes/" + this.tabContext.note.noteId + "/attributes/" + valueAttr.attributeId);
+                        await server.remove("notes/" + this.noteId + "/attributes/" + valueAttr.attributeId);
                     }
 
                     $tr.remove();
@@ -253,7 +253,7 @@ export default class PromotedAttributesWidget extends TabAwareWidget {
             value = $attr.val();
         }
 
-        const result = await server.put(`notes/${this.tabContext.note.noteId}/attribute`, {
+        const result = await server.put(`notes/${this.noteId}/attribute`, {
             attributeId: $attr.prop("attribute-id"),
             type: $attr.prop("attribute-type"),
             name: $attr.prop("attribute-name"),
@@ -261,13 +261,5 @@ export default class PromotedAttributesWidget extends TabAwareWidget {
         });
 
         $attr.prop("attribute-id", result.attributeId);
-
-        // FIXME
-        // animate only if it's not being animated already, this is important especially for e.g. number inputs
-        // which can be changed many times in a second by clicking on higher/lower buttons.
-        // if (this.$savedIndicator.queue().length === 0) {
-        //     this.$savedIndicator.fadeOut();
-        //     this.$savedIndicator.fadeIn();
-        // }
     }
 }

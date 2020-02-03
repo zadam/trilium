@@ -22,8 +22,8 @@ export default class WhatLinksHereWidget extends CollapsibleWidget {
         return [$showFullButton];
     }
 
-    async refreshWithNote() {
-        const targetRelations = this.tabContext.note.getTargetRelations();
+    async refreshWithNote(note) {
+        const targetRelations = note.getTargetRelations();
 
         if (targetRelations.length === 0) {
             this.$body.text("Nothing links here yet ...");
@@ -44,7 +44,7 @@ export default class WhatLinksHereWidget extends CollapsibleWidget {
         }
 
         if (i < targetRelations.length) {
-            $list.append($("<li>").text(`${targetRelations.length - i} more links ...`))
+            $list.append($("<li>").text(`${targetRelations.length - i} more links ...`));
         }
 
         this.$body.empty().append($list);

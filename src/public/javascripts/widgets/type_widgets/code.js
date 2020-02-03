@@ -107,20 +107,19 @@ export default class CodeTypeWidget extends TypeWidget {
 
     async executeCurrentNote() {
         // ctrl+enter is also used elsewhere so make sure we're running only when appropriate
-        if (this.tabContext.note.type !== 'code') {
+        if (this.note.type !== 'code') {
             return;
         }
 
         // make sure note is saved so we load latest changes
-        // FIXME
-        await noteDetailService.saveNotesIfChanged();
+        await this.spacedUpdate.updateNowIfNecessary();
 
-        if (this.tabContext.note.mime.endsWith("env=frontend")) {
-            await bundleService.getAndExecuteBundle(this.tabContext.note.noteId);
+        if (this.note.mime.endsWith("env=frontend")) {
+            await bundleService.getAndExecuteBundle(this.noteId);
         }
 
-        if (this.tabContext.note.mime.endsWith("env=backend")) {
-            await server.post('script/run/' + this.tabContext.note.noteId);
+        if (this.note.mime.endsWith("env=backend")) {
+            await server.post('script/run/' + this.noteId);
         }
 
         toastService.showMessage("Note executed");

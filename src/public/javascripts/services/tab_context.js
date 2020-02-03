@@ -49,6 +49,8 @@ class TabContext extends Component {
 
         await this.trigger('beforeNoteSwitch', {tabId: this.tabId}, true);
 
+        utils.closeActiveDialog();
+
         this.notePath = notePath;
         this.noteId = treeService.getNoteIdFromNotePath(notePath);
 

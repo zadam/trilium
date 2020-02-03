@@ -64,8 +64,6 @@ ws.subscribeToMessages(async message => {
 
         toastService.showPersistent(toast);
 
-        appContext.trigger('reloadNotes', {noteIds: [message.result.parentNoteId]});
-
         if (message.result.importedNoteId) {
             await appContext.getActiveTabContext.setNote(message.result.importedNoteId);
         }

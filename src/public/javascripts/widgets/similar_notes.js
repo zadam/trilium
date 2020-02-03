@@ -32,7 +32,7 @@ export default class SimilarNotesWidget extends CollapsibleWidget {
         // remember which title was when we found the similar notes
         this.title = note.title;
 
-        const similarNotes = await server.get('similar-notes/' + this.tabContext.note.noteId);
+        const similarNotes = await server.get('similar-notes/' + this.noteId);
 
         if (similarNotes.length === 0) {
             this.$body.text("No similar notes found ...");

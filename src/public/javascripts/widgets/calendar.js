@@ -2,7 +2,6 @@ import CollapsibleWidget from "./collapsible_widget.js";
 import libraryLoader from "../services/library_loader.js";
 import utils from "../services/utils.js";
 import dateNoteService from "../services/date_notes.js";
-import treeService from "../services/tree.js";
 import server from "../services/server.js";
 import appContext from "../services/app_context.js";
 
@@ -30,7 +29,7 @@ export default class CalendarWidget extends CollapsibleWidget {
 
     async isEnabled() {
         return await super.isEnabled()
-            && this.tabContext.note.hasOwnedLabel("dateNote");
+            && this.note.hasOwnedLabel("dateNote");
     }
 
     async doRenderBody() {
