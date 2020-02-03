@@ -26,47 +26,48 @@ export default class NotePathsWidget extends TabAwareWidget {
         this.$notePathList = this.$widget.find(".note-path-list");
         this.$notePathCount = this.$widget.find(".note-path-count");
 
+        this.$widget.on('show.bs.dropdown', () => this.renderDropdown());
+
         return this.$widget;
     }
 
     async refreshWithNote(note, notePath) {
-        if (note.noteId === 'root') {
-            // root doesn't have any parent, but it's still technically 1 path
+        const pathCount = note.noteId === 'root'
+            ? 1 // root doesn't have any parent, but it's still technically 1 path
+            : note.getBranchIds().length;
 
-            this.$notePathCount.html("1 path");
+        this.$notePathCount.html(pathCount + " path" + (pathCount > 1 ? "s" : ""));
+    }
 
-            this.$notePathList.empty();
+    async renderDropdown() {
+        this.$notePathList.empty();
 
+        if (this.noteId === 'root') {
             await this.addPath('root', true);
+            return;
         }
-        else {
-            const parents = await note.getParentNotes();
 
-            this.$notePathCount.html(parents.length + " path" + (parents.length > 1 ? "s" : ""));
-            this.$notePathList.empty();
+        const pathSegments = this.notePath.split("/");
+        const activeNoteParentNoteId = pathSegments[pathSegments.length - 2]; // we know this is not root so there must be a parent
 
-            const pathSegments = notePath.split("/");
-            const activeNoteParentNoteId = pathSegments[pathSegments.length - 2]; // we know this is not root so there must be a parent
+        for (const parentNote of await this.note.getParentNotes()) {
+            const parentNotePath = await treeService.getSomeNotePath(parentNote);
+            // this is to avoid having root notes leading '/'
+            const notePath = parentNotePath ? (parentNotePath + '/' + this.noteId) : this.noteId;
+            const isCurrent = activeNoteParentNoteId === parentNote.noteId;
 
-            for (const parentNote of parents) {
-                const parentNotePath = await treeService.getSomeNotePath(parentNote);
-                // this is to avoid having root notes leading '/'
-                const notePath = parentNotePath ? (parentNotePath + '/' + note.noteId) : note.noteId;
-                const isCurrent = activeNoteParentNoteId === parentNote.noteId;
-
-                await this.addPath(notePath, isCurrent);
-            }
-
-            const cloneLink = $("<div>")
-                .addClass("dropdown-item")
-                .append(
-                    $('<button class="btn btn-sm">')
-                        .text('Clone note to new location...')
-                        .on('click', () => import("../dialogs/clone_to.js").then(d => d.showDialog([note.noteId])))
-                );
-
-            this.$notePathList.append(cloneLink);
+            await this.addPath(notePath, isCurrent);
         }
+
+        const cloneLink = $("<div>")
+            .addClass("dropdown-item")
+            .append(
+                $('<button class="btn btn-sm">')
+                    .text('Clone note to new location...')
+                    .on('click', () => import("../dialogs/clone_to.js").then(d => d.showDialog([this.noteId])))
+            );
+
+        this.$notePathList.append(cloneLink);
     }
 
     async addPath(notePath, isCurrent) {
@@ -75,8 +76,11 @@ export default class NotePathsWidget extends TabAwareWidget {
         const noteLink = await linkService.createNoteLink(notePath, {title});
 
         noteLink
-            .addClass("no-tooltip-preview")
             .addClass("dropdown-item");
+
+        noteLink
+            .find('a')
+            .addClass("no-tooltip-preview");
 
         if (isCurrent) {
             noteLink.addClass("current");

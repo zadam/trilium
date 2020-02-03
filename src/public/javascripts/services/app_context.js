@@ -433,22 +433,6 @@ class AppContext {
         this.openTabsChangedListener();
     }
 
-    // FIXME non existent event
-    noteChangesSavedListener() {
-        const activeTabContext = this.getActiveTabContext();
-
-        if (!activeTabContext || !activeTabContext.note) {
-            return;
-        }
-
-        if (activeTabContext.note.isProtected && protectedSessionHolder.isProtectedSessionAvailable()) {
-            protectedSessionHolder.touchProtectedSession();
-        }
-
-        // run async
-        bundleService.executeRelationBundles(activeTabContext.note, 'runOnNoteChange', activeTabContext);
-    }
-
     activateNextTabListener() {
         const tabIdsInOrder = this.tabRow.getTabIdsInOrder();
         const oldIdx = tabIdsInOrder.findIndex(tid => tid === this.activeTabId);

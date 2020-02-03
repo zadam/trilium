@@ -486,7 +486,7 @@ window.Springy = function() {
 				t._started = false;
 				onRenderStop();
 			} else {
-				requestIdleCallback(step, { timeout: 10 });
+				requestIdleCallback(step, { timeout: 30 });
 			}
 		}
 

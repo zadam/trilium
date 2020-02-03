@@ -26,6 +26,18 @@ class NoteRevisionsWidget extends CollapsibleWidget {
         return [$showFullButton];
     }
 
+    noteSwitched() {
+        const noteId = this.noteId;
+
+        // avoid executing this expensive operation multiple times when just going through notes (with keyboard especially)
+        // until the users settles on a note
+        setTimeout(() => {
+            if (this.noteId === noteId) {
+                this.refresh();
+            }
+        }, 1000);
+    }
+
     async refreshWithNote(note) {
         const revisionItems = await server.get(`notes/${note.noteId}/revisions`);
 

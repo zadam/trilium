@@ -14,6 +14,20 @@ export default class SimilarNotesWidget extends CollapsibleWidget {
 
     getMaxHeight() { return "200px"; }
 
+    noteSwitched() {
+        const noteId = this.noteId;
+
+        this.$body.empty();
+
+        // avoid executing this expensive operation multiple times when just going through notes (with keyboard especially)
+        // until the users settles on a note
+        setTimeout(() => {
+            if (this.noteId === noteId) {
+                this.refresh();
+            }
+        }, 1000);
+    }
+
     async refreshWithNote(note) {
         // remember which title was when we found the similar notes
         this.title = note.title;

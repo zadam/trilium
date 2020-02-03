@@ -415,7 +415,7 @@ function evaluateSimilarity(text1, text2, noteId, results) {
  */
 function setImmediatePromise() {
     return new Promise((resolve) => {
-        setImmediate(() => resolve());
+        setTimeout(() => resolve(), 0);
     });
 }
 

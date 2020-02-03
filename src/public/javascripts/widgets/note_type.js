@@ -52,7 +52,7 @@ export default class NoteTypeWidget extends TabAwareWidget {
     }
 
     /** actual body is rendered lazily on note-type button click */
-    async renderDropdown() {console.log("AAAAAAAAAAAAAAAAAAA");
+    async renderDropdown() {
         this.$noteTypeDropdown.empty();
 
         for (const noteType of NOTE_TYPES.filter(nt => nt.selectable)) {
@@ -130,6 +130,7 @@ export default class NoteTypeWidget extends TabAwareWidget {
     }
 
     async confirmChangeIfContent() {
+        // FIXME
         if (!this.tabContext.getComponent().getContent()) {
             return true;
         }

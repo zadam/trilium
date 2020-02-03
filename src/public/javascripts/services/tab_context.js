@@ -66,9 +66,6 @@ class TabContext extends Component {
             }
         }, 5000);
 
-        // should be done somewhere else ...
-        bundleService.executeRelationBundles(this.note, 'runOnNoteView', this);
-
         if (this.note.isProtected && protectedSessionHolder.isProtectedSessionAvailable()) {
             // FIXME: there are probably more places where this should be done
             protectedSessionHolder.touchProtectedSession();

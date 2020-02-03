@@ -50,6 +50,8 @@ let maxKnownSyncId = 0;
 async function call(method, url, data, headers = {}) {
     let resp;
 
+    const start = Date.now();
+
     if (utils.isElectron()) {
         const ipc = require('electron').ipcRenderer;
         const requestId = i++;
@@ -73,6 +75,10 @@ async function call(method, url, data, headers = {}) {
     else {
         resp = await ajax(url, method, data, headers);
     }
+
+    const end = Date.now();
+
+    console.log(`${method} ${url} took ${end-start}ms`);
 
     const maxSyncIdStr = resp.headers['trilium-max-sync-id'];
 

@@ -24,46 +24,44 @@ export default class AttributesWidget extends CollapsibleWidget {
     }
 
     async refreshWithNote(note) {
-        const attributes = await note.getAttributes();
         const ownedAttributes = note.getOwnedAttributes();
-
-        if (attributes.length === 0) {
-            this.$body.text("No attributes yet...");
-            return;
-        }
-
         const $attributesContainer = $("<div>");
 
         await this.renderAttributes(ownedAttributes, $attributesContainer);
 
-        const inheritedAttributes = attributes.filter(attr => attr.noteId !== this.tabContext.note.noteId);
+        const $inheritedAttrs = $("<span>").append($("<strong>").text("Inherited: "));
+        const $showInheritedAttributes = $("<a>")
+            .attr("href", "javascript:")
+            .text("+show inherited")
+            .on('click', async () => {
+                const attributes = await note.getAttributes();
+                const inheritedAttributes = attributes.filter(attr => attr.noteId !== this.tabContext.note.noteId);
 
-        if (inheritedAttributes.length > 0) {
-            const $inheritedAttrs = $("<span>").append($("<strong>").text("Inherited: "));
-            const $showInheritedAttributes = $("<a>")
-                .attr("href", "javascript:")
-                .text("+show inherited")
-                .on('click', () => {
-                    $showInheritedAttributes.hide();
-                    $inheritedAttrs.show();
-                });
+                if (inheritedAttributes.length === 0) {
+                    $inheritedAttrs.text("No inherited attributes yet...");
+                }
+                else {
+                    await this.renderAttributes(inheritedAttributes, $inheritedAttrs);
+                }
 
-            const $hideInheritedAttributes = $("<a>")
-                .attr("href", "javascript:")
-                .text("-hide inherited")
-                .on('click', () => {
-                    $showInheritedAttributes.show();
-                    $inheritedAttrs.hide();
-                });
+                $inheritedAttrs.show();
+                $showInheritedAttributes.hide();
+                $hideInheritedAttributes.show();
+            });
 
-            $attributesContainer.append($showInheritedAttributes);
-            $attributesContainer.append($inheritedAttrs);
+        const $hideInheritedAttributes = $("<a>")
+            .attr("href", "javascript:")
+            .text("-hide inherited")
+            .on('click', () => {
+                $showInheritedAttributes.show();
+                $hideInheritedAttributes.hide();
+                $inheritedAttrs.empty().hide();
+            });
 
-            await this.renderAttributes(inheritedAttributes, $inheritedAttrs);
+        $attributesContainer.append($showInheritedAttributes, $inheritedAttrs, $hideInheritedAttributes);
 
-            $inheritedAttrs.append($hideInheritedAttributes);
-            $inheritedAttrs.hide();
-        }
+        $inheritedAttrs.hide();
+        $hideInheritedAttributes.hide();
 
         this.$body.empty().append($attributesContainer);
     }

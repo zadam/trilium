@@ -28,6 +28,18 @@ export default class LinkMapWidget extends CollapsibleWidget {
         return [$showFullButton];
     }
 
+    noteSwitched() {
+        const noteId = this.noteId;
+
+        // avoid executing this expensive operation multiple times when just going through notes (with keyboard especially)
+        // until the users settles on a note
+        setTimeout(() => {
+            if (this.noteId === noteId) {
+                this.refresh();
+            }
+        }, 1000);
+    }
+
     async refreshWithNote(note) {
         this.$body.css('opacity', 0);
         this.$body.html(TPL);

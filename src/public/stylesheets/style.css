@@ -268,7 +268,7 @@ div.ui-tooltip {
     color: #888 !important;
 }
 
-.dropdown-menu a:hover:not(.disabled), li.dropdown-item:hover:not(.disabled), div.dropdown-item:hover:not(.disabled) {
+.dropdown-menu a:hover:not(.disabled), .dropdown-item:hover:not(.disabled) {
     color: var(--hover-item-text-color) !important;
     background-color: var(--hover-item-background-color) !important;
     cursor: pointer;
