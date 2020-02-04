@@ -153,6 +153,13 @@ body {
     z-index: 1000;
 }
 
+#hide-left-pane-button, #show-left-pane-button {
+    position: fixed;
+    bottom: 10px;
+    left: 10px;
+    z-index: 1000;
+}
+
 #right-pane {
     overflow: auto;
     padding-top: 4px;

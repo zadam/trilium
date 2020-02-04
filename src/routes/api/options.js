@@ -34,6 +34,7 @@ const ALLOWED_OPTIONS = new Set([
     'imageJpegQuality',
     'leftPaneWidth',
     'rightPaneWidth',
+    'leftPaneVisible',
     'rightPaneVisible',
     'nativeTitleBarVisible'
 ]);

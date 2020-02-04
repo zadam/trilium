@@ -196,8 +196,8 @@ class AppContext {
 
         this.components = [
             new Entrypoints(),
-            this.tabRow,
             new DialogEventComponent(this),
+            ...topPaneWidgets,
             ...leftPaneWidgets,
             ...centerPaneWidgets,
             ...rightPaneWidgets

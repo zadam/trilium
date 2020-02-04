@@ -27,7 +27,7 @@
     "commonmark": "0.29.1",
     "cookie-parser": "1.4.4",
     "csurf": "1.11.0",
-    "dayjs": "1.8.19",
+    "dayjs": "1.8.20",
     "debug": "4.1.1",
     "ejs": "2.7.4",
     "electron-debug": "3.0.1",
@@ -76,7 +76,7 @@
     "ws": "7.2.1"
   },
   "devDependencies": {
-    "electron": "8.0.0-beta.9",
+    "electron": "8.0.0",
     "electron-builder": "22.3.2",
     "electron-packager": "14.2.0",
     "electron-rebuild": "1.10.0",

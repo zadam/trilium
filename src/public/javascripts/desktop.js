@@ -145,38 +145,33 @@ if (utils.isElectron()) {
     import("./services/spell_check.js").then(spellCheckService => spellCheckService.initSpellCheck());
 }
 
-const rightPane = $("#right-pane");
+optionService.waitForOptions().then(options => {
+    toggleSidebar('left', options.is('leftPaneVisible'));
+    toggleSidebar('right', options.is('rightPaneVisible'));
 
-const $showRightPaneButton = $("#show-right-pane-button");
-const $hideRightPaneButton = $("#hide-right-pane-button");
+    splitService.setupSplit(paneVisible.left, paneVisible.right);
+});
 
-optionService.waitForOptions().then(options => toggleSidebar(options.is('rightPaneVisible')));
+const paneVisible = {};
 
-function toggleSidebar(show) {
-    rightPane.toggle(show);
-    $showRightPaneButton.toggle(!show);
-    $hideRightPaneButton.toggle(show);
+function toggleSidebar(side, show) {
+    $(`#${side}-pane`).toggle(show);
+    $(`#show-${side}-pane-button`).toggle(!show);
+    $(`#hide-${side}-pane-button`).toggle(show);
 
-    if (show) {
-        splitService.setupSplitWithSidebar();
-    }
-    else {
-        splitService.setupSplitWithoutSidebar();
-    }
+    paneVisible[side] = show;
 }
 
-$hideRightPaneButton.on('click', () => {
-    toggleSidebar(false);
+function toggleAndSave(side, show) {
+    toggleSidebar(side, show);
 
-    server.put('options/rightPaneVisible/false');
-});
+    splitService.setupSplit(paneVisible.left, paneVisible.right);
 
-$showRightPaneButton.on('click', async () => {
-    toggleSidebar(true);
+    server.put(`options/${side}PaneVisible/` + show.toString());
+}
 
-    await server.put('options/rightPaneVisible/true');
+$("#show-right-pane-button").on('click', () => toggleAndSave('right', true));
+$("#hide-right-pane-button").on('click', () => toggleAndSave('right', false));
 
-    const {sidebar} = appContext.getActiveTabContext();
-    await sidebar.noteLoaded();
-    sidebar.show();
-});
+$("#show-left-pane-button").on('click', () => toggleAndSave('left', true));
+$("#hide-left-pane-button").on('click', () => toggleAndSave('left', false));
