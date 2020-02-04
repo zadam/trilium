@@ -25,7 +25,6 @@ import RunScriptButtonsWidget from "../widgets/run_script_buttons.js";
 import ProtectedNoteSwitchWidget from "../widgets/protected_note_switch.js";
 import NoteTypeWidget from "../widgets/note_type.js";
 import NoteActionsWidget from "../widgets/note_actions.js";
-import protectedSessionHolder from "./protected_session_holder.js";
 import bundleService from "./bundle.js";
 import DialogEventComponent from "./dialog_events.js";
 import Entrypoints from "./entrypoints.js";
@@ -33,6 +32,7 @@ import CalendarWidget from "../widgets/calendar.js";
 import optionsService from "./options.js";
 import utils from "./utils.js";
 import treeService from "./tree.js";
+import SidePaneContainer from "../widgets/side_pane_container.js";
 
 class AppContext {
     constructor() {
@@ -144,20 +144,7 @@ class AppContext {
             $topPane.append(widget.render());
         }
 
-        const $leftPane = $("#left-pane");
-
         this.noteTreeWidget = new NoteTreeWidget(this);
-
-        const leftPaneWidgets = [
-            new GlobalButtonsWidget(this),
-            new SearchBoxWidget(this),
-            new SearchResultsWidget(this),
-            this.noteTreeWidget
-        ];
-
-        for (const widget of leftPaneWidgets) {
-            $leftPane.append(widget.render());
-        }
 
         const $centerPane = $("#center-pane");
 
@@ -178,9 +165,16 @@ class AppContext {
             $centerPane.append(widget.render());
         }
 
-        const $rightPane = $("#right-pane");
+        const leftPaneContainer = new SidePaneContainer(this, 'left', [
+            new GlobalButtonsWidget(this),
+            new SearchBoxWidget(this),
+            new SearchResultsWidget(this),
+            this.noteTreeWidget
+        ]);
 
-        const rightPaneWidgets = [
+        $centerPane.before(leftPaneContainer.render());
+
+        const rightPaneContainer = new SidePaneContainer(this, 'right', [
             new NoteInfoWidget(this),
             new TabCachingWidget(this, () => new CalendarWidget(this)),
             new TabCachingWidget(this, () => new AttributesWidget(this)),
@@ -188,19 +182,17 @@ class AppContext {
             new TabCachingWidget(this, () => new NoteRevisionsWidget(this)),
             new TabCachingWidget(this, () => new SimilarNotesWidget(this)),
             new TabCachingWidget(this, () => new WhatLinksHereWidget(this))
-        ];
+        ]);
 
-        for (const widget of rightPaneWidgets) {
-            $rightPane.append(widget.render());
-        }
+        $centerPane.after(rightPaneContainer.render());
 
         this.components = [
             new Entrypoints(),
             new DialogEventComponent(this),
             ...topPaneWidgets,
-            ...leftPaneWidgets,
+            leftPaneContainer,
             ...centerPaneWidgets,
-            ...rightPaneWidgets
+            rightPaneContainer
         ];
     }
 

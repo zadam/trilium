@@ -76,4 +76,8 @@ export default class TabAwareWidget extends BasicWidget {
     treeCacheReloadedListener() {
         this.refresh();
     }
+
+    lazyLoadedListener() {
+        this.refresh();
+    }
 }

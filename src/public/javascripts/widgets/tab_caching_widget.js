@@ -13,15 +13,13 @@ export default class TabCachingWidget extends TabAwareWidget {
         return this.$widget;
     }
 
-    activeTabChangedListener() {
-        super.activeTabChangedListener();
-
+    refreshWithNote() {
         for (const widget of Object.values(this.widgets)) {
             widget.toggle(false);
         }
 
         if (!this.tabContext) {
-            console.log(`Received activeTabChanged to widget ${this.componentId} which does not have tabContext.`);
+            console.log(`No tabContext in widget ${this.componentId}.`);
 
             return;
         }

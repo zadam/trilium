@@ -162,12 +162,16 @@ function toggleSidebar(side, show) {
     paneVisible[side] = show;
 }
 
-function toggleAndSave(side, show) {
+async function toggleAndSave(side, show) {
     toggleSidebar(side, show);
+
+    await server.put(`options/${side}PaneVisible/` + show.toString());
+
+    await optionService.reloadOptions();
 
     splitService.setupSplit(paneVisible.left, paneVisible.right);
 
-    server.put(`options/${side}PaneVisible/` + show.toString());
+    appContext.trigger('sidebarVisibilityChanged', {side, show});
 }
 
 $("#show-right-pane-button").on('click', () => toggleAndSave('right', true));

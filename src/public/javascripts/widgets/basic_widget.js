@@ -25,6 +25,10 @@ class BasicWidget extends Component {
         this.$widget.toggle(show);
     }
 
+    isVisible() {
+        return this.$widget.is(":visible");
+    }
+
     remove() {
         if (this.$widget) {
             this.$widget.remove();
