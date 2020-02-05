@@ -101,8 +101,6 @@ export default class ProtectedSessionOptions {
             const eraseNotesAfterTimeInSeconds = this.$eraseNotesAfterTimeInSeconds.val();
 
             server.put('options', { 'eraseNotesAfterTimeInSeconds': eraseNotesAfterTimeInSeconds }).then(() => {
-                optionsService.reloadOptions();
-
                 toastService.showMessage("Options change have been saved.");
             });
 
@@ -115,8 +113,6 @@ export default class ProtectedSessionOptions {
             const protectedSessionTimeout = this.$protectedSessionTimeout.val();
 
             server.put('options', { 'protectedSessionTimeout': protectedSessionTimeout }).then(() => {
-                optionsService.reloadOptions();
-
                 toastService.showMessage("Options change have been saved.");
             });
 

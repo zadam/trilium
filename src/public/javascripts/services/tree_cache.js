@@ -5,6 +5,7 @@ import server from "./server.js";
 import {LoadResults} from "./load_results.js";
 import NoteComplement from "../entities/note_complement.js";
 import appContext from "./app_context.js";
+import options from "./options.js";
 
 /**
  * TreeCache keeps a read only cache of note tree structure in frontend's memory.
@@ -349,6 +350,12 @@ class TreeCache {
 
         syncRows.filter(sync => sync.entityName === 'note_revisions').forEach(sync => {
             loadResults.addNoteRevision(sync.entityId, sync.noteId, sync.sourceId);
+        });
+
+        syncRows.filter(sync => sync.entityName === 'options').forEach(sync => {
+            options.set(sync.entity.name, sync.entity.value);
+
+            loadResults.addOption(sync.entity.name);
         });
 
         appContext.trigger('entitiesReloaded', {loadResults});

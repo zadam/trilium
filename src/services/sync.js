@@ -315,10 +315,13 @@ async function getSyncRecords(syncs) {
     let length = 0;
 
     for (const sync of syncs) {
-        const record = {
-            sync: sync,
-            entity: await getEntityRow(sync.entityName, sync.entityId)
-        };
+        const entity = await getEntityRow(sync.entityName, sync.entityId);
+
+        if (sync.entityName === 'options' && !entity.isSynced) {
+            continue;
+        }
+
+        const record = { sync, entity };
 
         records.push(record);
 

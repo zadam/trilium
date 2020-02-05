@@ -92,6 +92,9 @@ async function fillInAdditionalProperties(sync) {
     } else if (sync.entityName === 'note_reordering') {
         sync.positions = await sql.getMap(`SELECT branchId, notePosition FROM branches WHERE isDeleted = 0 AND parentNoteId = ?`, [sync.entityId]);
     }
+    else if (sync.entityName === 'options') {
+        sync.entity = await sql.getRow(`SELECT * FROM options WHERE name = ?`, [sync.entityId]);
+    }
 }
 
 async function sendPing(client) {

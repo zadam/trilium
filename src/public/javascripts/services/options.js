@@ -1,11 +1,9 @@
 import server from "./server.js";
 
-let optionsReady;
-
 const loadListeners = [];
 
 class Options {
-    constructor(arr) {
+    load(arr) {
         this.arr = arr;
     }
 
@@ -37,45 +35,21 @@ class Options {
     is(key) {
         return this.arr[key] === 'true';
     }
+
+    set(key, value) {
+        this.arr[key] = value;
+    }
+
+    async save(key, value) {
+        this.set(key, value);
+
+        const payload = {};
+        payload[key] = value;
+
+        await server.put(`options`, payload);
+    }
 }
 
-function reloadOptions() {
-    optionsReady = new Promise((resolve, reject) => {
-        server.get('options').then(optionArr => {
-            const options = new Options(optionArr);
+const options = new Options();
 
-            resolve(options);
-
-            for (const listener of loadListeners) {
-                listener(options);
-            }
-        });
-    });
-
-    return optionsReady;
-}
-
-/**
- * just waits for some options without triggering reload
- *
- * @return {Options}
- */
-async function waitForOptions() {
-    return await optionsReady;
-}
-
-reloadOptions(); // initial load
-
-function addLoadListener(listener) {
-    loadListeners.push(listener);
-
-    // useful when listener has been added after the promise resolved, but can cause double emit if not yet
-    // that should not be an issue though
-    optionsReady.then(listener);
-}
-
-export default {
-    addLoadListener,
-    reloadOptions,
-    waitForOptions
-}
+export default options;

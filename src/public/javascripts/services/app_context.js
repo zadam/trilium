@@ -29,10 +29,12 @@ import bundleService from "./bundle.js";
 import DialogEventComponent from "./dialog_events.js";
 import Entrypoints from "./entrypoints.js";
 import CalendarWidget from "../widgets/calendar.js";
-import optionsService from "./options.js";
+import options from "./options.js";
 import utils from "./utils.js";
 import treeService from "./tree.js";
 import SidePaneContainer from "../widgets/side_pane_container.js";
+import ZoomService from "./zoom.js";
+import SidebarToggle from "../widgets/sidebar_toggle.js";
 
 class AppContext {
     constructor() {
@@ -45,7 +47,9 @@ class AppContext {
         this.activeTabId = null;
     }
 
-    start() {
+    async start() {
+        options.load(await server.get('options'));
+
         this.showWidgets();
 
         this.loadTabs();
@@ -54,8 +58,6 @@ class AppContext {
     }
 
     async loadTabs() {
-        const options = await optionsService.waitForOptions();
-
         const openTabs = options.getJson('openTabs') || [];
 
         await treeCache.initializedPromise;
@@ -186,14 +188,25 @@ class AppContext {
 
         $centerPane.after(rightPaneContainer.render());
 
+        const sidebarToggleWidget = new SidebarToggle(this);
+
+        $centerPane.after(sidebarToggleWidget.render());
+
         this.components = [
             new Entrypoints(),
             new DialogEventComponent(this),
             ...topPaneWidgets,
             leftPaneContainer,
             ...centerPaneWidgets,
-            rightPaneContainer
+            rightPaneContainer,
+            sidebarToggleWidget
         ];
+
+        if (utils.isElectron()) {
+            this.components.push(new ZoomService(this));
+
+            import("./spell_check.js").then(spellCheckService => spellCheckService.initSpellCheck());
+        }
     }
 
     trigger(name, data, sync = false) {

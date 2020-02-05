@@ -1,16 +1,6 @@
-import server from "./server.js";
-import optionService from "./options.js";
+import options from "./options.js";
 
 let instance;
-
-async function getPaneWidths() {
-    const options = await optionService.waitForOptions();
-
-    return {
-        leftPaneWidth: options.getInt('leftPaneWidth'),
-        rightPaneWidth: options.getInt('rightPaneWidth')
-    };
-}
 
 async function setupSplit(left, right) {
     if (instance) {
@@ -24,15 +14,16 @@ async function setupSplit(left, right) {
         return;
     }
 
-    const {leftPaneWidth, rightPaneWidth} = await getPaneWidths();
+    const leftPaneWidth = options.getInt('leftPaneWidth');
+    const rightPaneWidth = options.getInt('rightPaneWidth');
 
     if (left && right) {
         instance = Split(['#left-pane', '#center-pane', '#right-pane'], {
             sizes: [leftPaneWidth, 100 - leftPaneWidth - rightPaneWidth, rightPaneWidth],
             gutterSize: 5,
             onDragEnd: sizes => {
-                server.put('options/leftPaneWidth/' + Math.round(sizes[0]));
-                server.put('options/rightPaneWidth/' + Math.round(sizes[2]));
+                options.save('leftPaneWidth', Math.round(sizes[0]));
+                options.save('rightPaneWidth', Math.round(sizes[2]));
             }
         });
     }
@@ -41,7 +32,7 @@ async function setupSplit(left, right) {
             sizes: [leftPaneWidth, 100 - leftPaneWidth],
             gutterSize: 5,
             onDragEnd: sizes => {
-                server.put('options/leftPaneWidth/' + Math.round(sizes[0]));
+                options.save('leftPaneWidth', Math.round(sizes[0]));
             }
         });
     }
@@ -50,7 +41,7 @@ async function setupSplit(left, right) {
             sizes: [100 - rightPaneWidth, rightPaneWidth],
             gutterSize: 5,
             onDragEnd: sizes => {
-                server.put('options/rightPaneWidth/' + Math.round(sizes[1]));
+                options.save('rightPaneWidth', Math.round(sizes[1]));
             }
         });
     }

@@ -130,7 +130,7 @@ async function consumeSyncData() {
             await treeCache.processSyncRows(allSyncData);
         }
         catch (e) {
-            logError(`Encountered error ${e.message}, reloading frontend.`);
+            logError(`Encountered error ${e.message}: ${e.stack}, reloading frontend.`);
 
             // if there's an error in updating the frontend then the easy option to recover is to reload the frontend completely
             utils.reloadApp();

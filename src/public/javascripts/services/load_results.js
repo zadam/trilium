@@ -14,6 +14,8 @@ export class LoadResults {
         this.noteRevisions = [];
 
         this.contentNoteIdToSourceId = [];
+
+        this.options = [];
     }
 
     addNote(noteId, sourceId) {
@@ -89,5 +91,13 @@ export class LoadResults {
         }
 
         return this.contentNoteIdToSourceId.find(l => l.noteId === noteId && l.sourceId !== sourceId);
+    }
+
+    addOption(name) {
+        this.options.push(name);
+    }
+
+    isOptionReloaded(name) {
+        this.options.includes(name);
     }
 }

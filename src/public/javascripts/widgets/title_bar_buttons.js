@@ -1,5 +1,5 @@
 import BasicWidget from "./basic_widget.js";
-import optionService from "../services/options.js";
+import options from "../services/options.js";
 import utils from "../services/utils.js";
 
 const TPL = `
@@ -23,41 +23,41 @@ export default class TitleBarButtonsWidget extends BasicWidget {
             return;
         }
 
-        this.$widget = $(TPL);
+        if (!options.is('nativeTitleBarVisible')) {
+            this.$widget = $(TPL);
+            this.$widget.show();
 
-        optionService.waitForOptions().then(options => {
-            if (!options.is('nativeTitleBarVisible')) {
-                this.$widget.show();
+            const $minimizeBtn = this.$widget.find(".minimize-btn");
+            const $maximizeBtn = this.$widget.find(".maximize-btn");
+            const $closeBtn = this.$widget.find(".close-btn");
 
-                const $minimizeBtn = this.$widget.find(".minimize-btn");
-                const $maximizeBtn = this.$widget.find(".maximize-btn");
-                const $closeBtn = this.$widget.find(".close-btn");
+            $minimizeBtn.on('click', () => {
+                $minimizeBtn.trigger('blur');
+                const {remote} = require('electron');
+                remote.BrowserWindow.getFocusedWindow().minimize();
+            });
 
-                $minimizeBtn.on('click', () => {
-                    $minimizeBtn.trigger('blur');
-                    const {remote} = require('electron');
-                    remote.BrowserWindow.getFocusedWindow().minimize();
-                });
+            $maximizeBtn.on('click', () => {
+                $maximizeBtn.trigger('blur');
+                const {remote} = require('electron');
+                const focusedWindow = remote.BrowserWindow.getFocusedWindow();
 
-                $maximizeBtn.on('click', () => {
-                    $maximizeBtn.trigger('blur');
-                    const {remote} = require('electron');
-                    const focusedWindow = remote.BrowserWindow.getFocusedWindow();
+                if (focusedWindow.isMaximized()) {
+                    focusedWindow.unmaximize();
+                } else {
+                    focusedWindow.maximize();
+                }
+            });
 
-                    if (focusedWindow.isMaximized()) {
-                        focusedWindow.unmaximize();
-                    } else {
-                        focusedWindow.maximize();
-                    }
-                });
-
-                $closeBtn.on('click', () => {
-                    $closeBtn.trigger('blur');
-                    const {remote} = require('electron');
-                    remote.BrowserWindow.getFocusedWindow().close();
-                });
-            }
-        });
+            $closeBtn.on('click', () => {
+                $closeBtn.trigger('blur');
+                const {remote} = require('electron');
+                remote.BrowserWindow.getFocusedWindow().close();
+            });
+        }
+        else {
+            this.$widget = $('<div>');
+        }
 
         return this.$widget;
     }

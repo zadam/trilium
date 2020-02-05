@@ -118,7 +118,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
                 autoExpandMS: 600,
                 dragStart: (node, data) => {
                     // don't allow dragging root node
-                    if (node.data.noteId === hoistedNoteService.getHoistedNoteNoPromise()
+                    if (node.data.noteId === hoistedNoteService.getHoistedNoteId()
                         || node.getParent().data.noteType === 'search') {
                         return false;
                     }
@@ -141,7 +141,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
                 dragDrop: async (node, data) => {
                     if ((data.hitMode === 'over' && node.data.noteType === 'search') ||
                         (['after', 'before'].includes(data.hitMode)
-                            && (node.data.noteId === hoistedNoteService.getHoistedNoteNoPromise() || node.getParent().data.noteType === 'search'))) {
+                            && (node.data.noteId === hoistedNoteService.getHoistedNoteId() || node.getParent().data.noteType === 'search'))) {
 
                         const infoDialog = await import('../dialogs/info.js');
 

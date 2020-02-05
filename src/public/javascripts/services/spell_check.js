@@ -1,8 +1,6 @@
-import optionsService from "./options.js";
+import options from "./options.js";
 
 export async function initSpellCheck() {
-    const options = await optionsService.waitForOptions();
-
     const {SpellCheckHandler, ContextMenuListener, ContextMenuBuilder} = require('electron-spellchecker');
     const {remote, shell} = require('electron');
 

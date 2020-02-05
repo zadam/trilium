@@ -1,4 +1,4 @@
-import optionsService from "./options.js";
+import options from "./options.js";
 
 const MIME_TYPES_DICT = [
     { default: true, title: "Plain text", mime: "text/plain" },
@@ -161,7 +161,7 @@ const MIME_TYPES_DICT = [
 
 let mimeTypes = null;
 
-function loadMimeTypes(options) {
+function loadMimeTypes() {
     mimeTypes = JSON.parse(JSON.stringify(MIME_TYPES_DICT)); // clone
 
     const enabledMimeTypes = options.getJson('codeNotesMimeTypes')
@@ -172,16 +172,15 @@ function loadMimeTypes(options) {
     }
 }
 
-optionsService.addLoadListener(loadMimeTypes);
-
 async function getMimeTypes() {
     if (mimeTypes === null) {
-        loadMimeTypes(await options.waitForOptions());
+        loadMimeTypes();
     }
 
     return mimeTypes;
 }
 
 export default {
-    getMimeTypes
+    getMimeTypes,
+    loadMimeTypes
 }

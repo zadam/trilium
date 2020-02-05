@@ -1,51 +1,47 @@
-import server from "./server.js";
-import utils from "./utils.js";
-import optionsService from "./options.js";
+import options from "./options.js";
+import Component from "../widgets/component.js";
 
 const MIN_ZOOM = 0.5;
 const MAX_ZOOM = 2.0;
 
-async function decreaseZoomFactor() {
-    await setZoomFactorAndSave(getCurrentZoom() - 0.1);
-}
+export default class ZoomService extends Component {
+    constructor(appContext) {
+        super(appContext);
 
-async function increaseZoomFactor() {
-    await setZoomFactorAndSave(getCurrentZoom() + 0.1);
-}
-
-function setZoomFactor(zoomFactor) {
-    zoomFactor = parseFloat(zoomFactor);
-
-    const webFrame = require('electron').webFrame;
-    webFrame.setZoomFactor(zoomFactor);
-}
-
-async function setZoomFactorAndSave(zoomFactor) {
-    if (!utils.isElectron()) {
-        return;
+        this.setZoomFactor(options.getFloat('zoomFactor'));
     }
 
-    if (zoomFactor >= MIN_ZOOM && zoomFactor <= MAX_ZOOM) {
-        setZoomFactor(zoomFactor);
-
-        await server.put('options/zoomFactor/' + zoomFactor);
+    setZoomFactor(zoomFactor) {
+        zoomFactor = parseFloat(zoomFactor);
+    
+        const webFrame = require('electron').webFrame;
+        webFrame.setZoomFactor(zoomFactor);
     }
-    else {
-        console.log(`Zoom factor ${zoomFactor} outside of the range, ignored.`);
+    
+    async setZoomFactorAndSave(zoomFactor) {
+        if (zoomFactor >= MIN_ZOOM && zoomFactor <= MAX_ZOOM) {
+            this.setZoomFactor(zoomFactor);
+    
+            await options.save('zoomFactor', zoomFactor);
+        }
+        else {
+            console.log(`Zoom factor ${zoomFactor} outside of the range, ignored.`);
+        }
     }
-}
+    
+    getCurrentZoom() {
+        return require('electron').webFrame.getZoomFactor();
+    }
 
-function getCurrentZoom() {
-    return require('electron').webFrame.getZoomFactor();
-}
+    zoomOutListener() {
+        this.setZoomFactorAndSave(this.getCurrentZoom() - 0.1);
+    }
 
-if (utils.isElectron()) {
-    optionsService.addLoadListener(options => setZoomFactor(options.getFloat('zoomFactor')))
-}
+    zoomInListener() {
+        this.setZoomFactorAndSave(this.getCurrentZoom() + 0.1);
+    }
 
-export default {
-    decreaseZoomFactor,
-    increaseZoomFactor,
-    setZoomFactor,
-    setZoomFactorAndSave
+    setZoomFactorAndSaveListener({zoomFactor}) {
+        this.setZoomFactorAndSave(zoomFactor);
+    }
 }

@@ -57,13 +57,7 @@ export default class Entrypoints extends Component {
         });
     }
 
-    zoomOutListener() {
-        zoomService.decreaseZoomFactor();
-    }
 
-    zoomInListener() {
-        zoomService.increaseZoomFactor();
-    }
 
     async createNoteIntoDayNoteListener() {
         const todayNote = await dateNoteService.getTodayNote();

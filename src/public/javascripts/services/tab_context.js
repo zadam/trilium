@@ -9,12 +9,6 @@ import Component from "../widgets/component.js";
 import treeCache from "./tree_cache.js";
 import hoistedNoteService from "./hoisted_note.js";
 
-let showSidebarInNewTab = true;
-
-optionsService.addLoadListener(options => {
-    showSidebarInNewTab = options.is('showSidebarInNewTab');
-});
-
 class TabContext extends Component {
     /**
      * @param {AppContext} appContext

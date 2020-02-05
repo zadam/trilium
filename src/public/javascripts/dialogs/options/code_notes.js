@@ -1,6 +1,5 @@
-import server from "../../services/server.js";
 import mimeTypesService from "../../services/mime_types.js";
-import optionsService from "../../services/options.js";
+import options from "../../services/options.js";
 
 const TPL = `
 <h4>Available MIME types in the dropdown</h4>
@@ -14,7 +13,7 @@ export default class CodeNotesOptions {
         this.$mimeTypes = $("#options-mime-types");
     }
 
-    async optionsLoaded(options) {
+    async optionsLoaded() {
         this.$mimeTypes.empty();
 
         let idCtr = 1;
@@ -42,10 +41,8 @@ export default class CodeNotesOptions {
         this.$mimeTypes.find("input:checked").each(
             (i, el) => enabledMimeTypes.push($(el).attr("data-mime-type")));
 
-        const opts = { codeNotesMimeTypes: JSON.stringify(enabledMimeTypes) };
+        await options.save('codeNotesMimeTypes', JSON.stringify(enabledMimeTypes));
 
-        await server.put('options', opts);
-
-        await optionsService.reloadOptions();
+        mimeTypesService.loadMimeTypes();
     }
 }

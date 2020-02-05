@@ -3,6 +3,7 @@ import utils from "../../services/utils.js";
 import cssLoader from "../../services/css_loader.js";
 import zoomService from "../../services/zoom.js";
 import optionsService from "../../services/options.js";
+import appContext from "../../services/app_context.js";
 
 const TPL = `
 <p><strong>Settings on this options tab are saved automatically after each change.</strong></p>
@@ -107,7 +108,7 @@ export default class ApperanceOptions {
             server.put('options/theme/' + newTheme);
         });
 
-        this.$zoomFactorSelect.on('change', () => { zoomService.setZoomFactorAndSave(this.$zoomFactorSelect.val()); });
+        this.$zoomFactorSelect.on('change', () => { appContext.trigger('setZoomFactorAndSave', {zoomFactor: this.$zoomFactorSelect.val()}); });
 
         this.$nativeTitleBarSelect.on('change', () => {
             const nativeTitleBarVisible = this.$nativeTitleBarSelect.val() === 'show' ? 'true' : 'false';

@@ -104,8 +104,6 @@ export default class SidebarOptions {
         });
 
         await server.put('options', opts);
-
-        optionsService.reloadOptions();
     }
 
     parseJsonSafely(str) {

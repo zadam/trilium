@@ -28,7 +28,7 @@ import dateNoteService from './services/date_notes.js';
 import importService from './services/import.js';
 import keyboardActionService from "./services/keyboard_actions.js";
 import splitService from "./services/split.js";
-import optionService from "./services/options.js";
+import options from "./services/options.js";
 import noteContentRenderer from "./services/note_content_renderer.js";
 import appContext from "./services/app_context.js";
 
@@ -140,42 +140,3 @@ appContext.start();
 noteTooltipService.setupGlobalTooltip();
 
 noteAutocompleteService.init();
-
-if (utils.isElectron()) {
-    import("./services/spell_check.js").then(spellCheckService => spellCheckService.initSpellCheck());
-}
-
-optionService.waitForOptions().then(options => {
-    toggleSidebar('left', options.is('leftPaneVisible'));
-    toggleSidebar('right', options.is('rightPaneVisible'));
-
-    splitService.setupSplit(paneVisible.left, paneVisible.right);
-});
-
-const paneVisible = {};
-
-function toggleSidebar(side, show) {
-    $(`#${side}-pane`).toggle(show);
-    $(`#show-${side}-pane-button`).toggle(!show);
-    $(`#hide-${side}-pane-button`).toggle(show);
-
-    paneVisible[side] = show;
-}
-
-async function toggleAndSave(side, show) {
-    toggleSidebar(side, show);
-
-    await server.put(`options/${side}PaneVisible/` + show.toString());
-
-    await optionService.reloadOptions();
-
-    splitService.setupSplit(paneVisible.left, paneVisible.right);
-
-    appContext.trigger('sidebarVisibilityChanged', {side, show});
-}
-
-$("#show-right-pane-button").on('click', () => toggleAndSave('right', true));
-$("#hide-right-pane-button").on('click', () => toggleAndSave('right', false));
-
-$("#show-left-pane-button").on('click', () => toggleAndSave('left', true));
-$("#hide-left-pane-button").on('click', () => toggleAndSave('left', false));

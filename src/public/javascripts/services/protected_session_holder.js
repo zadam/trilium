@@ -1,22 +1,18 @@
 import utils from "./utils.js";
-import optionsService from './options.js';
+import options from './options.js';
 
 const PROTECTED_SESSION_ID_KEY = 'protectedSessionId';
 
-let lastProtectedSessionOperationDate = null;
-let protectedSessionTimeout = null;
-
-optionsService.addLoadListener(options => setProtectedSessionTimeout(options.getInt('protectedSessionTimeout')));
+let lastProtectedSessionOperationDate = 0;
 
 setInterval(() => {
-    if (lastProtectedSessionOperationDate !== null && Date.now() - lastProtectedSessionOperationDate.getTime() > protectedSessionTimeout * 1000) {
+    const protectedSessionTimeout = options.getInt('protectedSessionTimeout');
+    if (lastProtectedSessionOperationDate
+        && Date.now() - lastProtectedSessionOperationDate > protectedSessionTimeout * 1000) {
+
         resetProtectedSession();
     }
 }, 5000);
-
-function setProtectedSessionTimeout(encSessTimeout) {
-    protectedSessionTimeout = encSessTimeout;
-}
 
 function setProtectedSessionId(id) {
     // using session cookie so that it disappears after browser/tab is closed
@@ -37,7 +33,7 @@ function isProtectedSessionAvailable() {
 
 function touchProtectedSession() {
     if (isProtectedSessionAvailable()) {
-        lastProtectedSessionOperationDate = new Date();
+        lastProtectedSessionOperationDate = Date.now();
 
         setProtectedSessionId(utils.getCookie(PROTECTED_SESSION_ID_KEY));
     }
@@ -47,6 +43,5 @@ export default {
     setProtectedSessionId,
     resetProtectedSession,
     isProtectedSessionAvailable,
-    setProtectedSessionTimeout,
     touchProtectedSession
 };

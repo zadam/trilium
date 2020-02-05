@@ -1,5 +1,5 @@
 import BasicWidget from "./basic_widget.js";
-import optionService from "../services/options.js";
+import options from "../services/options.js";
 
 export default class SidePaneContainer extends BasicWidget {
     constructor(appContext, side, widgets) {
@@ -19,9 +19,7 @@ export default class SidePaneContainer extends BasicWidget {
         return this.$widget;
     }
 
-    async eventReceived(name, data, sync = false) {
-        const options = await optionService.waitForOptions();
-
+    eventReceived(name, data, sync = false) {
         if (options.is(this.side + 'PaneVisible')) {
             super.eventReceived(name, data, sync);
         }

@@ -1,30 +1,16 @@
-import optionsService from './options.js';
-import server from "./server.js";
+import options from './options.js';
 import appContext from "./app_context.js";
 import treeService from "./tree.js";
 
-let hoistedNoteId = 'root';
-
-optionsService.waitForOptions().then(options => {
-    hoistedNoteId = options.get('hoistedNoteId');
-});
-
-function getHoistedNoteNoPromise() {
-    return hoistedNoteId;
-}
-
-async function getHoistedNoteId() {
-    await optionsService.waitForOptions();
-
-    return hoistedNoteId;
+function getHoistedNoteId() {
+    return options.get('hoistedNoteId');
 }
 
 async function setHoistedNoteId(noteId) {
-    hoistedNoteId = noteId;
+    await options.save('hoistedNoteId', noteId);
 
-    await server.put('options/hoistedNoteId/' + noteId);
-
-    appContext.trigger('hoistedNoteChanged', {hoistedNoteId});
+    // FIXME - just use option load event
+    appContext.trigger('hoistedNoteChanged', {noteId});
 }
 
 async function unhoist() {
@@ -69,7 +55,6 @@ async function checkNoteAccess(notePath) {
 
 export default {
     getHoistedNoteId,
-    getHoistedNoteNoPromise,
     setHoistedNoteId,
     unhoist,
     isTopLevelNode,

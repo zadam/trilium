@@ -70,7 +70,7 @@ function copy(nodes) {
 
 function cut(nodes) {
     clipboardBranchIds = nodes
-        .filter(node => node.data.noteId !== hoistedNoteService.getHoistedNoteNoPromise())
+        .filter(node => node.data.noteId !== hoistedNoteService.getHoistedNoteId())
         .filter(node => node.getParent().data.noteType !== 'search')
         .map(node => node.key);
 
