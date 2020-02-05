@@ -2,10 +2,7 @@ import Branch from "../entities/branch.js";
 import NoteShort from "../entities/note_short.js";
 import Attribute from "../entities/attribute.js";
 import server from "./server.js";
-import {LoadResults} from "./load_results.js";
 import NoteComplement from "../entities/note_complement.js";
-import appContext from "./app_context.js";
-import options from "./options.js";
 
 /**
  * TreeCache keeps a read only cache of note tree structure in frontend's memory.
@@ -228,137 +225,6 @@ class TreeCache {
         }
 
         return await this.noteComplementPromises[noteId];
-    }
-
-    // FIXME does not actually belong here
-    async processSyncRows(syncRows) {
-        const loadResults = new LoadResults(this);
-
-        syncRows.filter(sync => sync.entityName === 'notes').forEach(sync => {
-            const note = this.notes[sync.entityId];
-
-            if (note) {
-                note.update(sync.entity);
-                loadResults.addNote(sync.entityId, sync.sourceId);
-            }
-        });
-
-        syncRows.filter(sync => sync.entityName === 'branches').forEach(sync => {
-            let branch = this.branches[sync.entityId];
-            const childNote = this.notes[sync.entity.noteId];
-            const parentNote = this.notes[sync.entity.parentNoteId];
-
-            if (branch) {
-                if (sync.entity.isDeleted) {
-                    if (childNote) {
-                        childNote.parents = childNote.parents.filter(parentNoteId => parentNoteId !== sync.entity.parentNoteId);
-                        delete childNote.parentToBranch[sync.entity.parentNoteId];
-                    }
-
-                    if (parentNote) {
-                        parentNote.children = parentNote.children.filter(childNoteId => childNoteId !== sync.entity.noteId);
-                        delete parentNote.childToBranch[sync.entity.noteId];
-                    }
-                }
-                else {
-                    branch.update(sync.entity);
-                    loadResults.addBranch(sync.entityId, sync.sourceId);
-
-                    if (childNote) {
-                        childNote.addParent(branch.parentNoteId, branch.branchId);
-                    }
-
-                    if (parentNote) {
-                        parentNote.addChild(branch.noteId, branch.branchId);
-                    }
-                }
-            }
-            else if (!sync.entity.isDeleted) {
-                if (childNote || parentNote) {
-                    branch = new Branch(this, sync.entity);
-                    this.branches[branch.branchId] = branch;
-
-                    loadResults.addBranch(sync.entityId, sync.sourceId);
-
-                    if (childNote) {
-                        childNote.addParent(branch.parentNoteId, branch.branchId);
-                    }
-
-                    if (parentNote) {
-                        parentNote.addChild(branch.noteId, branch.branchId);
-                    }
-                }
-            }
-        });
-
-        syncRows.filter(sync => sync.entityName === 'note_reordering').forEach(sync => {
-            for (const branchId in sync.positions) {
-                const branch = this.branches[branchId];
-
-                if (branch) {
-                    branch.notePosition = sync.positions[branchId];
-                }
-            }
-
-            loadResults.addNoteReordering(sync.entityId, sync.sourceId);
-        });
-
-        // missing reloading the relation target note
-        syncRows.filter(sync => sync.entityName === 'attributes').forEach(sync => {
-            let attribute = this.attributes[sync.entityId];
-            const sourceNote = this.notes[sync.entity.noteId];
-            const targetNote = sync.entity.type === 'relation' && this.notes[sync.entity.value];
-
-            if (attribute) {
-                attribute.update(sync.entity);
-                loadResults.addAttribute(sync.entityId, sync.sourceId);
-
-                if (sync.entity.isDeleted) {
-                    if (sourceNote) {
-                        sourceNote.attributes = sourceNote.attributes.filter(attributeId => attributeId !== attribute.attributeId);
-                    }
-
-                    if (targetNote) {
-                        targetNote.targetRelations = targetNote.targetRelations.filter(attributeId => attributeId !== attribute.value);
-                    }
-                }
-            }
-            else if (!sync.entity.isDeleted) {
-                if (sourceNote || targetNote) {
-                    attribute = new Attribute(this, sync.entity);
-
-                    this.attributes[attribute.attributeId] = attribute;
-
-                    loadResults.addAttribute(sync.entityId, sync.sourceId);
-
-                    if (sourceNote && !sourceNote.attributes.includes(attribute.attributeId)) {
-                        sourceNote.attributes.push(attribute.attributeId);
-                    }
-
-                    if (targetNote && !targetNote.attributes.includes(attribute.attributeId)) {
-                        targetNote.attributes.push(attribute.attributeId);
-                    }
-                }
-            }
-        });
-
-        syncRows.filter(sync => sync.entityName === 'note_contents').forEach(sync => {
-            delete this.noteComplementPromises[sync.entityId];
-
-            loadResults.addNoteContent(sync.entityId, sync.sourceId);
-        });
-
-        syncRows.filter(sync => sync.entityName === 'note_revisions').forEach(sync => {
-            loadResults.addNoteRevision(sync.entityId, sync.noteId, sync.sourceId);
-        });
-
-        syncRows.filter(sync => sync.entityName === 'options').forEach(sync => {
-            options.set(sync.entity.name, sync.entity.value);
-
-            loadResults.addOption(sync.entity.name);
-        });
-
-        appContext.trigger('entitiesReloaded', {loadResults});
     }
 }
 

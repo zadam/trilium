@@ -1,5 +1,4 @@
 import utils from "./utils.js";
-import zoomService from "./zoom.js";
 import treeService from "./tree.js";
 import dateNoteService from "./date_notes.js";
 import hoistedNoteService from "./hoisted_note.js";

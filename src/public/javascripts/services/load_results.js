@@ -1,4 +1,4 @@
-export class LoadResults {
+export default class LoadResults {
     constructor(treeCache) {
         this.treeCache = treeCache;
 

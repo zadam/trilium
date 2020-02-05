@@ -1,6 +1,5 @@
 import BasicWidget from "./basic_widget.js";
 import HistoryNavigationWidget from "./history_navigation.js";
-import keyboardActionService from "../services/keyboard_actions.js";
 import protectedSessionService from "../services/protected_session.js";
 
 const TPL = `

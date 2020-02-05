@@ -34,7 +34,7 @@ import utils from "./utils.js";
 import treeService from "./tree.js";
 import SidePaneContainer from "../widgets/side_pane_container.js";
 import ZoomService from "./zoom.js";
-import SidebarToggle from "../widgets/sidebar_toggle.js";
+import SidepaneToggles from "../widgets/sidebar_toggle.js";
 
 class AppContext {
     constructor() {
@@ -188,7 +188,7 @@ class AppContext {
 
         $centerPane.after(rightPaneContainer.render());
 
-        const sidebarToggleWidget = new SidebarToggle(this);
+        const sidebarToggleWidget = new SidepaneToggles(this);
 
         $centerPane.after(sidebarToggleWidget.render());
 

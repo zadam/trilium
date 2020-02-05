@@ -1,8 +1,6 @@
 import server from "../../services/server.js";
 import utils from "../../services/utils.js";
 import cssLoader from "../../services/css_loader.js";
-import zoomService from "../../services/zoom.js";
-import optionsService from "../../services/options.js";
 import appContext from "../../services/app_context.js";
 
 const TPL = `

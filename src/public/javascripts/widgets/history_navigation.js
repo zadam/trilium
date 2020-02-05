@@ -18,11 +18,12 @@ const TPL = `
 
 export default class HistoryNavigationWidget extends BasicWidget {
     doRender() {
-        if (!utils.isElectron()) {
-            return;
+        if (utils.isElectron()) {
+            this.$widget = $(TPL);
         }
-
-        this.$widget = $(TPL);
+        else {
+            this.$widget = $("<div>");
+        }
 
         return this.$widget;
     }

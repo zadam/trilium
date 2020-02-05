@@ -19,10 +19,6 @@ const TPL = `
 
 export default class TitleBarButtonsWidget extends BasicWidget {
     doRender() {
-        if (!utils.isElectron()) {
-            return;
-        }
-
         if (!options.is('nativeTitleBarVisible')) {
             this.$widget = $(TPL);
             this.$widget.show();
