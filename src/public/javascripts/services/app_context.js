@@ -1,43 +1,20 @@
-import GlobalButtonsWidget from "../widgets/global_buttons.js";
-import SearchBoxWidget from "../widgets/search_box.js";
-import SearchResultsWidget from "../widgets/search_results.js";
 import NoteTreeWidget from "../widgets/note_tree.js";
 import TabContext from "./tab_context.js";
 import server from "./server.js";
 import TabRowWidget from "../widgets/tab_row.js";
-import NoteTitleWidget from "../widgets/note_title.js";
-import PromotedAttributesWidget from "../widgets/promoted_attributes.js";
-import NoteDetailWidget from "../widgets/note_detail.js";
-import TabCachingWidget from "../widgets/tab_caching_widget.js";
-import NoteInfoWidget from "../widgets/note_info.js";
-import NoteRevisionsWidget from "../widgets/note_revisions.js";
-import LinkMapWidget from "../widgets/link_map.js";
-import SimilarNotesWidget from "../widgets/similar_notes.js";
-import WhatLinksHereWidget from "../widgets/what_links_here.js";
-import AttributesWidget from "../widgets/attributes.js";
-import TitleBarButtonsWidget from "../widgets/title_bar_buttons.js";
-import GlobalMenuWidget from "../widgets/global_menu.js";
-import StandardTopWidget from "../widgets/standard_top_widget.js";
 import treeCache from "./tree_cache.js";
-import NotePathsWidget from "../widgets/note_paths.js";
-import RunScriptButtonsWidget from "../widgets/run_script_buttons.js";
-import ProtectedNoteSwitchWidget from "../widgets/protected_note_switch.js";
-import NoteTypeWidget from "../widgets/note_type.js";
-import NoteActionsWidget from "../widgets/note_actions.js";
 import bundleService from "./bundle.js";
 import DialogEventComponent from "./dialog_events.js";
 import Entrypoints from "./entrypoints.js";
-import CalendarWidget from "../widgets/calendar.js";
 import options from "./options.js";
 import utils from "./utils.js";
 import treeService from "./tree.js";
-import SidePaneContainer from "../widgets/side_pane_container.js";
 import ZoomService from "./zoom.js";
-import SidePaneToggles from "../widgets/side_pane_toggles.js";
-import FlexContainer from "../widgets/flex_container.js";
+import Layout from "../widgets/layout.js";
 
 class AppContext {
-    constructor() {
+    constructor(layout) {
+        this.layout = layout;
         this.components = [];
         /** @type {TabContext[]} */
         this.tabContexts = [];
@@ -129,47 +106,7 @@ class AppContext {
     }
 
     showWidgets() {
-        this.tabRow = new TabRowWidget(this);
-        this.noteTreeWidget = new NoteTreeWidget(this);
-
-        const rootContainer = new FlexContainer(this, { 'flex-direction': 'column', 'height': '100vh' }, [
-            new FlexContainer(this, { 'flex-direction': 'row' }, [
-                new GlobalMenuWidget(this),
-                this.tabRow,
-                new TitleBarButtonsWidget(this)
-            ]),
-            new StandardTopWidget(this),
-            new FlexContainer(this, { 'flex-direction': 'row' }, [
-                new SidePaneContainer(this, 'left', [
-                    new GlobalButtonsWidget(this),
-                    new SearchBoxWidget(this),
-                    new SearchResultsWidget(this),
-                    this.noteTreeWidget
-                ]),
-                new FlexContainer(this, { id: 'center-pane', 'flex-direction': 'column' }, [
-                    new FlexContainer(this, { 'flex-direction': 'row' }, [
-                        new TabCachingWidget(this, () => new NotePathsWidget(this)),
-                        new NoteTitleWidget(this),
-                        new RunScriptButtonsWidget(this),
-                        new ProtectedNoteSwitchWidget(this),
-                        new NoteTypeWidget(this),
-                        new NoteActionsWidget(this)
-                    ]),
-                    new TabCachingWidget(this, () => new PromotedAttributesWidget(this)),
-                    new TabCachingWidget(this, () => new NoteDetailWidget(this))
-                ]),
-                new SidePaneContainer(this, 'right', [
-                    new NoteInfoWidget(this),
-                    new TabCachingWidget(this, () => new CalendarWidget(this)),
-                    new TabCachingWidget(this, () => new AttributesWidget(this)),
-                    new TabCachingWidget(this, () => new LinkMapWidget(this)),
-                    new TabCachingWidget(this, () => new NoteRevisionsWidget(this)),
-                    new TabCachingWidget(this, () => new SimilarNotesWidget(this)),
-                    new TabCachingWidget(this, () => new WhatLinksHereWidget(this))
-                ]),
-                new SidePaneToggles(this)
-            ])
-        ]);
+        const rootContainer = this.layout.getRootWidget(this);
 
         $("body").append(rootContainer.render());
 
@@ -456,7 +393,9 @@ class AppContext {
     }
 }
 
-const appContext = new AppContext();
+const layout = new Layout();
+
+const appContext = new AppContext(layout);
 
 // we should save all outstanding changes before the page/app is closed
 $(window).on('beforeunload', () => {

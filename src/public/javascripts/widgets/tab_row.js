@@ -234,6 +234,12 @@ const TAB_ROW_TPL = `
 </div>`;
 
 export default class TabRowWidget extends BasicWidget {
+    constructor(appContext) {
+        super(appContext);
+
+        appContext.tabRow = this;
+    }
+
     doRender() {
         this.$widget = $(TAB_ROW_TPL);
 
