@@ -234,12 +234,6 @@ const TAB_ROW_TPL = `
 </div>`;
 
 export default class TabRowWidget extends BasicWidget {
-    constructor(appContext) {
-        super(appContext);
-
-        appContext.tabRow = this;
-    }
-
     doRender() {
         this.$widget = $(TAB_ROW_TPL);
 
@@ -425,50 +419,6 @@ export default class TabRowWidget extends BasicWidget {
         return this.$widget.find('.note-tab[active]')[0];
     }
 
-    get previousTabEl() {
-        const tabEls = this.tabEls;
-
-        if (tabEls.length <= 1) {
-            return null;
-        }
-
-        let prev = tabEls[tabEls.length - 1];
-
-        for (const tabEl of tabEls) {
-            if (tabEl.hasAttribute("active")) {
-                return prev;
-            }
-
-            prev = tabEl;
-        }
-
-        return null;
-    }
-
-    get nextTabEl() {
-        const tabEls = this.tabEls;
-
-        if (tabEls.length <= 1) {
-            return null;
-        }
-
-        let prev = tabEls[tabEls.length - 1];
-
-        for (const tabEl of tabEls) {
-            if (prev.hasAttribute("active")) {
-                return tabEl;
-            }
-
-            prev = tabEl;
-        }
-
-        return null;
-    }
-
-    hasActiveTab() {
-        return !!this.activeTabEl;
-    }
-
     activeTabChangedListener({newActiveTabId}) {
         const tabEl = this.getTabById(newActiveTabId)[0];
         const activeTabEl = this.activeTabEl;
@@ -600,7 +550,7 @@ export default class TabRowWidget extends BasicWidget {
 
             tabEl.parentNode.insertBefore(tabEl, beforeEl);
         }
-        this.trigger('tabReorder');
+        this.trigger('tabReorder', {tabIdsInOrder: this.getTabIdsInOrder()});
         this.layoutTabs();
     }
 

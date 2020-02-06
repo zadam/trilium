@@ -12,13 +12,11 @@ import hoistedNoteService from "./hoisted_note.js";
 class TabContext extends Component {
     /**
      * @param {AppContext} appContext
-     * @param {TabRowWidget} tabRow
      * @param {object} state
      */
-    constructor(appContext, tabRow, state = {}) {
+    constructor(appContext, state = {}) {
         super(appContext);
 
-        this.tabRow = tabRow;
         this.tabId = state.tabId || utils.randomString(4);
         this.state = state;
 
@@ -89,12 +87,6 @@ class TabContext extends Component {
         return await treeCache.getNoteComplement(this.noteId);
     }
 
-    async remove() {
-        await this.trigger('beforeTabRemove', {tabId: this.tabId}, true);
-
-        this.trigger('tabRemoved', {tabId: this.tabId});
-    }
-
     isActive() {
         return this.appContext.activeTabId === this.tabId;
     }
@@ -107,7 +99,7 @@ class TabContext extends Component {
         return {
             tabId: this.tabId,
             notePath: this.notePath,
-            active: this.tabRow.activeTabId === this.tabId
+            active: this.appContext.activeTabId === this.tabId
         }
     }
 

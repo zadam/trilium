@@ -1,7 +1,6 @@
 import NoteTreeWidget from "../widgets/note_tree.js";
 import TabContext from "./tab_context.js";
 import server from "./server.js";
-import TabRowWidget from "../widgets/tab_row.js";
 import treeCache from "./tree_cache.js";
 import bundleService from "./bundle.js";
 import DialogEventComponent from "./dialog_events.js";
@@ -19,8 +18,6 @@ class AppContext {
         /** @type {TabContext[]} */
         this.tabContexts = [];
         this.tabsChangedTaskId = null;
-        /** @type {TabRowWidget} */
-        this.tabRow = null;
         this.activeTabId = null;
     }
 
@@ -214,7 +211,7 @@ class AppContext {
     getTab(newTab, state) {
         if (!this.getActiveTabContext() || newTab) {
             // if it's a new tab explicitly by user then it's in background
-            const ctx = new TabContext(this, this.tabRow, state);
+            const ctx = new TabContext(this, state);
             this.tabContexts.push(ctx);
             this.components.push(ctx);
 
@@ -231,7 +228,7 @@ class AppContext {
     }
 
     openEmptyTab() {
-        const tabContext = new TabContext(this, this.tabRow);
+        const tabContext = new TabContext(this);
         this.tabContexts.push(tabContext);
         this.components.push(tabContext);
         return tabContext;
@@ -258,7 +255,7 @@ class AppContext {
 
         for (const tc of this.tabContexts) {
             if (tc.notePath && !tc.notePath.split("/").includes(hoistedNoteId)) {
-                this.tabRow.removeTab(tc.tabId);
+                this.removeTab(tc.tabId);
             }
         }
 
@@ -272,15 +269,11 @@ class AppContext {
     async saveOpenTabs() {
         const openTabs = [];
 
-        for (const tabId of this.tabRow.getTabIdsInOrder()) {
-            const tabContext = appContext.getTabContexts().find(tc => tc.tabId === tabId);
+        for (const tabContext of this.tabContexts) {
+            const tabState = tabContext.getTabState();
 
-            if (tabContext) {
-                const tabState = tabContext.getTabState();
-
-                if (tabState) {
-                    openTabs.push(tabState);
-                }
+            if (tabState) {
+                openTabs.push(tabState);
             }
         }
 
@@ -322,50 +315,49 @@ class AppContext {
 
     async removeTab(tabId) {
         const tabContextToRemove = this.tabContexts.find(tc => tc.tabId === tabId);
-        const tabIdsInOrder = this.tabRow.getTabIdsInOrder();
 
         if (!tabContextToRemove) {
             return;
         }
 
-        if (this.tabContexts.length === 0) {
+        await this.trigger('beforeTabRemove', {tabId}, true);
+
+        if (this.tabContexts.length === 1) {
             this.openAndActivateEmptyTab();
         }
         else {
-            const oldIdx = tabIdsInOrder.findIndex(tid => tid === tabId);
-            const newActiveTabId = tabIdsInOrder[oldIdx === tabIdsInOrder.length - 1 ? oldIdx - 1 : oldIdx + 1];
-
-            if (newActiveTabId) {
-                this.activateTab(newActiveTabId);
-            }
-            else {
-                console.log("Failed to find next tabcontext to activate");
-            }
+            this.activateNextTabListener();
         }
 
-        await tabContextToRemove.remove();
-
         this.tabContexts = this.tabContexts.filter(tc => tc.tabId === tabId);
+
+        this.trigger('tabRemoved', {tabId});
 
         this.openTabsChangedListener();
     }
 
-    tabReorderListener() {
+    tabReorderListener({tabIdsInOrder}) {
+        const order = {};
+
+        for (const i in tabIdsInOrder) {
+            order[tabIdsInOrder[i]] = i;
+        }
+
+        this.tabContexts.sort((a, b) => order[a.tabId] < order[b.tabId] ? -1 : 1);
+
         this.openTabsChangedListener();
     }
 
     activateNextTabListener() {
-        const tabIdsInOrder = this.tabRow.getTabIdsInOrder();
-        const oldIdx = tabIdsInOrder.findIndex(tid => tid === this.activeTabId);
-        const newActiveTabId = tabIdsInOrder[oldIdx === tabIdsInOrder.length - 1 ? 0 : oldIdx + 1];
+        const oldIdx = this.tabContexts.findIndex(tc => tc.tabId === this.activeTabId);
+        const newActiveTabId = this.tabContexts[oldIdx === this.tabContexts.length - 1 ? 0 : oldIdx + 1].tabId;
 
         this.activateTab(newActiveTabId);
     }
 
     activatePreviousTabListener() {
-        const tabIdsInOrder = this.tabRow.getTabIdsInOrder();
-        const oldIdx = tabIdsInOrder.findIndex(tid => tid === this.activeTabId);
-        const newActiveTabId = tabIdsInOrder[oldIdx === 0 ? tabIdsInOrder.length - 1 : oldIdx - 1];
+        const oldIdx = this.tabContexts.findIndex(tc => tc.tabId === this.activeTabId);
+        const newActiveTabId = this.tabContexts[oldIdx === 0 ? this.tabContexts.length - 1 : oldIdx - 1].tabId;
 
         this.activateTab(newActiveTabId);
     }
