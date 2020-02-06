@@ -28,7 +28,7 @@ const TPL = `
 </div>
 `;
 
-export default class SidepaneToggles extends BasicWidget {
+export default class SidePaneToggles extends BasicWidget {
     constructor(appContext) {
         super(appContext);
 

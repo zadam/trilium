@@ -34,7 +34,7 @@ import utils from "./utils.js";
 import treeService from "./tree.js";
 import SidePaneContainer from "../widgets/side_pane_container.js";
 import ZoomService from "./zoom.js";
-import SidepaneToggles from "../widgets/sidebar_toggle.js";
+import SidePaneToggles from "../widgets/side_pane_toggles.js";
 
 class AppContext {
     constructor() {
@@ -188,9 +188,9 @@ class AppContext {
 
         $centerPane.after(rightPaneContainer.render());
 
-        const sidebarToggleWidget = new SidepaneToggles(this);
+        const sidePaneTogglesWidget = new SidePaneToggles(this);
 
-        $centerPane.after(sidebarToggleWidget.render());
+        $centerPane.after(sidePaneTogglesWidget.render());
 
         this.components = [
             new Entrypoints(),
@@ -199,7 +199,7 @@ class AppContext {
             leftPaneContainer,
             ...centerPaneWidgets,
             rightPaneContainer,
-            sidebarToggleWidget
+            sidePaneTogglesWidget
         ];
 
         if (utils.isElectron()) {

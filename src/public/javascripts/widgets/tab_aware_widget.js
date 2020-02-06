@@ -78,6 +78,10 @@ export default class TabAwareWidget extends BasicWidget {
     }
 
     lazyLoadedListener() {
+        if (!this.tabContext) { // has not been loaded yet
+            this.tabContext = this.appContext.getActiveTabContext();
+        }
+
         this.refresh();
     }
 }
