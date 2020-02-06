@@ -47,8 +47,6 @@ export default class SidePaneToggles extends BasicWidget {
         this.$widget.find(".show-left-pane-button").on('click', () => this.toggleAndSave('left', true));
         this.$widget.find(".hide-left-pane-button").on('click', () => this.toggleAndSave('left', false));
 
-        splitService.setupSplit(this.paneVisible.left, this.paneVisible.right);
-
         return this.$widget;
     }
 
@@ -68,5 +66,9 @@ export default class SidePaneToggles extends BasicWidget {
         splitService.setupSplit(this.paneVisible.left, this.paneVisible.right);
 
         this.trigger('sidebarVisibilityChanged', {side, show});
+    }
+
+    initialRenderCompleteListener() {
+        splitService.setupSplit(this.paneVisible.left, this.paneVisible.right);
     }
 }

@@ -17,7 +17,6 @@ import WhatLinksHereWidget from "../widgets/what_links_here.js";
 import AttributesWidget from "../widgets/attributes.js";
 import TitleBarButtonsWidget from "../widgets/title_bar_buttons.js";
 import GlobalMenuWidget from "../widgets/global_menu.js";
-import RowFlexContainer from "../widgets/row_flex_container.js";
 import StandardTopWidget from "../widgets/standard_top_widget.js";
 import treeCache from "./tree_cache.js";
 import NotePathsWidget from "../widgets/note_paths.js";
@@ -35,6 +34,7 @@ import treeService from "./tree.js";
 import SidePaneContainer from "../widgets/side_pane_container.js";
 import ZoomService from "./zoom.js";
 import SidePaneToggles from "../widgets/side_pane_toggles.js";
+import FlexContainer from "../widgets/flex_container.js";
 
 class AppContext {
     constructor() {
@@ -130,76 +130,53 @@ class AppContext {
 
     showWidgets() {
         this.tabRow = new TabRowWidget(this);
+        this.noteTreeWidget = new NoteTreeWidget(this);
 
-        const topPaneWidgets = [
-            new RowFlexContainer(this, [
+        const rootContainer = new FlexContainer(this, { 'flex-direction': 'column', 'height': '100vh' }, [
+            new FlexContainer(this, { 'flex-direction': 'row' }, [
                 new GlobalMenuWidget(this),
                 this.tabRow,
                 new TitleBarButtonsWidget(this)
             ]),
-            new StandardTopWidget(this)
-        ];
-
-        const $topPane = $("#top-pane");
-
-        for (const widget of topPaneWidgets) {
-            $topPane.append(widget.render());
-        }
-
-        this.noteTreeWidget = new NoteTreeWidget(this);
-
-        const $centerPane = $("#center-pane");
-
-        const centerPaneWidgets = [
-            new RowFlexContainer(this, [
-                new TabCachingWidget(this, () => new NotePathsWidget(this)),
-                new NoteTitleWidget(this),
-                new RunScriptButtonsWidget(this),
-                new ProtectedNoteSwitchWidget(this),
-                new NoteTypeWidget(this),
-                new NoteActionsWidget(this)
-            ]),
-            new TabCachingWidget(this, () => new PromotedAttributesWidget(this)),
-            new TabCachingWidget(this, () => new NoteDetailWidget(this))
-        ];
-
-        for (const widget of centerPaneWidgets) {
-            $centerPane.append(widget.render());
-        }
-
-        const leftPaneContainer = new SidePaneContainer(this, 'left', [
-            new GlobalButtonsWidget(this),
-            new SearchBoxWidget(this),
-            new SearchResultsWidget(this),
-            this.noteTreeWidget
+            new StandardTopWidget(this),
+            new FlexContainer(this, { 'flex-direction': 'row' }, [
+                new SidePaneContainer(this, 'left', [
+                    new GlobalButtonsWidget(this),
+                    new SearchBoxWidget(this),
+                    new SearchResultsWidget(this),
+                    this.noteTreeWidget
+                ]),
+                new FlexContainer(this, { id: 'center-pane', 'flex-direction': 'column' }, [
+                    new FlexContainer(this, { 'flex-direction': 'row' }, [
+                        new TabCachingWidget(this, () => new NotePathsWidget(this)),
+                        new NoteTitleWidget(this),
+                        new RunScriptButtonsWidget(this),
+                        new ProtectedNoteSwitchWidget(this),
+                        new NoteTypeWidget(this),
+                        new NoteActionsWidget(this)
+                    ]),
+                    new TabCachingWidget(this, () => new PromotedAttributesWidget(this)),
+                    new TabCachingWidget(this, () => new NoteDetailWidget(this))
+                ]),
+                new SidePaneContainer(this, 'right', [
+                    new NoteInfoWidget(this),
+                    new TabCachingWidget(this, () => new CalendarWidget(this)),
+                    new TabCachingWidget(this, () => new AttributesWidget(this)),
+                    new TabCachingWidget(this, () => new LinkMapWidget(this)),
+                    new TabCachingWidget(this, () => new NoteRevisionsWidget(this)),
+                    new TabCachingWidget(this, () => new SimilarNotesWidget(this)),
+                    new TabCachingWidget(this, () => new WhatLinksHereWidget(this))
+                ]),
+                new SidePaneToggles(this)
+            ])
         ]);
 
-        $centerPane.before(leftPaneContainer.render());
-
-        const rightPaneContainer = new SidePaneContainer(this, 'right', [
-            new NoteInfoWidget(this),
-            new TabCachingWidget(this, () => new CalendarWidget(this)),
-            new TabCachingWidget(this, () => new AttributesWidget(this)),
-            new TabCachingWidget(this, () => new LinkMapWidget(this)),
-            new TabCachingWidget(this, () => new NoteRevisionsWidget(this)),
-            new TabCachingWidget(this, () => new SimilarNotesWidget(this)),
-            new TabCachingWidget(this, () => new WhatLinksHereWidget(this))
-        ]);
-
-        $centerPane.after(rightPaneContainer.render());
-
-        const sidePaneTogglesWidget = new SidePaneToggles(this);
-
-        $centerPane.after(sidePaneTogglesWidget.render());
+        $("body").append(rootContainer.render());
 
         this.components = [
+            rootContainer,
             new Entrypoints(),
-            new DialogEventComponent(this),
-            ...topPaneWidgets,
-            leftPaneContainer,
-            ...centerPaneWidgets,
-            rightPaneContainer,
-            sidePaneTogglesWidget
+            new DialogEventComponent(this)
         ];
 
         if (utils.isElectron()) {
@@ -207,6 +184,8 @@ class AppContext {
 
             import("./spell_check.js").then(spellCheckService => spellCheckService.initSpellCheck());
         }
+
+        this.trigger('initialRenderComplete');
     }
 
     trigger(name, data, sync = false) {
