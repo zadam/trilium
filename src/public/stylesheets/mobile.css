@@ -9,12 +9,6 @@ html, body {
     height: 100%;
 }
 
-#left-pane {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-}
-
 #global-buttons {
     display: flex;
     flex-shrink: 0;

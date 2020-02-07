@@ -35,7 +35,7 @@ export default class Layout {
                 new TitleBarButtonsWidget(appContext)
             ]),
             new StandardTopWidget(appContext),
-            new FlexContainer(appContext, { 'flex-direction': 'row' }, [
+            new FlexContainer(appContext, { 'flex-direction': 'row', 'overflow': 'hidden' }, [
                 new SidePaneContainer(appContext, 'left', [
                     new GlobalButtonsWidget(appContext),
                     new SearchBoxWidget(appContext),

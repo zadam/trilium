@@ -45,12 +45,6 @@ body {
     width: 100%;
 }
 
-#left-pane {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-}
-
 .dropdown-menu {
     font-size: inherit;
 }
@@ -144,14 +138,6 @@ body {
 
 .refresh-search-button:hover {
     border-color: var(--button-border-color);
-}
-
-#right-pane {
-    overflow: auto;
-    padding-top: 4px;
-    padding-left: 7px;
-    font-size: 90%;
-    height: 100%;
 }
 
 #right-pane .card {

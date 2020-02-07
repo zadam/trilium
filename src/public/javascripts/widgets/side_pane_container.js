@@ -1,22 +1,12 @@
-import BasicWidget from "./basic_widget.js";
 import options from "../services/options.js";
+import FlexContainer from "./flex_container.js";
 
-export default class SidePaneContainer extends BasicWidget {
+export default class SidePaneContainer extends FlexContainer {
     constructor(appContext, side, widgets) {
-        super(appContext);
+        super(appContext, {id: side + '-pane', 'flex-direction': 'column', 'height': '100%'}, widgets);
 
         this.side = side;
         this.children = widgets;
-    }
-
-    render() {
-        this.$widget = $(`<div id="${this.side}-pane" style="display: flex; flex-direction: column;">`);
-
-        for (const widget of this.children) {
-            this.$widget.append(widget.render());
-        }
-
-        return this.$widget;
     }
 
     eventReceived(name, data, sync = false) {
