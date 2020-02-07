@@ -17,6 +17,7 @@ const helpText = `
 </p>`;
 
 async function refreshSearch() {
+    // FIXME
     const activeNode = appContext.getMainNoteTree().getActiveNode();
 
     activeNode.load(true);

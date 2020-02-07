@@ -35,8 +35,6 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
         window.glob.cutIntoNote = () => this.cutIntoNoteListener();
 
-        this.appContext.noteTreeWidget = this;
-
         this.tree = null;
     }
 

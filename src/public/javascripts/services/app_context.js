@@ -1,4 +1,3 @@
-import NoteTreeWidget from "../widgets/note_tree.js";
 import TabContext from "./tab_context.js";
 import server from "./server.js";
 import treeCache from "./tree_cache.js";
@@ -10,6 +9,7 @@ import utils from "./utils.js";
 import treeService from "./tree.js";
 import ZoomService from "./zoom.js";
 import Layout from "../widgets/layout.js";
+import SpacedUpdate from "./spaced_update.js";
 
 class AppContext {
     constructor(layout) {
@@ -17,8 +17,17 @@ class AppContext {
         this.components = [];
         /** @type {TabContext[]} */
         this.tabContexts = [];
-        this.tabsChangedTaskId = null;
         this.activeTabId = null;
+
+        this.tabsUpdate = new SpacedUpdate(async () => {
+            const openTabs = this.tabContexts
+                .map(tc => tc.getTabState())
+                .filter(t => !!t);
+
+            await server.put('options', {
+                openTabs: JSON.stringify(openTabs)
+            });
+        });
     }
 
     async start() {
@@ -88,18 +97,16 @@ class AppContext {
             filteredTabs[0].active = true;
         }
 
-        for (const tab of filteredTabs) {
-            const tabContext = this.openEmptyTab();
-            tabContext.setNote(tab.notePath);
+        this.tabsUpdate.allowUpdateWithoutChange(() => {
+            for (const tab of filteredTabs) {
+                const tabContext = this.openEmptyTab();
+                tabContext.setNote(tab.notePath);
 
-            if (tab.active) {
-                this.activateTab(tabContext.tabId);
+                if (tab.active) {
+                    this.activateTab(tabContext.tabId);
+                }
             }
-        }
-
-        // previous opening triggered task to save tab changes but these are bogus changes (this is init)
-        // so we'll cancel it
-        this.clearOpenTabsTask();
+        });
     }
 
     showWidgets() {
@@ -201,13 +208,6 @@ class AppContext {
         await tabContext.setNote(notePath);
     }
 
-    /**
-     * @return {NoteTreeWidget}
-     */
-    getMainNoteTree() {
-        return this.noteTreeWidget;
-    }
-
     getTab(newTab, state) {
         if (!this.getActiveTabContext() || newTab) {
             // if it's a new tab explicitly by user then it's in background
@@ -266,35 +266,8 @@ class AppContext {
         this.saveOpenTabs();
     }
 
-    async saveOpenTabs() {
-        const openTabs = [];
-
-        for (const tabContext of this.tabContexts) {
-            const tabState = tabContext.getTabState();
-
-            if (tabState) {
-                openTabs.push(tabState);
-            }
-        }
-
-        await server.put('options', {
-            openTabs: JSON.stringify(openTabs)
-        });
-    }
-
-    clearOpenTabsTask() {
-        if (this.tabsChangedTaskId) {
-            clearTimeout(this.tabsChangedTaskId);
-        }
-    }
-
     openTabsChangedListener() {
-        // we don't want to send too many requests with tab changes so we always schedule task to do this in 1 seconds,
-        // but if there's any change in between, we cancel the old one and schedule new one
-        // so effectively we kind of wait until user stopped e.g. quickly switching tabs
-        this.clearOpenTabsTask();
-
-        this.tabsChangedTaskId = setTimeout(() => this.saveOpenTabs(), 1000);
+        this.tabsUpdate.scheduleUpdate();
     }
 
     activateTab(tabId) {

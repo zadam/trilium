@@ -36,6 +36,7 @@ export async function showDialog(nodes) {
 }
 
 async function moveNotesTo(notePath) {
+    // FIXME
     const targetNode = await appContext.getMainNoteTree().getNodeFromPath(notePath);
 
     await treeChangesService.moveToParentNote(movedNodes, targetNode);

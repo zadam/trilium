@@ -78,17 +78,17 @@ export default class Entrypoints extends Component {
     }
 
     toggleNoteHoistingListener() {
-        const node = appContext.getMainNoteTree().getActiveNode();
+        const note = appContext.getActiveTabNote();
 
         hoistedNoteService.getHoistedNoteId().then(async hoistedNoteId => {
-            if (node.data.noteId === hoistedNoteId) {
+            if (note.noteId === hoistedNoteId) {
                 hoistedNoteService.unhoist();
             }
             else {
-                const note = await treeCache.getNote(node.data.noteId);
+                const note = await treeCache.getNote(note.noteId);
 
                 if (note.type !== 'search') {
-                    hoistedNoteService.setHoistedNoteId(node.data.noteId);
+                    hoistedNoteService.setHoistedNoteId(note.noteId);
                 }
             }
         });

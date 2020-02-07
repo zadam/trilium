@@ -34,7 +34,7 @@ export default class DialogEventComponent extends Component {
     }
 
     async cloneNotesToListener() {
-        // probably should not happen here
+        // FIXME
         const selectedOrActiveNodes = this.appContext.getMainNoteTree().getSelectedOrActiveNodes();
 
         const noteIds = selectedOrActiveNodes.map(node => node.data.noteId);
@@ -44,6 +44,7 @@ export default class DialogEventComponent extends Component {
     }
 
     async moveNotesToListener() {
+        // FIXME
         const selectedOrActiveNodes = this.appContext.getMainNoteTree().getSelectedOrActiveNodes();
 
         const d = await import("../dialogs/move_to.js");
@@ -51,6 +52,7 @@ export default class DialogEventComponent extends Component {
     }
 
     async editBranchPrefixListener() {
+        // FIXME
         const node = this.appContext.getMainNoteTree().getActiveNode();
 
         const editBranchPrefixDialog = await import("../dialogs/branch_prefix.js");

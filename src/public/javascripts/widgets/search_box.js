@@ -107,6 +107,7 @@ export default class SearchBoxWidget extends BasicWidget {
             return;
         }
 
+        // FIXME
         let activeNode = appContext.getMainNoteTree().getActiveNode();
         const parentNote = await treeCache.getNote(activeNode.data.noteId);
 

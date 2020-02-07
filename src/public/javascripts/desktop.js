@@ -36,6 +36,7 @@ window.glob.isDesktop = utils.isDesktop;
 window.glob.isMobile = utils.isMobile;
 
 // required for CKEditor image upload plugin
+// FIXME
 window.glob.getActiveNode = () => appContext.getMainNoteTree().getActiveNode();
 window.glob.getHeaders = server.getHeaders;
 window.glob.showAddLinkDialog = () => import('./dialogs/add_link.js').then(d => d.showDialog());

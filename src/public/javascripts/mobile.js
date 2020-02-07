@@ -90,6 +90,7 @@ async function showTree() {
 }
 
 $detail.on("click", ".note-menu-button", async e => {
+    // FIXME
     const node = appContext.getMainNoteTree().getActiveNode();
     const branch = treeCache.getBranch(node.data.branchId);
     const note = await treeCache.getNote(node.data.noteId);
