@@ -54,7 +54,7 @@ export default class NoteDetailWidget extends TabAwareWidget {
         this.$widget.on("dragleave", e => e.preventDefault());
 
         this.$widget.on("drop", async e => {
-            const activeNote = this.appContext.tabManager.getActiveTabNote();
+            const activeNote = this.tabManager.getActiveTabNote();
 
             if (!activeNote) {
                 return;

@@ -62,7 +62,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
             }
         });
 
-        treeBuilder.prepareTree().then(treeData => this.initFancyTree($tree, treeData));
+        this.initialized = treeBuilder.prepareTree().then(treeData => this.initFancyTree($tree, treeData));
 
         return $widget;
     }
@@ -106,7 +106,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
                 const notePath = await treeService.getNotePath(data.node);
 
-                const activeTabContext = this.appContext.tabManager.getActiveTabContext();
+                const activeTabContext = this.tabManager.getActiveTabContext();
                 await activeTabContext.setNote(notePath);
             },
             expand: (event, data) => this.setExpandedToServer(data.node.data.branchId, true),

@@ -4,7 +4,10 @@ export default class Component {
     /** @param {AppContext} appContext */
     constructor(appContext) {
         this.componentId = `comp-${this.constructor.name}-` + utils.randomString(6);
+        /** @type AppContext */
         this.appContext = appContext;
+        /** @type TabManager */
+        this.tabManager = appContext.tabManager;
         /** @type Component[] */
         this.children = [];
         this.initialized = Promise.resolve();

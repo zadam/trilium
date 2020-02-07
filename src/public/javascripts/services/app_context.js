@@ -33,7 +33,7 @@ class AppContext {
 
         this.components = [
             rootContainer,
-            new Entrypoints(),
+            new Entrypoints(this),
             new DialogEventComponent(this)
         ];
 
