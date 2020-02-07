@@ -69,20 +69,20 @@ async function enterProtectedSessionOnServer(password) {
 }
 
 async function protectNoteAndSendToServer() {
-    if (!appContext.getActiveTabNote() || appContext.getActiveTabNote().isProtected) {
+    if (!appContext.tabManager.getActiveTabNote() || appContext.tabManager.getActiveTabNote().isProtected) {
         return;
     }
 
     await enterProtectedSession();
 
-    const note = appContext.getActiveTabNote();
+    const note = appContext.tabManager.getActiveTabNote();
     note.isProtected = true;
 
-    await appContext.getActiveTabContext().saveNote();
+    await appContext.tabManager.getActiveTabContext().saveNote();
 }
 
 async function unprotectNoteAndSendToServer() {
-    const activeNote = appContext.getActiveTabNote();
+    const activeNote = appContext.tabManager.getActiveTabNote();
 
     if (!activeNote.isProtected) {
         toastService.showAndLogError(`Note ${activeNote.noteId} is not protected`);
@@ -101,7 +101,7 @@ async function unprotectNoteAndSendToServer() {
 
     activeNote.isProtected = false;
 
-    await appContext.getActiveTabContext().saveNote();
+    await appContext.tabManager.getActiveTabContext().saveNote();
 }
 
 async function protectSubtree(noteId, protect) {

@@ -490,7 +490,7 @@ export default class TabRowWidget extends BasicWidget {
             this.draggabillies.push(draggabilly);
 
             draggabilly.on('pointerDown', _ => {
-                this.appContext.activateTab(tabEl.getAttribute('data-tab-id'));
+                this.appContext.tabManager.activateTab(tabEl.getAttribute('data-tab-id'));
             });
 
             draggabilly.on('dragStart', _ => {
@@ -585,7 +585,7 @@ export default class TabRowWidget extends BasicWidget {
     tabNoteSwitchedListener({tabId}) {
         const $tab = this.getTabById(tabId);
 
-        const {note} = this.appContext.getTabContextById(tabId);
+        const {note} = this.appContext.tabManager.getTabContextById(tabId);
 
         this.updateTab($tab, note);
     }
@@ -609,7 +609,7 @@ export default class TabRowWidget extends BasicWidget {
     }
 
     async entitiesReloadedListener({loadResults}) {
-        for (const tabContext of this.appContext.getTabContexts()) {
+        for (const tabContext of this.appContext.tabManager.getTabContexts()) {
             if (loadResults.isNoteReloaded(tabContext.noteId)) {
                 const $tab = this.getTabById(tabContext.tabId);
 
@@ -619,7 +619,7 @@ export default class TabRowWidget extends BasicWidget {
     }
 
     treeCacheReloadedListener() {
-        for (const tabContext of this.appContext.getTabContexts()) {
+        for (const tabContext of this.appContext.tabManager.getTabContexts()) {
             const $tab = this.getTabById(tabContext.tabId);
 
             this.updateTab($tab, tabContext.note);

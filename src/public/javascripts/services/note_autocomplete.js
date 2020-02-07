@@ -8,7 +8,7 @@ const SELECTED_PATH_KEY = "data-note-path";
 async function autocompleteSource(term, cb) {
     const result = await server.get('autocomplete'
         + '?query=' + encodeURIComponent(term)
-        + '&activeNoteId=' + appContext.getActiveTabNoteId());
+        + '&activeNoteId=' + appContext.tabManager.getActiveTabNoteId());
 
     if (result.length === 0) {
         result.push({

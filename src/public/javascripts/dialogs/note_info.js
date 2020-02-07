@@ -16,7 +16,7 @@ export async function showDialog() {
 
     $dialog.modal();
 
-    const activeTabContext = appContext.getActiveTabContext();
+    const activeTabContext = appContext.tabManager.getActiveTabContext();
     const {note} = activeTabContext;
     const noteComplement = await activeTabContext.getNoteComplement();
 

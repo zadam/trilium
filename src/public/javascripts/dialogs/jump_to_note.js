@@ -22,7 +22,7 @@ export async function showDialog() {
                 return false;
             }
 
-            appContext.getActiveTabContext().setNote(suggestion.path);
+            appContext.tabManager.getActiveTabContext().setNote(suggestion.path);
         });
 
     noteAutocompleteService.showRecentNotes($autoComplete);

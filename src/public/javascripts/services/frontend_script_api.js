@@ -48,7 +48,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
      * @returns {Promise<void>}
      */
     this.activateNote = async notePath => {
-        await appContext.getActiveTabContext().setNote(notePath);
+        await appContext.tabManager.getActiveTabContext().setNote(notePath);
     };
 
     /**
@@ -60,7 +60,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
     this.activateNewNote = async notePath => {
         await ws.waitForMaxKnownSyncId();
 
-        await appContext.getActiveTabContext().setNote(notePath);
+        await appContext.tabManager.getActiveTabContext().setNote(notePath);
         appContext.trigger('focusAndSelectTitle');
     };
 
@@ -285,7 +285,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
      * @method
      * @returns {NoteShort} active note (loaded into right pane)
      */
-    this.getActiveTabNote = appContext.getActiveTabNote;
+    this.getActiveTabNote = appContext.tabManager.getActiveTabNote;
 
     /**
      * See https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editor-Editor.html for a documentation on the returned instance.
@@ -299,7 +299,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
      * @method
      * @returns {Promise<string|null>} returns note path of active note or null if there isn't active note
      */
-    this.getActiveTabNotePath = appContext.getActiveTabNotePath;
+    this.getActiveTabNotePath = appContext.tabManager.getActiveTabNotePath;
 
     /**
      * This method checks whether user navigated away from the note from which the scripts has been started.

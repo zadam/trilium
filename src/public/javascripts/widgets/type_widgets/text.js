@@ -91,7 +91,7 @@ export default class TextTypeWidget extends TypeWidget {
             if (match) {
                 const noteId = match[1];
 
-                appContext.getActiveTabContext().setNote(noteId);
+                appContext.tabManager.getActiveTabContext().setNote(noteId);
             }
             else {
                 window.open(src, '_blank');

@@ -139,7 +139,7 @@ async function sortAlphabetically(noteId) {
 
 ws.subscribeToMessages(message => {
    if (message.type === 'open-note') {
-       appContext.activateOrOpenNote(message.noteId);
+       appContext.tabManager.activateOrOpenNote(message.noteId);
 
        if (utils.isElectron()) {
            const currentWindow = require("electron").remote.getCurrentWindow();

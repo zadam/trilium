@@ -56,7 +56,7 @@ window.glob.loadIncludedNote = async (noteId, el) => {
 };
 // this is required by CKEditor when uploading images
 window.glob.noteChanged = () => {
-    const activeTabContext = appContext.getActiveTabContext();
+    const activeTabContext = appContext.tabManager.getActiveTabContext();
 
     if (activeTabContext) {
         activeTabContext.noteChanged();
@@ -65,7 +65,7 @@ window.glob.noteChanged = () => {
 window.glob.refreshTree = treeService.reload;
 
 // required for ESLint plugin
-window.glob.getActiveTabNote = () => appContext.getActiveTabNote();
+window.glob.getActiveTabNote = () => appContext.tabManager.getActiveTabNote();
 window.glob.requireLibrary = libraryLoader.requireLibrary;
 window.glob.ESLINT = libraryLoader.ESLINT;
 

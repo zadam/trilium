@@ -55,7 +55,7 @@ export async function showDialog() {
 
                                 await treeCache.reloadNotes([change.noteId]);
 
-                                appContext.getActiveTabContext().setNote(change.noteId);
+                                appContext.tabManager.getActiveTabContext().setNote(change.noteId);
                             }
                         });
 

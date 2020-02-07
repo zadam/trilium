@@ -29,7 +29,7 @@ async function convertMarkdownToHtml(text) {
 }
 
 export async function importMarkdownInline() {
-    if (appContext.getActiveTabNoteType() !== 'text') {
+    if (appContext.tabManager.getActiveTabNoteType() !== 'text') {
         return;
     }
 

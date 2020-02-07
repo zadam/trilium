@@ -71,14 +71,14 @@ export default class Entrypoints extends Component {
         await treeService.expandToNote(note.noteId);
 
         const tabContext = appContext.openEmptyTab();
-        appContext.activateTab(tabContext.tabId);
+        appContext.tabManager.activateTab(tabContext.tabId);
         await tabContext.setNote(note.noteId);
 
         appContext.trigger('focusAndSelectTitle');
     }
 
     toggleNoteHoistingListener() {
-        const note = appContext.getActiveTabNote();
+        const note = appContext.tabManager.getActiveTabNote();
 
         hoistedNoteService.getHoistedNoteId().then(async hoistedNoteId => {
             if (note.noteId === hoistedNoteId) {

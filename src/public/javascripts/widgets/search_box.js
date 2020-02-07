@@ -168,7 +168,7 @@ export default class SearchBoxWidget extends BasicWidget {
     }
 
     searchInSubtreeListener({noteId}) {
-        noteId = noteId || appContext.getActiveTabNoteId();
+        noteId = noteId || appContext.tabManager.getActiveTabNoteId();
 
         this.toggle(true);
 

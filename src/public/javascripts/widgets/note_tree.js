@@ -89,7 +89,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
                     else if (event.ctrlKey) {
                         const tabContext = appContext.openEmptyTab();
                         treeService.getNotePath(node).then(notePath => tabContext.setNote(notePath));
-                        appContext.activateTab(tabContext.tabId);
+                        appContext.tabManager.activateTab(tabContext.tabId);
                     }
                     else {
                         node.setActive();
@@ -106,7 +106,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
                 const notePath = await treeService.getNotePath(data.node);
 
-                const activeTabContext = this.appContext.getActiveTabContext();
+                const activeTabContext = this.appContext.tabManager.getActiveTabContext();
                 await activeTabContext.setNote(notePath);
             },
             expand: (event, data) => this.setExpandedToServer(data.node.data.branchId, true),
@@ -286,7 +286,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
     }
 
     async scrollToActiveNoteListener() {
-        const activeContext = appContext.getActiveTabContext();
+        const activeContext = appContext.tabManager.getActiveTabContext();
 
         if (activeContext && activeContext.notePath) {
             this.tree.setFocus();
@@ -466,7 +466,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
                         const notePath = await treeService.getNotePath(newActive);
 
-                        appContext.getActiveTabContext().setNote(notePath);
+                        appContext.tabManager.getActiveTabContext().setNote(notePath);
                     }
 
                     node.remove();
@@ -526,7 +526,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
             }
         }
 
-        const activateNotePath = appContext.getActiveTabNotePath();
+        const activateNotePath = appContext.tabManager.getActiveTabNotePath();
 
         if (activateNotePath) {
             const node = await this.getNodeFromPath(activateNotePath);

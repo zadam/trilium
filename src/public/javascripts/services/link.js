@@ -78,11 +78,11 @@ function goToLink(e) {
     if (notePath) {
         if ((e.which === 1 && e.ctrlKey) || e.which === 2) {
             const tabContext = appContext.openEmptyTab();
-            appContext.activateTab(tabContext.tabId);
+            appContext.tabManager.activateTab(tabContext.tabId);
             tabContext.setNote(notePath);
         }
         else if (e.which === 1) {
-            const activeTabContext = appContext.getActiveTabContext();
+            const activeTabContext = appContext.tabManager.getActiveTabContext();
             activeTabContext.setNote(notePath)
         }
         else {
@@ -121,7 +121,7 @@ function newTabContextMenu(e) {
             if (cmd === 'openNoteInNewTab') {
                 const tabContext = appContext.openEmptyTab();
                 tabContext.setNote(notePath);
-                appContext.activateTab(tabContext.tabId);
+                appContext.tabManager.activateTab(tabContext.tabId);
             }
         }
     });
@@ -143,7 +143,7 @@ $(document).on('mousedown', '.note-detail-text a', function (e) {
         if (notePath) {
             const tabContext = appContext.openEmptyTab();
             tabContext.setNote(notePath);
-            appContext.activateTab(tabContext.tabId);
+            appContext.tabManager.activateTab(tabContext.tabId);
         }
         else {
             const address = $link.attr('href');

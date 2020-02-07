@@ -25,7 +25,7 @@ async function createNote(parentNoteId, options = {}) {
         options.isProtected = false;
     }
 
-    if (appContext.getActiveTabNoteType() !== 'text') {
+    if (appContext.tabManager.getActiveTabNoteType() !== 'text') {
         options.saveSelection = false;
     }
 
@@ -48,7 +48,7 @@ async function createNote(parentNoteId, options = {}) {
     }
 
     if (options.activate) {
-        const activeTabContext = appContext.getActiveTabContext();
+        const activeTabContext = appContext.tabManager.getActiveTabContext();
         activeTabContext.setNote(note.noteId);
     }
 
@@ -76,7 +76,7 @@ async function duplicateNote(noteId, parentNoteId) {
 
     await ws.waitForMaxKnownSyncId();
 
-    await appContext.activateOrOpenNote(note.noteId);
+    await appContext.tabManager.activateOrOpenNote(note.noteId);
 
     const origNote = await treeCache.getNote(noteId);
     toastService.showMessage(`Note "${origNote.title}" has been duplicated`);

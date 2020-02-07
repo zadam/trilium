@@ -11,7 +11,7 @@ export function showDialog() {
 
     $dialog.modal();
 
-    const noteText = appContext.getActiveTabNote().content;
+    const noteText = appContext.tabManager.getActiveTabNote().content;
 
     $noteSource.text(formatHtml(noteText));
 }
