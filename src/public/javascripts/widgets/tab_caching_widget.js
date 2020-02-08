@@ -36,7 +36,7 @@ export default class TabCachingWidget extends TabAwareWidget {
 
         if (!widget) {
             widget = this.widgets[this.tabContext.tabId] = this.widgetFactory();
-            this.children.push(widget);console.log("Creating widget",widget.componentId,"for", this.tabContext.tabId);
+            this.children.push(widget);
             this.$widget.after(widget.render());
 
             widget.eventReceived('setTabContext', {tabContext: this.tabContext});
