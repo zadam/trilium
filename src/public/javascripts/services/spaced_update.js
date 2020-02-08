@@ -36,11 +36,11 @@ export default class SpacedUpdate {
         }
     }
 
-    allowUpdateWithoutChange(callback) {
+    async allowUpdateWithoutChange(callback) {
         this.changeForbidden = true;
 
         try {
-            callback();
+            await callback();
         }
         finally {
             this.changeForbidden = false;

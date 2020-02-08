@@ -69,8 +69,6 @@ class TabContext extends Component {
             tabId: this.tabId,
             notePath: this.notePath
         });
-
-        this.trigger('openTabsChanged');
     }
 
     /** @property {NoteShort} */
@@ -99,12 +97,8 @@ class TabContext extends Component {
         return {
             tabId: this.tabId,
             notePath: this.notePath,
-            active: this.tabManager.activeTabId === this.tabId
+            active: this.isActive()
         }
-    }
-
-    stateChanged() {
-        appContext.openTabsChangedListener();
     }
 
     noteDeletedListener({noteId}) {

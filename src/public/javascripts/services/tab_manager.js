@@ -83,10 +83,10 @@ export default class TabManager extends Component {
             filteredTabs[0].active = true;
         }
 
-        this.tabsUpdate.allowUpdateWithoutChange(() => {
+        await this.tabsUpdate.allowUpdateWithoutChange(async () => {
             for (const tab of filteredTabs) {
                 const tabContext = this.openEmptyTab();
-                tabContext.setNote(tab.notePath);
+                await tabContext.setNote(tab.notePath);
 
                 if (tab.active) {
                     this.activateTab(tabContext.tabId);
@@ -97,11 +97,13 @@ export default class TabManager extends Component {
 
     tabNoteSwitchedListener({tabId}) {
         if (tabId === this.activeTabId) {
-            this._setCurrentNotePathToHash();
+            this.setCurrentNotePathToHash();
         }
+
+        this.tabsUpdate.scheduleUpdate();
     }
 
-    _setCurrentNotePathToHash() {
+    setCurrentNotePathToHash() {
         const activeTabContext = this.getActiveTabContext();
 
         if (activeTabContext && activeTabContext.notePath) {
@@ -185,10 +187,6 @@ export default class TabManager extends Component {
         await tabContext.setNote(noteId);
     }
 
-    openTabsChangedListener() {
-        this.tabsUpdate.scheduleUpdate();
-    }
-
     activateTab(tabId) {
         if (tabId === this.activeTabId) {
             return;
@@ -199,6 +197,10 @@ export default class TabManager extends Component {
         this.activeTabId = tabId;
 
         this.trigger('activeTabChanged', { oldActiveTabId, newActiveTabId: tabId });
+
+        this.tabsUpdate.scheduleUpdate();
+        
+        this.setCurrentNotePathToHash();
     }
 
     async removeTab(tabId) {
@@ -221,7 +223,7 @@ export default class TabManager extends Component {
 
         this.trigger('tabRemoved', {tabId});
 
-        this.openTabsChangedListener();
+        this.tabsUpdate.scheduleUpdate();
     }
 
     tabReorderListener({tabIdsInOrder}) {
@@ -233,7 +235,7 @@ export default class TabManager extends Component {
 
         this.tabContexts.sort((a, b) => order[a.tabId] < order[b.tabId] ? -1 : 1);
 
-        this.openTabsChangedListener();
+        this.tabsUpdate.scheduleUpdate();
     }
 
     activateNextTabListener() {

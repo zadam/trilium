@@ -5,6 +5,7 @@ import LoadResults from "./load_results.js";
 import Branch from "../entities/branch.js";
 import Attribute from "../entities/attribute.js";
 import options from "./options.js";
+import treeCache from "./tree_cache.js";
 
 const $outstandingSyncsCount = $("#outstanding-syncs-count");
 
@@ -203,7 +204,7 @@ async function processSyncRows(syncRows) {
     const loadResults = new LoadResults(this);
 
     syncRows.filter(sync => sync.entityName === 'notes').forEach(sync => {
-        const note = this.notes[sync.entityId];
+        const note = treeCache.notes[sync.entityId];
 
         if (note) {
             note.update(sync.entity);
@@ -212,9 +213,9 @@ async function processSyncRows(syncRows) {
     });
 
     syncRows.filter(sync => sync.entityName === 'branches').forEach(sync => {
-        let branch = this.branches[sync.entityId];
-        const childNote = this.notes[sync.entity.noteId];
-        const parentNote = this.notes[sync.entity.parentNoteId];
+        let branch = treeCache.branches[sync.entityId];
+        const childNote = treeCache.notes[sync.entity.noteId];
+        const parentNote = treeCache.notes[sync.entity.parentNoteId];
 
         if (branch) {
             if (sync.entity.isDeleted) {
@@ -244,7 +245,7 @@ async function processSyncRows(syncRows) {
         else if (!sync.entity.isDeleted) {
             if (childNote || parentNote) {
                 branch = new Branch(this, sync.entity);
-                this.branches[branch.branchId] = branch;
+                treeCache.branches[branch.branchId] = branch;
 
                 loadResults.addBranch(sync.entityId, sync.sourceId);
 
@@ -261,7 +262,7 @@ async function processSyncRows(syncRows) {
 
     syncRows.filter(sync => sync.entityName === 'note_reordering').forEach(sync => {
         for (const branchId in sync.positions) {
-            const branch = this.branches[branchId];
+            const branch = treeCache.branches[branchId];
 
             if (branch) {
                 branch.notePosition = sync.positions[branchId];
@@ -273,9 +274,9 @@ async function processSyncRows(syncRows) {
 
     // missing reloading the relation target note
     syncRows.filter(sync => sync.entityName === 'attributes').forEach(sync => {
-        let attribute = this.attributes[sync.entityId];
-        const sourceNote = this.notes[sync.entity.noteId];
-        const targetNote = sync.entity.type === 'relation' && this.notes[sync.entity.value];
+        let attribute = treeCache.attributes[sync.entityId];
+        const sourceNote = treeCache.notes[sync.entity.noteId];
+        const targetNote = sync.entity.type === 'relation' && treeCache.notes[sync.entity.value];
 
         if (attribute) {
             attribute.update(sync.entity);
@@ -295,7 +296,7 @@ async function processSyncRows(syncRows) {
             if (sourceNote || targetNote) {
                 attribute = new Attribute(this, sync.entity);
 
-                this.attributes[attribute.attributeId] = attribute;
+                treeCache.attributes[attribute.attributeId] = attribute;
 
                 loadResults.addAttribute(sync.entityId, sync.sourceId);
 
@@ -311,7 +312,7 @@ async function processSyncRows(syncRows) {
     });
 
     syncRows.filter(sync => sync.entityName === 'note_contents').forEach(sync => {
-        delete this.noteComplementPromises[sync.entityId];
+        delete treeCache.noteComplementPromises[sync.entityId];
 
         loadResults.addNoteContent(sync.entityId, sync.sourceId);
     });
