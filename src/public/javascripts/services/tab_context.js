@@ -88,7 +88,7 @@ class TabContext extends Component {
     }
 
     isActive() {
-        return this.appContext.activeTabId === this.tabId;
+        return this.tabManager.activeTabId === this.tabId;
     }
 
     getTabState() {
@@ -99,7 +99,7 @@ class TabContext extends Component {
         return {
             tabId: this.tabId,
             notePath: this.notePath,
-            active: this.appContext.activeTabId === this.tabId
+            active: this.tabManager.activeTabId === this.tabId
         }
     }
 

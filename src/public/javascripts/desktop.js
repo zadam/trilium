@@ -32,6 +32,8 @@ import options from "./services/options.js";
 import noteContentRenderer from "./services/note_content_renderer.js";
 import appContext from "./services/app_context.js";
 
+window.glob.PROFILING_LOG = false;
+
 window.glob.isDesktop = utils.isDesktop;
 window.glob.isMobile = utils.isMobile;
 

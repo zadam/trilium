@@ -44,7 +44,7 @@ export default class TabAwareWidget extends BasicWidget {
     }
 
     async isEnabled() {
-        return !!this.note;
+        return !!this.note && this.tabContext.isActive();
     }
 
     async refresh() {
@@ -56,7 +56,7 @@ export default class TabAwareWidget extends BasicWidget {
 
             const end = Date.now();
 
-            if (end - start > 10) {
+            if (glob.PROFILING_LOG && end - start > 10) {
                 console.log(`Refresh of ${this.componentId} took ${end-start}ms`);
             }
         }

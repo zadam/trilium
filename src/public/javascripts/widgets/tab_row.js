@@ -409,12 +409,6 @@ export default class TabRowWidget extends BasicWidget {
         });
     }
 
-    get activeTabId() {
-        const tabEl = this.activeTabEl;
-
-        return tabEl ? tabEl.getAttribute('data-tab-id') : null;
-    }
-
     get activeTabEl() {
         return this.$widget.find('.note-tab[active]')[0];
     }

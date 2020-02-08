@@ -43,7 +43,7 @@
     "html": "1.0.0",
     "html2plaintext": "2.1.2",
     "http-proxy-agent": "4.0.0",
-    "https-proxy-agent": "4.0.0",
+    "https-proxy-agent": "5.0.0",
     "image-type": "4.1.0",
     "imagemin": "7.0.1",
     "imagemin-giflossy": "5.1.10",
@@ -78,7 +78,7 @@
   "devDependencies": {
     "electron": "8.0.0",
     "electron-builder": "22.3.2",
-    "electron-packager": "14.2.0",
+    "electron-packager": "14.2.1",
     "electron-rebuild": "1.10.0",
     "jsdoc": "3.6.3",
     "lorem-ipsum": "2.0.3"

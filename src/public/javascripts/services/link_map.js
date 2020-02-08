@@ -176,7 +176,7 @@ export default class LinkMap {
                     .addClass('link-' + edge.target.id);
             }
             else {
-                console.log(`connection not created for`, edge);
+                console.debug(`connection not created for`, edge);
             }
         });
 

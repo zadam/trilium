@@ -44,4 +44,6 @@ app.on('will-quit', () => {
     globalShortcut.unregisterAll();
 });
 
+process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
+
 require('./src/www');

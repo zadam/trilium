@@ -78,7 +78,9 @@ async function call(method, url, data, headers = {}) {
 
     const end = Date.now();
 
-    console.log(`${method} ${url} took ${end-start}ms`);
+    if (glob.PROFILING_LOG) {
+        console.log(`${method} ${url} took ${end - start}ms`);
+    }
 
     const maxSyncIdStr = resp.headers['trilium-max-sync-id'];
 

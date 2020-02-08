@@ -28,7 +28,7 @@ export default class Component {
 
         const end = Date.now();
 
-        if (end - start > 10) {
+        if (end - start > 10 && glob.PROFILING_LOG) {
             console.log(`Event ${name} in component ${this.componentId} took ${end-start}ms`);
         }
 
