@@ -38,12 +38,6 @@ export default class CalendarWidget extends CollapsibleWidget {
         console.log("set tab context", tabContext.tabId, "to", this.componentId);
     }
 
-    async refresh() {
-        super.refresh();
-
-        //console.trace("tab", this.tabContext.tabId);
-    }
-
     async doRenderBody() {
         await libraryLoader.requireLibrary(libraryLoader.CALENDAR_WIDGET);
 

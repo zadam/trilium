@@ -44,6 +44,7 @@ app.on('will-quit', () => {
     globalShortcut.unregisterAll();
 });
 
+// this is to disable electron warning spam in the dev console (local development only)
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
 
 require('./src/www');
