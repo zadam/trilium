@@ -201,10 +201,6 @@ export default class TabManager extends Component {
         this.trigger('activeTabChanged', { oldActiveTabId, newActiveTabId: tabId });
     }
 
-    newTabListener() {
-        this.openAndActivateEmptyTab();
-    }
-
     async removeTab(tabId) {
         const tabContextToRemove = this.tabContexts.find(tc => tc.tabId === tabId);
 
@@ -256,6 +252,10 @@ export default class TabManager extends Component {
 
     closeActiveTabListener() {
         this.removeTab(this.activeTabId);
+    }
+
+    beforeUnloadListener() {
+        this.tabsUpdate.updateNowIfNecessary();
     }
 
     openNewTabListener() {

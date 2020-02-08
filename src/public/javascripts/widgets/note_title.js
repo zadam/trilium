@@ -1,7 +1,6 @@
 import TabAwareWidget from "./tab_aware_widget.js";
 import utils from "../services/utils.js";
 import protectedSessionHolder from "../services/protected_session_holder.js";
-import treeCache from "../services/tree_cache.js";
 import server from "../services/server.js";
 import SpacedUpdate from "../services/spaced_update.js";
 
@@ -40,34 +39,13 @@ export default class NoteTitleWidget extends TabAwareWidget {
         this.$widget = $(TPL);
         this.$noteTitle = this.$widget.find(".note-title");
 
-        this.$noteTitle.on('input', () => this.titleChanged());
+        this.$noteTitle.on('input', () => this.spacedUpdate.scheduleUpdate());
 
         utils.bindElShortcut(this.$noteTitle, 'return', () => {
             this.trigger('focusOnDetail', {tabId: this.tabContext.tabId});
         });
 
         return this.$widget;
-    }
-
-    async titleChanged() {
-        const {note} = this.tabContext;
-
-        if (!note) {
-            return;
-        }
-
-        note.title = this.$noteTitle.val();
-
-        this.spacedUpdate.scheduleUpdate();
-
-        const noteFromCache = await treeCache.getNote(note.noteId);
-        noteFromCache.title = note.title;
-
-        this.trigger(`noteTitleChanged`, {
-            tabId: this.tabContext.tabId, // used to identify that the event comes from this tab so we should not update this tab's input
-            title: note.title,
-            noteId: note.noteId
-        });
     }
 
     async refreshWithNote(note) {

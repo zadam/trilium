@@ -20,7 +20,7 @@ class TabContext extends Component {
         this.tabId = state.tabId || utils.randomString(4);
         this.state = state;
 
-        this.trigger('tabOpened', {tabId: this.tabId});
+        this.trigger('newTabOpened', {tabId: this.tabId});
     }
 
     async setNote(inputNotePath) {

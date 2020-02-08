@@ -421,7 +421,7 @@ export default class TabRowWidget extends BasicWidget {
         tabEl.setAttribute('active', '');
     }
 
-    tabOpenedListener({tabId}) {
+    newTabOpenedListener({tabId}) {
         this.addTab(tabId);
     }
 
@@ -553,7 +553,7 @@ export default class TabRowWidget extends BasicWidget {
 
         this.$tabContainer.append(this.$newTab);
 
-        this.$newTab.on('click', _ => this.trigger('newTab'));
+        this.$newTab.on('click', _ => this.trigger('openNewTab'));
     }
 
     setupFiller() {

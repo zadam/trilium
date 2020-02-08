@@ -1,6 +1,7 @@
 import BasicWidget from "./basic_widget.js";
 import protectedSessionService from "../services/protected_session.js";
 import protectedSessionHolder from "../services/protected_session_holder.js";
+import TabAwareWidget from "./tab_aware_widget.js";
 
 const TPL = `
 <div class="btn-group btn-group-xs" style="margin-left: 10px; margin-right: 10px;">
@@ -15,7 +16,7 @@ const TPL = `
     </button>
 </div>`;
 
-export default class ProtectedNoteSwitchWidget extends BasicWidget {
+export default class ProtectedNoteSwitchWidget extends TabAwareWidget {
     doRender() {
         this.$widget = $(TPL);
 

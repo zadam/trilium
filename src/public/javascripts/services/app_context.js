@@ -13,7 +13,7 @@ class AppContext {
     constructor(layout) {
         this.layout = layout;
         this.tabManager = new TabManager(this);
-        this.components = [this.tabManager];
+        this.components = [];
     }
 
     async start() {
@@ -32,6 +32,7 @@ class AppContext {
         $("body").append(rootContainer.render());
 
         this.components = [
+            this.tabManager,
             rootContainer,
             new Entrypoints(this),
             new DialogEventComponent(this)
@@ -112,7 +113,7 @@ $(window).on('hashchange', function() {
     if (isNotePathInAddress()) {
         const [notePath, tabId] = getHashValueFromAddress();
 
-        appContext.switchToTab(tabId, notePath);
+        appContext.tabManager.switchToTab(tabId, notePath);
     }
 });
 

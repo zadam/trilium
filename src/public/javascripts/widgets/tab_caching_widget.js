@@ -8,6 +8,10 @@ export default class TabCachingWidget extends TabAwareWidget {
         this.widgets = {};
     }
 
+    async isEnabled() {
+        return this.tabContext.isActive();
+    }
+
     doRender() {
         this.$widget = $(`<div class="marker" style="display: none;">`);
         return this.$widget;
@@ -53,9 +57,12 @@ export default class TabCachingWidget extends TabAwareWidget {
         }
     }
 
-    toggle(show) {
+    async toggle(show) {
         for (const tabId in this.widgets) {
-            this.widgets[tabId].toggle(show && this.tabContext && tabId === this.tabContext.tabId);
+            this.widgets[tabId].toggle(
+                show
+                && this.tabContext && tabId === this.tabContext.tabId
+                && await this.widgets[tabId].isEnabled());
         }
     }
 }
