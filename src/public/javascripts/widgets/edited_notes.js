@@ -14,9 +14,9 @@ export default class EditedNotesWidget extends CollapsibleWidget {
 
     getMaxHeight() { return "200px"; }
 
-    async isEnabled() {
-        return await super.isEnabled()
-            && await this.note.hasOwnedLabel("dateNote");
+    isEnabled() {
+        return super.isEnabled()
+            && this.note.hasOwnedLabel("dateNote");
     }
 
     async refreshWithNote(note) {

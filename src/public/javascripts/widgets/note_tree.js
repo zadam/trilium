@@ -39,14 +39,13 @@ export default class NoteTreeWidget extends TabAwareWidget {
     }
 
     doRender() {
-        const $widget = $(TPL);
-        const $tree = $widget;
+        this.$widget = $(TPL);
 
-        $tree.on("click", ".unhoist-button", hoistedNoteService.unhoist);
-        $tree.on("click", ".refresh-search-button", searchNotesService.refreshSearch);
+        this.$widget.on("click", ".unhoist-button", hoistedNoteService.unhoist);
+        this.$widget.on("click", ".refresh-search-button", searchNotesService.refreshSearch);
 
         // fancytree doesn't support middle click so this is a way to support it
-        $widget.on('mousedown', '.fancytree-title', e => {
+        this.$widget.on('mousedown', '.fancytree-title', e => {
             if (e.which === 2) {
                 const node = $.ui.fancytree.getNode(e);
 
@@ -62,20 +61,20 @@ export default class NoteTreeWidget extends TabAwareWidget {
             }
         });
 
-        this.initialized = treeBuilder.prepareTree().then(treeData => this.initFancyTree($tree, treeData));
+        this.initialized = treeBuilder.prepareTree().then(treeData => this.initFancyTree(treeData));
 
-        return $widget;
+        return this.$widget;
     }
 
-    async initFancyTree($tree, treeData) {
+    async initFancyTree(treeData) {
         utils.assertArguments(treeData);
 
-        $tree.fancytree({
+        this.$widget.fancytree({
             autoScroll: true,
             keyboard: false, // we takover keyboard handling in the hotkeys plugin
             extensions: ["hotkeys", "dnd5", "clones"],
             source: treeData,
-            scrollParent: $tree,
+            scrollParent: this.$widget,
             minExpandLevel: 2, // root can't be collapsed
             click: (event, data) => {
                 const targetType = data.targetType;
@@ -224,7 +223,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
             }
         });
 
-        $tree.on('contextmenu', '.fancytree-node', e => {
+        this.$widget.on('contextmenu', '.fancytree-node', e => {
             const node = $.ui.fancytree.getNode(e);
 
             contextMenuWidget.initContextMenu(e, new TreeContextMenu(this, node));
@@ -232,7 +231,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
             return false; // blocks default browser right click menu
         });
 
-        this.tree = $.ui.fancytree.getTree($tree);
+        this.tree = $.ui.fancytree.getTree(this.$widget);
     }
 
     /** @return {FancytreeNode[]} */
@@ -411,6 +410,8 @@ export default class NoteTreeWidget extends TabAwareWidget {
     collapseTreeListener() { this.collapseTree(); }
 
     async refresh() {
+        this.toggle(this.isEnabled());
+
         const oldActiveNode = this.getActiveNode();
 
         if (oldActiveNode) {

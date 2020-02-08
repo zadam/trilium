@@ -27,8 +27,8 @@ const TPL = `
 export default class CalendarWidget extends CollapsibleWidget {
     getWidgetTitle() { return "Calendar"; }
 
-    async isEnabled() {
-        return await super.isEnabled()
+    isEnabled() {
+        return super.isEnabled()
             && this.note.hasOwnedLabel("dateNote");
     }
 

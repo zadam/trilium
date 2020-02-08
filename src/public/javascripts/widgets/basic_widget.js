@@ -13,7 +13,13 @@ class BasicWidget extends Component {
             this.appContext.trigger(eventName);
         });
 
+        this.toggle(this.isEnabled());
+
         return $widget;
+    }
+
+    isEnabled() {
+        return true;
     }
 
     /**

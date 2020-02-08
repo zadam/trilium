@@ -8,7 +8,7 @@ export default class FlexContainer extends BasicWidget {
         this.children = widgets;
     }
 
-    render() {
+    doRender() {
         this.$widget = $(`<div style="display: flex;">`);
 
         for (const key in this.attrs) {

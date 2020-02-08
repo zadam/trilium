@@ -43,12 +43,12 @@ export default class TabAwareWidget extends BasicWidget {
         this.refresh();
     }
 
-    async isEnabled() {
+    isEnabled() {
         return !!this.note && this.tabContext.isActive();
     }
 
     async refresh() {
-        if (await this.isEnabled()) {
+        if (this.isEnabled()) {
             const start = Date.now();
 
             this.toggle(true);
