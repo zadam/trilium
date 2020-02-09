@@ -8,6 +8,7 @@ import utils from "./utils.js";
 import ZoomService from "./zoom.js";
 import Layout from "../widgets/layout.js";
 import TabManager from "./tab_manager.js";
+import treeService from "./tree.js";
 
 class AppContext {
     constructor(layout) {
@@ -63,22 +64,6 @@ class AppContext {
         }
     }
 
-    hoistedNoteChangedListener({hoistedNoteId}) {
-        if (hoistedNoteId === 'root') {
-            return;
-        }
-
-        for (const tc of this.tabManager.getTabContexts()) {
-            if (tc.notePath && !tc.notePath.split("/").includes(hoistedNoteId)) {
-                this.tabManager.removeTab(tc.tabId);
-            }
-        }
-
-        if (this.tabManager.getTabContexts().length === 0) {
-            this.tabManager.openAndActivateEmptyTab();
-        }
-    }
-
     async protectedSessionStartedListener() {
         await treeCache.loadInitialTree();
 
@@ -103,15 +88,9 @@ function isNotePathInAddress() {
         || (notePath === '' && !!tabId);
 }
 
-function getHashValueFromAddress() {
-    const str = document.location.hash ? document.location.hash.substr(1) : ""; // strip initial #
-
-    return str.split("-");
-}
-
 $(window).on('hashchange', function() {
     if (isNotePathInAddress()) {
-        const [notePath, tabId] = getHashValueFromAddress();
+        const [notePath, tabId] = treeService.getHashValueFromAddress();
 
         appContext.tabManager.switchToTab(tabId, notePath);
     }

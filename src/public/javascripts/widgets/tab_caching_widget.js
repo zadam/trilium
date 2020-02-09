@@ -53,6 +53,9 @@ export default class TabCachingWidget extends TabAwareWidget {
 
         if (widget) {
             widget.remove();
+            delete this.widgets[tabId];
+
+            this.children = this.children.filter(ch => ch !== widget);
         }
     }
 

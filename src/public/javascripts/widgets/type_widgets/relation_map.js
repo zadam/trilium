@@ -196,7 +196,7 @@ export default class RelationMapTypeWidget extends TypeWidget {
         const noteId = this.idToNoteId($noteBox.prop("id"));
 
         if (cmd === "open-in-new-tab") {
-            const tabContext = appContext.openEmptyTab();
+            const tabContext = this.tabManager.openEmptyTab();
             tabContext.setNote(noteId);
         }
         else if (cmd === "remove") {

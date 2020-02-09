@@ -9,7 +9,6 @@ import treeBuilder from "../services/tree_builder.js";
 import TreeContextMenu from "../services/tree_context_menu.js";
 import treeChangesService from "../services/branches.js";
 import ws from "../services/ws.js";
-import appContext from "../services/app_context.js";
 import TabAwareWidget from "./tab_aware_widget.js";
 import server from "../services/server.js";
 import noteCreateService from "../services/note_create.js";
@@ -51,7 +50,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
                 treeService.getNotePath(node).then(notePath => {
                     if (notePath) {
-                        const tabContext = appContext.openEmptyTab();
+                        const tabContext = this.tabManager.openEmptyTab();
                         tabContext.setNote(notePath);
                     }
                 });
@@ -86,9 +85,9 @@ export default class NoteTreeWidget extends TabAwareWidget {
                         node.setFocus(true);
                     }
                     else if (event.ctrlKey) {
-                        const tabContext = appContext.openEmptyTab();
+                        const tabContext = this.tabManager.openEmptyTab();
                         treeService.getNotePath(node).then(notePath => tabContext.setNote(notePath));
-                        appContext.tabManager.activateTab(tabContext.tabId);
+                        this.tabManager.activateTab(tabContext.tabId);
                     }
                     else {
                         node.setActive();
@@ -285,7 +284,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
     }
 
     async scrollToActiveNoteListener() {
-        const activeContext = appContext.tabManager.getActiveTabContext();
+        const activeContext = this.tabManager.getActiveTabContext();
 
         if (activeContext && activeContext.notePath) {
             this.tree.setFocus();
@@ -409,6 +408,10 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
     collapseTreeListener() { this.collapseTree(); }
 
+    isEnabled() {
+        return this.tabContext && this.tabContext.isActive();
+    }
+
     async refresh() {
         this.toggle(this.isEnabled());
 
@@ -467,7 +470,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
                         const notePath = await treeService.getNotePath(newActive);
 
-                        appContext.tabManager.getActiveTabContext().setNote(notePath);
+                        this.tabManager.getActiveTabContext().setNote(notePath);
                     }
 
                     node.remove();
@@ -527,7 +530,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
             }
         }
 
-        const activateNotePath = appContext.tabManager.getActiveTabNotePath();
+        const activateNotePath = this.tabManager.getActiveTabNotePath();
 
         if (activateNotePath) {
             const node = await this.getNodeFromPath(activateNotePath);

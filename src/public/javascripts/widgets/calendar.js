@@ -32,12 +32,6 @@ export default class CalendarWidget extends CollapsibleWidget {
             && this.note.hasOwnedLabel("dateNote");
     }
 
-    setTabContextListener({tabContext}) {
-        super.setTabContextListener({tabContext});
-
-        console.log("set tab context", tabContext.tabId, "to", this.componentId);
-    }
-
     async doRenderBody() {
         await libraryLoader.requireLibrary(libraryLoader.CALENDAR_WIDGET);
 

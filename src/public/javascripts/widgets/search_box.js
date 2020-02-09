@@ -4,6 +4,7 @@ import treeCache from "../services/tree_cache.js";
 import toastService from "../services/toast.js";
 import appContext from "../services/app_context.js";
 import noteCreateService from "../services/note_create.js";
+import utils from "../services/utils.js";
 
 const TPL = `
 <div class="search-box">
@@ -126,6 +127,8 @@ export default class SearchBoxWidget extends BasicWidget {
     }
 
     showSearchListener() {
+        utils.saveFocusedElement();
+
         this.$searchBox.slideDown();
 
         this.$searchBox.tooltip({

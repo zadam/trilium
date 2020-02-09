@@ -261,11 +261,7 @@ export default class TabRowWidget extends BasicWidget {
                     ];
                 },
                 selectContextMenuItem: (e, cmd) => {
-                    if (cmd === 'removeAllTabs') {
-                        this.trigger('removeAllTabs');
-                    } else if (cmd === 'removeAllTabsExceptForThis') {
-                        this.trigger('removeAllTabsExceptForThis', {tabId});
-                    }
+                    this.trigger(cmd, {tabId});
                 }
             });
         });
@@ -398,11 +394,11 @@ export default class TabRowWidget extends BasicWidget {
 
     setTabCloseEventListener($tab) {
         $tab.find('.note-tab-close')
-            .on('click', _ => this.appContext.removeTab($tab.attr('data-tab-id')));
+            .on('click', _ => this.tabManager.removeTab($tab.attr('data-tab-id')));
 
         $tab.on('mousedown', e => {
             if (e.which === 2) {
-                this.appContext.removeTab($tab.attr('data-tab-id'));
+                this.tabManager.removeTab($tab.attr('data-tab-id'));
 
                 return true; // event has been handled
             }
@@ -413,12 +409,14 @@ export default class TabRowWidget extends BasicWidget {
         return this.$widget.find('.note-tab[active]')[0];
     }
 
-    activeTabChangedListener({newActiveTabId}) {
+    activeTabChangedListener() {
+        const newActiveTabId = this.tabManager.activeTabId;
+
         const tabEl = this.getTabById(newActiveTabId)[0];
         const activeTabEl = this.activeTabEl;
         if (activeTabEl === tabEl) return;
         if (activeTabEl) activeTabEl.removeAttribute('active');
-        tabEl.setAttribute('active', '');
+        if (tabEl) tabEl.setAttribute('active', '');
     }
 
     newTabOpenedListener({tabId}) {
@@ -603,7 +601,7 @@ export default class TabRowWidget extends BasicWidget {
     }
 
     async entitiesReloadedListener({loadResults}) {
-        for (const tabContext of this.tabManager.getTabContexts()) {
+        for (const tabContext of this.tabManager.tabContexts) {
             if (loadResults.isNoteReloaded(tabContext.noteId)) {
                 const $tab = this.getTabById(tabContext.tabId);
 
@@ -613,7 +611,7 @@ export default class TabRowWidget extends BasicWidget {
     }
 
     treeCacheReloadedListener() {
-        for (const tabContext of this.tabManager.getTabContexts()) {
+        for (const tabContext of this.tabManager.tabContexts) {
             const $tab = this.getTabById(tabContext.tabId);
 
             this.updateTab($tab, tabContext.note);

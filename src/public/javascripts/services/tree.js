@@ -1,13 +1,8 @@
 import ws from './ws.js';
-import protectedSessionHolder from './protected_session_holder.js';
 import utils from './utils.js';
 import server from './server.js';
 import treeCache from './tree_cache.js';
-import toastService from "./toast.js";
-import treeBuilder from "./tree_builder.js";
 import hoistedNoteService from '../services/hoisted_note.js';
-import optionsService from "../services/options.js";
-import bundle from "./bundle.js";
 import appContext from "./app_context.js";
 
 /**
@@ -262,6 +257,12 @@ async function getNotePathTitle(notePath) {
     return titlePath.join(' / ');
 }
 
+function getHashValueFromAddress() {
+    const str = document.location.hash ? document.location.hash.substr(1) : ""; // strip initial #
+
+    return str.split("-");
+}
+
 export default {
     sortAlphabetically,
     resolveNotePath,
@@ -272,5 +273,6 @@ export default {
     getNoteIdFromNotePath,
     getNoteIdAndParentIdFromNotePath,
     getNoteTitle,
-    getNotePathTitle
+    getNotePathTitle,
+    getHashValueFromAddress
 };

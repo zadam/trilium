@@ -12,13 +12,12 @@ import hoistedNoteService from "./hoisted_note.js";
 class TabContext extends Component {
     /**
      * @param {AppContext} appContext
-     * @param {object} state
+     * @param {string|null} tabId
      */
-    constructor(appContext, state = {}) {
+    constructor(appContext, tabId = null) {
         super(appContext);
 
-        this.tabId = state.tabId || utils.randomString(4);
-        this.state = state;
+        this.tabId = tabId || utils.randomString(4);
 
         this.trigger('newTabOpened', {tabId: this.tabId});
     }

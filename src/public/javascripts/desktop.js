@@ -70,6 +70,7 @@ window.glob.refreshTree = treeService.reload;
 window.glob.getActiveTabNote = () => appContext.tabManager.getActiveTabNote();
 window.glob.requireLibrary = libraryLoader.requireLibrary;
 window.glob.ESLINT = libraryLoader.ESLINT;
+window.glob.appContext = appContext; // for debugging
 
 protectedSessionHolder.setProtectedSessionId(null);
 

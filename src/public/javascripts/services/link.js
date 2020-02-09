@@ -77,7 +77,7 @@ function goToLink(e) {
 
     if (notePath) {
         if ((e.which === 1 && e.ctrlKey) || e.which === 2) {
-            const tabContext = appContext.openEmptyTab();
+            const tabContext = appContext.tabManager.openEmptyTab();
             appContext.tabManager.activateTab(tabContext.tabId);
             tabContext.setNote(notePath);
         }
@@ -119,7 +119,7 @@ function newTabContextMenu(e) {
         },
         selectContextMenuItem: (e, cmd) => {
             if (cmd === 'openNoteInNewTab') {
-                const tabContext = appContext.openEmptyTab();
+                const tabContext = appContext.tabManager.openEmptyTab();
                 tabContext.setNote(notePath);
                 appContext.tabManager.activateTab(tabContext.tabId);
             }
@@ -141,7 +141,7 @@ $(document).on('mousedown', '.note-detail-text a', function (e) {
         e.preventDefault();
 
         if (notePath) {
-            const tabContext = appContext.openEmptyTab();
+            const tabContext = appContext.tabManager.openEmptyTab();
             tabContext.setNote(notePath);
             appContext.tabManager.activateTab(tabContext.tabId);
         }

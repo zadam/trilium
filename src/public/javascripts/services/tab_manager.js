@@ -11,8 +11,6 @@ export default class TabManager extends Component {
     constructor(appContext) {
         super(appContext);
 
-        /** @type {TabContext[]} */
-        this.tabContexts = [];
         this.activeTabId = null;
 
         this.tabsUpdate = new SpacedUpdate(async () => {
@@ -24,6 +22,11 @@ export default class TabManager extends Component {
                 openTabs: JSON.stringify(openTabs)
             });
         });
+    }
+
+    /** @type {TabContext[]} */
+    get tabContexts() {
+        return this.children;
     }
 
     async loadTabs() {
@@ -85,7 +88,7 @@ export default class TabManager extends Component {
 
         await this.tabsUpdate.allowUpdateWithoutChange(async () => {
             for (const tab of filteredTabs) {
-                const tabContext = this.openEmptyTab();
+                const tabContext = this.openEmptyTab(tab.tabId);
                 await tabContext.setNote(tab.notePath);
 
                 if (tab.active) {
@@ -106,8 +109,19 @@ export default class TabManager extends Component {
     setCurrentNotePathToHash() {
         const activeTabContext = this.getActiveTabContext();
 
-        if (activeTabContext && activeTabContext.notePath) {
-            document.location.hash = (activeTabContext.notePath || "") + "-" + activeTabContext.tabId;
+        if (activeTabContext
+            && activeTabContext.notePath !== treeService.getHashValueFromAddress()) {
+            const url = '#' + (activeTabContext.notePath || "") + "-" + activeTabContext.tabId;
+
+            // using pushState instead of directly modifying document.location because it does not trigger hashchange
+            window.history.pushState(null, "", url);
+
+            document.title = "Trilium Notes";
+
+            if (activeTabContext.note) {
+                // it helps navigating in history if note title is included in the title
+                document.title += " - " + activeTabContext.note.title;
+            }
         }
     }
 
@@ -166,9 +180,8 @@ export default class TabManager extends Component {
         await this.activateTab(tabContext.tabId);
     }
 
-    openEmptyTab() {
-        const tabContext = new TabContext(this.appContext);
-        this.tabContexts.push(tabContext);
+    openEmptyTab(tabId) {
+        const tabContext = new TabContext(this.appContext, tabId);
         this.children.push(tabContext);
         return tabContext;
     }
@@ -192,11 +205,9 @@ export default class TabManager extends Component {
             return;
         }
 
-        const oldActiveTabId = this.activeTabId;
-
         this.activeTabId = tabId;
 
-        this.trigger('activeTabChanged', { oldActiveTabId, newActiveTabId: tabId });
+        this.trigger('activeTabChanged');
 
         this.tabsUpdate.scheduleUpdate();
         
@@ -204,7 +215,7 @@ export default class TabManager extends Component {
     }
 
     async removeTab(tabId) {
-        const tabContextToRemove = this.tabContexts.find(tc => tc.tabId === tabId);
+        const tabContextToRemove = this.getTabContextById(tabId);
 
         if (!tabContextToRemove) {
             return;
@@ -212,14 +223,14 @@ export default class TabManager extends Component {
 
         await this.trigger('beforeTabRemove', {tabId}, true);
 
-        if (this.tabContexts.length === 1) {
+        if (this.tabContexts.length <= 1) {
             this.openAndActivateEmptyTab();
         }
         else {
             this.activateNextTabListener();
         }
 
-        this.children = this.tabContexts = this.tabContexts.filter(tc => tc.tabId === tabId);
+        this.children = this.children.filter(tc => tc.tabId !== tabId);
 
         this.trigger('tabRemoved', {tabId});
 
@@ -233,7 +244,7 @@ export default class TabManager extends Component {
             order[tabIdsInOrder[i]] = i;
         }
 
-        this.tabContexts.sort((a, b) => order[a.tabId] < order[b.tabId] ? -1 : 1);
+        this.children.sort((a, b) => order[a.tabId] < order[b.tabId] ? -1 : 1);
 
         this.tabsUpdate.scheduleUpdate();
     }
@@ -264,11 +275,29 @@ export default class TabManager extends Component {
         this.openAndActivateEmptyTab();
     }
 
-    removeAllTabsListener() {
-        // TODO
+    async removeAllTabsListener() {
+        for (const tabIdToRemove of this.tabContexts.map(tc => tc.tabId)) {
+            await this.removeTab(tabIdToRemove);
+        }
     }
 
-    removeAllTabsExceptForThis() {
-        // TODO
+    async removeAllTabsExceptForThisListener({tabId}) {
+        for (const tabIdToRemove of this.tabContexts.map(tc => tc.tabId)) {
+            if (tabIdToRemove !== tabId) {
+                await this.removeTab(tabIdToRemove);
+            }
+        }
+    }
+
+    async hoistedNoteChangedListener({hoistedNoteId}) {
+        if (hoistedNoteId === 'root') {
+            return;
+        }
+
+        for (const tc of this.tabContexts.splice()) {
+            if (tc.notePath && !tc.notePath.split("/").includes(hoistedNoteId)) {
+                await this.removeTab(tc.tabId);
+            }
+        }
     }
 }
