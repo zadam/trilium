@@ -1,11 +1,9 @@
-import treeService from './tree.js';
 import utils from './utils.js';
 import server from './server.js';
 import toastService from "./toast.js";
 import treeCache from "./tree_cache.js";
 import hoistedNoteService from "./hoisted_note.js";
 import ws from "./ws.js";
-import appContext from "./app_context.js";
 
 async function moveBeforeBranch(branchIdsToMove, beforeBranchId) {
     branchIdsToMove = await filterRootNote(branchIdsToMove);
@@ -120,8 +118,6 @@ async function deleteNodes(branchIdsToDelete) {
             await server.remove(`branches/${branchIdToDelete}` + query);
         }
     }
-
-    const noteIds = Array.from(new Set(nodes.map(node => node.getParent().data.noteId)));
 
     return true;
 }

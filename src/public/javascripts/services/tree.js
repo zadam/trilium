@@ -86,7 +86,7 @@ async function getRunPath(notePath) {
                     break;
                 }
                 else {
-                    ws.logError("No parents, can't activate node.");
+                    console.log("No parents so no run path.");
                     return;
                 }
             }

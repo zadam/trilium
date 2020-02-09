@@ -218,6 +218,9 @@ async function processSyncRows(syncRows) {
         const parentNote = treeCache.notes[sync.entity.parentNoteId];
 
         if (branch) {
+            branch.update(sync.entity);
+            loadResults.addBranch(sync.entityId, sync.sourceId);
+
             if (sync.entity.isDeleted) {
                 if (childNote) {
                     childNote.parents = childNote.parents.filter(parentNoteId => parentNoteId !== sync.entity.parentNoteId);
@@ -230,9 +233,6 @@ async function processSyncRows(syncRows) {
                 }
             }
             else {
-                branch.update(sync.entity);
-                loadResults.addBranch(sync.entityId, sync.sourceId);
-
                 if (childNote) {
                     childNote.addParent(branch.parentNoteId, branch.branchId);
                 }

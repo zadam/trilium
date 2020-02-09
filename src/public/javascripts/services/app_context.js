@@ -29,8 +29,15 @@ class AppContext {
 
     showWidgets() {
         const rootContainer = this.layout.getRootWidget(this);
+        const $renderedWidget = rootContainer.render();
 
-        $("body").append(rootContainer.render());
+        $("body").append($renderedWidget);
+
+        $renderedWidget.on('click', "[data-trigger-event]", e => {
+            const eventName = $(e.target).attr('data-trigger-event');
+
+            this.trigger(eventName);
+        });
 
         this.components = [
             this.tabManager,

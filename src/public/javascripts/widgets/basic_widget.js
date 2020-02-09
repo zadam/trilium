@@ -7,12 +7,6 @@ class BasicWidget extends Component {
 
         keyboardActionsService.updateDisplayedShortcuts($widget);
 
-        $widget.find("[data-trigger-event]").on('click', e => {
-            const eventName = $(e.target).attr('data-trigger-event');
-
-            this.appContext.trigger(eventName);
-        });
-
         this.toggle(this.isEnabled());
 
         return $widget;

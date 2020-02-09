@@ -100,15 +100,19 @@ class TabContext extends Component {
         }
     }
 
-    noteDeletedListener({noteId}) {
-        if (this.noteId === noteId) {
-            this.noteId = null;
-            this.notePath = null;
+    async entitiesReloadedListener({loadResults}) {
+        if (loadResults.isNoteReloaded(this.noteId)) {
+            const note = await treeCache.getNote(this.noteId);
 
-            this.trigger('tabNoteSwitched', {
-                tabId: this.tabId,
-                notePath: this.notePath
-            });
+            if (note.isDeleted) {
+                this.noteId = null;
+                this.notePath = null;
+
+                this.trigger('tabNoteSwitched', {
+                    tabId: this.tabId,
+                    notePath: this.notePath
+                });
+            }
         }
     }
 }

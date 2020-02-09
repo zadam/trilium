@@ -473,7 +473,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
                         this.tabManager.getActiveTabContext().setNote(notePath);
                     }
 
-                    node.remove();
+                    noteIdsToReload.add(branch.parentNoteId);
                 }
                 else {
                     noteIdsToUpdate.add(branch.noteId);
