@@ -152,6 +152,11 @@ async function importTar(taskContext, fileBuffer, importRootNote) {
                 continue;
             }
 
+            if (attr.type === 'label' && attr.name === 'externalLink') {
+                // also created automatically
+                continue;
+            }
+
             if (attr.type === 'relation') {
                 attr.value = getNewNoteId(attr.value);
             }

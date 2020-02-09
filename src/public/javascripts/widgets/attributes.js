@@ -71,7 +71,19 @@ class AttributesWidget extends StandardWidget {
     async renderAttributes(attributes, $container) {
         for (const attribute of attributes) {
             if (attribute.type === 'label') {
-                $container.append(utils.formatLabel(attribute) + " ");
+                if (attribute.name === 'externalLink') {
+                    $container.append('@' + attribute.name + "=");
+                    $container.append(
+                        $('<a>')
+                            .text(attribute.value)
+                            .attr('href', attribute.value)
+                            .addClass('external')
+                    );
+                    $container.append(" ");
+                }
+                else {
+                    $container.append(utils.formatLabel(attribute) + " ");
+                }
             } else if (attribute.type === 'relation') {
                 if (attribute.value) {
                     $container.append('@' + attribute.name + "=");
