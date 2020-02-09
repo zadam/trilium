@@ -404,7 +404,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
         await this.tree.reload(notes);
     }
 
-    createTopLevelNoteListener() { treeService.createNewTopLevelNote(); }
+    createTopLevelNoteListener() { noteCreateService.createNewTopLevelNote(); }
 
     collapseTreeListener() { this.collapseTree(); }
 

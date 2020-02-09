@@ -45,7 +45,7 @@ export default class TabCachingWidget extends TabAwareWidget {
             widget.eventReceived('setTabContext', {tabContext: this.tabContext});
         }
 
-        widget.toggle(true);
+        widget.toggle(widget.isEnabled());
     }
 
     tabRemovedListener({tabId}) {
@@ -63,7 +63,7 @@ export default class TabCachingWidget extends TabAwareWidget {
         for (const tabId in this.widgets) {
             this.widgets[tabId].toggle(
                 show
-                && this.tabContext && tabId === this.tabContext.tabId
+                && this.isTab(tabId)
                 && this.widgets[tabId].isEnabled());
         }
     }

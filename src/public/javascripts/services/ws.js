@@ -201,7 +201,7 @@ subscribeToMessages(message => {
 });
 
 async function processSyncRows(syncRows) {
-    const loadResults = new LoadResults(this);
+    const loadResults = new LoadResults(treeCache);
 
     syncRows.filter(sync => sync.entityName === 'notes').forEach(sync => {
         const note = treeCache.notes[sync.entityId];
@@ -244,7 +244,7 @@ async function processSyncRows(syncRows) {
         }
         else if (!sync.entity.isDeleted) {
             if (childNote || parentNote) {
-                branch = new Branch(this, sync.entity);
+                branch = new Branch(treeCache, sync.entity);
                 treeCache.branches[branch.branchId] = branch;
 
                 loadResults.addBranch(sync.entityId, sync.sourceId);
@@ -294,7 +294,7 @@ async function processSyncRows(syncRows) {
         }
         else if (!sync.entity.isDeleted) {
             if (sourceNote || targetNote) {
-                attribute = new Attribute(this, sync.entity);
+                attribute = new Attribute(treeCache, sync.entity);
 
                 treeCache.attributes[attribute.attributeId] = attribute;
 
