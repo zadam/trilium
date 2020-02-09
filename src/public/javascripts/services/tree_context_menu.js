@@ -62,6 +62,11 @@ class TreeContextMenu {
             !isHoisted || !isNotRoot ? null : { title: 'Unhoist note <kbd data-kb-action="ToggleNoteHoisting"></kbd>', cmd: "unhoist", uiIcon: "arrow-up" },
             { title: 'Edit branch prefix <kbd data-kb-action="EditBranchPrefix"></kbd>', cmd: "editBranchPrefix", uiIcon: "empty",
                 enabled: isNotRoot && parentNotSearch && noSelectedNotes},
+            { title: "Advanced", uiIcon: "empty", enabled: true, items: [
+                    { title: 'Collapse subtree <kbd data-kb-action="CollapseSubtree"></kbd>', cmd: "collapseSubtree", uiIcon: "align-justify", enabled: noSelectedNotes },
+                    { title: "Force note sync", cmd: "forceNoteSync", uiIcon: "recycle", enabled: noSelectedNotes },
+                    { title: 'Sort alphabetically <kbd data-kb-action="SortChildNotes"></kbd>', cmd: "sortAlphabetically", uiIcon: "empty", enabled: noSelectedNotes && notSearch }
+                ] },
             { title: "----" },
             { title: "Protect subtree", cmd: "protectSubtree", uiIcon: "check-shield", enabled: noSelectedNotes },
             { title: "Unprotect subtree", cmd: "unprotectSubtree", uiIcon: "shield", enabled: noSelectedNotes },
@@ -84,12 +89,7 @@ class TreeContextMenu {
             { title: "Export", cmd: "export", uiIcon: "empty",
                 enabled: notSearch && noSelectedNotes },
             { title: "Import into note", cmd: "importIntoNote", uiIcon: "empty",
-                enabled: notSearch && noSelectedNotes },
-            { title: "Advanced", uiIcon: "empty", enabled: true, items: [
-                    { title: 'Collapse subtree <kbd data-kb-action="CollapseSubtree"></kbd>', cmd: "collapseSubtree", uiIcon: "align-justify", enabled: noSelectedNotes },
-                    { title: "Force note sync", cmd: "forceNoteSync", uiIcon: "recycle", enabled: noSelectedNotes },
-                    { title: 'Sort alphabetically <kbd data-kb-action="SortChildNotes"></kbd>', cmd: "sortAlphabetically", uiIcon: "empty", enabled: noSelectedNotes && notSearch }
-                ] },
+                enabled: notSearch && noSelectedNotes }
         ].filter(row => row !== null);
     }
 
