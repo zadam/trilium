@@ -16,10 +16,6 @@ function getOptions() {
 }
 
 export async function showDialog() {
-    utils.closeActiveDialog();
-
-    glob.activeDialog = $dialog;
-
     // set default settings
     $maxNotesInput.val(20);
 
@@ -27,7 +23,7 @@ export async function showDialog() {
 
     $linkMapContainer.empty();
 
-    $dialog.modal();
+    utils.openDialog($dialog);
 }
 
 $dialog.on('shown.bs.modal', () => {

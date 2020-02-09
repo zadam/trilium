@@ -287,8 +287,6 @@ function initKoPlugins() {
 }
 
 export async function showDialog() {
-    utils.closeActiveDialog();
-
     await libraryLoader.requireLibrary(libraryLoader.KNOCKOUT);
 
     // lazily apply bindings on first use
@@ -300,11 +298,9 @@ export async function showDialog() {
         ko.applyBindings(attributesModel, $dialog[0]);
     }
 
-    glob.activeDialog = $dialog;
-
     await attributesModel.loadAttributes();
 
-    $dialog.modal();
+    utils.openDialog($dialog);
 }
 
 $dialog.on('focus', '.attribute-name', function (e) {

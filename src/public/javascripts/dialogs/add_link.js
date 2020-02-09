@@ -11,13 +11,9 @@ const $linkTitle = $("#link-title");
 const $addLinkTitleFormGroup = $("#add-link-title-form-group");
 
 export async function showDialog() {
-    utils.closeActiveDialog();
-
     $addLinkTitleFormGroup.toggle(!hasSelection());
 
-    glob.activeDialog = $dialog;
-
-    $dialog.modal();
+    utils.openDialog($dialog);
 
     $autoComplete.val('').trigger('focus');
     $linkTitle.val('');

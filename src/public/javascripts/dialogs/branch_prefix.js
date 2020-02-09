@@ -13,10 +13,6 @@ const $noteTitle = $('#branch-prefix-note-title');
 let branchId;
 
 export async function showDialog(node) {
-    utils.closeActiveDialog();
-
-    glob.activeDialog = $dialog;
-
     branchId = node.data.branchId;
     const branch = treeCache.getBranch(branchId);
 
@@ -30,7 +26,7 @@ export async function showDialog(node) {
         return;
     }
 
-    $dialog.modal();
+    utils.openDialog($dialog);
 
     $treePrefixInput.val(branch.prefix);
 

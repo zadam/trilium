@@ -2,6 +2,7 @@ import treeService from './tree.js';
 import treeCache from "./tree_cache.js";
 import server from './server.js';
 import toastService from "./toast.js";
+import utils from "./utils.js";
 
 const $searchInput = $("input[name='search-text']");
 const $resetSearchButton = $("#reset-search-button");
@@ -28,6 +29,8 @@ const helpText = `
 </p>`;
 
 function showSearch() {
+    utils.saveFocusedElement();
+
     $searchBox.slideDown();
 
     $searchBox.tooltip({
@@ -49,6 +52,8 @@ function hideSearch() {
 
     $searchResults.hide();
     $searchBox.slideUp();
+
+    utils.focusSavedElement();
 }
 
 function toggleSearch() {

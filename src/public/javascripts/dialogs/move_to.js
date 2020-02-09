@@ -1,7 +1,5 @@
 import noteAutocompleteService from "../services/note_autocomplete.js";
 import utils from "../services/utils.js";
-import cloningService from "../services/cloning.js";
-import treeUtils from "../services/tree_utils.js";
 import toastService from "../services/toast.js";
 import treeCache from "../services/tree_cache.js";
 import treeChangesService from "../services/branches.js";
@@ -18,11 +16,7 @@ let movedNodes;
 export async function showDialog(nodes) {
     movedNodes = nodes;
 
-    utils.closeActiveDialog();
-
-    glob.activeDialog = $dialog;
-
-    $dialog.modal();
+    utils.openDialog($dialog);
 
     $noteAutoComplete.val('').trigger('focus');
 

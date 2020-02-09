@@ -37,9 +37,7 @@ export async function importMarkdownInline() {
         convertMarkdownToHtml(text);
     }
     else {
-        glob.activeDialog = $dialog;
-
-        $dialog.modal();
+        utils.openDialog($dialog);
     }
 }
 

@@ -209,7 +209,48 @@ function getMimeTypeClass(mime) {
 function closeActiveDialog() {
     if (glob.activeDialog) {
         glob.activeDialog.modal('hide');
+        glob.activeDialog = null;
     }
+}
+
+let $lastFocusedElement = null;
+
+function saveFocusedElement() {
+    $lastFocusedElement = $(":focus");
+}
+
+function focusSavedElement() {
+    if (!$lastFocusedElement) {
+        return;
+    }
+
+    if ($lastFocusedElement.hasClass("ck")) {
+        // must handle CKEditor separately because of this bug: https://github.com/ckeditor/ckeditor5/issues/607
+
+        import("./note_detail.js").then(noteDetail => {
+            noteDetail.default.getActiveEditor().editing.view.focus();
+        });
+    } else {
+        $lastFocusedElement.focus();
+    }
+
+    $lastFocusedElement = null;
+}
+
+function openDialog($dialog) {
+    closeActiveDialog();
+
+    glob.activeDialog = $dialog;
+
+    saveFocusedElement();
+
+    $dialog.modal();
+
+    $dialog.on('hidden.bs.modal', () => {
+        if (!glob.activeDialog || glob.activeDialog === $dialog) {
+            focusSavedElement();
+        }
+    });
 }
 
 function isHtmlEmpty(html) {
@@ -281,6 +322,9 @@ export default {
     getNoteTypeClass,
     getMimeTypeClass,
     closeActiveDialog,
+    openDialog,
+    saveFocusedElement,
+    focusSavedElement,
     isHtmlEmpty,
     clearBrowserCache,
     getUrlForDownload,

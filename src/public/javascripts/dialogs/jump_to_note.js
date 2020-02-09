@@ -8,13 +8,9 @@ const $autoComplete = $("#jump-to-note-autocomplete");
 const $showInFullTextButton = $("#show-in-full-text-button");
 
 export async function showDialog() {
-    utils.closeActiveDialog();
-
-    glob.activeDialog = $dialog;
-
     $autoComplete.val('');
 
-    $dialog.modal();
+    utils.openDialog($dialog);
 
     noteAutocompleteService.initNoteAutocomplete($autoComplete, { hideGoToSelectedNoteButton: true })
         .on('autocomplete:selected', function(event, suggestion, dataset) {

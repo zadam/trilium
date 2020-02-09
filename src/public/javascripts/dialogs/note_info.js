@@ -10,11 +10,7 @@ const $mime = $("#note-info-mime");
 const $okButton = $("#note-info-ok-button");
 
 export function showDialog() {
-    utils.closeActiveDialog();
-
-    glob.activeDialog = $dialog;
-
-    $dialog.modal();
+    utils.openDialog($dialog);
 
     const activeNote = noteDetailService.getActiveTabNote();
 

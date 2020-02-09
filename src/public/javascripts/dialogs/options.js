@@ -6,13 +6,9 @@ import utils from "../services/utils.js";
 const $dialog = $("#options-dialog");
 
 export async function showDialog() {
-    utils.closeActiveDialog();
-
-    glob.activeDialog = $dialog;
-
     const options = await server.get('options');
 
-    $dialog.modal();
+    utils.openDialog($dialog);
 
     (await Promise.all([
         import('./options/advanced.js'),

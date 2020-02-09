@@ -8,11 +8,7 @@ const $dialog = $("#recent-changes-dialog");
 const $content = $("#recent-changes-content");
 
 export async function showDialog() {
-    utils.closeActiveDialog();
-
-    glob.activeDialog = $dialog;
-
-    $dialog.modal();
+    utils.openDialog($dialog);
 
     const result = await server.get('recent-changes');
 
