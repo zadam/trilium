@@ -14,13 +14,9 @@ let codeEditor;
 $dialog.on("shown.bs.modal", e => initEditor());
 
 export async function showDialog() {
-    utils.closeActiveDialog();
-
-    glob.activeDialog = $dialog;
-
     await showTableSchemas();
 
-    $dialog.modal();
+    utils.openDialog($dialog);
 }
 
 async function initEditor() {

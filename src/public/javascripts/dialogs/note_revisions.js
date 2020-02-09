@@ -29,11 +29,7 @@ export async function showCurrentNoteRevisions() {
 }
 
 export async function showNoteRevisionsDialog(noteId, noteRevisionId) {
-    utils.closeActiveDialog();
-
-    glob.activeDialog = $dialog;
-
-    $dialog.modal();
+    utils.openDialog($dialog);
 
     await loadNoteRevisions(noteId, noteRevisionId);
 }

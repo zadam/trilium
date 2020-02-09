@@ -10,8 +10,6 @@ const $buildRevision = $("#build-revision");
 const $dataDirectory = $("#data-directory");
 
 export async function showDialog() {
-    utils.closeActiveDialog();
-
     const appInfo = await server.get('app-info');
 
     $appVersion.text(appInfo.appVersion);
@@ -22,7 +20,5 @@ export async function showDialog() {
     $buildRevision.attr('href', 'https://github.com/zadam/trilium/commit/' + appInfo.buildRevision);
     $dataDirectory.text(appInfo.dataDirectory);
 
-    glob.activeDialog = $dialog;
-
-    $dialog.modal();
+    utils.openDialog($dialog);
 }

@@ -10,13 +10,9 @@ let $originallyFocused; // element focused before the dialog was opened so we ca
 export function info(message) {
     $originallyFocused = $(':focus');
 
-    utils.closeActiveDialog();
-
-    glob.activeDialog = $dialog;
-
     $infoContent.text(message);
 
-    $dialog.modal();
+    utils.openDialog($dialog);
 
     return new Promise((res, rej) => { resolve = res; });
 }

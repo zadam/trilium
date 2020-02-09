@@ -6,11 +6,7 @@ const $backendLogTextArea = $("#backend-log-textarea");
 const $refreshBackendLog = $("#refresh-backend-log-button");
 
 export async function showDialog() {
-    utils.closeActiveDialog();
-
-    glob.activeDialog = $dialog;
-
-    $dialog.modal();
+    utils.openDialog($dialog);
 
     load();
 }

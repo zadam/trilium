@@ -12,10 +12,6 @@ let resolve;
 let shownCb;
 
 export function ask({ message, defaultValue, shown }) {
-    utils.closeActiveDialog();
-
-    glob.activeDialog = $dialog;
-
     shownCb = shown;
 
     $question = $("<label>")
@@ -34,7 +30,7 @@ export function ask({ message, defaultValue, shown }) {
             .append($question)
             .append($answer));
 
-    $dialog.modal();
+    utils.openDialog($dialog);
 
     return new Promise((res, rej) => { resolve = res; });
 }

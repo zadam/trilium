@@ -15,11 +15,7 @@ let movedNodes;
 export async function showDialog(nodes) {
     movedNodes = nodes;
 
-    utils.closeActiveDialog();
-
-    glob.activeDialog = $dialog;
-
-    $dialog.modal();
+    utils.openDialog($dialog);
 
     $noteAutoComplete.val('').trigger('focus');
 

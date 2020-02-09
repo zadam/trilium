@@ -242,6 +242,20 @@ function findInternalLinks(content, foundLinks) {
     return content.replace(/href="[^"]*#root/g, 'href="#root');
 }
 
+function findExternalLinks(content, foundLinks) {
+    const re = /href="([a-zA-Z]+:\/\/[^"]*)"/g;
+    let match;
+
+    while (match = re.exec(content)) {
+        foundLinks.push({
+            name: 'externalLink',
+            value: match[1]
+        });
+    }
+
+    return content;
+}
+
 function findIncludeNoteLinks(content, foundLinks) {
     const re = /<section class="include-note" data-note-id="([a-zA-Z0-9]+)">/g;
     let match;
@@ -281,6 +295,7 @@ async function saveLinks(note, content) {
     if (note.type === 'text') {
         content = findImageLinks(content, foundLinks);
         content = findInternalLinks(content, foundLinks);
+        content = findExternalLinks(content, foundLinks);
         content = findIncludeNoteLinks(content, foundLinks);
     }
     else if (note.type === 'relation-map') {
@@ -293,9 +308,11 @@ async function saveLinks(note, content) {
     const existingLinks = await note.getLinks();
 
     for (const foundLink of foundLinks) {
-        const targetNote = await repository.getNote(foundLink.value);
-        if (!targetNote || targetNote.isDeleted) {
-            continue;
+        if (foundLink.name !== 'externalLink') {
+            const targetNote = await repository.getNote(foundLink.value);
+            if (!targetNote || targetNote.isDeleted) {
+                continue;
+            }
         }
 
         const existingLink = existingLinks.find(existingLink =>
@@ -305,7 +322,7 @@ async function saveLinks(note, content) {
         if (!existingLink) {
             await new Attribute({
                 noteId: note.noteId,
-                type: 'relation',
+                type: foundLink.name === 'externalLink' ? 'label' : 'relation',
                 name: foundLink.name,
                 value: foundLink.value,
             }).save();

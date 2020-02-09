@@ -22,11 +22,7 @@ export async function showDialog(noteIds) {
         }
     }
 
-    utils.closeActiveDialog();
-
-    glob.activeDialog = $dialog;
-
-    $dialog.modal();
+    utils.openDialog($dialog);
 
     $noteAutoComplete.val('').trigger('focus');
 

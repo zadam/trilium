@@ -5,11 +5,7 @@ const $dialog = $("#note-source-dialog");
 const $noteSource = $("#note-source");
 
 export function showDialog() {
-    utils.closeActiveDialog();
-
-    glob.activeDialog = $dialog;
-
-    $dialog.modal();
+    utils.openDialog($dialog);
 
     const noteText = appContext.tabManager.getActiveTabNote().content;
 

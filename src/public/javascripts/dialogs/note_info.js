@@ -10,11 +10,7 @@ const $mime = $("#note-info-mime");
 const $okButton = $("#note-info-ok-button");
 
 export async function showDialog() {
-    utils.closeActiveDialog();
-
-    glob.activeDialog = $dialog;
-
-    $dialog.modal();
+    utils.openDialog($dialog);
 
     const activeTabContext = appContext.tabManager.getActiveTabContext();
     const {note} = activeTabContext;

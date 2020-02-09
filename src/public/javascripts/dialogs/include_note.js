@@ -10,13 +10,9 @@ let callback = null;
 export async function showDialog(cb) {
     callback = cb;
 
-    utils.closeActiveDialog();
-
-    glob.activeDialog = $dialog;
-
     $autoComplete.val('');
 
-    $dialog.modal();
+    utils.openDialog($dialog);
 
     noteAutocompleteService.initNoteAutocomplete($autoComplete, { hideGoToSelectedNoteButton: true });
     noteAutocompleteService.showRecentNotes($autoComplete);

@@ -10,8 +10,6 @@ const $linkTitle = $("#link-title");
 const $addLinkTitleFormGroup = $("#add-link-title-form-group");
 
 export async function showDialog() {
-    utils.closeActiveDialog();
-
     appContext.trigger('executeInActiveEditor', {
         callback: textEditor => {
             const hasSelection = !textEditor.model.document.selection.isCollapsed;
@@ -20,9 +18,7 @@ export async function showDialog() {
         }
     });
 
-    glob.activeDialog = $dialog;
-
-    $dialog.modal();
+    utils.openDialog($dialog);
 
     $autoComplete.val('').trigger('focus');
     $linkTitle.val('');

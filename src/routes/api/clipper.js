@@ -1,5 +1,6 @@
 "use strict";
 
+const attributeService = require("../../services/attributes");
 const noteService = require('../../services/notes');
 const dateNoteService = require('../../services/date_notes');
 const dateUtils = require('../../services/date_utils');
@@ -23,16 +24,26 @@ async function findClippingNote(todayNote, pageUrl) {
     return null;
 }
 
+async function getClipperInboxNote() {
+    let clipperInbox = await attributeService.getNoteWithLabel('clipperInbox');
+
+    if (!clipperInbox) {
+        clipperInbox = await dateNoteService.getDateNote(dateUtils.localNowDate());
+    }
+
+    return clipperInbox;
+}
+
 async function addClipping(req) {
     const {title, content, pageUrl, images} = req.body;
 
-    const todayNote = await dateNoteService.getDateNote(dateUtils.localNowDate());
+    const clipperInbox = await getClipperInboxNote();
 
-    let clippingNote = await findClippingNote(todayNote, pageUrl);
+    let clippingNote = await findClippingNote(clipperInbox, pageUrl);
 
     if (!clippingNote) {
         clippingNote = (await noteService.createNewNote({
-            parentNoteId: todayNote.noteId,
+            parentNoteId: clipperInbox.noteId,
             title: title,
             content: '',
             type: 'text'
@@ -54,10 +65,10 @@ async function addClipping(req) {
 async function createNote(req) {
     const {title, content, pageUrl, images, clipType} = req.body;
 
-    const todayNote = await dateNoteService.getDateNote(dateUtils.localNowDate());
+    const clipperInbox = await getClipperInboxNote();
 
     const {note} = await noteService.createNewNote({
-        parentNoteId: todayNote.noteId,
+        parentNoteId: clipperInbox.noteId,
         title,
         content,
         type: 'text'

@@ -16,8 +16,6 @@ const $explodeArchivesCheckbox = $("#explode-archives-checkbox");
 let parentNoteId = null;
 
 export async function showDialog(noteId) {
-    utils.closeActiveDialog();
-
     $fileUploadInput.val('').trigger('change'); // to trigger Import button disabling listener below
 
     $safeImportCheckbox.prop("checked", true);
@@ -26,13 +24,11 @@ export async function showDialog(noteId) {
     $codeImportedAsCodeCheckbox.prop("checked", true);
     $explodeArchivesCheckbox.prop("checked", true);
 
-    glob.activeDialog = $dialog;
-
     parentNoteId = noteId;
 
     $noteTitle.text(await treeService.getNoteTitle(parentNoteId));
 
-    $dialog.modal();
+    utils.openDialog($dialog);
 }
 
 $form.on('submit', () => {

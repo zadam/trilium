@@ -18,8 +18,6 @@ let taskId = '';
 let branchId = null;
 
 export async function showDialog(notePath, defaultType) {
-    utils.closeActiveDialog();
-
     // each opening of the dialog resets the taskId so we don't associate it with previous exports anymore
     taskId = '';
     $exportButton.removeAttr("disabled");
@@ -39,9 +37,7 @@ export async function showDialog(notePath, defaultType) {
 
     $("#opml-v2").prop("checked", true); // setting default
 
-    glob.activeDialog = $dialog;
-
-    $dialog.modal();
+    utils.openDialog($dialog);
 
     const {noteId, parentNoteId} = treeService.getNoteIdAndParentIdFromNotePath(notePath);
 
