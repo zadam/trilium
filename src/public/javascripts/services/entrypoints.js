@@ -77,21 +77,20 @@ export default class Entrypoints extends Component {
         appContext.trigger('focusAndSelectTitle');
     }
 
-    toggleNoteHoistingListener() {
+    async toggleNoteHoistingListener() {
         const note = appContext.tabManager.getActiveTabNote();
 
-        hoistedNoteService.getHoistedNoteId().then(async hoistedNoteId => {
-            if (note.noteId === hoistedNoteId) {
-                hoistedNoteService.unhoist();
-            }
-            else {
-                const note = await treeCache.getNote(note.noteId);
+        const hoistedNoteId = hoistedNoteService.getHoistedNoteId();
+        if (note.noteId === hoistedNoteId) {
+            hoistedNoteService.unhoist();
+        }
+        else {
+            const note = await treeCache.getNote(note.noteId);
 
-                if (note.type !== 'search') {
-                    hoistedNoteService.setHoistedNoteId(note.noteId);
-                }
+            if (note.type !== 'search') {
+                hoistedNoteService.setHoistedNoteId(note.noteId);
             }
-        });
+        }
     }
 
     copyWithoutFormattingListener() {

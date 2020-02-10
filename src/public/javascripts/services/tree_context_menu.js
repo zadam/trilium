@@ -36,7 +36,7 @@ class TreeContextMenu {
         const branch = treeCache.getBranch(this.node.data.branchId);
         const parentNote = await treeCache.getNote(branch.parentNoteId);
         const isNotRoot = note.noteId !== 'root';
-        const isHoisted = note.noteId === await hoistedNoteService.getHoistedNoteId();
+        const isHoisted = note.noteId === hoistedNoteService.getHoistedNoteId();
 
         // some actions don't support multi-note so they are disabled when notes are selected
         // the only exception is when the only selected note is the one that was right-clicked, then
@@ -99,7 +99,7 @@ class TreeContextMenu {
 
     async selectContextMenuItem(event, cmd) {
         const noteId = this.node.data.noteId;
-        const notePath = await treeService.getNotePath(this.node);
+        const notePath = treeService.getNotePath(this.node);
 
         if (cmd === 'openInTab') {
             const tabContext = appContext.tabManager.openEmptyTab();
@@ -188,7 +188,7 @@ class TreeContextMenu {
         else if (cmd === "duplicateNote") {
             const branch = treeCache.getBranch(this.node.data.branchId);
 
-            treeService.duplicateNote(noteId, branch.parentNoteId);
+            noteCreateService.duplicateNote(noteId, branch.parentNoteId);
         }
         else if (cmd === "searchInSubtree") {
             appContext.trigger("searchInSubtree", {noteId});

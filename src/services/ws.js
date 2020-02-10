@@ -99,7 +99,7 @@ async function fillInAdditionalProperties(sync) {
 
 async function sendPing(client) {
     const syncRows = cls.getSyncRows()
-        .filter(r => r.entityName !== 'recent_notes'); // only noise ...
+        .filter(r => r.entityName !== 'recent_notes' && (r.entityName !== 'options' || r.entityId !== 'openTabs')); // only noise ...
 
     for (const sync of syncRows) {
         try {

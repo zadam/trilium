@@ -8,7 +8,7 @@ import treeCache from "./tree_cache.js";
 import toastService from "./toast.js";
 
 async function createNewTopLevelNote() {
-    const hoistedNoteId = await hoistedNoteService.getHoistedNoteId();
+    const hoistedNoteId = hoistedNoteService.getHoistedNoteId();
 
     await createNote(hoistedNoteId);
 }

@@ -171,8 +171,8 @@ function getTemplates(treeWidget) {
 
             return false;
         },
-        "ActivateParentNote": async node => {
-            if (!await hoistedNoteService.isRootNode(node)) {
+        "ActivateParentNote": node => {
+            if (!hoistedNoteService.isRootNode(node)) {
                 node.getParent().setActive().then(treeWidget.clearSelectedNodes);
             }
         }

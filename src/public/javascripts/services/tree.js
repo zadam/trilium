@@ -37,7 +37,7 @@ async function getRunPath(notePath) {
         path.push('root');
     }
 
-    const hoistedNoteId = await hoistedNoteService.getHoistedNoteId();
+    const hoistedNoteId = hoistedNoteService.getHoistedNoteId();
 
     const effectivePath = [];
     let childNoteId = null;
@@ -144,8 +144,8 @@ ws.subscribeToMessages(message => {
    }
 });
 
-async function getParentProtectedStatus(node) {
-    return await hoistedNoteService.isRootNode(node) ? 0 : node.getParent().data.isProtected;
+function getParentProtectedStatus(node) {
+    return hoistedNoteService.isRootNode(node) ? 0 : node.getParent().data.isProtected;
 }
 
 function getNoteIdFromNotePath(notePath) {
@@ -184,7 +184,7 @@ function getNoteIdAndParentIdFromNotePath(notePath) {
     }
 }
 
-async function getNotePath(node) {
+function getNotePath(node) {
     if (!node) {
         console.error("Node is null");
         return "";
@@ -192,7 +192,7 @@ async function getNotePath(node) {
 
     const path = [];
 
-    while (node && !await hoistedNoteService.isRootNode(node)) {
+    while (node && !hoistedNoteService.isRootNode(node)) {
         if (node.data.noteId) {
             path.push(node.data.noteId);
         }

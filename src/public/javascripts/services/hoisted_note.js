@@ -17,14 +17,14 @@ async function unhoist() {
     await setHoistedNoteId('root');
 }
 
-async function isTopLevelNode(node) {
-    return await isRootNode(node.getParent());
+function isTopLevelNode(node) {
+    return isRootNode(node.getParent());
 }
 
-async function isRootNode(node) {
+function isRootNode(node) {
     // even though check for 'root' should not be necessary, we keep it just in case
     return node.data.noteId === "root"
-        || node.data.noteId === await getHoistedNoteId();
+        || node.data.noteId === getHoistedNoteId();
 }
 
 async function checkNoteAccess(notePath) {
@@ -37,7 +37,7 @@ async function checkNoteAccess(notePath) {
         return false;
     }
 
-    const hoistedNoteId = await getHoistedNoteId();
+    const hoistedNoteId = getHoistedNoteId();
 
     if (hoistedNoteId !== 'root' && !runNotePath.includes(hoistedNoteId)) {
         const confirmDialog = await import('../dialogs/confirm.js');

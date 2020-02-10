@@ -6,7 +6,7 @@ import hoistedNoteService from "./hoisted_note.js";
 async function prepareTree() {
     await treeCache.initializedPromise;
 
-    const hoistedNoteId = await hoistedNoteService.getHoistedNoteId();
+    const hoistedNoteId = hoistedNoteService.getHoistedNoteId();
 
     let hoistedBranch;
 
@@ -47,7 +47,7 @@ async function getIconClass(note) {
 }
 
 async function getIcon(note) {
-    const hoistedNoteId = await hoistedNoteService.getHoistedNoteId();
+    const hoistedNoteId = hoistedNoteService.getHoistedNoteId();
 
     const iconClass = await getIconClass(note);
 
@@ -81,7 +81,7 @@ async function prepareNode(branch) {
     }
 
     const title = (branch.prefix ? (branch.prefix + " - ") : "") + note.title;
-    const hoistedNoteId = await hoistedNoteService.getHoistedNoteId();
+    const hoistedNoteId = hoistedNoteService.getHoistedNoteId();
 
     const node = {
         noteId: note.noteId,

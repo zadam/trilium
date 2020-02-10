@@ -48,12 +48,12 @@ export default class NoteTreeWidget extends TabAwareWidget {
             if (e.which === 2) {
                 const node = $.ui.fancytree.getNode(e);
 
-                treeService.getNotePath(node).then(notePath => {
-                    if (notePath) {
-                        const tabContext = this.tabManager.openEmptyTab();
-                        tabContext.setNote(notePath);
-                    }
-                });
+                const notePath = treeService.getNotePath(node);
+
+                if (notePath) {
+                    const tabContext = this.tabManager.openEmptyTab();
+                    tabContext.setNote(notePath);
+                }
 
                 e.stopPropagation();
                 e.preventDefault();
@@ -86,7 +86,8 @@ export default class NoteTreeWidget extends TabAwareWidget {
                     }
                     else if (event.ctrlKey) {
                         const tabContext = this.tabManager.openEmptyTab();
-                        treeService.getNotePath(node).then(notePath => tabContext.setNote(notePath));
+                        const notePath = treeService.getNotePath(node);
+                        tabContext.setNote(notePath);
                         this.tabManager.activateTab(tabContext.tabId);
                     }
                     else {
@@ -102,7 +103,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
                 // click event won't propagate so let's close context menu manually
                 contextMenuWidget.hideContextMenu();
 
-                const notePath = await treeService.getNotePath(data.node);
+                const notePath = treeService.getNotePath(data.node);
 
                 const activeTabContext = this.tabManager.getActiveTabContext();
                 await activeTabContext.setNote(notePath);
@@ -194,7 +195,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
                 const $span = $(node.span);
 
                 if (node.data.noteId !== 'root'
-                    && node.data.noteId === await hoistedNoteService.getHoistedNoteId()
+                    && node.data.noteId === hoistedNoteService.getHoistedNoteId()
                     && $span.find('.unhoist-button').length === 0) {
 
                     const unhoistButton = $('<span>&nbsp; (<a class="unhoist-button">unhoist</a>)</span>');
@@ -249,9 +250,9 @@ export default class NoteTreeWidget extends TabAwareWidget {
         return notes;
     }
 
-    async collapseTree(node = null) {
+    collapseTree(node = null) {
         if (!node) {
-            const hoistedNoteId = await hoistedNoteService.getHoistedNoteId();
+            const hoistedNoteId = hoistedNoteService.getHoistedNoteId();
 
             node = this.getNodesByNoteId(hoistedNoteId)[0];
         }
@@ -300,7 +301,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
     async getNodeFromPath(notePath, expand = false, expandOpts = {}) {
         utils.assertArguments(notePath);
 
-        const hoistedNoteId = await hoistedNoteService.getHoistedNoteId();
+        const hoistedNoteId = hoistedNoteService.getHoistedNoteId();
         /** @var {FancytreeNode} */
         let parentNode = null;
 
@@ -457,20 +458,24 @@ export default class NoteTreeWidget extends TabAwareWidget {
         for (const branch of loadResults.getBranches()) {
             for (const node of this.getNodesByBranchId(branch.branchId)) {
                 if (branch.isDeleted) {
+                    node.data.toBeRemoved = true;
+
                     if (node.isActive()) {
-                        let newActive = node.getNextSibling();
+                        let curNode = node;
 
-                        if (!newActive) {
-                            newActive = node.getPrevSibling();
+                        while (curNode.data.toBeRemoved) {
+                            if (curNode.getNextSibling() && !curNode.getNextSibling().data.toBeRemoved) {
+                                curNode = curNode.getNextSibling();
+                            }
+                            else if (curNode.getPrevSibling() && !curNode.getPrevSibling().data.toBeRemoved) {
+                                curNode = curNode.getPrevSibling();
+                            }
+                            else {
+                                curNode = curNode.getParent();
+                            }
                         }
 
-                        if (!newActive) {
-                            newActive = node.getParent();
-                        }
-
-                        const notePath = await treeService.getNotePath(newActive);
-
-                        this.tabManager.getActiveTabContext().setNote(notePath);
+                        curNode.setActive(true, {noEvents:true, noFocus:true});
                     }
 
                     noteIdsToReload.add(branch.parentNoteId);
@@ -494,6 +499,9 @@ export default class NoteTreeWidget extends TabAwareWidget {
                 }
             }
         }
+
+        const activeNode = this.getActiveNode();
+        const activeNotePath = activeNode ? treeService.getNotePath(activeNode) : null;
 
         for (const noteId of loadResults.getNoteIds()) {
             noteIdsToUpdate.add(noteId);
@@ -530,14 +538,8 @@ export default class NoteTreeWidget extends TabAwareWidget {
             }
         }
 
-        const activateNotePath = this.tabManager.getActiveTabNotePath();
-
-        if (activateNotePath) {
-            const node = await this.getNodeFromPath(activateNotePath);
-
-            if (node && !node.isActive()) {
-                await node.setActive(true);
-            }
+        if (activeNotePath) {
+            this.tabManager.getActiveTabContext().setNote(activeNotePath);
         }
     }
 
@@ -546,7 +548,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
         const parentNoteId = node.data.parentNoteId;
         const isProtected = await treeService.getParentProtectedStatus(node);
 
-        if (node.data.noteId === 'root' || node.data.noteId === await hoistedNoteService.getHoistedNoteId()) {
+        if (node.data.noteId === 'root' || node.data.noteId === hoistedNoteService.getHoistedNoteId()) {
             return;
         }
 
@@ -593,7 +595,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
         const activeNode = this.getActiveNode();
 
-        const activeNotePath = activeNode !== null ? await treeService.getNotePath(activeNode) : null;
+        const activeNotePath = activeNode !== null ? treeService.getNotePath(activeNode) : null;
 
         await this.reload(notes);
 

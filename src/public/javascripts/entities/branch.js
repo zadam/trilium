@@ -19,6 +19,8 @@ class Branch {
         this.prefix = row.prefix;
         /** @param {boolean} */
         this.isExpanded = !!row.isExpanded;
+        /** @param {boolean} */
+        this.isDeleted = !!row.isDeleted;
     }
 
     /** @returns {NoteShort} */

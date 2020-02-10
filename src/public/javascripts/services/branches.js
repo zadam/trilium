@@ -6,7 +6,7 @@ import hoistedNoteService from "./hoisted_note.js";
 import ws from "./ws.js";
 
 async function moveBeforeBranch(branchIdsToMove, beforeBranchId) {
-    branchIdsToMove = await filterRootNote(branchIdsToMove);
+    branchIdsToMove = filterRootNote(branchIdsToMove);
 
     if (beforeBranchId === 'root') {
         alert('Cannot move notes before root note.');
@@ -24,11 +24,11 @@ async function moveBeforeBranch(branchIdsToMove, beforeBranchId) {
 }
 
 async function moveAfterBranch(branchIdsToMove, afterBranchId) {
-    branchIdsToMove = await filterRootNote(branchIdsToMove);
+    branchIdsToMove = filterRootNote(branchIdsToMove);
 
     const afterNote = await treeCache.getBranch(afterBranchId).getNote();
 
-    if (afterNote.noteId === 'root' || afterNote.noteId === await hoistedNoteService.getHoistedNoteId()) {
+    if (afterNote.noteId === 'root' || afterNote.noteId === hoistedNoteService.getHoistedNoteId()) {
         alert('Cannot move notes after root note.');
         return;
     }
@@ -46,12 +46,12 @@ async function moveAfterBranch(branchIdsToMove, afterBranchId) {
 }
 
 async function moveToParentNote(branchIdsToMove, newParentNoteId) {
-    branchIdsToMove = await filterRootNote(branchIdsToMove);
+    branchIdsToMove = filterRootNote(branchIdsToMove);
 
     for (const branchIdToMove of branchIdsToMove) {
         const branchToMove = treeCache.getBranch(branchIdToMove);
 
-        if (branchToMove.noteId === await hoistedNoteService.getHoistedNoteId()
+        if (branchToMove.noteId === hoistedNoteService.getHoistedNoteId()
             || (await branchToMove.getParentNote()).type === 'search') {
             continue;
         }
@@ -66,7 +66,7 @@ async function moveToParentNote(branchIdsToMove, newParentNoteId) {
 }
 
 async function deleteNodes(branchIdsToDelete) {
-    branchIdsToDelete = await filterRootNote(branchIdsToDelete);
+    branchIdsToDelete = filterRootNote(branchIdsToDelete);
 
     if (branchIdsToDelete.length === 0) {
         return false;
@@ -123,8 +123,8 @@ async function deleteNodes(branchIdsToDelete) {
 }
 
 async function moveNodeUpInHierarchy(node) {
-    if (await hoistedNoteService.isRootNode(node)
-        || await hoistedNoteService.isTopLevelNode(node)
+    if (hoistedNoteService.isRootNode(node)
+        || hoistedNoteService.isTopLevelNode(node)
         || node.getParent().data.noteType === 'search') {
         return;
     }
@@ -136,14 +136,14 @@ async function moveNodeUpInHierarchy(node) {
         return;
     }
 
-    if (!await hoistedNoteService.isTopLevelNode(node) && node.getParent().getChildren().length <= 1) {
+    if (!hoistedNoteService.isTopLevelNode(node) && node.getParent().getChildren().length <= 1) {
         node.getParent().folder = false;
         node.getParent().renderTitle();
     }
 }
 
-async function filterRootNote(branchIds) {
-    const hoistedNoteId = await hoistedNoteService.getHoistedNoteId();
+function filterRootNote(branchIds) {
+    const hoistedNoteId = hoistedNoteService.getHoistedNoteId();
 
     return branchIds.filter(branchId => {
        const branch = treeCache.getBranch(branchId);
