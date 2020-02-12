@@ -372,7 +372,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
     }
 
     async updateNode(node) {
-        const note = await treeCache.getNote(node.data.noteId);
+        const note = treeCache.getNoteFromCache(node.data.noteId);
         const branch = treeCache.getBranch(node.data.branchId);
 
         node.data.isProtected = note.isProtected;

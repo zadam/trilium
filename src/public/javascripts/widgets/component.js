@@ -1,4 +1,5 @@
 import utils from '../services/utils.js';
+import Mutex from "../services/mutex.js";
 
 export default class Component {
     /** @param {AppContext} appContext */
@@ -11,6 +12,7 @@ export default class Component {
         /** @type Component[] */
         this.children = [];
         this.initialized = Promise.resolve();
+        this.mutex = new Mutex();
     }
 
     async eventReceived(name, data, sync = false) {
@@ -23,7 +25,18 @@ export default class Component {
         const start = Date.now();
 
         if (typeof fun === 'function') {
-            propagateToChildren = await fun.call(this, data) !== false;
+            let release;
+
+            try {
+                release = await this.mutex.acquire();
+
+                propagateToChildren = await fun.call(this, data) !== false;
+            }
+            finally {
+                if (release) {
+                    release();
+                }
+            }
         }
 
         const end = Date.now();
@@ -46,12 +59,14 @@ export default class Component {
     }
 
     async triggerChildren(name, data, sync = false) {
-        for (const child of this.children) {
-            let promise = child.eventReceived(name, data, sync);
+        const promises = [];
 
-            if (sync) {
-                await promise;
-            }
+        for (const child of this.children) {
+            promises.push(child.eventReceived(name, data, sync));
+        }
+
+        if (sync) {
+            await Promise.all(promises);
         }
     }
 }
