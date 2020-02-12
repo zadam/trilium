@@ -15,12 +15,10 @@ export default class Component {
         this.mutex = new Mutex();
     }
 
-    async eventReceived(name, data, sync = false) {
+    async eventReceived(name, data) {
         await this.initialized;
 
         const fun = this[name + 'Listener'];
-
-        let propagateToChildren = true;
 
         const start = Date.now();
 
@@ -30,7 +28,7 @@ export default class Component {
             try {
                 release = await this.mutex.acquire();
 
-                propagateToChildren = await fun.call(this, data) !== false;
+                await fun.call(this, data);
             }
             finally {
                 if (release) {
@@ -45,28 +43,20 @@ export default class Component {
             console.log(`Event ${name} in component ${this.componentId} took ${end-start}ms`);
         }
 
-        if (propagateToChildren) {
-            const promise = this.triggerChildren(name, data, sync);
-
-            if (sync) {
-                await promise;
-            }
-        }
+        await this.triggerChildren(name, data);
     }
 
-    trigger(name, data, sync = false) {
-        this.appContext.trigger(name, data, sync);
+    async trigger(name, data) {
+        await this.appContext.trigger(name, data);
     }
 
-    async triggerChildren(name, data, sync = false) {
+    async triggerChildren(name, data) {
         const promises = [];
 
         for (const child of this.children) {
-            promises.push(child.eventReceived(name, data, sync));
+            promises.push(child.eventReceived(name, data));
         }
 
-        if (sync) {
-            await Promise.all(promises);
-        }
+        await Promise.all(promises);
     }
 }

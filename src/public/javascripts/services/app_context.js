@@ -55,19 +55,23 @@ class AppContext {
         this.trigger('initialRenderComplete');
     }
 
-    trigger(name, data, sync = false) {
+    async trigger(name, data) {
         this.eventReceived(name, data);
 
+        const promises = [];
+
         for (const component of this.components) {
-            component.eventReceived(name, data, sync);
+            promises.push(component.eventReceived(name, data));
         }
+
+        await Promise.all(promises);
     }
 
-    async eventReceived(name, data, sync) {
+    async eventReceived(name, data) {
         const fun = this[name + 'Listener'];
 
         if (typeof fun === 'function') {
-            await fun.call(this, data, sync);
+            await fun.call(this, data);
         }
     }
 

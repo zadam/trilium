@@ -13,9 +13,9 @@ export default class SidePaneContainer extends FlexContainer {
         return super.isEnabled() && options.is(this.side + 'PaneVisible');
     }
 
-    eventReceived(name, data, sync = false) {
+    eventReceived(name, data) {
         if (options.is(this.side + 'PaneVisible')) {
-            super.eventReceived(name, data, sync);
+            super.eventReceived(name, data);
         }
     }
 

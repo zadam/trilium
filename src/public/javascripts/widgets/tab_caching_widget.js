@@ -16,12 +16,12 @@ export default class TabCachingWidget extends TabAwareWidget {
         return this.$widget = $(`<div class="marker" style="display: none;">`);
     }
 
-    activeTabChangedListener(param) {
-        super.activeTabChangedListener(param);
-
+    async triggerChildren(name, data) {
         // stop propagation of the event to the children, individual tab widget should not know about tab switching
         // since they are per-tab
-        return false;
+        if (name !== 'activeTabChanged') {
+            super.triggerChildren(name, data);
+        }
     }
 
     refreshWithNote() {
