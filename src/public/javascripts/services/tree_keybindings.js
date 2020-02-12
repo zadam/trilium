@@ -53,7 +53,9 @@ function getSelectedOrActiveBranchIds(treeWidget, node) {
 function getTemplates(treeWidget) {
     return {
         "DeleteNotes": node => {
-            treeChangesService.deleteNodes(getSelectedOrActiveBranchIds(treeWidget, node));
+            const branchIds = getSelectedOrActiveBranchIds(treeWidget, node);
+
+            treeChangesService.deleteNotes(treeWidget, branchIds);
         },
         "MoveNoteUp": node => {
             const beforeNode = node.getPrevSibling();

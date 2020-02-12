@@ -123,7 +123,7 @@ $detail.on("click", ".note-menu-button", async e => {
                 noteCreateService.createNote(node.data.noteId);
             }
             else if (cmd === "delete") {
-                if (await treeChangesService.deleteNodes([node])) {
+                if (await treeChangesService.deleteNotes([node])) {
                     // move to the tree
                     togglePanes();
                 }

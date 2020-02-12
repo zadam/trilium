@@ -432,6 +432,8 @@ export default class NoteTreeWidget extends TabAwareWidget {
                 }
 
                 newActiveNode.setActive(true, {noEvents: true});
+
+                newActiveNode.makeVisible({scrollIntoView: true});
             }
         }
     }
@@ -458,27 +460,19 @@ export default class NoteTreeWidget extends TabAwareWidget {
         for (const branch of loadResults.getBranches()) {
             for (const node of this.getNodesByBranchId(branch.branchId)) {
                 if (branch.isDeleted) {
-                    node.data.toBeRemoved = true;
-
                     if (node.isActive()) {
-                        let curNode = node;
+                        const newActiveNode = node.getNextSibling()
+                            || node.getPrevSibling()
+                            || node.getParent();
 
-                        while (curNode.data.toBeRemoved) {
-                            if (curNode.getNextSibling() && !curNode.getNextSibling().data.toBeRemoved) {
-                                curNode = curNode.getNextSibling();
-                            }
-                            else if (curNode.getPrevSibling() && !curNode.getPrevSibling().data.toBeRemoved) {
-                                curNode = curNode.getPrevSibling();
-                            }
-                            else {
-                                curNode = curNode.getParent();
-                            }
+                        if (newActiveNode) {
+                            newActiveNode.setActive(true, {noEvents: true, noFocus: true});
                         }
-
-                        curNode.setActive(true, {noEvents:true, noFocus:true});
                     }
 
-                    noteIdsToReload.add(branch.parentNoteId);
+                    node.remove();
+
+                    noteIdsToUpdate.add(branch.parentNoteId);
                 }
                 else {
                     noteIdsToUpdate.add(branch.noteId);

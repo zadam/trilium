@@ -160,7 +160,7 @@ class TreeContextMenu {
             clipboard.pasteInto(noteId);
         }
         else if (cmd === "delete") {
-            treeChangesService.deleteNodes(this.getSelectedOrActiveBranchIds());
+            treeChangesService.deleteNotes(this.treeWidget, this.getSelectedOrActiveBranchIds());
         }
         else if (cmd === "export") {
             const exportDialog = await import('../dialogs/export.js');
