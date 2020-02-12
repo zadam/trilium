@@ -20,7 +20,7 @@ export default class TabCachingWidget extends TabAwareWidget {
         // stop propagation of the event to the children, individual tab widget should not know about tab switching
         // since they are per-tab
         if (name !== 'activeTabChanged') {
-            super.triggerChildren(name, data);
+            await super.triggerChildren(name, data);
         }
     }
 

@@ -4,6 +4,16 @@ import protectedSessionHolder from "../services/protected_session_holder.js";
 import SpacedUpdate from "../services/spaced_update.js";
 import server from "../services/server.js";
 import libraryLoader from "../services/library_loader.js";
+import EmptyTypeWidget from "./type_widgets/empty.js";
+import TextTypeWidget from "./type_widgets/text.js";
+import CodeTypeWidget from "./type_widgets/code.js";
+import FileTypeWidget from "./type_widgets/file.js";
+import ImageTypeWidget from "./type_widgets/image.js";
+import SearchTypeWidget from "./type_widgets/search.js";
+import RenderTypeWidget from "./type_widgets/render.js";
+import RelationMapTypeWidget from "./type_widgets/relation_map.js";
+import ProtectedSessionTypeWidget from "./type_widgets/protected_session.js";
+import BookTypeWidget from "./type_widgets/book.js";
 
 const TPL = `
 <div class="note-detail">
@@ -16,16 +26,16 @@ const TPL = `
 `;
 
 const typeWidgetClasses = {
-    'empty': "./type_widgets/empty.js",
-    'text': "./type_widgets/text.js",
-    'code': "./type_widgets/code.js",
-    'file': "./type_widgets/file.js",
-    'image': "./type_widgets/image.js",
-    'search': "./type_widgets/search.js",
-    'render': "./type_widgets/render.js",
-    'relation-map': "./type_widgets/relation_map.js",
-    'protected-session': "./type_widgets/protected_session.js",
-    'book': "./type_widgets/book.js"
+    'empty': EmptyTypeWidget,
+    'text': TextTypeWidget,
+    'code': CodeTypeWidget,
+    'file': FileTypeWidget,
+    'image': ImageTypeWidget,
+    'search': SearchTypeWidget,
+    'render': RenderTypeWidget,
+    'relation-map': RelationMapTypeWidget,
+    'protected-session': ProtectedSessionTypeWidget,
+    'book': BookTypeWidget
 };
 
 export default class NoteDetailWidget extends TabAwareWidget {
@@ -33,7 +43,6 @@ export default class NoteDetailWidget extends TabAwareWidget {
         super(appContext);
 
         this.typeWidgets = {};
-        this.typeWidgetPromises = {};
 
         this.spacedUpdate = new SpacedUpdate(async () => {
             const {note} = this.tabContext;
@@ -77,32 +86,28 @@ export default class NoteDetailWidget extends TabAwareWidget {
     }
 
     async refresh() {
-        await this.initType();
-
-        for (const typeWidget of Object.values(this.typeWidgets)) {
-            if (typeWidget.constructor.getType() !== this.type) {
-                typeWidget.cleanup();
-                typeWidget.toggle(false);
-            }
+        if (!this.isEnabled()) {
+            this.toggle(false);
+            return;
         }
 
-        this.getTypeWidget().toggle(true);
+        this.toggle(true);
+
+        this.type = await this.getWidgetType();
+
+        if (!(this.type in this.typeWidgets)) {
+            const clazz = typeWidgetClasses[this.type];
+
+            const typeWidget = this.typeWidgets[this.type] = new clazz(this.appContext);
+            typeWidget.spacedUpdate = this.spacedUpdate;
+
+            this.children.push(typeWidget);
+            this.$widget.append(typeWidget.render());
+
+            typeWidget.eventReceived('setTabContext', {tabContext: this.tabContext});
+        }
 
         this.setupClasses();
-    }
-
-    async initType() {
-        let foundType;
-
-        do {
-            foundType = this.type = await this.getWidgetType();
-
-            if (!(this.type in this.typeWidgetPromises)) {
-                this.typeWidgetPromises[this.type] = this.initWidgetType(this.type);
-            }
-
-            await this.typeWidgetPromises[this.type];
-        } while (foundType !== await this.getWidgetType());
     }
 
     setupClasses() {
@@ -129,18 +134,6 @@ export default class NoteDetailWidget extends TabAwareWidget {
         }
 
         return this.typeWidgets[this.type];
-    }
-    
-    async initWidgetType(type) {
-        const clazz = await import(typeWidgetClasses[type]);
-
-        const typeWidget = this.typeWidgets[type] = new clazz.default(this.appContext);
-        typeWidget.spacedUpdate = this.spacedUpdate;
-
-        this.children.push(typeWidget);
-        this.$widget.append(typeWidget.render());
-
-        typeWidget.eventReceived('setTabContext', {tabContext: this.tabContext});
     }
 
     async getWidgetType() {
@@ -227,5 +220,12 @@ export default class NoteDetailWidget extends TabAwareWidget {
 
     autoBookDisabledListener() {
         this.refresh();
+    }
+
+    async triggerChildren(name, data) {
+        // done manually in refresh()
+        if (name !== 'setTabContext') {
+            await super.triggerChildren(name, data);
+        }
     }
 }

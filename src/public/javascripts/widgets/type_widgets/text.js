@@ -1,5 +1,4 @@
 import libraryLoader from "../../services/library_loader.js";
-import treeService from '../../services/tree.js';
 import noteAutocompleteService from '../../services/note_autocomplete.js';
 import mimeTypesService from '../../services/mime_types.js';
 import TypeWidget from "./type_widget.js";
@@ -137,7 +136,7 @@ export default class TextTypeWidget extends TypeWidget {
         }
     }
 
-    async doRefresh(note) {
+    async doRefresh(note) {console.trace("UPDATE###" + this.componentId);
         this.textEditor.isReadOnly = await note.hasLabel('readOnly');
 
         const noteComplement = await this.tabContext.getNoteComplement();

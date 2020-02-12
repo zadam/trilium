@@ -19,10 +19,13 @@ export default class TypeWidget extends TabAwareWidget {
                 && (widgetType !== 'protected-session' || !note.isProtected))) {
             this.toggle(false);
 
-            return;
+            this.cleanup();
         }
+        else {
+            this.toggle(true);
 
-        this.doRefresh(note);
+            this.doRefresh(note);
+        }
     }
 
     isActive() {

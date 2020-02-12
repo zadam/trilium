@@ -6,7 +6,6 @@ import contextMenuWidget from "../../services/context_menu.js";
 import toastService from "../../services/toast.js";
 import attributeAutocompleteService from "../../services/attribute_autocomplete.js";
 import TypeWidget from "./type_widget.js";
-import appContext from "../../services/app_context.js";
 
 const uniDirectionalOverlays = [
     [ "Arrow", {
