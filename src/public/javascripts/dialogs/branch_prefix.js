@@ -11,11 +11,17 @@ const $noteTitle = $('#branch-prefix-note-title');
 
 let branchId;
 
-export async function showDialog(node) {
-    branchId = node.data.branchId;
+export async function showDialog(notePath) {
+    const {noteId, parentNoteId} = treeService.getNoteIdAndParentIdFromNotePath(notePath);
+
+    if (!noteId || !parentNoteId) {
+        return;
+    }
+
+    branchId = await treeCache.getBranchId(parentNoteId, noteId);
     const branch = treeCache.getBranch(branchId);
 
-    if (branch.noteId === 'root') {
+    if (!branch || branch.noteId === 'root') {
         return;
     }
 
@@ -29,7 +35,7 @@ export async function showDialog(node) {
 
     $treePrefixInput.val(branch.prefix);
 
-    const noteTitle = await treeService.getNoteTitle(node.data.noteId);
+    const noteTitle = await treeService.getNoteTitle(noteId);
 
     $noteTitle.text(" - " + noteTitle);
 }
@@ -38,8 +44,6 @@ async function savePrefix() {
     const prefix = $treePrefixInput.val();
 
     await server.put('branches/' + branchId + '/set-prefix', { prefix: prefix });
-
-    await treeService.setPrefix(branchId, prefix);
 
     $dialog.modal('hide');
 

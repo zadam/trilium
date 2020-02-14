@@ -52,11 +52,12 @@ export default class DialogEventComponent extends Component {
     }
 
     async editBranchPrefixListener() {
-        // FIXME
-        const node = this.appContext.getMainNoteTree().getActiveNode();
+        const notePath = this.appContext.tabManager.getActiveTabNotePath();
 
-        const editBranchPrefixDialog = await import("../dialogs/branch_prefix.js");
-        editBranchPrefixDialog.showDialog(node);
+        if (notePath) {
+            const editBranchPrefixDialog = await import("../dialogs/branch_prefix.js");
+            editBranchPrefixDialog.showDialog(notePath);
+        }
     }
 
     addLinkToTextListener() {
