@@ -37,7 +37,7 @@
     "electron-window-state": "5.0.3",
     "express": "4.17.1",
     "express-session": "1.17.0",
-    "file-type": "14.1.1",
+    "file-type": "14.1.2",
     "fs-extra": "8.1.0",
     "helmet": "3.21.2",
     "html": "1.0.0",
@@ -53,7 +53,7 @@
     "jimp": "0.9.3",
     "mime-types": "2.1.26",
     "multer": "1.4.2",
-    "node-abi": "2.14.0",
+    "node-abi": "2.15.0",
     "open": "7.0.2",
     "portscanner": "2.2.0",
     "rand-token": "0.4.0",
@@ -75,7 +75,7 @@
     "ws": "7.2.1"
   },
   "devDependencies": {
-    "electron": "8.0.0",
+    "electron": "9.0.0-beta.1",
     "electron-builder": "22.3.2",
     "electron-packager": "14.2.1",
     "electron-rebuild": "1.10.0",

@@ -1,5 +1,4 @@
 import hoistedNoteService from "../services/hoisted_note.js";
-import searchNotesService from "../services/search_notes.js";
 import treeService from "../services/tree.js";
 import utils from "../services/utils.js";
 import contextMenuWidget from "../services/context_menu.js";
@@ -12,6 +11,7 @@ import ws from "../services/ws.js";
 import TabAwareWidget from "./tab_aware_widget.js";
 import server from "../services/server.js";
 import noteCreateService from "../services/note_create.js";
+import toastService from "../services/toast.js";
 
 const TPL = `
 <div class="tree">
@@ -41,7 +41,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
         this.$widget = $(TPL);
 
         this.$widget.on("click", ".unhoist-button", hoistedNoteService.unhoist);
-        this.$widget.on("click", ".refresh-search-button", searchNotesService.refreshSearch);
+        this.$widget.on("click", ".refresh-search-button", () => this.refreshSearch());
 
         // fancytree doesn't support middle click so this is a way to support it
         this.$widget.on('mousedown', '.fancytree-title', e => {
@@ -436,6 +436,15 @@ export default class NoteTreeWidget extends TabAwareWidget {
                 newActiveNode.makeVisible({scrollIntoView: true});
             }
         }
+    }
+
+    async refreshSearch() {
+        const activeNode = this.getActiveNode();
+
+        activeNode.load(true);
+        activeNode.setExpanded(true);
+
+        toastService.showMessage("Saved search note refreshed.");
     }
 
     async entitiesReloadedListener({loadResults}) {

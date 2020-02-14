@@ -1,6 +1,4 @@
 import BasicWidget from "./basic_widget.js";
-import searchService from "../services/search_notes.js";
-import treeCache from "../services/tree_cache.js";
 import toastService from "../services/toast.js";
 import appContext from "../services/app_context.js";
 import noteCreateService from "../services/note_create.js";
@@ -109,14 +107,13 @@ export default class SearchBoxWidget extends BasicWidget {
         }
 
         // FIXME
-        let activeNode = appContext.getMainNoteTree().getActiveNode();
-        const parentNote = await treeCache.getNote(activeNode.data.noteId);
+        let activeNote = appContext.tabManager.getActiveTabNote();
 
-        if (parentNote.type === 'search') {
-            activeNode = activeNode.getParent();
+        if (activeNote.type === 'search') {
+            activeNote = (await activeNote.getParentNotes())[0];
         }
 
-        await noteCreateService.createNote(activeNode.data.noteId, {
+        await noteCreateService.createNote(activeNote.noteId, {
             type: "search",
             mime: "application/json",
             title: searchString,
@@ -134,7 +131,7 @@ export default class SearchBoxWidget extends BasicWidget {
         this.$searchBox.tooltip({
             trigger: 'focus',
             html: true,
-            title: searchService.getHelpText(),
+            title: window.glob.SEARCH_HELP_TEXT,
             placement: 'right',
             delay: {
                 show: 500, // necessary because sliding out may cause wrong position

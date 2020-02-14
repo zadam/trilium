@@ -1,4 +1,3 @@
-import searchNotesService from "../../services/search_notes.js";
 import TypeWidget from "./type_widget.js";
 
 const TPL = `
@@ -6,11 +5,6 @@ const TPL = `
     <div style="display: flex; align-items: center; margin-right: 20px; margin-top: 15px;">
         <strong>Search string: &nbsp; &nbsp;</strong>
         <textarea rows="4" style="width: auto !important; flex-grow: 4" class="search-string form-control"></textarea>
-
-        <span>
-            &nbsp; &nbsp;
-            <button type="button" class="btn btn-primary note-detail-search-refresh-results-button">Refresh search results</button>
-        </span>
     </div>
 
     <br />
@@ -26,19 +20,12 @@ export default class SearchTypeWidget extends TypeWidget {
         this.$searchString = this.$widget.find(".search-string");
         this.$component = this.$widget.find('.note-detail-search');
         this.$help = this.$widget.find(".note-detail-search-help");
-        this.$refreshButton = this.$widget.find('.note-detail-search-refresh-results-button');
 
-        this.$refreshButton.on('click', async () => {
-            await this.spacedUpdate.updateNowIfNecessary();
-
-            await searchNotesService.refreshSearch();
-        });
-        
         return this.$widget;
     }
 
     async doRefresh(note) {
-        this.$help.html(searchNotesService.getHelpText());
+        this.$help.html(window.glob.SEARCH_HELP_TEXT);
 
         this.$component.show();
 
@@ -53,7 +40,7 @@ export default class SearchTypeWidget extends TypeWidget {
             this.$searchString.val('');
         }
 
-        this.$searchString.on('input', () => this.noteChanged());
+        this.$searchString.on('input', () => this.spacedUpdate.scheduleUpdate());
     }
 
     getContent() {

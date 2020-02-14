@@ -5,7 +5,6 @@ import ws from './services/ws.js';
 import noteType from './widgets/note_type.js';
 import protectedSessionService from './services/protected_session.js';
 import protectedSessionHolder from './services/protected_session_holder.js';
-import searchNotesService from './services/search_notes.js';
 import FrontendScriptApi from './services/frontend_script_api.js';
 import ScriptContext from './services/script_context.js';
 import sync from './services/sync.js';
@@ -135,9 +134,22 @@ window.glob.importMarkdownInline = async () => {
     dialog.importMarkdownInline();
 };
 
-macInit.init();
+window.glob.SEARCH_HELP_TEXT = `
+<strong>Search tips</strong> - also see <button class="btn btn-sm" type="button" data-help-page="Search">complete help on search</button>
+<p>
+<ul>
+    <li>Just enter any text for full text search</li>
+    <li><code>@abc</code> - returns notes with label abc</li>
+    <li><code>@year=2019</code> - matches notes with label <code>year</code> having value <code>2019</code></li>
+    <li><code>@rock @pop</code> - matches notes which have both <code>rock</code> and <code>pop</code> labels</li>
+    <li><code>@rock or @pop</code> - only one of the labels must be present</li>
+    <li><code>@year&lt;=2000</code> - numerical comparison (also &gt;, &gt;=, &lt;).</li>
+    <li><code>@dateCreated>=MONTH-1</code> - notes created in the last month</li>
+    <li><code>=handler</code> - will execute script defined in <code>handler</code> relation to get results</li>
+</ul>
+</p>`;
 
-searchNotesService.init(); // should be in front of treeService since that one manipulates address bar hash
+macInit.init();
 
 appContext.start();
 

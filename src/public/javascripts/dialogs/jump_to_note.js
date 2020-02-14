@@ -1,4 +1,3 @@
-import searchNotesService from '../services/search_notes.js';
 import noteAutocompleteService from '../services/note_autocomplete.js';
 import utils from "../services/utils.js";
 import appContext from "../services/app_context.js";
