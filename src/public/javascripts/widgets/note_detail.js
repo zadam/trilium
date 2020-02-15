@@ -39,8 +39,8 @@ const typeWidgetClasses = {
 };
 
 export default class NoteDetailWidget extends TabAwareWidget {
-    constructor(appContext) {
-        super(appContext);
+    constructor(appContext, parent) {
+        super(appContext, parent);
 
         this.typeWidgets = {};
 

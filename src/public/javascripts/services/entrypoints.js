@@ -8,8 +8,8 @@ import appContext from "./app_context.js";
 import Component from "../widgets/component.js";
 
 export default class Entrypoints extends Component {
-    constructor(appContext) {
-        super(appContext);
+    constructor(appContext, parent) {
+        super(appContext, parent);
 
         // hot keys are active also inside inputs and content editables
         jQuery.hotkeys.options.filterInputAcceptingElements = false;

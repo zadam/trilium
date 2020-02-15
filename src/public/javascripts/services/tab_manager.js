@@ -8,8 +8,8 @@ import utils from "./utils.js";
 import TabContext from "./tab_context.js";
 
 export default class TabManager extends Component {
-    constructor(appContext) {
-        super(appContext);
+    constructor(appContext, parent) {
+        super(appContext, parent);
 
         this.activeTabId = null;
 

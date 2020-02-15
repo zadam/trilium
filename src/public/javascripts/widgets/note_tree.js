@@ -29,8 +29,8 @@ const TPL = `
 `;
 
 export default class NoteTreeWidget extends TabAwareWidget {
-    constructor(appContext) {
-        super(appContext);
+    constructor(appContext, parent) {
+        super(appContext, parent);
 
         window.glob.cutIntoNote = () => this.cutIntoNoteListener();
 

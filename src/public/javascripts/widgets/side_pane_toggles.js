@@ -29,8 +29,8 @@ const TPL = `
 `;
 
 export default class SidePaneToggles extends BasicWidget {
-    constructor(appContext) {
-        super(appContext);
+    constructor(appContext, parent) {
+        super(appContext, parent);
 
         this.paneVisible = {};
     }

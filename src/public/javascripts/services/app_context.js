@@ -47,7 +47,7 @@ class AppContext {
         ];
 
         if (utils.isElectron()) {
-            this.components.push(new ZoomService(this));
+            this.components.push(new ZoomService(this, this));
 
             import("./spell_check.js").then(spellCheckService => spellCheckService.initSpellCheck());
         }

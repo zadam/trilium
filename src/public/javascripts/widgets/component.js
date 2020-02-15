@@ -2,11 +2,16 @@ import utils from '../services/utils.js';
 import Mutex from "../services/mutex.js";
 
 export default class Component {
-    /** @param {AppContext} appContext */
-    constructor(appContext) {
+    /**
+     * @param {AppContext} appContext
+     * @param {Component} parent
+     */
+    constructor(appContext, parent) {
         this.componentId = `comp-${this.constructor.name}-` + utils.randomString(6);
         /** @type AppContext */
         this.appContext = appContext;
+        /** @type Component */
+        this.parent = parent;
         /** @type TabManager */
         this.tabManager = appContext.tabManager;
         /** @type Component[] */
@@ -58,5 +63,9 @@ export default class Component {
         }
 
         await Promise.all(promises);
+    }
+
+    triggerCommand(name, data) {
+
     }
 }

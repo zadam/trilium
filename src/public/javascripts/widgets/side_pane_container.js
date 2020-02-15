@@ -2,11 +2,10 @@ import options from "../services/options.js";
 import FlexContainer from "./flex_container.js";
 
 export default class SidePaneContainer extends FlexContainer {
-    constructor(appContext, side, widgets) {
-        super(appContext, {id: side + '-pane', 'flex-direction': 'column', 'height': '100%'}, widgets);
+    constructor(appContext, parent, side, widgetFactories) {
+        super(appContext, parent, {id: side + '-pane', 'flex-direction': 'column', 'height': '100%'}, widgetFactories);
 
         this.side = side;
-        this.children = widgets;
     }
 
     isEnabled() {

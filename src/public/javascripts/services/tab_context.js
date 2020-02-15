@@ -15,7 +15,7 @@ class TabContext extends Component {
      * @param {string|null} tabId
      */
     constructor(appContext, tabId = null) {
-        super(appContext);
+        super(appContext, parent);
 
         this.tabId = tabId || utils.randomString(4);
 

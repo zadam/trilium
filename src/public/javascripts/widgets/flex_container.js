@@ -1,11 +1,11 @@
 import BasicWidget from "./basic_widget.js";
 
 export default class FlexContainer extends BasicWidget {
-    constructor(appContext, attrs, widgets) {
-        super(appContext);
+    constructor(appContext, parent, attrs, widgetFactories) {
+        super(appContext, parent);
 
         this.attrs = attrs;
-        this.children = widgets;
+        this.children = widgetFactories.map(wf => wf(this));
     }
 
     doRender() {
