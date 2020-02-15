@@ -42,44 +42,44 @@ const TPL = `
             <a class="dropdown-item open-dev-tools-button" data-trigger-event="openDevTools">
                 <span class="bx bx-terminal"></span>
                 Open Dev Tools
-                <kbd data-kb-action="OpenDevTools"></kbd>
+                <kbd data-kb-action="openDevTools"></kbd>
             </a>
 
             <a class="dropdown-item" data-trigger-event="showSQLConsole">
                 <span class="bx bx-data"></span>
                 Open SQL Console
-                <kbd data-kb-action="ShowSQLConsole"></kbd>
+                <kbd data-kb-action="showSQLConsole"></kbd>
             </a>
 
             <a class="dropdown-item" data-trigger-event="showBackendLog">
                 <span class="bx bx-empty"></span>
                 Show backend log
-                <kbd data-kb-action="ShowBackendLog"></kbd>
+                <kbd data-kb-action="showBackendLog"></kbd>
             </a>
 
             <a class="dropdown-item" data-trigger-event="reloadFrontendApp" 
                 title="Reload can help with some visual glitches without restarting the whole app.">
                 <span class="bx bx-empty"></span>
                 Reload frontend
-                <kbd data-kb-action="ReloadFrontendApp"></kbd>
+                <kbd data-kb-action="reloadFrontendApp"></kbd>
             </a>
 
             <a class="dropdown-item" data-trigger-event="toggleZenMode">
                 <span class="bx bx-empty"></span>
                 Toggle Zen mode
-                <kbd data-kb-action="ToggleZenMode"></kbd>
+                <kbd data-kb-action="toggleZenMode"></kbd>
             </a>
 
             <a class="dropdown-item" data-trigger-event="toggleFullscreen">
                 <span class="bx bx-empty"></span>
                 Toggle fullscreen
-                <kbd data-kb-action="ToggleFullscreen"></kbd>
+                <kbd data-kb-action="toggleFullscreen"></kbd>
             </a>
 
             <a class="dropdown-item" data-trigger-event="showHelp">
                 <span class="bx bx-info-circle"></span>
                 Show Help
-                <kbd data-kb-action="ShowHelp"></kbd>
+                <kbd data-kb-action="showHelp"></kbd>
             </a>
 
             <a class="dropdown-item show-about-dialog-button">

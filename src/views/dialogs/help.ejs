@@ -18,12 +18,12 @@
                                 <ul>
                                     <li><kbd>UP</kbd>, <kbd>DOWN</kbd> - go up/down in the list of notes</li>
                                     <li><kbd>LEFT</kbd>, <kbd>RIGHT</kbd> - collapse/expand node</li>
-                                    <li><kbd data-kb-action="BackInNoteHistory"></kbd>, <kbd data-kb-action="BackInNoteHistory"></kbd> - go back / forwards in the history</li>
-                                    <li><kbd data-kb-action="JumpToNote"></kbd> - show <a class="external" href="https://github.com/zadam/trilium/wiki/Note-navigation#jump-to-note">"Jump to" dialog</a></li>
-                                    <li><kbd data-kb-action="ScrollToActiveNote"></kbd> - scroll to active note</li>
-                                    <li><kbd data-kb-action="ActivateParentNote"></kbd> - jumps to parent note</li>
-                                    <li><kbd data-kb-action="CollapseTree"></kbd> - collapse whole note tree</li>
-                                    <li><kbd data-kb-action="CollapseSubtree"></kbd> - collapse sub-tree</li>
+                                    <li><kbd data-kb-action="backInNoteHistory"></kbd>, <kbd data-kb-action="BackInNoteHistory"></kbd> - go back / forwards in the history</li>
+                                    <li><kbd data-kb-action="jumpToNote"></kbd> - show <a class="external" href="https://github.com/zadam/trilium/wiki/Note-navigation#jump-to-note">"Jump to" dialog</a></li>
+                                    <li><kbd data-kb-action="scrollToActiveNote"></kbd> - scroll to active note</li>
+                                    <li><kbd data-kb-action="activateParentNote"></kbd> - jumps to parent note</li>
+                                    <li><kbd data-kb-action="collapseTree"></kbd> - collapse whole note tree</li>
+                                    <li><kbd data-kb-action="collapseSubtree"></kbd> - collapse sub-tree</li>
                                 </ul>
                             </p>
                         </div>
@@ -40,10 +40,10 @@
 
                             Only in desktop (electron build):
                             <ul>
-                                <li><kbd data-kb-action="OpenNewTab"></kbd> opens empty tab</li>
-                                <li><kbd data-kb-action="CloseActiveTab"></kbd> closes active tab</li>
-                                <li><kbd data-kb-action="ActivateNextTab"></kbd> activates next tab</li>
-                                <li><kbd data-kb-action="ActivatePreviousTab"></kbd> activates previous tab</li>
+                                <li><kbd data-kb-action="openNewTab"></kbd> opens empty tab</li>
+                                <li><kbd data-kb-action="closeActiveTab"></kbd> closes active tab</li>
+                                <li><kbd data-kb-action="activateNextTab"></kbd> activates next tab</li>
+                                <li><kbd data-kb-action="activatePreviousTab"></kbd> activates previous tab</li>
                             </ul>
                             </p>
                         </div>
@@ -55,9 +55,9 @@
 
                             <p class="card-text">
                                 <ul>
-                                    <li><kbd data-kb-action="CreateNoteAfter"></kbd> - creates new note after the active note</li>
-                                    <li><kbd data-kb-action="CreateNoteInto"></kbd> - creates new sub-note into active note</li>
-                                    <li><kbd data-kb-action="EditBranchPrefix"></kbd> - edit <a class="external" href="https://github.com/zadam/trilium/wiki/Tree concepts#prefix">prefix</a> of active note clone</li>
+                                    <li><kbd data-kb-action="createNoteAfter"></kbd> - creates new note after the active note</li>
+                                    <li><kbd data-kb-action="createNoteInto"></kbd> - creates new sub-note into active note</li>
+                                    <li><kbd data-kb-action="editBranchPrefix"></kbd> - edit <a class="external" href="https://github.com/zadam/trilium/wiki/Tree concepts#prefix">prefix</a> of active note clone</li>
                                 </ul>
                             </p>
                         </div>
@@ -69,15 +69,15 @@
 
                             <p class="card-text">
                                 <ul>
-                                    <li><kbd data-kb-action="MoveNoteUp"></kbd>, <kbd data-kb-action="MoveNoteDown"></kbd> - move note up/down in the note list</li>
-                                    <li><kbd data-kb-action="MoveNoteUpInHierarchy"></kbd>, <kbd data-kb-action="MoveNoteDownInHierarchy"></kbd> - move note up in the hierarchy</li>
-                                    <li><kbd data-kb-action="AddNoteAboveToSelection"></kbd>, <kbd data-kb-action="AddNoteBelowToSelection"></kbd> - multi-select note above/below</li>
-                                    <li><kbd data-kb-action="SelectAllNotesInParent"></kbd> - select all notes in the current level</li>
+                                    <li><kbd data-kb-action="moveNoteUp"></kbd>, <kbd data-kb-action="MoveNoteDown"></kbd> - move note up/down in the note list</li>
+                                    <li><kbd data-kb-action="moveNoteUpInHierarchy"></kbd>, <kbd data-kb-action="MoveNoteDownInHierarchy"></kbd> - move note up in the hierarchy</li>
+                                    <li><kbd data-kb-action="addNoteAboveToSelection"></kbd>, <kbd data-kb-action="AddNoteBelowToSelection"></kbd> - multi-select note above/below</li>
+                                    <li><kbd data-kb-action="selectAllNotesInParent"></kbd> - select all notes in the current level</li>
                                     <li><kbd>Shift+click</kbd> - select note</li>
-                                    <li><kbd data-kb-action="CopyNotesToClipboard"></kbd> - copies active note (or current selection) into clipboard (used for <a class="external" href="https://github.com/zadam/trilium/wiki/Cloning notes">cloning</a>)</li>
-                                    <li><kbd data-kb-action="CutNotesToClipboard"></kbd> - cuts current (or current selection) note into clipboard (used for moving notes)</li>
-                                    <li><kbd data-kb-action="PasteNotesFromClipboard"></kbd> - pastes note(s) as sub-note into active note (which is either move or clone depending on whether it was copied or cut into clipboard)</li>
-                                    <li><kbd data-kb-action="DeleteNotes"></kbd> - delete note / sub-tree</li>
+                                    <li><kbd data-kb-action="copyNotesToClipboard"></kbd> - copies active note (or current selection) into clipboard (used for <a class="external" href="https://github.com/zadam/trilium/wiki/Cloning notes">cloning</a>)</li>
+                                    <li><kbd data-kb-action="cutNotesToClipboard"></kbd> - cuts current (or current selection) note into clipboard (used for moving notes)</li>
+                                    <li><kbd data-kb-action="pasteNotesFromClipboard"></kbd> - pastes note(s) as sub-note into active note (which is either move or clone depending on whether it was copied or cut into clipboard)</li>
+                                    <li><kbd data-kb-action="deleteNotes"></kbd> - delete note / sub-tree</li>
                                 </ul>
                             </p>
                         </div>
@@ -89,12 +89,12 @@
 
                             <p class="card-text">
                                 <ul>
-                                    <li><kbd data-kb-action="EditNoteTitle"></kbd> in tree pane switches from tree pane into note title. Enter from note title switches focus to text editor.
-                                        <kbd data-kb-action="ScrollToActiveNote"></kbd> switches back from editor to tree pane.</li>
+                                    <li><kbd data-kb-action="editNoteTitle"></kbd> in tree pane switches from tree pane into note title. Enter from note title switches focus to text editor.
+                                        <kbd data-kb-action="scrollToActiveNote"></kbd> switches back from editor to tree pane.</li>
                                     <li><kbd>Ctrl+K</kbd> - create / edit external link</li>
-                                    <li><kbd data-kb-action="AddLinkToText"></kbd> - create internal link</li>
-                                    <li><kbd data-kb-action="InsertDateTimeToText"></kbd> - inserts current date and time at caret position</li>
-                                    <li><kbd data-kb-action="ScrollToActiveNote"></kbd> - jump away to the tree pane and scroll to active note</li>
+                                    <li><kbd data-kb-action="addLinkToText"></kbd> - create internal link</li>
+                                    <li><kbd data-kb-action="insertDateTimeToText"></kbd> - inserts current date and time at caret position</li>
+                                    <li><kbd data-kb-action="scrollToActiveNote"></kbd> - jump away to the tree pane and scroll to active note</li>
                                 </ul>
                             </p>
                         </div>
@@ -121,9 +121,9 @@
 
                             <p class="card-text">
                                 <ul>
-                                    <li><kbd data-kb-action="ReloadFrontendApp"></kbd> - reloads Trilium frontend</li>
-                                    <li><kbd data-kb-action="OpenDevTools"></kbd> - show developer tools</li>
-                                    <li><kbd data-kb-action="ShowSQLConsole"></kbd> - show SQL console</li>
+                                    <li><kbd data-kb-action="reloadFrontendApp"></kbd> - reloads Trilium frontend</li>
+                                    <li><kbd data-kb-action="openDevTools"></kbd> - show developer tools</li>
+                                    <li><kbd data-kb-action="showSQLConsole"></kbd> - show SQL console</li>
                                 </ul>
                             </p>
                         </div>
@@ -135,10 +135,10 @@
 
                             <p class="card-text">
                                 <ul>
-                                    <li><kbd data-kb-action="ToggleZenMode"></kbd> - Zen mode - display only note editor, everything else is hidden</li>
-                                    <li><kbd data-kb-action="SearchNotes"></kbd> - toggle search form in tree pane</li>
-                                    <li><kbd data-kb-action="FindInText"></kbd> - in page search</li>
-                                    <li><kbd data-kb-action="ShowAttributes"></kbd> - show note attributes dialog</li>
+                                    <li><kbd data-kb-action="toggleZenMode"></kbd> - Zen mode - display only note editor, everything else is hidden</li>
+                                    <li><kbd data-kb-action="searchNotes"></kbd> - toggle search form in tree pane</li>
+                                    <li><kbd data-kb-action="findInText"></kbd> - in page search</li>
+                                    <li><kbd data-kb-action="showAttributes"></kbd> - show note attributes dialog</li>
                                 </ul>
                             </p>
                         </div>

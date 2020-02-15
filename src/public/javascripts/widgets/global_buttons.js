@@ -19,17 +19,17 @@ const WIDGET_TPL = `
 
     <a data-trigger-event="collapseTree"
        title="Collapse note tree" 
-       data-kb-action="CollapseTree" 
+       data-kb-action="collapseTree" 
        class="icon-action bx bx-layer-minus"></a>
 
     <a data-trigger-event="scrollToActiveNote"
        title="Scroll to active note" 
-       data-kb-action="ScrollToActiveNote" 
+       data-kb-action="scrollToActiveNote" 
        class="icon-action bx bx-crosshair"></a>
 
     <a data-trigger-event="searchNotes"
        title="Search in notes"
-       data-kb-action="SearchNotes"
+       data-kb-action="searchNotes"
        class="icon-action bx bx-search"></a>
 </div>
 `;

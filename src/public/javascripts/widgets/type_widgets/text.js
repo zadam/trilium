@@ -4,6 +4,7 @@ import mimeTypesService from '../../services/mime_types.js';
 import TypeWidget from "./type_widget.js";
 import utils from "../../services/utils.js";
 import appContext from "../../services/app_context.js";
+import keyboardActionService from "../../services/keyboard_actions.js";
 
 const ENABLE_INSPECTOR = false;
 
@@ -99,6 +100,8 @@ export default class TextTypeWidget extends TypeWidget {
 
         this.initialized = this.initEditor();
 
+        keyboardActionService.setupActionsForElement('text-detail', this.$widget, this);
+
         return this.$widget;
     }
 
@@ -184,11 +187,7 @@ export default class TextTypeWidget extends TypeWidget {
         this.$widget.scrollTop(0);
     }
 
-    insertDateTimeToTextListener() {
-        if (!this.isActive()) {
-            return;
-        }
-
+    insertDateTimeToTextCommand() {
         const date = new Date();
         const dateString = utils.formatDateTime(date);
 
@@ -221,11 +220,7 @@ export default class TextTypeWidget extends TypeWidget {
         this.addTextToEditor(text);
     }
 
-    async addLinkToActiveEditorListener({linkTitle, linkHref}) {
-        if (!this.isActive()) {
-            return;
-        }
-
+    async addLink(linkTitle, linkHref) {
         await this.initialized;
 
         if (this.hasSelection()) {
@@ -254,5 +249,9 @@ export default class TextTypeWidget extends TypeWidget {
         await this.initialized;
 
         callback(this.textEditor);
+    }
+
+    addLinkToTextCommand() {
+        import("../../dialogs/add_link.js").then(d => d.showDialog(this));
     }
 }

@@ -52,12 +52,12 @@ function getSelectedOrActiveBranchIds(treeWidget, node) {
  */
 function getTemplates(treeWidget) {
     return {
-        "DeleteNotes": node => {
+        "deleteNotes": node => {
             const branchIds = getSelectedOrActiveBranchIds(treeWidget, node);
 
             treeChangesService.deleteNotes(treeWidget, branchIds);
         },
-        "MoveNoteUp": node => {
+        "moveNoteUp": node => {
             const beforeNode = node.getPrevSibling();
 
             if (beforeNode !== null) {
@@ -66,7 +66,7 @@ function getTemplates(treeWidget) {
 
             return false;
         },
-        "MoveNoteDown": node => {
+        "moveNoteDown": node => {
             const afterNode = node.getNextSibling();
             if (afterNode !== null) {
                 treeChangesService.moveAfterBranch([node.data.branchId], afterNode.data.branchId);
@@ -74,12 +74,12 @@ function getTemplates(treeWidget) {
 
             return false;
         },
-        "MoveNoteUpInHierarchy": node => {
+        "moveNoteUpInHierarchy": node => {
             treeChangesService.moveNodeUpInHierarchy(node);
 
             return false;
         },
-        "MoveNoteDownInHierarchy": node => {
+        "moveNoteDownInHierarchy": node => {
             const toNode = node.getPrevSibling();
 
             if (toNode !== null) {
@@ -88,7 +88,7 @@ function getTemplates(treeWidget) {
 
             return false;
         },
-        "AddNoteAboveToSelection": () => {
+        "addNoteAboveToSelection": () => {
             const node = treeWidget.getFocusedNode();
 
             if (!node) {
@@ -113,7 +113,7 @@ function getTemplates(treeWidget) {
 
             return false;
         },
-        "AddNoteBelowToSelection": () => {
+        "addNoteBelowToSelection": () => {
             const node = treeWidget.getFocusedNode();
 
             if (!node) {
@@ -138,42 +138,42 @@ function getTemplates(treeWidget) {
 
             return false;
         },
-        "CollapseSubtree": node => {
+        "collapseSubtree": node => {
             treeWidget.collapseTree(node);
         },
-        "SortChildNotes": node => {
+        "sortChildNotes": node => {
             treeService.sortAlphabetically(node.data.noteId);
 
             return false;
         },
-        "SelectAllNotesInParent": node => {
+        "selectAllNotesInParent": node => {
             for (const child of node.getParent().getChildren()) {
                 child.setSelected(true);
             }
 
             return false;
         },
-        "CopyNotesToClipboard": node => {
+        "copyNotesToClipboard": node => {
             clipboard.copy(getSelectedOrActiveBranchIds(treeWidget, node));
 
             return false;
         },
-        "CutNotesToClipboard": node => {
+        "cutNotesToClipboard": node => {
             clipboard.cut(getSelectedOrActiveBranchIds(treeWidget, node));
 
             return false;
         },
-        "PasteNotesFromClipboard": node => {
+        "pasteNotesFromClipboard": node => {
             clipboard.pasteInto(node.data.noteId);
 
             return false;
         },
-        "EditNoteTitle": node => {
+        "editNoteTitle": node => {
             appContext.trigger('focusOnTitle');
 
             return false;
         },
-        "ActivateParentNote": node => {
+        "activateParentNote": node => {
             if (!hoistedNoteService.isRootNode(node)) {
                 node.getParent().setActive().then(treeWidget.clearSelectedNodes);
             }

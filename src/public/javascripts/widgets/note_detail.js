@@ -98,7 +98,7 @@ export default class NoteDetailWidget extends TabAwareWidget {
         if (!(this.type in this.typeWidgets)) {
             const clazz = typeWidgetClasses[this.type];
 
-            const typeWidget = this.typeWidgets[this.type] = new clazz(this.appContext);
+            const typeWidget = this.typeWidgets[this.type] = new clazz(this.appContext, this);
             typeWidget.spacedUpdate = this.spacedUpdate;
 
             this.children.push(typeWidget);

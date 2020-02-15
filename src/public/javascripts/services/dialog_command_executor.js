@@ -42,10 +42,6 @@ export default class DialogCommandExecutor extends Component {
         }
     }
 
-    addLinkToTextCommand() {
-        import("../dialogs/add_link.js").then(d => d.showDialog());
-    }
-
     async cloneNoteIdsToCommand({noteIds}) {
         const d = await import("../dialogs/clone_to.js");
         d.showDialog(noteIds);

@@ -14,25 +14,30 @@ const DEFAULT_KEYBOARD_ACTIONS = [
     {
         actionName: "BackInNoteHistory",
         // Mac has a different history navigation shortcuts - https://github.com/zadam/trilium/issues/376
-        defaultShortcuts: isMac ? ["Meta+Left"] : ["Alt+Left"]
+        defaultShortcuts: isMac ? ["Meta+Left"] : ["Alt+Left"],
+        scope: "window"
     },
     {
         actionName: "ForwardInNoteHistory",
         // Mac has a different history navigation shortcuts - https://github.com/zadam/trilium/issues/376
-        defaultShortcuts: isMac ? ["Meta+Right"] : ["Alt+Right"]
+        defaultShortcuts: isMac ? ["Meta+Right"] : ["Alt+Right"],
+        scope: "window"
     },
     {
         actionName: "JumpToNote",
         defaultShortcuts: ["CommandOrControl+J"],
-        description: 'Open "Jump to note" dialog'
+        description: 'Open "Jump to note" dialog',
+        scope: "window"
     },
     {
         actionName: "ScrollToActiveNote",
-        defaultShortcuts: ["CommandOrControl+."]
+        defaultShortcuts: ["CommandOrControl+."],
+        scope: "window" // FIXME - how do we find what note tree should be updated?
     },
     {
         actionName: "SearchNotes",
-        defaultShortcuts: ["CommandOrControl+S"]
+        defaultShortcuts: ["CommandOrControl+S"],
+        scope: "window"
     },
     {
         actionName: "SearchInSubtree",
@@ -43,6 +48,7 @@ const DEFAULT_KEYBOARD_ACTIONS = [
     {
         actionName: "CollapseTree",
         defaultShortcuts: ["Alt+C"],
+        scope: "note-tree"
     },
     {
         actionName: "CollapseSubtree",
@@ -69,16 +75,19 @@ const DEFAULT_KEYBOARD_ACTIONS = [
     },
     {
         actionName: "CreateNoteAfter",
-        defaultShortcuts: ["CommandOrControl+O"]
+        defaultShortcuts: ["CommandOrControl+O"],
+        scope: "window"
     },
     {
         actionName: "CreateNoteInto",
-        defaultShortcuts: ["CommandOrControl+P"]
+        defaultShortcuts: ["CommandOrControl+P"],
+        scope: "window"
     },
     {
         actionName: "CreateNoteIntoDayNote",
         defaultShortcuts: ["global:CommandOrControl+Alt+P"],
-        description: "Create and open subnote of a current day note"
+        description: "Create and open subnote of a current day note",
+        scope: "window"
     },
     {
         actionName: "DeleteNotes",
@@ -119,15 +128,18 @@ const DEFAULT_KEYBOARD_ACTIONS = [
     {
         actionName: "EditBranchPrefix",
         defaultShortcuts: ["F2"],
-        description: "Show Edit branch prefix dialog"
+        description: "Show Edit branch prefix dialog",
+        scope: "window"
     },
     {
         actionName: "CloneNotesTo",
-        defaultShortcuts: ["CommandOrControl+Shift+C"]
+        defaultShortcuts: ["CommandOrControl+Shift+C"],
+        scope: "window"
     },
     {
         actionName: "MoveNotesTo",
-        defaultShortcuts: ["CommandOrControl+Shift+X"]
+        defaultShortcuts: ["CommandOrControl+Shift+X"],
+        scope: "window"
     },
 
     {
@@ -179,22 +191,26 @@ const DEFAULT_KEYBOARD_ACTIONS = [
     {
         actionName: "OpenNewTab",
         defaultShortcuts: isElectron ? ["CommandOrControl+T"] : [],
-        description: "Opens new tab"
+        description: "Opens new tab",
+        scope: "window"
     },
     {
         actionName: "CloseActiveTab",
         defaultShortcuts: isElectron ? ["CommandOrControl+W"] : [],
-        description: "Closes active tab"
+        description: "Closes active tab",
+        scope: "window"
     },
     {
         actionName: "ActivateNextTab",
         defaultShortcuts: isElectron ? ["CommandOrControl+Tab"] : [],
-        description: "Activates tab on the right"
+        description: "Activates tab on the right",
+        scope: "window"
     },
     {
         actionName: "ActivatePreviousTab",
         defaultShortcuts: isElectron ? ["CommandOrControl+Shift+Tab"] : [],
-        description: "Activates tab on the left"
+        description: "Activates tab on the left",
+        scope: "window"
     },
 
 
@@ -204,52 +220,62 @@ const DEFAULT_KEYBOARD_ACTIONS = [
     {
         actionName: "ShowAttributes",
         defaultShortcuts: ["Alt+A"],
-        description: "Shows Attributes dialog"
+        description: "Shows Attributes dialog",
+        scope: "window"
     },
     {
         actionName: "ShowNoteInfo",
         defaultShortcuts: [],
-        description: "Shows Note Info dialog"
+        description: "Shows Note Info dialog",
+        scope: "window"
     },
     {
         actionName: "ShowNoteSource",
         defaultShortcuts: [],
-        description: "Shows Note Source dialog"
+        description: "Shows Note Source dialog",
+        scope: "window"
     },
     {
         actionName: "ShowLinkMap",
         defaultShortcuts: [],
-        description: "Shows Link Map dialog"
+        description: "Shows Link Map dialog",
+        scope: "window"
     },
     {
         actionName: "ShowOptions",
         defaultShortcuts: [],
-        description: "Shows Options dialog"
+        description: "Shows Options dialog",
+        scope: "window"
     },
     {
         actionName: "ShowNoteRevisions",
         defaultShortcuts: [],
-        description: "Shows Note Revisions dialog"
+        description: "Shows Note Revisions dialog",
+        scope: "window"
     },
     {
         actionName: "ShowRecentChanges",
         defaultShortcuts: [],
-        description: "Shows Recent Changes dialog"
+        description: "Shows Recent Changes dialog",
+        scope: "window"
     },
     {
         actionName: "ShowSQLConsole",
         defaultShortcuts: ["Alt+O"],
-        description: "Shows SQL Console dialog"
+        description: "Shows SQL Console dialog",
+        scope: "window"
     },
     {
         actionName: "ShowBackendLog",
         defaultShortcuts: [],
-        description: "Shows Backend Log dialog"
+        description: "Shows Backend Log dialog",
+        scope: "window"
     },
     {
         actionName: "ShowHelp",
         defaultShortcuts: ["F1"],
-        description: "Shows built-in Help / cheatsheet"
+        description: "Shows built-in Help / cheatsheet",
+        scope: "window"
     },
 
 
@@ -260,21 +286,25 @@ const DEFAULT_KEYBOARD_ACTIONS = [
     {
         actionName: "AddLinkToText",
         defaultShortcuts: ["CommandOrControl+L"],
-        description: "Open dialog to add link to the text"
+        description: "Open dialog to add link to the text",
+        scope: "text-detail"
     },
     {
         actionName: "InsertDateTimeToText",
-        defaultShortcuts: ["Alt+T"]
+        defaultShortcuts: ["Alt+T"],
+        scope: "text-detail"
     },
     {
         actionName: "PasteMarkdownIntoText",
         defaultShortcuts: [],
-        description: "Pastes Markdown from clipboard into text note"
+        description: "Pastes Markdown from clipboard into text note",
+        scope: "text-detail"
     },
     {
         actionName: "CutIntoNote",
         defaultShortcuts: [],
-        description: "Cuts the selection from the current note and creates subnote with the selected text"
+        description: "Cuts the selection from the current note and creates subnote with the selected text",
+        scope: "text-detail"
     },
 
     {
@@ -283,49 +313,60 @@ const DEFAULT_KEYBOARD_ACTIONS = [
 
     {
         actionName: "PrintActiveNote",
-        defaultShortcuts: []
+        defaultShortcuts: [],
+        scope: "note-detail"
     },
     {
         actionName: "RunActiveNote",
         defaultShortcuts: ["CommandOrControl+Enter"],
-        description: "Run active JavaScript (frontend/backend) code note"
+        description: "Run active JavaScript (frontend/backend) code note",
+        scope: "code-detail"
     },
     {
         actionName: "ToggleNoteHoisting",
         defaultShortcuts: ["Alt+H"],
-        description: "Toggles note hoisting of active note"
+        description: "Toggles note hoisting of active note",
+        scope: "window"
     },
     {
         actionName: "ReloadFrontendApp",
-        defaultShortcuts: ["F5", "CommandOrControl+R"]
+        defaultShortcuts: ["F5", "CommandOrControl+R"],
+        scope: "window"
     },
     {
         actionName: "OpenDevTools",
-        defaultShortcuts: ["CommandOrControl+Shift+I"]
+        defaultShortcuts: ["CommandOrControl+Shift+I"],
+        scope: "window"
     },
     {
         actionName: "FindInText",
-        defaultShortcuts: ["CommandOrControl+F"]
+        defaultShortcuts: ["CommandOrControl+F"],
+        scope: "window"
     },
     {
         actionName: "ToggleFullscreen",
-        defaultShortcuts: ["F11"]
+        defaultShortcuts: ["F11"],
+        scope: "window"
     },
     {
         actionName: "ToggleZenMode",
-        defaultShortcuts: ["Alt+M"]
+        defaultShortcuts: ["Alt+M"],
+        scope: "window"
     },
     {
         actionName: "ZoomOut",
-        defaultShortcuts: ["CommandOrControl+-"]
+        defaultShortcuts: ["CommandOrControl+-"],
+        scope: "window"
     },
     {
         actionName: "ZoomIn",
-        defaultShortcuts: ["CommandOrControl+="]
+        defaultShortcuts: ["CommandOrControl+="],
+        scope: "window"
     },
     {
         actionName: "CopyWithoutFormatting",
-        defaultShortcuts: ["CommandOrControl+Alt+C"]
+        defaultShortcuts: ["CommandOrControl+Alt+C"],
+        scope: "text-detail"
     }
 ];
 
@@ -341,9 +382,7 @@ async function getKeyboardActions() {
     const actions = JSON.parse(JSON.stringify(DEFAULT_KEYBOARD_ACTIONS));
 
     for (const action of actions) {
-        if (action.defaultShortcuts) {
-            action.effectiveShortcuts = action.defaultShortcuts.slice();
-        }
+        action.effectiveShortcuts = action.effectiveShortcuts ? action.defaultShortcuts.slice() : [];
     }
 
     for (const option of await optionService.getOptions()) {

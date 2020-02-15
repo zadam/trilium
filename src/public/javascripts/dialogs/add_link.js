@@ -9,14 +9,13 @@ const $autoComplete = $("#add-link-note-autocomplete");
 const $linkTitle = $("#link-title");
 const $addLinkTitleFormGroup = $("#add-link-title-form-group");
 
-export async function showDialog() {
-    appContext.trigger('executeInActiveEditor', {
-        callback: textEditor => {
-            const hasSelection = !textEditor.model.document.selection.isCollapsed;
+/** @var TextTypeWidget */
+let textTypeWidget;
 
-            $addLinkTitleFormGroup.toggle(!hasSelection);
-        }
-    });
+export async function showDialog(widget) {
+    textTypeWidget = widget;
+
+    $addLinkTitleFormGroup.toggle(!textTypeWidget.hasSelection());
 
     utils.openDialog($dialog);
 
@@ -58,10 +57,7 @@ $form.on('submit', () => {
     if (notePath) {
         $dialog.modal('hide');
 
-        appContext.trigger(`addLinkToActiveEditor`, {
-            linkTitle: $linkTitle.val(),
-            linkHref: '#' + notePath
-        });
+        textTypeWidget.addLink($linkTitle.val(), '#' + notePath);
     }
     else {
         console.error("No path to add link.");

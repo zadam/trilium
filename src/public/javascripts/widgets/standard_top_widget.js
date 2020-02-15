@@ -32,12 +32,12 @@ const TPL = `
     </style>
 
     <div style="flex-grow: 100; display: flex;">
-        <button class="btn btn-sm jump-to-note-dialog-button" data-kb-action="JumpToNote">
+        <button class="btn btn-sm jump-to-note-dialog-button" data-kb-action="jumpToNote">
             <span class="bx bx-crosshair"></span>
             Jump to note
         </button>
     
-        <button class="btn btn-sm recent-changes-button" data-kb-action="ShowRecentChanges">
+        <button class="btn btn-sm recent-changes-button" data-kb-action="showRecentChanges">
             <span class="bx bx-history"></span>
     
             Recent changes

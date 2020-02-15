@@ -5,18 +5,39 @@ import appContext from "./app_context.js";
 const keyboardActionRepo = {};
 
 const keyboardActionsLoaded = server.get('keyboard-actions').then(actions => {
+	actions = actions.filter(a => !!a.actionName); // filter out separators
+
 	for (const action of actions) {
+		action.effectiveShortcuts = action.effectiveShortcuts.filter(shortcut => !shortcut.startsWith("global:"));
+		action.actionName = action.actionName.charAt(0).toLowerCase() + action.actionName.slice(1);
+
 		keyboardActionRepo[action.actionName] = action;
+	}
 
-		for (const shortcut of action.effectiveShortcuts || []) {
-			if (shortcut && !shortcut.startsWith("global:")) { // global shortcuts should be handled in the electron code
-				const eventName = action.actionName.charAt(0).toLowerCase() + action.actionName.slice(1);
+	return actions;
+});
 
-				if (action.scope !== 'note-tree') {
-					// empty object param so that destructuring with optional params work
-					utils.bindGlobalShortcut(shortcut, () => appContext.trigger(eventName, {}));
-				}
-			}
+async function getActionsForScope(scope) {
+	const actions = await keyboardActionsLoaded;
+
+	return actions.filter(action => action.scope === scope);
+}
+
+async function setupActionsForElement(scope, $el, component) {
+	const actions = await getActionsForScope(scope);
+
+	for (const action of actions) {
+		for (const shortcut of action.effectiveShortcuts) {
+			utils.bindElShortcut($el, shortcut, () => component.triggerCommand(action.actionName));
+		}
+	}
+}
+
+getActionsForScope("window").then(actions => {
+	for (const action of actions) {
+		for (const shortcut of action.effectiveShortcuts) {
+			// empty object param so that destructuring with optional params work
+			utils.bindGlobalShortcut(shortcut, () => appContext.trigger(action.actionName, {}));
 		}
 	}
 });
@@ -24,8 +45,6 @@ const keyboardActionsLoaded = server.get('keyboard-actions').then(actions => {
 server.get('keyboard-shortcuts-for-notes').then(shortcutForNotes => {
 	for (const shortcut in shortcutForNotes) {
 		utils.bindGlobalShortcut(shortcut, async () => {
-			const treeService = (await import("./tree.js")).default;
-
 			appContext.tabManager.getActiveTabContext().setNote(shortcutForNotes[shortcut]);
 		});
 	}
@@ -104,5 +123,7 @@ export default {
 	setElementActionHandler,
 	triggerAction,
 	getAction,
-	updateDisplayedShortcuts
+	updateDisplayedShortcuts,
+	getActionsForScope,
+	setupActionsForElement
 };
