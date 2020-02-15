@@ -35,7 +35,7 @@ const TPL = `
             </a>
 
             <a class="dropdown-item sync-now-button" title="Trigger sync">
-                <span class="bx bx-recycle"></span>
+                <span class="bx bx-refresh"></span>
                 Sync (<span id="outstanding-syncs-count">0</span>)
             </a>
 

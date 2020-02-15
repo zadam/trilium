@@ -68,7 +68,7 @@ class TreeContextMenu {
                 enabled: isNotRoot && parentNotSearch && noSelectedNotes},
             { title: "Advanced", uiIcon: "empty", enabled: true, items: [
                     { title: 'Collapse subtree <kbd data-kb-action="CollapseSubtree"></kbd>', cmd: "collapseSubtree", uiIcon: "align-justify", enabled: noSelectedNotes },
-                    { title: "Force note sync", cmd: "forceNoteSync", uiIcon: "recycle", enabled: noSelectedNotes },
+                    { title: "Force note sync", cmd: "forceNoteSync", uiIcon: "refresh", enabled: noSelectedNotes },
                     { title: 'Sort alphabetically <kbd data-kb-action="SortChildNotes"></kbd>', cmd: "sortAlphabetically", uiIcon: "empty", enabled: noSelectedNotes && notSearch }
                 ] },
             { title: "----" },

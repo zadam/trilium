@@ -11,7 +11,7 @@ const TPL = `
     </button>
 
     <button type="button"
-            class="btn btn-sm icon-button bx bx-shield unprotect-button"
+            class="btn btn-sm icon-button bx bx-shield-x unprotect-button"
             title="Not protected note can be viewed without entering password">
     </button>
 </div>`;
