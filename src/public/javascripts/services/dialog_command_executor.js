@@ -33,16 +33,6 @@ export default class DialogCommandExecutor extends Component {
         import("../dialogs/markdown_import.js").then(d => d.importMarkdownInline());
     }
 
-    async cloneNotesToCommand() {
-        // FIXME
-        const selectedOrActiveNodes = this.appContext.getMainNoteTree().getSelectedOrActiveNodes();
-
-        const noteIds = selectedOrActiveNodes.map(node => node.data.noteId);
-
-        const d = await import("../dialogs/clone_to.js");
-        d.showDialog(noteIds);
-    }
-
     async editBranchPrefixCommand() {
         const notePath = this.appContext.tabManager.getActiveTabNotePath();
 
@@ -54,6 +44,11 @@ export default class DialogCommandExecutor extends Component {
 
     addLinkToTextCommand() {
         import("../dialogs/add_link.js").then(d => d.showDialog());
+    }
+
+    async cloneNoteIdsToCommand({noteIds}) {
+        const d = await import("../dialogs/clone_to.js");
+        d.showDialog(noteIds);
     }
 
     async moveBranchIdsToCommand({branchIds}) {
