@@ -616,4 +616,10 @@ export default class NoteTreeWidget extends TabAwareWidget {
     treeCacheReloadedListener() {
         this.reloadTreeFromCache();
     }
+
+    async moveNotesToCommand() {
+        const selectedOrActiveBranchIds = this.getSelectedOrActiveNodes().map(node => node.data.branchId);
+
+        this.triggerCommand('moveBranchIdsTo', {branchIds: selectedOrActiveBranchIds});
+    }
 }

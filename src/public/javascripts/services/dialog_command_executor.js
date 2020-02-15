@@ -1,39 +1,39 @@
 import Component from "../widgets/component.js";
 
-export default class DialogEventComponent extends Component {
-    jumpToNoteListener() {
+export default class DialogCommandExecutor extends Component {
+    jumpToNoteCommand() {
         import("../dialogs/jump_to_note.js").then(d => d.showDialog());
     }
 
-    showRecentChangesListener() {
+    showRecentChangesCommand() {
         import("../dialogs/recent_changes.js").then(d => d.showDialog());
     }
 
-    showAttributesListener() {
+    showAttributesCommand() {
         import("../dialogs/attributes.js").then(d => d.showDialog());
     }
 
-    showNoteInfoListener() {
+    showNoteInfoCommand() {
         import("../dialogs/note_info.js").then(d => d.showDialog());
     }
 
-    showNoteRevisionsListener() {
+    showNoteRevisionsCommand() {
         import("../dialogs/note_revisions.js").then(d => d.showCurrentNoteRevisions());
     }
 
-    showNoteSourceListener() {
+    showNoteSourceCommand() {
         import("../dialogs/note_source.js").then(d => d.showDialog());
     }
 
-    showLinkMapListener() {
+    showLinkMapCommand() {
         import("../dialogs/link_map.js").then(d => d.showDialog());
     }
 
-    pasteMarkdownIntoTextListener() {
+    pasteMarkdownIntoTextCommand() {
         import("../dialogs/markdown_import.js").then(d => d.importMarkdownInline());
     }
 
-    async cloneNotesToListener() {
+    async cloneNotesToCommand() {
         // FIXME
         const selectedOrActiveNodes = this.appContext.getMainNoteTree().getSelectedOrActiveNodes();
 
@@ -43,15 +43,7 @@ export default class DialogEventComponent extends Component {
         d.showDialog(noteIds);
     }
 
-    async moveNotesToListener() {
-        // FIXME
-        const selectedOrActiveNodes = this.appContext.getMainNoteTree().getSelectedOrActiveNodes();
-
-        const d = await import("../dialogs/move_to.js");
-        d.showDialog(selectedOrActiveNodes);
-    }
-
-    async editBranchPrefixListener() {
+    async editBranchPrefixCommand() {
         const notePath = this.appContext.tabManager.getActiveTabNotePath();
 
         if (notePath) {
@@ -60,7 +52,12 @@ export default class DialogEventComponent extends Component {
         }
     }
 
-    addLinkToTextListener() {
+    addLinkToTextCommand() {
         import("../dialogs/add_link.js").then(d => d.showDialog());
+    }
+
+    async moveBranchIdsToCommand({branchIds}) {
+        const d = await import("../dialogs/move_to.js");
+        d.showDialog(branchIds);
     }
 }

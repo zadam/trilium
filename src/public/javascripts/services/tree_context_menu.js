@@ -149,9 +149,7 @@ class TreeContextMenu {
             clipboard.cut(this.getSelectedOrActiveBranchIds());
         }
         else if (cmd === "moveTo") {
-            const nodes = this.treeWidget.getSelectedOrActiveNodes(this.node);
-
-            import("../dialogs/move_to.js").then(d => d.showDialog(nodes));
+            this.treeWidget.triggerCommand('moveNotesTo');
         }
         else if (cmd === "pasteAfter") {
             clipboard.pasteAfter(this.node.data.branchId);

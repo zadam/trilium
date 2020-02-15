@@ -27,20 +27,7 @@ export default class Component {
 
         const start = Date.now();
 
-        if (typeof fun === 'function') {
-            let release;
-
-            try {
-                release = await this.mutex.acquire();
-
-                await fun.call(this, data);
-            }
-            finally {
-                if (release) {
-                    release();
-                }
-            }
-        }
+        await this.callMethod(fun, data);
 
         const end = Date.now();
 
@@ -65,7 +52,33 @@ export default class Component {
         await Promise.all(promises);
     }
 
-    triggerCommand(name, data) {
+    async triggerCommand(name, data) {
+        const fun = this[name + 'Command'];
 
+        const called = await this.callMethod(fun, data);
+
+        if (!called) {
+            await this.parent.triggerCommand(name, data);
+        }
+    }
+
+    async callMethod(fun, data) {
+        if (typeof fun !== 'function') {
+            return false;
+        }
+
+        let release;
+
+        try {
+            release = await this.mutex.acquire();
+
+            await fun.call(this, data);
+
+            return true;
+        } finally {
+            if (release) {
+                release();
+            }
+        }
     }
 }

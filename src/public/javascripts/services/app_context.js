@@ -1,7 +1,7 @@
 import server from "./server.js";
 import treeCache from "./tree_cache.js";
 import bundleService from "./bundle.js";
-import DialogEventComponent from "./dialog_events.js";
+import DialogCommandExecutor from "./dialog_command_executor.js";
 import Entrypoints from "./entrypoints.js";
 import options from "./options.js";
 import utils from "./utils.js";
@@ -15,6 +15,7 @@ class AppContext {
         this.layout = layout;
         this.tabManager = new TabManager(this);
         this.components = [];
+        this.executors = [];
     }
 
     async start() {
@@ -42,8 +43,11 @@ class AppContext {
         this.components = [
             this.tabManager,
             rootContainer,
-            new Entrypoints(this),
-            new DialogEventComponent(this)
+            new Entrypoints(this)
+        ];
+
+        this.executors = [
+            new DialogCommandExecutor(this, this)
         ];
 
         if (utils.isElectron()) {
@@ -79,6 +83,30 @@ class AppContext {
         await treeCache.loadInitialTree();
 
         this.trigger('treeCacheReloaded');
+    }
+
+    async triggerCommand(name, data) {
+        for (const executor of this.executors) {
+            const fun = executor[name + 'Command'];
+
+            const called = await this.callMethod(executor, fun, data);
+
+            if (called) {
+                return;
+            }
+        }
+
+        console.error(`Unhandled command ${name}`);
+    }
+
+    async callMethod(thiz, fun, data) {
+        if (typeof fun !== 'function') {
+            return false;
+        }
+
+        await fun.call(thiz, data);
+
+        return true;
     }
 }
 

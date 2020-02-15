@@ -4,16 +4,17 @@ import toastService from "../services/toast.js";
 import treeCache from "../services/tree_cache.js";
 import treeChangesService from "../services/branches.js";
 import appContext from "../services/app_context.js";
+import treeService from "../services/tree.js";
 
 const $dialog = $("#move-to-dialog");
 const $form = $("#move-to-form");
 const $noteAutoComplete = $("#move-to-note-autocomplete");
 const $noteList = $("#move-to-note-list");
 
-let movedNodes;
+let movedBranchIds;
 
-export async function showDialog(nodes) {
-    movedNodes = nodes;
+export async function showDialog(branchIds) {
+    movedBranchIds = branchIds;
 
     utils.openDialog($dialog);
 
@@ -21,8 +22,9 @@ export async function showDialog(nodes) {
 
     $noteList.empty();
 
-    for (const node of movedNodes) {
-        const note = await treeCache.getNote(node.data.noteId);
+    for (const branchId of movedBranchIds) {
+        const branch = treeCache.getBranch(branchId);
+        const note = await treeCache.getNote(branch.noteId);
 
         $noteList.append($("<li>").text(note.title));
     }
@@ -31,13 +33,12 @@ export async function showDialog(nodes) {
     noteAutocompleteService.showRecentNotes($noteAutoComplete);
 }
 
-async function moveNotesTo(notePath) {
-    // FIXME
-    const targetNode = await appContext.getMainNoteTree().getNodeFromPath(notePath);
+async function moveNotesTo(parentNoteId) {
+    await treeChangesService.moveToParentNote(movedBranchIds, parentNoteId);
 
-    await treeChangesService.moveToParentNote(movedNodes, targetNode);
+    const parentNote = await treeCache.getNote(parentNoteId);
 
-    toastService.showMessage(`Selected notes have been moved into ${targetNode.title}`);
+    toastService.showMessage(`Selected notes have been moved into ${parentNote.title}`);
 }
 
 $form.on('submit', () => {
@@ -46,7 +47,9 @@ $form.on('submit', () => {
     if (notePath) {
         $dialog.modal('hide');
 
-        moveNotesTo(notePath);
+        const noteId = treeService.getNoteIdFromNotePath(notePath);
+
+        moveNotesTo(noteId);
     }
     else {
         console.error("No path to move to.");
