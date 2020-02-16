@@ -12,9 +12,9 @@ export default class SidePaneContainer extends FlexContainer {
         return super.isEnabled() && options.is(this.side + 'PaneVisible');
     }
 
-    eventReceived(name, data) {
+    handleEvent(name, data) {
         if (options.is(this.side + 'PaneVisible')) {
-            super.eventReceived(name, data);
+            super.handleEvent(name, data);
         }
     }
 
@@ -22,7 +22,7 @@ export default class SidePaneContainer extends FlexContainer {
         if (this.side === side) {
             this.toggle(show);
 
-            this.eventReceived('lazyLoaded');
+            this.handleEvent('lazyLoaded');
         }
     }
 }

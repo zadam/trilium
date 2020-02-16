@@ -65,7 +65,7 @@ export default class SidePaneToggles extends BasicWidget {
 
         splitService.setupSplit(this.paneVisible.left, this.paneVisible.right);
 
-        this.trigger('sidebarVisibilityChanged', {side, show});
+        this.triggerEvent('sidebarVisibilityChanged', {side, show});
     }
 
     initialRenderCompleteListener() {

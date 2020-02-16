@@ -9,14 +9,15 @@ import ZoomService from "./zoom.js";
 import Layout from "../widgets/layout.js";
 import TabManager from "./tab_manager.js";
 import treeService from "./tree.js";
+import Component from "../widgets/component.js";
 
-class AppContext {
+class AppContext extends Component {
     constructor(layout) {
+        super(null);
+
         this.layout = layout;
         this.tabManager = new TabManager(this);
-        this.components = [];
         this.executors = [];
-        this.idToComponent = {};
     }
 
     async start() {
@@ -30,72 +31,38 @@ class AppContext {
     }
 
     showWidgets() {
-        const rootContainer = this.layout.getRootWidget(this);
-        const $renderedWidget = rootContainer.render();
+        const rootWidget = this.layout.getRootWidget(this);
+        const $renderedWidget = rootWidget.render();
 
         $("body").append($renderedWidget);
 
         $renderedWidget.on('click', "[data-trigger-event]", e => {
             const eventName = $(e.target).attr('data-trigger-event');
 
-            this.trigger(eventName);
+            this.triggerEvent(eventName);
         });
 
-        this.components = [
+        this.children = [
             this.tabManager,
-            rootContainer,
+            rootWidget,
             new Entrypoints(this)
         ];
 
         this.executors = [
-            new DialogCommandExecutor(this, this)
+            new DialogCommandExecutor(this)
         ];
 
         if (utils.isElectron()) {
-            this.components.push(new ZoomService(this, this));
+            this.children.push(new ZoomService(this));
 
             import("./spell_check.js").then(spellCheckService => spellCheckService.initSpellCheck());
         }
 
-        this.trigger('initialRenderComplete');
+        this.triggerEvent('initialRenderComplete');
     }
 
-    registerComponent(componentId, component) {
-        this.idToComponent[componentId] = component;
-    }
-
-    findComponentById(componentId) {
-        return this.idToComponent[componentId];
-    }
-
-    getComponentByEl(el) {
-        return $(el).closest(".component").prop('component');
-    }
-
-    async trigger(name, data) {
-        this.eventReceived(name, data);
-
-        const promises = [];
-
-        for (const component of this.components) {
-            promises.push(component.eventReceived(name, data));
-        }
-
-        await Promise.all(promises);
-    }
-
-    async eventReceived(name, data) {
-        const fun = this[name + 'Listener'];
-
-        if (typeof fun === 'function') {
-            await fun.call(this, data);
-        }
-    }
-
-    async protectedSessionStartedListener() {
-        await treeCache.loadInitialTree();
-
-        this.trigger('treeCacheReloaded');
+    async triggerEvent(name, data) {
+        await this.handleEvent(name, data);
     }
 
     async triggerCommand(name, data = {}) {
@@ -112,14 +79,14 @@ class AppContext {
         console.error(`Unhandled command ${name}`);
     }
 
-    async callMethod(thiz, fun, data) {
-        if (typeof fun !== 'function') {
-            return false;
-        }
+    getComponentByEl(el) {
+        return $(el).closest(".component").prop('component');
+    }
 
-        await fun.call(thiz, data);
+    async protectedSessionStartedListener() {
+        await treeCache.loadInitialTree();
 
-        return true;
+        this.triggerEvent('treeCacheReloaded');
     }
 }
 
@@ -129,7 +96,7 @@ const appContext = new AppContext(layout);
 
 // we should save all outstanding changes before the page/app is closed
 $(window).on('beforeunload', () => {
-    appContext.trigger('beforeUnload');
+    appContext.triggerEvent('beforeUnload');
 });
 
 function isNotePathInAddress() {

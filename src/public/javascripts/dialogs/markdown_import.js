@@ -16,7 +16,7 @@ async function convertMarkdownToHtml(text) {
 
     const result = writer.render(parsed);
 
-    appContext.trigger('executeInActiveEditor', {
+    appContext.triggerEvent('executeInActiveEditor', {
         callback: textEditor => {
             const viewFragment = textEditor.data.processor.toView(result);
             const modelFragment = textEditor.data.toModel(viewFragment);

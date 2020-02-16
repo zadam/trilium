@@ -106,7 +106,7 @@ export default class ApperanceOptions {
             server.put('options/theme/' + newTheme);
         });
 
-        this.$zoomFactorSelect.on('change', () => { appContext.trigger('setZoomFactorAndSave', {zoomFactor: this.$zoomFactorSelect.val()}); });
+        this.$zoomFactorSelect.on('change', () => { appContext.triggerEvent('setZoomFactorAndSave', {zoomFactor: this.$zoomFactorSelect.val()}); });
 
         this.$nativeTitleBarSelect.on('change', () => {
             const nativeTitleBarVisible = this.$nativeTitleBarSelect.val() === 'show' ? 'true' : 'false';

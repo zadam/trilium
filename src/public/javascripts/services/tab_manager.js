@@ -6,10 +6,11 @@ import treeCache from "./tree_cache.js";
 import treeService from "./tree.js";
 import utils from "./utils.js";
 import TabContext from "./tab_context.js";
+import appContext from "./app_context.js";
 
 export default class TabManager extends Component {
-    constructor(appContext, parent) {
-        super(appContext, parent);
+    constructor(parent) {
+        super(parent);
 
         this.activeTabId = null;
 
@@ -181,7 +182,7 @@ export default class TabManager extends Component {
     }
 
     openEmptyTab(tabId) {
-        const tabContext = new TabContext(this.appContext, tabId);
+        const tabContext = new TabContext(appContext, tabId);
         this.children.push(tabContext);
         return tabContext;
     }
@@ -207,7 +208,7 @@ export default class TabManager extends Component {
 
         this.activeTabId = tabId;
 
-        this.trigger('activeTabChanged');
+        this.triggerEvent('activeTabChanged');
 
         this.tabsUpdate.scheduleUpdate();
         
@@ -221,7 +222,7 @@ export default class TabManager extends Component {
             return;
         }
 
-        await this.trigger('beforeTabRemove', {tabId}, true);
+        await this.triggerEvent('beforeTabRemove', {tabId}, true);
 
         if (this.tabContexts.length <= 1) {
             this.openAndActivateEmptyTab();
@@ -232,7 +233,7 @@ export default class TabManager extends Component {
 
         this.children = this.children.filter(tc => tc.tabId !== tabId);
 
-        this.trigger('tabRemoved', {tabId});
+        this.triggerEvent('tabRemoved', {tabId});
 
         this.tabsUpdate.scheduleUpdate();
     }

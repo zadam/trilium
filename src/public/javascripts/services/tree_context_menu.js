@@ -189,7 +189,7 @@ class TreeContextMenu {
             noteCreateService.duplicateNote(noteId, branch.parentNoteId);
         }
         else if (cmd === "searchInSubtree") {
-            appContext.trigger("searchInSubtree", {noteId});
+            appContext.triggerEvent("searchInSubtree", {noteId});
         }
         else {
             ws.logError("Unknown command: " + cmd);

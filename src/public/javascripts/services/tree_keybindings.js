@@ -169,7 +169,7 @@ function getTemplates(treeWidget) {
             return false;
         },
         "editNoteTitle": node => {
-            appContext.trigger('focusOnTitle');
+            appContext.triggerEvent('focusOnTitle');
 
             return false;
         },

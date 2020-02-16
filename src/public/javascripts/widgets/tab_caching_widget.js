@@ -16,11 +16,11 @@ export default class TabCachingWidget extends TabAwareWidget {
         return this.$widget = $(`<div class="marker" style="display: none;">`);
     }
 
-    async triggerChildren(name, data) {
+    async handleEventInChildren(name, data) {
         // stop propagation of the event to the children, individual tab widget should not know about tab switching
         // since they are per-tab
         if (name !== 'activeTabChanged') {
-            await super.triggerChildren(name, data);
+            await super.handleEventInChildren(name, data);
         }
     }
 
@@ -42,7 +42,7 @@ export default class TabCachingWidget extends TabAwareWidget {
             this.children.push(widget);
             this.$widget.after(widget.render());
 
-            widget.eventReceived('setTabContext', {tabContext: this.tabContext});
+            widget.handleEvent('setTabContext', {tabContext: this.tabContext});
         }
 
         widget.toggle(widget.isEnabled());

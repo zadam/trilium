@@ -51,6 +51,6 @@ export default class NoteActionsWidget extends TabAwareWidget {
             return;
         }
 
-        this.trigger(eventName);
+        this.triggerEvent(eventName);
     }
 }

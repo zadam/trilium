@@ -17,7 +17,7 @@ class TabContext extends Component {
 
         this.tabId = tabId || utils.randomString(4);
 
-        this.trigger('newTabOpened', {tabId: this.tabId});
+        this.triggerEvent('newTabOpened', {tabId: this.tabId});
     }
 
     async setNote(inputNotePath) {
@@ -36,7 +36,7 @@ class TabContext extends Component {
             return; // note is outside of hoisted subtree and user chose not to unhoist
         }
 
-        await this.trigger('beforeNoteSwitch', {tabId: this.tabId});
+        await this.triggerEvent('beforeNoteSwitch', {tabId: this.tabId});
 
         utils.closeActiveDialog();
 
@@ -62,7 +62,7 @@ class TabContext extends Component {
             protectedSessionHolder.touchProtectedSession();
         }
 
-        this.trigger('tabNoteSwitched', {
+        this.triggerEvent('tabNoteSwitched', {
             tabId: this.tabId,
             notePath: this.notePath
         });
@@ -106,7 +106,7 @@ class TabContext extends Component {
                 this.noteId = null;
                 this.notePath = null;
 
-                this.trigger('tabNoteSwitched', {
+                this.triggerEvent('tabNoteSwitched', {
                     tabId: this.tabId,
                     notePath: this.notePath
                 });

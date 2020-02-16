@@ -10,7 +10,7 @@ async function setHoistedNoteId(noteId) {
     await options.save('hoistedNoteId', noteId);
 
     // FIXME - just use option load event
-    appContext.trigger('hoistedNoteChanged', {noteId});
+    appContext.triggerEvent('hoistedNoteChanged', {noteId});
 }
 
 async function unhoist() {

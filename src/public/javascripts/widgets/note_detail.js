@@ -105,7 +105,7 @@ export default class NoteDetailWidget extends TabAwareWidget {
             this.children.push(typeWidget);
             this.$widget.append(typeWidget.render());
 
-            typeWidget.eventReceived('setTabContext', {tabContext: this.tabContext});
+            typeWidget.handleEvent('setTabContext', {tabContext: this.tabContext});
         }
 
         this.setupClasses();
@@ -223,10 +223,10 @@ export default class NoteDetailWidget extends TabAwareWidget {
         this.refresh();
     }
 
-    async triggerChildren(name, data) {
+    async handleEventInChildren(name, data) {
         // done manually in refresh()
         if (name !== 'setTabContext') {
-            await super.triggerChildren(name, data);
+            await super.handleEventInChildren(name, data);
         }
     }
 }

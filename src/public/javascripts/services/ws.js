@@ -328,7 +328,7 @@ async function processSyncRows(syncRows) {
     });
 
     const appContext = (await import("./app_context.js")).default;
-    appContext.trigger('entitiesReloaded', {loadResults});
+    appContext.triggerEvent('entitiesReloaded', {loadResults});
 }
 
 export default {

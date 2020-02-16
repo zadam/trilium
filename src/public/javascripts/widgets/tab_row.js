@@ -262,7 +262,7 @@ export default class TabRowWidget extends BasicWidget {
                     ];
                 },
                 selectContextMenuItem: (e, cmd) => {
-                    this.trigger(cmd, {tabId});
+                    this.triggerEvent(cmd, {tabId});
                 }
             });
         });
@@ -543,7 +543,7 @@ export default class TabRowWidget extends BasicWidget {
 
             tabEl.parentNode.insertBefore(tabEl, beforeEl);
         }
-        this.trigger('tabReorder', {tabIdsInOrder: this.getTabIdsInOrder()});
+        this.triggerEvent('tabReorder', {tabIdsInOrder: this.getTabIdsInOrder()});
         this.layoutTabs();
     }
 
@@ -552,7 +552,7 @@ export default class TabRowWidget extends BasicWidget {
 
         this.$tabContainer.append(this.$newTab);
 
-        this.$newTab.on('click', _ => this.trigger('openNewTab'));
+        this.$newTab.on('click', _ => this.triggerEvent('openNewTab'));
     }
 
     setupFiller() {

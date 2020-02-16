@@ -1,6 +1,5 @@
 import utils from '../services/utils.js';
 import Mutex from "../services/mutex.js";
-import appContext from "../services/app_context.js";
 
 export default class Component {
     /**
@@ -16,7 +15,7 @@ export default class Component {
         this.mutex = new Mutex();
     }
 
-    async eventReceived(name, data) {
+    async handleEvent(name, data) {
         await this.initialized;
 
         const fun = this[name + 'Listener'];
@@ -31,18 +30,18 @@ export default class Component {
             console.log(`Event ${name} in component ${this.componentId} took ${end-start}ms`);
         }
 
-        await this.triggerChildren(name, data);
+        await this.handleEventInChildren(name, data);
     }
 
-    async trigger(name, data) {
-        await appContext.trigger(name, data);
+    async triggerEvent(name, data) {
+        await this.parent.triggerEvent(name, data);
     }
 
-    async triggerChildren(name, data) {
+    async handleEventInChildren(name, data) {
         const promises = [];
 
         for (const child of this.children) {
-            promises.push(child.eventReceived(name, data));
+            promises.push(child.handleEvent(name, data));
         }
 
         await Promise.all(promises);

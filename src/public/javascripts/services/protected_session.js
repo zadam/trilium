@@ -47,7 +47,7 @@ async function setupProtectedSession(password) {
     protectedSessionHolder.setProtectedSessionId(response.protectedSessionId);
     protectedSessionHolder.touchProtectedSession();
 
-    appContext.trigger('protectedSessionStarted');
+    appContext.triggerEvent('protectedSessionStarted');
 
     if (protectedSessionDeferred !== null) {
         import("../dialogs/protected_session.js").then(dialog => dialog.close());
