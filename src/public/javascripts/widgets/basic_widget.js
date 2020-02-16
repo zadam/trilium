@@ -5,6 +5,9 @@ class BasicWidget extends Component {
     render() {
         const $widget = this.doRender();
 
+        $widget.addClass('component')
+            .prop('component', this);
+
         keyboardActionsService.updateDisplayedShortcuts($widget);
 
         this.toggle(this.isEnabled());

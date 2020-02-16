@@ -5,6 +5,9 @@ import TypeWidget from "./type_widget.js";
 import utils from "../../services/utils.js";
 import appContext from "../../services/app_context.js";
 import keyboardActionService from "../../services/keyboard_actions.js";
+import treeCache from "../../services/tree_cache.js";
+import linkService from "../../services/link.js";
+import noteContentRenderer from "../../services/note_content_renderer.js";
 
 const ENABLE_INSPECTOR = false;
 
@@ -253,5 +256,33 @@ export default class TextTypeWidget extends TypeWidget {
 
     addLinkToTextCommand() {
         import("../../dialogs/add_link.js").then(d => d.showDialog(this));
+    }
+
+    addIncludeNoteToTextCommand() {
+        import("../../dialogs/include_note.js").then(d => d.showDialog(this));
+    }
+
+    async loadIncludedNote(noteId, el) {
+        const note = await treeCache.getNote(noteId);
+
+        if (note) {
+            $(el).empty().append($("<h3>").append(await linkService.createNoteLink(note.noteId, {
+                showTooltip: false
+            })));
+
+            const {renderedContent} = await noteContentRenderer.getRenderedContent(note);
+
+            $(el).append(renderedContent);
+        }
+    }
+
+    addIncludeNote(noteId) {
+        this.textEditor.model.change( writer => {
+            // Insert <includeNote>*</includeNote> at the current selection position
+            // in a way that will result in creating a valid model structure
+            this.textEditor.model.insertContent(writer.createElement('includeNote', {
+                noteId: noteId
+            }));
+        } );
     }
 }

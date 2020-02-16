@@ -5,10 +5,12 @@ import utils from "../services/utils.js";
 const $dialog = $("#include-note-dialog");
 const $form = $("#include-note-form");
 const $autoComplete = $("#include-note-autocomplete");
-let callback = null;
 
-export async function showDialog(cb) {
-    callback = cb;
+/** @var TextTypeWidget */
+let textTypeWidget;
+
+export async function showDialog(widget) {
+    textTypeWidget = widget;
 
     $autoComplete.val('');
 
@@ -24,9 +26,9 @@ $form.on('submit', () => {
     if (notePath) {
         $dialog.modal('hide');
 
-        if (callback) {
-            callback(treeService.getNoteIdFromNotePath(notePath));
-        }
+        const includedNoteId = treeService.getNoteIdFromNotePath(notePath);
+
+        textTypeWidget.addIncludeNote(includedNoteId);
     }
     else {
         console.error("No noteId to include.");

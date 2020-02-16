@@ -36,36 +36,10 @@ window.glob.PROFILING_LOG = false;
 window.glob.isDesktop = utils.isDesktop;
 window.glob.isMobile = utils.isMobile;
 
-// required for CKEditor image upload plugin
-// FIXME
-window.glob.getActiveNode = () => appContext.getMainNoteTree().getActiveNode();
+window.glob.getComponentByEl = el => appContext.getComponentByEl(el);
 window.glob.getHeaders = server.getHeaders;
-window.glob.showAddLinkDialog = () => import('./dialogs/add_link.js').then(d => d.showDialog());
-window.glob.showIncludeNoteDialog = cb => import('./dialogs/include_note.js').then(d => d.showDialog(cb));
-window.glob.loadIncludedNote = async (noteId, el) => {
-    const note = await treeCache.getNote(noteId);
 
-    if (note) {
-        $(el).empty().append($("<h3>").append(await linkService.createNoteLink(note.noteId, {
-            showTooltip: false
-        })));
-
-        const {renderedContent} = await noteContentRenderer.getRenderedContent(note);
-
-        $(el).append(renderedContent);
-    }
-};
-// this is required by CKEditor when uploading images
-window.glob.noteChanged = () => {
-    const activeTabContext = appContext.tabManager.getActiveTabContext();
-
-    if (activeTabContext) {
-        activeTabContext.noteChanged();
-    }
-};
-window.glob.refreshTree = treeService.reload;
-
-// required for ESLint plugin
+// required for ESLint plugin and CKEditor
 window.glob.getActiveTabNote = () => appContext.tabManager.getActiveTabNote();
 window.glob.requireLibrary = libraryLoader.requireLibrary;
 window.glob.ESLINT = libraryLoader.ESLINT;

@@ -16,6 +16,7 @@ class AppContext {
         this.tabManager = new TabManager(this);
         this.components = [];
         this.executors = [];
+        this.idToComponent = {};
     }
 
     async start() {
@@ -57,6 +58,18 @@ class AppContext {
         }
 
         this.trigger('initialRenderComplete');
+    }
+
+    registerComponent(componentId, component) {
+        this.idToComponent[componentId] = component;
+    }
+
+    findComponentById(componentId) {
+        return this.idToComponent[componentId];
+    }
+
+    getComponentByEl(el) {
+        return $(el).closest(".component").prop('component');
     }
 
     async trigger(name, data) {
