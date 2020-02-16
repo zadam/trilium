@@ -123,5 +123,6 @@ export default {
 	triggerAction,
 	getAction,
 	updateDisplayedShortcuts,
-	setupActionsForElement
+	setupActionsForElement,
+	getActionsForScope
 };

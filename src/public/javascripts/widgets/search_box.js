@@ -159,7 +159,7 @@ export default class SearchBoxWidget extends BasicWidget {
         }
     }
 
-    searchNotesEvent() {
+    searchNotesCommand() {
         this.toggleSearchEvent();
     }
 
@@ -167,7 +167,7 @@ export default class SearchBoxWidget extends BasicWidget {
         this.$searchInput.val("");
     }
 
-    searchInSubtreeEvent({noteId}) {
+    searchInSubtreeCommand({noteId}) {
         noteId = noteId || appContext.tabManager.getActiveTabNoteId();
 
         this.toggle(true);

@@ -91,7 +91,7 @@ export default class NoteDetailWidget extends TabAwareWidget {
         return this.tabContext && this.tabContext.isActive();
     }
 
-    async refresh() {console.log("REFRESH DETAIL");
+    async refresh() {
         if (!this.isEnabled()) {
             this.toggle(false);
             return;

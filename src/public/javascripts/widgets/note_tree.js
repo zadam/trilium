@@ -2,7 +2,6 @@ import hoistedNoteService from "../services/hoisted_note.js";
 import treeService from "../services/tree.js";
 import utils from "../services/utils.js";
 import contextMenuWidget from "../services/context_menu.js";
-import treeKeyBindingService from "../services/tree_keybindings.js";
 import treeCache from "../services/tree_cache.js";
 import treeBuilder from "../services/tree_builder.js";
 import TreeContextMenu from "../services/tree_context_menu.js";
@@ -13,6 +12,8 @@ import server from "../services/server.js";
 import noteCreateService from "../services/note_create.js";
 import toastService from "../services/toast.js";
 import appContext from "../services/app_context.js";
+import keyboardActionsService from "../services/keyboard_actions.js";
+import clipboard from "../services/clipboard.js";
 
 const TPL = `
 <div class="tree">
@@ -29,7 +30,7 @@ const TPL = `
 </div>
 `;
 
-export default class NoteTreeWidget extends TabAwareWidget {
+export default class Notethis extends TabAwareWidget {
     constructor(appContext, parent) {
         super(appContext, parent);
 
@@ -112,7 +113,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
             expand: (event, data) => this.setExpandedToServer(data.node.data.branchId, true),
             collapse: (event, data) => this.setExpandedToServer(data.node.data.branchId, false),
             hotkeys: {
-                keydown: await treeKeyBindingService.getKeyboardBindings(this)
+                keydown: await this.getHotKeys()
             },
             dnd5: {
                 autoExpandMS: 600,
@@ -406,9 +407,9 @@ export default class NoteTreeWidget extends TabAwareWidget {
         await this.tree.reload(notes);
     }
 
-    createTopLevelNoteEvent() { noteCreateService.createNewTopLevelNote(); }
+    createTopLevelNoteCommand() { noteCreateService.createNewTopLevelNote(); }
 
-    collapseTreeEvent() { this.collapseTree(); }
+    collapseTreeCommand() { this.collapseTree(); }
 
     isEnabled() {
         return this.tabContext && this.tabContext.isActive();
@@ -547,7 +548,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
         }
     }
 
-    async createNoteAfterEvent() {
+    async createNoteAfterCommand() {
         const node = this.getActiveNode();
         const parentNoteId = node.data.parentNoteId;
         const isProtected = await treeService.getParentProtectedStatus(node);
@@ -564,7 +565,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
         });
     }
 
-    async createNoteIntoEvent() {
+    async createNoteIntoCommand() {
         const node = this.getActiveNode();
 
         if (node) {
@@ -628,5 +629,166 @@ export default class NoteTreeWidget extends TabAwareWidget {
         const selectedOrActiveBranchIds = this.getSelectedOrActiveNodes().map(node => node.data.branchId);
 
         this.triggerCommand('moveBranchIdsTo', {branchIds: selectedOrActiveBranchIds});
+    }
+
+    async getHotKeys() {
+        const actions = await keyboardActionsService.getActionsForScope('note-tree');
+        const hotKeyMap = {
+            // code below shouldn't be necessary normally, however there's some problem with interaction with context menu plugin
+            // after opening context menu, standard shortcuts don't work, but they are detected here
+            // so we essentially takeover the standard handling with our implementation.
+            "left": node => {
+                node.navigate($.ui.keyCode.LEFT, true).then(this.clearSelectedNodes);
+
+                return false;
+            },
+            "right": node => {
+                node.navigate($.ui.keyCode.RIGHT, true).then(this.clearSelectedNodes);
+
+                return false;
+            },
+            "up": node => {
+                node.navigate($.ui.keyCode.UP, true).then(this.clearSelectedNodes);
+
+                return false;
+            },
+            "down": node => {
+                node.navigate($.ui.keyCode.DOWN, true).then(this.clearSelectedNodes);
+
+                return false;
+            }
+        };
+        
+        for (const action of actions) {
+            for (const shortcut of action.effectiveShortcuts) {
+                hotKeyMap[shortcut] = node => this.triggerCommand(action.actionName, {node}); 
+            }
+        }
+    }
+
+    /**
+     * @param {FancytreeNode} node
+     */
+    getSelectedOrActiveBranchIds(node) {
+        const nodes = this.getSelectedOrActiveNodes(node);
+
+        return nodes.map(node => node.data.branchId);
+    }
+
+    deleteNotesCommand({node}) {
+        const branchIds = this.getSelectedOrActiveBranchIds(node);
+    
+        treeChangesService.deleteNotes(this, branchIds);
+    }
+    
+    moveNoteUpCommand({node}) {
+        const beforeNode = node.getPrevSibling();
+    
+        if (beforeNode !== null) {
+            treeChangesService.moveBeforeBranch([node.data.branchId], beforeNode.data.branchId);
+        }
+    }
+    
+    moveNoteDownCommand({node}) {
+        const afterNode = node.getNextSibling();
+        if (afterNode !== null) {
+            treeChangesService.moveAfterBranch([node.data.branchId], afterNode.data.branchId);
+        }
+    }
+    
+    moveNoteUpInHierarchyCommand({node}) {
+        treeChangesService.moveNodeUpInHierarchy(node);
+    }
+    
+    moveNoteDownInHierarchyCommand({node}) {
+        const toNode = node.getPrevSibling();
+    
+        if (toNode !== null) {
+            treeChangesService.moveToParentNote([node.data.branchId], toNode.data.noteId);
+        }
+    }
+    
+    addNoteAboveToSelectionCommand() {
+        const node = this.getFocusedNode();
+    
+        if (!node) {
+            return;
+        }
+    
+        if (node.isActive()) {
+            node.setSelected(true);
+        }
+    
+        const prevSibling = node.getPrevSibling();
+    
+        if (prevSibling) {
+            prevSibling.setActive(true, {noEvents: true});
+    
+            if (prevSibling.isSelected()) {
+                node.setSelected(false);
+            }
+    
+            prevSibling.setSelected(true);
+        }
+    }
+
+    addNoteBelowToSelectionCommand() {
+        const node = this.getFocusedNode();
+    
+        if (!node) {
+            return;
+        }
+    
+        if (node.isActive()) {
+            node.setSelected(true);
+        }
+    
+        const nextSibling = node.getNextSibling();
+    
+        if (nextSibling) {
+            nextSibling.setActive(true, {noEvents: true});
+    
+            if (nextSibling.isSelected()) {
+                node.setSelected(false);
+            }
+    
+            nextSibling.setSelected(true);
+        }
+    }
+
+    collapseSubtreeCommand({node}) {
+        this.collapseTree(node);
+    }
+
+    sortChildNotesCommand({node}) {
+        treeService.sortAlphabetically(node.data.noteId);
+    }
+
+    selectAllNotesInParentCommand({node}) {
+        for (const child of node.getParent().getChildren()) {
+            child.setSelected(true);
+        }
+    }
+
+    copyNotesToClipboardCommand({node}) {
+        clipboard.copy(this.getSelectedOrActiveBranchIds(node));
+    }
+
+    cutNotesToClipboardCommand({node}) {
+        clipboard.cut(this.getSelectedOrActiveBranchIds(node));
+    }
+
+    pasteNotesFromClipboardCommand({node}) {
+        clipboard.pasteInto(node.data.noteId);
+    }
+
+    editNoteTitleCommand({node}) {
+        appContext.triggerEvent('focusOnTitle');
+    }
+
+    activateParentNoteCommand({node}) {
+        if (!hoistedNoteService.isRootNode(node)) {
+            node.getParent().setActive().then(this.clearSelectedNodes);
+        }
     }
 }

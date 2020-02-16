@@ -72,7 +72,7 @@ export default class NoteTitleWidget extends TabAwareWidget {
         }
     }
 
-    focusAndSelectTitleEvent() {
+    focusAndSelectTitleCommand() {
         if (this.tabContext && this.tabContext.isActive()) {
             this.$noteTitle
                 .trigger('focus')
