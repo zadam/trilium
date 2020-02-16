@@ -16,6 +16,7 @@ import ProtectedSessionTypeWidget from "./type_widgets/protected_session.js";
 import BookTypeWidget from "./type_widgets/book.js";
 import appContext from "../services/app_context.js";
 import keyboardActionsService from "../services/keyboard_actions.js";
+import noteCreateService from "../services/note_create.js";
 
 const TPL = `
 <div class="note-detail">
@@ -237,5 +238,18 @@ export default class NoteDetailWidget extends TabAwareWidget {
         if (name !== 'setTabContext') {
             await super.handleEventInChildren(name, data);
         }
+    }
+
+    async cutIntoNoteCommand() {
+        const note = appContext.tabManager.getActiveTabNote();
+
+        if (!note) {
+            return;
+        }
+
+        await noteCreateService.createNote(note.noteId, {
+            isProtected: note.isProtected,
+            saveSelection: true
+        });
     }
 }

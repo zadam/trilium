@@ -65,7 +65,7 @@ async function moveToParentNote(branchIdsToMove, newParentNoteId) {
     }
 }
 
-async function deleteNotes(treeWidget, branchIdsToDelete) {
+async function deleteNotes(branchIdsToDelete) {
     branchIdsToDelete = filterRootNote(branchIdsToDelete);
 
     if (branchIdsToDelete.length === 0) {
@@ -118,8 +118,6 @@ async function deleteNotes(treeWidget, branchIdsToDelete) {
             await server.remove(`branches/${branchIdToDelete}` + query);
         }
     }
-
-    treeWidget.clearSelectedNodes();
 
     return true;
 }

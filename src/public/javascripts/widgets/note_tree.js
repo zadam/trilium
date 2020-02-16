@@ -14,6 +14,8 @@ import toastService from "../services/toast.js";
 import appContext from "../services/app_context.js";
 import keyboardActionsService from "../services/keyboard_actions.js";
 import clipboard from "../services/clipboard.js";
+import protectedSessionService from "../services/protected_session.js";
+import syncService from "../services/sync.js";
 
 const TPL = `
 <div class="tree">
@@ -30,15 +32,7 @@ const TPL = `
 </div>
 `;
 
-export default class Notethis extends TabAwareWidget {
-    constructor(appContext, parent) {
-        super(appContext, parent);
-
-        window.glob.cutIntoNote = () => this.cutIntoNoteEvent();
-
-        this.tree = null;
-    }
-
+export default class NoteTreeWidget extends TabAwareWidget {
     doRender() {
         this.$widget = $(TPL);
 
@@ -576,17 +570,6 @@ export default class Notethis extends TabAwareWidget {
         }
     }
 
-    async cutIntoNoteEvent() {
-        const node = this.getActiveNode();
-
-        if (node) {
-            await noteCreateService.createNote(node.data.noteId, {
-                isProtected: node.data.isProtected,
-                saveSelection: true
-            });
-        }
-    }
-
     async setExpandedToServer(branchId, isExpanded) {
         utils.assertArguments(branchId);
 
@@ -675,10 +658,12 @@ export default class Notethis extends TabAwareWidget {
         return nodes.map(node => node.data.branchId);
     }
 
-    deleteNotesCommand({node}) {
+    async deleteNotesCommand({node}) {
         const branchIds = this.getSelectedOrActiveBranchIds(node);
     
-        treeChangesService.deleteNotes(this, branchIds);
+        await treeChangesService.deleteNotes(branchIds);
+
+        this.clearSelectedNodes();
     }
     
     moveNoteUpCommand({node}) {
@@ -782,6 +767,26 @@ export default class Notethis extends TabAwareWidget {
         clipboard.pasteInto(node.data.noteId);
     }
 
+    pasteNotesAfterFromClipboard({node}) {
+        clipboard.pasteAfter(node.data.branchId);
+    }
+
+    async exportNoteCommand({node}) {
+        const exportDialog = await import('../dialogs/export.js');
+        const notePath = treeService.getNotePath(node);
+
+        exportDialog.showDialog(notePath,"subtree");
+    }
+
+    async importIntoNoteCommand({node}) {
+        const importDialog = await import('../dialogs/import.js');
+        importDialog.showDialog(node.data.noteId);
+    }
+
+    forceNoteSyncCommand({node}) {
+        syncService.forceNoteSync(noteId);
+    }
+
     editNoteTitleCommand({node}) {
         appContext.triggerEvent('focusOnTitle');
     }
@@ -790,5 +795,19 @@ export default class Notethis extends TabAwareWidget {
         if (!hoistedNoteService.isRootNode(node)) {
             node.getParent().setActive().then(this.clearSelectedNodes);
         }
+    }
+
+    protectSubtreeCommand({node}) {
+        protectedSessionService.protectSubtree(node.data.noteId, true);
+    }
+
+    unprotectSubtreeCommand({node}) {
+        protectedSessionService.protectSubtree(node.data.noteId, false);
+    }
+
+    duplicateNoteCommand({node}) {
+        const branch = treeCache.getBranch(node.data.branchId);
+
+        noteCreateService.duplicateNote(noteId, branch.parentNoteId);
     }
 }
