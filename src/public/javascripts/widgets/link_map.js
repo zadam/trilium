@@ -67,7 +67,7 @@ export default class LinkMapWidget extends CollapsibleWidget {
         }
     }
 
-    entitiesReloadedListener({loadResults}) {
+    entitiesReloadedEvent({loadResults}) {
         if (loadResults.getAttributes().find(attr => attr.type === 'relation' && (attr.noteId === this.noteId || attr.value === this.noteId))) {
             this.refresh();
         }

@@ -98,7 +98,7 @@ export default class AttributesWidget extends CollapsibleWidget {
         }
     }
 
-    entitiesReloadedListener({loadResults}) {
+    entitiesReloadedEvent({loadResults}) {
         if (loadResults.getAttributes().find(attr => attr.noteId === this.noteId)) {
             this.refresh();
         }

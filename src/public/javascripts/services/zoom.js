@@ -33,15 +33,15 @@ export default class ZoomService extends Component {
         return require('electron').webFrame.getZoomFactor();
     }
 
-    zoomOutListener() {
+    zoomOutEvent() {
         this.setZoomFactorAndSave(this.getCurrentZoom() - 0.1);
     }
 
-    zoomInListener() {
+    zoomInEvent() {
         this.setZoomFactorAndSave(this.getCurrentZoom() + 0.1);
     }
 
-    setZoomFactorAndSaveListener({zoomFactor}) {
+    setZoomFactorAndSaveEvent({zoomFactor}) {
         this.setZoomFactorAndSave(zoomFactor);
     }
 }

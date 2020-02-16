@@ -98,7 +98,7 @@ class TabContext extends Component {
         }
     }
 
-    async entitiesReloadedListener({loadResults}) {
+    async entitiesReloadedEvent({loadResults}) {
         if (loadResults.isNoteReloaded(this.noteId)) {
             const note = await treeCache.getNote(this.noteId);
 

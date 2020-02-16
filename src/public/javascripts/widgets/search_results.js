@@ -39,7 +39,7 @@ export default class SearchResultsWidget extends BasicWidget {
         return this.$widget;
     }
 
-    async searchForResultsListener({searchText}) {
+    async searchForResultsEvent({searchText}) {
         this.toggle(true);
 
         const response = await server.get('search/' + encodeURIComponent(searchText));
@@ -68,7 +68,7 @@ export default class SearchResultsWidget extends BasicWidget {
         toastService.showMessage("Search finished successfully.");
     }
 
-    hideSearchResultsListener() {
+    hideSearchResultsEvent() {
         this.$searchResults.hide();
     }
 }

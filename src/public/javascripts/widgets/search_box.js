@@ -66,7 +66,7 @@ export default class SearchBoxWidget extends BasicWidget {
         });
 
         this.$doSearchButton.on('click', () => this.doSearch()); // keep long form because of argument
-        this.$resetSearchButton.on('click', () => this.resetSearchListener());
+        this.$resetSearchButton.on('click', () => this.resetSearchEvent());
 
         this.$saveSearchButton.on('click', () => this.saveSearch());
 
@@ -120,10 +120,10 @@ export default class SearchBoxWidget extends BasicWidget {
             content: JSON.stringify({ searchString: searchString })
         });
 
-        this.resetSearchListener();
+        this.resetSearchEvent();
     }
 
-    showSearchListener() {
+    showSearchEvent() {
         utils.saveFocusedElement();
 
         this.$searchBox.slideDown();
@@ -142,32 +142,32 @@ export default class SearchBoxWidget extends BasicWidget {
         this.$searchInput.trigger('focus');
     }
 
-    hideSearchListener() {
-        this.resetSearchListener();
+    hideSearchEvent() {
+        this.resetSearchEvent();
 
         this.$searchBox.slideUp();
 
         this.triggerEvent('hideSearchResults');
     }
 
-    toggleSearchListener() {
+    toggleSearchEvent() {
         if (this.$searchBox.is(":hidden")) {
-            this.showSearchListener();
+            this.showSearchEvent();
         }
         else {
-            this.hideSearchListener();
+            this.hideSearchEvent();
         }
     }
 
-    searchNotesListener() {
-        this.toggleSearchListener();
+    searchNotesEvent() {
+        this.toggleSearchEvent();
     }
 
-    resetSearchListener() {
+    resetSearchEvent() {
         this.$searchInput.val("");
     }
 
-    searchInSubtreeListener({noteId}) {
+    searchInSubtreeEvent({noteId}) {
         noteId = noteId || appContext.tabManager.getActiveTabNoteId();
 
         this.toggle(true);

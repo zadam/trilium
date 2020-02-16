@@ -215,7 +215,7 @@ export default class TextTypeWidget extends TypeWidget {
         });
     }
 
-    addTextToActiveEditorListener(text) {
+    addTextToActiveEditorEvent(text) {
         if (!this.isActive()) {
             return;
         }
@@ -244,7 +244,7 @@ export default class TextTypeWidget extends TypeWidget {
         return !selection.isCollapsed;
     }
 
-    async executeInActiveEditorListener({callback}) {
+    async executeInActiveEditorEvent({callback}) {
         if (!this.isActive()) {
             return;
         }

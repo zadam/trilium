@@ -83,7 +83,7 @@ class AppContext extends Component {
         return $(el).closest(".component").prop('component');
     }
 
-    async protectedSessionStartedListener() {
+    async protectedSessionStartedEvent() {
         await treeCache.loadInitialTree();
 
         this.triggerEvent('treeCacheReloaded');

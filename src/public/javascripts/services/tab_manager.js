@@ -99,7 +99,7 @@ export default class TabManager extends Component {
         });
     }
 
-    tabNoteSwitchedListener({tabId}) {
+    tabNoteSwitchedEvent({tabId}) {
         if (tabId === this.activeTabId) {
             this.setCurrentNotePathToHash();
         }
@@ -228,7 +228,7 @@ export default class TabManager extends Component {
             this.openAndActivateEmptyTab();
         }
         else {
-            this.activateNextTabListener();
+            this.activateNextTabEvent();
         }
 
         this.children = this.children.filter(tc => tc.tabId !== tabId);
@@ -238,7 +238,7 @@ export default class TabManager extends Component {
         this.tabsUpdate.scheduleUpdate();
     }
 
-    tabReorderListener({tabIdsInOrder}) {
+    tabReorderEvent({tabIdsInOrder}) {
         const order = {};
 
         for (const i in tabIdsInOrder) {
@@ -250,39 +250,39 @@ export default class TabManager extends Component {
         this.tabsUpdate.scheduleUpdate();
     }
 
-    activateNextTabListener() {
+    activateNextTabEvent() {
         const oldIdx = this.tabContexts.findIndex(tc => tc.tabId === this.activeTabId);
         const newActiveTabId = this.tabContexts[oldIdx === this.tabContexts.length - 1 ? 0 : oldIdx + 1].tabId;
 
         this.activateTab(newActiveTabId);
     }
 
-    activatePreviousTabListener() {
+    activatePreviousTabEvent() {
         const oldIdx = this.tabContexts.findIndex(tc => tc.tabId === this.activeTabId);
         const newActiveTabId = this.tabContexts[oldIdx === 0 ? this.tabContexts.length - 1 : oldIdx - 1].tabId;
 
         this.activateTab(newActiveTabId);
     }
 
-    closeActiveTabListener() {
+    closeActiveTabEvent() {
         this.removeTab(this.activeTabId);
     }
 
-    beforeUnloadListener() {
+    beforeUnloadEvent() {
         this.tabsUpdate.updateNowIfNecessary();
     }
 
-    openNewTabListener() {
+    openNewTabEvent() {
         this.openAndActivateEmptyTab();
     }
 
-    async removeAllTabsListener() {
+    async removeAllTabsEvent() {
         for (const tabIdToRemove of this.tabContexts.map(tc => tc.tabId)) {
             await this.removeTab(tabIdToRemove);
         }
     }
 
-    async removeAllTabsExceptForThisListener({tabId}) {
+    async removeAllTabsExceptForThisEvent({tabId}) {
         for (const tabIdToRemove of this.tabContexts.map(tc => tc.tabId)) {
             if (tabIdToRemove !== tabId) {
                 await this.removeTab(tabIdToRemove);
@@ -290,7 +290,7 @@ export default class TabManager extends Component {
         }
     }
 
-    async hoistedNoteChangedListener({hoistedNoteId}) {
+    async hoistedNoteChangedEvent({hoistedNoteId}) {
         if (hoistedNoteId === 'root') {
             return;
         }

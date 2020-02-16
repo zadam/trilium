@@ -2,7 +2,7 @@ import BasicWidget from "./basic_widget.js";
 import appContext from "../services/app_context.js";
 
 export default class TabAwareWidget extends BasicWidget {
-    setTabContextListener({tabContext}) {
+    setTabContextEvent({tabContext}) {
         /** @var {TabContext} */
         this.tabContext = tabContext;
 
@@ -29,7 +29,7 @@ export default class TabAwareWidget extends BasicWidget {
         return this.tabContext && this.tabContext.notePath;
     }
 
-    tabNoteSwitchedListener({tabId, notePath}) {
+    tabNoteSwitchedEvent({tabId, notePath}) {
         // if notePath does not match then the tabContext has been switched to another note in the mean time
         if (this.isTab(tabId) && this.notePath === notePath) {
             this.noteSwitched();
@@ -68,17 +68,17 @@ export default class TabAwareWidget extends BasicWidget {
 
     refreshWithNote(note, notePath) {}
 
-    activeTabChangedListener() {
+    activeTabChangedEvent() {
         this.tabContext = appContext.tabManager.getActiveTabContext();
 
         this.activeTabChanged();
     }
 
-    treeCacheReloadedListener() {
+    treeCacheReloadedEvent() {
         this.refresh();
     }
 
-    lazyLoadedListener() {
+    lazyLoadedEvent() {
         if (!this.tabContext) { // has not been loaded yet
             this.tabContext = appContext.tabManager.getActiveTabContext();
         }

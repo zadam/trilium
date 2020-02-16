@@ -61,7 +61,7 @@ export default class SimilarNotesWidget extends CollapsibleWidget {
         this.$body.empty().append($list);
     }
 
-    entitiesReloadedListener({loadResults}) {
+    entitiesReloadedEvent({loadResults}) {
         if (this.note && this.title !== this.note.title) {
             this.rendered = false;
 

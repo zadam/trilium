@@ -50,7 +50,7 @@ export default class WhatLinksHereWidget extends CollapsibleWidget {
         this.$body.empty().append($list);
     }
 
-    entitiesReloadedListener({loadResults}) {
+    entitiesReloadedEvent({loadResults}) {
         if (loadResults.getAttributes().find(attr => attr.type === 'relation' && attr.value === this.noteId)) {
             this.refresh();
         }

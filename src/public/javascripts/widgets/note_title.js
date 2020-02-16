@@ -54,25 +54,25 @@ export default class NoteTitleWidget extends TabAwareWidget {
         this.$noteTitle.prop("readonly", note.isProtected && !protectedSessionHolder.isProtectedSessionAvailable());
     }
 
-    async beforeNoteSwitchListener({tabId}) {
+    async beforeNoteSwitchEvent({tabId}) {
         if (this.isTab(tabId)) {
             await this.spacedUpdate.updateNowIfNecessary();
         }
     }
 
-    async beforeTabRemoveListener({tabId}) {
+    async beforeTabRemoveEvent({tabId}) {
         if (this.isTab(tabId)) {
             await this.spacedUpdate.updateNowIfNecessary();
         }
     }
 
-    focusOnTitleListener() {
+    focusOnTitleEvent() {
         if (this.tabContext && this.tabContext.isActive()) {
             this.$noteTitle.trigger('focus');
         }
     }
 
-    focusAndSelectTitleListener() {
+    focusAndSelectTitleEvent() {
         if (this.tabContext && this.tabContext.isActive()) {
             this.$noteTitle
                 .trigger('focus')
@@ -80,7 +80,7 @@ export default class NoteTitleWidget extends TabAwareWidget {
         }
     }
 
-    beforeUnloadListener() {
+    beforeUnloadEvent() {
         this.spacedUpdate.updateNowIfNecessary();
     }
 }

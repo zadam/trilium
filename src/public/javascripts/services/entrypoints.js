@@ -29,13 +29,13 @@ export default class Entrypoints extends Component {
         });
     }
 
-    openDevToolsListener() {
+    openDevToolsEvent() {
         if (utils.isElectron()) {
             require('electron').remote.getCurrentWindow().toggleDevTools();
         }
     }
 
-    findInTextListener() {
+    findInTextEvent() {
         if (!utils.isElectron()) {
             return;
         }
@@ -58,7 +58,7 @@ export default class Entrypoints extends Component {
 
 
 
-    async createNoteIntoDayNoteListener() {
+    async createNoteIntoDayNoteEvent() {
         const todayNote = await dateNoteService.getTodayNote();
 
         const {note} = await server.post(`notes/${todayNote.noteId}/children?target=into`, {
@@ -77,7 +77,7 @@ export default class Entrypoints extends Component {
         appContext.triggerEvent('focusAndSelectTitle');
     }
 
-    async toggleNoteHoistingListener() {
+    async toggleNoteHoistingEvent() {
         const note = appContext.tabManager.getActiveTabNote();
 
         const hoistedNoteId = hoistedNoteService.getHoistedNoteId();
@@ -93,11 +93,11 @@ export default class Entrypoints extends Component {
         }
     }
 
-    copyWithoutFormattingListener() {
+    copyWithoutFormattingEvent() {
         utils.copySelectionToClipboard();
     }
 
-    toggleFullscreenListener() {
+    toggleFullscreenEvent() {
         if (utils.isElectron()) {
             const win = require('electron').remote.getCurrentWindow();
 
@@ -111,7 +111,7 @@ export default class Entrypoints extends Component {
         }
     }
 
-    toggleZenModeListener() {
+    toggleZenModeEvent() {
         if (!this.zenModeActive) {
             $(".hide-in-zen-mode,.gutter").addClass("hidden-by-zen-mode");
             $("#container").addClass("zen-mode");
@@ -125,11 +125,11 @@ export default class Entrypoints extends Component {
         }
     }
 
-    reloadFrontendAppListener() {
+    reloadFrontendAppEvent() {
         utils.reloadApp();
     }
 
-    logoutListener() {
+    logoutEvent() {
         const $logoutForm = $('<form action="logout" method="POST">')
             .append($(`<input type="hidden" name="_csrf" value="${glob.csrfToken}"/>`));
 
@@ -137,27 +137,27 @@ export default class Entrypoints extends Component {
         $logoutForm.trigger('submit');
     }
 
-    showOptionsListener() {
+    showOptionsEvent() {
         import("../dialogs/options.js").then(d => d.showDialog())
     }
 
-    showHelpListener() {
+    showHelpEvent() {
         import("../dialogs/help.js").then(d => d.showDialog())
     }
 
-    showSQLConsoleListener() {
+    showSQLConsoleEvent() {
         import("../dialogs/sql_console.js").then(d => d.showDialog())
     }
 
-    showBackendLogListener() {
+    showBackendLogEvent() {
         import("../dialogs/backend_log.js").then(d => d.showDialog())
     }
 
-    backInNoteHistoryListener() {
+    backInNoteHistoryEvent() {
         window.history.back();
     }
 
-    forwardInNoteHistoryListener() {
+    forwardInNoteHistoryEvent() {
         window.history.forward();
     }
 }

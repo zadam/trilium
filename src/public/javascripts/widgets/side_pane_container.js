@@ -18,7 +18,7 @@ export default class SidePaneContainer extends FlexContainer {
         }
     }
 
-    sidebarVisibilityChangedListener({side, show}) {
+    sidebarVisibilityChangedEvent({side, show}) {
         if (this.side === side) {
             this.toggle(show);
 

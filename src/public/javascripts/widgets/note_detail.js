@@ -164,7 +164,7 @@ export default class NoteDetailWidget extends TabAwareWidget {
         return type;
     }
 
-    async focusOnDetailListener({tabId}) {
+    async focusOnDetailEvent({tabId}) {
         if (this.tabContext.tabId === tabId) {
             await this.refresh();
 
@@ -173,19 +173,19 @@ export default class NoteDetailWidget extends TabAwareWidget {
         }
     }
 
-    async beforeNoteSwitchListener({tabId}) {
+    async beforeNoteSwitchEvent({tabId}) {
         if (this.isTab(tabId)) {
             await this.spacedUpdate.updateNowIfNecessary();
         }
     }
 
-    async beforeTabRemoveListener({tabId}) {
+    async beforeTabRemoveEvent({tabId}) {
         if (this.isTab(tabId)) {
             await this.spacedUpdate.updateNowIfNecessary();
         }
     }
 
-    async printActiveNoteListener() {
+    async printActiveNoteEvent() {
         if (!this.tabContext.isActive()) {
             return;
         }
@@ -203,11 +203,11 @@ export default class NoteDetailWidget extends TabAwareWidget {
         });
     }
 
-    hoistedNoteChangedListener() {
+    hoistedNoteChangedEvent() {
         this.refresh();
     }
 
-    async entitiesReloadedListener({loadResults}) {
+    async entitiesReloadedEvent({loadResults}) {
         // we should test what happens when the loaded note is deleted
 
         if (loadResults.isNoteContentReloaded(this.noteId, this.componentId)) {
@@ -215,11 +215,11 @@ export default class NoteDetailWidget extends TabAwareWidget {
         }
     }
 
-    beforeUnloadListener() {
+    beforeUnloadEvent() {
         this.spacedUpdate.updateNowIfNecessary();
     }
 
-    autoBookDisabledListener() {
+    autoBookDisabledEvent() {
         this.refresh();
     }
 

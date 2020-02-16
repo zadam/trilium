@@ -33,7 +33,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
     constructor(appContext, parent) {
         super(appContext, parent);
 
-        window.glob.cutIntoNote = () => this.cutIntoNoteListener();
+        window.glob.cutIntoNote = () => this.cutIntoNoteEvent();
 
         this.tree = null;
     }
@@ -285,7 +285,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
         }
     }
 
-    async scrollToActiveNoteListener() {
+    async scrollToActiveNoteEvent() {
         const activeContext = appContext.tabManager.getActiveTabContext();
 
         if (activeContext && activeContext.notePath) {
@@ -406,9 +406,9 @@ export default class NoteTreeWidget extends TabAwareWidget {
         await this.tree.reload(notes);
     }
 
-    createTopLevelNoteListener() { noteCreateService.createNewTopLevelNote(); }
+    createTopLevelNoteEvent() { noteCreateService.createNewTopLevelNote(); }
 
-    collapseTreeListener() { this.collapseTree(); }
+    collapseTreeEvent() { this.collapseTree(); }
 
     isEnabled() {
         return this.tabContext && this.tabContext.isActive();
@@ -448,7 +448,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
         toastService.showMessage("Saved search note refreshed.");
     }
 
-    async entitiesReloadedListener({loadResults}) {
+    async entitiesReloadedEvent({loadResults}) {
         const noteIdsToUpdate = new Set();
         const noteIdsToReload = new Set();
 
@@ -547,7 +547,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
         }
     }
 
-    async createNoteAfterListener() {
+    async createNoteAfterEvent() {
         const node = this.getActiveNode();
         const parentNoteId = node.data.parentNoteId;
         const isProtected = await treeService.getParentProtectedStatus(node);
@@ -564,7 +564,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
         });
     }
 
-    async createNoteIntoListener() {
+    async createNoteIntoEvent() {
         const node = this.getActiveNode();
 
         if (node) {
@@ -575,7 +575,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
         }
     }
 
-    async cutIntoNoteListener() {
+    async cutIntoNoteEvent() {
         const node = this.getActiveNode();
 
         if (node) {
@@ -610,11 +610,11 @@ export default class NoteTreeWidget extends TabAwareWidget {
         }
     }
 
-    hoistedNoteChangedListener() {
+    hoistedNoteChangedEvent() {
         this.reloadTreeFromCache();
     }
 
-    treeCacheReloadedListener() {
+    treeCacheReloadedEvent() {
         this.reloadTreeFromCache();
     }
 

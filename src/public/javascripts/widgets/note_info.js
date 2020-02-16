@@ -67,7 +67,7 @@ export default class NoteInfoWidget extends CollapsibleWidget {
             .attr("title", note.mime);
     }
 
-    entitiesReloadedListener({loadResults}) {
+    entitiesReloadedEvent({loadResults}) {
         if (loadResults.isNoteReloaded(this.noteId)) {
             this.refresh();
         }

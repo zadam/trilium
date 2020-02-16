@@ -41,7 +41,7 @@ export async function initSpellCheck() {
         });
     });
 
-    new ContextMenuListener(async (info) => {
+    new ContextMenuEvent(async (info) => {
         await contextMenuBuilder.showPopupMenu(info);
     });
 }

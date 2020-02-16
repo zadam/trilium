@@ -70,7 +70,7 @@ class NoteRevisionsWidget extends CollapsibleWidget {
         }
     }
 
-    entitiesReloadedListener({loadResults}) {
+    entitiesReloadedEvent({loadResults}) {
         if (loadResults.hasNoteRevisionForNote(this.noteId)) {
             this.refresh();
         }
