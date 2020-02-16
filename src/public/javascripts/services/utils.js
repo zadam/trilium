@@ -227,9 +227,11 @@ function focusSavedElement() {
     if ($lastFocusedElement.hasClass("ck")) {
         // must handle CKEditor separately because of this bug: https://github.com/ckeditor/ckeditor5/issues/607
 
-        import("./note_detail.js").then(noteDetail => {
-            noteDetail.default.getActiveEditor().editing.view.focus();
-        });
+        const editor = $lastFocusedElement
+            .closest('.ck-editor__editable')
+            .prop('ckeditorInstance');
+
+        editor.editing.view.focus();
     } else {
         $lastFocusedElement.focus();
     }

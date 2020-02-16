@@ -35,9 +35,8 @@ async function setupActionsForElement(scope, $el, component) {
 
 getActionsForScope("window").then(actions => {
 	for (const action of actions) {
-		for (const shortcut of action.effectiveShortcuts) {
-			// empty object param so that destructuring with optional params work
-			utils.bindGlobalShortcut(shortcut, () => appContext.trigger(action.actionName, {}));
+		for (const shortcut of action.effectiveShortcuts) {console.log(`Binding ${shortcut} for ${action.actionName}`);
+			utils.bindGlobalShortcut(shortcut, () => appContext.triggerCommand(action.actionName));
 		}
 	}
 });

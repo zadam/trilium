@@ -98,7 +98,7 @@ class AppContext {
         this.trigger('treeCacheReloaded');
     }
 
-    async triggerCommand(name, data) {
+    async triggerCommand(name, data = {}) {
         for (const executor of this.executors) {
             const fun = executor[name + 'Command'];
 

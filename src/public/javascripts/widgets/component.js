@@ -52,7 +52,7 @@ export default class Component {
         await Promise.all(promises);
     }
 
-    async triggerCommand(name, data) {
+    async triggerCommand(name, data = {}) {
         const fun = this[name + 'Command'];
 
         const called = await this.callMethod(fun, data);
