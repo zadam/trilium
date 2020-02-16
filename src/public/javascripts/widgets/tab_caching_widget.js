@@ -1,4 +1,5 @@
 import TabAwareWidget from "./tab_aware_widget.js";
+import keyboardActionsService from "../services/keyboard_actions.js";
 
 export default class TabCachingWidget extends TabAwareWidget {
     constructor(parent, widgetFactory) {
@@ -40,7 +41,11 @@ export default class TabCachingWidget extends TabAwareWidget {
         if (!widget) {
             widget = this.widgets[this.tabContext.tabId] = this.widgetFactory(this);
             this.children.push(widget);
-            this.$widget.after(widget.render());
+
+            const $renderedWidget = widget.render();
+            keyboardActionsService.updateDisplayedShortcuts($renderedWidget);
+
+            this.$widget.after($renderedWidget);
 
             widget.handleEvent('setTabContext', {tabContext: this.tabContext});
         }

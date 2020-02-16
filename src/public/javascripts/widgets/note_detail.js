@@ -15,6 +15,7 @@ import RelationMapTypeWidget from "./type_widgets/relation_map.js";
 import ProtectedSessionTypeWidget from "./type_widgets/protected_session.js";
 import BookTypeWidget from "./type_widgets/book.js";
 import appContext from "../services/app_context.js";
+import keyboardActionsService from "../services/keyboard_actions.js";
 
 const TPL = `
 <div class="note-detail">
@@ -86,7 +87,11 @@ export default class NoteDetailWidget extends TabAwareWidget {
         return this.$widget;
     }
 
-    async refresh() {
+    isEnabled() {
+        return this.tabContext && this.tabContext.isActive();
+    }
+
+    async refresh() {console.log("REFRESH DETAIL");
         if (!this.isEnabled()) {
             this.toggle(false);
             return;
@@ -103,7 +108,11 @@ export default class NoteDetailWidget extends TabAwareWidget {
             typeWidget.spacedUpdate = this.spacedUpdate;
 
             this.children.push(typeWidget);
-            this.$widget.append(typeWidget.render());
+
+            const $renderedWidget = typeWidget.render();
+            keyboardActionsService.updateDisplayedShortcuts($renderedWidget);
+
+            this.$widget.append($renderedWidget);
 
             typeWidget.handleEvent('setTabContext', {tabContext: this.tabContext});
         }

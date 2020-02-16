@@ -8,8 +8,6 @@ class BasicWidget extends Component {
         $widget.addClass('component')
             .prop('component', this);
 
-        keyboardActionsService.updateDisplayedShortcuts($widget);
-
         this.toggle(this.isEnabled());
 
         return $widget;

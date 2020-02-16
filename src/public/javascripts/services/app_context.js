@@ -10,6 +10,7 @@ import Layout from "../widgets/layout.js";
 import TabManager from "./tab_manager.js";
 import treeService from "./tree.js";
 import Component from "../widgets/component.js";
+import keyboardActionsService from "./keyboard_actions.js";
 
 class AppContext extends Component {
     constructor(layout) {
@@ -33,6 +34,8 @@ class AppContext extends Component {
     showWidgets() {
         const rootWidget = this.layout.getRootWidget(this);
         const $renderedWidget = rootWidget.render();
+
+        keyboardActionsService.updateDisplayedShortcuts($renderedWidget);
 
         $("body").append($renderedWidget);
 
