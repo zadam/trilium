@@ -35,7 +35,7 @@ async function setupActionsForElement(scope, $el, component) {
 
 getActionsForScope("window").then(actions => {
 	for (const action of actions) {
-		for (const shortcut of action.effectiveShortcuts) {console.log(`Binding ${shortcut} for ${action.actionName}`);
+		for (const shortcut of action.effectiveShortcuts) {
 			utils.bindGlobalShortcut(shortcut, () => appContext.triggerCommand(action.actionName));
 		}
 	}

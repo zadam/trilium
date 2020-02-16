@@ -6,6 +6,7 @@ import contextMenuWidget from "../../services/context_menu.js";
 import toastService from "../../services/toast.js";
 import attributeAutocompleteService from "../../services/attribute_autocomplete.js";
 import TypeWidget from "./type_widget.js";
+import appContext from "../../services/app_context.js";
 
 const uniDirectionalOverlays = [
     [ "Arrow", {
@@ -195,7 +196,7 @@ export default class RelationMapTypeWidget extends TypeWidget {
         const noteId = this.idToNoteId($noteBox.prop("id"));
 
         if (cmd === "open-in-new-tab") {
-            const tabContext = this.tabManager.openEmptyTab();
+            const tabContext = appContext.tabManager.openEmptyTab();
             tabContext.setNote(noteId);
         }
         else if (cmd === "remove") {

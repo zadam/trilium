@@ -1,4 +1,5 @@
 import BasicWidget from "./basic_widget.js";
+import appContext from "../services/app_context.js";
 
 export default class TabAwareWidget extends BasicWidget {
     setTabContextListener({tabContext}) {
@@ -68,7 +69,7 @@ export default class TabAwareWidget extends BasicWidget {
     refreshWithNote(note, notePath) {}
 
     activeTabChangedListener() {
-        this.tabContext = this.tabManager.getActiveTabContext();
+        this.tabContext = appContext.tabManager.getActiveTabContext();
 
         this.activeTabChanged();
     }
@@ -79,7 +80,7 @@ export default class TabAwareWidget extends BasicWidget {
 
     lazyLoadedListener() {
         if (!this.tabContext) { // has not been loaded yet
-            this.tabContext = this.tabManager.getActiveTabContext();
+            this.tabContext = appContext.tabManager.getActiveTabContext();
         }
 
         this.refresh();

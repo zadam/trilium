@@ -1,8 +1,6 @@
 import protectedSessionHolder from "./protected_session_holder.js";
 import server from "./server.js";
-import bundleService from "./bundle.js";
 import utils from "./utils.js";
-import optionsService from "./options.js";
 import appContext from "./app_context.js";
 import treeService from "./tree.js";
 import Component from "../widgets/component.js";
@@ -11,11 +9,11 @@ import hoistedNoteService from "./hoisted_note.js";
 
 class TabContext extends Component {
     /**
-     * @param {AppContext} appContext
+     * @param {Component} parent
      * @param {string|null} tabId
      */
-    constructor(appContext, tabId = null) {
-        super(appContext, parent);
+    constructor(parent, tabId = null) {
+        super(parent);
 
         this.tabId = tabId || utils.randomString(4);
 
@@ -85,7 +83,7 @@ class TabContext extends Component {
     }
 
     isActive() {
-        return this.tabManager.activeTabId === this.tabId;
+        return appContext.tabManager.activeTabId === this.tabId;
     }
 
     getTabState() {

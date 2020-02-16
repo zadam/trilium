@@ -1,8 +1,8 @@
 import TabAwareWidget from "./tab_aware_widget.js";
 
 export default class TabCachingWidget extends TabAwareWidget {
-    constructor(appContext, parent, widgetFactory) {
-        super(appContext, parent);
+    constructor(parent, widgetFactory) {
+        super(parent);
 
         this.widgetFactory = widgetFactory;
         this.widgets = {};

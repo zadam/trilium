@@ -66,7 +66,7 @@ export default class StandardTopWidget extends BasicWidget {
     doRender() {
         this.$widget = $(TPL);
 
-        const historyNavigationWidget = new HistoryNavigationWidget(this.appContext);
+        const historyNavigationWidget = new HistoryNavigationWidget(this);
 
         this.$widget.prepend(historyNavigationWidget.render());
 

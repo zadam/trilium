@@ -28,42 +28,42 @@ import SidePaneToggles from "./side_pane_toggles.js";
 
 export default class Layout {
     getRootWidget(appContext) {
-        return new FlexContainer(appContext, appContext, { 'flex-direction': 'column', 'height': '100vh' }, [
-            parent => new FlexContainer(appContext, parent, { 'flex-direction': 'row' }, [
-                parent => new GlobalMenuWidget(appContext, parent),
-                parent => new TabRowWidget(appContext, parent),
-                parent => new TitleBarButtonsWidget(appContext, parent)
+        return new FlexContainer(appContext, { 'flex-direction': 'column', 'height': '100vh' }, [
+            parent => new FlexContainer(parent, { 'flex-direction': 'row' }, [
+                parent => new GlobalMenuWidget(parent),
+                parent => new TabRowWidget(parent),
+                parent => new TitleBarButtonsWidget(parent)
             ]),
-            parent => new StandardTopWidget(appContext, parent),
-            parent => new FlexContainer(appContext, parent, { 'flex-direction': 'row', 'overflow': 'hidden' }, [
-                parent => new SidePaneContainer(appContext, parent, 'left', [
-                    parent => new GlobalButtonsWidget(appContext, parent),
-                    parent => new SearchBoxWidget(appContext, parent),
-                    parent => new SearchResultsWidget(appContext, parent),
-                    parent => new NoteTreeWidget(appContext, parent)
+            parent => new StandardTopWidget(parent),
+            parent => new FlexContainer(parent, { 'flex-direction': 'row', 'overflow': 'hidden' }, [
+                parent => new SidePaneContainer(parent, 'left', [
+                    parent => new GlobalButtonsWidget(parent),
+                    parent => new SearchBoxWidget(parent),
+                    parent => new SearchResultsWidget(parent),
+                    parent => new NoteTreeWidget(parent)
                 ]),
-                parent => new FlexContainer(appContext, parent, { id: 'center-pane', 'flex-direction': 'column' }, [
-                    parent => new FlexContainer(appContext, parent, { 'flex-direction': 'row' }, [
-                        parent => new TabCachingWidget(appContext, parent, parent => new NotePathsWidget(appContext, parent)),
-                        parent => new NoteTitleWidget(appContext, parent),
-                        parent => new RunScriptButtonsWidget(appContext, parent),
-                        parent => new ProtectedNoteSwitchWidget(appContext, parent),
-                        parent => new NoteTypeWidget(appContext, parent),
-                        parent => new NoteActionsWidget(appContext, parent)
+                parent => new FlexContainer(parent, { id: 'center-pane', 'flex-direction': 'column' }, [
+                    parent => new FlexContainer(parent, { 'flex-direction': 'row' }, [
+                        parent => new TabCachingWidget(parent, parent => new NotePathsWidget(parent)),
+                        parent => new NoteTitleWidget(parent),
+                        parent => new RunScriptButtonsWidget(parent),
+                        parent => new ProtectedNoteSwitchWidget(parent),
+                        parent => new NoteTypeWidget(parent),
+                        parent => new NoteActionsWidget(parent)
                     ]),
-                    parent => new TabCachingWidget(appContext, parent, parent => new PromotedAttributesWidget(appContext, parent)),
-                    parent => new TabCachingWidget(appContext, parent, parent => new NoteDetailWidget(appContext, parent))
+                    parent => new TabCachingWidget(parent, parent => new PromotedAttributesWidget(parent)),
+                    parent => new TabCachingWidget(parent, parent => new NoteDetailWidget(parent))
                 ]),
-                parent => new SidePaneContainer(appContext, parent, 'right', [
-                    parent => new NoteInfoWidget(appContext, parent),
-                    parent => new TabCachingWidget(appContext, parent, parent => new CalendarWidget(appContext, parent)),
-                    parent => new TabCachingWidget(appContext, parent, parent => new AttributesWidget(appContext, parent)),
-                    parent => new TabCachingWidget(appContext, parent, parent => new LinkMapWidget(appContext, parent)),
-                    parent => new TabCachingWidget(appContext, parent, parent => new NoteRevisionsWidget(appContext, parent)),
-                    parent => new TabCachingWidget(appContext, parent, parent => new SimilarNotesWidget(appContext, parent)),
-                    parent => new TabCachingWidget(appContext, parent, parent => new WhatLinksHereWidget(appContext, parent))
+                parent => new SidePaneContainer(parent, 'right', [
+                    parent => new NoteInfoWidget(parent),
+                    parent => new TabCachingWidget(parent, parent => new CalendarWidget(parent)),
+                    parent => new TabCachingWidget(parent, parent => new AttributesWidget(parent)),
+                    parent => new TabCachingWidget(parent, parent => new LinkMapWidget(parent)),
+                    parent => new TabCachingWidget(parent, parent => new NoteRevisionsWidget(parent)),
+                    parent => new TabCachingWidget(parent, parent => new SimilarNotesWidget(parent)),
+                    parent => new TabCachingWidget(parent, parent => new WhatLinksHereWidget(parent))
                 ]),
-                parent => new SidePaneToggles(appContext, parent)
+                parent => new SidePaneToggles(parent)
             ])
         ])
     }

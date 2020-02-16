@@ -14,6 +14,7 @@ import RenderTypeWidget from "./type_widgets/render.js";
 import RelationMapTypeWidget from "./type_widgets/relation_map.js";
 import ProtectedSessionTypeWidget from "./type_widgets/protected_session.js";
 import BookTypeWidget from "./type_widgets/book.js";
+import appContext from "../services/app_context.js";
 
 const TPL = `
 <div class="note-detail">
@@ -39,8 +40,8 @@ const typeWidgetClasses = {
 };
 
 export default class NoteDetailWidget extends TabAwareWidget {
-    constructor(appContext, parent) {
-        super(appContext, parent);
+    constructor(parent) {
+        super(parent);
 
         this.typeWidgets = {};
 
@@ -63,7 +64,7 @@ export default class NoteDetailWidget extends TabAwareWidget {
         this.$widget.on("dragleave", e => e.preventDefault());
 
         this.$widget.on("drop", async e => {
-            const activeNote = this.tabManager.getActiveTabNote();
+            const activeNote = appContext.tabManager.getActiveTabNote();
 
             if (!activeNote) {
                 return;
@@ -98,7 +99,7 @@ export default class NoteDetailWidget extends TabAwareWidget {
         if (!(this.type in this.typeWidgets)) {
             const clazz = typeWidgetClasses[this.type];
 
-            const typeWidget = this.typeWidgets[this.type] = new clazz(this.appContext, this);
+            const typeWidget = this.typeWidgets[this.type] = new clazz(this);
             typeWidget.spacedUpdate = this.spacedUpdate;
 
             this.children.push(typeWidget);

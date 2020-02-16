@@ -1,19 +1,15 @@
 import utils from '../services/utils.js';
 import Mutex from "../services/mutex.js";
+import appContext from "../services/app_context.js";
 
 export default class Component {
     /**
-     * @param {AppContext} appContext
      * @param {Component} parent
      */
-    constructor(appContext, parent) {
+    constructor(parent) {
         this.componentId = `comp-${this.constructor.name}-` + utils.randomString(6);
-        /** @type AppContext */
-        this.appContext = appContext;
         /** @type Component */
         this.parent = parent;
-        /** @type TabManager */
-        this.tabManager = appContext.tabManager;
         /** @type Component[] */
         this.children = [];
         this.initialized = Promise.resolve();
@@ -39,7 +35,7 @@ export default class Component {
     }
 
     async trigger(name, data) {
-        await this.appContext.trigger(name, data);
+        await appContext.trigger(name, data);
     }
 
     async triggerChildren(name, data) {

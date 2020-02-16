@@ -12,6 +12,7 @@ import TabAwareWidget from "./tab_aware_widget.js";
 import server from "../services/server.js";
 import noteCreateService from "../services/note_create.js";
 import toastService from "../services/toast.js";
+import appContext from "../services/app_context.js";
 
 const TPL = `
 <div class="tree">
@@ -51,7 +52,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
                 const notePath = treeService.getNotePath(node);
 
                 if (notePath) {
-                    const tabContext = this.tabManager.openEmptyTab();
+                    const tabContext = appContext.tabManager.openEmptyTab();
                     tabContext.setNote(notePath);
                 }
 
@@ -85,10 +86,10 @@ export default class NoteTreeWidget extends TabAwareWidget {
                         node.setFocus(true);
                     }
                     else if (event.ctrlKey) {
-                        const tabContext = this.tabManager.openEmptyTab();
+                        const tabContext = appContext.tabManager.openEmptyTab();
                         const notePath = treeService.getNotePath(node);
                         tabContext.setNote(notePath);
-                        this.tabManager.activateTab(tabContext.tabId);
+                        appContext.tabManager.activateTab(tabContext.tabId);
                     }
                     else {
                         node.setActive();
@@ -105,7 +106,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
                 const notePath = treeService.getNotePath(data.node);
 
-                const activeTabContext = this.tabManager.getActiveTabContext();
+                const activeTabContext = appContext.tabManager.getActiveTabContext();
                 await activeTabContext.setNote(notePath);
             },
             expand: (event, data) => this.setExpandedToServer(data.node.data.branchId, true),
@@ -285,7 +286,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
     }
 
     async scrollToActiveNoteListener() {
-        const activeContext = this.tabManager.getActiveTabContext();
+        const activeContext = appContext.tabManager.getActiveTabContext();
 
         if (activeContext && activeContext.notePath) {
             this.tree.setFocus();
@@ -542,7 +543,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
         }
 
         if (activeNotePath) {
-            this.tabManager.getActiveTabContext().setNote(activeNotePath);
+            appContext.tabManager.getActiveTabContext().setNote(activeNotePath);
         }
     }
 
