@@ -8,8 +8,8 @@ import appContext from "./app_context.js";
 import Component from "../widgets/component.js";
 
 export default class Entrypoints extends Component {
-    constructor(appContext, parent) {
-        super(appContext, parent);
+    constructor(parent) {
+        super(parent);
 
         // hot keys are active also inside inputs and content editables
         jQuery.hotkeys.options.filterInputAcceptingElements = false;
@@ -29,13 +29,13 @@ export default class Entrypoints extends Component {
         });
     }
 
-    openDevToolsEvent() {
+    openDevToolsCommand() {
         if (utils.isElectron()) {
             require('electron').remote.getCurrentWindow().toggleDevTools();
         }
     }
 
-    findInTextEvent() {
+    findInTextCommand() {
         if (!utils.isElectron()) {
             return;
         }
@@ -56,9 +56,7 @@ export default class Entrypoints extends Component {
         });
     }
 
-
-
-    async createNoteIntoDayNoteEvent() {
+    async createNoteIntoDayNoteCommand() {
         const todayNote = await dateNoteService.getTodayNote();
 
         const {note} = await server.post(`notes/${todayNote.noteId}/children?target=into`, {
@@ -74,10 +72,10 @@ export default class Entrypoints extends Component {
         appContext.tabManager.activateTab(tabContext.tabId);
         await tabContext.setNote(note.noteId);
 
-        appContext.triggerEvent('focusAndSelectTitle');
+        appContext.triggerCommand('focusAndSelectTitle');
     }
 
-    async toggleNoteHoistingEvent() {
+    async toggleNoteHoistingCommand() {
         const note = appContext.tabManager.getActiveTabNote();
 
         const hoistedNoteId = hoistedNoteService.getHoistedNoteId();
@@ -93,11 +91,11 @@ export default class Entrypoints extends Component {
         }
     }
 
-    copyWithoutFormattingEvent() {
+    copyWithoutFormattingCommand() {
         utils.copySelectionToClipboard();
     }
 
-    toggleFullscreenEvent() {
+    toggleFullscreenCommand() {
         if (utils.isElectron()) {
             const win = require('electron').remote.getCurrentWindow();
 
@@ -111,7 +109,7 @@ export default class Entrypoints extends Component {
         }
     }
 
-    toggleZenModeEvent() {
+    toggleZenModeCommand() {
         if (!this.zenModeActive) {
             $(".hide-in-zen-mode,.gutter").addClass("hidden-by-zen-mode");
             $("#container").addClass("zen-mode");
@@ -125,11 +123,11 @@ export default class Entrypoints extends Component {
         }
     }
 
-    reloadFrontendAppEvent() {
+    reloadFrontendAppCommand() {
         utils.reloadApp();
     }
 
-    logoutEvent() {
+    logoutCommand() {
         const $logoutForm = $('<form action="logout" method="POST">')
             .append($(`<input type="hidden" name="_csrf" value="${glob.csrfToken}"/>`));
 
@@ -137,27 +135,11 @@ export default class Entrypoints extends Component {
         $logoutForm.trigger('submit');
     }
 
-    showOptionsEvent() {
-        import("../dialogs/options.js").then(d => d.showDialog())
-    }
-
-    showHelpEvent() {
-        import("../dialogs/help.js").then(d => d.showDialog())
-    }
-
-    showSQLConsoleEvent() {
-        import("../dialogs/sql_console.js").then(d => d.showDialog())
-    }
-
-    showBackendLogEvent() {
-        import("../dialogs/backend_log.js").then(d => d.showDialog())
-    }
-
-    backInNoteHistoryEvent() {
+    backInNoteHistoryCommand() {
         window.history.back();
     }
 
-    forwardInNoteHistoryEvent() {
+    forwardInNoteHistoryCommand() {
         window.history.forward();
     }
 }

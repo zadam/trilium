@@ -29,11 +29,11 @@ const TAB_TPL = `
   <div class="note-tab-wrapper">
     <div class="note-tab-title"></div>
     <div class="note-tab-drag-handle"></div>
-    <div class="note-tab-close kb-in-title" title="Close tab" data-kb-action="closeActiveTab"><span>×</span></div>
+    <div class="note-tab-close kb-in-title" title="Close tab" data-kb-command="closeActiveTab"><span>×</span></div>
   </div>
 </div>`;
 
-const NEW_TAB_BUTTON_TPL = `<div class="note-new-tab kb-in-title" data-kb-action="openNewTab" title="Add new tab">+</div>`;
+const NEW_TAB_BUTTON_TPL = `<div class="note-new-tab kb-in-title" data-kb-command="openNewTab" title="Add new tab">+</div>`;
 const FILLER_TPL = `<div class="tab-row-filler">
     <div class="tab-row-border"></div>
 </div>`;
@@ -262,7 +262,7 @@ export default class TabRowWidget extends BasicWidget {
                     ];
                 },
                 selectContextMenuItem: (e, cmd) => {
-                    this.triggerEvent(cmd, {tabId});
+                    this.triggerCommand(cmd, {tabId});
                 }
             });
         });
@@ -290,7 +290,7 @@ export default class TabRowWidget extends BasicWidget {
             window.addEventEvent('resize', resizeListener);
         }
 
-        this.tabEls.forEach((tabEl) => this.setTabCloseEventEvent(tabEl));
+        this.tabEls.forEach((tabEl) => this.setTabCloseEvent(tabEl));
     }
 
     setVisibility() {
@@ -386,14 +386,14 @@ export default class TabRowWidget extends BasicWidget {
 
         this.$newTab.before($tab);
         this.setVisibility();
-        this.setTabCloseEventEvent($tab);
+        this.setTabCloseEvent($tab);
         this.updateTitle($tab, 'New tab');
         this.cleanUpPreviouslyDraggedTabs();
         this.layoutTabs();
         this.setupDraggabilly();
     }
 
-    setTabCloseEventEvent($tab) {
+    setTabCloseEvent($tab) {
         $tab.find('.note-tab-close')
             .on('click', _ => appContext.tabManager.removeTab($tab.attr('data-tab-id')));
 
@@ -552,7 +552,7 @@ export default class TabRowWidget extends BasicWidget {
 
         this.$tabContainer.append(this.$newTab);
 
-        this.$newTab.on('click', _ => this.triggerEvent('openNewTab'));
+        this.$newTab.on('click', _ => this.triggerCommand('openNewTab'));
     }
 
     setupFiller() {

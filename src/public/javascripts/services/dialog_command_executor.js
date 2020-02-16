@@ -51,4 +51,20 @@ export default class DialogCommandExecutor extends Component {
         const d = await import("../dialogs/move_to.js");
         d.showDialog(branchIds);
     }
+
+    showOptionsCommand() {
+        import("../dialogs/options.js").then(d => d.showDialog())
+    }
+
+    showHelpCommand() {
+        import("../dialogs/help.js").then(d => d.showDialog())
+    }
+
+    showSQLConsoleCommand() {
+        import("../dialogs/sql_console.js").then(d => d.showDialog())
+    }
+
+    showBackendLogCommand() {
+        import("../dialogs/backend_log.js").then(d => d.showDialog())
+    }
 }

@@ -42,14 +42,12 @@ class AppContext extends Component {
             this.triggerEvent(eventName);
         });
 
-        this.children = [
-            this.tabManager,
-            rootWidget,
-            new Entrypoints(this)
-        ];
+        this.children = [ rootWidget ];
 
         this.executors = [
-            new DialogCommandExecutor(this)
+            this.tabManager,
+            new DialogCommandExecutor(this),
+            new Entrypoints(this)
         ];
 
         if (utils.isElectron()) {
@@ -67,9 +65,7 @@ class AppContext extends Component {
 
     async triggerCommand(name, data = {}) {
         for (const executor of this.executors) {
-            const fun = executor[name + 'Command'];
-
-            const called = await this.callMethod(executor, fun, data);
+            const called = await executor.handleCommand(name, data);
 
             if (called) {
                 return;

@@ -18,7 +18,7 @@ export default class Component {
     async handleEvent(name, data) {
         await this.initialized;
 
-        const fun = this[name + 'Listener'];
+        const fun = this[name + 'Event'];
 
         const start = Date.now();
 
@@ -48,13 +48,17 @@ export default class Component {
     }
 
     async triggerCommand(name, data = {}) {
-        const fun = this[name + 'Command'];
-
-        const called = await this.callMethod(fun, data);
+        const called = await this.handleCommand(name, data);
 
         if (!called) {
             await this.parent.triggerCommand(name, data);
         }
+    }
+
+    async handleCommand(name, data) {
+        const fun = this[name + 'Command'];
+
+        return await this.callMethod(fun, data);
     }
 
     async callMethod(fun, data) {

@@ -95,8 +95,8 @@ async function getAction(actionName, silent = false) {
 }
 
 function updateDisplayedShortcuts($container) {
-	$container.find('kbd[data-kb-action]').each(async (i, el) => {
-		const actionName = $(el).attr('data-kb-action');
+	$container.find('kbd[data-kb-command]').each(async (i, el) => {
+		const actionName = $(el).attr('data-kb-command');
 		const action = await getAction(actionName, true);
 
 		if (action) {
@@ -104,8 +104,8 @@ function updateDisplayedShortcuts($container) {
 		}
 	});
 
-	$container.find('button[data-kb-action],a.icon-action[data-kb-action],.kb-in-title').each(async (i, el) => {
-		const actionName = $(el).attr('data-kb-action');
+	$container.find('button[data-kb-command],a.icon-action[data-kb-command],.kb-in-title').each(async (i, el) => {
+		const actionName = $(el).attr('data-kb-command');
 		const action = await getAction(actionName, true);
 
 		if (action) {

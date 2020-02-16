@@ -250,21 +250,21 @@ export default class TabManager extends Component {
         this.tabsUpdate.scheduleUpdate();
     }
 
-    activateNextTabEvent() {
+    activateNextTabCommand() {
         const oldIdx = this.tabContexts.findIndex(tc => tc.tabId === this.activeTabId);
         const newActiveTabId = this.tabContexts[oldIdx === this.tabContexts.length - 1 ? 0 : oldIdx + 1].tabId;
 
         this.activateTab(newActiveTabId);
     }
 
-    activatePreviousTabEvent() {
+    activatePreviousTabCommand() {
         const oldIdx = this.tabContexts.findIndex(tc => tc.tabId === this.activeTabId);
         const newActiveTabId = this.tabContexts[oldIdx === 0 ? this.tabContexts.length - 1 : oldIdx - 1].tabId;
 
         this.activateTab(newActiveTabId);
     }
 
-    closeActiveTabEvent() {
+    closeActiveTabCommand() {
         this.removeTab(this.activeTabId);
     }
 
@@ -272,17 +272,17 @@ export default class TabManager extends Component {
         this.tabsUpdate.updateNowIfNecessary();
     }
 
-    openNewTabEvent() {
+    openNewTabCommand() {
         this.openAndActivateEmptyTab();
     }
 
-    async removeAllTabsEvent() {
+    async removeAllTabsCommand() {
         for (const tabIdToRemove of this.tabContexts.map(tc => tc.tabId)) {
             await this.removeTab(tabIdToRemove);
         }
     }
 
-    async removeAllTabsExceptForThisEvent({tabId}) {
+    async removeAllTabsExceptForThisCommand({tabId}) {
         for (const tabIdToRemove of this.tabContexts.map(tc => tc.tabId)) {
             if (tabIdToRemove !== tabId) {
                 await this.removeTab(tabIdToRemove);
