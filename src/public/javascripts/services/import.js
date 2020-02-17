@@ -1,5 +1,4 @@
 import toastService from "./toast.js";
-import treeService from "./tree.js";
 import server from "./server.js";
 import ws from "./ws.js";
 import utils from "./utils.js";

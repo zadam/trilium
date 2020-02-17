@@ -1,5 +1,3 @@
-import cssLoader from './css_loader.js';
-
 const CKEDITOR = {"js": ["libraries/ckeditor/ckeditor.js"]};
 
 const CODE_MIRROR = {
@@ -55,7 +53,7 @@ const CALENDAR_WIDGET = {css: ["stylesheets/calendar.css"]};
 
 async function requireLibrary(library) {
     if (library.css) {
-        library.css.map(cssUrl => cssLoader.requireCss(cssUrl));
+        library.css.map(cssUrl => requireCss(cssUrl));
     }
 
     if (library.js) {
@@ -80,7 +78,18 @@ async function requireScript(url) {
     await loadedScriptPromises[url];
 }
 
+async function requireCss(url) {
+    const cssLinks = Array
+        .from(document.querySelectorAll('link'))
+        .map(el => el.href);
+
+    if (!cssLinks.some(l => l.endsWith(url))) {
+        $('head').append($('<link rel="stylesheet" type="text/css" />').attr('href', url));
+    }
+}
+
 export default {
+    requireCss,
     requireLibrary,
     CKEDITOR,
     CODE_MIRROR,

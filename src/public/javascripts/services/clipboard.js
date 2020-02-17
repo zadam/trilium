@@ -1,5 +1,4 @@
-import treeChangesService from "./branches.js";
-import cloningService from "./cloning.js";
+import branchService from "./branches.js";
 import toastService from "./toast.js";
 import hoistedNoteService from "./hoisted_note.js";
 import treeCache from "./tree_cache.js";
@@ -13,7 +12,7 @@ async function pasteAfter(afterBranchId) {
     }
 
     if (clipboardMode === 'cut') {
-        await treeChangesService.moveAfterBranch(clipboardBranchIds, afterBranchId);
+        await branchService.moveAfterBranch(clipboardBranchIds, afterBranchId);
 
         clipboardBranchIds = [];
         clipboardMode = null;
@@ -24,7 +23,7 @@ async function pasteAfter(afterBranchId) {
         for (const clipboardBranch of clipboardBranches) {
             const clipboardNote = await clipboardBranch.getNote();
 
-            await cloningService.cloneNoteAfter(clipboardNote.noteId, afterBranchId);
+            await branchService.cloneNoteAfter(clipboardNote.noteId, afterBranchId);
         }
 
         // copy will keep clipboardBranchIds and clipboardMode so it's possible to paste into multiple places
@@ -40,7 +39,7 @@ async function pasteInto(parentNoteId) {
     }
 
     if (clipboardMode === 'cut') {
-        await treeChangesService.moveToParentNote(clipboardBranchIds, parentNoteId);
+        await branchService.moveToParentNote(clipboardBranchIds, parentNoteId);
 
         clipboardBranchIds = [];
         clipboardMode = null;
@@ -51,7 +50,7 @@ async function pasteInto(parentNoteId) {
         for (const clipboardBranch of clipboardBranches) {
             const clipboardNote = await clipboardBranch.getNote();
 
-            await cloningService.cloneNoteTo(clipboardNote.noteId, parentNoteId);
+            await branchService.cloneNoteTo(clipboardNote.noteId, parentNoteId);
         }
 
         // copy will keep clipboardBranchIds and clipboardMode so it's possible to paste into multiple places

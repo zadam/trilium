@@ -2,8 +2,7 @@ import noteAutocompleteService from "../services/note_autocomplete.js";
 import utils from "../services/utils.js";
 import toastService from "../services/toast.js";
 import treeCache from "../services/tree_cache.js";
-import treeChangesService from "../services/branches.js";
-import appContext from "../services/app_context.js";
+import branchService from "../services/branches.js";
 import treeService from "../services/tree.js";
 
 const $dialog = $("#move-to-dialog");
@@ -34,7 +33,7 @@ export async function showDialog(branchIds) {
 }
 
 async function moveNotesTo(parentNoteId) {
-    await treeChangesService.moveToParentNote(movedBranchIds, parentNoteId);
+    await branchService.moveToParentNote(movedBranchIds, parentNoteId);
 
     const parentNote = await treeCache.getNote(parentNoteId);
 

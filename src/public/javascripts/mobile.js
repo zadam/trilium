@@ -2,7 +2,7 @@ import treeService from "./services/tree.js";
 import treeCache from "./services/tree_cache.js";
 import treeBuilder from "./services/tree_builder.js";
 import contextMenuWidget from "./services/context_menu.js";
-import treeChangesService from "./services/branches.js";
+import branchService from "./services/branches.js";
 import utils from "./services/utils.js";
 import appContext from "./services/app_context.js";
 import noteCreateService from "./services/note_create.js";
@@ -123,7 +123,7 @@ $detail.on("click", ".note-menu-button", async e => {
                 noteCreateService.createNote(node.data.noteId);
             }
             else if (cmd === "delete") {
-                if (await treeChangesService.deleteNotes([node])) {
+                if (await branchService.deleteNotes([node])) {
                     // move to the tree
                     togglePanes();
                 }

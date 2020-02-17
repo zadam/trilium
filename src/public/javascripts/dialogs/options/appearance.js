@@ -1,7 +1,7 @@
 import server from "../../services/server.js";
 import utils from "../../services/utils.js";
-import cssLoader from "../../services/css_loader.js";
 import appContext from "../../services/app_context.js";
+import libraryLoader from "../../services/library_loader.js";
 
 const TPL = `
 <p><strong>Settings on this options tab are saved automatically after each change.</strong></p>
@@ -98,7 +98,7 @@ export default class ApperanceOptions {
             if (noteId) {
                 // make sure the CSS is loaded
                 // if the CSS has been loaded and then updated then the changes won't take effect though
-                cssLoader.requireCss(`api/notes/download/${noteId}`);
+                libraryLoader.requireCss(`api/notes/download/${noteId}`);
             }
 
             this.$body.addClass("theme-" + newTheme);

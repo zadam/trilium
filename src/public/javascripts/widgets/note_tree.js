@@ -5,7 +5,7 @@ import contextMenuWidget from "../services/context_menu.js";
 import treeCache from "../services/tree_cache.js";
 import treeBuilder from "../services/tree_builder.js";
 import TreeContextMenu from "../services/tree_context_menu.js";
-import treeChangesService from "../services/branches.js";
+import branchService from "../services/branches.js";
 import ws from "../services/ws.js";
 import TabAwareWidget from "./tab_aware_widget.js";
 import server from "../services/server.js";
@@ -167,11 +167,11 @@ export default class NoteTreeWidget extends TabAwareWidget {
                         const selectedBranchIds = this.getSelectedNodes().map(node => node.data.branchId);
 
                         if (data.hitMode === "before") {
-                            treeChangesService.moveBeforeBranch(selectedBranchIds, node.data.branchId);
+                            branchService.moveBeforeBranch(selectedBranchIds, node.data.branchId);
                         } else if (data.hitMode === "after") {
-                            treeChangesService.moveAfterBranch(selectedBranchIds, node.data.branchId);
+                            branchService.moveAfterBranch(selectedBranchIds, node.data.branchId);
                         } else if (data.hitMode === "over") {
-                            treeChangesService.moveToParentNote(selectedBranchIds, node.data.noteId);
+                            branchService.moveToParentNote(selectedBranchIds, node.data.noteId);
                         } else {
                             throw new Error("Unknown hitMode=" + data.hitMode);
                         }
@@ -661,7 +661,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
     async deleteNotesCommand({node}) {
         const branchIds = this.getSelectedOrActiveBranchIds(node);
     
-        await treeChangesService.deleteNotes(branchIds);
+        await branchService.deleteNotes(branchIds);
 
         this.clearSelectedNodes();
     }
@@ -670,26 +670,26 @@ export default class NoteTreeWidget extends TabAwareWidget {
         const beforeNode = node.getPrevSibling();
     
         if (beforeNode !== null) {
-            treeChangesService.moveBeforeBranch([node.data.branchId], beforeNode.data.branchId);
+            branchService.moveBeforeBranch([node.data.branchId], beforeNode.data.branchId);
         }
     }
     
     moveNoteDownCommand({node}) {
         const afterNode = node.getNextSibling();
         if (afterNode !== null) {
-            treeChangesService.moveAfterBranch([node.data.branchId], afterNode.data.branchId);
+            branchService.moveAfterBranch([node.data.branchId], afterNode.data.branchId);
         }
     }
     
     moveNoteUpInHierarchyCommand({node}) {
-        treeChangesService.moveNodeUpInHierarchy(node);
+        branchService.moveNodeUpInHierarchy(node);
     }
     
     moveNoteDownInHierarchyCommand({node}) {
         const toNode = node.getPrevSibling();
     
         if (toNode !== null) {
-            treeChangesService.moveToParentNote([node.data.branchId], toNode.data.noteId);
+            branchService.moveToParentNote([node.data.branchId], toNode.data.noteId);
         }
     }
     

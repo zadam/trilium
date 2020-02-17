@@ -1,4 +1,3 @@
-import cloning from './services/cloning.js';
 import contextMenu from './services/tree_context_menu.js';
 import link from './services/link.js';
 import ws from './services/ws.js';
@@ -9,7 +8,7 @@ import FrontendScriptApi from './services/frontend_script_api.js';
 import ScriptContext from './services/script_context.js';
 import sync from './services/sync.js';
 import treeService from './services/tree.js';
-import treeChanges from './services/branches.js';
+import branchService from './services/branches.js';
 import utils from './services/utils.js';
 import server from './services/server.js';
 import Entrypoints from './services/entrypoints.js';
@@ -22,7 +21,6 @@ import noteTypeService from './widgets/note_type.js';
 import linkService from './services/link.js';
 import noteAutocompleteService from './services/note_autocomplete.js';
 import macInit from './services/mac_init.js';
-import cssLoader from './services/css_loader.js';
 import dateNoteService from './services/date_notes.js';
 import importService from './services/import.js';
 import keyboardActionService from "./services/keyboard_actions.js";
@@ -76,7 +74,7 @@ window.onerror = function (msg, url, lineNo, columnNo, error) {
 };
 
 for (const appCssNoteId of window.appCssNoteIds) {
-    cssLoader.requireCss(`api/notes/download/${appCssNoteId}`);
+    libraryLoader.requireCss(`api/notes/download/${appCssNoteId}`);
 }
 
 const wikiBaseUrl = "https://github.com/zadam/trilium/wiki/";

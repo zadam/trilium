@@ -198,10 +198,31 @@ ws.subscribeToMessages(async message => {
     }
 });
 
+async function cloneNoteTo(childNoteId, parentNoteId, prefix) {
+    const resp = await server.put('notes/' + childNoteId + '/clone-to/' + parentNoteId, {
+        prefix: prefix
+    });
+
+    if (!resp.success) {
+        alert(resp.message);
+    }
+}
+
+// beware that first arg is noteId and second is branchId!
+async function cloneNoteAfter(noteId, afterBranchId) {
+    const resp = await server.put('notes/' + noteId + '/clone-after/' + afterBranchId);
+
+    if (!resp.success) {
+        alert(resp.message);
+    }
+}
+
 export default {
     moveBeforeBranch,
     moveAfterBranch,
     moveToParentNote,
     deleteNotes,
-    moveNodeUpInHierarchy
+    moveNodeUpInHierarchy,
+    cloneNoteAfter,
+    cloneNoteTo
 };

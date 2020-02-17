@@ -1,9 +1,9 @@
 import noteAutocompleteService from "../services/note_autocomplete.js";
 import utils from "../services/utils.js";
-import cloningService from "../services/cloning.js";
 import treeService from "../services/tree.js";
 import toastService from "../services/toast.js";
 import treeCache from "../services/tree_cache.js";
+import branchService from "../services/branches.js";
 
 const $dialog = $("#clone-to-dialog");
 const $form = $("#clone-to-form");
@@ -42,7 +42,7 @@ async function cloneNotesTo(notePath) {
     const targetNoteId = treeService.getNoteIdFromNotePath(notePath);
 
     for (const cloneNoteId of clonedNoteIds) {
-        await cloningService.cloneNoteTo(cloneNoteId, targetNoteId, $clonePrefix.val());
+        await branchService.cloneNoteTo(cloneNoteId, targetNoteId, $clonePrefix.val());
 
         const clonedNote = await treeCache.getNote(cloneNoteId);
         const targetNote = await treeCache.getNote(targetNoteId);
