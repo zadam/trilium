@@ -29,7 +29,7 @@ export default class CodeTypeWidget extends TypeWidget {
         this.$editor = this.$widget.find('.note-detail-code-editor');
         this.$executeScriptButton = this.$widget.find(".execute-script-button");
 
-        keyboardActionService.setElementActionHandler(this.$widget, 'RunActiveNote', () => this.executeCurrentNote());
+        keyboardActionService.setElementActionHandler(this.$widget, 'runActiveNote', () => this.executeCurrentNote());
 
         this.$executeScriptButton.on('click', () => this.executeCurrentNote());
 

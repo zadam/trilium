@@ -5,8 +5,8 @@ const MIN_ZOOM = 0.5;
 const MAX_ZOOM = 2.0;
 
 export default class ZoomService extends Component {
-    constructor(appContext, parent) {
-        super(appContext, parent);
+    constructor(parent) {
+        super(parent);
 
         this.setZoomFactor(options.getFloat('zoomFactor'));
     }

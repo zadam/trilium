@@ -25,8 +25,8 @@ const TPL = `
 </div>`;
 
 export default class NoteTitleWidget extends TabAwareWidget {
-    constructor(appContext, parent) {
-        super(appContext, parent);
+    constructor(parent) {
+        super(parent);
 
         this.spacedUpdate = new SpacedUpdate(async () => {
             const title = this.$noteTitle.val();

@@ -237,7 +237,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
     /** @return {FancytreeNode[]} */
     getSelectedOrActiveNodes(node = null) {
-        let notes = this.getSelectedNodes(true);
+        const notes = this.getSelectedNodes(true);
 
         if (notes.length === 0) {
             notes.push(node ? node : this.getActiveNode());
@@ -266,8 +266,8 @@ export default class NoteTreeWidget extends TabAwareWidget {
     }
 
     /**
-     * focused & not active node can happen during multiselection where the node is selected but not activated
-     * (its content is not displayed in the detail)
+     * focused & not active node can happen during multiselection where the node is selected
+     * but not activated (its content is not displayed in the detail)
      * @return {FancytreeNode|null}
      */
     getFocusedNode() {
@@ -520,7 +520,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
             }
         }
 
-        for (const {parentNoteId} of loadResults.getNoteReorderings()) {
+        for (const parentNoteId of loadResults.getNoteReorderings()) {
             for (const node of this.getNodesByNoteId(parentNoteId)) {
                 if (node.isLoaded()) {
                     node.sortChildren((nodeA, nodeB) => {

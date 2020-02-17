@@ -1,4 +1,5 @@
 import Component from "../widgets/component.js";
+import appContext from "./app_context.js";
 
 export default class DialogCommandExecutor extends Component {
     jumpToNoteCommand() {
@@ -34,7 +35,7 @@ export default class DialogCommandExecutor extends Component {
     }
 
     async editBranchPrefixCommand() {
-        const notePath = this.appContext.tabManager.getActiveTabNotePath();
+        const notePath = appContext.tabManager.getActiveTabNotePath();
 
         if (notePath) {
             const editBranchPrefixDialog = await import("../dialogs/branch_prefix.js");
