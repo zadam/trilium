@@ -3,8 +3,8 @@
 const sql = require('../../services/sql');
 const utils = require('../../services/utils');
 const syncTableService = require('../../services/sync_table');
-const tree = require('../../services/tree');
-const notes = require('../../services/notes');
+const treeService = require('../../services/tree');
+const noteService = require('../../services/notes');
 const repository = require('../../services/repository');
 const TaskContext = require('../../services/task_context');
 
@@ -16,13 +16,13 @@ const TaskContext = require('../../services/task_context');
 async function moveBranchToParent(req) {
     const {branchId, parentNoteId} = req.params;
 
-    const branchToMove = await tree.getBranch(branchId);
+    const branchToMove = await repository.getBranch(branchId);
 
     if (branchToMove.parentNoteId === parentNoteId) {
         return { success: true }; // no-op
     }
 
-    const validationResult = await tree.validateParentChild(parentNoteId, branchToMove.noteId, branchId);
+    const validationResult = await treeService.validateParentChild(parentNoteId, branchToMove.noteId, branchId);
 
     if (!validationResult.success) {
         return [200, validationResult];
@@ -43,10 +43,10 @@ async function moveBranchToParent(req) {
 async function moveBranchBeforeNote(req) {
     const {branchId, beforeBranchId} = req.params;
 
-    const branchToMove = await tree.getBranch(branchId);
-    const beforeNote = await tree.getBranch(beforeBranchId);
+    const branchToMove = await repository.getBranch(branchId);
+    const beforeNote = await repository.getBranch(beforeBranchId);
 
-    const validationResult = await tree.validateParentChild(beforeNote.parentNoteId, branchToMove.noteId, branchId);
+    const validationResult = await treeService.validateParentChild(beforeNote.parentNoteId, branchToMove.noteId, branchId);
 
     if (!validationResult.success) {
         return [200, validationResult];
@@ -77,10 +77,10 @@ async function moveBranchBeforeNote(req) {
 async function moveBranchAfterNote(req) {
     const {branchId, afterBranchId} = req.params;
 
-    const branchToMove = await tree.getBranch(branchId);
-    const afterNote = await tree.getBranch(afterBranchId);
+    const branchToMove = await repository.getBranch(branchId);
+    const afterNote = await repository.getBranch(afterBranchId);
 
-    const validationResult = await tree.validateParentChild(afterNote.parentNoteId, branchToMove.noteId, branchId);
+    const validationResult = await treeService.validateParentChild(afterNote.parentNoteId, branchToMove.noteId, branchId);
 
     if (!validationResult.success) {
         return [200, validationResult];
@@ -123,7 +123,7 @@ async function deleteBranch(req) {
     const taskContext = TaskContext.getInstance(req.query.taskId, 'delete-notes');
 
     const deleteId = utils.randomString(10);
-    const noteDeleted = await notes.deleteBranch(branch, deleteId, taskContext);
+    const noteDeleted = await noteService.deleteBranch(branch, deleteId, taskContext);
 
     if (last) {
         taskContext.taskSucceeded();

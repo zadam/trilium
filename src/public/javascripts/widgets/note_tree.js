@@ -621,22 +621,26 @@ export default class NoteTreeWidget extends TabAwareWidget {
             // after opening context menu, standard shortcuts don't work, but they are detected here
             // so we essentially takeover the standard handling with our implementation.
             "left": node => {
-                node.navigate($.ui.keyCode.LEFT, true).then(this.clearSelectedNodes);
+                node.navigate($.ui.keyCode.LEFT, true);
+                this.clearSelectedNodes();
 
                 return false;
             },
             "right": node => {
-                node.navigate($.ui.keyCode.RIGHT, true).then(this.clearSelectedNodes);
+                node.navigate($.ui.keyCode.RIGHT, true);
+                this.clearSelectedNodes();
 
                 return false;
             },
             "up": node => {
-                node.navigate($.ui.keyCode.UP, true).then(this.clearSelectedNodes);
+                node.navigate($.ui.keyCode.UP, true);
+                this.clearSelectedNodes();
 
                 return false;
             },
             "down": node => {
-                node.navigate($.ui.keyCode.DOWN, true).then(this.clearSelectedNodes);
+                node.navigate($.ui.keyCode.DOWN, true);
+                this.clearSelectedNodes();
 
                 return false;
             }
@@ -647,6 +651,8 @@ export default class NoteTreeWidget extends TabAwareWidget {
                 hotKeyMap[shortcut] = node => this.triggerCommand(action.actionName, {node}); 
             }
         }
+
+        return hotKeyMap;
     }
 
     /**

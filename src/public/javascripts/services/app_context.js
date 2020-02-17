@@ -45,13 +45,13 @@ class AppContext extends Component {
             this.triggerEvent(eventName);
         });
 
-        this.children = [ rootWidget ];
-
         this.executors = [
             this.tabManager,
             new DialogCommandExecutor(this),
             new Entrypoints(this)
         ];
+
+        this.children = [ rootWidget, ...this.executors ];
 
         if (utils.isElectron()) {
             this.children.push(new ZoomService(this));
@@ -75,7 +75,9 @@ class AppContext extends Component {
             }
         }
 
-        console.error(`Unhandled command ${name}`);
+        console.debug(`Unhandled command ${name}, converting to event.`);
+
+        await this.triggerEvent(name, data);
     }
 
     getComponentByEl(el) {

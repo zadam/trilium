@@ -70,7 +70,7 @@ async function toggleNoteInParent(present, noteId, parentNoteId, prefix) {
 }
 
 async function cloneNoteAfter(noteId, afterBranchId) {
-    const afterNote = await treeService.getBranch(afterBranchId);
+    const afterNote = await repository.getBranch(afterBranchId);
 
     if (await isNoteDeleted(noteId) || await isNoteDeleted(afterNote.parentNoteId)) {
         return { success: false, message: 'Note is deleted.' };

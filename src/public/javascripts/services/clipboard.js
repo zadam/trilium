@@ -60,18 +60,15 @@ async function pasteInto(parentNoteId) {
     }
 }
 
-function copy(nodes) {
-    clipboardBranchIds = nodes.map(node => node.data.branchId);
+function copy(branchIds) {
+    clipboardBranchIds = branchIds;
     clipboardMode = 'copy';
 
     toastService.showMessage("Note(s) have been copied into clipboard.");
 }
 
-function cut(nodes) {
-    clipboardBranchIds = nodes
-        .filter(node => node.data.noteId !== hoistedNoteService.getHoistedNoteId())
-        .filter(node => node.getParent().data.noteType !== 'search')
-        .map(node => node.key);
+function cut(branchIds) {
+    clipboardBranchIds = branchIds;
 
     if (clipboardBranchIds.length > 0) {
         clipboardMode = 'cut';

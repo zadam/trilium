@@ -99,10 +99,6 @@ async function checkTreeCycle(parentNoteId, childNoteId) {
     return await checkTreeCycleInner(parentNoteId);
 }
 
-async function getBranch(branchId) {
-    return sql.getRow("SELECT * FROM branches WHERE branchId = ?", [branchId]);
-}
-
 async function loadSubtreeNoteIds(parentNoteId, subtreeNoteIds) {
     subtreeNoteIds.push(parentNoteId);
 
@@ -199,7 +195,6 @@ async function setNoteToParent(noteId, prefix, parentNoteId) {
 module.exports = {
     getNotes,
     validateParentChild,
-    getBranch,
     sortNotesAlphabetically,
     setNoteToParent
 };

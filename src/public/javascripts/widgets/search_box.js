@@ -167,7 +167,7 @@ export default class SearchBoxWidget extends BasicWidget {
         this.$searchInput.val("");
     }
 
-    searchInSubtreeCommand({noteId}) {
+    searchInSubtreeEvent({noteId}) {
         noteId = noteId || appContext.tabManager.getActiveTabNoteId();
 
         this.toggle(true);
