@@ -88,4 +88,10 @@ export default class NotePathsWidget extends TabAwareWidget {
 
         this.$notePathList.append(noteLink);
     }
+
+    entitiesReloadedEvent({loadResults}) {
+        if (loadResults.getBranches().find(branch => branch.noteId === this.noteId)) {
+            this.refresh();
+        }
+    }
 }

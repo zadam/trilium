@@ -486,11 +486,11 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
             if (!branch.isDeleted) {
                 for (const parentNode of this.getNodesByNoteId(branch.parentNoteId)) {
-                    if (!parentNode.isLoaded()) {
+                    if (parentNode.isFolder() && !parentNode.isLoaded()) {
                         continue;
                     }
 
-                    const found = parentNode.getChildren().find(child => child.data.noteId === branch.noteId);
+                    const found = (parentNode.getChildren() || []).find(child => child.data.noteId === branch.noteId);
 
                     if (!found) {
                         noteIdsToReload.add(branch.parentNoteId);
