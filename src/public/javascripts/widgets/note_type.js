@@ -118,6 +118,10 @@ export default class NoteTypeWidget extends TabAwareWidget {
     }
 
     async save(type, mime) {
+        if (type === this.note.type && mime === this.note.mime) {
+            return;
+        }
+
         if (type !== this.note.type && !await this.confirmChangeIfContent()) {
             return;
         }
@@ -125,8 +129,6 @@ export default class NoteTypeWidget extends TabAwareWidget {
         await server.put('notes/' + this.noteId
             + '/type/' + encodeURIComponent(type)
             + '/mime/' + encodeURIComponent(mime));
-
-        this.update();
     }
 
     async confirmChangeIfContent() {
@@ -138,5 +140,11 @@ export default class NoteTypeWidget extends TabAwareWidget {
 
         const confirmDialog = await import("../dialogs/confirm.js");
         return await confirmDialog.confirm("It is not recommended to change note type when note content is not empty. Do you want to continue anyway?");
+    }
+
+    async entitiesReloadedEvent({loadResults}) {
+        if (loadResults.isNoteReloaded(this.noteId, this.componentId)) {
+            this.refresh();
+        }
     }
 }

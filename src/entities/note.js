@@ -36,7 +36,7 @@ const RELATION_DEFINITION = 'relation-definition';
 class Note extends Entity {
     static get entityName() { return "notes"; }
     static get primaryKeyName() { return "noteId"; }
-    static get hashedProperties() { return ["noteId", "title", "type", "isProtected", "isDeleted", "deleteId"]; }
+    static get hashedProperties() { return ["noteId", "title", "type", "mime", "isProtected", "isDeleted", "deleteId"]; }
 
     /**
      * @param row - object containing database row from "notes" table

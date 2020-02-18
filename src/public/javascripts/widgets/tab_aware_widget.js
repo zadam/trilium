@@ -36,6 +36,12 @@ export default class TabAwareWidget extends BasicWidget {
         }
     }
 
+    noteTypeMimeChangedEvent({noteId}) {
+        if (this.noteId === noteId) {
+            this.refresh();
+        }
+    }
+
     noteSwitched() {
         this.refresh();
     }

@@ -101,6 +101,7 @@ export default class NoteDetailWidget extends TabAwareWidget {
         this.toggle(true);
 
         this.type = await this.getWidgetType();
+        this.mime = this.note.mime;
 
         if (!(this.type in this.typeWidgets)) {
             const clazz = typeWidgetClasses[this.type];
@@ -218,10 +219,12 @@ export default class NoteDetailWidget extends TabAwareWidget {
     }
 
     async entitiesReloadedEvent({loadResults}) {
-        // we should test what happens when the loaded note is deleted
+        // FIXME: we should test what happens when the loaded note is deleted
 
-        if (loadResults.isNoteContentReloaded(this.noteId, this.componentId)) {
-            this.refreshWithNote(this.note, this.notePath);
+        if (loadResults.isNoteContentReloaded(this.noteId, this.componentId)
+            || (loadResults.isNoteReloaded(this.noteId, this.componentId) && (this.type !== await this.getWidgetType() || this.mime !== this.note.mime))) {
+
+            this.handleEvent('noteTypeMimeChanged', {noteId: this.noteId});
         }
     }
 
