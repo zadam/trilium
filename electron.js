@@ -26,9 +26,9 @@ app.on('ready', async () => {
 
     await sqlInit.dbConnection;
 
-    // if schema doesn't exist -> setup process
-    // if schema exists, then we need to wait until the migration process is finished
-    if (await sqlInit.schemaExists()) {
+    // if db is not initialized -> setup process
+    // if db is initialized, then we need to wait until the migration process is finished
+    if (await sqlInit.isDbInitialized()) {
         await sqlInit.dbReady;
 
         await windowService.createMainWindow();

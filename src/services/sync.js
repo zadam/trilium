@@ -228,9 +228,10 @@ async function syncFinished(syncContext) {
 
 async function checkContentHash(syncContext) {
     const resp = await syncRequest(syncContext, 'GET', '/api/sync/check');
+    const lastSyncedPullId = await getLastSyncedPull();
 
-    if (await getLastSyncedPull() < resp.maxSyncId) {
-        log.info("There are some outstanding pulls, skipping content check.");
+    if (lastSyncedPullId < resp.maxSyncId) {
+        log.info(`There are some outstanding pulls (${lastSyncedPullId} vs. ${resp.maxSyncId}), skipping content check.`);
 
         return true;
     }
