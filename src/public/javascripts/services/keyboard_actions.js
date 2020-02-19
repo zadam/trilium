@@ -9,7 +9,6 @@ const keyboardActionsLoaded = server.get('keyboard-actions').then(actions => {
 
 	for (const action of actions) {
 		action.effectiveShortcuts = action.effectiveShortcuts.filter(shortcut => !shortcut.startsWith("global:"));
-		action.actionName = action.actionName.charAt(0).toLowerCase() + action.actionName.slice(1);
 
 		keyboardActionRepo[action.actionName] = action;
 	}
