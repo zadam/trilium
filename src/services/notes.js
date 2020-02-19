@@ -599,6 +599,7 @@ async function eraseDeletedNotes() {
         UPDATE notes 
         SET title = '[deleted]',
             contentLength = 0,
+            isProtected = 0,
             isErased = 1
         WHERE noteId IN (???)`, noteIdsToErase);
 
