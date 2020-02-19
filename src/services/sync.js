@@ -156,7 +156,10 @@ async function pullSync(syncContext) {
                     appliedPulls++;
                 }
 
-                await syncUpdateService.updateEntity(sync, entity, syncContext.sourceId);
+                // can be undefined for options with isSynced=false
+                if (entity) {
+                    await syncUpdateService.updateEntity(sync, entity, syncContext.sourceId);
+                }
             }
 
             stats.outstandingPulls = resp.maxSyncId - sync.id;
@@ -318,6 +321,8 @@ async function getSyncRecords(syncs) {
         const entity = await getEntityRow(sync.entityName, sync.entityId);
 
         if (sync.entityName === 'options' && !entity.isSynced) {
+            records.push({sync});
+
             continue;
         }
 
