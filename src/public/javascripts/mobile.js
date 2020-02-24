@@ -7,9 +7,26 @@ import contextMenuWidget from "./services/context_menu.js";
 import treeChangesService from "./services/branches.js";
 import utils from "./services/utils.js";
 import treeUtils from "./services/tree_utils.js";
+import linkService from "./services/link.js";
+import noteContentRenderer from "./services/note_content_renderer.js";
 
 window.glob.isDesktop = utils.isDesktop;
 window.glob.isMobile = utils.isMobile;
+window.glob.showAddLinkDialog = () => import('./dialogs/add_link.js').then(d => d.showDialog());
+window.glob.showIncludeNoteDialog = cb => import('./dialogs/include_note.js').then(d => d.showDialog(cb));
+window.glob.loadIncludedNote = async (noteId, el) => {
+    const note = await treeCache.getNote(noteId);
+
+    if (note) {
+        $(el).empty().append($("<h3>").append(await linkService.createNoteLink(note.noteId, {
+            showTooltip: false
+        })));
+
+        const {renderedContent} = await noteContentRenderer.getRenderedContent(note);
+
+        $(el).append(renderedContent);
+    }
+};
 
 const $leftPane = $("#left-pane");
 const $tree = $("#tree");
