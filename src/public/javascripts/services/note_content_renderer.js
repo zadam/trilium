@@ -7,7 +7,7 @@ import protectedSessionHolder from "./protected_session_holder.js";
 async function getRenderedContent(note) {
     const type = getRenderingType(note);
 
-    let rendered;
+    let $rendered;
 
     if (type === 'text') {
         const fullNote = await server.get('notes/' + note.noteId);
@@ -15,23 +15,23 @@ async function getRenderedContent(note) {
         const $content = $("<div>").html(fullNote.content);
 
         if (utils.isHtmlEmpty(fullNote.content)) {
-            rendered = "";
+            $rendered = "";
         }
         else {
-            rendered = $content;
+            $rendered = $content;
         }
     }
     else if (type === 'code') {
         const fullNote = await server.get('notes/' + note.noteId);
 
         if (fullNote.content.trim() === "") {
-            rendered = "";
+            $rendered = "";
         }
 
-        rendered = $("<pre>").text(fullNote.content);
+        $rendered = $("<pre>").text(fullNote.content);
     }
     else if (type === 'image') {
-        rendered = $("<img>").attr("src", `api/images/${note.noteId}/${note.title}`);
+        $rendered = $("<img>").attr("src", `api/images/${note.noteId}/${note.title}`);
     }
     else if (type === 'file') {
         function getFileUrl() {
@@ -56,7 +56,7 @@ async function getRenderedContent(note) {
         // open doesn't work for protected notes since it works through browser which isn't in protected session
         $openButton.toggle(!note.isProtected);
 
-        rendered = $('<div>')
+        $rendered = $('<div>')
             .append($downloadButton)
             .append(' &nbsp; ')
             .append($openButton);
@@ -66,23 +66,27 @@ async function getRenderedContent(note) {
 
         await renderService.render(note, $el, this.ctx);
 
-        rendered = $el;
+        $rendered = $el;
     }
     else if (type === 'protected-session') {
         const $button = $(`<button class="btn btn-sm"><span class="bx bx-log-in"></span> Enter protected session</button>`)
             .on('click', protectedSessionService.enterProtectedSession);
 
-        rendered = $("<div>")
+        $rendered = $("<div>")
             .append("<div>This note is protected and to access it you need to enter password.</div>")
             .append("<br/>")
             .append($button);
     }
     else {
-        rendered = "<em>Content of this note cannot be displayed in the book format</em>";
+        $rendered = $("<em>Content of this note cannot be displayed in the book format</em>");
+    }
+
+    if (note.cssClass) {
+        $rendered.addClass(note.cssClass);
     }
 
     return {
-        renderedContent: rendered,
+        renderedContent: $rendered,
         type
     };
 }
