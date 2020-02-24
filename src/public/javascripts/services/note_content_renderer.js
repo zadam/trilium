@@ -12,21 +12,10 @@ async function getRenderedContent(note) {
     if (type === 'text') {
         const fullNote = await server.get('notes/' + note.noteId);
 
-        const $content = $("<div>").html(fullNote.content);
-
-        if (utils.isHtmlEmpty(fullNote.content)) {
-            $rendered = "";
-        }
-        else {
-            $rendered = $content;
-        }
+        $rendered = $("<div>").html(fullNote.content);
     }
     else if (type === 'code') {
         const fullNote = await server.get('notes/' + note.noteId);
-
-        if (fullNote.content.trim() === "") {
-            $rendered = "";
-        }
 
         $rendered = $("<pre>").text(fullNote.content);
     }
@@ -62,11 +51,9 @@ async function getRenderedContent(note) {
             .append($openButton);
     }
     else if (type === 'render') {
-        const $el = $('<div>');
+        $rendered = $('<div>');
 
-        await renderService.render(note, $el, this.ctx);
-
-        $rendered = $el;
+        await renderService.render(note, $rendered, this.ctx);
     }
     else if (type === 'protected-session') {
         const $button = $(`<button class="btn btn-sm"><span class="bx bx-log-in"></span> Enter protected session</button>`)
