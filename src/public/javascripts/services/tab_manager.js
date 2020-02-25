@@ -227,8 +227,8 @@ export default class TabManager extends Component {
         if (this.tabContexts.length <= 1) {
             this.openAndActivateEmptyTab();
         }
-        else {
-            this.activateNextTabEvent();
+        else if (tabContextToRemove.isActive()) {
+            this.activateNextTabCommand();
         }
 
         this.children = this.children.filter(tc => tc.tabId !== tabId);
