@@ -596,7 +596,7 @@ export default class TabRowWidget extends BasicWidget {
             }
         }
 
-        $tab.addClass(note.cssClass);
+        note.getCssClass().then(cssClass => $tab.addClass(cssClass));
         $tab.addClass(utils.getNoteTypeClass(note.type));
         $tab.addClass(utils.getMimeTypeClass(note.mime));
     }

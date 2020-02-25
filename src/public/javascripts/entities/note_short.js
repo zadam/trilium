@@ -445,6 +445,11 @@ class NoteShort {
 
         return dto;
     }
+
+    async getCssClass() {
+        const labels = await this.getLabels('cssClass');
+        return labels.map(l => l.value).join(' ');
+    }
 }
 
 export default NoteShort;

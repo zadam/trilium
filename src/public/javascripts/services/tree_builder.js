@@ -134,11 +134,6 @@ async function prepareSearchBranch(note) {
     return await prepareRealBranch(newNote);
 }
 
-async function getCssClass(note) {
-    const labels = await note.getLabels('cssClass');
-    return labels.map(l => l.value).join(' ');
-}
-
 async function getExtraClasses(note) {
     utils.assertArguments(note);
 
@@ -152,7 +147,7 @@ async function getExtraClasses(note) {
         extraClasses.push("multiple-parents");
     }
 
-    const cssClass = await getCssClass(note);
+    const cssClass = await note.getCssClass();
 
     if (cssClass) {
         extraClasses.push(cssClass);
