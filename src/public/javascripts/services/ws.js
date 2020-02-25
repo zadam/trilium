@@ -288,7 +288,7 @@ async function processSyncRows(syncRows) {
                 }
 
                 if (targetNote) {
-                    targetNote.targetRelations = targetNote.targetRelations.filter(attributeId => attributeId !== attribute.value);
+                    targetNote.targetRelations = targetNote.targetRelations.filter(attributeId => attributeId !== attribute.attributeId);
                 }
             }
         }

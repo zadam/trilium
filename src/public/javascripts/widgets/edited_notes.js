@@ -12,8 +12,6 @@ export default class EditedNotesWidget extends CollapsibleWidget {
         };
     }
 
-    getMaxHeight() { return "200px"; }
-
     isEnabled() {
         return super.isEnabled()
             && this.note.hasOwnedLabel("dateNote");

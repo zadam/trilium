@@ -4,8 +4,6 @@ import linkService from "../services/link.js";
 export default class WhatLinksHereWidget extends CollapsibleWidget {
     getWidgetTitle() { return "What links here"; }
 
-    getMaxHeight() { return "200px"; }
-
     getHelp() {
         return {
             title: "This list contains all notes which link to this note through links and relations."

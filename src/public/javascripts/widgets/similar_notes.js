@@ -12,8 +12,6 @@ export default class SimilarNotesWidget extends CollapsibleWidget {
         };
     }
 
-    getMaxHeight() { return "200px"; }
-
     noteSwitched() {
         const noteId = this.noteId;
 

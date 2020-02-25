@@ -105,8 +105,8 @@ class TreeCache {
                 const targetNote = this.notes[attributeRow.value];
 
                 if (targetNote) {
-                    if (!note.targetRelations.includes(attributeId)) {
-                        note.targetRelations.push(attributeId);
+                    if (!targetNote.targetRelations.includes(attributeId)) {
+                        targetNote.targetRelations.push(attributeId);
                     }
                 }
             }

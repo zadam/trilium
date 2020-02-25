@@ -14,7 +14,7 @@ const WIDGET_TPL = `
         <div class="widget-header-actions"></div>
     </div>
 
-    <div id="[to be set]" class="collapse body-wrapper" style="transition: none;">
+    <div id="[to be set]" class="collapse body-wrapper" style="transition: none; ">
         <div class="card-body"></div>
     </div>
 </div>
@@ -27,25 +27,15 @@ export default class CollapsibleWidget extends TabAwareWidget {
 
     getHelp() { return {}; }
 
-    getMaxHeight() { return null; }
-
     doRender() {
         this.$widget = $(WIDGET_TPL);
         this.$widget.find('[data-target]').attr('data-target', "#" + this.componentId);
 
         this.$bodyWrapper = this.$widget.find('.body-wrapper');
-        this.$bodyWrapper.attr('id', this.componentId);
-
+        this.$bodyWrapper.attr('id', this.componentId); // for toggle to work we need id
         this.$bodyWrapper.collapse("show");
 
         this.$body = this.$bodyWrapper.find('.card-body');
-
-        const maxHeight = this.getMaxHeight();
-
-        if (maxHeight) {
-            this.$body.css("max-height", maxHeight);
-            this.$body.css("overflow", "auto");
-        }
 
         this.$title = this.$widget.find('.widget-title');
         this.$title.text(this.getWidgetTitle());
