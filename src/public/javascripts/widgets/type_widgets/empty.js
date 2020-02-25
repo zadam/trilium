@@ -36,10 +36,6 @@ export default class EmptyTypeWidget extends TypeWidget {
         return this.$widget;
     }
 
-    refresh() {
-        this.toggle(!this.tabContext.note);
-    }
-
     getContent() {}
 
     focus() {}

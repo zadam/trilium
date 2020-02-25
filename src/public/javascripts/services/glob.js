@@ -71,7 +71,7 @@ window.onerror = function (msg, url, lineNo, columnNo, error) {
 
 protectedSessionHolder.setProtectedSessionId(null);
 
-for (const appCssNoteId of window.appCssNoteIds || []) {
+for (const appCssNoteId of glob.appCssNoteIds || []) {
     libraryLoader.requireCss(`api/notes/download/${appCssNoteId}`);
 }
 

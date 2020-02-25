@@ -101,7 +101,7 @@ export default class NoteDetailWidget extends TabAwareWidget {
         this.toggle(true);
 
         this.type = await this.getWidgetType();
-        this.mime = this.note.mime;
+        this.mime = this.note ? this.note.mime : null;
 
         if (!(this.type in this.typeWidgets)) {
             const clazz = typeWidgetClasses[this.type];
@@ -163,6 +163,8 @@ export default class NoteDetailWidget extends TabAwareWidget {
             && utils.isDesktop()) {
 
             const noteComplement = await this.tabContext.getNoteComplement();
+
+            console.log(note, noteComplement);
 
             if (utils.isHtmlEmpty(noteComplement.content)) {
                 type = 'book';
