@@ -323,14 +323,25 @@ class ConsistencyChecks {
                     WHERE isErased = 1
                       AND content IS NOT NULL`,
             async ({noteId}) => {
-            if (this.autoFix) {
-                await sql.execute(`UPDATE note_contents SET content = NULL WHERE noteId = ?`, [noteId]);
 
-                logFix(`Note ${noteId} content has been set to null since the note is erased`);
-            }
-            else {
-                logError(`Note ${noteId} content is not null even though the note is erased`);
-            }
+            // we always fix this issue because there does not seem to be a good way to prevent it.
+            // Scenario in which this can happen:
+            // 1. user on instance A deletes the note (sync for notes is created, but not for note_contents) and is later erased
+            // 2. instance B gets synced from instance A, note is updated because of sync row for notes,
+            //    but note_contents is not because erasion does not create sync rows
+            // 3. therefore note.isErased = true, but note_contents.content remains not updated and not erased.
+            //
+            // Considered solutions:
+            // - don't sync erased notes - this might prevent syncing also of the isDeleted flag and note would continue
+            //   to exist on the other instance
+            // - create sync rows for erased event - this would be a problem for undeletion since erasion might happen
+            //   on one instance after undelete and thus would win even though there's no user action behind it
+            //
+            // So instead we just fix such cases afterwards here.
+
+            await sql.execute(`UPDATE note_contents SET content = NULL WHERE noteId = ?`, [noteId]);
+
+            logFix(`Note ${noteId} content has been set to null since the note is erased`);
         });
 
         await this.findAndFixIssues(`
@@ -547,23 +558,23 @@ class ConsistencyChecks {
             });
 
         await this.findAndFixIssues(`
-        SELECT 
-          id, entityId
-        FROM 
-          sync 
-          LEFT JOIN ${entityName} ON entityId = ${key} 
-        WHERE 
-          sync.entityName = '${entityName}' 
-          AND ${key} IS NULL`,
-            async ({id, entityId}) => {
-                if (this.autoFix) {
-                    await sql.execute("DELETE FROM sync WHERE entityName = ? AND entityId = ?", [entityName, entityId]);
+            SELECT 
+              id, entityId
+            FROM 
+              sync 
+              LEFT JOIN ${entityName} ON entityId = ${key} 
+            WHERE 
+              sync.entityName = '${entityName}' 
+              AND ${key} IS NULL`,
+                async ({id, entityId}) => {
+                    if (this.autoFix) {
+                        await sql.execute("DELETE FROM sync WHERE entityName = ? AND entityId = ?", [entityName, entityId]);
 
-                    logFix(`Deleted extra sync record id=${id}, entityName=${entityName}, entityId=${entityId}`);
-                } else {
-                    logError(`Unrecognized sync record id=${id}, entityName=${entityName}, entityId=${entityId}`);
-                }
-            });
+                        logFix(`Deleted extra sync record id=${id}, entityName=${entityName}, entityId=${entityId}`);
+                    } else {
+                        logError(`Unrecognized sync record id=${id}, entityName=${entityName}, entityId=${entityId}`);
+                    }
+                });
     }
 
     async findSyncRowsIssues() {
