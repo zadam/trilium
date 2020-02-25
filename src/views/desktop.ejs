@@ -46,9 +46,9 @@
         maxSyncIdAtLoad: <%= maxSyncIdAtLoad %>,
         instanceName: '<%= instanceName %>',
         csrfToken: '<%= csrfToken %>',
-        isDev: '<%= isDev %>'
+        isDev: '<%= isDev %>',
+        appCssNoteIds: <%- JSON.stringify(appCssNoteIds) %>
     };
-    window.appCssNoteIds = <%- JSON.stringify(appCssNoteIds) %>;
 </script>
 
 <!-- Required for correct loading of scripts in Electron -->

@@ -1,5 +1,4 @@
 import utils from './utils.js';
-import toastService from "./toast.js";
 
 const REQUEST_LOGGING_ENABLED = false;
 
@@ -112,8 +111,9 @@ function ajax(url, method, data, headers) {
                     headers: respHeaders
                 });
             },
-            error: (jqXhr, textStatus, error) => {
+            error: async (jqXhr, textStatus, error) => {
                 const message = "Error when calling " + method + " " + url + ": " + textStatus + " - " + error;
+                const toastService = (await import("./toast.js")).default;
                 toastService.showError(message);
                 toastService.throwError(message);
 

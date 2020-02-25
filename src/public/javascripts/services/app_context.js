@@ -28,7 +28,7 @@ class AppContext extends Component {
 
         this.tabManager.loadTabs();
 
-        bundleService.executeStartupBundles();
+        setTimeout(() => bundleService.executeStartupBundles(), 2000);
     }
 
     showWidgets() {
