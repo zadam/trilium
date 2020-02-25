@@ -21,7 +21,7 @@ export default class RenderTypeWidget extends TypeWidget {
         this.$noteDetailRenderContent = this.$widget.find('.note-detail-render-content');
         this.$renderButton = this.$widget.find('.render-button');
 
-        this.$renderButton.on('click', () => this.render()); // long form!
+        this.$renderButton.on('click', () => this.refresh());
 
         return this.$widget;
     }
@@ -30,7 +30,9 @@ export default class RenderTypeWidget extends TypeWidget {
         this.$widget.show();
         this.$noteDetailRenderHelp.hide();
 
-        const renderNotesFound = await renderService.render(note, this.$noteDetailRenderContent, this.tabContext);
+        const renderNotesFound = await renderService.render(note, this.$noteDetailRenderContent);
+
+        console.log("render", this.$noteDetailRenderContent);
 
         if (!renderNotesFound) {
             this.$noteDetailRenderHelp.show();

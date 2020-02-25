@@ -20,7 +20,7 @@ class NoteRevisionsWidget extends CollapsibleWidget {
         const $showFullButton = $("<a>").append("show dialog").addClass('widget-header-action');
         $showFullButton.on('click', async () => {
             const attributesDialog = await import("../dialogs/note_revisions.js");
-            attributesDialog.showCurrentNoteRevisions(this.ctx.note.noteId);
+            attributesDialog.showCurrentNoteRevisions(this.noteId);
         });
 
         return [$showFullButton];

@@ -23,6 +23,7 @@ const TPL = `
     <style>
     .note-detail {
         height: 100%;
+        min-height: 0;
     }  
     </style>
 </div>
@@ -163,8 +164,6 @@ export default class NoteDetailWidget extends TabAwareWidget {
             && utils.isDesktop()) {
 
             const noteComplement = await this.tabContext.getNoteComplement();
-
-            console.log(note, noteComplement);
 
             if (utils.isHtmlEmpty(noteComplement.content)) {
                 type = 'book';

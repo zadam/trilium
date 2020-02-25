@@ -35,7 +35,7 @@ export default class Layout {
                 parent => new TitleBarButtonsWidget(parent)
             ]),
             parent => new StandardTopWidget(parent),
-            parent => new FlexContainer(parent, { 'flex-direction': 'row', 'overflow': 'hidden' }, [
+            parent => new FlexContainer(parent, { 'flex-direction': 'row', 'min-height': '0' }, [
                 parent => new SidePaneContainer(parent, 'left', [
                     parent => new GlobalButtonsWidget(parent),
                     parent => new SearchBoxWidget(parent),

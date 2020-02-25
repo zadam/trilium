@@ -18,7 +18,7 @@ import appContext from "./app_context.js";
  * @constructor
  * @hideconstructor
  */
-function FrontendScriptApi(startNote, currentNote, originEntity = null, tabContext = null, $container = null) {
+function FrontendScriptApi(startNote, currentNote, originEntity = null, $container = null) {
     const $pluginButtons = $("#plugin-buttons");
 
     /** @property {jQuery} container of all the rendered script content */
@@ -33,9 +33,6 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
 
     // to keep consistency with backend API
     this.dayjs = dayjs;
-
-    /** @property {TabContext|null} - experimental! */
-    this.tabContext = tabContext;
 
     /** @property {CollapsibleWidget} */
     this.CollapsibleWidget = CollapsibleWidget;
@@ -300,19 +297,6 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
      * @returns {Promise<string|null>} returns note path of active note or null if there isn't active note
      */
     this.getActiveTabNotePath = appContext.tabManager.getActiveTabNotePath;
-
-    /**
-     * This method checks whether user navigated away from the note from which the scripts has been started.
-     * This is necessary because script execution is async and by the time it is finished, the user might have
-     * already navigated away from this page - the end result would be that script might return data for the wrong
-     * note.
-     *
-     * @method
-     * @return {boolean} returns true if the original note is still loaded, false if user switched to another
-     */
-    this.isNoteStillActive = () => {
-        return tabContext.note && this.originEntity.noteId === tabContext.note.noteId;
-    };
 
     /**
      * @method
