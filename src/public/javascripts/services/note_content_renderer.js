@@ -68,9 +68,7 @@ async function getRenderedContent(note) {
         $rendered = $("<em>Content of this note cannot be displayed in the book format</em>");
     }
 
-    if (note.cssClass) {
-        $rendered.addClass(note.cssClass);
-    }
+    $rendered.addClass(await note.getCssClass());
 
     return {
         renderedContent: $rendered,
