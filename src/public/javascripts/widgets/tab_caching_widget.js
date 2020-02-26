@@ -2,8 +2,8 @@ import TabAwareWidget from "./tab_aware_widget.js";
 import keyboardActionsService from "../services/keyboard_actions.js";
 
 export default class TabCachingWidget extends TabAwareWidget {
-    constructor(parent, widgetFactory) {
-        super(parent);
+    constructor(widgetFactory) {
+        super();
 
         this.widgetFactory = widgetFactory;
         this.widgets = {};

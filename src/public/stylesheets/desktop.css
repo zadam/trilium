@@ -149,7 +149,7 @@ body {
 
 #right-pane .card-header {
     background: inherit;
-    padding: 5px 10px 5px 10px;
+    padding: 3px 10px 3px 10px;
     width: 99%; /* to give minimal right margin */
     background-color: var(--button-background-color);
     border-color: var(--button-border-color);

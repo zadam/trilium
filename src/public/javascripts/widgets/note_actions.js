@@ -2,6 +2,12 @@ import TabAwareWidget from "./tab_aware_widget.js";
 
 const TPL = `
 <div class="dropdown note-actions">
+    <style>
+    .note-actions .dropdown-menu {
+        width: 15em;
+    }
+    </style>
+
     <button type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-sm dropdown-toggle">
         Note actions
         <span class="caret"></span>

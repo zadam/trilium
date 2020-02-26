@@ -28,43 +28,46 @@ import SidePaneToggles from "./side_pane_toggles.js";
 
 export default class Layout {
     getRootWidget(appContext) {
-        return new FlexContainer(appContext, { 'flex-direction': 'column', 'height': '100vh' }, [
-            parent => new FlexContainer(parent, { 'flex-direction': 'row' }, [
-                parent => new GlobalMenuWidget(parent),
-                parent => new TabRowWidget(parent),
-                parent => new TitleBarButtonsWidget(parent)
-            ]),
-            parent => new StandardTopWidget(parent),
-            parent => new FlexContainer(parent, { 'flex-direction': 'row', 'min-height': '0' }, [
-                parent => new SidePaneContainer(parent, 'left', [
-                    parent => new GlobalButtonsWidget(parent),
-                    parent => new SearchBoxWidget(parent),
-                    parent => new SearchResultsWidget(parent),
-                    parent => new NoteTreeWidget(parent)
+        const root = new FlexContainer(appContext)
+            .child(new FlexContainer('row')
+                .child(new GlobalMenuWidget())
+                .child(new TabRowWidget())
+                .child(new TitleBarButtonsWidget()))
+            .child(new StandardTopWidget())
+            new FlexContainer({ 'flex-direction': 'row', 'min-height': '0' }, [
+                new SidePaneContainer('left', [
+                    new GlobalButtonsWidget(),
+                    new SearchBoxWidget(),
+                    new SearchResultsWidget(),
+                    new NoteTreeWidget()
                 ]),
-                parent => new FlexContainer(parent, { id: 'center-pane', 'flex-direction': 'column' }, [
-                    parent => new FlexContainer(parent, { 'flex-direction': 'row' }, [
-                        parent => new TabCachingWidget(parent, parent => new NotePathsWidget(parent)),
-                        parent => new NoteTitleWidget(parent),
-                        parent => new RunScriptButtonsWidget(parent),
-                        parent => new ProtectedNoteSwitchWidget(parent),
-                        parent => new NoteTypeWidget(parent),
-                        parent => new NoteActionsWidget(parent)
+                new FlexContainer({ id: 'center-pane', 'flex-direction': 'column' }, [
+                    new FlexContainer({ 'flex-direction': 'row' }, [
+                        new TabCachingWidget(new NotePathsWidget()),
+                        new NoteTitleWidget(),
+                        new RunScriptButtonsWidget(),
+                        new ProtectedNoteSwitchWidget(),
+                        new NoteTypeWidget(),
+                        new NoteActionsWidget()
                     ]),
-                    parent => new TabCachingWidget(parent, parent => new PromotedAttributesWidget(parent)),
-                    parent => new TabCachingWidget(parent, parent => new NoteDetailWidget(parent))
+                    new TabCachingWidget(new PromotedAttributesWidget()),
+                    new TabCachingWidget(new NoteDetailWidget())
                 ]),
-                parent => new SidePaneContainer(parent, 'right', [
-                    parent => new NoteInfoWidget(parent),
-                    parent => new TabCachingWidget(parent, parent => new CalendarWidget(parent)),
-                    parent => new TabCachingWidget(parent, parent => new AttributesWidget(parent)),
-                    parent => new TabCachingWidget(parent, parent => new LinkMapWidget(parent)),
-                    parent => new TabCachingWidget(parent, parent => new NoteRevisionsWidget(parent)),
-                    parent => new TabCachingWidget(parent, parent => new SimilarNotesWidget(parent)),
-                    parent => new TabCachingWidget(parent, parent => new WhatLinksHereWidget(parent))
+                new SidePaneContainer('right', [
+                    new NoteInfoWidget(),
+                    new TabCachingWidget(() => new CalendarWidget()),
+                    new TabCachingWidget(() => new AttributesWidget()),
+                    new TabCachingWidget(() => new LinkMapWidget()),
+                    new TabCachingWidget(() => new NoteRevisionsWidget()),
+                    new TabCachingWidget(() => new SimilarNotesWidget()),
+                    new TabCachingWidget(() => new WhatLinksHereWidget())
                 ]),
-                parent => new SidePaneToggles(parent)
+                new SidePaneToggles()
             ])
-        ])
+        ]);
+
+        root.setParent(appContext);
+        
+        return root;
     }
 }

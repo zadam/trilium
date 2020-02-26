@@ -2,17 +2,17 @@ import utils from '../services/utils.js';
 import Mutex from "../services/mutex.js";
 
 export default class Component {
-    /**
-     * @param {Component} parent
-     */
-    constructor(parent) {
+    constructor() {
         this.componentId = `comp-${this.constructor.name}-` + utils.randomString(6);
-        /** @type Component */
-        this.parent = parent;
         /** @type Component[] */
         this.children = [];
         this.initialized = Promise.resolve();
         this.mutex = new Mutex();
+    }
+
+    setParent(parent) {
+        /** @type Component */
+        this.parent = parent;
     }
 
     async handleEvent(name, data) {

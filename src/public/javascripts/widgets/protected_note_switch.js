@@ -1,10 +1,8 @@
-import BasicWidget from "./basic_widget.js";
 import protectedSessionService from "../services/protected_session.js";
-import protectedSessionHolder from "../services/protected_session_holder.js";
 import TabAwareWidget from "./tab_aware_widget.js";
 
 const TPL = `
-<div class="btn-group btn-group-xs" style="margin-left: 10px; margin-right: 10px;">
+<div class="btn-group btn-group-xs">
     <button type="button"
             class="btn btn-sm icon-button bx bx-check-shield protect-button"
             title="Protected note can be viewed and edited only after entering password">
@@ -14,7 +12,7 @@ const TPL = `
             class="btn btn-sm icon-button bx bx-shield-x unprotect-button"
             title="Not protected note can be viewed without entering password">
     </button>
-</div>`;
+</div>`;``;
 
 export default class ProtectedNoteSwitchWidget extends TabAwareWidget {
     doRender() {

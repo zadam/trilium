@@ -380,15 +380,6 @@ button.icon-button {
     max-height: 34px;
 }
 
-.note-actions {
-    margin-left: 10px;
-    margin-right: 10px;
-}
-
-.note-actions .dropdown-menu {
-    width: 15em;
-}
-
 .ck.ck-block-toolbar-button {
     transform: translateX(7px);
     color: var(--muted-text-color);

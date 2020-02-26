@@ -12,8 +12,6 @@ const TPL = `
     }
     
     .note-title-container input.note-title {
-        margin-left: 15px;
-        margin-right: 10px;
         font-size: 150%;
         border: 0;
         min-width: 5em;
