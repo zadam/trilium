@@ -305,9 +305,32 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
     this.setupElementTooltip = noteTooltipService.setupElementTooltip;
 
     /**
+     * @deprecated use protectNote and protectSubtree instead
      * @method
      */
-    this.protectActiveNote = protectedSessionService.protectNoteAndSendToServer;
+    this.protectActiveNote = async () => {
+        const activeNote = appContext.tabManager.getActiveTabNote();
+
+        await protectedSessionService.protectNote(activeNote.noteId, true, false);
+    };
+
+    /**
+     * @method
+     * @param {string} noteId
+     * @param {boolean} protect - true to protect note, false to unprotect
+     */
+    this.protectNote = async (noteId, protect) => {
+        await protectedSessionService.protectNote(noteId, protect, false);
+    };
+
+    /**
+     * @method
+     * @param {string} noteId
+     * @param {boolean} protect - true to protect subtree, false to unprotect
+     */
+    this.protectSubTree = async (noteId, protect) => {
+        await protectedSessionService.protectNote(noteId, protect, true);
+    };
 
     /**
      * Returns date-note for today. If it doesn't exist, it is automatically created.

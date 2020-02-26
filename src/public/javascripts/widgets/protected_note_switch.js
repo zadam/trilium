@@ -21,10 +21,10 @@ export default class ProtectedNoteSwitchWidget extends TabAwareWidget {
         this.$widget = $(TPL);
 
         this.$protectButton = this.$widget.find(".protect-button");
-        this.$protectButton.on('click', protectedSessionService.protectNoteAndSendToServer);
+        this.$protectButton.on('click', () => protectedSessionService.protectNote(this.noteId, true, false));
 
         this.$unprotectButton = this.$widget.find(".unprotect-button");
-        this.$unprotectButton.on('click', protectedSessionService.unprotectNoteAndSendToServer);
+        this.$unprotectButton.on('click', () => protectedSessionService.protectNote(this.noteId, false, false));
 
         return this.$widget;
     }
@@ -33,6 +33,12 @@ export default class ProtectedNoteSwitchWidget extends TabAwareWidget {
         this.$protectButton.toggleClass("active", note.isProtected);
         this.$protectButton.prop("disabled", note.isProtected);
         this.$unprotectButton.toggleClass("active", !note.isProtected);
-        this.$unprotectButton.prop("disabled", !note.isProtected || !protectedSessionHolder.isProtectedSessionAvailable());
+        this.$unprotectButton.prop("disabled", !note.isProtected);
+    }
+
+    async entitiesReloadedEvent({loadResults}) {
+        if (loadResults.isNoteReloaded(this.noteId)) {
+            this.refresh();
+        }
     }
 }

@@ -151,16 +151,14 @@ export default class NoteDetailWidget extends TabAwareWidget {
     }
 
     async getWidgetType() {
-        const note = this.note;
-
-        if (!note) {
+        if (!this.note) {
             return "empty";
         }
 
-        let type = note.type;
+        let type = this.note.type;
 
         if (type === 'text' && !this.tabContext.autoBookDisabled
-            && note.hasChildren()
+            && this.note.hasChildren()
             && utils.isDesktop()) {
 
             const noteComplement = await this.tabContext.getNoteComplement();
@@ -170,7 +168,7 @@ export default class NoteDetailWidget extends TabAwareWidget {
             }
         }
 
-        if (note.isProtected && !protectedSessionHolder.isProtectedSessionAvailable()) {
+        if (this.note.isProtected && !protectedSessionHolder.isProtectedSessionAvailable()) {
             type = 'protected-session';
         }
 

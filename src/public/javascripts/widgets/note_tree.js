@@ -804,11 +804,11 @@ export default class NoteTreeWidget extends TabAwareWidget {
     }
 
     protectSubtreeCommand({node}) {
-        protectedSessionService.protectSubtree(node.data.noteId, true);
+        protectedSessionService.protectNote(node.data.noteId, true, true);
     }
 
     unprotectSubtreeCommand({node}) {
-        protectedSessionService.protectSubtree(node.data.noteId, false);
+        protectedSessionService.protectNote(node.data.noteId, false, true);
     }
 
     duplicateNoteCommand({node}) {

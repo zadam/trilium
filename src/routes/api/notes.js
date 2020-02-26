@@ -83,14 +83,15 @@ async function sortNotes(req) {
     await treeService.sortNotesAlphabetically(noteId);
 }
 
-async function protectSubtree(req) {
+async function protectNote(req) {
     const noteId = req.params.noteId;
     const note = await repository.getNote(noteId);
     const protect = !!parseInt(req.params.isProtected);
+    const includingSubTree = !!parseInt(req.query.subtree);
 
     const taskContext = new TaskContext(utils.randomString(10), 'protect-notes', {protect});
 
-    await noteService.protectNoteRecursively(note, protect, taskContext);
+    await noteService.protectNoteRecursively(note, protect, includingSubTree, taskContext);
 
     taskContext.taskSucceeded();
 }
@@ -183,7 +184,7 @@ module.exports = {
     undeleteNote,
     createNote,
     sortNotes,
-    protectSubtree,
+    protectNote,
     setNoteTypeMime,
     getRelationMap,
     changeTitle,

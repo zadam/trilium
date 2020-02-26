@@ -16,10 +16,11 @@ export default class TypeWidget extends TabAwareWidget {
      */
     doRefresh(note) {}
 
-    refresh() {
-        const widgetType = this.constructor.getType();
+    async refresh() {
+        const thisWidgetType = this.constructor.getType();
+        const noteWidgetType = await this.noteDetailWidget.getWidgetType();
 
-        if (widgetType !== this.noteDetailWidget.type) {
+        if (thisWidgetType !== noteWidgetType) {
             this.toggle(false);
 
             this.cleanup();

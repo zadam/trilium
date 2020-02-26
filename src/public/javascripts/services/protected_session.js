@@ -68,46 +68,10 @@ async function enterProtectedSessionOnServer(password) {
     });
 }
 
-async function protectNoteAndSendToServer() {
-    if (!appContext.tabManager.getActiveTabNote() || appContext.tabManager.getActiveTabNote().isProtected) {
-        return;
-    }
-
+async function protectNote(noteId, protect, includingSubtree) {
     await enterProtectedSession();
 
-    const note = appContext.tabManager.getActiveTabNote();
-    note.isProtected = true;
-
-    await appContext.tabManager.getActiveTabContext().saveNote();
-}
-
-async function unprotectNoteAndSendToServer() {
-    const activeNote = appContext.tabManager.getActiveTabNote();
-
-    if (!activeNote.isProtected) {
-        toastService.showAndLogError(`Note ${activeNote.noteId} is not protected`);
-
-        return;
-    }
-
-    if (!protectedSessionHolder.isProtectedSessionAvailable()) {
-        console.log("Unprotecting notes outside of protected session is not allowed.");
-        // the reason is that it's not easy to handle even with enterProtectedSession,
-        // because we would first have to make sure the note is loaded and only then unprotect
-        // we used to have a bug where we would overwrite the previous note with unprotected content.
-
-        return;
-    }
-
-    activeNote.isProtected = false;
-
-    await appContext.tabManager.getActiveTabContext().saveNote();
-}
-
-async function protectSubtree(noteId, protect) {
-    await enterProtectedSession();
-
-    await server.put('notes/' + noteId + "/protect/" + (protect ? 1 : 0));
+    await server.put(`notes/${noteId}/protect/${protect ? 1 : 0}?subtree=${includingSubtree ? 1 : 0}`);
 }
 
 function makeToast(message, protectingLabel, text) {
@@ -140,10 +104,8 @@ ws.subscribeToMessages(async message => {
 });
 
 export default {
-    protectSubtree,
+    protectNote,
     enterProtectedSession,
     leaveProtectedSession,
-    protectNoteAndSendToServer,
-    unprotectNoteAndSendToServer,
     setupProtectedSession
 };

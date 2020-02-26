@@ -90,11 +90,12 @@ export default class TabManager extends Component {
         await this.tabsUpdate.allowUpdateWithoutChange(async () => {
             for (const tab of filteredTabs) {
                 const tabContext = this.openEmptyTab(tab.tabId);
-                await tabContext.setNote(tab.notePath);
 
                 if (tab.active) {
                     this.activateTab(tabContext.tabId);
                 }
+
+                await tabContext.setNote(tab.notePath);
             }
         });
     }
