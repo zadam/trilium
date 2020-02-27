@@ -70,7 +70,7 @@ export default class SearchBoxWidget extends BasicWidget {
 
         this.$saveSearchButton.on('click', () => this.saveSearch());
 
-        this.$closeSearchButton.on('click', () => this.triggerCommand('hideSearch'));
+        this.$closeSearchButton.on('click', () => this.hideSearch());
 
         return this.$widget;
     }
@@ -142,7 +142,7 @@ export default class SearchBoxWidget extends BasicWidget {
         this.$searchInput.trigger('focus');
     }
 
-    hideSearchEvent() {
+    hideSearch() {
         this.resetSearchEvent();
 
         this.$searchBox.slideUp();
@@ -155,7 +155,7 @@ export default class SearchBoxWidget extends BasicWidget {
             this.showSearchEvent();
         }
         else {
-            this.hideSearchEvent();
+            this.hideSearch();
         }
     }
 

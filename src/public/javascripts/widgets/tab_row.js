@@ -575,7 +575,15 @@ export default class TabRowWidget extends BasicWidget {
         return closestIndex;
     };
 
+    tabNoteSwitchedAndActivatedEvent({tabId}) {
+        this.updateTabById(tabId);
+    }
+
     tabNoteSwitchedEvent({tabId}) {
+        this.updateTabById(tabId);
+    }
+
+    updateTabById(tabId) {
         const $tab = this.getTabById(tabId);
 
         const {note} = appContext.tabManager.getTabContextById(tabId);
