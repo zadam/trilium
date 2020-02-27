@@ -32,8 +32,6 @@ export default class RenderTypeWidget extends TypeWidget {
 
         const renderNotesFound = await renderService.render(note, this.$noteDetailRenderContent);
 
-        console.trace("render");
-
         if (!renderNotesFound) {
             this.$noteDetailRenderHelp.show();
         }

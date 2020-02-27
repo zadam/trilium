@@ -27,25 +27,25 @@ export default class TabAwareWidget extends BasicWidget {
         return this.tabContext && this.tabContext.notePath;
     }
 
-    tabNoteSwitchedEvent({tabId, notePath}) {
+    async tabNoteSwitchedEvent({tabId, notePath}) {
         // if notePath does not match then the tabContext has been switched to another note in the mean time
         if (this.isTab(tabId) && this.notePath === notePath) {
-            this.noteSwitched();
+            await this.noteSwitched();
         }
     }
 
-    noteTypeMimeChangedEvent({noteId}) {
+    async noteTypeMimeChangedEvent({noteId}) {
         if (this.noteId === noteId) {
-            this.refresh();
+            await this.refresh();
         }
     }
 
-    noteSwitched() {
-        this.refresh();
+    async noteSwitched() {
+        await this.refresh();
     }
 
-    activeTabChanged() {
-        this.refresh();
+    async activeTabChanged() {
+        await this.refresh();
     }
 
     isEnabled() {
@@ -70,30 +70,30 @@ export default class TabAwareWidget extends BasicWidget {
         }
     }
 
-    refreshWithNote(note, notePath) {}
+    async refreshWithNote(note, notePath) {}
 
-    activeTabChangedEvent() {
+    async activeTabChangedEvent() {
         this.tabContext = appContext.tabManager.getActiveTabContext();
 
-        this.activeTabChanged();
+        await this.activeTabChanged();
     }
 
     // when note is both switched and activated, this should not produce double refresh
-    tabNoteSwitchedAndActivatedEvent() {
+    async tabNoteSwitchedAndActivatedEvent() {
         this.tabContext = appContext.tabManager.getActiveTabContext();
 
-        this.refresh();
+        await this.refresh();
     }
 
-    treeCacheReloadedEvent() {
-        this.refresh();
+    async treeCacheReloadedEvent() {
+        await this.refresh();
     }
 
-    lazyLoadedEvent() {
+    async lazyLoadedEvent() {
         if (!this.tabContext) { // has not been loaded yet
             this.tabContext = appContext.tabManager.getActiveTabContext();
         }
 
-        this.refresh();
+        await this.refresh();
     }
 }

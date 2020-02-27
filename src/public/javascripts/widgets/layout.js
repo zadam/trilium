@@ -31,6 +31,7 @@ export default class Layout {
         return new FlexContainer('column')
             .setParent(appContext)
             .id('root-widget')
+            .css('height', '100vh')
             .child(new FlexContainer('row')
                 .child(new GlobalMenuWidget())
                 .child(new TabRowWidget())
