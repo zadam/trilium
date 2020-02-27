@@ -88,13 +88,7 @@ export default class TabManager extends Component {
 
         await this.tabsUpdate.allowUpdateWithoutChange(async () => {
             for (const tab of filteredTabs) {
-                const tabContext = this.openEmptyTab(tab.tabId);
-
-                if (tab.active) {
-                    this.activateTab(tabContext.tabId);
-                }
-
-                await tabContext.setNote(tab.notePath);
+                await this.openTabWithNote(tab.notePath, tab.active, tab.tabId);
             }
         });
     }
@@ -185,9 +179,21 @@ export default class TabManager extends Component {
         const tabContext = new TabContext(tabId);
         this.child(tabContext);
 
-        this.triggerEvent('newTabOpened', {tabId: this.tabId})
+        this.triggerEvent('newTabOpened', {tabId: this.tabId});
 
         return tabContext;
+    }
+
+    async openTabWithNote(notePath, activate, tabId = null) {
+        const tabContext = this.openEmptyTab(tabId);
+
+        await tabContext.setNote(notePath, !activate); // if activate is false then send normal noteSwitched event
+
+        if (activate) {
+            this.activateTab(tabContext.tabId, false);
+
+            this.triggerEvent('tabNoteSwitchedAndActivated');
+        }
     }
 
     async activateOrOpenNote(noteId) {
@@ -204,14 +210,16 @@ export default class TabManager extends Component {
         await tabContext.setNote(noteId);
     }
 
-    activateTab(tabId) {
+    activateTab(tabId, triggerEvent = true) {
         if (tabId === this.activeTabId) {
             return;
         }
 
         this.activeTabId = tabId;
 
-        this.triggerEvent('activeTabChanged');
+        if (triggerEvent) {
+            this.triggerEvent('activeTabChanged');
+        }
 
         this.tabsUpdate.scheduleUpdate();
         

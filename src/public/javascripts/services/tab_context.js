@@ -17,7 +17,7 @@ class TabContext extends Component {
         this.tabId = tabId || utils.randomString(4);
     }
 
-    async setNote(inputNotePath) {
+    async setNote(inputNotePath, triggerSwitchEvent = true) {
         const notePath = await treeService.resolveNotePath(inputNotePath);
 
         if (!notePath) {
@@ -59,10 +59,12 @@ class TabContext extends Component {
             protectedSessionHolder.touchProtectedSession();
         }
 
-        this.triggerEvent('tabNoteSwitched', {
-            tabId: this.tabId,
-            notePath: this.notePath
-        });
+        if (triggerSwitchEvent) {
+            this.triggerEvent('tabNoteSwitched', {
+                tabId: this.tabId,
+                notePath: this.notePath
+            });
+        }
     }
 
     /** @property {NoteShort} */

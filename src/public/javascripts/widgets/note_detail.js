@@ -236,13 +236,6 @@ export default class NoteDetailWidget extends TabAwareWidget {
         this.refresh();
     }
 
-    async handleEventInChildren(name, data) {
-        // done manually in refresh()
-        if (name !== 'setTabContext') {
-            await super.handleEventInChildren(name, data);
-        }
-    }
-
     async cutIntoNoteCommand() {
         const note = appContext.tabManager.getActiveTabNote();
 

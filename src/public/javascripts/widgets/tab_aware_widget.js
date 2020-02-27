@@ -5,8 +5,6 @@ export default class TabAwareWidget extends BasicWidget {
     setTabContextEvent({tabContext}) {
         /** @var {TabContext} */
         this.tabContext = tabContext;
-
-        this.noteSwitched();
     }
 
     isTab(tabId) {
@@ -78,6 +76,13 @@ export default class TabAwareWidget extends BasicWidget {
         this.tabContext = appContext.tabManager.getActiveTabContext();
 
         this.activeTabChanged();
+    }
+
+    // when note is both switched and activated, this should not produce double refresh
+    tabNoteSwitchedAndActivatedEvent() {
+        this.tabContext = appContext.tabManager.getActiveTabContext();
+
+        this.refresh();
     }
 
     treeCacheReloadedEvent() {

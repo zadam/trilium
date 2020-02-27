@@ -28,7 +28,9 @@ import SidePaneToggles from "./side_pane_toggles.js";
 
 export default class Layout {
     getRootWidget(appContext) {
-        const root = new FlexContainer('column').id('root-widget')
+        return new FlexContainer('column')
+            .setParent(appContext)
+            .id('root-widget')
             .child(new FlexContainer('row')
                 .child(new GlobalMenuWidget())
                 .child(new TabRowWidget())
@@ -65,9 +67,5 @@ export default class Layout {
                 )
                 .child(new SidePaneToggles())
             );
-
-        root.setParent(appContext);
-        
-        return root;
     }
 }
