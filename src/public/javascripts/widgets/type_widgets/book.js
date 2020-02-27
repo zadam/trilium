@@ -293,15 +293,7 @@ export default class BookTypeWidget extends TypeWidget {
         }
     }
 
-    getContent() {}
-
-    focus() {}
-
     cleanup() {
         this.$content.empty();
-    }
-
-    scrollToTop() {
-        this.$widget.scrollTop(0);
     }
 }

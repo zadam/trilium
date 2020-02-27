@@ -186,10 +186,6 @@ export default class TextTypeWidget extends TypeWidget {
         }
     }
 
-    scrollToTop() {
-        this.$widget.scrollTop(0);
-    }
-
     insertDateTimeToTextCommand() {
         const date = new Date();
         const dateString = utils.formatDateTime(date);

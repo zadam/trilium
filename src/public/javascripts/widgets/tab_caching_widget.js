@@ -40,13 +40,13 @@ export default class TabCachingWidget extends TabAwareWidget {
 
         if (!widget) {
             widget = this.widgets[this.tabContext.tabId] = this.widgetFactory();
-            this.child(widget);
 
             const $renderedWidget = widget.render();
-            keyboardActionsService.updateDisplayedShortcuts($renderedWidget);
-
             this.$widget.after($renderedWidget);
 
+            keyboardActionsService.updateDisplayedShortcuts($renderedWidget);
+
+            this.child(widget); // add as child only once it is ready (also rendered)
             widget.handleEvent('setTabContext', {tabContext: this.tabContext});
         }
 

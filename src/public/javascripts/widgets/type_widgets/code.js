@@ -132,8 +132,4 @@ export default class CodeTypeWidget extends TypeWidget {
             });
         }
     }
-
-    scrollToTop() {
-        this.$widget.scrollTop(0);
-    }
 }

@@ -48,10 +48,4 @@ export default class SearchTypeWidget extends TypeWidget {
             searchString: this.$searchString.val()
         });
     }
-
-    focus() {}
-
-    cleanup() {}
-
-    scrollToTop() {}
 }

@@ -38,12 +38,4 @@ export default class EmptyTypeWidget extends TypeWidget {
     doRefresh(note) {
         this.$autoComplete.trigger('focus');
     }
-
-    getContent() {}
-
-    focus() {}
-
-    cleanup() {}
-
-    scrollToTop() {}
 }

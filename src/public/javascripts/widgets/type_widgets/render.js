@@ -37,15 +37,7 @@ export default class RenderTypeWidget extends TypeWidget {
         }
     }
 
-    getContent() {}
-
-    focus() {}
-
     cleanup() {
         this.$noteDetailRenderContent.empty();
-    }
-
-    scrollToTop() {
-        this.$widget.scrollTop(0);
     }
 }

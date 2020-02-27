@@ -39,14 +39,4 @@ export default class ProtectedSessionTypeWidget extends TypeWidget {
         
         return this.$widget;
     }
-
-    getContent() {}
-
-    focus() {}
-
-    cleanup() {}
-
-    scrollToTop() {
-        this.$widget.scrollTop(0);
-    }
 }

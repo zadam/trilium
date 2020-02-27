@@ -144,12 +144,4 @@ export default class FileTypeWidget extends TypeWidget {
     getFileUrl() {
         return utils.getUrlForDownload("api/notes/" + this.noteId + "/download");
     }
-
-    getContent() {}
-
-    focus() {}
-
-    cleanup() {}
-
-    scrollToTop() {}
 }

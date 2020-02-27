@@ -640,8 +640,4 @@ export default class RelationMapTypeWidget extends TypeWidget {
     getContent() {
         return JSON.stringify(this.mapData);
     }
-
-    focus() {}
-
-    scrollToTop() {}
 }

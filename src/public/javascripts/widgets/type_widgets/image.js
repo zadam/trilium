@@ -147,16 +147,6 @@ class ImageTypeWidget extends TypeWidget {
     getFileUrl() {
         return utils.getUrlForDownload(`api/notes/${this.noteId}/download`);
     }
-
-    getContent() {}
-
-    focus() {}
-
-    cleanup() {}
-
-    scrollToTop() {
-        this.$widget.scrollTop(0);
-    }
 }
 
 export default ImageTypeWidget

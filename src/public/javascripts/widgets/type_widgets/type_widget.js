@@ -28,4 +28,12 @@ export default class TypeWidget extends TabAwareWidget {
     isActive() {
         return this.$widget.is(":visible");
     }
+
+    getContent() {}
+
+    focus() {}
+
+    scrollToTop() {
+        this.$widget.scrollTop(0);
+    }
 }
