@@ -29,11 +29,11 @@ const TAB_TPL = `
   <div class="note-tab-wrapper">
     <div class="note-tab-title"></div>
     <div class="note-tab-drag-handle"></div>
-    <div class="note-tab-close kb-in-title" title="Close tab" data-kb-command="closeActiveTab"><span>×</span></div>
+    <div class="note-tab-close kb-in-title" title="Close tab" data-command="closeActiveTab"><span>×</span></div>
   </div>
 </div>`;
 
-const NEW_TAB_BUTTON_TPL = `<div class="note-new-tab kb-in-title" data-kb-command="openNewTab" title="Add new tab">+</div>`;
+const NEW_TAB_BUTTON_TPL = `<div class="note-new-tab kb-in-title" data-command="openNewTab" title="Add new tab">+</div>`;
 const FILLER_TPL = `<div class="tab-row-filler">
     <div class="tab-row-border"></div>
 </div>`;
