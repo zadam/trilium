@@ -9,15 +9,12 @@ import hoistedNoteService from "./hoisted_note.js";
 
 class TabContext extends Component {
     /**
-     * @param {Component} parent
      * @param {string|null} tabId
      */
-    constructor(parent, tabId = null) {
-        super(parent);
+    constructor(tabId = null) {
+        super();
 
         this.tabId = tabId || utils.randomString(4);
-
-        this.triggerEvent('newTabOpened', {tabId: this.tabId});
     }
 
     async setNote(inputNotePath) {

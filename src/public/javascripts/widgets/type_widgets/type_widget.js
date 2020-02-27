@@ -1,13 +1,6 @@
 import TabAwareWidget from "../tab_aware_widget.js";
 
 export default class TypeWidget extends TabAwareWidget {
-    constructor(parent) {
-        super(parent);
-
-        /** @var {NoteDetailWidget} */
-        this.noteDetailWidget = parent;
-    }
-
     // for overriding
     static getType() {}
 
@@ -18,7 +11,7 @@ export default class TypeWidget extends TabAwareWidget {
 
     async refresh() {
         const thisWidgetType = this.constructor.getType();
-        const noteWidgetType = await this.noteDetailWidget.getWidgetType();
+        const noteWidgetType = await this.parent.getWidgetType();
 
         if (thisWidgetType !== noteWidgetType) {
             this.toggle(false);

@@ -43,8 +43,8 @@ const typeWidgetClasses = {
 };
 
 export default class NoteDetailWidget extends TabAwareWidget {
-    constructor(parent) {
-        super(parent);
+    constructor() {
+        super();
 
         this.typeWidgets = {};
 
@@ -107,10 +107,10 @@ export default class NoteDetailWidget extends TabAwareWidget {
         if (!(this.type in this.typeWidgets)) {
             const clazz = typeWidgetClasses[this.type];
 
-            const typeWidget = this.typeWidgets[this.type] = new clazz(this);
+            const typeWidget = this.typeWidgets[this.type] = new clazz();
             typeWidget.spacedUpdate = this.spacedUpdate;
 
-            this.children.push(typeWidget);
+            this.child(typeWidget);
 
             const $renderedWidget = typeWidget.render();
             keyboardActionsService.updateDisplayedShortcuts($renderedWidget);

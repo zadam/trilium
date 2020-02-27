@@ -28,43 +28,42 @@ import SidePaneToggles from "./side_pane_toggles.js";
 
 export default class Layout {
     getRootWidget(appContext) {
-        const root = new FlexContainer(appContext)
+        const root = new FlexContainer('column').id('root-widget')
             .child(new FlexContainer('row')
                 .child(new GlobalMenuWidget())
                 .child(new TabRowWidget())
                 .child(new TitleBarButtonsWidget()))
             .child(new StandardTopWidget())
-            new FlexContainer({ 'flex-direction': 'row', 'min-height': '0' }, [
-                new SidePaneContainer('left', [
-                    new GlobalButtonsWidget(),
-                    new SearchBoxWidget(),
-                    new SearchResultsWidget(),
-                    new NoteTreeWidget()
-                ]),
-                new FlexContainer({ id: 'center-pane', 'flex-direction': 'column' }, [
-                    new FlexContainer({ 'flex-direction': 'row' }, [
-                        new TabCachingWidget(new NotePathsWidget()),
-                        new NoteTitleWidget(),
-                        new RunScriptButtonsWidget(),
-                        new ProtectedNoteSwitchWidget(),
-                        new NoteTypeWidget(),
-                        new NoteActionsWidget()
-                    ]),
-                    new TabCachingWidget(new PromotedAttributesWidget()),
-                    new TabCachingWidget(new NoteDetailWidget())
-                ]),
-                new SidePaneContainer('right', [
-                    new NoteInfoWidget(),
-                    new TabCachingWidget(() => new CalendarWidget()),
-                    new TabCachingWidget(() => new AttributesWidget()),
-                    new TabCachingWidget(() => new LinkMapWidget()),
-                    new TabCachingWidget(() => new NoteRevisionsWidget()),
-                    new TabCachingWidget(() => new SimilarNotesWidget()),
-                    new TabCachingWidget(() => new WhatLinksHereWidget())
-                ]),
-                new SidePaneToggles()
-            ])
-        ]);
+            .child(new FlexContainer('row').collapsible()
+                .child(new SidePaneContainer('left')
+                    .child(new GlobalButtonsWidget())
+                    .child(new SearchBoxWidget())
+                    .child(new SearchResultsWidget())
+                    .child(new NoteTreeWidget())
+                )
+                .child(new FlexContainer('column').id('center-pane')
+                    .child(new FlexContainer('row')
+                        .child(new TabCachingWidget(() => new NotePathsWidget()))
+                        .child(new NoteTitleWidget())
+                        .child(new RunScriptButtonsWidget())
+                        .child(new ProtectedNoteSwitchWidget())
+                        .child(new NoteTypeWidget())
+                        .child(new NoteActionsWidget())
+                    )
+                    .child(new TabCachingWidget(() => new PromotedAttributesWidget()))
+                    .child(new TabCachingWidget(() => new NoteDetailWidget()))
+                )
+                .child(new SidePaneContainer('right')
+                    .child(new NoteInfoWidget())
+                    .child(new TabCachingWidget(() => new CalendarWidget()))
+                    .child(new TabCachingWidget(() => new AttributesWidget()))
+                    .child(new TabCachingWidget(() => new LinkMapWidget()))
+                    .child(new TabCachingWidget(() => new NoteRevisionsWidget()))
+                    .child(new TabCachingWidget(() => new SimilarNotesWidget()))
+                    .child(new TabCachingWidget(() => new WhatLinksHereWidget()))
+                )
+                .child(new SidePaneToggles())
+            );
 
         root.setParent(appContext);
         

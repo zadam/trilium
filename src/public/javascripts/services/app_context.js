@@ -17,7 +17,6 @@ class AppContext extends Component {
         super(null);
 
         this.layout = layout;
-        this.tabManager = new TabManager(this);
         this.executors = [];
     }
 
@@ -45,16 +44,22 @@ class AppContext extends Component {
             this.triggerEvent(eventName);
         });
 
+        this.tabManager = new TabManager();
+
         this.executors = [
             this.tabManager,
-            new DialogCommandExecutor(this),
-            new Entrypoints(this)
+            new DialogCommandExecutor(),
+            new Entrypoints()
         ];
 
-        this.children = [ rootWidget, ...this.executors ];
+        this.child(rootWidget);
+
+        for (const executor of this.executors) {
+            this.child(executor);
+        }
 
         if (utils.isElectron()) {
-            this.children.push(new ZoomService(this));
+            this.child(new ZoomService());
 
             import("./spell_check.js").then(spellCheckService => spellCheckService.initSpellCheck());
         }

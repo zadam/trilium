@@ -13,6 +13,15 @@ export default class Component {
     setParent(parent) {
         /** @type Component */
         this.parent = parent;
+        return this;
+    }
+
+    child(component) {
+        component.setParent(this);
+
+        this.children.push(component);
+
+        return this;
     }
 
     async handleEvent(name, data) {

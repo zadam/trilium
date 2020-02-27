@@ -6,11 +6,10 @@ import treeCache from "./tree_cache.js";
 import treeService from "./tree.js";
 import utils from "./utils.js";
 import TabContext from "./tab_context.js";
-import appContext from "./app_context.js";
 
 export default class TabManager extends Component {
-    constructor(parent) {
-        super(parent);
+    constructor() {
+        super();
 
         this.activeTabId = null;
 
@@ -183,8 +182,11 @@ export default class TabManager extends Component {
     }
 
     openEmptyTab(tabId) {
-        const tabContext = new TabContext(appContext, tabId);
-        this.children.push(tabContext);
+        const tabContext = new TabContext(tabId);
+        this.child(tabContext);
+
+        this.triggerEvent('newTabOpened', {tabId: this.tabId})
+
         return tabContext;
     }
 

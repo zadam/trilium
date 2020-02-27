@@ -4,12 +4,12 @@ export default class FlexContainer extends BasicWidget {
     constructor(direction) {
         super();
 
-        if (!direction) {
-            throw new Error(`Direction argument missing, use either 'row' or 'column'`);
+        if (!direction || !['row', 'column'].includes(direction)) {
+            throw new Error(`Direction argument given as "${direction}", use either 'row' or 'column'`);
         }
 
         this.attrs = {
-            style: 'display: flex;'
+            style: `display: flex; flex-direction: ${direction};`,
         };
 
         this.children = [];
@@ -25,23 +25,14 @@ export default class FlexContainer extends BasicWidget {
         return this;
     }
 
-    rowFlex() {
-        this.css('flex-direction', 'row');
-        return this;
-    }
-
-    columnFlex() {
-        this.css('flex-direction', 'column');
+    collapsible() {
+        this.css('min-height', '0');
         return this;
     }
 
     cssBlock(block) {
         this.cssEl = block;
         return this;
-    }
-
-    child(widgetFactory) {
-        this.children = widgetFactory(this);
     }
 
     doRender() {
@@ -54,8 +45,6 @@ export default class FlexContainer extends BasicWidget {
         for (const key in this.attrs) {
             this.$widget.attr(key, this.attrs[key]);
         }
-
-        if (!this.children)
 
         for (const widget of this.children) {
             this.$widget.append(widget.render());
