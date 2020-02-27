@@ -12,11 +12,18 @@ export default class FlexContainer extends BasicWidget {
             style: `display: flex; flex-direction: ${direction};`,
         };
 
+        this.classes = [];
+
         this.children = [];
     }
 
     id(id) {
         this.attrs.id = id;
+        return this;
+    }
+
+    class(className) {
+        this.classes.push(className);
         return this;
     }
 
@@ -44,6 +51,10 @@ export default class FlexContainer extends BasicWidget {
 
         for (const key in this.attrs) {
             this.$widget.attr(key, this.attrs[key]);
+        }
+
+        for (const className of this.classes) {
+            this.$widget.addClass(className);
         }
 
         for (const widget of this.children) {
