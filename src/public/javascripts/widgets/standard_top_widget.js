@@ -71,8 +71,8 @@ export default class StandardTopWidget extends BasicWidget {
 
         this.$widget.prepend(historyNavigationWidget.render());
 
-        this.$widget.find(".jump-to-note-dialog-button").on('click', () => this.triggerEvent('jumpToNote'));
-        this.$widget.find(".recent-changes-button").on('click', () => this.triggerEvent('showRecentChanges'));
+        this.$widget.find(".jump-to-note-dialog-button").on('click', () => this.triggerCommand('jumpToNote'));
+        this.$widget.find(".recent-changes-button").on('click', () => this.triggerCommand('showRecentChanges'));
 
         this.$widget.find(".enter-protected-session-button").on('click', protectedSessionService.enterProtectedSession);
         this.$widget.find(".leave-protected-session-button").on('click', protectedSessionService.leaveProtectedSession);

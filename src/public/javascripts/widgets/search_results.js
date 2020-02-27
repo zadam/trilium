@@ -39,20 +39,13 @@ export default class SearchResultsWidget extends BasicWidget {
         return this.$widget;
     }
 
-    async searchForResultsEvent({searchText}) {
+    searchResultsEvent({results}) {
         this.toggle(true);
-
-        const response = await server.get('search/' + encodeURIComponent(searchText));
-
-        if (!response.success) {
-            toastService.showError("Search failed.", 3000);
-            return;
-        }
 
         this.$searchResultsInner.empty();
         this.$searchResults.show();
 
-        for (const result of response.results) {
+        for (const result of results) {
             const link = $('<a>', {
                 href: 'javascript:',
                 text: result.title
@@ -62,13 +55,9 @@ export default class SearchResultsWidget extends BasicWidget {
 
             this.$searchResultsInner.append($result);
         }
-
-        // have at least some feedback which is good especially in situations
-        // when the result list does not change with a query
-        toastService.showMessage("Search finished successfully.");
     }
 
-    hideSearchResultsEvent() {
+    searchFlowEndedEvent() {
         this.$searchResults.hide();
     }
 }

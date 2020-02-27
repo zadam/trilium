@@ -70,7 +70,7 @@ export default class SearchBoxWidget extends BasicWidget {
 
         this.$saveSearchButton.on('click', () => this.saveSearch());
 
-        this.$closeSearchButton.on('click', () => this.triggerEvent('hideSearch'));
+        this.$closeSearchButton.on('click', () => this.triggerCommand('hideSearch'));
 
         return this.$widget;
     }
@@ -91,7 +91,7 @@ export default class SearchBoxWidget extends BasicWidget {
             return;
         }
 
-        this.triggerEvent('searchForResults', {
+        this.triggerCommand('searchForResults', {
             searchText: this.$searchInput.val()
         });
 
@@ -147,7 +147,7 @@ export default class SearchBoxWidget extends BasicWidget {
 
         this.$searchBox.slideUp();
 
-        this.triggerEvent('hideSearchResults');
+        this.triggerCommand('searchFlowEnded');
     }
 
     toggleSearchEvent() {
@@ -159,7 +159,7 @@ export default class SearchBoxWidget extends BasicWidget {
         }
     }
 
-    searchNotesCommand() {
+    searchNotesEvent() {
         this.toggleSearchEvent();
     }
 

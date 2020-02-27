@@ -58,7 +58,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
         await ws.waitForMaxKnownSyncId();
 
         await appContext.tabManager.getActiveTabContext().setNote(notePath);
-        appContext.triggerEvent('focusAndSelectTitle');
+        appContext.triggerCommand('focusAndSelectTitle');
     };
 
     /**
@@ -276,7 +276,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * @param {string} text - this must be clear text, HTML is not supported.
      * @method
      */
-    this.addTextToActiveTabEditor = text => appContext.triggerEvent('addTextToActiveEditor', {text});
+    this.addTextToActiveTabEditor = text => appContext.triggerCommand('addTextToActiveEditor', {text});
 
     /**
      * @method
@@ -290,7 +290,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * @method
      * @param callback - method receiving "textEditor" instance
      */
-    this.getActiveTabTextEditor = callback => appContext.triggerEvent('executeInActiveEditor', {callback});
+    this.getActiveTabTextEditor = callback => appContext.triggerCommand('executeInActiveEditor', {callback});
 
     /**
      * @method

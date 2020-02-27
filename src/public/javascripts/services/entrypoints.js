@@ -6,6 +6,7 @@ import treeCache from "./tree_cache.js";
 import server from "./server.js";
 import appContext from "./app_context.js";
 import Component from "../widgets/component.js";
+import toastService from "./toast.js";
 
 export default class Entrypoints extends Component {
     constructor() {
@@ -141,5 +142,20 @@ export default class Entrypoints extends Component {
 
     forwardInNoteHistoryCommand() {
         window.history.forward();
+    }
+
+    async searchForResultsCommand({searchText}) {
+        const response = await server.get('search/' + encodeURIComponent(searchText));
+
+        if (!response.success) {
+            toastService.showError("Search failed.", 3000);
+            return;
+        }
+
+        this.triggerEvent('searchResults', {results: response.results});
+
+        // have at least some feedback which is good especially in situations
+        // when the result list does not change with a query
+        toastService.showMessage("Search finished successfully.");
     }
 }

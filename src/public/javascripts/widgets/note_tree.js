@@ -794,7 +794,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
     }
 
     editNoteTitleCommand({node}) {
-        appContext.triggerEvent('focusOnTitle');
+        appContext.triggerCommand('focusOnTitle');
     }
 
     activateParentNoteCommand({node}) {
