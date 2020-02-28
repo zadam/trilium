@@ -17,6 +17,13 @@ class TabContext extends Component {
         this.tabId = tabId || utils.randomString(4);
     }
 
+    setEmpty() {
+        this.triggerEvent('tabNoteSwitched', {
+            tabId: this.tabId,
+            notePath: this.notePath
+        });
+    }
+
     async setNote(inputNotePath, triggerSwitchEvent = true) {
         const notePath = await treeService.resolveNotePath(inputNotePath);
 

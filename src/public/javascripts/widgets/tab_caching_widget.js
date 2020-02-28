@@ -20,12 +20,15 @@ export default class TabCachingWidget extends TabAwareWidget {
     async handleEventInChildren(name, data) {
         // stop propagation of the event to the children, individual tab widget should not know about tab switching
         // since they are per-tab
-        if (name !== 'activeTabChanged') {
+        if (name === 'tabNoteSwitchedAndActivated') {
+            await super.handleEventInChildren('tabNoteSwitched', data);
+        }
+        else if (name !== 'activeTabChanged') {
             await super.handleEventInChildren(name, data);
         }
     }
 
-    refreshWithNote() {
+    async refreshWithNote() {
         for (const widget of Object.values(this.widgets)) {
             widget.toggle(false);
         }
@@ -47,7 +50,7 @@ export default class TabCachingWidget extends TabAwareWidget {
             keyboardActionsService.updateDisplayedShortcuts($renderedWidget);
 
             this.child(widget); // add as child only once it is ready (also rendered)
-            widget.handleEvent('setTabContext', {tabContext: this.tabContext});
+            await widget.handleEvent('setTabContext', {tabContext: this.tabContext});
         }
 
         widget.toggle(widget.isEnabled());

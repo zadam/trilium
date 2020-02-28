@@ -576,6 +576,8 @@ export default class TabRowWidget extends BasicWidget {
     };
 
     tabNoteSwitchedAndActivatedEvent({tabId}) {
+        this.activeTabChangedEvent();
+
         this.updateTabById(tabId);
     }
 

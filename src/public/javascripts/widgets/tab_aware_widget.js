@@ -80,7 +80,9 @@ export default class TabAwareWidget extends BasicWidget {
 
     // when note is both switched and activated, this should not produce double refresh
     async tabNoteSwitchedAndActivatedEvent({tabId, notePath}) {
-        if (this.isTab(tabId) && this.notePath === notePath) {
+        this.tabContext = appContext.tabManager.getActiveTabContext();
+
+        if (this.notePath === notePath) {
             this.tabContext = appContext.tabManager.getActiveTabContext();
 
             await this.refresh();
