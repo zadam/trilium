@@ -16,11 +16,11 @@ const TPL = `
     <br/>
 
     <div class="form-group">
-        <label for="spell-check-language-code">Language code</label>
+        <label for="spell-check-language-code">Language code(s)</label>
         <input type="text" class="form-control" id="spell-check-language-code" placeholder="for example &quot;en-US&quot;, &quot;de-AT&quot;">
     </div>
 
-    <p>Changes to the spell check options will take effect after application restart.</p>
+    <p>Multiple languages can be separated by comman. Changes to the spell check options will take effect after application restart.</p>
 </div>
 
 <div>

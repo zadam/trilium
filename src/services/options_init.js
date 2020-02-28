@@ -102,13 +102,11 @@ async function initStartupOptions() {
 function getKeyboardDefaultOptions() {
     return keyboardActions.DEFAULT_KEYBOARD_ACTIONS
         .filter(ka => !!ka.actionName)
-        .map(ka => {
-            return {
-                name: "keyboardShortcuts" + ka.actionName.charAt(0).toUpperCase() + ka.actionName.slice(1),
-                value: JSON.stringify(ka.defaultShortcuts),
-                isSynced: false
-            };
-        });
+        .map(ka => ({
+            name: "keyboardShortcuts" + ka.actionName.charAt(0).toUpperCase() + ka.actionName.slice(1),
+            value: JSON.stringify(ka.defaultShortcuts),
+            isSynced: false
+        }));
 }
 
 module.exports = {

@@ -120,10 +120,10 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
                     node.setSelected(true);
 
-                    const notes = this.getSelectedNodes().map(node => { return {
+                    const notes = this.getSelectedNodes().map(node => ({
                         noteId: node.data.noteId,
                         title: node.title
-                    }});
+                    }));
 
                     data.dataTransfer.setData("text", JSON.stringify(notes));
 

@@ -3,15 +3,7 @@ const $contextMenuContainer = $("#context-menu-container");
 
 let dateContextMenuOpenedMs = 0;
 
-/**
- * @param event - originating click event (used to get coordinates to display menu at position)
- * @param {object} contextMenu - needs to have getContextMenuItems() and selectContextMenuItem(e, cmd)
- */
-async function initContextMenu(event, contextMenu) {
-    event.stopPropagation();
-
-    $contextMenuContainer.empty();
-
+async function initContextMenu(options) {
     function addItems($parent, items) {
         for (const item of items) {
             if (item.title === '----') {
@@ -33,15 +25,14 @@ async function initContextMenu(event, contextMenu) {
                 const $item = $("<li>")
                     .addClass("dropdown-item")
                     .append($link)
-                    .attr("data-cmd", item.cmd)
-                    .on('click', function (e) {
-                        const cmd = $(e.target).closest(".dropdown-item").attr("data-cmd");
+                    .on('mousedown', function (e) {
+                        e.stopPropagation();
+
+                        hideContextMenu();
 
                         e.originalTarget = event.target;
 
-                        contextMenu.selectContextMenuItem(e, cmd);
-
-                        hideContextMenu();
+                        options.selectContextMenuItem(e, item);
 
                         // it's important to stop the propagation especially for sub-menus, otherwise the event
                         // might be handled again by top-level menu
@@ -68,21 +59,22 @@ async function initContextMenu(event, contextMenu) {
         }
     }
 
-    addItems($contextMenuContainer, await contextMenu.getContextMenuItems());
+    $contextMenuContainer.empty();
+
+    addItems($contextMenuContainer, options.items);
 
     keyboardActionService.updateDisplayedShortcuts($contextMenuContainer);
 
     // code below tries to detect when dropdown would overflow from page
     // in such case we'll position it above click coordinates so it will fit into client
-    const clickPosition = event.pageY;
     const clientHeight = document.documentElement.clientHeight;
     const contextMenuHeight = $contextMenuContainer.outerHeight() + 30;
     let top;
 
-    if (clickPosition + contextMenuHeight > clientHeight) {
+    if (options.y + contextMenuHeight > clientHeight) {
         top = clientHeight - contextMenuHeight - 10;
     } else {
-        top = event.pageY - 10;
+        top = options.y - 10;
     }
 
     dateContextMenuOpenedMs = Date.now();
@@ -90,7 +82,7 @@ async function initContextMenu(event, contextMenu) {
     $contextMenuContainer.css({
         display: "block",
         top: top,
-        left: event.pageX - 20
+        left: options.x - 20
     }).addClass("show");
 }
 

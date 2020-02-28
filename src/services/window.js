@@ -23,6 +23,8 @@ async function createMainWindow() {
         defaultHeight: 800
     });
 
+    const spellcheckEnabled = await optionService.getOptionBool('spellCheckEnabled');
+
     const {BrowserWindow} = require('electron'); // should not be statically imported
     mainWindow = new BrowserWindow({
         x: mainWindowState.x,
@@ -31,7 +33,8 @@ async function createMainWindow() {
         height: mainWindowState.height,
         title: 'Trilium Notes',
         webPreferences: {
-            nodeIntegration: true
+            nodeIntegration: true,
+            spellcheck: spellcheckEnabled
         },
         frame: await optionService.getOptionBool('nativeTitleBarVisible'),
         icon: getIcon()
@@ -43,15 +46,17 @@ async function createMainWindow() {
     mainWindow.loadURL('http://127.0.0.1:' + await port);
     mainWindow.on('closed', () => mainWindow = null);
 
-    mainWindow.webContents.on('new-window', (e, url) => {
-        if (url !== mainWindow.webContents.getURL()) {
+    const {webContents} = mainWindow;
+
+    webContents.on('new-window', (e, url) => {
+        if (url !== webContents.getURL()) {
             e.preventDefault();
             require('electron').shell.openExternal(url);
         }
     });
 
     // prevent drag & drop to navigate away from trilium
-    mainWindow.webContents.on('will-navigate', (ev, targetUrl) => {
+    webContents.on('will-navigate', (ev, targetUrl) => {
         const parsedUrl = url.parse(targetUrl);
 
         // we still need to allow internal redirects from setup and migration pages
@@ -59,6 +64,14 @@ async function createMainWindow() {
             ev.preventDefault();
         }
     });
+
+    if (spellcheckEnabled) {
+        const languageCodes = (await optionService.getOption('spellCheckLanguageCode'))
+            .split('/')
+            .map(code => code.trim());
+
+        webContents.session.setSpellCheckerLanguages(languageCodes);
+    }
 }
 
 function getIcon() {

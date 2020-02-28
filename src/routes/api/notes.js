@@ -133,12 +133,12 @@ async function getRelationMap(req) {
 
         resp.relations = resp.relations.concat((await note.getRelations())
             .filter(relation => noteIds.includes(relation.value))
-            .map(relation => { return {
+            .map(relation => ({
                 attributeId: relation.attributeId,
                 sourceNoteId: relation.noteId,
                 targetNoteId: relation.value,
                 name: relation.name
-            }; }));
+            })));
 
         for (const relationDefinition of await note.getRelationDefinitions()) {
             if (relationDefinition.value.inverseRelation) {

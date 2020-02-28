@@ -26,7 +26,4 @@ cp -r electron.js $DIR/
 # run in subshell (so we return to original dir)
 (cd $DIR && npm install --only=prod)
 
-rm -r $DIR/node_modules/cld/deps
-
 find $DIR/libraries -name "*.map" -type f -delete
-find $DIR/libraries -name "hunspell.lib" -type f -delete

@@ -114,12 +114,10 @@ export default class TextTypeWidget extends TypeWidget {
         const codeBlockLanguages =
             (await mimeTypesService.getMimeTypes())
                 .filter(mt => mt.enabled)
-                .map(mt => {
-                    return {
+                .map(mt => ({
                         language: mt.mime.toLowerCase().replace(/[\W_]+/g,"-"),
                         label: mt.title
-                    }
-                });
+                    }));
 
         // CKEditor since version 12 needs the element to be visible before initialization. At the same time
         // we want to avoid flicker - i.e. show editor only once everything is ready. That's why we have separate

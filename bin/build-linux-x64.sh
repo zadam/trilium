@@ -11,11 +11,9 @@ echo "Copying required linux-x64 binaries"
 
 rm -r $SRC_DIR/node_modules/sqlite3/lib/binding/*
 rm -r $SRC_DIR/node_modules/pngquant-bin/vendor/*
-rm -r $SRC_DIR/node_modules/@felixrieseberg/spellchecker/build/Release/*
 
 cp -r bin/deps/linux-x64/sqlite/* $SRC_DIR/node_modules/sqlite3/lib/binding/
 cp bin/deps/linux-x64/image/pngquant $SRC_DIR/node_modules/pngquant-bin/vendor/
-cp bin/deps/linux-x64/spellchecker/* $SRC_DIR/node_modules/@felixrieseberg/spellchecker/build/Release/
 
 ./node_modules/.bin/electron-packager $SRC_DIR --asar --out=dist --executable-name=trilium --platform=linux --arch=x64 --overwrite
 

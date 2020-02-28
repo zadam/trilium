@@ -125,7 +125,7 @@ export default class PromotedAttributesWidget extends TabAwareWidget {
                         return;
                     }
 
-                    attributeValues = attributeValues.map(attribute => { return { value: attribute }; });
+                    attributeValues = attributeValues.map(attribute => ({ value: attribute }));
 
                     $input.autocomplete({
                         appendTo: document.querySelector('body'),

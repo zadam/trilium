@@ -66,6 +66,7 @@ import RenderTypeWidget from "./widgets/type_widgets/render.js";
 import RelationMapTypeWidget from "./widgets/type_widgets/relation_map.js";
 import ProtectedSessionTypeWidget from "./widgets/type_widgets/protected_session.js";
 import BookTypeWidget from "./widgets/type_widgets/book.js";
+import contextMenuService from "./services/context_menu.js";
 
 if (utils.isElectron()) {
     require('electron').ipcRenderer.on('globalShortcut', async function(event, actionName) {
@@ -84,3 +85,43 @@ appContext.start();
 noteTooltipService.setupGlobalTooltip();
 
 noteAutocompleteService.init();
+
+if (utils.isElectron()) {
+    const {webContents} = require('electron').remote.getCurrentWindow();
+
+    webContents.on('context-menu', (event, params) => {
+        const items = [
+            {title: "Hello", cmd: "openNoteInNewTab", uiIcon: "arrow-up-right"}
+        ];
+
+        if (params.misspelledWord) {
+            items.push({
+                title: `Misspelled "<strong>${params.misspelledWord}</strong>"`,
+                cmd: "openNoteInNewTab",
+                uiIcon: ""
+            });
+
+            for (const suggestion of params.dictionarySuggestions) {
+                items.push({
+                    title: suggestion,
+                    command: "replaceMisspelling",
+                    spellingSuggestion: suggestion,
+                    uiIcon: ""
+                });
+            }
+        }
+
+        contextMenuService.initContextMenu({
+            x: params.x,
+            y: params.y,
+            items,
+            selectContextMenuItem: (e, {command, spellingSuggestion}) => {
+                if (command === 'replaceMisspelling') {
+                    console.log("Replacing missspeling", spellingSuggestion);
+
+                    require('electron').remote.getCurrentWindow().webContents.insertText(spellingSuggestion);
+                }
+            }
+        });
+    });
+}

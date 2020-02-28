@@ -121,15 +121,13 @@ async function exportToTar(taskContext, branch, format, res) {
             type: note.type,
             mime: note.mime,
             // we don't export utcDateCreated and utcDateModified of any entity since that would be a bit misleading
-            attributes: (await note.getOwnedAttributes()).map(attribute => {
-                return {
+            attributes: (await note.getOwnedAttributes()).map(attribute => ({
                     type: attribute.type,
                     name: attribute.name,
                     value: attribute.value,
                     isInheritable: attribute.isInheritable,
                     position: attribute.position
-                };
-            })
+            }))
         };
 
         taskContext.increaseProgressCount();
