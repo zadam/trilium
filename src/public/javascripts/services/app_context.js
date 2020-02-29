@@ -60,8 +60,6 @@ class AppContext extends Component {
 
         if (utils.isElectron()) {
             this.child(new ZoomService());
-
-            import("./spell_check.js").then(spellCheckService => spellCheckService.initSpellCheck());
         }
 
         this.triggerEvent('initialRenderComplete');
@@ -106,7 +104,7 @@ $(window).on('beforeunload', () => {
 });
 
 function isNotePathInAddress() {
-    const [notePath, tabId] = getHashValueFromAddress();
+    const [notePath, tabId] = treeService.getHashValueFromAddress();
 
     return notePath.startsWith("root")
         // empty string is for empty/uninitialized tab

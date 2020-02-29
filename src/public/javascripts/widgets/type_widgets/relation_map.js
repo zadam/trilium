@@ -2,7 +2,7 @@ import server from "../../services/server.js";
 import linkService from "../../services/link.js";
 import libraryLoader from "../../services/library_loader.js";
 import treeService from "../../services/tree.js";
-import contextMenuWidget from "../../services/context_menu.js";
+import contextMenu from "../../services/context_menu.js";
 import toastService from "../../services/toast.js";
 import attributeAutocompleteService from "../../services/attribute_autocomplete.js";
 import TypeWidget from "./type_widget.js";
@@ -133,15 +133,15 @@ export default class RelationMapTypeWidget extends TypeWidget {
 
         this.$relationMapContainer.attr("id", "relation-map-container-" + (containerCounter++));
         this.$relationMapContainer.on("contextmenu", ".note-box", e => {
-            contextMenuWidget.initContextMenu(e, {
-                getContextMenuItems: () => {
-                    return [
-                        {title: "Open in new tab", cmd: "open-in-new-tab", uiIcon: "empty"},
-                        {title: "Remove note", cmd: "remove", uiIcon: "trash"},
-                        {title: "Edit title", cmd: "edit-title", uiIcon: "pencil"},
-                    ];
-                },
-                selectContextMenuItem: (event, cmd) => this.tabContextMenuHandler(event, cmd)
+            contextMenu.show({
+                x: e.pageX,
+                y: e.pageY,
+                items: [
+                    {title: "Open in new tab", command: "openInNewTab", uiIcon: "empty"},
+                    {title: "Remove note", command: "remove", uiIcon: "trash"},
+                    {title: "Edit title", command: "editTitle", uiIcon: "pencil"},
+                ],
+                selectMenuItemHandler: ({command}) => this.contextMenuHandler(command, e.target)
             });
 
             return false;
@@ -190,16 +190,16 @@ export default class RelationMapTypeWidget extends TypeWidget {
         return this.$widget;
     }
 
-    async tabContextMenuHandler(event, cmd) {
-        const $noteBox = $(event.originalTarget).closest(".note-box");
+    async contextMenuHandler(command, originalTarget) {
+        const $noteBox = $(originalTarget).closest(".note-box");
         const $title = $noteBox.find(".title a");
         const noteId = this.idToNoteId($noteBox.prop("id"));
 
-        if (cmd === "open-in-new-tab") {
+        if (command === "openInNewTab") {
             const tabContext = appContext.tabManager.openEmptyTab();
             tabContext.setNote(noteId);
         }
-        else if (cmd === "remove") {
+        else if (command === "remove") {
             const confirmDialog = await import('../../dialogs/confirm.js');
 
             if (!await confirmDialog.confirmDeleteNoteBoxWithNote($title.text())) {
@@ -221,7 +221,7 @@ export default class RelationMapTypeWidget extends TypeWidget {
 
             this.saveData();
         }
-        else if (cmd === "edit-title") {
+        else if (command === "editTitle") {
             const promptDialog = await import("../../dialogs/prompt.js");
             const title = await promptDialog.ask({
                 message: "Enter new note title:",
@@ -233,8 +233,6 @@ export default class RelationMapTypeWidget extends TypeWidget {
             }
 
             await server.put(`notes/${noteId}/change-title`, { title });
-
-            treeService.setNoteTitle(noteId, title);
 
             $title.text(title);
         }
@@ -449,12 +447,12 @@ export default class RelationMapTypeWidget extends TypeWidget {
                 event.preventDefault();
                 event.stopPropagation();
 
-                contextMenuWidget.initContextMenu(event, {
-                    getContextMenuItems: () => {
-                        return [ {title: "Remove relation", cmd: "remove", uiIcon: "trash"} ];
-                    },
-                    selectContextMenuItem: async (event, cmd) => {
-                        if (cmd === 'remove') {
+                contextMenu.show({
+                    x: event.pageX,
+                    y: event.pageY,
+                    items: [ {title: "Remove relation", command: "remove", uiIcon: "trash"} ],
+                    selectMenuItemHandler: async ({command}) => {
+                        if (command === 'remove') {
                             const confirmDialog = await import('../../dialogs/confirm.js');
 
                             if (!await confirmDialog.confirm("Are you sure you want to remove the relation?")) {

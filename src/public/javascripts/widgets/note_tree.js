@@ -222,7 +222,8 @@ export default class NoteTreeWidget extends TabAwareWidget {
         this.$widget.on('contextmenu', '.fancytree-node', e => {
             const node = $.ui.fancytree.getNode(e);
 
-            contextMenuWidget.initContextMenu(e, new TreeContextMenu(this, node));
+            const treeContextMenu = new TreeContextMenu(this, node);
+            treeContextMenu.show(e);
 
             return false; // blocks default browser right click menu
         });

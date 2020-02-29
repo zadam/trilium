@@ -6,7 +6,7 @@
  */
 
 import BasicWidget from "./basic_widget.js";
-import contextMenuService from "../services/context_menu.js";
+import contextMenu from "../services/context_menu.js";
 import utils from "../services/utils.js";
 import keyboardActionService from "../services/keyboard_actions.js";
 import appContext from "../services/app_context.js";
@@ -254,15 +254,15 @@ export default class TabRowWidget extends BasicWidget {
 
             const tabId = $(e.target).closest(".note-tab").attr('data-tab-id');
 
-            contextMenuService.initContextMenu(e, {
-                getContextMenuItems: () => {
-                    return [
-                        {title: "Close all tabs", cmd: "removeAllTabs", uiIcon: "empty"},
-                        {title: "Close all tabs except for this", cmd: "removeAllTabsExceptForThis", uiIcon: "empty"}
-                    ];
-                },
-                selectContextMenuItem: (e, cmd) => {
-                    this.triggerCommand(cmd, {tabId});
+            contextMenu.show({
+                x: e.pageX,
+                y: e.pageY,
+                items: [
+                    {title: "Close all tabs", command: "removeAllTabs", uiIcon: "empty"},
+                    {title: "Close all tabs except for this", command: "removeAllTabsExceptForThis", uiIcon: "empty"}
+                ],
+                selectMenuItemHandler: ({command}) => {
+                    this.triggerCommand(command, {tabId});
                 }
             });
         });

@@ -70,8 +70,6 @@ class ContextMenu {
 
                         this.hide();
 
-                        e.originalTarget = event.target;
-
                         if (item.handler) {
                             item.handler(item, e);
                         }

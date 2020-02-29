@@ -1,5 +1,5 @@
 import treeService from './tree.js';
-import contextMenuService from "./context_menu.js";
+import contextMenu from "./context_menu.js";
 import appContext from "./app_context.js";
 
 function getNotePathFromUrl(url) {
@@ -111,17 +111,16 @@ function newTabContextMenu(e) {
 
     e.preventDefault();
 
-    contextMenuService.initContextMenu(e, {
-        getContextMenuItems: () => {
-            return [
-                {title: "Open note in new tab", cmd: "openNoteInNewTab", uiIcon: "arrow-up-right"}
-            ];
-        },
-        selectContextMenuItem: (e, cmd) => {
-            if (cmd === 'openNoteInNewTab') {
+    contextMenu.show({
+        x: e.pageX,
+        y: e.pageY,
+        items: [
+            {title: "Open note in new tab", command: "openNoteInNewTab", uiIcon: "arrow-up-right"}
+        ],
+        selectMenuItemHandler: ({command}) => {
+            if (command === 'openNoteInNewTab') {
                 const tabContext = appContext.tabManager.openEmptyTab();
                 tabContext.setNote(notePath);
-                appContext.tabManager.activateTab(tabContext.tabId);
             }
         }
     });
