@@ -77,8 +77,7 @@ function goToLink(e) {
 
     if (notePath) {
         if ((e.which === 1 && e.ctrlKey) || e.which === 2) {
-            const tabContext = appContext.tabManager.openEmptyTab();
-            tabContext.setNote(notePath);
+            appContext.tabManager.openTabWithNote(notePath);
         }
         else if (e.which === 1) {
             const activeTabContext = appContext.tabManager.getActiveTabContext();
@@ -118,8 +117,7 @@ function newTabContextMenu(e) {
         ],
         selectMenuItemHandler: ({command}) => {
             if (command === 'openNoteInNewTab') {
-                const tabContext = appContext.tabManager.openEmptyTab();
-                tabContext.setNote(notePath);
+                appContext.tabManager.openTabWithNote(notePath);
             }
         }
     });
@@ -139,8 +137,7 @@ $(document).on('mousedown', '.note-detail-text a', function (e) {
         e.preventDefault();
 
         if (notePath) {
-            const tabContext = appContext.tabManager.openEmptyTab();
-            tabContext.setNote(notePath);
+            appContext.tabManager.openTabWithNote(notePath, false);
         }
         else {
             const address = $link.attr('href');

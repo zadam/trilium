@@ -28,6 +28,23 @@ export default class TabCachingWidget extends TabAwareWidget {
         }
     }
 
+    async newTabOpenedEvent({tabId}) {
+        if (this.widgets[tabId]) {
+            return;
+        }
+
+        this.widgets[tabId] = this.widgetFactory();
+
+        const $renderedWidget = this.widgets[tabId].render();
+        this.$widget.after($renderedWidget);
+
+        keyboardActionsService.updateDisplayedShortcuts($renderedWidget);
+
+        await this.widgets[tabId].handleEvent('setTabContext', {tabContext: this.tabContext});
+
+        this.child(this.widgets[tabId]); // add as child only once it is ready (rendered with tabContext)
+    }
+
     async refreshWithNote() {
         for (const widget of Object.values(this.widgets)) {
             widget.toggle(false);
@@ -39,21 +56,14 @@ export default class TabCachingWidget extends TabAwareWidget {
             return;
         }
 
-        let widget = this.widgets[this.tabContext.tabId];
+        const widget = this.widgets[this.tabContext.tabId];
 
-        if (!widget) {
-            widget = this.widgets[this.tabContext.tabId] = this.widgetFactory();
-
-            const $renderedWidget = widget.render();
-            this.$widget.after($renderedWidget);
-
-            keyboardActionsService.updateDisplayedShortcuts($renderedWidget);
-
-            this.child(widget); // add as child only once it is ready (also rendered)
-            await widget.handleEvent('setTabContext', {tabContext: this.tabContext});
+        if (widget) {
+            widget.toggle(widget.isEnabled());
         }
-
-        widget.toggle(widget.isEnabled());
+        else {
+            console.error(`Widget for tab ${this.tabContext.tabId} not found.`);
+        }
     }
 
     tabRemovedEvent({tabId}) {

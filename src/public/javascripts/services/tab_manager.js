@@ -163,31 +163,31 @@ export default class TabManager extends Component {
 
     async switchToTab(tabId, notePath) {
         const tabContext = this.tabContexts.find(tc => tc.tabId === tabId)
-            || this.openEmptyTab();
+            || await this.openEmptyTab();
 
         this.activateTab(tabContext.tabId);
         await tabContext.setNote(notePath);
     }
 
     async openAndActivateEmptyTab() {
-        const tabContext = this.openEmptyTab();
+        const tabContext = await this.openEmptyTab();
 
         await this.activateTab(tabContext.tabId);
 
         await tabContext.setEmpty();
     }
 
-    openEmptyTab(tabId) {
+    async openEmptyTab(tabId) {
         const tabContext = new TabContext(tabId);
         this.child(tabContext);
 
-        this.triggerEvent('newTabOpened', {tabId: tabContext.tabId});
+        await this.triggerEvent('newTabOpened', {tabId: tabContext.tabId});
 
         return tabContext;
     }
 
     async openTabWithNote(notePath, activate, tabId = null) {
-        const tabContext = this.openEmptyTab(tabId);
+        const tabContext = await this.openEmptyTab(tabId);
 
         await tabContext.setNote(notePath, !activate); // if activate is false then send normal noteSwitched event
 
@@ -211,8 +211,7 @@ export default class TabManager extends Component {
 
         // if no tab with this note has been found we'll create new tab
 
-        const tabContext = this.openEmptyTab();
-        await tabContext.setNote(noteId);
+        await this.openTabWithNote(noteId);
     }
 
     activateTab(tabId, triggerEvent = true) {
