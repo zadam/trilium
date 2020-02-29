@@ -84,7 +84,6 @@ export default class NoteTreeWidget extends TabAwareWidget {
                         const tabContext = appContext.tabManager.openEmptyTab();
                         const notePath = treeService.getNotePath(node);
                         tabContext.setNote(notePath);
-                        appContext.tabManager.activateTab(tabContext.tabId);
                     }
                     else {
                         node.setActive();

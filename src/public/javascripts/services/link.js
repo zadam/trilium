@@ -78,7 +78,6 @@ function goToLink(e) {
     if (notePath) {
         if ((e.which === 1 && e.ctrlKey) || e.which === 2) {
             const tabContext = appContext.tabManager.openEmptyTab();
-            appContext.tabManager.activateTab(tabContext.tabId);
             tabContext.setNote(notePath);
         }
         else if (e.which === 1) {
@@ -142,7 +141,6 @@ $(document).on('mousedown', '.note-detail-text a', function (e) {
         if (notePath) {
             const tabContext = appContext.tabManager.openEmptyTab();
             tabContext.setNote(notePath);
-            appContext.tabManager.activateTab(tabContext.tabId);
         }
         else {
             const address = $link.attr('href');

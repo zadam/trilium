@@ -109,7 +109,6 @@ class TreeContextMenu {
 
         if (command === 'openInTab') {
             const tabContext = appContext.tabManager.openEmptyTab();
-            appContext.tabManager.activateTab(tabContext.tabId);
             tabContext.setNote(notePath);
         }
         else if (command === "insertNoteAfter") {
