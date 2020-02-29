@@ -1,6 +1,18 @@
 import utils from '../services/utils.js';
 import Mutex from "../services/mutex.js";
 
+/**
+ * Abstract class for all components in the Trilium's frontend.
+ *
+ * Contains also event implementation with following properties:
+ * - event / command distribution is synchronous which among others mean that events are well ordered - event
+ *   which was sent out first will also be processed first by the component since it was added to the mutex queue
+ *   as the first one
+ * - execution of the event / command is asynchronous - each component executes the event on its own without regard for
+ *   other components.
+ * - although the execution is async, we are collecting all the promises and therefore it is possible to wait until the
+ *   event / command is executed in all components - by simply awaiting the `triggerEvent()`.
+ */
 export default class Component {
     constructor() {
         this.componentId = `comp-${this.constructor.name}-` + utils.randomString(6);
@@ -24,50 +36,40 @@ export default class Component {
         return this;
     }
 
-    async handleEvent(name, data) {
-        await this.initialized;
-
-        const fun = this[name + 'Event'];
-
-        const start = Date.now();
-
-        await this.callMethod(fun, data);
-
-        const end = Date.now();
-
-        if (end - start > 10 && glob.PROFILING_LOG) {
-            console.log(`Event ${name} in component ${this.componentId} took ${end-start}ms`);
-        }
-
-        await this.handleEventInChildren(name, data);
+    /** @return {Promise} */
+    handleEvent(name, data) {
+        return Promise.all([
+            this.initialized.then(() => this.callMethod(this[name + 'Event'], data)),
+            this.handleEventInChildren(name, data)
+        ]);
     }
 
-    async triggerEvent(name, data) {
-        await this.parent.triggerEvent(name, data);
+    /** @return {Promise} */
+    triggerEvent(name, data) {
+        return this.parent.triggerEvent(name, data);
     }
 
-    async handleEventInChildren(name, data) {
+    /** @return {Promise} */
+    handleEventInChildren(name, data) {
         const promises = [];
 
         for (const child of this.children) {
             promises.push(child.handleEvent(name, data));
         }
 
-        await Promise.all(promises);
+        return Promise.all(promises);
     }
 
-    async triggerCommand(name, data = {}) {
-        const called = await this.handleCommand(name, data);
-
-        if (!called) {
-            await this.parent.triggerCommand(name, data);
-        }
-    }
-
-    async handleCommand(name, data) {
+    /** @return {Promise} */
+    triggerCommand(name, data = {}) {
         const fun = this[name + 'Command'];
 
-        return await this.callMethod(fun, data);
+        if (fun) {
+            return this.callMethod(fun, data);
+        }
+        else {
+            return this.parent.triggerCommand(name, data);
+        }
     }
 
     async callMethod(fun, data) {

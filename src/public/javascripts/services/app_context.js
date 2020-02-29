@@ -65,22 +65,24 @@ class AppContext extends Component {
         this.triggerEvent('initialRenderComplete');
     }
 
-    async triggerEvent(name, data) {
-        await this.handleEvent(name, data);
+    /** @return {Promise} */
+    triggerEvent(name, data) {
+        return this.handleEvent(name, data);
     }
 
-    async triggerCommand(name, data = {}) {
+    /** @return {Promise} */
+    triggerCommand(name, data = {}) {
         for (const executor of this.executors) {
-            const called = await executor.handleCommand(name, data);
+            const fun = executor[name + "Command"];
 
-            if (called) {
-                return;
+            if (fun) {
+                return executor.callMethod(fun, data);
             }
         }
 
         console.debug(`Unhandled command ${name}, converting to event.`);
 
-        await this.triggerEvent(name, data);
+        return this.triggerEvent(name, data);
     }
 
     getComponentByEl(el) {
