@@ -38,10 +38,10 @@ class AppContext extends Component {
 
         $("body").append($renderedWidget);
 
-        $renderedWidget.on('click', "[data-trigger-event]", e => {
-            const eventName = $(e.target).attr('data-trigger-event');
+        $renderedWidget.on('click', "[data-trigger-command]", e => {
+            const commandName = $(e.target).attr('data-trigger-command');
 
-            this.triggerEvent(eventName);
+            this.triggerCommand(commandName);
         });
 
         this.tabManager = new TabManager();

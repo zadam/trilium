@@ -13,14 +13,14 @@ const TPL = `
         <span class="caret"></span>
     </button>
     <div class="dropdown-menu dropdown-menu-right">
-        <a data-trigger-event="showNoteRevisions" class="dropdown-item show-note-revisions-button">Revisions</a>
-        <a data-trigger-event="showAttributes" class="dropdown-item show-attributes-button"><kbd data-command="showAttributes"></kbd> Attributes</a>
-        <a data-trigger-event="showLinkMap" class="dropdown-item show-link-map-button"><kbd data-command="showLinkMap"></kbd> Link map</a>
-        <a data-trigger-event="showNoteSource" class="dropdown-item show-source-button"><kbd data-command="showNoteSource"></kbd> Note source</a>
+        <a data-trigger-command="showNoteRevisions" class="dropdown-item show-note-revisions-button">Revisions</a>
+        <a data-trigger-command="showAttributes" class="dropdown-item show-attributes-button"><kbd data-command="showAttributes"></kbd> Attributes</a>
+        <a data-trigger-command="showLinkMap" class="dropdown-item show-link-map-button"><kbd data-command="showLinkMap"></kbd> Link map</a>
+        <a data-trigger-command="showNoteSource" class="dropdown-item show-source-button"><kbd data-command="showNoteSource"></kbd> Note source</a>
         <a class="dropdown-item import-files-button">Import files</a>
         <a class="dropdown-item export-note-button">Export note</a>
-        <a data-trigger-event="printActiveNote" class="dropdown-item print-note-button"><kbd data-command="printActiveNote"></kbd> Print note</a>
-        <a data-trigger-event="showNoteInfo" class="dropdown-item show-note-info-button"><kbd data-command="showNoteInfo"></kbd> Note info</a>
+        <a data-trigger-command="printActiveNote" class="dropdown-item print-note-button"><kbd data-command="printActiveNote"></kbd> Print note</a>
+        <a data-trigger-command="showNoteInfo" class="dropdown-item show-note-info-button"><kbd data-command="showNoteInfo"></kbd> Note info</a>
     </div>
 </div>`;
 

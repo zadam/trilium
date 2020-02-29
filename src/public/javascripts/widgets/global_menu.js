@@ -29,7 +29,7 @@ const TPL = `
             <span class="caret"></span>
         </button>
         <div class="dropdown-menu dropdown-menu-right">
-            <a class="dropdown-item options-button" data-trigger-event="showOptions">
+            <a class="dropdown-item options-button" data-trigger-command="showOptions">
                 <span class="bx bx-slider"></span>
                 Options
             </a>
@@ -39,44 +39,44 @@ const TPL = `
                 Sync (<span id="outstanding-syncs-count">0</span>)
             </a>
 
-            <a class="dropdown-item open-dev-tools-button" data-trigger-event="openDevTools">
+            <a class="dropdown-item open-dev-tools-button" data-trigger-command="openDevTools">
                 <span class="bx bx-terminal"></span>
                 Open Dev Tools
                 <kbd data-command="openDevTools"></kbd>
             </a>
 
-            <a class="dropdown-item" data-trigger-event="showSQLConsole">
+            <a class="dropdown-item" data-trigger-command="showSQLConsole">
                 <span class="bx bx-data"></span>
                 Open SQL Console
                 <kbd data-command="showSQLConsole"></kbd>
             </a>
 
-            <a class="dropdown-item" data-trigger-event="showBackendLog">
+            <a class="dropdown-item" data-trigger-command="showBackendLog">
                 <span class="bx bx-empty"></span>
                 Show backend log
                 <kbd data-command="showBackendLog"></kbd>
             </a>
 
-            <a class="dropdown-item" data-trigger-event="reloadFrontendApp" 
+            <a class="dropdown-item" data-trigger-command="reloadFrontendApp" 
                 title="Reload can help with some visual glitches without restarting the whole app.">
                 <span class="bx bx-empty"></span>
                 Reload frontend
                 <kbd data-command="reloadFrontendApp"></kbd>
             </a>
 
-            <a class="dropdown-item" data-trigger-event="toggleZenMode">
+            <a class="dropdown-item" data-trigger-command="toggleZenMode">
                 <span class="bx bx-empty"></span>
                 Toggle Zen mode
                 <kbd data-command="toggleZenMode"></kbd>
             </a>
 
-            <a class="dropdown-item" data-trigger-event="toggleFullscreen">
+            <a class="dropdown-item" data-trigger-command="toggleFullscreen">
                 <span class="bx bx-empty"></span>
                 Toggle fullscreen
                 <kbd data-command="toggleFullscreen"></kbd>
             </a>
 
-            <a class="dropdown-item" data-trigger-event="showHelp">
+            <a class="dropdown-item" data-trigger-command="showHelp">
                 <span class="bx bx-info-circle"></span>
                 Show Help
                 <kbd data-command="showHelp"></kbd>
@@ -87,7 +87,7 @@ const TPL = `
                 About Trilium Notes
             </a>
 
-            <a class="dropdown-item logout-button" data-trigger-event="logout">
+            <a class="dropdown-item logout-button" data-trigger-command="logout">
                 <span class="bx bx-log-out"></span>
                 Logout
             </a>

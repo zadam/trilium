@@ -13,21 +13,21 @@ const WIDGET_TPL = `
     }
     </style>
 
-    <a data-trigger-event="createTopLevelNote"
+    <a data-trigger-command="createTopLevelNote"
        title="Create new top level note" 
        class="icon-action bx bx-folder-plus"></a>
 
-    <a data-trigger-event="collapseTree"
+    <a data-trigger-command="collapseTree"
        title="Collapse note tree" 
        data-command="collapseTree" 
        class="icon-action bx bx-layer-minus"></a>
 
-    <a data-trigger-event="scrollToActiveNote"
+    <a data-trigger-command="scrollToActiveNote"
        title="Scroll to active note" 
        data-command="scrollToActiveNote" 
        class="icon-action bx bx-crosshair"></a>
 
-    <a data-trigger-event="searchNotes"
+    <a data-trigger-command="searchNotes"
        title="Search in notes"
        data-command="searchNotes"
        class="icon-action bx bx-search"></a>

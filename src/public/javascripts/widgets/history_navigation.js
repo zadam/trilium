@@ -10,9 +10,9 @@ const TPL = `
     }
     </style>
 
-    <a title="Go to previous note." data-trigger-event="backInNoteHistory" class="icon-action bx bx-left-arrow-circle"></a>
+    <a title="Go to previous note." data-trigger-command="backInNoteHistory" class="icon-action bx bx-left-arrow-circle"></a>
 
-    <a title="Go to next note." data-trigger-event="forwardInNoteHistory" class="icon-action bx bx-right-arrow-circle"></a>
+    <a title="Go to next note." data-trigger-command="forwardInNoteHistory" class="icon-action bx bx-right-arrow-circle"></a>
 </div>
 `;
 
