@@ -1,5 +1,4 @@
 import glob from './services/glob.js';
-import contextMenu from './services/tree_context_menu.js';
 import link from './services/link.js';
 import ws from './services/ws.js';
 import noteType from './widgets/note_type.js';
@@ -66,7 +65,7 @@ import RenderTypeWidget from "./widgets/type_widgets/render.js";
 import RelationMapTypeWidget from "./widgets/type_widgets/relation_map.js";
 import ProtectedSessionTypeWidget from "./widgets/type_widgets/protected_session.js";
 import BookTypeWidget from "./widgets/type_widgets/book.js";
-import contextMenuService from "./services/context_menu.js";
+import contextMenu from "./services/context_menu.js";
 
 if (utils.isElectron()) {
     require('electron').ipcRenderer.on('globalShortcut', async function(event, actionName) {
@@ -87,39 +86,107 @@ noteTooltipService.setupGlobalTooltip();
 noteAutocompleteService.init();
 
 if (utils.isElectron()) {
-    const {webContents} = require('electron').remote.getCurrentWindow();
+    const electron = require('electron');
+    const {webContents} = electron.remote.getCurrentWindow();
 
     webContents.on('context-menu', (event, params) => {
-        const items = [
-            {title: "Hello", cmd: "openNoteInNewTab", uiIcon: "arrow-up-right"}
-        ];
+        const {editFlags} = params;
+        const hasText = params.selectionText.trim().length > 0;
+        const isMac = process.platform === "darwin";
+        const platformModifier = isMac ? 'Meta' : 'Ctrl';
+
+        const items = [];
 
         if (params.misspelledWord) {
-            items.push({
-                title: `Misspelled "<strong>${params.misspelledWord}</strong>"`,
-                cmd: "openNoteInNewTab",
-                uiIcon: ""
-            });
-
             for (const suggestion of params.dictionarySuggestions) {
                 items.push({
                     title: suggestion,
                     command: "replaceMisspelling",
                     spellingSuggestion: suggestion,
-                    uiIcon: ""
+                    uiIcon: "empty"
                 });
             }
+
+            items.push({
+                title: `Add "${params.misspelledWord}" to dictionary`,
+                uiIcon: "plus",
+                handler: () => webContents.session.addWordToSpellCheckerDictionary(params.misspelledWord)
+            });
+
+            items.push({ title: `----` });
         }
 
-        contextMenuService.initContextMenu({
+        if (params.isEditable) {
+            items.push({
+                enabled: editFlags.canCut && hasText,
+                title: `Cut <kbd>${platformModifier}+X`,
+                uiIcon: "cut",
+                handler: () => webContents.cut()
+            });
+        }
+
+        if (params.isEditable || hasText) {
+            items.push({
+                enabled: editFlags.canCopy && hasText,
+                title: `Copy <kbd>${platformModifier}+C`,
+                uiIcon: "copy",
+                handler: () => webContents.copy()
+            });
+        }
+
+        if (params.linkURL.length !== 0 && params.mediaType === 'none') {
+            items.push({
+                title: `Copy link`,
+                uiIcon: "copy",
+                handler: () => {
+                    electron.clipboard.write({
+                        bookmark: params.linkText,
+                        text: params.linkURL
+                    });
+                }
+            });
+        }
+
+        if (params.isEditable) {
+            items.push({
+                enabled: editFlags.canPaste,
+                title: `Paste <kbd>${platformModifier}+V`,
+                uiIcon: "paste",
+                handler: () => webContents.paste()
+            });
+        }
+
+        if (params.isEditable) {
+            items.push({
+                enabled: editFlags.canPaste,
+                title: `Paste as plain text <kbd>${platformModifier}+Shift+V`,
+                uiIcon: "paste",
+                handler: () => webContents.pasteAndMatchStyle()
+            });
+        }
+
+        if (hasText) {
+            const shortenedSelection = params.selectionText.length > 15
+                ? (params.selectionText.substr(0, 13) + "…")
+                : params.selectionText;
+
+            items.push({
+                enabled: editFlags.canPaste,
+                title: `Search for "${shortenedSelection}" with DuckDuckGo`,
+                uiIcon: "search-alt",
+                handler: () => electron.shell.openExternal(`https://duckduckgo.com/?q=${encodeURIComponent(params.selectionText)}`)
+            });
+        }
+
+        contextMenu.show({
             x: params.x,
             y: params.y,
             items,
-            selectContextMenuItem: (e, {command, spellingSuggestion}) => {
+            selectMenuItemHandler: ({command, spellingSuggestion}) => {
                 if (command === 'replaceMisspelling') {
                     console.log("Replacing missspeling", spellingSuggestion);
 
-                    require('electron').remote.getCurrentWindow().webContents.insertText(spellingSuggestion);
+                    webContents.insertText(spellingSuggestion);
                 }
             }
         });

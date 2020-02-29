@@ -1,7 +1,7 @@
 import hoistedNoteService from "../services/hoisted_note.js";
 import treeService from "../services/tree.js";
 import utils from "../services/utils.js";
-import contextMenuWidget from "../services/context_menu.js";
+import contextMenu from "../services/context_menu.js";
 import treeCache from "../services/tree_cache.js";
 import treeBuilder from "../services/tree_builder.js";
 import TreeContextMenu from "../services/tree_context_menu.js";
@@ -97,7 +97,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
             },
             activate: async (event, data) => {
                 // click event won't propagate so let's close context menu manually
-                contextMenuWidget.hideContextMenu();
+                contextMenu.hide();
 
                 const notePath = treeService.getNotePath(data.node);
 

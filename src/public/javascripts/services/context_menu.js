@@ -1,10 +1,48 @@
 import keyboardActionService from './keyboard_actions.js';
-const $contextMenuContainer = $("#context-menu-container");
 
-let dateContextMenuOpenedMs = 0;
+class ContextMenu {
+    constructor() {
+        this.$widget = $("#context-menu-container");
+        this.dateContextMenuOpenedMs = 0;
 
-async function initContextMenu(options) {
-    function addItems($parent, items) {
+        $(document).on('click', () => this.hide());
+    }
+    
+    async show(options) {
+        this.options = options;
+        
+        this.$widget.empty();
+
+        this.addItems(this.$widget, options.items);
+
+        keyboardActionService.updateDisplayedShortcuts(this.$widget);
+
+        this.positionMenu();
+
+        this.dateContextMenuOpenedMs = Date.now();
+    }
+
+    positionMenu() {
+        // code below tries to detect when dropdown would overflow from page
+        // in such case we'll position it above click coordinates so it will fit into client
+        const clientHeight = document.documentElement.clientHeight;
+        const contextMenuHeight = this.$widget.outerHeight() + 30;
+        let top;
+
+        if (this.options.y + contextMenuHeight > clientHeight) {
+            top = clientHeight - contextMenuHeight - 10;
+        } else {
+            top = this.options.y - 10;
+        }
+
+        this.$widget.css({
+            display: "block",
+            top: top,
+            left: this.options.x - 20
+        }).addClass("show");
+    }
+
+    addItems($parent, items) {
         for (const item of items) {
             if (item.title === '----') {
                 $parent.append($("<div>").addClass("dropdown-divider"));
@@ -25,14 +63,20 @@ async function initContextMenu(options) {
                 const $item = $("<li>")
                     .addClass("dropdown-item")
                     .append($link)
-                    .on('mousedown', function (e) {
+                    // important to use mousedown instead of click since the former does not change focus
+                    // (especially important for focused text for spell check)
+                    .on('mousedown', (e) => {
                         e.stopPropagation();
 
-                        hideContextMenu();
+                        this.hide();
 
                         e.originalTarget = event.target;
 
-                        options.selectContextMenuItem(e, item);
+                        if (item.handler) {
+                            item.handler(item, e);
+                        }
+
+                        this.options.selectMenuItemHandler(item, e);
 
                         // it's important to stop the propagation especially for sub-menus, otherwise the event
                         // might be handled again by top-level menu
@@ -49,7 +93,7 @@ async function initContextMenu(options) {
 
                     const $subMenu = $("<ul>").addClass("dropdown-menu");
 
-                    addItems($subMenu, item.items);
+                    this.addItems($subMenu, item.items);
 
                     $item.append($subMenu);
                 }
@@ -59,45 +103,16 @@ async function initContextMenu(options) {
         }
     }
 
-    $contextMenuContainer.empty();
-
-    addItems($contextMenuContainer, options.items);
-
-    keyboardActionService.updateDisplayedShortcuts($contextMenuContainer);
-
-    // code below tries to detect when dropdown would overflow from page
-    // in such case we'll position it above click coordinates so it will fit into client
-    const clientHeight = document.documentElement.clientHeight;
-    const contextMenuHeight = $contextMenuContainer.outerHeight() + 30;
-    let top;
-
-    if (options.y + contextMenuHeight > clientHeight) {
-        top = clientHeight - contextMenuHeight - 10;
-    } else {
-        top = options.y - 10;
-    }
-
-    dateContextMenuOpenedMs = Date.now();
-
-    $contextMenuContainer.css({
-        display: "block",
-        top: top,
-        left: options.x - 20
-    }).addClass("show");
-}
-
-$(document).on('click', () => hideContextMenu());
-
-function hideContextMenu() {
-    // this date checking comes from change in FF66 - https://github.com/zadam/trilium/issues/468
-    // "contextmenu" event also triggers "click" event which depending on the timing can close just opened context menu
-    // we might filter out right clicks, but then it's better if even right clicks close the context menu
-    if (Date.now() - dateContextMenuOpenedMs > 300) {
-        $contextMenuContainer.hide();
+    hide() {
+        // this date checking comes from change in FF66 - https://github.com/zadam/trilium/issues/468
+        // "contextmenu" event also triggers "click" event which depending on the timing can close just opened context menu
+        // we might filter out right clicks, but then it's better if even right clicks close the context menu
+        if (Date.now() - this.dateContextMenuOpenedMs > 300) {
+            this.$widget.hide();
+        }
     }
 }
 
-export default {
-    initContextMenu,
-    hideContextMenu
-}
+const contextMenu = new ContextMenu();
+
+export default contextMenu;
