@@ -117,7 +117,12 @@ export default class NoteDetailWidget extends TabAwareWidget {
 
             this.$widget.append($renderedWidget);
 
-            typeWidget.handleEvent('setTabContext', {tabContext: this.tabContext});
+            await typeWidget.handleEvent('setTabContext', {tabContext: this.tabContext});
+
+            typeWidget.handleEvent('tabNoteSwitched', {
+                tabId: this.tabContext.tabId,
+                notePath: this.notePath
+            });
         }
 
         this.setupClasses();

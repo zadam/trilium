@@ -1,5 +1,6 @@
 import TabAwareWidget from "./tab_aware_widget.js";
 import keyboardActionsService from "../services/keyboard_actions.js";
+import appContext from "../services/app_context.js";
 
 export default class TabCachingWidget extends TabAwareWidget {
     constructor(widgetFactory) {
@@ -42,7 +43,9 @@ export default class TabCachingWidget extends TabAwareWidget {
 
         keyboardActionsService.updateDisplayedShortcuts($renderedWidget);
 
-        await this.widgets[tabId].handleEvent('setTabContext', {tabContext: this.tabContext});
+        await this.widgets[tabId].handleEvent('setTabContext', {
+            tabContext: appContext.tabManager.getTabContextById(tabId)
+        });
 
         this.child(this.widgets[tabId]); // add as child only once it is ready (rendered with tabContext)
     }

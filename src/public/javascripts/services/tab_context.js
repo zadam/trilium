@@ -49,8 +49,6 @@ class TabContext extends Component {
 
         this.autoBookDisabled = false;
 
-        //this.cleanup(); // esp. on windows autocomplete is not getting closed automatically
-
         setTimeout(async () => {
             // we include the note into recent list only if the user stayed on the note at least 5 seconds
             if (notePath && notePath === this.notePath) {

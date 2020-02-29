@@ -222,7 +222,7 @@ export default class TabManager extends Component {
         this.activeTabId = tabId;
 
         if (triggerEvent) {
-            this.triggerEvent('activeTabChanged');
+            this.triggerEvent('activeTabChanged', {tabId});
         }
 
         this.tabsUpdate.scheduleUpdate();
