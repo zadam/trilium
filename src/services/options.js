@@ -41,13 +41,14 @@ async function getOptionBool(name) {
 async function setOption(name, value) {
     const option = await require('./repository').getOption(name);
 
-    if (!option) {
-        throw new Error(`Option ${name} doesn't exist`);
+    if (option) {
+        option.value = value;
+
+        await option.save();
     }
-
-    option.value = value;
-
-    await option.save();
+    else {
+        await createOption(name, value, false);
+    }
 }
 
 async function createOption(name, value, isSynced) {

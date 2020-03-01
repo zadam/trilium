@@ -1,4 +1,5 @@
 import TabAwareWidget from "./tab_aware_widget.js";
+import options from "../services/options.js";
 
 const WIDGET_TPL = `
 <div class="card widget">
@@ -33,7 +34,15 @@ export default class CollapsibleWidget extends TabAwareWidget {
 
         this.$bodyWrapper = this.$widget.find('.body-wrapper');
         this.$bodyWrapper.attr('id', this.componentId); // for toggle to work we need id
-        this.$bodyWrapper.collapse("show");
+
+        const widgetName = this.constructor.name;
+
+        if (!options.is(widgetName + 'Collapsed')) {
+            this.$bodyWrapper.collapse("show");
+        }
+
+        this.$bodyWrapper.on('hidden.bs.collapse', () => options.save(widgetName + 'Collapsed', 'true'));
+        this.$bodyWrapper.on('shown.bs.collapse', () => options.save(widgetName + 'Collapsed', 'false'));
 
         this.$body = this.$bodyWrapper.find('.card-body');
 
