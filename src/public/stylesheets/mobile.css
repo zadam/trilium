@@ -5,46 +5,15 @@ html, body {
     padding: 0;
 }
 
-
-.tree {
-    width: 100%;
-    overflow: auto;
-}
-
-.tree .action-button {
-    position: relative;
-    top: -5px;
-    margin-left: 10px;
-}
-
-#detail {
-    padding: 5px 20px 10px 0px;
+.note-detail {
+    padding: 5px 20px 10px 0;
     height: 100%;
     flex-direction: column;
 }
 
-#note-tab-container {
-    height: 100%;
-}
-
-.note-tab-row {
-    display: none !important;
-}
-
-.note-title-row {
-    display: flex;
-    padding-left: 15px;
-    padding-top: 10px;
-    flex-shrink: 0;
-}
-
-.action-button {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 1.5em;
-    padding-left: 0.5em;
-    padding-right: 0.5em;
+.note-title-container {
+    padding: 10px;
+    font-size: larger;
 }
 
 .fancytree-custom-icon {
