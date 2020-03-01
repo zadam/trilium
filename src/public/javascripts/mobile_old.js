@@ -87,52 +87,6 @@ async function showTree() {
     treeService.setTree($.ui.fancytree.getTree("#tree"));
 }
 
-$detail.on("click", ".note-menu-button", async e => {
-    // FIXME
-    const node = appContext.getMainNoteTree().getActiveNode();
-    const branch = treeCache.getBranch(node.data.branchId);
-    const note = await treeCache.getNote(node.data.noteId);
-    const parentNote = await treeCache.getNote(branch.parentNoteId);
-    const isNotRoot = note.noteId !== 'root';
-
-    const items = [
-        { title: "Insert note after", cmd: "insertNoteAfter", uiIcon: "plus",
-            enabled: isNotRoot && parentNote.type !== 'search' },
-        { title: "Insert child note", cmd: "insertChildNote", uiIcon: "plus",
-            enabled: note.type !== 'search' },
-        { title: "Delete this note", cmd: "delete", uiIcon: "trash",
-            enabled: isNotRoot && parentNote.type !== 'search' }
-    ];
-
-    contextMenuWidget.initContextMenu(e, {
-        getContextMenuItems: () => items,
-        selectContextMenuItem: async (event, cmd) => {
-            if (cmd === "insertNoteAfter") {
-                const parentNoteId = node.data.parentNoteId;
-                const isProtected = await treeService.getParentProtectedStatus(node);
-
-                noteCreateService.createNote(parentNoteId, {
-                    isProtected: isProtected,
-                    target: 'after',
-                    targetBranchId: node.data.branchId
-                });
-            }
-            else if (cmd === "insertChildNote") {
-                noteCreateService.createNote(node.data.noteId);
-            }
-            else if (cmd === "delete") {
-                if (await branchService.deleteNotes([node])) {
-                    // move to the tree
-                    togglePanes();
-                }
-            }
-            else {
-                throw new Error("Unrecognized command " + cmd);
-            }
-        }
-    });
-});
-
 $("#log-out-button").on('click', () => {
     $("#logout-form").trigger('submit');
 });

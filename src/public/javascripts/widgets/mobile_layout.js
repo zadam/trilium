@@ -3,6 +3,8 @@ import NoteTitleWidget from "./note_title.js";
 import NoteDetailWidget from "./note_detail.js";
 import NoteTreeWidget from "./note_tree.js";
 import MobileGlobalButtonsWidget from "./mobile_global_buttons.js";
+import CloseDetailButtonWidget from "./close_detail_button.js";
+import MobileDetailMenuWidget from "./mobile_detail_menu.js";
 
 export default class MobileLayout {
     getRootWidget(appContext) {
@@ -16,7 +18,10 @@ export default class MobileLayout {
                 .child(new NoteTreeWidget()))
             .child(new FlexContainer('column')
                 .class("d-none d-sm-flex d-md-flex d-lg-flex d-xl-flex col-12 col-sm-7 col-md-8 col-lg-8")
-                .child(new NoteTitleWidget())
+                .child(new FlexContainer('row')
+                    .child(new MobileDetailMenuWidget())
+                    .child(new NoteTitleWidget())
+                    .child(new CloseDetailButtonWidget()))
                 .child(new NoteDetailWidget()));
     }
 }

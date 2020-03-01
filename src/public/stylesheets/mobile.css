@@ -57,3 +57,12 @@ span.fancytree-expander {
     border-width: 2px;
     border-style: solid;
 }
+
+.action-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.5em;
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+}
