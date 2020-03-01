@@ -114,13 +114,13 @@ export default class Entrypoints extends Component {
     toggleZenModeCommand() {
         if (!this.zenModeActive) {
             $(".hide-in-zen-mode,.gutter").addClass("hidden-by-zen-mode");
-            $("#container").addClass("zen-mode");
+            $("#root-widget").addClass("zen-mode");
             this.zenModeActive = true;
         }
         else {
             // not hiding / showing explicitly since element might be hidden also for other reasons
             $(".hide-in-zen-mode,.gutter").removeClass("hidden-by-zen-mode");
-            $("#container").removeClass("zen-mode");
+            $("#root-widget").removeClass("zen-mode");
             this.zenModeActive = false;
         }
     }

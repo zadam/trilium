@@ -82,7 +82,6 @@ export default class ApperanceOptions {
         this.$treeFontSize = $("#tree-font-size");
         this.$detailFontSize = $("#detail-font-size");
         this.$body = $("body");
-        this.$container = $("#container");
 
         this.$themeSelect.on('change', () => {
             const newTheme = this.$themeSelect.val();
