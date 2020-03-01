@@ -46,7 +46,9 @@ export default class FlexContainer extends BasicWidget {
         this.$widget = $(`<div>`);
 
         if (this.cssEl) {
-            this.$widget.append($(`<style>`).append(this.cssEl));
+            const css = this.cssEl.trim().startsWith('<style>') ? this.cssEl : `<style>${this.cssEl}</style>`;
+
+            this.$widget.append(css);
         }
 
         for (const key in this.attrs) {

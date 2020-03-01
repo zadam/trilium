@@ -26,6 +26,75 @@ import SimilarNotesWidget from "./similar_notes.js";
 import WhatLinksHereWidget from "./what_links_here.js";
 import SidePaneToggles from "./side_pane_toggles.js";
 
+const RIGHT_PANE_CSS = `
+<style>
+#right-pane .card {
+    border: 0;
+    min-height: 0;
+    max-height: 30%;
+    display: flex;
+    flex-grow: 1;
+    flex-shrink: 1;
+    flex-direction: column;
+}
+
+#right-pane .card-header {
+    background: inherit;
+    padding: 3px 10px 3px 10px;
+    width: 99%; /* to give minimal right margin */
+    background-color: var(--button-background-color);
+    border-color: var(--button-border-color);
+    border-width: 1px;
+    border-radius: 4px;
+    border-style: solid;
+    display: flex;
+    justify-content: space-between;
+}
+
+#right-pane .widget-title {
+    border-radius: 0;
+    padding: 0;
+    border: 0;
+    background: inherit;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: var(--muted-text-color) !important;
+}
+
+#right-pane .widget-header-action {
+    color: var(--link-color) !important;
+    cursor: pointer;
+}
+
+#right-pane .widget-help {
+    color: var(--muted-text-color);
+    position: relative;
+    top: 2px;
+}
+
+#right-pane .widget-help.no-link:hover {
+    cursor: default;
+    text-decoration: none;
+}
+
+#right-pane .body-wrapper {
+    overflow: auto;
+}
+
+#right-pane .card-body {
+    width: 100%;
+    padding: 8px;
+    border: 0;
+    height: 100%;
+    overflow: auto;
+}
+
+#right-pane .card-body ul {
+    padding-left: 25px;
+    margin-bottom: 5px;
+}
+</style>`;
+
 export default class DesktopLayout {
     getRootWidget(appContext) {
         return new FlexContainer('column')
@@ -57,7 +126,7 @@ export default class DesktopLayout {
                     .child(new TabCachingWidget(() => new PromotedAttributesWidget()))
                     .child(new TabCachingWidget(() => new NoteDetailWidget()))
                 )
-                .child(new SidePaneContainer('right')
+                .child(new SidePaneContainer('right').cssBlock(RIGHT_PANE_CSS)
                     .child(new NoteInfoWidget())
                     .child(new TabCachingWidget(() => new CalendarWidget()))
                     .child(new TabCachingWidget(() => new AttributesWidget()))

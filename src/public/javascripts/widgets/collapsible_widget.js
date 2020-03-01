@@ -58,10 +58,15 @@ export default class CollapsibleWidget extends TabAwareWidget {
         this.$headerActions = this.$widget.find('.widget-header-actions');
         this.$headerActions.append(...this.getHeaderActions());
 
+        this.decorateWidget();
+
         this.initialized = this.doRenderBody();
 
         return this.$widget;
     }
+
+    /** for overriding */
+    decorateWidget() {}
 
     /** for overriding */
     async doRenderBody() {}

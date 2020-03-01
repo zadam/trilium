@@ -818,8 +818,4 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
         noteCreateService.duplicateNote(noteId, branch.parentNoteId);
     }
-
-    activeScreenChangedEvent({activeScreen}) {
-        this.toggle(activeScreen === 'tree');
-    }
 }

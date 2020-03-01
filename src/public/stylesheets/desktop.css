@@ -141,69 +141,6 @@ body {
     border-color: var(--button-border-color);
 }
 
-#right-pane .card {
-    border: 0;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-}
-
-#right-pane .card-header {
-    background: inherit;
-    padding: 3px 10px 3px 10px;
-    width: 99%; /* to give minimal right margin */
-    background-color: var(--button-background-color);
-    border-color: var(--button-border-color);
-    border-width: 1px;
-    border-radius: 4px;
-    border-style: solid;
-    display: flex;
-    justify-content: space-between;
-}
-
-#right-pane .widget-title {
-    border-radius: 0;
-    padding: 0;
-    border: 0;
-    background: inherit;
-    font-weight: bold;
-    text-transform: uppercase;
-    color: var(--muted-text-color) !important;
-}
-
-#right-pane .widget-header-action {
-    color: var(--link-color) !important;
-    cursor: pointer;
-}
-
-#right-pane .widget-help {
-    color: var(--muted-text-color);
-    position: relative;
-    top: 2px;
-}
-
-#right-pane .widget-help.no-link:hover {
-    cursor: default;
-    text-decoration: none;
-}
-
-#right-pane .body-wrapper {
-    overflow: auto;
-}
-
-#right-pane .card-body {
-    width: 100%;
-    padding: 8px;
-    border: 0;
-    height: 100%;
-    overflow: auto;
-}
-
-#right-pane .card-body ul {
-    padding-left: 25px;
-    margin-bottom: 5px;
-}
-
 #widgets-configuration {
     margin: 0;
 }
