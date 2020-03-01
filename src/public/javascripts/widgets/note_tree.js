@@ -66,7 +66,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
         this.$widget.fancytree({
             autoScroll: true,
             keyboard: false, // we takover keyboard handling in the hotkeys plugin
-            extensions: utils.isMobile() ? ["clones"] : ["hotkeys", "dnd5", "clones"],
+            extensions: utils.isMobile() ? ["dnd5", "clones"] : ["hotkeys", "dnd5", "clones"],
             source: treeData,
             scrollParent: this.$widget,
             minExpandLevel: 2, // root can't be collapsed
@@ -82,6 +82,10 @@ export default class NoteTreeWidget extends TabAwareWidget {
                     else if (event.ctrlKey) {
                         const notePath = treeService.getNotePath(node);
                         appContext.tabManager.openTabWithNote(notePath);
+                    }
+                    else if (data.node.isActive()) {
+                        // this is important for single column mobile view, otherwise it's not possible to see again previously displayed note
+                        this.tree.reactivate(true);
                     }
                     else {
                         node.setActive();
@@ -100,6 +104,10 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
                 const activeTabContext = appContext.tabManager.getActiveTabContext();
                 await activeTabContext.setNote(notePath);
+
+                if (utils.isMobile()) {
+                    this.triggerCommand('setActiveScreen', {screen:'detail'});
+                }
             },
             expand: (event, data) => this.setExpandedToServer(data.node.data.branchId, true),
             collapse: (event, data) => this.setExpandedToServer(data.node.data.branchId, false),
@@ -809,5 +817,9 @@ export default class NoteTreeWidget extends TabAwareWidget {
         const branch = treeCache.getBranch(node.data.branchId);
 
         noteCreateService.duplicateNote(noteId, branch.parentNoteId);
+    }
+
+    activeScreenChangedEvent({activeScreen}) {
+        this.toggle(activeScreen === 'tree');
     }
 }

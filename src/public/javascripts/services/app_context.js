@@ -10,6 +10,7 @@ import TabManager from "./tab_manager.js";
 import treeService from "./tree.js";
 import Component from "../widgets/component.js";
 import keyboardActionsService from "./keyboard_actions.js";
+import MobileScreenSwitcherExecutor from "../widgets/mobile_screen_switcher.js";
 
 class AppContext extends Component {
     setLayout(layout) {
@@ -47,6 +48,10 @@ class AppContext extends Component {
             new DialogCommandExecutor(),
             new Entrypoints()
         ];
+
+        if (utils.isMobile()) {
+            this.executors.push(new MobileScreenSwitcherExecutor());
+        }
 
         this.child(rootWidget);
 

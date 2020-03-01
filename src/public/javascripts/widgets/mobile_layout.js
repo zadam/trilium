@@ -5,6 +5,7 @@ import NoteTreeWidget from "./note_tree.js";
 import MobileGlobalButtonsWidget from "./mobile_global_buttons.js";
 import CloseDetailButtonWidget from "./close_detail_button.js";
 import MobileDetailMenuWidget from "./mobile_detail_menu.js";
+import ScreenContainer from "./screen_container.js";
 
 export default class MobileLayout {
     getRootWidget(appContext) {
@@ -12,12 +13,12 @@ export default class MobileLayout {
             .setParent(appContext)
             .id('root-widget')
             .css('height', '100vh')
-            .child(new FlexContainer('column')
+            .child(new ScreenContainer("tree", 'column')
                 .class("d-sm-flex d-md-flex d-lg-flex d-xl-flex col-12 col-sm-5 col-md-4 col-lg-4 col-xl-4")
                 .child(new MobileGlobalButtonsWidget())
                 .child(new NoteTreeWidget()))
-            .child(new FlexContainer('column')
-                .class("d-none d-sm-flex d-md-flex d-lg-flex d-xl-flex col-12 col-sm-7 col-md-8 col-lg-8")
+            .child(new ScreenContainer("detail", "column")
+                .class("d-sm-flex d-md-flex d-lg-flex d-xl-flex col-12 col-sm-7 col-md-8 col-lg-8")
                 .child(new FlexContainer('row')
                     .child(new MobileDetailMenuWidget())
                     .child(new NoteTitleWidget())
