@@ -11,6 +11,13 @@ const TPL = `
         .note-info-widget-table td, .note-info-widget-table th {
             padding: 5px;
         }
+        
+        .note-info-mime {
+            max-width: 13em;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
     </style>
 
     <tr>

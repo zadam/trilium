@@ -28,6 +28,19 @@ const TPL = `
         font-family: var(--tree-font-family);
         font-size: var(--tree-font-size);
     }
+    
+    .refresh-search-button {
+        cursor: pointer;
+        position: relative;
+        top: -1px;
+        border: 1px solid transparent;
+        padding: 2px;
+        border-radius: 2px;
+    }
+    
+    .refresh-search-button:hover {
+        border-color: var(--button-border-color);
+    }
     </style>
 </div>
 `;
