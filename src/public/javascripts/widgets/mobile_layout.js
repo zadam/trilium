@@ -2,6 +2,7 @@ import FlexContainer from "./flex_container.js";
 import NoteTitleWidget from "./note_title.js";
 import NoteDetailWidget from "./note_detail.js";
 import NoteTreeWidget from "./note_tree.js";
+import MobileGlobalButtonsWidget from "./mobile_global_buttons.js";
 
 export default class MobileLayout {
     getRootWidget(appContext) {
@@ -10,7 +11,7 @@ export default class MobileLayout {
             .id('root-widget')
             .css('height', '100vh')
             .child(new FlexContainer('column')
-                // .child(/* buttons */)
+                .child(new MobileGlobalButtonsWidget())
                 .child(new NoteTreeWidget()))
             .child(new FlexContainer('column')
                 .child(new NoteTitleWidget())

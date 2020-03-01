@@ -5,17 +5,6 @@ html, body {
     padding: 0;
 }
 
-#container-row {
-    height: 100%;
-}
-
-#global-buttons {
-    display: flex;
-    flex-shrink: 0;
-    justify-content: space-around;
-    padding: 3px 0 3px 0;
-    margin: 0 10px 0 16px;
-}
 
 .tree {
     width: 100%;

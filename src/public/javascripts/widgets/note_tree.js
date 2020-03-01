@@ -103,9 +103,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
             },
             expand: (event, data) => this.setExpandedToServer(data.node.data.branchId, true),
             collapse: (event, data) => this.setExpandedToServer(data.node.data.branchId, false),
-            hotkeys: {
-                keydown: await this.getHotKeys()
-            },
+            hotkeys: utils.isMobile() ? undefined : { keydown: await this.getHotKeys() },
             dnd5: {
                 autoExpandMS: 600,
                 dragStart: (node, data) => {
@@ -398,8 +396,6 @@ export default class NoteTreeWidget extends TabAwareWidget {
     async reload(notes) {
         await this.tree.reload(notes);
     }
-
-    createTopLevelNoteCommand() { noteCreateService.createNewTopLevelNote(); }
 
     collapseTreeCommand() { this.collapseTree(); }
 

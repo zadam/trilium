@@ -133,12 +133,6 @@ $detail.on("click", ".note-menu-button", async e => {
     });
 });
 
-$("#switch-to-desktop-button").on('click', () => {
-    utils.setCookie('trilium-device', 'desktop');
-
-    utils.reloadApp();
-});
-
 $("#log-out-button").on('click', () => {
     $("#logout-form").trigger('submit');
 });

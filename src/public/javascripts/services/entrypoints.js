@@ -7,6 +7,7 @@ import server from "./server.js";
 import appContext from "./app_context.js";
 import Component from "../widgets/component.js";
 import toastService from "./toast.js";
+import noteCreateService from "./note_create.js";
 
 export default class Entrypoints extends Component {
     constructor() {
@@ -158,4 +159,12 @@ export default class Entrypoints extends Component {
         // when the result list does not change with a query
         toastService.showMessage("Search finished successfully.");
     }
+
+    async switchToDesktopVersionCommand() {
+        utils.setCookie('trilium-device', 'desktop');
+
+        utils.reloadApp();
+    }
+
+    createTopLevelNoteCommand() { noteCreateService.createNewTopLevelNote(); }
 }
