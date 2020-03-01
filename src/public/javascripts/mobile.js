@@ -1,151 +1,22 @@
-import treeService from "./services/tree.js";
-import treeCache from "./services/tree_cache.js";
-import treeBuilder from "./services/tree_builder.js";
-import contextMenuWidget from "./services/context_menu.js";
-import branchService from "./services/branches.js";
-import utils from "./services/utils.js";
+import glob from './services/glob.js';
+import macInit from './services/mac_init.js';
+import options from "./services/options.js";
+import noteContentRenderer from "./services/note_content_renderer.js";
 import appContext from "./services/app_context.js";
-import noteCreateService from "./services/note_create.js";
-import glob from "./services/glob.js";
+import FlexContainer from "./widgets/flex_container.js";
+import EmptyTypeWidget from "./widgets/type_widgets/empty.js";
+import TextTypeWidget from "./widgets/type_widgets/text.js";
+import CodeTypeWidget from "./widgets/type_widgets/code.js";
+import FileTypeWidget from "./widgets/type_widgets/file.js";
+import ImageTypeWidget from "./widgets/type_widgets/image.js";
+import SearchTypeWidget from "./widgets/type_widgets/search.js";
+import RenderTypeWidget from "./widgets/type_widgets/render.js";
+import RelationMapTypeWidget from "./widgets/type_widgets/relation_map.js";
+import ProtectedSessionTypeWidget from "./widgets/type_widgets/protected_session.js";
+import BookTypeWidget from "./widgets/type_widgets/book.js";
+import MobileLayout from "./widgets/mobile_layout.js";
 
-const $leftPane = $("#left-pane");
-const $tree = $("#tree");
-const $detail = $("#detail");
+macInit.init();
 
-function togglePanes() {
-    if (!$leftPane.is(":visible") || !$detail.is(":visible")) {
-        $detail.toggleClass("d-none");
-        $leftPane.toggleClass("d-none");
-    }
-}
-
-function showDetailPane() {
-    if (!$detail.is(":visible")) {
-        $detail.removeClass("d-none");
-        $leftPane.addClass("d-none");
-    }
-}
-
-$detail.on("click", ".close-detail-button",() => {
-    // no page is opened
-    document.location.hash = '-';
-
-    togglePanes();
-});
-
-async function showTree() {
-    const treeData = await treeBuilder.prepareTree();
-
-    $tree.fancytree({
-        autoScroll: true,
-        extensions: ["dnd5", "clones"],
-        source: treeData,
-        scrollParent: $tree,
-        minExpandLevel: 2, // root can't be collapsed
-        click: (event, data) => {
-            if (data.targetType !== 'expander' && data.node.isActive()) {
-                // this is important for single column mobile view, otherwise it's not possible to see again previously displayed note
-                $tree.fancytree('getTree').reactivate(true);
-
-                return false;
-            }
-        },
-        activate: async (event, data) => {
-            const node = data.node;
-
-            treeService.clearSelectedNodes();
-
-            showDetailPane();
-
-            const notePath = await treeService.getNotePath(node);
-
-        },
-        expand: (event, data) => treeService.setExpandedToServer(data.node.data.branchId, true),
-        collapse: (event, data) => treeService.setExpandedToServer(data.node.data.branchId, false),
-        init: (event, data) => treeService.treeInitialized(), // don't collapse to short form
-        dnd5: dragAndDropSetup,
-        lazyLoad: function(event, data) {
-            const noteId = data.node.data.noteId;
-
-            data.result = treeCache.getNote(noteId).then(note => treeBuilder.prepareBranch(note));
-        },
-        clones: {
-            highlightActiveClones: true
-        },
-        // this is done to automatically lazy load all expanded search notes after tree load
-        loadChildren: (event, data) => {
-            data.node.visit((subNode) => {
-                // Load all lazy/unloaded child nodes
-                // (which will trigger `loadChildren` recursively)
-                if (subNode.isUndefined() && subNode.isExpanded()) {
-                    subNode.load();
-                }
-            });
-        }
-    });
-
-    treeService.setTree($.ui.fancytree.getTree("#tree"));
-}
-
-$detail.on("click", ".note-menu-button", async e => {
-    // FIXME
-    const node = appContext.getMainNoteTree().getActiveNode();
-    const branch = treeCache.getBranch(node.data.branchId);
-    const note = await treeCache.getNote(node.data.noteId);
-    const parentNote = await treeCache.getNote(branch.parentNoteId);
-    const isNotRoot = note.noteId !== 'root';
-
-    const items = [
-        { title: "Insert note after", cmd: "insertNoteAfter", uiIcon: "plus",
-            enabled: isNotRoot && parentNote.type !== 'search' },
-        { title: "Insert child note", cmd: "insertChildNote", uiIcon: "plus",
-            enabled: note.type !== 'search' },
-        { title: "Delete this note", cmd: "delete", uiIcon: "trash",
-            enabled: isNotRoot && parentNote.type !== 'search' }
-    ];
-
-    contextMenuWidget.initContextMenu(e, {
-        getContextMenuItems: () => items,
-        selectContextMenuItem: async (event, cmd) => {
-            if (cmd === "insertNoteAfter") {
-                const parentNoteId = node.data.parentNoteId;
-                const isProtected = await treeService.getParentProtectedStatus(node);
-
-                noteCreateService.createNote(parentNoteId, {
-                    isProtected: isProtected,
-                    target: 'after',
-                    targetBranchId: node.data.branchId
-                });
-            }
-            else if (cmd === "insertChildNote") {
-                noteCreateService.createNote(node.data.noteId);
-            }
-            else if (cmd === "delete") {
-                if (await branchService.deleteNotes([node])) {
-                    // move to the tree
-                    togglePanes();
-                }
-            }
-            else {
-                throw new Error("Unrecognized command " + cmd);
-            }
-        }
-    });
-});
-
-$("#switch-to-desktop-button").on('click', () => {
-    utils.setCookie('trilium-device', 'desktop');
-
-    utils.reloadApp();
-});
-
-$("#log-out-button").on('click', () => {
-    $("#logout-form").trigger('submit');
-});
-
-// this is done so that startNotePath is not used
-if (!document.location.hash) {
-    document.location.hash = '-';
-}
-
-showTree();
+appContext.setLayout(new MobileLayout());
+appContext.start();

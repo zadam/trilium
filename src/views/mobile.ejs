@@ -7,87 +7,12 @@
     <title>Trilium Notes</title>
     <link rel="apple-touch-icon" sizes="180x180" href="images/app-icons/ios/apple-touch-icon.png">
 </head>
-<body class="mobile">
+<body class="mobile" style="display: none;">
 <noscript>Trilium requires JavaScript to be enabled.</noscript>
 
 <div id="toast-container" class="d-flex flex-column justify-content-center align-items-center"></div>
 
-<div class="row" id="container-row" style="display: none;">
 
-    <div id="left-pane" class="d-sm-flex d-md-flex d-lg-flex d-xl-flex col-12 col-sm-5 col-md-4 col-lg-4 col-xl-4">
-        <div id="global-buttons">
-            <a id="create-top-level-note-button" title="Create new top level note" class="icon-action bx bx-folder-plus"></a>
-
-            <a id="collapse-tree-button" title="Collapse note tree" class="icon-action bx bx-layer-minus"></a>
-
-            <a id="scroll-to-active-note-button" title="Scroll to active note" class="icon-action bx bx-crosshair"></a>
-
-            <div class="dropdown">
-                <a id="global-actions-button" title="Global actions" class="icon-action bx bx-cog dropdown-toggle" data-toggle="dropdown"></a>
-
-                <div class="dropdown-menu dropdown-menu-right">
-                    <a class="dropdown-item" id="switch-to-desktop-button"><span class="bx bx-laptop"></span> Switch to desktop version</a>
-                    <a class="dropdown-item" id="log-out-button"><span class="bx bx-log-out"></span> Logout</a>
-                </div>
-            </div>
-        </div>
-
-        <div id="tree"></div>
-    </div>
-
-    <div id="detail" class="d-none d-sm-flex d-md-flex d-lg-flex d-xl-flex col-12 col-sm-7 col-md-8 col-lg-8">
-        <div class="note-tab-row">
-            <div class="note-tab-row-content"></div>
-        </div>
-
-        <div id="note-tab-container">
-            <div class="note-tab-content note-tab-content-template">
-                <div class="note-detail-content" style="width: 100%">
-                    <div class="note-title-row">
-                        <button type="button" class="note-menu-button action-button bx bx-menu"></button>
-
-                        <input autocomplete="off" value="" class="form-control note-title" tabindex="1">
-
-                        <button type="button" class="close-detail-button action-button d-sm-none d-md-none d-lg-none d-xl-none" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-
-                    <div class="note-detail-printable-wrapper">
-                        <div class="note-detail-text note-detail-printable" tabindex="10000">
-                            <div class="note-detail-text-editor"></div>
-                        </div>
-
-                        <div class="note-detail-code note-detail-printable">
-                            <div class="note-detail-code-editor"></div>
-                        </div>
-
-                        <% include details/search.ejs %>
-
-                        <% include details/render.ejs %>
-
-                        <% include details/image.ejs %>
-
-                        <% include details/relation_map.ejs %>
-
-                        <% include details/protected_session_password.ejs %>
-
-                        <% include details/book.ejs %>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <% include dialogs/protected_session_password.ejs %>
-    <% include dialogs/confirm.ejs %>
-
-    <div class="dropdown-menu dropdown-menu-sm" id="context-menu-container"></div>
-
-    <form action="logout" id="logout-form" method="POST" style="display: none;">
-        <input type="hidden" name="_csrf" value="<%= csrfToken %>"/>
-    </form>
-</div>
 
 <script type="text/javascript">
     window.baseApiUrl = 'api/';
@@ -121,10 +46,8 @@
 
 <link rel="stylesheet" type="text/css" href="libraries/boxicons/css/boxicons.min.css">
 
-<script type="text/javascript">
-    // we hide container initally because otherwise it is rendered first without CSS and then flickers into
-    // final form which is pretty ugly.
-    $("#container-row").show();
+<script>
+    $("body").show();
 </script>
 </body>
 </html>

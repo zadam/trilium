@@ -12,10 +12,12 @@ export default class Entrypoints extends Component {
     constructor() {
         super();
 
-        // hot keys are active also inside inputs and content editables
-        jQuery.hotkeys.options.filterInputAcceptingElements = false;
-        jQuery.hotkeys.options.filterContentEditable = false;
-        jQuery.hotkeys.options.filterTextInputs = false;
+        if (jQuery.hotkeys) {
+            // hot keys are active also inside inputs and content editables
+            jQuery.hotkeys.options.filterInputAcceptingElements = false;
+            jQuery.hotkeys.options.filterContentEditable = false;
+            jQuery.hotkeys.options.filterTextInputs = false;
+        }
 
         $(document).on('click', "a[data-action='note-revision']", async event => {
             const linkEl = $(event.target);

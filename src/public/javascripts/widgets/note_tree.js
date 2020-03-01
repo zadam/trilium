@@ -66,7 +66,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
         this.$widget.fancytree({
             autoScroll: true,
             keyboard: false, // we takover keyboard handling in the hotkeys plugin
-            extensions: ["hotkeys", "dnd5", "clones"],
+            extensions: utils.isMobile() ? ["clones"] : ["hotkeys", "dnd5", "clones"],
             source: treeData,
             scrollParent: this.$widget,
             minExpandLevel: 2, // root can't be collapsed
