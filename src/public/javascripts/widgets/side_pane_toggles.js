@@ -38,9 +38,6 @@ export default class SidePaneToggles extends BasicWidget {
     doRender() {
         this.$widget = $(TPL);
 
-        this.toggleSidebar('left', options.is('leftPaneVisible'));
-        this.toggleSidebar('right', options.is('rightPaneVisible'));
-
         this.$widget.find(".show-right-pane-button").on('click', () => this.toggleAndSave('right', true));
         this.$widget.find(".hide-right-pane-button").on('click', () => this.toggleAndSave('right', false));
 
@@ -59,9 +56,9 @@ export default class SidePaneToggles extends BasicWidget {
     }
 
     async toggleAndSave(side, show) {
-        this.toggleSidebar(side, show);
-
         await options.save(`${side}PaneVisible`, show.toString());
+
+        this.toggleSidebar(side, show);
 
         splitService.setupSplit(this.paneVisible.left, this.paneVisible.right);
 
@@ -69,6 +66,9 @@ export default class SidePaneToggles extends BasicWidget {
     }
 
     initialRenderCompleteEvent() {
+        this.toggleSidebar('left', options.is('leftPaneVisible'));
+        this.toggleSidebar('right', options.is('rightPaneVisible'));
+
         splitService.setupSplit(this.paneVisible.left, this.paneVisible.right);
     }
 }

@@ -15,16 +15,8 @@ export default class SidePaneContainer extends FlexContainer {
         return super.isEnabled() && options.is(this.side + 'PaneVisible');
     }
 
-    handleEvent(name, data) {
-        if (options.is(this.side + 'PaneVisible')) {
-            super.handleEvent(name, data);
-        }
-    }
-
     sidebarVisibilityChangedEvent({side, show}) {
-        if (this.side === side) {
-            this.toggle(show);
-
+        if (this.side === side && show) {
             this.handleEvent('lazyLoaded');
         }
     }

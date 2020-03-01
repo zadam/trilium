@@ -2,7 +2,7 @@ import options from "./options.js";
 
 let instance;
 
-async function setupSplit(left, right) {
+function setupSplit(left, right) {
     if (instance) {
         instance.destroy();
         instance = null;
