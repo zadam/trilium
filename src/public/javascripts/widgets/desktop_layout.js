@@ -26,7 +26,7 @@ import SimilarNotesWidget from "./similar_notes.js";
 import WhatLinksHereWidget from "./what_links_here.js";
 import SidePaneToggles from "./side_pane_toggles.js";
 
-export default class Layout {
+export default class DesktopLayout {
     getRootWidget(appContext) {
         return new FlexContainer('column')
             .setParent(appContext)

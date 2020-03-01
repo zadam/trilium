@@ -6,18 +6,14 @@ import Entrypoints from "./entrypoints.js";
 import options from "./options.js";
 import utils from "./utils.js";
 import ZoomService from "./zoom.js";
-import Layout from "../widgets/layout.js";
 import TabManager from "./tab_manager.js";
 import treeService from "./tree.js";
 import Component from "../widgets/component.js";
 import keyboardActionsService from "./keyboard_actions.js";
 
 class AppContext extends Component {
-    constructor(layout) {
-        super(null);
-
+    setLayout(layout) {
         this.layout = layout;
-        this.executors = [];
     }
 
     async start() {
@@ -96,9 +92,7 @@ class AppContext extends Component {
     }
 }
 
-const layout = new Layout();
-
-const appContext = new AppContext(layout);
+const appContext = new AppContext();
 
 // we should save all outstanding changes before the page/app is closed
 $(window).on('beforeunload', () => {

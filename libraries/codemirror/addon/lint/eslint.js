@@ -46,10 +46,11 @@
         const errors = new eslint().verify(text, {
             root: true,
             parserOptions: {
-                ecmaVersion: 2017
+                ecmaVersion: 2019
             },
             extends: ['eslint:recommended', 'airbnb-base'],
             env: {
+                'browser': true,
                 'node': true
             },
             rules: {
@@ -62,6 +63,9 @@
                 'no-unused-vars': ['warn', { vars: 'local', args: 'after-used' }],
                 'no-nested-ternary': 'off',
                 'no-underscore-dangle': ['error', {'allow': ['_super', '_lookupFactory']}]
+            },
+            globals: {
+                "api": "readonly"
             }
         });
 

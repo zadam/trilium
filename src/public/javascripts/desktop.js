@@ -66,6 +66,7 @@ import RelationMapTypeWidget from "./widgets/type_widgets/relation_map.js";
 import ProtectedSessionTypeWidget from "./widgets/type_widgets/protected_session.js";
 import BookTypeWidget from "./widgets/type_widgets/book.js";
 import contextMenu from "./services/context_menu.js";
+import DesktopLayout from "./widgets/desktop_layout.js";
 
 if (utils.isElectron()) {
     require('electron').ipcRenderer.on('globalShortcut', async function(event, actionName) {
@@ -79,6 +80,7 @@ $('[data-toggle="tooltip"]').tooltip({
 
 macInit.init();
 
+appContext.setLayout(new DesktopLayout());
 appContext.start();
 
 noteTooltipService.setupGlobalTooltip();
