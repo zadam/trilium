@@ -102,8 +102,7 @@ export default class NoteDetailWidget extends TabAwareWidget {
 
             const typeWidget = this.typeWidgets[this.type] = new clazz();
             typeWidget.spacedUpdate = this.spacedUpdate;
-
-            this.child(typeWidget);
+            typeWidget.setParent(this);
 
             const $renderedWidget = typeWidget.render();
             keyboardActionsService.updateDisplayedShortcuts($renderedWidget);
@@ -112,10 +111,7 @@ export default class NoteDetailWidget extends TabAwareWidget {
 
             await typeWidget.handleEvent('setTabContext', {tabContext: this.tabContext});
 
-            typeWidget.handleEvent('tabNoteSwitched', {
-                tabId: this.tabContext.tabId,
-                notePath: this.notePath
-            });
+            this.child(typeWidget);
         }
 
         this.setupClasses();

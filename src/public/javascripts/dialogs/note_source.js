@@ -4,12 +4,12 @@ import utils from "../services/utils.js";
 const $dialog = $("#note-source-dialog");
 const $noteSource = $("#note-source");
 
-export function showDialog() {
+export async function showDialog() {
     utils.openDialog($dialog);
 
-    const noteText = appContext.tabManager.getActiveTabNote().content;
+    const noteCompletement = await appContext.tabManager.getActiveTabContext().getNoteComplement();
 
-    $noteSource.text(formatHtml(noteText));
+    $noteSource.text(formatHtml(noteCompletement.content));
 }
 
 function formatHtml(str) {

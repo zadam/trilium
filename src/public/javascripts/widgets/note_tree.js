@@ -421,7 +421,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
     collapseTreeCommand() { this.collapseTree(); }
 
     isEnabled() {
-        return this.tabContext && this.tabContext.isActive();
+        return !!this.tabContext;
     }
 
     async refresh() {

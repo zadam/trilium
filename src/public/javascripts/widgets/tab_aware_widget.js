@@ -80,6 +80,8 @@ export default class TabAwareWidget extends BasicWidget {
     setTabContextEvent({tabContext}) {
         /** @var {TabContext} */
         this.tabContext = tabContext;
+
+        this.refresh();
     }
 
     async newTabOpenedEvent({tabContext}) {
