@@ -24,7 +24,7 @@ const TPL = `
     .note-detail {
         height: 100%;
         min-height: 0;
-    }  
+    }
     </style>
 </div>
 `;
@@ -59,6 +59,10 @@ export default class NoteDetailWidget extends TabAwareWidget {
         });
     }
 
+    isEnabled() {
+        return true;
+    }
+
     doRender() {
         this.$widget = $(TPL);
 
@@ -89,18 +93,7 @@ export default class NoteDetailWidget extends TabAwareWidget {
         return this.$widget;
     }
 
-    isEnabled() {
-        return this.tabContext && this.tabContext.isActive();
-    }
-
     async refresh() {
-        if (!this.isEnabled()) {
-            this.toggle(false);
-            return;
-        }
-
-        this.toggle(true);
-
         this.type = await this.getWidgetType();
         this.mime = this.note ? this.note.mime : null;
 
@@ -130,7 +123,7 @@ export default class NoteDetailWidget extends TabAwareWidget {
 
     setupClasses() {
         for (const clazz of Array.from(this.$widget[0].classList)) { // create copy to safely iterate over while removing classes
-            if (clazz !== 'note-detail') {
+            if (clazz !== 'note-detail' && !clazz.startsWith('hidden-')) {
                 this.$widget.removeClass(clazz);
             }
         }
@@ -156,14 +149,16 @@ export default class NoteDetailWidget extends TabAwareWidget {
     }
 
     async getWidgetType() {
-        if (!this.note) {
+        const note = this.note;
+
+        if (!note) {
             return "empty";
         }
 
-        let type = this.note.type;
+        let type = note.type;
 
         if (type === 'text' && !this.tabContext.autoBookDisabled
-            && this.note.hasChildren()
+            && note.hasChildren()
             && utils.isDesktop()) {
 
             const noteComplement = await this.tabContext.getNoteComplement();
@@ -173,7 +168,7 @@ export default class NoteDetailWidget extends TabAwareWidget {
             }
         }
 
-        if (this.note.isProtected && !protectedSessionHolder.isProtectedSessionAvailable()) {
+        if (note.isProtected && !protectedSessionHolder.isProtectedSessionAvailable()) {
             type = 'protected-session';
         }
 

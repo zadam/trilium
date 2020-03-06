@@ -41,8 +41,9 @@ export default class CollapsibleWidget extends TabAwareWidget {
             this.$bodyWrapper.collapse("show");
         }
 
-        this.$bodyWrapper.on('hidden.bs.collapse', () => options.save(widgetName + 'Collapsed', 'true'));
-        this.$bodyWrapper.on('shown.bs.collapse', () => options.save(widgetName + 'Collapsed', 'false'));
+        // using immediate variants of the event so that the previous collapse is not caught
+        this.$bodyWrapper.on('hide.bs.collapse', () => options.save(widgetName + 'Collapsed', 'true'));
+        this.$bodyWrapper.on('show.bs.collapse', () => options.save(widgetName + 'Collapsed', 'false'));
 
         this.$body = this.$bodyWrapper.find('.card-body');
 

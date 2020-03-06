@@ -47,7 +47,7 @@ class BasicWidget extends Component {
         $widget.addClass('component')
             .prop('component', this);
 
-        this.toggle(this.isEnabled());
+        this.toggleInt(this.isEnabled());
 
         if (this.cssEl) {
             const css = this.cssEl.trim().startsWith('<style>') ? this.cssEl : `<style>${this.cssEl}</style>`;
@@ -75,8 +75,12 @@ class BasicWidget extends Component {
      */
     doRender() {}
 
-    toggle(show) {
-        this.$widget.toggle(show);
+    toggleInt(show) {
+        this.$widget.toggleClass('hidden-int', !show);
+    }
+
+    toggleExt(show) {
+        this.$widget.toggleClass('hidden-ext', !show);
     }
 
     isVisible() {

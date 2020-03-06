@@ -181,7 +181,7 @@ export default class TabManager extends Component {
         const tabContext = new TabContext(tabId);
         this.child(tabContext);
 
-        await this.triggerEvent('newTabOpened', {tabId: tabContext.tabId});
+        await this.triggerEvent('newTabOpened', {tabContext});
 
         return tabContext;
     }

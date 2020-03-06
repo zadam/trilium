@@ -1,6 +1,5 @@
 import TabAwareWidget from "./tab_aware_widget.js";
 import keyboardActionsService from "../services/keyboard_actions.js";
-import appContext from "../services/app_context.js";
 
 export default class TabCachingWidget extends TabAwareWidget {
     constructor(widgetFactory) {
@@ -11,7 +10,7 @@ export default class TabCachingWidget extends TabAwareWidget {
     }
 
     isEnabled() {
-        return this.tabContext && this.tabContext.isActive();
+        return !!this.tabContext;
     }
 
     doRender() {
@@ -31,7 +30,11 @@ export default class TabCachingWidget extends TabAwareWidget {
         return Promise.resolve();
     }
 
-    async newTabOpenedEvent({tabId}) {
+    async newTabOpenedEvent({tabContext}) {
+        super.newTabOpenedEvent({tabContext});
+
+        const {tabId} = tabContext;
+
         if (this.widgets[tabId]) {
             return;
         }
@@ -39,20 +42,20 @@ export default class TabCachingWidget extends TabAwareWidget {
         this.widgets[tabId] = this.widgetFactory();
 
         const $renderedWidget = this.widgets[tabId].render();
+        this.widgets[tabId].toggleExt(this.widgets[tabId]);
+
         this.$widget.after($renderedWidget);
 
         keyboardActionsService.updateDisplayedShortcuts($renderedWidget);
 
-        await this.widgets[tabId].handleEvent('setTabContext', {
-            tabContext: appContext.tabManager.getTabContextById(tabId)
-        });
+        await this.widgets[tabId].handleEvent('newTabOpened', {tabContext});
 
         this.child(this.widgets[tabId]); // add as child only once it is ready (rendered with tabContext)
     }
 
     async refreshWithNote() {
         for (const widget of Object.values(this.widgets)) {
-            widget.toggle(false);
+            widget.toggleExt(false);
         }
 
         if (!this.tabContext) {
@@ -64,7 +67,7 @@ export default class TabCachingWidget extends TabAwareWidget {
         const widget = this.widgets[this.tabContext.tabId];
 
         if (widget) {
-            widget.toggle(widget.isEnabled());
+            widget.toggleExt(true);
         }
         else {
             console.error(`Widget for tab ${this.tabContext.tabId} not found.`);
@@ -82,12 +85,11 @@ export default class TabCachingWidget extends TabAwareWidget {
         }
     }
 
-    toggle(show) {
+    toggleInt(show) {} // not needed
+
+    toggleByTab(show) {
         for (const tabId in this.widgets) {
-            this.widgets[tabId].toggle(
-                show
-                && this.isTab(tabId)
-                && this.widgets[tabId].isEnabled());
+            this.widgets[tabId].toggleExt(show && this.isTab(tabId));
         }
     }
 }

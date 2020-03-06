@@ -420,8 +420,8 @@ export default class TabRowWidget extends BasicWidget {
         if (tabEl) tabEl.setAttribute('active', '');
     }
 
-    newTabOpenedEvent({tabId}) {
-        this.addTab(tabId);
+    newTabOpenedEvent({tabContext}) {
+        this.addTab(tabContext.tabId);
     }
 
     removeTab(tabId) {

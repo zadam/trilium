@@ -864,3 +864,7 @@ body {
     padding-bottom: 0;
     border-bottom: 1px dotted;
 }
+
+.hidden-int, .hidden-ext {
+    display: none !important;
+}

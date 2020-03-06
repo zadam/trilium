@@ -425,7 +425,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
     }
 
     async refresh() {
-        this.toggle(this.isEnabled());
+        this.toggleInt(this.isEnabled());
 
         const oldActiveNode = this.getActiveNode();
 

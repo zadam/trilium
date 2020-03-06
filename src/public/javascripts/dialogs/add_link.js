@@ -1,7 +1,6 @@
 import treeService from '../services/tree.js';
 import noteAutocompleteService from "../services/note_autocomplete.js";
 import utils from "../services/utils.js";
-import appContext from "../services/app_context.js";
 
 const $dialog = $("#add-link-dialog");
 const $form = $("#add-link-form");

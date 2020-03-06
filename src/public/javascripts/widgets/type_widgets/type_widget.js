@@ -7,21 +7,21 @@ export default class TypeWidget extends TabAwareWidget {
     /**
      * @param {NoteShort} note
      */
-    doRefresh(note) {}
+    async doRefresh(note) {}
 
     async refresh() {
         const thisWidgetType = this.constructor.getType();
         const noteWidgetType = await this.parent.getWidgetType();
 
         if (thisWidgetType !== noteWidgetType) {
-            this.toggle(false);
+            this.toggleInt(false);
 
             this.cleanup();
         }
         else {
-            this.toggle(true);
+            this.toggleInt(true);
 
-            this.doRefresh(this.note);
+            await this.doRefresh(this.note);
         }
     }
 

@@ -145,7 +145,7 @@ export default class TextTypeWidget extends TypeWidget {
 
         const noteComplement = await this.tabContext.getNoteComplement();
 
-        this.spacedUpdate.allowUpdateWithoutChange(() => {
+        await this.spacedUpdate.allowUpdateWithoutChange(() => {
             this.textEditor.setData(noteComplement.content);
         });
     }

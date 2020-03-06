@@ -34,13 +34,13 @@ export default class SearchResultsWidget extends BasicWidget {
         this.$searchResults = this.$widget;
         this.$searchResultsInner = this.$widget.find(".search-results-list");
 
-        this.toggle(false);
+        this.toggleInt(false);
 
         return this.$widget;
     }
 
     searchResultsEvent({results}) {
-        this.toggle(true);
+        this.toggleInt(true);
 
         this.$searchResultsInner.empty();
         this.$searchResults.show();
