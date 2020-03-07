@@ -164,6 +164,7 @@ async function printActiveNote() {
             "libraries/ckeditor/ckeditor-content.css",
             "libraries/ckeditor/ckeditor-content.css",
             "libraries/bootstrap/css/bootstrap.min.css",
+            "stylesheets/print.css",
             "stylesheets/themes.css",
             "stylesheets/detail.css"
         ],
