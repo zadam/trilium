@@ -28,13 +28,14 @@ import SidePaneToggles from "./side_pane_toggles.js";
 
 const RIGHT_PANE_CSS = `
 <style>
+#right-pane {
+    overflow: auto;
+}
+
 #right-pane .card {
     border: 0;
-    min-height: 0;
-    max-height: 30%;
     display: flex;
-    flex-grow: 1;
-    flex-shrink: 1;
+    flex-shrink: 0;
     flex-direction: column;
 }
 
