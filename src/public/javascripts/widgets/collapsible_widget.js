@@ -18,8 +18,7 @@ const WIDGET_TPL = `
     <div id="[to be set]" class="collapse body-wrapper" style="transition: none; ">
         <div class="card-body"></div>
     </div>
-</div>
-`;
+</div>`;
 
 export default class CollapsibleWidget extends TabAwareWidget {
     getWidgetTitle() { return "Untitled widget"; }
@@ -68,9 +67,9 @@ export default class CollapsibleWidget extends TabAwareWidget {
         this.$headerActions = this.$widget.find('.widget-header-actions');
         this.$headerActions.append(...this.getHeaderActions());
 
-        this.decorateWidget();
-
         this.initialized = this.doRenderBody();
+
+        this.decorateWidget();
 
         return this.$widget;
     }

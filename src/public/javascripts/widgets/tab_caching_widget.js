@@ -17,9 +17,22 @@ export default class TabCachingWidget extends TabAwareWidget {
         // stop propagation of the event to the children, individual tab widget should not know about tab switching
         // since they are per-tab
         if (name === 'tabNoteSwitchedAndActivated') {
-            return super.handleEventInChildren('tabNoteSwitched', data);
+            name = 'tabNoteSwitched';
         }
-        else if (name !== 'activeTabChanged') {
+
+        if (name === 'tabNoteSwitched') {
+            // this event is propagated only to the widgets of a particular tab
+            const widget = this.widgets[data.tabContext.tabId];
+
+            if (widget) {
+                return widget.handleEvent(name, data);
+            }
+            else {
+                return Promise.resolve();
+            }
+        }
+
+        if (name !== 'activeTabChanged') {
             return super.handleEventInChildren(name, data);
         }
 

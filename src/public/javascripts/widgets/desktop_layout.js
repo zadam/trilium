@@ -88,6 +88,7 @@ const RIGHT_PANE_CSS = `
     border: 0;
     height: 100%;
     overflow: auto;
+    max-height: 300px;
 }
 
 #right-pane .card-body ul {

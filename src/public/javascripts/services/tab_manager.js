@@ -244,7 +244,7 @@ export default class TabManager extends Component {
         if (this.tabContexts.length <= 1) {
             this.openAndActivateEmptyTab();
         }
-        else {
+        else if (tabContextToRemove.isActive()) {
             const idx = this.tabContexts.findIndex(tc => tc.tabId === tabId);
 
             if (idx === this.tabContexts.length - 1) {

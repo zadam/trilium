@@ -184,18 +184,36 @@ export default class LinkMap {
     }
 
     moveToCenterOfElement(element) {
-        const elemBounds = element.getBoundingClientRect();
-        const containerBounds = this.pzInstance.getOwner().getBoundingClientRect();
+        const owner = this.pzInstance.getOwner();
 
-        const centerX = -elemBounds.left + containerBounds.left + (containerBounds.width / 2) - (elemBounds.width / 2);
-        const centerY = -elemBounds.top + containerBounds.top + (containerBounds.height / 2) - (elemBounds.height / 2);
+        const center = () => {
+            const elemBounds = element.getBoundingClientRect();
+            const containerBounds = owner.getBoundingClientRect();
 
-        const transform = this.pzInstance.getTransform();
+            const centerX = -elemBounds.left + containerBounds.left + (containerBounds.width / 2) - (elemBounds.width / 2);
+            const centerY = -elemBounds.top + containerBounds.top + (containerBounds.height / 2) - (elemBounds.height / 2);
 
-        const newX = transform.x + centerX;
-        const newY = transform.y + centerY;
+            const transform = this.pzInstance.getTransform();
 
-        this.pzInstance.moveTo(newX, newY);
+            const newX = transform.x + centerX;
+            const newY = transform.y + centerY;
+
+            this.pzInstance.moveTo(newX, newY);
+        };
+
+        let shown = false;
+
+        const observer = new IntersectionObserver(entries => {
+            if (!shown && entries[0].isIntersecting) {
+                shown = true;
+                center();
+            }
+        }, {
+            rootMargin: '0px',
+            threshold: 0.1
+        });
+
+        observer.observe(owner);
     }
 
     initPanZoom() {
