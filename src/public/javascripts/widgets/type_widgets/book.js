@@ -259,8 +259,8 @@ export default class BookTypeWidget extends TypeWidget {
                 const label = `${childCount} child${childCount > 1 ? 'ren' : ''}`;
 
                 $card.append($('<div class="note-book-children">')
-                    .append($(`<a class="note-book-open-children-button" href="javascript:">+ Show ${label}</a>`))
-                    .append($(`<a class="note-book-hide-children-button" href="javascript:">- Hide ${label}</a>`).hide())
+                    .append($(`<a class="note-book-open-children-button no-print" href="javascript:">+ Show ${label}</a>`))
+                    .append($(`<a class="note-book-hide-children-button no-print" href="javascript:">- Hide ${label}</a>`).hide())
                     .append($('<div class="note-book-children-content">'))
                 );
             }
