@@ -35,72 +35,6 @@ const ZOOMS = {
 
 const TPL = `
 <div class="note-detail-book note-detail-printable">
-    <style>
-    .note-detail-book {
-        height: 100%;
-        padding: 10px;
-        position: relative;
-    }
-    
-    .note-detail-book-content {
-        display: flex;
-        flex-wrap: wrap;
-        overflow: auto;
-        height: 100%;
-        align-content: start;
-    }
-    
-    .note-book-card {
-        border-radius: 10px;
-        background-color: var(--accented-background-color);
-        padding: 15px;
-        padding-bottom: 5px;
-        margin: 5px;
-        margin-left: 0;
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-        flex-shrink: 0;
-    }
-    
-    .note-book-card .note-book-card {
-        border: 1px solid var(--main-border-color);
-    }
-    
-    .note-book-content {
-        overflow: hidden;
-    }
-    
-    .note-book-card.type-image .note-book-content, .note-book-card.type-file .note-book-content, .note-book-card.type-protected-session .note-book-content {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-    }
-    
-    .note-book-card.type-image .note-book-content img, .note-book-card.type-text .note-book-content img {
-        max-width: 100%;
-        max-height: 100%;
-    }
-    
-    .note-book-title {
-        flex-grow: 0;
-    }
-    
-    .note-book-content {
-        flex-grow: 1;
-    }
-    
-    .note-book-auto-message {
-        background-color: var(--accented-background-color);
-        text-align: center;
-        width: 100%;
-        border-radius: 10px;
-        padding: 5px;
-        margin-top: 5px;
-    }
-    </style>
-
     <div class="btn-group floating-button" style="right: 20px; top: 20px;">
         <button type="button"
                 class="expand-children-button btn icon-button bx bx-move-vertical"
@@ -225,11 +159,6 @@ export default class BookTypeWidget extends TypeWidget {
         }
 
         for (const childNote of childNotes) {
-            if (note.noteId !== this.noteId) {
-                // rendering can take a long time and the note might be switched during the rendering
-                return;
-            }
-
             const childNotePath = this.notePath + '/' + childNote.noteId;
 
             const $content = $('<div class="note-book-content">')

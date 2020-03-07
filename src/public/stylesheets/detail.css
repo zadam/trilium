@@ -1,5 +1,11 @@
+/*
+ * We have specific CSS file here instead of being part of the respective widgets to also include this in the printing process
+ */
+
 .note-detail-book {
     height: 100%;
+    padding: 10px;
+    position: relative;
 }
 
 .note-detail-book-content {
