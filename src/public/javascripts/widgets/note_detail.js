@@ -111,6 +111,12 @@ export default class NoteDetailWidget extends TabAwareWidget {
 
             await typeWidget.handleEvent('setTabContext', {tabContext: this.tabContext});
 
+            // this is happening in update() so note has been already set and we need to reflect this
+            await typeWidget.handleEvent('tabNoteSwitched', {
+                tabContext: this.tabContext,
+                notePath: this.tabContext.notePath
+            });
+
             this.child(typeWidget);
         }
 
