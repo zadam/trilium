@@ -161,7 +161,10 @@ async function printActiveNote() {
         importCSS: false,
         loadCSS: [
             "libraries/codemirror/codemirror.css",
-            "libraries/ckeditor/ckeditor-content.css"
+            "libraries/ckeditor/ckeditor-content.css",
+            "libraries/ckeditor/ckeditor-content.css",
+            "libraries/bootstrap/css/bootstrap.min.css",
+            "stylesheets/detail.css"
         ],
         debug: true
     });
