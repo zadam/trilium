@@ -45,8 +45,6 @@ const LINK_MAP = {
 
 const PRINT_THIS = {js: ["libraries/printThis.js"]};
 
-const SORTABLE = {js: ["libraries/sortable.min.js"]};
-
 const KNOCKOUT = {js: ["libraries/knockout.min.js"]};
 
 const CALENDAR_WIDGET = {css: ["stylesheets/calendar.css"]};
@@ -98,7 +96,6 @@ export default {
     RELATION_MAP,
     LINK_MAP,
     PRINT_THIS,
-    SORTABLE,
     KNOCKOUT,
     CALENDAR_WIDGET
 }
