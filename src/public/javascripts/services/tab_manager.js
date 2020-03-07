@@ -239,13 +239,20 @@ export default class TabManager extends Component {
             return;
         }
 
-        await this.triggerEvent('beforeTabRemove', {tabId}, true);
+        await this.triggerEvent('beforeTabRemove', {tabId});
 
         if (this.tabContexts.length <= 1) {
             this.openAndActivateEmptyTab();
         }
-        else if (tabContextToRemove.isActive()) {
-            this.activateNextTabCommand();
+        else {
+            const idx = this.tabContexts.findIndex(tc => tc.tabId === tabId);
+
+            if (idx === this.tabContexts.length - 1) {
+                this.activatePreviousTabCommand();
+            }
+            else {
+                this.activateNextTabCommand();
+            }
         }
 
         this.children = this.children.filter(tc => tc.tabId !== tabId);
