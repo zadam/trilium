@@ -9,10 +9,6 @@ export default class TabCachingWidget extends TabAwareWidget {
         this.widgets = {};
     }
 
-    isEnabled() {
-        return !!this.tabContext;
-    }
-
     doRender() {
         return this.$widget = $(`<div class="marker" style="display: none;">`);
     }
@@ -31,8 +27,6 @@ export default class TabCachingWidget extends TabAwareWidget {
     }
 
     async newTabOpenedEvent({tabContext}) {
-        super.newTabOpenedEvent({tabContext});
-
         const {tabId} = tabContext;
 
         if (this.widgets[tabId]) {
@@ -48,29 +42,16 @@ export default class TabCachingWidget extends TabAwareWidget {
 
         keyboardActionsService.updateDisplayedShortcuts($renderedWidget);
 
-        await this.widgets[tabId].handleEvent('newTabOpened', {tabContext});
+        await this.widgets[tabId].handleEvent('setTabContext', {tabContext});
 
         this.child(this.widgets[tabId]); // add as child only once it is ready (rendered with tabContext)
     }
 
-    async refreshWithNote() {
-        for (const widget of Object.values(this.widgets)) {
-            widget.toggleExt(false);
-        }
+    async refresh() {
+        const activeTabId = this.tabContext && this.tabContext.tabId;
 
-        if (!this.tabContext) {
-            console.log(`No tabContext in widget ${this.componentId}.`);
-
-            return;
-        }
-
-        const widget = this.widgets[this.tabContext.tabId];
-
-        if (widget) {
-            widget.toggleExt(true);
-        }
-        else {
-            console.error(`Widget for tab ${this.tabContext.tabId} not found.`);
+        for (const tabId in this.widgets) {
+            this.widgets[tabId].toggleExt(tabId === activeTabId);
         }
     }
 

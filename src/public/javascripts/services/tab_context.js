@@ -19,7 +19,7 @@ class TabContext extends Component {
 
     setEmpty() {
         this.triggerEvent('tabNoteSwitched', {
-            tabId: this.tabId,
+            tabContext: this,
             notePath: this.notePath
         });
     }
@@ -66,7 +66,7 @@ class TabContext extends Component {
 
         if (triggerSwitchEvent) {
             this.triggerEvent('tabNoteSwitched', {
-                tabId: this.tabId,
+                tabContext: this,
                 notePath: this.notePath
             });
         }
@@ -111,7 +111,7 @@ class TabContext extends Component {
                 this.notePath = null;
 
                 this.triggerEvent('tabNoteSwitched', {
-                    tabId: this.tabId,
+                    tabContext: this,
                     notePath: this.notePath
                 });
             }

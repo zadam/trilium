@@ -411,7 +411,7 @@ export default class TabRowWidget extends BasicWidget {
     }
 
     activeTabChangedEvent() {
-        const newActiveTabId = appContext.tabManager.activeTabId;
+        const newActiveTabId = appContext.tabManager.getActiveTabContext().tabId;
 
         const tabEl = this.getTabById(newActiveTabId)[0];
         const activeTabEl = this.activeTabEl;
@@ -575,14 +575,14 @@ export default class TabRowWidget extends BasicWidget {
         return closestIndex;
     };
 
-    tabNoteSwitchedAndActivatedEvent({tabId}) {
+    tabNoteSwitchedAndActivatedEvent({tabContext}) {
         this.activeTabChangedEvent();
 
-        this.updateTabById(tabId);
+        this.updateTabById(tabContext.tabId);
     }
 
-    tabNoteSwitchedEvent({tabId}) {
-        this.updateTabById(tabId);
+    tabNoteSwitchedEvent({tabContext}) {
+        this.updateTabById(tabContext.tabId);
     }
 
     updateTabById(tabId) {

@@ -93,8 +93,8 @@ export default class TabManager extends Component {
         });
     }
 
-    tabNoteSwitchedEvent({tabId}) {
-        if (tabId === this.activeTabId) {
+    tabNoteSwitchedEvent({tabContext}) {
+        if (tabContext.isActive()) {
             this.setCurrentNotePathToHash();
         }
 
@@ -195,7 +195,7 @@ export default class TabManager extends Component {
             this.activateTab(tabContext.tabId, false);
 
             this.triggerEvent('tabNoteSwitchedAndActivated', {
-                tabId: tabContext.tabId,
+                tabContext,
                 notePath
             });
         }
@@ -222,7 +222,9 @@ export default class TabManager extends Component {
         this.activeTabId = tabId;
 
         if (triggerEvent) {
-            this.triggerEvent('activeTabChanged', {tabId});
+            this.triggerEvent('activeTabChanged', {
+                tabContext: this.getTabContextById(tabId)
+            });
         }
 
         this.tabsUpdate.scheduleUpdate();
