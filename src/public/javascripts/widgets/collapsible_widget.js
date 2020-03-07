@@ -35,15 +35,15 @@ export default class CollapsibleWidget extends TabAwareWidget {
         this.$bodyWrapper = this.$widget.find('.body-wrapper');
         this.$bodyWrapper.attr('id', this.componentId); // for toggle to work we need id
 
-        const widgetName = this.constructor.name;
+        this.widgetName = this.constructor.name;
 
-        if (!options.is(widgetName + 'Collapsed')) {
+        if (!options.is(this.widgetName + 'Collapsed')) {
             this.$bodyWrapper.collapse("show");
         }
 
         // using immediate variants of the event so that the previous collapse is not caught
-        this.$bodyWrapper.on('hide.bs.collapse', () => options.save(widgetName + 'Collapsed', 'true'));
-        this.$bodyWrapper.on('show.bs.collapse', () => options.save(widgetName + 'Collapsed', 'false'));
+        this.$bodyWrapper.on('hide.bs.collapse', () => this.saveCollapsed(true));
+        this.$bodyWrapper.on('show.bs.collapse', () => this.saveCollapsed(false));
 
         this.$body = this.$bodyWrapper.find('.card-body');
 
@@ -73,6 +73,22 @@ export default class CollapsibleWidget extends TabAwareWidget {
         this.initialized = this.doRenderBody();
 
         return this.$widget;
+    }
+
+    saveCollapsed(collapse) {
+        options.save(this.widgetName + 'Collapsed', collapse.toString());
+
+        this.triggerEvent(`widgetCollapsedStateChanged`, {widgetName: this.widgetName, collapse});
+    }
+
+    /**
+     * This event is used to synchronize collapsed state of all the tab-cached widgets since they are all rendered
+     * separately but should behave uniformly for the user.
+     */
+    widgetCollapsedStateChangedEvent({widgetName, collapse}) {
+        if (widgetName === this.widgetName) {
+            this.$bodyWrapper.toggleClass('show', !collapse);
+        }
     }
 
     /** for overriding */
