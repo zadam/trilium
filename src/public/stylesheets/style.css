@@ -518,14 +518,6 @@ button.icon-button {
     padding: 5px;
 }
 
-.note-detail-image {
-    text-align: center;
-}
-
-.note-detail-image-view {
-    max-width: 100%;
-}
-
 pre:not(.CodeMirror-line) {
     color: var(--main-text-color) !important;
     white-space: pre-wrap;

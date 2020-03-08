@@ -59,3 +59,11 @@
     padding: 5px;
     margin-top: 5px;
 }
+
+.note-detail-image {
+    text-align: center;
+}
+
+.note-detail-image-view {
+    max-width: 100%;
+}
