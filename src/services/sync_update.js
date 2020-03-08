@@ -4,6 +4,11 @@ const syncTableService = require('./sync_table');
 const eventService = require('./events');
 
 async function updateEntity(sync, entity, sourceId) {
+    // can be undefined for options with isSynced=false
+    if (!entity) {
+        return;
+    }
+
     const {entityName} = sync;
 
     if (entityName === 'notes') {
