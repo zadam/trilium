@@ -156,10 +156,7 @@ async function pullSync(syncContext) {
                     appliedPulls++;
                 }
 
-                // can be undefined for options with isSynced=false
-                if (entity) {
-                    await syncUpdateService.updateEntity(sync, entity, syncContext.sourceId);
-                }
+                await syncUpdateService.updateEntity(sync, entity, syncContext.sourceId);
             }
 
             stats.outstandingPulls = resp.maxSyncId - sync.id;
