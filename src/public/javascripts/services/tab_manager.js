@@ -117,6 +117,8 @@ export default class TabManager extends Component {
                 // it helps navigating in history if note title is included in the title
                 document.title += " - " + activeTabContext.note.title;
             }
+
+            this.triggerEvent('activeNoteChanged');
         }
     }
 

@@ -35,7 +35,7 @@ import treeCache from './tree_cache.js';
 import noteTooltipService from './note_tooltip.js';
 import protectedSessionService from './protected_session.js';
 import dateNotesService from './date_notes.js';
-import StandardWidget from '../widgets/collapsible_widget.js';
+import CollapsibleWidget from '../widgets/collapsible_widget.js';
 import ws from "./ws.js";
 import hoistedNoteService from "./hoisted_note.js";
 import appContext from "./app_context.js";
@@ -46,7 +46,7 @@ import appContext from "./app_context.js";
  * @constructor
  * @hideconstructor
  */
-function FrontendScriptApi(startNote, currentNote, originEntity = null, tabContext = null, $container = null) {
+function FrontendScriptApi(startNote, currentNote, originEntity = null, $container = null) {
     const $pluginButtons = $("#plugin-buttons");
 
     /** @property {jQuery} container of all the rendered script content */
@@ -62,11 +62,8 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
     // to keep consistency with backend API
     this.dayjs = dayjs;
 
-    /** @property {TabContext|null} - experimental! */
-    this.tabContext = tabContext;
-
-    /** @property {StandardWidget} */
-    this.StandardWidget = StandardWidget;
+    /** @property {CollapsibleWidget} */
+    this.CollapsibleWidget = CollapsibleWidget;
 
     /**
      * Activates note in the tree and in the note detail.
@@ -75,14 +72,8 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
      * @param {string} notePath (or noteId)
      * @returns {Promise&lt;void>}
      */
-    this.activateNote = async (notePath, noteLoadedListener) => {
-        await treeService.activateNote(notePath, async () => {
-            await appContext.getMainNoteTree().scrollToActiveNoteListener();
-
-            if (noteLoadedListener) {
-                noteLoadedListener();
-            }
-        });
+    this.activateNote = async notePath => {
+        await appContext.tabManager.getActiveTabContext().setNote(notePath);
     };
 
     /**
@@ -94,7 +85,8 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
     this.activateNewNote = async notePath => {
         await ws.waitForMaxKnownSyncId();
 
-        await treeService.activateNote(notePath, () => appContext.trigger('focusAndSelectTitle'));
+        await appContext.tabManager.getActiveTabContext().setNote(notePath);
+        appContext.triggerCommand('focusAndSelectTitle');
     };
 
     /**
@@ -312,13 +304,13 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
      * @param {string} text - this must be clear text, HTML is not supported.
      * @method
      */
-    this.addTextToActiveTabEditor = text => appContext.trigger('addTextToActiveEditor', {text});
+    this.addTextToActiveTabEditor = text => appContext.triggerCommand('addTextToActiveEditor', {text});
 
     /**
      * @method
      * @returns {NoteShort} active note (loaded into right pane)
      */
-    this.getActiveTabNote = appContext.getActiveTabNote;
+    this.getActiveTabNote = appContext.tabManager.getActiveTabNote;
 
     /**
      * See https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editor-Editor.html for a documentation on the returned instance.
@@ -326,26 +318,13 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
      * @method
      * @param callback - method receiving "textEditor" instance
      */
-    this.getActiveTabTextEditor = callback => appContext.trigger('executeInActiveEditor', {callback});
+    this.getActiveTabTextEditor = callback => appContext.triggerCommand('executeInActiveEditor', {callback});
 
     /**
      * @method
      * @returns {Promise&lt;string|null>} returns note path of active note or null if there isn't active note
      */
-    this.getActiveTabNotePath = appContext.getActiveTabNotePath;
-
-    /**
-     * This method checks whether user navigated away from the note from which the scripts has been started.
-     * This is necessary because script execution is async and by the time it is finished, the user might have
-     * already navigated away from this page - the end result would be that script might return data for the wrong
-     * note.
-     *
-     * @method
-     * @return {boolean} returns true if the original note is still loaded, false if user switched to another
-     */
-    this.isNoteStillActive = () => {
-        return tabContext.note &amp;&amp; this.originEntity.noteId === tabContext.note.noteId;
-    };
+    this.getActiveTabNotePath = appContext.tabManager.getActiveTabNotePath;
 
     /**
      * @method
@@ -354,9 +333,32 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, tabConte
     this.setupElementTooltip = noteTooltipService.setupElementTooltip;
 
     /**
+     * @deprecated use protectNote and protectSubtree instead
      * @method
      */
-    this.protectActiveNote = protectedSessionService.protectNoteAndSendToServer;
+    this.protectActiveNote = async () => {
+        const activeNote = appContext.tabManager.getActiveTabNote();
+
+        await protectedSessionService.protectNote(activeNote.noteId, true, false);
+    };
+
+    /**
+     * @method
+     * @param {string} noteId
+     * @param {boolean} protect - true to protect note, false to unprotect
+     */
+    this.protectNote = async (noteId, protect) => {
+        await protectedSessionService.protectNote(noteId, protect, false);
+    };
+
+    /**
+     * @method
+     * @param {string} noteId
+     * @param {boolean} protect - true to protect subtree, false to unprotect
+     */
+    this.protectSubTree = async (noteId, protect) => {
+        await protectedSessionService.protectNote(noteId, protect, true);
+    };
 
     /**
      * Returns date-note for today. If it doesn't exist, it is automatically created.

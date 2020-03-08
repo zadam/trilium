@@ -185,7 +185,7 @@ span.fancytree-node.archived {
     overflow-x: hidden;
 }
 
-.icon-action:hover {
+.icon-action:hover:not(.disabled) {
     text-decoration: none;
     border-color: var(--button-border-color);
 }
@@ -196,6 +196,11 @@ span.fancytree-node.archived {
     padding: 5px;
     cursor: pointer;
     font-size: 1.5em;
+}
+
+.icon-action.disabled {
+    color: var(--muted-text-color) !important;
+    cursor: not-allowed;
 }
 
 .ui-widget-content a:not(.ui-tabs-anchor) {

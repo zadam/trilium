@@ -73,7 +73,7 @@ class NoteShort {
         /** @param {int} */
         this.contentLength = row.contentLength;
         /** @param {boolean} */
-        this.isProtected = row.isProtected;
+        this.isProtected = !!row.isProtected;
         /** @param {string} one of 'text', 'code', 'file' or 'render' */
         this.type = row.type;
         /** @param {string} content-type, e.g. "application/json" */
@@ -129,6 +129,11 @@ class NoteShort {
 
             return null;
         }
+    }
+
+    /** @returns {string[]} */
+    getBranchIds() {
+        return Object.values(this.parentToBranch);
     }
 
     /** @returns {Promise&lt;Branch[]>} */
@@ -467,6 +472,11 @@ class NoteShort {
         delete dto.treeCache;
 
         return dto;
+    }
+
+    async getCssClass() {
+        const labels = await this.getLabels('cssClass');
+        return labels.map(l => l.value).join(' ');
     }
 }
 
