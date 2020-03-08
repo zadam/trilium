@@ -180,6 +180,10 @@ if (utils.isElectron()) {
             });
         }
 
+        if (items.length === 0) {
+            return;
+        }
+
         contextMenu.show({
             x: params.x,
             y: params.y,

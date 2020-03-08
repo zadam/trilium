@@ -24,8 +24,7 @@ export default class HistoryNavigationWidget extends BasicWidget {
         if (utils.isElectron()) {
             this.$widget = $(TPL);
 
-            this.$backInHistory = this.$widget.find("[data-trigger-command='backInNoteHistory']");
-            this.$backInHistory.on('contextmenu',  e => {
+            const contextMenuHandler = e => {
                 e.preventDefault();
 
                 if (this.webContents.history.length < 2) {
@@ -33,13 +32,18 @@ export default class HistoryNavigationWidget extends BasicWidget {
                 }
 
                 this.showContextMenu(e);
-            });
+            };
 
+            this.$backInHistory = this.$widget.find("[data-trigger-command='backInNoteHistory']");
+            this.$backInHistory.on('contextmenu', contextMenuHandler);
 
             this.$forwardInHistory = this.$widget.find("[data-trigger-command='forwardInNoteHistory']");
+            this.$forwardInHistory.on('contextmenu', contextMenuHandler);
 
             const electron = require('electron');
             this.webContents = electron.remote.getCurrentWindow().webContents;
+
+            // without this the history is preserved across frontend reloads
             this.webContents.clearHistory();
 
             this.refresh();
@@ -54,7 +58,8 @@ export default class HistoryNavigationWidget extends BasicWidget {
     async showContextMenu(e) {
         let items = [];
 
-        for (const url of this.webContents.history) {
+        for (const idx in this.webContents.history) {
+            const url = this.webContents.history[idx];
             const [_, notePathWithTab] = url.split('#');
             const [notePath, tabId] = notePathWithTab.split('-');
 
@@ -62,25 +67,22 @@ export default class HistoryNavigationWidget extends BasicWidget {
 
             items.push({
                 title,
-                notePath,
-                tabId,
+                idx,
                 uiIcon: "empty"
             });
         }
 
         items.reverse();
 
-        items = items.slice(1); // remove the current note
-
         if (items.length > 20) {
-            items = items.slice(0, 20);
+            items = items.slice(0, 50);
         }
 
         contextMenu.show({
             x: e.pageX,
             y: e.pageY,
             items,
-            selectMenuItemHandler: ({notePath, tabId}) => appContext.tabManager.switchToTab(tabId, notePath)
+            selectMenuItemHandler: ({idx}) => this.webContents.goToIndex(idx)
         });
     }
 

@@ -138,17 +138,11 @@ export default class Entrypoints extends Component {
     }
 
     backInNoteHistoryCommand() {
-        const electron = require('electron');
-        const {webContents} = electron.remote.getCurrentWindow();
-
-        webContents.goBack();
+        window.history.back();
     }
 
-    forwardInNoteHistoryCommand() {console.log("forward");
-        const electron = require('electron');
-        const {webContents} = electron.remote.getCurrentWindow();
-
-        webContents.goForward();
+    forwardInNoteHistoryCommand() {
+        window.history.forward();
     }
 
     async searchForResultsCommand({searchText}) {

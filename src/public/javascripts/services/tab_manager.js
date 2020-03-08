@@ -104,8 +104,8 @@ export default class TabManager extends Component {
     setCurrentNotePathToHash() {
         const activeTabContext = this.getActiveTabContext();
 
-        if (activeTabContext
-            && activeTabContext.notePath !== treeService.getHashValueFromAddress()) {
+        if (window.history.length === 0 // first history entry
+            || (activeTabContext && activeTabContext.notePath !== treeService.getHashValueFromAddress()[0])) {
             const url = '#' + (activeTabContext.notePath || "") + "-" + activeTabContext.tabId;
 
             // using pushState instead of directly modifying document.location because it does not trigger hashchange
@@ -117,9 +117,9 @@ export default class TabManager extends Component {
                 // it helps navigating in history if note title is included in the title
                 document.title += " - " + activeTabContext.note.title;
             }
-
-            this.triggerEvent('activeNoteChanged');
         }
+
+        this.triggerEvent('activeNoteChanged'); // trigger this even in on popstate event
     }
 
     /** @return {TabContext[]} */
