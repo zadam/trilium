@@ -45,7 +45,7 @@ class NoteShort {
         /** @param {int} */
         this.contentLength = row.contentLength;
         /** @param {boolean} */
-        this.isProtected = row.isProtected;
+        this.isProtected = !!row.isProtected;
         /** @param {string} one of 'text', 'code', 'file' or 'render' */
         this.type = row.type;
         /** @param {string} content-type, e.g. "application/json" */

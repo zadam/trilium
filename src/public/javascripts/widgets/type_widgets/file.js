@@ -5,25 +5,6 @@ import TypeWidget from "./type_widget.js";
 
 const TPL = `
 <div class="note-detail-file note-detail-printable">
-    <style>
-    .note-detail-file {
-        padding: 10px;
-    }
-    
-    .file-table th, .file-table td {
-        padding: 10px;
-        font-size: larger;
-    }
-
-    .file-preview-content {
-        background-color: var(--accented-background-color);
-        padding: 15px;
-        max-height: 300px;
-        overflow: auto;
-        margin: 10px;
-    }
-    </style>
-
     <table class="file-table">
         <tr>
             <th nowrap>Note ID:</th>

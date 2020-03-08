@@ -73,3 +73,20 @@
 .note-detail-image-view {
     max-width: 100%;
 }
+
+.note-detail-file {
+    padding: 10px;
+}
+
+.file-table th, .file-table td {
+    padding: 10px;
+    font-size: larger;
+}
+
+.file-preview-content {
+    background-color: var(--accented-background-color);
+    padding: 15px;
+    max-height: 300px;
+    overflow: auto;
+    margin: 10px;
+}
