@@ -4,4 +4,8 @@
     {
         display: none !important;
     }
+
+    .relation-map-wrapper {
+        height: 100vh !important;
+    }
 }
