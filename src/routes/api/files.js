@@ -31,7 +31,7 @@ async function updateFile(req) {
     };
 }
 
-async function downloadNoteFile(noteId, res) {
+async function downloadNoteFile(noteId, res, contentDisposition = true) {
     const note = await repository.getNote(noteId);
 
     if (!note) {
@@ -42,9 +42,12 @@ async function downloadNoteFile(noteId, res) {
         return res.status(401).send("Protected session not available");
     }
 
-    // (one) reason we're not using the originFileName (available as label) is that it's not
-    // available for older note revisions and thus would be inconsistent
-    res.setHeader('Content-Disposition', utils.getContentDisposition(note.title || "untitled"));
+    if (contentDisposition) {
+        // (one) reason we're not using the originFileName (available as label) is that it's not
+        // available for older note revisions and thus would be inconsistent
+        res.setHeader('Content-Disposition', utils.getContentDisposition(note.title || "untitled"));
+    }
+
     res.setHeader('Content-Type', note.mime);
 
     res.send(await note.getContent());
@@ -54,11 +57,17 @@ async function downloadFile(req, res) {
     const noteId = req.params.noteId;
 
     return await downloadNoteFile(noteId, res);
+}
 
+async function openFile(req, res) {
+    const noteId = req.params.noteId;
+
+    return await downloadNoteFile(noteId, res, false);
 }
 
 module.exports = {
     updateFile,
+    openFile,
     downloadFile,
     downloadNoteFile
 };

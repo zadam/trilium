@@ -9,30 +9,30 @@ const TPL = `
         <tr>
             <th nowrap>Note ID:</th>
             <td class="file-note-id"></td>
-        </tr>
-        <tr>
             <th nowrap>Original file name:</th>
             <td class="file-filename"></td>
         </tr>
         <tr>
             <th nowrap>File type:</th>
             <td class="file-filetype"></td>
-        </tr>
-        <tr>
             <th nowrap>File size:</th>
             <td class="file-filesize"></td>
         </tr>
     </table>
     
     <pre class="file-preview-content"></pre>
+    
+    <iframe class="pdf-preview" style="width: 100%; height: 100%; flex-grow: 100;"></iframe>
 
-    <button class="file-download btn btn-sm btn-primary" type="button">Download</button>
-    &nbsp;
-    <button class="file-open btn btn-sm btn-primary" type="button">Open</button>
-    &nbsp;
-    <button class="file-upload-new-revision btn btn-sm btn-primary">Upload new revision</button>
-
-    <input type="file" class="file-upload-new-revision-input" style="display: none">
+    <div style="padding: 10px; display: flex; justify-content: space-evenly;">
+        <button class="file-download btn btn-sm btn-primary" type="button">Download</button>
+        &nbsp;
+        <button class="file-open btn btn-sm btn-primary" type="button">Open</button>
+        &nbsp;
+        <button class="file-upload-new-revision btn btn-sm btn-primary">Upload new revision</button>
+    
+        <input type="file" class="file-upload-new-revision-input" style="display: none">
+    </div>
 </div>`;
 
 export default class FileTypeWidget extends TypeWidget {
@@ -45,6 +45,7 @@ export default class FileTypeWidget extends TypeWidget {
         this.$fileType = this.$widget.find(".file-filetype");
         this.$fileSize = this.$widget.find(".file-filesize");
         this.$previewContent = this.$widget.find(".file-preview-content");
+        this.$pdfPreview = this.$widget.find(".pdf-preview");
         this.$downloadButton = this.$widget.find(".file-download");
         this.$openButton = this.$widget.find(".file-open");
         this.$uploadNewRevisionButton = this.$widget.find(".file-upload-new-revision");
@@ -110,12 +111,16 @@ export default class FileTypeWidget extends TypeWidget {
 
         const noteComplement = await this.tabContext.getNoteComplement();
 
+        this.$previewContent.empty().hide();
+        this.$pdfPreview.attr('src', '').empty().hide();
+
         if (noteComplement.content) {
             this.$previewContent.show();
             this.$previewContent.text(noteComplement.content);
         }
-        else {
-            this.$previewContent.empty().hide();
+        else if (note.mime === 'application/pdf' && utils.isElectron()) {
+            this.$pdfPreview.show();
+            this.$pdfPreview.attr("src", utils.getUrlForDownload("api/notes/" + this.noteId + "/open"));
         }
 
         // open doesn't work for protected notes since it works through browser which isn't in protected session

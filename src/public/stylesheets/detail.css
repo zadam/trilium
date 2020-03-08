@@ -76,6 +76,9 @@
 
 .note-detail-file {
     padding: 10px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 
 .file-table th, .file-table td {
