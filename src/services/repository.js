@@ -110,7 +110,9 @@ async function updateEntity(entity) {
         const primaryKey = entity[primaryKeyName];
 
         if (entity.isChanged) {
-            await syncTableService.addEntitySync(entityName, primaryKey);
+            const isSynced = entityName !== 'options' || entity.isSynced;
+
+            await syncTableService.addEntitySync(entityName, primaryKey, isSynced);
 
             if (!cls.isEntityEventsDisabled()) {
                 const eventPayload = {

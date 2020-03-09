@@ -176,7 +176,7 @@ async function updateOptions(remoteEntity, sourceId) {
         if (shouldWeUpdateEntity(localEntity, remoteEntity)) {
             await sql.replace('options', remoteEntity);
 
-            await syncTableService.addOptionsSync(remoteEntity.name, sourceId);
+            await syncTableService.addOptionsSync(remoteEntity.name, sourceId, true);
         }
     });
 }

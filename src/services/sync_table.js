@@ -1,16 +1,20 @@
+/**
+ * TODO: rename "sync" table to something like "changelog" since it now also contains rows which are not synced (isSynced=false)
+ */
+
 const sql = require('./sql');
 const sourceIdService = require('./source_id');
 const dateUtils = require('./date_utils');
 const log = require('./log');
 const cls = require('./cls');
 
-async function insertEntitySync(entityName, entityId, sourceId) {
+async function insertEntitySync(entityName, entityId, sourceId, isSynced) {
     const sync = {
         entityName: entityName,
         entityId: entityId,
         utcSyncDate: dateUtils.utcNowDateTime(),
         sourceId: sourceId || cls.getSourceId() || sourceIdService.getCurrentSourceId(),
-        isSynced: 1
+        isSynced: isSynced
     };
 
     sync.id = await sql.replace("sync", sync);
@@ -18,8 +22,8 @@ async function insertEntitySync(entityName, entityId, sourceId) {
     return sync;
 }
 
-async function addEntitySync(entityName, entityId, sourceId) {
-    const sync = await insertEntitySync(entityName, entityId, sourceId);
+async function addEntitySync(entityName, entityId, sourceId, isSynced = true) {
+    const sync = await insertEntitySync(entityName, entityId, sourceId, isSynced);
 
     cls.addSyncRow(sync);
 }
@@ -28,7 +32,15 @@ async function addEntitySyncsForSector(entityName, entityPrimaryKey, sector) {
     const entityIds = await sql.getColumn(`SELECT ${entityPrimaryKey} FROM ${entityName} WHERE SUBSTR(${entityPrimaryKey}, 1, 1) = ?`, [sector]);
 
     for (const entityId of entityIds) {
-        await insertEntitySync(entityName, entityId, 'content-check');
+        if (entityName === 'options') {
+            const isSynced = await sql.getValue(`SELECT isSynced FROM options WHERE name = ?`, [entityId]);
+
+            if (!isSynced) {
+                continue;
+            }
+        }
+
+        await insertEntitySync(entityName, entityId, 'content-check', true);
     }
 }
 
@@ -97,7 +109,7 @@ module.exports = {
     addNoteReorderingSync: async (parentNoteId, sourceId) => await addEntitySync("note_reordering", parentNoteId, sourceId),
     addNoteRevisionSync: async (noteRevisionId, sourceId) => await addEntitySync("note_revisions", noteRevisionId, sourceId),
     addNoteRevisionContentSync: async (noteRevisionId, sourceId) => await addEntitySync("note_revision_contents", noteRevisionId, sourceId),
-    addOptionsSync: async (name, sourceId) => await addEntitySync("options", name, sourceId),
+    addOptionsSync: async (name, sourceId, isSynced) => await addEntitySync("options", name, sourceId, isSynced),
     addRecentNoteSync: async (noteId, sourceId) => await addEntitySync("recent_notes", noteId, sourceId),
     addAttributeSync: async (attributeId, sourceId) => await addEntitySync("attributes", attributeId, sourceId),
     addApiTokenSync: async (apiTokenId, sourceId) => await addEntitySync("api_tokens", apiTokenId, sourceId),
