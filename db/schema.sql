@@ -1,9 +1,3 @@
-CREATE TABLE IF NOT EXISTS "sync" (
-                                    `id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-                                    `entityName`	TEXT NOT NULL,
-                                    `entityId`	TEXT NOT NULL,
-                                    `sourceId` TEXT NOT NULL,
-                                    `utcSyncDate`	TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS "source_ids" (
                                           `sourceId`	TEXT NOT NULL,
                                           `utcDateCreated`	TEXT NOT NULL,
@@ -27,13 +21,6 @@ CREATE TABLE IF NOT EXISTS "options"
   utcDateCreated TEXT not null,
   utcDateModified TEXT NOT NULL
 );
-CREATE UNIQUE INDEX `IDX_sync_entityName_entityId` ON `sync` (
-                                                              `entityName`,
-                                                              `entityId`
-  );
-CREATE INDEX `IDX_sync_utcSyncDate` ON `sync` (
-                                            `utcSyncDate`
-  );
 CREATE TABLE IF NOT EXISTS "note_contents" (
                                                    `noteId`	TEXT NOT NULL,
                                                    `content`	TEXT NULL DEFAULT NULL,
@@ -130,3 +117,17 @@ CREATE INDEX IDX_attributes_noteId_index
     on attributes (noteId);
 CREATE INDEX IDX_attributes_value_index
     on attributes (value);
+CREATE TABLE IF NOT EXISTS "sync" (
+    `id`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    `entityName`	TEXT NOT NULL,
+    `entityId`	TEXT NOT NULL,
+    `sourceId` TEXT NOT NULL,
+    `isSynced` INTEGER default 0 not null,
+    `utcSyncDate`	TEXT NOT NULL);
+CREATE UNIQUE INDEX `IDX_sync_entityName_entityId` ON `sync` (
+                                                              `entityName`,
+                                                              `entityId`
+    );
+CREATE INDEX `IDX_sync_utcSyncDate` ON `sync` (
+                                               `utcSyncDate`
+    );

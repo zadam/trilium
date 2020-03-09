@@ -176,7 +176,7 @@ async function pushSync(syncContext) {
     let lastSyncedPush = await getLastSyncedPush();
 
     while (true) {
-        const syncs = await sql.getRows('SELECT * FROM sync WHERE id > ? LIMIT 1000', [lastSyncedPush]);
+        const syncs = await sql.getRows('SELECT * FROM sync WHERE isSynced = 1 AND id > ? LIMIT 1000', [lastSyncedPush]);
 
         if (syncs.length === 0) {
             log.info("Nothing to push");
@@ -236,7 +236,7 @@ async function checkContentHash(syncContext) {
         return true;
     }
 
-    const notPushedSyncs = await sql.getValue("SELECT EXISTS(SELECT 1 FROM sync WHERE id > ?)", [await getLastSyncedPush()]);
+    const notPushedSyncs = await sql.getValue("SELECT EXISTS(SELECT 1 FROM sync WHERE isSynced = 1 AND id > ?)", [await getLastSyncedPush()]);
 
     if (notPushedSyncs) {
         log.info(`There's ${notPushedSyncs} outstanding pushes, skipping content check.`);
@@ -358,7 +358,7 @@ async function updatePushStats() {
     if (await syncOptions.isSyncSetup()) {
         const lastSyncedPush = await optionService.getOption('lastSyncedPush');
 
-        stats.outstandingPushes = await sql.getValue("SELECT COUNT(1) FROM sync WHERE id > ?", [lastSyncedPush]);
+        stats.outstandingPushes = await sql.getValue("SELECT COUNT(1) FROM sync WHERE isSynced = 1 AND id > ?", [lastSyncedPush]);
     }
 }
 
