@@ -27,7 +27,7 @@
     "commonmark": "0.29.1",
     "cookie-parser": "1.4.4",
     "csurf": "1.11.0",
-    "dayjs": "1.8.21",
+    "dayjs": "1.8.22",
     "debug": "4.1.1",
     "ejs": "2.7.4",
     "electron-debug": "3.0.1",
@@ -53,7 +53,7 @@
     "mime-types": "2.1.26",
     "multer": "1.4.2",
     "node-abi": "2.15.0",
-    "open": "7.0.2",
+    "open": "7.0.3",
     "portscanner": "2.2.0",
     "rand-token": "0.4.0",
     "rcedit": "2.1.0",
@@ -71,7 +71,7 @@
     "turndown": "5.0.3",
     "turndown-plugin-gfm": "1.0.2",
     "unescape": "1.0.1",
-    "ws": "7.2.1"
+    "ws": "7.2.3"
   },
   "devDependencies": {
     "electron": "9.0.0-beta.7",

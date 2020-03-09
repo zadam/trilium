@@ -8,6 +8,8 @@ const dateUtils = require('./date_utils');
 const log = require('./log');
 const cls = require('./cls');
 
+let maxSyncId = 0;
+
 async function insertEntitySync(entityName, entityId, sourceId, isSynced) {
     const sync = {
         entityName: entityName,
@@ -18,6 +20,8 @@ async function insertEntitySync(entityName, entityId, sourceId, isSynced) {
     };
 
     sync.id = await sql.replace("sync", sync);
+
+    maxSyncId = Math.max(maxSyncId, sync.id);
 
     return sync;
 }
@@ -115,5 +119,6 @@ module.exports = {
     addApiTokenSync: async (apiTokenId, sourceId) => await addEntitySync("api_tokens", apiTokenId, sourceId),
     addEntitySync,
     fillAllSyncRows,
-    addEntitySyncsForSector
+    addEntitySyncsForSector,
+    getMaxSyncId: () => maxSyncId
 };
