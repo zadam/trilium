@@ -287,7 +287,7 @@ export default class TabRowWidget extends BasicWidget {
         }
         else {
             // for older firefox
-            window.addEventEvent('resize', resizeListener);
+            window.addEventListener('resize', resizeListener);
         }
 
         this.tabEls.forEach((tabEl) => this.setTabCloseEvent(tabEl));

@@ -74,7 +74,7 @@
     "ws": "7.2.1"
   },
   "devDependencies": {
-    "electron": "9.0.0-beta.6",
+    "electron": "9.0.0-beta.7",
     "electron-builder": "22.4.0",
     "electron-packager": "14.2.1",
     "electron-rebuild": "1.10.0",
