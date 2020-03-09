@@ -546,7 +546,7 @@ class ConsistencyChecks {
           ${entityName} 
           LEFT JOIN sync ON sync.entityName = '${entityName}' AND entityId = ${key} 
         WHERE 
-          sync.id IS NULL AND ` + (entityName === 'options' ? 'isSynced = 1' : '1'),
+          sync.id IS NULL AND ` + (entityName === 'options' ? 'options.isSynced = 1' : '1'),
             async ({entityId}) => {
                 if (this.autoFix) {
                     await syncTableService.addEntitySync(entityName, entityId);

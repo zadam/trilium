@@ -1,9 +1,9 @@
 "use strict";
 
-const app_info = require('../../services/app_info');
+const appInfo = require('../../services/app_info');
 
 async function getAppInfo() {
-    return app_info;
+    return appInfo;
 }
 
 module.exports = {

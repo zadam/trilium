@@ -11,7 +11,8 @@ async function insertEntitySync(entityName, entityId, sourceId) {
         entityName: entityName,
         entityId: entityId,
         utcSyncDate: dateUtils.utcNowDateTime(),
-        sourceId: sourceId || cls.getSourceId() || sourceIdService.getCurrentSourceId()
+        sourceId: sourceId || cls.getSourceId() || sourceIdService.getCurrentSourceId(),
+        isSynced: 1
     };
 
     sync.id = await sql.replace("sync", sync);
