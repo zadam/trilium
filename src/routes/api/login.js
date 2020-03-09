@@ -49,7 +49,7 @@ async function loginSync(req) {
 
     return {
         sourceId: sourceIdService.getCurrentSourceId(),
-        maxSyncId: await sql.getValue("SELECT MAX(id) FROM sync")
+        maxSyncId: await sql.getValue("SELECT MAX(id) FROM sync WHERE isSynced = 1")
     };
 }
 
