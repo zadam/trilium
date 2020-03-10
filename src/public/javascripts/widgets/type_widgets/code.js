@@ -77,6 +77,7 @@ export default class CodeTypeWidget extends TypeWidget {
             // CodeMirror breaks pretty badly on null so even though it shouldn't happen (guarded by consistency check)
             // we provide fallback
             this.codeEditor.setValue(noteComplement.content || "");
+            this.codeEditor.clearHistory();
 
             const info = CodeMirror.findModeByMIME(note.mime);
 
