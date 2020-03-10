@@ -60,6 +60,7 @@ class NoteDetailCode {
             // CodeMirror breaks pretty badly on null so even though it shouldn't happen (guarded by consistency check)
             // we provide fallback
             this.codeEditor.setValue(this.ctx.note.content || "");
+            this.codeEditor.clearHistory();
 
             const info = CodeMirror.findModeByMIME(this.ctx.note.mime);
 
