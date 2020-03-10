@@ -100,4 +100,14 @@ export default class LoadResults {
     isOptionReloaded(name) {
         this.options.includes(name);
     }
+
+    isEmpty() {
+        return Object.keys(this.noteIdToSourceId).length > 0
+            || this.branches.length > 0
+            || this.attributes.length > 0
+            || this.noteReorderings.length > 0
+            || this.noteRevisions.length > 0
+            || this.contentNoteIdToSourceId.length > 0
+            || this.options.length > 0;
+    }
 }

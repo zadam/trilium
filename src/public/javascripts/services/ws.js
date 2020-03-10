@@ -44,7 +44,7 @@ async function handleMessage(event) {
     }
 
     if (message.type === 'sync') {
-        const syncRows = message.data;
+        let syncRows = message.data;
         lastPingTs = Date.now();
 
         $outstandingSyncsCount.html(message.outstandingSyncs);
@@ -89,6 +89,8 @@ function waitForSyncId(desiredSyncId) {
     if (desiredSyncId <= lastProcessedSyncId) {
         return Promise.resolve();
     }
+
+    console.log("Waiting for", desiredSyncId, 'current is', lastProcessedSyncId);
 
     return new Promise((res, rej) => {
         syncIdReachedListeners.push({
@@ -322,13 +324,19 @@ async function processSyncRows(syncRows) {
     });
 
     syncRows.filter(sync => sync.entityName === 'options').forEach(sync => {
+        if (sync.entity.name === 'openTabs') {
+            return; // only noise
+        }
+
         options.set(sync.entity.name, sync.entity.value);
 
         loadResults.addOption(sync.entity.name);
     });
 
-    const appContext = (await import("./app_context.js")).default;
-    appContext.triggerEvent('entitiesReloaded', {loadResults});
+    if (!loadResults.isEmpty()) {
+        const appContext = (await import("./app_context.js")).default;
+        appContext.triggerEvent('entitiesReloaded', {loadResults});
+    }
 }
 
 export default {
