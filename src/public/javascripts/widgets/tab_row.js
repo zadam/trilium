@@ -431,11 +431,13 @@ export default class TabRowWidget extends BasicWidget {
     removeTab(tabId) {
         const tabEl = this.getTabById(tabId)[0];
 
-        tabEl.parentNode.removeChild(tabEl);
-        this.cleanUpPreviouslyDraggedTabs();
-        this.layoutTabs();
-        this.setupDraggabilly();
-        this.setVisibility();
+        if (tabEl) {
+            tabEl.parentNode.removeChild(tabEl);
+            this.cleanUpPreviouslyDraggedTabs();
+            this.layoutTabs();
+            this.setupDraggabilly();
+            this.setVisibility();
+        }
     }
 
     getTabIdsInOrder() {

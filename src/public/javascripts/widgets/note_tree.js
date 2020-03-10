@@ -831,4 +831,11 @@ export default class NoteTreeWidget extends TabAwareWidget {
 
         noteCreateService.duplicateNote(noteId, branch.parentNoteId);
     }
+
+    async tabNoteSwitchedEvent({tabContext, notePath}) {
+        // this causes unnecessary scrolling to active note
+        if (tabContext.isActive()) {
+            super.tabNoteSwitchedEvent({tabContext, notePath});
+        }
+    }
 }
