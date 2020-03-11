@@ -10,13 +10,13 @@ const cls = require('./cls');
 
 let maxSyncId = 0;
 
-async function insertEntitySync(entityName, entityId, sourceId, isSynced) {
+async function insertEntitySync(entityName, entityId, sourceId = null, isSynced = true) {
     const sync = {
         entityName: entityName,
         entityId: entityId,
         utcSyncDate: dateUtils.utcNowDateTime(),
         sourceId: sourceId || cls.getSourceId() || sourceIdService.getCurrentSourceId(),
-        isSynced: isSynced
+        isSynced: isSynced ? 1 : 0
     };
 
     sync.id = await sql.replace("sync", sync);
@@ -26,7 +26,7 @@ async function insertEntitySync(entityName, entityId, sourceId, isSynced) {
     return sync;
 }
 
-async function addEntitySync(entityName, entityId, sourceId, isSynced = true) {
+async function addEntitySync(entityName, entityId, sourceId, isSynced) {
     const sync = await insertEntitySync(entityName, entityId, sourceId, isSynced);
 
     cls.addSyncRow(sync);

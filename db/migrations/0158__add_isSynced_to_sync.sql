@@ -6,8 +6,8 @@ CREATE TABLE IF NOT EXISTS "sync_mig" (
     `isSynced` INTEGER default 0 not null,
     `utcSyncDate`	TEXT NOT NULL);
 
-INSERT INTO sync_mig (entityName, entityId, sourceId, isSynced, utcSyncDate)
-SELECT entityName, entityId, sourceId, 1, utcSyncDate FROM sync;
+INSERT INTO sync_mig (id, entityName, entityId, sourceId, isSynced, utcSyncDate)
+SELECT id, entityName, entityId, sourceId, 1, utcSyncDate FROM sync;
 
 DROP TABLE sync;
 
