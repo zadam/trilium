@@ -235,8 +235,6 @@ async function importEnex(taskContext, file, parentNote) {
 
         taskContext.increaseProgressCount();
 
-        let noteContent = await noteEntity.getContent();
-
         for (const resource of resources) {
             const hash = utils.md5(resource.content);
 
@@ -268,7 +266,7 @@ async function importEnex(taskContext, file, parentNote) {
 
                 const resourceLink = `<a href="#root/${resourceNote.noteId}">${utils.escapeHtml(resource.title)}</a>`;
 
-                noteContent = noteContent.replace(mediaRegex, resourceLink);
+                content = content.replace(mediaRegex, resourceLink);
             };
 
             if (["image/jpeg", "image/png", "image/gif", "image/webp"].includes(resource.mime)) {
@@ -281,12 +279,12 @@ async function importEnex(taskContext, file, parentNote) {
 
                     const imageLink = `<img src="${url}">`;
 
-                    noteContent = noteContent.replace(mediaRegex, imageLink);
+                    content = content.replace(mediaRegex, imageLink);
 
-                    if (!noteContent.includes(imageLink)) {
+                    if (!content.includes(imageLink)) {
                         // if there wasn't any match for the reference, we'll add the image anyway
                         // otherwise image would be removed since no note would include it
-                        noteContent += imageLink;
+                        content += imageLink;
                     }
                 } catch (e) {
                     log.error("error when saving image from ENEX file: " + e);
@@ -298,7 +296,7 @@ async function importEnex(taskContext, file, parentNote) {
         }
 
         // save updated content with links to files/images
-        await noteEntity.setContent(noteContent);
+        await noteEntity.setContent(content);
 
         await noteService.scanForLinks(noteEntity.noteId);
 
