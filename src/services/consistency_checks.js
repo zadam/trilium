@@ -51,7 +51,7 @@ class ConsistencyChecks {
             childToParents[childNoteId].push(parentNoteId);
         }
 
-        function checkTreeCycle(noteId, path) {
+        const checkTreeCycle = (noteId, path) => {
             if (noteId === 'root') {
                 return;
             }
@@ -75,7 +75,7 @@ class ConsistencyChecks {
                     checkTreeCycle(parentNoteId, newPath);
                 }
             }
-        }
+        };
 
         const noteIds = Object.keys(childToParents);
 
