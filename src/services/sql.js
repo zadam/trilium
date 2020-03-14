@@ -209,6 +209,8 @@ async function transactional(func) {
 
             transactionActive = false;
             resolve();
+
+            setTimeout(() => require('./ws').sendPingToAllClients(), 50);
         }
         catch (e) {
             if (transactionActive) {

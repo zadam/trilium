@@ -24,8 +24,6 @@ async function addEntitySync(entityName, entityId, sourceId) {
     const sync = await insertEntitySync(entityName, entityId, sourceId);
 
     syncs.push(sync);
-
-    setTimeout(() => require('./ws').sendPingToAllClients(), 50);
 }
 
 async function addEntitySyncsForSector(entityName, entityPrimaryKey, sector) {
