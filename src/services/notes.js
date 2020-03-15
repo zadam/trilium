@@ -193,7 +193,7 @@ async function protectNoteRecursively(note, protect, includingSubTree, taskConte
 
     if (includingSubTree) {
         for (const child of await note.getChildNotes()) {
-            await protectNoteRecursively(child, protect, taskContext);
+            await protectNoteRecursively(child, protect, includingSubTree, taskContext);
         }
     }
 }
