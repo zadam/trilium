@@ -240,8 +240,10 @@ export default class NoteDetailWidget extends TabAwareWidget {
         this.spacedUpdate.updateNowIfNecessary();
     }
 
-    autoBookDisabledEvent() {
-        this.refresh();
+    autoBookDisabledEvent({tabContext}) {
+        if (this.isTab(tabContext.tabId)) {
+            this.refresh();
+        }
     }
 
     async cutIntoNoteCommand() {

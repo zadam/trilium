@@ -136,7 +136,7 @@ export default class BookTypeWidget extends TypeWidget {
             const $addTextLink = $('<a href="javascript:">here</a>').on('click', () => {
                 this.tabContext.autoBookDisabled = true;
 
-                this.triggerEvent('autoBookDisabled');
+                this.triggerEvent('autoBookDisabled', {tabContext: this.tabContext});
             });
 
             this.$content.append($('<div class="note-book-auto-message"></div>')
