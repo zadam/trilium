@@ -618,18 +618,6 @@ export default class NoteTreeWidget extends TabAwareWidget {
         this.reloadTreeFromCache();
     }
 
-    async cloneNotesToCommand() {
-        const selectedOrActiveNoteIds = this.getSelectedOrActiveNodes().map(node => node.data.noteId);
-
-        this.triggerCommand('cloneNoteIdsTo', {noteIds: selectedOrActiveNoteIds});
-    }
-
-    async moveNotesToCommand() {
-        const selectedOrActiveBranchIds = this.getSelectedOrActiveNodes().map(node => node.data.branchId);
-
-        this.triggerCommand('moveBranchIdsTo', {branchIds: selectedOrActiveBranchIds});
-    }
-
     async getHotKeys() {
         const actions = await keyboardActionsService.getActionsForScope('note-tree');
         const hotKeyMap = {
@@ -830,6 +818,6 @@ export default class NoteTreeWidget extends TabAwareWidget {
     duplicateNoteCommand({node}) {
         const branch = treeCache.getBranch(node.data.branchId);
 
-        noteCreateService.duplicateNote(noteId, branch.parentNoteId);
+        noteCreateService.duplicateNote(node.data.noteId, branch.parentNoteId);
     }
 }

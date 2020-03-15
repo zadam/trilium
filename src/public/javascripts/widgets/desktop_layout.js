@@ -25,6 +25,7 @@ import NoteRevisionsWidget from "./note_revisions.js";
 import SimilarNotesWidget from "./similar_notes.js";
 import WhatLinksHereWidget from "./what_links_here.js";
 import SidePaneToggles from "./side_pane_toggles.js";
+import appContext from "../services/app_context.js";
 
 const RIGHT_PANE_CSS = `
 <style>
@@ -99,6 +100,8 @@ const RIGHT_PANE_CSS = `
 
 export default class DesktopLayout {
     getRootWidget(appContext) {
+        appContext.mainTreeWidget = new NoteTreeWidget();
+
         return new FlexContainer('column')
             .setParent(appContext)
             .id('root-widget')
@@ -116,7 +119,7 @@ export default class DesktopLayout {
                     .child(new GlobalButtonsWidget())
                     .child(new SearchBoxWidget())
                     .child(new SearchResultsWidget())
-                    .child(new NoteTreeWidget())
+                    .child(appContext.mainTreeWidget)
                 )
                 .child(new FlexContainer('column').id('center-pane')
                     .child(new FlexContainer('row').class('title-row')
