@@ -45,7 +45,16 @@ async function getRenderedContent(note) {
         // open doesn't work for protected notes since it works through browser which isn't in protected session
         $openButton.toggle(!note.isProtected);
 
-        $rendered = $('<div>')
+        $rendered = $('<div>');
+
+        if (note.mime === 'application/pdf' && utils.isElectron()) {
+            const $pdfPreview = $('<iframe class="pdf-preview" style="width: 100%; height: 100%; flex-grow: 100;"></iframe>');
+            $pdfPreview.attr("src", utils.getUrlForDownload("api/notes/" + note.noteId + "/open"));
+
+            $rendered.append($pdfPreview);
+        }
+
+        $rendered
             .append($downloadButton)
             .append(' &nbsp; ')
             .append($openButton);
