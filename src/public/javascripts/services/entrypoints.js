@@ -84,12 +84,8 @@ export default class Entrypoints extends Component {
         if (note.noteId === hoistedNoteId) {
             hoistedNoteService.unhoist();
         }
-        else {
-            const note = await treeCache.getNote(note.noteId);
-
-            if (note.type !== 'search') {
-                hoistedNoteService.setHoistedNoteId(note.noteId);
-            }
+        else if (note.type !== 'search') {
+            hoistedNoteService.setHoistedNoteId(note.noteId);
         }
     }
 
