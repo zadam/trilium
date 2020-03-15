@@ -24,6 +24,8 @@ const TPL = `
     .note-detail {
         height: 100%;
         min-height: 0;
+        font-family: var(--detail-font-family);
+        font-size: var(--detail-font-size);
     }
     </style>
 </div>
