@@ -3,8 +3,6 @@ CREATE TABLE IF NOT EXISTS "source_ids" (
                                           `utcDateCreated`	TEXT NOT NULL,
                                           PRIMARY KEY(`sourceId`)
 );
-CREATE INDEX IDX_source_ids_utcDateCreated
-    on source_ids (utcDateCreated);
 CREATE TABLE IF NOT EXISTS "api_tokens"
 (
   apiTokenId TEXT PRIMARY KEY NOT NULL,
@@ -59,6 +57,8 @@ CREATE INDEX `IDX_note_revisions_utcDateCreated` ON `note_revisions` (`utcDateCr
 CREATE INDEX `IDX_note_revisions_utcDateLastEdited` ON `note_revisions` (`utcDateLastEdited`);
 CREATE INDEX `IDX_note_revisions_dateCreated` ON `note_revisions` (`dateCreated`);
 CREATE INDEX `IDX_note_revisions_dateLastEdited` ON `note_revisions` (`dateLastEdited`);
+CREATE INDEX IDX_source_ids_utcDateCreated
+    on source_ids (utcDateCreated);
 CREATE TABLE IF NOT EXISTS "notes" (
                                            `noteId`	TEXT NOT NULL,
                                            `title`	TEXT NOT NULL DEFAULT "note",

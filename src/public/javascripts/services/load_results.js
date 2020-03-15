@@ -18,7 +18,7 @@ export default class LoadResults {
         this.options = [];
     }
 
-    addNote(noteId, sourceId) {
+    addNote(noteId, sourceId) {console.log("Adding", noteId, sourceId);
         this.noteIdToSourceId[noteId] = this.noteIdToSourceId[noteId] || [];
 
         if (!this.noteIdToSourceId[noteId].includes(sourceId)) {
@@ -102,12 +102,12 @@ export default class LoadResults {
     }
 
     isEmpty() {
-        return Object.keys(this.noteIdToSourceId).length > 0
-            || this.branches.length > 0
-            || this.attributes.length > 0
-            || this.noteReorderings.length > 0
-            || this.noteRevisions.length > 0
-            || this.contentNoteIdToSourceId.length > 0
-            || this.options.length > 0;
+        return Object.keys(this.noteIdToSourceId).length === 0
+            && this.branches.length === 0
+            && this.attributes.length === 0
+            && this.noteReorderings.length === 0
+            && this.noteRevisions.length === 0
+            && this.contentNoteIdToSourceId.length === 0
+            && this.options.length === 0;
     }
 }
