@@ -48,7 +48,7 @@ export default class TabAwareWidget extends BasicWidget {
 
     async tabNoteSwitchedEvent({tabContext, notePath}) {
         // if notePath does not match then the tabContext has been switched to another note in the mean time
-        if (tabContext.isActive() && tabContext.notePath === notePath) {
+        if (tabContext.notePath === notePath) {
             await this.noteSwitched();
         }
     }

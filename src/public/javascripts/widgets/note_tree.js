@@ -418,7 +418,8 @@ export default class NoteTreeWidget extends TabAwareWidget {
         await this.tree.reload(notes);
     }
 
-    collapseTreeCommand() { this.collapseTree(); }
+    // must be event since it's triggered from outside the tree
+    collapseTreeEvent() { this.collapseTree(); }
 
     isEnabled() {
         return !!this.tabContext;
