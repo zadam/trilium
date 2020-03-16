@@ -99,6 +99,10 @@ const RIGHT_PANE_CSS = `
 </style>`;
 
 export default class DesktopLayout {
+    constructor(customWidgets) {
+        this.customWidgets = customWidgets;
+    }
+
     getRootWidget(appContext) {
         appContext.mainTreeWidget = new NoteTreeWidget();
 
@@ -144,6 +148,7 @@ export default class DesktopLayout {
                     .child(new TabCachingWidget(() => new NoteRevisionsWidget()))
                     .child(new TabCachingWidget(() => new SimilarNotesWidget()))
                     .child(new TabCachingWidget(() => new WhatLinksHereWidget()))
+                    .addChildren(this.customWidgets['right-pane'])
                 )
                 .child(new SidePaneToggles().hideInZenMode())
             );

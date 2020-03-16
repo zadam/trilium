@@ -11,6 +11,17 @@ export default class FlexContainer extends BasicWidget {
         this.attrs.style = `display: flex; flex-direction: ${direction};`;
 
         this.children = [];
+
+        this.positionCounter = 10;
+    }
+
+    child(component) {
+        super.child(component);
+
+        component.position = this.positionCounter;
+        this.positionCounter += 10;
+
+        return this;
     }
 
     doRender() {

@@ -29,8 +29,8 @@ async function run(req) {
     return { executionResult: result };
 }
 
-async function getStartupBundles() {
-    const notes = await attributeService.getNotesWithLabel("run", "frontendStartup");
+async function getBundlesWithLabel(label, value) {
+    const notes = await attributeService.getNotesWithLabel(label, value);
 
     const bundles = [];
 
@@ -43,6 +43,14 @@ async function getStartupBundles() {
     }
 
     return bundles;
+}
+
+async function getStartupBundles() {
+    return await getBundlesWithLabel("run", "frontendStartup");
+}
+
+async function getWidgetBundles() {
+    return await getBundlesWithLabel("widget");
 }
 
 async function getRelationBundles(req) {
@@ -84,6 +92,7 @@ module.exports = {
     exec,
     run,
     getStartupBundles,
+    getWidgetBundles,
     getRelationBundles,
     getBundle
 };

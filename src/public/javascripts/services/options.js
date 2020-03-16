@@ -1,8 +1,10 @@
 import server from "./server.js";
 
-const loadListeners = [];
-
 class Options {
+    constructor() {
+        this.initializedPromise = server.get('options').then(data => this.load(data));
+    }
+
     load(arr) {
         this.arr = arr;
     }

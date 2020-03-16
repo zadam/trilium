@@ -1,4 +1,3 @@
-import server from "./server.js";
 import treeCache from "./tree_cache.js";
 import bundleService from "./bundle.js";
 import DialogCommandExecutor from "./dialog_command_executor.js";
@@ -18,9 +17,9 @@ class AppContext extends Component {
     }
 
     async start() {
-        options.load(await server.get('options'));
-
         this.showWidgets();
+
+        await Promise.all([treeCache.initializedPromise, options.initializedPromise]);
 
         this.tabManager.loadTabs();
 

@@ -282,7 +282,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * @method
      * @returns {NoteShort} active note (loaded into right pane)
      */
-    this.getActiveTabNote = appContext.tabManager.getActiveTabNote;
+    this.getActiveTabNote = () => appContext.tabManager.getActiveTabNote();
 
     /**
      * See https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editor-Editor.html for a documentation on the returned instance.
@@ -296,7 +296,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
      * @method
      * @returns {Promise<string|null>} returns note path of active note or null if there isn't active note
      */
-    this.getActiveTabNotePath = appContext.tabManager.getActiveTabNotePath;
+    this.getActiveTabNotePath = () => appContext.tabManager.getActiveTabNotePath();
 
     /**
      * @method

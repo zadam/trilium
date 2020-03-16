@@ -9,6 +9,8 @@ class BasicWidget extends Component {
             style: ''
         };
         this.classes = [];
+
+        this.position = 0;
     }
 
     id(id) {
@@ -85,6 +87,10 @@ class BasicWidget extends Component {
 
     isVisible() {
         return this.$widget.is(":visible");
+    }
+
+    getPosition() {
+        return this.position;
     }
 
     remove() {

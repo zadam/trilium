@@ -67,6 +67,7 @@ import ProtectedSessionTypeWidget from "./widgets/type_widgets/protected_session
 import BookTypeWidget from "./widgets/type_widgets/book.js";
 import contextMenu from "./services/context_menu.js";
 import DesktopLayout from "./widgets/desktop_layout.js";
+import bundleService from "./services/bundle.js";
 
 if (utils.isElectron()) {
     require('electron').ipcRenderer.on('globalShortcut', async function(event, actionName) {
@@ -80,8 +81,12 @@ $('[data-toggle="tooltip"]').tooltip({
 
 macInit.init();
 
-appContext.setLayout(new DesktopLayout());
-appContext.start();
+bundleService.getWidgetBundlesByParent().then(widgetBundles => {
+    const desktopLayout = new DesktopLayout(widgetBundles);
+
+    appContext.setLayout(desktopLayout);
+    appContext.start();
+});
 
 noteTooltipService.setupGlobalTooltip();
 

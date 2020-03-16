@@ -1,6 +1,7 @@
 import ScriptContext from "./script_context.js";
 import server from "./server.js";
 import toastService from "./toast.js";
+import treeCache from "./tree_cache.js";
 
 async function getAndExecuteBundle(noteId, originEntity = null) {
     const bundle = await server.get('script/bundle/' + noteId);
@@ -29,8 +30,40 @@ async function executeStartupBundles() {
     }
 }
 
+async function getWidgetBundlesByParent() {
+    const scriptBundles = await server.get("script/widgets");
+
+    const byParent = {};
+
+    for (const bundle of scriptBundles) {
+
+        let widget;
+
+        try {
+            widget = await executeBundle(bundle);
+        }
+        catch (e) {
+            console.error("Widget initialization failed: ", e);
+            continue;
+        }
+
+        if (!widget.getParentWidget) {
+            console.log(`Custom widget does not have mandatory 'getParent()' method defined`);
+            continue;
+        }
+
+        const parentWidgetName = widget.getParentWidget();
+
+        byParent[parentWidgetName] = byParent[parentWidgetName] || [];
+        byParent[parentWidgetName].push(widget);
+    }
+
+    return byParent;
+}
+
 export default {
     executeBundle,
     getAndExecuteBundle,
-    executeStartupBundles
+    executeStartupBundles,
+    getWidgetBundlesByParent
 }

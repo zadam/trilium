@@ -32,8 +32,6 @@ export default class TabManager extends Component {
     async loadTabs() {
         const openTabs = options.getJson('openTabs') || [];
 
-        await treeCache.initializedPromise;
-
         // if there's notePath in the URL, make sure it's open and active
         // (useful, among others, for opening clipped notes from clipper)
         if (window.location.hash) {

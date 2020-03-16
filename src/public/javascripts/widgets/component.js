@@ -36,6 +36,14 @@ export default class Component {
         return this;
     }
 
+    addChildren(components = []) {
+        for (const component of components) {
+            this.child(component);
+        }
+
+        return this;
+    }
+
     /** @return {Promise} */
     handleEvent(name, data) {
         return Promise.all([
