@@ -16,6 +16,10 @@ export default class FlexContainer extends BasicWidget {
     }
 
     child(...components) {
+        if (!components) {
+            return this;
+        }
+
         super.child(...components);
 
         for (const component of components) {

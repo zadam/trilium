@@ -148,7 +148,7 @@ export default class DesktopLayout {
                     .child(new TabCachingWidget(() => new NoteRevisionsWidget()))
                     .child(new TabCachingWidget(() => new SimilarNotesWidget()))
                     .child(new TabCachingWidget(() => new WhatLinksHereWidget()))
-                    .child(...this.customWidgets['right-pane'])
+                    .child(...this.customWidgets.get('right-pane'))
                 )
                 .child(new SidePaneToggles().hideInZenMode())
             );

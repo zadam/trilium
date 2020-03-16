@@ -30,10 +30,30 @@ async function executeStartupBundles() {
     }
 }
 
+class WidgetsByParent {
+    constructor() {
+        this.byParent = {};
+    }
+
+    add(widget) {
+        if (!widget.parentWidget) {
+            console.log(`Custom widget does not have mandatory 'getParent()' method defined`);
+            return;
+        }
+
+        this.byParent[widget.parentWidget] = this.byParent[widget.parentWidget] || [];
+        this.byParent[widget.parentWidget].push(widget);
+    }
+
+    get(parentName) {
+        return this.byParent[parentName] || [];
+    }
+}
+
 async function getWidgetBundlesByParent() {
     const scriptBundles = await server.get("script/widgets");
 
-    const byParent = {};
+    const widgetsByParent = new WidgetsByParent();
 
     for (const bundle of scriptBundles) {
         let widget;
@@ -46,16 +66,10 @@ async function getWidgetBundlesByParent() {
             continue;
         }
 
-        if (!widget.parentWidget) {
-            console.log(`Custom widget does not have mandatory 'getParent()' method defined`);
-            continue;
-        }
-
-        byParent[widget.parentWidget] = byParent[widget.parentWidget] || [];
-        byParent[widget.parentWidget].push(widget);
+        widgetsByParent.add(widget);
     }
 
-    return byParent;
+    return widgetsByParent;
 }
 
 export default {
