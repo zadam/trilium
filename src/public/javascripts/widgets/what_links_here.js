@@ -2,15 +2,15 @@ import CollapsibleWidget from "./collapsible_widget.js";
 import linkService from "../services/link.js";
 
 export default class WhatLinksHereWidget extends CollapsibleWidget {
-    getWidgetTitle() { return "What links here"; }
+    get widgetTitle() { return "What links here"; }
 
-    getHelp() {
+    get help() {
         return {
             title: "This list contains all notes which link to this note through links and relations."
         };
     }
 
-    getHeaderActions() {
+    get headerActions() {
         const $showFullButton = $("<a>").append("show link map").addClass('widget-header-action');
         $showFullButton.on('click', async () => {
             const linkMapDialog = await import("../dialogs/link_map.js");

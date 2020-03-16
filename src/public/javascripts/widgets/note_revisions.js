@@ -7,16 +7,16 @@ const TPL = `
 `;
 
 class NoteRevisionsWidget extends CollapsibleWidget {
-    getWidgetTitle() { return "Note revisions"; }
+    get widgetTitle() { return "Note revisions"; }
 
-    getHelp() {
+    get help() {
         return {
             title: "Note revisions track changes in the note across the time.",
             url: "https://github.com/zadam/trilium/wiki/Note-revisions"
         };
     }
 
-    getHeaderActions() {
+    get headerActions() {
         const $showFullButton = $("<a>").append("show dialog").addClass('widget-header-action');
         $showFullButton.on('click', async () => {
             const attributesDialog = await import("../dialogs/note_revisions.js");

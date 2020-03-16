@@ -9,16 +9,16 @@ const TPL = `
 `;
 
 export default class LinkMapWidget extends CollapsibleWidget {
-    getWidgetTitle() { return "Link map"; }
+    get widgetTitle() { return "Link map"; }
 
-    getHelp() {
+    get help() {
         return {
             title: "Link map shows incoming and outgoing links from/to the current note.",
             url: "https://github.com/zadam/trilium/wiki/Link-map"
         };
     }
 
-    getHeaderActions() {
+    get headerActions() {
         const $showFullButton = $("<a>").append("show full").addClass('widget-header-action');
         $showFullButton.on('click', async () => {
             const linkMapDialog = await import("../dialogs/link_map.js");

@@ -4,16 +4,16 @@ import ws from "../services/ws.js";
 import CollapsibleWidget from "./collapsible_widget.js";
 
 export default class AttributesWidget extends CollapsibleWidget {
-    getWidgetTitle() { return "Attributes"; }
+    get widgetTitle() { return "Attributes"; }
 
-    getHelp() {
+    get help() {
         return {
             title: "Attributes are key-value records owned by assigned to this note.",
             url: "https://github.com/zadam/trilium/wiki/Attributes"
         };
     }
 
-    getHeaderActions() {
+    get headerActions() {
         const $showFullButton = $("<a>").append("show dialog").addClass('widget-header-action');
         $showFullButton.on('click', async () => {
             const attributesDialog = await import("../dialogs/attributes.js");

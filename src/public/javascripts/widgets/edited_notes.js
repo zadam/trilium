@@ -4,9 +4,9 @@ import server from "../services/server.js";
 import treeCache from "../services/tree_cache.js";
 
 export default class EditedNotesWidget extends CollapsibleWidget {
-    getWidgetTitle() { return "Edited notes on this day"; }
+    get widgetTitle() { return "Edited notes on this day"; }
 
-    getHelp() {
+    get help() {
         return {
             title: "This contains a list of notes created or updated on this day."
         };

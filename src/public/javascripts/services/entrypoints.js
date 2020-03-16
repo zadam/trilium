@@ -58,6 +58,8 @@ export default class Entrypoints extends Component {
             textHoverBgColor: '#555',
             caseSelectedColor: 'var(--main-border-color)'
         });
+
+        findInPage.openFindWindow();
     }
 
     async createNoteIntoDayNoteCommand() {

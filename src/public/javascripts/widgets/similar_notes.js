@@ -4,9 +4,9 @@ import server from "../services/server.js";
 import treeCache from "../services/tree_cache.js";
 
 export default class SimilarNotesWidget extends CollapsibleWidget {
-    getWidgetTitle() { return "Similar notes"; }
+    get widgetTitle() { return "Similar notes"; }
 
-    getHelp() {
+    get help() {
         return {
             title: "This list contains notes which might be similar to the current note based on textual similarity of note title."
         };

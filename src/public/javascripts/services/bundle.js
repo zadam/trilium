@@ -36,7 +36,6 @@ async function getWidgetBundlesByParent() {
     const byParent = {};
 
     for (const bundle of scriptBundles) {
-
         let widget;
 
         try {
@@ -47,15 +46,13 @@ async function getWidgetBundlesByParent() {
             continue;
         }
 
-        if (!widget.getParentWidget) {
+        if (!widget.parentWidget) {
             console.log(`Custom widget does not have mandatory 'getParent()' method defined`);
             continue;
         }
 
-        const parentWidgetName = widget.getParentWidget();
-
-        byParent[parentWidgetName] = byParent[parentWidgetName] || [];
-        byParent[parentWidgetName].push(widget);
+        byParent[widget.parentWidget] = byParent[widget.parentWidget] || [];
+        byParent[widget.parentWidget].push(widget);
     }
 
     return byParent;

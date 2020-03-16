@@ -21,11 +21,11 @@ const WIDGET_TPL = `
 </div>`;
 
 export default class CollapsibleWidget extends TabAwareWidget {
-    getWidgetTitle() { return "Untitled widget"; }
+    get widgetTitle() { return "Untitled widget"; }
 
-    getHeaderActions() { return []; }
+    get headerActions() { return []; }
 
-    getHelp() { return {}; }
+    get help() { return {}; }
 
     doRender() {
         this.$widget = $(WIDGET_TPL);
@@ -47,16 +47,15 @@ export default class CollapsibleWidget extends TabAwareWidget {
         this.$body = this.$bodyWrapper.find('.card-body');
 
         this.$title = this.$widget.find('.widget-title');
-        this.$title.text(this.getWidgetTitle());
+        this.$title.text(this.widgetTitle);
 
         this.$help = this.$widget.find('.widget-help');
-        const help = this.getHelp();
 
-        if (help.title) {
-            this.$help.attr("title", help.title);
-            this.$help.attr("href", help.url || "javascript:");
+        if (this.help.title) {
+            this.$help.attr("title", this.help.title);
+            this.$help.attr("href", this.help.url || "javascript:");
 
-            if (!help.url) {
+            if (!this.help.url) {
                 this.$help.addClass('no-link');
             }
         }
@@ -65,7 +64,7 @@ export default class CollapsibleWidget extends TabAwareWidget {
         }
 
         this.$headerActions = this.$widget.find('.widget-header-actions');
-        this.$headerActions.append(...this.getHeaderActions());
+        this.$headerActions.append(...this.headerActions);
 
         this.initialized = this.doRenderBody();
 

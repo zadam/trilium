@@ -25,7 +25,7 @@ const TPL = `
 `;
 
 export default class CalendarWidget extends CollapsibleWidget {
-    getWidgetTitle() { return "Calendar"; }
+    get widgetTitle() { return "Calendar"; }
 
     isEnabled() {
         return super.isEnabled()

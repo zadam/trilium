@@ -15,11 +15,17 @@ export default class FlexContainer extends BasicWidget {
         this.positionCounter = 10;
     }
 
-    child(component) {
-        super.child(component);
+    child(...components) {
+        super.child(...components);
 
-        component.position = this.positionCounter;
-        this.positionCounter += 10;
+        for (const component of components) {
+            if (!component.position) {
+                component.position = this.positionCounter;
+                this.positionCounter += 10;
+            }
+        }
+
+        this.children.sort((a, b) => a.position - b.position < 0 ? -1 : 1);
 
         return this;
     }

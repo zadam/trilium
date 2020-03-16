@@ -43,7 +43,7 @@ const TPL = `
 `;
 
 export default class NoteInfoWidget extends CollapsibleWidget {
-    getWidgetTitle() { return "Note info"; }
+    get widgetTitle() { return "Note info"; }
 
     async doRenderBody() {
         this.$body.html(TPL);

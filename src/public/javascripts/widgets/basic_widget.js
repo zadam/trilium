@@ -1,5 +1,4 @@
 import Component from "./component.js";
-import keyboardActionsService from "../services/keyboard_actions.js";
 
 class BasicWidget extends Component {
     constructor() {
@@ -9,8 +8,6 @@ class BasicWidget extends Component {
             style: ''
         };
         this.classes = [];
-
-        this.position = 0;
     }
 
     id(id) {

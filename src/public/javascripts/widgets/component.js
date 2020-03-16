@@ -28,17 +28,11 @@ export default class Component {
         return this;
     }
 
-    child(component) {
-        component.setParent(this);
-
-        this.children.push(component);
-
-        return this;
-    }
-
-    addChildren(components = []) {
+    child(...components) {
         for (const component of components) {
-            this.child(component);
+            component.setParent(this);
+
+            this.children.push(component);
         }
 
         return this;
