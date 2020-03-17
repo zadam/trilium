@@ -3,6 +3,7 @@ import noteCreateService from "./note_create.js";
 import treeService from "./tree.js";
 import hoistedNoteService from "./hoisted_note.js";
 import Component from "../widgets/component.js";
+import ws from "./ws.js";
 
 /**
  * This class contains command executors which logically belong to the NoteTree widget, but for better user experience
@@ -27,14 +28,20 @@ export default class MainTreeExecutors extends Component {
     }
 
     async createNoteIntoCommand() {
-        const note = appContext.tabManager.getActiveTabNote();
+        const activeNote = appContext.tabManager.getActiveTabNote();
 
-        if (note) {
-            await noteCreateService.createNote(note.noteId, {
-                isProtected: note.isProtected,
-                saveSelection: false
-            });
+        if (!activeNote) {
+            return;
         }
+
+        const {note} = await noteCreateService.createNote(activeNote.noteId, {
+            isProtected: activeNote.isProtected,
+            saveSelection: false
+        });
+
+        await ws.waitForMaxKnownSyncId();
+
+        appContext.tabManager.getActiveTabContext().setNote(note.noteId);
     }
 
     async createNoteAfterCommand() {
@@ -46,11 +53,15 @@ export default class MainTreeExecutors extends Component {
             return;
         }
 
-        await noteCreateService.createNote(parentNoteId, {
+        const {note} = await noteCreateService.createNote(parentNoteId, {
             target: 'after',
             targetBranchId: node.data.branchId,
             isProtected: isProtected,
             saveSelection: true
         });
+
+        await ws.waitForMaxKnownSyncId();
+
+        appContext.tabManager.getActiveTabContext().setNote(note.noteId);
     }
 }
