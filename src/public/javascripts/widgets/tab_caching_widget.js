@@ -23,7 +23,7 @@ export default class TabCachingWidget extends TabAwareWidget {
         this.widgets[tabId] = this.widgetFactory();
 
         const $renderedWidget = this.widgets[tabId].render();
-        this.widgets[tabId].toggleExt(this.isTab(tabId));
+        this.widgets[tabId].toggleExt(false); // new tab is always not active, can be activated after creation
 
         this.$widget.after($renderedWidget);
 

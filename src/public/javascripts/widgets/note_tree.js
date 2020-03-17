@@ -624,7 +624,11 @@ export default class NoteTreeWidget extends TabAwareWidget {
         
         for (const action of actions) {
             for (const shortcut of action.effectiveShortcuts) {
-                hotKeyMap[utils.normalizeShortcut(shortcut)] = node => this.triggerCommand(action.actionName, {node});
+                hotKeyMap[utils.normalizeShortcut(shortcut)] = node => {
+                    this.triggerCommand(action.actionName, {node});
+
+                    return false;
+                }
             }
         }
 
