@@ -165,27 +165,4 @@ export default class Entrypoints extends Component {
     }
 
     createTopLevelNoteCommand() { noteCreateService.createNewTopLevelNote(); }
-
-    async cloneNotesToCommand() {
-        const selectedOrActiveNoteIds = appContext.mainTreeWidget.getSelectedOrActiveNodes().map(node => node.data.noteId);
-
-        this.triggerCommand('cloneNoteIdsTo', {noteIds: selectedOrActiveNoteIds});
-    }
-
-    async moveNotesToCommand() {
-        const selectedOrActiveBranchIds = appContext.mainTreeWidget.getSelectedOrActiveNodes().map(node => node.data.branchId);
-
-        this.triggerCommand('moveBranchIdsTo', {branchIds: selectedOrActiveBranchIds});
-    }
-
-    async createNoteIntoCommand() {
-        const note = appContext.tabManager.getActiveTabNote();
-
-        if (note) {
-            await noteCreateService.createNote(note.noteId, {
-                isProtected: note.isProtected,
-                saveSelection: false
-            });
-        }
-    }
 }

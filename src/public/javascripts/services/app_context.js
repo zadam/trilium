@@ -10,6 +10,7 @@ import treeService from "./tree.js";
 import Component from "../widgets/component.js";
 import keyboardActionsService from "./keyboard_actions.js";
 import MobileScreenSwitcherExecutor from "../widgets/mobile_screen_switcher.js";
+import MainTreeExecutors from "./main_tree_executors.js";
 
 class AppContext extends Component {
     setLayout(layout) {
@@ -45,7 +46,8 @@ class AppContext extends Component {
         this.executors = [
             this.tabManager,
             new DialogCommandExecutor(),
-            new Entrypoints()
+            new Entrypoints(),
+            new MainTreeExecutors()
         ];
 
         if (utils.isMobile()) {
