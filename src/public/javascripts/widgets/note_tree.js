@@ -575,17 +575,6 @@ export default class NoteTreeWidget extends TabAwareWidget {
         });
     }
 
-    async createNoteIntoCommand() {
-        const node = this.getActiveNode();
-
-        if (node) {
-            await noteCreateService.createNote(node.data.noteId, {
-                isProtected: node.data.isProtected,
-                saveSelection: false
-            });
-        }
-    }
-
     async setExpandedToServer(branchId, isExpanded) {
         utils.assertArguments(branchId);
 

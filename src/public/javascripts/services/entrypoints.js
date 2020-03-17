@@ -177,4 +177,15 @@ export default class Entrypoints extends Component {
 
         this.triggerCommand('moveBranchIdsTo', {branchIds: selectedOrActiveBranchIds});
     }
+
+    async createNoteIntoCommand() {
+        const note = appContext.tabManager.getActiveTabNote();
+
+        if (note) {
+            await noteCreateService.createNote(note.noteId, {
+                isProtected: note.isProtected,
+                saveSelection: false
+            });
+        }
+    }
 }
