@@ -58,6 +58,8 @@ export default class HistoryNavigationWidget extends BasicWidget {
     async showContextMenu(e) {
         let items = [];
 
+        const activeIndex = this.webContents.getActiveIndex();
+
         for (const idx in this.webContents.history) {
             const url = this.webContents.history[idx];
             const [_, notePathWithTab] = url.split('#');
@@ -68,7 +70,8 @@ export default class HistoryNavigationWidget extends BasicWidget {
             items.push({
                 title,
                 idx,
-                uiIcon: "empty"
+                uiIcon: idx == activeIndex ? "radio-circle-marked" : // compare with type coercion!
+                    (idx < activeIndex ? "left-arrow-alt" : "right-arrow-alt")
             });
         }
 

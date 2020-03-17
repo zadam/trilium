@@ -136,11 +136,27 @@ export default class Entrypoints extends Component {
     }
 
     backInNoteHistoryCommand() {
-        window.history.back();
+        if (utils.isElectron()) {
+            const webContents = require('electron').remote.getCurrentWebContents();
+            const activeIndex = parseInt(webContents.getActiveIndex());
+
+            webContents.goToIndex(activeIndex - 1);
+        }
+        else {
+            window.history.back();
+        }
     }
 
     forwardInNoteHistoryCommand() {
-        window.history.forward();
+        if (utils.isElectron()) {
+            const webContents = require('electron').remote.getCurrentWebContents();
+            const activeIndex = parseInt(webContents.getActiveIndex());
+
+            webContents.goToIndex(activeIndex + 1);
+        }
+        else {
+            window.history.forward();
+        }
     }
 
     async searchForResultsCommand({searchText}) {
