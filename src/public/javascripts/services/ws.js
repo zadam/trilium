@@ -306,8 +306,8 @@ async function processSyncRows(syncRows) {
                     sourceNote.attributes.push(attribute.attributeId);
                 }
 
-                if (targetNote && !targetNote.attributes.includes(attribute.attributeId)) {
-                    targetNote.attributes.push(attribute.attributeId);
+                if (targetNote && !targetNote.targetRelations.includes(attribute.attributeId)) {
+                    targetNote.targetRelations.push(attribute.attributeId);
                 }
             }
         }
