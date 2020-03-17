@@ -58,7 +58,7 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
         await ws.waitForMaxKnownSyncId();
 
         await appContext.tabManager.getActiveTabContext().setNote(notePath);
-        appContext.triggerCommand('focusAndSelectTitle');
+        appContext.triggerEvent('focusAndSelectTitle');
     };
 
     /**

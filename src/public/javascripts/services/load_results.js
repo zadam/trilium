@@ -18,7 +18,7 @@ export default class LoadResults {
         this.options = [];
     }
 
-    addNote(noteId, sourceId) {console.log("Adding", noteId, sourceId);
+    addNote(noteId, sourceId) {
         this.noteIdToSourceId[noteId] = this.noteIdToSourceId[noteId] || [];
 
         if (!this.noteIdToSourceId[noteId].includes(sourceId)) {

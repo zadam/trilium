@@ -8,6 +8,7 @@ import appContext from "./app_context.js";
 import Component from "../widgets/component.js";
 import toastService from "./toast.js";
 import noteCreateService from "./note_create.js";
+import ws from "./ws.js";
 
 export default class Entrypoints extends Component {
     constructor() {
@@ -65,18 +66,18 @@ export default class Entrypoints extends Component {
     async createNoteIntoDayNoteCommand() {
         const todayNote = await dateNoteService.getTodayNote();
 
-        const {note} = await server.post(`notes/${todayNote.noteId}/children?target=into`, {
-            title: 'new note',
-            content: '',
+        const {note} = await noteCreateService.createNote(todayNote.noteId, {
+            isProtected: todayNote.isProtected,
             type: 'text',
-            isProtected: todayNote.isProtected
+            title: 'new note',
+            content: ''
         });
 
-        await treeService.expandToNote(note.noteId);
+        await ws.waitForMaxKnownSyncId();
 
-        const tabContext = await appContext.tabManager.openTabWithNote(note.noteId, true);
+        await appContext.tabManager.openTabWithNote(note.noteId, false);
 
-        appContext.triggerCommand('focusAndSelectTitle');
+        appContext.triggerEvent('focusAndSelectTitle');
     }
 
     async toggleNoteHoistingCommand() {
@@ -137,6 +138,7 @@ export default class Entrypoints extends Component {
 
     backInNoteHistoryCommand() {
         if (utils.isElectron()) {
+            // standard JS version does not work completely correctly in electron
             const webContents = require('electron').remote.getCurrentWebContents();
             const activeIndex = parseInt(webContents.getActiveIndex());
 
@@ -149,6 +151,7 @@ export default class Entrypoints extends Component {
 
     forwardInNoteHistoryCommand() {
         if (utils.isElectron()) {
+            // standard JS version does not work completely correctly in electron
             const webContents = require('electron').remote.getCurrentWebContents();
             const activeIndex = parseInt(webContents.getActiveIndex());
 

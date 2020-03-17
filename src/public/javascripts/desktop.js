@@ -71,7 +71,7 @@ import bundleService from "./services/bundle.js";
 
 if (utils.isElectron()) {
     require('electron').ipcRenderer.on('globalShortcut', async function(event, actionName) {
-        keyboardActionService.triggerAction(actionName);
+        appContext.triggerCommand(actionName);
     });
 }
 

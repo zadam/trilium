@@ -66,16 +66,6 @@ function setElementActionHandler($el, actionName, handler) {
 	});
 }
 
-async function triggerAction(actionName) {
-	const action = await getAction(actionName);
-
-	if (!action.handler) {
-		throw new Error(`Action ${actionName} has no handler`);
-	}
-
-	await action.handler();
-}
-
 async function getAction(actionName, silent = false) {
 	await keyboardActionsLoaded;
 
@@ -119,8 +109,6 @@ function updateDisplayedShortcuts($container) {
 
 export default {
 	setElementActionHandler,
-	triggerAction,
-	getAction,
 	updateDisplayedShortcuts,
 	setupActionsForElement,
 	getActionsForScope
