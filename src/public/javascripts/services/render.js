@@ -2,7 +2,7 @@ import server from "./server.js";
 import bundleService from "./bundle.js";
 
 async function render(note, $el) {
-    const relations = await note.getRelations('renderNote');
+    const relations = note.getRelations('renderNote');
     const renderNoteIds = relations
         .map(rel => rel.value)
         .filter(noteId => noteId);

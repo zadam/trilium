@@ -145,7 +145,7 @@ export default class BookTypeWidget extends TypeWidget {
                 .append(' if you want to add some text.'));
         }
 
-        const zoomLevel = parseInt(await note.getLabelValue('bookZoomLevel')) || this.getDefaultZoomLevel();
+        const zoomLevel = parseInt(note.getLabelValue('bookZoomLevel')) || this.getDefaultZoomLevel();
         this.setZoom(zoomLevel);
 
         await this.renderIntoElement(note, this.$content);

@@ -112,7 +112,7 @@ class ImageTypeWidget extends TypeWidget {
     }
 
     async doRefresh(note) {
-        const attributes = await note.getAttributes();
+        const attributes = note.getAttributes();
         const attributeMap = utils.toObject(attributes, l => [l.name, l.value]);
 
         this.$widget.show();

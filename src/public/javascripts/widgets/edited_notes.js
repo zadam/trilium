@@ -20,7 +20,7 @@ export default class EditedNotesWidget extends CollapsibleWidget {
     async refreshWithNote(note) {
         // remember which title was when we found the similar notes
         this.title = note.title;
-        let editedNotes = await server.get('edited-notes/' + await note.getLabelValue("dateNote"));
+        let editedNotes = await server.get('edited-notes/' + note.getLabelValue("dateNote"));
 
         editedNotes = editedNotes.filter(n => n.noteId !== note.noteId);
 

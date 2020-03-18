@@ -343,7 +343,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
                     await parentNode.setExpanded(true, expandOpts);
                 }
 
-                await this.updateNode(parentNode);
+                this.updateNode(parentNode);
 
                 let foundChildNode = this.findChildNode(parentNode, childNoteId);
 
@@ -384,15 +384,15 @@ export default class NoteTreeWidget extends TabAwareWidget {
         return this.getNodeFromPath(notePath, true, expandOpts);
     }
 
-    async updateNode(node) {
+    updateNode(node) {
         const note = treeCache.getNoteFromCache(node.data.noteId);
         const branch = treeCache.getBranch(node.data.branchId);
 
         node.data.isProtected = note.isProtected;
         node.data.noteType = note.type;
         node.folder = note.type === 'search' || note.getChildNoteIds().length > 0;
-        node.icon = await treeBuilder.getIcon(note);
-        node.extraClasses = await treeBuilder.getExtraClasses(note);
+        node.icon = treeBuilder.getIcon(note);
+        node.extraClasses = treeBuilder.getExtraClasses(note);
         node.title = (branch.prefix ? (branch.prefix + " - ") : "") + note.title;
         node.renderTitle();
     }
@@ -526,13 +526,13 @@ export default class NoteTreeWidget extends TabAwareWidget {
             for (const node of this.getNodesByNoteId(noteId)) {
                 await node.load(true);
 
-                await this.updateNode(node);
+                this.updateNode(node);
             }
         }
 
         for (const noteId of noteIdsToUpdate) {
             for (const node of this.getNodesByNoteId(noteId)) {
-                await this.updateNode(node);
+                this.updateNode(node);
             }
         }
 

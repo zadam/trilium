@@ -407,7 +407,7 @@ class NoteShort {
      * @returns {Promise<NoteShort[]>}
      */
     async getRelationTargets(name) {
-        const relations = await this.getRelations(name);
+        const relations = this.getRelations(name);
         const targets = [];
 
         for (const relation of relations) {
@@ -446,8 +446,8 @@ class NoteShort {
         return dto;
     }
 
-    async getCssClass() {
-        const labels = await this.getLabels('cssClass');
+    getCssClass() {
+        const labels = this.getLabels('cssClass');
         return labels.map(l => l.value).join(' ');
     }
 }

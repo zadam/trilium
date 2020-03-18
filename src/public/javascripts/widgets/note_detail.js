@@ -135,7 +135,7 @@ export default class NoteDetailWidget extends TabAwareWidget {
         const note = this.note;
 
         if (note) {
-            note.getCssClass().then(cssClass => this.$widget.addClass(cssClass));
+            this.$widget.addClass(note.getCssClass());
 
             this.$widget.addClass(utils.getNoteTypeClass(note.type));
             this.$widget.addClass(utils.getMimeTypeClass(note.mime));
