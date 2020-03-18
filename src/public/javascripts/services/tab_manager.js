@@ -196,7 +196,7 @@ export default class TabManager extends Component {
 
             this.triggerEvent('tabNoteSwitchedAndActivated', {
                 tabContext,
-                notePath
+                notePath: tabContext.notePath // resolved note path
             });
         }
     }
@@ -211,7 +211,7 @@ export default class TabManager extends Component {
 
         // if no tab with this note has been found we'll create new tab
 
-        await this.openTabWithNote(noteId);
+        await this.openTabWithNote(noteId, true);
     }
 
     activateTab(tabId, triggerEvent = true) {

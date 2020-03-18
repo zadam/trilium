@@ -554,7 +554,9 @@ export default class NoteTreeWidget extends TabAwareWidget {
         }
 
         if (activeNotePath) {
-            appContext.tabManager.getActiveTabContext().setNote(activeNotePath);
+            const node = await this.expandToNote(activeNotePath);
+
+            node.setActive(true, {noEvents: true});
         }
     }
 

@@ -90,7 +90,7 @@ function waitForSyncId(desiredSyncId) {
         return Promise.resolve();
     }
 
-    console.log("Waiting for", desiredSyncId, 'current is', lastProcessedSyncId);
+    console.debug("Waiting for", desiredSyncId, 'current is', lastProcessedSyncId);
 
     return new Promise((res, rej) => {
         syncIdReachedListeners.push({
@@ -335,7 +335,7 @@ async function processSyncRows(syncRows) {
 
     if (!loadResults.isEmpty()) {
         const appContext = (await import("./app_context.js")).default;
-        appContext.triggerEvent('entitiesReloaded', {loadResults});
+        await appContext.triggerEvent('entitiesReloaded', {loadResults});
     }
 }
 

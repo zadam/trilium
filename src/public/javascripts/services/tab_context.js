@@ -40,7 +40,7 @@ class TabContext extends Component {
             return; // note is outside of hoisted subtree and user chose not to unhoist
         }
 
-        await this.triggerEvent('beforeNoteSwitch', {tabId: this.tabId});
+        await this.triggerEvent('beforeNoteSwitch', {tabContext: this});
 
         utils.closeActiveDialog();
 

@@ -66,16 +66,16 @@ export default class Entrypoints extends Component {
     async createNoteIntoDayNoteCommand() {
         const todayNote = await dateNoteService.getTodayNote();
 
-        const {note} = await noteCreateService.createNote(todayNote.noteId, {
-            isProtected: todayNote.isProtected,
-            type: 'text',
+        const {note} = await server.post(`notes/${todayNote.noteId}/children?target=into`, {
             title: 'new note',
-            content: ''
+            content: '',
+            type: 'text',
+            isProtected: todayNote.isProtected
         });
 
         await ws.waitForMaxKnownSyncId();
 
-        await appContext.tabManager.openTabWithNote(note.noteId, false);
+        await appContext.tabManager.openTabWithNote(note.noteId, true);
 
         appContext.triggerEvent('focusAndSelectTitle');
     }

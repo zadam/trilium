@@ -188,8 +188,8 @@ export default class NoteDetailWidget extends TabAwareWidget {
         }
     }
 
-    async beforeNoteSwitchEvent({tabId}) {
-        if (this.isTab(tabId)) {
+    async beforeNoteSwitchEvent({tabContext}) {
+        if (this.isTab(tabContext.tabId)) {
             await this.spacedUpdate.updateNowIfNecessary();
         }
     }
