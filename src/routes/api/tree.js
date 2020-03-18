@@ -55,7 +55,7 @@ async function getTree() {
 
     // we fetch all branches of notes, even if that particular branch isn't visible
     // this allows us to e.g. detect and properly display clones
-    let noteIds = await sql.getColumn(`
+    const noteIds = await sql.getColumn(`
         WITH RECURSIVE
             tree(branchId, noteId, isExpanded) AS (
             SELECT branchId, noteId, isExpanded FROM branches WHERE noteId = ? 

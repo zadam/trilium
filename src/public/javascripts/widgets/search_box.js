@@ -110,7 +110,7 @@ export default class SearchBoxWidget extends BasicWidget {
         let activeNote = appContext.tabManager.getActiveTabNote();
 
         if (activeNote.type === 'search') {
-            activeNote = (await activeNote.getParentNotes())[0];
+            activeNote = activeNote.getParentNotes()[0];
         }
 
         await noteCreateService.createNote(activeNote.noteId, {

@@ -58,7 +58,7 @@ async function getRunPath(notePath) {
                 return;
             }
 
-            const parents = await child.getParentNotes();
+            const parents = child.getParentNotes();
 
             if (!parents) {
                 ws.logError("No parents found for " + childNoteId);
@@ -113,7 +113,7 @@ async function getSomeNotePath(note) {
     while (cur.noteId !== 'root') {
         path.push(cur.noteId);
 
-        const parents = await cur.getParentNotes();
+        const parents = cur.getParentNotes();
 
         if (!parents.length) {
             console.error(`Can't find parents for note ${cur.noteId}`);

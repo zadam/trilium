@@ -18,7 +18,7 @@ class TreeCache {
     }
 
     async loadInitialTree() {
-        const {notes, branches, attributes} = await server.get('tree');
+        const resp = await server.get('tree');
 
         // clear the cache only directly before adding new content which is important for e.g. switching to protected session
 
@@ -34,10 +34,42 @@ class TreeCache {
         /** @type {Object.<string, Promise<NoteComplement>>} */
         this.noteComplementPromises = {};
 
-        this.addResp(notes, branches, attributes);
+        await this.loadParents(resp);
+        this.addResp(resp);
     }
 
-    addResp(noteRows, branchRows, attributeRows) {
+    async loadParents(resp) {
+        const noteIds = new Set(resp.notes.map(note => note.noteId));
+        const missingNoteIds = [];
+
+        for (const branch of resp.branches) {
+            if (!(branch.parentNoteId in this.notes) && !noteIds.has(branch.parentNoteId) && branch.parentNoteId !== 'none') {
+                missingNoteIds.push(branch.parentNoteId);
+            }
+        }
+
+        for (const attr of resp.attributes) {
+            if (attr.type === 'relation' && attr.name === 'template' && !(attr.value in this.notes) && !noteIds.has(attr.value)) {
+                missingNoteIds.push(attr.value);
+            }
+        }
+
+        if (missingNoteIds.length > 0) {
+            const newResp = await server.post('tree/load', { noteIds: missingNoteIds });
+
+            resp.notes = resp.notes.concat(newResp.notes);
+            resp.branches = resp.branches.concat(newResp.branches);
+            resp.attributes = resp.attributes.concat(newResp.attributes);
+
+            await this.loadParents(resp);
+        }
+    }
+
+    addResp(resp) {
+        const noteRows = resp.notes;
+        const branchRows = resp.branches;
+        const attributeRows = resp.attributes;
+
         for (const noteRow of noteRows) {
             const {noteId} = noteRow;
 
@@ -122,7 +154,8 @@ class TreeCache {
 
         const resp = await server.post('tree/load', { noteIds });
 
-        this.addResp(resp.notes, resp.branches, resp.attributes);
+        await this.loadParents(resp);
+        this.addResp(resp);
 
         for (const note of resp.notes) {
             if (note.type === 'search') {
@@ -147,9 +180,27 @@ class TreeCache {
                 }));
 
                 // update this note with standard (parent) branches + virtual (children) branches
-                this.addResp([note], branches, []);
+                this.addResp({
+                    notes: [note],
+                    branches,
+                    attributes: []
+                });
             }
         }
+    }
+
+    /** @return {NoteShort[]} */
+    getNotesFromCache(noteIds, silentNotFoundError = false) {
+        return noteIds.map(noteId => {
+            if (!this.notes[noteId] && !silentNotFoundError) {
+                console.log(`Can't find note "${noteId}"`);
+
+                return null;
+            }
+            else {
+                return this.notes[noteId];
+            }
+        }).filter(note => !!note);
     }
 
     /** @return {Promise<NoteShort[]>} */
