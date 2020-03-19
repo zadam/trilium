@@ -3,7 +3,7 @@
 const html = require('html');
 const repository = require('../repository');
 const dateUtils = require('../date_utils');
-const tar = require('tar-stream');
+const zip = require('tar-stream');
 const path = require('path');
 const mimeTypes = require('mime-types');
 const mdService = require('./md');
@@ -13,16 +13,29 @@ const protectedSessionService = require('../protected_session');
 const sanitize = require("sanitize-filename");
 const fs = require("fs");
 const RESOURCE_DIR = require('../../services/resource_dir').RESOURCE_DIR;
+const ZipStream = require('zip-stream');
 
 /**
  * @param {TaskContext} taskContext
  * @param {Branch} branch
  * @param {string} format - 'html' or 'markdown'
  */
-async function exportToTar(taskContext, branch, format, res) {
-    const pack = tar.pack();
+async function exportToZip(taskContext, branch, format, res) {
+    const packer = new ZipStream();
 
     const noteIdToMeta = {};
+
+    async function addEntry(source, data) {
+        return new Promise((res, rej) => {
+            packer.entry(source, data, (err, entry) => {
+                if (err) {
+                    rej(err);
+                }
+
+                res(entry);
+            })
+        });
+    }
 
     function getUniqueFilename(existingFileNames, fileName) {
         const lcFileName = fileName.toLowerCase();
@@ -265,7 +278,8 @@ ${content}
 
             content = prepareContent(noteMeta.title, content, noteMeta);
 
-            pack.entry({name: filePathPrefix + noteMeta.dataFileName, size: content.length}, content);
+            await addEntry(content, {name: filePathPrefix + noteMeta.dataFileName});
+
             return;
         }
 
@@ -276,11 +290,10 @@ ${content}
         if (noteMeta.dataFileName) {
             const content = prepareContent(noteMeta.title, await note.getContent(), noteMeta);
 
-            pack.entry({
+            await addEntry(content, {
                 name: filePathPrefix + noteMeta.dataFileName,
-                size: content.length,
-                mtime: dateUtils.parseDateTime(note.utcDateModified)
-            }, content);
+                date: dateUtils.parseDateTime(note.utcDateModified)
+            });
         }
 
         taskContext.increaseProgressCount();
@@ -288,10 +301,10 @@ ${content}
         if (noteMeta.children && noteMeta.children.length > 0) {
             const directoryPath = filePathPrefix + noteMeta.dirFileName;
 
-            pack.entry({
+            await addEntry(null,{
                 name: directoryPath,
                 type: 'directory',
-                mtime: dateUtils.parseDateTime(note.utcDateModified)
+                date: dateUtils.parseDateTime(note.utcDateModified)
             });
 
             for (const childMeta of noteMeta.children) {
@@ -300,7 +313,7 @@ ${content}
         }
     }
 
-    function saveNavigation(rootMeta, navigationMeta) {
+    async function saveNavigation(rootMeta, navigationMeta) {
         function saveNavigationInner(meta) {
             let html = '<li>';
 
@@ -339,10 +352,10 @@ ${content}
 </html>`;
         const prettyHtml = html.prettyPrint(fullHtml, {indent_size: 2});
 
-        pack.entry({name: navigationMeta.dataFileName, size: prettyHtml.length}, prettyHtml);
+        await addEntry(prettyHtml, {name: navigationMeta.dataFileName});
     }
 
-    function saveIndex(rootMeta, indexMeta) {
+    async function saveIndex(rootMeta, indexMeta) {
         let firstNonEmptyNote;
         let curMeta = rootMeta;
 
@@ -370,13 +383,13 @@ ${content}
 </frameset>
 </html>`;
 
-        pack.entry({name: indexMeta.dataFileName, size: fullHtml.length}, fullHtml);
+        await addEntry(fullHtml, {name: indexMeta.dataFileName});
     }
 
-    function saveCss(rootMeta, cssMeta) {
+    async function saveCss(rootMeta, cssMeta) {
         const cssContent = fs.readFileSync(RESOURCE_DIR + '/libraries/ckeditor/ckeditor-content.css');
 
-        pack.entry({name: cssMeta.dataFileName, size: cssContent.length}, cssContent);
+        await addEntry(cssContent, {name: cssMeta.dataFileName});
     }
 
     const existingFileNames = format === 'html' ? ['navigation', 'index'] : [];
@@ -425,29 +438,29 @@ ${content}
 
     const metaFileJson = JSON.stringify(metaFile, null, '\t');
 
-    pack.entry({name: "!!!meta.json", size: metaFileJson.length}, metaFileJson);
+    await addEntry(metaFileJson, {name: "!!!meta.json"});
 
     await saveNote(rootMeta, '');
 
     if (format === 'html') {
-        saveNavigation(rootMeta, navigationMeta);
-        saveIndex(rootMeta, indexMeta);
-        saveCss(rootMeta, cssMeta);
+        await saveNavigation(rootMeta, navigationMeta);
+        await saveIndex(rootMeta, indexMeta);
+        await saveCss(rootMeta, cssMeta);
     }
 
-    pack.finalize();
+    packer.finalize();
 
     const note = await branch.getNote();
-    const tarFileName = (branch.prefix ? (branch.prefix + " - ") : "") + note.title + ".tar";
+    const zipFileName = (branch.prefix ? (branch.prefix + " - ") : "") + note.title + ".zip";
 
-    res.setHeader('Content-Disposition', utils.getContentDisposition(tarFileName));
-    res.setHeader('Content-Type', 'application/tar');
+    res.setHeader('Content-Disposition', utils.getContentDisposition(zipFileName));
+    res.setHeader('Content-Type', 'application/zip');
 
-    pack.pipe(res);
+    packer.pipe(res);
 
     taskContext.taskSucceeded();
 }
 
 module.exports = {
-    exportToTar
+    exportToZip
 };

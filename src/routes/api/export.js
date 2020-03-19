@@ -1,6 +1,6 @@
 "use strict";
 
-const tarExportService = require('../../services/export/tar');
+const zipExportService = require('../../services/export/tar');
 const singleExportService = require('../../services/export/single');
 const opmlExportService = require('../../services/export/opml');
 const repository = require("../../services/repository");
@@ -15,7 +15,7 @@ async function exportBranch(req, res) {
 
     try {
         if (type === 'subtree' && (format === 'html' || format === 'markdown')) {
-            await tarExportService.exportToTar(taskContext, branch, format, res);
+            await zipExportService.exportToZip(taskContext, branch, format, res);
         }
         else if (type === 'single') {
             await singleExportService.exportSingleNote(taskContext, branch, format, res);
