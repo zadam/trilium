@@ -203,6 +203,25 @@ subscribeToMessages(message => {
 });
 
 async function processSyncRows(syncRows) {
+    const missingNoteIds = [];
+
+    syncRows.forEach(({entityName, entity}) => {
+       if (entityName === 'branches' && !(entity.parentNoteId in treeCache.notes)) {
+            missingNoteIds.push(entity.parentNoteId);
+       }
+       else if (entityName === 'attributes'
+           && entity.type === 'relation'
+           && entity.name === 'template'
+           && !(entity.noteId in treeCache.notes)) {
+
+           missingNoteIds.push(entity.value);
+       }
+    });
+
+    if (missingNoteIds.length > 0) {
+        await treeCache.reloadNotes(missingNoteIds);
+    }
+
     const loadResults = new LoadResults(treeCache);
 
     syncRows.filter(sync => sync.entityName === 'notes').forEach(sync => {
