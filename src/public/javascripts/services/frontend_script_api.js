@@ -11,6 +11,9 @@ import CollapsibleWidget from '../widgets/collapsible_widget.js';
 import ws from "./ws.js";
 import hoistedNoteService from "./hoisted_note.js";
 import appContext from "./app_context.js";
+import TabAwareWidget from "../widgets/tab_aware_widget.js";
+import TabCachingWidget from "../widgets/tab_caching_widget.js";
+import BasicWidget from "../widgets/basic_widget.js";
 
 /**
  * This is the main frontend API interface for scripts. It's published in the local "api" object.
@@ -36,6 +39,15 @@ function FrontendScriptApi(startNote, currentNote, originEntity = null, $contain
 
     /** @property {CollapsibleWidget} */
     this.CollapsibleWidget = CollapsibleWidget;
+
+    /** @property {TabAwareWidget} */
+    this.TabAwareWidget = TabAwareWidget;
+
+    /** @property {TabCachingWidget} */
+    this.TabCachingWidget = TabCachingWidget;
+
+    /** @property {BasicWidget} */
+    this.BasicWidget = BasicWidget;
 
     /**
      * Activates note in the tree and in the note detail.
