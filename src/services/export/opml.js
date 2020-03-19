@@ -16,7 +16,7 @@ async function exportToOpml(taskContext, branch, version, res) {
         const branch = await repository.getBranch(branchId);
         const note = await branch.getNote();
 
-        if (!note.isStringNote() || await note.hasOwnedLabel('excludeFromExport')) {
+        if (await note.hasOwnedLabel('excludeFromExport')) {
             return;
         }
 
@@ -24,13 +24,13 @@ async function exportToOpml(taskContext, branch, version, res) {
 
         if (opmlVersion === 1) {
             const preparedTitle = escapeXmlAttribute(title);
-            const preparedContent = prepareText(await note.getContent());
+            const preparedContent = note.isStringNote() ? prepareText(await note.getContent()) : '';
 
             res.write(`<outline title="${preparedTitle}" text="${preparedContent}">\n`);
         }
         else if (opmlVersion === 2) {
             const preparedTitle = escapeXmlAttribute(title);
-            const preparedContent = escapeXmlAttribute(await note.getContent());
+            const preparedContent = note.isStringNote() ? escapeXmlAttribute(await note.getContent()) : '';
 
             res.write(`<outline text="${preparedTitle}" _note="${preparedContent}">\n`);
         }
