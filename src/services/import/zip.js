@@ -386,50 +386,57 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
         return new Promise((res, rej) => stream.on('end', () => res(Buffer.concat(chunks))));
     }
 
-    function readZipFile(buffer) {
+    function readContent(zipfile, entry) {
+        return new Promise((res, rej) => {
+            zipfile.openReadStream(entry, function(err, readStream) {
+                if (err) rej(err);
+
+                streamToBuffer(readStream).then(res);
+            });
+        });
+    }
+
+    function readZipFile(buffer, processEntryCallback) {
         return new Promise((res, rej) => {
             yauzl.fromBuffer(buffer, {lazyEntries: true, validateEntrySizes: false}, function(err, zipfile) {
-                function readContent(entry) {
-                    return new Promise((res, rej) => {
-                        zipfile.openReadStream(entry, function(err, readStream) {
-                            if (err) rej(err);
-
-                            streamToBuffer(readStream).then(res);
-                        });
-                    });
-                }
-
-                async function saveEntry(entry) {
-                    const filePath = normalizeFilePath(entry.fileName);
-console.log(filePath);
-                    if (/\/$/.test(entry.fileName)) {
-                        await saveDirectory(filePath);
-                    }
-                    else {
-                        const content = await readContent(entry);
-
-                        if (filePath === '!!!meta.json') {
-                            metaFile = JSON.parse(content.toString("UTF-8"));
-                        }
-                        else {
-                            await saveNote(filePath, content);
-                        }
-                    }
-
-                    taskContext.increaseProgressCount();
-
-                    zipfile.readEntry();
-                }
-
                 if (err) throw err;
                 zipfile.readEntry();
-                zipfile.on("entry", saveEntry);
+                zipfile.on("entry", entry => processEntryCallback(zipfile, entry));
                 zipfile.on("end", res);
             });
         });
     }
 
-    await readZipFile(fileBuffer);
+    // we're running two passes to make sure that the meta file is loaded before the rest of the files is processed.
+
+    await readZipFile(fileBuffer, async (zipfile, entry) => {
+        const filePath = normalizeFilePath(entry.fileName);
+
+        if (filePath === '!!!meta.json') {
+            const content = await readContent(zipfile, entry);
+
+            metaFile = JSON.parse(content.toString("UTF-8"));
+        }
+
+        taskContext.increaseProgressCount();
+        zipfile.readEntry();
+    });
+
+    await readZipFile(fileBuffer, async (zipfile, entry) => {
+        const filePath = normalizeFilePath(entry.fileName);
+
+        if (/\/$/.test(entry.fileName)) {
+            await saveDirectory(filePath);
+        }
+        else if (filePath !== '!!!meta.json') {
+            const content = await readContent(zipfile, entry);
+
+            await saveNote(filePath, content);
+        }
+
+        taskContext.increaseProgressCount();
+        zipfile.readEntry();
+    });
 
     const createdNoteIds = {};
 
