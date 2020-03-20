@@ -14,6 +14,8 @@ const sanitize = require("sanitize-filename");
 const fs = require("fs");
 const RESOURCE_DIR = require('../../services/resource_dir').RESOURCE_DIR;
 const ZipStream = require('zip-stream');
+const {Readable} = require('stream');
+const yazl = require("yazl");
 
 /**
  * @param {TaskContext} taskContext
@@ -21,21 +23,9 @@ const ZipStream = require('zip-stream');
  * @param {string} format - 'html' or 'markdown'
  */
 async function exportToZip(taskContext, branch, format, res) {
-    const packer = new ZipStream();
+    const zipFile = new yazl.ZipFile();
 
     const noteIdToMeta = {};
-
-    async function addEntry(source, data) {
-        return new Promise((res, rej) => {
-            packer.entry(source, data, (err, entry) => {
-                if (err) {
-                    rej(err);
-                }
-
-                res(entry);
-            })
-        });
-    }
 
     function getUniqueFilename(existingFileNames, fileName) {
         const lcFileName = fileName.toLowerCase();
@@ -278,7 +268,7 @@ ${content}
 
             content = prepareContent(noteMeta.title, content, noteMeta);
 
-            await addEntry(content, {name: filePathPrefix + noteMeta.dataFileName});
+            zipFile.addBuffer(content, filePathPrefix + noteMeta.dataFileName);
 
             return;
         }
@@ -290,10 +280,7 @@ ${content}
         if (noteMeta.dataFileName) {
             const content = prepareContent(noteMeta.title, await note.getContent(), noteMeta);
 
-            await addEntry(content, {
-                name: filePathPrefix + noteMeta.dataFileName,
-                date: dateUtils.parseDateTime(note.utcDateModified)
-            });
+            zipFile.addBuffer(content, filePathPrefix + noteMeta.dataFileName, {mtime: dateUtils.parseDateTime(note.utcDateModified)});
         }
 
         taskContext.increaseProgressCount();
@@ -301,11 +288,7 @@ ${content}
         if (noteMeta.children && noteMeta.children.length > 0) {
             const directoryPath = filePathPrefix + noteMeta.dirFileName;
 
-            await addEntry(null,{
-                name: directoryPath,
-                type: 'directory',
-                date: dateUtils.parseDateTime(note.utcDateModified)
-            });
+            zipFile.addEmptyDirectory(directoryPath, {mtime: dateUtils.parseDateTime(note.utcDateModified)});
 
             for (const childMeta of noteMeta.children) {
                 await saveNote(childMeta, directoryPath + '/');
@@ -352,7 +335,7 @@ ${content}
 </html>`;
         const prettyHtml = html.prettyPrint(fullHtml, {indent_size: 2});
 
-        await addEntry(prettyHtml, {name: navigationMeta.dataFileName});
+        zipFile.addBuffer(prettyHtml, navigationMeta.dataFileName);
     }
 
     async function saveIndex(rootMeta, indexMeta) {
@@ -383,13 +366,13 @@ ${content}
 </frameset>
 </html>`;
 
-        await addEntry(fullHtml, {name: indexMeta.dataFileName});
+        zipFile.addBuffer(fullHtml, indexMeta.dataFileName);
     }
 
     async function saveCss(rootMeta, cssMeta) {
         const cssContent = fs.readFileSync(RESOURCE_DIR + '/libraries/ckeditor/ckeditor-content.css');
 
-        await addEntry(cssContent, {name: cssMeta.dataFileName});
+        zipFile.addBuffer(cssContent, cssMeta.dataFileName);
     }
 
     const existingFileNames = format === 'html' ? ['navigation', 'index'] : [];
@@ -438,7 +421,7 @@ ${content}
 
     const metaFileJson = JSON.stringify(metaFile, null, '\t');
 
-    await addEntry(metaFileJson, {name: "!!!meta.json"});
+    zipFile.addBuffer(metaFileJson, "!!!meta.json");
 
     await saveNote(rootMeta, '');
 
@@ -448,15 +431,15 @@ ${content}
         await saveCss(rootMeta, cssMeta);
     }
 
-    packer.finalize();
-
     const note = await branch.getNote();
     const zipFileName = (branch.prefix ? (branch.prefix + " - ") : "") + note.title + ".zip";
 
     res.setHeader('Content-Disposition', utils.getContentDisposition(zipFileName));
     res.setHeader('Content-Type', 'application/zip');
 
-    packer.pipe(res);
+    zipFile.end();
+
+    zipFile.outputStream.pipe(res);
 
     taskContext.taskSucceeded();
 }
