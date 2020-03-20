@@ -72,6 +72,7 @@
     "turndown-plugin-gfm": "1.0.2",
     "unescape": "1.0.1",
     "ws": "7.2.3",
+    "yauzl": "^2.10.0",
     "yazl": "^2.5.1"
   },
   "devDependencies": {

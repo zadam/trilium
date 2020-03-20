@@ -13,8 +13,6 @@ const protectedSessionService = require('../protected_session');
 const sanitize = require("sanitize-filename");
 const fs = require("fs");
 const RESOURCE_DIR = require('../../services/resource_dir').RESOURCE_DIR;
-const ZipStream = require('zip-stream');
-const {Readable} = require('stream');
 const yazl = require("yazl");
 
 /**
