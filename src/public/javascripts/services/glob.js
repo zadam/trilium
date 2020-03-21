@@ -4,6 +4,7 @@ import server from "./server.js";
 import libraryLoader from "./library_loader.js";
 import ws from "./ws.js";
 import protectedSessionHolder from "./protected_session_holder.js";
+import treeCache from "./tree_cache.js";
 
 window.glob.PROFILING_LOG = false;
 
@@ -18,6 +19,7 @@ window.glob.getActiveTabNote = () => appContext.tabManager.getActiveTabNote();
 window.glob.requireLibrary = libraryLoader.requireLibrary;
 window.glob.ESLINT = libraryLoader.ESLINT;
 window.glob.appContext = appContext; // for debugging
+window.glob.treeCache = treeCache;
 
 // for CKEditor integration (button on block toolbar)
 window.glob.importMarkdownInline = async () => {

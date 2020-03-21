@@ -9,7 +9,7 @@ import treeCache from "../../services/tree_cache.js";
 import linkService from "../../services/link.js";
 import noteContentRenderer from "../../services/note_content_renderer.js";
 
-const ENABLE_INSPECTOR = false;
+const ENABLE_INSPECTOR = true;
 
 const mentionSetup = {
     feeds: [
@@ -135,7 +135,7 @@ export default class TextTypeWidget extends TypeWidget {
         this.textEditor.model.document.on('change:data', () => this.spacedUpdate.scheduleUpdate());
 
         if (glob.isDev && ENABLE_INSPECTOR) {
-            await import('../../libraries/ckeditor/inspector.js');
+            await import('../../../libraries/ckeditor/inspector.js');
             CKEditorInspector.attach(this.textEditor);
         }
     }
@@ -191,7 +191,7 @@ export default class TextTypeWidget extends TypeWidget {
         this.addTextToEditor(dateString);
     }
 
-    async addLinkToEditor(linkTitle, linkHref) {
+    async addLinkToEditor(linkHref, linkTitle) {
         await this.initialized;
 
         this.textEditor.model.change(writer => {
@@ -217,14 +217,18 @@ export default class TextTypeWidget extends TypeWidget {
         this.addTextToEditor(text);
     }
 
-    async addLink(linkTitle, linkHref) {
+    async addLink(notePath, linkTitle) {
         await this.initialized;
 
-        if (this.hasSelection()) {
-            this.textEditor.execute('link', linkHref);
+        if (linkTitle && false) {
+            if (this.hasSelection()) {
+                this.textEditor.execute('link', '#' + notePath);
+            } else {
+                await this.addLinkToEditor('#' + notePath, linkTitle);
+            }
         }
         else {
-            await this.addLinkToEditor(linkTitle, linkHref);
+            this.textEditor.execute('referenceLink', { notePath: notePath });
         }
 
         this.textEditor.editing.view.focus();

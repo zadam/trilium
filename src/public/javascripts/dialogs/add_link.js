@@ -56,7 +56,7 @@ $form.on('submit', () => {
     if (notePath) {
         $dialog.modal('hide');
 
-        textTypeWidget.addLink($linkTitle.val(), '#' + notePath);
+        textTypeWidget.addLink(notePath, $linkTitle.val());
     }
     else {
         console.error("No path to add link.");

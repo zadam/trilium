@@ -117,6 +117,11 @@ $(window).on('hashchange', function() {
     if (isNotePathInAddress()) {
         const [notePath, tabId] = treeService.getHashValueFromAddress();
 
+        if (!notePath) {
+            console.log(`Invalid hash value "${document.location.hash}", ignoring.`);
+            return;
+        }
+
         appContext.tabManager.switchToTab(tabId, notePath);
     }
 });
