@@ -25,12 +25,13 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
     // maps from original noteId (in tar file) to newly generated noteId
     const noteIdMap = {};
     const attributes = [];
-    // path => noteId
+    // path => noteId, used only when meta file is not available
     const createdPaths = { '/': importRootNote.noteId, '\\': importRootNote.noteId };
     const mdReader = new commonmark.Parser();
     const mdWriter = new commonmark.HtmlRenderer();
     let metaFile = null;
     let firstNote = null;
+    const createdNoteIds = {};
 
     function getNewNoteId(origNoteId) {
         // in case the original noteId is empty. This probably shouldn't happen, but still good to have this precaution
@@ -111,13 +112,17 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
     }
 
     function getNoteId(noteMeta, filePath) {
+        if (noteMeta) {
+            return getNewNoteId(noteMeta.noteId);
+        }
+
         const filePathNoExt = getTextFileWithoutExtension(filePath);
 
         if (filePathNoExt in createdPaths) {
             return createdPaths[filePathNoExt];
         }
 
-        const noteId = noteMeta ? getNewNoteId(noteMeta.noteId) : utils.newEntityId();
+        const noteId = utils.newEntityId();
 
         createdPaths[filePathNoExt] = noteId;
 
@@ -191,6 +196,8 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
             isProtected: importRootNote.isProtected && protectedSessionService.isProtectedSessionAvailable(),
         }));
 
+        createdNoteIds[note.noteId] = true;
+
         await saveAttributes(note, noteMeta);
 
         if (!firstNote) {
@@ -244,6 +251,10 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
 
         const noteId = getNoteId(noteMeta, filePath);
         const parentNoteId = await getParentNoteId(filePath, parentNoteMeta);
+
+        if (!parentNoteId) {
+            throw new Error(`Cannot find parentNoteId for ${filePath}`);
+        }
 
         if (noteMeta && noteMeta.isClone) {
             await new Branch({
@@ -343,6 +354,8 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
                 isProtected: importRootNote.isProtected && protectedSessionService.isProtectedSessionAvailable(),
             }));
 
+            createdNoteIds[note.noteId] = true;
+
             await saveAttributes(note, noteMeta);
 
             if (!firstNote) {
@@ -418,7 +431,6 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
             metaFile = JSON.parse(content.toString("UTF-8"));
         }
 
-        taskContext.increaseProgressCount();
         zipfile.readEntry();
     });
 
@@ -437,14 +449,6 @@ async function importZip(taskContext, fileBuffer, importRootNote) {
         taskContext.increaseProgressCount();
         zipfile.readEntry();
     });
-
-    const createdNoteIds = {};
-
-    for (const path in createdPaths) {
-        const noteId = createdPaths[path];
-
-        createdNoteIds[noteId] = true;
-    }
 
     for (const noteId in createdNoteIds) { // now the noteIds are unique
         await noteService.scanForLinks(noteId);
