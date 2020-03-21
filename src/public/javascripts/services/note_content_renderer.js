@@ -20,7 +20,9 @@ async function getRenderedContent(note) {
         $rendered = $("<pre>").text(fullNote.content);
     }
     else if (type === 'image') {
-        $rendered = $("<img>").attr("src", `api/images/${note.noteId}/${note.title}`);
+        $rendered = $("<img>")
+            .attr("src", `api/images/${note.noteId}/${note.title}`)
+            .css("max-width", "100%");
     }
     else if (type === 'file') {
         function getFileUrl() {
