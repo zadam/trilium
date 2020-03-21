@@ -1,6 +1,7 @@
 import treeService from '../services/tree.js';
 import noteAutocompleteService from '../services/note_autocomplete.js';
 import utils from "../services/utils.js";
+import treeCache from "../services/tree_cache.js";
 
 const $dialog = $("#include-note-dialog");
 const $form = $("#include-note-form");
@@ -20,15 +21,27 @@ export async function showDialog(widget) {
     noteAutocompleteService.showRecentNotes($autoComplete);
 }
 
+async function includeNote(notePath) {
+    const noteId = treeService.getNoteIdFromNotePath(notePath);
+    const note = await treeCache.getNote(noteId);
+
+    if (note.type === 'image') {
+        // there's no benefit to use insert note functionlity for images
+        // so we'll just add an IMG tag
+        textTypeWidget.addImage(noteId);
+    }
+    else {
+        textTypeWidget.addIncludeNote(noteId);
+    }
+}
+
 $form.on('submit', () => {
     const notePath = $autoComplete.getSelectedPath();
 
     if (notePath) {
         $dialog.modal('hide');
 
-        const includedNoteId = treeService.getNoteIdFromNotePath(notePath);
-
-        textTypeWidget.addIncludeNote(includedNoteId);
+        includeNote(notePath);
     }
     else {
         console.error("No noteId to include.");

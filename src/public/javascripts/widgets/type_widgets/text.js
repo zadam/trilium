@@ -279,4 +279,16 @@ export default class TextTypeWidget extends TypeWidget {
             }));
         } );
     }
+
+    async addImage(noteId) {
+        const note = await treeCache.getNote(noteId);
+
+        this.textEditor.model.change( writer => {
+            const src = `api/images/${note.noteId}/${note.title}`;
+
+            const imageElement = writer.createElement( 'image',  { 'src': src } );
+
+            this.textEditor.model.insertContent(imageElement, this.textEditor.model.document.selection);
+        } );
+    }
 }
