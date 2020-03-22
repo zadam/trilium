@@ -6,6 +6,7 @@ const $dialog = $("#add-link-dialog");
 const $form = $("#add-link-form");
 const $autoComplete = $("#add-link-note-autocomplete");
 const $linkTitle = $("#link-title");
+const $addLinkTitleSettings = $("#add-link-title-settings");
 const $addLinkTitleFormGroup = $("#add-link-title-form-group");
 
 /** @var TextTypeWidget */
@@ -14,7 +15,10 @@ let textTypeWidget;
 export async function showDialog(widget) {
     textTypeWidget = widget;
 
-    $addLinkTitleFormGroup.toggle(!textTypeWidget.hasSelection());
+    $addLinkTitleSettings.toggle(!textTypeWidget.hasSelection());
+
+    updateTitleFormGroupVisibility();
+    $addLinkTitleSettings.find('input[type=radio]').on('change', updateTitleFormGroupVisibility);
 
     utils.openDialog($dialog);
 
@@ -50,13 +54,25 @@ export async function showDialog(widget) {
     noteAutocompleteService.showRecentNotes($autoComplete);
 }
 
+function getLinkType() {
+    return $addLinkTitleSettings.find('input[type=radio]:checked').val();
+}
+
+function updateTitleFormGroupVisibility() {
+    const visible = getLinkType() === 'hyper-link';
+
+    $addLinkTitleFormGroup.toggle(visible);
+}
+
 $form.on('submit', () => {
     const notePath = $autoComplete.getSelectedPath();
 
     if (notePath) {
         $dialog.modal('hide');
 
-        textTypeWidget.addLink(notePath, $linkTitle.val());
+        const linkTitle = getLinkType() === 'reference-link' ? null : $linkTitle.val();
+
+        textTypeWidget.addLink(notePath, linkTitle);
     }
     else {
         console.error("No path to add link.");

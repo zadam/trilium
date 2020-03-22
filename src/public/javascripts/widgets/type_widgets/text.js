@@ -220,7 +220,7 @@ export default class TextTypeWidget extends TypeWidget {
     async addLink(notePath, linkTitle) {
         await this.initialized;
 
-        if (linkTitle && false) {
+        if (linkTitle) {
             if (this.hasSelection()) {
                 this.textEditor.execute('link', '#' + notePath);
             } else {
