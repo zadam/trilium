@@ -17,6 +17,7 @@ import BookTypeWidget from "./type_widgets/book.js";
 import appContext from "../services/app_context.js";
 import keyboardActionsService from "../services/keyboard_actions.js";
 import noteCreateService from "../services/note_create.js";
+import DeletedTypeWidget from "./type_widgets/deleted.js";
 
 const TPL = `
 <div class="note-detail">
@@ -33,6 +34,7 @@ const TPL = `
 
 const typeWidgetClasses = {
     'empty': EmptyTypeWidget,
+    'deleted': DeletedTypeWidget,
     'text': TextTypeWidget,
     'code': CodeTypeWidget,
     'file': FileTypeWidget,
@@ -157,6 +159,8 @@ export default class NoteDetailWidget extends TabAwareWidget {
 
         if (!note) {
             return "empty";
+        } else if (note.isDeleted) {
+            return "deleted";
         }
 
         let type = note.type;

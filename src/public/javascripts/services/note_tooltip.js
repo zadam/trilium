@@ -70,6 +70,10 @@ function mouseLeaveHandler() {
 }
 
 async function renderTooltip(note, noteComplement) {
+    if (note.isDeleted) {
+        return '<div>Note has been deleted.</div>';
+    }
+
     const attributes = await note.getAttributes();
 
     let content = '';

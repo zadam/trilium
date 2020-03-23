@@ -25,19 +25,28 @@ class TabContext extends Component {
     }
 
     async setNote(inputNotePath, triggerSwitchEvent = true) {
-        const notePath = await treeService.resolveNotePath(inputNotePath);
+        const noteId = treeService.getNoteIdFromNotePath(inputNotePath);
+        let notePath;
 
-        if (!notePath) {
-            console.error(`Cannot resolve note path ${inputNotePath}`);
-            return;
+        if ((await treeCache.getNote(noteId)).isDeleted) {
+            // no point in trying to resolve canonical notePath
+            notePath = inputNotePath;
         }
+        else {
+            notePath = await treeService.resolveNotePath(inputNotePath);
 
-        if (notePath === this.notePath) {
-            return;
-        }
+            if (!notePath) {
+                console.error(`Cannot resolve note path ${inputNotePath}`);
+                return;
+            }
 
-        if (await hoistedNoteService.checkNoteAccess(notePath) === false) {
-            return; // note is outside of hoisted subtree and user chose not to unhoist
+            if (notePath === this.notePath) {
+                return;
+            }
+
+            if (await hoistedNoteService.checkNoteAccess(notePath) === false) {
+                return; // note is outside of hoisted subtree and user chose not to unhoist
+            }
         }
 
         await this.triggerEvent('beforeNoteSwitch', {tabContext: this});
@@ -45,7 +54,7 @@ class TabContext extends Component {
         utils.closeActiveDialog();
 
         this.notePath = notePath;
-        this.noteId = treeService.getNoteIdFromNotePath(notePath);
+        this.noteId = noteId;
 
         this.autoBookDisabled = false;
 
