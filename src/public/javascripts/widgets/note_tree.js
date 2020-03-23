@@ -435,7 +435,7 @@ export default class NoteTreeWidget extends TabAwareWidget {
             oldActiveNode.setFocus(false);
         }
 
-        if (this.tabContext && this.tabContext.notePath) {
+        if (this.tabContext && this.tabContext.notePath && !this.tabContext.note.isDeleted) {
             const newActiveNode = await this.getNodeFromPath(this.tabContext.notePath);
 
             if (newActiveNode) {

@@ -50,7 +50,13 @@ async function handleMessage(event) {
         $outstandingSyncsCount.html(message.outstandingSyncs);
 
         if (syncRows.length > 0) {
-            console.debug(utils.now(), "Sync data: ", syncRows);
+            const filteredRows = syncRows.filter(row =>
+                row.entityName !== 'recent_notes'
+                && (row.entityName !== 'options' || row.entityId !== 'openTabs'));
+
+            if (filteredRows.length > 0) {
+                console.debug(utils.now(), "Sync data: ", filteredRows);
+            }
 
             syncDataQueue.push(...syncRows);
 

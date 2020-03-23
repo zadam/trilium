@@ -151,7 +151,7 @@ $(document).on('mousedown', '.note-detail-text a', function (e) {
 
 $(document).on('mousedown', '.note-detail-book a', goToLink);
 $(document).on('mousedown', '.note-detail-render a', goToLink);
-$(document).on('mousedown', '.note-detail-text.ck-read-only a', goToLink);
+$(document).on('mousedown', '.note-detail-text.ck-read-only a,.note-detail-text a.reference-link', goToLink);
 $(document).on('mousedown', 'a.ck-link-actions__preview', goToLink);
 $(document).on('click', 'a.ck-link-actions__preview', e => {
     e.preventDefault();
